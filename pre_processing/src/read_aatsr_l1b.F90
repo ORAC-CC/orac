@@ -1,0 +1,401 @@
+! Name: read_aatsr_l1b.F90 
+!
+!
+! Purpose:
+! Read AATSR level 1b file using a C function. This routine passes a set of C
+! pointers to that function which point to the appropriate sections of 
+! imager_measurements%data or other imager structures.
+!
+! Description and Algorithm details:
+! 1) Allocate pointers as required by the views and channels requested.
+! 2) Call C function.
+! 3) Correct data returned to correspond to the desired formating. These include
+!    converting elevation angle to zenith angles and percentage radiances into
+!    fractional radiances.
+! 4) Apply the drift corrections dictated by the drift table.
+! 5) Parse the land/sea and cloud flags into the ORAC format.
+!
+! Arguments:
+! Name                 Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! l1b_file     string in   Full path to level 1B data
+! drift_file    string in   Full path to the AATSR calibration file
+! imager_geolocation   struct both Summary of pixel positions
+! imager_measurements  struct both Satellite observations
+! imager_angles        struct both Summary of sun/satellite viewing angles
+! imager_flags         struct both Summary of land/sea/ice flags
+! imager_time          struct both Summary of pixel observation time
+! channel_info         struct in   Summary of channel information
+! verbose              logic  in   T: print status information; F: don't
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
+! 2012/06/22: GT First version
+! 2012/07/29: CP added header and changed filename to lower case
+! 2012/08/01: GT Bug fix: solzen, satzen, solazi and relazi were
+!                all being stored in imager_angles%solzen!
+! 2012/08/20: MJ fixes several programming errors
+! 2012/08/21: GT Further syntax fixes
+! 2012/08/28: GT Changed C calls to use iso_c_binding. Temporarily commented out
+!                calibration correction code until it can be updated.
+! 2012/09/12: GT Changed size of arrays that took output of C data
+! 2012/09/12: GT changed day array structure write
+! 2012/09/12: GT assigned time to imager_time structure
+! 2012/09/13: GT Reactivated calibration correction code.
+! 2012/09/14: GT Bug fix in indexing of nday array. Bug fix to 
+!                read_aatsr_beam_ctof90 interface: fixed length strings are not
+!                supported by iso_c_binding and must be defined as
+!                   character(kind=c_char), intent(inout) :: var(*)
+!                not
+!                   character(kind=c_char,len=X), intent(inout) :: var
+! 2012/11/29: CP changed type and initialise channels_short
+! 2013/09/02: AP Removed startyi, endye.
+! 2013/09/10: AP tidying
+! 2013/10/07: AP Complete rewrite. Rather than allocate arrays for the C
+!                function to read into, this now passes a set of pointers. This
+!                relies on imager_measurements%data being real(sreal) as that
+!                exactly corresponds to c_float. The drift corrections have also
+!                been altered: aatsr_corrections now simply returns a few
+!                constants rather than passing arrays around.
+!2013/10/10 MJ fixed small bug
+!2013/10/17 GM Hoist loop invariant call to aatsr_read_drift_table() out of loop.
+!
+! $Id$
+!
+! Bugs:
+! none known
+!
+
+subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
+     imager_measurements, imager_angles, imager_flags, imager_time, &
+     channel_info, verbose)
+   
+   use iso_c_binding ! technically Fortran 2003
+   use preproc_constants
+   use channel_structures
+   use imager_structures
+   use aatsr_drift_structure
+
+   implicit none
+
+   interface
+     subroutine read_aatsr_orbit(l1b_file, verb, nch, ch, view, &
+           nx, ny, startx, starty, stat, lat, lon, &
+           nsza, niza, nsaz, nraz, nflg, nqul, nday, &
+           nch1, nch2, nch3, nch4, nch5, nch6, nch7, &
+           ner1, ner2, ner3, ner4, ner5, ner6, ner7, &
+           fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
+           fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
+           fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
+           start_date, gc1_file, vc1_file) bind(C,name='read_aatsr_orbit')
+         use iso_c_binding ! technically Fortran 2003
+         use preproc_constants
+ 
+         implicit none
+         
+         character(c_char), dimension(pathlength) :: l1b_file
+         character(c_char), dimension(30)   :: start_date
+         character(c_char), dimension(62)   :: gc1_file, vc1_file
+         integer(c_short)                   :: nch, stat
+         integer(c_short), dimension(nch)   :: ch, view
+         integer(c_long)                    :: nx, ny, startx, starty
+         integer(c_short), dimension(nx,ny) :: nflg, nqul, fflg, fqul
+         real(c_double), dimension(ny)      :: nday, fday
+         logical(c_bool)                    :: verb
+         type(c_ptr) :: lat, lon
+         type(c_ptr) :: nsza, niza, nsaz, nraz
+         type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
+         type(c_ptr) :: ner1, ner2, ner3, ner4, ner5, ner6, ner7
+         type(c_ptr) :: fsza, fiza, fsaz, fraz
+         type(c_ptr) :: fch1, fch2, fch3, fch4, fch5, fch6, fch7
+         type(c_ptr) :: fer1, fer2, fer3, fer4, fer5, fer6, fer7
+      end subroutine read_aatsr_orbit
+   end interface
+
+   ! Fortran variables
+   character(len=pathlength)   :: l1b_file, drift_file
+   type(imager_geolocation_s)  :: imager_geolocation
+   type(imager_measurements_s) :: imager_measurements
+   type(imager_angles_s)       :: imager_angles
+   type(imager_flags_s)        :: imager_flags
+   type(imager_time_s)         :: imager_time
+   type(channel_info_s)        :: channel_info
+   logical                     :: verbose
+   integer                     :: i, j, status
+   integer(sint)               :: view_selection
+   real(sreal), dimension(4)   :: A
+   type(aatsr_drift_lut)       :: lut
+   real(dreal)                 :: new_drift, old_drift, drift_var
+
+   ! C variables
+   logical(c_bool)                       :: verb
+   integer(c_short)                      :: nch, stat, ind, val, temp
+   integer(c_long)                       :: nx, ny, startx, starty
+   character(kind=c_char,len=pathlength) :: l1b_file_c
+   character(kind=c_char,len=30)         :: start_date
+   character(kind=c_char,len=62)         :: gc1_file, vc1_file
+   real(c_double), allocatable, dimension(:)     :: nday, fday
+   integer(c_short), allocatable, dimension(:)   :: ch, view
+   integer(c_short), allocatable, dimension(:,:) :: nflg, fflg
+   integer(c_short), allocatable, dimension(:,:) :: nqul, fqul
+   type(c_ptr) :: lat, lon
+   type(c_ptr) :: nsza, niza, nsaz, nraz
+   type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
+   type(c_ptr) :: ner1, ner2, ner3, ner4, ner5, ner6, ner7
+   type(c_ptr) :: fsza, fiza, fsaz, fraz
+   type(c_ptr) :: fch1, fch2, fch3, fch4, fch5, fch6, fch7
+   type(c_ptr) :: fer1, fer2, fer3, fer4, fer5, fer6, fer7
+
+   ! initialise all the pointers
+   lat  = c_null_ptr
+   lon  = c_null_ptr
+   nsza = c_null_ptr
+   niza = c_null_ptr
+   nsaz = c_null_ptr
+   nraz = c_null_ptr
+   nch1 = c_null_ptr
+   nch2 = c_null_ptr
+   nch3 = c_null_ptr
+   nch4 = c_null_ptr
+   nch5 = c_null_ptr
+   nch6 = c_null_ptr
+   nch7 = c_null_ptr
+   ner1 = c_null_ptr
+   ner2 = c_null_ptr
+   ner3 = c_null_ptr
+   ner4 = c_null_ptr
+   ner5 = c_null_ptr
+   ner6 = c_null_ptr
+   ner7 = c_null_ptr
+   fsza = c_null_ptr
+   fiza = c_null_ptr
+   fsaz = c_null_ptr
+   fraz = c_null_ptr
+   fch1 = c_null_ptr
+   fch2 = c_null_ptr
+   fch3 = c_null_ptr
+   fch4 = c_null_ptr
+   fch5 = c_null_ptr
+   fch6 = c_null_ptr
+   fch7 = c_null_ptr
+   fer1 = c_null_ptr
+   fer2 = c_null_ptr
+   fer3 = c_null_ptr
+   fer4 = c_null_ptr
+   fer5 = c_null_ptr
+   fer6 = c_null_ptr
+   fer7 = c_null_ptr
+
+   ! copy function arguments into dummy variables
+   nch = int(channel_info%nchannels_total, c_short)
+   allocate(ch(nch))
+   allocate(view(nch))
+   ch = int(channel_info%channel_ids_instr, c_short)
+   view = int(channel_info%channel_view_ids, c_short)
+
+   nx = int(imager_geolocation%nx, c_long)
+   startx = int(imager_geolocation%startx, c_long)
+   ny = int(imager_geolocation%ny, c_long)
+   starty = int(imager_geolocation%starty, c_long)
+   stat = 0
+   view_selection = 0
+   verb = verbose
+   if (any(view.eq.1)) view_selection = view_selection + 1
+   if (any(view.eq.2)) view_selection = view_selection + 2
+
+   ! assign geolocation and angle pointers
+   lat = c_loc(imager_geolocation%latitude(startx,1))
+   lon = c_loc(imager_geolocation%longitude(startx,1))
+   if (iand(view_selection,1_sint) .gt. 0) then
+      allocate(nflg(startx:imager_geolocation%endx,1:ny))
+      allocate(nqul(startx:imager_geolocation%endx,1:ny))
+      allocate(nday(1:ny))
+      nsza = c_loc(imager_angles%solzen(startx,1,1))
+      niza = c_loc(imager_angles%satzen(startx,1,1))
+      nsaz = c_loc(imager_angles%solazi(startx,1,1))
+      nraz = c_loc(imager_angles%relazi(startx,1,1))
+   else ! you have to pass something in Fortran
+      allocate(nflg(1,1))
+      allocate(nqul(1,1))
+      allocate(nday(1))
+   endif
+   if (iand(view_selection,2_sint) .gt. 0) then
+      allocate(fflg(startx:imager_geolocation%endx,1:ny))
+      allocate(fqul(startx:imager_geolocation%endx,1:ny))
+      allocate(fday(1:ny))
+      fsza = c_loc(imager_angles%solzen(startx,1,2))
+      fiza = c_loc(imager_angles%satzen(startx,1,2))
+      fsaz = c_loc(imager_angles%solazi(startx,1,2))
+      fraz = c_loc(imager_angles%relazi(startx,1,2))
+   else
+      allocate(fflg(1,1))
+      allocate(fqul(1,1))
+      allocate(fday(1))
+   endif
+   
+   ! assign write pointers for required channels and views. Fortran pointers
+   ! required for aatsr_apply_corrections as uncertain of last index
+   do i=1,nch
+      j=channel_info%channel_ids_abs(i)
+      if (view(i) .eq. 1) then
+         select case (ch(i))
+         case (1)
+            nch1 = c_loc(imager_measurements%data(startx,1,j))
+            ner1 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (2)
+            nch2 = c_loc(imager_measurements%data(startx,1,j))
+            ner2 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (3)
+            nch3 = c_loc(imager_measurements%data(startx,1,j))
+            ner3 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (4)
+            nch4 = c_loc(imager_measurements%data(startx,1,j))
+            ner4 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (5)
+            nch5 = c_loc(imager_measurements%data(startx,1,j))
+            ner5 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (6)
+            nch6 = c_loc(imager_measurements%data(startx,1,j))
+            ner6 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (7)
+            nch7 = c_loc(imager_measurements%data(startx,1,j))
+            ner7 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case default
+            print*,'Channel ',ch(i),', view ',view(i),' not defined for AATSR.'
+            stop
+         end select
+      else if (view(i) .eq. 2) then
+         select case (ch(i))
+         case (1)
+            fch1 = c_loc(imager_measurements%data(startx,1,j))
+            fer1 = c_loc(imager_measurements%uncertainty(startx,1,j))
+        case (2)
+            fch2 = c_loc(imager_measurements%data(startx,1,j))
+            fer2 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (3)
+            fch3 = c_loc(imager_measurements%data(startx,1,j))
+            fer3 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (4)
+            fch4 = c_loc(imager_measurements%data(startx,1,j))
+            fer4 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (5)
+            fch5 = c_loc(imager_measurements%data(startx,1,j))
+            fer5 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (6)
+            fch6 = c_loc(imager_measurements%data(startx,1,j))
+            fer6 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case (7)
+            fch7 = c_loc(imager_measurements%data(startx,1,j))
+            fer7 = c_loc(imager_measurements%uncertainty(startx,1,j))
+         case default
+            print*,'Channel ',ch(i),', view ',view(i),' not defined for AATSR.'
+            stop
+         end select
+      else
+         print*,'View ',view(i),' not defined for AATSR.'
+         stop
+      end if
+   end do
+
+   ! read data using C routine (correct starts to zero offset)
+   startx=startx-1
+   starty=starty-1
+   l1b_file_c = trim(l1b_file)//C_NULL_CHAR
+   if (verbose) print*,'Calling C function READ_AATSR_ORBIT with file ', &
+        trim(l1b_file)
+   call read_aatsr_orbit(l1b_file_c, verb, nch, ch, view, &
+        nx, ny, startx, starty, stat, lat, lon, &
+        nsza, niza, nsaz, nraz, nflg, nqul, nday, &
+        nch1, nch2, nch3, nch4, nch5, nch6, nch7, &
+        ner1, ner2, ner3, ner4, ner5, ner6, ner7, &
+        fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
+        fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
+        fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
+        start_date, gc1_file, vc1_file)
+   if (verbose) print*,'C function returned with status ', stat
+
+   ! convert elevation angles read into zenith angles
+   imager_angles%solzen = 90.0 - imager_angles%solzen
+   imager_angles%satzen = 90.0 - imager_angles%satzen
+
+   call aatsr_read_drift_table(drift_file, lut, status)
+
+   ! correct channels 1-4
+   do i=1,channel_info%nchannels_total
+      j=channel_info%channel_ids_instr(i)
+      if (j.le.4) then
+         ! AATSR L1B reflectances are stored as percentage values, so scale to
+         ! the fractional value used by ORAC
+         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i)*0.01
+         imager_measurements%uncertainty(:,:,i) = &
+              imager_measurements%uncertainty(:,:,i) * 0.01
+
+         ! determine if non-linearity correction has been applied
+         if (j.eq.4 .and. gc1_file .eq. &
+         & 'ATS_GC1_AXVIEC20020123_073430_20020101_000000_20200101_000000') then
+            ! this correction acts on the voltage, which is -4.25*radiance
+            A = pi/1.553 * (/ 1.0, -4.25, 18.0625, -76.765625 /) * &
+                 (/ -0.000027,-0.1093,0.009393,0.001013 /)
+            ! evaluate:
+            ! pi*(A(1) + A(2)*volts + A(3)*volts**2 + A(4)*volts**3) / 1.553
+            imager_measurements%data(:,:,i) = A(1) + &
+                 imager_measurements%data(:,:,i)*(A(2) + &
+                 imager_measurements%data(:,:,i)*(A(3) + &
+                 imager_measurements%data(:,:,i)* A(4)))
+         end if
+
+         ! determine drift correction to remove from data
+         if (status.eq.0) then
+            ! drift = old correction / new correction
+            call aatsr_corrections(start_date, vc1_file, lut, j, new_drift, &
+                 old_drift, drift_var)
+            if (verbose) print*,'Corrections - new_drift:',new_drift, &
+                 'old_drift:',old_drift,'drift_var:',drift_var
+            imager_measurements%data(:,:,i) = &
+                 (old_drift/new_drift) * imager_measurements%data(:,:,i)
+            ! propogate errors in above, with none on old_drift
+            imager_measurements%uncertainty(:,:,i) = sqrt( &
+                 imager_measurements%uncertainty(:,:,i) &
+                 *imager_measurements%uncertainty(:,:,i) + &
+                 drift_var*imager_measurements%data(:,:,i) &
+                 *imager_measurements%data(:,:,i)) / new_drift
+         end if
+      end if
+   end do
+
+   ! copy time values into rows from nadir (which we're presumably viewing)
+   do i=1,imager_geolocation%ny
+      imager_time%time(:,i) = nday(i)
+   end do
+
+   ! translate flags (THIS USED TO BE RATHER MORE COMPLICATED)
+   if (iand(view_selection,1_sint) .gt. 0_sint) then
+      do i=imager_geolocation%startx,imager_geolocation%endx
+         do j=1,imager_geolocation%ny
+            imager_flags%lsflag(i,j) = iand(nflg(i,j),1_c_short)
+            temp = iand(nflg(i,j),2_c_short)
+            if (temp .gt. 0) imager_flags%cflag(i,j) = temp
+         end do
+      end do
+   else if (iand(view_selection,2_sint) .gt. 0) then
+      do i=imager_geolocation%startx,imager_geolocation%endx
+         do j=1,imager_geolocation%ny
+            temp = iand(fflg(i,j),2_c_short)
+            if (temp .gt. 0) imager_flags%cflag(i,j) = 1
+         end do
+      end do
+   end if
+   
+   deallocate(ch)
+   deallocate(view)
+   deallocate(nflg)
+   deallocate(nqul)
+   deallocate(nday)
+   deallocate(fflg)
+   deallocate(fqul)
+   deallocate(fday)
+
+end subroutine read_aatsr_l1b

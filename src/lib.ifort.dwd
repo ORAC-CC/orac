@@ -1,0 +1,8 @@
+#ifort
+NCDFLIB=/home/mjerg/netcdf3.6.3_ifort_12.0.2/lib
+NCDFINCLUDE=/home/mjerg/netcdf3.6.3_ifort_12.0.2/include
+
+
+#Set up libraries and includes
+LIBS=-L$(NCDFLIB) -lnetcdf 
+INC=-I./  -I$(NCDFINCLUDE)

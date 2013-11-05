@@ -1,0 +1,117 @@
+! Name: read_imager.F90
+!
+!
+! Purpose:
+! A wrapper to call the routine appropriate for reading L1B and geolocation
+! data for this sensor.
+! 
+! Description and Algorithm details:
+! 1) Call read_L1B routine.
+! 2) Call read_geolocation routine.
+!
+! Arguments:
+! Name                      Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! sensor                    string in   Name of instrument
+! platform                  string in   Name of satellite
+! path_to_l1b_file          string in   Full path to level 1B data
+! path_to_geo_file          string in   Full path to geolocation data 
+! path_to_aatsr_drift_table string in   Full path to the AATSR calibration file
+! imager_geolocation        struct both Summary of pixel positions
+! imager_angles             struct both Summary of sun/satellite viewing angles
+! imager_flags              struct both Summary of land/sea/ice flags
+! imager_time               struct both Summary of pixel observation time
+! imager_measurements       struct both Satellite observations
+! channel_info              struct in   Summary of channel information
+! n_along_track             lint   in   Number of pixels available in the 
+!                                       direction of travel
+! verbose                   logic  in   T: print status information; F: don't
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
+! 2011/12/12: MJ produces draft code which opens and reads MODIS L1b file.
+! 2012/01/24: MJ includes code to read AVHRR L1b file.
+! 2012/06/22: GT Added code to read AATSR L1b file.
+! 2012/08/28:    Set imager_flags%cflag = 1 for MODIS, AVHHR, and AATSR as we
+!                don't have proper masks.
+! 2012/09/04: GT Corrected AATSR sensor name
+! 2013/09/06: AP tidying
+!
+! $Id$
+!
+! Bugs:
+! none known
+!
+
+!---------------------------------------------------------------------------
+!---------------------------------------------------------------------------
+subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
+     path_to_aatsr_drift_table, &
+     imager_geolocation,imager_angles,imager_flags,imager_time, &
+     imager_measurements,channel_info,n_along_track,verbose)
+
+   use preproc_constants
+   use imager_structures
+   use channel_structures
+
+   implicit none
+
+   integer(kind=lint)            :: n_along_track
+
+   character(len=sensorlength)   :: sensor
+   character(len=platformlength) :: platform
+
+   character(len=pathlength)     :: path_to_l1b_file,path_to_geo_file, &
+        path_to_aatsr_drift_table
+
+   type(imager_geolocation_s)    :: imager_geolocation
+   type(imager_angles_s)         :: imager_angles
+   type(imager_flags_s)          :: imager_flags
+   type(imager_time_s)           :: imager_time
+   type(imager_measurements_s)   :: imager_measurements
+   type(channel_info_s)          :: channel_info
+   
+   logical                       :: verbose
+
+   !branches for the sensors
+   if(trim(adjustl(sensor)) .eq. 'MODIS') then
+      call read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
+           imager_flags,imager_time,n_along_track)
+
+      !read MODIS L1b data. SW:reflectances, LW:brightness temperatures
+      call read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
+           imager_measurements,channel_info,verbose)
+
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+
+   elseif(trim(adjustl(sensor)) .eq. 'AVHRR') then
+      !read the angles and lat/lon info of the orbit
+      call read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
+           imager_flags,imager_time,n_along_track)
+
+      !read land/sea flag from physiography file
+      call read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
+           imager_angles,imager_flags,imager_time)
+
+      !read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
+      call read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
+           imager_measurements,channel_info)
+
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+
+   elseif(trim(adjustl(sensor)) .eq. 'AATSR') then
+      ! Read the L1B data, according to the dimensions and offsets specified in 
+      ! imager_geolocation
+      call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
+           imager_geolocation, imager_measurements, imager_angles, &
+           imager_flags,imager_time, channel_info, verbose)
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1     
+   endif
+
+end subroutine read_imager

@@ -1,0 +1,36 @@
+#ORAC
+F90=ec_f90
+
+#set compiler flags for ECMWF
+#performance
+##FFLAGS=-g -O3 -qtune=auto  -qcache=auto -q64 -qsmp=omp:opt -qnosave -qarch=pwr7 -bmaxstack:0x8000000000
+##LFLAGS=-g -O3 -qtune=auto  -qcache=auto -q64  -qsmp=omp:opt -qnosave -qarch=pwr7 -bmaxstack:0x8000000000
+
+FFLAGS=-g  -O3 -qsmp=omp:opt -qtune=auto  -qcache=auto   -qnosave -qarch=pwr7 -qfullpath -qsaveopt -bmaxstack:0x8000000000
+LFLAGS=-g -O3 -qsmp=omp:opt -qtune=auto  -qcache=auto   -qnosave -qarch=pwr7 -qfullpath -qsaveopt -bmaxstack:0x8000000000
+
+##FFLAGS=-g  -O3 -qtune=auto  -qcache=auto   -qnosave -qarch=pwr7 -qfullpath -qsaveopt
+##LFLAGS=-g -O3  -qtune=auto  -qcache=auto   -qnosave -qarch=pwr7 -qfullpath -qsaveopt
+
+
+
+##FFLAGS=-g  -qsmp=omp -qfullpath -qsaveopt
+##LFLAGS=-g  -qsmp=omp -qfullpath -qsaveopt
+
+#org
+#FFLAGS=-g -O3 -qsmp=omp  -qstrict -qessl  -qfullpath -qsaveopt -qnosave -qarch=auto -bmaxstack:0x8000000000
+#LFLAGS=-g -O3 -qsmp=omp  -qstrict -lessl -lmass -qfullpath -qsaveopt -qnosave -qarch=auto -bmaxstack:0x8000000000
+
+#FFLAGS=-g -O3 -qsmp=omp  -qstrict -qnosave -qarch=pwr7 -bmaxstack:0x8000000000
+#LFLAGS=-g -O3 -qsmp=omp  -qstrict -qnosave -qarch=pwr7 -bmaxstack:0x8000000000
+
+
+#debugging and checking
+#FFLAGS=-qwarn64 -qnooptimize -qextchk -qsaveopt -qsmp=noopt -qinitauto=7fc00000 -qflttrap -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet
+#LFLAGS=-qwarn64 -qnooptimize -qextchk -qsmp=noopt -qsaveopt -qinitauto=7fc00000 -qflttrap -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet
+
+##FFLAGS=-qwarn64 -qnooptimize -qextchk -qsaveopt -qsmp=noopt -qinitauto=7fc00000 -qflttrap -qsigtrap -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet
+##LFLAGS=-qwarn64 -qnooptimize -qextchk -qsmp=noopt -qsaveopt -qinitauto=7fc00000 -qflttrap -qsigtrap  -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet
+
+##FFLAGS=-qwarn64 -qnooptimize -qextchk -qsaveopt -qinitauto=7fc00000 -qflttrap -qsigtrap -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet -qcheck
+##LFLAGS=-qwarn64 -qnooptimize -qextchk -qsaveopt -qinitauto=7fc00000 -qflttrap -qsigtrap  -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet -qcheck

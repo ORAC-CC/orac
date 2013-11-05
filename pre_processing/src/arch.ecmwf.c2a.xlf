@@ -1,0 +1,42 @@
+#PREPROC
+# Define fortran 90 compiler
+F90=xlf90_r
+# Define C Compiler
+CC=xlc
+
+OBJS=../obj
+AUXFLAGS=-qmoddir=$(OBJS)
+
+#set compiler flags for ECMWF
+#performance
+
+#this works:
+#FFLAGS=-g -O3  -qstrict -qessl -lessl  -qipa -qfullpath -qsaveopt -qarch=auto 
+#LFLAGS=-g -O3  -qstrict -qessl -lessl   -qipa -qfullpath -qsaveopt -qarch=auto
+
+#for parallel RTTOV
+##FFLAGS=-g -O3  -qsmp=omp -qstrict -qessl  -qipa -qfullpath -qsaveopt -qnosave  -qarch=auto  -qsuffix=cpp=F90  -bmaxstack:0x8000000000 #-WF,-DRTTOV_EXAMPLE_FWD_PARALLEL=1 
+##LFLAGS=-g -O3  -qsmp=omp -qstrict -lessl -lmass -qipa -qfullpath -qsaveopt -qnosave  -qarch=auto -qsuffix=cpp=F90  -bmaxstack:0x8000000000 #-WF,-DRTTOV_EXAMPLE_FWD_PARALLEL=1
+
+
+#FFLAGS=-g -O3  -qsmp=omp  -qipa  -qnosave  -qarch=auto  -qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+#LFLAGS=-g -O3  -qsmp=omp  -qipa  -qnosave  -qarch=auto -qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+
+#profiling
+#FFLAGS=-g  -pg -qfullpath -qsmp=omp  -O3   -qipa  -qnosave  -qarch=auto  #-qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+#LFLAGS=-g -pg  -qfullpath -qsmp=omp -O3   -qipa  -qnosave  -qarch=auto #-qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+
+#FFLAGS=-g  -pg -d -qfullpath -O3 -qsmp=omp  -qipa  -qnosave  -qarch=auto  #-qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+#LFLAGS=-g -pg  -d -qfullpath -O3 -qsmp=omp -qipa  -qnosave  -qarch=auto #-qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+
+
+##FFLAGS=-g -O3 -qnosmp  -qipa  -qnosave  -qarch=auto  -qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+##LFLAGS=-g -O3 -qnosmp  -qipa  -qnosave  -qarch=auto -qsuffix=cpp=F90  #-bmaxstack:0x8000000000
+
+#debugging
+#works
+FFLAGS=-g -C    -qsmp=omp -qessl -lessl -qsaveopt -qflttrap=overflow:zerodivide:invalid:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt  -qarch=auto -bnoquiet -qsource #-qextchk
+LFLAGS=-g -C    -qsmp=omp -qessl -lessl -qsaveopt -qflttrap=overflow:zerodivide:invalid:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt  -qarch=auto -bnoquiet -qsource #-qextchk
+
+#CFLAGS=-O3
+CFLAGS=-g -C -qsaveopt -qflttrap=overflow:zerodivide:invalid:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt  -qarch=auto -bnoquiet -qsource

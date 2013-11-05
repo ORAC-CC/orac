@@ -1,0 +1,135 @@
+! Name:
+!   Read_CloudFlags
+!
+! Purpose:
+!   Controls the reading of cloud flags values from ATSR-type files into
+!   the Data_CloudFlags array.
+!
+! Arguments:
+!   Name     Type           In/Out   Description
+!   Ctrl     struct         Both     Control structure
+!   NSegs    int            In       Number of image segments read in by 
+!                                    previous calls to this routine.
+!   SegSize  int           In        Number of rows of pixels in an image 
+!                                    segment.
+!   MSI_files_open Logical In        Indicates whether the MSI data file is
+!                                    open (if not, open it).
+!   lun      int           In/Out    File unit number set by this routine
+!                                    when file is opened, passed back and
+!                                    forth for subsequent reads.
+!   MSI_Data struct         Both     Data structure: contains the cloud flag
+!                                    array to be populated with data from the 
+!                                    file. This is overwritten as successive
+!                                    segments of data are read in.
+!   status   int            Out      Error status                         
+!       
+! Algorithm:
+!   if (MSI files are not yet open)
+!      Find a logical unit number to be used for the cloud flag file
+!      Open cloud flag file
+!      If open error
+!         Write error message to screen and log file
+!      else
+!        allocate MSI image segment array in Data_MSI struct.
+!
+!   If (no error opening files)
+!       Read header (not used further)
+!       If read error
+!          Write error message to screen and log file
+!       Else
+!          Read byte array of size defined by Ctrl structure
+!          If read error
+!             Write error message to log file
+!   Leave cloud flag file open for later reads
+!
+! Local variables:
+!   Name     Type   Description
+!   ios      int    I/O status, file operations
+!   message  char   Error message to pass to Write_Log   
+!   row      int    Number of last image row read by ReadByteArray.  
+!
+! History:
+! 2012/08/22 MJ uses original routine and implements reading of netcdf data.
+! 2013/03/12 CP changed definition of relative azimuth angle
+! 2013/05/21 GT Undid previous change made by CP. The error was in the
+!               L1B reading code in the preprocessing 
+! Bugs:
+!   None known.
+!
+!!
+!-------------------------------------------------------------------------------
+subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, &
+   MSI_Data, status)
+
+   use CTRL_def
+   use ECP_Constants
+   use Data_def
+
+   use netcdf
+
+   implicit none
+
+!  Argument declarations
+
+   type(CTRL_t), intent(in)      :: Ctrl
+   integer, intent(in)           :: NSegs     ! Number of segments read so far
+   integer, intent(in)           :: SegSize   ! Size of image segment in rows of
+                                              ! pixels.
+   type(Data_t), intent(inout)   :: MSI_Data
+   integer, intent(out)          :: status
+
+!  Local variables
+
+   integer        :: ios       ! I/O status from file operations
+   character(256) :: message   ! Error message to pass to Write_Log
+   integer        :: row       ! Number of final image row read by ReadByteArray
+                               ! (in pixels, starting at first row of segment)
+
+  !netcdf related
+  integer :: ncid,iview
+
+   status = 0
+
+   !     Open geometry file
+   ios = nf90_open(path=trim(adjustl(Ctrl%Fid%Geo)),mode = nf90_nowrite,ncid = ncid) 
+   
+   if (ios /= 0) then
+      status = GeomFileOpenErr ! Return error code
+      write(unit=message, fmt=*) 'Read_Geometry: Error opening file ', &
+           & Ctrl%Fid%Geo
+      call Write_Log(Ctrl, trim(message), status)
+   else
+      !        Open successful. Allocate MSI_Data%CloudFlags array size
+      
+      !write(*,*) Ctrl%Ind%NViews
+      
+      allocate(MSI_Data%Geometry%Sol(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
+      allocate(MSI_Data%Geometry%Sat(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
+      allocate(MSI_Data%Geometry%Azi(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))      
+
+   end if
+
+   if (status == 0) then
+      !if multi views introduced this needs to be placed inside a loop over the views
+      iview=1
+      call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,iview,&
+           & "solzen",MSI_Data%Geometry%Sol(:,:,iview),0)
+      call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,iview,&
+           & "satzen",MSI_Data%Geometry%Sat(:,:,iview),0)
+      call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,iview,&
+           & "relazi",MSI_Data%Geometry%Azi(:,:,iview),0)
+!CP added this required for aatsr code may also be a problem in modis/avhrr!!
+!Removed by GT: Error should be corrected in the preprocessing, not here.
+!MSI_Data%Geometry%Azi(:,:,iview)=180.-MSI_Data%Geometry%Azi(:,:,iview)
+!pause
+   endif
+   
+   !close  cflag input file
+   ios=nf90_close(ncid)
+   if (ios /= 0) then
+      status = GeomFileCloseErr ! Return error code
+      write(unit=message, fmt=*) &
+           & 'Read_Geometry: Error closing file ', trim(adjustl(Ctrl%Fid%Geo))
+      call Write_Log(Ctrl, trim(message), status)
+   endif
+ end subroutine Read_Geometry_nc

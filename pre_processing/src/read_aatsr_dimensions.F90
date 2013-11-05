@@ -1,0 +1,154 @@
+! Name: read_aatsr_dimensions.F90
+!
+!
+! Purpose:
+! Determine the dimensions of AATSR data to read in, based on a day_night flag
+! and lat-lon limit. This is mostly a wrapper for read_aatsr_beam.c
+! 
+!
+! Description and Algorithm details:
+! 1) Prepare variables.
+! 2) Call the C function get_aatsr_dimension_ctof90.
+! 3) If processing night data, call the function again.
+!
+! Arguments:
+! Name                Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! path_to_l1b_file    string in  Full path to L1B file
+! n_across_track      lint   out Number of pixels available perpendicular to the
+!                                direction of travel
+! n_along_track       lint   out Number of pixels in the direction of travel
+! along_track_offset  lint   out Pixel number at which reading should begin
+!                                (generally where daylight begins)
+! day_night           stint  in  Optional. 1: daytime data; 2: night data
+! loc_limit           sreal  in  Optional. (/ minimum latitude, minimum
+!                                longitude, maximum latitude, maximum
+!                                longitude /)
+! n_along_track2      lint   out Optional. When considering night data, there
+!                                are two chunks of data (each end of the orbit).
+!                                This gives the second chunk's length.
+! along_track_offset2 lint   out Optional. The pixel number of the beginning of 
+!                                a secondchunk for night data.
+!
+! Local variables:
+! Name Type Description
+!
+! path_to_l1b_file str in  Full path to L1B file
+!
+! History:
+! 2012/06/22: GT First version
+! 2012/07/29: CP changed filename to lower case
+! 2012/08/21: GT Tidied up unused variables
+! 2012/08/27: GT Changed C call to use ISO C binding
+! 2013/08/14: GT Added half_orbit optional input parameter
+!                used for dealing with night time data.
+! 2013/09/06: AP tidying
+! 2013/10/08: AP altered call to C routine
+!
+! $Id$
+!
+! Bugs:
+! none known
+!
+
+subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
+     n_along_track,along_track_offset,day_night,loc_limit,n_along_track2, &
+     along_track_offset2,verbose)
+
+   use preproc_constants
+   use iso_c_binding
+
+   implicit none
+
+   interface
+      subroutine get_aatsr_dimension(l1b_file, daynight, limit, half_orbit, &
+           nx, ny, miny, stat, verb) bind(C,name='get_aatsr_dimension')
+         use preproc_constants
+         use iso_c_binding
+
+         implicit none
+
+         character(c_char), dimension(*) :: l1b_file
+         integer(c_short)                :: daynight, half_orbit, stat
+         real(c_float), dimension(4)     :: limit
+         integer(c_long)                 :: nx, ny, miny
+         logical(c_bool)                 :: verb
+      end subroutine get_aatsr_dimension
+   end interface
+   
+   character(len=pathlength)                             :: path_to_l1b_file
+   integer(kind=stint), optional, intent(in)             :: day_night
+   real(kind=sreal), dimension(4), optional, intent(in)  :: loc_limit
+   integer(kind=lint), optional, intent(out)             :: n_along_track2
+   integer(kind=lint), optional, intent(out)             :: along_track_offset2
+
+   character(len=pathlength,kind=c_char) :: l1b_file_C
+   integer(c_short)                      :: tmp_dynght, half_orbit
+   real(c_float), dimension(4)           :: tmp_limit
+  
+   integer(c_short)   :: err_code
+   logical(c_bool)    :: verb
+   logical            :: verbose
+
+   integer(kind=lint) :: n_across_track, n_along_track, along_track_offset
+
+   integer(c_long)    :: tmp_nx, tmp_ny, tmp_miny
+
+   n_across_track = 2
+   n_along_track = 3
+   along_track_offset = 4
+
+   tmp_nx = n_across_track
+   tmp_ny = n_along_track
+   tmp_miny = along_track_offset
+
+   ! Check for the presense of the optional day_night and lat-lon limit
+   ! input variables and set defaults if not present.
+   if (present(day_night)) then
+      tmp_dynght = day_night
+   else
+      tmp_dynght = 0
+   end if
+
+   if (present(loc_limit)) then
+      tmp_limit = loc_limit
+   else
+      tmp_limit = (/ -90.0, -180.0, 90.0, 180.0 /)
+   end if
+
+   ! If we are dealing with night time data, we need to call
+   ! get_aatsr_dimension_ctof90 twice; once for the start of the orbit
+   ! and once for the end. We also populate the optional output parameters
+   ! "n_along_track2" and "along_track_offset2"
+   if (tmp_dynght .eq. 2) then
+      half_orbit = 1
+   else
+      half_orbit = 0
+   end if
+
+   ! This is a wrapper function for C code using the EPR_API from
+   ! Brokemann Consulting
+   if (verbose) then
+      verb = .true.
+   else
+      verb = .false.
+   end if
+   l1b_file_C = trim(path_to_l1b_file)//C_NULL_CHAR
+   call get_aatsr_dimension(l1b_file_C, tmp_dynght, tmp_limit, &
+        half_orbit, tmp_nx, tmp_ny, tmp_miny, err_code, verb)
+
+   n_across_track = tmp_nx
+   n_along_track  = tmp_ny
+   along_track_offset = tmp_miny
+
+   ! make second call for second night time chunk
+   if (tmp_dynght .eq. 2) then
+      half_orbit = 2
+      call get_aatsr_dimension(l1b_file_C, tmp_dynght, tmp_limit, &
+           half_orbit, tmp_nx, tmp_ny, tmp_miny, err_code, verb)
+
+      n_along_track2  = tmp_ny
+      along_track_offset2 = tmp_miny
+   end if
+
+end subroutine read_aatsr_dimensions

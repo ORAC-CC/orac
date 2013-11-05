@@ -1,0 +1,104 @@
+! Name: read_modis_angles.F90
+!
+!
+! Purpose:
+! Read angular information from MODIS geolocation data
+! 
+! Description and Algorithm details:
+! 1) Set start, end, and stride of data read.
+! 2) Read data with SFRDATA.
+! 3) Set all values outside the valid range to the file's fill value. Multiply
+!    those inside the range by the scale factor. Because of the if/then/else, it
+!    is not necessary to initialise the input array.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+! ------------------------------------------------------------------------------
+! fid      int    in   A file ID returned by SFSTART
+! SDS_name string in   Name of the data field to read
+! ixstart  lint   in   First pixel to read across track
+! ixstop   lint   in   Last pixel to read across track
+! iystart  lint   in   First pixel to read along track
+! iystop   lint   in   Last pixel to read along track
+! rtemp    real   both Initialised array into which data is stored
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
+! 2011/12/14: MJ produces draft code which reads modis angles
+! 2013/09/06: AP tidying, switched to using MODIS file's fill value to be
+!                consistent with read_modis_lat_lon.F90, use real_fill_value
+!                rather than file's own value
+!
+! $Id$
+!
+! Bugs:
+! none known
+!
+
+!-------------------------------------------------------
+!-------------------------------------------------------
+subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
+
+   use preproc_constants
+
+   implicit none
+
+   include "hdf.f90"
+   include "dffunc.f90"
+
+   integer(kind=lint)  :: ixstart, ixstop,iystart,iystop,ix,jy
+   
+   integer, intent(in) :: fid
+   
+   integer             :: file_id, var_id, err_code, start(2), stride(2)
+   integer             :: edge(2), attr_id
+   character(len=*)    :: SDS_name
+   
+   real(kind=sreal)    :: rtemp(ixstart:ixstop,iystart:iystop)
+   
+   real(kind=dreal)    :: sf
+   
+   integer(kind=stint) :: stemp(ixstart:ixstop,iystart:iystop),vr(2),fv
+
+   start(1) = ixstart-1
+   start(2) = iystart-1
+   stride = 1
+   edge(1) = ixstop-ixstart+1
+   edge(2) = iystop-iystart+1
+
+   file_id = fid
+   var_id = sfselect(file_id, sfn2index(file_id, SDS_name))
+
+   err_code = sfrdata(var_id, start, stride, edge, stemp)
+
+   attr_id=sffattr(var_id, "scale_factor")
+   err_code=sfrattr(var_id, attr_id, sf)
+
+   attr_id=sffattr(var_id, "_FillValue")
+   err_code=sfrattr(var_id, attr_id, fv)
+
+   attr_id=sffattr(var_id, "valid_range")
+   err_code=sfrattr(var_id, attr_id, vr)
+
+   ! which of these is most efficient is compiler-dependant
+!   where(stemp.ge.vr(1) .and. stemp.le.vr(2))
+!      rtemp = real(stemp*sf,kind=sreal)
+!   elsewhere
+!      rtemp = real_fill_value
+!   end where
+   do ix=ixstart,ixstop
+      do jy=iystart,iystop
+        if(stemp(ix,jy) .ge. vr(1) .and. stemp(ix,jy) .le. vr(2)) then
+           rtemp(ix,jy)=real(stemp(ix,jy)*sf,kind=sreal)
+        else
+           rtemp(ix,jy)=real_fill_value
+        endif
+      enddo
+   enddo
+
+   err_code=sfendacc(var_id)
+
+end subroutine read_modis_angles

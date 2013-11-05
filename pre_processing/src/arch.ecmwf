@@ -1,0 +1,37 @@
+#preproc arch
+
+# Define fortran 90 compiler
+F90=ec_f90
+# Define C Compiler
+CC=xlc
+
+
+#set compiler flags for ECMWF
+#performance
+#FFLAGS=-g -pg -O4  -qessl -lessl  -qipa -qfullpath -qsaveopt
+#LFLAGS=-g -pg -O4  -qessl -lessl   -qipa -qfullpath -qsaveopt
+
+#this works:
+FFLAGS=-g -O3   -qnosmp -qstrict -qtune=auto  -qcache=auto -qessl -lessl  -qipa -qfullpath -qsaveopt -qarch=auto -qmaxmem=12000 -bh:5
+LFLAGS=-g -O3  -qnosmp -qstrict -qtune=auto  -qcache=auto -qessl -lessl   -qipa -qfullpath -qsaveopt -qarch=auto -qmaxmem=12000 -bh:5
+
+#FFLAGS=-O4  -qessl -lessl  -qipa -qfullpath -qsaveopt
+#LFLAGS=-O4  -qessl -lessl   -qipa -qfullpath -qsaveopt
+
+#FFLAGS=-g -O3  -qarch=auto -qsaveopt -qflttrap -qmaxmem=12000 -bh:5
+#LFLAGS=-g -O3  -qarch=auto -qsaveopt -qflttrap -qmaxmem=12000 -bh:5
+
+#FFLAGS=-g -O3 -qarch=auto -qstrict -qsaveopt -qflttrap -qmaxmem=12000 -bh:5
+#LFLAGS=-g -O3 -qarch=auto -qstrict -qsaveopt -qflttrap -qmaxmem=12000 -bh:5
+
+#debugging and checking
+##FFLAGS=-g -C  -qsaveopt -qextcheck -qflttrap=overflow:underflow:zerodivide:invalid:inexact:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet -qmaxmem=9000
+##LFLAGS=-g -C  -qsaveopt -qextcheck -qflttrap=overflow:underflow:zerodivide:invalid:inexact:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet -qmaxmem=9000
+
+#FFLAGS=-g -C  -qsaveopt -qextchk -qflttrap=overflow:zerodivide:invalid:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=pwr6 -bnoquiet -qmaxmem=9000
+#LFLAGS=-g -C  -qsaveopt -qextchk -qflttrap=overflow:zerodivide:invalid:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=pwr6 -bnoquiet -qmaxmem=9000
+
+
+#FFLAGS=-g -C   -qessl -lessl -qsaveopt -qflttrap=overflow:zerodivide:invalid:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet 
+#LFLAGS=-g -C   -qessl -lessl -qsaveopt -qflttrap=overflow:zerodivide:invalid:enable -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet 
+

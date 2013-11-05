@@ -1,0 +1,12 @@
+F90=f90
+#sun
+FFLAGS=-cpp -g -pg -ftrap=common  -xcheck=%all -fstore
+LFLAGS=-g -pg -ftrap=common -xcheck=%all -fstore
+
+#debug
+#FFLAGS=-cpp -g -pg #-xcheck=%all
+#LFLAGS=-g -pg # -xcheck=%all
+
+#optimize
+#FFLAGS=-O2
+#LFLAGS=-O2

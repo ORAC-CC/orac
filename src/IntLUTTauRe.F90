@@ -1,0 +1,235 @@
+! Name:
+!    Int_LUT_Tau_Re
+!
+! Purpose:
+!    Interpolates values from a LUT array with dimensions (channel, Tau, Re)
+!    using either linear or bicubic interpolation 
+!    (Bicubic algorithm taken from Numerical Recipes in Fortran 77).
+!
+! Description:
+!    The subroutine is passed an array of data in 3 dimensions, plus info 
+!    relating to the Tau and Re grids corresponding to the LUT array 
+!    points (the third dimension in the LUT array is the channel number, 
+!    which is not interpolated).
+!
+!    The subroutine calculates the value of the LUT at the current Tau, Re,
+!    plus the gradients in Tau and Re.
+!
+! Arguments:
+!    Name       Type    In/Out/Both    Description
+!    F          real array  In         Function to be interpolated, i.e. 3-d
+!                                      array of LUT values with dimensions
+!                                      channels, Tau, Re.
+!    Grid       struct      In         LUT Grid data: see SADLUT.F90
+!                                      Includes the grid values in Tau and Re,
+!                                      no. of values and step size
+!    Gzero      struct      In         Structure containing "zero'th" point
+!                                      indices, i.e. LUT grid array indices
+!                                      for the nearest neighbour point, plus
+!                                      dT, dR values: fraction of grid step
+!                                      from zero'th point to the Tau, Re value 
+!                                      we want. Also contains the next-nearest
+!                                      neighbour indices and the denominator
+!                                      for calculating finite difference
+!                                      gradients
+!    Ind        struct      In         The index structure from the SPixel 
+!                                      array
+!    FInt       real array  Both       The interpolated values of F for all 
+!                                      required channels.
+!    FGrads     real array  Both       Interpolated gradient values in Tau 
+!                                      and Re for all channels.
+!    status     int         Out        Standard status code set by ECP routines
+!
+! Algorithm:
+!    The routine is passed the description of the LUT grid (Grid),  
+!    with the "zero'th" point grid data (in GZero: the calling routine 
+!    populates GZero).
+!       The zero'th point is the bottom left hand corner of the Tau, Re grid
+!       cell containing the required Tau, Re. GZero also contains the array 
+!       indices for the top right hand corner, plus the following data relating
+!        to the required Tau, Re values:
+!          dT: distance from zero'th point to required Tau value as a fraction 
+!              of the grid step size in the Tau direction
+!          dR: equivalent to dT in the Re grid
+!          The next-nearest neighbour LUT indices to the required point (which
+!          are used in finite difference gradient calculation). At the edge of
+!          LUT these indices are set to the nearest neighbour value and an
+!          uncentred difference is used
+!          The denominator values of the finite difference calculations are
+!          also included in GZero - these will be the same as the grid spacing
+!          at the edge of the LUT, and twice this elsewhere.
+!
+!    Note the routine is NOT passed the required Tau, Re values: the info in
+!    GZero and Grid is sufficient.
+!
+!    The subroutine populates 4 arrays with:
+!       - The value of the LUT function at the 4 nearest LUT vertices
+!       - The gradient wrt to Tau at these points
+!       - The gradient wrt to Re at these points
+!       - The second order cross-derivative wrt Tau and Re at these points
+!    These, and the dT and dR values from the GZero structure, are passed to
+!    the bicubic interpolation routine.
+!    The resulting interpolated gradients are re-scaled by the grid spacing,
+!    since the interpolation routine works on the (0,1) interval.
+!
+! Local variables:
+!    Name   Type         Description
+!    Y      real array   Holds the function values at the LUT vertices
+!    dYdTau real array   Holds the derivative wrt Tau
+!    dYdRe  real array   Holds the derivative wrt Re
+!    ddY    real array   Holds the cross-derivative wrt Tau and Re
+!    a1     real         Temporary store of output of bicubic routine
+!    a2     real                             "
+!    a3     real                             "
+!    i      integer      Counter
+!
+! History:
+!    26th Oct 2000, Andy Smith: Original version
+!    16th Nov 2000, Andy Smith: 
+!       Updated arguments: more data passed via structs, allows for easier 
+!       generalisation to more dimensions and improves performance as some
+!       values used by several Int routines are calculated once only by the 
+!       calling routine.
+!    22nd Dec 2000, Phil Watts: removed redundent Chans argument; all channels
+!       implicit in the LUT are interpolated.
+!    19th Jan 2001, Andy Smith:
+!       Comments updated.
+!    5th Sep 2011, Chris Arnold:
+!       Added bicubic interpolation
+!    20th Jan 2012 changed definition of Y to remove contiguos array warning!
+!    7th Feb 2012, Chris Arnold:
+!       Ctrl struct now passed to routine
+!    7th Feb 2012, Chris Arnold:
+!       Input structures Ctrl, GZero, Grid now have intent(in)
+!    8/7/2012 C. Poulsen fixed non contiguous array
+! Bugs:
+!    None known.
+!
+!---------------------------------------------------------------------
+
+Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
+
+   use CTRL_def
+   use GZero_def
+   use SAD_LUT_def
+   use bcubic_def   
+
+   implicit none
+
+!  argument declarations 
+!  Note if the arguments are changed, the interface definition in
+!  IntRoutines.f90 must be updated to match.
+
+   type(CTRL_t), intent(in)      :: Ctrl
+   real, dimension(:,:,:), intent(in)  :: F 
+                                             ! The array to be interpolated.
+   type(GZero_t), intent(in)      :: GZero               ! Struct containing "zero'th" grid
+                                             ! points
+   type(LUT_Grid_t), intent(in)   :: Grid                ! LUT grid data
+   real, dimension(:), intent(inout)   :: FInt	      
+                                             ! Interpolated value of F at
+					     ! required Tau, Re values, 
+					     ! (1 value per channel).
+   real, dimension(:,:), intent(inout) :: FGrads   
+                                             ! Gradients of F wrt Tau and Re at 
+					     ! required Tau, Re values, 
+					     ! (1 value per channel).
+   integer          :: status
+   real, dimension(4) ::Yinb,dYdTauin,dYdRein,ddYin
+!  Local variables
+   real, dimension(size(FInt),4) :: Y        ! A vector to contain the values
+ 					     ! of F at (iT0,iR0), (iT0,iR1),
+					     ! (iT1,iR1) and (iT1,iR0) 
+					     ! respectively (i.e. anticlockwise
+					     ! from the bottom left)
+   real, dimension(size(FInt),4) :: dYdTau   ! Gradients of F wrt Tau at the
+					     ! same points as Y
+   real, dimension(size(FInt),4) :: dYdRe    ! Gradients of F wrt Re at the
+					     ! same points as Y
+   real, dimension(size(FInt),4) :: ddY      ! 2nd order cross derivatives of
+					     ! F wrt Tau and Re at the same
+					     ! points
+   real :: a1, a2, a3                        ! Temporary store for output of
+   real, dimension(4) ::yin     ! Temporary store for output of	
+					     ! BiCubic subroutine
+   integer :: NChans                         ! Number of Channels
+   integer :: i                              ! Counters
+  
+   NChans = size(FInt)
+
+!  Construct the input vectors for BCuInt:
+!  Function values at four LUT points around our X
+
+   Y(:,1) = F(:,GZero%iT0,GZero%iR0)
+   Y(:,4) = F(:,GZero%iT0,GZero%iR1)
+   Y(:,3) = F(:,GZero%iT1,GZero%iR1)
+   Y(:,2) = F(:,GZero%iT1,GZero%iR0)
+
+!  Function derivatives at four LUT points around our X....
+!  - WRT to Tau
+
+    dYdTau(:,1) = (F(:,GZero%iT1,GZero%iR0)-F(:,GZero%iTm1,GZero%iR0))/ &
+	  	  (Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) 
+    dYdTau(:,2) = (F(:,GZero%iTp1,GZero%iR0)-F(:,GZero%iT0,GZero%iR0))/ &
+	  	  (Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0))
+    dYdTau(:,3) = (F(:,GZero%iTp1,GZero%iR1)-F(:,GZero%iT0,GZero%iR1))/ &
+	 	  (Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0))
+    dYdTau(:,4) = (F(:,GZero%iT1,GZero%iR1)-F(:,GZero%iTm1,GZero%iR1))/ &
+	 	  (Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1))
+
+!   - WRT to Re
+
+    dYDRe(:,1) = (F(:,GZero%iT0,GZero%iR1)-F(:,GZero%iT0,GZero%iRm1))/ &
+		 (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1))
+    dYDRe(:,2) = (F(:,GZero%iT1,GZero%iR1)-F(:,GZero%iT1,GZero%iRm1))/ &
+		 (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1))
+    dYDRe(:,3) = (F(:,GZero%iT1,GZero%iRp1)-F(:,GZero%iT1,GZero%iR0))/ &
+		 (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0))
+    dYDRe(:,4) = (F(:,GZero%iT0,GZero%iRp1)-F(:,GZero%iT0,GZero%iR0))/ &
+		 (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0))
+
+!   - Cross derivatives (dY^2/dTaudRe)
+
+    ddY(:,1) = (F(:,GZero%iT1,GZero%iR1) - F(:,GZero%iT1,GZero%iRm1) - F(:,GZero%iTm1,GZero%iR1) + F(:,GZero%iTm1,GZero%iRm1)) / &
+		((Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) * (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1)))
+    ddY(:,2) = (F(:,GZero%iTp1,GZero%iR1) - F(:,GZero%iTp1,GZero%iRm1) - F(:,GZero%iT0,GZero%iR1) + F(:,GZero%iT0,GZero%iRm1)) / &
+		((Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0)) * (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1)))
+    ddY(:,3) = (F(:,GZero%iTp1,GZero%iRp1) - F(:,GZero%iTp1,GZero%iR0) - F(:,GZero%iT0,GZero%iRp1) + F(:,GZero%iT0,GZero%iR0)) / &
+		((Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0)) * (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0)))
+    ddY(:,4) = (F(:,GZero%iT1,GZero%iRp1) - F(:,GZero%iT1,GZero%iR0) - F(:,GZero%iTm1,GZero%iRp1) + F(:,GZero%iTm1,GZero%iR0)) / &
+		((Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) * (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0)))
+
+!  Now call the adapted Numerical Recipes BCuInt subroutine to
+!  perform the interpolation to our desired state vector
+!  [Or the equivalent linint subroutine - Oct 2011]
+
+   if (Ctrl%LUTIntflag .eq. 0) then
+      do i = 1,NChans
+
+      YIN=Y(i,:)
+         call linint(YIN,Grid%Tau(GZero%iT0),Grid%Tau(GZero%iT1),&
+	 Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),GZero%dT,GZero%dR,a1,a2,a3)
+         FInt(i) = a1
+         FGrads(i,1) = a2
+         FGrads(i,2) = a3
+    enddo
+   else if (Ctrl%LUTIntflag .eq. 1) then
+      do i = 1,NChans
+      Yinb=Y(i,1:4)
+      dYdTauin=dYdTau(i,1:4)
+      dYdRein=dYdRe(i,1:4)
+      ddYin=ddY(i,1:4)
+         call bcuint(Yinb,dYdTauin,dYdRein,ddYin,&
+		 Grid%Tau(GZero%iT0),  Grid%Tau(GZero%iT1),&
+		 Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),&
+		 GZero%dT,GZero%dR,a1,a2,a3)
+         FInt(i) = a1
+         FGrads(i,1) = a2
+         FGrads(i,2) = a3
+      enddo
+   else
+      status = LUTIntflagErr
+      call Write_Log(Ctrl, 'IntLUTTauRe.f90: LUT Interp flag error:', status)
+   endif
+
+End Subroutine Int_LUT_TauRe

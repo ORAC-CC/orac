@@ -1,0 +1,644 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (X11; I; OSF1 V5.1 alpha) [Netscape]">
+</head>
+<body>
+
+<h1>
+FILES USED BY THE ORAC PROCESSOR</h1>
+
+<h2>
+1 Input</h2>
+The Data Preparation Module (DPM) input files will comprise:
+<br>&nbsp;
+<table BORDER WIDTH="100%" NOSAVE >
+<tr>
+<td><b>Default name&nbsp;</b></td>
+
+<td><b>Descriptive name</b></td>
+
+<td><b>Purpose</b></td>
+
+<td><b>Type</b></td>
+</tr>
+
+<tr NOSAVE>
+<td><i>1.1 User_defined.dri</i></td>
+
+<td>Driver file</td>
+
+<td>All initialisation and control variables</td>
+
+<td NOSAVE>ASCII</td>
+</tr>
+
+<tr>
+<td><i>1.2 Ecp_Inst_Config.sad</i></td>
+
+<td>Instrument configuration file</td>
+
+<td>Defines instruments and their principal characteristics available to
+the ORAC system (and its predecessor ECP)</td>
+
+<td>ASCII</td>
+</tr>
+
+<tr>
+<td><i>1.3 Ecp_CloudClass_Config.sad</i></td>
+
+<td>Cloud LUT configuration file</td>
+
+<td>Defines cloud radiative property LUT types available to the ORAC system</td>
+
+<td>ASCII</td>
+</tr>
+
+<tr>
+<td><i>1.4 'Inst'_'Chx'.sad</i></td>
+
+<td>Channel specification files</td>
+
+<td>Defines the principal characteristics of a particular instrument channel</td>
+
+<td>ASCII</td>
+</tr>
+
+<tr>
+<td><i>1.5 'Inst'_'Chx'_'class'_ 'crp'.sad</i></td>
+
+<td>LUT file</td>
+
+<td>Cloud radiative properties</td>
+
+<td>ASCII</td>
+</tr>
+
+<tr>
+<td><i>1.6 User_defined.Msi</i></td>
+
+<td>MSI file</td>
+
+<td>Multi-spectral imagery file</td>
+
+<td>Bin</td>
+</tr>
+
+<tr>
+<td><i>1.7 User_defined.Geo</i></td>
+
+<td>Geometry file</td>
+
+<td>Pixel based solar-satellite geometry</td>
+
+<td>Bin</td>
+</tr>
+
+<tr>
+<td><i>1.8 User_defined.Lsf</i></td>
+
+<td>Land map file</td>
+
+<td>Land sea bit map by pixel</td>
+
+<td>Bin</td>
+</tr>
+
+<tr>
+<td><i>1.9 User_defined.Cfl</i></td>
+
+<td>Cloud flag file</td>
+
+<td>Cloud flag bit map by pixel</td>
+
+<td>Bin</td>
+</tr>
+
+<tr>
+<td><i>1.10 User_defined.Lrtm</i></td>
+
+<td>LW-RTM file</td>
+
+<td>Longwave channel atmospheric RT results</td>
+
+<td>bin</td>
+</tr>
+
+<tr>
+<td><i>1.11 User_defined.Srtm</i></td>
+
+<td>SW-RTM file</td>
+
+<td>Shortwave channel atmospheric RT results</td>
+
+<td>bin</td>
+</tr>
+
+<tr>
+<td><i>1.12 User_defined.Prtm</i></td>
+
+<td>RTM profile file</td>
+
+<td>Profile data (T,P) used in RTM calculations</td>
+
+<td>bin</td>
+</tr>
+</table>
+
+<br>&nbsp;
+<h3>
+1.1 Driver file</h3>
+<p>
+This is the driver file for the ORAC system. It contains all the intialisation
+and control variables required to define the running of the system and
+all variables supplied by it are internally stored in the CTRL structure.
+All other input is either data (imagery, RTM calculations based on model
+data etc) or 'static' parameters (LUTs etc). The driver file is fixed ASCII
+format with optional comments following the data on each input line (except
+for file names where a mandatory comment is found on the preceeding line).
+The most basic way to control the ORAC operation is to edit the driver file 
+to set the required parameters. It is recommended
+that a read-only 'template' driver file is kept.
+<p>See the <a href="UserManual.html">Software User Manual</a> for a detailed
+description of the driver file fields and how to set them. </p>
+
+<h3>
+1.2 Instrument configuration file: <i>Ecp_Inst_Config.sad</i></h3>
+<p>
+The instrument configuration file tells ORAC what instruments can be
+processed and provides high level characterisation of these instruments.
+The file is effectively read-only and modifications should only be available
+to the system administrator. The supplied <i>Ecp_Inst_Config.sad</i> is
+given below.</p>
+
+<p>Instrument configuration file:
+<pre>ECP instrument configuration file
+4       % Number of instruments
+Inst#   Name            #views  #chans  image-x image-y Functional
+1       SEVIRI-1        1       11      3712    3712    1 1 1 1 0 0 1 0 1 1 0
+2       ATSR-2	        2       7        512     512    0 1 1 1 1 1 1 0 0 0 0
+3       METEOSAT-5      1       3       2500    2500    1 1 1 0 0 0 0 0 0 0 0
+4       METEOSAT-7      1       3       2500    2500    1 1 1 0 0 0 0 0 0 0 0
+
+Notes:
+
+Name - 	corresponds to file naming convention for all instrument related SAD files.
+#views - number of different viewing angles available in imagery data stream.
+#chans - number of channels available in imagery data stream.
+image-x - image size in x direction.
+image-y - image size in y direction.
+Functional - indicates the working availability of each of the channels (padded
+to maximum size, MaxNumMeas parameter.
+</pre>
+</p>
+
+<p>
+The file provides a unique instrument identifier (Inst #) and name for
+each instrument. ORAC reads the driver file value for Ctrl%Inst%ID and
+checks that this ID number is available in the instrument configuration
+file. (If it is, the instrument configuration file name is also checked
+for consistency with Ctrl%Inst%Name from the driver file.) The Ctrl%Inst%Name
+string is used to build the filenames of instrument-specific SAD files.</p>
+
+<p>The number of channels and image dimensions given in the instrument
+configuration file allows ORAC to allocate appropriate space for the
+MSI imagery. The list, length the number of channels, of single digits
+(1 or 0) under the label 'Functional' informs ORAC which of the channels
+are available. Normally these digits will be 1s; the circumstances under
+which a channel on an instrument is not available (in which case the '1'
+is replaced by a '0') are likely to be related to channel failure or, more
+commonly, lack of supporting LUTs (the SEVIRI-1 specification in the supplied
+file reflects this latter situation).</p>
+
+
+<h3>
+1.4 Cloud class configuration file: <i>Ecp_CloudClass_Config.sad</i></h3>
+
+<p>
+This file allows flexibility in the use of cloud radiative properties Look-up
+Tables (LUTs). Although it is perhaps reasonable to expect that only one
+type of water cloud need be modelled, there are good reasons for expecting
+a requirement to have more than one ice cloud model. ORAC therefore
+allows a user specified number of cloud classes (<i>Ctrl%CloudClass%n</i>)
+of which it is mandatory to have at least one water class and one ice class.
+Information in this file relating to the selected cloud classes (determined
+by <i>Ctrl%CloudClass%id</i>) is loaded into the SAD_CloudClass structure.
+Modifications to this file should be restricted to the system administrator.
+The supplied <i>Ecp_CloudClass_Config.sad</i> file is shown below:</p>
+
+<pre>&nbsp;Cloud Class configuration file
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % # classes available
+1 2&nbsp;&nbsp;&nbsp;&nbsp; % Default (SAD method) classes on phase change to water, ice
+Class#&nbsp; Name&nbsp;&nbsp;&nbsp; Avg-Re&nbsp; Avg-Tau Ass-Pc&nbsp; w/i&nbsp;&nbsp;&nbsp;&nbsp; n_tau&nbsp;&nbsp; n_re&nbsp;&nbsp;&nbsp; n_sat&nbsp;&nbsp; n_sun&nbsp;&nbsp; n_azi
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WAT&nbsp;&nbsp;&nbsp;&nbsp; 8.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 800.&nbsp;&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.&nbsp;&nbsp;&nbsp; 100.&nbsp;&nbsp;&nbsp; 10000.&nbsp; % Sx-Re&nbsp;&nbsp; Sx-Tau&nbsp; Sx-Pc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+0.5 1.&nbsp;&nbsp; 400.&nbsp; 0 250.&nbsp; % State lower limits for this class
+3.1 22.&nbsp; 1013. 1 320.&nbsp; % State upper limits for this class
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ICE&nbsp;&nbsp;&nbsp;&nbsp; 40.&nbsp;&nbsp;&nbsp;&nbsp; 4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 400.&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.&nbsp;&nbsp;&nbsp; 100.&nbsp;&nbsp;&nbsp; 10000.&nbsp; % Sx-Re&nbsp;&nbsp; Sx-Tau&nbsp; Sx-Pc
+0.5 30.&nbsp; 100.&nbsp; 0 250.&nbsp; % State lower limits for this class
+3.1 100. 700.&nbsp; 1 320.&nbsp; % State upper limits for this class
+3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PLY&nbsp;&nbsp;&nbsp;&nbsp; 40.&nbsp;&nbsp;&nbsp;&nbsp; 4.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 400.&nbsp;&nbsp;&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100.&nbsp;&nbsp;&nbsp; 100.&nbsp;&nbsp;&nbsp; 10000.&nbsp; % Sx-Re&nbsp;&nbsp; Sx-Tau&nbsp; Sx-Pc
+0.5 30.&nbsp; 100.&nbsp; 0 250.&nbsp; % State lower limits for this class
+3.1 100. 700.&nbsp; 1 320.&nbsp; % State upper limits for this class</pre>
+
+<p>Working down through the file:</p>
+<p>3 classes available to ORAC. (Check made that <i>Ctrl%CloudClass%n</i>
+does not exceed this number and confirms SAD_CloudClass as dimension <i>Ctrl%CloudClass%n</i>)</p>
+
+<p>The default water and ice class values on phase change are no longer used, since 
+phase change functionality has been removed from ORAC.</p>
+
+<p>The class details are then given;
+<ul>
+<li>
+Number ID and Name ID (which is the string used for LUT file naming, e.g.
+<i>ATSR-2_Ch2_WAT1_RBD.sad</i>).
+<i>SAD_CloudClass()%Id</i>
+and <i>SAD_CloudClass()%Name</i>.</li>
+
+<li>
+Average values of Tau , Re and Pc are supplied for potentially setting
+the first guess and a priori in these parameters; these defaults are not currently 
+used as the SAD selection method has been removed.</li>
+
+<li>
+Similarly, values of expected errors in these estimates are supplied for
+setting the a priori error in these parameters; these defaults are not currently 
+used as the SAD selection method has been removed.</li>
+
+<li>
+A flag, <i>SAD_CloudClass().Wiflg</i>, which is used to confirm whether
+the class is water or ice phase and the LUT dimensions. </li>
+
+<li>
+The dimensions of the LUTs associated with this class1, <i>SAD_CloudClass%nTau</i>
+etc. These are used to correctly read and interpolate the LUTs in the corresponding
+Read_&nbsp; and Int_LUT_ routines.</li>
+
+<li>
+Upper and lower limits on the state parameters for this class. These are
+stored in <i>SAD_CloudClass()%Ulim, Llim</i> and are currently not functional
+in ORAC. </li>
+</ul></p>
+
+<h3>
+1.5 Channel characterisation files: <i>'Inst'_'Chx'.sad</i></h3>
+
+<p>
+Each channel for each instrument has an associated file giving its principal
+characteristics. The file name is constructed as in the section title using
+the instrument code and the channel identifier. The identifier convention
+is that ascending number corresponds to increasing wavelength, however,
+this need not be strictly adhered to, the only requirement is that all
+channels with solar contributions are numbered below those with only thermal
+contributions. (Thus for example, the order [Ch1=0.67, Ch2=0.87, Ch3=11]
+is conventional, [Ch1=0.87, Ch2=0.67, Ch3=11] is acceptable, [Ch1=0.67,
+Ch2=11, Ch3=0.87] is not acceptable. Modifications to these files should
+be limited to the system administrator. A sample specification file for
+the ATSR-2 3.7um channel is given below.</p>
+
+<pre>ATSR-2_Ch5.sad&nbsp;&nbsp;&nbsp;&nbsp; % Channel characterisation file
+3.7 um&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Descriptor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Desc
+Ch5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % File ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Fileid
+2715.30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Central wavenmuber&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Wvn
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Thermal cource flag&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Thermal%Flag
+238452.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Planck coefficient 1&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Thermal%B1
+3885.87&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Planck coefficient 2&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Thermal%B2
+-2.041717&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Planck coefficient 3&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Thermal%T1&nbsp;
+1.005042&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Planck coefficient 4&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Thermal%T2
+.5,.5,1.,.5,.5&nbsp;&nbsp;&nbsp;&nbsp; % Thermal noise Eqv Homog&nbsp; SAD_CHAN()%Thermal%NeHomog
+.15,.15,1.,.25,.25 % Thermal noise Eqv Coreg&nbsp; SAD_CHAN()%Thermal%NeCoreg
+0.28&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Thermal NeBT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Thermal%NeBT
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Solar source flag&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%Flag
+5.39,0.177&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Solar constant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%F0,F1
+.5,.5,1.,.5,.5&nbsp;&nbsp;&nbsp;&nbsp; % Solar noise Eqv Homog&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%NeHomog
+.15,.15,1.,.25,.25 % Solar noise Eqv Coreg&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%NeCoreg
+0.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Solar NeFR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%NeFR
+0.01 1.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % 'typical' sea/land refl&nbsp; SAD_CHAN()%Solar%Rs(2)</pre>
+This channel is chosen as an example because it has both solar and thermal
+components and hence the characterisation file is more complete than most
+other channels. If a source (thermal or solar) is not present, then the
+detail following the flag for that source is omitted; the file below is
+for the ATSR-2 0.67um channel which has only solar sources.
+<pre>ATSR-2_Ch2.sad&nbsp;&nbsp;&nbsp;&nbsp; % Channel characterisation file
+0.67 um&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Descriptor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Desc
+Ch2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % File ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Fileid
+14925.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Central wavenmuber&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Wvn
+0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Thermal source flag&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Thermal%Flag
+1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Solar source flag&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%Flag
+21.46, 0.703&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Solar constant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%F0,F1
+.5, .75,2.,1.,.75&nbsp; % Solar noise Eqv Homog&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%NeHomog
+1.5,2., 3.,1.,1.&nbsp;&nbsp; % Solar noise Eqv Coreg&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%NeCoreg
+0.0058&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % Solar NedR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SAD_CHAN()%Solar%NedR
+0.1 5.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; % 'typical' sea/land refl&nbsp; SAD_CHAN()%Solar%Rs(2)</pre>
+
+<h3>
+1.6 Look-Up Table files: <i>'Inst'_'class'_'crp'_ 'Chx'.sad</i>.</h3>
+LUT file names are constructed from the instrument, channel, cloud class
+and radiative properties codes. Thus the water cloud bidirectional reflectance
+file for the SEVIRI 0.8um channel is named SEVIRI-1_WAT_RBD_Ch2.sad. Files
+are ASCII formatted for portability. Each file has header information describing
+its contents and allowing for some consistency checks between it and the
+requested parameters.
+<p>The header contents are described in the following table; see following
+sections for full details.
+<br>&nbsp;
+<table BORDER CELLSPACING=2 CELLPADDING=4 WIDTH="589" BORDERCOLOR="#008000" >
+<tr>
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="29%">&nbsp;</td>
+
+<td VALIGN=TOP COLSPAN="2" WIDTH="20%"><b><font face="Palatino">Needed
+for ?</font></b></td>
+
+<td VALIGN=TOP COLSPAN="6" WIDTH="41%"><b><font face="Palatino">Header
+information present ?</font></b></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="29%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="8%">&nbsp;</td>
+
+<td VALIGN=TOP COLSPAN="5" WIDTH="33%"><font face="Palatino">grid descriptors,
+nX, dX, X</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">LUT&nbsp;</font></td>
+
+<td VALIGN=TOP WIDTH="29%"><font face="Palatino">Description</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">Solar</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">Thermal</font></td>
+
+<td VALIGN=TOP WIDTH="8%"><font face="Palatino">Wavelength</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">Tau</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">Sat zen</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">Sun zen</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">Rel azi</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">Re</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Palatino">Rbd</font></b></td>
+
+<td VALIGN=TOP WIDTH="29%"><font face="Palatino">Bidirectional reflectance</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="8%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Palatino">Tb</font></b></td>
+
+<td VALIGN=TOP WIDTH="29%"><font face="Palatino">Beam direct transmission</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="8%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Palatino">Tbd +Tfbd</font></b></td>
+
+<td VALIGN=TOP WIDTH="29%"><font face="Palatino">Beam diffuse transmission
++ flux</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="8%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Palatino">Td +Tfd</font></b></td>
+
+<td VALIGN=TOP WIDTH="29%"><font face="Palatino">Diffuse transmission +
+flux</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="8%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Palatino">Rd +Rfd</font></b></td>
+
+<td VALIGN=TOP WIDTH="29%"><font face="Palatino">Diffuse reflection + flux</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="8%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+</tr>
+
+<tr>
+<td VALIGN=TOP WIDTH="10%"><b><font face="Palatino">Em</font></b></td>
+
+<td VALIGN=TOP WIDTH="29%"><font face="Palatino">Emission</font></td>
+
+<td VALIGN=TOP WIDTH="10%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="10%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="8%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%">&nbsp;</td>
+
+<td VALIGN=TOP WIDTH="7%"><font face="Palatino">*</font></td>
+</tr>
+</table>
+
+<h4>
+1.6.1 LUT file structure (ASCII)</h4>
+The exact contents of the LUT files depend on which grid descriptors apply
+to the LUT in question (see table above). However, the general structure
+is the same in each case:
+<p>Line 1: Wavelength (f8.2). Store in <i>SAD_LUT()%wavelength</i>
+<br>Line 2: Grid descriptor 1: number of values (integer), grid step size
+for this descriptor (float)
+<br>Line 3: Grid descriptor 1: grid descriptor values
+<br>Line 4: Grid descriptor 2: as above
+<br>Line 5 etc as above for all relevant grid descriptors
+<br>Line <i>n </i>to end of file: LUT values (f8.3); stored in <i>SAD_LUT(
+)%LUT(x, y, z, ...)</i>
+<p>For example, the RBD LUT files contain the following information:
+<p>Wavelength (f8.2). Store in <i>SAD_LUT()%wavelength</i>
+<br>no. of tau (i2), delta_Tau (f8.2). Check against <i>SAD_CloudClass()%nTau</i>),
+<br>Tau values (nTau * f8.3). First (1) stored in <i>SAD_LUT()%Grid%MinTau</i>,
+last (nTau) stored in %<i>MaxTau</i>
+<br>No. of Satzen values, dSatzen i4, f8.2 check nsat against <i>SAD_CloudClass()%nSat</i>,
+dsat stored in <i>SAD_LUT()%Grid%dSatzen</i>, nsat stored in <i>SAD_LUT()%Grid%nSatzen</i>
+<br>Satzen values (nSat * f8.2) satz(1) stored in <i>SAD_LUT()%Grid%MinSatzen</i>,
+satz(nsat) stored in <i>MaxSatzen</i>
+<br>No. of Sunzen values, dSunzen (i4, f8.2) check nsun against <i>SAD_CloudCLass()%nSun,
+</i>dsun
+stored in <i>SAD_LUT()%dSunzen</i>, nsun stored in <i>SAD_LUT()%nSunzen</i>
+<br>Sunzen values (nsun* f8.2) sunz (1) stored in <i>SAD_LUT()%Grid%MinSunzen</i>,
+sunz(nsun) in <i>MaxSunzen</i>
+<br>No. of Relazi values, dRelazi (i4, f8.2) check nazi against <i>SAD_CloudCLass()%nAzi,
+</i>dRelazi
+stored in <i>SAD_LUT()%Grid%dRelazi,</i>
+<br>Relazi values (nazi * f8.2) azi(1) stored in <i>SAD_LUT()%Grid%MinRelazi</i>,
+azi(nazi) stored in <i>MaxRelazi</i>
+<br>No. of Re values, dRe (i4, f8.2) check nr against <i>SAD_CloudCLass()%nRe,
+</i>dr
+stored in <i>SAD_LUT()%Grid%nRe</i>,
+<br>Re values (nre * f8.2), Re(1) stored in <i>SAD_LUT()%Grid%MinRe</i>,
+re(nre) stored in "".MaxRelazi
+<br>RBD (f8.3) stored in <i>SAD_LUT()%Solar%Rbd (chan_index, 1:ntau, 1:nsat,
+1:nsun,1:nazi,1:nr)&nbsp; </i>(written left indices first)
+<h3>
+1.6 MSI (Multi Spectral Imagery) file, <i>User_defined.MSI</i></h3>
+<p>
+Filenames and specifications for the multi-spectral imagery are taken to
+be determined by the instrument and processing chain from which they originate.
+ORAC is configured to ingest ATSR-2 and psuedo-SEVIRI MSI files. Files are 
+pre-processed to a generic binary file type.</p>
+
+<p><b>Image segmentation</b></p>
+<p>The ORAC code allows for the image data to be read in "segments" of a specified 
+number of image rows, in order to reduce the memory required. It is unnecessary to hold
+the entire image arrays in memory when the processing of each pixel
+is independent of the rest of the image.</p>
+
+<p>The image data files (i.e. the multi-spectral image file and all associated
+files: geometry, location, land/sea flags and cloud flags) are written
+in image rows. An image row consists of all the channel values at each
+x location for a given y location within the image (or all the geometry/location/flags
+at each x for a given y). The segment
+size in rows is set by the driver file variable Ctrl%Resoln%SegSize.
+</p>
+
+<p>Reading is dealt with by the Read_Sat_Data routine and its subordinates.
+The main program must ensure that the correct segment size is passed to
+Read_Sat_Data, and that each image segment is read in at the correct time
+as the main processing loop proceeds through the selected image sub-area. The 
+program must read past any unwanted segments at the start of the image if
+the selected starting pixel is part-way through the image. 
+</p>
+
+<h3>
+1.7 Geometry file, <i>User_defined.Geo</i></h3>
+ATSR-2 MSI data includes geometric information, but in order to retain
+the functionality required for SEVIRI data, it is assumed that a separate
+pixel based geometry file will be available. For ATSR-2 images, this will
+be generated 'offline' by the pre-processor code. See the section on
+image segmentation above.
+<h3>
+1.8 Land map file, <i>User_defined.Lsf</i></h3>
+Considerations similar to that in section 1.7&nbsp; apply to land / sea
+information. ORAC will not obtain the underlying surface character for
+a particular pixel but will assume a pixel based map is available via this
+file. For ATSR-2 processing, this will obtained by the pre-processor 
+code. See the section on image segmentation above.
+<h3>
+1.9 Cloud flag file, <i>User_defined.Clf</i></h3>
+As in section 1.7, cloud flags are assumed to be provided in a file separately
+to the MSI data. For ATSR-2 data, pre-processor code will generate a
+cloud flag file. See the section on image segmentation above.
+<h3>
+1.10 Long Wave Radiative Transfer Model file, <i>User_defined.Lrtm</i></h3>
+The longwave radiative transfer file supplies the atmospheric channel transmittances
+and radiance terms (see the ATBD) for the channels with thermal emission
+sources. The source of this file for ORAC prototyping and testing will be
+the Eumetsat RTM model. See the <a href="Read_LwRTM_Doc.html">Read_Lw_RTM</a>
+module description for details of the Lw RTM file format and contents.
+<h3>
+1.11 Short Wave Radiative Transfer Model file, <i>User_defined.Srtm</i></h3>
+The shortwave radiative transfer file supplies the atmospheric channel
+transmittances and radiance terms (see the ATBD) for the channels without
+thermal emission sources. The source of this file for ORAC prototyping and
+testing will be a modified LOWTRAN7 RTM model. See the <a href="Read_SwRTM_Doc.html">Read_Sw_RTM</a>
+module description for details of the Sw RTM file format and contents.
+<h3>
+1.12 RTM Profile file, <i>User_defined.Prtm</i></h3>
+This file contains the level pressure and temperature information that
+was used in the RTM models. See the <a href="Read_LwRTM_Doc.html">Read_Lw_RTM</a>
+module description for details of the RTM profile file format and contents.
+<br>&nbsp;
+<br>&nbsp;
+</body>
+</html>

@@ -1,0 +1,25 @@
+#preproc lib
+
+#epr lib dirs
+EPRLIBDIR = /c2a/perm/ms/de/sf4/esa_cci_c_proc/software/epr/epr_api-2.2/build/release
+EPRINCDIR = /c2a/perm/ms/de/sf4/esa_cci_c_proc/software/epr/epr_api-2.2/src
+
+#Setup RTTOV library
+#performance
+RTTOVLIB=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd/lib
+RTTOVINCLUDE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd/include
+RTTOVMODULE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd/mod
+
+#debug
+#RTTOVLIB=/c1a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/ecmwf_pwr7_debug/lib
+#RTTOVINCLUDE=/c1a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/ecmwf_pwr7_debug/include
+#RTTOVMODULE=/c1a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/ecmwf_pwr7_debug/mod
+
+
+#Set up libraries and includes
+LIBS=-L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other -L$(EPRLIBDIR) -lepr_api $(ECLIB)
+INC=-I$(RTTOVINCLUDE) -I$(RTTOVMODULE) -I$(EPRINCDIR) -I./
+
+
+
+

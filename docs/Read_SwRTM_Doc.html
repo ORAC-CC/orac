@@ -1,0 +1,54 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (X11; I; OSF1 V4.0 alpha) [Netscape]">
+</head>
+<body>
+<b>Routine:&nbsp; </b>Read_SwRTM
+<hr WIDTH="100%">
+<p><b>Documentation:</b></p>
+<p>Reads the shortwave Radiative Transfer Model (atmospheric) binary file and
+loads appropriate data arrays.</p>
+
+<p>Unlike the supplied longwave RTM which is on a latitude, longitude grid; 
+the supplied shortwave RTM results are based on three broad latitude bands 
+(essentially the Tropical, Midlatitude and High latitude LOWTRAN7 atmpospheres) 
+the central values of which are given in the file. 
+<font size=-1>(The accompanying shortwave part of Get_RTM 
+is therefore an interpolation in latitude only.)</font></p>
+
+<p>Data is therefore in the form T( level, channel, latitude_band ) </p>
+
+<p><b>Sw RTM file contents and layout</b></p>
+<p><b>Header</b>:</p>
+<p>Instrument name
+<br>Number of lat band profiles
+<br>Latitudes at band centres
+<br>Number of pressure levels in grid
+<br>Number of solar channels for which data is stored
+<br>Instrument channel IDs (integer, e.g. 2&nbsp;&nbsp; 3&nbsp;&nbsp; 4)
+</p>
+
+<p><b>Data blocks:</b></p>
+<p>For each latitude band, a data block containing:
+<br>Latitude band header text (e.g. "Latitude band 1")
+<br>Above-cloud transmittance block header text (e.g. "Level to space transmittances
+(Tac):")
+<br>for each pressure level:
+<br>&nbsp;&nbsp;&nbsp; pressure value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Tac
+(chan 1)&nbsp;&nbsp;&nbsp; Tac (Chan 2)&nbsp;&nbsp;&nbsp; etc
+<br>&nbsp;
+<br>e.g. 100.0&nbsp;&nbsp;&nbsp; 1.0000&nbsp;&nbsp;&nbsp; 1.0000&nbsp;&nbsp;&nbsp;
+1.0000
+<br>Below-cloud transmittance block header text (e.g. "Surface to Level
+transmittances (Tbc):")
+<br>for each pressure level:
+<br>&nbsp;&nbsp;&nbsp; pressure value&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Tbc
+(chan 1)&nbsp;&nbsp;&nbsp; Tbc (Chan 2)&nbsp;&nbsp;&nbsp; etc
+</p>
+
+<hr WIDTH="100%">
+
+</body>
+</html>

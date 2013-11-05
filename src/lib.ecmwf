@@ -1,0 +1,7 @@
+
+# Define RTL library file for Linux system (required for getenv)
+# Add $(LIBS) to the link command for each test harness when required.
+
+#Set up libraries and includes
+INC=-I./
+LIBS=$(ECLIB)

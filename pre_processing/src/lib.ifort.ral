@@ -1,0 +1,113 @@
+HDFLIB=/usr/local/hdf4.2.6-ifort-new4/lib/
+HDFINCLUDE=/usr/local/hdf4.2.6-ifort-new4/include/
+
+#HDFLIB=/usr/local/hdf4.2.6-ifort/lib/
+#HDFINCLUDE=/usr/local/hdf4.2.6-ifort/include/
+
+
+SZLIB=/usr/local/gareth/szip/lib
+SZINC=/usr/local/gareth/szip/include
+
+
+ZLIB=/usr/local/gareth/zlib/lib
+ZINC=/usr/local/gareth/zlib/include
+
+JPEGLIB=/usr/local/gareth/jpeg-6b/lib
+JPEGINC=/usr/local/gareth/jpeg-6b/include
+
+#
+#
+#
+
+#
+#includes and library for reading AATSR data
+#
+
+#
+#NB a shared object must be included in ld_library_path
+#
+#
+#envisat product software
+#
+EPRINCDIR = /misc/oxford1/rsg/Data/projects/ecv_clouds/software/epr_api-2.2/src/
+EPRLIBDIR = /misc/oxford1/rsg/Data/projects/ecv_clouds/software/epr_api-2.2/build/release/
+
+#COBJ = /misc/cluster_home/cpoulsen/orac_svn/v12/C/read_aatsr_beam.o
+
+#HDFLIB=/usr/local/hdf4.2.6-gfortran/lib/
+#HDFINCLUDE=/usr/local/hdf4.2.6-gfortran/include/
+
+#HDF5LIB=/usr/lib64/
+#HDF5INCLUDE=/usr/include/
+
+HDF5LIB=/usr/local/hdf5-1.6.7intel/lib/
+HDF5INCLUDE=/usr/local/hdf5-1.6.7intel/include/
+
+#HDF5MOD=/usr/lib64/gfortran/modules/
+HDF5MOD=/usr/local/hdf5-1.6.7intel/lib/
+
+#Set path to HDF-EOS library. Should be compiled with the same version of the HDF4
+#library specified above (HDFLIB)
+
+#EOSLIB=/usr/local/hdfeos2-gfortran/lib/
+#EOSINCLUDE=/usr/local/hdfeos2-gfortran/lib/
+
+
+EOSLIB=/usr/local/hdfeos2-ifort-test/lib/
+EOSINCLUDE=/usr/local/hdfeos2-ifort-test/include/
+#Set path to netcdf library and include directory.
+#NCDFLIB=/usr/lib64
+#NCDFINCLUDE=/usr/include
+#/netcdf-3.6.2/include
+#gfortran
+#apps2
+#NCDFLIB=/usr/local/netcdf-3.6.3gfortran64/lib/
+#NCDFINCLUDE=/usr/local/netcdf-3.6.3gfortran64/include/
+
+NCDFLIB=/usr/local/netcdf-3.6.3ifc64/lib/
+NCDFINCLUDE=/usr/local/netcdf-3.6.3ifc64/include/
+
+#NCDFLIB=/usr/local/netcdf-3.6.3-ifc-new/lib/
+#NCDFINCLUDE=/usr/local/netcdf-3.6.3-ifc-new/include/
+
+
+
+#Setup GRIB API library and JASPER
+#GRIBLIB=/usr/local/grib_api/lib/
+#GRIBINCLUDE=/usr/local/grib_api/include/
+
+GRIBLIB=/usr/local/grib_api-intel/lib/
+GRIBINCLUDE=/usr/local/grib_api-intel/include/
+
+
+#JASPERLIB=/usr/local/jasper-gfortran/lib/
+#JASPERINCLUDE=/usr/local/jasper-gfortran/include/jasper/
+
+
+JASPERLIB=/usr/local/jasper-ifort/lib/
+JASPERINCLUDE=/usr/local/jasper-fort/include/jasper/
+
+#Setup RTTOV library
+
+#debug
+#RTTOVLIB=/misc/wantage_static/rsg/Data/fm/rttov/rttov102_gfortran//lib
+#RTTOVINCLUDE=/misc/wantage_static/rsg/Data/fm/rttov/rttov102_gfortran//include
+#RTTOVMODULE=/misc/wantage_static/rsg/Data/fm/rttov/rttov102_gfortran//mod
+
+
+RTTOVLIB=/misc/wantage_static/rsg/Data/fm/rttov/rttov102_intel2/lib
+RTTOVINCLUDE=/misc/wantage_static/rsg/Data/fm/rttov/rttov102_intel2/include
+RTTOVMODULE=/misc/wantage_static/rsg/Data/fm/rttov/rttov102_intel2/mod
+
+
+#Set up libraries and includes
+# -L$(JASPERLIB) -ljasper 
+
+
+
+####NB order is VERY important!!!!!!
+LIBS=  -L$(EPRLIBDIR) -lepr_api -L$(GRIBLIB) -lgrib_api_f90 -lgrib_api_f77 -lgrib_api -L$(JASPERLIB) -ljasper -L$(HDFLIB) -lmfhdf -ldf  -L$(JPEGLIB) -ljpeg  -L$(ZLIB) -lz -L$(SZLIB) -lsz -lm  -L$(EOSLIB) -lhdfeos -lGctp -L$(HDF5LIB) -lhdf5_fortran -lhdf5 -L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -L$(NCDFLIB) -lnetcdf -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other  -L$(ZLIB) 
+#-L$(EPRLIBDIR) -lepr_api
+
+#-lopenjpeg
+INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE) -I$(NCDFINCLUDE) -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE) -I$(HDF5MOD)  

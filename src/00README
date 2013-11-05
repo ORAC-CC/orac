@@ -1,0 +1,192 @@
+Readme file for ORAC source code
+-------------------------------
+
+Updated 23-May-2011, Andy Smith
+
+This version of the ORAC code has been developed and tested on a Linux platform 
+using the Intel ifort compiler (version 8.1).
+
+Building the code
+-----------------
+
+The supplied Makefile contains targets for the main orac executable, several test 
+harness programs for different sections of the code, and some additional test 
+programs.
+
+To build all targets, type 'make'
+To build the orac program, type 'make orac'
+
+The main build removes all object files before compiling. 
+
+In general you will only want to build the main orac program. If you have problems 
+at run-time, the test harnesses may help diagnose the problem. Otherwise they are 
+only useful for development. 
+
+Executables or targets currently supported are:
+
+Target: orac    HarnessInvMarq   HarnessFM    HarnessFMSolar   HarnessFMThermal
+Exe:    orac    HarInvMarq       HarFM        HarFMSolar       HarFMThermal
+
+Target: HarnessReadDriver  HarnessReadSat   HarnessGetSPixel
+Exe:    HarReadDriver      HarReadSat       HarGetSPixel
+
+(target and executable names differ slightly for ease of typing executable 
+names when running from the command line)
+
+To make HarnessFM, for example, type
+
+make HarnessFM 
+
+A "tidy" target is provided to allow forced removal of ".o" files before 
+re-compilation.
+
+The -cpp compiler flag is used to force compilation via the C pre-compiler.
+This flag may not apply with different systems. The C pre-compiler is used
+to allow breakpoint outputs to be included through conditional compilation. 
+(Not all ECP routines include breakpoints.) 
+
+Running the code
+----------------
+
+Before running the code, a sufficiently large stack size is required. 
+Recent experience suggests 250,000 is a suitable value. 
+The commands
+
+ulimit -s 250000              (Bourne/Korn/Bash shell)
+or
+limit stacksize 250000        (C shell)
+
+must be issued before running ORAC executables.
+
+The driver file is located via an environment variable ORAC_DRIVER:
+e.g. export ORAC_DRIVER=<path>/HarFM.dri (ksh)
+
+The code expects all Static Application Data (SAD) files to be in place in the
+SAD directory pointed to by the driver file. SAD files include:
+  the overall instrument configuration file (summary info on all supported 
+     instruments)
+  instrument channel characteristics
+  cloud class characteristics
+  cloud radiative properties for each supported cloud class in each instrument
+     channel (Look Up Tables)
+
+
+Breakpoint outputs
+------------------
+
+To make with breakpoint outputs, type
+
+make HarnessFM FFLAGS=-DBKP
+
+In order to re-build with breakpoints you must re-compile the main program as 
+well as the routine whose breakpoint outputs you require, otherwise the 
+breakpoint file will not be opened and cleared at the start of execution. 
+
+Note that breakpoint output from different routines within the ORAC can be
+switched in and out by changing the breakpoint level set in ECPConstants.f90,
+and setting the breakpoint level in the driver file.
+
+
+
+Moving the source code between platforms/compilers
+--------------------------------------------------
+
+This version of the ORAC code has been developed and tested on a Linux platform 
+using the Intel Ifort compiler (version 8.1).
+
+You may need to make some changes if you move to a different platform or compiler. 
+The text below details experiences from several years ago, moving from DEC Unix to 
+Linux (Absoft compiler). This is clearly out of date but may provide a useful hint
+of where to expect problems. 
+
+1) The code makes use of the C preprocessor for conditional compilation to 
+   include or exclude breakpoint outputs. This requires different source code 
+   file extensions in order for the two different compilers to recognise that 
+   pre-compilation may be necessary.
+
+2) The code uses the getenv function to translate the ORAC_DRIVER environment 
+   variable. Different compilers may link to the getenv function in different ways.
+   The Ifort compiler picks up getenv automatically. Other compilers may need to 
+   link in a specific library. 
+
+Moving the code:
+
+1) Source code may need to be renamed to use different file extensions. To move
+  between the "DEC Unix" setting (.f90) and the "Linux" (.F90) or vice versa:
+
+  make DEC2Linux     (moves .f90 files to .F90)     or
+  make Linux2DEC     (moves .F90 files to .f90)
+
+  You will need to edit the Makefile to change the file extensions in 
+  the object/source code dependencies (take care not to change the SUFFIXES
+  and compilation rules).
+
+2) Edit Read_Driver to include/exclude the declaration of getenv as external,
+  and edit the link command in the Makefile to include/exclude the libU77.a
+  library, as required for the operating system/compiler.
+  
+  Ifort compiler:     declare getenv external       no link
+
+  Absoft compiler:    no declaration                link to libU77.a
+                                                       (-L$ABSOFT/lib -lU77)
+
+  For Absoft, the Makefile contains a line defining a LIBS macro for
+  inclusion in the link list for each executable. This line should be
+  un-commented for use on Linux, and the ${LIBS} macro added to the list of 
+  objects to link for each executable to be built.
+
+3) The SUFFIXES and compilation rules in the supplied Makefile should 
+   automatically handle the different file extensions when building the code.
+
+
+
+
+A few notes on conventions etc.
+-------------------------------
+
+File names and routine names:
+  Routine names have underscores in them, file names generally don't,
+  e.g. function Read_SAD is in source file ReadSAD.F90. 
+  This is to take advantage of UNIX case sensitivity, but still make the
+  routine names legible when the FORTRAN compiler has turned them into upper
+  case and writes them out in error messages. 
+
+  The make file passes the source files to the C pre-compiler before compilation. 
+  This allows conditional compilation (handy for debugging:
+  put #ifdef DEBUG and #endif around the lines of code you want for debugging,
+  e.g. a write(*,*) statement, and type "make FFLAGS=-DDEBUG" - the double 
+  D is intentional).
+  
+Modules:
+  Modules are used to define data structures, i.e. to set out the templates
+  for what they look like, but not actually to declare them (this is done
+  in the code where they're used). 
+
+  Each module has it's own source file.
+
+  Module names for type definitions end in _def, filenames don't, so 
+  e.g. module CPL_def is in source file CPL.F90 .
+
+  The compiler creates a .mod file for each module, e.g. CPL_DEF.mod. 
+  If you want to use a module in a piece of code make sure the module is
+  compiled before the code that uses it (see the Makefile).
+  
+Interfaces:
+  Subroutines that use passed-length (or assumed-shape) arrays must have 
+  their interface declared to any subroutine that calls them. There is an
+  interface module (source file XXXRoutines.F90, module name 
+  XXX_Routines_def) for each set of subroutines. 
+  e.g. SAD_Routines_def defines interfaces for all routines called by 
+  Read_SAD, LUT_Routines_def is for all routines called by Read_LUT.
+  
+ECP_Constants
+  This module holds useful constants such as error code parameters, 
+  array size limits, format statements. Using parameters for constants
+  in this way should make for more readable and more easily maintainable 
+  code.
+
+Source code header comments
+  The file f90_header is a blank template for commenting the header part
+  of an ORAC source file. See existing code for examples of how to fill it
+  in (not all bits apply to all source files, e.g. "algorithm" doesn't 
+  make sense for a module defininng a structure type).

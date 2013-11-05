@@ -1,0 +1,604 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.72 [en] (X11; I; OSF1 V5.1 alpha) [Netscape]">
+</head>
+<body>
+
+<h1>Software User Manual for ORAC</h1>
+
+<p>Andy Smith, STFC, 24th May 2011</p>
+
+<p>(Based on the Software User Manual for the Enhanced Cloud Products (ECP) prototype processor, 
+Sept 2001)</P>
+
+<h2>
+1. Introduction</h2>
+
+<h3>
+1.1 Intended readership and applicability</h3>
+<p>This document is intended for users of the ORAC code.</p>
+
+<h3>
+1.2 Purpose</h3>
+<p>This SUM contains instructions on how to run the following software and
+set up associated driver files, read output files etc:
+<ul>
+<li>
+ORAC main program</li>
+<li>
+ORAC test harnesses</li>
+
+</ul></p>
+
+<h3>
+1.3 References</h3>
+
+<h4>
+1.3.1 Applicable documents</h4>
+
+<blockquote>
+<br><b>AD 1 </b><a href="input_req.html">Required input data files for ORAC</a>
+<br><b>AD 2</b> <a href="../src/00README">Build procedures for ORAC</a></blockquote>
+
+<h3>
+1.4 Conventions</h3>
+<h2>
+2. Overview</h2>
+<p>This section summarises how to run the ORAC code, the fundamental principles
+involved, the inputs required and the outputs generated.</p>
+<p>The ORAC code version 1.0 can be used to build the orac executable and
+the following test harness programs. The test harnesses are used during development 
+to execute a limited section of the code in isolation, using known inputs.
+<ul>
+<li>
+HarnessInvertMarquardt - tests the main inversion routine used to retrieve
+the state vector in each image pixel. Use driver file HarInvMarq.dri. </li>
+
+<li>
+HarnessFM - tests the forward model. Driver HarFM.dri.</li>
+
+<li>
+HarnessFMThermal - tests the thermal part of the forward model. Driver HarFMThermal.dri.</li>
+
+<li>
+HarnessFMSolar - tests the solar part of the forward model. Driver HarFMSolar.dri.</li>
+
+<li>HarnessGetSPixel - tests the assignment of values for a selected pixel, i.e. 
+measurements, location, viewing geometry, RTM data etc. Drivers HarGetSPixel.dri, 
+HarGetSPixel1View.dri</li>
+
+<li>HarnessReadSat - tests the data input, i.e. reading the driver file, RTM data
+and satellite data (multi-spectral image file, location, geometry etc). Use driver 
+WatPhase.dri</li>
+
+</ul></p>
+<p>All of these test harness programs and the main orac executable are simple
+executables run from the command line by typing the executable name. None
+of the programs takes any command-line arguments or options.</p>
+
+<p>The orac main executable processes the requested MSI file and generates
+a retrieved state vector for each pixel. The test harness programs process a 
+number of pre-defined test cases. Saved results are available for comparison in
+the testoutputs directory. Note that there is no guarantee that test harnesses
+will be supported into the future, and changes due to ongoing software 
+development may lead to changes in the outputs from each test. </p>
+
+
+<h3>
+2.1 Hardware/platform</h3>
+<p>Recent development of the ORAC code has been done using the Intel ifort compiler 
+on a Linux system (x86_64 GNU/Linux, release 2.6.18.8-0.10-default). The code has not 
+been tested using other platforms or compilers although experience during the original 
+development shows that the code can be compiled and run on other platforms.</p>
+
+<h3>
+2.2 Inputs</h3>
+<p>The only source of user input to any of the ORAC programs is the <b>driver
+file</b>. This is used to control the processing via parameters for the
+image files to be processed, area within the image, instrument channels
+to be used, state variables to be active, inversion parameters etc.</p>
+
+<p>The code also requires a number of Static Application Data files which
+give overall instrument properties, instrument channel characteristics,
+detailed information on cloud classes supported by the scheme, Look-Up
+Tables (LUTs) of cloud radiative property data, and pre-calculated Radiative
+Transfer Model data for the area of the Multi-Spectral Image to be processed.
+See AD 1 for more detail on the files required as inputs to the scheme.</p>
+
+<h3>
+2.3 Outputs</h3>
+<p>The ORAC code generates a number of output files, the names of which are
+specified in the driver file. The only output to the stdout stream is a
+brief set of summary statistics generated when processing of an image is
+complete (number of pixels where the inversion process converged,
+average number of iterations taken etc).</p>
+
+<p>The main outputs, i.e. the retrieved state vector and associated errors
+in each pixel, are written to the output file (binary). Additional
+diagnostic information is written to the diagnostic file (also binary).
+An array of flags in the driver file can be used to specify which diagnostic
+quantities are output. Section 3.2 describes how to read the output files.
+Error messages and warnings are written to the log file. Section 3.4 describes
+use of the log file.</p>
+
+<p>The supported test harness programs write their results to particular
+listing files whose relative path names are hard-coded internally. Some of the 
+simpler harnesses write to stdout. </p>
+
+<h2>
+<a NAME="Instructions"></a>3. Instructions</h2>
+
+<p>Before attempting to run the ORAC code you should ensure that you have built
+the required executable properly (with required breakpoint options etc)
+and all <a href="input_req.html">Static Application Data</a> such as instrument
+channel configuration files, cloud class configuration files etc are in
+place (ORAC will terminate with error message to the log file if any files
+are missing. You should then
+<ul>
+<li>
+ensure the required <a href="input_req.html">MSI files</a> for the image
+to be processed (image file, cloud flags, land-sea flags, geometry etc)
+are in place,</li>
+
+<li>
+ensure that appropriate <a href="input_req.html">RTM data files</a> (SW
+and LW) for the MSI file region are in place,</li>
+
+<li>
+edit the driver file as appropriate to the run requirements,</li>
+
+<li>
+ensure the ORAC_DRIVER environment variable is set to point to the required
+driver file (full path) and exported,</li>
+
+<li>
+run the ORAC executable by typing <i>orac</i> at the command prompt (or the
+appropriate executable file name for the test harnesses).</li>
+
+<li>Typical run-time for an orbit of ATSR-2 data is about 4 minutes on hardware with 
+a 2.4GHz Dual-Core AMD Opteron Processor. (Performance is significantly slower if diagnostic 
+outputs are switched on). </li>
+
+<li>N.B. you <em>may</em> need to update the instrument config file to set the 
+correct number of views. The code has recently (May 2011) been updated to 
+handle data from multiple instrument viewing angles. This update requires a modified
+instrument config file with a new column for the number of views. In most cases the 
+number of views remains 1 and the MSI and geometry input files contain data for 
+1 view only. To use the multi-view functionality, ensure that the data are 
+pre-processed to generate msi and geo data for all views, and the number of views in 
+the inst config file matches the data. </li>
+
+</ul>
+<p>The outputs are directed to the files specified in the driver file.</p>
+
+<h3>
+3.1 Setting up a driver file</h3>
+
+<p>The driver file is the only source of user input to the orac executable.
+The driver file name (and path) is passed to the orac executable via the
+environment variable ORAC_DRIVER. The file is a simple
+ASCII file containing the information described below.</p>
+
+<p>The driver file contains one item of data or set of values per line,
+with comments. In the case of text fields, the comment is written on a
+separate line preceding the data in question, the only exception being
+the header line which has no associated comment. Where data is described
+below as a "set of" values, all values are expected to appear on one line.</p>
+
+<p>The <a href="../drivers/ORACmain.dri">example driver file</a> may be helpful in
+understanding the information below.</p>
+
+<p><b>Header line: </b>a simple line of text describing the current driver
+file.</p>
+<p><b>Directories: </b>paths to the input data, output and Static Application
+Data directories (note text fields are written on separate lines, preceded
+by a comment line).</p>
+<p><b>Run ID: </b>a brief text description of the current run (preceded
+by a comment line).</p>
+<p><b>File IDs</b>: a set of text fields containing filenames (with full
+path) for the MSI data and associated location, geometry etc, the RTM data,
+output, diagnostic, log and breakpoint files. Each line is preceded by
+a comment line. AD 1 gives further information on the RTM <a href="Read_LwRTM_Doc.html">long-wave</a>
+and <a href="Read_SwRTM_Doc.html">short-wave</a> data file formats.</p>
+<p><b>Diagnostic flags</b>: an array of integer flags indicating whether
+each diagnostic output value should be switched on (1) or off (0). See
+the <a href="Output_Overview.html">overview on outputs</a> (part of AD
+1) for their meaning.</p>
+<p><b>Breakpoint level</b>: if the code is compiled with breakpoint outputs
+this integer value determines which parts of the output are actually done.
+Set as appropriate for the routine you want to give breakpoint information
+(see the appropriate routine test plan document and ECP_Constants file
+for definitions of routine breakpoint levels). A value of 0 switches all
+breakpoint outputs off.</p>
+<p><b>Instrument identifier and name</b>: the integer code used in the
+ORAC to identify the required instrument, plus a text field specifying its
+name.</p>
+
+<p><b>Cloud fraction threshold</b>: cloud fraction below which no retrieval is done.</p>
+
+<p><b>Image segment size:</b> number of rows of pixels to be read
+in and processed at a time. It may be possible (or necessary) to optimise
+ORAC's performance by trying different image segment sizes, changing
+the balance between I/O and processing time. This depends on the image size
+and processor memory.</p>
+
+<p><b>Temporal resolution</b>: not used at present. This control variable
+would become of use in an extended ORAC that used (for example) retrieval
+results from a previous image.</p>
+
+<p><b>Maximum satellite zenith angle</b>: the scheme does not process a
+pixel if the if the satellite zenith angle exceeds this value.</p>
+
+<p><b>Maximum solar zenith angle</b>: the maximum solar zenith angle denotes
+the boundary between "daylight" and "twilight". Instrument channels with
+a solar component are excluded from retrievals in twilight conditions.</p>
+
+<p><b>Sunset solar zenith angle</b>: denotes the boundary between "twilight"
+and "night". Solar channels are excluded from night-time retrievals, although
+channels with both thermal and solar contributions are used (unlike at
+twilight). </a></p>
+
+<p><b>Coordinates: </b>integers denoting the pixel numbers within the image
+of the user's selected area (starting at 1), in the following order: X0
+("lower-left" x), Y0, X1 ("upper-right" x), Y1. One line per value.</p>
+<p><b>Warm start flag: </b>used for debugging if the program crashes or
+throws up an error when dealing with a given pixel, or for processing the
+part of an image after a given pixel. Values: 1 for warm start "on", 0
+off.</p>
+<p><b>Warm start x and y: </b>coordinates for the starting pixel if warm
+start is switched on. Xstart, then Ystart (1 value per line). Processing
+will go from Xstart to X1 on the first image line to be processed
+(line Ystart), and thereafter from X0 to X1.</p>
+
+<p><b>Number of active state variables (daytime): </b>the user can select
+how many, and which, state variables are "active" within the inversion.
+<br>These settings can be made independently for daytime, twlight and nighttime
+conditions where the information that can usefully be extracted from the
+available instrument channels can vary. Active state variables are changed
+by the inversion process whereas inactive ones are held at their first
+guess value. This integer value sets the number of state variables which
+are active in daytime conditions (see <b>Maximum Solar Zenith angle</b>).</p>
+
+<p><b>Indices of active state variables (daytime): </b> a set of
+up to 5 integer values denoting which of the 5 possible state variables
+used within the ORAC inversion are active in daytime conditions. Indices
+are: 1 - Tau, 2 - Re, 3 - Pc, 4 - Fr, 5 - Ts.
+<br><b>Number of active state variables (twilight): </b>see description
+for daytime above.
+<br><b>Indices of active state variables (twilight): </b>see description
+for daytime above.
+<br><b>Number of active state variables (night): </b>see description for
+daytime above.
+<br><b>Indices of active state variables (night): </b>see description for
+daytime above.</p>
+
+<p><b>Measurements: number: </b>integer denoting the number of instrument
+channels to be used in inversion. If more than one viewing angle is to be used 
+in the retrieval, this value is the total number of "measurements", i.e. 
+the sum of the number of channels to be used from each view. </p>
+<p><b>Measurement channel IDs: </b>set of integers denoting the instrument
+channel numbers to be used, in ascending order. Note these channel numbers
+are the IDs used in filenames etc. In the case of ATSR-2 the first available
+channel is channel 2. If using the same channel number from more than one viewing 
+angle, the channel ID should be repeated, keeping to ascending order of channel IDs.</p>
+<p><b>Number of channels with solar component:</b> number of required instrument
+channels with a solar contribution (i.e. includes channels with both solar
+and thermal contributions). Note that this number could in principle be
+calculated internally from the ingested channels SAD files but in order
+to support the user defined surface reflectance option (see below) is required
+at the driver file ingest stage.</p>
+<p><b>Solar channel indices: </b>indices of the solar channels within the
+array of channel IDs specified above, e.g. if the user selects solar channel
+IDs 2, 3, 4, the indices specified here are 1, 2, 3. All values specified
+on a single line. (See also note imediately above.)</p>
+<p><b>Number of channels with thermal component: </b>see solar above.</p>
+<p><b>Thermal channel indices: </b>see solar above.</p>
+
+<p><b>Number of instrument viewing angles</b>: number of different viewing angles
+to be used in the retrieval (number of different angles, not number of view indices 
+below).</p>
+<p><b>Viewing angle IDs</b>: set of integers denoting the view angle identifier 
+for each measurement channel in the channel IDs above. I.e. if using 2 views from 
+ATSR data, view 1 is nadir, view 2 forward, and channel 2 is to be used from 
+both views, the first 2 elements of this array are 1 2.</p>
+
+<p><b>Cloud class ID: </b>integer ID denoting the cloud class 
+to be used, as specified in the ORAC cloud class configuration file.</p>
+<p><b>Cloud class name: </b>cloud class name (used to obtain LUT
+filenames). the name is a 3 character string.</p>
+
+<p><b>First guess state vector selection options (day): </b>set of integers
+denoting the methods to be used for setting first guess values for the
+5 state variables. Methods are the ORAC standards: 1) Ctrl, 2) Meas, 3) Aux.
+Different methods can be specified for different times of
+day since some methods will become invalid at night etc. Not all methods
+are supported for all variables. The ORAC code makes a check on the selected
+methods and will report an error if an invalid method is detected, but
+this check is not stringent (i.e. only checks for a method that is always
+invalid for a given variable regardless of the pixel illumination).
+During image processing, if a requested method is unavailable in the illumination
+conditions, the code will use Ctrl as a default.
+<br><b>First guess state vector selection options (twilight): </b>see description
+for day above.
+<br><b>First guess state vector selection options (night): </b>see
+description for day above.
+<br><b>First guess values: </b>set of 5 real values 
+to be used as first guess values for the 5 state variables when the selection method
+for a given variable is Ctrl.</p>
+
+<p><b>A priori state vector selection options (day):</b> set of 5 integers
+denoting the methods used for setting a priori values for the 5 state variables
+in daylight conditions. Methods are the ORAC standards, Ctrl, Meas, Aux. As
+with the first guess, different methods can be specified for different
+times of day. 
+<br><b>A priori state vector selection options (twilight): </b>see description
+for
+day above.
+<br><b>A priori state vector selection options (night): </b>see description
+for day above.
+<b>A priori state vector values: </b>set of 5 real values, the
+a priori values for each of the 5 state variables, to be used when the
+selection method for a given variable is Ctrl.
+<b>A priori errors: </b>set of 5 real values for the errors associated
+with the a priori values specified above.<b> </b>Used when the a priori
+selection method for a given variable is Ctrl.</p>
+
+<p><b>SDAD pixel limit: </b> (now redundant - TBC - SDAD selection method removed) 
+the limit on the distance, expressed as the
+number of pixels from the last successful inversion to the current image
+pixel location, within which the results of the last inversion can be used
+for setting first guess or a priori values via the SDAD method. If the
+inversion fails to converge for a number of pixels, the saved state
+vector from the last successful inversion may no longer be relevant for
+SDAD setting of values for the current pixel.</p>
+
+<p><b>Surface reflectance flag: </b>integer flag specifying the method
+for setting surface reflectance values. The possible values are Ctrl, Aux 
+although Ctrl is strictly intended for testing.</p>
+<p><b>Surface reflectances (sea): </b>set of real values, 1 per selected
+instrument channel with a solar component, per view, used for the surface reflectances
+over sea when the selection method is Ctrl. For multiple viewing angles there 
+should be a value for every solar channel in the ID array above.
+Expressed as percentages rather than fractions.</p>
+<p><b>Surface reflectances (land): </b>as above, for land.
+<p><b>Percentage error in surface reflectances: </b>a single value for
+the percentage error in all solar channel reflectances. Note that this
+error applies to the surface reflectances whether they are obtained by
+the Ctrl method or otherwise.</p>
+<p><b>Correlation between surface reflectance errors: </b>a single real
+value for the correlation between the different channel error values. Applies
+to the surface reflectances whether they are obtained by the Ctrl method
+or otherwise.</p>
+<p><b>EQMPN Rs error flag:</b> an integer flag (0 or 1 for off or on) indicating
+whether Equivalent Model Parameter Noise from surface reflectance errors
+should be included. See the <a href="Sy_Overview.html">overview on Sy</a>
+setting in AD 1.</p>
+<p><b>EQMPN T/H error flag:</b> an integer flag (0 or 1 for off or on)
+indicating whether Equivalent Model Parameter Noise from atmospheric profile
+(T(z)/H(z)) errors should be included. EQMPN errors from this source
+are not currently supported in the ORAC code. See the <a href="Sy_Overview.html">overview
+on Sy</a> setting in AD 1.</p>
+<p><b>EQMPN Homog error flag:</b> an integer flag (0 or 1 for off or on)
+indicating whether Equivalent Model Parameter Noise from homogeneity errors
+(i.e. incorrect assumption of non-plane-parallel cloud) should be included.
+See the <a href="Sy_Overview.html">overview on Sy</a> setting in AD 2.</p>
+<p><b>EQMPN Coreg error flag:</b> an integer flag (0 or 1 for off or on)
+indicating whether Equivalent Model Parameter Noise from errors in the
+coregistration of the channels should be included. See the <a href="Sy_Overview.html">overview
+on Sy</a> setting in AD 1.</p>
+<p><b>Cloud type: </b>integer indicating the type (as opposed to class)
+of cloud in the current image. Used for setting homog and coreg noise based
+on values in the channel characteristic files. The channel files contain
+noise values for 5 cloud types, with 1 being the closest approximation
+to plane-parallel: 1 - Stratus; 2 - Strato-Cumulus; 3 - Cumulus; 4 - Cumulo-Nimbus;
+5 - Cirrus.</p>
+<p>Ideally the functions of cloud type and class should be combined and
+homog and coreg noise should be set using the current cloud class to define
+levels. However, the current ORAC does not have a wide variety of classes
+(one water and one ice only) so the cloud type parameter is present to
+allow an external (for example) cloud classifier to influence the effective
+homogeneity / coregistration noises present.</p>
+<p><b>Noise equivalent fractional reflection: </b>not currently used in
+ORAC code. Noise equivalents are taken from SAD channel data at present.</p>
+<p><b>Noise equivalent brightness temperature: </b>not currently used in
+ORAC code. Noise equivalents are taken from SAD channel data at present.</p>
+<p><b>Marquardt starting parameter: </b>a real value for the Marquardt
+starting parameter Mqstart used to initialise the alpha value which determines
+the relative contributions of the steepest descent and Newtonian methods
+to delta X in the inversion process. Usually set at 0.001. </p>
+<p><b>Marquardt step parameter: </b>real value for the factor applied to
+alpha between iterations of the inversion process. Usually set at 10.0.</p>
+<p><b>Maximum number of iterations: </b>integer value for the maximum number
+of iterations allowed in the inversion. Usually set at 10. Prevents waste
+of processing time when a solution is not reached within a few iterations
+or does not converge at all. </p>
+<p><b>Maximum number of phase changes: </b>integer value for the maximum
+number of phase changes allowed in the inversion. Suggested setting of
+3. Prevents repeated oscillation between phases and wasted processing time.
+</p>
+<p><b>Cost convergence criteria: </b>a real value specifiying the change
+in cost between iterations (i.e. delta J not absolute J) at which the inversion
+is considered to have converged. Costs are divided by the number of active
+instrument channels used in the retrieval before being output. Hence this
+value is multplied by the number of active channels for the pixel
+before inversion. </p>
+<p><b>Scale factors for state variables: </b>a set of 5 real values, 1
+per state variable, used to scale the state and associated variables values
+during the inversion. The state variable values are multiplied by these
+factors in order to reduce the wide differences in order of magnitude between
+the sensitivity of the measurements terms to each of the variables. </p>
+
+<p><b>Lower limits on state: </b>a set of 5 real values specifying
+the lower limit on each of the 5 state variables for the inversion process. 
+If the inversion tries to force any variable below
+its limit, the value is held at the limit.  </p>
+<p><b>Upper limits on state: </b>Upper limits equivalent to lower limits described 
+above.</p>
+<p><b>Maximum acceptable retrieval cost: </b>a single real value used in
+setting quality control information for a given pixel inversion.
+Maximum allowed total cost resulting from an inversion. See the <a href="Output_Overview.html">overview
+on outputs</a>.</p>
+<p><b>Maximum acceptable retrieval errors: </b>a set of 5 real values,
+1 per state variable, indicating the the maximum retrieval error acceptable
+for each of the state variables. Used in setting quality control information
+for a given pixel inversion. </p>
+
+<h3>
+<a NAME="Outputs"></a>3.2 Reading the output files</h3>
+<font size=+0><p>See the overview on
+</font><a href="Output_Overview.html">outputs</a>
+for descriptions of the format and content of the output and diagnostic
+files. Both files are unformatted, sequential acces files containing
+the entire Ctrl structure (currently comitted, May 2011, TBC whether this will be 
+reintroduced) for the processing run at the beginning of the
+file, followed by the output information for each pixel in the selected
+image area.</p>
+<p>To open the output or diagnostic file in a Fortran program, use a statement
+such as:
+<blockquote>open(unit=out_lun, file=filename, form='Unformatted', status='old',&nbsp;
+iostat=ios)</blockquote>
+To read in the Ctrl structure at the start of the file, the program must
+include a <b>use</b> statement for the Ctrl module (and ECP_Constants which
+contains definitions used in Ctrl) and declare a Ctrl structure, then read
+the structure in a single statement as follows (<i>Ctrl.f90</i> and <i>ECPConstants.f90</i>
+must be in the list of compiled files in order to incorporate the definitions
+of the Ctrl structure):
+<blockquote>use ECP_Constants
+<br>use CTRL_def
+<p>type(CTRL_t)&nbsp;&nbsp;&nbsp;&nbsp; :: Ctrl
+<p>&lt; open statement >
+<p>! Note May 2011, Ctrl struct recently removed - TBC whether it will be brought back
+<br>! read(unit=out_lun, iostat=ios)Ctrl</blockquote>
+To read in the subsequent output values for each pixel, the following
+read statement can be used:
+<blockquote>read(out_lun) Xn, Sn</blockquote>
+where Xn and Sn are both real arrays of 5 elements (corresponding to Tau,
+Re, Pc, f, Ts).
+<p>Reading in the diagnostic values from the diagnostic file is more complex,
+since there are several possible diagnostic outputs. In the ORAC code these
+diagnostics are stored in a structure (defined in Diag.f90), but only the
+requested parts of the structure are written to the diagnostic file. Reading
+of each diagnostic quantity is dependent on the setting of the associated
+diagnostic flag in Ctrl.</p>
+<p>See the <a href="../src/WriteDiag.f90">Write_Diag</a> routine for details
+of how the diagnostic structure is output, and therefore how it can be
+read.</p>
+
+
+<h3>
+3.3 Using breakpoints</h3>
+<p>Breakpoint outputs are provided in several major ORAC routines in order
+to help with debugging and tracing the forward model and inversion calcuations.
+Breakpoint outputs are written to the breakpoint file specified in the
+driver file.</p>
+<p>In order to generate breakpoint outputs it is necessary to:
+<blockquote><b>1.</b> compile the code with the breakpoint flag (if the
+code has already been built it is only necessary to re-compile those routines
+from which breakpoints are required, plus the ORAC main routine), as described
+in the ORAC build procedures (follow the make target with "FFLAGS=-DBKP",
+e.g. <i>make ORAC FFLAGS=-DBKP</i> )
+<br><b>2.</b> set the breakpoint level in the ORAC driver file to greater
+than 0, and greater than or equal to the breakpoint level for the required
+routine</blockquote>
+If the breakpoint level for the required routine also switches in unwanted
+outputs from other routines, it is possible to switch off the other routines'
+outputs by raising their breakpoint levels in the ECP_Constants module
+and re-building the code.</p>
+
+
+<h3>
+3.4 Error tracing</h3>
+<p>The ORAC code will handle an error in one of three ways:
+<blockquote><b>1.</b> most severe error conditions result in a message
+and error code being written to the log file, and the program stopping
+(an "Ending with status xx" message should be seen on stdout).
+<br><b>2.</b> an error in the driver file data or format, or in opening
+the driver file <b>may</b> result in an error message being written to
+stdout rather than the log file, and the program stopping (if the error
+occurs so early that the program can not open the log file).
+<br><b>3. </b>data errors such as extrapolation warnings will result in
+a message being written to the log file but will not generally cause the
+program to stop as they are not fatal for the whole image.</blockquote>
+</p>
+
+
+<h4>
+Use of the log file</h4>
+<p>The ORAC log file is a simple ASCII file containing only a header, an ending
+message and any error and warning messages generated during execution.
+The log file name and path are defined in the driver file.</p>
+<p>The ORAC main program writes a header consisting of the date and time
+when the run started and the Run ID from the driver file. Other (test harness)
+programs may not write this header information.</p>
+<p>An error message is preceded by the date and time and followed by an
+error code. The error messages are short but are intended to be reasonably
+informative. Quite a number of error codes are defined, however some codes
+may be used at more than one location in the code since not all errors
+are completely unique.</p>
+<p>The ending message written by the ORAC main program includes the date
+and time and status code, although some test harnesses may write a simpler
+message. This message simply enables the user to tell whether the program
+finished and how long it might have taken to execute.</p>
+
+
+<h4>
+Interpreting error codes</h4>
+<p>The error codes written to the log file (or sometimes to stdout) are defined
+as named constants in <i>ECPConstants.f90</i>. It may be helpful to search
+for the reported error code value in this file in order to identify the
+error condition. The constant name may be useful when more detail is required
+as it can be used in a search through the code to find where the error
+occurred. However, generally the text message accompanying the error code
+in the log file will be more informative. Most error messages include the
+routine name where the error was detected, and a description of the error.</p>
+<br>&nbsp;
+<h4>
+Likely errors and possible causes</h4>
+
+<blockquote><b>ORAC_DRIVER environment variable</b>
+<p>Probably the simplest error that can occur is if the driver file cannot
+be found because the environment variable ORAC_DRIVER is undefined or incorrectly
+defined. ORAC_DRIVER should be defined as the full path and filename for
+the driver file and should be exported (Bourne or Korn shell users) before
+the ORAC executable is run. Failure to define the variable correctly can
+lead to file not found and file open errors.</p>
+<p><b>Common driver file data errors</b></p>
+<p>Simple errors can occur when editing the driver file by hand. For example
+when excluding or adding <b>measurement channel identifiers</b> (Ctrl%Ind%Ny
+and Y_ID) the <u>number</u> and <u>indices</u> for the solar and thermal
+channel values must also be reset. Particular care should be taken where
+there are channels with both thermal and solar components amongst those
+selected.</p>
+<p>When <b>selecting a priori and first guess selection methods for Ts</b>,
+values other than Aux should be avoided (unless perhaps using Ctrl for
+small area case studies where the local Ts is known well). The code has
+been known to crash because large delta Ts values are passed to the T2R
+routine resulting in apparent negative radiance values. This arises (mainly
+in the short wave IR (3.7/3.9 window) region) because adjustments to the
+long-wave RTM terms are made using a Taylor expansion approximation (relies
+on the Planck curve being approximately linear), which is good only for
+small changes in Ts. For this reason a special Aux method has been provided
+in Get_X for setting Ts a priori and first guess values.</p>
+<p><b>MSI and related data file errors</b>
+<p>The Multi-Spectral Image file and related information (geometry, location,
+land-sea flags and cloud flags) must be re-formatted for reading into 
+ORAC. Errors on reading these files may point to re-formatting problems.
+For more information on the file organisation see the descriptions of routines
+<a href="Read_ATSR_Doc.html">Read_ATSR_MSI</a>
+etc in AD 2.</p>
+<p><b>Breakpoint outputs were not generated when expected</b>
+<p>Breakpoint outputs are directed to the breakpoint file specified in
+the ORAC driver file. Check that the breakpoint file name is correctly defined
+and that the breakpoint level specified in the driver file is (a) greater
+than 0 and (b) high enough to trigger breakpoint outputs from the routine
+required (see breakpoint levels specified in ECP_Constants). When the code
+is built it is necessary to re-compile both the routine from which breakpoint
+outputs are required AND the ORAC main routine, which opens and initialises
+the breakpoint output file.</p>
+<br>&nbsp;</blockquote>
+
+
+</body>
+</html>

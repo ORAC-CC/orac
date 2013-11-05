@@ -1,0 +1,220 @@
+! Name:
+!    Set_CRP_Solar
+!
+! Description:
+!    Interpolates Cloud Radiative Properties for the ECP solar channels.
+!
+!    Takes the SAD LUT array of look up table values and interpolates the
+!    arrays of RBd, TB etc from the LUT grid to the current point in the 
+!    multi-spectral image data.
+!
+! Arguments:
+!    Name       Type    In/Out/Both  Description
+!
+!    Ctrl       struct  In           Standard ECP control structure
+!    Ind        struct  In           Sub-struct of SPixel, contains channel
+!                                    indices used in selecting Solar parts
+!                                    of the SAD_LUT arrays.
+!    SAD_LUT    struct  In           Static Application Data structure 
+!                                    containing the arrays of Look-Up Tables
+!                                    to be interpolated.
+!    GZero      Struct  In           Holds "0'th point" information relating to
+!                                    the grid on which the SAD_LUT CRP arrays
+!                                    are based.
+!    CRPOut     real(8)  Out         Array of interpolated values:
+!                                    1=RBd, 2=Tb, 3=TFBd, 4=Td, 5=TFd, 6=Rd,
+!                                    7=RFd, 8=Em
+!    dCRPOut    real(8,2)  Out       Array of interpolated gradients in Tau, Re:
+!                                    1=RBd, 2=Tb, 3=TFBd, 4=Td, 5=TFd, 6=Rd,
+!                                    7=RFd, 8=Em
+!    status     int     Out          Standard status code set by ECP routines
+!
+! Algorithm:
+!    For each LUT array in SAD_LUT (i.e. TBd etc)
+!    - Pass GZero and SAD_LUT info to the appropriate interpolation routine
+!      (depending on the array dimensions) and interpolate the Solar channels.
+!    Note in the case of Td the SAD_LUT arrays are only interpolated for
+!    channels that are entirely solar (i.e. no thermal component). Em is not
+!    interpolated here.
+!
+! Local variables:
+!    Name       Type    Description
+!
+! History:
+!    2nd Nov 2000, Andy Smith : original version
+!   16th Nov 2000, Andy Smith :
+!      Extending to interpolate arrays in (Tau, Re, Solzen) (original just
+!      handled (Tau, Re) interpolation.
+!   24th Nov 2000, Andy Smith :
+!      Changed subroutine interface: SatZen, SunZe, RelAzi now passed in
+!      Geom structure (defined in SPixel module).
+!    1st Dec 2000, Andy Smith :
+!      Renamed routines containing sun or Solzen in their names.
+!      Using Sol or SolZen instead.
+!      Variables using Sun or Su also renamed Sol/So
+!   11th Jan 2001, Andy Smith :
+!      Ctrl%Ind%Y renamed Y_Id
+!   16th Jan 2001, Andy Smith :
+!      Header comments brought up to date.
+!      Change of array indices for LUT arrays that cover both solar and
+!      thermal channels.
+!   17th Jan 2001, Andy Smith :
+!      Interpolation of Rd removed. Not required in FM_Solar.
+!   23rd Jan 2001, Andy Smith :
+!      "Zero'th point" calculation moved out of this routine into a separate 
+!      subroutine called before this one (info is common to both SetCRPSolar 
+!      and Thermal). New argument GZero passed in, Tau, Re, Geom arguments 
+!      no longer required as a result.
+!   16th Feb 2001, Andy Smith:
+!      Only "purely" solar channels are handled by FMSolar and it's 
+!      subordinates. New argument Spixel: struct contains revised channel
+!      indices. Use these to determine which channels to interpolate.
+!   19th Feb 2001, Andy Smith:
+!      Error in previous update. Ranges of channels interpolated were correct
+!      previously, although the index values should be picked up from SPixel.
+!   20th Feb 2001, andy Smith:
+!      Use of SPixel argument changed: only the Ind part of SPixel is used
+!      hence only this sub-struct is passed. Simplifies array indexing.
+!    6th May 2011, Andy Smith:
+!      Extension to multiple instrument views. Re-worked debug output to 
+!      new viewing geometry arrays. 
+!    5th Sep 2011, Chris Arnold:
+!       Status now passed to interpolation routines IntLUT*.f90
+!    7th Feb 2012, Chris Arnold:
+!       Ctrl struct now passed to interpolation routines IntLUT*.f90
+!
+! Bugs:
+!    None known.
+!
+!---------------------------------------------------------------------
+
+Subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
+
+   use Int_Routines_def
+   use Ctrl_def
+   use SPixel_def
+   use SAD_LUT_def
+   use GZero_def
+   
+   implicit none
+
+!  argument declarations 
+!  Note if these arguments are changed, the interface definition in
+!  FMRoutines.f90 must be updated to match.
+   
+   type(Ctrl_t), intent(in)              :: Ctrl
+   type(Spixel_Ind_t), intent(in)        :: Ind
+   type(GZero_t), intent(inout)          :: GZero  ! Struct containing 
+                                                   ! "zero'th" grid points
+   type(SAD_LUT_t), intent(inout)        :: SAD_LUT
+   real, dimension(:,:), intent(inout)   :: CRPOut  
+                        		   ! Interpolated values returned
+                        		   ! (CRPOut(1)=RBD, (2)=TB, ...
+   real, dimension(:,:,:), intent(inout) :: dCRPOut
+                                	   ! Interpolated gradients of CRPOut in 
+					   ! Tau and Re
+   integer, intent(out)                  :: status
+
+!  local variables 
+
+   integer   :: i, j   ! Just for testing
+
+
+!  Status is not actually set at present. Error-checking would be very
+!  costly in terms of CPU here. Leave status argument in case of future
+!  updates. Set to 0 to avoid compiler warnings.
+
+   status = 0
+
+!  Interpolation is done over all passed channels - handled by the Int f'ns
+!  N.B. Grid is the same for all SAD_LUT channels in a given cloud class
+!  - channel is a dimension of the LUT arrays inside SAD_LUT.
+
+!  Call functions to interpolate the arrays: TFd and RFD are interpolated
+!  only in Tau and Re.
+
+   call Int_LUT_TauRe(SAD_LUT%TFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
+      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd), &
+      dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd,:),status)
+
+   call Int_LUT_TauRe(SAD_LUT%RFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
+      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd), &
+      dCRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd,:),status)
+
+!  Tb and TFBd are interpolated in Tau, Solzen and Re
+
+   call Int_LUT_TauSolRe(SAD_LUT%Tb(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITb), &
+      dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITb,:),status)
+
+   call Int_LUT_TauSolRe(SAD_LUT%TFbd(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITFbd), &
+      dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITFbd,:),status)
+
+!  Td is interpolated in Tau, SatZen and Re
+!  Only process the channels that are exclusively solar. Channels with 
+!  a thermal component are interpolated by SetCRPThermal.
+
+   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%ThermalFirst-1,:,:,:), &
+      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd), &
+      dCRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd,:),status)
+
+!  RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
+
+   call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd(Ind%SolarFirst:Ind%SolarLast,:,:,:,:,:), &
+      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,IRBd), &
+      dCRPOut(Ind%SolarFirst:Ind%SolarLast,IRBd,:),status)
+
+#ifdef DEBUG
+
+!  For debugging: check interpolated values
+
+   write(*,*) ' SetCRPSolar: TFd values, solar 1st to solar last: ',Ind%SolarFirst,&
+     Ind%SolarLast
+   do j=Ind%SolarFirst, Ind%SolarLast
+      write(*,*)' Function values at top corners', &
+	 SAD_LUT%TFd(j, GZero%iT0, GZero%iR1),  &
+	 SAD_LUT%TFd(j, GZero%iT1, GZero%iR1) 
+      write(*,*)' Function values at bot corners', &
+	 SAD_LUT%TFd(j, GZero%iT0, GZero%iR0),  &
+	 SAD_LUT%TFd(j, GZero%iT1, GZero%iR0) 
+
+      write(*,*)' Interpolated value ',CRPOut(j,ITFd) 
+      write(*,*)' Gradient values    ',(dCRPOut(j,ITFd,i),i=1,2)
+      write(*,*)
+   end do
+
+   write(*,*) ' SetCRPSolar: RFd values'
+   do j=Ind%SolarFirst, Ind%SolarLast
+      write(*,*)' Function values at top corners', &
+	 SAD_LUT%RFd(j, GZero%iT0, GZero%iR1),  &
+	 SAD_LUT%RFd(j, GZero%iT1, GZero%iR1) 
+      write(*,*)' Function values at bot corners', &
+	 SAD_LUT%RFd(j, GZero%iT0, GZero%iR0),  &
+	 SAD_LUT%RFd(j, GZero%iT1, GZero%iR0) 
+
+      write(*,*)' Interpolated value ',CRPOut(j,IRFd) 
+      write(*,*)' Gradient values    ',(dCRPOut(j,IRFd,i),i=1,2)
+      write(*,*)
+   end do
+
+   write(*,*) ' SetCRPSolar: Tb values (2 channels only)'
+   do j=Ind%SolarFirst, Ind%SolarFirst+1
+      write(*,'(a,4(f10.5,1x))')' Function values at top corners', &
+	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ0(j), GZero%iR1),  &
+	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ0(j), GZero%iR1),  & 
+	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ1(j), GZero%iR1),  &
+	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ1(j), GZero%iR1) 
+      write(*,'(a,4(f10.5,1x))')' Function values at bot corners', &
+	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ0(j), GZero%iR0),  &
+	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ0(j), GZero%iR0),  & 
+	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ1(j), GZero%iR0),  &
+	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ1(j), GZero%iR0) 
+
+      write(*,*)' Interpolated value ',CRPOut(j,ITb) 
+      write(*,*)' Gradient values    ',(dCRPOut(j,ITb,i),i=1,2)
+      write(*,*)
+   end do
+#endif
+
+End Subroutine Set_CRP_Solar

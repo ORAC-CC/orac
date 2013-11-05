@@ -1,0 +1,82 @@
+#PREPROC
+
+#epr lib dirs
+EPRLIBDIR = /c2a/perm/ms/de/sf4/esa_cci_c_proc/software/epr/epr_api-2.2/build/release
+EPRINCDIR = /c2a/perm/ms/de/sf4/esa_cci_c_proc/software/epr/epr_api-2.2/src
+EPR=-lepr_api
+
+GRIBLIB=/usr/local/lib/metaps/lib/grib_api/1.10.0/lib
+GRIBINC=/usr/local/lib/metaps/lib/grib_api/1.10.0/include
+GRIB=-lgrib_api_f90 -lgrib_api
+
+JASPERLIB=/usr/local/apps/jasper/1.900.1/LP64/lib
+JASPERINC=/usr/local/apps/jasper/1.900.1/LP64/include
+JASPER=-ljasper -lm
+
+EMOSLIB=/usr/local/lib/metaps/lib/000392
+#EMOSINCLUDE=
+EMOS=-lemos.R64.D64.I32
+
+ECLIB=/usr/local/apps/eclib/2008/LP64
+#ECINC=
+EC=-lec.R64.D64.I32
+
+SZLIB=/usr/local/apps/szip/2.1/LP64/lib
+SZINC=/usr/local/apps/szip/2.1/LP64/include
+SZ=-lsz
+
+HDF5LIB=/usr/local/apps/hdf5/1.8.8/LP64/lib
+HDF5INC=/usr/local/apps/hdf5/1.8.8/LP64/include
+HDF5=-lhdf5_fortran -lhdf5 -lhdf5_hl -lhdf5hl_fortran -lz -lessl
+
+NETCDF4LIB=/usr/local/apps/netcdf4/4.1.3/LP64/lib
+NETCDF4INC=/usr/local/apps/netcdf4/4.1.3/LP64/include
+NETCDF4=-lnetcdf -lnetcdff
+#NETCDF4LIB=/usr/local/apps/netcdf/3.6.3/LP64/lib
+#NETCDF4INC=/usr/local/apps/netcdf/3.6.3/LP64/include
+#NETCDF4=-lnetcdf
+
+HDF4LIB=/usr/local/apps/hdf/4.2.8/LP64/lib
+HDF4INC=/usr/local/apps/hdf/4.2.8/LP64/include
+HDF4=-lmfhdf -ldf -lz -ljpeg
+
+HDFEOSLIB=/usr/local/apps/hdfeos/2.17/LP64/lib
+HDFEOSINC=/usr/local/apps/hdfeos/2.17/LP64/include
+HDFEOS=-lGctp -lhdfeos
+
+#Setup RTTOV library
+#performance
+#RTTOVLIB=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd/lib
+#RTTOVINCLUDE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd/include
+#RTTOVMODULE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd/mod
+#RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other
+
+#parallel (OMP)
+RTTOVLIB=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/lib
+RTTOVINCLUDE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/include
+RTTOVMODULE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/mod
+RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_parallel -lrttov10.2.0_coef_io -lrttov10.2.0_other
+
+#debug
+#RTTOVLIB=/c1a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/ecmwf_pwr7_debug/lib
+#RTTOVINCLUDE=/c1a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/ecmwf_pwr7_debug/include
+#RTTOVMODULE=/c1a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/ecmwf_pwr7_debug/mod
+
+
+#Set up libraries and includes
+LIBS=-L$(RTTOVLIB) $(RTTOV)  -L$(EPRLIBDIR) $(EPR) -L$(ECLIB)  $(EC) -L$(GRIBLIB) $(GRIB) -L$(JASPERLIB) $(JASPER)  -L$(EMOSLIB) $(EMOS)  -L$(ECLIB) $(EC)  -L$(SZLIB) $(SZ) -L$(HDF5LIB) $(HDF5) -L$(NETCDF4LIB) $(NETCDF4) -L$(HDF4LIB) $(HDF4) -L$(HDFEOSLIB) $(HDFEOS) 
+INC=-I$(GRIBINC) -I$(JASPERINC)  -I$(SZINC) -I$(HDF5INC) -I$(NETCDF4INC) -I$(HDF4INC)  -I$(HDFEOSINC)  -I./ -I$(RTTOVINCLUDE) -I$(RTTOVMODULE) -I$(EPRINCDIR) -I$(OBJS)
+
+CINC=-I./ -I$(EPRINCDIR)
+
+#works LIBS=-L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_parallel -lrttov10.2.0_coef_io -lrttov10.2.0_other -L$(EPRLIBDIR) -lepr_api $(ECLIB)  -L/usr/local/lib/metaps/lib/grib_api/1.10.0/lib -lgrib_api_f90 -lgrib_api -L/usr/local/apps/jasper/1.900.1/LP64/lib -ljasper -lm  -L/usr/local/lib/metaps/lib/000392 -lemos.R64.D64.I32  -L/usr/local/apps/eclib/2008/LP64 -lec.R64.D64.I32 -L/opt/freeware/lib -L/usr/local/apps/szip/2.1/LP64/lib -lsz -L/usr/local/apps/hdf5/1.8.8/LP64/lib -lhdf5_fortran -lhdf5 -lhdf5_hl -lhdf5hl_fortran -lz -lessl -L/usr/local/apps/netcdf4/4.1.3/LP64/lib  -lnetcdf -lnetcdff -L/usr/local/apps/hdf/4.2.8/LP64/lib -lmfhdf -ldf -lz -ljpeg -L/usr/local/apps/hdfeos/2.17/LP64/lib -lGctp -lhdfeos
+
+
+
+
+#LIBS=-L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other -L$(EPRLIBDIR) -lepr_api $(ECLIB)
+# works INC=-I/usr/local/lib/metaps/lib/grib_api/1.10.0/include -I/usr/local/apps/jasper/1.900.1/LP64/include  -I/opt/freeware/include -I/usr/local/apps/szip/2.1/LP64/include -I/usr/local/apps/hdf5/1.8.8/LP64/include -I/usr/local/apps/netcdf4/4.1.3/LP64/include -I/usr/local/apps/hdf/4.2.8/LP64/include  -I/usr/local/apps/hdfeos/2.17/LP64/include  -I./ -I$(RTTOVINCLUDE) -I$(RTTOVMODULE) -I$(EPRINCDIR)
+
+
+
+
