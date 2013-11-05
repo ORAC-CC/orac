@@ -20,6 +20,8 @@
 ! 2013/03/19: G Thomas Commented debugging write statements
 ! 2013/11/01: Greg McGarragh Cleaned up code and removed the use of several
 !             auxiliary arrays.
+! 2013/11/05: G Thomas Bug fix. Moved declaration of dim1 & dim2 to before they
+!             are used in the definition of var.
 !
 ! $Id$
 !
@@ -33,9 +35,9 @@ subroutine rearrange_ecmwf(var,ecmwf_dims,dim1,dim2)
 
    implicit none
 
+   integer,            intent(in)    :: dim1,dim2
    real(kind=sreal),   intent(inout) :: var(dim1,dim2)
    type(ecmwf_dims_s), intent(in)    :: ecmwf_dims
-   integer,            intent(in)    :: dim1,dim2
 
    integer          :: i
    integer          :: x_half,y_half
