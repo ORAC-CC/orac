@@ -254,7 +254,7 @@ function read_cimss_2d(fid, did, fill, data) result(stat)
   ! What is the fill value?  Some files use 'FillValue' and others use
   ! 'fill_value'
   stat = nf90_get_att(fid, did, 'FillValue', ifill)
-  if (stat .ne. 0) then
+  if (stat .ne. NF90_NOERR) then
      stat = nf90_get_att(fid, did, 'fill_value', ifill)
   endif
 
