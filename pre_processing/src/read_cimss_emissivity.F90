@@ -254,13 +254,9 @@ function read_cimss_2d(fid, did, fill, data) result(stat)
   ! What is the fill value?  Some files use 'FillValue' and others use
   ! 'fill_value'
   stat = nf90_get_att(fid, did, 'FillValue', ifill)
-print *, stat
   if (stat .ne. 0) then
      stat = nf90_get_att(fid, did, 'fill_value', ifill)
-print *, stat
-  endif
-print *, ifill
-stop
+
   ! Apply and copy into the data array
   data = real(idata)*scale_factor + offset
 !  write(*,*) data(750:760,4900)
