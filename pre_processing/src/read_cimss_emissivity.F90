@@ -37,6 +37,9 @@
 ! 16/10/2013 Greg McGarragh: Changed the name of the fill value for the CIMSS
 !                            emissivity product to the correct name: 'FillValue'
 !                            to 'fill_value'.
+! 05/11/2013 Greg McGarragh: It turns out some files use 'FillValue' and others
+!                            use 'fill_value'.  So now we handle both cases.
+!
 ! Bugs:
 ! None known
 !
@@ -248,9 +251,16 @@ function read_cimss_2d(fid, did, fill, data) result(stat)
   ! Likewise the offset... 
   stat = nf90_get_att(fid, did, 'add_offset', offset)
   if (stat .ne. NF90_NOERR) offset = 0.0
-  ! What is the fill value?
-  stat = nf90_get_att(fid, did, 'fill_value', ifill)
-
+  ! What is the fill value?  Some files use 'FillValue' and others use
+  ! 'fill_value'
+  stat = nf90_get_att(fid, did, 'FillValue', ifill)
+print *, stat
+  if (stat .ne. 0) then
+     stat = nf90_get_att(fid, did, 'fill_value', ifill)
+print *, stat
+  endif
+print *, ifill
+stop
   ! Apply and copy into the data array
   data = real(idata)*scale_factor + offset
 !  write(*,*) data(750:760,4900)
