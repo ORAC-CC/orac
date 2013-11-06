@@ -85,9 +85,10 @@ subroutine open_netcdf_output(nx,ny,output_pathin, output_pathout,&
   !     & //'/'//trim(adjustl(cmonth))//'/'//trim(adjustl(cday))
   output_pathout=trim(adjustl(output_pathin))
 
-  call nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,platform,sensor,&
-       & trim(adjustl(output_pathout))//'/'//trim(adjustl(config_file)), &
-       & wo,netcdf_info,channel_info)
+!further test
+!!$  call nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,platform,sensor,&
+!!$       & trim(adjustl(output_pathout))//'/'//trim(adjustl(config_file)), &
+!!$       & wo,netcdf_info,channel_info)
 
   !create lwrtm file
   call nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth, &
