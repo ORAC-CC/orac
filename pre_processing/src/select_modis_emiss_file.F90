@@ -1,63 +1,56 @@
 ! Name: select_modis_emiss_file.F90
 !
 ! Purpose:
-! select the matching emissivity file
+! Select the matching emissivity file.
 !
-! Description and algorithm details
+! Description and algorithm details:
 !
 ! Arguments:
-! Name            Type     In/Out/Both Description
-! doy    integer  in  
-! mcd_date integer out
+! Name Type In/Out/Both Description
+! ------------------------------------------------------------------------------
 !
 ! Local variables:
 ! Name Type Description
+! ------------------------------------------------------------------------------
 !
 ! History:
-! 2012/08/06 Caroline Poulsen original version
-! 2012/08/16 Gareth Thomas. Extensive rewrite. The code now checks if we're looking
-!            at data for a leap year, and sets the day-of-year numbers (which are for
-!            the first of each month) accordingly. Date arrays are also no-longer
-!            dynamic.
-!            Also changed the way the appropriate day-of-year number is selected, so
-!            that it is always the closest smaller number to the actual date.
-! 2012/08/20 Matthias Jerg fixes bug (variable type from int to logical) in inquire
-!            statement reads files downloaded from
-!            http://cimss.ssec.wisc.edu/iremis/download.php
-! 2013/06/27 MJ implements file independent checking for leap year
-! 2013/11/01 Greg McGarragh: Fixed leap year check to include all cases.  This
-!            code is now 2100 ready:)
+! 2012/08/06: Caroline Poulsen original version
+! 2012/08/16: Gareth Thomas. Extensive rewrite. The code now checks if we're looking
+!             at data for a leap year, and sets the day-of-year numbers (which are for
+!             the first of each month) accordingly. Date arrays are also no-longer
+!             dynamic.
+!             Also changed the way the appropriate day-of-year number is selected, so
+!             that it is always the closest smaller number to the actual date.
+! 2012/08/20: Matthias Jerg fixes bug (variable type from int to logical) in inquire
+!             statement reads files downloaded from
+!             http://cimss.ssec.wisc.edu/iremis/download.php
+! 2013/06/27: MJ implements file independent checking for leap year
+! 2013/11/01: Greg McGarragh: Fixed leap year check to include all cases.  This
+!             code is now 2100 ready:)
+! 2013/11/01: Greg McGarragh: Cleaned up code.
 !
 subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_path_file)
+
   use preproc_structures
 
   implicit none
+
+  integer(kind=stint),       intent(in)    :: year
+  character(len=datelength), intent(in)    :: cyear
+  integer(kind=stint),       intent(in)    :: doy
   character(len=pathlength), intent(in)    :: emiss_surf_path
   character(len=pathlength), intent(out)   :: emiss_surf_path_file
-  integer(kind=stint), intent(in)          :: doy,year
-  integer                                  :: pos(1)
-  logical :: isleapyear
-  integer(kind=stint), dimension(12)       :: dates,newdates
-  character(len=datelength), dimension(12) :: dates_s 
-  character(len=datelength), intent(in)    :: cyear
-  character(len=3)                         :: emis_date_s 
-  
-  dates = long_int_fill_value
-  !obsolete:
-  ! Note that the CIMSS data is stored per month, but they follow the NASA system
-  ! of using day-of-year (rather than month number) to specify the date of each file.
-  ! Thus, we need to know if it is a leap year or not.
-  ! Do this by testing for a file numbered "061" (if February has 29 days, the March 1st
-  ! will be day 61).
-  !inquire(file=trim(adjustl(emiss_surf_path))// &
-  !& '/global_emis_inf10_monthFilled_MYD11C3.A'//trim(adjustl(cyear))//'061.041.nc', &
-  !& exist=isleapyear)
 
-! test for leap year 
+  integer                                  :: pos
+  logical                                  :: isleapyear
+  integer(kind=stint),       dimension(12) :: dates,newdates
+  character(len=datelength), dimension(12) :: dates_s
+  character(len=3)                         :: emis_date_s
+
   isleapyear=.false.
 
   if ((mod(year,  4_stint) .eq. 0 .and. mod(year,100_stint) .ne. 0) .or. &
-       mod(year,400_stint) .eq. 0) isleapyear = .true. 
+       mod(year,400_stint) .eq. 0) isleapyear=.true.
 
   if (isleapyear) then
      dates(1)=1
@@ -72,7 +65,7 @@ subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_pat
      dates(10)=275
      dates(11)=306
      dates(12)=336
-     
+
      dates_s(1)='001'
      dates_s(2)='032'
      dates_s(3)='061'
@@ -98,7 +91,7 @@ subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_pat
      dates(10)=274
      dates(11)=305
      dates(12)=335
-     
+
      dates_s(1)='001'
      dates_s(2)='032'
      dates_s(3)='060'
@@ -113,14 +106,15 @@ subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_pat
      dates_s(12)='335'
   end if
 
-  newdates = long_int_fill_value
-  newdates = dates-doy
+  newdates=dates-doy
+
   pos=count(newdates .le. 0)
-  
-  emis_date_s=dates_s(pos(1))
-  
+
+  emis_date_s=dates_s(pos)
+
   emiss_surf_path_file=trim(adjustl(emiss_surf_path))// &
-       & '/global_emis_inf10_monthFilled_MYD11C3.A'//trim(adjustl(cyear))// &
-       & trim(adjustl(emis_date_s))//'.041'//'.nc'
-  
+     '/global_emis_inf10_monthFilled_MYD11C3.A'// &
+     trim(adjustl(cyear))// &
+     trim(adjustl(emis_date_s))//'.041'//'.nc'
+
 end subroutine select_modis_emiss_file
