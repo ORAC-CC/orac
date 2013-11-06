@@ -23,6 +23,7 @@
 !            tidied up the file
 !2013/10/17: GM: wo was not initialised, resulting in compiler dependent
 !                initialisation behaviour.  It is now set to zero.
+! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
 !
 !
 ! $Id$
@@ -34,7 +35,7 @@
 !---------------------------------------------------------------------------------
 !---------------------------------------------------------------------------------
 subroutine open_netcdf_output(nx,ny,output_pathin, output_pathout,&
-     & lwrtm_file,swrtm_file,prtm_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,&
+     & lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,&
      & platform,sensor,script_input,&
      & cyear,chour,cminute,cmonth,cday,preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info)
 !---------------------------------------------------------------------------------
@@ -55,7 +56,7 @@ subroutine open_netcdf_output(nx,ny,output_pathin, output_pathout,&
   implicit none
   
   character(len=pathlength) :: output_pathin,output_pathout
-  character(len=filelength) :: lwrtm_file,swrtm_file,prtm_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file
+  character(len=filelength) :: lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file
   character(len=platformlength) :: platform
   character(len=sensorlength) :: sensor
 
@@ -83,6 +84,10 @@ subroutine open_netcdf_output(nx,ny,output_pathin, output_pathout,&
   !output_pathout=trim(adjustl(output_pathin))//'/'//trim(adjustl(cyear)) &
   !     & //'/'//trim(adjustl(cmonth))//'/'//trim(adjustl(cday))
   output_pathout=trim(adjustl(output_pathin))
+
+  call nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,platform,sensor,&
+       & trim(adjustl(output_pathout))//'/'//trim(adjustl(config_file)), &
+       & wo,netcdf_info,channel_info)
 
   !create lwrtm file
   call nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth, &

@@ -75,6 +75,9 @@ subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
    attr_id=sffattr(var_id, "_FillValue")
    err_code=sfrattr(var_id, attr_id, fv)
 
+   write(*,*) 'fv ls flag',fv
+   write(*,*) 'btemp',btemp
+   !stop
    ! overwrite fill value with ORAC value
    ! which of these is most efficient is compiler-dependant
    where(btemp .eq. fv) btemp=-1

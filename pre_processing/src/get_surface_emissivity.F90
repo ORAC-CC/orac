@@ -263,6 +263,7 @@ subroutine get_surface_emissivity(emissivity_path, imager_flags, imager_geolocat
      preloni(i+1) =location1d(1)
   end do
 
+
   ! Now calculate the mean emissivity in each preproc grid
   do i=1,preproc_dims%ydim_pre
      do j=1,preproc_dims%xdim_pre
@@ -272,6 +273,9 @@ subroutine get_surface_emissivity(emissivity_path, imager_flags, imager_geolocat
            do ii=i,i+1
               do jj=j,j+1
                  if(transemis(k,preloni(jj),prelati(ii)) .ge. 0.00) then
+!!$                    write(*,*) size(preloni)
+!!$                    write(*,*) size(prelati)
+!!$                    write(*,*) i,j,k
                     summy=summy+transemis(k,preloni(jj),prelati(ii))
                     sum_counter=sum_counter+1_lint
                  endif

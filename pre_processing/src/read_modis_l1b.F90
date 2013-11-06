@@ -51,7 +51,7 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer                       :: ich, l1b_id, err_code, ix, jy
+   integer(kind=lint) :: l1b_id, ix, jy,ich, err_code
 
    character(len=pathlength)     :: path_to_l1b_file
    character(len=sensorlength)   :: sensor
@@ -73,6 +73,7 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    !get file id
    l1b_id=sfstart(path_to_l1b_file,DFACC_READ)
+   write(*,*) 'L1B FILE:',path_to_l1b_file,l1b_id
 
    do ich=1,channel_info%nchannels_total
       ! use channel_info from SETUP.F90
@@ -104,5 +105,7 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    !end access to l1b file
    err_code=sfend(l1b_id)
+
+   !stop
 
 end subroutine read_modis_l1b

@@ -76,7 +76,7 @@ subroutine find_min_max_preproc(preproc_dims,imager_geolocation,verbose)
    preproc_dims%preproc_max_lon = maxval(ceiling(lon), mask) + 1
    preproc_dims%preproc_min_lon = minval(floor(lon), mask) - 1
    if (preproc_dims%preproc_max_lon.ge.preproc_dims%xdim_pre .or. &
-        preproc_dims%preproc_min_lon.le.1) then
+        &        preproc_dims%preproc_min_lon.le.1) then
       preproc_dims%preproc_max_lon = preproc_dims%xdim_pre
       preproc_dims%preproc_min_lon = 1
    end if

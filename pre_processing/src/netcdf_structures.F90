@@ -43,7 +43,7 @@ module netcdf_structures
 
      !file ids
      integer :: ncid_prtm,ncid_lwrtm,ncid_swrtm
-     integer :: ncid_msi,ncid_cf,ncid_lsf,ncid_geo,ncid_loc,ncid_alb,ncid_scan
+     integer :: ncid_config,ncid_msi,ncid_cf,ncid_lsf,ncid_geo,ncid_loc,ncid_alb,ncid_scan
 
      !fundamental dimensions ids for the different dimensions in the
      !different files

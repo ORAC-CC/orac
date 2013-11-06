@@ -34,6 +34,7 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
   !2013/03/07: Cp added in some diagnostics q and albedo
   !2013 MJ adds PLATFORMUP varaible and output to comply with nomenclature.
 ! 2013/10/14: MJ fixed bug with writing of albedo and emissivity.
+! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
   ! Applied SPRs:
   !
   !-----------------------------------------------------------------------
@@ -1289,3 +1290,321 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
   RETURN
   
 END SUBROUTINE nc_create_file_swath
+
+
+
+!new
+
+!---------------------------------------------------------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------------------------------------------------------
+SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,platform,sensor,path,&
+     & wo,netcdf_info,channel_info)
+!---------------------------------------------------------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------------------------------------------------------
+  ! Description:
+  !
+  ! Creates new netcdf-file. (Output file)
+  !
+  !-----------------------------------------------------------------------
+  ! This software was developed within the ESA Cloud CCI Project
+  ! and is based on routines developed during the
+  ! ESA DUE GlobVapour Project. 
+  ! Copyright 2011, DWD, All Rights Reserved.
+  !-----------------------------------------------------------------------
+  !
+  ! Unit Name:           nc_create_file.f90
+  !
+
+  !   
+  ! Modifications Log:    
+  !2013/11/06: MJ initial routine version.
+
+  !
+  ! Applied SPRs:
+  !
+  !-----------------------------------------------------------------------
+  !
+  ! Declarations:
+  !
+  !---------------------------------
+  
+  USE netcdf
+
+  use preproc_constants
+
+  use attribute_structures
+
+  use preproc_structures
+
+  use imager_structures
+
+  use netcdf_structures
+
+  use channel_structures
+
+  IMPLICIT NONE
+
+
+  
+  ! Input
+  INTEGER,INTENT(IN) :: wo!, ryr
+  !ORG  INTEGER,INTENT(IN) :: time, nx, ny, grid, dx, dy,wo!, ryr
+  integer :: yday
+  CHARACTER(LEN=*),INTENT(IN) :: path
+  
+
+  INTEGER :: ncid
+
+  
+  
+  INTEGER, PARAMETER :: SINGLE = 4
+  INTEGER, PARAMETER :: DOUBLE = 8
+!  REAL(KIND=SINGLE):: lon(nx), lat(ny)
+  
+  CHARACTER(LEN=100) :: tunits
+  CHARACTER(LEN=  4) :: chryr
+    
+  integer :: type,cposition,clength,ierr
+
+  integer :: time
+
+  integer, dimension(2) :: dims2d
+  integer, dimension(3) :: dims3d
+  integer, dimension(3) :: dims3dd
+  
+  character(len=platformlength) :: platform,platformup
+  character(len=sensorlength) :: sensor
+  character(len=filelength) :: fname,ctitle
+
+  character(len=datelength) :: cyear,chour,cminute,cmonth,cday
+
+  type(script_arguments_s) :: script_input
+
+  type(preproc_dims_s) :: preproc_dims
+
+  type(imager_angles_s) :: imager_angles
+
+  type(imager_geolocation_s) :: imager_geolocation
+
+  type(netcdf_info_s) :: netcdf_info
+
+  type(channel_info_s) :: channel_info
+
+  ! End of header ----------------------------------------------------------
+  
+!ORG  write(chryr,'(i4)') ryr
+  
+  ! Create new file
+    
+
+  ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_config)
+  IF (ierr.NE.NF90_NOERR)  stop 'error config creating file'
+  
+  ctitle='ORAC Preprocessing config  file'
+  
+  !start defining things
+  ierr = NF90_REDEF(netcdf_info%ncid_msi)
+  
+  
+  !define x and y
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'nx_msi',&
+       & imager_geolocation%endx-imager_geolocation%startx+1,&
+       & netcdf_info%xdim_msi)
+  IF (ierr.NE.NF90_NOERR) STOP 'create x-d msi'
+  
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'ny_msi',&
+       & imager_geolocation%endy-imager_geolocation%starty+1,&
+       & netcdf_info%ydim_msi)
+  IF (ierr.NE.NF90_NOERR) STOP 'create y-d msi'
+  
+  !define nviews
+  !     ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'nv_msi',&
+  !          & imager_angles%nviews,&
+  !          & netcdf_info%vdim_msi)
+  !     IF (ierr.NE.NF90_NOERR) STOP 'create v-d msi'
+  
+  !define nchannels
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'nc_msi',&
+       & channel_info%nchannels_total,&
+       & netcdf_info%cdim_msi)
+  IF (ierr.NE.NF90_NOERR) STOP 'create c-d msi'
+  
+  !define some channel variables
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_instr_ch_numbers', NF90_INT, netcdf_info%cdim_msi,&
+       & netcdf_info%channelninid) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel n'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelninid, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel n'
+  
+  
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_abs_ch_numbers', NF90_INT, netcdf_info%cdim_msi,&
+       & netcdf_info%channelnabsid) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel n abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelnabsid, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel n abs'
+
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_abs_ch_wl', NF90_FLOAT, netcdf_info%cdim_msi,&
+       & netcdf_info%channelwlabsid) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel wl abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelwlabsid, '_FillValue', real_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel wl abs'
+
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_ch_swflag', NF90_INT, netcdf_info%cdim_msi,&
+       & netcdf_info%channelswflag) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel swf'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelswflag, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel swf'
+  
+  
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_ch_lwflag', NF90_INT, netcdf_info%cdim_msi,&
+       & netcdf_info%channellwflag) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel lwf'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channellwflag, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel lwf'
+
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_ch_procflag', NF90_INT, netcdf_info%cdim_msi,&
+       & netcdf_info%channelprocflag) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel proc'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelprocflag, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel proc'
+
+  !define nchannels albedo
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_alb, 'nc_alb',&
+       & channel_info%nchannels_sw,&
+       & netcdf_info%cdim_alb)
+  IF (ierr.NE.NF90_NOERR) STOP 'create c-d alb'
+  
+  !define nchannels emissivity
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_alb, 'nc_emis',&
+       & channel_info%nchannels_lw,&
+       & netcdf_info%cdim_emis)
+  IF (ierr.NE.NF90_NOERR) STOP 'create c-d emi'
+  
+
+     !MJ OLD ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'alb_abs_ch_numbers', NF90_INT, netcdf_info%cdim_alb,&
+     !MJ OLD netcdf_info%channelnabsid) 
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'alb_abs_ch_numbers', NF90_INT, netcdf_info%cdim_alb,&
+       netcdf_info%channelnalbid) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def alb channel n abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_alb,  netcdf_info%channelnalbid, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue alb channel n abs'
+  
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'emis_abs_ch_numbers', NF90_INT, netcdf_info%cdim_emis,&
+       netcdf_info%channelnemisid) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def emis channel n abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_alb,  netcdf_info%channelnemisid, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue emis channel n abs'
+
+
+  !define horizontal dimension as one big vector containing all pixels
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlon_x_nlat_lwrtm', NF90_UNLIMITED,  netcdf_info%xydim_lw)
+  IF (ierr.NE.NF90_NOERR) STOP 'create xy-d 2'
+
+  !defone lon and lat just for reference
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlon_lwrtm',&
+       & preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1,&
+       & netcdf_info%xdim_lw)
+  IF (ierr.NE.NF90_NOERR) STOP 'create x-d'
+  
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlat_lwrtm',&
+       & preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1,&
+       & netcdf_info%ydim_lw)
+  IF (ierr.NE.NF90_NOERR) STOP 'create y-d'
+  
+  !layer land level dimension
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlayers_lwrtm',preproc_dims%kdim_pre-1,&
+       & netcdf_info%layerdim_lw)
+  IF (ierr.NE.NF90_NOERR) STOP 'create nlay lw'
+  
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlevels_lwrtm',preproc_dims%kdim_pre, &
+       & netcdf_info%leveldim_lw)
+  IF (ierr.NE.NF90_NOERR) STOP 'create nlev lw'
+  
+
+
+
+
+
+  
+
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Title',trim(adjustl(ctitle)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Project',trim(adjustl(script_input%project)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'NetCDF_Version',trim(adjustl(script_input%cncver)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'CF_Convention_Version',trim(adjustl(script_input%ccon)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Processing_Institution',trim(adjustl(script_input%cinst)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'L2_Processor',trim(adjustl(script_input%l2cproc)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'L2_Processor_Version',trim(adjustl(script_input%l2cprocver)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  
+
+  !MJ ORG if(platform(1:4) .eq. 'noaa') PLATFORM(1:4)='NOAA'
+  !MST following line by MST
+  PLATFORMUP=platform
+  if(platform(1:4) .eq. 'noaa') PLATFORMUP(1:4)='NOAA'
+
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Platform',trim(adjustl(platformup)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Sensor_Name',trim(adjustl(sensor)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'uuid',trim(adjustl(script_input%uuid_tag)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  cposition=index(trim(adjustl(path)),'/',back=.true.)
+  clength=len_trim(adjustl(path))
+!  fname=trim(adjustl(path(cposition+1:clength)))
+  fname=trim(adjustl(path))
+!  write(*,*) cposition,clength
+!  write(*,*) trim(adjustl(path))
+!  write(*,*) trim(adjustl(fname))
+!  write(*,*) F90MAXNCNAM
+
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Name',trim(adjustl(fname(cposition+1:clength))))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Email',trim(adjustl(script_input%contact)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Website',trim(adjustl(script_input%website)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Production_Time',trim(adjustl(script_input%exec_time)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Product_Date',&
+       & trim(adjustl(trim(adjustl(cyear))//trim(adjustl(cmonth))//&
+       & trim(adjustl(cday))//trim(adjustl(chour))//trim(adjustl(cminute)))))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Reference',trim(adjustl(script_input%reference)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'History',trim(adjustl(script_input%history)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Summary',trim(adjustl(script_input%summary)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Keywords',trim(adjustl(script_input%keywords)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Comment',trim(adjustl(script_input%comment)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'License',trim(adjustl(script_input%license)))
+  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+
+  !close definition section
+  ierr = NF90_ENDDEF(ncid)
+  IF (ierr.NE.NF90_NOERR)  stop 'error enddef swath'
+
+  IF (wo.EQ.1) THEN
+     write(*,*) ''
+     write(*,*) 'New file created: ',TRIM(path)
+  ENDIF
+  
+  RETURN
+  
+END SUBROUTINE nc_create_file_config
+
+
+
+
+
+
+
+

@@ -170,7 +170,7 @@
 ! 2013/10/30: AP Continued tidying. Altered call for find_min_max_preproc.
 ! 2013/11/05: GT Changed type cast of cverbose to verbose variable to use
 !                '(I6)', as '(L6)' was causing a buffer overrun.
-!
+! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
 ! $Id$
 !
 ! Bugs:
@@ -218,7 +218,7 @@ program preprocessing
    character(len=pathlength) :: ecmwf_path3,badc,emiss_path_file,ecmwf_path2out
    character(len=pathlength) :: ecmwf_path3out,ecmwf_pathout
    character(len=flaglength)       :: cgrid_flag,cchannel_flag
-   character(len=sensorlength)     :: sensor
+      character(len=sensorlength)     :: sensor
    character(len=platformlength)   :: platform
    character(len=attribute_length) :: cdellon,cdellat
 
@@ -228,7 +228,7 @@ program preprocessing
    character(len=datelength) :: cyear,chour,cminute,cmonth,cday
 
    character(len=filelength) :: lwrtm_file,swrtm_file,prtm_file
-   character(len=filelength) :: msi_file,cf_file,lsf_file
+   character(len=filelength) :: msi_file,cf_file,lsf_file,config_file
    character(len=filelength) :: geo_file,loc_file,alb_file,scan_file
 
    type(imager_geolocation_s)  :: imager_geolocation
@@ -272,6 +272,8 @@ program preprocessing
 
    logical            :: verbose, check
    integer, parameter :: chunksize=4096
+
+   include "sigtrap.F90"
 
    ! get number of arguments
    nargs = COMMAND_ARGUMENT_COUNT()  
@@ -369,7 +371,7 @@ program preprocessing
    endif ! nargs gt 1
 
    ! cast input strings into appropriate variables
-   read(cgrid_flag, '(I1)') grid_flag
+   read(cgrid_flag, '(i1)') grid_flag
    read(cdellon, '(f10.5)') preproc_dims%dellon
    read(cdellat, '(f10.5)') preproc_dims%dellat
    read(cstartx(1:len_trim(cstartx)), '(I6)') startx
@@ -547,7 +549,7 @@ program preprocessing
       ! carry out any prepatory steps: identify required ECMWF and MODIS L3 
       ! information,set paths and filenames to those required  
       ! auxilliary/ancilliary input...
-      call preparation(lwrtm_file,swrtm_file,prtm_file,msi_file,cf_file, &
+      call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,cf_file, &
            lsf_file,geo_file,loc_file,alb_file,scan_file, &
            sensor,platform,hour,cyear,chour,cminute,cmonth,cday,ecmwf_path, &
            ecmwf_path2,ecmwf_path3,ecmwf_pathout, &
@@ -677,6 +679,7 @@ program preprocessing
 
       call open_netcdf_output(imager_geolocation%nx,imager_geolocation%ny,&
            & output_pathin, output_pathout,lwrtm_file,swrtm_file,prtm_file, &
+           & config_file,&
            & msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,&
            & platform,sensor,script_input,&
            & cyear,chour,cminute,cmonth,cday,&
@@ -732,7 +735,7 @@ program preprocessing
       !
       write(*,*)'start close netcdf'
       call close_netcdf_output(output_pathout,&
-           & lwrtm_file,swrtm_file,prtm_file,msi_file,cf_file, &
+           & lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,cf_file, &
            & lsf_file,geo_file,loc_file,alb_file,scan_file,&
            & netcdf_info)
       write(*,*)'end close netcdf'

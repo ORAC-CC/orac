@@ -71,7 +71,7 @@
 !-------------------------------------------------
 !-------------------------------------------------
 subroutine preparation(lwrtm_file,swrtm_file, &
-     prtm_file,msi_file,cf_file,lsf_file,geo_file, &
+     prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file, &
      loc_file,alb_file,scan_file, &
      sensor,platform,hour,cyear,chour,cminute,cmonth,cday,ecmwf_path, &
      ecmwf_path2,ecmwf_path3,ecmwf_pathout, &
@@ -89,7 +89,7 @@ subroutine preparation(lwrtm_file,swrtm_file, &
 
    character(len=pathlength)  :: ecmwf_path,ecmwf_path2,ecmwf_path3
    character(len=pathlength)  :: ecmwf_pathout,ecmwf_path2out,ecmwf_path3out
-   character(len=filelength)  :: lwrtm_file,swrtm_file,prtm_file, &
+   character(len=filelength)  :: lwrtm_file,swrtm_file,prtm_file, config_file,&
         msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
         scan_file,badc,range_name
 
@@ -149,6 +149,7 @@ subroutine preparation(lwrtm_file,swrtm_file, &
    lwrtm_file=trim(adjustl(file_base))//'.lwrtm.nc'
    swrtm_file=trim(adjustl(file_base))//'.swrtm.nc'
    prtm_file=trim(adjustl(file_base))//'.prtm.nc'
+   config_file=trim(adjustl(file_base))//'.config.nc'
    msi_file=trim(adjustl(file_base))//'.msi.nc'
    cf_file=trim(adjustl(file_base))//'.clf.nc'
    lsf_file=trim(adjustl(file_base))//'.lsf.nc'
