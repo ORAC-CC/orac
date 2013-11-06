@@ -73,7 +73,10 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles, &
    ierr = NF90_PUT_VAR(netcdf_info%ncid_loc, netcdf_info%lonid,&
         & imager_geolocation%longitude(imager_geolocation%startx:imager_geolocation%endx,&
         & 1:imager_geolocation%ny), start2d, counter2d,stride2d)
-   if (ierr.NE.NF90_NOERR) stop 'err write lon'
+   if (ierr.NE.NF90_NOERR) then
+      write(*,*) 'err write lon', ierr
+      stop 
+   endif
 
    ierr = NF90_PUT_VAR(netcdf_info%ncid_loc, netcdf_info%latid,&
         & imager_geolocation%latitude(imager_geolocation%startx:imager_geolocation%endx,&
@@ -239,5 +242,83 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles, &
         & start3d, counter3d,stride3d)
    if (ierr.NE.NF90_NOERR) stop 'err write emiss'
 
+!--------------------
+!--------------------
+!   write config file
+!--------------------
+!--------------------
+   start1d = 1
+   stride1d = 1
+   counter1d=channel_info%nchannels_total
+
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channelninid_config,&
+        & channel_info%channel_ids_instr(1:channel_info%nchannels_total),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write msi channels'
+
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channelnabsid_config,&
+        & channel_info%channel_ids_abs(1:channel_info%nchannels_total),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write msi channels abs'
+
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channelwlabsid_config,&
+        & channel_info%channel_wl_abs(1:channel_info%nchannels_total),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write msi wls'
+
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channellwflag_config,&
+        & channel_info%channel_lw_flag(1:channel_info%nchannels_total),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write msi lw flag'
+
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channelswflag_config,&
+        & channel_info%channel_sw_flag(1:channel_info%nchannels_total),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write msi sw flag'
+
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channelprocflag_config,&
+        & channel_info%channel_proc_flag(1:channel_info%nchannels_total),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write msi proc flag'
+
+   counter1d=channel_info%nchannels_sw
+
+   allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
+   dummy_chan_vec1d=0_lint
+   ic=1
+   do ichan=1,channel_info%nchannels_total
+      if(channel_info%channel_sw_flag(ichan) .eq. 1) then
+         dummy_chan_vec1d(ic)=channel_info%channel_ids_abs(ichan)
+         ic=ic+1
+      endif
+   enddo
+!MJ OLD   ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%albid,&
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config,  netcdf_info%channelnalbid_config,&
+        !MJ OLD & channel_info%channel_ids_abs(1:channel_info%nchannels_sw),&
+        & dummy_chan_vec1d(1:channel_info%nchannels_sw),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write alb channels alb'
+   deallocate(dummy_chan_vec1d)
+
+
+   counter1d=channel_info%nchannels_lw
+   allocate(dummy_chan_vec1d(channel_info%nchannels_lw))
+   dummy_chan_vec1d=0_lint
+   ic=1
+   do ichan=1,channel_info%nchannels_total
+      if(channel_info%channel_lw_flag(ichan) .eq. 1) then
+         dummy_chan_vec1d(ic)=channel_info%channel_ids_abs(ichan)
+         ic=ic+1
+      endif
+   enddo
+!MJOLD  ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%emisid,&
+   ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channelnemisid_config,&
+        !MJ OLD& channel_info%channel_ids_abs(1:channel_info%nchannels_lw),&
+        & dummy_chan_vec1d(1:channel_info%nchannels_sw),&
+        & start1d, counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'err write alb channels emis'
+   deallocate(dummy_chan_vec1d)
+
+   
 
 end subroutine write_swath_to_netcdf

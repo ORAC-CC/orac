@@ -1298,7 +1298,7 @@ END SUBROUTINE nc_create_file_swath
 !---------------------------------------------------------------------------------------------------------------------------------
 !---------------------------------------------------------------------------------------------------------------------------------
 SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,platform,sensor,path,&
-     & wo,netcdf_info,channel_info)
+     & wo,preproc_dims,imager_geolocation,netcdf_info,channel_info)
 !---------------------------------------------------------------------------------------------------------------------------------
 !---------------------------------------------------------------------------------------------------------------------------------
   ! Description:
@@ -1403,125 +1403,128 @@ SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,pl
   ctitle='ORAC Preprocessing config  file'
   
   !start defining things
-  ierr = NF90_REDEF(netcdf_info%ncid_msi)
+  ierr = NF90_REDEF(netcdf_info%ncid_config)
   
   
   !define x and y
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'nx_msi',&
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nx_conf',&
        & imager_geolocation%endx-imager_geolocation%startx+1,&
-       & netcdf_info%xdim_msi)
-  IF (ierr.NE.NF90_NOERR) STOP 'create x-d msi'
-  
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'ny_msi',&
+       & netcdf_info%xdim_config)
+  IF (ierr.NE.NF90_NOERR) then
+     write(*,*) 'create x-d conf',ierr
+     STOP 
+  endif
+
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'ny_conf',&
        & imager_geolocation%endy-imager_geolocation%starty+1,&
-       & netcdf_info%ydim_msi)
-  IF (ierr.NE.NF90_NOERR) STOP 'create y-d msi'
+       & netcdf_info%ydim_config)
+  IF (ierr.NE.NF90_NOERR) STOP 'create y-d conf'
   
   !define nviews
-  !     ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'nv_msi',&
+  !     ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nv_msi',&
   !          & imager_angles%nviews,&
   !          & netcdf_info%vdim_msi)
   !     IF (ierr.NE.NF90_NOERR) STOP 'create v-d msi'
   
   !define nchannels
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_msi, 'nc_msi',&
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nc_conf',&
        & channel_info%nchannels_total,&
-       & netcdf_info%cdim_msi)
-  IF (ierr.NE.NF90_NOERR) STOP 'create c-d msi'
+       & netcdf_info%cdim_config)
+  IF (ierr.NE.NF90_NOERR) STOP 'create c-d conf'
   
   !define some channel variables
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_instr_ch_numbers', NF90_INT, netcdf_info%cdim_msi,&
-       & netcdf_info%channelninid) 
-  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel n'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelninid, '_FillValue', long_int_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel n'
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'msi_instr_ch_numbers', NF90_INT, netcdf_info%cdim_config,&
+       & netcdf_info%channelninid_config) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def conf channel n'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channelninid_config, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue conf channel n'
   
   
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_abs_ch_numbers', NF90_INT, netcdf_info%cdim_msi,&
-       & netcdf_info%channelnabsid) 
-  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel n abs'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelnabsid, '_FillValue', long_int_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel n abs'
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'msi_abs_ch_numbers', NF90_INT, netcdf_info%cdim_config,&
+       & netcdf_info%channelnabsid_config) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def conf channel n abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channelnabsid_config, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue conf channel n abs'
 
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_abs_ch_wl', NF90_FLOAT, netcdf_info%cdim_msi,&
-       & netcdf_info%channelwlabsid) 
-  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel wl abs'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelwlabsid, '_FillValue', real_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel wl abs'
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'msi_abs_ch_wl', NF90_FLOAT, netcdf_info%cdim_config,&
+       & netcdf_info%channelwlabsid_config) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def conf channel wl abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channelwlabsid_config, '_FillValue', real_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue conf channel wl abs'
 
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_ch_swflag', NF90_INT, netcdf_info%cdim_msi,&
-       & netcdf_info%channelswflag) 
-  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel swf'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelswflag, '_FillValue', long_int_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel swf'
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'msi_ch_swflag', NF90_INT, netcdf_info%cdim_config,&
+       & netcdf_info%channelswflag_config) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def conf channel swf'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channelswflag_config, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue conf channel swf'
   
   
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_ch_lwflag', NF90_INT, netcdf_info%cdim_msi,&
-       & netcdf_info%channellwflag) 
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'msi_ch_lwflag', NF90_INT, netcdf_info%cdim_config,&
+       & netcdf_info%channellwflag_config) 
   IF (ierr.NE.NF90_NOERR) STOP 'def msi channel lwf'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channellwflag, '_FillValue', long_int_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel lwf'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channellwflag_config, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue conf channel lwf'
 
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_ch_procflag', NF90_INT, netcdf_info%cdim_msi,&
-       & netcdf_info%channelprocflag) 
-  IF (ierr.NE.NF90_NOERR) STOP 'def msi channel proc'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%channelprocflag, '_FillValue', long_int_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi channel proc'
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'msi_ch_procflag', NF90_INT, netcdf_info%cdim_config,&
+       & netcdf_info%channelprocflag_config) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def conf channel proc'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channelprocflag_config, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue conf channel proc'
 
   !define nchannels albedo
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_alb, 'nc_alb',&
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nc_alb',&
        & channel_info%nchannels_sw,&
-       & netcdf_info%cdim_alb)
-  IF (ierr.NE.NF90_NOERR) STOP 'create c-d alb'
+       & netcdf_info%cdim_config_alb)
+  IF (ierr.NE.NF90_NOERR) STOP 'create c-d alb conf'
   
   !define nchannels emissivity
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_alb, 'nc_emis',&
+  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nc_emis',&
        & channel_info%nchannels_lw,&
-       & netcdf_info%cdim_emis)
-  IF (ierr.NE.NF90_NOERR) STOP 'create c-d emi'
+       & netcdf_info%cdim_config_emis)
+  IF (ierr.NE.NF90_NOERR) STOP 'create c-d emi conf'
   
 
      !MJ OLD ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'alb_abs_ch_numbers', NF90_INT, netcdf_info%cdim_alb,&
      !MJ OLD netcdf_info%channelnabsid) 
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'alb_abs_ch_numbers', NF90_INT, netcdf_info%cdim_alb,&
-       netcdf_info%channelnalbid) 
-  IF (ierr.NE.NF90_NOERR) STOP 'def alb channel n abs'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_alb,  netcdf_info%channelnalbid, '_FillValue', long_int_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue alb channel n abs'
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'alb_abs_ch_numbers', NF90_INT, netcdf_info%cdim_config_alb,&
+       netcdf_info%channelnalbid_config) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def alb conf channel n abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channelnalbid_config, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue alb conf channel n abs'
   
-  ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'emis_abs_ch_numbers', NF90_INT, netcdf_info%cdim_emis,&
-       netcdf_info%channelnemisid) 
-  IF (ierr.NE.NF90_NOERR) STOP 'def emis channel n abs'
-  ierr = NF90_PUT_ATT(netcdf_info%ncid_alb,  netcdf_info%channelnemisid, '_FillValue', long_int_fill_value )
-  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue emis channel n abs'
+  ierr = NF90_DEF_VAR ( netcdf_info%ncid_config, 'emis_abs_ch_numbers', NF90_INT, netcdf_info%cdim_config_emis,&
+       netcdf_info%channelnemisid_config) 
+  IF (ierr.NE.NF90_NOERR) STOP 'def emis conf channel n abs'
+  ierr = NF90_PUT_ATT(netcdf_info%ncid_config,  netcdf_info%channelnemisid_config, '_FillValue', long_int_fill_value )
+  IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue emis conf channel n abs'
 
+!!$
+!!$  !define horizontal dimension as one big vector containing all pixels
+!!$  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nlon_x_nlat_lwrtm', NF90_UNLIMITED,  netcdf_info%xydim_lw)
+!!$  IF (ierr.NE.NF90_NOERR) STOP 'create xy-d 2'
+!!$
+!!$  !defone lon and lat just for reference
+!!$  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nlon_lwrtm',&
+!!$       & preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1,&
+!!$       & netcdf_info%xdim_lw)
+!!$  IF (ierr.NE.NF90_NOERR) STOP 'create x-d'
+!!$  
+!!$  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nlat_lwrtm',&
+!!$       & preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1,&
+!!$       & netcdf_info%ydim_lw)
+!!$  IF (ierr.NE.NF90_NOERR) STOP 'create y-d'
+!!$  
+!!$  !layer land level dimension
+!!$  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nlayers_lwrtm',preproc_dims%kdim_pre-1,&
+!!$       & netcdf_info%layerdim_lw)
+!!$  IF (ierr.NE.NF90_NOERR) STOP 'create nlay lw'
+!!$  
+!!$  ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nlevels_lwrtm',preproc_dims%kdim_pre, &
+!!$       & netcdf_info%leveldim_lw)
+!!$  IF (ierr.NE.NF90_NOERR) STOP 'create nlev lw'
+!!$  
 
-  !define horizontal dimension as one big vector containing all pixels
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlon_x_nlat_lwrtm', NF90_UNLIMITED,  netcdf_info%xydim_lw)
-  IF (ierr.NE.NF90_NOERR) STOP 'create xy-d 2'
-
-  !defone lon and lat just for reference
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlon_lwrtm',&
-       & preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1,&
-       & netcdf_info%xdim_lw)
-  IF (ierr.NE.NF90_NOERR) STOP 'create x-d'
-  
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlat_lwrtm',&
-       & preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1,&
-       & netcdf_info%ydim_lw)
-  IF (ierr.NE.NF90_NOERR) STOP 'create y-d'
-  
-  !layer land level dimension
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlayers_lwrtm',preproc_dims%kdim_pre-1,&
-       & netcdf_info%layerdim_lw)
-  IF (ierr.NE.NF90_NOERR) STOP 'create nlay lw'
-  
-  ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlevels_lwrtm',preproc_dims%kdim_pre, &
-       & netcdf_info%leveldim_lw)
-  IF (ierr.NE.NF90_NOERR) STOP 'create nlev lw'
-  
-
-
+  ncid=netcdf_info%ncid_config
 
 
 

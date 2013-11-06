@@ -61,6 +61,7 @@ module netcdf_structures
           ydim_geo,xdim_loc,ydim_loc,xdim_alb,ydim_alb,xdim_scan,ydim_scan
 
      integer :: vdim_geo,vdim_msi,cdim_msi,cdim_alb,cdim_emis
+     integer :: cdim_config,cdim_config_alb,cdim_config_emis,xdim_config,ydim_config
 
      !variable ids
      !prtm file:
@@ -90,6 +91,11 @@ module netcdf_structures
      !msi file
      integer :: msid,timeid,channelninid,channelnabsid,channelwlabsid, &
           channelswflag,channellwflag,channelprocflag
+
+     !config file
+     integer :: channelninid_config,channelnabsid_config,channelwlabsid_config, &
+          & channelswflag_config,channellwflag_config,channelprocflag_config,&
+          & channelnalbid_config,channelnemisid_config
 
      !cf file
      integer :: cfid

@@ -303,10 +303,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 ! AVHRR
 !
   if(trim(sensor) .eq. 'AVHRR') then
- !Get instrument type
+     !Get instrument type
      instrument(3,nrttovid)=5_jpim
- !Get satellite number
- !Look for numbers in name
+     !Get satellite number
+     !Look for numbers in name
      platformnumber='        '
      dummy='        '
      do kchar=1,len(platform)
@@ -316,15 +316,15 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
         endif
      enddo
 
- !assign this characters as integers to variable
+     !assign this characters as integers to variable
      dummy=platformnumber
      write(platformnumber, '(i2)')  instrument(2,nrttovid)
      platformnumber=dummy
      write(*,*) platformnumber,platform,instrument
      
-!     read(trim(adjustl(platformnumber)), '(i2)')  instrument(2,nrttovid)
+     !     read(trim(adjustl(platformnumber)), '(i2)')  instrument(2,nrttovid)
 
- !which satellite is it flying on
+     !which satellite is it flying on
      if(index(trim(platform),'noaa') .ge. 1) then
         instrument(1,nrttovid)=1 !NOAA
         
@@ -334,16 +334,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 !
 ! MODIS
 !
-     elseif(trim(sensor) .eq. 'MODIS') then
-        instrument(3,nrttovid)=13
-        instrument(1,nrttovid)=9 !EOS Aqua or Terra
-        if(trim(platform) .eq. 'TERRA') instrument(2,nrttovid)=1
-        if(trim(platform) .eq. 'AQUA')  instrument(2,nrttovid)=2
-    !(A)ATSR
-     elseif(trim(sensor) .eq. 'ATSR' .or. trim(sensor) .eq. 'AATSR'  ) then
-        instrument(3,nrttovid)=14
-    !instrument(1,nrttovid)=???
-    !instrument(2,nrttovid)=???
+  elseif(trim(sensor) .eq. 'MODIS') then
+     instrument(3,nrttovid)=13
+     instrument(1,nrttovid)=9 !EOS Aqua or Terra
+     if(trim(platform) .eq. 'TERRA') instrument(2,nrttovid)=1
+     if(trim(platform) .eq. 'AQUA')  instrument(2,nrttovid)=2
+     !(A)ATSR
+  elseif(trim(sensor) .eq. 'ATSR' .or. trim(sensor) .eq. 'AATSR'  ) then
+     instrument(3,nrttovid)=14
+     !instrument(1,nrttovid)=???
+     !instrument(2,nrttovid)=???
   endif
   write(*,*) sensor,' ',platform,' ',instrument(:,nrttovid)
   
