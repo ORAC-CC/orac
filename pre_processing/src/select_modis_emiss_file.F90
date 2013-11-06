@@ -21,10 +21,12 @@
 !            dynamic.
 !            Also changed the way the appropriate day-of-year number is selected, so
 !            that it is always the closest smaller number to the actual date.
-!2012/08/20 Matthias Jerg fixes bug (variable type from int to logical) in inquire statement 
-! reads files downloaded from
-! http://cimss.ssec.wisc.edu/iremis/download.php
-!2013/06/27 MJ implements file independent checking for leap year
+! 2012/08/20 Matthias Jerg fixes bug (variable type from int to logical) in inquire
+!            statement reads files downloaded from
+!            http://cimss.ssec.wisc.edu/iremis/download.php
+! 2013/06/27 MJ implements file independent checking for leap year
+! 2013/11/01 Greg McGarragh: Fixed leap year check to include all cases.  This
+!            code is now 2100 ready:)
 !
 subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_path_file)
   use preproc_structures
@@ -53,7 +55,9 @@ subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_pat
 
 ! test for leap year 
   isleapyear=.false.
-  IF (MOD(year,4_stint) .EQ. 0) isleapyear = .TRUE. 
+
+  if ((mod(year,  4_stint) .eq. 0 .and. mod(year,100_stint) .ne. 0) .or. &
+       mod(year,400_stint) .eq. 0) isleapyear = .true. 
 
   if (isleapyear) then
      dates(1)=1
