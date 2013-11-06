@@ -26,6 +26,7 @@
 ! 2012/10/22: CP modified file for netcdf
 ! 2013/10/22: AP Tidying. Removed allocated arrays as unnecessary. Added
 !                nc_close. Removed unused variables.
+! 2013/11/06: GM wo was unititialized, set to 0
 !
 ! $Id$
 !
@@ -61,6 +62,8 @@ subroutine read_ecmwf_lat_lon_nc(ecmwf_path,ecmwf_dims,ecmwf_2d)
 
 
    ! open netcdf file
+   wo = 0
+
    call nc_open(ncid,ecmwf_path,ierr,wo)
 
    call nc_info(ncid,ndim,nvar,nattr,wo)
