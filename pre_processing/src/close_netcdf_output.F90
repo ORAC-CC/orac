@@ -54,7 +54,7 @@ subroutine close_netcdf_output(output_path,&
   call nc_close(netcdf_info%ncid_swrtm,trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)),wo)
   call nc_close(netcdf_info%ncid_prtm,trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)),wo)
 
-  call nc_close(netcdf_info%ncid_msi,trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),wo)
+  !call nc_close(netcdf_info%ncid_msi,trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),wo)
   call nc_close(netcdf_info%ncid_msi,trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)),wo)
   call nc_close(netcdf_info%ncid_geo,trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)),wo)
   call nc_close(netcdf_info%ncid_lsf,trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)),wo)
