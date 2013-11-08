@@ -49,7 +49,7 @@ subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
 
    character(len=pathlength)  :: path_to_geo_file
 
-   integer(kind=lint)         :: geo_id,ix,jy
+   integer(kind=lint)         :: geo_id
 
    type(imager_geolocation_s) :: imager_geolocation
    type(imager_angles_s)      :: imager_angles
@@ -57,8 +57,6 @@ subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    type(imager_time_s)        :: imager_time
 
    real(kind=sreal), allocatable, dimension(:,:)   :: temp,temp2
-
-   integer(kind=sint), allocatable, dimension(:,:) :: btemp,ltemp
 
    integer(kind=lint)         :: startepochs,endepochs
 

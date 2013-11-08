@@ -41,7 +41,7 @@ subroutine compute_geopot_coordinate(ecmwf_dims,geopot,spec_hum,temperature,avec
 
   type(ecmwf_dims_s) :: ecmwf_dims
 
-  integer(kind=lint) :: ik,ikk,nlayers
+  integer(kind=lint) :: ik,ikk
 
   real(kind=sreal) :: virt_temp,geopot,sp,p,pp1,logpp,&
        & spec_hum(ecmwf_dims%kdim_ec),temperature(ecmwf_dims%kdim_ec),&

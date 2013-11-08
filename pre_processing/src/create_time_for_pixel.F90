@@ -47,7 +47,7 @@ subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop, &
 
    implicit none
 
-   integer(kind=lint)  :: ix,jy,ixstart,ixstop,iystart,iystop
+   integer(kind=lint)  :: jy,ixstart,ixstop,iystart,iystop
 
    real(kind=dreal)    :: deltime
 

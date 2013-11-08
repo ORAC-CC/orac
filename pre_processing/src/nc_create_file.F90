@@ -62,30 +62,18 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
   ! Input
   INTEGER,INTENT(IN) :: wo!, ryr
   !ORG  INTEGER,INTENT(IN) :: time, nx, ny, grid, dx, dy,wo!, ryr
-  integer :: yday
   CHARACTER(LEN=*),INTENT(IN) :: path
   
 
   
   ! Local
-  INTEGER :: ierr, xdim, ydim,xydim,tdim,lwchanneldim,swchanneldim,viewdim,layerdim,leveldim
-
-  INTEGER :: latid,lonid
-
-  INTEGER :: xid, yid, tid
-  INTEGER :: yrlen(38), diff(2)
-  INTEGER :: i
+  INTEGER :: ierr
   
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
 !  REAL(KIND=SINGLE):: lon(nx), lat(ny)
-  
-  CHARACTER(LEN=100) :: tunits
-  CHARACTER(LEN=  4) :: chryr
-    
-  integer :: type,cposition,clength
 
-  integer :: time
+  integer :: type,cposition,clength
 
   character(len=platformlength) :: platform,PLATFORMUP
   character(len=sensorlength) :: sensor
@@ -106,16 +94,7 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
   INTEGER :: ncid
 
   ! End of header ----------------------------------------------------------
-  
-!ORG  write(chryr,'(i4)') ryr
-  
-  ! Create new file
-  
-!  write(*,*) type
 
-  yday=1
-  
-  
   !open stuff related to LW
   if(type .eq. 1 ) then 
 
@@ -776,7 +755,6 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
   ! Input
   INTEGER,INTENT(IN) :: wo!, ryr
   !ORG  INTEGER,INTENT(IN) :: time, nx, ny, grid, dx, dy,wo!, ryr
-  integer :: yday
   CHARACTER(LEN=*),INTENT(IN) :: path
   
 
@@ -787,13 +765,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
 !  REAL(KIND=SINGLE):: lon(nx), lat(ny)
-  
-  CHARACTER(LEN=100) :: tunits
-  CHARACTER(LEN=  4) :: chryr
-    
-  integer :: type,cposition,clength,ierr
 
-  integer :: time
+  integer :: type,cposition,clength,ierr
 
   integer, dimension(2) :: dims2d
   integer, dimension(3) :: dims3d
@@ -807,8 +780,6 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
 
   type(script_arguments_s) :: script_input
 
-  type(preproc_dims_s) :: preproc_dims
-
   type(imager_angles_s) :: imager_angles
 
   type(imager_geolocation_s) :: imager_geolocation
@@ -818,15 +789,7 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
   type(channel_info_s) :: channel_info
 
   ! End of header ----------------------------------------------------------
-  
-!ORG  write(chryr,'(i4)') ryr
-  
-  ! Create new file
-  
 
-  yday=1
-  
-  
   !open stuff related to msi
   if(type .eq. 1 ) then 
 
@@ -1349,7 +1312,6 @@ SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,pl
   ! Input
   INTEGER,INTENT(IN) :: wo!, ryr
   !ORG  INTEGER,INTENT(IN) :: time, nx, ny, grid, dx, dy,wo!, ryr
-  integer :: yday
   CHARACTER(LEN=*),INTENT(IN) :: path
   
 
@@ -1360,18 +1322,9 @@ SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,pl
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
 !  REAL(KIND=SINGLE):: lon(nx), lat(ny)
-  
-  CHARACTER(LEN=100) :: tunits
-  CHARACTER(LEN=  4) :: chryr
-    
-  integer :: type,cposition,clength,ierr
 
-  integer :: time
+  integer :: cposition,clength,ierr
 
-  integer, dimension(2) :: dims2d
-  integer, dimension(3) :: dims3d
-  integer, dimension(3) :: dims3dd
-  
   character(len=platformlength) :: platform,platformup
   character(len=sensorlength) :: sensor
   character(len=filelength) :: fname,ctitle
@@ -1382,7 +1335,7 @@ SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,pl
 
   type(preproc_dims_s) :: preproc_dims
 
-  type(imager_angles_s) :: imager_angles
+! type(imager_angles_s) :: imager_angles
 
   type(imager_geolocation_s) :: imager_geolocation
 
@@ -1391,12 +1344,6 @@ SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,pl
   type(channel_info_s) :: channel_info
 
   ! End of header ----------------------------------------------------------
-  
-!ORG  write(chryr,'(i4)') ryr
-  
-  ! Create new file
-    
-
   ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_config)
   IF (ierr.NE.NF90_NOERR)  stop 'error config creating file'
   

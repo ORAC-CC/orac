@@ -53,7 +53,7 @@ subroutine read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
    type(imager_flags_s)       :: imager_flags
    type(imager_time_s)        :: imager_time
 
-   integer(kind=lint), allocatable, dimension(:,:)  :: btemp,ltemp
+   integer(kind=lint), allocatable, dimension(:,:)  :: btemp
 
    integer                    :: err_code
    logical                    :: check

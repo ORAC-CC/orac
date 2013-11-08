@@ -49,14 +49,14 @@ subroutine read_avhrr_landseamask(fid,group,dataset,startx,stopx,starty,stopy, &
 
    integer(kind=HID_T), intent(in) :: fid
 
-   integer               :: var_id, err_code
+   integer               :: err_code
    character(len=*)      :: dataset, group
 
-   integer(kind=HID_T)   :: gr_id,dset_id,dset_id2,dspace_id,mem_id,attr_id
+   integer(kind=HID_T)   :: gr_id,dset_id,dspace_id,mem_id
 
-   integer(kind=HSIZE_T) :: start(2), stride(2), edge(2), adims(1)
+   integer(kind=HSIZE_T) :: start(2), stride(2), edge(2)
 
-   integer(kind=lint)    :: ix,jy,startx,stopx,starty,stopy
+   integer(kind=lint)    :: startx,stopx,starty,stopy
 
    integer(kind=lint)    :: btemp(startx:stopx,starty:stopy)
 

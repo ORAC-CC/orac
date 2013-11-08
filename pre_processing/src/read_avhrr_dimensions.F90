@@ -47,15 +47,13 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
    integer(kind=lint)        :: rank
   
-   integer(kind=lint)        :: err_code, dummy_type, dummy_numattrs, dummy_rank
+   integer(kind=lint)        :: err_code
 
    integer(kind=HSIZE_T)     :: dims(2),maxdims(2)
 
    integer(kind=HID_T)       :: geo_id
 
    integer(kind=lint)        :: n_across_track, n_along_track
-
-   character(len=50)         :: dummy_name
 
    !initialize the f90 interface for hdf5
    call h5open_f(err_code)

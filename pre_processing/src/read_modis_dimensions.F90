@@ -50,7 +50,7 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
    integer(kind=lint) :: err_code, dims(2), dummy_type, dummy_numattrs, &
         dummy_rank
 
-   integer(kind=lint) :: l1b_id, geo_id
+   integer(kind=lint) :: geo_id
 
    integer(kind=lint) :: n_across_track, n_along_track
 

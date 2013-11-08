@@ -85,7 +85,7 @@ subroutine preparation(lwrtm_file,swrtm_file, &
    implicit none
 
    character(len=sensorlength)   :: sensor
-   character(len=platformlength) :: platform,splatform
+   character(len=platformlength) :: platform
 
    character(len=pathlength)  :: ecmwf_path,ecmwf_path2,ecmwf_path3
    character(len=pathlength)  :: ecmwf_pathout,ecmwf_path2out,ecmwf_path3out

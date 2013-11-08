@@ -108,13 +108,10 @@ SUBROUTINE nc_dim_id(ncid,name,did,wo)
   CHARACTER(LEN=*) :: name
 
   ! Output
-  INTEGER :: did, n
-
-  integer :: diddummy
+  INTEGER :: did
 
   ! Local
   INTEGER :: ierr
-  character :: dummyname*100
 
   ! End of header ----------------------------------------------------------
 
@@ -182,11 +179,8 @@ SUBROUTINE nc_dim_length(ncid,dname,did,n,wo)
   ! Output
   INTEGER :: did, n
 
-  integer :: diddummy
-
   ! Local
   INTEGER :: ierr
-  character :: dummyname*100
 
   ! End of header ----------------------------------------------------------
 

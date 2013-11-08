@@ -44,7 +44,7 @@ subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_pat
   integer                                  :: pos
   logical                                  :: isleapyear
   integer(kind=stint),       dimension(12) :: dates,newdates
-  character(len=datelength), dimension(12) :: dates_s
+  character(len=3),          dimension(12) :: dates_s
   character(len=3)                         :: emis_date_s
 
   isleapyear=.false.

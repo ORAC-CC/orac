@@ -44,7 +44,6 @@
 !---------------------------------------------------------------------
 
 integer*4 core_dump_flag,ireturn,signals(1),signal_trap
-real a
 
 core_dump_flag=0
 signals(1)=0

@@ -44,7 +44,7 @@ subroutine close_netcdf_output(output_path,&
   character(len=filelength) :: lwrtm_file,swrtm_file,prtm_file,config_file,&
        & msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file
   
-  integer(kind=lint) :: ncid_lwrtm,ncid_swrtm,ncid_prtm, wo
+  integer(kind=lint) :: wo
 
   type(netcdf_info_s) :: netcdf_info
 

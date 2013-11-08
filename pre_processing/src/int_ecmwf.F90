@@ -47,7 +47,8 @@ subroutine int_ecmwf(preproc_dims,igrib,intdistances,intindexes,intvalues)
   
   integer(kind=kindOfInt), dimension(preproc_dims%xdim_pre,preproc_dims%ydim_pre,1:4) :: intindexes
 
-  integer :: nthreads,nompthreads,OMP_GET_max_THREADS
+! integer :: nthreads,nompthreads
+! integer :: OMP_GET_max_THREADS
 
   !how many threads are available?
 !!$  nompthreads=OMP_get_max_threads()

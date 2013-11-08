@@ -51,7 +51,7 @@ subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
 
    integer(kind=HID_T), intent(in) :: fid
 
-   integer               :: var_id, err_code
+   integer               :: err_code
    integer(kind=size_t), parameter    :: dim=10
    character(len=*)      :: dataset, group, attrgroup
 

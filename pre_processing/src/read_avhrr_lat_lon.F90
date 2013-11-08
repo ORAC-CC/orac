@@ -51,20 +51,21 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
 
    integer(kind=HID_T), intent(in) :: fid
    
-   integer               :: var_id, err_code
+   integer               :: err_code
    character(len=*)      :: dataset, group, attrgroup
 
    integer(kind=HID_T)   :: gr_id,dset_id,dset_id2,dspace_id,mem_id,attr_id
    
    integer(kind=HSIZE_T) :: start(2), stride(2), edge(2), adims(1)
    
-   integer(kind=lint)    :: ix,jy,startx,stopx,starty,stopy
+!  integer(kind=lint)    :: ix,jy
+   integer(kind=lint)    :: startx,stopx,starty,stopy
 
    integer(kind=lint)    :: temp(startx:stopx,starty:stopy)
    
    real(kind=sreal)      :: rtemp(startx:stopx,starty:stopy)
 
-   real(kind=sreal)      :: nodata,missingdata,scale,offset
+   real(kind=sreal)      :: scale,offset !,nodata,missingdata
    
    !open the data group
    call h5gopen_f(fid,group,gr_id,err_code)

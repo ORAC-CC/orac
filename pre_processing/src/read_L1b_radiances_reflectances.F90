@@ -70,14 +70,12 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    integer(kind=lint)    :: file_id, var_id, err_code, start(3), stride(3), &
         edge(3), attr_id
    real(kind=sreal)      :: scale_factors(20), offsets(20)
-   real(kind=sreal)      :: spec_unc(20), unc_scale(20)
    character(len=100)    :: SDS_name, SDS_unc_name, Dim_band_index,band_names
    integer               :: number_of_bands,iband,comma_i,comma_i_old,band_name_length,current_band
    character(len=100)    :: tmpname
    integer               :: tmprank, tmptype, tmpnattrs
 !MJORG   integer, dimension(1) :: tmpdimsizes
    integer, dimension(3) :: tmpdimsizes
-   real(kind=sreal), allocatable, dimension(:) :: band_numbers
    integer               :: band_index
    integer(kind=lint)    :: ixstart, ixstop, iystart, iystop, ix, jy
         

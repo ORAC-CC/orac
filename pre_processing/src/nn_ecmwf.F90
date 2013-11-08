@@ -46,7 +46,7 @@ subroutine nn_ecmwf(preproc_dims,igrib,nnindex,nnvalue)
 
   real(kind=dreal) :: nnvalue(preproc_dims%xdim_pre,preproc_dims%ydim_pre)
 
-  integer :: nthreads,nompthreads,OMP_GET_max_THREADS,OMP_GET_NUM_THREADS
+! integer :: nthreads,nompthreads,OMP_GET_max_THREADS,OMP_GET_NUM_THREADS
 
   !how many threads are available?
 !!$  nompthreads=OMP_get_max_threads()

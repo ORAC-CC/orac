@@ -156,7 +156,7 @@ subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    character(len=platformlength) :: platform
    character(len=pathlength)     :: path_to_l1b_file,path_to_geo_file
-   character(len=datelength)     :: cyear,cdoy,chour,cminute,cmonth,cday
+   character(len=datelength)     :: cyear,chour,cminute,cmonth,cday
 
    integer(kind=stint)  :: intdummy1,intdummy2
 
@@ -236,9 +236,9 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    character(len=platformlength) :: platform
    character(len=pathlength)     :: path_to_l1b_file,path_to_geo_file
-   character(len=datelength)     :: cyear,cdoy,chour,cminute,cmonth,cday
+   character(len=datelength)     :: cyear,chour,cminute,cmonth,cday
 
-   integer(kind=stint)  :: intdummy1,intdummy2
+   integer(kind=stint)  :: intdummy1
 
    integer(kind=stint)  :: hour,minute,doy,year,month,day
 

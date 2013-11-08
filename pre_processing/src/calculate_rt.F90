@@ -40,7 +40,6 @@ subroutine calculate_rt(coef_path,emiss_path,sensor,platform,preproc_dims,prepro
 
   implicit none
 
-  integer(kind=lint) :: idim,jdim
   integer(kind=stint):: month
 
   type(preproc_dims_s) :: preproc_dims

@@ -50,7 +50,6 @@ subroutine interpol_nearest_neighbour(xin, yin, datin, xout, yout, datout)
   ! Local variables
   real(kind=sreal), allocatable, dimension(:)  :: dx, dy
 !MST
-  real(kind=sreal) dx2, dy2
   integer(kind=lint)                           :: nxin, nyin, nout
   integer(kind=lint)                           :: ii, jj, i, j, out
 !MST

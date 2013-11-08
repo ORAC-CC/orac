@@ -75,7 +75,7 @@ subroutine allocate_preproc_structures(imager_angles, &
    type(preproc_surf_s)   :: preproc_surf
    type(channel_info_s)   :: channel_info
    type(imager_angles_s)  :: imager_angles
-   integer                :: nchan_sw,nchan_lw,kdim_pre
+   integer                :: nchan_sw,nchan_lw
 
    allocate(preproc_dims%counter_sw(preproc_dims%xdim_pre,preproc_dims%ydim_pre))
    allocate(preproc_dims%counter_lw(preproc_dims%xdim_pre,preproc_dims%ydim_pre))

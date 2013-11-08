@@ -42,13 +42,13 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer(kind=lint)         :: geo_id,ix,jy,startyy,stopyy
+   integer(kind=lint)         :: geo_id,startyy,stopyy
    
    integer(kind=lint)         :: var_id
 
    integer(kind=lint)         :: err_code
 
-   integer(kind=lint)         :: dims(2),dummy_type,dummy_numattrs,dummy_rank, &
+   integer(kind=lint)         :: dummy_type,dummy_numattrs,dummy_rank, &
         dims_10
 
    integer(kind=lint)         :: n_along_track,n_along_track_10, &
@@ -125,7 +125,7 @@ subroutine get_modis_time_old(geo_id,imager_geolocation,imager_time)
   include "hdf.f90"
   include "dffunc.f90"
 
-  integer(kind=lint) :: geo_id,ix,jy,startyy,stopyy
+  integer(kind=lint) :: geo_id,startyy,stopyy
 
   integer(kind=lint) :: var_id
 

@@ -69,8 +69,6 @@ subroutine read_ecmwf_nc(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,pr
 
   character(len=pathlength) :: ecmwf_path
 
-  character(len=errlength) :: err_msg
-
   type(ecmwf_dims_s) :: ecmwf_dims
   type(ecmwf_3d_s) :: ecmwf_3d
   type(ecmwf_2d_s) :: ecmwf_2d
@@ -84,28 +82,23 @@ subroutine read_ecmwf_nc(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,pr
   integer(kind=lint) :: ivar,ndim,nvar,nattr,dummyint
 
   integer, allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
-  real, allocatable :: new_dummy(:,:)
+
   character(len=varlength), allocatable :: dname(:)
 
   character (len=varlength), allocatable, dimension(:) ::  available_names(:)
 
   character(len=varlength) :: name
 
-  integer (kind=lint) :: xdim,ydim,levlistdim,levtypedim,timedim,k,jdim,idim
+  integer (kind=lint) :: xdim,ydim,levlistdim,timedim,k,jdim,idim ! ,levtypedim
   integer (kind=stint) :: surfaceflag
      
-  logical :: lgetindices,lnn
+  logical :: lnn
+
   !near neighbor
-  real(kind=dreal), allocatable, dimension(:,:) :: nnoutlat,nnoutlon,nnvalue,nndistance
   !  integer(kind=kindOfInt), allocatable, dimension(:,:) :: nnindex
   
   !interpolation
-  real(kind=dreal), allocatable, dimension(:,:,:) :: intoutlats,intoutlons,intvalues,intdistances
   !  integer(kind=kindOfInt), allocatable, dimension(:,:,:) :: intindexes
-
-  
-  real(kind=dreal) :: dummysum,normdist(1:4)
-  real(kind=sreal),allocatable,dimension(:) :: lon,lat
   
   real(kind=sreal),allocatable,dimension(:) :: levelist,levtype,time
   
@@ -125,7 +118,7 @@ subroutine read_ecmwf_nc(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,pr
        skin_temp_flag,temperature_flag,spec_hum_flag,ozone_flag, &
        geopot_flag,surface_pressure_flag,pressure_flag,ii,jj,dim1,dim2,dim3,ik
 
- real(kind=sreal), allocatable, dimension(:) :: pv_dummy,avector,bvector, &
+ real(kind=sreal), allocatable, dimension(:) :: avector,bvector, &
       &phi_lev,phi_lay,spec_hum_g,temperature_g
   real(kind=sreal) :: sp,geopot_g
 

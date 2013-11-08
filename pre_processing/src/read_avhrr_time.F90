@@ -43,10 +43,10 @@ subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)
 
    integer(kind=HID_T), intent(in) :: fid
 
-   integer               :: var_id, err_code
+   integer               :: err_code
    character(len=*)      :: attrgroup
 
-   integer(kind=HID_T)   :: gr_id,dset_id,dset_id2,dspace_id,mem_id,attr_id
+   integer(kind=HID_T)   :: dset_id2,attr_id
    
    integer(kind=HSIZE_T) :: adims(1)
    

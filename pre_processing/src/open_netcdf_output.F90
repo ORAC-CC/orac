@@ -60,7 +60,7 @@ subroutine open_netcdf_output(nx,ny,output_pathin, output_pathout,&
   character(len=platformlength) :: platform
   character(len=sensorlength) :: sensor
 
-  integer(kind=lint) :: dims_var(2),wo = 0
+  integer(kind=lint) :: wo = 0
 
   integer(kind=stint) :: nx,ny
 

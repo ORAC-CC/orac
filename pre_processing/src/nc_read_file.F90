@@ -44,14 +44,13 @@ SUBROUTINE nc_read_array_float_1d(ncid,n1,cv,v,wo)
   CHARACTER(LEN=*) :: cv                     ! variable name
   
   ! Output
-  INTEGER :: n                            ! Dimension of data
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
-  real(kind=sreal) :: fv,os,sf,vmin,vmax
+! real(kind=sreal) :: fv,os,sf,vmin,vmax
   CHARACTER(LEN=unitlength) :: unit
   
   ! Local
-  INTEGER :: ierr, vid, did, i, j
+  INTEGER :: ierr, vid !, i
   INTEGER ::  start(1), counter(1),stride(1)
 
   REAL,PARAMETER :: miss=-9999.
@@ -191,14 +190,13 @@ SUBROUTINE nc_read_array_int_1d(ncid,n1,cv,v,wo)
   CHARACTER(LEN=*) :: cv                     ! variable name
   
   ! Output
-  INTEGER :: n                            ! Dimension of data
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
-  real(kind=sreal) :: fv,os,sf,vmin,vmax
+! real(kind=sreal) :: fv,os,sf,vmin,vmax
   CHARACTER(LEN=unitlength) :: unit
   
   ! Local
-  INTEGER :: ierr, vid, did, i, j
+  INTEGER :: ierr, vid !, i
   INTEGER ::  start(1), counter(1),stride(1)
 
   REAL,PARAMETER :: miss=-9999.
@@ -339,14 +337,13 @@ SUBROUTINE nc_read_array_short_4d(ncid,n1,n2,n3,n4,cv,v_out,wo)
   CHARACTER(LEN=*) :: cv                     ! variable name
   
   ! Output
-  INTEGER :: n                            ! Dimension of data
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
   real(kind=sreal) :: fv,os,sf,vmin,vmax
   CHARACTER(LEN=unitlength) :: unit
   
   ! Local
-  INTEGER :: ierr, vid, did, i, j,k,l,m
+  INTEGER :: ierr, vid, i,j,k,l
   INTEGER ::  start(4), counter(4),stride(4)
 
   REAL,PARAMETER :: miss=-9999.
@@ -510,14 +507,13 @@ SUBROUTINE nc_read_array_short_5d(ncid,n1,n2,n3,n4,n5,cv,v_out,wo)
   CHARACTER(LEN=*) :: cv                     ! variable name
   
   ! Output
-  INTEGER :: n                            ! Dimension of data
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
   real(kind=sreal) :: fv,os,sf,vmin,vmax
   CHARACTER(LEN=unitlength) :: unit
   
   ! Local
-  INTEGER :: ierr, vid, did, i, j,k,l,m
+  INTEGER :: ierr, vid, i,j,k,l,m
   INTEGER ::  start(5), counter(5),stride(5)
 
   REAL,PARAMETER :: miss=-9999.
@@ -721,7 +717,7 @@ END SUBROUTINE nc_read_array_short_5d
 !!$      CHARACTER(LEN=unitlength) :: unit
 !!$
 !!$      ! Local
-!!$      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+!!$      INTEGER :: ierr, vid, i,j,start(2), counter(2),stride(2)
 !!$      REAL,PARAMETER :: miss=-9999.
 !!$      real(kind=sreal) :: v(1:n2,1:n1)
 !!$
@@ -898,7 +894,7 @@ END SUBROUTINE nc_read_array_short_5d
 !!$      CHARACTER(LEN=unitlength) :: unit
 !!$
 !!$      ! Local
-!!$      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+!!$      INTEGER :: ierr, vid, i,j,start(2), counter(2),stride(2)
 !!$      REAL,PARAMETER :: miss=-9999.
 !!$      real(kind=sreal) :: v(1:n1,1:n2)
 !!$
@@ -1076,7 +1072,7 @@ END SUBROUTINE nc_read_array_short_5d
 !!$      CHARACTER(LEN=unitlength) :: unit
 !!$
 !!$      ! Local
-!!$      INTEGER :: ierr, vid, did, i, j,start(1), counter(1),stride(1)
+!!$      INTEGER :: ierr, vid, i,j,start(1), counter(1),stride(1)
 !!$      REAL,PARAMETER :: miss=-9999.
 !!$      real(kind=sreal) :: v(1:n1)
 !!$
@@ -1239,7 +1235,7 @@ END SUBROUTINE nc_read_array_short_5d
 !!$      CHARACTER(LEN=unitlength) :: unit
 !!$
 !!$      ! Local
-!!$      INTEGER :: ierr, vid, did, i, j,start(1), counter(1),stride(1)
+!!$      INTEGER :: ierr, vid, i,j,start(1), counter(1),stride(1)
 !!$      REAL,PARAMETER :: miss=-9999.
 !!$      real(kind=sreal) :: v(1:n1)
 !!$
@@ -1410,7 +1406,7 @@ END SUBROUTINE nc_read_array_short_5d
 !!$      CHARACTER(LEN=unitlength) :: unit
 !!$
 !!$      ! Local
-!!$      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+!!$      INTEGER :: ierr, vid, i,j,start(2), counter(2),stride(2)
 !!$      REAL,PARAMETER :: miss=-9999.
 !!$      integer(kind=stint) :: v(1:n2,1:n1),fv
 !!$
@@ -1582,7 +1578,7 @@ END SUBROUTINE nc_read_array_short_5d
 !!$      CHARACTER(LEN=unitlength) :: unit
 !!$
 !!$      ! Local
-!!$      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+!!$      INTEGER :: ierr, vid, i,j,start(2), counter(2),stride(2)
 !!$      REAL,PARAMETER :: miss=-9999.
 !!$      integer(kind=sint) :: v(1:n2,1:n1),fv
 !!$

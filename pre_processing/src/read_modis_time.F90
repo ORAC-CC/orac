@@ -42,12 +42,13 @@ subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer(kind=lint)  :: startyy, stopyy, jy
+   integer(kind=lint)  :: startyy, stopyy
    
    integer, intent(in) :: fid
    
    integer             :: file_id, var_id, err_code, start(1), stride(1)
-   integer             :: edge(1), attr_id
+   integer             :: edge(1)
+!  integer             :: attr_id
    character(len=*)    :: SDS_name
    
    real(kind=dreal)    :: temp(startyy:stopyy-1)

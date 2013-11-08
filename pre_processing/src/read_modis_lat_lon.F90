@@ -52,7 +52,8 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
    integer             :: var_id,err_code,start(2),stride(2),edge(2),attr_id
    character(len=*)    :: SDS_name
    
-   integer(kind=lint)  :: ix,jy,startx,stopx,starty,stopy
+   integer(kind=lint)  :: startx,stopx,starty,stopy 
+!  integer(kind=lint)  :: ix,jy
    
    real(kind=sreal)    :: temp(startx:stopx,starty:stopy),fv,vr(2)
 

@@ -179,7 +179,7 @@ subroutine DOY2GREG(doy,y,m,d)
        integer(kind=stint) :: D                                                                  ! day of month 
        INTEGER(kind=stint) :: dayint 
        INTEGER(kind=stint) :: M                                                                  ! month 
-       INTEGER(kind=stint) :: Y,dummy                                                            ! year 
+       INTEGER(kind=stint) :: Y                                                          ! year 
   
        real(kind=dreal) :: JD                                                                  ! Julian day 
   
@@ -469,7 +469,7 @@ subroutine DOY2GREG(doy,y,m,d)
 
        dayint=int(d,kind=stint) 
 !       GREGORIAN_FLAG = GREGORIAN(Y, M, INT(D), GREGORIAN_START(GREGORIAN_CHOICE))   ! test for Gregorian calendar 
-       GREGORIAN_FLAG = GREGORIAN_GREG2DOY(Y, M, dayint, GREGORIAN_START(GREGORIAN_CHOICE))  
+       GREGORIAN_FLAG = GREGORIAN_GREG2DOY(int(Y), int(M), int(dayint), GREGORIAN_START(GREGORIAN_CHOICE))  
 
        LEAP = .FALSE. 
        IF (MOD(Y,4_stint) .EQ. 0) LEAP = .TRUE. 

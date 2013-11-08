@@ -51,7 +51,7 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
 
    integer(kind=HID_T), intent(in) :: fid
    
-   integer               :: var_id, err_code
+   integer               :: err_code
    character(len=*)      :: dataset, group, attrgroup
    
    integer(kind=HID_T)   :: gr_id,dset_id,dset_id2,dspace_id,mem_id,attr_id

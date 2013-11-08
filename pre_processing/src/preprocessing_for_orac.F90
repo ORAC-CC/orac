@@ -199,7 +199,7 @@ program preprocessing
 
    integer(kind=sint) :: grid_flag
 
-   integer(kind=lint) :: startx,endx,starty,endy,nx,ny,n_across_track, &
+   integer(kind=lint) :: startx,endx,starty,endy,n_across_track, &
         n_along_track,along_track_offset
    
    ! The following are for lengths and offsets for the second section of
@@ -208,17 +208,15 @@ program preprocessing
 
    integer(kind=stint) :: doy,year,month,day,hour,minute,surfaceflag,startyi
 
-   integer(kind=lint)  :: ncid_lwrtm,ncid_swrtm,ncid_prtm, dims_var(2),wo
-
    character(len=pathlength) :: driver_path_and_file,path_to_l1b_file
    character(len=pathlength) :: path_to_geo_file,output_pathin,output_pathout
-   character(len=pathlength) :: ecmwf_path,coef_path,emiss_path,albedo_path
-   character(len=pathlength) :: ice_path,emiss2_PATH,albedo_path_file
+   character(len=pathlength) :: ecmwf_path,coef_path,emiss_path
+   character(len=pathlength) :: emiss2_PATH,albedo_path_file
    character(len=pathlength) :: ice_path_file,aatsr_calib_file,ecmwf_path2
    character(len=pathlength) :: ecmwf_path3,badc,emiss_path_file,ecmwf_path2out
    character(len=pathlength) :: ecmwf_path3out,ecmwf_pathout
-   character(len=flaglength)       :: cgrid_flag,cchannel_flag
-      character(len=sensorlength)     :: sensor
+   character(len=flaglength)       :: cgrid_flag
+   character(len=sensorlength)     :: sensor
    character(len=platformlength)   :: platform
    character(len=attribute_length) :: cdellon,cdellat
 
@@ -241,10 +239,6 @@ program preprocessing
    type(ecmwf_3d_s)       :: ecmwf_3d
    type(ecmwf_2d_s)       :: ecmwf_2d
 
-   type(ecmwf_dims_nc_s)  :: ecmwf_dims_nc
-   type(ecmwf_3d_nc_s)    :: ecmwf_3d_nc
-   type(ecmwf_2d_nc_s)    :: ecmwf_2d_nc
-
    type(preproc_geoloc_s) :: preproc_geoloc
    type(preproc_geo_s)    :: preproc_geo
    type(preproc_dims_s)   :: preproc_dims
@@ -263,12 +257,9 @@ program preprocessing
 
    type(channel_info_s)     :: channel_info
 
-   integer(kind=lint) ,allocatable, dimension(:) :: instr_channel_sw
-   integer(kind=lint) ,allocatable, dimension(:) :: instr_channel_lw
-   integer :: nargs,varno
+   integer :: nargs
    integer :: nchunks1,leftover_chunk1,nc,chunkproc
    integer :: nchunks2,leftover_chunk2, nchunks_total
-   real    :: total_len_aatsr,chunkflag
 
    logical            :: verbose, check
    integer, parameter :: chunksize=4096
@@ -317,7 +308,7 @@ program preprocessing
       CALL GET_COMMAND_ARGUMENT(36,badc)
       CALL GET_COMMAND_ARGUMENT(37,ecmwf_path2)
       CALL GET_COMMAND_ARGUMENT(38,ecmwf_path3)
-      CALL GET_COMMAND_ARGUMENT(39,cchunkproc)	
+      CALL GET_COMMAND_ARGUMENT(39,cchunkproc)
       CALL GET_COMMAND_ARGUMENT(40,cday_night)
       CALL GET_COMMAND_ARGUMENT(41,cverbose)
    else
@@ -609,7 +600,7 @@ program preprocessing
       !
 
       !MST next line introduces by me; took it away a few lines down
-      write(*,*) 'Build preprocessing grid'	 
+      write(*,*) 'Build preprocessing grid'
       call build_preproc_fields(preproc_dims,preproc_geo,imager_geolocation,imager_angles)
       write(*,*) 'finished preprocessing grid'
 
@@ -668,7 +659,7 @@ program preprocessing
            & imager_geolocation, &
            & channel_info,preproc_dims, preproc_geoloc, surface, preproc_surf)  
       !write(*,*)'surface%emissivity',surface%emissivity
-1100  continue
+! 1100  continue
 
       write(*,*)'create/open profile, lwrtm,swrtm, albedo/brdf netcdf files', &
            & trim(lwrtm_file)
@@ -717,7 +708,7 @@ program preprocessing
            & preproc_dims, surface,cyear,cmonth,cday,channel_info)
       !write(*,*)'surface',surface%albedo(1,:,:)
 
-1200  continue
+! 1200  continue
 
       write(*,*) 'before write netcdf'
 
@@ -727,8 +718,6 @@ program preprocessing
       write(*,*) 'after write'
 
       write(*,*)'finished correction for ice'
-
-1000  continue
 
       !
       ! netcdf files are closed

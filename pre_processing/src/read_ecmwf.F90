@@ -74,9 +74,8 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
   !interpolation
   real(kind=dreal), allocatable, dimension(:,:,:) :: intoutlats,intoutlons,intvalues,intdistances
   integer(kind=kindOfInt), allocatable, dimension(:,:,:) :: intindexes
-  real(kind=dreal) :: dummysum,normdist(1:4)
 
-  integer(kind=lint) :: idim,jdim,ik,idummy
+  integer(kind=lint) :: idim,jdim,ik
 
   integer(kind=lint) :: PVPresent,nb_pv,dim1,dim2,dim3
 

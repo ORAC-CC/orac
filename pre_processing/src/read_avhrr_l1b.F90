@@ -51,9 +51,9 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    implicit none
 
-   integer                       :: ichannel,idummy, err_code
+   integer                       :: ichannel,err_code
    
-   integer(kind=lint)            :: l1b_id,ix,jy
+   integer(kind=lint)            :: l1b_id
    
    character(len=pathlength)     :: path_to_l1b_file
    character(len=sensorlength)   :: sensor
@@ -65,11 +65,9 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    real(kind=sreal), allocatable, dimension(:,:) :: temp
 
-   logical                       :: lrefl
-
    character(len=6)              :: cimage,cich
 
-   character(len=10)             :: channel_type,channel_number
+   character(len=10)             :: channel_number
 
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx, &
         imager_geolocation%starty:imager_geolocation%endy))

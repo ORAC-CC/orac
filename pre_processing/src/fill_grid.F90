@@ -89,7 +89,7 @@ subroutine fill_grid(grid, fillval, mask)
                  do k=1,count
                     a1 = i + int(real(m)*isearch(k))
                     b1 = j + int(real(m)*jsearch(k))
-                    if(a1 .lt. 1.0) a1 = 1.0
+                    if(a1 .lt. 1.0) a1 = 1
                     if(a1 .gt. nx) a1 = nx
                     if(b1 .lt. 1) b1 = 1
                     if(b1 .gt. ny) b1 = ny

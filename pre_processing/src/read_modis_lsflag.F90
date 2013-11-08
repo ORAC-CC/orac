@@ -47,7 +47,8 @@ subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer             :: ixstart, ixstop, iystart, iystop, ix, jy
+   integer             :: ixstart, ixstop, iystart, iystop
+!  integer             :: ix, jy
    
    integer, intent(in) :: fid
    

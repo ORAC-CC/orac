@@ -63,9 +63,9 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
 
    integer(kind=stint)       :: hour
 
-   character(len=datelength) :: cyear,chour,cminute,cmonth,cday,badc
+   character(len=datelength) :: cyear,chour,cmonth,cday,badc
 
-   character(len=pathlength) :: output_path,ecmwf_path,ecmwf_path2, &
+   character(len=pathlength) :: ecmwf_path,ecmwf_path2, &
         ecmwf_path3,ecmwf_path_root,ecmwf_path_root2,ecmwf_path_root3
    character(len=pathlength) :: ecmwf_pathout,ecmwf_path2out,ecmwf_path3out
    character                 :: cera_hour*2
