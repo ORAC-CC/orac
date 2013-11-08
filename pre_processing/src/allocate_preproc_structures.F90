@@ -45,8 +45,11 @@
 !                preproc_lwrtm%plevels
 ! 2013/10/23: AP Tidying. Removed unused arguments. Removed print statements.
 !
-! 2013/10/16 CP readded def of kdim_pre changed definition of preproc_lwrtm%phi_lay and preproc_lwrtm%phi_lev
-! 2013/10/16 CP removed kdim_pre and removed ecmwf_dims form subroutine call, changed array definition of players and plev
+! 2013/10/16: CP readded def of kdim_pre changed definition of preproc_lwrtm%phi_lay and preproc_lwrtm%phi_lev
+! 2013/10/16: CP removed kdim_pre and removed ecmwf_dims form subroutine call, changed array definition of players and plev
+! 2013/11/08: GM Removed double allocations (allocated twice in a row) of
+!                preproc_prtm% temperature through preproc_prtm%ozone.
+!
 ! $Id$
 !
 ! Bugs:
@@ -128,18 +131,6 @@ subroutine allocate_preproc_structures(imager_angles, &
         preproc_dims%ydim_pre,preproc_dims%kdim_pre))
    preproc_prtm%ozone=real_fill_value
 
-  allocate(preproc_prtm%temperature(preproc_dims%xdim_pre,preproc_dims%ydim_pre,preproc_dims%kdim_pre))
-  preproc_prtm%temperature=real_fill_value
-  allocate(preproc_prtm%pressure(preproc_dims%xdim_pre,preproc_dims%ydim_pre,preproc_dims%kdim_pre))
-  preproc_prtm%pressure=real_fill_value
-  allocate(preproc_prtm%spec_hum(preproc_dims%xdim_pre,preproc_dims%ydim_pre,preproc_dims%kdim_pre))
-  preproc_prtm%spec_hum=real_fill_value
-  allocate(preproc_prtm%phi_lay(preproc_dims%xdim_pre,preproc_dims%ydim_pre,preproc_dims%kdim_pre-1))
-  preproc_prtm%phi_lay=real_fill_value
-  allocate(preproc_prtm%phi_lev(preproc_dims%xdim_pre,preproc_dims%ydim_pre,preproc_dims%kdim_pre))
-  preproc_prtm%phi_lev=real_fill_value
-  allocate(preproc_prtm%ozone(preproc_dims%xdim_pre,preproc_dims%ydim_pre,preproc_dims%kdim_pre))
-  preproc_prtm%ozone=real_fill_value
 
    allocate(preproc_prtm%snow_albedo(preproc_dims%xdim_pre,preproc_dims%ydim_pre))
    preproc_prtm%snow_albedo=real_fill_value
