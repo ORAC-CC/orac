@@ -73,6 +73,7 @@
 ! 2013/07/25 MJ tidies up some preprocessor statements
 ! 2013/10/29 CP removed redundant variables nlevs and nlayers
 ! 2013/10/31 MJ added another bugfix for levels/layers
+! 2013/11/08 GM added missing call to rttov_alloc_auxrad() in deallocate mode
 !
 ! $Id$
 !
@@ -1516,20 +1517,26 @@ elseif(icoeffs.eq.2) then
      asw=0 !deallocate now
      call rttov_alloc_rad(errorstatus,nchannels,radiance,preproc_dims%kdim_pre,asw)
      write(*,*) 'errorstatus dealloc rad',errorstatus
+
+     call rttov_alloc_auxrad(errorstatus,auxrad,profiles(1)%nlevels,nchannels,asw)
+
      write(*,*) 'Deallocate trans',size(transmission%tau_levels(1,:))
      asw=0
      call rttov_alloc_transmission(errorstatus,transmission,preproc_dims%kdim_pre-1,nchannels,asw,init=.true._jplm)
      write(*,*) 'errorstatus dealloc tran',errorstatus
+
      !write(*,*) 'Deallocate prof'
      asw=0
      call rttov_alloc_prof(errorstatus,nprof,profiles,preproc_dims%kdim_pre,opts,asw,coefs=coefs(nrttovid),init=.true._jplm)
      write(*,*) 'errorstatus dealloc prof',errorstatus
+
      !-----------------------
      ! Deallocate atlas data
      !-----------------------
      !write(*,*) 'Deallocate atlas'
      call rttov_deallocate_atlas(coefs(nrttovid)%coef)
      write(*,*) 'errorstatus dealloc atlas',errorstatus
+
      !write(*,*) 'Deallocate coefs'
      call rttov_dealloc_coefs(errorstatus,coefs(nrttovid))
      write(*,*) 'errorstatus dealloc coefs',errorstatus

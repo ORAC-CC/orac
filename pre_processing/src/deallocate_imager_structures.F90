@@ -17,10 +17,11 @@
 !
 !
 ! History:
-!2012/01/13: Matthias Jerg produces draft code for MODIS L1b data
-!2012/02/03: Matthias Jerg adds uncertainty to measurements
-!2012/02/03: Caroline Poulsen deallocated solazi
-!2012/12/13: Caroline Poulsen deallocated uscan and vscan
+! 2012/01/13: Matthias Jerg produces draft code for MODIS L1b data
+! 2012/02/03: Matthias Jerg adds uncertainty to measurements
+! 2012/02/03: Caroline Poulsen deallocated solazi
+! 2012/12/13: Caroline Poulsen deallocated uscan and vscan
+! 2013/11/08: Greg McGarragh added missing deallocate statements.
 !
 ! $Id$
 !
@@ -53,6 +54,7 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles,imager_
   deallocate(imager_angles%relazi)
   deallocate(imager_angles%solazi)
   deallocate(imager_flags%lsflag)
+  deallocate(imager_flags%cflag)
   deallocate(imager_time%time)
   deallocate(imager_measurements%data)
 !!$  write(*,*) associated(imager_measurements%uncertainty)

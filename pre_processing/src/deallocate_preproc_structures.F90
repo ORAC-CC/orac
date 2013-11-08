@@ -26,17 +26,19 @@
 ! 2012/07/30: C. Poulsen added in solazi
 ! 2012/08/01: MJ adds geopotential height coordinates
 ! 2012/11/14: CP adds surface pressure
+! 2013/11/08: GM Added missing deallocate statements.
+!
 ! $Id$
 !
 ! Bugs:
 !
 !none known
 
-subroutine deallocate_preproc_structures(preproc_geoloc,preproc_geo,preproc_prtm,&
-     & preproc_lwrtm, preproc_swrtm, preproc_surf,channel_info)
+subroutine deallocate_preproc_structures(preproc_geoloc,preproc_geo,preproc_dims, &
+           preproc_prtm, preproc_lwrtm, preproc_swrtm, preproc_surf,channel_info)
 
   use preproc_constants
-use channel_structures
+  use channel_structures
   use preproc_structures
 
   implicit none
@@ -44,27 +46,33 @@ use channel_structures
   type(preproc_geoloc_s) :: preproc_geoloc
 
   type(preproc_geo_s) :: preproc_geo
+  type(preproc_dims_s)   :: preproc_dims
   type(preproc_prtm_s) :: preproc_prtm
   type(preproc_lwrtm_s) :: preproc_lwrtm
   type(preproc_swrtm_s) :: preproc_swrtm
   type(preproc_surf_s) :: preproc_surf
-type(channel_info_s) :: channel_info
+  type(channel_info_s) :: channel_info
+
+  deallocate(preproc_dims%counter_sw)
+  deallocate(preproc_dims%counter_lw)
+
+  deallocate(preproc_dims%channels)
+
   deallocate(preproc_geoloc%longitude)
   deallocate(preproc_geoloc%latitude)
 
-
   deallocate(preproc_geo%satza)
   deallocate(preproc_geo%solza)
- deallocate(preproc_geo%solazi)
+  deallocate(preproc_geo%solazi)
   deallocate(preproc_geo%relazi)
 
   deallocate(preproc_prtm%temperature)
   deallocate(preproc_prtm%pressure)
   deallocate(preproc_prtm%spec_hum)
   deallocate(preproc_prtm%ozone)
- deallocate(preproc_prtm%phi_lev)
+  deallocate(preproc_prtm%phi_lev)
   deallocate(preproc_prtm%phi_lay)
- deallocate(preproc_prtm%geopot)
+  deallocate(preproc_prtm%geopot)
   deallocate(preproc_prtm%lnsp)
   deallocate(preproc_prtm%sea_ice_cover)
   deallocate(preproc_prtm%snow_albedo)
@@ -78,8 +86,8 @@ type(channel_info_s) :: channel_info
   deallocate(preproc_prtm%skin_temp)
   deallocate(preproc_prtm%surface_pressure)
 
-
-
+  deallocate(preproc_dims%filter_array_lw)
+  deallocate(preproc_dims%filter_array_sw)
 
   deallocate(preproc_lwrtm%radiance_cloudy)
   deallocate(preproc_lwrtm%transmission_tau_total)
@@ -95,15 +103,10 @@ type(channel_info_s) :: channel_info
   deallocate(preproc_lwrtm%players)
   deallocate(preproc_lwrtm%plevels)
 
-
   deallocate(preproc_swrtm%transmission_tau_total)
   deallocate(preproc_swrtm%trans_layer)
   deallocate(preproc_swrtm%taubc)
   deallocate(preproc_swrtm%tauac)
-
-
-
-
 
   deallocate(preproc_surf%emissivity)
 

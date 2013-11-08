@@ -171,6 +171,8 @@
 ! 2013/11/05: GT Changed type cast of cverbose to verbose variable to use
 !                '(I6)', as '(L6)' was causing a buffer overrun.
 ! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
+! 2013/11/08: GM added missing call to deallocate_surface_structures()
+!
 ! $Id$
 !
 ! Bugs:
@@ -735,10 +737,13 @@ program preprocessing
       write(*,*)'start deallocate'!
       call deallocate_ecmwf_structures(ecmwf_dims,ecmwf_3d,ecmwf_2d)
       call deallocate_preproc_structures(preproc_geoloc,preproc_geo, &
-           & preproc_prtm, preproc_lwrtm, preproc_swrtm,preproc_surf)
+           & preproc_dims, preproc_prtm, preproc_lwrtm, preproc_swrtm, &
+           & preproc_surf)
       call deallocate_imager_structures(imager_geolocation, &
            & imager_angles,imager_flags,&
            & imager_time,imager_measurements)
+      call deallocate_surface_structures(surface,imager_geolocation, &
+           & channel_info)
 
       !
       !end looping over chunks aatsr option
