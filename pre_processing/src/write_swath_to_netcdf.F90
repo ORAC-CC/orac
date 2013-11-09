@@ -27,7 +27,8 @@
 ! 2013/09/03: AP Removed startyi, endye.
 ! 2013/10/14: MJ fixed bug with writing of albedo and emissivity.
 ! 2013/11/05: MJ fixed bug with writing of albedo and emissivity (channel numbers).
-
+! 2013/11/05: GM Fixed a copy-and-paste-and-forgot-to-change bug from the above
+!                fix.
 subroutine write_swath_to_netcdf(imager_flags,imager_angles, &
      & imager_geolocation,imager_measurements,imager_time,&
      & netcdf_info,channel_info,surface)
@@ -219,7 +220,7 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles, &
 !MJOLD  ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%emisid,&
    ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%channelnemisid,&
         !MJ OLD& channel_info%channel_ids_abs(1:channel_info%nchannels_lw),&
-        & dummy_chan_vec1d(1:channel_info%nchannels_sw),&
+        & dummy_chan_vec1d(1:channel_info%nchannels_lw),&
         & start1d, counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'err write alb channels emis'
    deallocate(dummy_chan_vec1d)
@@ -314,7 +315,7 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles, &
 !MJOLD  ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%emisid,&
    ierr = NF90_PUT_VAR(netcdf_info%ncid_config, netcdf_info%channelnemisid_config,&
         !MJ OLD& channel_info%channel_ids_abs(1:channel_info%nchannels_lw),&
-        & dummy_chan_vec1d(1:channel_info%nchannels_sw),&
+        & dummy_chan_vec1d(1:channel_info%nchannels_lw),&
         & start1d, counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'err write alb channels emis'
    deallocate(dummy_chan_vec1d)
