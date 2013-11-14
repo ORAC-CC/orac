@@ -121,9 +121,9 @@ Subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
    status = 0
 !     Open ALB file
-write(*,*)'alb file',Ctrl%Fid%Aux
+   write(*,*)'alb file',Ctrl%Fid%Aux
    ios = nf90_open(path=trim(adjustl(Ctrl%Fid%Aux)),mode = nf90_nowrite,ncid = ncid) 
-write(*,*)'alb ios',ios
+   write(*,*)'alb ios',ios
    if (ios /= 0) then
       status = ALBFileOpenErr ! Return error code
       write(unit=message, fmt=*) &

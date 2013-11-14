@@ -229,21 +229,24 @@ SUBROUTINE nc_write_L2_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
   counter(2) = ny-jy+1
 
   !MST 
-  if(trim(var_name) .ne. 'residuals_1' .and. &
-       trim(var_name) .ne. 'residuals_4' .and. &
-       trim(var_name) .ne. 'channels_1' .and. &
-       trim(var_name) .ne. 'channels_4' .and. &
-       trim(var_name) .ne. 'albedo_1' .and. &
-       trim(var_name) .ne. 'albedo_4' .and. &
-       trim(var_name) .ne. 'y0_1' .and. &
-       trim(var_name) .ne. 'y0_4') then
+!!$  if(trim(var_name) .ne. 'residuals_1' .and. &
+!!$       trim(var_name) .ne. 'residuals_4' .and. &
+!!$       trim(var_name) .ne. 'channels_1' .and. &
+!!$       trim(var_name) .ne. 'channels_4' .and. &
+!!$       trim(var_name) .ne. 'albedo_1' .and. &
+!!$       trim(var_name) .ne. 'albedo_4' .and. &
+!!$       trim(var_name) .ne. 'y0_1' .and. &
+!!$       trim(var_name) .ne. 'y0_4') then
      ierr = NF90_PUT_VAR(ncid, vid, v(ix:nx,jy:ny), start, counter,stride)
-  endif
+!  endif
 
 !MJ ORG     ierr = NF90_PUT_VAR(ncid, vid, v(ix:nx,jy:ny), start, counter,stride)
 
-  if (ierr.NE.NF90_NOERR) stop 'err write v 3'
-  
+     if (ierr.NE.NF90_NOERR) then
+        write(*,*) 'err write v 3', ierr
+        stop 
+     endif
+
   IF (wo.EQ.1) THEN
      write(*,*) ''
      write(*,*) 'wrote variable: ', trim(var_name)

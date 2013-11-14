@@ -39,6 +39,8 @@
 ! 2013/06/27 MJ implemented reading of path to driver file either from environme
 !nt variable or passed from outside
 ! 2013/10/02 CP added comments for GT added aerosl classes for Bayesian cloud id
+! 2013/11/14 MJ rewrote most parts refering to setting and reading channel indices. added reading of config file
+!                    Different driver file necessary now.
 ! Bugs:
 ! nviews should be changed for dual view
 ! not quiteworking for AVHRR
@@ -49,14 +51,16 @@
 !   None known.
 !
 !---------------------------------------------------------------------
-subroutine Read_Driver (Ctrl, message, drifile,status)
+subroutine Read_Driver (Ctrl, conf,message, drifile,status)
 
    use ECP_constants
    use CTRL_def
+   use config_s
 
    implicit none
 
    type(CTRL_t) :: Ctrl
+   type(config_struct) :: conf
    integer, intent(inout) :: status
    character(*), intent(inout) :: message 
                                     ! Error message returned to calling routine
@@ -65,7 +69,7 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
 
    integer              :: dri_lun  ! Unit number for driver file
    integer              :: ios      ! Iostat value from file open, read etc.
-   integer              :: i, j, jin,k ,nsolar,nthermal,jcount ! Counters for loops in reads etc
+   integer              :: i, ii,j,jj, jin,k ,nsolar,nthermal,jcount ! Counters for loops in reads etc
    integer, dimension(2)           :: rangev  ! specifies size of granule
 !   real, dimension(4)           :: solar_store_sea,solar_store_land
 
@@ -136,28 +140,120 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
    
    read(dri_lun, *, err=999, iostat=ios) Ctrl%Inst%Name
    write(*,*)'Ctrl%Inst%Name',trim(adjustl(Ctrl%Inst%Name))
-   read(dri_lun, *, err=999, iostat=ios) Ctrl%Ind%NChans ,Navail!to actually use
+   !MJ ORGread(dri_lun, *, err=999, iostat=ios) Ctrl%Ind%NChans ,Navail!to actually use
+
+   !number of channels in preprocessing file
+   !(this is actually not really necessary as we have that in the config file)
+   read(dri_lun, *, err=999, iostat=ios) Navail
    
+
+   write(*,*)  'Number of available channels in preproc files',Navail
+
+   suffix='.config.nc'
+   Ctrl%FID%CONFIG=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
+   Ctrl%FID%CONFIG=trim(adjustl(Ctrl%FID%CONFIG))   
+   !write(*,*) 'Ctrl%FID%CONFIG',Ctrl%FID%CONFIG
+   !read config file in order to set all channel related info
+   call read_config_file(Ctrl,conf)
+   !check if input ok
+   if(navail .ne. conf%nc) then
+      write(*,*) 'ERROR: conf%nc .ne. navail: Problem with file or driver!)',navail,conf%nc
+      stop
+   endif
+
+   !read processing flag from driver
+   allocate(conf%channel_proc_flag(conf%nc))
+   read(dri_lun, *, err=999, iostat=ios)(conf%channel_proc_flag(i),i=1,conf%nc)  
+   if(sum(conf%channel_proc_flag) .lt. 1 .or. sum(conf%channel_proc_flag) .gt. conf%nc .or. &
+        & any(conf%channel_proc_flag .lt. 0) .or. any(conf%channel_proc_flag .gt. 1))  then
+
+      write(*,*) 'ERROR: processing flag from driver wrong:',conf%channel_proc_flag
+      stop
+
+   endif
+   write(*,*) 'processing flag from driver:',conf%channel_proc_flag
+
+   !determine the number of channels to be used
+   !some of the follolwing is not (yet) used
+   !leave in there for potential later use for the time being
+   Ctrl%Ind%NChans=sum(conf%channel_proc_flag)
+   allocate(ref_solar_sea(Ctrl%Ind%NChans))
+   ref_solar_sea=0.00
+   allocate(ref_solar_land(Ctrl%Ind%NChans))
+   ref_solar_land=0.00
    write(*,*) 'Ctrl%Ind%NChan',Ctrl%Ind%NChans 
-   write(*,*)  'Navail',Navail
-   
 
-   allocate(Ctrl%Ind%ChI(Ctrl%Ind%NChans))
-  Ctrl%Ind%Chi=0 
-  allocate(Ctrl%Ind%y_id(navail))
-   Ctrl%Ind%y_id=0
+   !these are the indices wrt the position of the channels in the file
+   !which are to be used.
+   !determine them from the indices in the file and proc. flag
+   allocate(Ctrl%Ind%Chi(Ctrl%Ind%NChans))
+   Ctrl%Ind%Chi=0 
+   ii=0
+   do i=1,conf%nc
+      if(conf%channel_proc_flag(i) .eq. 1 ) then
+         ii=ii+1
+         Ctrl%Ind%Chi(ii)=conf%channel_ids_abs(i)
+      endif
+   enddo
 
-   read(dri_lun, *, err=999, iostat=ios)(Ctrl%Ind%y_id(i),i=1,nAvail)  
-   write(*,*)'Ctrl%Ind%y_id',ios
-   write(*,*)'Ctrl%Ind%y_id',Ctrl%Ind%y_id
-   write(*,*)'Ctrl%Ind%Chi',Ctrl%Ind%Chi(:)
+   allocate(conf%channel_sw_flag_use(Ctrl%Ind%NChans))
+   conf%channel_sw_flag_use=0
+   allocate(conf%channel_lw_flag_use(Ctrl%Ind%NChans))
+   conf%channel_lw_flag_use=0
+   allocate(conf%channel_mixed_flag_use(Ctrl%Ind%NChans))
+   conf%channel_mixed_flag_use=0
 
-   read(dri_lun, *, err=999, iostat=ios)(Ctrl%Ind%Chi(i),i=1,Ctrl%Ind%NChans)  
-   write(*,*)'Ctrl%Ind%chi',ios
-   write(*,*)'Ctrl%Ind%chi',Ctrl%Ind%chi
+   !these are the channels available in the file wrt 
+   !numbering in the instrument
+   allocate(Ctrl%Ind%y_id(conf%nc))
+   Ctrl%Ind%y_id=conf%channel_ids_instr
 
-   
-   ! what indices to actually use   this could change if runwith1.6/3.7 seperately      
+   write(*,*) 'CHI',Ctrl%Ind%Chi
+   write(*,*) 'Y_ID',Ctrl%Ind%y_id 
+
+   !determine number of channels in lw,sw, and mixed in preproc_file
+   conf%nsolar=0
+   conf%nthermal=0
+   conf%nmixed=0
+
+   conf%nsolar_use=0
+   conf%nthermal_use=0
+   conf%nmixed_use=0
+
+
+   conf%nsolar=sum(conf%channel_sw_flag)
+   conf%nthermal=sum(conf%channel_lw_flag)
+   ii=0
+   do i=1,conf%nc
+
+      if(conf%channel_sw_flag(i) .eq. 1 .and. conf%channel_lw_flag(i) .eq. 1) then
+         conf%nmixed=conf%nmixed+1
+      endif
+
+      !these treats only the channels actually used
+      if(conf%channel_proc_flag(i) .eq. 1) then
+         ii=ii+1
+         if(conf%channel_sw_flag(i) .eq. 1 ) then
+            conf%nsolar_use=conf%nsolar_use+1   
+            conf%channel_sw_flag_use(ii)=1
+         endif
+         if(conf%channel_lw_flag(i) .eq. 1) then
+            conf%nthermal_use=conf%nthermal_use+1         
+            conf%channel_lw_flag_use(ii)=1
+         endif
+         if(conf%channel_sw_flag(i) .eq. 1 .and. conf%channel_lw_flag(i) .eq. 1) then
+            conf%nmixed_use=conf%nmixed_use+1         
+            conf%channel_mixed_flag_use(ii)=1
+         endif
+      endif
+   enddo
+
+   write(*,*) 'Flags solar,thermal and mixed of used channels'
+   write(*,*) conf%nsolar_use,conf%channel_sw_flag_use
+   write(*,*) conf%nthermal_use,conf%channel_lw_flag_use
+   write(*,*) conf%nmixed_use,conf%channel_mixed_flag_use
+
+   !read in cloud class (aka phase of no aerosols processed)
    read(dri_lun, *, err=999, iostat=ios) Ctrl%CloudClass%Name
    write(*,*)'Ctrl%CloudClass%Name',trim(adjustl(Ctrl%CloudClass%Name))
 
@@ -166,39 +262,28 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
    ! introducing a new instrument channel info needs to be stored here
    
    write(*,*)'Ctrl%Inst%Name',trim(adjustl(Ctrl%Inst%Name))
-   
-   !
-   !modis solar channels 1-19,26 mixed 20-23 ir 24-36
-   !
-   
+
+   allocate(solar_store_sea(conf%nc))
+   allocate(solar_store_land(conf%nc))
+
+   !set some default arrays for surface reflection   
    if ((trim(Ctrl%Inst%Name) .eq. trim('MODIS-AQUA')) .or.&
         & (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA')) ) then
-      
-      allocate(index_solar(20))
-      allocate(solar_store_sea(20))
-      
-      allocate(solar_store_land(20))
-      allocate(index_mixed(5))
-      allocate(index_ir(13))
-      
-      
-      index_solar=0
-      solar_store_sea=0.
-      solar_store_land=0.
-      index_mixed=0
-      index_ir=0
+      !
+      !modis solar channels 1-19,26 mixed 20-23 ir 24-36
+      !
+      !default reflectance values:
 
-!
-! these variables are default value of surface reflectance
-!      
+
+      !
+      ! these variables are default value of surface reflectance
+      !            
       solar_store_sea(1)=2.00
       solar_store_sea(2)=1.00
       solar_store_sea(3)=0.00
       solar_store_sea(4)=0.00
       solar_store_sea(5)=0.00
-      solar_store_sea(6)=0.00
-      solar_store_sea(7)=1.00
-      !(/2.00000, 1.00000 , 0.0, 0.0, 0.0, 0.0,1.0/)
+      solar_store_sea(6)=1.00
 
       solar_store_land(1)=10.0
       solar_store_land(2)=1.0
@@ -206,235 +291,249 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
       solar_store_land(4)=0.0
       solar_store_land(5)=0.0
       solar_store_land(6)=1.0
-      !solar_store_land=(/10.0 ,  1.0  , 0.0, 0.0, 0.0,   1.0/)
 
-!
-!index_solar/mixed/ir contains the modis channels which are solar/mixed/ir
-!this uses modis channel numbering
-      
-      index_solar(1)=1
-      index_solar(2)=2
-      index_solar(3)=3
-      index_solar(4)=4
-      index_solar(5)=5
-      index_solar(6)=6
-      index_solar(7)=7
-      index_solar(8)=8
-      index_solar(9)=9
-      index_solar(10)=10
-      index_solar(11)=11
-      index_solar(12)=12
-      index_solar(13)=13
-      index_solar(14)=14
-      index_solar(15)=15
-      index_solar(16)=16
-      index_solar(17)=17
-      index_solar(18)=18
-      index_solar(19)=19
-      index_solar(20)=26
-      !(/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,26/)
 
-      !index_solar=(/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,26/)
-      index_mixed(1)=20
-      index_mixed(2)=21
-      index_mixed(3)=22
-      index_mixed(4)=23
-      index_mixed(5)=24
-      !index_mixed=(/20,21,22,23,24/)
-      index_ir(1)=24
-      index_ir(2)=25
-      index_ir(3)=26
-      index_ir(4)=27
-      index_ir(5)=28
-      index_ir(6)=29
-      index_ir(7)=30
-      index_ir(8)=31
-      index_ir(9)=32
-      index_ir(10)=33
-      index_ir(11)=34
-      index_ir(12)=35
-      index_ir(13)=36
+!!$      allocate(index_solar(20))
+!!$      allocate(index_mixed(5))
+!!$      allocate(index_ir(13))
+!!$      
+!!$      
+!!$      index_solar=0
+!!$      index_mixed=0
+!!$      index_ir=0
+!!$
+!!$
+!!$!
+!!$!index_solar/mixed/ir contains the modis channels which are solar/mixed/ir
+!!$!this uses modis channel numbering
+!!$      
+!!$      index_solar(1)=1
+!!$      index_solar(2)=2
+!!$      index_solar(3)=3
+!!$      index_solar(4)=4
+!!$      index_solar(5)=5
+!!$      index_solar(6)=6
+!!$      index_solar(7)=7
+!!$      index_solar(8)=8
+!!$      index_solar(9)=9
+!!$      index_solar(10)=10
+!!$      index_solar(11)=11
+!!$      index_solar(12)=12
+!!$      index_solar(13)=13
+!!$      index_solar(14)=14
+!!$      index_solar(15)=15
+!!$      index_solar(16)=16
+!!$      index_solar(17)=17
+!!$      index_solar(18)=18
+!!$      index_solar(19)=19
+!!$      index_solar(20)=26
+!!$      !(/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,26/)
+!!$
+!!$      !index_solar=(/1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,26/)
+!!$      index_mixed(1)=20
+!!$      index_mixed(2)=21
+!!$      index_mixed(3)=22
+!!$      index_mixed(4)=23
+!!$      index_mixed(5)=24
+!!$      !index_mixed=(/20,21,22,23,24/)
+!!$      index_ir(1)=24
+!!$      index_ir(2)=25
+!!$      index_ir(3)=26
+!!$      index_ir(4)=27
+!!$      index_ir(5)=28
+!!$      index_ir(6)=29
+!!$      index_ir(7)=30
+!!$      index_ir(8)=31
+!!$      index_ir(9)=32
+!!$      index_ir(10)=33
+!!$      index_ir(11)=34
+!!$      index_ir(12)=35
+!!$      index_ir(13)=36
       !index_ir=(/24,25,26,27,28,29,30,31,32,33,34,35,36/)
       !rangev=(/1354,2030/)
       !???rangev=(/1354,1/)???
    end if
 
    !
-   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
-   !
-   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA15') then
-      
-      allocate(index_solar(2))
-      allocate(solar_store_sea(2))
-      allocate(solar_store_land(2))
-      allocate(index_mixed(1))
-      allocate(index_ir(2))
-      
-      index_solar=0
-      solar_store_sea=0.
-      
-      solar_store_land=0.
-      print*,'shape',shape(solar_store_sea)
-      print*,'shape',shape(solar_store_land)
-      index_mixed=0
-      index_ir=0
-
-
-!
-!designate which avhrr channels are vis/mixed or ir note this may chane depending on if 1.6 of 3.7 retrived.
-!      
-      index_solar(1)=1
-      index_solar(2)=2
-      !index_solar(3)=3
-      !index_solar=(/1,2,3/) !3a
-      
-      index_mixed(1)=3
-      !index_mixed=(/3/) !3b
-      
-      index_ir(1)=4
-      index_ir(2)=5
-      !index_ir=(/4,5/)
-   end if
-   
-   
-   !
-   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
-   !watch oout for time later as other channerls were tuirned on
-   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA16') then
-
-      write(*,*) 'in here for n16',Ctrl%Inst%Name
-      
-      allocate(index_solar(2))
-      allocate(solar_store_sea(2))
-      allocate(solar_store_land(2))
-      allocate(index_mixed(1))
-      allocate(index_ir(2))
-      
-      index_solar=0
-      solar_store_sea=0.
-      
-      solar_store_land=0.
-      print*,'shape',shape(solar_store_sea)
-      print*,'shape',shape(solar_store_land)
-      index_mixed=0
-      index_ir=0
-      
-      index_solar(1)=1
-      index_solar(2)=2
-      !index_solar(3)=3
-      !index_solar=(/1,2,3/) !3a
-      
-      index_mixed(1)=3
-      !index_mixed=(/3/) !3b
-      
-      index_ir(1)=4
-      index_ir(2)=5
-      !index_ir=(/4,5/)
-   end if
-   
-   !
-   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
-   !this one has channel 3a turned on which is a purely solar channel
-   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA17') then
-      
-      allocate(index_solar(3))
-      allocate(solar_store_sea(3))
-      allocate(solar_store_land(3))
-      allocate(index_mixed(1))
-      allocate(index_ir(2))
-      
-      index_solar=0
-      solar_store_sea=0.
-      solar_store_land=0.
-      index_mixed=0
-      index_ir=0
-      
-      index_solar(1)=1
-      index_solar(2)=2
-      index_solar(3)=3
-      !index_solar=(/1,2,3/) !3a
-      
-      !this one doe not exist on NOAA17
-      index_mixed(1)=-1
-      !index_mixed=(/3/) !3b
-      
-      index_ir(1)=4
-      index_ir(2)=5
-      !index_ir=(/4,5/)
-   end if
-!
-   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
-   !
-   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA18') then
-      
-      allocate(index_solar(2))
-      allocate(solar_store_sea(2))
-      allocate(solar_store_land(2))
-      allocate(index_mixed(1))
-      allocate(index_ir(2))
-      
-      index_solar=0
-      solar_store_sea=0.
-      
-      solar_store_land=0.
-      print*,'shape',shape(solar_store_sea)
-      print*,'shape',shape(solar_store_land)
-      index_mixed=0
-      index_ir=0
-      
-      index_solar(1)=1
-      index_solar(2)=2
-      !index_solar(3)=3
-      !index_solar=(/1,2,3/) !3a
-      
-      index_mixed(1)=3
-      !index_mixed=(/3/) !3b
-      
-      index_ir(1)=4
-      index_ir(2)=5
-      !index_ir=(/4,5/)
-   end if
-
-
-   !
-   !aatsr solar channels 1-4 nir 5 ir 6,7 (nadir view)
-   !
+!!$   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
+!!$   !
+!!$   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA15') then
+!!$      
+!!$      allocate(index_solar(2))
+!!$      allocate(solar_store_sea(2))
+!!$      allocate(solar_store_land(2))
+!!$      allocate(index_mixed(1))
+!!$      allocate(index_ir(2))
+!!$      
+!!$      index_solar=0
+!!$      solar_store_sea=0.
+!!$      
+!!$      solar_store_land=0.
+!!$      print*,'shape',shape(solar_store_sea)
+!!$      print*,'shape',shape(solar_store_land)
+!!$      index_mixed=0
+!!$      index_ir=0
+!!$
+!!$
+!!$!
+!!$!designate which avhrr channels are vis/mixed or ir note this may chane depending on if 1.6 of 3.7 retrived.
+!!$!      
+!!$      index_solar(1)=1
+!!$      index_solar(2)=2
+!!$      !index_solar(3)=3
+!!$      !index_solar=(/1,2,3/) !3a
+!!$      
+!!$      index_mixed(1)=3
+!!$      !index_mixed=(/3/) !3b
+!!$      
+!!$      index_ir(1)=4
+!!$      index_ir(2)=5
+!!$      !index_ir=(/4,5/)
+!!$   end if
+!!$   
+!!$   
+!!$   !
+!!$   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
+!!$   !watch oout for time later as other channerls were tuirned on
+!!$   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA16') then
+!!$
+!!$      write(*,*) 'in here for n16',Ctrl%Inst%Name
+!!$      
+!!$      allocate(index_solar(2))
+!!$      allocate(solar_store_sea(2))
+!!$      allocate(solar_store_land(2))
+!!$      allocate(index_mixed(1))
+!!$      allocate(index_ir(2))
+!!$      
+!!$      index_solar=0
+!!$      solar_store_sea=0.
+!!$      
+!!$      solar_store_land=0.
+!!$      print*,'shape',shape(solar_store_sea)
+!!$      print*,'shape',shape(solar_store_land)
+!!$      index_mixed=0
+!!$      index_ir=0
+!!$      
+!!$      index_solar(1)=1
+!!$      index_solar(2)=2
+!!$      !index_solar(3)=3
+!!$      !index_solar=(/1,2,3/) !3a
+!!$      
+!!$      index_mixed(1)=3
+!!$      !index_mixed(1)=4
+!!$      !index_mixed=(/3/) !3b
+!!$      
+!!$      index_ir(1)=4
+!!$      index_ir(2)=5
+!!$      !index_ir(1)=5
+!!$      !index_ir(2)=6
+!!$
+!!$      !index_ir=(/4,5/)
+!!$   end if
+!!$   
+!!$   !
+!!$   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
+!!$   !this one has channel 3a turned on which is a purely solar channel
+!!$   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA17') then
+!!$      
+!!$      allocate(index_solar(3))
+!!$      allocate(solar_store_sea(3))
+!!$      allocate(solar_store_land(3))
+!!$      allocate(index_mixed(1))
+!!$      allocate(index_ir(2))
+!!$      
+!!$      index_solar=0
+!!$      solar_store_sea=0.
+!!$      solar_store_land=0.
+!!$      index_mixed=0
+!!$      index_ir=0
+!!$      
+!!$      index_solar(1)=1
+!!$      index_solar(2)=2
+!!$      index_solar(3)=3
+!!$      !index_solar=(/1,2,3/) !3a
+!!$      
+!!$      !this one doe not exist on NOAA17
+!!$      index_mixed(1)=-1
+!!$      !index_mixed=(/3/) !3b
+!!$      
+!!$      index_ir(1)=4
+!!$      index_ir(2)=5
+!!$      !index_ir=(/4,5/)
+!!$   end if
+!!$!
+!!$   !avhrr solar channels solar 1,2 3a mixed 3b ir 4,5
+!!$   !
+!!$   if (Ctrl%Inst%Name .eq. 'AVHRR-NOAA18') then
+!!$      
+!!$      allocate(index_solar(2))
+!!$      allocate(solar_store_sea(2))
+!!$      allocate(solar_store_land(2))
+!!$      allocate(index_mixed(1))
+!!$      allocate(index_ir(2))
+!!$      
+!!$      index_solar=0
+!!$      solar_store_sea=0.
+!!$      
+!!$      solar_store_land=0.
+!!$      print*,'shape',shape(solar_store_sea)
+!!$      print*,'shape',shape(solar_store_land)
+!!$      index_mixed=0
+!!$      index_ir=0
+!!$      
+!!$      index_solar(1)=1
+!!$      index_solar(2)=2
+!!$      !index_solar(3)=3
+!!$      !index_solar=(/1,2,3/) !3a
+!!$      
+!!$      index_mixed(1)=3
+!!$      !index_mixed=(/3/) !3b
+!!$      
+!!$      index_ir(1)=4
+!!$      index_ir(2)=5
+!!$      !index_ir=(/4,5/)
+!!$   end if
+!!$
+!!$
+!!$   !
+!!$   !aatsr solar channels 1-4 nir 5 ir 6,7 (nadir view)
+!!$   !
    if (Ctrl%Inst%Name .eq. 'AATSR') then
-      
-      allocate(index_solar(4))
-      allocate(solar_store_sea(4))
-      allocate(solar_store_land(4))
-      allocate(index_mixed(1))
-      allocate(index_ir(2))
-      
-      index_solar=0
-      solar_store_sea=0.0
-      
-      solar_store_land=0.0
-      index_mixed=0
-      index_ir=0
-
-      index_solar(1)=1 !55
-      index_solar(2)=2 !67
-      index_solar(3)=3 !87
-      index_solar(4)=4 !1.6
-
-      index_mixed(1)=5 !3.7
-      index_ir(1)=6 ! 11
-      index_ir(2)=7 ! 12
-      
-
-      !index_solar=(/1,2,3,4/)
-      !index_mixed=(/5/)
-      !index_ir=(/6,7/)
-      
-! store default value of surface reflecatnce thses can be used whn the value is missing from auxillary file
-
+!!$      
+!!$      allocate(index_solar(4))
+!!$      allocate(solar_store_sea(4))
+!!$      allocate(solar_store_land(4))
+!!$      allocate(index_mixed(1))
+!!$      allocate(index_ir(2))
+!!$      
+!!$      index_solar=0
+!!$      solar_store_sea=0.0
+!!$      
+!!$      solar_store_land=0.0
+!!$      index_mixed=0
+!!$      index_ir=0
+!!$
+!!$      index_solar(1)=1 !55
+!!$      index_solar(2)=2 !67
+!!$      index_solar(3)=3 !87
+!!$      index_solar(4)=4 !1.6
+!!$
+!!$      index_mixed(1)=5 !3.7
+!!$      index_ir(1)=6 ! 11
+!!$      index_ir(2)=7 ! 12
+!!$      
+!!$
+!!$      !index_solar=(/1,2,3,4/)
+!!$      !index_mixed=(/5/)
+!!$      !index_ir=(/6,7/)
+!!$      
+!!$! store default value of surface reflecatnce thses can be used whn the value is missing from auxillary file
+!!$
       solar_store_sea(1)=5.
       solar_store_sea(2)=2.0
       solar_store_sea(3)=1.0
       solar_store_sea(4)= 1.0
-
+      
       solar_store_land(1)=15.0
       solar_store_land(2)=10.0
       solar_store_land(3)=1.0
@@ -442,33 +541,171 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
       
    end if
 
-   write(*,*) solar_store_land
-   write(*,*)'index_solar',index_solar
-   write(*,*)'size(index_solar)',size(index_solar)
+!!$   write(*,*) solar_store_land
+!!$   write(*,*)'index_solar',index_solar
+!!$   write(*,*)'size(index_solar)',size(index_solar)
 
    !
    !count the number of POTENTIAL channels that could be used.
    !
    
-   nindex_solar=size(index_solar)
-   nindex_mixed=size(index_mixed)
-   nindex_ir=size(index_ir)
-   
+!!$   nindex_solar=size(index_solar)
+!!$   nindex_mixed=size(index_mixed)
+!!$   nindex_ir=size(index_ir)
 
+
+
+   !
+   !this value should be how many luts etc to read in
+   !
+   !Ny= number of measurements which will be used 
+   Ctrl%Ind%Ny=Ctrl%Ind%NChans
+   allocate(Ctrl%Sy(Ctrl%Ind%Ny,Ctrl%Ind%Ny))
+
+!!$  allocate(pos_solar(nindex_solar+1))
+!!$  allocate(ref_solar_sea(nindex_solar+1))
+!!$  ref_solar_sea=0.0
+!!$  allocate(ref_solar_land(nindex_solar+1))                
+!!$  ref_solar_land=0.0
+!!$  allocate(pos_thermal(nindex_ir+1))
+!!$  allocate(pos_mixed(nindex_mixed))
+!!$  
+!!$ 
+!!$  pos_solar=0
+!!$  pos_thermal=0
+!!$  pos_mixed=0
+!!$  Nsolar=0
+!!$  Nthermal=0
+!!$  write(*,*)' nindex_solar',nindex_solar
+!!$  write(*,*)'Ctrl%Ind%nchans aa',Ctrl%Ind%nchans
+  !
+   !set default surface reflectance values for channels used
+   !this just maps the values from all channels in the file to the ones which will be actually used
+  !
+   
+  ii=1
+  do i=1,conf%nc
+     if(conf%channel_proc_flag(i) .eq. 1) then
+        ref_solar_sea(ii)=solar_store_sea(i)
+        ref_solar_land(ii)=solar_store_land(i) 
+        ii=ii+1
+     endif
+  enddo
+!!$
+!!$  do i=1,nindex_solar
+!!$     do j=1,Ctrl%Ind%nchans 
+!!$        jin=Ctrl%Ind%Chi(j)
+!!$
+!!$        if  (Ctrl%Ind%Y_id(jin) .eq. index_solar(i)) then
+!!$           nsolar=nsolar+1
+!!$           pos_solar(i)=jin
+!!$           ref_solar_sea(i)=solar_store_sea(j)
+!!$           ref_solar_land(i)=solar_store_land(j)        
+!!$        end if
+!!$        
+!!$     end do
+!!$  end do
+!!$  
+  write(*,*)'here Ctrl%Ind%Y_ida',Ctrl%Ind%Y_id
+!!$  !thermal channels count channels and assign index
+!!$  do i=1,nindex_ir
+!!$     do j=1,Ctrl%Ind%nchans 
+!!$        jin=Ctrl%Ind%Chi(j)
+!!$        if  (Ctrl%Ind%Y_id(jin) .eq. index_ir(i)) then
+!!$           nthermal=nthermal+1
+!!$           pos_thermal(i)=jin
+!!$        end if
+!!$     end do
+!!$  end do
+!!$
+!!$  !mixed channels count channels and assign index
+!!$  do i=1,nindex_mixed
+!!$     do j=1,Ctrl%Ind%nchans 
+!!$        
+!!$        jin=Ctrl%Ind%Chi(j)
+!!$        if  (Ctrl%Ind%Y_id(jin) .eq. index_mixed(i)) then
+!!$           nsolar=nsolar+1
+!!$           nthermal=nthermal+1
+!!$           pos_solar(i)=j
+!!$           pos_thermal(i)=jin
+!!$        end if
+!!$     end do
+!!$  end do
+  
+
+  !this stores for the used channels the number of channels 
+  !where mixed channels are included in both on the l.h.s.
+  Ctrl%Ind%Nsolar=conf%nsolar_use!+conf%nmixed_use
+  Ctrl%Ind%Nthermal=conf%nthermal_use!+conf%nmixed_use
+
+  !
+  ! use above  indices to assign to measurement indices
+  !
+!!$  write(*,*) 'this test'
+!!$  write(*,*) Ctrl%Ind%Nsolar
+!!$  write(*,*) Ctrl%Ind%Nthermal
+!!$  write(*,*) Ctrl%Ind%NChans 
+!!$  write(*,*) conf%channel_sw_flag_use
+!!$  write(*,*) conf%channel_lw_flag_use
+!!$  write(*,*)  Ctrl%Ind%Chi
+
+
+  allocate(Ctrl%Ind%Ysolar(Ctrl%Ind%Nsolar))
+  Ctrl%Ind%Ysolar=-1
+  allocate(Ctrl%Ind%Ythermal(Ctrl%Ind%Nthermal))
+  Ctrl%Ind%Ythermal=-1
+  ii=0
+  jj=0
+  do i=1,Ctrl%Ind%NChans 
+     if(conf%channel_sw_flag_use(i) .eq. 1 ) then
+        ii=ii+1
+        Ctrl%Ind%Ysolar(ii)=Ctrl%Ind%Chi(i)
+     endif
+     if(conf%channel_lw_flag_use(i) .eq. 1) then
+        jj=jj+1
+        Ctrl%Ind%Ythermal(jj)=Ctrl%Ind%Chi(i)
+     endif
+  enddo
+
+!!$  write(*,*)  Ctrl%Ind%Ysolar
+!!$  write(*,*) Ctrl%Ind%Ythermal
+!!$  stop
+!!$  jcount=1
+!!$  do i=1,nindex_solar
+!!$     if (pos_solar(i) .gt. 0) then
+!!$        Ctrl%Ind%Ysolar(jcount)=pos_solar(i)
+!!$        jcount=jcount+1
+!!$     end if
+!!$  end do
+  
+  
+
+  !Ctrl%Ind%Ythermal=conf%channel_sw_flag_use
+!!$  jcount=1
+!!$  do i=1,nindex_ir
+!!$     if (pos_thermal(i) .gt. 0) then
+!!$        Ctrl%Ind%Ythermal(jcount)=pos_thermal(i)
+!!$        jcount=jcount+1
+!!$     end if
+!!$  end do
+!!$   
+
+
+
+   !Setup some directories:
    !
    !strip off root filename
    !
-
-   if ((Ctrl%Inst%Name .eq. 'MODIS-MYD') .or. (Ctrl%Inst%Name .eq. 'MODIS-MOD'))  then
-      
-      root=Ctrl%fid%input_filename(:)
-      write(*,*)'rootCtrl%fid%input_filename(', Ctrl%fid%input_filename(:)
-      root=trim(root)
-   end if
-   
-   root=trim(adjustl(input_path))
-
-   write(*,*)'root',root
+!!$   if ((Ctrl%Inst%Name .eq. 'MODIS-MYD') .or. (Ctrl%Inst%Name .eq. 'MODIS-MOD'))  then
+!!$      
+!!$      root=Ctrl%fid%input_filename(:)
+!!$      write(*,*)'rootCtrl%fid%input_filename(', Ctrl%fid%input_filename(:)
+!!$      root=trim(root)
+!!$   end if
+!!$   
+!!$   root=trim(adjustl(input_path))
+!!$
+!!$   write(*,*)'root',root
    !
    !assign directories
    !
@@ -523,6 +760,7 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
    
    write(*,*)'log file',trim(adjustl(Ctrl%FID%Log))
    
+
    !
    !Ctrl%Diag  values set the diagnostic output level Theses values can be changed but they are mostly static
    !
@@ -576,7 +814,8 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
 
    !
    !set active and inactive state variables
-   !   
+   !
+   !Day:
    k = 0
    do i=1, MaxStateVar
       found = .false.
@@ -595,8 +834,7 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
 
    !
    !twilight options
-   !
-   
+   !   
    Ctrl%Ind%Nx_Tw=3
    
    Ctrl%Ind%X_Tw(1)=3
@@ -626,7 +864,6 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
   !
   !night options
   ! 
-
   Ctrl%Ind%Nx_Ni=3
   !indices of state parameters
   Ctrl%Ind%X_Ni(1)=3
@@ -653,98 +890,6 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
      if (k == Ctrl%Ind%NxI_Ni) exit  ! Correct number of values found 
   end do
   
-!
-!this value should be how many luts etc to read in
-!
-!Ny= number of measurements
-
-  Ctrl%Ind%Ny=Ctrl%Ind%NChans         
-
-  allocate(Ctrl%Sy(Ctrl%Ind%Ny,Ctrl%Ind%Ny))
-  allocate(pos_solar(nindex_solar+1))
-  allocate(ref_solar_sea(nindex_solar+1))
-  ref_solar_sea=0.0
-  allocate(ref_solar_land(nindex_solar+1))                
-  ref_solar_land=0.0
-  allocate(pos_thermal(nindex_ir+1))
-  allocate(pos_mixed(nindex_mixed))
-  
- 
-  pos_solar=0
-  pos_thermal=0
-  pos_mixed=0
-  Nsolar=0
-  Nthermal=0
-  write(*,*)' nindex_solar',nindex_solar
-  write(*,*)'Ctrl%Ind%nchans aa',Ctrl%Ind%nchans
-  !
-  !set default surface reflectance values for channels used
-  !
-  do i=1,nindex_solar
-     do j=1,Ctrl%Ind%nchans 
-        jin=Ctrl%Ind%Chi(j)
-
-        if  (Ctrl%Ind%Y_id(jin) .eq. index_solar(i)) then
-           nsolar=nsolar+1
-           pos_solar(i)=jin
-           ref_solar_sea(i)=solar_store_sea(j)
-           ref_solar_land(i)=solar_store_land(j)        
-        end if
-        
-     end do
-  end do
-  
-  write(*,*)'here Ctrl%Ind%Y_ida',Ctrl%Ind%Y_id
-  !thermal channels count channels and assign index
-  do i=1,nindex_ir
-     do j=1,Ctrl%Ind%nchans 
-        jin=Ctrl%Ind%Chi(j)
-        if  (Ctrl%Ind%Y_id(jin) .eq. index_ir(i)) then
-           nthermal=nthermal+1
-           pos_thermal(i)=jin
-        end if
-     end do
-  end do
-
-  !mixed channels count channels and assign index
-  do i=1,nindex_mixed
-     do j=1,Ctrl%Ind%nchans 
-        
-        jin=Ctrl%Ind%Chi(j)
-        if  (Ctrl%Ind%Y_id(jin) .eq. index_mixed(i)) then
-           nsolar=nsolar+1
-           nthermal=nthermal+1
-           pos_solar(i)=j
-           pos_thermal(i)=jin
-        end if
-     end do
-  end do
-  
-
-  Ctrl%Ind%Nsolar=nsolar
-  Ctrl%Ind%Nthermal=nthermal
-
-  !
-  ! use above  indices to assign to measurement indices
-  !
-  allocate(Ctrl%Ind%Ysolar(Ctrl%Ind%Nsolar))
-  jcount=1
-  do i=1,nindex_solar
-     if (pos_solar(i) .gt. 0) then
-        Ctrl%Ind%Ysolar(jcount)=pos_solar(i)
-        jcount=jcount+1
-     end if
-  end do
-  
-  
-  allocate(Ctrl%Ind%Ythermal(Ctrl%Ind%Nthermal))
-  jcount=1
-  do i=1,nindex_ir
-     if (pos_thermal(i) .gt. 0) then
-        Ctrl%Ind%Ythermal(jcount)=pos_thermal(i)
-        jcount=jcount+1
-     end if
-  end do
 
   Ctrl%Ind%NViews=1
   allocate(Ctrl%Ind%viewidx(Ctrl%Ind%nchans))
@@ -752,6 +897,14 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
   do i=1,Ctrl%Ind%nchans 
      Ctrl%Ind%Viewidx(i)=1
   end do
+
+!!$  write(*,*) Ctrl%Ind%Chi
+!!$  write(*,*) Ctrl%Ind%Nsolar
+!!$  write(*,*) Ctrl%Ind%Nthermal
+!!$  write(*,*) Ctrl%Ind%Ythermal
+!!$  write(*,*) Ctrl%Ind%Ysolar
+!!$  write(*,*) 'STOPSTOPSTOP'
+!!$  stop
 
   Ctrl%CloudClass%Id=1
   
@@ -914,8 +1067,11 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
   allocate(Ctrl%RS%B(Ctrl%Ind%Nsolar,2))
   Ctrl%RS%B=0.00  
   Ctrl%RS%B(1:Ctrl%Ind%Nsolar,1)=ref_solar_sea(1:Ctrl%Ind%Nsolar)/100.0 !valid for 67/87/1.6 channels  
-
   Ctrl%RS%B(1:Ctrl%Ind%Nsolar,2) = ref_solar_land(1:Ctrl%Ind%Nsolar)/100.0   
+  deallocate(ref_solar_sea)
+  deallocate(ref_solar_land)
+  deallocate(solar_store_sea)
+  deallocate(solar_store_land)
   
   Ctrl%RS%Sb  = 20.0/100.0   !Percentage error in surface reflectance  
   Ctrl%RS%Cb =  0.2    !Correlation between    surface reflectance
@@ -945,7 +1101,8 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
   else
      Ctrl%Invpar%Xllim(2) = 0.1
   endif
-  Ctrl%Invpar%Xllim(3)= 100.0
+  !MJ ORG Ctrl%Invpar%Xllim(3)= 100.0
+  Ctrl%Invpar%Xllim(3)= 10.0
   Ctrl%Invpar%Xllim(4)= 1.0
   Ctrl%Invpar%Xllim(5)= 250.0
 
@@ -1067,14 +1224,6 @@ subroutine Read_Driver (Ctrl, message, drifile,status)
      !        later on in this routine.
   end if ! end of status==0 check          
   
-
-
-  deallocate(index_solar)
-  deallocate(solar_store_sea)
-  
-  deallocate(solar_store_land)
-  deallocate(index_mixed)
-  deallocate(index_ir)
 
 
 !  write(*,*)'here q'

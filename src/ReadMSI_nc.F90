@@ -281,10 +281,10 @@ print*, 'y_id ',Ctrl%Ind%Y_Id
      do ii=1,Ctrl%Ind%Ny
  !       print*,'readchannela',ii
  !       do i=1,Ctrl%Ind%Nyp
-           print*,'readchannelb ch y_id',i,msi_instr_ch_numbers(i), Ctrl%Ind%Y_Id(ii)
+           print*,'readchannelb ch y_id',ii,msi_instr_ch_numbers(ii), Ctrl%Ind%Y_Id(ii)
 
  !          if(msi_instr_ch_numbers(i) .eq. Ctrl%Ind%Y_Id(ii)-1) then
-              print*,'readchannelc',msi_instr_ch_numbers(i),Ctrl%Ind%Y_Id(ii)
+              print*,'readchannelc',msi_instr_ch_numbers(ii),Ctrl%Ind%Y_Id(ii)
               call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(ii),"msi_data",MSI_Data%MSI(:,:,ii),1)
  !   print*,maxval(MSI_Data%MSI(:,:,ii)) 
  !         endif

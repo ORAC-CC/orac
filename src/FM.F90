@@ -193,10 +193,12 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
    if (Ctrl%RTMIntflag .eq. 0) then
 
+      !write(*,*) 'test size'
+      !write(*,*) SPixel%Ind%ThermalFirst,SPixel%Ind%ThermalLast
+      !write(*,*) size(SAD_Chan)
 
-     call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
-
-         SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
+      call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
+           SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
          RTM_Pc, status)   
 
    else if (Ctrl%RTMIntflag .eq. 1) then
@@ -290,14 +292,16 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 !!$      endif
 
       !MJ use original version
-      if(SPixel%Ind%ThermalFirst .eq. 3) then
+      !MJ!if(SPixel%Ind%ThermalFirst .eq. 3) then
          temp_thermal_CRP=CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:)
          temp_thermal_d_CRP=d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)
-      endif
-      if(SPixel%Ind%ThermalFirst .eq. 4) then
-         temp_thermal_CRP=CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:)
-         temp_thermal_d_CRP=d_CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:,:)
-      endif
+         !MJ!endif
+
+!MJ
+!!$      if(SPixel%Ind%ThermalFirst .eq. 4) then
+!!$         temp_thermal_CRP=CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:)
+!!$         temp_thermal_d_CRP=d_CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:,:)
+!!$      endif
 
       call FM_Thermal(Ctrl, SAD_LUT, SPixel, &
            & SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast),     &
@@ -322,14 +326,14 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 !!$         temp_thermal_d_CRP=d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)
 !!$      endif
 
-      if(SPixel%Ind%ThermalFirst .eq. 3) then
+      !if(SPixel%Ind%ThermalFirst .eq. 3) then
          CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:)=temp_thermal_CRP
          d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)= temp_thermal_d_CRP
-      endif
-      if(SPixel%Ind%ThermalFirst .eq. 4) then
-         CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:)=temp_thermal_CRP
-         d_CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:,:)= temp_thermal_d_CRP
-      endif
+      !endif
+         !if(SPixel%Ind%ThermalFirst .eq. 4) then
+         !CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:)=temp_thermal_CRP
+         !d_CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:,:)= temp_thermal_d_CRP
+      !endif
       
 !     Daytime
 !           Ctrl%RTMIntflag=1

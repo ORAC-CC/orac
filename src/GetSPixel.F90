@@ -246,6 +246,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
     integer          :: stat      ! Local status value
     integer          :: StartChan ! First valid channel for pixel, used in breakpoints.
 
+    #define DEBUG
+
 !   Set status to zero
 
     status = 0
@@ -273,7 +275,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
     !pause
     call Check_FloatArray(1, 1, MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
          & SPixel%Mask, CloudMax, CloudMin, stat)
-
+    !write(*,*) 'stat1',stat
     if (stat > 0) then
 #ifdef DEBUG
        write(unit=message, fmt=*) &
@@ -283,6 +285,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
 #endif
        SPixel%QC = ibset(SPixel%QC, SPixCloudFl)
     end if
+    !write(*,*) 'SPixel%QC',SPixel%QC,SPixCloudFl
 
 !   Land/Sea flags (0 or 1)
 
@@ -290,7 +293,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
     call Check_ByteArray(1, 1, &
        MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), SPixel%Mask, &
           FlagMax, FlagMin, stat)
-
+    !write(*,*) 'stat2',stat
     if (stat > 0) then
 #ifdef DEBUG
        write(unit=message, fmt=*) &
@@ -299,6 +302,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
        call Write_log(Ctrl, trim(message), stat)
 #endif
        SPixel%QC = ibset(SPixel%QC, SPixLandFl)
+       !write(*,*) 'SPixel%QC',SPixel%QC
     end if 
 
 !   Geometry - Solar zenith (between 0o and 90o)
@@ -323,7 +327,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
       call Check_FloatArray(1, 1, &
          MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0, view), SPixel%Mask, &
             SatZenMax, SatZenMin, stat)
-   
+      !write(*,*) 'stat3',stat
       if (stat > 0) then
 #ifdef DEBUG
          write(unit=message, fmt=*) &
@@ -333,6 +337,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
          call Write_log(Ctrl, trim(message), stat)
 #endif
          SPixel%QC = ibset(SPixel%QC, SPixSatZen)
+         !write(*,*) 'SPixel%QC',SPixel%QC
       end if
    end do
 
@@ -343,7 +348,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
       call Check_FloatArray(1, 1, &
          MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0, view), SPixel%Mask, &
             RelAziMax, RelAziMin, stat)
-      
+      !write(*,*) 'stat4',stat
+
       if (stat > 0) then
 #ifdef DEBUG
          write(unit=message, fmt=*) &
@@ -353,6 +359,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
          call Write_log(Ctrl, trim(message), stat)
 #endif
          SPixel%QC = ibset(SPixel%QC, SPixRelAzi)
+         !write(*,*) 'SPixel%QC',SPixel%QC
       end if
    end do
 
@@ -362,6 +369,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
     call Check_FloatArray(1, 1, &
        MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0), SPixel%Mask, &
           LatMax, LatMin, stat)
+    !write(*,*) 'stat5',stat
     if (stat > 0) then
 #ifdef DEBUG
        write(unit=message, fmt=*) &
@@ -370,6 +378,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
        call Write_log(Ctrl, trim(message), stat)
 #endif
        SPixel%QC = ibset(SPixel%QC, SPixLat)
+       !write(*,*) 'SPixel%QC',SPixel%QC
     end if
 
 !   Location - Longitude (between -180o and 180o)
@@ -378,6 +387,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
     call Check_FloatArray(1, 1, &
        MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0), SPixel%Mask, &
           LonMax, LonMin, stat)
+    !write(*,*) 'stat6',stat
     if (stat > 0) then
 #ifdef DEBUG
        write(unit=message, fmt=*) &
@@ -386,6 +396,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
        call Write_log(Ctrl, trim(message), stat)
 #endif
        SPixel%QC = ibset(SPixel%QC, SPixLon)
+       !write(*,*) 'SPixel%QC',SPixel%QC
     end if
     
 !   MSI - Reflectances (between 0 and 1)
@@ -400,7 +411,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
        call Check_FloatArray(1, 1, &
           MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, i), SPixel%Mask, & 
              RefMax, RefMin, stat)
-
+       !write(*,*) 'stat7',stat
        if (stat > 0) then
 #ifdef DEBUG
 
@@ -411,6 +422,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
           call Write_log(Ctrl, trim(message), stat)
 #endif
           SPixel%QC = ibset(SPixel%QC, SPixRef)
+          !write(*,*) 'SPixel%QC',SPixel%QC
        end if
     end do
  endif               
@@ -419,10 +431,17 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
 !   Loop over longwave channels
 
     stat = 0
-    do i = Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
+    !write(*,*) 'minvals',Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
+!!$    do i=1,Ctrl%Ind%ThermalLast
+!!$       write(*,*) minval(MSI_Data%MSI(:,:,i)),minloc(MSI_Data%MSI(:,:,i))
+!!$       write(*,*) maxval(MSI_Data%MSI(:,:,i)),maxloc(MSI_Data%MSI(:,:,i))
+!!$    enddo
+       do i = Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
+          
        call Check_FloatArray(1, 1, &
-          MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, i), SPixel%Mask, &
+            MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, i), SPixel%Mask, &
              BTMax, BTMin, stat)
+       !write(*,*) 'stat8',stat,i,btmax,btmin
        if (stat > 0) then
 #ifdef DEBUG
           write(unit=message, fmt=*) &
@@ -432,8 +451,10 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
           call Write_log(Ctrl, trim(message), stat)
 #endif
           SPixel%QC = ibset(SPixel%QC, SPixTemp)
+          !write(*,*) 'SPixel%QC',SPixel%QC
        end if
     end do
+    !stop
 
     stat = 0
     
@@ -463,7 +484,9 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
 
     if (SPixel%NMask == 0) then 
        Spixel%QC = ibset(Spixel%QC, SPixAll)
+       !write(*,*) 'SPixel%QC',SPixel%QC
        stat = SPixelInvalid ! Entire super-pixel is invalid
+       !write(*,*) 'stat invalid',stat
 #ifdef DEBUG
        write(unit=message, fmt=*) &
           'Get_SPixel: NMask zero in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0
@@ -485,6 +508,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
 !         No cloud in SPixel. Don't process.
 
           Spixel%QC = ibset(Spixel%QC, SPixNoCloud)
+          !write(*,*) 'SPixel%QC',SPixel%QC
           stat = SPixelCloudFrac
 #ifdef DEBUG
           write(unit=message, fmt=*) &
@@ -494,6 +518,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
 #endif
        end if
 
+       !write(*,*) 'this stat'
        if (stat == 0) then
 
 !         Call 'Get_' subroutines. Use of stat here assumes that no subordinate
@@ -504,22 +529,26 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
           if (stat == 0) then
              call Get_illum(Ctrl, SPixel, MSI_Data, stat)
              if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixillum)
+             !write(*,*) 'SPixel%QC',SPixel%QC
           end if 
 
 
           if (stat == 0) then
              call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
              if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixGeom)
+             !write(*,*) 'SPixel%QC',SPixel%QC
           end if 
 
            if (stat == 0) then
              call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
              if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixRTM)
+             !write(*,*) 'SPixel%QC',SPixel%QC
           end if 
 
           if (stat == 0) then
              call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
              if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixMeas)
+             !write(*,*) 'SPixel%QC',SPixel%QC
           end if 
 
 !         Get surface parameters and reduce reflectance by solar angle effect. 
@@ -528,6 +557,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
           call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
              if (stat /= 0) then 
                 Spixel%QC = ibset(Spixel%QC, SPixSurf)
+                !write(*,*) 'SPixel%QC',SPixel%QC
              else
                 do i=1,Ctrl%Ind%NSolar
                    SPixel%Rs(i) = SPixel%Rs(i) &
@@ -544,6 +574,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
           if (stat == 0) then
           call Get_X(Ctrl, SAD_Chan, SPixel, stat)
              if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixFGAP)
+             !write(*,*) 'SPixel%QC',SPixel%QC
           end if
 
        end if ! End of "if stat" after cloud fraction check
@@ -603,6 +634,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, &
 !  flag bit to indicate no processing.
 
    if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixNoProc)
+   !write(*,*) 'SPixel%QC',SPixel%QC
  
 !  If the super-pixel will not be processed, zero the first guess and
 !  a priori state vectors for output into the diag file. Check the QC flag

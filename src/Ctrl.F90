@@ -124,6 +124,7 @@ module CTRL_def
 !  Define a type to hold File names used by the ECP
 
    type FID_t
+      character(FilenameLen) :: CONFIG	  ! Multi-Spectral Image
       character(FilenameLen) :: MSI	  ! Multi-Spectral Image
       character(FilenameLen) :: LWRTM	  ! LW Rad Trans Model results
       character(FilenameLen) :: SWRTM	  ! SW Rad Trans Model results

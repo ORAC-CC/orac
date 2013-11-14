@@ -360,6 +360,7 @@ Subroutine Invert_Marquardt (Ctrl, SPixel, SAD_Chan, SAD_LUT, &
         RTM_Pc,SPixel%X0, Y, dY_dX, stat) 
 
    Diag%Y0(1:SPixel%Ind%Ny)=Y 
+   !write(*,*) 'Y',Y
 
    !  Convert dY_dX to Kx and Kbj. 
 
@@ -663,7 +664,8 @@ Subroutine Invert_Marquardt (Ctrl, SPixel, SAD_Chan, SAD_LUT, &
                Xdiff = (Xplus_dX(SPixel%X) - SPixel%Xb(SPixel%X)) &
                     & * Ctrl%Invpar%XScale(SPixel%X)
                Ydiff = Y - SPixel%Ym
-               Diag%YmFit= Ydiff
+               !MJ ORG Diag%YmFit= Ydiff
+               Diag%YmFit(1:SPixel%Ind%NY)= Ydiff
                Ja    = dot_product(Xdiff, matmul(SxInv, Xdiff))
                Jm    = dot_product(Ydiff, matmul(SyInv, Ydiff)) 
                J     = Jm + Ja
@@ -896,7 +898,9 @@ if (stat == 0) then
 
          !this is a workaround otherwise a 3x3 matrix is written into a 2x2 matrix
          !MJ: temp. commented out
-         Diag%Ss(1:SPixel%Ind%Ny+1,1:SPixel%Ind%Ny+1) = matmul(Dy_Kb(:,1:Spixel%NxI), &
+         !MJ ORG workaround Diag%Ss(1:SPixel%Ind%Ny+1,1:SPixel%Ind%Ny+1) = matmul(Dy_Kb(:,1:Spixel%NxI), &
+         !MJ matmul(Sb(1:Spixel%NxI,1:Spixel%NxI), transpose(Dy_Kb(:,1:Spixel%NxI))) )
+         Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny) = matmul(Dy_Kb(:,1:Spixel%NxI), &
               matmul(Sb(1:Spixel%NxI,1:Spixel%NxI), transpose(Dy_Kb(:,1:Spixel%NxI))) )
 
       end if

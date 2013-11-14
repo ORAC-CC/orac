@@ -94,7 +94,8 @@ module ECP_constants
    integer, parameter :: ECPlogReclen = 132 ! record length in ECP log file, 
                                           ! to avoid annoying line breaks. 
    integer, parameter :: MaxStateVar = 5  ! Max. number of state variables
-   integer, parameter :: MaxNumMeas  = 5 ! Max no. of measurement channels
+   !MJ ORG integer, parameter :: MaxNumMeas  = 5 ! Max no. of measurement channels
+   integer, parameter :: MaxNumMeas  = 6 ! Max no. of measurement channels
    integer, parameter :: MaxNumSolar  = 4 ! Max no. of solar channels(ATSR -specfic)
    integer, parameter :: MaxCloudClass = 3 ! Max no. of cloud classes
    integer, parameter :: InstNameLen = 16 ! Max. length of instrument name

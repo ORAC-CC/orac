@@ -56,6 +56,7 @@ SUBROUTINE read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)
   dimlength(3)=dummyint
   cdim=int(dimlength(3),kind=nint)
 
+
   deallocate(dimids)
   deallocate(dname)
   deallocate(dimlength)

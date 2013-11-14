@@ -155,7 +155,7 @@ write(*,*)'Ctrl%Ind%Ny',Ctrl%Ind%Ny
 	 read(c_lun, *, err=999, iostat=ios)filename       ! skip first line
 	 read(c_lun, '(A10)', err=999, iostat=ios) SAD_Chan(i)%Desc 
 	 read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%FileID
-write(*,*)'chan_file ios',ios	 
+         write(*,*)'chan_file ios',ios	 
 !        Check FileID vs. expected value (i.e. value in filename vs. 
 !        value in file)
 	 
@@ -287,6 +287,9 @@ write(*,*)'chan_file ios g',status
    Ctrl%Ind%SolarFirst = 1
    Ctrl%Ind%ThermalLast = Ctrl%Ind%Ny
    
+   write(*,*)'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
+   write(*,*)'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
+
 #ifdef DEBUG
    write(*,*)'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
    write(*,*)'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast

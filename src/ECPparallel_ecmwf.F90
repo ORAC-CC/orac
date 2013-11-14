@@ -224,6 +224,7 @@
 !
 !---------------------------------------------------------------------
 
+
 Program ECP
 
 !  Modules used by this program. 
@@ -239,6 +240,7 @@ Program ECP
    use Diag_def
    use ECP_Routines_def    ! Defines subroutine interfaces for ReadSAD etc
    use input_structures
+   use config_s
 
    use netcdf
 
@@ -253,6 +255,7 @@ Program ECP
    type(RTM_Pc_t)   :: RTM_Pc
    type(SPixel_t)   :: SPixel
    type(Data_t)     :: MSI_Data
+   type(config_struct) :: conf
    type(Diag_t)     :: Diag     ! Diagnostic struct returned by Invert_Marquardt
    character(180)   :: message  ! Error message string returned by Read_Driver
    integer          :: status = 0 ! Status value returned from subroutines
@@ -344,7 +347,8 @@ Program ECP
    CHARACTER(LEN=15) :: comp_nthreads
    INTEGER :: Statomp,omp_nthreads
 
-   !include "sigtrap.F90"
+   include "sigtrap.F90"
+#define DEBUG
 
    !initialize timing
 110 format(1x,'TIMING: INITIALIZED:',1x,d15.5,1x,'r')
@@ -394,7 +398,7 @@ Program ECP
 
 !  Read Ctrl struct from driver file   
 
-   call Read_Driver(Ctrl, message, drifile,status)
+   call Read_Driver(Ctrl, conf,message, drifile,status)
 
 
    !read dimensions of preprocessing swath files first:
@@ -610,6 +614,7 @@ Program ECP
 !              & MSI_Data%Location%Lon .ge. range_lon(1) .and. &
 !              & MSI_Data%Location%Lon .le. range_lon(2))
 
+         lhres=.true.
          !if yes, do higher resolution processing there.
 !         if(lhres) then
             xstep=1
@@ -814,111 +819,112 @@ Program ECP
 
 
            !write(*,*) 'status1',status
-            if (status_line(j) == 0) call Get_SPixel(Ctrl, SAD_Chan, &
-               MSI_Data, RTM, SPixel, status)
-            status_line(j)=status
-
+           if (status_line(j) == 0) call Get_SPixel(Ctrl, SAD_Chan, &
+                & MSI_Data, RTM, SPixel, status)
+           status_line(j)=status
+           !write(*,*) 'main qc',Spixel%QC,status
+           !Spixel%QC=0
             !write(*,*) 'status2',status
-         	   if (status_line(j) == 0) then
-!              If the super-pixel cannot be processed, zero the outputs and
-!              diag struct.
-
-                !write(*,*) 'status3',status
-
-               if (btest(Spixel%QC, SpixNoProc)) then
-                  !MJ ORG TotMissed = TotMissed+1
-                  Totmissed_line(j) = Totmissed_line(j)+1
-  
-
-                  Spixel%Xn = MissingXn
-                  Spixel%Sn = MissingSn
-
-                  !write(*,*) 'status3a',status
-
-                  call Zero_Diag(Ctrl, Diag, status)
+           if (status_line(j) == 0) then
+              !              If the super-pixel cannot be processed, zero the outputs and
+              !              diag struct.
+              
+              !write(*,*) 'status3',status
+              
+              if (btest(Spixel%QC, SpixNoProc)) then
+                 !MJ ORG TotMissed = TotMissed+1
+                 Totmissed_line(j) = Totmissed_line(j)+1
+                 
+                 
+                 Spixel%Xn = MissingXn
+                 Spixel%Sn = MissingSn
+                 
+                 !write(*,*) 'status3a',status
+                 
+                 call Zero_Diag(Ctrl, Diag, status)
  
-                  !write(*,*) 'status3b',status
+                 !write(*,*) 'status3b',status
+                 
+              else
+                 
+                 !write(*,*) 'status4',status
+                 !                 No indication that the SPixel should not be processed,
+                 !                 do the inversion.
+                 !write(*,*) 'before marqw'
+                 Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT,  &
+                      & RTM_Pc, Diag, status)
+                 status_line(j)=status
+                 !write(*,*) 'after marqw'
+                 
+                 !                 Set values required for overall statistics
+                 !                 1st bit test on QC Flag determines whether convergence 
+                 !                 occurred.
+                 
+                 !                  Spixel%Xn = MissingXn
+                 !write(*,*) 'marq status',status,Diag%QCFlag,MaxStateVar
+                 !                  pause
+                 if (status_line(j) == 0) then
+                    if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
+                       
+                       !MJ ORG                        TotConv = TotConv+1
+                       TotConv_line(j) = TotConv_line(j)+1
+                       !MJORG                        AvIter  = AvIter + Diag%Iterations
+                       AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
+                       if (Diag%PhaseChanges >= 0) then 
+                          !MJ ORG                           AvPhCh = AvPhCh + Diag%PhaseChanges
+                          AvPhCh_line(j) = AvPhCh_line(j) + Diag%PhaseChanges
+                       else
+                          !MJ ORG                           AvPhCh = AvPhCh + Ctrl%InvPar%MaxPhase                     
+                          AvPhCh_line(j) = AvPhCh_line(j) + Ctrl%InvPar%MaxPhase                     
+                       end if
+                       !MJ ORG                        AvJ = AvJ + Diag%Jm + Diag%Ja
+                       AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
+                    end if
+                    if (btest(Diag%QCFlag,MaxStateVar+2)) then
+                       !MJ ORG                        TotMaxJ = TotMaxJ+1
+                       TotMaxJ_line(j) = TotMaxJ_line(j)+1
+                    end if
+                 else
+                    Diag%YmFit= MissingXn
+                    Spixel%Xn = MissingXn
+                    Spixel%Sn = MissingSn
+                    call Zero_Diag(Ctrl, Diag, status)
+                    status_line(j)=status
+                    
+                 end if
+                 
+              end if!btest if closes
 
-               else
-
-                  !write(*,*) 'status4',status
-!                 No indication that the SPixel should not be processed,
-!                 do the inversion.
-                  !write(*,*) 'before marqw'
-                  Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT,  &
-                     RTM_Pc, Diag, status)
-                  status_line(j)=status
-                  !write(*,*) 'after marqw'
-
-!                 Set values required for overall statistics
-!                 1st bit test on QC Flag determines whether convergence 
-!                 occurred.
-
-!                  Spixel%Xn = MissingXn
-                  !write(*,*) 'marq status',status,Diag%QCFlag,MaxStateVar
-!                  pause
-                  if (status_line(j) == 0) then
-                     if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
-
-  !MJ ORG                        TotConv = TotConv+1
-                        TotConv_line(j) = TotConv_line(j)+1
-                        !MJORG                        AvIter  = AvIter + Diag%Iterations
-                        AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
-                        if (Diag%PhaseChanges >= 0) then 
-                           !MJ ORG                           AvPhCh = AvPhCh + Diag%PhaseChanges
-                           AvPhCh_line(j) = AvPhCh_line(j) + Diag%PhaseChanges
-                        else
-                           !MJ ORG                           AvPhCh = AvPhCh + Ctrl%InvPar%MaxPhase                     
-                           AvPhCh_line(j) = AvPhCh_line(j) + Ctrl%InvPar%MaxPhase                     
-                        end if
-                        !MJ ORG                        AvJ = AvJ + Diag%Jm + Diag%Ja
-                        AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
-                     end if
-                     if (btest(Diag%QCFlag,MaxStateVar+2)) then
-                        !MJ ORG                        TotMaxJ = TotMaxJ+1
-                        TotMaxJ_line(j) = TotMaxJ_line(j)+1
-                     end if
-                  else
-                     Diag%YmFit= MissingXn
-                     Spixel%Xn = MissingXn
-                     Spixel%Sn = MissingSn
-                     call Zero_Diag(Ctrl, Diag, status)
-                     status_line(j)=status
-
-                  end if
-
-               end if!btest if closes
-
-!calculate the Cloud water path CWP
+              !calculate the Cloud water path CWP
 !
-               !write(*,*) 'before cwp',status
-               call Calc_CWP(Ctrl,SPixel, status)
-               status_line(j)=status
-               !write(*,*) 'after cwp',status
+              !write(*,*) 'before cwp',status
+              call Calc_CWP(Ctrl,SPixel, status)
+              status_line(j)=status
+              !write(*,*) 'after cwp',status
+              
+
+              
+              !              Write the outputs
+              
+              conv=1
+              if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
+                 conv=0
+              end if
 
 
-
-!              Write the outputs
-
-               conv=1
-               if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
-                  conv=0
-               end if
-
-
-               ! write out the quality indicators               
-!reset
-!                    Spixel%Xn = MissingXn
-
-               !include variable preparation files
-               !write(*,*) 'before preps', RTM_Pc%Hc,RTM_Pc%Tc,Spixel%CWP,Spixel%CWP_error
-               include "prepare_primary.inc"
-               !write(*,*) 'after preps prim'
-               include "prepare_secondary.inc"
-               !write(*,*) 'after preps sec'
-!               pause 
-
-            end if  ! End of status check after Get_SPixel
+              ! write out the quality indicators               
+              !reset
+              !                    Spixel%Xn = MissingXn
+              
+              !include variable preparation files
+              !write(*,*) 'before preps', RTM_Pc%Hc,RTM_Pc%Tc,Spixel%CWP,Spixel%CWP_error
+              include "prepare_primary.inc"
+              !write(*,*) 'after preps prim'
+              include "prepare_secondary.inc"
+              !write(*,*) 'after preps sec'
+              !               pause 
+              
+           end if  ! End of status check after Get_SPixel
 
             !MJ ORG i = i + 1
             i = i + xstep
@@ -952,7 +958,8 @@ Program ECP
       !include netcdf write files
       !         write(*,*) 'before writes'
          include "write_primary.inc"
-         include "write_secondary.inc"
+         !quite some problems with loops over channels in secondary:
+         !include "write_secondary.inc"
       !         write(*,*) 'after writes'
       !         pause
       endif
@@ -1023,6 +1030,15 @@ Program ECP
 
       call Dealloc_Ctrl(Ctrl, status)
   !  call Dealloc_GZero(Ctrl, status)        
+
+      deallocate(conf%channel_ids_instr)
+      deallocate(conf%channel_ids_abs)
+      deallocate(conf%channel_sw_flag)
+      deallocate(conf%channel_lw_flag)
+      deallocate(conf%channel_proc_flag)
+
+
+
 
       close(unit=diag_lun)
 
