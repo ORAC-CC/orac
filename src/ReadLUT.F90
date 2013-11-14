@@ -62,6 +62,7 @@
 !    22/03/2013 Gareth Thomas : Added trim() to LUT_file in write(message,*)
 !                      statements (called on I/O error). Also added write(*,*)
 !                      statements for I/O errors
+! 20131114 MJ corrected zeroing of satzen when ref is allocated, some cleanup
 ! Bugs:
 !    None known
 !
@@ -107,86 +108,85 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       write(message, *) 'Read_LUTEm: Error opening file ', trim(LUT_file) 
       call Write_Log(Ctrl, trim(message), status)
    else
+      
 
-
-!     Read the file contents into the SAD_LUT structure
-
+      !     Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios) SAD_LUT%Wavelength(chan)
+      read(l_lun, *, err=999, iostat=ios) nVals, SAD_LUT%Grid%dTau
 
-      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau
+      !Used for loop control later
+      SAD_LUT%Grid%nTau = nVals               
 
-      SAD_LUT%Grid%nTau = nVals               !    Used for loop control later
 
-
-!        Read in Tau values and set min and max
-         if (chan == Ctrl%Ind%ThermalFirst) then
-            if (.not.associated(SAD_LUT%Grid%tau)) allocate(SAD_LUT%Grid%tau(SAD_LUT%Grid%nTau) )
-            SAD_LUT%Grid%tau=0.00
-         end if
+      !Read in Tau values and set min and max
+      if (chan == Ctrl%Ind%ThermalFirst) then
+         if (.not.associated(SAD_LUT%Grid%tau)) allocate(SAD_LUT%Grid%tau(SAD_LUT%Grid%nTau) )
+         SAD_LUT%Grid%tau=0.00
+      end if
          
-        read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
+      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
 
-	 SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
-	 SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
+      SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
+      SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
 
 
-!     Now get the satzen values
-
+      !Now get the satzen values
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen
-	 SAD_LUT%Grid%nSatzen = nVals
-	
-!           Read in values and set min and max
-            if (chan == Ctrl%Ind%ThermalFirst) then 
-                if (.not.associated(SAD_LUT%Grid%satzen)) allocate(SAD_LUT%Grid%satzen(SAD_LUT%Grid%nsatzen) )
-                SAD_LUT%Grid%satzen=0.00
-             end if   
-            read(l_lun, *, err=999, iostat=ios) &
-	       (SAD_LUT%Grid%Satzen(i), i=1,nVals)
-	    SAD_LUT%Grid%MinSatzen = SAD_LUT%Grid%Satzen(1)
-	    SAD_LUT%Grid%MaxSatzen = SAD_LUT%Grid%Satzen(nVals)	    
-
+         SAD_LUT%Grid%nSatzen = nVals
+         
+         !Read in values and set min and max
+         if (chan == Ctrl%Ind%ThermalFirst) then 
+            if (.not.associated(SAD_LUT%Grid%satzen)) allocate(SAD_LUT%Grid%satzen(SAD_LUT%Grid%nsatzen) )
+            SAD_LUT%Grid%satzen=0.00
+         end if
+         read(l_lun, *, err=999, iostat=ios) &
+              & (SAD_LUT%Grid%Satzen(i), i=1,nVals)
+         SAD_LUT%Grid%MinSatzen = SAD_LUT%Grid%Satzen(1)
+         SAD_LUT%Grid%MaxSatzen = SAD_LUT%Grid%Satzen(nVals)	    
+         
       end if
-!     Now get the effective radius values
 
+      !Now get the effective radius values
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe
 	 SAD_LUT%Grid%nRe = nVals
-
-!           Read in values and set min and max
-            if (chan == Ctrl%Ind%ThermalFirst) then 
-                if (.not.associated(SAD_LUT%Grid%Re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
-                SAD_LUT%Grid%satzen=0.00
-                end if
-            read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
-	    SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
-	    SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
-
+         
+         !           Read in values and set min and max
+         if (chan == Ctrl%Ind%ThermalFirst) then 
+            if (.not.associated(SAD_LUT%Grid%Re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
+            !MJ ORG SAD_LUT%Grid%satzen=0.00
+            SAD_LUT%Grid%Re=0.00
+         end if
+         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
+         SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
+         SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
+         
       end if
-!     Read in the Em array 
 
+      !Read in the Em array 
       if (Ctrl%Ind%NThermal > 0 .and. chan == Ctrl%Ind%ThermalFirst) then
          allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSatzen, &
-              SAD_LUT%Grid%nre))
+              & SAD_LUT%Grid%nre))
          SAD_LUT%Em=0.00
       end if
 
-
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-	    (((SAD_LUT%Em(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
-	    j=1, SAD_LUT%Grid%nSatzen), k=1, SAD_LUT%Grid%nRe)
+              & (((SAD_LUT%Em(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
+              & j=1, SAD_LUT%Grid%nSatzen), k=1, SAD_LUT%Grid%nRe)
       end if
 
       close(unit=l_lun)
    end if
-999   if (ios /= 0) then
-	 status = LUTFileReadErr 
-	 write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
-	 write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
-	 call Write_Log(Ctrl, trim(message), status)
-      end if
-end Subroutine Read_LUT_Em 
+   
+999 if (ios /= 0) then
+      status = LUTFileReadErr 
+      write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
+      write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
+      call Write_Log(Ctrl, trim(message), status)
+   end if
+ end Subroutine Read_LUT_Em
 
 
 ! Name:
