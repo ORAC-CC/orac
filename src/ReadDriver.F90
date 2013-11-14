@@ -41,6 +41,7 @@
 ! 2013/10/02 CP added comments for GT added aerosl classes for Bayesian cloud id
 ! 2013/11/14 MJ rewrote most parts refering to setting and reading channel indices. added reading of config file
 !                    Different driver file necessary now.
+!2013/11/14 MJ changes lower and upper limits for ctp.
 ! Bugs:
 ! nviews should be changed for dual view
 ! not quiteworking for AVHRR
@@ -1122,7 +1123,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
      Ctrl%Invpar%Xulim(2)=20.0
   endif
 
-  Ctrl%Invpar%Xulim(3)=1050.0
+  Ctrl%Invpar%Xulim(3)=1200.0
   Ctrl%Invpar%Xulim(4)=1.0
   Ctrl%Invpar%Xulim(5)=320.0
 ! Maximum acceptable retrieval cost   
