@@ -76,6 +76,7 @@
 !        Moved code to convert Solar constant value from here to Read_ATSR_MSI
 !        since the latter now reads the date from the MSI file header.  
 !    20/09/2012 added channel index to y_id value
+! 2013/11/14 MJ: some cleanup.
 ! Bugs:
 !    None known.
 !
@@ -126,114 +127,117 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
    Ctrl%Sy = 0.
  
    call Find_LUN(c_lun)
-write(*,*)'Ctrl%Ind%Ny',Ctrl%Ind%Ny
+   write(*,*)'Number of channels used:Ctrl%Ind%Ny',Ctrl%Ind%Ny
+   
+   !loop over the channels which will be used
    do i=1, Ctrl%Ind%Ny
       if (status /= 0) exit ! Drop out of loop if an open or write error 
                             ! occurred last time round
 
-!     Generate channel file name from Ctrl struct info
-
+      !Generate channel file name from Ctrl struct info
+      !This sets the channel to be used in instrument notation for reading from the LUT.
       if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) < 10) then 
          write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) 
       else
-	 write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) 
+         write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) 
       end if
 
       chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) &
-        	  // '_' // trim(chan_num) // '.sad'
-      write(*,*)'chan_file',trim(adjustl(chan_file))
+           & // '_' // trim(chan_num) // '.sad'
+      write(*,*)'chan_file read in',trim(adjustl(chan_file))
 !     Open the file 
-
       open(unit=c_lun, file=chan_file, iostat=ios)
       if (ios /= 0) then
-	 status = ChanFileOpenErr
-	 write(message, *) 'Read_Chan: Error opening file ', chan_file 
-	 call Write_Log(Ctrl, trim(message), status)
+         status = ChanFileOpenErr
+         write(message, *) 'Read_Chan: Error opening file ', chan_file 
+         call Write_Log(Ctrl, trim(message), status)
       else
 !        Read the file contents into the SAD_Chan(i) structure
 
-	 read(c_lun, *, err=999, iostat=ios)filename       ! skip first line
-	 read(c_lun, '(A10)', err=999, iostat=ios) SAD_Chan(i)%Desc 
-	 read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%FileID
-         write(*,*)'chan_file ios',ios	 
+         read(c_lun, *, err=999, iostat=ios)filename       ! skip first line
+         read(c_lun, '(A10)', err=999, iostat=ios) SAD_Chan(i)%Desc 
+         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%FileID
+         !write(*,*)'chan_file ios',ios	 
 !        Check FileID vs. expected value (i.e. value in filename vs. 
 !        value in file)
 	 
-	 if (trim(SAD_Chan(i)%FileID) /= trim(chan_num)) then
-	    status = ChanFileDataErr
-	    write(message, *)                                           &
-	       'Read_Chan: channel ID inconsistent with file name in ', &
-	       chan_file
-	    call Write_Log(Ctrl, trim(message), status)
-	 end if
+         if (trim(SAD_Chan(i)%FileID) /= trim(chan_num)) then
+            status = ChanFileDataErr
+            write(message, *)                                           &
+                 'Read_Chan: channel ID inconsistent with file name in ', &
+                 & chan_file
+            call Write_Log(Ctrl, trim(message), status)
+         end if
 	  
          if (status == 0) then
-	    read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%WvN 
-	    read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%Flag
-write(*,*)'chan_file ios b',ios
-	    if (SAD_Chan(i)%Thermal%Flag > 0) then
-	       if (ThermalFirstSet == 0) then
-	          Ctrl%Ind%ThermalFirst = i
-		  ThermalFirstSet = 1 ! ThermalFirst set
-	       end if
+            read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%WvN 
+            read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%Flag
+            write(*,*)'Specs (wavenumber and t-flag):',SAD_Chan(i)%WvN,SAD_Chan(i)%Thermal%Flag
+            !write(*,*)'chan_file ios b',ios
+            if (SAD_Chan(i)%Thermal%Flag > 0) then
+               if (ThermalFirstSet == 0) then
+                  Ctrl%Ind%ThermalFirst = i
+                  ThermalFirstSet = 1 ! ThermalFirst set
+               end if
 	       
-	       NThermal = NThermal + 1
+               NThermal = NThermal + 1
 !	       Ctrl%Ind%YThermal(Ctrl%Ind%NThermal) = i
 	       
-	       read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B1
-	       read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B2
-	       read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T1
-	       read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T2
-write(*,*)'chan_file ios c',ios
-	       read(c_lun, *, err=999, iostat=ios) &
-		  (SAD_Chan(i)%Thermal%NeHomog(j), j=1,MaxCloudType)
-	       read(c_lun, *, err=999, iostat=ios) &
-		  (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
+               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B1
+               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B2
+               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T1
+               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T2
+               !write(*,*)'chan_file ios c',ios
+               read(c_lun, *, err=999, iostat=ios) &
+                    & (SAD_Chan(i)%Thermal%NeHomog(j), j=1,MaxCloudType)
+               read(c_lun, *, err=999, iostat=ios) &
+                    & (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
 
                do j=1,MaxCloudType
 	          SAD_Chan(i)%Thermal%NeHomog(j) = &
-		     SAD_Chan(i)%Thermal%NeHomog(j) ** 2
-		  SAD_Chan(i)%Thermal%NeCoreg(j) = &
-		     SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
-	       end do	       
+                       & SAD_Chan(i)%Thermal%NeHomog(j) ** 2
+                  SAD_Chan(i)%Thermal%NeCoreg(j) = &
+                       & SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
+               end do
 	
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%NEBT
-	       SAD_Chan(i)%Thermal%NEBT = SAD_Chan(i)%Thermal%NEBT ** 2
+               SAD_Chan(i)%Thermal%NEBT = SAD_Chan(i)%Thermal%NEBT ** 2
 	       
-	    end if
+            end if
 
-	    read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Flag
-
-	    if (SAD_Chan(i)%Solar%Flag > 0) then
-	       Ctrl%Ind%SolarLast = i
-	       NSolar = NSolar + 1
-!	       Ctrl%Ind%YSolar(Ctrl%Ind%NSolar) = i
+            read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Flag
+            write(*,*)'Specs (s-flag):',SAD_Chan(i)%Solar%Flag
+            if (SAD_Chan(i)%Solar%Flag > 0) then
+               Ctrl%Ind%SolarLast = i
+               NSolar = NSolar + 1
+               !	       Ctrl%Ind%YSolar(Ctrl%Ind%NSolar) = i
 	       
-	       read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
-	          SAD_Chan(i)%Solar%F1
-
-	       read(c_lun, *, err=999, iostat=ios) &
-	          (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
-	       read(c_lun, *, err=999, iostat=ios) &
-		  (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
-write(*,*)'chan_file ios d',ios
+               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
+                    & SAD_Chan(i)%Solar%F1
+               
+               read(c_lun, *, err=999, iostat=ios) &
+                    & (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
+               read(c_lun, *, err=999, iostat=ios) &
+                    & (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
+               !write(*,*)'chan_file ios d',ios
                do j=1,MaxCloudType
-	          SAD_Chan(i)%Solar%NeHomog(j) = &
-		     (SAD_Chan(i)%Solar%NeHomog(j) / 100) ** 2
-		  SAD_Chan(i)%Solar%NeCoreg(j) = &
-		     (SAD_Chan(i)%Solar%NeCoreg(j) / 100) ** 2
-	       end do	       
+                  SAD_Chan(i)%Solar%NeHomog(j) = &
+                       & (SAD_Chan(i)%Solar%NeHomog(j) / 100.0) ** 2
 	
-	       read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%NedR
+                  SAD_Chan(i)%Solar%NeCoreg(j) = &
+                       & (SAD_Chan(i)%Solar%NeCoreg(j) / 100.0) ** 2
+               end do
+	
+               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%NedR
                SAD_Chan(i)%Solar%NedR = &
-	          (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2  
+                    & (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2  
 
-!              Convert Rs from a percentage to a fraction
-	       read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Rs
-	       SAD_Chan(i)%Solar%Rs = SAD_Chan(i)%Solar%Rs / 100
+               !Convert Rs from a percentage to a fraction
+               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Rs
+               SAD_Chan(i)%Solar%Rs = SAD_Chan(i)%Solar%Rs / 100.0
 
-	    end if
-write(*,*)'chan_file ios ee',ios
+            end if
+            !write(*,*)'chan_file ios ee',ios
 !           Set the measurement error covariance for the channel
 !           Thermal/mixed use NEBT, Solar use NEdR
 
@@ -243,36 +247,38 @@ write(*,*)'chan_file ios ee',ios
                Ctrl%Sy(i,i) = SAD_Chan(i)%Solar%NedR  
             end if
          end if
-write(*,*)'chan_file ios e',ios	 
+         !write(*,*)'chan_file ios e',ios	 
 999      if (ios /= 0) then
-	    status = ChanFileReadErr 
-	    write(message, *)                                        &
-	       'Read_Chan: Error reading channel description file ', &
-	       chan_file
-	    call Write_Log(Ctrl, trim(message), status)
+            status = ChanFileReadErr 
+            write(message, *)                                        &
+                 'Read_Chan: Error reading channel description file ', &
+                 & chan_file
+            call Write_Log(Ctrl, trim(message), status)
          end if
 	 
          close(c_lun)   
       end if
    end do
-   write(*,*)'chan_file ios ff',status
+!   write(*,*)'chan_file ios ff',status
 !  Check the NSolar and NThermal totals vs. the driver file values
- write(*,*)'nsolar',NSolar,Ctrl%Ind%NSolar
+   write(*,*)'nsolar',NSolar,Ctrl%Ind%NSolar
    if (NSolar /= Ctrl%Ind%NSolar) then
       status = DriverFileDataErr
       call Write_Log(Ctrl, &
-         'Read_Chan: Error in NSolar value in driver file', &
-	 status)
+           & 'Read_Chan: Error in NSolar value in driver file', &
+           & status)
+      stop
    end if
 
-write(*,*)'chan_file ios f',status,NThermal,Ctrl%Ind%NThermal
+   !write(*,*)'chan_file ios f',status,NThermal,Ctrl%Ind%NThermal
    if (NThermal /= Ctrl%Ind%NThermal) then
       status = DriverFileDataErr
       call Write_Log(Ctrl, &
-         'Read_Chan: Error in NThermal value in driver file', &
-	 status)
+           & 'Read_Chan: Error in NThermal value in driver file', &
+           & status)
+      stop
    end if
-write(*,*)'chan_file ios g',status
+   !write(*,*)'chan_file ios g',status
 
 !  If no thermal channels are selected, ThermalFirst is 0. However, some
 !  solar routines rely on ThermalFirst-1 to index the last purely solar
@@ -295,12 +301,10 @@ write(*,*)'chan_file ios g',status
    write(*,*)'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
 #endif
 
-!  Number of channels with both solar and thermal components (needed in FM).
-
+   !  Number of channels with both solar and thermal components (needed in FM).
    Ctrl%Ind%NMixed = Ctrl%Ind%NSolar + Ctrl%Ind%NThermal - Ctrl%Ind%Ny
    
 !  Find indices of channels required for calculation of MDAD FG state parameters
-
    Ctrl%Ind%MDAD_LW = 0
    Ctrl%Ind%MDAD_SW = 0
    
@@ -319,12 +323,12 @@ write(*,*)'chan_file ios g',status
 !     minimum difference and set the channel index in Ctrl%Ind%MDAD_LW.
    
       if (SAD_Chan(i)%WvN < 2500.0) then
-!        Difference between central WN and 11 um
-	 LW_diff = SAD_Chan(i)%WvN - 909.0 
-	 if (LW_diff < min_LW_diff) then
+         !Difference between central WN and 11 um
+         LW_diff = SAD_Chan(i)%WvN - 909.0 
+         if (LW_diff < min_LW_diff) then
             min_LW_diff = LW_diff
-	    Ctrl%Ind%MDAD_LW = i
-	 end if
+            Ctrl%Ind%MDAD_LW = i
+         end if
       end if
 
 !     If the channel WN is greater then 10000 cm-1 and less than 20000 cm-1 then
@@ -333,13 +337,14 @@ write(*,*)'chan_file ios g',status
 !     Ctrl%Ind%MDAD_SW.
    
       if (SAD_Chan(i)%WvN > 10000.0 .and. SAD_Chan(i)%WvN < 20000.0) then
-!        Difference between central WN and 0.67 um
-	 SW_diff = SAD_Chan(i)%WvN - 14925.0 
-	 if (SW_diff < min_SW_diff) then
+         !Difference between central WN and 0.67 um
+
+         SW_diff = SAD_Chan(i)%WvN - 14925.0 
+         if (SW_diff < min_SW_diff) then
             min_SW_diff = SW_diff
-	    Ctrl%Ind%MDAD_SW = i
-	 end if   
-      end if 
+            Ctrl%Ind%MDAD_SW = i
+         end if
+      end if
       
    end do
 
