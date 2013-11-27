@@ -18,6 +18,7 @@
 ! History:
 ! 2011/12/09: MJ produces draft code with basic data types and lengths
 ! 2012/04/19: GT Added value of pi.
+! 20131127 MJ adds parameters for netcdf4 compression
 !
 ! $Id$
 !
@@ -71,5 +72,31 @@ module preproc_constants
   !WMO defined gravity constant which is constant  for all latitude and heights
   !used to convert from gph (m^2/s^2) to height (m) by h=gph/g_wmo
   real(kind=sreal), parameter :: g_wmo=9.80665
+
+  !some netcdf4 related parameters
+  !compression levels for variables of different type (0:none,9:maximum)
+  integer(kind=lint), parameter :: compress_level_float=7
+  integer(kind=lint), parameter :: compress_level_double=7
+  integer(kind=lint), parameter :: compress_level_lint=7
+  integer(kind=lint), parameter :: compress_level_nint=7
+  integer(kind=lint), parameter :: compress_level_stint=7
+  integer(kind=lint), parameter :: compress_level_byte=7
+  integer(kind=lint), parameter :: compress_level_stint_flag=7
+
+
+  !turn on shuffling to improve compression
+  logical, parameter :: shuffle_float=.TRUE.
+  logical, parameter :: shuffle_double=.TRUE.
+  logical, parameter :: shuffle_lint=.TRUE.
+  logical, parameter :: shuffle_nint=.TRUE.
+  logical, parameter :: shuffle_stint=.TRUE.
+  logical, parameter :: shuffle_byte=.TRUE.
+  logical, parameter :: shuffle_stint_flag=.TRUE.
+
+  !chunking array for internal file partitioning
+  !integer(kind=lint), parameter, dimension(3) :: chunksize3d=(/180,90,1/)
+  !for the 2D histogram
+  integer(kind=lint),dimension(6) :: chunksize6d
+
 
 end module preproc_constants

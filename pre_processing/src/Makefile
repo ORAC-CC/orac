@@ -19,8 +19,9 @@
 #archfile=arch.ifort.ox
 #libfile=lib.ifort.ox
 
-archfile=arch.ifort.ox
-libfile=lib.ifort.ox
+#ral/ox files are above, this is for dwd/ecmwf:
+archfile=arch.ecmwf.c2a.xlf
+libfile=lib.ecmwf.c2a.xlf
 
 include $(archfile)
 include $(libfile)

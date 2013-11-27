@@ -35,6 +35,7 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
   !2013 MJ adds PLATFORMUP varaible and output to comply with nomenclature.
 ! 2013/10/14: MJ fixed bug with writing of albedo and emissivity.
 ! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
+!20131127 MJ changes output from netcdf3 to netcdf4.
   ! Applied SPRs:
   !
   !-----------------------------------------------------------------------
@@ -98,7 +99,9 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
   !open stuff related to LW
   if(type .eq. 1 ) then 
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_lwrtm)
+     !MJ ORG ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_lwrtm)
+     !NETCDF4
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL),netcdf_info%ncid_lwrtm)
      write(*,*)'path lw',path
      IF (ierr.NE.NF90_NOERR)  stop 'error lw creating file'
 
@@ -136,7 +139,7 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define channel ids abs
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_lwrtm, 'lw_channel_abs_ids',&
-          & NF90_INT, netcdf_info%lwchanneldim, netcdf_info%channels_id_lw) 
+          & NF90_INT, netcdf_info%lwchanneldim, netcdf_info%channels_id_lw)
      IF (ierr.NE.NF90_NOERR) STOP 'def channels lw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%channels_id_lw, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue lw channel ids'
@@ -168,28 +171,32 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define counter variable
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_lwrtm, 'counter_lw', NF90_INT,&
-          & netcdf_info%xydim_lw, netcdf_info%counterid_lw) 
+          & netcdf_info%xydim_lw, netcdf_info%counterid_lw,&
+          & deflate_level=compress_level_lint,shuffle=shuffle_lint)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def counter lw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%counterid_lw, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var clw FillValue'
 
      !define solar zenith
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_lwrtm, 'solza_lw', NF90_FLOAT,&
-          &  netcdf_info%xyvdim_lw, netcdf_info%solzaid_lw) 
+          &  netcdf_info%xyvdim_lw, netcdf_info%solzaid_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def solza_lw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,netcdf_info%solzaid_lw, '_FillValue',real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var solza_lw FillValue'
 
      !define satellite zenith
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_lwrtm, 'satza_lw', NF90_FLOAT,&
-          &  netcdf_info%xyvdim_lw, netcdf_info%satzaid_lw) 
+          &  netcdf_info%xyvdim_lw, netcdf_info%satzaid_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def satza_lw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,netcdf_info%satzaid_lw, '_FillValue',real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var satza_lw FillValue'
 
      !define rez azimuth
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_lwrtm, 'relazi_lw', NF90_FLOAT,&
-          &  netcdf_info%xyvdim_lw, netcdf_info%relaziid_lw) 
+          &  netcdf_info%xyvdim_lw, netcdf_info%relaziid_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def relazi_lw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,netcdf_info%relaziid_lw, '_FillValue',real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var relazi_lw FillValue'
@@ -215,7 +222,8 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
      
      !define emissivity 3D
      ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'emiss_lw',&
-          & NF90_FLOAT, netcdf_info%xycdim_lw, netcdf_info%emiss_id_lw)
+          & NF90_FLOAT, netcdf_info%xycdim_lw, netcdf_info%emiss_id_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lw emiss'     
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%emiss_id_lw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
@@ -230,34 +238,39 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define tac profile at level centers as variable
      ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'tac_lw',&
-          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tac_id_lw)
+          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tac_id_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lw tac'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%tac_id_lw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      !define tbc
      ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'tbc_lw',&
-          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tbc_id_lw)
+          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tbc_id_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lw tbc'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%tbc_id_lw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      !define radiances
      ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'rbc_up_lw',&
-          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rbc_up_id_lw)
+          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rbc_up_id_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lw rbc_up'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%rbc_up_id_lw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'rac_up_lw',&
-          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_up_id_lw)
+          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_up_id_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lw rac_up'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%rac_up_id_lw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
 
      ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'rac_down_lw',&
-          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_down_id_lw)
+          & NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_down_id_lw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lw rac_down'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,  netcdf_info%rac_down_id_lw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
@@ -269,7 +282,8 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
      ctitle='ORAC Preprocessing swrtm output file'
      
      !create file
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_swrtm)
+     !MJ ORG ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_swrtm)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL),netcdf_info%ncid_swrtm)
      IF (ierr.NE.NF90_NOERR)  stop 'error creating sw file'
 
 
@@ -339,21 +353,24 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define solar zenith
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_swrtm, 'solza_sw', NF90_FLOAT,&
-          &  netcdf_info%xyvdim_sw, netcdf_info%solzaid_sw) 
+          &  netcdf_info%xyvdim_sw, netcdf_info%solzaid_sw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def solza_sw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%solzaid_sw, '_FillValue',real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var solza_sw FillValue'
 
      !define satellite zenith
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_swrtm, 'satza_sw', NF90_FLOAT,&
-          &  netcdf_info%xyvdim_sw, netcdf_info%satzaid_sw) 
+          &  netcdf_info%xyvdim_sw, netcdf_info%satzaid_sw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def satza_sw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%satzaid_sw, '_FillValue',real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var satza_sw FillValue'
 
      !define rez azimuth
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_swrtm, 'relazi_sw', NF90_FLOAT,&
-          &  netcdf_info%xyvdim_sw, netcdf_info%relaziid_sw) 
+          &  netcdf_info%xyvdim_sw, netcdf_info%relaziid_sw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def relazi_sw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%relaziid_sw, '_FillValue',real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var relazi_sw FillValue'
@@ -363,7 +380,8 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define counter variable
      ierr = NF90_DEF_VAR ( netcdf_info%ncid_swrtm, 'counter_sw', NF90_INT,&
-          & netcdf_info%xydim_sw, netcdf_info%counterid_sw) 
+          & netcdf_info%xydim_sw, netcdf_info%counterid_sw,&
+          & deflate_level=compress_level_lint,shuffle=shuffle_lint)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def counter sw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,  netcdf_info%counterid_sw, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var csw FillValue'
@@ -388,13 +406,15 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define tac profile at level centers as variable
      ierr = NF90_DEF_VAR( netcdf_info%ncid_swrtm, 'tac_sw',&
-          & NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tac_id_sw)
+          & NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tac_id_sw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def sw tac'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,  netcdf_info%tac_id_sw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      ierr = NF90_DEF_VAR( netcdf_info%ncid_swrtm, 'tbc_sw',&
-          & NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tbc_id_sw)
+          & NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tbc_id_sw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def sw tbc'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,  netcdf_info%tbc_id_sw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
@@ -403,7 +423,8 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
   elseif(type .eq. 3) then
 
      !create file
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_prtm)
+     !MJ ORGierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_prtm)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL),netcdf_info%ncid_prtm)
      IF (ierr.NE.NF90_NOERR)  stop 'error creating p file'
 
      !start defining things
@@ -444,19 +465,25 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 !!$     IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      !define i variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'i_pw', NF90_INT, netcdf_info%xydim_pw, netcdf_info%iid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'i_pw', NF90_INT, &
+          & netcdf_info%xydim_pw, netcdf_info%iid_pw,&
+          & deflate_level=compress_level_lint,shuffle=shuffle_lint)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def i'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%iid_pw, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var i FillValue'
 
      !define j variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'j_pw', NF90_INT, netcdf_info%xydim_pw, netcdf_info%jid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'j_pw', NF90_INT,&
+          & netcdf_info%xydim_pw, netcdf_info%jid_pw,&
+          & deflate_level=compress_level_lint,shuffle=shuffle_lint)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def j'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%jid_pw, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var j FillValue'
 
      !define counter variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'counter_pw', NF90_INT, netcdf_info%xydim_pw, netcdf_info%counterid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'counter_pw', NF90_INT,&
+          & netcdf_info%xydim_pw, netcdf_info%counterid_pw,&
+          & deflate_level=compress_level_lint,shuffle=shuffle_lint)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def counter pw'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%counterid_pw, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var i FillValue'
@@ -464,13 +491,17 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
 
      !define longitude variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'lon_pw', NF90_FLOAT, netcdf_info%xydim_pw, netcdf_info%lonid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'lon_pw', NF90_FLOAT,&
+          & netcdf_info%xydim_pw, netcdf_info%lonid_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)) 
      IF (ierr.NE.NF90_NOERR) STOP 'def lon'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%lonid_pw, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      !define latitude variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'lat_pw', NF90_FLOAT, netcdf_info%xydim_pw, netcdf_info%latid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'lat_pw', NF90_FLOAT,&
+          & netcdf_info%xydim_pw, netcdf_info%latid_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lat'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%latid_pw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
@@ -479,39 +510,47 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
 
      !define skint variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'skint_pw', NF90_FLOAT, netcdf_info%xydim_pw, netcdf_info%skintid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'skint_pw', NF90_FLOAT,&
+          & netcdf_info%xydim_pw, netcdf_info%skintid_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def skint'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%skintid_pw, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
 
      !define exp(lnsp) variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'explnsp_pw', NF90_FLOAT, netcdf_info%xydim_pw, netcdf_info%lnspid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'explnsp_pw', NF90_FLOAT,&
+          & netcdf_info%xydim_pw, netcdf_info%lnspid_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def explnsp'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%lnspid_pw, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
 
      !define exp(lsf) variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'lsf_pw', NF90_FLOAT, netcdf_info%xydim_pw, netcdf_info%lsfid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'lsf_pw', NF90_FLOAT,&
+          & netcdf_info%xydim_pw, netcdf_info%lsfid_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lsf'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%lsfid_pw, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
 
-
      !define satzen variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'satzen_pw', NF90_FLOAT, netcdf_info%xydim_pw, netcdf_info%satzenid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'satzen_pw', NF90_FLOAT,&
+          & netcdf_info%xydim_pw, netcdf_info%satzenid_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def satzen'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%satzenid_pw, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      !define solzen variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'solzen_pw', NF90_FLOAT, netcdf_info%xydim_pw, netcdf_info%solzenid_pw) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_prtm, 'solzen_pw', NF90_FLOAT,&
+          & netcdf_info%xydim_pw, netcdf_info%solzenid_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def solzen'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%solzenid_pw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
-
 
 
      !set up the combined dimensions for 3D fields
@@ -520,14 +559,16 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define pressure profile at level centers as variable
      ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'pprofile_lev',&
-          & NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%pprofile_lev_id_pw) 
+          & NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%pprofile_lev_id_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lat'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%pprofile_lev_id_pw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
 
      !define temperature profile at lever centers as variable
      ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'tprofile_lev',&
-          & NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%tprofile_lev_id_pw) 
+          & NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%tprofile_lev_id_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lat'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%tprofile_lev_id_pw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
@@ -543,7 +584,8 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 
      !define geopotential height profile at lever centers as variable
      ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'gphprofile_lev',&
-          & NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%hprofile_lev_id_pw) 
+          & NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%hprofile_lev_id_pw,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def lat'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm,  netcdf_info%hprofile_lev_id_pw, '_FillValue',  real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue'
@@ -793,7 +835,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
   !open stuff related to msi
   if(type .eq. 1 ) then 
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_msi)
+     !MJ ORGierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_msi)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_msi)
      IF (ierr.NE.NF90_NOERR)  stop 'error msi creating file'
 
      ctitle='ORAC Preprocessing msi output file'
@@ -867,7 +910,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      dims2d(1)=netcdf_info%xdim_msi
      dims2d(2)=netcdf_info%ydim_msi
      !define time variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'time_data', NF90_DOUBLE, dims2d, netcdf_info%timeid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'time_data', NF90_DOUBLE, dims2d, netcdf_info%timeid,&
+          & deflate_level=compress_level_double,shuffle=shuffle_double)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def time'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%timeid, '_FillValue', double_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue time'
@@ -880,7 +924,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
  
 
      !define msi variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_data', NF90_FLOAT, dims3dd, netcdf_info%msid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_msi, 'msi_data', NF90_FLOAT, dims3dd, netcdf_info%msid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def msi'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_msi,  netcdf_info%msid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue msi'
@@ -888,7 +933,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      !open cloud flag file
   elseif(type .eq. 2) then
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_cf)
+     !MJ ORGierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_cf)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_cf)
      IF (ierr.NE.NF90_NOERR)  stop 'error cf creating file'
 
      ctitle='ORAC Preprocessing cf output file'
@@ -921,7 +967,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      !open land/sea flag file
   elseif(type .eq. 3) then
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_lsf)
+     !MJ ORGierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_lsf)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_lsf)
      IF (ierr.NE.NF90_NOERR)  stop 'error lsf creating file'
 
      ctitle='ORAC Preprocessing lsf output file'
@@ -953,7 +1000,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      !open geometry file
   elseif(type .eq. 4) then
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_geo)
+     !MJ ORG ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_geo)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_geo)
      IF (ierr.NE.NF90_NOERR)  stop 'error geo creating file'
 
      ctitle='ORAC Preprocessing geo output file'
@@ -984,19 +1032,22 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      dims3d(2)=netcdf_info%ydim_geo
      dims3d(3)=netcdf_info%vdim_geo
      !define solzen variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'solzen', NF90_FLOAT, dims3d, netcdf_info%solzenid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'solzen', NF90_FLOAT, dims3d, netcdf_info%solzenid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def solzen'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_geo,  netcdf_info%solzenid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue solzen'
 
      !define satzen variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'satzen', NF90_FLOAT, dims3d, netcdf_info%satzenid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'satzen', NF90_FLOAT, dims3d, netcdf_info%satzenid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def satzen'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_geo,  netcdf_info%satzenid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue satzen'
 
      !define solaz variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'solaz', NF90_FLOAT, dims3d, netcdf_info%solazid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'solaz', NF90_FLOAT, dims3d, netcdf_info%solazid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def solaz'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_geo,  netcdf_info%solazid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue solaz'
@@ -1011,7 +1062,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
 
 
      !define relazi variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'relazi', NF90_FLOAT, dims3d, netcdf_info%relazid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_geo, 'relazi', NF90_FLOAT, dims3d, netcdf_info%relazid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def relazi'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_geo,  netcdf_info%relazid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue relazi'
@@ -1021,7 +1073,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      !open location file
   elseif(type .eq. 5) then
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_loc)
+     !MJ ORGierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_loc)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_loc)
      IF (ierr.NE.NF90_NOERR)  stop 'error loc creating file'
 
      ctitle='ORAC Preprocessing loc output file'
@@ -1044,13 +1097,15 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      dims2d(2)=netcdf_info%ydim_loc
 
      !define lon variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_loc, 'lon', NF90_FLOAT, dims2d, netcdf_info%lonid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_loc, 'lon', NF90_FLOAT, dims2d, netcdf_info%lonid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def loc'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_loc,  netcdf_info%lonid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue loc'
 
      !define lat variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_loc, 'lat', NF90_FLOAT, dims2d, netcdf_info%latid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_loc, 'lat', NF90_FLOAT, dims2d, netcdf_info%latid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def loc'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_loc,  netcdf_info%latid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue loc'
@@ -1059,7 +1114,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
   !open stuff related to albedo
   elseif(type .eq. 6 ) then 
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_alb)
+     !MJ ORGierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_alb)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_alb)
      IF (ierr.NE.NF90_NOERR)  stop 'error alb creating file'
 
      ctitle='ORAC Preprocessing alb output file'
@@ -1113,7 +1169,8 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      dims3d(3)=netcdf_info%cdim_alb
 
      !define alb variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'alb_data', NF90_FLOAT, dims3d, netcdf_info%albid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'alb_data', NF90_FLOAT, dims3d, netcdf_info%albid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def alb'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_alb,  netcdf_info%albid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue alb'
@@ -1124,14 +1181,16 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      dims3d(3)=netcdf_info%cdim_emis
 
      !define emis variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'emis_data', NF90_FLOAT, dims3d, netcdf_info%emisid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_alb, 'emis_data', NF90_FLOAT, dims3d, netcdf_info%emisid,&
+          & deflate_level=compress_level_float,shuffle=shuffle_float)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def emis'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_alb,  netcdf_info%emisid, '_FillValue', real_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue emis'
 
   elseif(type .eq. 7) then
 
-     ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_scan)
+     !MJ ORG ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_scan)
+     ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_scan)
      IF (ierr.NE.NF90_NOERR)  stop 'error scan creating file'
 
      ctitle='ORAC Preprocessing scan output file'
@@ -1154,14 +1213,16 @@ SUBROUTINE nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday,pla
      dims2d(2)=netcdf_info%ydim_scan
 
      !define u variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_scan, 'uscan', NF90_INT, dims2d, netcdf_info%uscanid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_scan, 'uscan', NF90_INT, dims2d, netcdf_info%uscanid,&
+          & deflate_level=compress_level_lint,shuffle=shuffle_lint)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def scan u'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_scan,  netcdf_info%uscanid, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue u scan'
 
 
      !define v variable
-     ierr = NF90_DEF_VAR ( netcdf_info%ncid_scan, 'vscan', NF90_INT, dims2d, netcdf_info%vscanid) 
+     ierr = NF90_DEF_VAR ( netcdf_info%ncid_scan, 'vscan', NF90_INT, dims2d, netcdf_info%vscanid,&
+          & deflate_level=compress_level_lint,shuffle=shuffle_lint)!, chunksizes=chunksize3d)
      IF (ierr.NE.NF90_NOERR) STOP 'def scan v'
      ierr = NF90_PUT_ATT(netcdf_info%ncid_scan,  netcdf_info%vscanid, '_FillValue', long_int_fill_value )
      IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var FillValue v scan'
@@ -1344,7 +1405,8 @@ SUBROUTINE nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday,pl
   type(channel_info_s) :: channel_info
 
   ! End of header ----------------------------------------------------------
-  ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_config)
+  !MJ ORG ierr = NF90_CREATE(path, NF90_CLOBBER, netcdf_info%ncid_config)
+  ierr = NF90_CREATE(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), netcdf_info%ncid_config)
   IF (ierr.NE.NF90_NOERR)  stop 'error config creating file'
   
   ctitle='ORAC Preprocessing config  file'
