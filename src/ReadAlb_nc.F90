@@ -72,6 +72,8 @@
 !   15/09/2012 CP initialise array
 !   15/09/2012 CP changed to read from netcdf files
 ! 2013 Matthias Jerg fixes bug with close of netcdf file.
+! 20131118 MJ cleans and debugs:Loop to read albedo is indexed with ysolar as ysolar halds the channel
+!indices as they are stored in the preprocessing file.
 ! Bugs:
 !   None known.
 !
@@ -130,42 +132,41 @@ Subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
            'Read_ALB: Error opening file ', trim(adjustl(Ctrl%Fid%AUX))
       call Write_Log(Ctrl, trim(message), status)
    else
-!        Allocate Data%ALB structure size to match image segments to be read in.
+      !        Allocate Data%ALB structure size to match image segments to be read in.
+      !MJ ORGallocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, 4))
+      allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+      
+      !read instrument channel indices from file
+      allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
+      alb_instr_ch_numbers=0_nint
+      call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%NSolar,"alb_abs_ch_numbers",alb_instr_ch_numbers,0)
+      
+      !loop over channels and read if desired channel number is hit
+      ios=nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date)
 
-      allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, 4))
-     
-     !read instrument channel indices from file
-     allocate(alb_instr_ch_numbers(Ctrl%Ind%Nyp))
-     alb_instr_ch_numbers=0_nint
+      do ii=1,Ctrl%Ind%NSolar !MJORG!4!Ctrl%Ind%Ny
+         write(*,*) 'Ctrl%Ind%ysolar(ii)',Ctrl%Ind%ysolar(ii)
+         call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%ysolar(ii),"alb_data",MSI_Data%ALB(:,:,ii),0)
+!         call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,ii,"alb_data",MSI_Data%ALB(:,:,ii),0)
 
-!     call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%Nyp,"alb_abs_ch_numbers",alb_instr_ch_numbers,0)
+         write(*,*) 'Max/Min Alb',maxval(MSI_Data%ALB(:,:, ii)),minval(MSI_Data%ALB(:,:, ii))
+      enddo
+      
+      !write(*,*) 'alb_data',MSI_Data%ALB(1, 1, :)	 
+      !    write(*,*) 'alb_data',MSI_Data%ALB(1, 1, 1)	 
+      !    write(*,*) 'alb_data',MSI_Data%ALB(300, 300, :)
 
-     !loop over channels and read if desired channel number is hit
-  ios=nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date)
-     write(*,*) ios,prod_date
+      deallocate(alb_instr_ch_numbers)
+      !write(*,*) 'Done reading ALB input' 
 
-     do ii=1,4!Ctrl%Ind%Ny
-
-              call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,ii,"alb_data",MSI_Data%ALB(:,:,ii),0)
-
-     enddo
-
-     write(*,*) 'alb_data',MSI_Data%ALB(1, 1, :)	 
-!    write(*,*) 'alb_data',MSI_Data%ALB(1, 1, 1)	 
-!    write(*,*) 'alb_data',MSI_Data%ALB(300, 300, :)
-
-     deallocate(alb_instr_ch_numbers)
-     write(*,*) 'Done reading ALB input' 
-
-
+      !obsolete comment:
       !        Read file header and extract the date: use date to calculate day of
       !        year. Date format is DD-MMM-YYYY HH:MM:SS.mmm
-	write(*,*)'alb status',status,ios
- 
-      end if
+     end if
 
-  !close  alb input file
-  ios=nf90_close(ncid)
+     !close  alb input file
+     ios=nf90_close(ncid)
+     write(*,*)'Reading Albedo done (status)',status,ios
 
- end subroutine Read_ALB_nc
+   end subroutine Read_ALB_nc
 

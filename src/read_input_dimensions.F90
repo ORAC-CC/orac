@@ -220,7 +220,7 @@ SUBROUTINE read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim,laydim,
   !close  input file
   ierr=nf90_close(ncid)
 
-  write(*,*) 'in lwrtm end', Ctrl%Ind%Y_Id
+  !write(*,*) 'in lwrtm end', Ctrl%Ind%Y_Id
   !stop
 
 end SUBROUTINE read_input_dimensions_lwrtm

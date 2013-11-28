@@ -133,7 +133,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
     real           :: Rad, dR_dT
 
 !   Set status to zero
-
     status = 0
     
 !   Check whether solar channels can be used and allocate size of SPixel%Ym
@@ -157,7 +156,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 !   requested channels (not just those that are valid for the current SPixel).
 
    SPixel%Ym = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-      StartChan: Ctrl%Ind%Ny)
+        & StartChan:Ctrl%Ind%Ny)
    SPixel%ViewIdx = Ctrl%Ind%ViewIdx(StartChan: Ctrl%Ind%Ny)
    SPixel%Ind%Nviews = Ctrl%Ind%NViews
 
@@ -176,44 +175,41 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
     if (Ctrl%Eqmpn%Homog /= 0) then
        do i = 1, SPixel%Ind%Ny
           j = i+StartChan-1
+          
+          if  (SPixel%Ym(i) .le. 0.0) then
+             SPixel%Sy(i,i)=1e6
+          end if
 
-	     if  (SPixel%Ym(i) .le. 0.0) then
-!	  write(*,*)' SPixel%Ym(i) ', SPixel%Ym(1), SPixel%Ym(2), SPixel%Ym(3),  SPixel%Ym(4),SPixel%Sy(i,i),SPixel%Illum(1) 
-	     	  SPixel%Sy(i,i)=1e6
-! write(*,*)'SPixel%Sy(i,i)',SPixel%Sy(i,i)	
-             
-	      end if
-
-
+          !daylight
           if (SPixel%Illum(1) == IDay) then
              if (SAD_Chan(j)%Solar%Flag /= 0) then
                 if (SAD_Chan(j)%Thermal%Flag /= 0) then ! Mixed channel?
-
+                   !both solar and thermal => mixed
 !                  Convert NedR to brightness temperature and add to Sy
 !                  Also add in the thermal contribution to Sy
 
                    call T2R(1, SAD_Chan(j), SPixel%Ym(i), Rad, dR_dT, status)
                    SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                      SAD_Chan(j)%Thermal%NeHomog(Ctrl%CloudType) + & 
-                      SAD_Chan(j)%Solar%NeHomog(Ctrl%CloudType) * &
-                      (SAD_Chan(j)%Solar%f0 / dR_dT) ** 2
+                        & SAD_Chan(j)%Thermal%NeHomog(Ctrl%CloudType) + & 
+                        & SAD_Chan(j)%Solar%NeHomog(Ctrl%CloudType) * &
+                        & (SAD_Chan(j)%Solar%f0 / dR_dT) ** 2
 
                 else ! Pure solar channel, just add the solar Ne contribution
                    SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                      SAD_Chan(j)%Solar%NeHomog(Ctrl%CloudType) * &
-                      SPixel%Ym(i) * SPixel%Ym(i)               
-                end if                
+                        & SAD_Chan(j)%Solar%NeHomog(Ctrl%CloudType) * &
+                        & SPixel%Ym(i) * SPixel%Ym(i)               
+                end if
              end if
      
           else ! Night/twilight, only thermal channel info required
              if (SAD_Chan(j)%Thermal%Flag /= 0) then
                 SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                   SAD_Chan(j)%Thermal%NeHomog(Ctrl%CloudType)
+                     & SAD_Chan(j)%Thermal%NeHomog(Ctrl%CloudType)
              end if
           end if
        end do
     end if ! End of Homog noise section
-
+    
     if (Ctrl%Eqmpn%Coreg /= 0) then
        do i = 1, SPixel%Ind%Ny
           j = i+StartChan-1
@@ -226,24 +222,24 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
                    call T2R(1, SAD_Chan(j), SPixel%Ym(i), Rad, dR_dT, status)
                    SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                      SAD_Chan(j)%Thermal%NeCoreg(Ctrl%CloudType) + & 
-                      SAD_Chan(j)%Solar%NeCoreg(Ctrl%CloudType) * &
-                      (SAD_Chan(j)%Solar%f0 / dR_dT) ** 2
+                        & SAD_Chan(j)%Thermal%NeCoreg(Ctrl%CloudType) + & 
+                        & SAD_Chan(j)%Solar%NeCoreg(Ctrl%CloudType) * &
+                        & (SAD_Chan(j)%Solar%f0 / dR_dT) ** 2
 
                 else ! Pure solar channel, just add the solar Ne contribution
                    SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                      SAD_Chan(j)%Solar%NeCoreg(Ctrl%CloudType) * &
-                      SPixel%Ym(i) * SPixel%Ym(i)
-                end if                
+                        & SAD_Chan(j)%Solar%NeCoreg(Ctrl%CloudType) * &
+                        & SPixel%Ym(i) * SPixel%Ym(i)
+                end if
              end if
 
           else ! Night/twilight, only thermal channel info required
              if (SAD_Chan(j)%Thermal%Flag /= 0) then
                 SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                   SAD_Chan(j)%Thermal%NeCoreg(Ctrl%CloudType)
+                     & SAD_Chan(j)%Thermal%NeCoreg(Ctrl%CloudType)
              end if
           end if
        end do
     end if ! End of Coreg noise section
 
-end subroutine Get_Measurements
+  end subroutine Get_Measurements

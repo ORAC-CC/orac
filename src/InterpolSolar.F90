@@ -94,12 +94,12 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
     integer :: i
     integer :: j
     real    :: delta_p
-!    real    :: delta_Tac(SPixel%Ind%Ny-SPixel%Ind%NThermal)
-!    real    :: delta_Tbc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
+!MJ ORG    real    :: delta_Tac(SPixel%Ind%Ny-SPixel%Ind%NThermal)
+!MJ ORG    real    :: delta_Tbc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
     real    :: delta_Tac(SPixel%Ind%NSolar)
     real    :: delta_Tbc(SPixel%Ind%NSolar)
     real    :: delta_Pc
-!    real    :: delta_Tc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
+!MJ ORG    real    :: delta_Tc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
     real    :: delta_Tc(SPixel%Ind%NSolar)
     character(180) :: message
     integer :: bkp_lun                 !    Unit number for breakpoint file
@@ -168,7 +168,7 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 !       (delta_Tac/bc are positive for increasing trans. with increasing i)
 
         delta_Tac = SPixel%RTM%SW%Tac(:,i+1) - SPixel%RTM%SW%Tac(:,i)
-	delta_Tbc = SPixel%RTM%SW%Tbc(:,i+1) - SPixel%RTM%SW%Tbc(:,i)
+        delta_Tbc = SPixel%RTM%SW%Tbc(:,i+1) - SPixel%RTM%SW%Tbc(:,i)
 
 !       Gradients of trans. with pressure (around Pc)
 !       Change in trans / change in p

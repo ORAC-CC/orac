@@ -107,13 +107,28 @@ Subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, &
 !  channels from First to NY. 
 
    call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:),status)
+        &SAD_LUT%Grid, GZero, Ctrl,&
+        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd,:),status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Rd(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:),status)
+        & SAD_LUT%Grid, GZero, Ctrl,&
+        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd,:),status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Em(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IEm), dCRPOut(:,IEm,:),status)
+        & SAD_LUT%Grid, GZero, Ctrl,&
+        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm,:),status)
+
+
+
+!MJ ORG
+!!$   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
+!!$      SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:),status)
+!!$
+!!$   call Int_LUT_TauSatRe(SAD_LUT%Rd(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
+!!$      SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:),status)
+!!$
+!!$   call Int_LUT_TauSatRe(SAD_LUT%Em(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
+!!$      SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IEm), dCRPOut(:,IEm,:),status)
 
 
 End Subroutine Set_CRP_Thermal

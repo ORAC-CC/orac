@@ -108,6 +108,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       write(*, *) 'Read_LUTEm: Error opening file ', trim(LUT_file) 
       write(message, *) 'Read_LUTEm: Error opening file ', trim(LUT_file) 
       call Write_Log(Ctrl, trim(message), status)
+      stop
    else
       
 
@@ -183,9 +184,10 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
    
 999 if (ios /= 0) then
       status = LUTFileReadErr 
-      write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
+      write(*,*)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       call Write_Log(Ctrl, trim(message), status)
+      stop
    end if
  end Subroutine Read_LUT_Em
 
@@ -283,6 +285,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       write(*, *) 'Read_LUTRbd: Error opening file ', trim(LUT_file) 
       write(message, *) 'Read_LUTRbd: Error opening file ', trim(LUT_file) 
       call Write_Log(Ctrl, trim(message), status)
+      stop
    else
       !Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
@@ -383,6 +386,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       call Write_Log(Ctrl, trim(message), status)
+      stop
    end if
  end Subroutine Read_LUT_RBD
 
@@ -483,6 +487,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       write(*, *) 'Read_LUTRd: Error opening file ', trim(LUT_file)
       write(message, *) 'Read_LUTRd: Error opening file ', trim(LUT_file)
       call Write_Log(Ctrl, trim(message), status)
+      stop
    else
 !     Read the file contents into the SAD_LUT structure
 
@@ -573,6 +578,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       call Write_Log(Ctrl, trim(message), status)
+      stop
    end if
    
  end Subroutine Read_LUT_Rd
@@ -672,7 +678,9 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       write(*, *) 'Read_LUTTb: Error opening file ', trim(LUT_file) 
       write(message, *) 'Read_LUTTb: Error opening file ', trim(LUT_file) 
       call Write_Log(Ctrl, trim(message), status)
+      stop
    else
+      write(*, *) 'Read_LUTTb:', trim(LUT_file) 
 !     Read the file contents into the SAD_LUT structure
 
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
@@ -732,9 +740,35 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       end if
 
       if (status == 0) then
+!!$         do k=1, SAD_LUT%Grid%nRe
+!!$               do  j=1, SAD_LUT%Grid%nSolzen                  
+!!$                  do  i=1, SAD_LUT%Grid%nTau
+!!$                  read(l_lun, LUTArrayForm, err=999, iostat=ios) SAD_LUT%Tb(chan, i, j, k)
+!!$                  write(*,*) 'chan, i, j, k',i,j,k,SAD_LUT%Tb(chan, i, j, k)
+!!$               enddo
+!!$            enddo
+!!$         enddo
+
+!!$                  read(l_lun, LUTArrayForm, err=999, iostat=ios) &
+!!$              & (((SAD_LUT%Tb(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
+!!$              & j=1, SAD_LUT%Grid%nSolzen), k=1, SAD_LUT%Grid%nRe) 
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
               & (((SAD_LUT%Tb(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
               & j=1, SAD_LUT%Grid%nSolzen), k=1, SAD_LUT%Grid%nRe) 
+         
+         
+         
+
+!!$         do k=1, SAD_LUT%Grid%nRe
+!!$            do  j=1, SAD_LUT%Grid%nSolzen
+!!$               do  i=1, SAD_LUT%Grid%nTau
+!!$                  write(*,*) 'chan, i, j, k',i,j,k,SAD_LUT%Tb(chan, i, j, k)
+!!$               enddo
+!!$            enddo
+!!$         enddo
+!         stop
+
+
       end if
 
       close(unit=l_lun)
@@ -745,6 +779,7 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       call Write_Log(Ctrl, trim(message), status)
+      stop
    end if
  end Subroutine Read_LUT_Tb
  
@@ -851,6 +886,7 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       write(*, *) 'Read_LUTTbd: Error opening file ', trim(LUT_file) 
       write(message, *) 'Read_LUTTbd: Error opening file ', trim(LUT_file) 
       call Write_Log(Ctrl, trim(message), status)
+      stop
    else
       !     Read the file contents into the SAD_LUT structure
       
@@ -992,6 +1028,7 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       call Write_Log(Ctrl, trim(message), status)
+      stop
    end if
  end Subroutine Read_LUT_Tbd
 
@@ -1092,6 +1129,7 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       write(*, *) 'Read_LUTTd: Error opening file ', trim(LUT_file) 
       write(message, *) 'Read_LUTTd: Error opening file ', trim(LUT_file) 
       call Write_Log(Ctrl, trim(message), status)
+      stop
    else
 !     Read the file contents into the SAD_LUT structure
 
@@ -1177,6 +1215,7 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       write(*, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       write(message, *)'Read_LUT: Error reading LUT file ', trim(LUT_file)
       call Write_Log(Ctrl, trim(message), status)
+      stop
    end if
  end Subroutine Read_LUT_Td
  
@@ -1348,7 +1387,11 @@ Subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
 
       !loop over the used channels
       do j=1, Ctrl%Ind%Ny
-         if (status /= 0) exit ! Drop out if an open or read error occurred
+         if (status /= 0) then
+            write(*,*) 'Failed to process Lut for index',j
+            stop
+            exit ! Drop out if an open or read error occurred
+         endif
 
          !create "chXX" string
          if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) < 10) then 

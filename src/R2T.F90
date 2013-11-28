@@ -33,6 +33,7 @@
 !   27th Feb 2001, andy Smith:
 !      Bug fix: following previous change, SAD_Chan needs an array 
 !      index when used: SAD_Chan(:)%X, not SAD_Chan%X
+!20131125 MJ fixed division by zero in log.
 !
 ! Bugs:
 !   None known.
@@ -41,6 +42,7 @@
 subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 
     use SAD_Chan_def
+    use ECP_Constants
 
     implicit none
 
@@ -53,7 +55,7 @@ subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
     real(4) :: R(NChan)
     real(4) :: T(NChan)
     real(4) :: d_T_d_R(NChan)
-    integer :: status
+    integer :: status,ichan
 
 !   Define local variables
 
@@ -65,6 +67,14 @@ subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
     status = 0
 
 !   Begin calculating temperatures
+
+!!$    write(*,*) 'inside log',(SAD_Chan(:)%Thermal%B1 / R ) + 1.0
+!!$    write(*,*) SAD_Chan(:)%Thermal%B1 / R
+!!$    write(*,*) SAD_Chan(:)%Thermal%B1 
+!!$    write(*,*) R
+    do ichan=1,NChan
+       if(R(ichan) .le. ditherm6) R(ichan)=max(R(ichan),ditherm6)
+    enddo
 
     C = log( ( SAD_Chan(:)%Thermal%B1 / R ) + 1.0 )
 !    write(*,*) C, SAD_Chan(:)%Thermal%T2

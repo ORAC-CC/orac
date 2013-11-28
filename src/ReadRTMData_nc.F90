@@ -45,13 +45,11 @@ subroutine Read_RTMData_nc(Ctrl, RTM, status)
   !   status = 0
   
   !  LONGWAVE SECTION
-  
   call Read_LwRTM_nc(Ctrl, RTM, status)
-  !write(*,*) 'LW',status
-  !pause
-  !  SHORTWAVE SECTION
+  write(*,*) 'Reading LW data done (status)',status
 
+  !  SHORTWAVE SECTION
   if (status == 0) call Read_SwRTM_nc(Ctrl, RTM, status)
-  !   write(*,*) 'SW',status				
+  write(*,*) 'Reading SW data done (status)',status
   
 end subroutine Read_RTMData_nc

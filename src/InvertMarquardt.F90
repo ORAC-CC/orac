@@ -345,9 +345,6 @@ Subroutine Invert_Marquardt (Ctrl, SPixel, SAD_Chan, SAD_LUT, &
    !  Set state variable limits for initial phase 
    
    call Set_Limits(Ctrl, SPixel, stat)
-   
-
-
 
    !  Calculate measurements at first-guess state vector X0 (SPixel%X0) 
    !  X0 should be provided un-scaled. Only used in the FM call and Xdiff(?)
@@ -664,6 +661,7 @@ Subroutine Invert_Marquardt (Ctrl, SPixel, SAD_Chan, SAD_LUT, &
                Xdiff = (Xplus_dX(SPixel%X) - SPixel%Xb(SPixel%X)) &
                     & * Ctrl%Invpar%XScale(SPixel%X)
                Ydiff = Y - SPixel%Ym
+               !write(*,*) 'ydiff',ydiff
                !MJ ORG Diag%YmFit= Ydiff
                Diag%YmFit(1:SPixel%Ind%NY)= Ydiff
                Ja    = dot_product(Xdiff, matmul(SxInv, Xdiff))

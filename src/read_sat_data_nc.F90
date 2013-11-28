@@ -78,37 +78,30 @@ Subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, &
  
    call Read_MSI_nc(Ctrl, NSegs, SegSize, &
         & MSI_Data, SAD_Chan, status)
-   write(*,*) 'status readmsi data 1',status
+   write(*,*) 'Reading MSI data (status)',status
    if (status == 0) call Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
-   write(*,*) 'status readcf data 2',status
+   write(*,*) 'Reading Cloud Flag data (status)',status
    if (status == 0) call Read_LSFlags_nc(Ctrl, NSegs, SegSize, &
         & MSI_Data, status)
-   write(*,*) 'status readlsf data 4',status
+   write(*,*) 'Reading LS Flag data (status)',status
    
    if (status == 0) call Read_Geometry_nc(Ctrl, NSegs, SegSize, &
         & MSI_Data, status)
-   
-   write(*,*) 'status readgeom data 3',status
+   write(*,*) 'Reading Geometry data (status)',status
+
    if (status == 0) call Read_Location_nc(Ctrl, NSegs, SegSize,MSI_Data, status)
-      write(*,*) 'status readloc data 5',status
-      
-      if (status == 0) call Read_illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
-      write(*,*) 'status readillum data 7',status
-      minsolzen=minval(MSI_Data%Geometry%Sol(:,:, :)) 
-      
-      write(*,*)'minsolzen',minsolzen,Ctrl%MaxSolzen
+   write(*,*) 'Reading Location data (status)',status
+   
+   if (status == 0) call Read_illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   write(*,*) 'Reading Illumination data (status)',status
+   minsolzen=minval(MSI_Data%Geometry%Sol(:,:, :)) 
 
-!      if (minsolzen < Ctrl%MaxSolzen) then
-!         goto 500
+   if (Ctrl%RS%Flag == SelmAux) then
+      if (status == 0) call Read_Alb_nc(Ctrl, NSegs, SegSize,MSI_Data, status)
+      write(*,*) 'Reading Albedo data (status)',status
+   endif
 
-         if (Ctrl%RS%Flag == SelmAux) then
-            if (status == 0) call Read_Alb_nc(Ctrl, NSegs, SegSize,MSI_Data, status)
-            write(*,*)'status readsat data 6',status
-         endif
-!      endif
-500   continue
-
-      if (status == 0) call Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
-      write(*,*) 'status readsat data 7',status
+   if (status == 0) call Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   write(*,*) 'Reading Scanline data (status)',status
       
-    end subroutine Read_SatData_nc
+ end subroutine Read_SatData_nc

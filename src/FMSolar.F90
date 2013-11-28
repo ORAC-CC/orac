@@ -172,47 +172,52 @@ Subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
 !  by FMThermal prior to this routine.
 
    call Set_CRP_Solar(Ctrl, SPixel%Ind, GZero, SAD_LUT, CRP, d_CRP, status)
-!   write(*,*) 'after set'
-
+!!$   write(*,*) 'after set'
+!!$   do i=1,SPixel%Ind%NSolar
+!!$      do j=1,MaxCRProps
+!!$         write(*,*) i,j,crp(i,j)
+!!$      enddo
+!!$   enddo
+!!$   stop
 !  Calculate transmittances
-
+   !striclty this loop should have solarfirst and last as boundaries?
    do i=1,SPixel%Ind%NSolar
-      Tac_o(i) = RTM_Pc%Tac(i) ** SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) ! Above cloud at solar zenith angle
-      Tac_v(i) = RTM_Pc%Tac(i) ** SPixel%Geom%SEC_v(SPixel%ViewIdx(i)) ! Above cloud at viewing angle
+      ! Above cloud at solar zenith angle:
+      Tac_o(i) = RTM_Pc%Tac(i) ** SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+      ! Above cloud at viewing angle:
+      Tac_v(i) = RTM_Pc%Tac(i) ** SPixel%Geom%SEC_v(SPixel%ViewIdx(i))
    end do
 
-   Tbc2 = RTM_Pc%Tbc(1:SPixel%Ind%Nsolar) * RTM_Pc%Tbc(1:SPixel%Ind%Nsolar) ! Calculate square of T_BC
+   ! Calculate square of T_BC
+   Tbc2 = RTM_Pc%Tbc(1:SPixel%Ind%Nsolar) * RTM_Pc%Tbc(1:SPixel%Ind%Nsolar)
 
-!  Calculate top of atmosphere 2-path transmittance for overcast (full cloud cover)
-!  conditions
-
-   T = Tac_o(1:SPixel%Ind%Nsolar) * Tac_v(1:SPixel%Ind%Nsolar) ! Above cloud transmittance for reflected radiation
-
-!  Sum of direct and diffuse beam transmissions
-!  Referencing of different properties stored in CRP and d_CRP: the last
-!  index of the CRP array refers to the property. Hence ITB is the index
-!  of TB, etc.
-
+   !  Calculate top of atmosphere 2-path transmittance for overcast (full cloud cover)
+   !  conditions
+   ! Above cloud transmittance for reflected radiation:
+   T = Tac_o(1:SPixel%Ind%Nsolar) * Tac_v(1:SPixel%Ind%Nsolar)
+   
+   !  Sum of direct and diffuse beam transmissions
+   !  Referencing of different properties stored in CRP and d_CRP: the last
+   !  index of the CRP array refers to the property. Hence ITB is the index
+   !  of TB, etc.
    T_all = (CRP(:,ITB) + CRP(:,ITFBd)) 
 
    S_dnom = 1.0 - (SPixel%Rs * CRP(:,IRFd) * Tbc2)
-!  CRP(1:SPixel%Ind%Nsolar,IRFd), diffuse reflectance
+   !  CRP(1:SPixel%Ind%Nsolar,IRFd), diffuse reflectance
 
    S = ( T_all * SPixel%Rs * CRP(:,ITd) * Tbc2 ) / S_dnom
 
    Sp = Tbc2 / S_dnom
 
-!  Below cloud transmittance for reflected radiation 
-
+   !  Below cloud transmittance for reflected radiation 
    REF_over = T * (CRP(:,IRBd) + S) ! Total 
 
-!  Calculate top of atmosphere reflectance for fractional cloud cover
+   !  Calculate top of atmosphere reflectance for fractional cloud cover
+   !!MJ this is actualy obsolete as X(iFR)==1
+   REF = (X(IFr)*REF_over)   + ((1.0-X(IFr)) * SPixel%RTM%REF_clear) 
 
-   REF = (X(IFr)*REF_over) + ((1.0-X(IFr)) * SPixel%RTM%REF_clear) 
-
-!  Calculate derivatives of reflectance w.r.t. all other variables
-!  for part cloudy conditions
-
+   !  Calculate derivatives of reflectance w.r.t. all other variables
+   !  for part cloudy conditions
    TBTD = T_all * CRP(:,ITd) ! See ATBD, T_B * T_D
 
 !   write(*,*) 'd_REF(:,ITau)',d_REF(:,ITau)

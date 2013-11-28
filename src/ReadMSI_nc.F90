@@ -109,6 +109,7 @@
 ! 2012/08/21 MJ uses original routine and implements reading of netcdf data.
 ! 2012/09/21  CP added channel index to y_id value
 ! 2012/11/03  MST and MJ  hard code in values for avhrr
+! 20131118 MJ cleans and debugs
 
 ! Bugs:
 !   None known.
@@ -164,18 +165,19 @@ Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &
   status = 0
   !     Open MSI file
   ios = nf90_open(path=trim(adjustl(Ctrl%Fid%MSI)),mode = nf90_nowrite,ncid = ncid) 
-  !write(*,*) trim(adjustl(Ctrl%Fid%MSI)),ios, NF90_NOERR
 
   if (ios /= NF90_NOERR) then
      status = MSIFileOpenErr ! Return error code
      write(unit=message, fmt=*) &
           & 'Read_MSI: Error opening file ', trim(adjustl(Ctrl%Fid%MSI))
      call Write_Log(Ctrl, trim(message), status)
+     write(*,*) 'Read_MSI: Error opening file ', trim(adjustl(Ctrl%Fid%MSI))
+     stop
   else
      
      !Read product date and time from netcdf global attributes
      ios=nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date)
-     !write(*,*) ios,prod_date
+
      if (ios == 0) then
         Ctrl%Date=trim(adjustl(prod_date(1:8)))
         Ctrl%Time=trim(adjustl(prod_date(9:12)))
@@ -200,8 +202,8 @@ Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &
         
         do i = 1, Ctrl%Ind%Ny
            if (SAD_Chan(i)%Solar%Flag > 0) &
-                SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
-                (SAD_Chan(i)%Solar%F1 * cos(2 * Pi * Ctrl%DOY / 365.))
+                & SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
+                & (SAD_Chan(i)%Solar%F1 * cos(2 * Pi * Ctrl%DOY / 365.))
         end do
         
      else
@@ -209,32 +211,23 @@ Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &
         write(unit=message, fmt=*) &
              'Read_MSI: Error reading header of file ', trim(adjustl(Ctrl%Fid%MSI))
         call Write_Log(Ctrl, trim(message), status)
+        write(*,*) 'Read_MSI: Error reading header of file ', trim(adjustl(Ctrl%Fid%MSI))
+        stop
      endif
      
   end if
 
   if (status == 0) then
-     !     Set the array indices used to select measurements from the MSI file.
-!!$     do i = 1, Ctrl%Ind%Ny
-!!$        !         ChanIdx(i) = Ctrl%Ind%Y_Id(i)+ (Ctrl%Ind%NChans * (Ctrl%Ind%ViewIdx(i)-1))
-!!$        ChanIdx(i) =Ctrl%Ind%ChI(i)
-!!$     end do
-     !write(*,*) ChanIdx,Ctrl%Ind%Ny
-     !pause
-
 
      !  Read MSI file 
      !read instrument channel numbers stored in the file
-
-     !call Read_FPArray(lun, Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NChans*Ctrl%Ind%NViews, &
-     !& Ctrl%Ind%Ny, ChanIdx, MSI_Data%MSI(:,:,:), row, ios)
-
-     !read msi data
-     !Allocate Data%MSI structure size to match image segments to be read in.
+     !Allocate Data%MSI structure size to match image segments to be used.
      allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%Ny))
      allocate(MSI_Data%time(Ctrl%Ind%Xmax, SegSize))
 
      !read instrument channel indices from file
+     write(*,*) Ctrl%Ind%Nyp
+     !stop
      allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
      msi_instr_ch_numbers=0_nint
      call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%Nyp,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
@@ -274,48 +267,43 @@ Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &
         Ctrl%Ind%Y_Id(5)=6
      endif
 
-  print*,'-----------',Ctrl%Ind%Ny
-print*,'chi   ',Ctrl%Ind%Chi
-print*,'msi ch',msi_instr_ch_numbers
-print*, 'y_id ',Ctrl%Ind%Y_Id
+     print*,'Number of channels to read in',Ctrl%Ind%Ny
+     print*,'chi',Ctrl%Ind%Chi
+     print*,'msi ch',msi_instr_ch_numbers
+     print*, 'y_id ',Ctrl%Ind%Y_Id
      do ii=1,Ctrl%Ind%Ny
- !       print*,'readchannela',ii
- !       do i=1,Ctrl%Ind%Nyp
-           print*,'readchannelb ch y_id',ii,msi_instr_ch_numbers(ii), Ctrl%Ind%Y_Id(ii)
 
- !          if(msi_instr_ch_numbers(i) .eq. Ctrl%Ind%Y_Id(ii)-1) then
-              print*,'readchannelc',msi_instr_ch_numbers(ii),Ctrl%Ind%Y_Id(ii)
-              call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(ii),"msi_data",MSI_Data%MSI(:,:,ii),1)
- !   print*,maxval(MSI_Data%MSI(:,:,ii)) 
- !         endif
- !       enddo
+        print*,'Read channel in MSI file', &
+             & ii,msi_instr_ch_numbers(Ctrl%Ind%Chi(ii)),Ctrl%Ind%Chi(ii),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(ii))
+        call nc_read_array_3d_float_orac &
+             & (ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(ii),"msi_data",MSI_Data%MSI(:,:,ii),1)
+        write(*,*) 'max/min MSI', maxval(MSI_Data%MSI(:,:,ii)),minval(MSI_Data%MSI(:,:,ii))
      enddo
- 
-     print*,maxval(MSI_Data%MSI(:,:,1))
-     print*,maxval(MSI_Data%MSI(:,:,2))
-     print*,maxval(MSI_Data%MSI(:,:,3))
-     print*,maxval(MSI_Data%MSI(:,:,4))
-     print*,maxval(MSI_Data%MSI(:,:,5))
 
+     
 
-    print*,'-----------'
-     print*,(MSI_Data%MSI(1:3,1,1))
-     print*,(MSI_Data%MSI(1:3,1,2))
-     print*,(MSI_Data%MSI(1:3,1,3))
-     print*,(MSI_Data%MSI(1:3,1,4))
-     print*,(MSI_Data%MSI(1:3,1,5))
-
-     print*,shape(MSI_Data%MSI)
+!!$     print*,maxval(MSI_Data%MSI(:,:,1))
+!!$     print*,maxval(MSI_Data%MSI(:,:,2))
+!!$     print*,maxval(MSI_Data%MSI(:,:,3))
+!!$     print*,maxval(MSI_Data%MSI(:,:,4))
+!!$     print*,maxval(MSI_Data%MSI(:,:,5))
+!!$
+!!$
+!!$     print*,'-----------'
+!!$     print*,(MSI_Data%MSI(1:3,1,1))
+!!$     print*,(MSI_Data%MSI(1:3,1,2))
+!!$     print*,(MSI_Data%MSI(1:3,1,3))
+!!$     print*,(MSI_Data%MSI(1:3,1,4))
+!!$     print*,(MSI_Data%MSI(1:3,1,5))
+!!$
+!!$     print*,shape(MSI_Data%MSI)
 
      deallocate(msi_instr_ch_numbers)
      write(*,*) 'Done reading MSI input'         
-     !write(*,*) MSI_Data%MSI(23,13,:)
-     !pause
+     
      !read time data
      call nc_read_array_2d_double_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,"time_data",MSI_Data%time(:,:),0)
      
-     !write(*,*) MSI_Data%time(5:15,4:9)
-     !pause
   endif
 
   !close  msi input file

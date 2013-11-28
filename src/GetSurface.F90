@@ -124,6 +124,8 @@
 !      (from MSI_Data%ALB). Y_ID gives the Channel ID numbers, rather than
 !      their index numbers within the data arrays.
 !
+!2013-11-19 MJ changes channel indices to ysolar_msi as this gives the indices of thr solar channels
+!as stored in the MSI array.
 
 ! Bugs:
 !   AS, Mar 2011. The Aux method albedo code includes specific handling
@@ -172,15 +174,14 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 !   Get the surface reflectances etc for the super pixel array according to 
 !   the specified method
 
-!   CTRL method
-
+    !   CTRL method
     if (Ctrl%Rs%Flag == SelmCtrl) then
     
-!      Get the surface flag super pixel array (only if the Ctrl or SAD method
-!      is set). Note:  The QC mask is applied later in all calculations
-!      involving the surface flags
-!      Note: setting by these methods could be done higher up in ECP, as the
-!      assignment only needs to be done once for each run rather than once per
+       !      Get the surface flag super pixel array (only if the Ctrl or SAD method
+       !      is set). Note:  The QC mask is applied later in all calculations
+       !      involving the surface flags
+       !      Note: setting by these methods could be done higher up in ECP, as the
+       !      assignment only needs to be done once for each run rather than once per
 !      super-pixel.
 
        SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
@@ -258,8 +259,6 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
        if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
        
 !      Call Get_Rs to calculate super pixel averages
-
-
     
        call Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)  
     
@@ -279,22 +278,27 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       Sb = Ctrl%Rs%Sb
       do i = 1,SPixel%Ind%NSolar
 
-         if (Ctrl%Ind%Chi(i) == 5) then 
+         !MJ ORG if (Ctrl%Ind%Chi(i) == 5) then
+         !MJ new:
+         if(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 5 .and. Ctrl%Inst%Name .eq. 'AATSR') then 
             if (SPixel%Surface%Flags == 0) then ! sea
                SPixel_b(i)  = Ctrl%Rs%b(i,1)
             else
                SPixel_b(i) = Ctrl%Rs%b(i,2)
             endif
          else
-!  AS, Apr 2011: solar_factor is set but not used. Commented out to avoid 
-!  re-shaping for multiple views. 
+            !  AS, Apr 2011: solar_factor is set but not used. Commented out to avoid 
+            !  re-shaping for multiple views. 
 
             solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
 
 !           AS, Mar 2011, presumably the 0.0001 scales down albedo from 
 !           values stored as int (percentage value * 1000) to a fraction.
             SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                 Ctrl%Ind%ChI(i)) /solar_factor
+                 Ctrl%Ind%ysolar_msi(i)) /solar_factor
+            !mj orgSPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+            !Ctrl%Ind%ChI(i)) /solar_factor
+
 !             qc1=0
 !            qc2=0
 !            call mvbits(MSI_Data%ALB(SPixel%Loc%X0, &
@@ -312,7 +316,8 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 !
             if (SPixel%Surface%Flags == 0) then ! sea
          
-               if (SPixel_b(i) == 1) then
+               if (SPixel_b(i) .ge. 1.0) then
+                  !MJ ORG if (SPixel_b(i) == 1) then
                   status = SPixelSurfglint
 #ifdef DEBUG
                   write(unit=message, fmt=*) &

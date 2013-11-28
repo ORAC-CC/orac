@@ -76,6 +76,7 @@
 !   2012/06/22 C. Poulsen added sacura option
 !   2012/10/01 C. Poulsen added case where 1.6 of 3.7 channel is missing during the day
 !   2013 MJ changes lengths of filenames and soem formatting, adds fill value for double precision.
+! 20131119 MJ changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
 ! Bugs:
 !    None known.
 !
@@ -106,6 +107,7 @@ module ECP_constants
    integer, parameter :: MaxDiagFlags = 14
                                           ! No. of flags in diagnostic flag
    real, parameter :: ditherm3=1.0E-3 !some small value         
+   real, parameter :: ditherm6=1.0E-6 !some even smaller value         
 
 !  Parameters for range checking of data values (used in Get_SPixel)
 
@@ -123,8 +125,10 @@ module ECP_constants
    real, parameter    :: LonMin = -180.0   ! Longitude
    real, parameter    :: LonMax =  180.0   !  "
    real, parameter    :: RefMin =  0.0     ! Reflectance
-   real, parameter    :: RefMax =  1.2     !  "
-   real, parameter    :: BTMin  =  150.0   ! Brightness temperature
+   real, parameter    :: RefMax =  1.5     !  "
+!MJ ORG   real, parameter    :: RefMax =  1.2     !  "
+   real, parameter    :: BTMin  =  140.0   ! Brightness temperature
+   !MJ ORG real, parameter    :: BTMin  =  150.0   ! Brightness temperature
    real, parameter    :: BTMax  =  330.0   !  "
 
    real, parameter    :: MissingXn = -999.! Value for "missing data" used

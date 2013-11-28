@@ -125,15 +125,15 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
                
 ! (Short wave)
 
-!   allocate(SPixel%RTM%SW%Tac   ((Ctrl%Ind%Ny-Ctrl%Ind%NThermal), &
-!                                  RTM%SW%NP))
+   !allocate(SPixel%RTM%SW%Tac   ((Ctrl%Ind%Ny-Ctrl%Ind%NThermal), &
+   !RTM%SW%NP))
    allocate(SPixel%RTM%SW%Tac   ((Ctrl%Ind%NSolar), &
-                                  RTM%SW%NP))
-!   allocate(SPixel%RTM%SW%Tbc   ((Ctrl%Ind%Ny-Ctrl%Ind%NThermal), &
-!                                  RTM%SW%NP))
+        & RTM%SW%NP))
+   !allocate(SPixel%RTM%SW%Tbc   ((Ctrl%Ind%Ny-Ctrl%Ind%NThermal), &
+   !RTM%SW%NP))
    allocate(SPixel%RTM%SW%Tbc   ((Ctrl%Ind%NSolar), &
-                                  RTM%SW%NP))
-!   allocate(SPixel%RTM%SW%Tsf    (Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
+        & RTM%SW%NP))
+   !allocate(SPixel%RTM%SW%Tsf    (Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
    allocate(SPixel%RTM%SW%Tsf    (Ctrl%Ind%NSolar))
    allocate(SPixel%RTM%SW%P      (RTM%LW%NP))
       

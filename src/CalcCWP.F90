@@ -22,6 +22,7 @@
 
 ! 8th Nov 2011 Caroline Poulsen original version adapted from idl version
 ! 28th Nov2011 Caroline Poulsen remove log write statement
+! 20131114 MJ makes branch for ICE explicit
 !
 ! Bugs:
 !   None known
@@ -61,7 +62,7 @@ Subroutine Calc_CWP (Ctrl,SPixel, status)
    if (trim(Ctrl%CloudClass%Name) == 'WAT') then
       rho=rhowat
       fac=(4./3.)*rho/qextwat
-   else
+   elseif (trim(Ctrl%CloudClass%Name) == 'ICE') then
       rho=rhoice
       fac=(4./3.)*rho/qextice  
    end if

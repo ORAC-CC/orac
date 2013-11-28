@@ -143,7 +143,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 !   from RTM_Pc and SPixel %LW arrays, since these are always allocated to size 
 !   Ctrl%Ind%NThermal, but not all thermal channels are used in all pixels
 !   hence SPixel%Ind%ThermalFirst may not equal Ctrl%Ind%ThermalFirst.
-
+    !the above is case in twilight conditiopn for that given pixel where the mixed channels is excluded
     ThF = 1 + SPixel%Ind%ThermalFirst - Ctrl%Ind%ThermalFirst
     ThL = Ctrl%Ind%NThermal
 
@@ -183,7 +183,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 !      If none of the above conditions are met (e.g. Pc = NaN) then return
 !      with a fatal error
        status = IntTransErr ! Set status to indicate failure of interpolation
-       write(unit=message, fmt=*) 'Interpol_Therm: Interpolation failure' 
+       write(unit=message, fmt=*) 'Interpol_Therm: Interpolation failure'
        call Write_Log(Ctrl, trim(message), status) ! Write to log
     else
 

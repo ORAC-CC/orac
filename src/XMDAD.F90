@@ -112,6 +112,7 @@
 !  8th Jul 2012 C. Poulsen fixed invalid memory access error
 ! 20120817 MJ fixed bug with divide by zero 
 ! 20121002 CP changed selection of first guess height
+! 20131122 MJ rewrites selection of ctp FG/AP based on BT interpolation.
 ! Bugs:
 !    None known.
 !
@@ -151,149 +152,160 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
   real            :: xstore=999
    integer         :: i,startp,endp,stepp,indexstop
    character(180)  :: message
-pdiffstore=2000000.
-tdiffstore=2000.
-!  Set up first guess optical depth vector
+   
+   status=0
+
+   pdiffstore=2000000.
+   tdiffstore=2000.
+   !  Set up first guess optical depth vector
 
    data FGOP / 0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, 1.7, 2.0, 2.4 /
+   !write(*,*) 'inside xmdad',SPixel%Ind%MDAD_LW
 
-!  Parameters supported are Tau, Pc and f.
+   !  Parameters supported are Tau, Pc and f.
 
    select case (index)
-      case (iTau)   !     Cloud optical depth, Tau.
+
+   case (iTau)   !     Cloud optical depth, Tau.
       
-         if (SPixel%Illum(1) == IDay .and. SPixel%Ind%MDAD_SW > 0) then
-!           Uses channel nearest 0.67 microns, index Ctrl%Ind%MDAD_SW.   
-!           Calculate overcast reflectance.      
+      if (SPixel%Illum(1) == IDay .and. SPixel%Ind%MDAD_SW > 0) then
+         !           Uses channel nearest 0.67 microns, index Ctrl%Ind%MDAD_SW.   
+         !           Calculate overcast reflectance.      
       
-            Ref_o = ( SPixel%Ym(SPixel%Ind%MDAD_SW) -   &
-	              ( SPixel%Rs(SPixel%Ind%MDAD_SW) * &
-		         (1.0-SPixel%Cloud%Fraction)    &
-		      ) &
-		    ) / SPixel%Cloud%Fraction
+         Ref_o = ( SPixel%Ym(SPixel%Ind%MDAD_SW) -   &
+              & ( SPixel%Rs(SPixel%Ind%MDAD_SW) * &
+              & (1.0-SPixel%Cloud%Fraction)    &
+              & ) &
+              & ) / SPixel%Cloud%Fraction
 
-!           Convert albedo (range 0 - 1) into index (range 1 to 10)
-!           Use the first sec_o value, assuming that all values are quite 
-!           close and we only need an approximation for first guess setting.
-
-	    iFGOP = int( ( Ref_o * SPixel%Geom%SEC_o(1) * 10.0 ) + 1.5 )
-
-	    if (iFGOP > 11) then
-	       iFGOP = 11
-	    else if (iFGOP < 1) then
-	       iFGOP = 1
-	    end if
-
-	    X = FGOP(iFGOP)	 
-	    if (SetErr) Err = MDADErrTau	       
+         !           Convert albedo (range 0 - 1) into index (range 1 to 10)
+         !           Use the first sec_o value, assuming that all values are quite 
+         !           close and we only need an approximation for first guess setting.
          
-	 else    !    Can't calculate Tau unless it's daylight
-	    status = XMDADMeth
-	 end if
+         iFGOP = int( ( Ref_o * SPixel%Geom%SEC_o(1) * 10.0 ) + 1.5 )
+
+         if (iFGOP > 11) then
+            iFGOP = 11
+         else if (iFGOP < 1) then
+            iFGOP = 1
+         end if
+
+         X = FGOP(iFGOP)	 
+         if (SetErr) Err = MDADErrTau	       
+         
+      else    !    Can't calculate Tau unless it's daylight
+         status = XMDADMeth
+      end if
 	 
-      case (iPc)    !     Cloud pressure, Pc.
+   case (iPc)    !     Cloud pressure, Pc.
 
-         if (SPixel%Ind%MDAD_LW > 0) then
-!           Uses channel nearest 11 microns, index Ctrl%Ind%MDAD_LW in SAD_Chan,
-!           but SPixel%Ind%MDAD_LW in the measurement array.
-!           Convert observed brightness temperature to radiance
+      if (SPixel%Ind%MDAD_LW > 0) then
+         !           Uses channel nearest 11 microns, index Ctrl%Ind%MDAD_LW in SAD_Chan,
+         !           but SPixel%Ind%MDAD_LW in the measurement array.
+         !           Convert observed brightness temperature to radiance
+         !write(*,*) 'size of ym',size(SPixel%Ym)
+         
+         call T2R(1, SAD_Chan(Ctrl%Ind%MDAD_LW), &
+              SPixel%Ym(SPixel%Ind%MDAD_LW), Rad, dR_dT, status)
 
+         !           Calculate overcast radiance from observed radiance and cloud 
+         !           fraction. Note MDAD_LW must be offset for use with R_Clear since
+         !           R_Clear stores thermal channels only. 
+         !write(*,*) 'rclear',SPixel%RTM%LW%R_clear(Ctrl%Ind%MDAD_LW-Ctrl%Ind%ThermalFirst+1)
+         Rad_o = ( Rad - &
+              SPixel%RTM%LW%R_clear(Ctrl%Ind%MDAD_LW-Ctrl%Ind%ThermalFirst+1) * &
+              (1.0 - SPixel%Cloud%Fraction) )  &
+              / SPixel%Cloud%Fraction
+         !  Exclude negative Rad_o (can arise due to approximation in the RTM)
+         !           Exclude negative Rad_o (can arise due to approximation in the RTM)
 
-
-            call T2R(1, SAD_Chan(Ctrl%Ind%MDAD_LW), &
-	       SPixel%Ym(SPixel%Ind%MDAD_LW), Rad, dR_dT, status)
-
-!           Calculate overcast radiance from observed radiance and cloud 
-!           fraction. Note MDAD_LW must be offset for use with R_Clear since
-!           R_Clear stores thermal channels only. 
-	    Rad_o = ( Rad - &
-	     SPixel%RTM%LW%R_clear(Ctrl%Ind%MDAD_LW-Ctrl%Ind%ThermalFirst+1) * &
-	             (1.0 - SPixel%Cloud%Fraction) )  &
-	                  / SPixel%Cloud%Fraction
-!  Exclude negative Rad_o (can arise due to approximation in the RTM)
-!           Exclude negative Rad_o (can arise due to approximation in the RTM)
-
-            if (Rad_o >= 0.0) then
-               
-               !              Convert overcast radiance back to brightness temperature
-               
-               
-	       call R2T(1, SAD_Chan(Ctrl%Ind%MDAD_LW), Rad_o, BT_o, dT_dR,status) 
+         if (Rad_o >= 0.0) then
+            !write(*,*) 'rad>0'
+            !              Convert overcast radiance back to brightness temperature
+            call R2T(1, SAD_Chan(Ctrl%Ind%MDAD_LW), Rad_o, BT_o, dT_dR,status) 
              
-            
-             do i = SPixel%RTM%LW%Np-1,1,-1
-        ! stop at closest to 80Hpa
-        pstop=60 !HPa
-        
-        pdiffa=abs(SPixel%RTM%LW%P(i+1)-pstop)
-        
-        if (pdiffa .lt. pdiffstore) then
-              pdiffstore=pdiffa
-              indexstop=i
-           endif
-        enddo
+            !this interpolates for the BT to the rad. profile to get ctp FG/AP
+            call interpolate2ctp(SPixel,Ctrl,BT_o,X,Err)
 
-        if (Ctrl%CloudClass%Name == 'ICE') then
-           startp= SPixel%RTM%LW%Np-2
-           endp=indexstop
-           stepp= -1
-        else
-           startp= SPixel%RTM%LW%Np-2
-           endp=indexstop
-           stepp= -1
-        endif
-        do i=startp,endp,stepp
-           
-           
-           
-           if (BT_o .gt. SPixel%RTM%LW%T(i-1)) then	    
-              
-              !Xnew = SPixel%RTM%LW%P(i) !better to start one lower
-              !write(*,*)'xmdad start',i, X  
-              tdiff=SPixel%RTM%LW%T(i+1)-SPixel%RTM%LW%T(i)
-              tdiff1=abs(BT_o -SPixel%RTM%LW%T(i))
-              
-              if(tdiff .lt. ditherm3) tdiff=ditherm3
-              if (tdiff1 .lt. tdiffstore) then
-                 tdiffstore=tdiff1
-                 tfrac=tdiff1/tdiff
-                 if (tfrac .gt. 1.0) then
-                    tfrac=0.0
-                 end if
-                 
-                 pdiff=SPixel%RTM%LW%P(i+1)-SPixel%RTM%LW%P(i)
-                 X=SPixel%RTM%LW%P(i)+tfrac*pdiff
-                 
-                 ! stop firstguess from going underaground
-                 if (X .gt. SPixel%RTM%LW%sp+5) then 
-                    X = SPixel%RTM%LW%sp+5
-                 end if
-                 if (SetErr) Err = MDADErrPc
-                 
-                 !                       		     exit	  
-              end if
-           end if
-        end do
-        
+!This is obsolete:            
+!!$            do i = SPixel%RTM%LW%Np-1,1,-1
+!!$               ! stop at closest to 80Hpa
+!!$               pstop=60 !HPa
+!!$        
+!!$               pdiffa=abs(SPixel%RTM%LW%P(i+1)-pstop)
+!!$        
+!!$               if (pdiffa .lt. pdiffstore) then
+!!$                  pdiffstore=pdiffa
+!!$                  indexstop=i
+!!$               endif
+!!$            enddo
+!!$
+!!$            if (Ctrl%CloudClass%Name == 'ICE') then
+!!$               startp= SPixel%RTM%LW%Np-2
+!!$               endp=indexstop
+!!$               stepp= -1
+!!$            else
+!!$               startp= SPixel%RTM%LW%Np-2
+!!$               endp=indexstop
+!!$               stepp= -1
+!!$            endif
+!!$
+!!$            do i=startp,endp,stepp
+!!$           
+!!$               if (BT_o .gt. SPixel%RTM%LW%T(i-1)) then	    
+!!$              
+!!$                  !Xnew = SPixel%RTM%LW%P(i) !better to start one lower
+!!$                  !write(*,*)'xmdad start',i, X  
+!!$                  tdiff=SPixel%RTM%LW%T(i+1)-SPixel%RTM%LW%T(i)
+!!$                  tdiff1=abs(BT_o -SPixel%RTM%LW%T(i))
+!!$              
+!!$                  if(tdiff .lt. ditherm3) tdiff=ditherm3
+!!$                  if (tdiff1 .lt. tdiffstore) then
+!!$                     tdiffstore=tdiff1
+!!$                     tfrac=tdiff1/tdiff
+!!$                     if (tfrac .gt. 1.0) then
+!!$                        tfrac=0.0
+!!$                     end if
+!!$                     
+!!$                     pdiff=SPixel%RTM%LW%P(i+1)-SPixel%RTM%LW%P(i)
+!!$                     X=SPixel%RTM%LW%P(i)+tfrac*pdiff
+!!$                     
+!!$                     ! stop firstguess from going underaground
+!!$                     if (X .gt. SPixel%RTM%LW%sp+5) then 
+!!$                        X = SPixel%RTM%LW%sp+5
+!!$                     end if
+!!$                     if (SetErr) Err = MDADErrPc
+!!$                     
+!!$                 !                       		     exit	  
+!!$                  end if
+!!$               end if
+!!$            end do
 
-	    else
+         else
 
-!              Negative Rad_O value: method won't work.
-	       status = XMDADMeth
-	    end if
+            !              Negative Rad_O value: method won't work.
+            !write(*,*) 'rad<0'
+            !if no interpolation possible set BP_o and DBP_o to hardcoded values to recover:
+            X=Ctrl%X0(3)
+            !FG does not need Error but AP does
+            Err=MDADErrPc
+            status = XMDADMeth
+         end if
 
+         
+      else    !    Can't calculate Pc if required LW channels not selected
+         status = XMDADMeth
+      end if
+      
+   case (iFr)   !     Cloud fraction, f, 
 
-	 else    !    Can't calculate Pc if required LW channels not selected
-	    status = XMDADMeth
-	 end if	 
-	 
-      case (iFr)   !     Cloud fraction, f, 
+      !        Value is taken straight from the SPixel structure.      
 
-!        Value is taken straight from the SPixel structure.      
+      X = SPixel%Cloud%Fraction
+      if (SetErr) Err = MDADErrF1
 
-         X = SPixel%Cloud%Fraction
-         if (SetErr) Err = MDADErrF1
+   end select
 
-   end select  
+   !write(*,*) 'Error status', err,status
 
 end subroutine X_MDAD

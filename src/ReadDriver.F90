@@ -42,6 +42,8 @@
 ! 2013/11/14 MJ rewrote most parts refering to setting and reading channel indices. added reading of config file
 !                    Different driver file necessary now.
 !2013/11/14 MJ changes lower and upper limits for ctp.
+!20131118 Several additional changes, introduces ysolar_msi and ythermal_msi
+!20131125 MJ initialized previously unitialized  Ctrl%Run_ID
 ! Bugs:
 ! nviews should be changed for dual view
 ! not quiteworking for AVHRR
@@ -184,7 +186,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    ref_solar_land=0.00
    write(*,*) 'Ctrl%Ind%NChan',Ctrl%Ind%NChans 
 
-   !these are the indices wrt the position of the channels in the file
+   !these are the indices wrt the position of the channels in the preproc file
    !which are to be used.
    !determine them from the indices in the file and proc. flag
    allocate(Ctrl%Ind%Chi(Ctrl%Ind%NChans))
@@ -250,6 +252,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    enddo
 
    write(*,*) 'Flags solar,thermal and mixed of used channels'
+   write(*,*) conf%nsolar, conf%nthermal
    write(*,*) conf%nsolar_use,conf%channel_sw_flag_use
    write(*,*) conf%nthermal_use,conf%channel_lw_flag_use
    write(*,*) conf%nmixed_use,conf%channel_mixed_flag_use
@@ -638,6 +641,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
   !where mixed channels are included in both on the l.h.s.
   Ctrl%Ind%Nsolar=conf%nsolar_use!+conf%nmixed_use
   Ctrl%Ind%Nthermal=conf%nthermal_use!+conf%nmixed_use
+  write(*,*) 'Nsolar, nthermal to be used',Ctrl%Ind%Nsolar,Ctrl%Ind%Nthermal
 
   !
   ! use above  indices to assign to measurement indices
@@ -655,21 +659,29 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
   Ctrl%Ind%Ysolar=-1
   allocate(Ctrl%Ind%Ythermal(Ctrl%Ind%Nthermal))
   Ctrl%Ind%Ythermal=-1
+
+  allocate(Ctrl%Ind%Ysolar_msi(Ctrl%Ind%Nsolar))
+  Ctrl%Ind%Ysolar_msi=-1
+  allocate(Ctrl%Ind%Ythermal_msi(Ctrl%Ind%Nthermal))
+  Ctrl%Ind%Ythermal_msi=-1
+
   ii=0
   jj=0
   do i=1,Ctrl%Ind%NChans 
      if(conf%channel_sw_flag_use(i) .eq. 1 ) then
         ii=ii+1
-        Ctrl%Ind%Ysolar(ii)=Ctrl%Ind%Chi(i)
+        Ctrl%Ind%Ysolar(ii)=Ctrl%Ind%Chi(i) !these are the indices wrt the preproc file
+        Ctrl%Ind%Ysolar_msi(ii)=i !these are the indices wrt the order in the MSI array
      endif
      if(conf%channel_lw_flag_use(i) .eq. 1) then
         jj=jj+1
-        Ctrl%Ind%Ythermal(jj)=Ctrl%Ind%Chi(i)
+        Ctrl%Ind%Ythermal(jj)=Ctrl%Ind%Chi(i)!these are the indices wrt the preproc file
+        Ctrl%Ind%Ythermal_msi(jj)=i !these are the indices wrt the order in the MSI array
      endif
   enddo
 
-!!$  write(*,*)  Ctrl%Ind%Ysolar
-!!$  write(*,*) Ctrl%Ind%Ythermal
+  write(*,*)  'Ctrl%Ind%Ysolar/msi',Ctrl%Ind%Ysolar,Ctrl%Ind%Ysolar_msi
+  write(*,*) 'Ctrl%Ind%Ythermal/msi',Ctrl%Ind%Ythermal,Ctrl%Ind%Ythermal_msi
 !!$  stop
 !!$  jcount=1
 !!$  do i=1,nindex_solar
@@ -710,7 +722,8 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    !
    !assign directories
    !
-   
+  
+  Ctrl%Run_ID=trim(adjustl(scratch_dir))
    Ctrl%Data_Dir=trim(adjustl(scratch_dir))//'/'
    Ctrl%out_Dir=trim(adjustl(scratch_dir))//'/'
    
@@ -791,9 +804,9 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    Ctrl%MaxSolZen=80 ! max solar zenith angle > 90 = night image
    Ctrl%Sunset=90 ! used to set twilight option
    Ctrl%Ind%Ws=0 ! warm start option i.e enables user to start partway through a scene
-   Ctrl%LUTIntflag=1 ! 0 =linear 2 = bicubic interpolation
+   Ctrl%LUTIntflag=1 ! 0 =linear 1 = bicubic interpolation
 
-   Ctrl%RTMIntflag=0 ! 0 =linear 2 = bicubic interpolation
+   Ctrl%RTMIntflag=0 ! 0 =linear 1 = bicubic interpolation
 
    !        For each of the day, twilight, night active state variable arrays,
    !        read the array and set up the corresponding inactive array.
@@ -802,7 +815,6 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    !
    !Day options
    !
-
    Ctrl%Ind%Nx_Dy=5  ! number of active state variables
    Ctrl%Ind%X_Dy(1)=1
    Ctrl%Ind%X_Dy(2)=2
@@ -1045,6 +1057,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
 
   Ctrl%Max_SDAD=10 !No. of pixels where state is valid for SDAD setting
   Ctrl%RS%Flag=3 ! Surface Ref: Flag (1-Ctrl 3-Aux) (1-Ctrl 3-Aux) 
+  !Ctrl%RS%Flag=1 ! Surface Ref: Flag (1-Ctrl 3-Aux) (1-Ctrl 3-Aux) 
   Ctrl%defaultSX(1)=1.0e+08 ! optical depth
   Ctrl%defaultSX(2)=1.0e+08 ! effective radii
   Ctrl%defaultSX(3)=1.0e+06 ! ctp
@@ -1081,6 +1094,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
   Ctrl%Eqmpn%TH = 0 ! Flag to use Eqmpn from T/H(z) errors   
   Ctrl%Eqmpn%Homog = 1 ! Flag to use Eqmpn from homog errors
   Ctrl%Eqmpn%Coreg = 1 ! Flag to use Eqmpn from coReg errors 
+
   Ctrl%CloudType = 1 ! use this to select which coreg/homog errors to use
   Ctrl%Invpar%Mqstart =  0.001 ! Marquardt: starting parameter     
   Ctrl%Invpar%Mqstep =  10.0  ! step parameter       

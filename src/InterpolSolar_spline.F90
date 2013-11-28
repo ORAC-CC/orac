@@ -113,12 +113,17 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
     integer        :: j
     integer        :: NChans                   ! Number of Channels
     real           :: delta_p
-    real           :: delta_Tac(SPixel%Ind%Ny-SPixel%Ind%NThermal)
-    real           :: delta_Tbc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
+!MJ ORG    real           :: delta_Tac(SPixel%Ind%Ny-SPixel%Ind%NThermal)
+!MJ ORG    real           :: delta_Tbc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
+    real    :: delta_Tac(SPixel%Ind%NSolar)
+    real    :: delta_Tbc(SPixel%Ind%NSolar)
     real           :: delta_Pc
-    real           :: delta_Tc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
-    real           :: d2Tac_dP2(SPixel%Ind%Ny-SPixel%Ind%NThermal,SPixel%RTM%SW%Np)
-    real           :: d2Tbc_dP2(SPixel%Ind%Ny-SPixel%Ind%NThermal,SPixel%RTM%SW%Np)
+!MJ ORG    real           :: delta_Tc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
+    real    :: delta_Tc(SPixel%Ind%NSolar)
+!MJ ORG    real           :: d2Tac_dP2(SPixel%Ind%Ny-SPixel%Ind%NThermal,SPixel%RTM%SW%Np)
+!MJ ORG    real           :: d2Tbc_dP2(SPixel%Ind%Ny-SPixel%Ind%NThermal,SPixel%RTM%SW%Np)
+    real           :: d2Tac_dP2(SPixel%Ind%NSolar,SPixel%RTM%SW%Np)
+    real           :: d2Tbc_dP2(SPixel%Ind%NSolar,SPixel%RTM%SW%Np)
     character(180) :: message
     integer        :: bkp_lun                 !    Unit number for breakpoint file
     integer        :: ios                     ! I/O status for breakpoint file

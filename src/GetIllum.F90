@@ -51,7 +51,7 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
     integer        :: view,j!,nsbad,minrad,nviews,ic
     integer        :: Illum(Ctrl%Ind%Ny,Ctrl%Ind%NViews)
 
-!   Set status to zero
+    !   Set status to zero
 
     status = 0
 
@@ -62,118 +62,117 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
 !   is Ctrl%Ind%Y(SPixel%Ind%ThermalFirst).
 
     SPixel%illum = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0, :)
-!write(*,*)'msi illum',MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0, :)
+    !write(*,*)'msi illum',MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0, :)
 
-! SPixel%illum(j,view)   = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0, view)
+    ! SPixel%illum(j,view)   = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0, view)
 
-do view=1,Ctrl%Ind%NViews
+    do view=1,Ctrl%Ind%NViews
 
-if (SPixel%illum(view)  .eq. 1) then 
-    SPixel%Illum(view) = IDay
+       !Daylight
+       if (SPixel%illum(view)  .eq. 1) then 
+          SPixel%Illum(view) = IDay
 
-!      These are a straight copy from the Ctrl values (i.e. all channels are allowed)
+          !      These are a straight copy from the Ctrl values (i.e. all channels are allowed)
+          SPixel%Ind%Ny = Ctrl%Ind%Ny
+          SPixel%Ind%NSolar = Ctrl%Ind%NSolar
+          SPixel%Ind%NThermal = Ctrl%Ind%NThermal
+          SPixel%Ind%NMixed = Ctrl%Ind%NMixed !comes from readchan.f90
+          SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst
+          SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast
+          SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
+          SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
+          
+          SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW
+          SPixel%Ind%MDAD_SW = Ctrl%Ind%MDAD_SW
 
-         SPixel%Ind%Ny = Ctrl%Ind%Ny
-         SPixel%Ind%NSolar = Ctrl%Ind%NSolar
-         SPixel%Ind%NThermal = Ctrl%Ind%NThermal
-         SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-         SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst
-         SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
+          SPixel%Nx = Ctrl%Ind%Nx_Dy
+          deallocate(SPixel%X)
+          allocate(SPixel%X(SPixel%Nx))
+          SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
+          
+          SPixel%NxI = MaxStateVar - SPixel%Nx
+          deallocate(SPixel%XI)
+          allocate(SPixel%XI(SPixel%NxI))
+          SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
+          
+          
+          SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
+          SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
 
-         SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW
-         SPixel%Ind%MDAD_SW = Ctrl%Ind%MDAD_SW
+          !Twilight          
+       else if  (SPixel%illum(1)  .eq. 2)  then
+          
+          SPixel%Illum(view) = ITwi
+          
+          !      Only pure thermal channels are allowed (i.e. mixed channels are excluded)   
+          
+          SPixel%Ind%Ny = Ctrl%Ind%Ny-Ctrl%Ind%NSolar
+          SPixel%Ind%NSolar = 0
+          SPixel%Ind%NThermal = SPixel%Ind%Ny
+          SPixel%Ind%NMixed = 0
+          SPixel%Ind%SolarFirst = 0
+          SPixel%Ind%SolarLast = 0
+          SPixel%Ind%ThermalFirst = Ctrl%Ind%SolarLast+1
+          SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
+          
+          SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW - Ctrl%Ind%NSolar
+          SPixel%Ind%MDAD_SW = 0
 
-         SPixel%Nx = Ctrl%Ind%Nx_Dy
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
+          SPixel%Nx = Ctrl%Ind%Nx_Tw
+          deallocate(SPixel%X)
+          allocate(SPixel%X(SPixel%Nx))
+          SPixel%X = Ctrl%Ind%X_Tw(1:Ctrl%Ind%Nx_Tw)
+          SPixel%NxI = MaxStateVar - SPixel%Nx
+          deallocate(SPixel%XI)
+          allocate(SPixel%XI(SPixel%NxI))
+          SPixel%XI = Ctrl%Ind%XI_Tw(1:Ctrl%Ind%NxI_Tw)
+          
+          SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
+          SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+          
+       else
 
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
+          !nighttime
+          SPixel%Illum(1) = INight
 
+          !      Channels with a thermal component are allowed (i.e. mixed channels are included)
+          SPixel%Ind%Ny = Ctrl%Ind%NThermal
+          SPixel%Ind%NSolar = 0
+          SPixel%Ind%NThermal = SPixel%Ind%Ny
+          SPixel%Ind%NMixed = 0
+          SPixel%Ind%SolarFirst = 0
+          SPixel%Ind%SolarLast = 0
+          SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
+          SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
+          
+          SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW - Ctrl%Ind%NSolar
+          SPixel%Ind%MDAD_SW = 0
+          
+          SPixel%Nx = Ctrl%Ind%Nx_Ni
+          deallocate(SPixel%X)
+          allocate(SPixel%X(SPixel%Nx))
+          SPixel%X = Ctrl%Ind%X_Ni(1:Ctrl%Ind%Nx_Ni)
+          
+          SPixel%NxI = MaxStateVar - SPixel%Nx
+          deallocate(SPixel%XI)
+          allocate(SPixel%XI(SPixel%NxI))
+          SPixel%XI = Ctrl%Ind%XI_Ni(1:Ctrl%Ind%NxI_Ni)
+          
 
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+          SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
+          SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+       end if
 
-         else if  (SPixel%illum(1)  .eq. 2)  then
+       if (Ctrl%Ind%NViews > 1) then
+          if (view > 1 .and. Illum(j,view) /= Illum(j,view)) then
+             status = SPixelillum
+          end if
+       end if
+    
+    end do ! views
 
-         SPixel%Illum(view) = ITwi
-
-   !      Only pure thermal channels are allowed (i.e. mixed channels are excluded)   
-
-         SPixel%Ind%Ny = Ctrl%Ind%Ny-Ctrl%Ind%NSolar
-         SPixel%Ind%NSolar = 0
-         SPixel%Ind%NThermal = SPixel%Ind%Ny
-         SPixel%Ind%NMixed = 0
-         SPixel%Ind%SolarFirst = 0
-         SPixel%Ind%SolarLast = 0
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%SolarLast+1
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
-
-         SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW - Ctrl%Ind%NSolar
-         SPixel%Ind%MDAD_SW = 0
-
-         SPixel%Nx = Ctrl%Ind%Nx_Tw
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Tw(1:Ctrl%Ind%Nx_Tw)
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Tw(1:Ctrl%Ind%NxI_Tw)
-
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
-
-         else
-
-         SPixel%Illum(1) = INight
-
-   !      Channels with a thermal component are allowed (i.e. mixed channels are included)
-         SPixel%Ind%Ny = Ctrl%Ind%NThermal
-         SPixel%Ind%NSolar = 0
-         SPixel%Ind%NThermal = SPixel%Ind%Ny
-         SPixel%Ind%NMixed = 0
-         SPixel%Ind%SolarFirst = 0
-         SPixel%Ind%SolarLast = 0
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
-
-         SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW - Ctrl%Ind%NSolar
-         SPixel%Ind%MDAD_SW = 0
-
-         SPixel%Nx = Ctrl%Ind%Nx_Ni
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Ni(1:Ctrl%Ind%Nx_Ni)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Ni(1:Ctrl%Ind%NxI_Ni)
-
-
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
-         end if
-
-      if (Ctrl%Ind%NViews > 1) then
-         if (view > 1 .and. Illum(j,view) /= Illum(j,view)) then
-            status = SPixelillum
-         end if
-      end if
-
-
-
-
-     end do ! views
-
-!   Set the first guess and a priori state variable setting methods according 
-!   to the illumination conditions. 
+    !   Set the first guess and a priori state variable setting methods according 
+    !   to the illumination conditions. 
 
 
 

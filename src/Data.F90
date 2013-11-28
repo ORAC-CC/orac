@@ -70,9 +70,9 @@ module Data_def
       type(Location_t) :: Location
       type(Scan_t) :: Scan
       real(4), pointer :: CloudFlags(:,:)
-!      byte,    pointer :: LSFlags(:,:)
+      !      byte,    pointer :: LSFlags(:,:)
       integer(kind=byte), pointer :: LSFlags(:,:)
-	real(4), pointer :: ALB(:,:,:)
+      real(4), pointer :: ALB(:,:,:)
       integer, pointer :: illum(:,:,:)
    end type Data_t
 

@@ -400,7 +400,6 @@ Program ECP
 
    call Read_Driver(Ctrl, conf,message, drifile,status)
 
-
    !read dimensions of preprocessing swath files first:
    call read_input_dimensions_msi(Ctrl%Fid%MSI,Ctrl%FID%Geo,&
         & Ctrl%Ind%Xmax,Ctrl%Ind%YMax,Ctrl%Ind%Nyp,Ctrl%Ind%NInstViews,0)
@@ -486,37 +485,33 @@ Program ECP
       
       call Read_SAD(Ctrl, SAD_Chan, SAD_LUT, status)
       if (status == 0) SAD_LUT_Alloc = .true.
-      write(*,*) 'after read_sad', Ctrl%Ind%Y_Id      
+      write(*,*) 'Rading SAF files done (status)',status
       
    end if
-!   write(*,*) 'sad',status
-!  Call Read_RTM  
-   !goto 1000
+
    if (status == 0) then
       !make here new netcdf read for all the rttov data
       !read everything in one go, no more segment reads
-      write(*,*) 'Read LWRTM dims'
-      write(*,*) 'after read_sad2', Ctrl%Ind%Y_Id      
       call read_input_dimensions_lwrtm(Ctrl,Ctrl%Fid%LWRTM,&
            & RTM%LW%Grid%NLatLon,RTM%LW%Grid%NLon, RTM%LW%Grid%NLat,&
            & RTM%LW%NP,RTM%LW%NPLAY,&
            & RTM%LW%NLWF,RTM%LW%NV,0)
-      write(*,*) 'after read_lwrtm_dims', Ctrl%Ind%Y_Id      
-      write(*,*) 'Read SWRTM dims'
+
       call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM,&
            & RTM%SW%Grid%NLatLon,RTM%SW%Grid%NLon, RTM%SW%Grid%NLat,&
            & RTM%SW%NP,RTM%SW%NPLAY,&
            & RTM%SW%NSWF,RTM%SW%NV,0)
-      write(*,*) 'after read_swrtm_dims', Ctrl%Ind%Y_Id      
+
       !this will probably change as we need to rethink the vert. coordinate!!!???!!!
       RTM%LW%NP=RTM%LW%NPLAY
       RTM%SW%NP=RTM%SW%NPLAY
-      write(*,*) 'y_id',Ctrl%Ind%Y_Id
+
       call Read_RTMData_nc(Ctrl, RTM, status)      
-      if (status == 0) RTM_Alloc = .true.
+      if (status == 0) then
+         RTM_Alloc = .true.
+      endif
+      
    end if
-!1000 continue
-!   write(*,*)'after rtm status',status  
 
 ! -------------------------------------------------------------------
 ! ------------------ End of Data Preparation section
@@ -660,7 +655,7 @@ Program ECP
  !include definition of variables files
 !         write(*,*) 'before defs'
          include "def_vars_primary.inc"
-         include "def_vars_secondary.inc"
+         !include "def_vars_secondary.inc"
 !         write(*,*) 'after defs'
 !         pause            
  	
@@ -819,7 +814,7 @@ Program ECP
 
 
            !write(*,*) 'status1',status
-           if (status_line(j) == 0) call Get_SPixel(Ctrl, SAD_Chan, &
+           if (status_line(j) == 0) call Get_SPixel(Ctrl, conf,SAD_Chan, &
                 & MSI_Data, RTM, SPixel, status)
            status_line(j)=status
            !write(*,*) 'main qc',Spixel%QC,status
@@ -920,7 +915,7 @@ Program ECP
               !write(*,*) 'before preps', RTM_Pc%Hc,RTM_Pc%Tc,Spixel%CWP,Spixel%CWP_error
               include "prepare_primary.inc"
               !write(*,*) 'after preps prim'
-              include "prepare_secondary.inc"
+              !include "prepare_secondary.inc"
               !write(*,*) 'after preps sec'
               !               pause 
               

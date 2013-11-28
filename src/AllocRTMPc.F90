@@ -69,10 +69,10 @@ subroutine Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
 !  Allocate sizes of SW sub-structure arrays
 
    if (Ctrl%Ind%Ny-Ctrl%Ind%NThermal > 0) then
-!      allocate(RTM_Pc%SW%Tac(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
-!      allocate(RTM_Pc%SW%Tbc(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
-!      allocate(RTM_Pc%SW%dTac_dPc(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
-!      allocate(RTM_Pc%SW%dTbc_dPc(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
+!!$      allocate(RTM_Pc%SW%Tac(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
+!!$      allocate(RTM_Pc%SW%Tbc(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
+!!$      allocate(RTM_Pc%SW%dTac_dPc(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
+!!$      allocate(RTM_Pc%SW%dTbc_dPc(Ctrl%Ind%Ny-Ctrl%Ind%NThermal))
       allocate(RTM_Pc%SW%Tac(Ctrl%Ind%NSolar))
       allocate(RTM_Pc%SW%Tbc(Ctrl%Ind%NSolar))
       allocate(RTM_Pc%SW%dTac_dPc(Ctrl%Ind%NSolar))

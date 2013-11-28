@@ -236,6 +236,8 @@ module CTRL_def
                                            ! i.e. indices in Y array, not
 					   ! channel IDs. 
       integer, pointer :: Ythermal(:)      ! Array of thermal channel indices
+      integer, pointer :: ysolar_msi(:)
+      integer, pointer :: ythermal_msi(:)
       integer      :: ThermalFirst         ! Index of first thermal ID
       integer      :: ThermalLast          ! Index of last thermal ID
       integer      :: SolarFirst           ! Index of first solar ID

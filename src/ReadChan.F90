@@ -76,7 +76,8 @@
 !        Moved code to convert Solar constant value from here to Read_ATSR_MSI
 !        since the latter now reads the date from the MSI file header.  
 !    20/09/2012 added channel index to y_id value
-! 2013/11/14 MJ: some cleanup.
+! 2013/11/14 MJ: some cleanup and bugfixing: Fixed bug with selection of mdad_sw/lw: 
+! changed diff to abs(diff)
 ! Bugs:
 !    None known.
 !
@@ -293,8 +294,9 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
    Ctrl%Ind%SolarFirst = 1
    Ctrl%Ind%ThermalLast = Ctrl%Ind%Ny
    
-   write(*,*)'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
-   write(*,*)'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
+   write(*,*) 'First/Last channels wrt number of channels used in successive order (aka stored in MSI array)'
+   write(*,*) 'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
+   write(*,*) 'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
 
 #ifdef DEBUG
    write(*,*)'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
@@ -324,8 +326,9 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
    
       if (SAD_Chan(i)%WvN < 2500.0) then
          !Difference between central WN and 11 um
-         LW_diff = SAD_Chan(i)%WvN - 909.0 
+         LW_diff = abs(SAD_Chan(i)%WvN - 909.0)
          if (LW_diff < min_LW_diff) then
+            !write(*,*) 'set mdad lw',i,SAD_Chan(i)%WvN,lw_diff,'909.0'
             min_LW_diff = LW_diff
             Ctrl%Ind%MDAD_LW = i
          end if
@@ -339,8 +342,9 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
       if (SAD_Chan(i)%WvN > 10000.0 .and. SAD_Chan(i)%WvN < 20000.0) then
          !Difference between central WN and 0.67 um
 
-         SW_diff = SAD_Chan(i)%WvN - 14925.0 
+         SW_diff = abs(SAD_Chan(i)%WvN - 14925.0)
          if (SW_diff < min_SW_diff) then
+            !write(*,*) 'set mdad sw',i,SAD_Chan(i)%WvN,sw_diff,'14925.0'
             min_SW_diff = SW_diff
             Ctrl%Ind%MDAD_SW = i
          end if

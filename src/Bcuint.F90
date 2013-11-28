@@ -87,7 +87,7 @@ Subroutine bcuint(y,y1,y2,y12,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
 
     call bcucof(y,y1,y2,y12,x1u-x1l,x2u-x2l,c)
     if (x1u == x1l .or. x2u == x2l) write(*,*) &
-         'BCuInt: problem with input values - boundary pair equal?', x1u, x1l, x2u, x2l
+         & 'BCuInt:problem with input values - boundary pair equal?', x1u, x1l, x2u, x2l
 
     t=x1
     u=x2

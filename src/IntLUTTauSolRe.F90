@@ -134,21 +134,17 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    real, dimension(4) ::Yinb,dYdTauin,dYdRein,ddYin
    NChans = size(F,1)
 
-   !write(*,*) 'Grid%nRe',Grid%nRe
-   !pause
-
-
    do i = 1, NChans
       G(i,1:Grid%nTau,1:Grid%nRe) = &
-      (GZero%So1(i)  * F(i,1:Grid%nTau,GZero%iSoZ0(i),1:Grid%nRe)) + &
-      (GZero%dSoZ(i) * F(i,1:Grid%nTau,GZero%iSoZ1(i),1:Grid%nRe))
+           & (GZero%So1(i)  * F(i,1:Grid%nTau,GZero%iSoZ0(i),1:Grid%nRe)) + &
+           & (GZero%dSoZ(i) * F(i,1:Grid%nTau,GZero%iSoZ1(i),1:Grid%nRe))
    end do
 
 !  Construct the input vectors for BCuInt:
 !  Function values at four LUT points around our X
 
 
-  Y(:,1) = G(:,GZero%iT0,GZero%iR0)
+   Y(:,1) = G(:,GZero%iT0,GZero%iR0)
    Y(:,4) = G(:,GZero%iT0,GZero%iR1)
    Y(:,3) = G(:,GZero%iT1,GZero%iR1)
    Y(:,2) = G(:,GZero%iT1,GZero%iR0)
@@ -177,7 +173,7 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
 		 (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0))
 
 !   - Cross derivatives (dY^2/dTaudRe)
-
+    
     ddY(:,1) = (G(:,GZero%iT1,GZero%iR1) - G(:,GZero%iT1,GZero%iRm1) - G(:,GZero%iTm1,GZero%iR1) + G(:,GZero%iTm1,GZero%iRm1)) / &
 		((Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) * (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1)))
     ddY(:,2) = (G(:,GZero%iTp1,GZero%iR1) - G(:,GZero%iTp1,GZero%iRm1) - G(:,GZero%iT0,GZero%iR1) + G(:,GZero%iT0,GZero%iRm1)) / &
@@ -206,13 +202,13 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    else if (Ctrl%LUTIntflag .eq. 1) then
       do i = 1,NChans
          Yinb=Y(i,1:4)
-      dYdTauin=dYdTau(i,1:4)
-      dYdRein=dYdRe(i,1:4)
-      ddYin=ddY(i,1:4)
+         dYdTauin=dYdTau(i,1:4)
+         dYdRein=dYdRe(i,1:4)
+         ddYin=ddY(i,1:4)
          call bcuint(Yinb,dYdTauin,dYdRein,ddYin,&
-		 Grid%Tau(GZero%iT0),  Grid%Tau(GZero%iT1),&
-		 Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),&
-		 GZero%dT,GZero%dR,a1,a2,a3)
+              & Grid%Tau(GZero%iT0),  Grid%Tau(GZero%iT1),&
+              & Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),&
+              & GZero%dT,GZero%dR,a1,a2,a3)
          FInt(i) = a1
          FGrads(i,1) = a2
          FGrads(i,2) = a3

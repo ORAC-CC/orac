@@ -115,92 +115,94 @@ Subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    real       :: X       ! State variable value returned by X_MDAD
    real       :: Err     ! Error value returned by X_MDAD
      
-
    SetErr = .false.
+   !SetErr = .true.
    
-!  Set a priori and associated error covariance, then set first guess.
-!  Having set both, check for internal consistency vs the cloud class limits. 
-!  Loop over all variables, checking the method for each. One loop is used 
-!  for both AP and FG setting. This is intended to minimise the number of
-!  operations in incrementing the counter, but the setting of SetErr may offset
-!  this saving.
+   !  Set a priori and associated error covariance, then set first guess.
+   !  Having set both, check for internal consistency vs the cloud class limits. 
+   !  Loop over all variables, checking the method for each. One loop is used 
+   !  for both AP and FG setting. This is intended to minimise the number of
+   !  operations in incrementing the counter, but the setting of SetErr may offset
+   !  this saving.
 
+   !A priori setting
    SPixel%Sx = 0 
    do i = 1, MaxStateVar
       if (status /= 0) exit
       SetErr = .true.   ! Error values are required for a priori
       select case (SPixel%AP(i))
+
       case (SelmMeas)   !  Measurement dependent. Not supported for all variables.
-	 call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
-	 if (status /= XMDADMeth) then
-	    SPixel%Xb(i)   = X
-!write(*,*)'GetX:  SPixel%Xb(i) ', SPixel%Xb(i) 
-	    SPixel%Sx(i,i) = (Err * Ctrl%Invpar%XScale(i)) ** 2
+         call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
+         if (status /= XMDADMeth) then
+            SPixel%Xb(i)   = X
+            !write(*,*)'GetX:  SPixel%Xb(i) ', SPixel%Xb(i) 
+            SPixel%Sx(i,i) = (Err * Ctrl%Invpar%XScale(i)) ** 2
          end if
 
       case (SelmAUX)    !  AUX method not supported for most vars.
          if (i == ITs) then
-!           Error setting could be much more sophisticated. The current scheme
-!           takes no account of relative proportions of land/sea in the 
-!           current SPixel.
+            !           Error setting could be much more sophisticated. The current scheme
+            !           takes no account of relative proportions of land/sea in the 
+            !           current SPixel.
 
-	    SPixel%Xb(i)   = SPixel%RTM%LW%skint
-	    if (SPixel%Surface%Sea == 1)  &
-	      &  SPixel%Sx(i,i) = (AUXErrTsSea * Ctrl%Invpar%XScale(i)) ** 2
-	    if (SPixel%Surface%Land == 1) &
-	      &  SPixel%Sx(i,i) = (AUXErrTsLand * Ctrl%Invpar%XScale(i)) ** 2	    
+            SPixel%Xb(i)   = SPixel%RTM%LW%skint
+            if (SPixel%Surface%Sea == 1)  &
+                 &  SPixel%Sx(i,i) = (AUXErrTsSea * Ctrl%Invpar%XScale(i)) ** 2
+            if (SPixel%Surface%Land == 1) &
+                 &  SPixel%Sx(i,i) = (AUXErrTsLand * Ctrl%Invpar%XScale(i)) ** 2	    
          end if
 
       end select
         
-!     Ctrl method, used if method is Ctrl or other methods failed.
-!     Ctrl%Sx is squared after reading in.
+      !     Ctrl method, used if method is Ctrl or other methods failed.
+      !     Ctrl%Sx is squared after reading in.
 
       if (SPixel%AP(i) == SelmCtrl .or. &   
-            (SPixel%AP(i) == SelmMeas .and. status == XMDADMeth) ) then  
+           & (SPixel%AP(i) == SelmMeas .and. status == XMDADMeth) ) then  
          SPixel%Xb(i)   = Ctrl%Xb(i)
- 
-
-
-        if (SPixel%Illum(1) == IDay .or. SPixel%Illum(1) == IDaynore) then
+         
+         if (SPixel%Illum(1) == IDay .or. SPixel%Illum(1) == IDaynore) then
             SPixel%Sx(i,i) = (Ctrl%Sx(i) * Ctrl%Invpar%XScale(i)) ** 2
             Ctrl%SX(:)=Ctrl%defaultSX(:)
 
 !
-!check if all IR channels are present if only one is present then remove surface temperature state variable from state vector by setting uncertainty to a very small number
-! SPixel%QC = ibset(SPixel%QC, SPixTemp)
+            !check if all IR channels are present 
+            !if only one is present then remove surface temperature state variable from state vector
+            ! by setting uncertainty to a very small number
+            ! SPixel%QC = ibset(SPixel%QC, SPixTemp)
             if (btest(Spixel%QC,SPixTemp )) then
-! check at least one thermal channel is present
-
-!               if ( SPixel%Ym(Ctrl%Ind%ThermalFirst) .or. SPixel%Ym(Ctrl%Ind%ThermalLast) .lt. 2.0) then                  
-!                  Ctrl%SX(5)=1.0e-5
-!write(*,*)'ym',SPixel%Ym
-
-!pause
-!               end if
+               ! check at least one thermal channel is present
+               !if ( SPixel%Ym(Ctrl%Ind%ThermalFirst) .or. SPixel%Ym(Ctrl%Ind%ThermalLast) .lt. 2.0) then                  
+               !                  Ctrl%SX(5)=1.0e-5
+               !write(*,*)'ym',SPixel%Ym
+               
+               !pause
+               !               end if
             end if
 
          else
-! assume that the inactive state variables are well known do not try to retrieve
-
+            ! assume that the inactive state variables are well known do not try to retrieve
+            
             do m=1,SPixel%NxI
                Ctrl%SX(SPixel%XI(m))=1.0e-5
             enddo
             SPixel%Sx(i,i) = (Ctrl%Sx(i) * Ctrl%Invpar%XScale(i)) ** 2
          endif
 
-	 status = 0
-    end if                                ! End of AP setting.
+         status = 0
+      end if                                ! End of AP setting.
 
 
-!     Having set a priori for the variable, set first guess. If the FG method is
-!     the same as the AP, just copy the AP value. The first "if" is slightly 
-!     dangerous: the assumption is that the first guess method is legal and
-!     supported. This holds provided that the same methods are supported for
-!     FG and AP.
+      !     Having set a priori for the variable, set first guess. If the FG method is
+      !     the same as the AP, just copy the AP value. The first "if" is slightly 
+      !     dangerous: the assumption is that the first guess method is legal and
+      !     supported. This holds provided that the same methods are supported for
+      !     FG and AP.
 
-!write(*,*)'aa',SPixel%FG(i), Spixel%AP(i)
+      !Set FG
       if (SPixel%FG(i) == Spixel%AP(i)) then
+
          SPixel%X0(i) = SPixel%Xb(i)
 
       else 
@@ -210,34 +212,35 @@ Subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
          select case (Spixel%FG(i))
          case (SelmMeas)   !  MDAD method. Not supported for all variables.
      
-           call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
- 
-	    SPixel%X0(i) = X
-!write(*,*)'GetX:  SPixel%X0(i) ',i, SPixel%X0(i) 
-	 case (Sacura)   !first guess is set using sacura
-!	    SPixel%X0(i) =sacuravalue
-	 case (SelmAUX)    !  AUX method not supported for most vars.
+            call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
+            if( status .ne. 0 ) then
+               write(*,*) 'X_MDAD failed with status:',status
+               exit
+            endif
+            SPixel%X0(i) = X
+            !write(*,*)'GetX:  SPixel%X0(i) ',i, SPixel%X0(i) 
+         case (Sacura)   !first guess is set using sacura
+            !	    SPixel%X0(i) =sacuravalue
+         case (SelmAUX)    !  AUX method not supported for most vars.
             if (i == ITs) &
-	       SPixel%X0(i) = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-
-	 end select
+                 & SPixel%X0(i) = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+         end select
 
 !        Ctrl method, used if method is Ctrl or other methods failed.
-
-	 if (SPixel%FG(i) == SelmCtrl .or. &             
-               (SPixel%FG(i) == SelmMeas .and. status == XMDADMeth)) then   
+         if (SPixel%FG(i) == SelmCtrl .or. &             
+              & (SPixel%FG(i) == SelmMeas .and. status == XMDADMeth)) then   
             SPixel%X0(i) = Ctrl%X0(i)	 
-	    status = 0
-	 end if 
+            status = 0
+         end if
 
       end if   ! End of first guess setting    
 
 !     Check for internal consistency with the cloud class limits. Set the 
 !     a priori or first guess values equal to any limit they exceed.
 
-!write(*,*)'SPixel%Xb',SPixel%Xb
-!write(*,*)'ll',Ctrl%Invpar%xLlim
-!write(*,*)'il',Ctrl%Invpar%xUlim
+      !write(*,*)'SPixel%Xb',SPixel%Xb
+      !write(*,*)'ll',Ctrl%Invpar%xLlim
+      !write(*,*)'il',Ctrl%Invpar%xUlim
       if (SPixel%Xb(i) > Ctrl%Invpar%xUlim(i)) then
          SPixel%Xb(i) = Ctrl%Invpar%xUlim(i)
       else if (SPixel%Xb(i) < Ctrl%Invpar%xLlim(i)) then

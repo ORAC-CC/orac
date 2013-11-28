@@ -112,7 +112,9 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
     real, intent(in)                :: X(MaxStateVar)
     type(GZero_t), intent(inout)    :: GZero    
     real, intent(inout)             :: CRP(Spixel%Ind%Nthermal, MaxCRProps)
+!MJ TEST    real, intent(inout)             :: CRP(SPixel%Ind%Ny, MaxCRProps)
     real, intent(inout)             :: d_CRP(Spixel%Ind%Nthermal, MaxCRProps, 2)
+!MJ TEST    real, intent(inout)             :: d_CRP(SPixel%Ind%Ny, MaxCRProps, 2)
     real, intent(out)               :: BT(Spixel%Ind%Nthermal)
     real, intent(out)               :: d_BT(Spixel%Ind%Nthermal, MaxStateVar)
     real, intent(out)               :: R(Spixel%Ind%Nthermal)

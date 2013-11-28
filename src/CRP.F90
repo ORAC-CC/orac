@@ -49,6 +49,6 @@ module CRP_def
 
 ! Should the array declaration be left up to the code using the module? 
 
-   type(CRP_t), dimension(:), allocatable :: CRP
+   !type(CRP_t), dimension(:), allocatable :: CRP
    
 end module CRP_def

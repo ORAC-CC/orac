@@ -133,37 +133,42 @@ Subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 !  Call functions to interpolate the arrays: TFd and RFD are interpolated
 !  only in Tau and Re.
 
-   call Int_LUT_TauRe(SAD_LUT%TFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd), &
-      dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd,:),status)
+   write(*,*) 'Ind%SolarFirst:Ind%SolarLast',Ind%SolarFirst,Ind%SolarLast
 
+   
+   call Int_LUT_TauRe(SAD_LUT%TFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
+        & SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd), &
+        & dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd,:),status)
+   
+   write(*,*) 'rfd start'
    call Int_LUT_TauRe(SAD_LUT%RFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd), &
-      dCRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd,:),status)
+        & SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd), &
+        & dCRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd,:),status)
+   write(*,*) 'rfd stop'
 
 !  Tb and TFBd are interpolated in Tau, Solzen and Re
 
    call Int_LUT_TauSolRe(SAD_LUT%Tb(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITb), &
-      dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITb,:),status)
+        & SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITb), &
+        & dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITb,:),status)
 
    call Int_LUT_TauSolRe(SAD_LUT%TFbd(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITFbd), &
-      dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITFbd,:),status)
+        & SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITFbd), &
+        & dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITFbd,:),status)
 
 !  Td is interpolated in Tau, SatZen and Re
 !  Only process the channels that are exclusively solar. Channels with 
 !  a thermal component are interpolated by SetCRPThermal.
 
    call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%ThermalFirst-1,:,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd), &
-      dCRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd,:),status)
+        & SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd), &
+        & dCRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd,:),status)
 
 !  RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
 
    call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd(Ind%SolarFirst:Ind%SolarLast,:,:,:,:,:), &
-      SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,IRBd), &
-      dCRPOut(Ind%SolarFirst:Ind%SolarLast,IRBd,:),status)
+        & SAD_LUT%Grid, GZero, Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,IRBd), &
+        & dCRPOut(Ind%SolarFirst:Ind%SolarLast,IRBd,:),status)
 
 #ifdef DEBUG
 
@@ -186,6 +191,7 @@ Subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    write(*,*) ' SetCRPSolar: RFd values'
    do j=Ind%SolarFirst, Ind%SolarLast
+      write(*,*) 'channels',j,Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
 	 SAD_LUT%RFd(j, GZero%iT0, GZero%iR1),  &
 	 SAD_LUT%RFd(j, GZero%iT1, GZero%iR1) 

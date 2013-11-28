@@ -156,7 +156,7 @@ Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    integer :: i                              ! Counters
   
    NChans = size(FInt)
-
+   write(*,*) 'nnnnchans',nchans
 !  Construct the input vectors for BCuInt:
 !  Function values at four LUT points around our X
 
@@ -206,9 +206,13 @@ Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    if (Ctrl%LUTIntflag .eq. 0) then
       do i = 1,NChans
 
-      YIN=Y(i,:)
+      YIN=Y(i,1:4)
          call linint(YIN,Grid%Tau(GZero%iT0),Grid%Tau(GZero%iT1),&
 	 Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),GZero%dT,GZero%dR,a1,a2,a3)
+         !write(*,*) 'aaaaa1',a1,yin
+         !write(*,*) 'sline',Grid%Tau(GZero%iT0),Grid%Tau(GZero%iT1),&
+         !& Grid%Re(GZero%iR0), Grid%Re(GZero%iR1)
+         !write(*,*) 'dt/r sline'    ,     GZero%dT,GZero%dR
          FInt(i) = a1
          FGrads(i,1) = a2
          FGrads(i,2) = a3

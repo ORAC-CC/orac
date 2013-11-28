@@ -40,6 +40,8 @@
 !             i.e 1.6 or 3.7 the pixel will not be processed in this case. So will make the code run faster
 !   2013 MJ implements code for MODIS and AVHRR processing
 !   24 Jul 2013 APovey: added MODIS-TERRA and AQUA as valid instruments
+! 20131118 MJ fixes a number of problems with this subroutine:refch2 for modis is corrected from 19 to 20. ysolar_msi and ythermal_mis is now used in indexing the MSI array, as this gives the indices of the channels as they are stored in the MSI array.
+!
 ! Bugs:
 !
 !
@@ -76,107 +78,95 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
 
    status=0
 
-   if ((trim(Ctrl%Inst%Name) .eq. trim('MODIS-MYD')) .or. &
-        & (trim(Ctrl%Inst%Name) .eq. trim('MODIS-MOD')) .or. &
-        & (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA')) .or. &
-        & (trim(Ctrl%Inst%Name) .eq. trim('MODIS-AQUA')) .or. &
-        & (trim(Ctrl%Inst%Name) .eq. trim('AVHRR-NOAA15')) .or. &
-        & (trim(Ctrl%Inst%Name) .eq. trim('AVHRR-NOAA16')) .or. &
-        & (trim(Ctrl%Inst%Name) .eq. trim('AVHRR-NOAA17')) .or. &
-        & (trim(Ctrl%Inst%Name) .eq. trim('AVHRR-NOAA18'))) then
-      minrad=0.0   
-   end if
-
-
-   if (trim(Ctrl%Inst%Name) .eq. trim('AATSR'))  then
-      minrad=0.00 !could be 0.001  
-   end if
-
    allocate(MSI_Data%illum(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
 
-   write(*,*)'Ctrl%Ind%Nsolar',Ctrl%Ind%Nsolar
 
-   !  First ensure that the illumination is consistent in all iews
-   ! loop over observations in y direction
-
-   write(*,*)'read illum SegSize',SegSize
-
-   !
-   !loop over all channels and set values to zero where missing
-   !Make sure that enough channels are present
-   !
+   !set channel number in instrument notation which can be used
+   !for effective radius retrieval (could be made dynmic but set
+   !static for each instrument here).
+   !also set minimum radiance
    if ((trim(Ctrl%inst%name) .eq. trim('MODIS-AQUA')) .or. &
         & (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA'))) then
+      minrad=0.00
       refch1=6
-      refch2=19
+      refch2=20
+      write(*,*) 'went in here'
    endif
 
 
    if   (trim(Ctrl%inst%name) .eq. 'AATSR') then
+      minrad=0.00
       refch1=4
       refch2=5
    endif
+   !
+   !loop over all channels and set values to zero where missing
+   !Make sure that enough channels are present
+   !  First ensure that the illumination is consistent in all iews
+   ! loop over observations in y direction
    
-   
+!!$   write(*,*) '1'
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,1))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,2))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,3))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,4))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,5))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,6))
+
    do i = 1,Ctrl%Ind%Xmax
-!      do j = 1,Ctrl%Ind%Ymax
       do j = 1,Ctrl%Resoln%SegSize
          do view = 1,Ctrl%Ind%NViews
             nref=0
             nsbad=0
-            do ic=1,Ctrl%Ind%NSolar
+            do ic=1,Ctrl%Ind%Nsolar
                
-               if ((Ctrl%Ind%Y_id(ic) .eq. refch1) .or. (Ctrl%Ind%Y_id(ic) .eq. refch2)) then
-
-                  if (MSI_Data%MSI(i, j, &
-                       & Ctrl%Ind%Chi(ic)) .le. minrad) then 
+               !check the ref channels
+               if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .eq. refch1) .or. (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .eq. refch2)) then
+                  if (MSI_Data%MSI(i, j,Ctrl%Ind%ysolar_msi(ic)) .le. minrad) then 
                      nref=nref+1
-                     MSI_Data%MSI(i,j,Ctrl%Ind%Chi(ic))=0.0
-
+                     MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic))=0.0
                   end if
                end if
                
-               if (ic .le. 2) then
-                  if (MSI_Data%MSI(i, j, &
-                       Ctrl%Ind%Chi(ic)) .le. minrad) then 
-                     nsbad=nsbad+1.0
-                     MSI_Data%MSI(i,j,Ctrl%Ind%Chi(ic))=0.0
-                     !if (ic .le. 2) then
-                     !write(*,*)'after',MSI_Data%MSI(i, j,:)
-                     !end if
+               !MJ ORG if (ic .le. 2) then
+               !check the tau channels
+               if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch1) .and. (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch2)) then
+                  if (MSI_Data%MSI(i, j,Ctrl%Ind%ysolar_msi(ic)) .le. minrad) then 
+                     nsbad=nsbad+1
+                     MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic))=0.0
                   end if
                end if
-
 
             end do !nsolar
+
             ntbad=0
-            ! check all channels
-
-            do ic=Ctrl%Ind%NSolar+1,Ctrl%Ind%Navail
-
-               if (MSI_Data%MSI(i, j, &
-                    Ctrl%Ind%Chi(ic)) .le. minrad) then
-                  ntbad=ntbad+1.0
-                  MSI_Data%MSI(i,j,Ctrl%Ind%Chi(ic))=0.0
+            ! check the cloud top property channels
+            do ic=1,Ctrl%Ind%Nthermal
+               if (MSI_Data%MSI(i, j,Ctrl%Ind%ythermal_msi(ic)) .le. minrad) then
+                  ntbad=ntbad+1
+                  MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic))=0.0
                end if
-
-            end do !nthermal
+            end do
 
             !
             !make sure enough channels are present
-           !
-
-           if ((nsbad  .le. 0) .and.&
+            !
+            !Day: information in solar channels for tau are there AND info in solar channels for ref are there
+            !AND solar zenith angle is OK
+            if ((nsbad  .le. 0) .and.&
                  & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. (nref  .eq. 0)  ) then
                MSI_Data%Illum(i,j,view) = IDay
+            !Twilight: if in more than one but less than 3 solar channels there is no information
+            !AND if solar zenith is larger than maximum but less than 90 deg. (sunset)
             else if ((nsbad .gt. 1) .and. (nsbad .le. 3) &
                  & .and. (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%MaxSolzen) &
                  & .and. (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%Sunset)) then
                MSI_Data%Illum(i,j,view) = ITwi
-           else if ((nsbad .eq. 0) .and. (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. (nref  .gt. 0) ) then
-              MSI_Data%Illum(i,j,view) = IDaynore !but no effective radius channel i.e no 1.6 of 3.7 channel
-              MSI_Data%MSI(i, j,:)=0.0
-           else
+            !Solar tau channels are present but no ref channel valid
+            else if ((nsbad .eq. 0) .and. (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. (nref  .gt. 0) ) then
+               MSI_Data%Illum(i,j,view) = IDaynore !but no effective radius channel i.e no 1.6 of 3.7 channel
+               !MJ ORGMSI_Data%MSI(i, j,:)=0.0
+            else
                MSI_Data%Illum(i,j,view) = INight
             end if
 
@@ -199,13 +189,18 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !MJ write(*,*) 'nref,nsbad,ntbad',nref,nsbad,ntbad            
+
 
          end do !view
       end do !y
    end do !x
 
-   write(*,*)'illum d'
-!
+!!$   write(*,*)'minmax thermal channels 1',&
+!!$        & minval(MSI_Data%MSI(:,:,Ctrl%Ind%ythermal_msi(1):Ctrl%Ind%ythermal_msi(Ctrl%Ind%Nthermal))),&
+!!$        & maxval(MSI_Data%MSI(:,:,Ctrl%Ind%ythermal_msi(1):Ctrl%Ind%ythermal_msi(Ctrl%Ind%Nthermal)))
+   !stop
+   !
    !these next lines are actually not applicable at the moment
 !
    ios=0
@@ -219,6 +214,14 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
 
    end if
 
-
+!!$   write(*,*) '2'
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,1))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,2))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,3))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,4))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,5))
+!!$   write(*,*) minval(MSI_Data%MSI(:,:,6))
+!!$
+!!$   stop
 
  end subroutine Read_Illum_nc

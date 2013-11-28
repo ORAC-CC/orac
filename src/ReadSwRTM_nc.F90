@@ -169,7 +169,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
    character(Instnamelen) :: platform
    character(Instnamelen) :: sensor
    character(len=12) :: prod_date_swrtm
-   integer :: ncid,ik
+   integer :: ncid,ik,ichan
    real(kind=sreal), allocatable, dimension(:,:) :: dummy1p1
    real(kind=sreal), allocatable, dimension(:,:,:) :: dummy1p2
    real(kind=sreal), allocatable, dimension(:) :: dummy1df
@@ -205,6 +205,8 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
          status = SwRTMRTMInstErr ! Return error code
          call Write_Log(Ctrl, 'Read_SwRTM: error reading instrument name', &
               status)
+         write(*,*) 'Read_SwRTM: error reading instrument name'
+         stop
          !         write(*,*) 'hier0'
          !         write(*,*) InstName
          !         write(*,*) Ctrl%Inst%Name
@@ -224,6 +226,8 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
             call Write_Log(Ctrl, &
                  & 'Read_SwRTM: RTM file; header instrument disagrees with filename',&
                  & status)
+            write(*,*)  'Read_SwRTM: RTM file; header instrument disagrees with filename'
+            stop
          end if
       end if
 
@@ -238,6 +242,8 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
             status = SwRTMRTMDateErr ! Return error code
             call Write_Log(Ctrl, 'Read_SwRTM: error reading date', &
                  status)
+            write(*,*) 'Read_SwRTM: error reading date'
+            stop
          end if
          !         if (trim(Date) /= trim(Ctrl%Inst%Date)) then
          !             status = LwRTMRTMDateErr ! Return error code
@@ -279,7 +285,8 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
          !        selection).
          Nchan=size(chanid)
 
-         do i = Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
+         !MJ ORG do i = Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
+         do i = 1,Ctrl%Ind%Ny
             !           Loop over channels in RTM
             do j = 1, RTM%SW%NSWF
 !            do j = 1, NChan
@@ -287,7 +294,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
                !              chan_found and break out of the inner loop to start search for
                !              next instrument channel
                if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
-                  !if (Ctrl%Ind%Y_Id(i) == ChanID(j)) then
+                  !MJ ORG? if (Ctrl%Ind%Y_Id(i) == ChanID(j)) then
                   chan_found = chan_found + 1
                   index(k) = j
                   k = k+1
@@ -300,6 +307,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
             write(unit=message, fmt=*) &
                  'Read_SwRTM: RTM file; required instrument channels not found' 
             call Write_Log(Ctrl, trim(message), status)
+            write(*,*) 'Read_SwRTM: RTM file; required instrument channels not found' 
          end if
 
       end if  ! End of "required solar channels" status check
@@ -320,29 +328,47 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
          !read al wl related stuff here
          !write(*,*) Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast,Ctrl%Ind%NThermal
          !pause
-         do i = Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
+         !MJ ORG do i = Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
+         ichan=0
+         do i = 1,Ctrl%Ind%Ny
             do j = 1,RTM%SW%NSWF
                !write(*,*) i,Ctrl%Ind%Y_Id(i),j,ChanID(j)
                !pause
-               if (Ctrl%Ind%Y_Id(i) == ChanID(j)) then
-
+               if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
+                  
+                  ichan=ichan+1
                   do ik=1,RTM%SW%NP
                      call nc_read_array_1p2_float_orac(ncid,RTM%SW%Grid%NLatLon,j,ik,"tac_sw",dummy1p2,0)
                      dummy1df=dummy1p2(:,1,1)
-                     RTM%SW%Tac(:,:,i-Ctrl%Ind%SolarFirst+1,ik)=&
+                     !MJ ORG RTM%SW%Tac(:,:,i-Ctrl%Ind%SolarFirst+1,ik)=&
+                     RTM%SW%Tac(:,:,ichan,ik)=&
                           & transpose(reshape(dummy1df,(/RTM%SW%Grid%NLon,RTM%SW%Grid%NLat/)))
                      
                      call nc_read_array_1p2_float_orac(ncid,RTM%SW%Grid%NLatLon,j,ik,"tbc_sw",dummy1p2,0)
                      dummy1df=dummy1p2(:,1,1)
-                     RTM%SW%Tbc(:,:,i-Ctrl%Ind%SolarFirst+1,ik)=&
+                     !MJ ORG RTM%SW%Tbc(:,:,i-Ctrl%Ind%SolarFirst+1,ik)=&
+                     RTM%SW%Tbc(:,:,ichan,ik)=&
                           & transpose(reshape(dummy1df,(/RTM%SW%Grid%NLon,RTM%SW%Grid%NLat/)))
 
                   enddo
 
+                  write(*,*) 'max/min TBC 1', ichan,Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)),&
+                       & maxval(RTM%SW%Tbc(:,:,ichan,1)),minval(RTM%SW%Tbc(:,:,ichan,1))
+                  write(*,*) 'max/min TBC RTM%SW%NP', ichan,Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)),&
+                       & maxval(RTM%SW%Tbc(:,:,ichan,RTM%SW%NP)),&
+                       & minval(RTM%SW%Tbc(:,:,ichan,RTM%SW%NP))
+                  write(*,*) 'max/min TAC 1', ichan, Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)),&
+                       & maxval(RTM%SW%Tbc(:,:,ichan,1)),minval(RTM%SW%Tbc(:,:,ichan,1))
+                  write(*,*) 'max/min TAC RTM%SW%NP', ichan, Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)),&
+                       & maxval(RTM%SW%Tbc(:,:,ichan,RTM%SW%NP)),&
+                       & minval(RTM%SW%Tbc(:,:,ichan,RTM%SW%NP))
+
                end if
             end do
+
          end do
-         
+
+
          deallocate(dummy1p1)
          deallocate(dummy1p2)
          deallocate(dummy1df)
@@ -356,9 +382,12 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
       ios=nf90_close(ncid)
 
 
-      if (status == SwRTMReadErr) &
+      if (status == SwRTMReadErr .or. ios .ne. 0) then
          call Write_Log(Ctrl, 'Read_SwRTM: error reading from Sw file', &
-            status)
+              & status)
+         write(*,*)'Read_SwRTM: error reading from Sw file'
+         stop
+      endif
 
       if (allocated(index)) deallocate(index)
       if (allocated(WvNumber)) deallocate(WvNumber)
