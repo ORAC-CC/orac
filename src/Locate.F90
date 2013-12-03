@@ -23,6 +23,7 @@ function locate(xx,x)
   integer :: n,jl,jm,ju
   logical :: ascnd
   n=size(xx)
+  !write(*,*) 'nlocate',n
   ascnd = (xx(n) >= xx(1))
   jl=0
   ju=n+1

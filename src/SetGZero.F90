@@ -59,13 +59,15 @@
 !       routine and instead deallocate at the end of FM.F90 this solved g95
 !2013 MJ changes loop boundaries and parameter list contents
 !       memory problem
+!20131203 MJ makes LUTs more flexible wrt channel and properties
 ! Bugs:
 !    None known.
 !
 !---------------------------------------------------------------------
 
-Subroutine Set_GZero (Tau, Re, Spixel, SAD_LUT, GZero, status)
+Subroutine Set_GZero (Tau, Re, Ctrl,Spixel, SAD_LUT, GZero, status)
 !MJ ORGSubroutine Set_GZero (Tau, Re, Geom, NChans, ViewIdx, SAD_LUT, GZero, status)
+  use Ctrl_def
    use SPixel_def
    use SAD_LUT_def
    use GZero_def
@@ -75,6 +77,7 @@ Subroutine Set_GZero (Tau, Re, Spixel, SAD_LUT, GZero, status)
 
 !  argument declarations 
    real, intent(in)                      :: Tau, Re
+   type(CTRL_t), intent(in)        :: Ctrl
    type(SPixel_t)   :: SPixel
    !MJORGtype(SPixel_Geom_t), intent(in)       :: Geom
    !integer, intent(in)                   :: NChans
@@ -84,7 +87,7 @@ Subroutine Set_GZero (Tau, Re, Spixel, SAD_LUT, GZero, status)
                                                    ! "zero'th" grid points
    integer, intent(out)                  :: status
 
-   integer :: i ! Loop counter
+   integer :: i,j ! Loop counters
    integer :: k
 
 !  Status is not actually set at present. Error-checking here could be very
@@ -117,12 +120,19 @@ Subroutine Set_GZero (Tau, Re, Spixel, SAD_LUT, GZero, status)
 !MJ ORG:
 !!$   GZero%iT0   = max(min(locate(SAD_LUT%Grid%Tau(1:SAD_LUT%Grid%nTau),Tau),SAD_LUT%Grid%nTau-1),1)
 !!$   GZero%iR0   =   max(min(locate(SAD_LUT%Grid%Re(1:SAD_LUT%Grid%nRe),Re),SAD_LUT%Grid%nRe-1),1)
-   GZero%iT0   = max(min(locate(SAD_LUT%Grid%Tau(1:SAD_LUT%Grid%nTau),Tau),SAD_LUT%Grid%nTau-1),1)
-   GZero%iR0   =   max(min(locate(SAD_LUT%Grid%Re(1:SAD_LUT%Grid%nRe),Re),SAD_LUT%Grid%nRe-1),1)
+
+   do j=1,maxcrprops
+      do i=1,Spixel%Ind%Ny
+         GZero%iT0(i,j)   = max(min(locate(SAD_LUT%Grid%Tau(i,1:SAD_LUT%Grid%nTau(i,j),j),Tau),SAD_LUT%Grid%nTau(i,j)-1),1)
+         write(*,*) 'test gz',i,j,GZero%iT0(i,j),tau,SAD_LUT%Grid%nTau(i,j),SAD_LUT%Grid%Tau(i,GZero%iT0(i,j),j)
+         write(*,*) 'lut tau',SAD_LUT%Grid%Tau(i,:,j)
+         GZero%iR0(i,j)   =   max(min(locate(SAD_LUT%Grid%Re(i,1:SAD_LUT%Grid%nRe(i,j),j),Re),SAD_LUT%Grid%nRe(i,j)-1),1)
+      enddo
 
 
 
    write(*,*) 'hewre ViewIdx',Spixel%ViewIdx
+!   write(*,*) 'tests',
 !   stop
 
    do i=1,Spixel%Ind%Ny
@@ -131,100 +141,160 @@ Subroutine Set_GZero (Tau, Re, Spixel, SAD_LUT, GZero, status)
 	!& SAD_LUT%Grid%nSatzen-1,SAD_LUT%Grid%nSolzen-1,SAD_LUT%Grid%nSolzen-1,SAD_LUT%Grid%nRelazi-1,&
 	!& SPixel%Geom%Solzen(Spixel%ViewIdx(i)),SPixel%Geom%Relazi(Spixel%ViewIdx(i))
 
-      GZero%iSaZ0(i) = &
-           & max(min(locate(SAD_LUT%Grid%SatZen(1:SAD_LUT%Grid%nSatzen),&
-           & SPixel%Geom%Satzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSatzen-1),1)
-      GZero%iSoZ0(i) = &
-           & max(min(locate(SAD_LUT%Grid%SolZen(1:SAD_LUT%Grid%nSolzen),&
-           & SPixel%Geom%Solzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSolzen-1),1)
-      GZero%iRA0(i)  = &
-           & max(min(locate(SAD_LUT%Grid%Relazi(1:SAD_LUT%Grid%nRelazi),&
-           & SPixel%Geom%Relazi(Spixel%ViewIdx(i))),SAD_LUT%Grid%nRelazi-1),1)
+      !MJ ORG
+!!$      GZero%iSaZ0(i) = &
+!!$           & max(min(locate(SAD_LUT%Grid%SatZen(1:SAD_LUT%Grid%nSatzen),&
+!!$           & SPixel%Geom%Satzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSatzen-1),1)
+!!$      GZero%iSoZ0(i) = &
+!!$           & max(min(locate(SAD_LUT%Grid%SolZen(1:SAD_LUT%Grid%nSolzen),&
+!!$           & SPixel%Geom%Solzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSolzen-1),1)
+!!$      GZero%iRA0(i)  = &
+!!$           & max(min(locate(SAD_LUT%Grid%Relazi(1:SAD_LUT%Grid%nRelazi),&
+!!$           & SPixel%Geom%Relazi(Spixel%ViewIdx(i))),SAD_LUT%Grid%nRelazi-1),1)
+
+      write(*,*) 'ichan zero',i
+      GZero%iSaZ0(i,j) = &
+           & max(min(locate(SAD_LUT%Grid%SatZen(i,1:SAD_LUT%Grid%nSatzen(i,j),j),&
+           & SPixel%Geom%Satzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSatzen(i,j)-1),1)
+      GZero%iSoZ0(i,j) = &
+           & max(min(locate(SAD_LUT%Grid%SolZen(i,1:SAD_LUT%Grid%nSolzen(i,j),j),&
+           & SPixel%Geom%Solzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSolzen(i,j)-1),1)
+      GZero%iRA0(i,j)  = &
+           & max(min(locate(SAD_LUT%Grid%Relazi(i,1:SAD_LUT%Grid%nRelazi(i,j),j),&
+           & SPixel%Geom%Relazi(Spixel%ViewIdx(i))),SAD_LUT%Grid%nRelazi(i,j)-1),1)
+
    end do
 
 ! The checks below should now be obsolote...?
 
    !this sets the upper bracketing index, the locate above set the lower index
-   GZero%iT1   = GZero%iT0 + 1
-   GZero%iR1   = GZero%iR0 + 1
+!MJ ORG
+!!$   GZero%iT1   = GZero%iT0 + 1
+!!$   GZero%iR1   = GZero%iR0 + 1
    do i=1,Spixel%Ind%Ny
-      GZero%iSaZ1(i) = GZero%iSaZ0(i) + 1
-      GZero%iSoZ1(i) = GZero%iSoZ0(i) + 1
-      GZero%iRA1(i)  = GZero%iRA0(i) + 1
+      GZero%iSaZ1(i,j) = GZero%iSaZ0(i,j) + 1
+      GZero%iSoZ1(i,j) = GZero%iSoZ0(i,j) + 1
+      GZero%iRA1(i,j)  = GZero%iRA0(i,j) + 1
+
+      GZero%iT1(i,j)   = GZero%iT0(i,j) + 1
+      GZero%iR1(i,j)   = GZero%iR0(i,j) + 1
+   
    end do
 
    !this sets the next pair of bracketing indices around the primary one
-   if (GZero%iT0 == 1) then
-      GZero%iTm1 = GZero%iT0
-      GZero%iTp1 = GZero%iT1+1
-   else if (GZero%iT1 == SAD_LUT%Grid%nTau) then
-      GZero%iTm1 = GZero%iT0-1
-      GZero%iTp1 = GZero%iT1
-   else
-      GZero%iTm1 = GZero%iT0-1
-      GZero%iTp1 = GZero%iT1+1
-   endif
+   do i=1,Spixel%Ind%Ny
+      if (GZero%iT0(i,j) == 1) then
+         GZero%iTm1(i,j) = GZero%iT0(i,j)
+         GZero%iTp1(i,j) = GZero%iT1(i,j)+1
+      else if (GZero%iT1(i,j) == SAD_LUT%Grid%nTau(i,j)) then
+         GZero%iTm1(i,j) = GZero%iT0(i,j)-1
+         GZero%iTp1(i,j) = GZero%iT1(i,j)
+      else
+         GZero%iTm1(i,j) = GZero%iT0(i,j)-1
+         GZero%iTp1(i,j) = GZero%iT1(i,j)+1
+      endif
 
-   if (GZero%iR0 == 1) then
-      GZero%iRm1 = GZero%iR0
-      GZero%iRp1 = GZero%iR1+1
-   else if (GZero%iR1 == SAD_LUT%Grid%nRe) then
-      GZero%iRm1 = GZero%iR0-1
-      GZero%iRp1 = GZero%iR1
-   else
-      GZero%iRm1 = GZero%iR0-1
-      GZero%iRp1 = GZero%iR1+1
-   endif
+      if (GZero%iR0(i,j) == 1) then
+         GZero%iRm1(i,j) = GZero%iR0(i,j)
+         GZero%iRp1(i,j) = GZero%iR1(i,j)+1
+      else if (GZero%iR1(i,j) == SAD_LUT%Grid%nRe(i,j)) then
+         GZero%iRm1(i,j) = GZero%iR0(i,j)-1
+         GZero%iRp1(i,j) = GZero%iR1(i,j)
+      else
+         GZero%iRm1(i,j) = GZero%iR0(i,j)-1
+         GZero%iRp1(i,j) = GZero%iR1(i,j)+1
+      endif
+
+   enddo
 
 !  Calcuate dT, dR: these are the distances in T, R, etc from the grid 
 !  point with indices (0, 0, ...) to (Tau, Re, ...) expressed as a fraction 
 !  of the LUT grid steps.
 
    ! These variables are not used and could be removed? No, they are used!
-   GZero%dT   = (Tau - SAD_LUT%Grid%Tau(GZero%iT0)) / &
-                (SAD_LUT%Grid%Tau(GZero%iT1) - SAD_LUT%Grid%Tau(GZero%iT0))   
-   GZero%dR   = (Re - SAD_LUT%Grid%Re(GZero%iR0)) / &
-                (SAD_LUT%Grid%Re(GZero%iR1) - SAD_LUT%Grid%Re(GZero%iR0))
-   write(*,*) 'compute dr',Re, SAD_LUT%Grid%Re(GZero%iR0),&
-        & SAD_LUT%Grid%Re(GZero%iR1), SAD_LUT%Grid%Re(GZero%iR0)
+   do i=1,Spixel%Ind%Ny
+      write(*,*) 'compute dt',i,j,tau, SAD_LUT%Grid%Tau(i,GZero%iT0(i,j),j),&
+           & SAD_LUT%Grid%Tau(i,GZero%iT1(i,j),j), SAD_LUT%Grid%tau(i,GZero%iT0(i,j),j)
+      if(abs(SAD_LUT%Grid%Tau(i,GZero%iT1(i,j),j)-SAD_LUT%Grid%Tau(i,GZero%iT0(i,j),j)) .le. &
+           & ditherm6) then
+         GZero%dT(i,j)   = 0.0
+      else
+         GZero%dT(i,j)   = (Tau - SAD_LUT%Grid%Tau(i,GZero%iT0(i,j),j)) / &
+              & (SAD_LUT%Grid%Tau(i,GZero%iT1(i,j),j) - SAD_LUT%Grid%Tau(i,GZero%iT0(i,j),j))
+      endif
+      if(abs(SAD_LUT%Grid%Re(i,GZero%iR1(i,j),j) - SAD_LUT%Grid%Re(i,GZero%iR0(i,j),j)) .le.&
+           & ditherm6) then
+         GZero%dT(i,j)   = 0.0
+      else 
+         GZero%dR(i,j)   = (Re - SAD_LUT%Grid%Re(i,GZero%iR0(i,j),j)) / &
+              & (SAD_LUT%Grid%Re(i,GZero%iR1(i,j),j) - SAD_LUT%Grid%Re(i,GZero%iR0(i,j),j))
+      endif
+      write(*,*) 'compute dr',Re, SAD_LUT%Grid%Re(i,GZero%iR0(i,j),j),&
+           & SAD_LUT%Grid%Re(i,GZero%iR1(i,j),j), SAD_LUT%Grid%Re(i,GZero%iR0(i,j),j)
+   enddo
+   
 
    do i=1,Spixel%Ind%Ny
-      GZero%dSaZ(i) = &
-           & (SPixel%Geom%SatZen(Spixel%ViewIdx(i)) - SAD_LUT%Grid%SatZen(GZero%iSaZ0(i))) / &
-           & (SAD_LUT%Grid%SatZen(GZero%iSaZ1(i)) - SAD_LUT%Grid%SatZen(GZero%iSaZ0(i))) 
-      GZero%dSoZ(i) = &
-           & (SPixel%Geom%SolZen(Spixel%ViewIdx(i)) - SAD_LUT%Grid%SolZen(GZero%iSoZ0(i))) / &
-           & (SAD_LUT%Grid%SolZen(GZero%iSoZ1(i)) - SAD_LUT%Grid%SolZen(GZero%iSoZ0(i))) 
-      GZero%dRA(i)  = &
-           & (SPixel%Geom%RelAzi(Spixel%ViewIdx(i)) - SAD_LUT%Grid%RelAzi(GZero%iRA0(i)))  / &
-           & (SAD_LUT%Grid%RelAzi(GZero%iRA1(i))  - SAD_LUT%Grid%RelAzi(GZero%iRA0(i))) 
+      !write(*,*) 'angle loop',i,SAD_LUT%Grid%SatZen(i,GZero%iSaZ1(i,j),j), SAD_LUT%Grid%SatZen(i,GZero%iSaZ0(i,j),j)
+      if(abs(SAD_LUT%Grid%SatZen(i,GZero%iSaZ1(i,j),j) - SAD_LUT%Grid%SatZen(i,GZero%iSaZ0(i,j),j)) .le. &
+           & ditherm6) then
+         GZero%dSaZ(i,j) = 0.0
+      else
+         GZero%dSaZ(i,j) = &
+              & (SPixel%Geom%SatZen(Spixel%ViewIdx(i)) - SAD_LUT%Grid%SatZen(i,GZero%iSaZ0(i,j),j)) / &
+              & (SAD_LUT%Grid%SatZen(i,GZero%iSaZ1(i,j),j) - SAD_LUT%Grid%SatZen(i,GZero%iSaZ0(i,j),j)) 
+      endif
+      !the other two angles only exist when we have solar channels (including mixed)
+      !if( i .le. Ctrl%Ind%SolarLast) then
+         if(abs(SAD_LUT%Grid%SolZen(i,GZero%iSoZ1(i,j),j) - SAD_LUT%Grid%SolZen(i,GZero%iSoZ0(i,j),j)) .le. &
+              & ditherm6 ) then
+            GZero%dSoZ(i,j)=0.0
+         else
+            GZero%dSoZ(i,j) = &
+                 & (SPixel%Geom%SolZen(Spixel%ViewIdx(i)) - SAD_LUT%Grid%SolZen(i,GZero%iSoZ0(i,j),j)) / &
+                 & (SAD_LUT%Grid%SolZen(i,GZero%iSoZ1(i,j),j) - SAD_LUT%Grid%SolZen(i,GZero%iSoZ0(i,j),j)) 
+         endif
+         if(abs(SAD_LUT%Grid%RelAzi(i,GZero%iRA1(i,j),j)  - SAD_LUT%Grid%RelAzi(i,GZero%iRA0(i,j),j)) .le. &
+              & ditherm6) then
+            GZero%dRA(i,j)=0.0
+         else            
+            GZero%dRA(i,j)  = &
+                 & (SPixel%Geom%RelAzi(Spixel%ViewIdx(i)) - SAD_LUT%Grid%RelAzi(i,GZero%iRA0(i,j),j))  / &
+                 & (SAD_LUT%Grid%RelAzi(i,GZero%iRA1(i,j),j)  - SAD_LUT%Grid%RelAzi(i,GZero%iRA0(i,j),j)) 
+         endif
+      
    end do
 
 !  Caclulate 1.0 minus each of the d values above - used several times by
 !  the interpolation routines.
 
-   GZero%T1  = 1.0 - GZero%dT
-   GZero%R1  = 1.0 - GZero%dR
-   GZero%Sa1 = 1.0 - GZero%dSaZ
-   GZero%So1 = 1.0 - GZero%dSoZ
-   GZero%Ra1 = 1.0 - GZero%dRA
+   do i=1,Spixel%Ind%Ny
+      GZero%T1(i,j)  = 1.0 - GZero%dT(i,j)
+      GZero%R1(i,j)  = 1.0 - GZero%dR(i,j)
+      GZero%Sa1(i,j) = 1.0 - GZero%dSaZ(i,j)
+      GZero%So1(i,j) = 1.0 - GZero%dSoZ(i,j)
+      GZero%Ra1(i,j) = 1.0 - GZero%dRA(i,j)
+   enddo
 
 #ifdef DEBUG
-   write(*,*)'SetGZero: CurT, TGrid(1), delT:', Tau, SAD_LUT%Grid%Tau( GZero%iT0), &
-        & SAD_LUT%Grid%Tau( GZero%iT1)
-   write(*,*)'SetGZero: CurR, RGrid(1), delR:', Re, SAD_LUT%Grid%Re( GZero%iR0), &
-        & SAD_LUT%Grid%Re( GZero%iR1)
-   write(*,*)'SetGZero: CurSa(1), SaGrid(1), delSa:', SPixel%Geom%SatZen(Spixel%ViewIdx(1)), &
-        & SAD_LUT%Grid%Satzen(GZero%iSaZ0(1)),SAD_LUT%Grid%Satzen(GZero%iSaZ1(1))
-   write(*,*)'SetGZero: CurSo(1), SoGrid(1), delSo:', SPixel%Geom%SolZen(Spixel%ViewIdx(1)), &
-        & SAD_LUT%Grid%Solzen(GZero%iSoZ0(1)),SAD_LUT%Grid%Solzen(GZero%iSoZ1(1))
-   write(*,*)'SetGZero: CurRa(1), RaGrid(1), delRa:', SPixel%Geom%RelAzi(Spixel%ViewIdx(1)), &
-        & SAD_LUT%Grid%Relazi(GZero%iRA0(1)),      SAD_LUT%Grid%Relazi(GZero%iRA1(1))
-
-   write(*,'(a, 5i3.1)')' indices of T0, R0, SoZ0(1), Saz0(1), Ra0(1)', &
-        & GZero%iT0, GZero%iR0, GZero%iSoZ0(1), GZero%iSaZ0(1), GZero%iRA0(1)
-   write(*,'(a, 5i3.1)')' indices of T1, R1, SoZ1(1), Saz1(1), Ra1(1): ', &
-        & GZero%iT1, GZero%iR1, GZero%iSoZ1(1), GZero%iSaZ1(1), GZero%iRA1(1)
+   do i=1,Spixel%Ind%Ny
+      write(*,*) 'channel',i,j
+      write(*,*)'SetGZero: CurT, TGrid(1), delT:', Tau, SAD_LUT%Grid%Tau(i,GZero%iT0(i,j),j), &
+           & SAD_LUT%Grid%Tau(i,GZero%iT1(i,j),j)
+      write(*,*)'SetGZero: CurR, RGrid(1), delR:', Re, SAD_LUT%Grid%Re(i,GZero%iR0(i,j),j), &
+           & SAD_LUT%Grid%Re(i,GZero%iR1(i,j),j)
+      write(*,*)'SetGZero: CurSa(1), SaGrid(1), delSa:', SPixel%Geom%SatZen(Spixel%ViewIdx(1)), &
+           & SAD_LUT%Grid%Satzen(i,GZero%iSaZ0(i,j),j),SAD_LUT%Grid%Satzen(i,GZero%iSaZ1(i,j),j)
+      write(*,*)'SetGZero: CurSo(1), SoGrid(1), delSo:', SPixel%Geom%SolZen(Spixel%ViewIdx(1)), &
+           & SAD_LUT%Grid%Solzen(i,GZero%iSoZ0(i,j),j),SAD_LUT%Grid%Solzen(i,GZero%iSoZ1(i,j),j)
+      write(*,*)'SetGZero: CurRa(1), RaGrid(1), delRa:', SPixel%Geom%RelAzi(Spixel%ViewIdx(1)), &
+           & SAD_LUT%Grid%Relazi(i,GZero%iRA0(i,j),j),      SAD_LUT%Grid%Relazi(i,GZero%iRA1(i,j),j)
+      
+      write(*,'(a, 5i3.1)')' indices of T0, R0, SoZ0(1), Saz0(1), Ra0(1)', &
+           & GZero%iT0(i,j), GZero%iR0(i,j), GZero%iSoZ0(i,j), GZero%iSaZ0(i,j), GZero%iRA0(i,j)
+      write(*,'(a, 5i3.1)')' indices of T1, R1, SoZ1(1), Saz1(1), Ra1(1): ', &
+           & GZero%iT1(i,j), GZero%iR1(i,j), GZero%iSoZ1(i,j), GZero%iSaZ1(i,j), GZero%iRA1(i,j)
+   enddo
 
 !MJ OLD:
 !!$   write(*,*)'SetGZero: CurT, TGrid(1), delT:', Tau, SAD_LUT%Grid%Tau(1), &
@@ -243,5 +313,7 @@ Subroutine Set_GZero (Tau, Re, Spixel, SAD_LUT, GZero, status)
 !!$   write(*,'(a, 5i3.1)')' indices of T1, R1, SoZ1(1), Saz1(1), Ra1(1): ', &
 !!$      GZero%iT1, GZero%iR1, GZero%iSoZ1(1), GZero%iSaZ1(1), GZero%iRA1(1)
 #endif
+
+enddo
 
  End Subroutine Set_GZero

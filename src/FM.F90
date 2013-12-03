@@ -225,30 +225,61 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
   !  Call Set_GZero (results used in both FM_Thermal and FM_Solar).
 
-  allocate(GZero%iSaZ0(Spixel%Ind%Ny))	
+  allocate(GZero%iSaZ0(Spixel%Ind%Ny,MaxCRProps))	
   GZero%iSaZ0=0
-  allocate(GZero%iSoZ0(Spixel%Ind%Ny))
+  allocate(GZero%iSoZ0(Spixel%Ind%Ny,MaxCRProps))
   GZero%iSoZ0=0
-  allocate(GZero%iRA0(Spixel%Ind%Ny))
+  allocate(GZero%iRA0(Spixel%Ind%Ny,MaxCRProps))
   GZero%iRA0=0
-  allocate(GZero%iSaZ1(Spixel%Ind%Ny))
+  allocate(GZero%iSaZ1(Spixel%Ind%Ny,MaxCRProps))
   GZero%iSaZ1=0
-  allocate(GZero%iSoZ1(Spixel%Ind%Ny))
+  allocate(GZero%iSoZ1(Spixel%Ind%Ny,MaxCRProps))
   GZero%iSoZ1=0
-  allocate(GZero%iRA1(Spixel%Ind%Ny))
+  allocate(GZero%iRA1(Spixel%Ind%Ny,MaxCRProps))
   GZero%iRA1=0
-  allocate(GZero%dSaZ(Spixel%Ind%Ny))
+  allocate(GZero%dSaZ(Spixel%Ind%Ny,MaxCRProps))
   GZero%dSaZ=0
-  allocate(GZero%dSoZ(Spixel%Ind%Ny))
+  allocate(GZero%dSoZ(Spixel%Ind%Ny,MaxCRProps))
   GZero%dSoZ=0
-  allocate(GZero%dRA(Spixel%Ind%Ny))
+  allocate(GZero%dRA(Spixel%Ind%Ny,MaxCRProps))
   GZero%dRA=0
-  allocate(GZero%Sa1(Spixel%Ind%Ny))
+  allocate(GZero%Sa1(Spixel%Ind%Ny,MaxCRProps))
   GZero%Sa1=0
-  allocate(GZero%So1(Spixel%Ind%Ny))
+  allocate(GZero%So1(Spixel%Ind%Ny,MaxCRProps))
   GZero%So1=0
-  allocate(GZero%Ra1(Spixel%Ind%Ny))
+  allocate(GZero%Ra1(Spixel%Ind%Ny,MaxCRProps))
   GZero%Ra1=0
+  
+
+
+  allocate(GZero%iT0(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iT0=0
+  allocate(GZero%iT1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iT1=0
+  allocate(GZero%iTm1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iTm1=0
+  allocate(GZero%iTp1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iTp1=0
+
+  allocate(GZero%iR0(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iR0=0
+  allocate(GZero%iR1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iR1=0
+  allocate(GZero%iRm1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iRm1=0
+  allocate(GZero%iRp1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%iRp1=0
+
+  allocate(GZero%dT(Spixel%Ind%Ny,MaxCRProps))
+  GZero%dT=0.0
+  allocate(GZero%dR(Spixel%Ind%Ny,MaxCRProps))
+  GZero%dR=0.0
+
+  allocate(GZero%T1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%T1=0.0
+  allocate(GZero%R1(Spixel%Ind%Ny,MaxCRProps))
+  GZero%R1=0.0
+
   
   CRP=0.00 !MJ
   d_CRP=0.00 !MJ
@@ -260,7 +291,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
      !MJ ORG SPixel%ViewIdx, SAD_LUT, GZero, status)
 
      !locate intervalls of the LUTS in which the current tau and ref values fall
-     call Set_GZero(X(iTau),X(iRe),SPixel,SAD_LUT, GZero, status)
+     call Set_GZero(X(iTau),X(iRe),Ctrl,SPixel,SAD_LUT, GZero, status)
   
   endif
 

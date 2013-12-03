@@ -73,11 +73,12 @@
 !    7th Feb 2012, Chris Arnold:
 !       Input structures Ctrl, GZero, Grid now have intent(in)
 !8/7/2012 C. Poulsen fixed non contiguous array
+!20131203 MJ makes LUTs more flexible wrt channel and properties
 ! Bugs:
 !    None known.
 !
 !---------------------------------------------------------------------
-Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
+Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr,status)
 
    use CTRL_def
    use GZero_def
@@ -107,7 +108,7 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    integer          :: status
 
 !  Local variables
-   real, dimension(size(FInt),Grid%nTau,Grid%nRe) :: G
+   real, dimension(size(FInt),Grid%nmaxTau,Grid%nmaxRe) :: G
 					      ! A Matrix of dimension Nchan,
 					      ! NTau,Nre - used to store array
 					      ! only interpolated to current
@@ -127,7 +128,7 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    real :: a1, a2, a3                         ! Temporary store for output of
 					      ! BiCubic subroutine
    integer :: NChans 			      ! Number of channels in LUT arrays etc
-   integer :: i      			      ! Array counter
+   integer :: i,icrpr      			      ! Array counter
    integer :: bkp_lun			      ! Unit number for breakpoint file
    integer :: ios    			      ! I/O stat for file handling
    real, dimension(4) ::yin   
@@ -135,53 +136,58 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    NChans = size(F,1)
 
    do i = 1, NChans
-      G(i,1:Grid%nTau,1:Grid%nRe) = &
-           & (GZero%So1(i)  * F(i,1:Grid%nTau,GZero%iSoZ0(i),1:Grid%nRe)) + &
-           & (GZero%dSoZ(i) * F(i,1:Grid%nTau,GZero%iSoZ1(i),1:Grid%nRe))
-   end do
+      G(i,1:Grid%nTau(i,icrpr),1:Grid%nRe(i,icrpr)) = &
+           & (GZero%So1(i,icrpr)  * F(i,1:Grid%nTau(i,icrpr),GZero%iSoZ0(i,icrpr),1:Grid%nRe(i,icrpr))) + &
+           & (GZero%dSoZ(i,icrpr) * F(i,1:Grid%nTau(i,icrpr),GZero%iSoZ1(i,icrpr),1:Grid%nRe(i,icrpr)))
+
 
 !  Construct the input vectors for BCuInt:
 !  Function values at four LUT points around our X
 
 
-   Y(:,1) = G(:,GZero%iT0,GZero%iR0)
-   Y(:,4) = G(:,GZero%iT0,GZero%iR1)
-   Y(:,3) = G(:,GZero%iT1,GZero%iR1)
-   Y(:,2) = G(:,GZero%iT1,GZero%iR0)
+      Y(i,1) = G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))
+      Y(i,4) = G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))
+      Y(i,3) = G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))
+      Y(i,2) = G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))
 
 !  Function derivatives at four LUT points around our X....
 !  - WRT to Tau
 
-    dYdTau(:,1) = (G(:,GZero%iT1,GZero%iR0)-G(:,GZero%iTm1,GZero%iR0))/ &
-	  	  (Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) 
-    dYdTau(:,2) = (G(:,GZero%iTp1,GZero%iR0)-G(:,GZero%iT0,GZero%iR0))/ &
-	  	  (Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0))
-    dYdTau(:,3) = (G(:,GZero%iTp1,GZero%iR1)-G(:,GZero%iT0,GZero%iR1))/ &
-	 	  (Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0))
-    dYdTau(:,4) = (G(:,GZero%iT1,GZero%iR1)-G(:,GZero%iTm1,GZero%iR1))/ &
-	 	  (Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1))
+      dYdTau(i,1) = (G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))-G(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) 
+      dYdTau(i,2) = (G(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr))-G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
+      dYdTau(i,3) = (G(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr))-G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)))/ &
+           & (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
+      dYdTau(i,4) = (G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-G(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)))/ &
+           & (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr))
 
 !   - WRT to Re
 
-    dYDRe(:,1) = (G(:,GZero%iT0,GZero%iR1)-G(:,GZero%iT0,GZero%iRm1))/ &
-		 (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1))
-    dYDRe(:,2) = (G(:,GZero%iT1,GZero%iR1)-G(:,GZero%iT1,GZero%iRm1))/ &
-		 (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1))
-    dYDRe(:,3) = (G(:,GZero%iT1,GZero%iRp1)-G(:,GZero%iT1,GZero%iR0))/ &
-		 (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0))
-    dYDRe(:,4) = (G(:,GZero%iT0,GZero%iRp1)-G(:,GZero%iT0,GZero%iR0))/ &
-		 (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0))
+      dYDRe(i,1) = (G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))-G(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr)))/ &
+           & (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
+      dYDRe(i,2) = (G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-G(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)))/ &
+           & (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
+      dYDRe(i,3) = (G(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr))-G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
+      dYDRe(i,4) = (G(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr))-G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
 
 !   - Cross derivatives (dY^2/dTaudRe)
     
-    ddY(:,1) = (G(:,GZero%iT1,GZero%iR1) - G(:,GZero%iT1,GZero%iRm1) - G(:,GZero%iTm1,GZero%iR1) + G(:,GZero%iTm1,GZero%iRm1)) / &
-		((Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) * (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1)))
-    ddY(:,2) = (G(:,GZero%iTp1,GZero%iR1) - G(:,GZero%iTp1,GZero%iRm1) - G(:,GZero%iT0,GZero%iR1) + G(:,GZero%iT0,GZero%iRm1)) / &
-		((Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0)) * (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1)))
-    ddY(:,3) = (G(:,GZero%iTp1,GZero%iRp1) - G(:,GZero%iTp1,GZero%iR0) - G(:,GZero%iT0,GZero%iRp1) + G(:,GZero%iT0,GZero%iR0)) / &
-		((Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0)) * (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0)))
-    ddY(:,4) = (G(:,GZero%iT1,GZero%iRp1) - G(:,GZero%iT1,GZero%iR0) - G(:,GZero%iTm1,GZero%iRp1) + G(:,GZero%iTm1,GZero%iR0)) / &
-		((Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) * (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0)))
+      ddY(i,1) = (G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr)) - G(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)) - &
+           & G(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)) + G(i,GZero%iTm1(i,icrpr),GZero%iRm1(i,icrpr))) / &
+           & ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
+      ddY(i,2) = (G(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr)) - G(i,GZero%iTp1(i,icrpr),GZero%iRm1(i,icrpr)) - &
+           & G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)) + G(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr))) / &
+           & ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
+      ddY(i,3) = (G(i,GZero%iTp1(i,icrpr),GZero%iRp1(i,icrpr)) - G(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr)) - &
+           & G(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr)) + G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))) / &
+           & ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
+      ddY(i,4) = (G(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr)) - G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)) - &
+           & G(i,GZero%iTm1(i,icrpr),GZero%iRp1(i,icrpr)) + G(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr))) / &
+           & ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
+ end do
 
 !  Now call the adapted Numerical Recipes BCuInt subroutine to
 !  perform the interpolation to our desired state vector
@@ -193,11 +199,12 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
 
        YIN=Y(i,:)
 
-        call linint(YIN,Grid%Tau(GZero%iT0),Grid%Tau(GZero%iT1),&
-	 Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),GZero%dT,GZero%dR,a1,a2,a3)
-         FInt(i) = a1
-         FGrads(i,1) = a2
-         FGrads(i,2) = a3
+       call linint(YIN,Grid%Tau(i,GZero%iT0(i,icrpr),icrpr),Grid%Tau(i,GZero%iT1(i,icrpr),icrpr),&
+            & Grid%Re(i,GZero%iR0(i,icrpr),icrpr), Grid%Re(i,GZero%iR1(i,icrpr),icrpr),&
+            & GZero%dT(i,icrpr),GZero%dR(i,icrpr),a1,a2,a3)
+       FInt(i) = a1
+       FGrads(i,1) = a2
+       FGrads(i,2) = a3
     enddo
    else if (Ctrl%LUTIntflag .eq. 1) then
       do i = 1,NChans
@@ -206,9 +213,9 @@ Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
          dYdRein=dYdRe(i,1:4)
          ddYin=ddY(i,1:4)
          call bcuint(Yinb,dYdTauin,dYdRein,ddYin,&
-              & Grid%Tau(GZero%iT0),  Grid%Tau(GZero%iT1),&
-              & Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),&
-              & GZero%dT,GZero%dR,a1,a2,a3)
+              & Grid%Tau(i,GZero%iT0(i,icrpr),icrpr),  Grid%Tau(i,GZero%iT1(i,icrpr),icrpr),&
+              & Grid%Re(i,GZero%iR0(i,icrpr),icrpr), Grid%Re(i,GZero%iR1(i,icrpr),icrpr),&
+              & GZero%dT(i,icrpr),GZero%dR(i,icrpr),a1,a2,a3)
          FInt(i) = a1
          FGrads(i,1) = a2
          FGrads(i,2) = a3

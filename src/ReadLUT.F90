@@ -63,6 +63,7 @@
 !                      statements (called on I/O error). Also added write(*,*)
 !                      statements for I/O errors
 ! 20131114 MJ corrected zeroing of satzen when ref is allocated, some cleanup
+!20131203 MJ makes LUTs more flexible wrt channel and properties
 ! Bugs:
 !    None known
 !
@@ -114,69 +115,74 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
 
       !     Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios) SAD_LUT%Wavelength(chan)
-      read(l_lun, *, err=999, iostat=ios) nVals, SAD_LUT%Grid%dTau
+      read(l_lun, *, err=999, iostat=ios) nVals, SAD_LUT%Grid%dTau(chan,iEm)
 
       !Used for loop control later
-      SAD_LUT%Grid%nTau = nVals               
+      SAD_LUT%Grid%nTau(chan,iEm) = nVals               
 
 
       !Read in Tau values and set min and max
       if (chan == Ctrl%Ind%ThermalFirst) then
-         if (.not.associated(SAD_LUT%Grid%tau)) allocate(SAD_LUT%Grid%tau(SAD_LUT%Grid%nTau) )
-         SAD_LUT%Grid%tau=0.00
+         if (.not.associated(SAD_LUT%Grid%tau)) then 
+            allocate(SAD_LUT%Grid%tau(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxtau,maxcrprops) )
+         endif
       end if
-         
-      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
+      SAD_LUT%Grid%tau(chan,:,iEm)=0.00         
+      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iEm), i=1,nVals)
 
-      SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
-      SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
+      SAD_LUT%Grid%MinTau(chan,iEm) = SAD_LUT%Grid%Tau(chan,1,iEm)
+      SAD_LUT%Grid%MaxTau(chan,iEm) = SAD_LUT%Grid%Tau(chan,nVals,iEm)
 
 
       !Now get the satzen values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen
-         SAD_LUT%Grid%nSatzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,iEm)
+         SAD_LUT%Grid%nSatzen(chan,iEm) = nVals
          
          !Read in values and set min and max
          if (chan == Ctrl%Ind%ThermalFirst) then 
-            if (.not.associated(SAD_LUT%Grid%satzen)) allocate(SAD_LUT%Grid%satzen(SAD_LUT%Grid%nsatzen) )
-            SAD_LUT%Grid%satzen=0.00
+            if (.not.associated(SAD_LUT%Grid%satzen)) then
+               allocate(SAD_LUT%Grid%satzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsatzen,maxcrprops) )
+            endif
          end if
+         SAD_LUT%Grid%satzen(chan,:,iEm)=0.00
          read(l_lun, *, err=999, iostat=ios) &
-              & (SAD_LUT%Grid%Satzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSatzen = SAD_LUT%Grid%Satzen(1)
-         SAD_LUT%Grid%MaxSatzen = SAD_LUT%Grid%Satzen(nVals)	    
+              & (SAD_LUT%Grid%Satzen(chan,i,iEm), i=1,nVals)
+         SAD_LUT%Grid%MinSatzen(chan,iEm) = SAD_LUT%Grid%Satzen(chan,1,iEm)
+         SAD_LUT%Grid%MaxSatzen(chan,iEm) = SAD_LUT%Grid%Satzen(chan,nVals,iEm)	    
          
       end if
 
       !Now get the effective radius values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe
-	 SAD_LUT%Grid%nRe = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iEm)
+	 SAD_LUT%Grid%nRe(chan,iEm) = nVals
          
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%ThermalFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
+            if (.not.associated(SAD_LUT%Grid%Re)) then
+               allocate(SAD_LUT%Grid%Re(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxre,maxcrprops) )
+            endif
             !MJ ORG SAD_LUT%Grid%satzen=0.00
-            SAD_LUT%Grid%Re=0.00
          end if
-         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
-         SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
-         SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
+         SAD_LUT%Grid%Re(chan,:,iEm)=0.00
+         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iEm), i=1,nVals)
+         SAD_LUT%Grid%MinRe(chan,iEm) = SAD_LUT%Grid%Re(chan,1,iEm)
+         SAD_LUT%Grid%MaxRe(chan,iEm) = SAD_LUT%Grid%Re(chan,nVals,iEm)	    
          
       end if
 
       !Read in the Em array 
       if (Ctrl%Ind%NThermal > 0 .and. chan == Ctrl%Ind%ThermalFirst) then
-         allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSatzen, &
-              & SAD_LUT%Grid%nre))
+         allocate(SAD_LUT%Em(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%NmaxSatzen, &
+              & SAD_LUT%Grid%nmaxre))
          SAD_LUT%Em=0.00
       end if
 
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & (((SAD_LUT%Em(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nSatzen), k=1, SAD_LUT%Grid%nRe)
+              & (((SAD_LUT%Em(chan, i, j, k), i=1, SAD_LUT%Grid%nTau(chan,iEm)), &
+              & j=1, SAD_LUT%Grid%nSatzen(chan,iEm)), k=1, SAD_LUT%Grid%nRe(chan,iEm))
       end if
 
       close(unit=l_lun)
@@ -289,93 +295,98 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
    else
       !Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
-      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau
-      SAD_LUT%Grid%nTau = nVals               !    Used for loop control later
+      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,irbd)
+      SAD_LUT%Grid%nTau(chan,irbd) = nVals               !    Used for loop control later
 
     
       !Read in Tau values and set min and max  (tau already allocated in routine above)
-      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
-      SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
-      SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
+      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,irbd), i=1,nVals)
+      SAD_LUT%Grid%MinTau(chan,irbd) = SAD_LUT%Grid%Tau(chan,1,irbd)
+      SAD_LUT%Grid%MaxTau(chan,irbd) = SAD_LUT%Grid%Tau(chan,nVals,irbd)
 
       !Now get the satzen values
       if (status == 0) then
       
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen
-         SAD_LUT%Grid%nSatzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,irbd)
+         SAD_LUT%Grid%nSatzen(chan,irbd) = nVals
          
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Satzen)) allocate(SAD_LUT%Grid%Satzen(SAD_LUT%Grid%nsatzen) )
-            SAD_LUT%Grid%Satzen=0.00
+            if (.not.associated(SAD_LUT%Grid%Satzen)) then
+               allocate(SAD_LUT%Grid%Satzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsatzen,maxcrprops) )
+            endif
          end if
-
+         SAD_LUT%Grid%satzen(chan,:,irbd)=0.00
          !Read in values and set min and max       
          read(l_lun, *, err=999, iostat=ios) &
-              & (SAD_LUT%Grid%Satzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSatzen = SAD_LUT%Grid%Satzen(1)
-         SAD_LUT%Grid%MaxSatzen = SAD_LUT%Grid%Satzen(nVals)
+              & (SAD_LUT%Grid%Satzen(chan,i,irbd), i=1,nVals)
+         SAD_LUT%Grid%MinSatzen(chan,irbd) = SAD_LUT%Grid%Satzen(chan,1,irbd)
+         SAD_LUT%Grid%MaxSatzen(chan,irbd) = SAD_LUT%Grid%Satzen(chan,nVals,irbd)
       end if
       
       !Now get the Solzen values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSolzen
-         SAD_LUT%Grid%nSolzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSolzen(chan,irbd)
+         SAD_LUT%Grid%nSolzen(chan,irbd) = nVals
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Solzen)) allocate(SAD_LUT%Grid%Solzen(SAD_LUT%Grid%nsolzen))
-            SAD_LUT%Grid%Solzen=0.00
+            if (.not.associated(SAD_LUT%Grid%Solzen)) then
+               allocate(SAD_LUT%Grid%Solzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsolzen,maxcrprops))
+            endif
          end if
+         SAD_LUT%Grid%Solzen(chan,:,irbd)=0.00
          read(l_lun, *, err=999, iostat=ios) &
-              & (SAD_LUT%Grid%Solzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSolzen = SAD_LUT%Grid%Solzen(1)
-         SAD_LUT%Grid%MaxSolzen = SAD_LUT%Grid%Solzen(nVals)	    
+              & (SAD_LUT%Grid%Solzen(chan,i,irbd), i=1,nVals)
+         SAD_LUT%Grid%MinSolzen(chan,irbd) = SAD_LUT%Grid%Solzen(chan,1,irbd)
+         SAD_LUT%Grid%MaxSolzen(chan,irbd) = SAD_LUT%Grid%Solzen(chan,nVals,irbd)	    
 	 
       end if
       
 !     Now get the rel. azi. values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRelazi
-         SAD_LUT%Grid%nRelazi = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRelazi(chan,irbd)
+         SAD_LUT%Grid%nRelazi(chan,irbd) = nVals
  
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Relazi)) allocate(SAD_LUT%Grid%Relazi(SAD_LUT%Grid%nrelazi) )
-            SAD_LUT%Grid%Relazi=0.00
+            if (.not.associated(SAD_LUT%Grid%Relazi)) then
+               allocate(SAD_LUT%Grid%Relazi(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxrelazi,maxcrprops) )
+            endif
          end if
-
+         SAD_LUT%Grid%Relazi(chan,:,irbd)=0.00
          read(l_lun, *, err=999, iostat=ios)  &
-              & (SAD_LUT%Grid%Relazi(i), i=1,nVals)
-         SAD_LUT%Grid%MinRelazi = SAD_LUT%Grid%Relazi(1)
-         SAD_LUT%Grid%MaxRelazi = SAD_LUT%Grid%Relazi(nVals)	    
+              & (SAD_LUT%Grid%Relazi(chan,i,irbd), i=1,nVals)
+         SAD_LUT%Grid%MinRelazi(chan,irbd) = SAD_LUT%Grid%Relazi(chan,1,irbd)
+         SAD_LUT%Grid%MaxRelazi(chan,irbd) = SAD_LUT%Grid%Relazi(chan,nVals,irbd)	    
       end if
       
       !Now get the effective radius values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe
-         SAD_LUT%Grid%nRe = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,irbd)
+         SAD_LUT%Grid%nRe(chan,irbd) = nVals
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
-            SAD_LUT%Grid%Re=0.00
+            if (.not.associated(SAD_LUT%Grid%re)) then
+               allocate(SAD_LUT%Grid%Re(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxre,maxcrprops) )
+            endif
          end if
-         
-         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
-         SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
-         SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
+         SAD_LUT%Grid%Re(chan,:,irbd)=0.00
+         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,irbd), i=1,nVals)
+         SAD_LUT%Grid%MinRe(chan,irbd) = SAD_LUT%Grid%Re(chan,1,irbd)
+         SAD_LUT%Grid%MaxRe(chan,irbd) = SAD_LUT%Grid%Re(chan,nVals,irbd)	    
 	 
       end if
   
       !Read in the RBD array.
       if (Ctrl%Ind%NSolar > 0 .and. chan == Ctrl%Ind%SolarFirst) then
-         allocate(SAD_LUT%Rbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSatzen, &
-              & SAD_LUT%Grid%NSolzen, SAD_LUT%Grid%nrelazi, SAD_LUT%Grid%nre))
+         allocate(SAD_LUT%Rbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%NmaxSatzen, &
+              & SAD_LUT%Grid%NmaxSolzen, SAD_LUT%Grid%nmaxrelazi, SAD_LUT%Grid%nmaxre))
          SAD_LUT%Rbd=0.00
       end if
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & (((((SAD_LUT%Rbd(chan, i, j, k, l, m), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nSatzen), k=1, SAD_LUT%Grid%nSolzen),     &
-              & l=1, SAD_LUT%Grid%nRelazi), m=1, SAD_LUT%Grid%nRe)
+              & (((((SAD_LUT%Rbd(chan, i, j, k, l, m), i=1, SAD_LUT%Grid%nTau(chan,irbd)), &
+              & j=1, SAD_LUT%Grid%nSatzen(chan,irbd)), k=1, SAD_LUT%Grid%nSolzen(chan,irbd)),     &
+              & l=1, SAD_LUT%Grid%nRelazi(chan,irbd)), m=1, SAD_LUT%Grid%nRe(chan,irbd))
       end if
 
       close(unit=l_lun)
@@ -493,80 +504,85 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
 
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
 
-      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau
+      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iRd)
 
-      SAD_LUT%Grid%nTau = nVals              !    Used for loop control later
+      SAD_LUT%Grid%nTau(chan,iRd) = nVals              !    Used for loop control later
 
       !Read in Tau values and set min and max
       if (chan == Ctrl%Ind%SolarFirst) then 
-         if (.not.associated(SAD_LUT%Grid%tau)) allocate(SAD_LUT%Grid%tau(SAD_LUT%Grid%nTau) )
-         SAD_LUT%Grid%tau=0.00
+         if (.not.associated(SAD_LUT%Grid%tau)) then
+            allocate(SAD_LUT%Grid%tau(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxTau,maxcrprops) )
+         endif
       end if
-
-      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
-      SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
-      SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
+         SAD_LUT%Grid%tau(chan,:,iRd)=0.00
+      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iRd), i=1,nVals)
+      SAD_LUT%Grid%MinTau(chan,iRd) = SAD_LUT%Grid%Tau(chan,1,iRd)
+      SAD_LUT%Grid%MaxTau(chan,iRd) = SAD_LUT%Grid%Tau(chan,nVals,iRd)
       
 
       !Now get the satzen values
 
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen
-         SAD_LUT%Grid%nSatzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,iRd)
+         SAD_LUT%Grid%nSatzen(chan,iRd) = nVals
 
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Satzen)) allocate(SAD_LUT%Grid%Satzen(SAD_LUT%Grid%nsatzen) )
-            SAD_LUT%Grid%Satzen=0.00
+            if (.not.associated(SAD_LUT%Grid%Satzen)) then
+               allocate(SAD_LUT%Grid%Satzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsatzen,maxcrprops) )
+            endif
          end if
+         SAD_LUT%Grid%satzen(chan,:,iRd)=0.00
          read(l_lun, *, err=999, iostat=ios) &
-              & (SAD_LUT%Grid%Satzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSatzen = SAD_LUT%Grid%Satzen(1)
-         SAD_LUT%Grid%MaxSatzen = SAD_LUT%Grid%Satzen(nVals)	    
+              & (SAD_LUT%Grid%Satzen(chan,i,iRd), i=1,nVals)
+         SAD_LUT%Grid%MinSatzen(chan,iRd) = SAD_LUT%Grid%Satzen(chan,1,iRd)
+         SAD_LUT%Grid%MaxSatzen(chan,iRd) = SAD_LUT%Grid%Satzen(chan,nVals,iRd)	    
 	 
       end if
 
 !     Now get the effective radius values
 
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe
-         SAD_LUT%Grid%nRe = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iRd)
+         SAD_LUT%Grid%nRe(chan,iRd) = nVals
 
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
-            SAD_LUT%Grid%Re=0.00
+            if (.not.associated(SAD_LUT%Grid%Re)) then
+               allocate(SAD_LUT%Grid%Re(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxre,maxcrprops) )
+            endif
          end if
-         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
+         SAD_LUT%Grid%Re(chan,:,iRd)=0.00
+         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iRd), i=1,nVals)
 
-         SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
-         SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
+         SAD_LUT%Grid%MinRe(chan,iRd) = SAD_LUT%Grid%Re(chan,1,iRd)
+         SAD_LUT%Grid%MaxRe(chan,iRd) = SAD_LUT%Grid%Re(chan,nVals,iRd)	    
 
       end if
 
       !Read in the Rd array 
       if (chan == Ctrl%Ind%SolarFirst) then 
-         allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSatzen, SAD_LUT%Grid%nre))
+         allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%NmaxSatzen, SAD_LUT%Grid%nmaxre))
          SAD_LUT%Rd=0.00
       end if
       
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios) &
-              & (((SAD_LUT%Rd(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nSatzen), k=1, SAD_LUT%Grid%nRe)
+              & (((SAD_LUT%Rd(chan, i, j, k), i=1, SAD_LUT%Grid%nTau(chan,iRd)), &
+              & j=1, SAD_LUT%Grid%nSatzen(chan,iRd)), k=1, SAD_LUT%Grid%nRe(chan,iRd))
       end if
 
 !     Read in the RFd array.
 
       if (chan == Ctrl%Ind%SolarFirst) then 
-         allocate(SAD_LUT%Rfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%nre))
-         SAD_LUT%Rfd=0.00
+         allocate(SAD_LUT%Rfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%nmaxre))
+         SAD_LUT%Rfd=-10.00
       end if
       
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & ((SAD_LUT%RFd(chan, i, j), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nRe)
+              & ((SAD_LUT%RFd(chan, i, j), i=1, SAD_LUT%Grid%nTau(chan,iRd)), &
+              & j=1, SAD_LUT%Grid%nRe(chan,iRd))
       end if
 
 
@@ -684,58 +700,63 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 !     Read the file contents into the SAD_LUT structure
 
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
-      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau
-      SAD_LUT%Grid%nTau = nVals                !    Used for loop control later
+      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTb)
+      SAD_LUT%Grid%nTau(chan,iTb) = nVals                !    Used for loop control later
 
      
       !Read in Tau values and set min and max
       if (chan == Ctrl%Ind%SolarFirst) then 
-         if (.not.associated(SAD_LUT%Grid%tau)) allocate(SAD_LUT%Grid%Tau(SAD_LUT%Grid%ntau) )
-         SAD_LUT%Grid%tau=0.00
+         if (.not.associated(SAD_LUT%Grid%tau)) then
+            allocate(SAD_LUT%Grid%Tau(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxtau,maxcrprops) )
+         endif
       end if
-
-      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
-      SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
-      SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
+      SAD_LUT%Grid%tau(chan,:,iTb)=0.00
+      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iTb), i=1,nVals)
+      SAD_LUT%Grid%MinTau(chan,iTb) = SAD_LUT%Grid%Tau(chan,1,iTb)
+      SAD_LUT%Grid%MaxTau(chan,iTb) = SAD_LUT%Grid%Tau(chan,nVals,iTb)
       
  
       !Now get the Solzen values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSolzen
-         SAD_LUT%Grid%nSolzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSolzen(chan,iTb)
+         SAD_LUT%Grid%nSolzen(chan,iTb) = nVals
 	 
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Solzen)) allocate(SAD_LUT%Grid%Solzen(SAD_LUT%Grid%nsolzen) )
-            SAD_LUT%Grid%Solzen=0.00
+            if (.not.associated(SAD_LUT%Grid%Solzen)) then
+               allocate(SAD_LUT%Grid%Solzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsolzen,maxcrprops) )
+            endif
          end if
+         SAD_LUT%Grid%Solzen(chan,:,iTb)=0.00
          read(l_lun, *, err=999, iostat=ios) &
-              & (SAD_LUT%Grid%Solzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSolzen = SAD_LUT%Grid%Solzen(1)
-         SAD_LUT%Grid%MaxSolzen = SAD_LUT%Grid%Solzen(nVals)	    
+              & (SAD_LUT%Grid%Solzen(chan,i,iTb), i=1,nVals)
+         SAD_LUT%Grid%MinSolzen(chan,iTb) = SAD_LUT%Grid%Solzen(chan,1,iTb)
+         SAD_LUT%Grid%MaxSolzen(chan,iTb) = SAD_LUT%Grid%Solzen(chan,nVals,iTb)	    
          
       end if
       
       !Now get the effective radius values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe
-         SAD_LUT%Grid%nRe = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iTb)
+         SAD_LUT%Grid%nRe(chan,iTb) = nVals
 	 
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
-            SAD_LUT%Grid%re=0.00
+            if (.not.associated(SAD_LUT%Grid%re)) then
+               allocate(SAD_LUT%Grid%Re(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxre,maxcrprops) )
+            endif
          end if
-         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
-         SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
-         SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
+         SAD_LUT%Grid%Re(chan,:,iTb)=0.00
+         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iTb), i=1,nVals)
+         SAD_LUT%Grid%MinRe(chan,iTb) = SAD_LUT%Grid%Re(chan,1,iTb)
+         SAD_LUT%Grid%MaxRe(chan,iTb) = SAD_LUT%Grid%Re(chan,nVals,iTb)	    
 	 
       end if
       
       !Read in the Tb array.
       if (Ctrl%Ind%NSolar > 0 .and. chan == Ctrl%Ind%SolarFirst) then
-         allocate(SAD_LUT%Tb(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSolzen, &
-              & SAD_LUT%Grid%nre))
+         allocate(SAD_LUT%Tb(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%NmaxSolzen, &
+              & SAD_LUT%Grid%nmaxre))
          SAD_LUT%Tb=0.00
       end if
 
@@ -753,8 +774,8 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 !!$              & (((SAD_LUT%Tb(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
 !!$              & j=1, SAD_LUT%Grid%nSolzen), k=1, SAD_LUT%Grid%nRe) 
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & (((SAD_LUT%Tb(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nSolzen), k=1, SAD_LUT%Grid%nRe) 
+              & (((SAD_LUT%Tb(chan, i, j, k), i=1, SAD_LUT%Grid%nTau(chan,iTb)), &
+              & j=1, SAD_LUT%Grid%nSolzen(chan,iTb)), k=1, SAD_LUT%Grid%nRe(chan,iTb)) 
          
          
          
@@ -891,37 +912,39 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       !     Read the file contents into the SAD_LUT structure
       
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
-      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau
-      SAD_LUT%Grid%nTau = nVals                !    Used for loop control later
+      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTbd)
+      SAD_LUT%Grid%nTau(chan,iTbd) = nVals                !    Used for loop control later
 
      
       !        Read in Tau values and set min and max
       if (chan == Ctrl%Ind%SolarFirst) then
-         if (.not.associated(SAD_LUT%Grid%tau)) allocate(SAD_LUT%Grid%Tau(SAD_LUT%Grid%ntau) )
-         SAD_LUT%Grid%Tau=0.00
+         if (.not.associated(SAD_LUT%Grid%tau)) then
+            allocate(SAD_LUT%Grid%Tau(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxtau,maxcrprops) )
+         endif
       endif
-
-      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
-      SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
-      SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
+      SAD_LUT%Grid%Tau(chan,:,iTbd)=0.00   
+      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iTbd), i=1,nVals)
+      SAD_LUT%Grid%MinTau(chan,iTbd) = SAD_LUT%Grid%Tau(chan,1,iTbd)
+      SAD_LUT%Grid%MaxTau(chan,iTbd) = SAD_LUT%Grid%Tau(chan,nVals,iTbd)
       
 
 !     Now get the satzen values
 
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen
-         SAD_LUT%Grid%nSatzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,iTbd)
+         SAD_LUT%Grid%nSatzen(chan,iTbd) = nVals
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Satzen)) allocate(SAD_LUT%Grid%Satzen(SAD_LUT%Grid%nsatzen) )
-            SAD_LUT%Grid%Satzen=0.00
+            if (.not.associated(SAD_LUT%Grid%Satzen)) then
+               allocate(SAD_LUT%Grid%Satzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsatzen,maxcrprops) )
+            endif
          end if
-
+         SAD_LUT%Grid%satzen(chan,:,iTbd)=0.00
          read(l_lun, *, err=999, iostat=ios) &
-              & (SAD_LUT%Grid%Satzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSatzen = SAD_LUT%Grid%Satzen(1)
-         SAD_LUT%Grid%MaxSatzen = SAD_LUT%Grid%Satzen(nVals)	    
+              & (SAD_LUT%Grid%Satzen(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%MinSatzen(chan,iTbd) = SAD_LUT%Grid%Satzen(chan,1,iTbd)
+         SAD_LUT%Grid%MaxSatzen(chan,iTbd) = SAD_LUT%Grid%Satzen(chan,nVals,iTbd)	    
      
       end if
       
@@ -929,56 +952,59 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 
       if (status == 0) then
          
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSolzen
-         SAD_LUT%Grid%nSolzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSolzen(chan,iTbd)
+         SAD_LUT%Grid%nSolzen(chan,iTbd) = nVals
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Solzen)) allocate(SAD_LUT%Grid%Solzen(SAD_LUT%Grid%nsolzen) )
-            SAD_LUT%Grid%Solzen=0.00
+            if (.not.associated(SAD_LUT%Grid%Solzen)) then
+               allocate(SAD_LUT%Grid%Solzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsolzen,maxcrprops) )
+            endif
          end if
-         
+         SAD_LUT%Grid%Solzen(chan,:,iTbd)=0.00
          read(l_lun, *, err=999, iostat=ios) &
-              & (SAD_LUT%Grid%Solzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSolzen = SAD_LUT%Grid%Solzen(1)
-         SAD_LUT%Grid%MaxSolzen = SAD_LUT%Grid%Solzen(nVals)	    
+              & (SAD_LUT%Grid%Solzen(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%MinSolzen(chan,iTbd) = SAD_LUT%Grid%Solzen(chan,1,iTbd)
+         SAD_LUT%Grid%MaxSolzen(chan,iTbd) = SAD_LUT%Grid%Solzen(chan,nVals,iTbd)	    
 	 
       end if
       
       !     Now get the rel. azi. values
 
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRelazi
-         SAD_LUT%Grid%nRelazi = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRelazi(chan,iTbd)
+         SAD_LUT%Grid%nRelazi(chan,iTbd) = nVals
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Relazi)) allocate(SAD_LUT%Grid%Relazi(SAD_LUT%Grid%nrelazi) )
-            SAD_LUT%Grid%Relazi=0.00
+            if (.not.associated(SAD_LUT%Grid%Relazi)) then
+               allocate(SAD_LUT%Grid%Relazi(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxrelazi,maxcrprops) )
+            endif
          end if
-
+         SAD_LUT%Grid%Relazi(chan,:,iTbd)=0.00
          read(l_lun, *, err=999, iostat=ios)  &
-              & (SAD_LUT%Grid%Relazi(i), i=1,nVals)
-         SAD_LUT%Grid%MinRelazi = SAD_LUT%Grid%Relazi(1)
-         SAD_LUT%Grid%MaxRelazi = SAD_LUT%Grid%Relazi(nVals)	    
+              & (SAD_LUT%Grid%Relazi(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%MinRelazi(chan,iTbd) = SAD_LUT%Grid%Relazi(chan,1,iTbd)
+         SAD_LUT%Grid%MaxRelazi(chan,iTbd) = SAD_LUT%Grid%Relazi(chan,nVals,iTbd)	    
 
       end if
       
 !     Now get the effective radius values
 
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe
-         SAD_LUT%Grid%nRe = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iTbd)
+         SAD_LUT%Grid%nRe(chan,iTbd) = nVals
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
-            SAD_LUT%Grid%Re=0.00
+            if (.not.associated(SAD_LUT%Grid%Re)) then
+               allocate(SAD_LUT%Grid%Re(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxre,maxcrprops))
+            endif
          end if
-
-         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
-         SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
-         SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
+         SAD_LUT%Grid%Re(chan,:,iTbd)=0.00
+         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%MinRe(chan,iTbd) = SAD_LUT%Grid%Re(chan,1,iTbd)
+         SAD_LUT%Grid%MaxRe(chan,iTbd) = SAD_LUT%Grid%Re(chan,nVals,iTbd)	    
 	 
       end if
       
@@ -987,8 +1013,8 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       
       if (Ctrl%Ind%NSolar > 0) then
          if (chan == Ctrl%Ind%SolarFirst) then 
-            allocate(SAD_LUT%Tbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSatzen, &
-                 & SAD_LUT%Grid%NSolzen, SAD_LUT%Grid%nrelazi, SAD_LUT%Grid%nre))
+            allocate(SAD_LUT%Tbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%NmaxSatzen, &
+                 & SAD_LUT%Grid%NmaxSolzen, SAD_LUT%Grid%nmaxrelazi, SAD_LUT%Grid%nmaxre))
             SAD_LUT%Tbd=0.00
          end if
 
@@ -996,9 +1022,9 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & (((((SAD_LUT%Tbd(chan, i, j, k, l, m), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nSatzen), k=1, SAD_LUT%Grid%nSolzen),     &
-              & l=1, SAD_LUT%Grid%nRelazi), m=1, SAD_LUT%Grid%nRe)
+              & (((((SAD_LUT%Tbd(chan, i, j, k, l, m), i=1, SAD_LUT%Grid%nTau(chan,iTbd)), &
+              & j=1, SAD_LUT%Grid%nSatzen(chan,iTbd)), k=1, SAD_LUT%Grid%nSolzen(chan,iTbd)),     &
+              & l=1, SAD_LUT%Grid%nRelazi(chan,iTbd)), m=1, SAD_LUT%Grid%nRe(chan,iTbd))
 
       end if
 
@@ -1007,16 +1033,16 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 
       if (Ctrl%Ind%NSolar > 0) then
          if (chan == Ctrl%Ind%SolarFirst) then 
-            allocate(SAD_LUT%Tfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSolzen, &
-                 & SAD_LUT%Grid%nre))
+            allocate(SAD_LUT%Tfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%NmaxSolzen, &
+                 & SAD_LUT%Grid%nmaxre))
             SAD_LUT%Tfbd=0.00
          end if
       end if
       
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & (((SAD_LUT%TFbd(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nSolzen), k=1, SAD_LUT%Grid%nRe)
+              & (((SAD_LUT%TFbd(chan, i, j, k), i=1, SAD_LUT%Grid%nTau(chan,iTbd)), &
+              & j=1, SAD_LUT%Grid%nSolzen(chan,iTbd)), k=1, SAD_LUT%Grid%nRe(chan,iTbd))
       end if
 
 
@@ -1134,57 +1160,60 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 !     Read the file contents into the SAD_LUT structure
 
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
-      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau
-      SAD_LUT%Grid%nTau = nVals                !    Used for loop control later
+      read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTd)
+      SAD_LUT%Grid%nTau(chan,iTd) = nVals                !    Used for loop control later
 
       !        Read in Tau values and set min and max
       if (chan == Ctrl%Ind%SolarFirst) then 
-         if (.not.associated(SAD_LUT%Grid%tau)) allocate(SAD_LUT%Grid%Tau(SAD_LUT%Grid%ntau) )
-         SAD_LUT%Grid%Tau=0.00
+         if (.not.associated(SAD_LUT%Grid%tau)) then
+            allocate(SAD_LUT%Grid%Tau(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxtau,maxcrprops) )
+         endif
       end if
-      
-      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(i), i=1,nVals)
-      SAD_LUT%Grid%MinTau = SAD_LUT%Grid%Tau(1)
-      SAD_LUT%Grid%MaxTau = SAD_LUT%Grid%Tau(nVals)
+      SAD_LUT%Grid%Tau(chan,:,iTd)=0.00
+      read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iTd), i=1,nVals)
+      SAD_LUT%Grid%MinTau(chan,iTd) = SAD_LUT%Grid%Tau(chan,1,iTd)
+      SAD_LUT%Grid%MaxTau(chan,iTd) = SAD_LUT%Grid%Tau(chan,nVals,iTd)
    
       !     Now get the satzen values
 
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen
-         SAD_LUT%Grid%nSatzen = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,iTd)
+         SAD_LUT%Grid%nSatzen(chan,iTd) = nVals
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Satzen)) allocate(SAD_LUT%Grid%Satzen(SAD_LUT%Grid%nsatzen) )
-            SAD_LUT%Grid%Satzen=0.00
+            if (.not.associated(SAD_LUT%Grid%Satzen)) then
+               allocate(SAD_LUT%Grid%Satzen(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxsatzen,maxcrprops) )
+            endif
          end if
-
+         SAD_LUT%Grid%Satzen(chan,:,iTd)=0.00
          read(l_lun, *, err=999, iostat=ios) &
-              (SAD_LUT%Grid%Satzen(i), i=1,nVals)
-         SAD_LUT%Grid%MinSatzen = SAD_LUT%Grid%Satzen(1)
-         SAD_LUT%Grid%MaxSatzen = SAD_LUT%Grid%Satzen(nVals)	    
+              & (SAD_LUT%Grid%Satzen(chan,i,iTd), i=1,nVals)
+         SAD_LUT%Grid%MinSatzen(chan,iTd) = SAD_LUT%Grid%Satzen(chan,1,iTd)
+         SAD_LUT%Grid%MaxSatzen(chan,iTd) = SAD_LUT%Grid%Satzen(chan,nVals,iTd)	    
 	 
       end if
       
       !     Now get the effective radius values
       if (status == 0) then
-         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe
-         SAD_LUT%Grid%nRe = nVals
+         read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iTd)
+         SAD_LUT%Grid%nRe(chan,iTd) = nVals
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
-            if (.not.associated(SAD_LUT%Grid%Re)) allocate(SAD_LUT%Grid%Re(SAD_LUT%Grid%nre) )
-            SAD_LUT%Grid%Re=0.00
+            if (.not.associated(SAD_LUT%Grid%Re)) then
+               allocate(SAD_LUT%Grid%Re(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxre,maxcrprops) )
+            endif
          end if
-         
-         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(i), i=1,nVals)
-         SAD_LUT%Grid%MinRe = SAD_LUT%Grid%Re(1)
-         SAD_LUT%Grid%MaxRe = SAD_LUT%Grid%Re(nVals)	    
+         SAD_LUT%Grid%Re(chan,:,iTd)=0.00
+         read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iTd), i=1,nVals)
+         SAD_LUT%Grid%MinRe(chan,iTd) = SAD_LUT%Grid%Re(chan,1,iTd)
+         SAD_LUT%Grid%MaxRe(chan,iTd) = SAD_LUT%Grid%Re(chan,nVals,iTd)	    
 	
       end if
 
       if (chan == Ctrl%Ind%SolarFirst) then
-         allocate(SAD_LUT%Td(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%NSatzen, SAD_LUT%Grid%nre))      
+         allocate(SAD_LUT%Td(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%NmaxSatzen, SAD_LUT%Grid%nmaxre))      
          SAD_LUT%Td=0.00
       end if
 
@@ -1192,20 +1221,20 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & (((SAD_LUT%Td(chan, i, j, k), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nSatzen), k=1, SAD_LUT%Grid%nRe)
+              & (((SAD_LUT%Td(chan, i, j, k), i=1, SAD_LUT%Grid%nTau(chan,iTd)), &
+              & j=1, SAD_LUT%Grid%nSatzen(chan,iTd)), k=1, SAD_LUT%Grid%nRe(chan,iTd))
       end if
 
 !     Read in the TFd array.
 
       if (chan == Ctrl%Ind%SolarFirst) then 
-         allocate(SAD_LUT%Tfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Ntau, SAD_LUT%Grid%nre))
+         allocate(SAD_LUT%Tfd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%nmaxre))
          SAD_LUT%Tfd=0.00
       end if
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & ((SAD_LUT%TFd(chan, i, j), i=1, SAD_LUT%Grid%nTau), &
-              & j=1, SAD_LUT%Grid%nRe)
+              & ((SAD_LUT%TFd(chan, i, j), i=1, SAD_LUT%Grid%nTau(chan,iTd)), &
+              & j=1, SAD_LUT%Grid%nRe(chan,iTd))
       end if
 
       close(unit=l_lun)
@@ -1319,7 +1348,7 @@ Subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
 
    use CTRL_def
    use SAD_Chan_def
-    use SAD_LUT_def
+   use SAD_LUT_def
 !   use LUT_Routines_def
    
    implicit none
@@ -1383,7 +1412,33 @@ Subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
 !      allocate(SAD_LUT%Wavelength(Ctrl%Ind%Ny))
       if (.not.associated(SAD_LUT%Wavelength)) allocate(SAD_LUT%Wavelength(Ctrl%Ind%Ny))
       SAD_LUT%Wavelength=0.00
-
+      
+      !allocate some arrays:
+      allocate(SAD_LUT%Grid%MaxTau(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%MinTau(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%dTau(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%nTau(Ctrl%Ind%Ny,maxcrprops))
+      SAD_LUT%Grid%nTau=SAD_LUT%Grid%nmaxtau
+      allocate(SAD_LUT%Grid%MaxRe(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%MinRe(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%dRe(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%nRe(Ctrl%Ind%Ny,maxcrprops))
+      SAD_LUT%Grid%nRe=SAD_LUT%Grid%nmaxre
+      allocate(SAD_LUT%Grid%MaxSatzen(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%MinSatzen(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%dSatzen(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%nSatzen(Ctrl%Ind%Ny,maxcrprops))
+      SAD_LUT%Grid%nSatzen=SAD_LUT%Grid%nmaxsatzen
+      allocate(SAD_LUT%Grid%MaxSolzen(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%MinSolzen(Ctrl%Ind%Ny,maxcrprops))            
+      allocate(SAD_LUT%Grid%dSolzen(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%nSolzen(Ctrl%Ind%Ny,maxcrprops))
+      SAD_LUT%Grid%nSolzen=SAD_LUT%Grid%nmaxsolzen
+      allocate(SAD_LUT%Grid%MaxRelazi(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%MinRelazi(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%dRelazi(Ctrl%Ind%Ny,maxcrprops))
+      allocate(SAD_LUT%Grid%nRelazi(Ctrl%Ind%Ny,maxcrprops))
+      SAD_LUT%Grid%nRelazi=SAD_LUT%Grid%nmaxrelazi
 
       !loop over the used channels
       do j=1, Ctrl%Ind%Ny
@@ -1527,63 +1582,63 @@ Subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
    !Convert from percentage to fractional values
    if (status == 0) then
 
-      SAD_LUT%Rd(:,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen,   &
-           & 1:SAD_LUT%Grid%nRe) &
-           & = SAD_LUT%Rd(:,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen, &
-           & 1:SAD_LUT%Grid%nRe) / 100.
+      SAD_LUT%Rd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,   &
+           & 1:SAD_LUT%Grid%nmaxRe) &
+           & = SAD_LUT%Rd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen, &
+           & 1:SAD_LUT%Grid%nmaxRe) / 100.
       
-      SAD_LUT%Td(1:Ctrl%Ind%Ny,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen,1:SAD_LUT%Grid%nRe)= & 
-           & SAD_LUT%Td(1:Ctrl%Ind%Ny,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen,1:SAD_LUT%Grid%nRe)/ &
+      SAD_LUT%Td(1:Ctrl%Ind%Ny,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,1:SAD_LUT%Grid%nmaxRe)= & 
+           & SAD_LUT%Td(1:Ctrl%Ind%Ny,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,1:SAD_LUT%Grid%nmaxRe)/ &
            & 100.
       
-      SAD_LUT%Tfd(:,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nRe) & 
-           & = SAD_LUT%Tfd(:,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nRe) / 100.
+      SAD_LUT%Tfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) & 
+           & = SAD_LUT%Tfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) / 100.
       
-      SAD_LUT%Rfd(:,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nRe) & 
-           & = SAD_LUT%Rfd(:,1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nRe) / 100.
+      SAD_LUT%Rfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) & 
+           & = SAD_LUT%Rfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) / 100.
       
       if (Ctrl%Ind%NSolar > 0) then 
          SAD_LUT%Rbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast, &
-              & 1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen,   &
-              & 1:SAD_LUT%Grid%nSolZen,1:SAD_LUT%Grid%nRelAzi,&
-              & 1:SAD_LUT%Grid%nRe) = &
+              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,   &
+              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi,&
+              & 1:SAD_LUT%Grid%nmaxRe) = &
               & SAD_LUT%Rbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,&
-              & 1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen,   &
-              & 1:SAD_LUT%Grid%nSolZen,1:SAD_LUT%Grid%nRelAzi,&
-              & 1:SAD_LUT%Grid%nRe) / 100.
+              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,   &
+              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi,&
+              & 1:SAD_LUT%Grid%nmaxRe) / 100.
   
          SAD_LUT%Tbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast, &
-              & 1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen,   &
-              & 1:SAD_LUT%Grid%nSolZen,1:SAD_LUT%Grid%nRelAzi,&
-              & 1:SAD_LUT%Grid%nRe) = &
+              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,   &
+              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi,&
+              & 1:SAD_LUT%Grid%nmaxRe) = &
               & SAD_LUT%Tbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,&
-              & 1:SAD_LUT%Grid%nTau,1:SAD_LUT%Grid%nSatZen,   &
-              & 1:SAD_LUT%Grid%nSolZen,1:SAD_LUT%Grid%nRelAzi,&
-              & 1:SAD_LUT%Grid%nRe) / 100.
+              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,   &
+              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi,&
+              & 1:SAD_LUT%Grid%nmaxRe) / 100.
 
          SAD_LUT%Tb(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast, &
-              & 1:SAD_LUT%Grid%nTau, 1:SAD_LUT%Grid%nSolZen,  &
-              & 1:SAD_LUT%Grid%nRe) = &
+              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,  &
+              & 1:SAD_LUT%Grid%nmaxRe) = &
               & SAD_LUT%Tb(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,&
-              & 1:SAD_LUT%Grid%nTau, 1:SAD_LUT%Grid%nSolZen, &
-              & 1:SAD_LUT%Grid%nRe) / 100.
+              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen, &
+              & 1:SAD_LUT%Grid%nmaxRe) / 100.
 
          SAD_LUT%Tfbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast, &
-              & 1:SAD_LUT%Grid%nTau, 1:SAD_LUT%Grid%nSolZen,  &
-              & 1:SAD_LUT%Grid%nRe) = &
+              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,  &
+              & 1:SAD_LUT%Grid%nmaxRe) = &
               & SAD_LUT%Tfbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,&
-              & 1:SAD_LUT%Grid%nTau, 1:SAD_LUT%Grid%nSolZen, &
-              & 1:SAD_LUT%Grid%nRe) / 100.
+              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen, &
+              & 1:SAD_LUT%Grid%nmaxRe) / 100.
       end if
 
       if (Ctrl%Ind%NThermal > 0) then
 
          SAD_LUT%Em(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast, &
-              & 1:SAD_LUT%Grid%nTau, 1:SAD_LUT%Grid%nSatZen,  &
-              & 1:SAD_LUT%Grid%nRe) = &
+              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSatZen,  &
+              & 1:SAD_LUT%Grid%nmaxRe) = &
               & SAD_LUT%Em(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast, &
-              & 1:SAD_LUT%Grid%nTau, 1:SAD_LUT%Grid%nSatZen,  &
-              & 1:SAD_LUT%Grid%nRe) / 100.
+              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSatZen,  &
+              & 1:SAD_LUT%Grid%nmaxRe) / 100.
       end if
 
    end if

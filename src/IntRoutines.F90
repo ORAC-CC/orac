@@ -35,6 +35,7 @@
 !	interfaces for Int_LUT routines
 !    7th Feb 2012, Chris Arnold:
 !       Ctrl struct now passed to interpolation routines IntLUT*.f90
+!20131203 MJ makes LUTs more flexible wrt channel and properties
 !
 ! Bugs:
 !    None known
@@ -44,7 +45,7 @@
 module Int_Routines_def
 
    interface
-      Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
+      Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr,status)
 
          use CTRL_def
 	 use GZero_def
@@ -60,13 +61,13 @@ module Int_Routines_def
 	 type(LUT_Grid_t), intent(in)   :: Grid 
 	 real, dimension(:), intent(inout)      :: FInt	      
 	 real, dimension(:,:), intent(inout)    :: FGrads 
-         integer          :: status   
+         integer          :: status,icrpr   
       End Subroutine Int_LUT_TauRe
    End interface
 
 
    Interface
-      Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
+      Subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
 
          use CTRL_def
 	 use GZero_def
@@ -82,12 +83,12 @@ module Int_Routines_def
 	 type(LUT_Grid_t), intent(in)   :: Grid
 	 real, dimension(:), intent(inout)      :: FInt	      
 	 real, dimension(:,:), intent(inout)    :: FGrads
-         integer          :: status   
+         integer          :: status,icrpr   
       End Subroutine Int_LUT_TauSolRe
    End interface
 
    Interface
-      Subroutine Int_LUT_TauSatRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
+      Subroutine Int_LUT_TauSatRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr,status)
 
          use CTRL_def
 	 use GZero_def
@@ -103,12 +104,12 @@ module Int_Routines_def
 	 type(LUT_Grid_t), intent(in)   :: Grid
 	 real, dimension(:), intent(inout)      :: FInt	      
 	 real, dimension(:,:), intent(inout)    :: FGrads 
-         integer          :: status   
+         integer          :: status,icrpr
       End Subroutine Int_LUT_TauSatRe
    End interface
 
    Interface
-      Subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
+      Subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr,status)
 
          use CTRL_def
 	 use GZero_def
@@ -124,7 +125,7 @@ module Int_Routines_def
 	 type(LUT_Grid_t), intent(in)   :: Grid
 	 real, dimension(:), intent(inout)		:: FInt	      
 	 real, dimension(:,:), intent(inout)		:: FGrads 
-         integer          :: status   
+         integer          :: status, icrpr   
       End Subroutine Int_LUT_TauSatSolAziRe
    End interface
 

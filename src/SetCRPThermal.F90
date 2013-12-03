@@ -59,6 +59,8 @@
 !       Status now passed to interpolation routines IntLUT*.f90
 !    7th Feb 2012, Chris Arnold:
 !       Ctrl struct now passed to interpolation routines IntLUT*.f90
+!20131203 MJ makes LUTs more flexible wrt channel and properties
+
 !
 ! Bugs:
 !    None known.
@@ -93,6 +95,8 @@ Subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, &
 					   ! Tau and Re
    integer, intent(inout)                :: status
 
+   integer :: icrpr
+
 !  Status is not actually set at present. Error-checking would be very
 !  costly in terms of CPU here. Leave status argument in case of future
 !  updates. Set to 0 to avoid compiler warnings.
@@ -107,16 +111,18 @@ Subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, &
 !  channels from First to NY. 
 
    call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-        &SAD_LUT%Grid, GZero, Ctrl,&
-        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd,:),status)
+        &SAD_LUT%Grid, GZero,Ctrl,&
+        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd),&
+        & dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd,:),&
+        & iTd,status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Rd(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-        & SAD_LUT%Grid, GZero, Ctrl,&
-        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd,:),status)
+        & SAD_LUT%Grid, GZero,Ctrl,&
+        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd,:),iRd,status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Em(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-        & SAD_LUT%Grid, GZero, Ctrl,&
-        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm,:),status)
+        & SAD_LUT%Grid, GZero,Ctrl,&
+        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm,:),iEm,status)
 
 
 

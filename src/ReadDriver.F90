@@ -804,7 +804,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    Ctrl%MaxSolZen=80 ! max solar zenith angle > 90 = night image
    Ctrl%Sunset=90 ! used to set twilight option
    Ctrl%Ind%Ws=0 ! warm start option i.e enables user to start partway through a scene
-   Ctrl%LUTIntflag=1 ! 0 =linear 1 = bicubic interpolation
+   Ctrl%LUTIntflag=0 ! 0 =linear 1 = bicubic interpolation
 
    Ctrl%RTMIntflag=0 ! 0 =linear 1 = bicubic interpolation
 

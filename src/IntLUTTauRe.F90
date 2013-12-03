@@ -102,12 +102,13 @@
 !    7th Feb 2012, Chris Arnold:
 !       Input structures Ctrl, GZero, Grid now have intent(in)
 !    8/7/2012 C. Poulsen fixed non contiguous array
+!20131203 MJ makes LUTs more flexible wrt channel and properties
 ! Bugs:
 !    None known.
 !
 !---------------------------------------------------------------------
 
-Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
+Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
 
    use CTRL_def
    use GZero_def
@@ -153,52 +154,58 @@ Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    real, dimension(4) ::yin     ! Temporary store for output of	
 					     ! BiCubic subroutine
    integer :: NChans                         ! Number of Channels
-   integer :: i                              ! Counters
+   integer :: i,icrpr                              ! Counters
   
    NChans = size(FInt)
    write(*,*) 'nnnnchans',nchans
 !  Construct the input vectors for BCuInt:
 !  Function values at four LUT points around our X
 
-   Y(:,1) = F(:,GZero%iT0,GZero%iR0)
-   Y(:,4) = F(:,GZero%iT0,GZero%iR1)
-   Y(:,3) = F(:,GZero%iT1,GZero%iR1)
-   Y(:,2) = F(:,GZero%iT1,GZero%iR0)
-
+   do i=1,nchans
+      Y(i,1) = F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))
+      Y(i,4) = F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))
+      Y(i,3) = F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))
+      Y(i,2) = F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))
+      
 !  Function derivatives at four LUT points around our X....
 !  - WRT to Tau
 
-    dYdTau(:,1) = (F(:,GZero%iT1,GZero%iR0)-F(:,GZero%iTm1,GZero%iR0))/ &
-	  	  (Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) 
-    dYdTau(:,2) = (F(:,GZero%iTp1,GZero%iR0)-F(:,GZero%iT0,GZero%iR0))/ &
-	  	  (Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0))
-    dYdTau(:,3) = (F(:,GZero%iTp1,GZero%iR1)-F(:,GZero%iT0,GZero%iR1))/ &
-	 	  (Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0))
-    dYdTau(:,4) = (F(:,GZero%iT1,GZero%iR1)-F(:,GZero%iTm1,GZero%iR1))/ &
-	 	  (Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1))
+      dYdTau(i,1) = (F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))-F(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) 
+      dYdTau(i,2) = (F(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr))
+      dYdTau(i,3) = (F(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)))/ &
+           & (Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr))
+      dYdTau(i,4) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)))/ &
+           & (Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr))
 
 !   - WRT to Re
 
-    dYDRe(:,1) = (F(:,GZero%iT0,GZero%iR1)-F(:,GZero%iT0,GZero%iRm1))/ &
-		 (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1))
-    dYDRe(:,2) = (F(:,GZero%iT1,GZero%iR1)-F(:,GZero%iT1,GZero%iRm1))/ &
-		 (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1))
-    dYDRe(:,3) = (F(:,GZero%iT1,GZero%iRp1)-F(:,GZero%iT1,GZero%iR0))/ &
-		 (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0))
-    dYDRe(:,4) = (F(:,GZero%iT0,GZero%iRp1)-F(:,GZero%iT0,GZero%iR0))/ &
-		 (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0))
+      dYDRe(i,1) = (F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr)))/ &
+           & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))
+      dYDRe(i,2) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)))/ &
+           & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))
+      dYDRe(i,3) = (F(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr))-F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))
+      dYDRe(i,4) = (F(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
+           & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))
 
 !   - Cross derivatives (dY^2/dTaudRe)
+      
+      ddY(i,1) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr)) - F(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)) - &
+           & F(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)) + F(i,GZero%iTm1(i,icrpr),GZero%iRm1(i,icrpr))) / &
+           & ((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)))
+      ddY(i,2) = (F(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr)) - F(i,GZero%iTp1(i,icrpr),GZero%iRm1(i,icrpr)) - &
+           & F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)) + F(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr))) / &
+           & ((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) * (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)))
+      ddY(i,3) = (F(i,GZero%iTp1(i,icrpr),GZero%iRp1(i,icrpr)) - F(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr)) - &
+           & F(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr)) + F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))) / &
+           & ((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) * (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)))
+      ddY(i,4) = (F(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr)) - F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)) - &
+           & F(i,GZero%iTm1(i,icrpr),GZero%iRp1(i,icrpr)) + F(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr))) / &
+           & ((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)))
 
-    ddY(:,1) = (F(:,GZero%iT1,GZero%iR1) - F(:,GZero%iT1,GZero%iRm1) - F(:,GZero%iTm1,GZero%iR1) + F(:,GZero%iTm1,GZero%iRm1)) / &
-		((Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) * (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1)))
-    ddY(:,2) = (F(:,GZero%iTp1,GZero%iR1) - F(:,GZero%iTp1,GZero%iRm1) - F(:,GZero%iT0,GZero%iR1) + F(:,GZero%iT0,GZero%iRm1)) / &
-		((Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0)) * (Grid%Re(GZero%iR1) - Grid%Re(GZero%iRm1)))
-    ddY(:,3) = (F(:,GZero%iTp1,GZero%iRp1) - F(:,GZero%iTp1,GZero%iR0) - F(:,GZero%iT0,GZero%iRp1) + F(:,GZero%iT0,GZero%iR0)) / &
-		((Grid%Tau(GZero%iTp1) - Grid%Tau(GZero%iT0)) * (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0)))
-    ddY(:,4) = (F(:,GZero%iT1,GZero%iRp1) - F(:,GZero%iT1,GZero%iR0) - F(:,GZero%iTm1,GZero%iRp1) + F(:,GZero%iTm1,GZero%iR0)) / &
-		((Grid%Tau(GZero%iT1) - Grid%Tau(GZero%iTm1)) * (Grid%Re(GZero%iRp1) - Grid%Re(GZero%iR0)))
-
+   enddo
 !  Now call the adapted Numerical Recipes BCuInt subroutine to
 !  perform the interpolation to our desired state vector
 !  [Or the equivalent linint subroutine - Oct 2011]
@@ -206,9 +213,9 @@ Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
    if (Ctrl%LUTIntflag .eq. 0) then
       do i = 1,NChans
 
-      YIN=Y(i,1:4)
-         call linint(YIN,Grid%Tau(GZero%iT0),Grid%Tau(GZero%iT1),&
-	 Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),GZero%dT,GZero%dR,a1,a2,a3)
+         YIN=Y(i,1:4)
+         call linint(YIN,Grid%tau(I,GZero%iT0(i,icrpr),icrpr),Grid%tau(I,GZero%iT1(i,icrpr),icrpr),&
+              & Grid%re(I,GZero%iR0(i,icrpr),icrpr), Grid%re(I,GZero%iR1(i,icrpr),icrpr),GZero%dT(i,icrpr),GZero%dR(i,icrpr),a1,a2,a3)
          !write(*,*) 'aaaaa1',a1,yin
          !write(*,*) 'sline',Grid%Tau(GZero%iT0),Grid%Tau(GZero%iT1),&
          !& Grid%Re(GZero%iR0), Grid%Re(GZero%iR1)
@@ -224,9 +231,9 @@ Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, status)
       dYdRein=dYdRe(i,1:4)
       ddYin=ddY(i,1:4)
          call bcuint(Yinb,dYdTauin,dYdRein,ddYin,&
-		 Grid%Tau(GZero%iT0),  Grid%Tau(GZero%iT1),&
-		 Grid%Re(GZero%iR0), Grid%Re(GZero%iR1),&
-		 GZero%dT,GZero%dR,a1,a2,a3)
+		 Grid%tau(I,GZero%iT0(i,icrpr),icrpr),  Grid%tau(I,GZero%iT1(i,icrpr),icrpr),&
+		 Grid%re(I,GZero%iR0(i,icrpr),icrpr), Grid%re(I,GZero%iR1(i,icrpr),icrpr),&
+		 GZero%dT(i,icrpr),GZero%dR(i,icrpr),a1,a2,a3)
          FInt(i) = a1
          FGrads(i,1) = a2
          FGrads(i,2) = a3

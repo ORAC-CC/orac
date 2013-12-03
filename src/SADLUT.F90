@@ -27,6 +27,7 @@
 !       Changing main LUT arrays (RBd etc) to allocatable. 
 !    11th June 2011, Caroline Poulsen: removed refrences to maxnum values 
 !       and changed some variables to pointers values
+!20131203 MJ makes LUTs more flexible wrt channel and properties
 !
 ! Bugs:
 !    None known.
@@ -40,33 +41,40 @@ module SAD_LUT_def
    use ECP_Constants
 
    type LUT_Grid_t
-      real      :: MaxTau                    ! Optical depth grid max.
-      real      :: MinTau                    !  - grid min
-      real      :: dTau                      !  - grid spacing
-      integer   :: nTau                      !  - no. of gridpoints
-       real      :: MaxRe                     ! Particle size grid max.
-      real      :: MinRe                     !  - grid min
-      real      :: dRe                       !  - grid spacing
-      integer   :: nRe                       !  - no. of gridpoints
-       real      :: MaxSatzen                 ! Satellite angle grid max.
-      real      :: MinSatzen                 !  - grid min
-      real      :: dSatzen                   !  - grid spacing
-      integer   :: nSatzen                   !  - no. of gridpoints
-       real      :: MaxSolzen                 ! Solar angle grid max.
-      real      :: MinSolzen                 !  - grid min
-      real      :: dSolzen                   !  - grid spacing
-      integer   :: nSolzen                   !  - no. of gridpoints
-       real      :: MaxRelazi                 ! Relative azimuth grid max.
-      real      :: MinRelazi                 !  - grid min
-      real      :: dRelazi                   !  - grid spacing
-      integer   :: nRelazi                   !  - no. of gridpoints
+      real, pointer      :: MaxTau(:,:)                    ! Optical depth grid max.
+      real,pointer      :: MinTau(:,:)                    !  - grid min
+      real, pointer      :: dTau(:,:)                      !  - grid spacing
+      integer,pointer   :: nTau(:,:)                      !  - no. of gridpoints
+      real,pointer      :: MaxRe(:,:)                     ! Particle size grid max.
+      real,pointer      :: MinRe(:,:)                     !  - grid min
+      real,pointer      :: dRe(:,:)                       !  - grid spacing
+      integer,pointer   :: nRe(:,:)                       !  - no. of gridpoints
+      real,pointer      :: MaxSatzen(:,:)                 ! Satellite angle grid max.
+      real,pointer      :: MinSatzen(:,:)                 !  - grid min
+      real,pointer      :: dSatzen(:,:)                   !  - grid spacing
+      integer,pointer   :: nSatzen(:,:)                   !  - no. of gridpoints
+      real,pointer      :: MaxSolzen(:,:)                 ! Solar angle grid max.
+      real,pointer      :: MinSolzen(:,:)                 !  - grid min
+      real,pointer      :: dSolzen(:,:)                   !  - grid spacing
+      integer,pointer   :: nSolzen(:,:)                   !  - no. of gridpoints
+      real,pointer      :: MaxRelazi(:,:)                 ! Relative azimuth grid max.
+      real,pointer      :: MinRelazi(:,:)                 !  - grid min
+      real,pointer      :: dRelazi(:,:)                   !  - grid spacing
+      integer,pointer   :: nRelazi(:,:)                   !  - no. of gridpoints
 
-      real, pointer :: Tau(:)
-      real, pointer :: Re(:)
-      real, pointer :: Satzen(:)
-      real, pointer :: Solzen(:)
-      real, pointer :: Relazi(:)
+      real, pointer :: Tau(:,:,:)
+      real, pointer :: Re(:,:,:)
+      real, pointer :: Satzen(:,:,:)
+      real, pointer :: Solzen(:,:,:)
+      real, pointer :: Relazi(:,:,:)
 
+      integer :: nmaxtau=20
+      integer :: nmaxre=20
+      integer :: nmaxsolzen=20
+      integer :: nmaxsatzen=20
+      integer :: nmaxrelazi=20
+
+      !integer, parameter :: 
    
    end type LUT_Grid_t
 
