@@ -127,6 +127,8 @@
 #     the c preprocessor for compilers where this can not be explicitly requested by a flag.
 #   13th December added in byte to integer routine and dealloccrl routine
 #   24th August 2012 MJ creates adds "includes" for better configurability
+#   24th August 2012, Greg McGarragh:
+#     Added object files and dependencies for recent chnages to ORAC.
 
 # Notes:
 # 1) The C preprocessor is used to allow conditional compilation (files with
@@ -190,6 +192,7 @@ ORAC_OBJ=	$(OBJS)/ECPConstants.o $(OBJS)/input_structures.o $(OBJS)/Ctrl.o \
 		$(OBJS)/SPixel.o $(OBJS)/Data.o $(OBJS)/RTM.o $(OBJS)/RTM_Pc.o $(OBJS)/Diag.o \
 		$(OBJS)/Bcubic_def.o $(OBJS)/IntRoutines.o $(OBJS)/SADRoutines.o \
 		$(OBJS)/FMRoutines.o $(OBJS)/FindLUN.o $(OBJS)/WriteLog.o \
+                $(OBJS)/config_structure.o $(OBJS)/read_config_file.o \
 		$(OBJS)/ReadDriver.o $(OBJS)/ReadChan.o  $(OBJS)/ReadLUT.o \
 		$(OBJS)/ECPRoutines.o $(OBJS)/ReadSAD.o $(OBJS)/CheckFloatArray.o \
 		$(OBJS)/CheckByteArray.o $(OBJS)/ReadByteArray.o $(OBJS)/ReadFPArray.o \
@@ -221,7 +224,7 @@ ORAC_OBJ=	$(OBJS)/ECPConstants.o $(OBJS)/input_structures.o $(OBJS)/Ctrl.o \
 		$(OBJS)/ReadLocation_nc.o $(OBJS)/ReadMSI_nc.o $(OBJS)/ReadScanLines_nc.o \
 		$(OBJS)/ReadGeometry_nc.o $(OBJS)/ReadLSFlags_nc.o  \
 		$(OBJS)/read_input_dimensions.o $(OBJS)/nc_open.o $(OBJS)/nc_dim_info.o \
-		$(OBJS)/nc_read_file.o
+		$(OBJS)/nc_read_file.o $(OBJS)/interpolate_to_ctp.o $(OBJS)/locate.o $(OBJS)/polint.o
 
 
 # .F90 was originally the extension on DecUnix, but seems to be allowed 
@@ -244,19 +247,11 @@ orac_old : $(ORAC_OBJ) $(OBJS)/ECP.o Makefile
 
 # Tidy up .cpp files produced by C pre-compiler when compilation errors occur
 # (screws up later attempts to compile - forces C++ compiler to be run)
-tidy_cpp :
+tidy_cpp clean_cpp:
 	rm -f *.cpp
 
-tidy : 
+tidy clean: 
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod
-
-
-clean_cpp:
-	rm -f *.cpp
-
-clean: 
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod
-
 
 
 # Utilities to change source code extensions when moving between DEC Unix and
@@ -438,3 +433,9 @@ read_input_dimensions.o  : read_input_dimensions.F90
 nc_open.o                : nc_open.F90
 nc_dim_info.o            : nc_dim_info.F90
 nc_read_file.o           : nc_read_file.F90
+ReadDriver.o             : ReadDriver.F90 config_structure.F90 read_config_file.F90
+config_structure.o       : config_structure.F90
+read_config_file.o       : read_config_file.F90 config_structure.F90
+interpolate_to_ctp.o     : interpolate_to_ctp.F90
+locate_int.o             : locate_int.F90
+locate_int.o             : polint.F90
