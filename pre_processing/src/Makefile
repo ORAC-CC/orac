@@ -8,6 +8,7 @@
 # 2012/05/31    Gareth Thomas: Added surface emissivity routines.
 # 2012/08/24    MJ: creates adds "includes" for better configurability
 # 2013/08/01    Adam Povey: Save .o and .mod files to a seperate folder.
+# 2013/12/03    G McGarragh: A couple of small fixes.
 
 # Notes:
 # - It appears that -lopenjpeg needs to be included in the LIBS list on some systems
@@ -69,8 +70,8 @@ PREPROC_OBJ=	$(OBJS)/preproc_constants.o \
 		$(OBJS)/deallocate_ecmwf_structures.o \
 		$(OBJS)/allocate_ecmwf_structures_nc.o \
 		$(OBJS)/rearrange_ecmwf3.o \
-		$(OBJS)/rearrange_ecmwf.o allocate_channel_info.F90 \
-		deallocate_channel_info.F90 $(OBJS)/set_ecmwf.o \
+		$(OBJS)/rearrange_ecmwf.o $(OBJS)/allocate_channel_info.o \
+		$(OBJS)/deallocate_channel_info.o $(OBJS)/set_ecmwf.o \
 		$(OBJS)/define_preprop_grid.o \
 		$(OBJS)/allocate_preproc_structures.o \
 		$(OBJS)/make_preprop_grid.o \
@@ -121,10 +122,7 @@ $(OBJS)/%.o: %.c
 orac_preproc.x : $(PREPROC_OBJ) Makefile
 	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ) $(LIBS) -I./$(OBJS)
 
-tidy: 
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod
-
-clean: 
+tidy clean: 
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod
 
 # Utilities to change source code extensions when moving between DEC Unix and
