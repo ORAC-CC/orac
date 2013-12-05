@@ -216,6 +216,7 @@
 !20120827 MJ better implements time variable in output.
 !2012 November: MJ implements openMP parallelization of along-track loop.
 ! 2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
+!20131205 MJ initializes Diag%AK=real_fill_value
 !!
 ! Bugs:
 !   None known
@@ -806,7 +807,9 @@ Program ECP
 !           Set up the super-pixel data values.                       
 
             !write(*,*) 'testtest0'
-
+            
+            !set averaging kernel to fill value
+            Diag%AK=real_fill_value
 !MST
            Spixel%QC=0
 
@@ -915,7 +918,7 @@ Program ECP
               !write(*,*) 'before preps', RTM_Pc%Hc,RTM_Pc%Tc,Spixel%CWP,Spixel%CWP_error
               include "prepare_primary.inc"
               !write(*,*) 'after preps prim'
-              !include "prepare_secondary.inc"
+              include "prepare_secondary.inc"
               !write(*,*) 'after preps sec'
               !               pause 
               
@@ -954,7 +957,7 @@ Program ECP
       !         write(*,*) 'before writes'
          include "write_primary.inc"
          !quite some problems with loops over channels in secondary:
-         !include "write_secondary.inc"
+         include "write_secondary.inc"
       !         write(*,*) 'after writes'
       !         pause
       endif

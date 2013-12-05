@@ -90,12 +90,10 @@
 !residualsy
 !
 
-               do iinput=1,Ctrl%Ind%Ny
-
-
+               do iinput=1,Ctrl%Ind%Ny!SPixel%Ind%NY!Ctrl%Ind%Ny
+	!	write(*,*) 'ii',iinput,Ctrl%Ind%Ny,SPixel%Ind%NY
                   dummyreal=(Diag%YmFit(iinput)-spixel_scan_out_sec%res_offset(iinput))/&
-                       & spixel_scan_out_sec%res_scale(iinput)
-
+	                       & spixel_scan_out_sec%res_scale(iinput)
 
                   if( dummyreal .ge. real(spixel_scan_out_sec%res_vmin(iinput),kind=sreal) .and. &
                        & dummyreal .le. real(spixel_scan_out_sec%res_vmax(iinput),kind=sreal)) then
@@ -111,7 +109,7 @@
 !
 !  firstguess forward modelled radiance
 !
-               do iinput=1,Ctrl%Ind%Ny
+               do iinput=1,Ctrl%Ind%Ny!SPixel%Ind%NY!Ctrl%Ind%Ny
 
                   dummyreal=(Diag%Y0(iinput)-spixel_scan_out_sec%y0_offset(iinput))/&
                        & spixel_scan_out_sec%y0_scale(iinput)
@@ -133,7 +131,7 @@
 !
 !write(*,*)'Ctrl%Ind%Ny',Ctrl%Ind%Ny
 !write(*,*)'prepare secmsi+data',MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,:) 
-               do iinput=1,Ctrl%Ind%Ny
+               do iinput=1,Ctrl%Ind%Ny!SPixel%Ind%NY!Ctrl%Ind%Ny
 
                   dummyreal=(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, iinput) -spixel_scan_out_sec%chans_offset(iinput))/&
                        & spixel_scan_out_sec%chans_scale(iinput)

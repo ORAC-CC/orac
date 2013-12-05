@@ -27,12 +27,14 @@
 !2013/01/25 C. Poulsen modified how channels are labelled now reads form the inputfile the channel names.
 !2013/05/29 G. Thomas: Added degrees of freedom for signal
 !2013/07/24 A. Povey: fixed bug in writing spixel_scan_out_sec%vidy0
+!20131205 MJ fixes bug with writing of albedo and radiance and bt output.
 ! $Id$
 !
 ! Bugs:
 !
 !none known
 
+wo=1
 
 !===============================
 !SCANU
@@ -183,8 +185,9 @@
 
 
          do i=1,Ctrl%Ind%Nsolar
-	write(*,*) 'channels in solar',iinput,i,Ctrl%Ind%Chi(iinput),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput)),Ctrl%Ind%Ysolar(i)	
-            if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ysolar(i) ) then
+	write(*,*) 'channels in solar',iinput,i,Ctrl%Ind%Chi(iinput),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput)),&
+	& Ctrl%Ind%Ysolar(i)	
+            if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ysolar(i) .and. conf%channel_mixed_flag_use(iinput) .eq. 0) then
                spixel_scan_out_sec%res_scale(iinput)=0.0001 !0.00001
                spixel_scan_out_sec%res_offset(iinput)=0.000 !0.0001
                spixel_scan_out_sec%res_vmin(iinput)=-30000
@@ -236,7 +239,7 @@
 
 
 !===============================
-!REFLECTANCES AND bRIGHTNESS TEMPERATURE
+!REFLECTANCES AND BRIGHTNESS TEMPERATURE
 !===============================
 
 
@@ -247,7 +250,7 @@
  
          do i=1,Ctrl%Ind%Nsolar
 
-            if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ysolar(i)) then
+            if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ysolar(i) .and. conf%channel_mixed_flag_use(iinput) .eq. 0) then
   write(*,*)'input_num def var',input_num,Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
                spixel_scan_out_sec%chans_scale(iinput)=0.0001
                spixel_scan_out_sec%chans_offset(iinput)=0.00
@@ -291,6 +294,10 @@ write(*,*)'Ctrl%Ind%Chi(iinput) ',Ctrl%Ind%Chi(iinput), Ctrl%Ind%Ysolar(i)
       enddo
 
 
+!===============================
+!ALBEDO
+!===============================
+
 
       do iinput=1,Ctrl%Ind%Nsolar
 
@@ -298,7 +305,7 @@ write(*,*)'Ctrl%Ind%Chi(iinput) ',Ctrl%Ind%Chi(iinput), Ctrl%Ind%Ysolar(i)
          write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
 
          do i=1,Ctrl%Ind%Nsolar
-            if(iinput .eq. Ctrl%Ind%Ysolar(i)) then
+            if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ysolar(i)) then
                spixel_scan_out_sec%alb_scale(iinput)=0.0001
                spixel_scan_out_sec%alb_offset(iinput)=0.00
                spixel_scan_out_sec%alb_vmin(iinput)=0
@@ -350,9 +357,10 @@ write(*,*)'Ctrl%Ind%Chi(iinput) ',Ctrl%Ind%Chi(iinput), Ctrl%Ind%Ysolar(i)
 
           write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
 
-!          do i=1,Ctrl%Ind%Nsolar
-!             if(iinput .eq. Ctrl%Ind%Ysolar(i)) then
-          if (any(Ctrl%Ind%Ysolar.eq.iinput)) then
+          do i=1,Ctrl%Ind%Nsolar
+             if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ysolar(i) .and. &
+	& conf%channel_mixed_flag_use(iinput) .eq. 0) then
+!          if (any(Ctrl%Ind%Ysolar.eq.iinput)) then
                 spixel_scan_out_sec%y0_scale(iinput)=0.0001
                 spixel_scan_out_sec%y0_offset(iinput)=0.00
                 spixel_scan_out_sec%y0_vmin(iinput)=0
@@ -368,11 +376,11 @@ write(*,*)'Ctrl%Ind%Chi(iinput) ',Ctrl%Ind%Chi(iinput), Ctrl%Ind%Ysolar(i)
                      & spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput), wo,ierr)
              if(ierr .ne. 0 ) status=SecondaryFileDefinitionErr
              endif
-!          enddo
+          enddo
 
 
-!          do i=1,Ctrl%Ind%Nthermal
-!             if(iinput .ne. Ctrl%Ind%Ysolar(i)) then
+          do i=1,Ctrl%Ind%Nthermal
+            if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ythermal(i)) then
                 spixel_scan_out_sec%y0_scale(iinput)=.1
                 spixel_scan_out_sec%y0_offset(iinput)=0.00
                 spixel_scan_out_sec%y0_vmin(iinput)=0
@@ -387,8 +395,8 @@ write(*,*)'Ctrl%Ind%Chi(iinput) ',Ctrl%Ind%Chi(iinput), Ctrl%Ind%Ysolar(i)
                      & spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput), wo,ierr)
              if(ierr .ne. 0 ) status=SecondaryFileDefinitionErr
 
-!             endif
-!          enddo
+             endif
+          enddo
 
 
        enddo
