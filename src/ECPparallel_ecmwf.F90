@@ -655,7 +655,7 @@ Program ECP
  !include definition of variables files
 !         write(*,*) 'before defs'
          include "def_vars_primary.inc"
-         !include "def_vars_secondary.inc"
+         include "def_vars_secondary.inc"
 !         write(*,*) 'after defs'
 !         pause            
  	

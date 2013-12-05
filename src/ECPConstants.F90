@@ -108,6 +108,7 @@ module ECP_constants
                                           ! No. of flags in diagnostic flag
    real, parameter :: ditherm3=1.0E-3 !some small value         
    real, parameter :: ditherm6=1.0E-6 !some even smaller value         
+   real, parameter :: ditherm15=1.0E-15 !tiny value
 
 !  Parameters for range checking of data values (used in Get_SPixel)
 

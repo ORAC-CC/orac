@@ -352,8 +352,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
       !MJ use original version
       !MJ!if(SPixel%Ind%ThermalFirst .eq. 3) then
-     write(*,*) 'bounds',&
-          & SPixel%Ind%nThermal,SPixel%Ind%ThermalFirst,SPixel%Ind%ThermalLast
+     !write(*,*) 'bounds',&
+     !& SPixel%Ind%nThermal,SPixel%Ind%ThermalFirst,SPixel%Ind%ThermalLast
      temp_thermal_CRP=CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:)
      temp_thermal_d_CRP=d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)
          !MJ!endif

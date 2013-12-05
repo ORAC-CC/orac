@@ -134,18 +134,18 @@ Subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 !  Call functions to interpolate the arrays: TFd and RFD are interpolated
 !  only in Tau and Re.
 
-   write(*,*) 'Ind%SolarFirst:Ind%SolarLast',Ind%SolarFirst,Ind%SolarLast
+   !write(*,*) 'Ind%SolarFirst:Ind%SolarLast',Ind%SolarFirst,Ind%SolarLast
 
    
    call Int_LUT_TauRe(SAD_LUT%TFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
         & SAD_LUT%Grid, GZero,Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd), &
         & dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITFd,:),iTfd,status)
    
-   write(*,*) 'rfd start'
+   !write(*,*) 'rfd start'
    call Int_LUT_TauRe(SAD_LUT%RFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
         & SAD_LUT%Grid, GZero,Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd), &
         & dCRPOut(Ind%SolarFirst:Ind%SolarLast,IRFd,:),iRfd,status)
-   write(*,*) 'rfd stop'
+   !write(*,*) 'rfd stop'
 
 !  Tb and TFBd are interpolated in Tau, Solzen and Re
 

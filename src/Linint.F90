@@ -53,6 +53,8 @@
 
 Subroutine linint(y,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
 
+  use ECP_Constants
+
     implicit none
 
 !   Define arguments
@@ -74,14 +76,22 @@ Subroutine linint(y,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
         (y(2) * dh1 * dl2) + &
         (y(3) * dh1 * dh2) + &
         (y(4) * dl1 * dh2))
-   
-   ansy1 = (((y(2) * dl2) + (y(3) * dh2)) - &
-        ((y(1) * dl2) + (y(4) * dh2))) &
-        / (x1u-x1l)
-   
-   ansy2 = (((y(4) * dl1) + (y(3) * dh1)) - &
-        ((y(1) * dl1) + (y(2) * dh1))) &
-        / (x2u-x2l)
+
+   if(abs(x1u-x1l) .le. ditherm15) then
+      ansy1 =0.00
+   else
+      ansy1 = (((y(2) * dl2) + (y(3) * dh2)) - &
+           ((y(1) * dl2) + (y(4) * dh2))) &
+           / (x1u-x1l)
+   endif
+
+   if(abs(x2u-x2l) .le. ditherm15) then
+      ansy2=0.00
+   else
+      ansy2 = (((y(4) * dl1) + (y(3) * dh1)) - &
+           ((y(1) * dl1) + (y(2) * dh1))) &
+           / (x2u-x2l)
+   endif
 
  end subroutine linint
 

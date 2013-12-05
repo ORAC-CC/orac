@@ -157,7 +157,7 @@ Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
    integer :: i,icrpr                              ! Counters
   
    NChans = size(FInt)
-   write(*,*) 'nnnnchans',nchans
+   !write(*,*) 'nnnnchans',nchans
 !  Construct the input vectors for BCuInt:
 !  Function values at four LUT points around our X
 
@@ -170,41 +170,110 @@ Subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
 !  Function derivatives at four LUT points around our X....
 !  - WRT to Tau
 
-      dYdTau(i,1) = (F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))-F(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr)))/ &
-           & (Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) 
-      dYdTau(i,2) = (F(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
-           & (Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr))
-      dYdTau(i,3) = (F(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)))/ &
-           & (Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr))
-      dYdTau(i,4) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)))/ &
-           & (Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr))
+      if(abs((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr))) .le. &
+           & ditherm15) then
+         dYdTau(i,1)=0.00
+      else
+         dYdTau(i,1) = (F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))-F(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr)))/ &
+              & (Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) 
+      endif
+      if(abs(Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) .le. &
+           & ditherm15) then
+         dYdTau(i,2) = 0.00
+      else
+         dYdTau(i,2) = (F(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
+              & (Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr))
+      endif
+      if(abs((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr))) .le. &
+           & ditherm15) then
+         dYdTau(i,3) = 0.0
+      else
+         dYdTau(i,3) = (F(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)))/ &
+              & (Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr))
+      endif
+      if(abs((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr))) .le. &
+           & ditherm15) then
+         dYdTau(i,4) = 0.0
+      else
+         dYdTau(i,4) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)))/ &
+              & (Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr))
+      endif
 
 !   - WRT to Re
 
-      dYDRe(i,1) = (F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr)))/ &
-           & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))
-      dYDRe(i,2) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)))/ &
-           & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))
-      dYDRe(i,3) = (F(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr))-F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)))/ &
-           & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))
-      dYDRe(i,4) = (F(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
-           & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))
+      if(abs(Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)) .le. &
+           & ditherm15) then
+         dYDRe(i,1) = 0.00
+      else
+         dYDRe(i,1) = (F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr)))/ &
+              & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))
+      endif
+
+      if(abs(Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)) .le. &
+           & ditherm15) then
+         dYDRe(i,2) = 0.0
+      else
+         dYDRe(i,2) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))-F(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)))/ &
+              & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))
+      endif
+      if( abs(Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)) .le. &
+           & ditherm15 ) then
+         dYDRe(i,3) = 0.0
+      else
+         dYDRe(i,3) = (F(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr))-F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)))/ &
+              & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))
+      endif
+      if(abs(Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)) .le. &
+           & ditherm15) then
+         dYDRe(i,4) = 0.0
+      else
+         dYDRe(i,4) = (F(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr))-F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr)))/ &
+              & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))
+      endif
 
 !   - Cross derivatives (dY^2/dTaudRe)
       
-      ddY(i,1) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr)) - F(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)) - &
-           & F(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)) + F(i,GZero%iTm1(i,icrpr),GZero%iRm1(i,icrpr))) / &
-           & ((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)))
-      ddY(i,2) = (F(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr)) - F(i,GZero%iTp1(i,icrpr),GZero%iRm1(i,icrpr)) - &
-           & F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)) + F(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr))) / &
-           & ((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) * (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)))
-      ddY(i,3) = (F(i,GZero%iTp1(i,icrpr),GZero%iRp1(i,icrpr)) - F(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr)) - &
-           & F(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr)) + F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))) / &
-           & ((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) * (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)))
-      ddY(i,4) = (F(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr)) - F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)) - &
-           & F(i,GZero%iTm1(i,icrpr),GZero%iRp1(i,icrpr)) + F(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr))) / &
-           & ((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)))
-
+      if(abs((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * &
+           & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))) .le. &
+           & ditherm15) then
+         ddY(i,1) = 0.0 
+      else
+         ddY(i,1) = (F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr)) - F(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)) - &
+              & F(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)) + F(i,GZero%iTm1(i,icrpr),GZero%iRm1(i,icrpr))) / &
+              & ((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * &
+              & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)))
+      endif
+      if(abs((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) * &
+           & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr))) .le. &
+           & ditherm15) then
+         ddY(i,2) = 0.00
+      else
+         ddY(i,2) = (F(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr)) - F(i,GZero%iTp1(i,icrpr),GZero%iRm1(i,icrpr)) - &
+              & F(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)) + F(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr))) / &
+              & ((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) * &
+              & (Grid%re(I,GZero%iR1(i,icrpr),icrpr) - Grid%re(I,GZero%iRm1(i,icrpr),icrpr)))
+      endif
+      if(abs((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) * &
+           & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))) .le. &
+           & ditherm15) then
+         ddY(i,3) = 0.00
+      else
+         ddY(i,3) = (F(i,GZero%iTp1(i,icrpr),GZero%iRp1(i,icrpr)) - F(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr)) - &
+              & F(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr)) + F(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))) / &
+              & ((Grid%tau(I,GZero%iTp1(i,icrpr),icrpr) - Grid%tau(I,GZero%iT0(i,icrpr),icrpr)) *&
+              & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)))
+      endif
+      if(abs((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * &
+           & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr))) .le. &
+           & ditherm15) then
+         ddY(i,4) = 0.0
+      else
+         ddY(i,4) = (F(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr)) - F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)) - &
+              & F(i,GZero%iTm1(i,icrpr),GZero%iRp1(i,icrpr)) + F(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr))) / &
+              & ((Grid%tau(I,GZero%iT1(i,icrpr),icrpr) - Grid%tau(I,GZero%iTm1(i,icrpr),icrpr)) * &
+              & (Grid%re(I,GZero%iRp1(i,icrpr),icrpr) - Grid%re(I,GZero%iR0(i,icrpr),icrpr)))
+      endif
+      
    enddo
 !  Now call the adapted Numerical Recipes BCuInt subroutine to
 !  perform the interpolation to our desired state vector

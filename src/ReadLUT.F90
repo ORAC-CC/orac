@@ -505,8 +505,10 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
 
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iRd)
+      SAD_LUT%Grid%dTau(chan,iRfd)=SAD_LUT%Grid%dTau(chan,iRd)
 
       SAD_LUT%Grid%nTau(chan,iRd) = nVals              !    Used for loop control later
+      SAD_LUT%Grid%nTau(chan,iRfd)=SAD_LUT%Grid%nTau(chan,iRd)
 
       !Read in Tau values and set min and max
       if (chan == Ctrl%Ind%SolarFirst) then 
@@ -514,17 +516,26 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
             allocate(SAD_LUT%Grid%tau(Ctrl%Ind%Ny,SAD_LUT%Grid%nmaxTau,maxcrprops) )
          endif
       end if
-         SAD_LUT%Grid%tau(chan,:,iRd)=0.00
+      SAD_LUT%Grid%tau(chan,:,iRd)=0.00
+      SAD_LUT%Grid%tau(chan,:,iRfd)=0.00
+
       read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iRd), i=1,nVals)
+      SAD_LUT%Grid%Tau(chan,:,iRfd)=SAD_LUT%Grid%Tau(chan,:,iRd)
+
       SAD_LUT%Grid%MinTau(chan,iRd) = SAD_LUT%Grid%Tau(chan,1,iRd)
       SAD_LUT%Grid%MaxTau(chan,iRd) = SAD_LUT%Grid%Tau(chan,nVals,iRd)
+
+      SAD_LUT%Grid%MinTau(chan,iRfd)=SAD_LUT%Grid%MinTau(chan,iRd)
+      SAD_LUT%Grid%MaxTau(chan,iRfd) = SAD_LUT%Grid%MaxTau(chan,iRd)
       
 
       !Now get the satzen values
 
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,iRd)
+         SAD_LUT%Grid%dSatzen(chan,iRfd)=SAD_LUT%Grid%dSatzen(chan,iRd)
          SAD_LUT%Grid%nSatzen(chan,iRd) = nVals
+         SAD_LUT%Grid%nSatzen(chan,iRfd)=SAD_LUT%Grid%nSatzen(chan,iRd)
 
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
@@ -533,18 +544,26 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%satzen(chan,:,iRd)=0.00
+         SAD_LUT%Grid%satzen(chan,:,iRfd)=0.00
+
          read(l_lun, *, err=999, iostat=ios) &
               & (SAD_LUT%Grid%Satzen(chan,i,iRd), i=1,nVals)
+         SAD_LUT%Grid%Satzen(chan,:,iRd)=SAD_LUT%Grid%Satzen(chan,:,iRfd)
+
          SAD_LUT%Grid%MinSatzen(chan,iRd) = SAD_LUT%Grid%Satzen(chan,1,iRd)
          SAD_LUT%Grid%MaxSatzen(chan,iRd) = SAD_LUT%Grid%Satzen(chan,nVals,iRd)	    
-	 
+         SAD_LUT%Grid%MinSatzen(chan,iRfd)=SAD_LUT%Grid%MinSatzen(chan,iRd)	 
+         SAD_LUT%Grid%MaxSatzen(chan,iRfd) =SAD_LUT%Grid%MaxSatzen(chan,iRd) 
+
       end if
 
 !     Now get the effective radius values
 
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iRd)
+         SAD_LUT%Grid%dRe(chan,iRfd)=SAD_LUT%Grid%dSatzen(chan,iRd)
          SAD_LUT%Grid%nRe(chan,iRd) = nVals
+         SAD_LUT%Grid%nRe(chan,iRfd)=SAD_LUT%Grid%nRe(chan,iRd)
 
          !Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
@@ -553,10 +572,14 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%Re(chan,:,iRd)=0.00
+         SAD_LUT%Grid%Re(chan,:,iRfd)=0.00
          read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iRd), i=1,nVals)
-
+         SAD_LUT%Grid%Re(chan,:,iRfd)=SAD_LUT%Grid%Re(chan,:,iRd)
+         
          SAD_LUT%Grid%MinRe(chan,iRd) = SAD_LUT%Grid%Re(chan,1,iRd)
          SAD_LUT%Grid%MaxRe(chan,iRd) = SAD_LUT%Grid%Re(chan,nVals,iRd)	    
+         SAD_LUT%Grid%MinRe(chan,iRfd)=SAD_LUT%Grid%MinRe(chan,iRd)
+         SAD_LUT%Grid%MaxRe(chan,iRfd)=SAD_LUT%Grid%MaxRe(chan,iRd)
 
       end if
 
@@ -581,8 +604,8 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & ((SAD_LUT%RFd(chan, i, j), i=1, SAD_LUT%Grid%nTau(chan,iRd)), &
-              & j=1, SAD_LUT%Grid%nRe(chan,iRd))
+              & ((SAD_LUT%RFd(chan, i, j), i=1, SAD_LUT%Grid%nTau(chan,iRfd)), &
+              & j=1, SAD_LUT%Grid%nRe(chan,iRfd))
       end if
 
 
@@ -913,8 +936,9 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTbd)
+      SAD_LUT%Grid%dTau(chan,iTfbd)= SAD_LUT%Grid%dTau(chan,iTbd)
       SAD_LUT%Grid%nTau(chan,iTbd) = nVals                !    Used for loop control later
-
+      SAD_LUT%Grid%nTau(chan,iTfbd)=SAD_LUT%Grid%nTau(chan,iTbd)
      
       !        Read in Tau values and set min and max
       if (chan == Ctrl%Ind%SolarFirst) then
@@ -923,16 +947,22 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
          endif
       endif
       SAD_LUT%Grid%Tau(chan,:,iTbd)=0.00   
+      SAD_LUT%Grid%Tau(chan,:,iTfbd)=0.00   
       read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iTbd), i=1,nVals)
+      SAD_LUT%Grid%Tau(chan,:,iTfbd)=SAD_LUT%Grid%Tau(chan,:,iTbd)
       SAD_LUT%Grid%MinTau(chan,iTbd) = SAD_LUT%Grid%Tau(chan,1,iTbd)
+      SAD_LUT%Grid%MinTau(chan,iTfbd)=SAD_LUT%Grid%MinTau(chan,iTbd)
       SAD_LUT%Grid%MaxTau(chan,iTbd) = SAD_LUT%Grid%Tau(chan,nVals,iTbd)
+      SAD_LUT%Grid%MaxTau(chan,iTfbd)=SAD_LUT%Grid%MaxTau(chan,iTbd)
       
 
 !     Now get the satzen values
 
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,iTbd)
+         SAD_LUT%Grid%dSatzen(chan,iTfbd)=SAD_LUT%Grid%dSatzen(chan,iTbd)
          SAD_LUT%Grid%nSatzen(chan,iTbd) = nVals
+         SAD_LUT%Grid%nSatzen(chan,iTfbd)=SAD_LUT%Grid%nSatzen(chan,iTbd)
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
@@ -941,11 +971,16 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%satzen(chan,:,iTbd)=0.00
+         SAD_LUT%Grid%satzen(chan,:,iTfbd)=0.00
+
          read(l_lun, *, err=999, iostat=ios) &
               & (SAD_LUT%Grid%Satzen(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%Satzen(chan,:,iTfbd)=SAD_LUT%Grid%Satzen(chan,:,iTbd)
          SAD_LUT%Grid%MinSatzen(chan,iTbd) = SAD_LUT%Grid%Satzen(chan,1,iTbd)
          SAD_LUT%Grid%MaxSatzen(chan,iTbd) = SAD_LUT%Grid%Satzen(chan,nVals,iTbd)	    
-     
+         SAD_LUT%Grid%MinSatzen(chan,iTfbd)=SAD_LUT%Grid%MinSatzen(chan,iTbd)     
+         SAD_LUT%Grid%MaxSatzen(chan,iTfbd)=SAD_LUT%Grid%MaxSatzen(chan,iTbd)
+
       end if
       
 !     Now get the Solzen values
@@ -953,7 +988,9 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       if (status == 0) then
          
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSolzen(chan,iTbd)
+         SAD_LUT%Grid%dSolzen(chan,iTfbd)= SAD_LUT%Grid%dSolzen(chan,iTbd)
          SAD_LUT%Grid%nSolzen(chan,iTbd) = nVals
+         SAD_LUT%Grid%nSolzen(chan,iTfbd)=SAD_LUT%Grid%nSolzen(chan,iTbd)
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
@@ -962,10 +999,14 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%Solzen(chan,:,iTbd)=0.00
+         SAD_LUT%Grid%Solzen(chan,:,iTfbd)=0.00
          read(l_lun, *, err=999, iostat=ios) &
               & (SAD_LUT%Grid%Solzen(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%Solzen(chan,:,iTfbd)=SAD_LUT%Grid%Solzen(chan,:,iTbd)
          SAD_LUT%Grid%MinSolzen(chan,iTbd) = SAD_LUT%Grid%Solzen(chan,1,iTbd)
          SAD_LUT%Grid%MaxSolzen(chan,iTbd) = SAD_LUT%Grid%Solzen(chan,nVals,iTbd)	    
+         SAD_LUT%Grid%MinSolzen(chan,iTfbd)=SAD_LUT%Grid%MinSolzen(chan,iTbd)
+         SAD_LUT%Grid%MaxSolzen(chan,iTfbd)=SAD_LUT%Grid%MaxSolzen(chan,iTbd)
 	 
       end if
       
@@ -973,7 +1014,10 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRelazi(chan,iTbd)
+         SAD_LUT%Grid%dRelazi(chan,iTfbd)=SAD_LUT%Grid%dRelazi(chan,iTbd)
+
          SAD_LUT%Grid%nRelazi(chan,iTbd) = nVals
+         SAD_LUT%Grid%nRelazi(chan,iTfbd)=SAD_LUT%Grid%nRelazi(chan,iTbd)
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
@@ -982,10 +1026,16 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%Relazi(chan,:,iTbd)=0.00
+         SAD_LUT%Grid%Relazi(chan,:,iTfbd)=0.00
+
          read(l_lun, *, err=999, iostat=ios)  &
               & (SAD_LUT%Grid%Relazi(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%Relazi(chan,:,iTfbd)=SAD_LUT%Grid%Relazi(chan,:,iTbd)
+
          SAD_LUT%Grid%MinRelazi(chan,iTbd) = SAD_LUT%Grid%Relazi(chan,1,iTbd)
          SAD_LUT%Grid%MaxRelazi(chan,iTbd) = SAD_LUT%Grid%Relazi(chan,nVals,iTbd)	    
+         SAD_LUT%Grid%MinRelazi(chan,iTfbd)=SAD_LUT%Grid%MinRelazi(chan,iTbd)
+         SAD_LUT%Grid%MaxRelazi(chan,iTfbd)=SAD_LUT%Grid%MaxRelazi(chan,iTbd)
 
       end if
       
@@ -993,7 +1043,9 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iTbd)
+         SAD_LUT%Grid%dRe(chan,iTFbd)= SAD_LUT%Grid%dRe(chan,iTbd)
          SAD_LUT%Grid%nRe(chan,iTbd) = nVals
+         SAD_LUT%Grid%nRe(chan,iTfbd)=SAD_LUT%Grid%nRe(chan,iTbd)
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
@@ -1002,9 +1054,13 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%Re(chan,:,iTbd)=0.00
+         SAD_LUT%Grid%Re(chan,:,iTfbd)=0.00
          read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iTbd), i=1,nVals)
+         SAD_LUT%Grid%Re(chan,:,iTfbd)=SAD_LUT%Grid%Re(chan,:,iTbd)
          SAD_LUT%Grid%MinRe(chan,iTbd) = SAD_LUT%Grid%Re(chan,1,iTbd)
          SAD_LUT%Grid%MaxRe(chan,iTbd) = SAD_LUT%Grid%Re(chan,nVals,iTbd)	    
+         SAD_LUT%Grid%MinRe(chan,iTfbd)=SAD_LUT%Grid%MinRe(chan,iTbd)
+         SAD_LUT%Grid%MaxRe(chan,iTfbd) =SAD_LUT%Grid%MaxRe(chan,iTbd)
 	 
       end if
       
@@ -1041,8 +1097,8 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & (((SAD_LUT%TFbd(chan, i, j, k), i=1, SAD_LUT%Grid%nTau(chan,iTbd)), &
-              & j=1, SAD_LUT%Grid%nSolzen(chan,iTbd)), k=1, SAD_LUT%Grid%nRe(chan,iTbd))
+              & (((SAD_LUT%TFbd(chan, i, j, k), i=1, SAD_LUT%Grid%nTau(chan,iTfbd)), &
+              & j=1, SAD_LUT%Grid%nSolzen(chan,iTfbd)), k=1, SAD_LUT%Grid%nRe(chan,iTfbd))
       end if
 
 
@@ -1161,7 +1217,9 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTd)
+      SAD_LUT%Grid%dTau(chan,iTfd)=SAD_LUT%Grid%dTau(chan,iTd)
       SAD_LUT%Grid%nTau(chan,iTd) = nVals                !    Used for loop control later
+      SAD_LUT%Grid%nTau(chan,iTfd)=SAD_LUT%Grid%nTau(chan,iTd)
 
       !        Read in Tau values and set min and max
       if (chan == Ctrl%Ind%SolarFirst) then 
@@ -1170,16 +1228,22 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
          endif
       end if
       SAD_LUT%Grid%Tau(chan,:,iTd)=0.00
+      SAD_LUT%Grid%Tau(chan,:,iTfd)=0.00
       read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Tau(chan,i,iTd), i=1,nVals)
+      SAD_LUT%Grid%Tau(chan,:,iTfd)=SAD_LUT%Grid%Tau(chan,:,iTd)
       SAD_LUT%Grid%MinTau(chan,iTd) = SAD_LUT%Grid%Tau(chan,1,iTd)
       SAD_LUT%Grid%MaxTau(chan,iTd) = SAD_LUT%Grid%Tau(chan,nVals,iTd)
+      SAD_LUT%Grid%MinTau(chan,iTfd)=SAD_LUT%Grid%MinTau(chan,iTd)
+      SAD_LUT%Grid%MaxTau(chan,iTfd)=SAD_LUT%Grid%MaxTau(chan,iTd)
    
       !     Now get the satzen values
 
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dSatzen(chan,iTd)
+         SAD_LUT%Grid%dSatzen(chan,iTfd)= SAD_LUT%Grid%dSatzen(chan,iTd)
          SAD_LUT%Grid%nSatzen(chan,iTd) = nVals
-	 
+         SAD_LUT%Grid%nSatzen(chan,iTfd)=SAD_LUT%Grid%nSatzen(chan,iTd)
+
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
             if (.not.associated(SAD_LUT%Grid%Satzen)) then
@@ -1187,17 +1251,23 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%Satzen(chan,:,iTd)=0.00
+         SAD_LUT%Grid%Satzen(chan,:,iTfd)=0.00
          read(l_lun, *, err=999, iostat=ios) &
               & (SAD_LUT%Grid%Satzen(chan,i,iTd), i=1,nVals)
+         SAD_LUT%Grid%Satzen(chan,:,iTfd)=SAD_LUT%Grid%Satzen(chan,:,iTd)
          SAD_LUT%Grid%MinSatzen(chan,iTd) = SAD_LUT%Grid%Satzen(chan,1,iTd)
          SAD_LUT%Grid%MaxSatzen(chan,iTd) = SAD_LUT%Grid%Satzen(chan,nVals,iTd)	    
-	 
+         SAD_LUT%Grid%MinSatzen(chan,iTfd)=SAD_LUT%Grid%MinSatzen(chan,iTd)
+         SAD_LUT%Grid%MaxSatzen(chan,iTfd)=SAD_LUT%Grid%MaxSatzen(chan,iTd)	 
+
       end if
       
       !     Now get the effective radius values
       if (status == 0) then
          read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dRe(chan,iTd)
+         SAD_LUT%Grid%dRe(chan,iTfd)= SAD_LUT%Grid%dRe(chan,iTd)
          SAD_LUT%Grid%nRe(chan,iTd) = nVals
+         SAD_LUT%Grid%nRe(chan,iTfd)=SAD_LUT%Grid%nRe(chan,iTd)
 	 
          !           Read in values and set min and max
          if (chan == Ctrl%Ind%SolarFirst) then 
@@ -1206,9 +1276,13 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
             endif
          end if
          SAD_LUT%Grid%Re(chan,:,iTd)=0.00
+         SAD_LUT%Grid%Re(chan,:,iTfd)=0.00
          read(l_lun, *, err=999, iostat=ios)(SAD_LUT%Grid%Re(chan,i,iTd), i=1,nVals)
+         SAD_LUT%Grid%Re(chan,:,iTfd)=SAD_LUT%Grid%Re(chan,:,iTd)
          SAD_LUT%Grid%MinRe(chan,iTd) = SAD_LUT%Grid%Re(chan,1,iTd)
          SAD_LUT%Grid%MaxRe(chan,iTd) = SAD_LUT%Grid%Re(chan,nVals,iTd)	    
+         SAD_LUT%Grid%MinRe(chan,iTfd)=SAD_LUT%Grid%MinRe(chan,iTd)
+         SAD_LUT%Grid%MaxRe(chan,iTfd)=SAD_LUT%Grid%MaxRe(chan,iTd)
 	
       end if
 
@@ -1233,8 +1307,8 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       end if
       if (status == 0) then
          read(l_lun, LUTArrayForm, err=999, iostat=ios) &
-              & ((SAD_LUT%TFd(chan, i, j), i=1, SAD_LUT%Grid%nTau(chan,iTd)), &
-              & j=1, SAD_LUT%Grid%nRe(chan,iTd))
+              & ((SAD_LUT%TFd(chan, i, j), i=1, SAD_LUT%Grid%nTau(chan,iTfd)), &
+              & j=1, SAD_LUT%Grid%nRe(chan,iTfd))
       end if
 
       close(unit=l_lun)
