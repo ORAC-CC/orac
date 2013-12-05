@@ -143,6 +143,8 @@
 #      Added object files and dependencies for recent chnages to ORAC.
 #   3rd Dec 2013, Greg McGarragh:
 #      Renewed object list and dependencies and some small clean ups.
+#   4th Dec 2013, Greg McGarragh:
+#      Added 'make depend' to automatically find all Fortran file dependencies.
 #
 # Notes:
 # 1) The C preprocessor is used to allow conditional compilation (files with
@@ -184,12 +186,12 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-#archfile=arch.ifort.ox
-#libfile=lib.ifort.ox
+archfile=arch.gfortran.ox
+libfile=lib.gfortran.ox
 
 # ral/ox files are above, this is for dwd/ecmwf:
-archfile=arch.ecmwf.xlf
-libfile=lib.ecmwf.xlf
+#archfile=arch.ecmwf.xlf
+#libfile=lib.ecmwf.xlf
 
 # Can even be set through env. variable
 #archfile=$(orac_arch)
@@ -202,54 +204,153 @@ include $(libfile)
 # Define object files to be linked. N.B. files containing module definitions
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
-ORAC_OBJ=$(OBJS)/alloc_spixel_scan_out.o $(OBJS)/AllocRTMPc.o \
-	 $(OBJS)/AllocSPixel.o $(OBJS)/b1_to_si1.o $(OBJS)/b1_to_ui1.o \
-	 $(OBJS)/Bcubic_def.o $(OBJS)/Bcucof.o $(OBJS)/Bcuint.o $(OBJS)/BITS.o \
-	 $(OBJS)/CalcCWP.o $(OBJS)/CheckByteArray.o $(OBJS)/CheckFloatArray.o \
-	 $(OBJS)/CheckLimits.o $(OBJS)/config_structure.o $(OBJS)/CPL.o \
-	 $(OBJS)/CRP.o $(OBJS)/Ctrl.o $(OBJS)/Data.o \
-	 $(OBJS)/dealloc_spixel_scan_out.o $(OBJS)/DeallocCtrl.o \
-	 $(OBJS)/DeallocData.o $(OBJS)/DeallocRTM.o $(OBJS)/DeallocRTMPc.o \
-	 $(OBJS)/DeallocSADLUT.o $(OBJS)/DeallocSPixel.o \
-	 $(OBJS)/DecomposeCholesky.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
-	 $(OBJS)/ECPRoutines.o $(OBJS)/FindLUN.o $(OBJS)/FM.o \
-	 $(OBJS)/FMRoutines.o $(OBJS)/FMSolar.o $(OBJS)/FMThermal.o \
-	 $(OBJS)/GetGeometry.o $(OBJS)/GetIllum.o $(OBJS)/GetLSF.o \
-	 $(OBJS)/GetLwSwRTM.o $(OBJS)/GetMeasurements.o $(OBJS)/GetRs.o \
-	 $(OBJS)/GetRTM.o $(OBJS)/GetSPixel.o $(OBJS)/GetSurface.o \
-	 $(OBJS)/GetX.o $(OBJS)/GZero.o $(OBJS)/input_structures.o \
-	 $(OBJS)/Int.o $(OBJS)/Interp3dLUT.o $(OBJS)/interpolate_to_ctp.o \
-	 $(OBJS)/InterpolSolar.o $(OBJS)/InterpolSolar_spline.o \
-	 $(OBJS)/InterpolThermal.o $(OBJS)/InterpolThermal_spline.o \
-	 $(OBJS)/InterpolTrans.o $(OBJS)/IntLUTTauRe.o \
-	 $(OBJS)/IntLUTTauSatRe.o $(OBJS)/IntLUTTauSatSolAziRe.o \
-	 $(OBJS)/IntLUTTauSolRe.o $(OBJS)/IntRoutines.o \
-	 $(OBJS)/InvertCholesky.o $(OBJS)/InvertCholeskyDC.o \
-	 $(OBJS)/InvertMarquardt.o $(OBJS)/Linint.o $(OBJS)/Locate.o \
-	 $(OBJS)/locate.o $(OBJS)/nc_close.o $(OBJS)/nc_create_global.o \
-	 $(OBJS)/nc_defdata.o $(OBJS)/nc_dim_info.o $(OBJS)/nc_open.o \
-	 $(OBJS)/nc_read_file.o $(OBJS)/nc_write_L2.o $(OBJS)/polint.o \
-	 $(OBJS)/R2T.o $(OBJS)/read_config_file.o \
-	 $(OBJS)/read_input_dimensions.o $(OBJS)/read_rtm_data_nc.o \
-	 $(OBJS)/read_sat_data_nc.o $(OBJS)/ReadAlb.o $(OBJS)/ReadAlb_nc.o \
-	 $(OBJS)/ReadByteArray.o $(OBJS)/ReadChan.o \
-	 $(OBJS)/ReadCloudFlags_nc.o $(OBJS)/ReadDataRTM.o \
-	 $(OBJS)/ReadDriver.o $(OBJS)/ReadFPArray.o $(OBJS)/ReadGeometry.o \
-	 $(OBJS)/ReadGeometry_nc.o $(OBJS)/Readillum.o $(OBJS)/Readillum_nc.o \
-	 $(OBJS)/ReadIntArray.o $(OBJS)/ReadLocation.o \
-	 $(OBJS)/ReadLocation_nc.o $(OBJS)/ReadLSFlags.o \
-	 $(OBJS)/ReadLSFlags_nc.o $(OBJS)/ReadLUT.o $(OBJS)/ReadLwRTM.o \
-	 $(OBJS)/ReadLwRTM_nc.o $(OBJS)/ReadMSI.o $(OBJS)/ReadMSI_nc.o \
-	 $(OBJS)/ReadRTMData_nc.o $(OBJS)/ReadSAD.o $(OBJS)/ReadScanLines.o \
-	 $(OBJS)/ReadScanLines_nc.o $(OBJS)/ReadSwRTM_nc.o $(OBJS)/RTM.o \
-	 $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADCloudClass.o \
-	 $(OBJS)/SADLUT.o $(OBJS)/SADRoutines.o $(OBJS)/SetCRPSolar.o \
-	 $(OBJS)/SetCRPThermal.o $(OBJS)/SetDiag.o $(OBJS)/SetGZero.o \
-	 $(OBJS)/SetKx.o $(OBJS)/SetLimits.o $(OBJS)/SetSy.o $(OBJS)/SetUnit.o \
-	 $(OBJS)/SolveCholesky.o $(OBJS)/SolveCholeskyDC.o $(OBJS)/SPixel.o \
-	 $(OBJS)/Spline.o $(OBJS)/SquareCholeskyDC.o $(OBJS)/T2R.o \
-	 $(OBJS)/Tridag.o $(OBJS)/WriteDiag.o $(OBJS)/WriteLog.o \
-	 $(OBJS)/XMDAD.o $(OBJS)/XSDAD.o $(OBJS)/ZeroDiag.o
+ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
+                  $(OBJS)/AllocRTMPc.o \
+	          $(OBJS)/AllocSPixel.o \
+                  $(OBJS)/b1_to_si1.o \
+                  $(OBJS)/b1_to_ui1.o \
+	          $(OBJS)/Bcubic_def.o \
+                  $(OBJS)/Bcucof.o \
+                  $(OBJS)/Bcuint.o \
+                  $(OBJS)/BITS.o \
+	          $(OBJS)/CalcCWP.o \
+                  $(OBJS)/CheckByteArray.o \
+                  $(OBJS)/CheckFloatArray.o \
+	          $(OBJS)/CheckLimits.o \
+                  $(OBJS)/config_structure.o \
+                  $(OBJS)/CPL.o \
+	          $(OBJS)/CRP.o \
+                  $(OBJS)/Ctrl.o \
+                  $(OBJS)/Data.o \
+	          $(OBJS)/dealloc_spixel_scan_out.o \
+                  $(OBJS)/DeallocCtrl.o \
+	          $(OBJS)/DeallocData.o \
+                  $(OBJS)/DeallocRTM.o \
+                  $(OBJS)/DeallocRTMPc.o \
+	          $(OBJS)/DeallocSADLUT.o \
+                  $(OBJS)/DeallocSPixel.o \
+	          $(OBJS)/DecomposeCholesky.o \
+                  $(OBJS)/Diag.o \
+                  $(OBJS)/ECPConstants.o \
+	          $(OBJS)/ECPRoutines.o \
+                  $(OBJS)/FindLUN.o \
+                  $(OBJS)/FM.o \
+	          $(OBJS)/FMRoutines.o \
+                  $(OBJS)/FMSolar.o \
+                  $(OBJS)/FMThermal.o \
+	          $(OBJS)/GetGeometry.o \
+                  $(OBJS)/GetIllum.o \
+                  $(OBJS)/GetLSF.o \
+	          $(OBJS)/GetLwSwRTM.o \
+                  $(OBJS)/GetMeasurements.o \
+                  $(OBJS)/GetRs.o \
+	          $(OBJS)/GetRTM.o \
+                  $(OBJS)/GetSPixel.o \
+                  $(OBJS)/GetSurface.o \
+	          $(OBJS)/GetX.o \
+                  $(OBJS)/GZero.o \
+                  $(OBJS)/input_structures.o \
+	          $(OBJS)/Int.o \
+                  $(OBJS)/Interp3dLUT.o \
+                  $(OBJS)/interpolate_to_ctp.o \
+	          $(OBJS)/InterpolSolar.o \
+                  $(OBJS)/InterpolSolar_spline.o \
+	          $(OBJS)/InterpolThermal.o \
+                  $(OBJS)/InterpolThermal_spline.o \
+	          $(OBJS)/InterpolTrans.o \
+                  $(OBJS)/IntLUTTauRe.o \
+	          $(OBJS)/IntLUTTauSatRe.o \
+                  $(OBJS)/IntLUTTauSatSolAziRe.o \
+	          $(OBJS)/IntLUTTauSolRe.o \
+                  $(OBJS)/IntRoutines.o \
+	          $(OBJS)/InvertCholesky.o \
+                  $(OBJS)/InvertCholeskyDC.o \
+	          $(OBJS)/InvertMarquardt.o \
+                  $(OBJS)/Linint.o \
+                  $(OBJS)/Locate.o \
+	          $(OBJS)/locate.o \
+                  $(OBJS)/nc_close.o \
+                  $(OBJS)/nc_create_global.o \
+	          $(OBJS)/nc_defdata.o \
+                  $(OBJS)/nc_dim_info.o \
+                  $(OBJS)/nc_open.o \
+	          $(OBJS)/nc_read_file.o \
+                  $(OBJS)/nc_write_L2.o \
+                  $(OBJS)/polint.o \
+	          $(OBJS)/R2T.o \
+                  $(OBJS)/read_config_file.o \
+	          $(OBJS)/read_input_dimensions.o \
+                  $(OBJS)/read_rtm_data_nc.o \
+	          $(OBJS)/read_sat_data_nc.o \
+                  $(OBJS)/ReadAlb.o \
+                  $(OBJS)/ReadAlb_nc.o \
+	          $(OBJS)/ReadByteArray.o \
+                  $(OBJS)/ReadChan.o \
+	          $(OBJS)/ReadCloudFlags_nc.o \
+                  $(OBJS)/ReadDataRTM.o \
+	          $(OBJS)/ReadDriver.o \
+                  $(OBJS)/ReadFPArray.o \
+                  $(OBJS)/ReadGeometry.o \
+	          $(OBJS)/ReadGeometry_nc.o \
+                  $(OBJS)/Readillum.o \
+                  $(OBJS)/Readillum_nc.o \
+	          $(OBJS)/ReadIntArray.o \
+                  $(OBJS)/ReadLocation.o \
+	          $(OBJS)/ReadLocation_nc.o \
+                  $(OBJS)/ReadLSFlags.o \
+	          $(OBJS)/ReadLSFlags_nc.o \
+                  $(OBJS)/ReadLUT.o \
+                  $(OBJS)/ReadLwRTM.o \
+	          $(OBJS)/ReadLwRTM_nc.o \
+                  $(OBJS)/ReadMSI.o \
+                  $(OBJS)/ReadMSI_nc.o \
+	          $(OBJS)/ReadRTMData_nc.o \
+                  $(OBJS)/ReadSAD.o \
+                  $(OBJS)/ReadScanLines.o \
+	          $(OBJS)/ReadScanLines_nc.o \
+                  $(OBJS)/ReadSwRTM_nc.o \
+                  $(OBJS)/RTM.o \
+	          $(OBJS)/RTM_Pc.o \
+                  $(OBJS)/SADChan.o \
+                  $(OBJS)/SADCloudClass.o \
+	          $(OBJS)/SADLUT.o \
+                  $(OBJS)/SADRoutines.o \
+                  $(OBJS)/SetCRPSolar.o \
+	          $(OBJS)/SetCRPThermal.o \
+                  $(OBJS)/SetDiag.o \
+                  $(OBJS)/SetGZero.o \
+	          $(OBJS)/SetKx.o \
+                  $(OBJS)/SetLimits.o \
+                  $(OBJS)/SetSy.o \
+                  $(OBJS)/SetUnit.o \
+	          $(OBJS)/SolveCholesky.o \
+                  $(OBJS)/SolveCholeskyDC.o \
+                  $(OBJS)/SPixel.o \
+	          $(OBJS)/Spline.o \
+                  $(OBJS)/SquareCholeskyDC.o \
+                  $(OBJS)/T2R.o \
+	          $(OBJS)/Tridag.o \
+                  $(OBJS)/WriteDiag.o \
+                  $(OBJS)/WriteLog.o \
+	          $(OBJS)/XMDAD.o \
+                  $(OBJS)/XSDAD.o \
+                  $(OBJS)/ZeroDiag.o
+
+ORAC_OBJ_MAIN    =$(OBJS)/ECPparallel_ecmwf.o \
+
+ORAC_OBJ_MAIN_OLD=$(OBJS)/ECP.o \
+
+ORAC_INC         =def_vars_input.inc \
+                  def_vars_primary.inc \
+                  def_vars_secondary.inc \
+                  fundamental_constants.inc \
+                  platform_name.inc \
+                  prepare_input.inc \
+                  prepare_primary.inc \
+                  prepare_secondary.inc \
+                  write_input.inc \
+                  write_primary.inc \
+                  write_secondary.inc
 
 
 # .F90 was originally the extension on DecUnix, but seems to be allowed by the
@@ -265,10 +366,14 @@ $(OBJS)/%.o: %.F90
 all: orac
 
 # Main program build
-orac: $(ORAC_OBJ) $(OBJS)/ECPparallel_ecmwf.o Makefile
+orac: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
 	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECPparallel_ecmwf.o $(LIBS) -I./$(OBJS)
-orac_old: $(ORAC_OBJ) $(OBJS)/ECP.o Makefile
+orac_old: $(ORAC_OBJ) $(ORAC_OBJ_MAIN_OLD) Makefile
 	$(F90) -o orac_old $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECP.o $(LIBS) -I./$(OBJS)
+
+# Rebuild dependencies housed in dependencies.inc
+depend:
+	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) $(ORAC_OBJ_MAIN_OLD) $(ORAC_INC) > dependencies.inc
 
 # Tidy up .cpp files produced by C pre-compiler when compilation errors occur
 # (screws up later attempts to compile - forces C++ compiler to be run)
@@ -289,165 +394,4 @@ Linux2DEC:
 
 
 # Object/source dependencies
-$(OBJS)/alloc_spixel_scan_out.o: $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/AllocRTMPc.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o
-$(OBJS)/AllocSPixel.o: $(OBJS)/Ctrl.o $(OBJS)/RTM.o $(OBJS)/SPixel.o
-$(OBJS)/b1_to_ui1.o: $(OBJS)/ECPConstants.o
-$(OBJS)/CalcCWP.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/ECPRoutines.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/CheckByteArray.o: $(OBJS)/ECPConstants.o
-$(OBJS)/CheckLimits.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/config_structure.o: $(OBJS)/ECPConstants.o
-$(OBJS)/Ctrl.o: $(OBJS)/ECPConstants.o
-$(OBJS)/Data.o: $(OBJS)/ECPConstants.o
-$(OBJS)/dealloc_spixel_scan_out.o: $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/DeallocCtrl.o: $(OBJS)/Ctrl.o
-$(OBJS)/DeallocData.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o
-$(OBJS)/DeallocRTM.o: $(OBJS)/Ctrl.o $(OBJS)/RTM.o
-$(OBJS)/DeallocRTMPc.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o
-$(OBJS)/DeallocSADLUT.o: $(OBJS)/Ctrl.o $(OBJS)/SADLUT.o
-$(OBJS)/DeallocSPixel.o: $(OBJS)/Ctrl.o $(OBJS)/SPixel.o
-$(OBJS)/DecomposeCholesky.o: $(OBJS)/ECPConstants.o
-$(OBJS)/Diag.o: $(OBJS)/ECPConstants.o
-$(OBJS)/ECP.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
-	$(OBJS)/ECPConstants.o $(OBJS)/ECPRoutines.o $(OBJS)/RTM.o \
-	$(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o \
-	$(OBJS)/input_structures.o def_vars_primary.inc \
-	def_vars_secondary.inc prepare_primary.inc prepare_secondary.inc \
-	write_primary.inc write_secondary.inc
-$(OBJS)/ECPparallel_ecmwf.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
-	$(OBJS)/ECPConstants.o $(OBJS)/ECPRoutines.o $(OBJS)/RTM.o \
-	$(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o \
-	$(OBJS)/config_structure.o $(OBJS)/input_structures.o \
-	def_vars_primary.inc prepare_primary.inc write_primary.inc
-$(OBJS)/ECPRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/FM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GZero.o $(OBJS)/RTM_Pc.o \
-	$(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o
-$(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
-	$(OBJS)/SADLUT.o $(OBJS)/SPixel.o
-$(OBJS)/FMSolar.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/FMRoutines.o \
-	$(OBJS)/GZero.o $(OBJS)/RTM_Pc.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o
-$(OBJS)/FMThermal.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/FMRoutines.o \
-	$(OBJS)/GZero.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/GetGeometry.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/GetIllum.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/GetLSF.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/GetLwSwRTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o \
-	$(OBJS)/SADChan.o $(OBJS)/SPixel.o
-$(OBJS)/GetMeasurements.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SADChan.o $(OBJS)/SPixel.o
-$(OBJS)/GetRs.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SPixel.o
-$(OBJS)/GetRTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o \
-	$(OBJS)/SADChan.o $(OBJS)/SPixel.o
-$(OBJS)/GetSPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o \
-	$(OBJS)/config_structure.o
-$(OBJS)/GetSurface.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/GetX.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/interpolate_to_ctp.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/InterpolSolar.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/InterpolSolar_spline.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/IntRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o
-$(OBJS)/InterpolThermal.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/InterpolThermal_spline.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o \
-	$(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o
-$(OBJS)/InterpolTrans.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/IntLUTTauRe.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o $(OBJS)/GZero.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/IntLUTTauSatRe.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o $(OBJS)/GZero.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/IntLUTTauSatSolAziRe.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o $(OBJS)/GZero.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/IntLUTTauSolRe.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o $(OBJS)/GZero.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/IntRoutines.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o $(OBJS)/GZero.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/InvertMarquardt.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o
-$(OBJS)/locate.o: $(OBJS)/ECPConstants.o
-$(OBJS)/nc_close.o: $(OBJS)/
-$(OBJS)/nc_create_global.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
-$(OBJS)/nc_defdata.o: $(OBJS)/ $(OBJS)/ECPConstants.o
-$(OBJS)/nc_dim_info.o: $(OBJS)/ $(OBJS)/ECPConstants.o
-$(OBJS)/nc_open.o: $(OBJS)/
-$(OBJS)/nc_read_file.o: $(OBJS)/ $(OBJS)/ECPConstants.o
-$(OBJS)/nc_write_L2.o: $(OBJS)/ $(OBJS)/ECPConstants.o
-$(OBJS)/polint.o: $(OBJS)/ECPConstants.o
-$(OBJS)/R2T.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o
-$(OBJS)/read_config_file.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/config_structure.o
-$(OBJS)/read_input_dimensions.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
-$(OBJS)/read_rtm_data_nc.o: $(OBJS)/
-$(OBJS)/read_sat_data_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SADChan.o
-$(OBJS)/ReadAlb.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SADChan.o
-$(OBJS)/ReadAlb_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SADChan.o
-$(OBJS)/ReadChan.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o
-$(OBJS)/ReadCloudFlags_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o \
-	$(OBJS)/ECPConstants.o
-$(OBJS)/ReadDataRTM.o: $(OBJS)/ECPConstants.o
-$(OBJS)/ReadDriver.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/config_structure.o
-$(OBJS)/ReadGeometry.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
-$(OBJS)/ReadGeometry_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o \
-	$(OBJS)/ECPConstants.o
-$(OBJS)/Readillum.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
-$(OBJS)/Readillum_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
-$(OBJS)/ReadLocation.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
-$(OBJS)/ReadLocation_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o \
-	$(OBJS)/ECPConstants.o
-$(OBJS)/ReadLSFlags.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
-$(OBJS)/ReadLSFlags_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o \
-	$(OBJS)/ECPConstants.o
-$(OBJS)/ReadLUT.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/ReadLwRTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o
-$(OBJS)/ReadLwRTM_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o
-$(OBJS)/ReadMSI.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SADChan.o
-$(OBJS)/ReadMSI_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SADChan.o
-$(OBJS)/ReadRTMData_nc.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o
-$(OBJS)/ReadSAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-	$(OBJS)/SADLUT.o $(OBJS)/SADRoutines.o
-$(OBJS)/ReadScanLines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
-$(OBJS)/ReadScanLines_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/Data.o \
-	$(OBJS)/ECPConstants.o
-$(OBJS)/ReadSwRTM_nc.o: $(OBJS)/ $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o
-$(OBJS)/SADChan.o: $(OBJS)/ECPConstants.o
-$(OBJS)/SADCloudClass.o: $(OBJS)/ECPConstants.o
-$(OBJS)/SADLUT.o: $(OBJS)/ECPConstants.o
-$(OBJS)/SADRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-	$(OBJS)/SADLUT.o
-$(OBJS)/SetCRPSolar.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
-	$(OBJS)/SADLUT.o $(OBJS)/SPixel.o
-$(OBJS)/SetCRPThermal.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
-	$(OBJS)/SADLUT.o $(OBJS)/SPixel.o
-$(OBJS)/SetDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/SetGZero.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
-	$(OBJS)/SADLUT.o $(OBJS)/SPixel.o
-$(OBJS)/SetKx.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/SetLimits.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/SetSy.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/SetUnit.o: $(OBJS)/SPixel.o
-$(OBJS)/SPixel.o: $(OBJS)/ECPConstants.o
-$(OBJS)/T2R.o: $(OBJS)/SADChan.o
-$(OBJS)/WriteDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/WriteLog.o: $(OBJS)/Ctrl.o
-$(OBJS)/XMDAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-	$(OBJS)/SPixel.o
-$(OBJS)/XSDAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/ZeroDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o
+include dependencies.inc
