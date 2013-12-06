@@ -131,7 +131,7 @@
 ! 20/09/2012 CP assigned Y to explicit sizeY(1:SPixel%Ind%Ny) = BT(1:SPixel%Ind%Ny)
 ! 2013 MJ makes some changes to merge code versions
 ! 20131125 MJ dynmically sets upper limit for CTP to highest pressure in profile to avoid extrapolation problems.
-
+!20131206 MJ add deallocation statements to fix memory leaks.
 
 
 ! Bugs:
@@ -596,18 +596,43 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    !if (associated(GZero%So1))   deallocate(GZero%So1)
    !if (associated(GZero%Ra1))   deallocate(GZero%Ra1)
 
-   deallocate(GZero%iSaZ0)
-   deallocate(GZero%iSoZ0)
-   deallocate(GZero%iRA0)
-   deallocate(GZero%iSaZ1)
-   deallocate(GZero%iSoZ1)
-   deallocate(GZero%iRA1)
-   deallocate(GZero%dSaZ)
-   deallocate(GZero%dSoZ)
-   deallocate(GZero%dRA)
-   deallocate(GZero%Sa1)
-   deallocate(GZero%So1)
-   deallocate(GZero%Ra1)
+!!$   deallocate(GZero%iSaZ0)
+!!$   deallocate(GZero%iSoZ0)
+!!$   deallocate(GZero%iRA0)
+!!$   deallocate(GZero%iSaZ1)
+!!$   deallocate(GZero%iSoZ1)
+!!$   deallocate(GZero%iRA1)
+!!$   deallocate(GZero%dSaZ)
+!!$   deallocate(GZero%dSoZ)
+!!$   deallocate(GZero%dRA)
+!!$   deallocate(GZero%Sa1)
+!!$   deallocate(GZero%So1)
+!!$   deallocate(GZero%Ra1)
+
+  deallocate(GZero%iSaZ0)
+  deallocate(GZero%iSoZ0)
+  deallocate(GZero%iRA0)
+  deallocate(GZero%iSaZ1)
+  deallocate(GZero%iSoZ1)
+  deallocate(GZero%iRA1)
+  deallocate(GZero%dSaZ)
+  deallocate(GZero%dSoZ)
+  deallocate(GZero%dRA)
+  deallocate(GZero%Sa1)
+  deallocate(GZero%So1)
+  deallocate(GZero%Ra1)
+  deallocate(GZero%iT0)
+  deallocate(GZero%iT1)
+  deallocate(GZero%iTm1)
+  deallocate(GZero%iTp1)
+  deallocate(GZero%iR0)
+  deallocate(GZero%iR1)
+  deallocate(GZero%iRm1)
+  deallocate(GZero%iRp1)
+  deallocate(GZero%dT)
+  deallocate(GZero%dR)
+  deallocate(GZero%T1)
+  deallocate(GZero%R1)
 
 
 
