@@ -28,6 +28,7 @@
 !2013/05/29 G. Thomas: Added degrees of freedom for signal
 !2013/07/24 A. Povey: fixed bug in writing spixel_scan_out_sec%vidy0
 !20131205 MJ fixes bug with writing of albedo and radiance and bt output.
+!20131209 MJ slightly adapts range of reflectances.
 ! $Id$
 !
 ! Bugs:
@@ -188,10 +189,16 @@ wo=1
 	write(*,*) 'channels in solar',iinput,i,Ctrl%Ind%Chi(iinput),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput)),&
 	& Ctrl%Ind%Ysolar(i)	
             if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ysolar(i) .and. conf%channel_mixed_flag_use(iinput) .eq. 0) then
+!MJ ORG               spixel_scan_out_sec%res_scale(iinput)=0.0001 !0.00001
+!MJ ORG               spixel_scan_out_sec%res_offset(iinput)=0.000 !0.0001
+!MJ ORG               spixel_scan_out_sec%res_vmin(iinput)=-30000
+!MJ ORG               spixel_scan_out_sec%res_vmax(iinput)=30000
+
                spixel_scan_out_sec%res_scale(iinput)=0.0001 !0.00001
                spixel_scan_out_sec%res_offset(iinput)=0.000 !0.0001
                spixel_scan_out_sec%res_vmin(iinput)=-30000
                spixel_scan_out_sec%res_vmax(iinput)=30000
+
   
                input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
 
@@ -213,10 +220,17 @@ wo=1
 	write(*,*) 'channels in thermal',iinput,i,Ctrl%Ind%Chi(iinput),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput)), Ctrl%Ind%Ythermal(i)	
             if(Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ythermal(i) ) then
 
+!MJ ORG               spixel_scan_out_sec%res_scale(iinput)=0.01!0.001
+!MJ ORG               spixel_scan_out_sec%res_offset(iinput)=0.0000
+!MJ ORG               spixel_scan_out_sec%res_vmin(iinput)=-30000
+!MJ ORG               spixel_scan_out_sec%res_vmax(iinput)=30000
+
                spixel_scan_out_sec%res_scale(iinput)=0.01!0.001
                spixel_scan_out_sec%res_offset(iinput)=0.0000
                spixel_scan_out_sec%res_vmin(iinput)=-30000
                spixel_scan_out_sec%res_vmax(iinput)=30000
+
+
 	wo=1
                input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
 
@@ -255,7 +269,8 @@ wo=1
                spixel_scan_out_sec%chans_scale(iinput)=0.0001
                spixel_scan_out_sec%chans_offset(iinput)=0.00
                spixel_scan_out_sec%chans_vmin(iinput)=0
-               spixel_scan_out_sec%chans_vmax(iinput)=10000
+!MJ ORG               spixel_scan_out_sec%chans_vmax(iinput)=10000
+               spixel_scan_out_sec%chans_vmax(iinput)=30000
 write(*,*)'Ctrl%Ind%Chi(iinput) ',Ctrl%Ind%Chi(iinput), Ctrl%Ind%Ysolar(i)
         
                input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
