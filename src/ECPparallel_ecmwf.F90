@@ -217,6 +217,7 @@
 !2012 November: MJ implements openMP parallelization of along-track loop.
 ! 2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
 !20131205 MJ initializes Diag%AK=real_fill_value
+!20131210 MJ initializes ymfit and y0 with missingxn
 !!
 ! Bugs:
 !   None known
@@ -651,7 +652,8 @@ Program ECP
               
          !allocate output arrays
          call alloc_spixel_scan_out( ixstart,ixstop,iystart,iystop,Ctrl%Ind%NViews,spixel_scan_out)
-         call alloc_spixel_scan_out_sec( ixstart,ixstop,iystart,iystop,Ctrl%Ind%Ny,SPixel%Nx,lcovar,spixel_scan_out_sec)      
+!MJ ORG         call alloc_spixel_scan_out_sec( ixstart,ixstop,iystart,iystop,Ctrl%Ind%Ny,SPixel%Nx,lcovar,spixel_scan_out_sec)      
+         call alloc_spixel_scan_out_sec( ixstart,ixstop,iystart,iystop,Ctrl%Ind%Ny,MaxStateVar,lcovar,spixel_scan_out_sec)      
         
  !include definition of variables files
 !         write(*,*) 'before defs'
@@ -801,6 +803,9 @@ Program ECP
 !         if(j .gt. 1) stop
          do 
             SPixel%Loc%X0 = i
+            !MJ set ymfit to "missing" as default
+            Diag%YmFit= MissingXn
+            Diag%Y0= MissingXn
 	    !write(*,*) 'Processing pixel:',i
             !MJ ORG TotPix = TotPix+1
             TotPix_line(j) = TotPix_line(j)+1
@@ -853,6 +858,7 @@ Program ECP
                       & RTM_Pc, Diag, status)
                  status_line(j)=status
                  !write(*,*) 'after marqw'
+                 !write(*,*) 'illum',i,j,SPixel%illum
                  
                  !                 Set values required for overall statistics
                  !                 1st bit test on QC Flag determines whether convergence 
