@@ -1,0 +1,97 @@
+
+RSG_LIB_BASE=/work/ralspace/rsg_group/cloud_ecv/libraries
+
+HDFLIB=$(RSG_LIB_BASE)/hdflib/
+HDFINCLUDE=$(RSG_LIB_BASE)/hdfinclude/
+
+SZLIB=$(RSG_LIB_BASE)/szlib/
+SZINC=$(RSG_LIB_BASE)/szinc/
+
+
+ZLIB=$(RSG_LIB_BASE)/zlib/
+ZINC=$(RSG_LIB_BASE)/szinc/
+
+JPEGLIB=$(RSG_LIB_BASE)/jpeglib/
+JPEGINC=$(RSG_LIB_BASE)/jpeginc
+
+#intel libraries
+INTELLIB=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/:/usr/lib64 
+INTELINC=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/include/
+
+
+#
+#includes and library for reading AATSR data
+#
+
+#
+#NB a shared object must be included in ld_library_path
+#
+
+#
+#envisat product software
+#
+EPRINCDIR = $(RSG_LIB_BASE)/eprincdir/
+EPRLIBDIR = $(RSG_LIB_BASE)/eprlibdir/
+
+HDF5LIB=$(RSG_LIB_BASE)/hdf5lib/
+HDF5INCLUDE=$(RSG_LIB_BASE)/hdf5include/
+HDF5MOD=$(RSG_LIB_BASE)/hdf5mod/
+
+
+#Set path to HDF-EOS library. Should be compiled with the same version of the HDF4
+#library specified above (HDFLIB)
+
+
+
+EOSLIB=$(RSG_LIB_BASE)/eoslib/
+EOSINCLUDE=$(RSG_LIB_BASE)/eosinclude/
+
+
+#Set path to netcdf library and include directory.
+#NCDFLIB=/usr/lib64
+#NCDFINCLUDE=/usr/include
+#/netcdf-3.6.2/include
+#gfortran
+#apps2
+#NCDFLIB=/usr/local/netcdf-3.6.3gfortran64/lib/
+#NCDFINCLUDE=/usr/local/netcdf-3.6.3gfortran64/include/
+
+
+#/apps/netCDF/4.2/fortran/intel/lib:/apps/netCDF/4.3.0/intel/lib:
+NCDFLIB=/apps/netCDF/4.3.0/intel/lib
+NCDFINCLUDE=/apps/netCDF/4.3.0/intel/lib
+
+NCDFLIBB=/apps/netCDF/4.2/fortran/intel/lib
+NCDFINCLUDEB=/apps/netCDF/4.2/fortran/intel/include/
+
+CINC=-I./ -I$(EPRINCDIR)
+
+
+#Setup GRIB API library and JASPER
+
+GRIBLIB=$(RSG_LIB_BASE)/griblib/ 
+GRIBINCLUDE=$(RSG_LIB_BASE)/gribinclude/
+
+JASPERLIB=/usr/lib64
+JASPERINCLUDE=/usr/include/jasper
+
+
+#Setup RTTOV library
+
+RTTOVLIB=$(RSG_LIB_BASE)/rttovlib/
+RTTOVINCLUDE=$(RSG_LIB_BASE)/rttovinclude/
+RTTOVMODULE=$(RSG_LIB_BASE)/rttovmodule/
+
+
+
+#Set up libraries and includes
+# -L$(JASPERLIB) -ljasper 
+
+
+
+####NB order is VERY important!!!!!!
+LIBS=  -L$(EPRLIBDIR) -lepr_api -L$(GRIBLIB) -lgrib_api_f90 -lgrib_api_f77 -lgrib_api -L$(JASPERLIB) -ljasper -L$(HDFLIB) -lmfhdf -ldf  -L$(JPEGLIB) -ljpeg  -L$(ZLIB) -lz -L$(SZLIB) -lsz -lm  -L$(EOSLIB) -lhdfeos -lGctp -L$(HDF5LIB) -lhdf5_fortran -lhdf5 -L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -L$(INTELLIB) -limf -lintlc -lsvml -lifport -lifcore -L$(NCDFLIBB) -lnetcdf -L$(NCDFLIB) -lnetcdff  -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other  -L$(ZLIB) 
+#-L$(EPRLIBDIR) -lepr_api
+
+#-lopenjpeg
+INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE) -I$(INTELINC) -I$(NCDFINCLUDEB) -I$(NCDFINCLUDE) -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE) -I$(HDF5MOD) # -I$(OBJS)                                                                                     

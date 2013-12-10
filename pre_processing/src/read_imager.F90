@@ -90,16 +90,16 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
 
    elseif(trim(adjustl(sensor)) .eq. 'AVHRR') then
       !read the angles and lat/lon info of the orbit
-      call read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
-           imager_flags,imager_time,n_along_track)
+!      call read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
+!           imager_flags,imager_time,n_along_track)
 
       !read land/sea flag from physiography file
-      call read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
-           imager_angles,imager_flags,imager_time)
+!      call read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
+!           imager_angles,imager_flags,imager_time)
 
       !read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
-      call read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
-           imager_measurements,channel_info)
+!      call read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
+!           imager_measurements,channel_info)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
