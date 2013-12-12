@@ -25,11 +25,11 @@ $(OBJS)/calculate_rt.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf_structures.o 
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/calender.o: $(OBJS)/date_type_structure.o $(OBJS)/preproc_constants.o
 $(OBJS)/call_rtm_ir_rttov.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/imager_structures.o $(OBJS)/netcdf_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/preproc_structures.o
 $(OBJS)/call_rtm_solar_rttov.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/imager_structures.o $(OBJS)/netcdf_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/preproc_structures.o
 $(OBJS)/channel_structures.o: $(OBJS)/preproc_constants.o
 $(OBJS)/close_netcdf_output.o: $(OBJS)/netcdf_structures.o \
         $(OBJS)/preproc_constants.o

@@ -103,14 +103,14 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/preprocessing_for_orac.o \
 	        $(OBJS)/read_aatsr_dimensions.o \
                 $(OBJS)/read_aatsr_l1b.o \
-#	        $(OBJS)/read_avhrr_angles.o \
-#                $(OBJS)/read_avhrr_dimensions.o \
-#	        $(OBJS)/read_avhrr_geo.o \
-#                $(OBJS)/read_avhrr_l1b.o \
-#	        $(OBJS)/read_avhrr_landseamask.o \
-#                $(OBJS)/read_avhrr_lat_lon.o \
-#	        $(OBJS)/read_avhrr_lsmask.o \
-#                $(OBJS)/read_avhrr_time.o \
+	        $(OBJS)/read_avhrr_angles.o \
+                $(OBJS)/read_avhrr_dimensions.o \
+	        $(OBJS)/read_avhrr_geo.o \
+                $(OBJS)/read_avhrr_l1b.o \
+	        $(OBJS)/read_avhrr_landseamask.o \
+                $(OBJS)/read_avhrr_lat_lon.o \
+	        $(OBJS)/read_avhrr_lsmask.o \
+                $(OBJS)/read_avhrr_time.o \
 	        $(OBJS)/read_cimss_emissivity.o \
                 $(OBJS)/read_ecmwf.o \
 	        $(OBJS)/read_ecmwf_dimensions.o \
@@ -119,7 +119,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/read_ecmwf_lat_lon_nc.o \
 	        $(OBJS)/read_ecmwf_nc.o \
                 $(OBJS)/read_imager.o \
-#	        $(OBJS)/read_L1B_avhrr_reflectances_radiances.o \
+	        $(OBJS)/read_L1B_avhrr_reflectances_radiances.o \
 	        $(OBJS)/read_L1b_radiances_reflectances.o \
                 $(OBJS)/read_mcd43c3.o \
 	        $(OBJS)/read_modis_angles.o \
@@ -186,9 +186,7 @@ Linux2DEC:
 	rename_svn.csh l2d
 
 
-
-
-
+# Fortran 90 dependencies
 include dependencies.inc
 
 # Fortran 90 on C dependecies
