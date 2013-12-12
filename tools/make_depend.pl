@@ -78,7 +78,7 @@ foreach $source_file (@source_file_list) {
 
 	close(FILE);
 
-	if (defined @incudes || defined @modules) {
+	if (defined @includes || defined @modules) {
 		$object_file = $source_file;
 		$object_file =~ s/\.F90/.o/;
 
@@ -90,7 +90,7 @@ foreach $source_file (@source_file_list) {
 		# Get rid of duplicates from multiple uses in the file
 		@mod_bases = &uniq(sort(@mod_bases));
 
-		# If the modeule is local include it as a dependency
+		# If the module is local include it as a dependency
 		foreach (@mod_bases) {
 			if("$_.F90" ~~ @source_file_list) {
 				push(@dependencies, "$objects_path$_.o");
@@ -142,5 +142,4 @@ foreach $source_file (@source_file_list) {
 
 	undef @modules;
 	undef @includes;
-	undef @mod_bases;
 }
