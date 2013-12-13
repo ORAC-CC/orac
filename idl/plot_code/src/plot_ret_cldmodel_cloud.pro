@@ -14,7 +14,7 @@
 ;	PS	Write pdf
 ;	FAC	Increase size of plot symbol by given factor
 ;	UR	Define grid U coord range to plot
-;	VR	Define grid V coord range to plot
+;	VRcolocate_calipso_modis,/ps,/aatsr,datein='20080921',/forc,/netcdf	Define grid V coord range to plot
 ;	IMAGE	Plot data as images (smaller ps file)
 ;	ITYPE 	Plot results for a specific type, not "best" type
 ;	MCOT	Set min cloud opt depth for plotting Re,height,phase
@@ -46,6 +46,7 @@
 ; Cp. 20/06/2013 remove sea key word as command need external
 ; libraries
 ; cp : 20/06/2013 added in nosec keyword
+; cp : 11/11/2013 modified code to plot out uncertainties if requested.
 ; $Id: plot_ret_cldmodel.pro 1112 2011-08-08 09:06:42Z rsiddans $
 ;-
 pro quick_cim_prc,sg,u,v,d,_EXTRA=extra,ll=ll,ext=ext,chars=chs,brd=brd,crd=crd,pext=pext,cpos=cpos,axti=axti,nodata=nodata,kml=kmlfi,eop_col=eop_col,eop_thick=eop_thick,eop_y=eop_y,eop_x=eop_x
@@ -297,7 +298,7 @@ if tag_exist(xc, 'solz') then begin
                  title='relaz ',lcb=lcb,bcb=bcb,image=image, $
                  ext=ext,_EXTRA=extra,axti=axti
    
-   levang=indgen(20)*5.
+   levang=indgen(36)*5.
    quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.solz,lev=levang,ur=ur,vr=vr, $
                  num=2,fac=fac,$
                  position=ypos(p1,p2,mask=mask),chars=chs,$
@@ -311,16 +312,17 @@ skipref:
 endif;solz
 
 
-goto,skipconv
+
+;goto,skipconv
 
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.conv,lev=[-1.5,-0.5,0.5,1.5],$
                       ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),chars=chs, $
-                      title='Conv',lcb=lcb,bcb=bcb,image=image, $
+                      title='Convergence',lcb=lcb,bcb=bcb,image=image, $
                       ext=ext,_EXTRA=extra,axti=axti
 
 
-skipconv:
+;skipconv:
 costlev=[0.,1,2,3,5,6, 7, 8, 9,10, 11, 12,   15,20,30,50]
 
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.cost/ny,$
@@ -337,13 +339,13 @@ costlev=[0.,1,2,3,5,6, 7, 8, 9,10, 11, 12,   15,20,30,50]
 ;plot ctt
 ;
 	pd=xc.tc;/100.0
-	lev=indgen(20)*5+210
+	levctt=indgen(20)*5+225
 	xd=u
 	yd=v
 	cbs=1
 
         quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                      position=ypos(p1,p2,mask=mask),lev=lev,$
+                      position=ypos(p1,p2,mask=mask),lev=levctt,$
                       chars=chs,title='CTT K',lcb=lcb,bcb=bcb,cbs=cbs,$
                       ext=ext,_EXTRA=extra,$
                       image=image,axti=axti,eop_col=eop_col,$
@@ -354,10 +356,12 @@ costlev=[0.,1,2,3,5,6, 7, 8, 9,10, 11, 12,   15,20,30,50]
 ;
 
 
-help,h.sg
-help,uq
+;help,h.sg
+;help,uq
+;help,xc,str
 
-	quick_cim_prc,kml=kmlfi,h.sg,uq,vq,xq.itype,lev=findgen(h.nst+1)-0.5,ur=ur,vr=vr,num=2,fac=fac,$
+;stop
+	quick_cim_prc,kml=kmlfi,h.sg,uq,vq,xq.itype,lev=findgen(5)-1,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='Phase',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
 		crd=crd,brd=brd,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
@@ -450,8 +454,14 @@ for i=0,nx-2 do begin
       if h.sv.zstar eq 1 then begin
          if keyword_set(error) then begin
             pd=xq.xe(i)
+;stop
          endif else begin
             pd=xq.xn(i)
+         if keyword_set(error) then begin
+            pd(wh)=zstar(xq(wh).xn(i)-xq(wh).sx(i))-zstar(xq(wh).xn(i))
+
+         endif
+
          endelse
       endif else begin
          pd=xq.xn(i)*0
@@ -459,26 +469,30 @@ for i=0,nx-2 do begin
          pd(wh)=zstar((xq.xn(i))(wh))
          if keyword_set(error) then begin
             pd(wh)=zstar(xq(wh).xn(i)-xq(wh).sx(i))-zstar(xq(wh).xn(i))
+
          endif
 ;message,'Check SX!!!!'
       endelse
       if n_elements(zran) eq 0 then range=[0.,16.] else range=zran
-      if  keyword_set(error) then range=[0.,2.] 
-   endif else if strpos(tis(i),'COT') ge 0 then begin
+      if  keyword_set(error) then range=[0.,3.] 
+   endif else if strpos(tis(i),'LCOT') ge 0 then begin
       ti1='Optical depth'
       pd=xc.xn(i)               ; removed 10^
       
-      if keyword_set(error) then pd=pd*xc.xe(i)/alog10(exp(1.))
+      if keyword_set(error) then pd=xq.xe(i);pd*xc.xe(i)/alog10(exp(1.))
+;  if keyword_set(error) then stop
       lev=[0.,0.05,0.1,0.2,0.4,0.7,1,2,5,10,20,50,100]
       cbs=1
    endif else if strpos(tis(i),'RE') ge 0 then begin
       pd=xq.xn(i)
       if keyword_set(error) then pd=xq.xe(i)
+;if keyword_set(error) then stop
       xd=uq
       yd=vq
 ;			lev=[0.,0.01,0.2,0.05,0.1,0.2,0.5,1.,2.,5,10,20,50,100,200]
                                 ;                   		if n_elements(relev) eq 0 then $
-      lev=[0.,0.1,1.,2,4,6,8,10,12,15,20,25,30,50,100,200] 
+      lev=[0.,0.1,1.,2,4,6,8,10,12,15,20,25,30,50,100] 
+      if keyword_set(error) then lev=[0.,0.1,1.,2,4,6,8,10,12,15,20] 
 ;				else lev=relev
       cbs=1
    endif else     range=range(cldmodel_sv_levels(tis(i)))
@@ -498,24 +512,31 @@ for i=0,nx-2 do begin
       
    endif else begin
       
-;if strpos(tis(i),'Ts') ge 0  then begin;
-;      set_a4,n=nx+8,/rs,/landscape
+;if strpos(tis(i),'Ts') ge 0  then lev=levctt
+;if strpos(tis(i),'Ts') ge 0  then
+      
 ;endif
+if strpos(tis(i),'TS') ge 0  then begin
       quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                    position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                    position=ypos(p1,p2,mask=mask),lev=levctt,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                     image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
       
+   endif else begin
+    quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                    position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                    image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+endelse
       
       
       if strpos(tis(i),'TS') ge 0  then begin ;
          pd=xc.x0(i)
         if ~keyword_set(nosec) then begin 
         quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                       position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                       position=ypos(p1,p2,mask=mask),lev=levctt,chars=chs,title='FG '+ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                        image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
          
 ;plot the difference between fg and ret
- 
+ set_a4,n=nx+8,/rs,/landscape
             diff=xc.xn(i)-xc.x0(i)
             levdiff=indgen(20)*.5-5.
             pd=diff
@@ -541,6 +562,7 @@ for i=0,nx-2 do begin
             endif
             
             pd=xc.x0(i)
+       if ~keyword_set(nosec) then begin 
             quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                           position=ypos(p1,p2,mask=mask),lev=levpc,chars=chs,title='FG '+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                           image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
@@ -550,12 +572,12 @@ for i=0,nx-2 do begin
                           position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                           image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
             any_key
-            
+            endif
                          
             set_a4,n=nx+8,/rs,landscape=land
             mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
             print,range(xc.lsflag)
-            help,xc.lsflag
+            ;help,xc.lsflag
             if ~keyword_set(nosec) then begin
                pd=xc.lsflag+1
                quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
@@ -619,13 +641,13 @@ levpc2=indgen(20)*7+900
 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),lev=levpc2,chars=chs,title='FG '+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                       image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-endif;nosec
+
 lev=indgen(20)*.1
 		pd=zstar(xc.x0(2))
 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                       image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-
+endif;nosec
 ;start new page
 if ~keyword_set(nosec) then begin
  set_a4,n=nx+8,/rs,landscape=land
@@ -644,7 +666,7 @@ for k=0,2 do begin
 
 ;plot albedo over land
 lev=indgen(20)*.0525
-if k eq 2 then lev=indgen(20)*.025
+;if k eq 2 then lev=indgen(20)*.025
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.alb(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$;
 		position=ypos(p1,p2,mask=mask),chars=chs,title='Albedo land Ch'+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
 
@@ -689,6 +711,7 @@ if n_elements(iok) le 1 then goto,skip
 
 		ti1=tis(i)
 		pd=xqc.xn(i)
+                      if keyword_set(error) then  pd=xqc.xe(i)
 		xd=uqc
 		yd=vqc
 		cbs=0
@@ -701,7 +724,12 @@ print,'h.sv.zstar',h.sv.zstar
                    yd=vqc
                    if h.sv.zstar eq 1 then begin
                       if keyword_set(error) then begin
-                         pd=xqc.xe(i)
+                         ;pd=xqc.xe(i)
+                if keyword_set(error) then begin
+                   pd=zstar(xqc.xn(i)-xqc.sx(i))-zstar(xqc.xn(i))
+                   
+                endif
+print,'CTH',range(pd)
                       endif else begin
                          pd=xqc.xn(i)
                       endelse
@@ -711,26 +739,29 @@ print,'h.sv.zstar',h.sv.zstar
                       pd(wh)=zstar((xqc.xn(i))(wh))
                       if keyword_set(error) then begin
                          pd(wh)=zstar(xqc(wh).xn(i)-xqc(wh).sx(i))-zstar(xqc(wh).xn(i))
+
                       endif
 ;message,'Check SX!!!!'
                    endelse
                    if n_elements(zran) eq 0 then range=[0.,16.] else range=zran
-                   if  keyword_set(error) then range=[0.,2.] 
-                endif else if strpos(tis(i),'COT') ge 0 then begin
+                   if  keyword_set(error) then range=[0.,3.] 
+                endif else if strpos(tis(i),'LCOT') ge 0 then begin
 			ti1='Optical depth'
 			pd=xqc.xn(i); removed 10^
 
-if keyword_set(error) then pd=pd*xqc.xe(i)/alog10(exp(1.))
+if keyword_set(error) then pd=xqc.xe(i);pd*xqc.xe(i)/alog10(exp(1.))
 			lev=[0.,0.05,0.1,0.2,0.4,0.7,1,2,5,10,20,50,100]
 			cbs=1
-		endif else if strpos(tis(i),'Re') ge 0 then begin
+		endif else if strpos(tis(i),'RE') ge 0 then begin
 			pd=xqc.xn(i)
 if keyword_set(error) then pd=xqc.xe(i)
 			xd=uqc
 			yd=vqc
 			;lev=[0.,0.01,0.2,0.05,0.1,0.2,0.5,1.,2.,5,10,20,50,100,200]
                     		;if n_elements(relev) eq 0 then $
-				lev=[0.,0.1,1.,2,4,6,8,10,12,15,20,25,30,50,100,200] 
+				lev=[0.,0.1,1.,2,4,6,8,10,12,15,20,25,30,50,100] 
+
+if keyword_set(error) then lev=[0.,0.1,1.,2,4,6,8,10,12,15,20] 
 				;else lev=relev
 			cbs=1
 		endif else range=range(cldmodel_sv_levels(tis(i)))
@@ -749,6 +780,10 @@ if strpos(tis(i),'PC') ge 0  then begin;
 levpc=indgen(20)*55
 
 		pd=xqc.cth
+                      if keyword_set(error) then begin
+                         pd=zstar(xqc.xn(i)-xqc.sx(i))-zstar(xqc.xn(i))
+
+                      endif
 print,ti1,range(pd)
 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='CTH '+'km',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
@@ -756,7 +791,7 @@ quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
 
 
 endif else begin
-print,'CTH',range(pd)
+
                     quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                       image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
@@ -777,12 +812,13 @@ endelse
 
 
                 endelse
-            endfor
+             endfor             ;loop over nx
+
 if ~keyword_set(nosec) then begin
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - measured',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 endif
-	quick_cim_prc,kml=kmlfi,h.sg,uqc,vqc,xqc.itype,lev=findgen(h.nst+1)-0.5,ur=ur,vr=vr,num=2,fac=fac,$
+	quick_cim_prc,kml=kmlfi,h.sg,uqc,vqc,xqc.itype,lev=findgen(5)-1,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='Phase',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
 		crd=crd,brd=brd,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
@@ -896,5 +932,7 @@ if keyword_set(noresid) then goto,skip
 		thic=thi,/bl
 	legend,line=[0,2],['Sea','Land'],size=chs*0.8,/box,/fill,/br
 skip:
+print,'ee'
 	if keyword_set(ps) then ps_close,/hqpdf
+print,'ff'
 end
