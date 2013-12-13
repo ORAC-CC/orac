@@ -13,8 +13,23 @@ NCDFINCLUDE=/apps/netCDF/4.3.0/intel/include/
 NCDFLIBB=/apps/netCDF/4.2/fortran/intel/lib/
 NCDFINCLUDEB=/apps/netCDF/4.2/fortran/intel/include/
 
+SZLIB=$(RSG_LIB_BASE)/szlib/
+SZINC=$(RSG_LIB_BASE)/szinc/
+SZIP=-lsz -lz
+
+HDF5LIB=$(RSG_LIB_BASE)/hdf5lib/
+HDF5INCLUDE=$(RSG_LIB_BASE)/hdf5include/
+HDF5MOD=$(RSG_LIB_BASE)/hdf5mod/
+HDF5=-lhdf5_fortran -lhdf5 -lhdf5_hl
+# -lhdf5hl_fortran
+
 #Set up libraries and includes
-#LIBS=-L$(NCDFLIB) -lnetcdf -lnetcdff -lgomp
-INC=-I./  -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB)
-#LIBS= -L$(NCDFLIBB) -lnetcdf  
-LIBS=  -L$(NCDFLIBB) -lnetcdf  -L$(NCDFLIB) -lnetcdff
+
+INC=-I./   -I$(SZIINC) -I$(HDF5INCLUDE) -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB)
+LIBS=   -L$(SZILIB) $(SZIP) -L$(HDF5LIB) $(HDF5) -L$(NCDFLIB) -lnetcdff -L$(NCDFLIBB) -lnetcdf 
+
+#INC=-I./  -I$(NCDFINCLUDE) 
+#LIBS=  -L$(NCDFLIB) -lnetcdff
+
+#INC=-I./  -I$(NCDFINCLUDEB)
+#LIBS=   -L$(NCDFLIBB) -lnetcdf 
