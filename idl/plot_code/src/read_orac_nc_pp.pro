@@ -46,14 +46,13 @@
 ;       original file C. Poulsen created 2011 1st public release April 2013
 ;	
 ;       typical usage idl>x=read_orac_nc_pp(/plot,/ps,/wat)
-;       typical usage idl>x=read_orac_nc_pp(/plot,/ps) ;PP file
+;       typical usage idl>x=read_orac_nc_pp(/plot,/ps,/error) ;PP file
 ;       typical usage idl>x=read_orac_nc_pp(/plot,/dwd) ;PP file
 ;
 ;	Bugs:
 ;       Currently reads as default the ice secondary file for residual
 ;       and measurement information until proper level2 file is created.
 ;       Will probably fall over with a night file
-;       needs to be set up for avhrr use aatsr as a template to do this.
 ;       code is hardwired for 5 measurements and 5 state vectors
 ;       works differently for dwd and ral files
 ;
@@ -64,36 +63,54 @@
 ;
 ;	C.Poulsen : 19 December 2011
 ; cp : 20/06/2013 added in nosec keyword
+; cp fixed up reading out of uncertainty information
+; cp 5/12/2013 changes to accomodate avhrr data
 ; $Id$
 ;-
 ;==========================================================================
-function read_orac_nc_pp,filein=filein,plot=plot,ps=ps,errflag=errflag,wat=wat,ice=ice,dirin=dirin,dwd=dwd,nosec=nosec
+function read_orac_nc_pp,filein=filein,plot=plot,ps=ps,errflag=errflag,wat=wat,ice=ice,dirin=dirin,dwd=dwd,nosec=nosec,error=error,version=version
 
+;if n_elements(version) eq 0 then version='_V3.0'
+if n_elements(version) eq 0 then version=''
 errflag=0
-
-;if ~keyword_set(dirin) then dirin='/misc/oxford1/rsg/Data/projects/ecv_clouds/test_output/scarf/2008/'
-if ~keyword_set(dirin) then dirin='/misc/paris_ftp/pub/cloud_ecv/for_stefan/01/'
-
-if n_elements(filein) eq 0 then filein=dirin+'ESA_Cloud_cci_RAL_AATSR_3-30.9--6.45_ORACV1.0_ENV__200809010029_V1.0_PP.primary.nc'
+if ~keyword_set(dirin) then dirin='/misc/wantage_static/cpoulsen/cloud_ecv/postproc/2008/05/13/'
 
 
 if keyword_set(dwd) then begin
 dirin='/cmsaf/cmsaf-cld4/mjerg/test_plotting/'
 ;dirin='/misc/cluster_home/rsg/Data/projects/ecv_clouds/matthias_test_files/'
-filein=dirin+'20090911002500-ESACCI-L2_CLOUD-CLD_PRODUCTS-MODIS-TERRA-fv1.0.PP.primary.nc'
+
 dirin='/cmsaf/cmsaf-cld4/mjerg/test_plotting/20080620_AVHRR_noaa16_proc_2_process_ID8206794_US1362069592/noaa16_20080620_0955_99999_satproj_00000_12180_avhrr/post/'
 filein=dirin+'20080620095500-ESACCI-L2_CLOUD-CLD_PRODUCTS-AVHRRGAC-NOAA16-fv1.0.nc'
 endif
 
+if ~keyword_set(filein) then filein=dirin+'*'+version+'*.PP.primary.nc'
 
-if keyword_set(wat) then  filein='*WAT.prim*.nc'
-if keyword_set(ice) then  filein='*ICE.prim*.nc'
+print,'filein a',filein
 
-print,'filein',filein
+dirin=file_dirname(filein)+'/'
+
+print,'dirin read_orac_nc_pp',dirin
+
 files=file_search(filein,count=adim)
 if adim eq 0 then print,'cannot find any files check directory and filename'
+if adim eq 0  then stop
+
+if keyword_set(wat) or  keyword_set(ice) then fbphase=file_basename(filein,'.PP.primary.nc')
+if keyword_set(wat) then  filein=dirin+fbphase+'*WAT.prim*nc'
+if keyword_set(ice) then  filein=dirin+fbphase+'*ICE.prim*nc'
+if keyword_set(wat) or  keyword_set(ice) then  files=file_search(filein,count=adim)
+print,'filein read_orac_nc_pp',filein
+
+
+
+print,'adim',adim
 
 for i=0,adim-1 do begin
+
+
+
+
    filein=files(i)
    print,files(i)
    if strpos(filein,'MODIS') gt 0 then inst='modis'
@@ -101,14 +118,30 @@ for i=0,adim-1 do begin
    if strpos(filein,'AATSR') gt 0 then inst='aatsr'
    if strpos(filein,'AVHRR') gt 0 then inst='avhrr'
    
-   if inst eq 'atsr' or inst eq 'avhrr' then message,'routine not valid for this instrument must edit to adapt it!'+' '+inst
+   if inst eq 'atsr'  then message,'routine not valid for this instrument must edit to adapt it!'+' '+inst
    
    fb=file_basename(filein,'primary.nc')
+fb1=file_basename(filein,'.primary.nc')
+   fd=file_dirname(filein)
 
-   if ~keyword_set(wat) and ~keyword_set(ice) then fbs=file_basename(filein,'_PP.primary.nc')
+psname=fd+'/'+fb1
+if keyword_set(nosec) then psfi=psname
+if ~keyword_set(nosec) then psfi=psname+'_extra'
+ psfi=psfi+'.pdf'
+
+chcek=file_search(psfi,count=cdim)
+print,'cdim pdf file',cdim
+print,'psfi',psfi
+cdim=0
+if cdim gt 0 then goto, endloop
+
+
+   if ~keyword_set(wat) and ~keyword_set(ice) then fbs=file_basename(filein,'.PP.primary.nc')
    if ~keyword_set(wat) and ~keyword_set(ice) and keyword_set(dwd) then fbs=file_basename(filein,'PP.primary.nc')
-   if keyword_set(wat)  then fbs=file_basename(filein,'_WAT.primary.nc')
-   if keyword_set(ice)  then fbs=file_basename(filein,'_ICE.primary.nc')
+   print,'filein wat/ice',filein
+
+   if keyword_set(wat)  then fbs=file_basename(filein,'WAT.primary.nc')
+   if keyword_set(ice)  then fbs=file_basename(filein,'ICE.primary.nc')
 
    fdir=file_dirname(filein)
    print,'fbs',fbs
@@ -125,7 +158,8 @@ for i=0,adim-1 do begin
       endif else begin
          if pdim le 0 then begin
             print,'not all files (prim) present',fdir+'/'+fbs+'*.nc'
-            errflag=1
+            errflag=0
+            print,'goto skipend'
             goto,skipend
          endif
  
@@ -136,19 +170,20 @@ for i=0,adim-1 do begin
 print,fdir+'/'+fb+'primary.nc'
 if ~keyword_set(nosec) then print,fdir+'/'+fbs+'ICE.secondary.nc'
 
+
    xpwat=ncdf_read(fdir+'/'+fb+'primary.nc')
 ; temporaray fudge until proper secondary file created
-
+print,'a'
    if ~keyword_set(nosec) then xswat=ncdf_read(fdir+'/'+fbs+'ICE.secondary.nc')
-
-   if ~keyword_set(wat) or  ~keyword_set(ice) then begin
+print,'b'
+   if ~keyword_set(wat) and ~keyword_set(ice)  then begin
 ;get ice and water
-      
       fb=strreplace(fb,'WAT','ICE')
       xpice=ncdf_read(fdir+'/'+fb+'primary.nc')
       if ~keyword_set(nosec) then xsice=ncdf_read(fdir+'/'+fbs+'ICE.secondary.nc')
-     
    endif 
+
+
 
 nx=n_elements(xpwat.cot(*,1))
 ny=n_elements(xpwat.cot(1,*))
@@ -160,19 +195,19 @@ ny=n_elements(xpwat.cot(1,*))
 ;create scan lines useful for plotting
 ;   
 
-    for i=0,nx-1 do begin
+    for in=0,nx-1 do begin
        for j=0,ny-1 do begin
-          xswat.SCANLINE_U[i, j]=i
-          xswat.SCANLINE_v[i,j]=j
+          xswat.SCANLINE_U[in, j]=in
+          xswat.SCANLINE_v[in,j]=j
        endfor
     endfor
  endif else begin
     SCANLINE_V=fltarr(nx,ny)
     SCANLINE_U=fltarr(nx,ny)
-    for i=0,nx-1 do begin
+    for in=0,nx-1 do begin
        for j=0,ny-1 do begin
-          SCANLINE_U(i,j)=i
-          SCANLINE_V(i,j)=j
+          SCANLINE_U(in,j)=in
+          SCANLINE_V(in,j)=j
        endfor
     endfor
     
@@ -194,6 +229,7 @@ endelse ;nosec
    nstate=5
    nsol=3
    if inst eq 'modis' then nsol=3
+   if inst eq 'avhrr' then nsol=3
    res=size(xpwat.lat)
    nx=res(1)
    ny=res(2)
@@ -233,99 +269,56 @@ endelse ;nosec
             x0(*,*,3)=xs.stemp_fg*xs.stemp_fg_att.scale_factor
          endif
       endif
+;CVal(OK) = 10^CVal(OK)
+          ;Err(OK) = Val(OK) * Err(OK) - not using natural logs!
+;          CErr(OK) = CVal(OK) * alog(10) * CErr(OK)
 
-      unc(*,*,0)=xp.cot_uncertainty*xp.cot_uncertainty_att.scale_factor
-      unc(*,*,1)=xp.ref_uncertainty*xp.ref_uncertainty_att.scale_factor
-      unc(*,*,2)=xp.ctp_uncertainty*xp.ctp_uncertainty_att.scale_factor
-      unc(*,*,3)=xp.stemp_uncertainty*xp.stemp_uncertainty_att.scale_factor
+;      unc(*,*,0)=xp.cot_uncertainty*xp.cot_uncertainty_att.scale_factor
+      unc(*,*,0)=xp.cot*xp.cot_att.scale_factor* alog(10)*(xp.cot_uncertainty*xp.cot_uncertainty_att.scale_factor)
+
+;pd*xqc.xe(i)/alog10(exp(1.))
+      unc(*,*,1)=(xp.ref_uncertainty*xp.ref_uncertainty_att.scale_factor)
+      unc(*,*,2)=(xp.ctp_uncertainty*xp.ctp_uncertainty_att.scale_factor)
+      unc(*,*,3)=(xp.stemp_uncertainty*xp.stemp_uncertainty_att.scale_factor)
       unc(*,*,4)=xp.cc_total_uncertainty*xp.cc_total_uncertainty_att.scale_factor
-      
-;
-;for MODIS only
-;
-      if inst eq 'modis' then begin
-         if ~keyword_set(nosec) then begin
-            if n_elements(xs) gt 0 then begin
-               if keyword_set(dwd) then    begin       
-                  meas(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
-                  meas(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_20*xs.REFLECTANCE_IN_CHANNEL_NO_20_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_20_ATT.add_offset
-               endif else begin
-                  meas(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_1*xs.REFLECTANCE_IN_CHANNEL_NO_1_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_1_ATT.add_offset
-                  meas(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_6*xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.add_offset        
-               endelse
-               
+
+      if ~keyword_set(nosec) then begin
+         if n_elements(xs) gt 0 then begin
+            
+            if inst eq 'modis' then begin
+               meas(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
                meas(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+               meas(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_6*xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.add_offset
                
-               meas(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_31*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_31_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_31_ATT.add_offset
-               meas(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_32*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_32_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_32_ATT.add_offset
                
-               if keyword_set(dwd) then    begin       
-                  y0(*,*,0)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
-                  y0(*,*,2)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_20*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_20_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_20_ATT.add_offset
-                  
-               endif else begin
-                  
-                  y0(*,*,0)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_1*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_1_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_1_ATT.add_offset
-                  y0(*,*,2)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_6*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_6_ATT.add_offset
-               endelse
-               
+               y0(*,*,0)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_1*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_1_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_1_ATT.add_offset
                y0(*,*,1)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+               
+               y0(*,*,2)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_6*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_6_ATT.add_offset
                
                y0(*,*,3)=xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_31*xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_31_ATT.scale_factor+xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_31_ATT.add_offset
                y0(*,*,4)=xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_32*xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_32_ATT.scale_factor+xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_32_ATT.add_offset
                
-;
-;nb note add_offset required
-;
-               if keyword_set(dwd) then    begin       
-                  ymfit(*,*,0)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.add_offset
-                  ymfit(*,*,2)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_20*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_20_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_20_ATT.add_offset
-               endif else begin
-                  ymfit(*,*,0)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_1*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_1_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_1_ATT.add_offset
-                  ymfit(*,*,2)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_6*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_6_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_6_ATT.add_offset
-               endelse
                
                
+               ymfit(*,*,0)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_1*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_1_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_1_ATT.add_offset
                ymfit(*,*,1)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.add_offset
+               ymfit(*,*,2)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_6*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_6_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_6_ATT.add_offset
+         
                ymfit(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_31*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_31_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_31_ATT.add_offset
-               ymfit(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_32*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_32_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_32_ATT.add_offset
-               xt=tag_exist(x,albedo_IN_CHANNEL_NO_1)
-               if xt ne 0 then begin
-                  
-                  if keyword_set(dwd) then begin               
-                     alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
-                     alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_20*xs.REFLECTANCE_IN_CHANNEL_NO_20_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_20_ATT.add_offset
-                  endif else begin
+               ymfit(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_32*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_32_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_32_ATT.add_offse
+
                      alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_1*xs.REFLECTANCE_IN_CHANNEL_NO_1_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_1_ATT.add_offset
-                     alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_6*xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.add_offset
-                  endelse
-                  alb(*,*,1)=xs.albedo_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
-                  
-               endif else begin
-                  if keyword_set(dwd) then begin               
-                     alb(*,*,0)=xs.reflectance_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
-                     alb(*,*,2)=xs.reflectance_IN_CHANNEL_NO_20*xs.REFLECTANCE_IN_CHANNEL_NO_20_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_20_ATT.add_offset
-                  endif else begin
-                     alb(*,*,0)=xs.reflectance_IN_CHANNEL_NO_1*xs.REFLECTANCE_IN_CHANNEL_NO_1_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_1_ATT.add_offset
-                     alb(*,*,2)=xs.reflectance_IN_CHANNEL_NO_6*xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.add_offset
-                  endelse
-                  
                   
                   alb(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
-                  
-               endelse
-               
-            endif
-            
-         endif;nosec
-      endif;inst
 
-;
-;now fill common
-;      
+                     alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_6*xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_6_ATT.add_offset
+
+
+            endif ;modis
+
       if inst eq 'aatsr' then begin
-         if ~keyword_set(nosec) then begin
-            if n_elements(xs) gt 0 then begin
+
                alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
                alb(*,*,1)=xs.albedo_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
                alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
@@ -359,7 +352,47 @@ endelse ;nosec
                alb(*,*,1)=xs.albedo_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
                alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
                
-            endif
+            endif;aatsr
+
+
+      if inst eq 'avhrr' then begin
+
+               alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+               alb(*,*,1)=xs.albedo_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
+               alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
+               meas(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+               meas(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
+               meas(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
+               meas(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.add_offset
+               meas(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset
+               
+;      y0(*,*,0)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+;      y0(*,*,1)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_3*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
+;      y0(*,*,2)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_4*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
+;      y0(*,*,3)=xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6*xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.add_offset
+;      y0(*,*,4)=xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.scale_factor+xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset
+;
+;nb note add_offset required
+;
+               ymfit(*,*,0)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.add_offset
+               ymfit(*,*,1)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3_ATT.add_offset
+               ymfit(*,*,2)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_ATT.add_offset
+               ymfit(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_ATT.add_offset
+               ymfit(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_ATT.add_offset
+               
+               yn(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset+ymfit(*,*,0)
+               yn(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset+ymfit(*,*,1)
+               yn(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset+ymfit(*,*,2)
+               yn(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.add_offset+ymfit(*,*,3)
+               yn(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset+ymfit(*,*,4)
+               
+               alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+               alb(*,*,1)=xs.albedo_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
+               alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
+               
+            endif;avhrr
+
+
          endif ;nosec
       endif;inst aatsr
 
@@ -374,13 +407,26 @@ endelse ;nosec
       if ncostjm gt 0 then xp.costjm(costbadjm)=0.0
 
 ; perform some test printing to see that arrays are filled
+if ~keyword_set(nosec) then begin
       print,'meas',range(meas(*,*,0))
       print,range(meas(*,*,1))
       print,range(meas(*,*,2))
       print,range(meas(*,*,3))
       print,range(meas(*,*,4))
+   endif
+
+print,'costja',range(xp.costja)
+print,'costjm',range(xp.costjm)
 ; fill the structure      
-      xin={y:meas,y0:y0,yn:yn,xn:xn,sx:unc,cost:(xp.costja+xp.costjm)*xp.COSTJM_ATT.SCALE_FACTOR,conv:abs(xp.convergence-1),tc:xp.ctt*xp.ctt_att.scale_factor,itype:xp.phase,zc:xp.cth*xp.cth_att.scale_factor,ni:xp.niter,white_sky_albedo:meas(*,*,0)*0.0-999.,clearsky_bt:meas*0.0-999.,xo:meas*0.0-999.,ae:meas(*,*,*)*0.0-999,ym:meas,cwp:meas(*,*,0)*0.0-999.,ymfit:ymfit,phase:meas(*,*,0)*0,x0:x0,lat:xp.lat,lon:xp.lon,solz:xp.SOLAR_ZENITH_VIEW_NO1,satz:xp.SATELLITE_ZENITH_VIEW_NO1,relaz:xp.REL_AZIMUTH_VIEW_NO1,cth:xp.cth*xp.cth_att.SCALE_FACTOR,mask:xp.cc_total,alb:alb,lsflag:xp.lsflag, cccot:xp.cccot*xp.cccot_att.SCALE_FACTOR}
+
+if keyword_set(ice) or keyword_set(wat) then begin
+cvar=xp.cc_total*0.-999
+endif else begin
+cvar= xp.cccot*xp.cccot_att.SCALE_FACTOR
+endelse
+
+
+      xin={y:meas,y0:y0,yn:yn,xn:xn,sx:unc,cost:(xp.costja+xp.costjm)*xp.COSTJM_ATT.SCALE_FACTOR,conv:abs(xp.convergence),tc:xp.ctt*xp.ctt_att.scale_factor,itype:xp.phase,zc:xp.cth*xp.cth_att.scale_factor,ni:xp.niter,white_sky_albedo:meas(*,*,0)*0.0-999.,clearsky_bt:meas*0.0-999.,xo:meas*0.0-999.,ae:meas(*,*,*)*0.0-999,ym:meas,cwp:meas(*,*,0)*0.0-999.,ymfit:ymfit,phase:meas(*,*,0)*0,x0:x0,lat:xp.lat,lon:xp.lon,solz:xp.SOLAR_ZENITH_VIEW_NO1,satz:xp.SATELLITE_ZENITH_VIEW_NO1,relaz:xp.REL_AZIMUTH_VIEW_NO1,cth:xp.cth*xp.cth_att.SCALE_FACTOR,mask:xp.cc_total,alb:alb,lsflag:xp.lsflag, cccot:cvar}
       
       
 ;
@@ -394,14 +440,32 @@ endelse ;nosec
 ;
 
 ; only pass through values that exist
-      igood = where(xin.xn(*,*,2) gt 0. and xin.ymfit(*,*,2) gt -30.,ngood,complement=ibad,ncomplement=nbad)
-      
+      if ~keyword_set(nosec) then begin
+         igood = where(xin.xn(*,*,2) gt 0. and xin.ymfit(*,*,2) gt -30.,ngood,complement=ibad,ncomplement=nbad)
+      endif else begin
+         igood = where(xin.xn(*,*,2) gt 0,ngood,complement=ibad,ncomplement=nbad)
+      endelse      
+print,'ngood',ngood
+if ngood le 0 then print,'no good points in this file skip file',filein
+if keyword_set(ps) then begin
+if ngood le 0 then begin
+pdfile=strreplace(psfi,'.ps','.pdf')
+print,'pdfile',pdfile
+spawn, 'touch '+ pdfile
+endif
+endif
+
+
+if ngood eq 0 then goto, skipend
+for kk=0,4 do print,'state',range(xin.xn(*,*,kk))
+print,'cost aa',range(xin.cost(*,*))
       if p eq 0 then begin
          ret=replicate({y:fltarr(nmeas),y0:fltarr(nmeas),yn:fltarr(nmeas),xn:fltarr(nstate),cost:0.0,conv:0,tc:0.0,itype:0,COLUMN_DENSITY:0.0,zc:0.0,ni:0,white_sky_albedo:0.0,clearsky_bt:1.0,x0:fltarr(nstate),xe:fltarr(nstate), COLUMN_DENSITY_ERROR:0.0,ymfit:fltarr(nmeas),sx:fltarr(nstate),ae:fltarr(nstate),alb:fltarr(nsol),mask:0.0,solz:0.0,satz:0.0,relaz:0.0,cth:0.0,lsflag:0.0,cccot:0.0},nph,ngood)
       endif
       
       ngood2 =n_elements(xp.lat)
-      
+
+print,'ngood1 read_orac',ngood2      
 ;
 ;reform 2 d array
 ;
@@ -439,6 +503,7 @@ endelse ;nosec
          for ii=1,4 do ret(p,whbad).Ymfit(ii)=-999.
       endif
       
+print,'nbad read_orac',nbad     
       
       ret(p,*).XN=reform(transpose(xin_xn(iretgood,*)),nstate,1,ngood)
       ret(p,*).sx=reform(transpose(xin_sx(iretgood,*)),nstate,1,ngood)
@@ -472,6 +537,8 @@ endelse ;nosec
 latr=range(xin.lat(igood))
 lonr=range(xin.lon(igood))
 
+print,'here a read_orac'     
+
    sg_temp={LATR:latr,LONR:lonr,UG:fltarr(3),VG:fltarr(3),LAT:xin.lat(igood),LON:xin.lon(igood),ID: inst+'-scan',SAT:1,NEQ:0,LL:0,SD:0,solz:xin.solz(igood),satz:xin.satz(igood),relaz:xin.relaz(igood) }
 
 ;   ha_sav=rd_sav('~/Temp/orac/h_sav.sav')
@@ -489,6 +556,8 @@ lonr=range(xin.lon(igood))
       datein=strmid(fb,0,12)
    endif
    
+
+print,'here b read_orac'     
    ha_temp={FILE:fdir+'/'+fb,OFILE:fdir+'/'+fb,PROC_DATE:datein,DATA_DATE:datein,S:s_temp,SV:sv_temp,U:xs.SCANLINE_U[igood],V:xs.SCANLINE_V[igood],TIME:fltarr(ngood),SG:sg_temp,DIA:2,TYPES:'LIQUID',LUTRE_RANGE:dblarr(2,2),LOPD_RANGE:dblarr(2,2),NSTR:0,RSA:0,BAUM:0,SPI:1,YE:fltarr(nmeas),CTEST:-1,IDC:0,MAX_IT:20,SYI:0,EXTRA:0.0,HX:0,VERSION:3.18,NX:nstate,NY:nmeas,npix:ngood,NST:2}  
    
 
@@ -511,18 +580,22 @@ lonr=range(xin.lon(igood))
 ;
 ;now call the plotting routine
 ;
-
+print,'here c read_orac'     
    if n_elements(plot) gt 0 then begin
-      plot_ret_cldmodel_modis,ret,ha_temp,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop_x=eop_x,ps=ps,night=night,itype=itype,/noqc,/rotate,nosec=nosec
+      plot_ret_cldmodel_modis,ret,ha_temp,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop_x=eop_x,ps=ps,night=night,itype=itype,/noqc,/rotate,nosec=nosec,error=error;error=error
    endif
    
-   
-endfor                          ;loop over adim
+print,'here d read_orac'     
+endloop:
 
 dataout={ret:ret,ha:ha_temp}
+print,'here e read_orac'     
+skipend:   
+endfor                          ;loop over adim
+
+
 
 return,dataout
 
-skipend:
 
 end
