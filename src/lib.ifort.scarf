@@ -1,0 +1,20 @@
+#ifort
+#export LD_LIBRARY_PATH=/work/ralspace/rsg_group/cloud_ecv/libraries/eprlibdir/:/work/ralspace/rsg_group/cloud_ecv/libraries/szlib/:/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/:/usr/lib64:/apps/netCDF/4.3.0/intel/lib/:/apps/netCDF/4.2/fortran/intel/lib/
+
+RSG_LIB_BASE=/work/ralspace/rsg_group/cloud_ecv/libraries
+
+#LIBBASE=/home/jupiter/eodg/gthomas/orac/orac_for_cci/fortran_preprocessing/libs
+#NCDFLIB=$(LIBBASE)/netcdf/lib
+#NCDFINCLUDE=$(LIBBASE)/netcdf/include
+
+NCDFLIB=/apps/netCDF/4.3.0/intel/lib/
+NCDFINCLUDE=/apps/netCDF/4.3.0/intel/include/
+
+NCDFLIBB=/apps/netCDF/4.2/fortran/intel/lib/
+NCDFINCLUDEB=/apps/netCDF/4.2/fortran/intel/include/
+
+#Set up libraries and includes
+#LIBS=-L$(NCDFLIB) -lnetcdf -lnetcdff -lgomp
+INC=-I./  -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB)
+#LIBS= -L$(NCDFLIBB) -lnetcdf  
+LIBS=  -L$(NCDFLIBB) -lnetcdf  -L$(NCDFLIB) -lnetcdff
