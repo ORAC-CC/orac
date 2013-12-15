@@ -35,9 +35,13 @@
 !              as the nearest neighbour interpolation (which also uses the
 !              bisection method).
 ! 23/05/2013 Gareth Thomas. Added the missing keyword.
+! 15/12/2013 Greg McGarragh. Deal with cases when the x or y coordinates for the
+!              desired values are outside the range of x or y coordinates of the
+!              gridded data.  In these cases the interpolated result is now
+!              bounded to the gridded data.
 !
 ! Bugs:
-!
+! none
 
 module interpol_bilinear_def
   interface
@@ -143,15 +147,23 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
         end if
      else
         ! Linearly interpolate in the x-direction
-        intxbot = datin(iibot,jjbot) + &
-             & (xout(out)-xin(iibot)) * (datin(iitop,jjbot)-datin(iibot,jjbot)) / &
-             & (xin(iitop)-xin(iibot))
-        intxtop = datin(iibot,jjtop) + &
-             & (xout(out)-xin(iibot)) * (datin(iitop,jjtop)-datin(iibot,jjtop)) / &
-             & (xin(iitop)-xin(iibot))
+        if (iitop .eq. iibot) then
+             intxbot = datin(iibot,jjbot)
+        else
+           intxbot = datin(iibot,jjbot) + &
+              & (xout(out)-xin(iibot)) * (datin(iitop,jjbot)-datin(iibot,jjbot)) / &
+              & (xin(iitop)-xin(iibot))
+           intxtop = datin(iibot,jjtop) + &
+              & (xout(out)-xin(iibot)) * (datin(iitop,jjtop)-datin(iibot,jjtop)) / &
+              & (xin(iitop)-xin(iibot))
+        endif
         ! Now interpolate these intermediate values in the y-direction
-        datout(out) = intxbot + (yout(out)-yin(jjbot)) * (intxtop-intxbot) / &
-             & (yin(jjtop)-yin(jjbot))
+        if (jjtop .eq. jjbot) then
+           datout(out) = intxbot
+        else
+           datout(out) = intxbot + (yout(out)-yin(jjbot)) * (intxtop-intxbot) / &
+              & (yin(jjtop)-yin(jjbot))
+        endif
      end if
      
   end do
