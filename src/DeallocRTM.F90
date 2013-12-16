@@ -5,11 +5,11 @@
 !    Deallocate the RTM arrays at end of ECP execution.
 !
 ! Arguments:
-!    Name        Type           In/Out   Description
-!    Ctrl        struct         In       Control structure
-!    RTM         alloc struct   In       RTM structure
-!    status      int            Out      Error status
-!    
+!    Name   Type         In/Out Description
+!    Ctrl   struct       In     Control structure
+!    RTM    alloc struct In     RTM structure
+!    status int          Out    Error status
+!
 ! Algorithm:
 !    Deallocates all arrays in the RTM structure
 !    If any solar channels were requested
@@ -29,44 +29,48 @@
 !    ******** ECV work starts here **********************
 !    21st Feb 2011, Andy Smith:
 !       Re-introducing changes made in late 2001/2002.
-!    12th December 2002 Caroline Poulsen added geopotential height
-!    22nd Sept 2011 Caroline Poulsen remove sw%p as now the same as lw%p
-!    13th December  Caroline Poulsen  deallocated RTM%SW%Lon
-! Bugs: 
+!    12th Dec 2002, Caroline Poulsen: Added geopotential height
+!    22nd Sept 2011, Caroline Poulsen: Remove sw%p as now the same as lw%p
+!    13th Dec 2011, Caroline Poulsen: Deallocated RTM%SW%Lon
+!    16th Dec 2013, Greg McGarragh:
+!       Add deallocation of RTM%LW%skint and RTM%LW%sp and a bit cleanup.
+!
+! Bugs:
 !    None known.
 !
-!------------------------------------------------------------------------------------
+! $Id$
+!
+!-------------------------------------------------------------------------------
 subroutine Dealloc_RTM(Ctrl, RTM, status)
 
    use Ctrl_def
    use RTM_def
 
    implicit none
-   
-!  Declare arguments
 
+!  Declare arguments
    type(Ctrl_t), intent(in)   :: Ctrl
-   type(RTM_t), intent(inout) :: RTM   
+   type(RTM_t), intent(inout) :: RTM
    integer, intent(inout)     :: status
 
-!  deallocate sizes of SW sub-structure arrays
-
+!  Deallocate sizes of SW sub-structure arrays
    if (Ctrl%Ind%Ny-Ctrl%Ind%NThermal > 0) then
       deallocate(RTM%SW%Lat)
-      deallocate(RTM%SW%Lon)	
-       deallocate(RTM%SW%Tac)
+      deallocate(RTM%SW%Lon)
+      deallocate(RTM%SW%Tac)
       deallocate(RTM%SW%Tbc)
    end if
 
-!  deallocate sizes of LW sub-structure arrays
-
+!  Deallocate sizes of LW sub-structure arrays
    if (Ctrl%Ind%NThermal > 0) then
       deallocate(RTM%LW%Lat)
       deallocate(RTM%LW%Lon)
+      deallocate(RTM%LW%skint)
+      deallocate(RTM%LW%sp)
       deallocate(RTM%LW%P)
       deallocate(RTM%LW%T)
       deallocate(RTM%LW%H)
-      !deallocate(RTM%LW%Bs)
+!     deallocate(RTM%LW%Bs)
       deallocate(RTM%LW%Ems)
       deallocate(RTM%LW%Tac)
       deallocate(RTM%LW%Tbc)
@@ -74,6 +78,5 @@ subroutine Dealloc_RTM(Ctrl, RTM, status)
       deallocate(RTM%LW%Rac_dwn)
       deallocate(RTM%LW%Rbc_up)
    end if
-
 
 end subroutine Dealloc_RTM
