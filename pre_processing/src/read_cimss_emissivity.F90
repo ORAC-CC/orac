@@ -68,15 +68,11 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
   integer                                       :: xdim, ydim, zdim
   integer                                       :: nDim, nVar, nAtt, uDimID, ForNM
   integer(kind=2), allocatable, dimension(:)    :: tmpwavenumber
-  integer(kind=2), allocatable, dimension(:,:)  :: idata
   real, allocatable, dimension(:,:)             :: fdata
   real                                          :: scale_factor, offset
   character(len=6)                              :: BandList(10)
   integer                                       :: i
 
-  character(len=30)              :: name
-  integer                        :: xtype, ndims, nAtts
-  integer, dimension(5) :: dimids
   integer, dimension(2) :: start, cnt, stride
   integer(kind=1) :: gen_loc=1
 

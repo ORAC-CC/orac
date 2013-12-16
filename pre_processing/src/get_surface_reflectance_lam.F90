@@ -158,8 +158,6 @@ subroutine get_surface_reflectance_lam(modis_surf_path, imager_flags, &
    integer(kind=lint)                              :: nsea=0, nland=0
    integer(kind=lint)                              :: seacount=1
    integer(kind=lint)                              :: lndcount=1
-   real:: t1,t2,clock_rate,cloud_max
-   integer :: now(3)
 
    real :: minlat,maxlat,minlon,maxlon
 

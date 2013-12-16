@@ -112,8 +112,6 @@ subroutine get_surface_emissivity(emissivity_path, imager_flags, imager_geolocat
   real(kind=sreal),    allocatable, dimension(:,:)   :: datemis
   real(kind=sreal),    allocatable, dimension(:)     :: prelat, prelon
   integer(kind=lint),  allocatable, dimension(:)     :: prelati, preloni
-  integer(kind=lint)                                 :: prelati_scalar,prelatip1_scalar, &
-                                                        preloni_scalar,prelonip1_scalar
   integer(kind=stint)                                :: stat
   integer(kind=lint)                                 :: i,j,k
   integer(kind=stint)                                :: nlwchannels

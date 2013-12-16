@@ -132,7 +132,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
 
    ! C variables
    logical(c_bool)                       :: verb
-   integer(c_short)                      :: nch, stat, ind, val, temp
+   integer(c_short)                      :: nch, stat, temp
    integer(c_long)                       :: nx, ny, startx, starty
    character(kind=c_char,len=pathlength) :: l1b_file_c
    character(kind=c_char,len=30)         :: start_date

@@ -111,7 +111,7 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, preproc_dims, sur
   type(nise_s)                     :: nise
   real(kind=sreal), dimension(2,2) :: nise_tmp
   real(kind=sreal), dimension(8)   :: nise_tmp2
-  character(len=datelength)        :: cyear,chour,cminute,cmonth,cday
+  character(len=datelength)        :: cyear,cmonth,cday
   real                             :: fmonth
   character(len=300)               :: nise_path_file
   logical                          :: nise_file_exist

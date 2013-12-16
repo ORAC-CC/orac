@@ -33,9 +33,7 @@ subroutine get_coefs_info(platformnumber,instrument,nrttovid,icoeffs,coeffile)
 
 implicit none 
 
-character(len=pathlength) :: coef_path
-character(len=filelength) :: file_coef,coeffile
-  character(len=filelength) :: form_coef
+character(len=filelength) :: coeffile
 Integer, Allocatable  :: instrument(:,:) 
 integer :: icoeffs,nrttovid
 character(len=platformlength) :: platformnumber
