@@ -1,3 +1,4 @@
+#export LD_LIBRARY_PATH=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/:/work/ralspace/rsg_group/cloud_ecv/libraries/eprlibdir/:/work/ralspace/rsg_group/cloud_ecv/libraries/szlib/:/apps/netCDF/4.3.0/intel/lib/:/apps/netCDF/4.2/fortran/intel/lib/
 
 RSG_LIB_BASE=/work/ralspace/rsg_group/cloud_ecv/libraries
 
@@ -12,10 +13,11 @@ ZLIB=$(RSG_LIB_BASE)/zlib/
 ZINC=$(RSG_LIB_BASE)/szinc/
 
 JPEGLIB=$(RSG_LIB_BASE)/jpeglib/
-JPEGINC=$(RSG_LIB_BASE)/jpeginc
+JPEGINC=$(RSG_LIB_BASE)/jpeginc/
 
 #intel libraries
-INTELLIB=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/:/usr/lib64 
+INTELLIB=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/
+#:/usr/lib64 
 INTELINC=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/include/
 
 
@@ -58,10 +60,10 @@ EOSINCLUDE=$(RSG_LIB_BASE)/eosinclude/
 
 
 #/apps/netCDF/4.2/fortran/intel/lib:/apps/netCDF/4.3.0/intel/lib:
-NCDFLIB=/apps/netCDF/4.3.0/intel/lib
-NCDFINCLUDE=/apps/netCDF/4.3.0/intel/lib
+NCDFLIB=/apps/netCDF/4.3.0/intel/lib/
+NCDFINCLUDE=/apps/netCDF/4.3.0/intel/include/
 
-NCDFLIBB=/apps/netCDF/4.2/fortran/intel/lib
+NCDFLIBB=/apps/netCDF/4.2/fortran/intel/lib/
 NCDFINCLUDEB=/apps/netCDF/4.2/fortran/intel/include/
 
 CINC=-I./ -I$(EPRINCDIR)
@@ -72,8 +74,8 @@ CINC=-I./ -I$(EPRINCDIR)
 GRIBLIB=$(RSG_LIB_BASE)/griblib/ 
 GRIBINCLUDE=$(RSG_LIB_BASE)/gribinclude/
 
-JASPERLIB=/usr/lib64
-JASPERINCLUDE=/usr/include/jasper
+JASPERLIB=/usr/lib64/
+JASPERINCLUDE=/usr/include/jasper/
 
 
 #Setup RTTOV library
@@ -85,13 +87,24 @@ RTTOVMODULE=$(RSG_LIB_BASE)/rttovmodule/
 
 
 #Set up libraries and includes
-# -L$(JASPERLIB) -ljasper 
-
-
 
 ####NB order is VERY important!!!!!!
-LIBS=  -L$(EPRLIBDIR) -lepr_api -L$(GRIBLIB) -lgrib_api_f90 -lgrib_api_f77 -lgrib_api -L$(JASPERLIB) -ljasper -L$(HDFLIB) -lmfhdf -ldf  -L$(JPEGLIB) -ljpeg  -L$(ZLIB) -lz -L$(SZLIB) -lsz -lm  -L$(EOSLIB) -lhdfeos -lGctp -L$(HDF5LIB) -lhdf5_fortran -lhdf5 -L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -L$(INTELLIB) -limf -lintlc -lsvml -lifport -lifcore -L$(NCDFLIBB) -lnetcdf -L$(NCDFLIB) -lnetcdff  -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other  -L$(ZLIB) 
-#-L$(EPRLIBDIR) -lepr_api
+LIBS=  -L$(EPRLIBDIR) -lepr_api \
+-L$(GRIBLIB) -lgrib_api_f90 -lgrib_api_f77 -lgrib_api \
+-L$(JASPERLIB) -ljasper \
+-L$(HDFLIB) -lmfhdf -ldf  \
+-L$(JPEGLIB) -ljpeg  \
+-L$(ZLIB) -lz \
+-L$(SZLIB) -lsz -lm  \
+-L$(EOSLIB) -lhdfeos -lGctp \
+-L$(HDF5LIB) -lhdf5_fortran -lhdf5 \
+-L$(INTELLIB) -limf -lintlc -lsvml -lifport -lifcore \
+-L$(NCDFLIB) -lnetcdf \
+-L$(NCDFLIBB) -lnetcdff \
+-L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other
+
+#-L$(NCDFLIBB) -lnetcdff \
+
 
 #-lopenjpeg
-INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE) -I$(INTELINC) -I$(NCDFINCLUDEB) -I$(NCDFINCLUDE) -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE) -I$(HDF5MOD) # -I$(OBJS)                                                                                     
+INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE)  -I$(HDF5MOD) -I$(INTELINC)  -I$(NCDFINCLUDE)  -I$(NCDFINCLUDEB)    -I$(INTELINC)  -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE)  -I$(OBJS)                                                                       #              -I$(NCDFINCLUDEB)  
