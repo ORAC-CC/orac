@@ -456,7 +456,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
 !    22/03/2013 Gareth Thomas : Added trim() to LUT_file in write(message,*)
 !                      statements (called on I/O error). Also added write(*,*)
 !                      statements for I/O errors
-!    01/12/2014 Greg McGarragh : Fixed LUT index for SAD_LUT%Grid%Satzen.
+!    01/12/2014 Greg McGarragh : Fixed LUT index for SAD_LUT%Grid%Satzen. 
 ! Bugs:
 !    None known
 !
