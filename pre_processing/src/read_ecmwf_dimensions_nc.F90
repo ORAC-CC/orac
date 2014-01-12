@@ -47,7 +47,7 @@ subroutine read_ecmwf_dimensions_nc(ecmwf_path, ecmwf_dims)
    type(ecmwf_dims_s)        :: ecmwf_dims
 
    integer(kind=lint)        :: ncid,ierr,wo,idim,ndim,nvar,nattr,dummyint
-   integer(kind=stint)       :: dimid
+   integer(kind=lint)        :: dimid
    character(len=varlength)  :: dname,name
    integer(kind=lint)        :: levtypedim,timedim
 

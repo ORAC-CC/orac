@@ -58,7 +58,7 @@ subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
 
    integer(kind=sint)  :: btemp(ixstart:ixstop,iystart:iystop)
 
-   integer(kind=stint) :: fv
+   integer(kind=sint) :: fv
 
    start(1) = ixstart-1
    start(2) = iystart-1

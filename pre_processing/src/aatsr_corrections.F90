@@ -196,7 +196,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
    implicit none
 
-   integer(kind=stint)       :: stat, lun, i
+   integer                   :: stat, lun, i
    character(len=pathlength) :: drift_table
    character(len=200)        :: line
    type(aatsr_drift_lut)     :: lut
