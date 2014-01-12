@@ -44,6 +44,8 @@
 !2013/11/14 MJ changes lower and upper limits for ctp.
 !20131118 Several additional changes, introduces ysolar_msi and ythermal_msi
 !20131125 MJ initialized previously unitialized  Ctrl%Run_ID
+! 2014/01/12, GM, Small fixes involving Ctrl%Ind%Navail
+!
 ! Bugs:
 ! nviews should be changed for dual view
 ! not quiteworking for AVHRR
@@ -84,7 +86,7 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    real,  allocatable, dimension(:)  :: solar_store_sea,solar_store_land
    integer,   allocatable            ::   pos_solar(:),pos_thermal(:),pos_mixed(:)
    real, allocatable, dimension(:)  ::  ref_solar_sea,ref_solar_land
-   integer :: nindex_solar,nindex_ir,nindex_mixed,navail
+   integer :: nindex_solar,nindex_ir,nindex_mixed
 !   external getenv      ! Declare getenv function on DEC UNIX systems
                         ! Remove for use on Linux system with Absoft compiler
    logical              :: found     ! Used when checking state vectors
@@ -147,10 +149,9 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
 
    !number of channels in preprocessing file
    !(this is actually not really necessary as we have that in the config file)
-   read(dri_lun, *, err=999, iostat=ios) Navail
-   
+   read(dri_lun, *, err=999, iostat=ios) Ctrl%Ind%Navail
 
-   write(*,*)  'Number of available channels in preproc files',Navail
+   write(*,*)  'Number of available channels in preproc files',Ctrl%Ind%Navail
 
    suffix='.config.nc'
    Ctrl%FID%CONFIG=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
@@ -159,8 +160,8 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    !read config file in order to set all channel related info
    call read_config_file(Ctrl,conf)
    !check if input ok
-   if(navail .ne. conf%nc) then
-      write(*,*) 'ERROR: conf%nc .ne. navail: Problem with file or driver!)',navail,conf%nc
+   if(Ctrl%Ind%navail .ne. conf%nc) then
+      write(*,*) 'ERROR: Ctrl%Ind%navail .ne. conf%nc: Problem with file or driver!',Ctrl%Ind%navail,conf%nc
       stop
    endif
 
