@@ -42,6 +42,8 @@
 ! 2013/11/05: GM Moved the verbose statement that prints band_names from just 
 !                before Adam's removing of NULL characters to just after as some
 !                text operations can be affected by them.
+! 2014/01/12: GM Fixed it so that the right scales and offsets are used.
+
 !
 ! $Id$
 !
@@ -67,6 +69,7 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    integer, intent(in)             :: band
    real(kind=sreal), intent(inout) :: level1b_buffer(ixstart:ixstop,iystart:iystop)
 
+   logical :: flag
    integer(kind=lint)    :: file_id, var_id, err_code, start(3), stride(3), &
         edge(3), attr_id
    real(kind=sreal)      :: scale_factors(20), offsets(20)
@@ -76,7 +79,6 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    integer               :: tmprank, tmptype, tmpnattrs
 !MJORG   integer, dimension(1) :: tmpdimsizes
    integer, dimension(3) :: tmpdimsizes
-   integer               :: band_index
    integer(kind=lint)    :: ixstart, ixstop, iystart, iystop, ix, jy
         
    integer(kind=stint)   :: temp(ixstart:ixstop,iystart:iystop), &
@@ -138,14 +140,13 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
 
    if(verbose) print*, 'Bands found: ',trim(band_names)
 
-   band_index=0
+   flag = .true.
    comma_i_old=1
    band_name_length=len_trim(band_names)
 
    do iband=1,number_of_bands
       if(iband .eq. number_of_bands) then 
          read(band_names(comma_i_old:band_name_length), '(i2)') current_band
-
       else
          comma_i=index(trim(adjustl(band_names(comma_i_old:band_name_length))),&
               ',')+comma_i_old-1
@@ -154,18 +155,16 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
       endif
 
       if(current_band .eq. band) then
-         band_index=band_index+1
-         if(verbose) print*, 'Selected band is: ',current_band,' ',iband    
-
+         flag = .false.
+         if(verbose) print*, 'Selected band is: ',current_band,iband
          exit
       endif
    enddo
 
-   if (band_index .eq.0) then
+   if (flag) then
       write(*,*) 'Band ',band,' not found in MODIS M*D02 file!'
       stop
-   endif
-   
+   endif   
 
    start(2) = iystart-1
    start(1) = ixstart-1
@@ -206,11 +205,12 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
 !      level1b_buffer = (real(temp,kind=sreal) - offsets(band_index)) * &
 !           scale_factors(band_index)
 !   end where
+
    do ix=ixstart,ixstop
       do jy=iystart,iystop
          if(temp(ix,jy) .ge. vr(1) .and. temp(ix,jy) .le. vr(2)) then
             level1b_buffer(ix,jy) = (real(temp(ix,jy),kind=sreal) - &
-                 offsets(band_index)) * scale_factors(band_index)
+                 offsets(iband)) * scale_factors(iband)
           else
              level1b_buffer(ix,jy) = real_fill_value
           endif
