@@ -69,7 +69,7 @@ module SAD_LUT_def
       real, pointer :: Relazi(:,:,:)
 
       integer :: nmaxtau=20
-      integer :: nmaxre=20
+      integer :: nmaxre=23
       integer :: nmaxsolzen=20
       integer :: nmaxsatzen=20
       integer :: nmaxrelazi=20
