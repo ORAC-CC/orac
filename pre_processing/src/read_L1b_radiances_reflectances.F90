@@ -3,13 +3,15 @@
 !
 ! Purpose:
 ! Read the radiance values from an already open MODIS M*D02!KM file
-! 
+!
+!
 ! Description and Algorithm details:
 ! 1) Select appropriate resolution band for requested channel.
 ! 2) Determine which channels are available in the file for that band.
-! 3) Select the requested channel from among those (band_index).
+! 3) Select the requested channel from among those.
 ! 4) Read data, valid range, scale factors, and offsets.
 ! 5) Apply scale factor and offset to data.
+!
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
@@ -32,27 +34,27 @@
 !
 ! History:
 ! 2011/12/??: MJ First version
-! 2013/03/22: GT Added code to assign the band index number dynamically 
-!                using information contained in the M*D02 file itself.
+! 2013/03/22: GT Added code to assign the band index number dynamically using
+!                information contained in the M*D02 file itself.
 ! 2013/09/12: AP tidying, added where statement
 ! 2013/10/15: MJ changes reading of band names for MODIS.
 ! 2013/10/22: AP when a field in the spectrally subsetted files contained only
 !                one channel, the band_names field ended in NULL characters
 !                which Fortran could not manage. Those have been removed.
-! 2013/11/05: GM Moved the verbose statement that prints band_names from just 
+! 2013/11/05: GM Moved the verbose statement that prints band_names from just
 !                before Adam's removing of NULL characters to just after as some
 !                text operations can be affected by them.
 ! 2014/01/12: GM Fixed it so that the right scales and offsets are used.
-
+! 2014/01/12: GM Cleaned up the code.
+!
 !
 ! $Id$
+!
 !
 ! Bugs:
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
      ixstart, ixstop, iystart, iystop, level1b_buffer, verbose)
 
@@ -64,54 +66,51 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer(kind=lint), intent(in)  :: fid
-   logical, intent(in)             :: Cal_type_is_refl, verbose
-   integer, intent(in)             :: band
-   real(kind=sreal), intent(inout) :: level1b_buffer(ixstart:ixstop,iystart:iystop)
+   integer(kind=lint), intent(in)    :: fid
+   integer,            intent(in)    :: band
+   logical,            intent(in)    :: Cal_type_is_refl
+   integer(kind=lint), intent(in)    :: ixstart, ixstop, iystart, iystop
+   real(kind=sreal),   intent(inout) :: level1b_buffer(ixstart:ixstop,iystart:iystop)
+   logical,            intent(in)    :: verbose
 
-   logical :: flag
-   integer(kind=lint)    :: file_id, var_id, err_code, start(3), stride(3), &
-        edge(3), attr_id
-   real(kind=sreal)      :: scale_factors(20), offsets(20)
-   character(len=100)    :: SDS_name, SDS_unc_name, Dim_band_index,band_names
-   integer               :: number_of_bands,iband,comma_i,comma_i_old,band_name_length,current_band
+   integer(kind=lint)    :: ix, jy
+   character(len=100)    :: SDS_name, SDS_unc_name, Dim_band_index
+   integer(kind=lint)    :: file_id, attr_id, var_id, err_code
    character(len=100)    :: tmpname
    integer               :: tmprank, tmptype, tmpnattrs
-!MJORG   integer, dimension(1) :: tmpdimsizes
    integer, dimension(3) :: tmpdimsizes
-   integer(kind=lint)    :: ixstart, ixstop, iystart, iystop, ix, jy
-        
-   integer(kind=stint)   :: temp(ixstart:ixstop,iystart:iystop), &
-        fv, vr(2)
+   integer               :: number_of_bands
+   character(len=100)    :: band_names
+   logical               :: flag
+   integer               :: iband,comma_i,comma_i_old,band_name_length,current_band
+   integer(kind=stint)   :: fv, vr(2)
+   real(kind=sreal)      :: scale_factors(20), offsets(20)
+   integer(kind=lint)    :: start(3), stride(3), edge(3)
+   integer(kind=stint)   :: temp(ixstart:ixstop,iystart:iystop)
 
-   if (band >= 1 .and. band <= 2) then 
+   if (band >= 1 .and. band <= 2) then
       SDS_name = "EV_250_Aggr1km_RefSB"
       SDS_unc_name = "EV_250_Aggr1km_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_250M"
    endif
    if (band >= 3 .and. band <= 7) then
-      SDS_name = "EV_500_Aggr1km_RefSB" 
+      SDS_name = "EV_500_Aggr1km_RefSB"
       SDS_unc_name = "EV_500_Aggr1km_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_500M"
    endif
    if (band >= 8 .and. band<= 19 .or. band == 26) then
-      SDS_name = "EV_1KM_RefSB" 
+      SDS_name = "EV_1KM_RefSB"
       SDS_unc_name = "EV_1KM_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_1KM_RefSB"
    endif
-   if (band >= 20 .and. band <= 36 .and. band /= 26) then 
+   if (band >= 20 .and. band <= 36 .and. band /= 26) then
       SDS_name = "EV_1KM_Emissive"
       SDS_unc_name = "EV_1KM_Emissive_Uncert_Indexes"
       Dim_band_index = "Band_1KM_Emissive"
    endif
 
-   ! first we need to find where to start
-   ! GT Calculate the band index using the Band number SDS's contained
-   !    within in the file (rather than hardwiried index numbers)
    file_id = fid
-   !MJ ORGvar_id = sfselect(file_id, sfn2index(file_id, Dim_band_index))
    var_id = sfselect(file_id,  sfn2index(file_id, SDS_name))
-   ! Extract the number of bands in this group, the dimension of Dim_band_index
    err_code = sfginfo(var_id, tmpname, tmprank, tmpdimsizes, tmptype, tmpnattrs)
 
    number_of_bands = tmpdimsizes(3)
@@ -145,7 +144,7 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    band_name_length=len_trim(band_names)
 
    do iband=1,number_of_bands
-      if(iband .eq. number_of_bands) then 
+      if(iband .eq. number_of_bands) then
          read(band_names(comma_i_old:band_name_length), '(i2)') current_band
       else
          comma_i=index(trim(adjustl(band_names(comma_i_old:band_name_length))),&
@@ -164,12 +163,12 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    if (flag) then
       write(*,*) 'Band ',band,' not found in MODIS M*D02 file!'
       stop
-   endif   
+   endif
 
+   ! data stored with 0 offset
    start(2) = iystart-1
    start(1) = ixstart-1
-   !MJ ORG start(3) = band_index-1 ! data stored with 0 offset
-   start(3) = iband-1 ! data stored with 0 offset
+   start(3) = iband-1
 
    stride = 1
 
@@ -177,17 +176,13 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    edge(2) = iystop-iystart+1
    edge(3) = 1
 
-   var_id = sfselect(file_id, sfn2index(file_id, SDS_name))
-
-   err_code = sfrdata(var_id, start, stride, edge, temp)
-
    attr_id=sffattr(var_id, "_FillValue")
    err_code=sfrattr(var_id, attr_id, fv)
 
    attr_id=sffattr(var_id, "valid_range")
    err_code=sfrattr(var_id, attr_id, vr)
 
-   if (Cal_type_is_refl) then 
+   if (Cal_type_is_refl) then
       attr_id = sffattr(var_id, "reflectance_scales")
       err_code = sfrattr(var_id, attr_id, scale_factors)
       attr_id = sffattr(var_id, "reflectance_offsets")
@@ -198,26 +193,22 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
       err_code = sfrattr(var_id, attr_id, scale_factors)
       attr_id = sffattr(var_id, "radiance_offsets")
       err_code = sfrattr(var_id, attr_id, offsets)
-
    endif
 
-!   where(temp.ge.vr(1) .and. temp.le.vr(2))
-!      level1b_buffer = (real(temp,kind=sreal) - offsets(band_index)) * &
-!           scale_factors(band_index)
-!   end where
+   var_id = sfselect(file_id, sfn2index(file_id, SDS_name))
+   err_code = sfrdata(var_id, start, stride, edge, temp)
 
    do ix=ixstart,ixstop
       do jy=iystart,iystop
          if(temp(ix,jy) .ge. vr(1) .and. temp(ix,jy) .le. vr(2)) then
             level1b_buffer(ix,jy) = (real(temp(ix,jy),kind=sreal) - &
                  offsets(iband)) * scale_factors(iband)
-          else
-             level1b_buffer(ix,jy) = real_fill_value
-          endif
+         else
+            level1b_buffer(ix,jy) = real_fill_value
+         endif
       enddo
    enddo
 
    err_code = sfendacc(var_id)
 
 end subroutine read_L1B_modis_reflectances_radiances
-
