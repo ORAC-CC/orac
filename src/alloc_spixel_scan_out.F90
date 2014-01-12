@@ -26,6 +26,8 @@
 ! 2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
 !23/01/2013 Caroline Poulsen changed illum from byte to int
 ! 02/10/2013 CP/GT added allocation statement for DOFS
+! 01/01/2014 GM: Fixed the range in NY for initializations.  Plus, no need for 
+!                explicit indexing in these cases anyway.
 !
 ! $Id$
 !
@@ -274,18 +276,18 @@ subroutine alloc_spixel_scan_out_sec( ixstart,ixstop,iystart,iystop,Ny,Nx,lcovar
 
 
   allocate(spixel_scan_out_sec%residuals(ixstart:ixstop,iystart:iystop,Ny))
-  spixel_scan_out_sec%residuals(ixstart:ixstop,iystart:iystop,Ny)=spixel_scan_out_sec%int_fill_value
+  spixel_scan_out_sec%residuals=spixel_scan_out_sec%int_fill_value
 
   allocate(spixel_scan_out_sec%channels(ixstart:ixstop,iystart:iystop,Ny))
-  spixel_scan_out_sec%channels(ixstart:ixstop,iystart:iystop,Ny)=spixel_scan_out_sec%int_fill_value
+  spixel_scan_out_sec%channels=spixel_scan_out_sec%int_fill_value
 
 
 
   allocate(spixel_scan_out_sec%albedo(ixstart:ixstop,iystart:iystop,Ny))
-  spixel_scan_out_sec%albedo(ixstart:ixstop,iystart:iystop,Ny)=spixel_scan_out_sec%int_fill_value
+  spixel_scan_out_sec%albedo=spixel_scan_out_sec%int_fill_value
 
   allocate(spixel_scan_out_sec%y0(ixstart:ixstop,iystart:iystop,Ny))
-  spixel_scan_out_sec%y0(ixstart:ixstop,iystart:iystop,Ny)=spixel_scan_out_sec%int_fill_value
+  spixel_scan_out_sec%y0=spixel_scan_out_sec%int_fill_value
 
   if(lcovar) then
 
@@ -335,7 +337,7 @@ subroutine alloc_spixel_scan_in( ixstart,ixstop,Ny,spixel_scan_in)
   spixel_scan_in%input_vmax=spixel_scan_in%int_fill_value
 
   allocate(spixel_scan_in%input(ixstart:ixstop,Ny))
-  spixel_scan_in%input(ixstart:ixstop,Ny)=spixel_scan_in%int_fill_value
+  spixel_scan_in%input=spixel_scan_in%int_fill_value
 
 
   allocate(spixel_scan_in%viderror(Ny))
@@ -354,6 +356,6 @@ subroutine alloc_spixel_scan_in( ixstart,ixstop,Ny,spixel_scan_in)
   spixel_scan_in%error_vmax=spixel_scan_in%int_fill_value
 
   allocate(spixel_scan_in%error(ixstart:ixstop,Ny))
-  spixel_scan_in%error(ixstart:ixstop,Ny)=spixel_scan_in%int_fill_value
+  spixel_scan_in%error=spixel_scan_in%int_fill_value
 
 end subroutine alloc_spixel_scan_in
