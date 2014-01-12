@@ -218,7 +218,8 @@
 ! 2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
 !20131205 MJ initializes Diag%AK=real_fill_value
 !20131210 MJ initializes ymfit and y0 with missingxn
-!!
+!   2014/01/12, Greg McGarragh: Added some missing deallocates.
+!
 ! Bugs:
 !   None known
 !
@@ -1040,6 +1041,9 @@ Program ECP
       deallocate(conf%channel_sw_flag)
       deallocate(conf%channel_lw_flag)
       deallocate(conf%channel_proc_flag)
+      deallocate(conf%channel_sw_flag_use)
+      deallocate(conf%channel_lw_flag_use)
+      deallocate(conf%channel_mixed_flag_use)
 
 
 
