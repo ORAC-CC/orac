@@ -27,7 +27,8 @@
 !       Changing main LUT arrays (RBd etc) to allocatable. 
 !    11th June 2011, Caroline Poulsen: removed refrences to maxnum values 
 !       and changed some variables to pointers values
-!20131203 MJ makes LUTs more flexible wrt channel and properties
+!    12th Dec 2013, MJ: makes LUTs more flexible wrt channel and properties
+!    12th Jan 2014, Greg McGarragh: Increase nmaxre to 23 for the ice LUTs.
 !
 ! Bugs:
 !    None known.
