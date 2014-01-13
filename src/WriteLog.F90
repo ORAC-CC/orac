@@ -44,7 +44,10 @@
 !    8th Jun 2011, Andy Smith:
 !      Fixed a typo in comment while trying temporary updates.  
 ! 2013 MJ turns off extensive writing to log file in order to accelerate code.
-
+!   13th Jan 2014, Greg McGarragh
+!      Added OpenMP critical region around log write to prevent multiple threads
+!      from stomping on each other.
+!
 ! Bugs:
 !    None known.
 !
@@ -80,7 +83,7 @@ subroutine Write_Log (Ctrl, message, status)
 
 !  Open the log file and write the message, with status value if it is an 
 !  error message.
-
+!$OMP CRITICAL
    call Find_Lun(log_lun)
    open(unit=log_lun,      & 
         file=Ctrl%FID%Log, &
@@ -98,5 +101,5 @@ subroutine Write_Log (Ctrl, message, status)
       write(log_lun, *) 'Status = ',status
    end if      
    close(unit=log_lun)   
-
+!$OMP END CRITICAL
 end subroutine Write_Log
