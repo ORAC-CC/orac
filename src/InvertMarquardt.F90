@@ -234,8 +234,10 @@
 !     Using just Diag%St results in use of garbage when there are inactive state
 !     variables.
 !  15th January 2014, Greg McGarragh: Corrected the dimensions of the assigment
-!   for the calculation of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny)
-!   to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
+!     for the calculation of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny)
+!     to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
+!  15th January 2014, Greg McGarragh: Set values of J, Jm, and Ja to MissingSn
+!     in the case of failed retrievals as is done with the other values in Diag.
 !
 ! Bugs: 
 !    None known
@@ -973,13 +975,17 @@ end if   ! End of stat check before Ss setting.
 !  state was good enough to use in SDAD first guess and a priori setting, and
 !  if so saves Xn and Sn in Spixel (XnSav and SnSav). Costs are divided by 
 !  number of active instrument channels before output.
-
-J  = J  / SPixel%Ind%Ny 
-Jm = Jm / SPixel%Ind%Ny
-Ja = Ja / SPixel%Ind%Ny
-
-Call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
-     NPhaseChanges, Y, Sy, Diag, stat)
+if (stat == 0) then
+   J  = J  / SPixel%Ind%Ny 
+   Jm = Jm / SPixel%Ind%Ny
+   Ja = Ja / SPixel%Ind%Ny
+else
+   J  = MissingSn
+   Jm = MissingSn
+   Ja = MissingSn
+endif
+   Call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
+        NPhaseChanges, Y, Sy, Diag, stat)
 
 
 !  Write final solution and close breakpoint output file
