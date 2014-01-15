@@ -1,13 +1,15 @@
 
 # folder for object files
-OBJS=/misc/cluster_home/cpoulsen/orac_svn/v16/preproc/
+OBJS=/misc/cluster_home/cpoulsen/orac_svn/v17/pre_processing/src/
 
 # Define fortran 90 compiler 
 F90=/opt/intel/composer_xe_2011_sp1.8.273/bin/intel64/ifort 
 
 #set compiler flags
-FFLAGS=-g -check all -heap-arrays -traceback
-LFLAGS=-g -check all -heap-arrays -traceback
+FFLAGS=-g -check all -heap-arrays -traceback  -warn all -fstack-protector -implitnone -assume protect_parens
+LFLAGS=-g -check all -heap-arrays -traceback  -warn all -fstack-protector -implitnone -assume protect_parens
+
+#including the static in lflags keyword means cannot find -lepri_api
 
 
 #FFLAGS=-O0  -check bounds  -traceback  -static 
