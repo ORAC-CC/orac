@@ -81,6 +81,7 @@
 ! 2013/10/31, MJ: added another bugfix for levels/layers
 ! 2013/11/08, GM: added missing call to rttov_alloc_auxrad() in deallocate mode
 ! 2013/12/11, GM: Significant code clean up.
+! 2014/01/15, GM: Removed some unnecessary RTTOV error handling calls.
 !
 !
 ! $Id$
@@ -101,7 +102,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    use netcdf
 
-   use ieee_arithmetic
+!  use ieee_arithmetic
 
    use preproc_constants
    use preproc_structures
@@ -540,14 +541,12 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
            & channels=input_chan(1:nchannels),form_coef="formatted", &
            & file_coef=trim(adjustl(coef_path))//'/'//trim(adjustl(coeffile)))
       write(*,*) 'errorstatus rttov_read_coefs: ', errorstatus
-      call rttov_errorhandling(err_unit, verbosity_level)
 
 
       write(*,*) 'Initialize coefficients'
 
       call rttov_init_coefs(errorstatus,opts,coefs(irttovid))
       write(*,*) 'errorstatus rttov_init_coefs: ', errorstatus
-      call rttov_errorhandling(err_unit, verbosity_level)
 
 
       write(*,*) 'Allocate channel and emmissivity arrays'
@@ -592,7 +591,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          call rttov_atlas_setup(errorstatus,imonth,coefs(irttovid)%coef, &
 	      & path=emiss_path)
          write(*,*) 'errorstatus rttov_atlas_setup: ', errorstatus
-         call rttov_errorhandling(err_unit, verbosity_level)
       endif
 
 
@@ -611,7 +609,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
               & preproc_dims%kdim_pre,opts,asw,coefs=coefs(irttovid), &
               & init=.true._jplm)
          write(*,*) 'errorstatus rttov_alloc_prof: ',errorstatus
-         call rttov_errorhandling(err_unit, verbosity_level)
 
          profiles(1)%nlevels=preproc_dims%kdim_pre
          profiles(1)%nlayers=profiles(1)%nlevels-1
@@ -622,7 +619,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
               & preproc_dims%kdim_pre,opts,asw,coefs=coefs(irttovid), &
               & init=.true._jplm)
          write(*,*) 'errorstatus rttov_alloc_prof: ',errorstatus
-     	 call rttov_errorhandling(err_unit, verbosity_level)
 
 	 preproc_dims%kdim_pre=43
  	 profiles(1)%nlevels=43
@@ -639,12 +635,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       call rttov_alloc_rad(errorstatus,nchannels,radiance, &
            & preproc_dims%kdim_pre-1,asw)
       write(*,*) 'errorstatus rttov_alloc_rad: ', errorstatus, preproc_dims%kdim_pre
-      call rttov_errorhandling(err_unit, verbosity_level)
 
       call rttov_alloc_auxrad(errorstatus,auxrad, profiles(1)%nlevels, &
            & nchannels,asw)
       write(*,*) 'errorstatus rttov_alloc_auxrad: ', errorstatus, preproc_dims%kdim_pre
-      call rttov_errorhandling(err_unit, verbosity_level)
 
 
       write(*,*) 'Allocate RTTOV rtransmission structure: ', preproc_dims%kdim_pre, profiles(1)%nlevels
@@ -652,7 +646,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       call rttov_alloc_transmission(errorstatus,transmission, &
       	   & preproc_dims%kdim_pre-1, nchannels,asw,init=.true._jplm)
       write(*,*) 'errorstatus rttov_alloc_transmission: ', errorstatus
-      call rttov_errorhandling(err_unit, verbosity_level)
 
 
       write(*,*) 'Loop over preprocessing (interpolated) pixels'
@@ -785,10 +778,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! Check profile first before do anything else
                   call rttov_user_profile_checkinput(opts, profiles(1), &
                        & coefs(irttovid),errorstatus)
-                  if (errorstatus .ne. 0) then
+                  if (errorstatus .eq. errorstatus_fatal) then
                      write(*,*) 'errorstatus rttov_user_profile_checkinput: ', errorstatus
                   endif
-                  call rttov_errorhandling(err_unit, verbosity_level)
 
                   ! Only write profile check outin testing phase
 !                 open(100,file='profile.check',status='replace')
@@ -809,7 +801,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      if (errorstatus .ne. 0) then
                         write(*,*) 'errorstatus rttov_get_emis: ', errorstatus
                      endif
-                     call rttov_errorhandling(err_unit, verbosity_level)
 
                      ! If returned emissivity is spurious (water surface) then
                      ! calculate emissivity. If it is not (land surface) then
@@ -846,7 +837,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      if (errorstatus .ne. 0) then
                         write(*,*) 'errorstatus rttov_direct: ', errorstatus
                      endif
-                     call rttov_errorhandling(err_unit, verbosity_level)
 
                      ! Calculate lw values
                      call call_rtm_ir_rttov(errorstatus,transmission,radiance, &
@@ -871,7 +861,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      if (errorstatus .ne. 0) then
                         write(*,*) 'errorstatus rttov_direct: ', errorstatus
                      endif
-                     call rttov_errorhandling(err_unit, verbosity_level)
 
                      sza=profiles(1)%zenangle
                      lza=profiles(1)%sunzenangle
