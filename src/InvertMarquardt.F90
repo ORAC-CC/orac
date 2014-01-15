@@ -233,6 +233,9 @@
 !     to Diag%St(1:SPixel%Nx, 1:SPixel%Nx) when inverting d2J_dX2 to get Diag%St.
 !     Using just Diag%St results in use of garbage when there are inactive state
 !     variables.
+!  15th January 2014, Greg McGarragh: Corrected the dimensions of the assigment
+!   for the calculation of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny)
+!   to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
 !
 ! Bugs: 
 !    None known
@@ -903,7 +906,7 @@ if (stat == 0) then
          !MJ: temp. commented out
          !MJ ORG workaround Diag%Ss(1:SPixel%Ind%Ny+1,1:SPixel%Ind%Ny+1) = matmul(Dy_Kb(:,1:Spixel%NxI), &
          !MJ matmul(Sb(1:Spixel%NxI,1:Spixel%NxI), transpose(Dy_Kb(:,1:Spixel%NxI))) )
-         Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny) = matmul(Dy_Kb(:,1:Spixel%NxI), &
+         Diag%Ss(1:SPixel%Nx,1:SPixel%Nx) = matmul(Dy_Kb(:,1:Spixel%NxI), &
               matmul(Sb(1:Spixel%NxI,1:Spixel%NxI), transpose(Dy_Kb(:,1:Spixel%NxI))) )
 
       end if
