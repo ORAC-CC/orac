@@ -229,6 +229,11 @@
 !  14th Sep 2012 C. Poulsen bug fix defined diag%ss to size of nx elements (was ny) initialised Y
 !  2nd Oct 2012 C. Poulsen initialised variables bug fix defined diag%ss changed how SPixel%sn calculated
 !  8th May 2013 C. Poulsen set Diag%Y0
+!  15th January 2014, Greg McGarragh: Changed Invert_Cholesky() argument Diag%St
+!     to Diag%St(1:SPixel%Nx, 1:SPixel%Nx) when inverting d2J_dX2 to get Diag%St.
+!     Using just Diag%St results in use of garbage when there are inactive state
+!     variables.
+!
 ! Bugs: 
 !    None known
 !
@@ -833,7 +838,7 @@ end do      ! End of "phase change" do loop
 if (stat == 0) then
    !state expected error from measurements=Diag%St(1:SPixel%Nx, 1:SPixel%Nx))
 
-   Call Invert_Cholesky(d2J_dX2, Diag%St, &
+   Call Invert_Cholesky(d2J_dX2, Diag%St(1:SPixel%Nx, 1:SPixel%Nx), &
         SPixel%Nx, stat)
 #ifdef DEBUG
    if (stat /= 0) &
