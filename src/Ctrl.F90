@@ -107,6 +107,8 @@
 !   2012/06/18, C. Poulsen added illum
 !   2012/08/22, Matthias Jerg adds Nyp
 !   3rd October 2012 C. Poulsen added defaultctrl%sx category!
+!   15th January 2014, Greg McGarragh: No need for Ctrl%DefaultSx anymore.
+
 ! Bugs:
 !   None known
 !
@@ -399,7 +401,6 @@ module CTRL_def
       real                    :: X0(MaxStateVar)     ! First-guess values
       real                    :: Xb(MaxStateVar)     ! A Priori values
       real                    :: Sx(MaxStateVar)     ! Error covariance of Xb
-      real                    :: DefaultSx(MaxStateVar)     ! default valuesError covariance of Xb
       integer                 :: Max_SDAD  ! Max distance (no of pixels) that
       ! last retrieved solution can be used
       ! for FG/AP setting by SDAD method. 

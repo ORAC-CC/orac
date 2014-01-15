@@ -45,6 +45,7 @@
 !20131118 Several additional changes, introduces ysolar_msi and ythermal_msi
 !20131125 MJ initialized previously unitialized  Ctrl%Run_ID
 ! 2014/01/12, GM, Small fixes involving Ctrl%Ind%Navail
+! 2014/01/15, GM, No need for Ctrl%defaultSx anymore.
 !
 ! Bugs:
 ! nviews should be changed for dual view
@@ -1059,23 +1060,21 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
   Ctrl%Max_SDAD=10 !No. of pixels where state is valid for SDAD setting
   Ctrl%RS%Flag=3 ! Surface Ref: Flag (1-Ctrl 3-Aux) (1-Ctrl 3-Aux) 
   !Ctrl%RS%Flag=1 ! Surface Ref: Flag (1-Ctrl 3-Aux) (1-Ctrl 3-Aux) 
-  Ctrl%defaultSX(1)=1.0e+08 ! optical depth
-  Ctrl%defaultSX(2)=1.0e+08 ! effective radii
-  Ctrl%defaultSX(3)=1.0e+06 ! ctp
-  Ctrl%defaultSX(4)=1.0e-10 ! fraction
-  Ctrl%defaultSX(5)=1.0e+00 ! surface temperature
-  Ctrl%SX= Ctrl%defaultSX ! optical depth
+  Ctrl%Sx(1)=1.0e+08 ! optical depth
+  Ctrl%Sx(2)=1.0e+08 ! effective radii
+  Ctrl%Sx(3)=1.0e+06 ! ctp
+  Ctrl%Sx(4)=1.0e-10 ! fraction
+  Ctrl%Sx(5)=1.0e+00 ! surface temperature
   
 
   if ( (trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
      & (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. & 
      & (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
-     Ctrl%defaultSX(1)=1.0e+01 ! optical depth
-     Ctrl%defaultSX(2)=1.0e-01 ! effective radii
-     Ctrl%defaultSX(3)=1.0e+06 ! ctp
-     Ctrl%defaultSX(4)=1.0e-10 ! fraction
-     Ctrl%defaultSX(5)=1.0e+00 ! surface temperature
-     Ctrl%SX= Ctrl%defaultSX
+     Ctrl%Sx(1)=1.0e+01 ! optical depth
+     Ctrl%Sx(2)=1.0e-01 ! effective radii
+     Ctrl%Sx(3)=1.0e+06 ! ctp
+     Ctrl%Sx(4)=1.0e-10 ! fraction
+     Ctrl%Sx(5)=1.0e+00 ! surface temperature
   end if
 
   

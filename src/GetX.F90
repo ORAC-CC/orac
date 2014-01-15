@@ -85,6 +85,9 @@
 ! 3rd October 2012 C. Poulsen modified how ctrl%sx is set added skint to be
 !     surface temperature first guess
 ! 26th/2/2013 CP added in option to process pixel if only one IR channel is present
+! 15th/1/2014, GM: Fixed setting of SPixel%Sx for inactive state variables so
+!     that Ctrl%Sx is not modified.
+!
 ! Bugs:
 !   None known.
 !
@@ -161,12 +164,15 @@ Subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
       if (SPixel%AP(i) == SelmCtrl .or. &   
            & (SPixel%AP(i) == SelmMeas .and. status == XMDADMeth) ) then  
          SPixel%Xb(i)   = Ctrl%Xb(i)
-         
-         if (SPixel%Illum(1) == IDay .or. SPixel%Illum(1) == IDaynore) then
-            SPixel%Sx(i,i) = (Ctrl%Sx(i) * Ctrl%Invpar%XScale(i)) ** 2
-            Ctrl%SX(:)=Ctrl%defaultSX(:)
 
-!
+         if (any(SPixel%X .eq. i)) then
+            SPixel%Sx(i,i) = (Ctrl%Sx(i) * Ctrl%Invpar%XScale(i)) ** 2
+         else
+            ! assume that the inactive state variables are well known do not try to retrieve
+            SPixel%Sx(i,i) = (1.0e-5     * Ctrl%Invpar%XScale(i)) ** 2
+         endif
+
+         if (SPixel%Illum(1) == IDay .or. SPixel%Illum(1) == IDaynore) then
             !check if all IR channels are present 
             !if only one is present then remove surface temperature state variable from state vector
             ! by setting uncertainty to a very small number
@@ -180,14 +186,6 @@ Subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
                !pause
                !               end if
             end if
-
-         else
-            ! assume that the inactive state variables are well known do not try to retrieve
-            
-            do m=1,SPixel%NxI
-               Ctrl%SX(SPixel%XI(m))=1.0e-5
-            enddo
-            SPixel%Sx(i,i) = (Ctrl%Sx(i) * Ctrl%Invpar%XScale(i)) ** 2
          endif
 
          status = 0
