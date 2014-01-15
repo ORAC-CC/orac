@@ -46,7 +46,9 @@
 !20131125 MJ initialized previously unitialized  Ctrl%Run_ID
 ! 2014/01/12, GM, Small fixes involving Ctrl%Ind%Navail
 ! 2014/01/15, GM, No need for Ctrl%defaultSx anymore.
-!
+! 2014/01/15, GM, Added the ability to read the driver file contents from
+!                 standard input indicated by DriFile .eq. '-'.
+! 
 ! Bugs:
 ! nviews should be changed for dual view
 ! not quiteworking for AVHRR
@@ -58,6 +60,8 @@
 !
 !---------------------------------------------------------------------
 subroutine Read_Driver (Ctrl, conf,message, drifile,status)
+
+   use, intrinsic :: iso_fortran_env, only : input_unit
 
    use ECP_constants
    use CTRL_def
@@ -103,13 +107,14 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
 
    endif
 
-
-   inquire(file=DriFile, exist=file_exists)
-   if (.not. file_exists) then
-      status = DriverFileNotFound
-      message = 'Read_Driver: Driver file not found'
-      write(*,*)' Driver file pointed to by ORAC_DRIVER does not exist'
-   end if
+   if (drifile .ne. '-') then
+      inquire(file=DriFile, exist=file_exists)
+      if (.not. file_exists) then
+         status = DriverFileNotFound
+         message = 'Read_Driver: Driver file not found'
+         write(*,*)' Driver file pointed to by ORAC_DRIVER does not exist'
+      end if
+   endif
 
    write(*,*)' driver: ',trim(DriFile),status
    
@@ -118,13 +123,17 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
    !if environment variable not set read default driver
    !
 
-   if (status == 0) then     
-      call Find_Lun(dri_lun)
-      open(unit=dri_lun, file=DriFile, iostat=ios)
-      if (ios /= 0) then
-         status = DriverFileOpenErr
-         message = 'Read_Driver: unable to open driver file'
-         write(*,*)' Unable to open driver file: ',trim(DriFile)
+   if (status == 0) then
+      if (drifile .eq. '-') then
+         dri_lun = input_unit
+      else
+         call Find_Lun(dri_lun)
+         open(unit=dri_lun, file=DriFile, iostat=ios)
+         if (ios /= 0) then
+            status = DriverFileOpenErr
+            message = 'Read_Driver: unable to open driver file'
+            write(*,*)' Unable to open driver file: ',trim(DriFile)
+         end if
       end if
    end if
 
@@ -1247,9 +1256,10 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
      status = DriverFileReadErr  ! Log file not open yet.
      message = 'Read_Driver: error reading driver file'
   end if
-  
-  close(unit=dri_lun)
-  
+
+  if (drifile .ne. '-') then
+     close(unit=dri_lun)
+  endif
 
 
 end subroutine Read_Driver
