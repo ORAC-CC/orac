@@ -238,6 +238,8 @@
 !     to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
 !  15th January 2014, Greg McGarragh: Set values of J, Jm, and Ja to MissingSn
 !     in the case of failed retrievals as is done with the other values in Diag.
+!  15th January 2014, Greg McGarragh: Moved dynamic setting of the upper limit
+!     for CTP to the highest pressure in the profile from FM() to this routine.
 !
 ! Bugs: 
 !    None known
@@ -355,6 +357,10 @@ Subroutine Invert_Marquardt (Ctrl, SPixel, SAD_Chan, SAD_LUT, &
    !  Set state variable limits for initial phase 
    
    call Set_Limits(Ctrl, SPixel, stat)
+
+   ! Dynamically set upper limit of cloud top pressure to lowest profile pressure
+   ! of current pixel.
+   SPixel%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
 
    !  Calculate measurements at first-guess state vector X0 (SPixel%X0) 
    !  X0 should be provided un-scaled. Only used in the FM call and Xdiff(?)

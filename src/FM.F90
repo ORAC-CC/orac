@@ -131,9 +131,12 @@
 ! 20/09/2012 CP assigned Y to explicit sizeY(1:SPixel%Ind%Ny) = BT(1:SPixel%Ind%Ny)
 ! 2013 MJ makes some changes to merge code versions
 ! 20131125 MJ dynmically sets upper limit for CTP to highest pressure in profile to avoid extrapolation problems.
-!20131206 MJ add deallocation statements to fix memory leaks.
-
-
+! 20131206 MJ add deallocation statements to fix memory leaks.
+! 20141506, GM: Ctrl%Invpar%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np), from
+!    20131125 should be SPixel%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np) but it
+!    would also be clearer to move it just out of FM() to just after Set_Limits()
+!    is called which is what was done here.
+!
 ! Bugs:
 !   None known.
 !
@@ -195,9 +198,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
   !   Write(*,*) 'START FM'
   Y = 0.0
   dy_dX = 0.0
-  
-  !Dynamicall set upper limit of cloud top pressure to lowest profile pressure of current pixel.
-  Ctrl%Invpar%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
 
   !  Call routine to interpolate RTM data to the cloud pressure level.
   !  Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
