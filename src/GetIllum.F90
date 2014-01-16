@@ -25,6 +25,9 @@
 ! History:
 !   15th June 2012, Caroline Poulsen: original version
 !   17th July 2012, Caroline Poulsen: changed value 1 to nviews
+!   16th Jan 2014, Greg McGarragh: Added initialization of
+!      SPixel%spixel_y_to_ctrl_y_index.
+!
 ! Bugs:
 !   None known.
 ! At the moment only one view is specified
@@ -48,7 +51,7 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
 !   Define local variables
 
 !    character(180) :: message ! stapel: var not used
-    integer        :: view,j!,nsbad,minrad,nviews,ic
+    integer        :: view,i,j!,nsbad,minrad,nviews,ic
     integer        :: Illum(Ctrl%Ind%Ny,Ctrl%Ind%NViews)
 
     !   Set status to zero
@@ -85,6 +88,10 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
           SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW
           SPixel%Ind%MDAD_SW = Ctrl%Ind%MDAD_SW
 
+          do i = 1, Ctrl%Ind%Ny
+             SPixel%spixel_y_to_ctrl_y_index(i) = i
+          enddo
+
           SPixel%Nx = Ctrl%Ind%Nx_Dy
           deallocate(SPixel%X)
           allocate(SPixel%X(SPixel%Nx))
@@ -100,7 +107,7 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
           SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
 
           !Twilight          
-       else if  (SPixel%illum(1)  .eq. 2)  then
+       else if  (SPixel%illum(view)  .eq. 2)  then
           
           SPixel%Illum(view) = ITwi
           
@@ -117,6 +124,10 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
           
           SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW - Ctrl%Ind%NSolar
           SPixel%Ind%MDAD_SW = 0
+
+          do i = 1, Ctrl%Ind%Ny-Ctrl%Ind%NSolar
+             SPixel%spixel_y_to_ctrl_y_index(i) = Ctrl%Ind%SolarLast + i
+          enddo
 
           SPixel%Nx = Ctrl%Ind%Nx_Tw
           deallocate(SPixel%X)
@@ -147,7 +158,11 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
           
           SPixel%Ind%MDAD_LW = Ctrl%Ind%MDAD_LW - Ctrl%Ind%NSolar
           SPixel%Ind%MDAD_SW = 0
-          
+
+          do i = 1, Ctrl%Ind%NThermal
+             SPixel%spixel_y_to_ctrl_y_index(i) = Ctrl%Ind%ThermalFirst + i - 1
+          enddo
+
           SPixel%Nx = Ctrl%Ind%Nx_Ni
           deallocate(SPixel%X)
           allocate(SPixel%X(SPixel%Nx))

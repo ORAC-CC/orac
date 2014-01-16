@@ -64,6 +64,9 @@
 !                      statements for I/O errors
 ! 20131114 MJ corrected zeroing of satzen when ref is allocated, some cleanup
 !20131203 MJ makes LUTs more flexible wrt channel and properties
+!    16th Jan 2014, Greg McGarragh: Added initialization of SAD_LUT%table_use*
+!       arrays.
+!
 ! Bugs:
 !    None known
 !
@@ -111,7 +114,11 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       call Write_Log(Ctrl, trim(message), status)
       stop
    else
-      
+      SAD_LUT%table_used_for_channel(chan, iem) = .true.
+
+      SAD_LUT%table_uses_satzen(iem) = .true.
+      SAD_LUT%table_uses_solzen(iem) = .false.
+      SAD_LUT%table_uses_relazi(iem) = .false.
 
       !     Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios) SAD_LUT%Wavelength(chan)
@@ -250,6 +257,8 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
 !    6th Oct 2000, Andy Smith : original version
 !    17th Apr 2013, Caroline Poulsen : fixed bug in which nsolzen specified
 !       before nsatzen in rbd read command
+!    16th Jan 2014, Greg McGarragh: Added initialization of SAD_LUT%table_use*
+!       arrays.
 !
 ! Bugs:
 !    None known
@@ -293,6 +302,12 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       call Write_Log(Ctrl, trim(message), status)
       stop
    else
+      SAD_LUT%table_used_for_channel(chan, irbd) = .true.
+
+      SAD_LUT%table_uses_satzen(irbd) = .true.
+      SAD_LUT%table_uses_solzen(irbd) = .true.
+      SAD_LUT%table_uses_relazi(irbd) = .true.
+
       !Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,irbd)
@@ -457,6 +472,9 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
 !                      statements (called on I/O error). Also added write(*,*)
 !                      statements for I/O errors
 !    01/12/2014 Greg McGarragh : Fixed LUT index for SAD_LUT%Grid%Satzen. 
+!    01/16/2014 Greg McGarragh : Added initialization of SAD_LUT%table_use*
+!       arrays.
+!
 ! Bugs:
 !    None known
 !
@@ -500,8 +518,18 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
       call Write_Log(Ctrl, trim(message), status)
       stop
    else
-!     Read the file contents into the SAD_LUT structure
+      SAD_LUT%table_used_for_channel(chan, iRd) = .true.
+      SAD_LUT%table_used_for_channel(chan, iRfd) = .true.
 
+      SAD_LUT%table_uses_satzen(iRd) = .true.
+      SAD_LUT%table_uses_solzen(iRd) = .false.
+      SAD_LUT%table_uses_relazi(iRd) = .false.
+
+      SAD_LUT%table_uses_satzen(iRfd) = SAD_LUT%table_uses_satzen(iRd)
+      SAD_LUT%table_uses_solzen(iRfd) = SAD_LUT%table_uses_solzen(iRd)
+      SAD_LUT%table_uses_relazi(iRfd) = SAD_LUT%table_uses_relazi(iRd)
+
+!     Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
 
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iRd)
@@ -676,6 +704,8 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
 !    22/03/2013 Gareth Thomas : Added trim() to LUT_file in write(message,*)
 !                      statements (called on I/O error). Also added write(*,*)
 !                      statements for I/O errors
+!    01/16/2014 Greg McGarragh : Added initialization of SAD_LUT%table_use*
+!       arrays.
 !
 ! Bugs:
 !    None known
@@ -720,8 +750,14 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       stop
    else
       write(*, *) 'Read_LUTTb:', trim(LUT_file) 
-!     Read the file contents into the SAD_LUT structure
 
+      SAD_LUT%table_used_for_channel(chan, iTb) = .true.
+
+      SAD_LUT%table_uses_satzen(iTb) = .false.
+      SAD_LUT%table_uses_solzen(iTb) = .true.
+      SAD_LUT%table_uses_relazi(iTb) = .false.
+
+!     Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTb)
       SAD_LUT%Grid%nTau(chan,iTb) = nVals                !    Used for loop control later
@@ -881,6 +917,8 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 !    22/03/2013 Gareth Thomas : Added trim() to LUT_file in write(message,*)
 !                      statements (called on I/O error). Also added write(*,*)
 !                      statements for I/O errors
+!    01/16/2014 Greg McGarragh : Added initialization of SAD_LUT%table_use*
+!       arrays.
 !
 ! Bugs:
 !    None known
@@ -932,8 +970,18 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       call Write_Log(Ctrl, trim(message), status)
       stop
    else
+      SAD_LUT%table_used_for_channel(chan, iTbd) = .true.
+      SAD_LUT%table_used_for_channel(chan, iTfbd) = .true.
+
+      SAD_LUT%table_uses_satzen(iTbd) = .true.
+      SAD_LUT%table_uses_solzen(iTbd) = .true.
+      SAD_LUT%table_uses_relazi(iTbd) = .true.
+
+      SAD_LUT%table_uses_satzen(iTfbd) = SAD_LUT%table_uses_satzen(iTbd)
+      SAD_LUT%table_uses_solzen(iTfbd) = SAD_LUT%table_uses_solzen(iTbd)
+      SAD_LUT%table_uses_relazi(iTfbd) = SAD_LUT%table_uses_relazi(iTbd)
+
       !     Read the file contents into the SAD_LUT structure
-      
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTbd)
       SAD_LUT%Grid%dTau(chan,iTfbd)= SAD_LUT%Grid%dTau(chan,iTbd)
@@ -1170,6 +1218,8 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 !    22/03/2013 Gareth Thomas : Added trim() to LUT_file in write(message,*)
 !                      statements (called on I/O error). Also added write(*,*)
 !                      statements for I/O errors
+!    01/16/2014 Greg McGarragh : Added initialization of SAD_LUT%table_use*
+!       arrays.
 !
 ! Bugs:
 !    None known
@@ -1213,8 +1263,18 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
       call Write_Log(Ctrl, trim(message), status)
       stop
    else
-!     Read the file contents into the SAD_LUT structure
+      SAD_LUT%table_used_for_channel(chan, iTd) = .true.
+      SAD_LUT%table_used_for_channel(chan, iTfd) = .true.
 
+      SAD_LUT%table_uses_satzen(iTd) = .true.
+      SAD_LUT%table_uses_solzen(iTd) = .false.
+      SAD_LUT%table_uses_relazi(iTd) = .false.
+
+      SAD_LUT%table_uses_satzen(iTfd) = SAD_LUT%table_uses_satzen(iTd)
+      SAD_LUT%table_uses_solzen(iTfd) = SAD_LUT%table_uses_solzen(iTd)
+      SAD_LUT%table_uses_relazi(iTfd) = SAD_LUT%table_uses_relazi(iTd)
+
+!     Read the file contents into the SAD_LUT structure
       read(l_lun, *, err=999, iostat=ios)SAD_LUT%Wavelength(chan)
       read(l_lun, *, err=999, iostat=ios)nVals, SAD_LUT%Grid%dTau(chan,iTd)
       SAD_LUT%Grid%dTau(chan,iTfd)=SAD_LUT%Grid%dTau(chan,iTd)
@@ -1412,6 +1472,9 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
 !   3rd May 2011, Caroline Poulsen: removed allocation of LUTs into individual
 !                    routine so ntau,nrensatzen etc could be read and used directly
 !                    from LUT files and are not replicated else where
+!   16th Jan 2014, Greg McGarragh:
+!      Added allocation of SAD_LUT%table_use* arrays.
+!
 ! Bugs:
 !   None known.
 !
@@ -1513,6 +1576,14 @@ Subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
       allocate(SAD_LUT%Grid%dRelazi(Ctrl%Ind%Ny,maxcrprops))
       allocate(SAD_LUT%Grid%nRelazi(Ctrl%Ind%Ny,maxcrprops))
       SAD_LUT%Grid%nRelazi=SAD_LUT%Grid%nmaxrelazi
+
+      allocate(SAD_LUT%table_used_for_channel(Ctrl%Ind%Ny, maxcrprops))
+
+      SAD_LUT%table_used_for_channel = .false.
+
+      SAD_LUT%table_uses_satzen = .false.
+      SAD_LUT%table_uses_solzen = .false.
+      SAD_LUT%table_uses_relazi = .false.
 
       !loop over the used channels
       do j=1, Ctrl%Ind%Ny

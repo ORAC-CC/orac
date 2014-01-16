@@ -29,6 +29,7 @@
 !       and changed some variables to pointers values
 !    12th Dec 2013, MJ: makes LUTs more flexible wrt channel and properties
 !    12th Jan 2014, Greg McGarragh: Increase nmaxre to 23 for the ice LUTs.
+!    16th Jan 2014, Greg McGarragh: Added SAD_LUT%table_use* arrays.
 !
 ! Bugs:
 !    None known.
@@ -86,6 +87,12 @@ module SAD_LUT_def
       character(80) :: Name   ! Optional class name
       real, pointer :: Wavelength(:) ! Channel wavelengths 
 
+      logical, pointer :: table_used_for_channel(:, :)
+
+      logical :: table_uses_satzen(maxcrprops)
+      logical :: table_uses_solzen(maxcrprops)
+      logical :: table_uses_relazi(maxcrprops)
+
       real, pointer :: Rbd(:,:,:,:,:,:)
                        ! Bi-directional reflectance
 		       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
@@ -123,7 +130,8 @@ module SAD_LUT_def
                        ! Diffuse emissivity
 		       ! Dimensions: channel, Tau, SatZen, Re
       
-      type(LUT_Grid_t) :: Grid   ! Grid parameters     
+      type(LUT_Grid_t) :: Grid   ! Grid parameters
+
    end type SAD_LUT_t
 
 end module SAD_LUT_def

@@ -101,6 +101,8 @@
 !   4th Oct 2012 Caroline Poulsen added in new variables
 ! 2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
 ! 2013/10/02 CP/GT added in variable to calculate degrees of freedom of signal
+! 2014/01/16 Greg MCgarragh: Added spixel_y_to_ctrl_y_index.
+!
 ! Bugs:
 !    None known.
 ! 
@@ -281,6 +283,8 @@ module SPixel_def
       real, pointer       :: Rs(:)        ! Super pixel surface reflectance
       real, pointer       :: SRs(:,:)     ! Super pixel surface reflectance covariances
       real, pointer       :: f0(:)        ! Solar constant
+      integer, pointer    :: spixel_y_to_ctrl_y_index(:) ! Index SPixel measurment
+                                                         ! space to CRTL measuement space
     end type SPixel_t
     
     type spixel_scanline_primary_output

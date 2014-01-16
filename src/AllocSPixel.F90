@@ -72,6 +72,9 @@
 !                  changed to this allocate(SPixel%RTM%SW%P      (RTM%LW%NP))
 !   15th June 2012 C. Poulsen changed illum definition
 !   3rd Nov 2012 Someone??? bug fix:changed way shortwave variables wer allocated remove ymsav variable
+!   16th Jan 2014, Greg McGarrah:
+!     Added allocation of SPixel%spixel_y_to_ctrl_y_index.
+!
 ! Bugs:
 !   None known.
 !
@@ -187,5 +190,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
    allocate(SPixel%Geom%RelAzi(Ctrl%Ind%NViews))
    allocate(SPixel%Geom%SEC_o(Ctrl%Ind%NViews))
    allocate(SPixel%Geom%SEC_v(Ctrl%Ind%NViews))
+
+   allocate(SPixel%spixel_y_to_ctrl_y_index(Ctrl%Ind%Ny))
 
 end subroutine Alloc_SPixel

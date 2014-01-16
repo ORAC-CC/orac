@@ -31,6 +31,7 @@
 !   11 June 2011, Caroline poulsen: deallocated new LUT variables
 !   13 Dec 2011, Caroline poulsen: deallocated new LUT wavelenght variables
 !   12th Jan 2014, Greg McGarragh: Added some missing deallocates.
+!   16th Jan 2014, Greg McGarragh: Added deallocation of SAD_LUT%table_used_for_channel.
 !
 ! Bugs:
 !    None known.
@@ -95,5 +96,7 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
    deallocate(SAD_LUT%Grid%MinRelazi)
    deallocate(SAD_LUT%Grid%dRelazi)
    deallocate(SAD_LUT%Grid%nRelazi)
+
+   deallocate(SAD_LUT%table_used_for_channel)
 
 end subroutine Dealloc_SAD_LUT

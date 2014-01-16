@@ -35,7 +35,9 @@
 !    22nd Sept 2011 Caroline Poulsen remove sw%p as now the same aslw%p
 !    13th December 2011 Caroline Poulsen deallocated SPixel%Geom
 !    arrays SPixel%SWRTM%P SPixel%ViewIdx
-!!
+!   16th Jan 2014, Greg McGarrah:
+!     Added deallocation of SPixel%spixel_y_to_ctrl_y_index.
+!
 ! Bugs:
 !   None known.
 !
@@ -125,6 +127,6 @@ subroutine Dealloc_SPixel(Ctrl, SPixel, status)
    deallocate(SPixel%Geom%SEC_o)
    deallocate(SPixel%Geom%SEC_v)
 
-
+   deallocate(SPixel%spixel_y_to_ctrl_y_index)
 
 end subroutine Dealloc_SPixel
