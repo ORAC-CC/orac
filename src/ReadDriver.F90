@@ -48,6 +48,7 @@
 ! 2014/01/15, GM, No need for Ctrl%defaultSx anymore.
 ! 2014/01/15, GM, Added the ability to read the driver file contents from
 !                 standard input indicated by DriFile .eq. '-'.
+! 2014/01/16, GM, Use Selm* constants to set FG and AP instead of numbers.
 ! 
 ! Bugs:
 ! nviews should be changed for dual view
@@ -941,23 +942,23 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
   ! Ctrl%FG(statevariable,time of day)
   !
   !day
-  Ctrl%FG(1,1)=1
-  Ctrl%FG(2,1)=1
-  Ctrl%FG(3,1)=2 !from ir profile=2
-  Ctrl%FG(4,1)=1
-  Ctrl%FG(5,1)=3 ! from auxillary file
+  Ctrl%FG(1,1)=SelmCtrl
+  Ctrl%FG(2,1)=SelmCtrl
+  Ctrl%FG(3,1)=SelmMeas ! from ir profile
+  Ctrl%FG(4,1)=SelmCtrl
+  Ctrl%FG(5,1)=SelmAux  ! from auxillary file
   !twilight
-  Ctrl%FG(1,2)=1
-  Ctrl%FG(2,2)=1
-  Ctrl%FG(3,2)=2
-  Ctrl%FG(4,2)=1
-  Ctrl%FG(5,2)=3
+  Ctrl%FG(1,2)=SelmCtrl
+  Ctrl%FG(2,2)=SelmCtrl
+  Ctrl%FG(3,2)=SelmMeas
+  Ctrl%FG(4,2)=SelmCtrl
+  Ctrl%FG(5,2)=SelmAux
   !night
-  Ctrl%FG(1,3)=1
-  Ctrl%FG(2,3)=1
-  Ctrl%FG(3,3)=2
-  Ctrl%FG(4,3)=1
-  Ctrl%FG(5,3)=3
+  Ctrl%FG(1,3)=SelmCtrl
+  Ctrl%FG(2,3)=SelmCtrl
+  Ctrl%FG(3,3)=SelmMeas
+  Ctrl%FG(4,3)=SelmCtrl
+  Ctrl%FG(5,3)=SelmAux
 
   ! first guess default values for water i,e if option 1 is selected above
   if  (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
@@ -1004,23 +1005,23 @@ subroutine Read_Driver (Ctrl, conf,message, drifile,status)
 
 !  write(*,*)'here g'
   !A priori options (Tau,Re,Pc,F,Ts)
-  Ctrl%AP(1,1)=1
-  Ctrl%AP(2,1)=1
-  Ctrl%AP(3,1)=1
-  Ctrl%AP(4,1)=2
-  Ctrl%AP(5,1)=3
+  Ctrl%AP(1,1)=SelmCtrl
+  Ctrl%AP(2,1)=SelmCtrl
+  Ctrl%AP(3,1)=SelmCtrl
+  Ctrl%AP(4,1)=SelmMeas
+  Ctrl%AP(5,1)=SelmAux
   !twilight
-  Ctrl%AP(1,2)=1
-  Ctrl%AP(2,2)=1
-  Ctrl%AP(3,2)=1
-  Ctrl%AP(4,2)=2
-  Ctrl%AP(5,2)=3
+  Ctrl%AP(1,2)=SelmCtrl
+  Ctrl%AP(2,2)=SelmCtrl
+  Ctrl%AP(3,2)=SelmCtrl
+  Ctrl%AP(4,2)=SelmMeas
+  Ctrl%AP(5,2)=SelmAux
   !night
-  Ctrl%AP(1,3)=1
-  Ctrl%AP(2,3)=1
-  Ctrl%AP(3,3)=1
-  Ctrl%AP(4,3)=2
-  Ctrl%AP(5,3)=3
+  Ctrl%AP(1,3)=SelmCtrl
+  Ctrl%AP(2,3)=SelmCtrl
+  Ctrl%AP(3,3)=SelmCtrl
+  Ctrl%AP(4,3)=SelmMeas
+  Ctrl%AP(5,3)=SelmAux
 
   ! set default apriori values (i.e if option 1 selected above) quite often these values with a very high uncertainty
 
