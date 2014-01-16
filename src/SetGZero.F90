@@ -60,9 +60,9 @@
 !2013 MJ changes loop boundaries and parameter list contents
 !       memory problem
 !20131203 MJ makes LUTs more flexible wrt channel and properties
-!   16th Jan 2014, Greg McGarragh: Fixed many garbage indexing operations by
-!      introducing use of SPixel%spixel_y_to_ctrl_y_index and the SAD_LUT%
-!      table_use* arrays.
+!   16th Jan 2014, Greg McGarragh: Fixed indexing operations on uninitialized
+!      (garbage) values introducing use of SPixel%spixel_y_to_ctrl_y_index and
+!      the SAD_LUT%table_use* arrays.
 !     
 !
 ! Bugs:

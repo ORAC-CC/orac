@@ -83,7 +83,10 @@
 !    7th Feb 2012, Chris Arnold:
 !       Ctrl struct now passed to interpolation routines IntLUT*.f90
 !20131203 MJ makes LUTs more flexible wrt channel and properties
-!
+!   16th Jan 2014, Greg McGarragh:
+!       Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset arguments
+!       to Int_LUT_TauSatRe().
+
 ! Bugs:
 !    None known.
 !
@@ -163,7 +166,7 @@ Subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%ThermalFirst-1,:,:,:), &
         & SAD_LUT%Grid, GZero,Ctrl, CRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd), &
-        & dCRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd,:), iTd,status)
+        & dCRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd,:), iTd,0,0,status)
 
 !  RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
 

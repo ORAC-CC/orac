@@ -60,7 +60,9 @@
 !    7th Feb 2012, Chris Arnold:
 !       Ctrl struct now passed to interpolation routines IntLUT*.f90
 !20131203 MJ makes LUTs more flexible wrt channel and properties
-
+!   16th Jan 2014, Greg McGarragh:
+!       Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset arguments
+!       to Int_LUT_TauSatRe().
 !
 ! Bugs:
 !    None known.
@@ -111,20 +113,16 @@ Subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, &
 !  channels from First to NY. 
 
    call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-        &SAD_LUT%Grid, GZero,Ctrl,&
-        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd),&
-        & dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,ITd,:),&
-        & iTd,status)
+        & SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
+        & iTd, Ctrl%Ind%NSolar - Ctrl%Ind%NMixed, Ind%NSolar - Ind%NMixed, status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Rd(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-        & SAD_LUT%Grid, GZero,Ctrl,&
-        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IRd,:),iRd,status)
+        & SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:), &
+        & iRd, Ctrl%Ind%NSolar - Ctrl%Ind%NMixed,Ind%NSolar - Ind%NMixed, status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Em(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-        & SAD_LUT%Grid, GZero,Ctrl,&
-        & CRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm), dCRPOut(Ind%ThermalFirst:Ind%ThermalLast,IEm,:),iEm,status)
-
-
+        & SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,IEm), dCRPOut(:,IEm,:), &
+        & iEm, Ctrl%Ind%NSolar - Ctrl%Ind%NMixed,Ind%NSolar - Ind%NMixed, status)
 
 !MJ ORG
 !!$   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &

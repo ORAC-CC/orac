@@ -36,6 +36,9 @@
 !    7th Feb 2012, Chris Arnold:
 !       Ctrl struct now passed to interpolation routines IntLUT*.f90
 !20131203 MJ makes LUTs more flexible wrt channel and properties
+!   16th Jan 2014, Greg McGarragh:
+!       Added i_chan_to_ctrl_offset and i_chan_to_spixel_offset to subroutine
+!       Int_LUT_TauSatRe.
 !
 ! Bugs:
 !    None known
@@ -88,7 +91,7 @@ module Int_Routines_def
    End interface
 
    Interface
-      Subroutine Int_LUT_TauSatRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr,status)
+      Subroutine Int_LUT_TauSatRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, i_chan_to_ctrl_offset, i_chan_to_spixel_offset, status)
 
          use CTRL_def
 	 use GZero_def
@@ -104,7 +107,7 @@ module Int_Routines_def
 	 type(LUT_Grid_t), intent(in)   :: Grid
 	 real, dimension(:), intent(inout)      :: FInt	      
 	 real, dimension(:,:), intent(inout)    :: FGrads 
-         integer          :: status,icrpr
+         integer          :: status,icrpr,i_chan_to_ctrl_offset, i_chan_to_spixel_offset
       End Subroutine Int_LUT_TauSatRe
    End interface
 
