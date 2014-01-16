@@ -63,6 +63,9 @@
 !       increasing pressure. Previously, if Pc was equal to P(1) it was not
 !       matched (and if Pc < P(1) it's P index is set to 1!)
 !  3rd November 2011 MJ changed definition of delta_tac and delta_tbc arrays
+!   15th Jan 2014, Greg McGarragh:
+!      Deal with the case when Pc is equal to the pressure of the last level.
+
 ! Bugs:
 !   None known.
 !
@@ -132,6 +135,10 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
             write(unit=message, fmt=*) 'Interpol_Solar low: Extrapolation warning', Pc , SPixel%RTM%SW%p(1)
             call Write_Log(Ctrl, trim(message), status) ! Write to log
         end if
+
+    else if (Pc == SPixel%RTM%SW%p(SPixel%RTM%SW%Np)) then
+
+        i = SPixel%RTM%SW%Np-1
 
     else
 

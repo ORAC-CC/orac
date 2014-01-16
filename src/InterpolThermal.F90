@@ -84,7 +84,9 @@
 !      for ascribing an error value to the height.
 !    7th February 2012 C. Arnold added intent() to argument declarations
 ! 2013/01/17 Matthias Jerg: Adds code to extract RTM_Pc%dHc_dPc and RTM_Pc%dTc_dPc
-!      
+!   15th Jan 2014, Greg McGarragh:
+!      Deal with the case when Pc is equal to the pressure of the last level.
+!
 ! Bugs:
 !   None known.
 !
@@ -167,6 +169,8 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
             write(unit=message, fmt=*) 'Interpol_Therm: Extrapolation warning low' ,Pc,SPixel%RTM%LW%p(1)
             call Write_Log(Ctrl, trim(message), status) ! Write to log
         end if
+    else if (Pc == SPixel%RTM%LW%P(SPixel%RTM%LW%Np)) then
+        i = SPixel%RTM%LW%Np-1
     else
         do j = 1, SPixel%RTM%LW%Np-1 ! Search through RTM levels sequentially 
                                      ! to find those bounding Pc
