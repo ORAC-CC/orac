@@ -95,5 +95,7 @@ Subroutine Zero_Diag (Ctrl, Diag, status)
 !  Sx available from SPixel, just set YError.
 
    if (Ctrl%Diagl(DiFlagSy) > 0) Diag%YError = 0
+
+
      
 End Subroutine Zero_Diag

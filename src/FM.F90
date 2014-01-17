@@ -136,6 +136,7 @@
 !    20131125 should be SPixel%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np) but it
 !    would also be clearer to move it just out of FM() to just after Set_Limits()
 !    is called which is what was done here.
+!20141701 MJ comments out usage of  some temp_* variables as they appear to be unneccessary.
 !
 ! Bugs:
 !   None known.
@@ -354,8 +355,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       !MJ!if(SPixel%Ind%ThermalFirst .eq. 3) then
      !write(*,*) 'bounds',&
      !& SPixel%Ind%nThermal,SPixel%Ind%ThermalFirst,SPixel%Ind%ThermalLast
-     temp_thermal_CRP=CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:)
-     temp_thermal_d_CRP=d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)
+     !MJ TRYtemp_thermal_CRP=CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:)
+     !MJ TRYtemp_thermal_d_CRP=d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)
          !MJ!endif
 
 !MJ
@@ -367,10 +368,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
      call FM_Thermal(Ctrl, SAD_LUT, SPixel, &
           & SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast),     &
           & RTM_Pc, X, GZero,                             &
-          & temp_thermal_CRP,        &
-          & temp_thermal_d_CRP,    &
-!MJ TEST          & CRP,        &
-!MJ TEST          & d_CRP,    &
+!MJ TRY          & temp_thermal_CRP,        &
+!MJ TRY          & temp_thermal_d_CRP,    &
+         & CRP,        &
+         & d_CRP,    &
           & BT, d_BT, Rad, d_Rad, status)
 
 
@@ -390,8 +391,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 !!$      endif
 
      !if(SPixel%Ind%ThermalFirst .eq. 3) then
-     CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:)=temp_thermal_CRP
-     d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)= temp_thermal_d_CRP
+     !MJ TRY CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:)=temp_thermal_CRP
+     !MJ TRY d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:)= temp_thermal_d_CRP
       !endif
          !if(SPixel%Ind%ThermalFirst .eq. 4) then
      !CRP(SPixel%Ind%ThermalFirst-1:SPixel%Ind%ThermalLast,:)=temp_thermal_CRP
@@ -460,23 +461,23 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
         Ref=0.00 !MJ
         temp_solar_d_Ref=0.00
         !call Set_CRP_Solar(Ctrl, SPixel%Ind, GZero, SAD_LUT, CRP, d_CRP, status)
-        temp_solar_CRP=CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)
-        temp_solar_d_CRP=d_CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :,:)
-        temp_solar_d_Ref=d_Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)
+        !MJ TRY temp_solar_CRP=CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)
+        !MJ TRY temp_solar_d_CRP=d_CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :,:)
+        !MJ TRY temp_solar_d_Ref=d_Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)
 
         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero,       &
-!!$             & CRP,     &
-!!$             & d_CRP,  &
-!!$             & Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast),        &
-!!$             & d_Ref, status)
-             & temp_solar_CRP,     &
-             & temp_solar_d_CRP,  &
+             & CRP,     &
+             & d_CRP,  &
              & Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast),        &
-             & temp_solar_d_Ref, status)
+             & d_Ref, status)
+!MJ TRY             & temp_solar_CRP,     &
+!MJ TRY             & temp_solar_d_CRP,  &
+!;J TRY             & Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast),        &
+!MJ TRY             & temp_solar_d_Ref, status)
 
-        CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)=temp_solar_CRP
-        d_CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :,:)=temp_solar_d_CRP
-        d_Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)=temp_solar_d_Ref
+!MJ TRY        CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)=temp_solar_CRP
+!MJ TRY        d_CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :,:)=temp_solar_d_CRP
+!MJ TRY        d_Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast, :)=temp_solar_d_Ref
         
 !        Combine the results from the LW and SW forward models
 

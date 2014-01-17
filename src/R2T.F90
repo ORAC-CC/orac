@@ -33,7 +33,7 @@
 !   27th Feb 2001, andy Smith:
 !      Bug fix: following previous change, SAD_Chan needs an array 
 !      index when used: SAD_Chan(:)%X, not SAD_Chan%X
-!20131125 MJ fixed division by zero in log.
+!20131125 MJ fixed division by zero in log by simple workaround. Should possibly avoided altogether.
 !
 ! Bugs:
 !   None known.
@@ -72,6 +72,7 @@ subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 !!$    write(*,*) SAD_Chan(:)%Thermal%B1 / R
 !!$    write(*,*) SAD_Chan(:)%Thermal%B1 
 !!$    write(*,*) R
+
     do ichan=1,NChan
        if(R(ichan) .le. ditherm6) R(ichan)=max(R(ichan),ditherm6)
     enddo

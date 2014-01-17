@@ -51,6 +51,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 #endif
      !if no interpolation possible set BP_o and DBP_o to hardcoded values to recover:
      BP_o=Ctrl%X0(3)
+     BP_o=Ctrl%Invpar%Xulim(3)
      !FG does not need Error but AP does
      DBP_o=MDADErrPc
      !if point too high up use highest point for extrapolation
@@ -63,9 +64,12 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
      BP_o=invert_p(mon_k)+dy*xd/dx
      !if extrapolation goes too far use just highest point
      if(BP_o .lt. Ctrl%Invpar%Xllim(3)) then
-        BP_o=invert_p(mon_k)
+        !BP_o=invert_p(mon_k)
+        BP_o=Ctrl%X0(3)
      endif
+     BP_o=Ctrl%X0(3)
      DBP_o=MDADErrPc
+     !MJ what was this supposed to do? BP_o=Ctrl%Invpar%Xulim(3)
 
 #ifdef DEBUG
      write(*,*) 'WARNING: kspot eq mon_k: linearly extrapolating now'

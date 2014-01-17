@@ -226,9 +226,9 @@ Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &
      allocate(MSI_Data%time(Ctrl%Ind%Xmax, SegSize))
 
      !read instrument channel indices from file
-     write(*,*) Ctrl%Ind%Nyp
+     write(*,*) 'Ctrl%Ind%Nyp',Ctrl%Ind%Nyp
      !stop
-     allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
+     allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp)) 
      msi_instr_ch_numbers=0_nint
      call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%Nyp,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
      write(*,*) 'msi channel numbers',msi_instr_ch_numbers
