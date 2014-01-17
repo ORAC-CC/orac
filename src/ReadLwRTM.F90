@@ -70,14 +70,12 @@
 !   NChan        int         Number of channels in RTM
 !   ChanID       alloc int   Channel identifiers
 !   WvNumber  alloc real(8)  Central wavenumber
-!   jplev        int         Loop counter over pressure levels
 !   ilat         int         Loop counter over latitudes
 !   ilon         int         Loop counter over longitudes
 !   x            real(4)     dummy variable for reading latitude value
 !   y            real(4)     dummy variable for reading longitude value
 !   klat         int         Loop counter over latitudes
 !   klon         int         Loop counter over longitudes
-!   klev         int         Loop counter over pressure levels
 !   index        int         Index to channel
 !   i,j,k        int         Loop counters
 !   chan_found   int         Flag to indicate channel has been found
@@ -167,14 +165,12 @@ subroutine Read_LwRTM(Ctrl, RTM, status)
    integer                :: NChan   
    integer, allocatable   :: ChanID(:)
    real(4), allocatable   :: WvNumber(:)  
-   integer                :: jplev 
    integer                :: ilat
    integer                :: ilon
    real(4)                :: x
    real(4)                :: y
    integer                :: klat
    integer                :: klon
-   integer                :: klev
    integer, allocatable   :: index(:)   
    integer                :: i, j, k
    integer                :: chan_found

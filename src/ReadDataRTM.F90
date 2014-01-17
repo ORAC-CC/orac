@@ -33,7 +33,8 @@ subroutine Read_Data_RTM (status)
    implicit none
 
 !  argument declarations 
-   integer, intent(out)        :: status
+   integer, intent(out) :: status
 
+   status = 0
 
 end subroutine Read_Data_RTM 

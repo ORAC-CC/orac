@@ -105,9 +105,10 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 !MJ ORG    real    :: delta_Tc(SPixel%Ind%Ny-SPixel%Ind%NThermal)
     real    :: delta_Tc(SPixel%Ind%NSolar)
     character(180) :: message
-    integer :: bkp_lun                 !    Unit number for breakpoint file
-    integer :: ios                     ! I/O status for breakpoint file
-    integer :: k ! for testing
+#ifdef BKP
+   integer :: bkp_lun ! Unit number for breakpoint file
+   integer :: ios     ! I/O status for breakpoint file
+#endif
 
 !   Set initial value of error status equal to zero (i.e. no error)
 

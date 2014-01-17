@@ -54,17 +54,9 @@
 !   Name      Type   Description
 !   ios       int    I/O status, file operations
 !   message   char   Error message to pass to Write_Log 
-!   header    char   Header data from input file
 !   day, month int   Day and month numbers extracted from header and used in 
 !                    calculation of Ctrl%DOY.
-!   mon       char   Month name extracted from header date string.
 !   i         int    Counter for DOY calculation
-!   row       int    Number of last image row read by ReadFPArray.
-!   ChanIdx   int    Array of channel indices, used to select data from the MSI 
-!                    file. Differs from Ctrl%Ind%Y_Id because Y_Id can contain 
-!                    repeated channel numbers if more than one view is selected.
-!                    ChanIdx is an array index used to locate the channel in the
-!                    MSI data. 
 !
 ! History:
 !   3rd November, 2000, Kevin M. Smith : original version
@@ -144,14 +136,9 @@ Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &
   integer        :: ios       ! I/O status from file operations
   !MJ ORG character(FilenameLen+100) :: message   ! Error message to pass to Write_Log
   character(2048) :: message   ! Error message to pass to Write_Log
-  character(24)  :: header    ! Input file header record
   integer        :: day, month ! Day and month numberss extracted from 
   ! Date string when calculating DOY.
-  character(3)   :: mon       ! Month extracted from date in file header.
-  integer        :: row       ! Number of final image row read by ReadFPArray
-  ! (in pixels, starting at first row of segment)
   integer        :: i         ! Counter for DOY calculation
-  integer        :: ChanIdx(Ctrl%Ind%Ny) ! Array of channel indices within the MSI file
 
   !netcdf related
   integer :: ncid

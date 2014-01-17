@@ -46,7 +46,6 @@
 !   Name     Type   Description
 !   ios      int    I/O status, file operations
 !   message  char   Error message to pass to Write_Log   
-!   row      int    Number of last image row read by ReadByteArray.  
 !
 ! History:
 !   3rd November, 2000, Kevin M. Smith : original version
@@ -102,8 +101,6 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, &
 
    integer        :: ios       ! I/O status from file operations
    character(256) :: message   ! Error message to pass to Write_Log
-   integer        :: row       ! Number of final image row read by ReadByteArray
-                               ! (in pixels, starting at first row of segment)
 
   !netcdf related
   integer :: ncid

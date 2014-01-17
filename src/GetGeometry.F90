@@ -106,7 +106,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
 
 !   Define local variables
 
-    character(180) :: message
+!   character(180) :: message
     integer        :: view
    
 

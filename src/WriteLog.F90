@@ -29,10 +29,6 @@
 !    Name       Type    Description
 !    log_lun    int     Logical UnitNumber for log file
 !    ios        int     I/O status from file operations
-!    stime      int     FORTRAN lib function 
-!    time       int     System time returned by stime function
-!    ctime      char    FORTRAN lib function 
-!    time_str   string  ASCII time string returned by ctime function
 !        
 ! References:
 !    UNIX man pages: man 3f ctime
@@ -67,16 +63,11 @@ subroutine Write_Log (Ctrl, message, status)
 !  Local variables
    integer     :: log_lun      ! Logical UnitNumber for log file
    integer     :: ios          ! I/O status from file operations
-!   integer     :: stime, time  ! stime function, int to hold the result
-   character(24)  :: ctime, time_str ! ctime function, string to hold the result
-!   external ctime, time     ! Declare FORTRAN library functions as external
+   character(24)  :: time_str
    character(8) :: date
    character(10) :: time
 
 !  Generate a time string to precede the entry in the log file
-
-!   stime = time()
-!   time_str = ctime(stime)
 
    call Date_and_Time (date=date, time=time)
    time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)  

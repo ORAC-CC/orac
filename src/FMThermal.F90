@@ -122,21 +122,21 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
     integer, intent(inout)          :: status
 
 !   Define local variables
-
+    integer :: i
     real    :: delta_Ts
     real    :: R_clear(Spixel%Ind%Nthermal)
     real    :: R_over(Spixel%Ind%Nthermal)
     real    :: Es_dB_dTs(Spixel%Ind%Nthermal)
     real    :: fTac(Spixel%Ind%Nthermal)
     real    :: dT_dR(Spixel%Ind%Nthermal)
-    integer :: bkp_lun, ios ! Logical unit number and IO status for breakpoint
-                            ! file.
     integer :: ThF, ThL     ! First, last thermal channel indices
                             ! for RTM_Pc%LW arrays
-    integer :: i, j
-    
-    real    :: a(Spixel%Ind%Nthermal) ! for debugging
- 
+#ifdef BKP
+   integer :: j                       ! For breakpoint output loops
+   integer :: bkp_lun                 ! Unit number for breakpoint file
+   integer :: ios                     ! I/O status for breakpoint file
+#endif
+
 !   Use ThF and ThL to access the first and last required thermal channels
 !   from RTM_Pc and SPixel %LW arrays, since these are always allocated to size 
 !   Ctrl%Ind%NThermal, but not all thermal channels are used in all pixels

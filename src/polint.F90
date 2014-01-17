@@ -29,7 +29,7 @@ SUBROUTINE polint(xa,ya,n,x,y,dy)
         hp=xa(i+m)-x
         w=c(i+1)-d(i)
         den=ho-hp
-        if(den.eq.0.)pause 'failure in polint'
+        if(den.eq.0.) stop 'failure in polint'
         den=w/den
         d(i)=hp*den
         c(i)=ho*den

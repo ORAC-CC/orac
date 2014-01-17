@@ -125,8 +125,6 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
     real     :: dH_dPc        ! Gradient of GPH wrt Pc
     real     :: T(SPixel%Ind%Nthermal) ! Calculated Temp at Pc. T2R wants array
     real     :: H(SPixel%Ind%Nthermal) ! Calculated GPH at Pc. 
-    real     :: dTac_dPc(SPixel%Ind%Nthermal)
-    real     :: dTbc_dPc(SPixel%Ind%Nthermal)
     real     :: delta_Pc
     real     :: delta_Tc(SPixel%Ind%Nthermal)
     real     :: delta_Rc(SPixel%Ind%Nthermal)
@@ -134,8 +132,10 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
     integer  :: ThF, ThL     ! First, last thermal channel indices
                             ! for RTM_Pc%LW arrays
     character(180) :: message
-    integer :: bkp_lun, ios ! Logical unit number and IO status for breakpoint
-                            ! file.
+#ifdef BKP
+   integer   :: bkp_lun ! Unit number for breakpoint file
+   integer   :: ios     ! I/O status for breakpoint file
+#endif
 
 !   Set initial value of error status equal to zero (i.e. no error)
 

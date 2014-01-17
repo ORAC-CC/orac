@@ -114,7 +114,7 @@ Subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 !  Local variables
 
    logical    :: SetErr  ! Tells X_MDAD/X_SDAD that an error value should be set
-   integer    :: i ,m      ! Loop counter
+   integer    :: i       ! Loop counter
    real       :: X       ! State variable value returned by X_MDAD
    real       :: Err     ! Error value returned by X_MDAD
      

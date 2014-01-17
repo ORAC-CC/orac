@@ -27,11 +27,6 @@
 !   Name   Type       Description
 !   ios    int        I/O status, file operations
 !   lun    int        File unit number
-!   array  real array Temporary array used to read in one row of values from
-!                     the data file. Size (3, XMax) since there are 3 angle
-!                     values at each x location within the image.
-!   row    int        Image segment row counter. Used to check for premature
-!                     end of file if EOF detected during segment read.
 !
 ! History:
 !  18/06/2012 C. Poulsen original version
@@ -66,10 +61,7 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
 
    integer        :: ios       ! I/O status from file operations
    character(180) :: message   ! Error message to pass to Write_Log
-   real           :: array(3*Ctrl%Ind%NViews, Ctrl%Ind%XMax)  
-                               ! Holds 1 row of data from the file
-   integer        :: row, view,i,j,ic,nsbad,ntbad,navail,icnew,nsolar,nthermal,jcount,nref
-   integer        ::  ii,jj,jin
+   integer        :: view,i,j,ic,nsbad,ntbad,nref
    integer ::refch1,refch2
    real            :: minrad
  

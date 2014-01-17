@@ -75,7 +75,7 @@ SUBROUTINE nc_write_L2_float(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
   REAL(KIND=SINGLE),DIMENSION(ix:nx,jy:ny),INTENT(in) :: v
 
 ! Local
-  INTEGER :: ierr, start(2), counter(2),stride(2),i,j
+  INTEGER :: ierr, start(2), counter(2),stride(2)
 
   start(1) = 1
   start(2) = 1
@@ -144,7 +144,7 @@ SUBROUTINE nc_write_L2_double(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
   REAL(KIND=DOUBLE),DIMENSION(ix:nx,jy:ny),INTENT(in) :: v
 
 ! Local
-  INTEGER :: ierr, start(2), counter(2),stride(2),i,j
+  INTEGER :: ierr, start(2), counter(2),stride(2)
 
   start(1) = 1
   start(2) = 1
@@ -218,7 +218,7 @@ SUBROUTINE nc_write_L2_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
   integer(KIND=sint),DIMENSION(ix:nx,jy:ny),INTENT(in) :: v
 
 ! Local
-  INTEGER :: ierr, start(2), counter(2),stride(2),i,j
+  INTEGER :: ierr, start(2), counter(2),stride(2)
 
   start(1) = 1
   start(2) = 1
@@ -307,7 +307,7 @@ SUBROUTINE nc_write_L2_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
   integer, DIMENSION(ix:nx,jy:ny),INTENT(in) :: v
 
 ! Local
-  INTEGER :: ierr, start(2), counter(2),stride(2),i,j
+  INTEGER :: ierr, start(2), counter(2),stride(2)
 
   start(1) = 1
   start(2) = 1
@@ -379,7 +379,7 @@ SUBROUTINE nc_write_L2_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
   integer(KIND=byte),DIMENSION(ix:nx,jy:ny),INTENT(in) :: v
 
 ! Local
-  INTEGER :: ierr, start(2), counter(2),stride(2),i,j
+  INTEGER :: ierr, start(2), counter(2),stride(2)
 
   start(1) = 1
   start(2) = 1

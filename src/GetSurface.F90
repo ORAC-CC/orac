@@ -156,10 +156,11 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
     real             :: SPixel_b(SPixel%Ind%NSolar)
     real             :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
     integer          :: i,j, jj,intflag
-    integer          :: qc1,qc2   ! N.B. qc vars are set but not used - code commented out
-    character(180)   :: message
+!   integer          :: qc1,qc2   ! N.B. qc vars are set but not used - code commented out
     real             :: solar_factor ! Is set but not used - commented out
-
+#ifdef DEBUG
+    character(180)   :: message
+#endif
 !   Initialise
 
     status = 0

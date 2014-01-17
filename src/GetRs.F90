@@ -70,7 +70,6 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)
     
 !   Define local variables
 
-    integer        :: i, j
     character(180) :: message
 
 !   Set status to zero

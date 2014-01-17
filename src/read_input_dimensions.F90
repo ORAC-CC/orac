@@ -9,8 +9,8 @@ SUBROUTINE read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)
   
   implicit none
  INTEGER,INTENT(IN) :: wo
-  integer :: ivar,idim,ndim,nvar,nattr,dummyint
-  integer :: ncid,ierr,ny=5,nx=5
+  integer :: ndim,nvar,nattr,dummyint
+  integer :: ncid,ierr
   character(len=FilenameLen) :: fname_msi,fname_geo,name
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   character(len=varlength), allocatable :: dname(:)
@@ -133,8 +133,8 @@ SUBROUTINE read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim,laydim,
   
   implicit none
  INTEGER,INTENT(IN) :: wo
-  integer :: ivar,idim,ndim,nvar,nattr,dummyint
-  integer :: ncid,ierr,ny=5,nx=5
+  integer :: ndim,nvar,nattr,dummyint
+  integer :: ncid,ierr
   character(len=FilenameLen) :: fname,name
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   character(len=varlength), allocatable :: dname(:)
@@ -237,8 +237,8 @@ SUBROUTINE read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim,chann
   
   implicit none
  INTEGER,INTENT(IN) :: wo
-  integer :: ivar,idim,ndim,nvar,nattr,dummyint
-  integer :: ncid,ierr,ny=5,nx=5
+  integer :: ndim,nvar,nattr,dummyint
+  integer :: ncid,ierr
   character(len=FilenameLen) :: fname,name
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   character(len=varlength), allocatable :: dname(:)

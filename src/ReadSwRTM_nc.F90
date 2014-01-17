@@ -47,27 +47,17 @@
 ! Local variables:
 !   Name         Type        Description
 !   ios          int         I/O status, file operations
-!   lun          int         File unit number 
 !   message      char        Error message to pass to Write_Log  
 !   InstName     char        Instrument name
 !   Date         char        Date
 !   NChan        int         Number of channels in RTM
 !   ChanID       alloc int   Channel identifiers
 !   WvNumber  alloc real(8)  Central wavenumber
-!   ilat         int         Loop counter over latitudes
-!   ilon         int         Loop counter over longitudes
-!   x            real(4)     dummy variable for reading latitude value
-!   y            real(4)     dummy variable for reading longitude value
 !   klat         int         Loop counter over latitudes
 !   klon         int         Loop counter over longitudes
 !   index        int         Index to channel
 !   i,j,k        int         Loop counters
 !   chan_found   int         Flag to indicate channel has been found
-!   dummy        char        Dummy string
-!   buf(:,:,:) alloc real(2) Dummy array for read. Dimensions are 
-!                            no. of channels, no. of pressure levels, 
-!                            no. of parameters in LwRTM file (or PRTM file).
-
 !
 ! History:
 !   5th December, 2000, Kevin M. Smith : original version
@@ -120,7 +110,7 @@
 !   20120828 CP defined nchan and changed indicing of y_id
 !   20121103 MJ changed loop over SW channels
 !   2013 MJ irones out some bugs wrt old binary file implementation.
-
+!
 ! Bugs:
 !   None known.
 !
@@ -148,22 +138,15 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 !  etc are explicitly written as real(4) in order to reduce the file size.
 
    integer                :: ios
-   integer                :: lun
    character(180)         :: message
    character(Instnamelen) :: InstName
-   character(8)           :: Date
+!  character(8)           :: Date
    integer                :: NChan   
    integer, allocatable   :: ChanID(:)
    real(4), allocatable   :: WvNumber(:)  
-   integer                :: ilat
-   integer                :: ilon
-   real(4)                :: x
-   real(4)                :: y
    integer, allocatable   :: index(:)   
    integer                :: i, j, k
    integer                :: chan_found
-   character(8)           :: dummy
-   real(4), allocatable   :: buf(:,:,:)
  
    !netcdf related
    character(Instnamelen) :: platform
@@ -173,8 +156,6 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
    real(kind=sreal), allocatable, dimension(:,:) :: dummy1p1
    real(kind=sreal), allocatable, dimension(:,:,:) :: dummy1p2
    real(kind=sreal), allocatable, dimension(:) :: dummy1df
-   integer(kind=nint), allocatable, dimension(:,:) :: dummy2dint
-   real(kind=sreal), allocatable, dimension(:,:) :: dummy2df
 
 
 !############################################

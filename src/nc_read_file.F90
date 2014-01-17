@@ -75,15 +75,13 @@ SUBROUTINE nc_read_array_1d_int_to_int_orac(ncid,n1,cv,v,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
-      real(kind=sreal) :: os,sf
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(1), counter(1),stride(1)
+      INTEGER :: ierr, vid, start(1), counter(1),stride(1)
       REAL,PARAMETER :: miss=-9999.
-      integer(kind=nint) :: v(1:n1),fv,vmin,vmax
+      integer(kind=nint) :: v(1:n1),fv
 
    ! End of header ----------------------------------------------------------
 
@@ -171,15 +169,13 @@ SUBROUTINE nc_read_array_1d_float_to_float_orac(ncid,n1,cv,v,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
-      real(kind=sreal) :: os,sf
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(1), counter(1),stride(1)
+      INTEGER :: ierr, vid, start(1), counter(1),stride(1)
       REAL,PARAMETER :: miss=-9999.
-      real(kind=sreal) :: v(1:n1),fv,vmin,vmax
+      real(kind=sreal) :: v(1:n1),fv
 
    ! End of header ----------------------------------------------------------
 
@@ -264,14 +260,13 @@ SUBROUTINE nc_read_array_3d_float_orac(ncid,n1,n2,ichan,cv,v,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
-      real(kind=sreal) :: fv,os,sf,vmin,vmax
+      real(kind=sreal) :: fv
       CHARACTER(LEN=unitlength) :: unit
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(3), counter(3),stride(3)
+      INTEGER :: ierr, vid, start(3), counter(3),stride(3)
       REAL,PARAMETER :: miss=-9999.
       real(kind=sreal) :: v(1:n1,1:n2,1)
 
@@ -365,14 +360,13 @@ SUBROUTINE nc_read_array_1p1_float_orac(ncid,n1,ichan,cv,v,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
-      real(kind=sreal) :: fv,os,sf,vmin,vmax
+      real(kind=sreal) :: fv
       CHARACTER(LEN=unitlength) :: unit
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+      INTEGER :: ierr, vid, start(2), counter(2),stride(2)
       REAL,PARAMETER :: miss=-9999.
       real(kind=sreal) :: v(1:n1,1)
 
@@ -485,14 +479,13 @@ SUBROUTINE nc_read_array_1p2_float_orac(ncid,n1,ichan,ilay,cv,v,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
-      real(kind=sreal) :: fv,os,sf,vmin,vmax
+      real(kind=sreal) :: fv
       CHARACTER(LEN=unitlength) :: unit
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(3), counter(3),stride(3)
+      INTEGER :: ierr, vid, start(3), counter(3),stride(3)
       REAL,PARAMETER :: miss=-9999.
       real(kind=sreal) :: v(1:n1,1,1)
 
@@ -603,13 +596,12 @@ SUBROUTINE nc_read_array_2d_double_orac(ncid,n1,n2,cv,v,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
-      real(kind=dreal) :: fv,os,sf,vmin,vmax
+      real(kind=dreal) :: fv
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+      INTEGER :: ierr, vid, start(2), counter(2),stride(2)
       REAL,PARAMETER :: miss=-9999.
       !MJOLD      real(kind=sreal) :: v(1:n2,1:n1)
       real(kind=dreal) :: v(1:n1,1:n2)
@@ -704,13 +696,12 @@ SUBROUTINE nc_read_array_2d_float_orac(ncid,n1,n2,cv,v,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
-      real(kind=sreal) :: fv,os,sf,vmin,vmax
+      real(kind=sreal) :: fv
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+      INTEGER :: ierr, vid, start(2), counter(2),stride(2)
       REAL,PARAMETER :: miss=-9999.
       !MJOLD      real(kind=sreal) :: v(1:n2,1:n1)
       real(kind=sreal) :: v(1:n1,1:n2)
@@ -809,14 +800,12 @@ SUBROUTINE nc_read_array_2d_byte_to_real_orac(ncid,n1,n2,cv,v_out,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
       real(KIND=sreal) :: v_out(1:n1,1:n2)    ! Variable (v): read in field 1-n1
-      integer(kind=byte) :: os,sf,vmin,vmax
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+      INTEGER :: ierr, vid, i, j,start(2), counter(2),stride(2)
       REAL,PARAMETER :: miss=-9999.
       integer(kind=byte) :: v(1:n1,1:n2),fv
 
@@ -926,14 +915,12 @@ SUBROUTINE nc_read_array_2d_int_to_real_orac(ncid,n1,n2,cv,v_out,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
       real(KIND=sreal) :: v_out(1:n1,1:n2)    ! Variable (v): read in field 1-n1
-      integer(kind=nint) :: os,sf,vmin,vmax
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+      INTEGER :: ierr, vid, i, j,start(2), counter(2),stride(2)
       REAL,PARAMETER :: miss=-9999.
       integer(kind=nint) :: v(1:n1,1:n2),fv
 
@@ -1044,14 +1031,12 @@ SUBROUTINE nc_read_array_2d_byte_to_byte_orac(ncid,n1,n2,cv,v_out,wo)
       CHARACTER(LEN=*) :: cv                     ! variable name
 
       ! Output
-      INTEGER :: n                            ! Dimension of data
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
       integer(KIND=byte) :: v_out(1:n1,1:n2)    ! Variable (v): read in field 1-n1
-      integer(kind=byte) :: os,sf,vmin,vmax
 
       ! Local
-      INTEGER :: ierr, vid, did, i, j,start(2), counter(2),stride(2)
+      INTEGER :: ierr, vid, start(2), counter(2),stride(2)
       REAL,PARAMETER :: miss=-9999.
       integer(kind=byte) :: fv
 

@@ -59,7 +59,6 @@ subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
 !  Declare local variables
 
    integer         :: NPix
-   character(180)  :: message
 
 !  Parameters supported are Tau, Re, Pc, f and Ts.
 

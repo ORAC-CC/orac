@@ -54,12 +54,7 @@
 !   Name      Type   Description
 !   ios       int    I/O status, file operations
 !   message   char   Error message to pass to Write_Log 
-!   header    char   Header data from input file
-!   day, month int   Day and month numbers extracted from header and used in 
-!                    calculation of Ctrl%DOY.
-!   mon       char   Month name extracted from header date string.
 !   i         int    Counter for DOY calculation
-!   row       int    Number of last image row read by ReadFPArray.
 !
 ! History:
 !   29th May, 2002, Caroline Poulsen : original version copied
@@ -100,18 +95,11 @@ Subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    
    type(Data_t), intent(inout) :: MSI_Data
    integer, intent(out)        :: status
-   integer, dimension(6) :: test=(/1,2,3,4,5,6/)
+
 !  Local variables
 
    integer        :: ios       ! I/O status from file operations
    character(180) :: message   ! Error message to pass to Write_Log
-   character(24)  :: header    ! Input file header record
-   integer        :: day, month ! Day and month numberss extracted from 
-                               ! Date string when calculating DOY.
-   character(3)   :: mon       ! Month extracted from date in file header.
-   integer        :: row       ! Number of final image row read by ReadFPArray
-                               ! (in pixels, starting at first row of segment)
-   integer        :: i         ! Counter for DOY calculation
 
    !netcdf related
    integer :: ncid
@@ -159,9 +147,6 @@ Subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
       deallocate(alb_instr_ch_numbers)
       !write(*,*) 'Done reading ALB input' 
 
-      !obsolete comment:
-      !        Read file header and extract the date: use date to calculate day of
-      !        year. Date format is DD-MMM-YYYY HH:MM:SS.mmm
      end if
 
      !close  alb input file

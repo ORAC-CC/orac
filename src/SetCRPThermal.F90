@@ -97,8 +97,6 @@ Subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, &
 					   ! Tau and Re
    integer, intent(inout)                :: status
 
-   integer :: icrpr
-
 !  Status is not actually set at present. Error-checking would be very
 !  costly in terms of CPU here. Leave status argument in case of future
 !  updates. Set to 0 to avoid compiler warnings.

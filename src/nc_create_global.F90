@@ -66,9 +66,8 @@ SUBROUTINE nc_create_global_l2(Ctrl,path, ncid, nx, ny, dims_var, wo,type,status
   IMPLICIT NONE
   
   ! Input
-  INTEGER,INTENT(IN) :: wo!, ryr
+  INTEGER,INTENT(IN) :: wo
   INTEGER,INTENT(IN) :: nx, ny
-  !ORG  INTEGER,INTENT(IN) :: time, nx, ny, grid, dx, dy,wo!, ryr
   integer :: yday
   CHARACTER(LEN=*),INTENT(IN) :: path
   
@@ -76,25 +75,13 @@ SUBROUTINE nc_create_global_l2(Ctrl,path, ncid, nx, ny, dims_var, wo,type,status
   INTEGER,INTENT(OUT) :: ncid, dims_var(2)
   
   ! Local
-  INTEGER :: ierr, xdim, ydim, tdim
-
-  INTEGER :: xid, yid, tid
-  INTEGER :: yrlen(38), diff(2)
-  INTEGER :: i
+  INTEGER :: ierr, xdim, ydim
   
   INTEGER, PARAMETER :: SINGLE = 4
   INTEGER, PARAMETER :: DOUBLE = 8
-!  REAL(KIND=SINGLE):: lon(nx), lat(ny)
-  
-  CHARACTER(LEN=100) :: tunits
-  CHARACTER(LEN=  4) :: chryr
-    
+
   integer :: type
 
-  integer :: time
-
-  integer, dimension(1) :: start,counter,stride
-  
   integer :: status
 
   CHARACTER(len= 75) :: cncver,ccon,cinst,csname, csid, cuuid, &
@@ -104,7 +91,6 @@ SUBROUTINE nc_create_global_l2(Ctrl,path, ncid, nx, ny, dims_var, wo,type,status
 
   ! End of header ----------------------------------------------------------
   
-!ORG  write(chryr,'(i4)') ryr
   
   ! Create new file
   
@@ -236,9 +222,7 @@ SUBROUTINE nc_create_global_l2(Ctrl,path, ncid, nx, ny, dims_var, wo,type,status
 
   dims_var(1) = xdim !1
   dims_var(2) = ydim !3
- 
-!  dims_var(3) = tdim !2
-  
+
 
   IF (wo.EQ.1) THEN
      write(*,*) ''

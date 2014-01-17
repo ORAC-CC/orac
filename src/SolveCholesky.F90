@@ -45,7 +45,6 @@ subroutine Solve_Cholesky(A, b, x, n, Status)
    real, dimension(n), intent(INOUT) :: x
    integer, intent(OUT) :: Status
    real, dimension(n,n) :: D
-   integer :: i
 
    D = A
     

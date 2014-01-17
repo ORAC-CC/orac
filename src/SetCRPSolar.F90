@@ -120,9 +120,9 @@ Subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    integer, intent(out)                  :: status
 
 !  local variables 
-
+#ifdef DEBUG
    integer   :: i, j   ! Just for testing
-
+#endif
 
 !  Status is not actually set at present. Error-checking would be very
 !  costly in terms of CPU here. Leave status argument in case of future

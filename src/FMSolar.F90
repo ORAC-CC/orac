@@ -152,6 +152,7 @@ Subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
 
 !  Define local variables
 
+   integer :: i
    real    :: Tac_o(SPixel%Ind%NSolar)            
    real    :: Tac_v(SPixel%Ind%NSolar)                   
    real    :: Tbc2(SPixel%Ind%NSolar)           
@@ -162,10 +163,11 @@ Subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
    real    :: Sp(SPixel%Ind%NSolar)                 
    real    :: S_dnom(SPixel%Ind%NSolar)
    real    :: TBTD(SPixel%Ind%NSolar)
+#ifdef BKP
+   integer :: j                       ! For breakpoint output loops
    integer :: bkp_lun                 ! Unit number for breakpoint file
    integer :: ios                     ! I/O status for breakpoint file
-   integer :: i,j                     ! For breakpoint output loops
-
+#endif
 !  Interpolate cloud radiative property LUT data to the current Tau, Re values
 !  Note that Set_CRP_Solar interpolates values for all solar channels, except
 !  in the case of Td. This is interpolated by SetCRPThermal, which is called

@@ -238,17 +238,21 @@ subroutine Get_SPixel(Ctrl, conf,SAD_Chan, MSI_Data, RTM, SPixel, &
     type(config_struct) :: conf
     integer, intent(out)            :: status
 
+!#define DEBUG
+
 !   Define local variables
 
     integer          :: i, j, view
-    real             :: ncloud,minsolzen
-    character(180)   :: message
-    integer          :: bkp_lun, ios ! Logical unit number and IO status value
-                                  !    for breakpoint file.
+    real             :: minsolzen
     integer          :: stat      ! Local status value
-    integer          :: StartChan ! First valid channel for pixel, used in breakpoints.
-
-    #define DEBUG
+#ifdef DEBUG
+    character(180)   :: message
+#endif
+#ifdef BKP
+    integer :: bkp_lun   ! Unit number for breakpoint file
+    integer :: ios       ! I/O status for breakpoint file
+    integer :: StartChan ! First valid channel for pixel, used in breakpoints.
+#endif
 
     !Set status to zero
     status = 0

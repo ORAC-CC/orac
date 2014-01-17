@@ -17,9 +17,8 @@ subroutine read_config_file(Ctrl,conf)
 
   integer :: ncid,ierr,wo
   integer :: ndim,nvar,nattr,dummyint
-  integer(kind=nint), allocatable, dimension(:) :: msi_instr_ch_numbers
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
-  INTEGER(kind=nint) ::  xdim,ydim,cdim,vdim,albdim,emisdim
+  INTEGER(kind=nint) ::  xdim,ydim,cdim,albdim,emisdim
   character(len=varlength), allocatable :: dname(:)
   character(len=FilenameLen) :: name
 
@@ -91,7 +90,6 @@ subroutine read_config_file(Ctrl,conf)
   call nc_read_array_1d_int_to_int_orac(ncid,conf%nc,"msi_instr_ch_numbers",conf%channel_ids_instr,0)
   write(*,*) 'msi channel numbers instr',conf%channel_ids_instr
   !write(*,*)  'msi channel numbers y_id',Ctrl%Ind%Y_Id
-  !deallocate(msi_instr_ch_numbers)
 
   allocate(conf%channel_ids_abs(conf%nc))
   conf%channel_ids_abs=-1_nint

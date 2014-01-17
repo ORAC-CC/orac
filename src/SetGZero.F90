@@ -92,7 +92,7 @@ Subroutine Set_GZero (Tau, Re, Ctrl,Spixel, SAD_LUT, GZero, status)
                                                    ! "zero'th" grid points
    integer, intent(out)                  :: status
 
-   integer :: i,ii,j,k ! Loop counters
+   integer :: i,ii,j ! Loop counters
 
 !  Status is not actually set at present. Error-checking here could be very
 !  costly in terms of CPU. Leave status argument in case of future

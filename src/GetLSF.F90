@@ -53,8 +53,9 @@ subroutine Get_lsf(Ctrl, SPixel, MSI_Data, status)
 
 !    integer          :: i,j, jj,intflag ! stapel vars set but not used
 !    integer          :: qc1,qc2   ! N.B. qc vars are set but not used - code commented out
+#ifdef DEBUG
     character(180)   :: message
-
+#endif
 
 !   Initialise
 

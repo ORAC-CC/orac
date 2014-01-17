@@ -141,22 +141,21 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
    real            :: FGOP(11)
    real            :: Ref_o
-   integer         :: iFGOP,indexin
+   integer         :: iFGOP
    real            :: BT_o
    real            :: Rad
    real            :: Rad_o
    real            :: dR_dT
    real            :: dT_dR
-   real            :: tdiff,tfrac,pnew,pdiff,tdiff1,tdiffstore
-   real            :: pdiffstore, pdiffa,pstop
-  real            :: xstore=999
-   integer         :: i,startp,endp,stepp,indexstop
-   character(180)  :: message
+!  real            :: tdiff,tfrac,pnew,pdiff,tdiff1,tdiffstore
+!  real            :: pdiffstore, pdiffa,pstop
+!  integer         :: i,startp,endp,stepp,indexstop
+!  character(180)  :: message
    
    status=0
 
-   pdiffstore=2000000.
-   tdiffstore=2000.
+!  pdiffstore=2000000.
+!  tdiffstore=2000.
    !  Set up first guess optical depth vector
 
    data FGOP / 0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, 1.7, 2.0, 2.4 /

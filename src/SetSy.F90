@@ -65,7 +65,7 @@ Subroutine Set_Sy(Ctrl, SPixel, Kbj, Sy, status)
 !   real       :: Sb(SPixel%Ind%Ny, SPixel%Ind%Ny)  ! Model par. error covariance
    real       :: Syb(SPixel%Ind%Ny, SPixel%Ind%Ny) ! Sb mapped into measurement 
                                                    ! errors.
-   integer    :: i,j             ! Counters
+!  integer    :: i             ! Counters
 
    status = 0
 

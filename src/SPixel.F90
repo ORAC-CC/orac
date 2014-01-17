@@ -285,6 +285,9 @@ module SPixel_def
       real, pointer       :: f0(:)        ! Solar constant
       integer, pointer    :: spixel_y_to_ctrl_y_index(:) ! Index SPixel measurment
                                                          ! space to CRTL measuement space
+      integer, pointer    :: spixel_y_thermal_to_ctrl_y(:) ! Other useful indexes
+      integer, pointer    :: spixel_y_solar_to_spixel_y(:)
+      integer, pointer    :: spixel_y_thermal_to_spixel_y(:)
     end type SPixel_t
     
     type spixel_scanline_primary_output

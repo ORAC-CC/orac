@@ -192,9 +192,11 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 !MJ TEST  real           :: temp_solar_d_CRP(SPixel%Ind%NSolar, MaxCRProps, 2)
   integer        :: ThF, ThL     ! First, last thermal channel indices
   ! for RTM_Pc%LW arrays
-  integer        :: i,j
-  integer        :: bkp_lun, ios ! Unit number and IO status value for 
+  integer        :: i
+#ifdef BKP
+  integer        :: j, bkp_lun, ios ! Unit number and IO status value for 
   ! breakpoint output file
+#endif
   
   !   Write(*,*) 'START FM'
   Y = 0.0

@@ -129,7 +129,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
     integer        :: i, j
 !    integer        :: N_ThermChan
     integer        :: StartChan
-    character(180) :: message
     real           :: Rad, dR_dT
 
 !   Set status to zero

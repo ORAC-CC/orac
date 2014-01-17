@@ -165,7 +165,10 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
     real     :: dB_dT(SPixel%Ind%Nthermal)         ! Gradient of Planck function wrt Temp.
     integer  :: ThF, ThL     ! First, last thermal channel indices for RTM_Pc%LW arrays
     character(180) :: message
-    integer  :: bkp_lun, ios ! Logical unit number and IO status for breakpoint file.
+#ifdef BKP
+   integer   :: bkp_lun ! Unit number for breakpoint file
+   integer   :: ios     ! I/O status for breakpoint file
+#endif
 
 !    write(*,*) 'spline0'
 

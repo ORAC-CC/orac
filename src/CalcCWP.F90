@@ -44,7 +44,6 @@ Subroutine Calc_CWP (Ctrl,SPixel, status)
    implicit none
    type(SPixel_t), intent(inout)  :: SPixel
    type(CTRL_t), intent(in)    :: Ctrl
-   character(180)   :: message  ! Error message string returned by Read_Driver
    integer ,   intent(inout)   :: status  ! Status value returned from subroutines
    integer          :: ios  =0.    ! I/O status value from file operations
                                    ! ran successfully, arrays are allocated.
@@ -64,7 +63,11 @@ Subroutine Calc_CWP (Ctrl,SPixel, status)
       fac=(4./3.)*rho/qextwat
    elseif (trim(Ctrl%CloudClass%Name) == 'ICE') then
       rho=rhoice
-      fac=(4./3.)*rho/qextice  
+      fac=(4./3.)*rho/qextice
+   else
+      status = CWP_Calcerror
+      call Write_Log(Ctrl,'ERROR: Calc_CWP(), invalid Ctrl%CloudClass%Name',status)
+      return
    end if
 
 
@@ -93,7 +96,7 @@ Subroutine Calc_CWP (Ctrl,SPixel, status)
    !Spixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
    
 
-999 if (ios /= 0) then
+   if (ios /= 0) then
       status = CWP_Calcerror
       call Write_Log(Ctrl,'Error calculating CWP',status)
    end if

@@ -127,10 +127,13 @@ Subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero,Ctrl, FInt, FGrads, icrpr,statu
 					      ! BiCubic subroutine
    integer :: NChans 			      ! Number of channels in LUT arrays etc
    integer :: i, icrpr      			      ! Array counter
-   integer :: bkp_lun			      ! Unit number for breakpoint file
-   integer :: ios    			      ! I/O stat for file handling
     real, dimension(4) :: YIN	
 real, dimension(4) ::Yinb,dYdTauin,dYdRein,ddYin
+#ifdef BKP
+   integer :: bkp_lun ! Unit number for breakpoint file
+   integer :: ios     ! I/O status for breakpoint file
+#endif
+
    NChans = size(F,1)
 
    do i = 1, NChans

@@ -102,7 +102,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
    integer        :: ios     !    I/O status from file operations
    character(180) :: message !    Error message to pass to Write_Log
    integer        :: nVals   !    No. of Tau/Re/Satzen etc values in file
-   integer        :: i,j,k,l,m  ! Loop counters
+   integer        :: i,j,k   ! Loop counters
 
 
 
@@ -506,7 +506,7 @@ Subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, &
    integer        :: ios     !    I/O status from file operations
    character(180) :: message !    Error message to pass to Write_Log
    integer        :: nVals   !    No. of Tau/Re/Satzen etc values in file
-   integer        :: i,j,k,l,m  ! Loop counters
+   integer        :: i,j,k   ! Loop counters
 
 
    open(unit=l_lun, file=LUT_file, status = 'old', iostat=ios)	    
@@ -1252,7 +1252,7 @@ Subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, &
    integer        :: ios     !    I/O status from file operations
    character(180) :: message !    Error message to pass to Write_Log
    integer        :: nVals   !    No. of Tau/Re/Satzen etc values in file
-   integer        :: i,j,k,l,m  ! Loop counters
+   integer        :: i,j,k   ! Loop counters
 
 
    open(unit=l_lun, file=LUT_file, status = 'old', iostat=ios)	    
@@ -1499,14 +1499,14 @@ Subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
    
 !  Local variables
 
-   integer                :: i, j    !    Array counters
+   integer                :: j       !    Array counters
    character(FilenameLen) :: LUT_file!    Name of LUT file
    character(4)           :: chan_num!    Channel number converted to a string
    integer                :: l_lun   !    Unit number for LUT file
+#ifdef BKP
    integer                :: bkp_lun !    Unit number for breakpoint file
    integer                :: ios     !    I/O status returned by file open etc
-   integer                :: k       !    Array counter
-
+#endif
 
 !  Open breakpoint file if required. 
 

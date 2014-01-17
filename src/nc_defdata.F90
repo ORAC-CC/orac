@@ -75,15 +75,7 @@ SUBROUTINE nc_defdata_float(ncid,dims,var_name,vid,var_lname,var_sname, &
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
-
-  integer :: var_ln, var_sn,var_un
-
-  var_ln=len_trim(adjustl(var_lname))
-  var_sn=len_trim(adjustl(var_sname))
-  var_un=len_trim(adjustl(var_unit))
+  INTEGER :: ierr
 
 !  write(*,*) 'ncid', ncid
   ierr = NF90_REDEF(ncid)
@@ -100,8 +92,6 @@ SUBROUTINE nc_defdata_float(ncid,dims,var_name,vid,var_lname,var_sname, &
 
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, 'units' ,var_unit )
@@ -177,14 +167,7 @@ SUBROUTINE nc_defdata_float_no_att(ncid,dims,var_name,vid,var_lname,var_sname,va
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
-
-  integer :: var_ln, var_sn,var_un
-
-  var_ln=len_trim(adjustl(var_lname))
-  var_sn=len_trim(adjustl(var_sname))
+  INTEGER :: ierr
 
 !  write(*,*) 'ncid', ncid
   ierr = NF90_REDEF(ncid)
@@ -201,8 +184,6 @@ SUBROUTINE nc_defdata_float_no_att(ncid,dims,var_name,vid,var_lname,var_sname,va
 
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, '_FillValue', var_fill )
@@ -271,15 +252,7 @@ SUBROUTINE nc_defdata_double(ncid,dims,var_name,vid,var_lname,var_sname, &
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
-
-  integer :: var_ln, var_sn,var_un
-
-  var_ln=len_trim(adjustl(var_lname))
-  var_sn=len_trim(adjustl(var_sname))
-  var_un=len_trim(adjustl(var_unit))
+  INTEGER :: ierr
 
 !  write(*,*) 'ncid', ncid
   ierr = NF90_REDEF(ncid)
@@ -296,8 +269,6 @@ SUBROUTINE nc_defdata_double(ncid,dims,var_name,vid,var_lname,var_sname, &
 
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, 'units' ,var_unit )
@@ -382,15 +353,7 @@ SUBROUTINE nc_defdata_short(ncid,dims,var_name,vid,var_lname,var_sname, &
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
-
-  integer :: var_ln, var_sn,var_un
-
-  var_ln=len_trim(adjustl(var_lname))
-  var_sn=len_trim(adjustl(var_sname))
-  var_un=len_trim(adjustl(var_unit))
+  INTEGER :: ierr
 
 !  write(*,*) 'ncid', ncid
   ierr = NF90_REDEF(ncid)
@@ -407,8 +370,6 @@ SUBROUTINE nc_defdata_short(ncid,dims,var_name,vid,var_lname,var_sname, &
 
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, 'units' ,var_unit )
@@ -493,14 +454,7 @@ SUBROUTINE nc_defdata_short_no_units(ncid,dims,var_name,vid,var_lname,var_sname,
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
-
-  integer :: var_ln, var_sn,var_un
-
-  var_ln=len_trim(adjustl(var_lname))
-  var_sn=len_trim(adjustl(var_sname))
+  INTEGER :: ierr
 
 !  write(*,*) 'ncid', ncid
   ierr = NF90_REDEF(ncid)
@@ -515,9 +469,6 @@ SUBROUTINE nc_defdata_short_no_units(ncid,dims,var_name,vid,var_lname,var_sname,
  
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var standard_name'
-
-20 continue
-
 
 
   ierr = NF90_PUT_ATT(ncid, vid, '_FillValue', var_fill )
@@ -597,9 +548,7 @@ SUBROUTINE nc_defdata_long(ncid,dims,var_name,vid,var_lname,var_sname, &
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
+  INTEGER :: ierr
 
   integer :: var_ln, var_sn,var_un
 
@@ -621,8 +570,6 @@ SUBROUTINE nc_defdata_long(ncid,dims,var_name,vid,var_lname,var_sname, &
  
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, 'units' ,var_unit )
@@ -706,9 +653,7 @@ SUBROUTINE nc_defdata_byte(ncid,dims,var_name,vid,var_lname,var_sname, &
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
+  INTEGER :: ierr
 
   integer :: var_ln, var_sn,var_un
 
@@ -730,8 +675,6 @@ SUBROUTINE nc_defdata_byte(ncid,dims,var_name,vid,var_lname,var_sname, &
  
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, 'units' ,var_unit )
@@ -813,9 +756,7 @@ SUBROUTINE nc_defdata_byte_flag_value(ncid,dims,var_name,vid,var_lname,var_sname
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
+  INTEGER :: ierr
 
   integer :: var_ln, var_sn,var_un
 
@@ -837,8 +778,6 @@ SUBROUTINE nc_defdata_byte_flag_value(ncid,dims,var_name,vid,var_lname,var_sname
  
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, 'flag_values' ,var_unit )
@@ -924,9 +863,7 @@ SUBROUTINE nc_defdata_short_flag_value(ncid,dims,var_name,vid,var_lname,var_snam
   INTEGER :: vid
  
 ! Local
-  INTEGER :: ierr, ivar_fill
-  CHARACTER(len=100) :: flag_mea
-  INTEGER :: flag_val(7),  flag_mn
+  INTEGER :: ierr
 
   integer :: var_ln, var_sn
 
@@ -946,8 +883,6 @@ SUBROUTINE nc_defdata_short_flag_value(ncid,dims,var_name,vid,var_lname,var_snam
  
   ierr = NF90_PUT_ATT(ncid, vid, 'standard_name', var_sname)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error def var standard_name'
-
-20 continue
 
 
   ierr = NF90_PUT_ATT(ncid, vid, 'flag_meanings' ,var_mean )
