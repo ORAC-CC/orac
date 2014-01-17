@@ -373,7 +373,9 @@ program preprocessing
    read(cendy(1:len_trim(cendy)), '(I6)') endy
    read(cchunkproc(1:len_trim(cchunkproc)), '(I6)') chunkproc
    read(cday_night(1:len_trim(cday_night)), '(I6)') day_night
-   read(cverbose(1:len_trim(cverbose)), '(I6)') verbose
+   if(trim(adjustl(cverbose)) .eq. 'T')    verbose=.true.
+   if(trim(adjustl(cverbose)) .eq. 'F')    verbose=.false.
+   !MJ ORG read(cverbose(1:len_trim(cverbose)), '(I6)') verbose
 
    ! Initialise some counts, offset variables...
    nchunks1=0
