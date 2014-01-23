@@ -19,6 +19,7 @@
 ! 2011/12/09: MJ produces draft code with basic data types and lengths
 ! 2012/04/19: GT Added value of pi.
 ! 20131127 MJ adds parameters for netcdf4 compression
+! 20140123 MJ switches nc4 shuffling off.
 !
 ! $Id$
 !
@@ -85,13 +86,13 @@ module preproc_constants
 
 
   !turn on shuffling to improve compression
-  logical, parameter :: shuffle_float=.TRUE.
-  logical, parameter :: shuffle_double=.TRUE.
-  logical, parameter :: shuffle_lint=.TRUE.
-  logical, parameter :: shuffle_nint=.TRUE.
-  logical, parameter :: shuffle_stint=.TRUE.
-  logical, parameter :: shuffle_byte=.TRUE.
-  logical, parameter :: shuffle_stint_flag=.TRUE.
+  logical, parameter :: shuffle_float=.FALSE.
+  logical, parameter :: shuffle_double=.FALSE.
+  logical, parameter :: shuffle_lint=.FALSE.
+  logical, parameter :: shuffle_nint=.FALSE.
+  logical, parameter :: shuffle_stint=.FALSE.
+  logical, parameter :: shuffle_byte=.FALSE.
+  logical, parameter :: shuffle_stint_flag=.FALSE.
 
   !chunking array for internal file partitioning
   !integer(kind=lint), parameter, dimension(3) :: chunksize3d=(/180,90,1/)
