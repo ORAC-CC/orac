@@ -1,5 +1,6 @@
 !20131122: MJ writes routine which return ctp FG including uncertainty information
 !based on interpolation of brightness temperature.
+! 20140123 CP puts in a condition to check minimum inversion level as false inversions over cold surfaces were causing mon_k values of 0 which subsequently crashed the program
 
 subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
@@ -17,6 +18,10 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
   real            :: invert_t(SPixel%RTM%LW%Np),&
        & invert_p(SPixel%RTM%LW%Np),invert_h(SPixel%RTM%LW%Np)
   integer :: kspot,ik,mon_k,upper_index,lower_index
+  integer :: min_prof_lev
+
+! minimum level above which to look for inversion
+  min_prof_lev=3
 
   !invert order of profiles
   do ik=1,SPixel%RTM%LW%Np
@@ -27,12 +32,17 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
   enddo
 
+
   !default value for inversion: TOA
   mon_k=SPixel%RTM%LW%Np
   !determine where temperature inversion is, counting from ground up
   do ik=1,SPixel%RTM%LW%Np-1
+
      if(invert_t(ik+1) .gt. invert_t(ik)) then
+        if (ik .gt. min_prof_lev) then
+           ! this condition is needed as over cold serverices in particular inversions might appear at the surface
         mon_k=ik
+        endif
         exit
      endif
   enddo
@@ -41,7 +51,10 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
   !we interpolate between those two below then
   call locate_int(invert_t(1:mon_k),mon_k,BT_o,kspot)
   !if kspot is too low (unlikely)
+
+
   if( kspot .eq. 0) then
+!locate routine cannot find a pair of points in the temperature profile between which the BT falls. In other words the BT is outside the temperature profile (or at least this monotonous stretch of it which is investigated).
 #ifdef DEBUG
      write(*,*) 'WARNING: Locating kspot for FG/AP CTP FAILED'
      write(*,*) 'kspot',kspot
