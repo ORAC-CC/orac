@@ -24,6 +24,7 @@
 !2013/10/17: GM: wo was not initialised, resulting in compiler dependent
 !                initialisation behaviour.  It is now set to zero.
 ! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
+!20140124 MJ changes nx,ny from stint to lint to conform with definition in structure.
 !
 !
 ! $Id$
@@ -40,6 +41,7 @@ subroutine open_netcdf_output(nx,ny,output_pathin, output_pathout,&
      & cyear,chour,cminute,cmonth,cday,preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info)
 !---------------------------------------------------------------------------------
 !---------------------------------------------------------------------------------
+
 
   use preproc_constants
 
@@ -62,7 +64,7 @@ subroutine open_netcdf_output(nx,ny,output_pathin, output_pathout,&
 
   integer(kind=lint) :: wo = 0
 
-  integer(kind=stint) :: nx,ny
+  integer(kind=lint) :: nx,ny
 
   character(len=datelength) :: cyear,chour,cminute,cmonth,cday
 
