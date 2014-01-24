@@ -172,6 +172,7 @@
 !                '(I6)', as '(L6)' was causing a buffer overrun.
 ! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
 ! 2013/11/08: GM added missing call to deallocate_surface_structures()
+!2014/01/24: MJ fixed type mismatch in deallocation of surface structures.
 !
 ! $Id$
 !
@@ -744,8 +745,7 @@ program preprocessing
       call deallocate_imager_structures(imager_geolocation, &
            & imager_angles,imager_flags,&
            & imager_time,imager_measurements)
-      call deallocate_surface_structures(surface,imager_geolocation, &
-           & channel_info)
+      call deallocate_surface_structures(surface)
 
       !
       !end looping over chunks aatsr option
