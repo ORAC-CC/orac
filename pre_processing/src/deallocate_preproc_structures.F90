@@ -27,6 +27,7 @@
 ! 2012/08/01: MJ adds geopotential height coordinates
 ! 2012/11/14: CP adds surface pressure
 ! 2013/11/08: GM Added missing deallocate statements.
+!2014/01/24 MJ removec channel_info structure as it is not necessary and was used in the call.
 !
 ! $Id$
 !
@@ -35,7 +36,7 @@
 !none known
 
 subroutine deallocate_preproc_structures(preproc_geoloc,preproc_geo,preproc_dims, &
-           preproc_prtm, preproc_lwrtm, preproc_swrtm, preproc_surf,channel_info)
+           preproc_prtm, preproc_lwrtm, preproc_swrtm, preproc_surf)
 
   use preproc_constants
   use channel_structures
