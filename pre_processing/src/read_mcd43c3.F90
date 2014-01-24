@@ -38,10 +38,12 @@
 !                            defined.
 ! 2012/08/20 MJ changed read_mcd43c3 from function to subroutine in order to iron out bugs and some slight change
 ! Bugs:
+!2014/01/24 MJ corrects length of "path_to_file"
 !
 !
 
 subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, QC,stat)
+
   use mcd43c_def
   use preproc_constants
 
@@ -52,7 +54,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
 
  
 ! Input variables
-  character(len=300), intent(in)  :: path_to_file 
+  character(len=pathlength), intent(in)  :: path_to_file 
   integer(kind=stint), intent(in) :: nbands
   integer(kind=stint), intent(in) :: bands(:)
   integer(kind=sint), intent(in)  :: white_sky
