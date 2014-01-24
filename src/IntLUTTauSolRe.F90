@@ -40,7 +40,7 @@
 !    status int        Out         Standard status code set by ECP routines
 !
 ! Algorithm:
-!    The routine is passed the description of the LUT grid (Grid), and the 
+!    The routine is passed the description of the LUT grid (Grid), and the
 !    "zero'th" point grid data (in GZero: the calling routine populates GZero).
 !
 !    See comments in IntLUTTauRe for a detailed description of the bi-cubic
@@ -68,7 +68,7 @@
 !       function and gradient estimates are continuous in these dimensions.
 !       (Interpolation in angles is still done linearly.)
 !    20th Jan 2012, C. Poulsen:
-!       Created YIN variable to deal with contiguous array
+!       Created Yin variable to deal with contiguous array
 !     7th Feb 2012, Chris Arnold:
 !       Ctrl struct now passed to routine
 !     7th Feb 2012, Chris Arnold:
@@ -76,9 +76,13 @@
 !     8th Jul 2012, C. Poulsen:
 !       Fixed non contiguous array
 !     3rd Dec 2013, MJ:
-!       makes LUTs more flexible wrt channel and properties
+!       Makes LUTs more flexible wrt channel and properties.
 !    21st Jan 2014, Greg McGarragh:
 !       Cleaned up code.
+!    23st Jan 2014, Greg McGarragh:
+!       Performance improvements.  Primarily through elimination of unused
+!       memory references and computations expecially when setting local
+!       variable G.
 !
 ! Bugs:
 !    None known.
@@ -98,35 +102,34 @@ subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
    ! Note if these arguments are changed the interface definition in
    ! IntRoutines.f90 must be updated.
 
-   real, dimension(:,:,:,:), intent(in)    :: F
+   real, dimension(:,:,:,:), intent(in)  :: F
                                               ! The array to be interpolated.
-   type(LUT_Grid_t),         intent(in)    :: Grid
+   type(LUT_Grid_t),         intent(in)  :: Grid
                                               ! LUT grid data
-   type(GZero_t),            intent(in)    :: GZero
+   type(GZero_t),            intent(in)  :: GZero
                                               ! Struct containing "zero'th" grid
                                               ! points
-   type(CTRL_t),             intent(in)    :: Ctrl
-   real, dimension(:),       intent(inout) :: FInt
+   type(CTRL_t),             intent(in)  :: Ctrl
+   real, dimension(:),       intent(out) :: FInt
                                               ! Interpolated value of F at the
 					      ! required Tau, SolZen, Re values
 					      ! (1 value per channel).
-   real, dimension(:,:),     intent(inout) :: FGrads
+   real, dimension(:,:),     intent(out) :: FGrads
                                 	      ! Gradients of F wrt Tau and Re at
 					      ! required Tau, SolZen, Re values
 					      ! (1 value per channel).
-   integer,                  intent(in)    :: icrpr
-   integer,                  intent(out)   :: status
+   integer,                  intent(in)  :: icrpr
+   integer,                  intent(out) :: status
 
    ! Local variables
 
-   integer                       :: i
+   integer                       :: i, j, jj, k, kk
    integer                       :: NChans    ! Number of channels in LUT arrays
                                               ! etc
-   real, dimension(size(FInt),Grid%nmaxTau,Grid%nmaxRe) :: G
-					      ! A Matrix of dimension Nchan,
-					      ! NTau,Nre - used to store array
-					      ! only interpolated to current
-					      ! viewing geometry
+   real, dimension(-1:2,-1:2)    :: G         ! A Matrix of dimension NTau,Nre
+                                              ! used to store array only
+                                              ! interpolated to current viewing
+                                              ! geometry
    real, dimension(size(FInt),4) :: Y         ! A vector to contain the values
  					      ! of F at (iT0,iR0), (iT0,iR1),
 					      ! (iT1,iR1) and (iT1,iR0)
@@ -149,6 +152,18 @@ subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
+   integer, parameter       :: iXm1 = -1
+   integer, parameter       :: iX0  =  0
+   integer, parameter       :: iX1  =  1
+   integer, parameter       :: iXp1 =  2
+
+   integer, dimension(-1:2) :: T_index
+   integer, dimension(-1:2) :: R_index
+
+   real                     :: iT1_m_iTm1
+   real                     :: iTp1_m_iT0
+   real                     :: iR1_m_iRm1
+   real                     :: iRp1_m_iR0
 
    NChans = size(F,1)
 
@@ -156,126 +171,129 @@ subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
    ! around our X
 
    do i = 1, NChans
-      G(i,1:Grid%nTau(i,icrpr),1:Grid%nRe(i,icrpr)) = &
-           & (GZero%So1(i,icrpr)  * F(i,1:Grid%nTau(i,icrpr),GZero%iSoZ0(i,icrpr),1:Grid%nRe(i,icrpr))) + &
-           & (GZero%dSoZ(i,icrpr) * F(i,1:Grid%nTau(i,icrpr),GZero%iSoZ1(i,icrpr),1:Grid%nRe(i,icrpr)))
+      T_index(-1) = GZero%iTm1(i,icrpr)
+      T_index( 0) = GZero%iT0 (i,icrpr)
+      T_index( 1) = GZero%iT1 (i,icrpr)
+      T_index( 2) = GZero%iTp1(i,icrpr)
+      R_index(-1) = GZero%iRm1(i,icrpr)
+      R_index( 0) = GZero%iR0 (i,icrpr)
+      R_index( 1) = GZero%iR1 (i,icrpr)
+      R_index( 2) = GZero%iRp1(i,icrpr)
 
-      Y(i,1) = G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))
-      Y(i,4) = G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))
-      Y(i,3) = G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))
-      Y(i,2) = G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))
+      do j = iXm1, iXp1
+         jj = T_index(j)
+         do k = iXm1, iXp1
+            kk = R_index(k)
+            G(j,k) = (GZero%So1(i,icrpr)  * F(i,jj,GZero%iSoZ0(i,icrpr),kk)) + &
+                     (GZero%dSoZ(i,icrpr) * F(i,jj,GZero%iSoZ1(i,icrpr),kk))
+         end do
+      end do
 
-      ! Function derivatives at four LUT points around our X....
+      Y(i,1) = G(iX0,iX0)
+      Y(i,4) = G(iX0,iX1)
+      Y(i,3) = G(iX1,iX1)
+      Y(i,2) = G(iX1,iX0)
 
-      ! WRT to Tau
+      if (Ctrl%LUTIntflag .eq. 1) then
+         ! Function derivatives at four LUT points around our X....
 
-      if(abs(Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYdTau(i,1) = 0.0
-      else
-         dYdTau(i,1) = (G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)) - &
-                        G(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr))) / &
-                       (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr))
-      endif
-      if(abs(Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYdTau(i,2) = 0.0
-      else
-         dYdTau(i,2) = (G(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr)) - &
-                        G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))) / &
-                       (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
-      endif
-      if(abs(Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYdTau(i,3) = 0.0
-      else
-         dYdTau(i,3) = (G(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr)) - &
-                        G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr))) / &
-                       (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
-      endif
-      if(abs(Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYdTau(i,4) = 0.0
-      else
-         dYdTau(i,4) = (G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr)) - &
-                        G(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr))) / &
-                       (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr))
-      endif
+         ! WRT to Tau
+         if(abs(Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYdTau(i,1) = 0.0
+         else
+            dYdTau(i,1) = (G(iX1,iX0) - G(iXm1,iX0)) / &
+                          (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr))
+         endif
+         if(abs(Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYdTau(i,2) = 0.0
+         else
+            dYdTau(i,2) = (G(iXp1,iX0) - G(iX0,iX0)) / &
+                          (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
+         endif
+         if(abs(Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYdTau(i,3) = 0.0
+         else
+            dYdTau(i,3) = (G(iXp1,iX1) - G(iX0,iX1)) / &
+                          (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
+         endif
+         if(abs(Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYdTau(i,4) = 0.0
+         else
+            dYdTau(i,4) = (G(iX1,iX1) - G(iXm1,iX1)) / &
+                          (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr))
+         endif
 
-      ! WRT to Re
-      if(abs(Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYDRe(i,1) = 0.0
-      else
-         dYDRe(i,1) = (G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)) - &
-                       G(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr))) / &
-                      (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
-      endif
-      if(abs(Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYDRe(i,2) = 0.0
-      else
-         dYDRe(i,2) = (G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr)) - &
-                       G(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr))) / &
-                      (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
-      endif
-      if(abs(Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYDRe(i,3) = 0.0
-      else
-         dYDRe(i,3) = (G(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr)) - &
-                       G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))) / &
-                      (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
-      endif
-      if(abs(Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)) &
-         .le. ditherm15) then
-         dYDRe(i,4) = 0.0
-      else
-         dYDRe(i,4) = (G(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr)) - &
-                       G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))) / &
-                      (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
-      endif
+         ! WRT to Re
+         if(abs(Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYDRe(i,1) = 0.0
+         else
+            dYDRe(i,1) = (G(iX0,iX1) - G(iX0,iXm1)) / &
+                         (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
+         endif
+         if(abs(Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYDRe(i,2) = 0.0
+         else
+            dYDRe(i,2) = (G(iX1,iX1) - G(iX1,iXm1)) / &
+                         (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
+         endif
+         if(abs(Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYDRe(i,3) = 0.0
+         else
+            dYDRe(i,3) = (G(iX1,iXp1) - G(iX1,iX0)) / &
+                         (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
+         endif
+         if(abs(Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)) &
+            .le. ditherm15) then
+            dYDRe(i,4) = 0.0
+         else
+            dYDRe(i,4) = (G(iX0,iXp1) - G(iX0,iX0)) / &
+                         (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
+         endif
 
-!   - Cross derivatives (dY^2/dTaudRe)
-      if(abs((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
-             (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))) &
-         .le. ditherm15) then
-         ddY(i,1) = 0.0
-      else
-         ddY(i,1) = (G(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr)) - G(i,GZero%iT1(i,icrpr),GZero%iRm1(i,icrpr)) - &
-                     G(i,GZero%iTm1(i,icrpr),GZero%iR1(i,icrpr)) + G(i,GZero%iTm1(i,icrpr),GZero%iRm1(i,icrpr))) / &
-                    ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
-      endif
-      if(abs((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
-             (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))) &
-         .le. ditherm15) then
-         ddY(i,2) = 0.0
-      else
-         ddY(i,2) = (G(i,GZero%iTp1(i,icrpr),GZero%iR1(i,icrpr)) - G(i,GZero%iTp1(i,icrpr),GZero%iRm1(i,icrpr)) - &
-                     G(i,GZero%iT0(i,icrpr),GZero%iR1(i,icrpr)) + G(i,GZero%iT0(i,icrpr),GZero%iRm1(i,icrpr))) / &
-                    ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
-      endif
-      if(abs((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
-             (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))) &
-         .le. ditherm15) then
-         ddY(i,3) = 0.0
-      else
-         ddY(i,3) = (G(i,GZero%iTp1(i,icrpr),GZero%iRp1(i,icrpr)) - G(i,GZero%iTp1(i,icrpr),GZero%iR0(i,icrpr)) - &
-                     G(i,GZero%iT0(i,icrpr),GZero%iRp1(i,icrpr)) + G(i,GZero%iT0(i,icrpr),GZero%iR0(i,icrpr))) / &
-                    ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
-      endif
-      if(abs((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
-             (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))) &
-         .le. ditherm15) then
-         ddY(i,4) = 0.0
-      else
-         ddY(i,4) = (G(i,GZero%iT1(i,icrpr),GZero%iRp1(i,icrpr)) - G(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr)) - &
-                     G(i,GZero%iTm1(i,icrpr),GZero%iRp1(i,icrpr)) + G(i,GZero%iTm1(i,icrpr),GZero%iR0(i,icrpr))) / &
-                    ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
+         ! Cross derivatives (dY^2/dTaudRe)
+         if(abs((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
+                (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))) &
+            .le. ditherm15) then
+            ddY(i,1) = 0.0
+         else
+            ddY(i,1) = (G(iX1,iX1) - G(iX1,iXm1) - G(iXm1,iX1) + G(iXm1,iXm1)) / &
+                       ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
+                        (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
+         endif
+         if(abs((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
+                (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))) &
+            .le. ditherm15) then
+            ddY(i,2) = 0.0
+         else
+            ddY(i,2) = (G(iXp1,iX1) - G(iXp1,iXm1) - G(iX0,iX1) + G(iX0,iXm1)) / &
+                       ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
+                        (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
+         endif
+         if(abs((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
+                (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))) &
+            .le. ditherm15) then
+            ddY(i,3) = 0.0
+         else
+            ddY(i,3) = (G(iXp1,iXp1) - G(iXp1,iX0) - G(iX0,iXp1) + G(iX0,iX0)) / &
+                       ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
+                        (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
+         endif
+         if(abs((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
+                (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))) &
+            .le. ditherm15) then
+            ddY(i,4) = 0.0
+         else
+            ddY(i,4) = (G(iX1,iXp1) - G(iX1,iX0) - G(iXm1,iXp1) + G(iXm1,iX0)) / &
+                       ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
+                        (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
+         endif
       endif
    end do
 
@@ -284,8 +302,8 @@ subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
    ! subroutine - Oct 2011]
    if (Ctrl%LUTIntflag .eq. 0) then
       do i = 1,NChans
-         YIN=Y(i,:)
-         call linint(YIN,Grid%Tau(i,GZero%iT0(i,icrpr),icrpr), &
+         Yin=Y(i,:)
+         call linint(Yin,Grid%Tau(i,GZero%iT0(i,icrpr),icrpr), &
                          Grid%Tau(i,GZero%iT1(i,icrpr),icrpr), &
                          Grid%Re(i,GZero%iR0(i,icrpr),icrpr), &
                          Grid%Re(i,GZero%iR1(i,icrpr),icrpr), &
