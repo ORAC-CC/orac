@@ -32,6 +32,8 @@
 !       Set_CRP_Thermal no longer requires argument First.
 !    20th Dec 2014, Greg McGarragh:
 !       Cleaned up code.
+!    24th Dec 2014, Greg McGarragh:
+!       Some indent changes.
 !
 ! Bugs:
 !    None known
@@ -53,19 +55,19 @@ module FM_Routines_def
 	 implicit none
 
          ! Argument declarations
-	 type(Ctrl_t),           intent(in)    :: Ctrl
-         type(SPixel_Ind_t),     intent(in)    :: Ind
-	 type(GZero_t),          intent(in)    :: GZero
-                                                  ! Struct containing "zero'th"
-                                                  ! grid points
-	 type(SAD_LUT_t),        intent(in)    :: SAD_LUT
-	 real, dimension(:,:),   intent(inout) :: CRPOut
-                        			  ! Interpolated values returned
-                        			  ! (CRPOut(1)=RBD, (2)=TB, ...)
-	 real, dimension(:,:,:), intent(inout) :: dCRPOut
-                                		  ! Interpolated gradients of
-                                                  ! CRPOut in Tau and Re
-	 integer,                intent(out)   :: status
+	 type(Ctrl_t),           intent(in)  :: Ctrl
+         type(SPixel_Ind_t),     intent(in)  :: Ind
+	 type(GZero_t),          intent(in)  :: GZero
+                                                ! Struct containing "zero'th"
+                                                ! grid points
+	 type(SAD_LUT_t),        intent(in)  :: SAD_LUT
+	 real, dimension(:,:),   intent(out) :: CRPOut
+                        			! Interpolated values returned
+                        			! (CRPOut(1)=RBD, (2)=TB, ...)
+	 real, dimension(:,:,:), intent(out) :: dCRPOut
+                                		! Interpolated gradients of
+                                                ! CRPOut in Tau and Re
+	 integer,                intent(out) :: status
       end subroutine Set_CRP_Solar
    end interface
 
@@ -82,19 +84,19 @@ module FM_Routines_def
 	 implicit none
 
          ! Argument declarations
-	 type(Ctrl_t),           intent(in)    :: Ctrl
-         type(SPixel_Ind_t),     intent(in)    :: Ind
-	 type(GZero_t),          intent(in)    :: GZero
-                                                  ! Struct containing "zero'th"
-                                                  ! grid points
-	 type(SAD_LUT_t),        intent(in)    :: SAD_LUT
-	 real, dimension(:,:),   intent(inout) :: CRPOut
-                        			  ! Interpolated values returned
-                        			  ! (CRPOut(1)=RBD, (2)=TB, ...)
-	 real, dimension(:,:,:), intent(inout) :: dCRPOut
-                                		  ! Interpolated gradients of
-                                                  ! CRPOut in Tau and Re
-	 integer,                intent(out)   :: status
+	 type(Ctrl_t),           intent(in)  :: Ctrl
+         type(SPixel_Ind_t),     intent(in)  :: Ind
+	 type(GZero_t),          intent(in)  :: GZero
+                                                ! Struct containing "zero'th"
+                                                ! grid points
+	 type(SAD_LUT_t),        intent(in)  :: SAD_LUT
+	 real, dimension(:,:),   intent(out) :: CRPOut
+                        			! Interpolated values returned
+                        			! (CRPOut(1)=RBD, (2)=TB, ...)
+	 real, dimension(:,:,:), intent(out) :: dCRPOut
+                                		! Interpolated gradients of
+                                                ! CRPOut in Tau and Re
+	 integer,                intent(out) :: status
       end subroutine Set_CRP_Thermal
    end interface
 

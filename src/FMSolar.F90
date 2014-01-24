@@ -106,6 +106,8 @@
 !       Fixed bug with rtm_pc%tbc array allocation.
 !    20th Dec 2014, Greg McGarragh:
 !       Cleaned up code.
+!    24th Dec 2014, Greg McGarragh:
+!       Some indent changes.
 !
 ! Bugs:
 !   None known.
@@ -133,8 +135,8 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    type(RTM_Pc_t),  intent(inout) :: RTM_Pc
    real,            intent(in)    :: X(MaxStateVar)
    type(GZero_t),   intent(in)    :: GZero
-   real,            intent(inout) :: CRP(SPixel%Ind%NSolar,MaxCRProps)
-   real,            intent(inout) :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
+   real,            intent(out)   :: CRP(SPixel%Ind%NSolar,MaxCRProps)
+   real,            intent(out)   :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
    real,            intent(out)   :: REF(SPixel%Ind%NSolar)
    real,            intent(out)   :: d_REF(SPixel%Ind%NSolar, MaxStateVar+1)
    integer,         intent(out)   :: status

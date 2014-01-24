@@ -62,6 +62,8 @@
 !       to Int_LUT_TauSatRe().
 !    20th Dec 2014, Greg McGarragh:
 !       Cleaned up code.
+!    24th Dec 2014, Greg McGarragh:
+!       Some indent changes.
 !
 ! Bugs:
 !    None known.
@@ -82,19 +84,19 @@ subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 !  Note if these arguments are changed, the interface definition in
 !  FMRoutines.f90 must be updated to match.
 
-   type(Ctrl_t),           intent(in)    :: Ctrl
-   type(SPixel_Ind_t),     intent(in)    :: Ind
-   type(GZero_t),          intent(in)    :: GZero
-                                            ! Struct containing "zero'th" grid
-                                            ! points
-   type(SAD_LUT_t),        intent(in)    :: SAD_LUT
-   real, dimension(:,:),   intent(inout) :: CRPOut
-                        		   ! Interpolated values returned
-                        		   ! (CRPOut(1)=RBD, (2)=TB, ...)
-   real, dimension(:,:,:), intent(inout) :: dCRPOut
-                                	   ! Interpolated gradients of CRPOut in
-					   ! Tau and Re
-   integer,                intent(out)   :: status
+   type(Ctrl_t),           intent(in)  :: Ctrl
+   type(SPixel_Ind_t),     intent(in)  :: Ind
+   type(GZero_t),          intent(in)  :: GZero
+                                          ! Struct containing "zero'th" grid
+                                          ! points
+   type(SAD_LUT_t),        intent(in)  :: SAD_LUT
+   real, dimension(:,:),   intent(out) :: CRPOut
+                        		  ! Interpolated values returned
+                        		  ! (CRPOut(1)=RBD, (2)=TB, ...)
+   real, dimension(:,:,:), intent(out) :: dCRPOut
+                                	  ! Interpolated gradients of CRPOut in
+					  ! Tau and Re
+   integer,                intent(out) :: status
 
    ! Status is not actually set at present. Error-checking would be very costly
    ! in terms of CPU here. Leave status argument in case of future updates. Set

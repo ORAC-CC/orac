@@ -42,6 +42,8 @@
 !       Int_LUT_TauSatRe.
 !    20th Dec 2014, Greg McGarragh:
 !       Cleaned up code.
+!    24th Dec 2014, Greg McGarragh:
+!       Some indent changes.
 !
 ! Bugs:
 !    None known
@@ -59,14 +61,14 @@ module Int_Routines_def
 
 	 implicit none
 
-	 real, dimension(:,:,:), intent(in)    :: F
-	 type(LUT_Grid_t),       intent(in)    :: Grid
-	 type(GZero_t),          intent(in)    :: GZero
-         type(CTRL_t),           intent(in)    :: Ctrl
-	 real, dimension(:),     intent(inout) :: FInt
-	 real, dimension(:,:),   intent(inout) :: FGrads
-         integer,                intent(in)    :: icrpr
-         integer,                intent(out)   :: status
+	 real, dimension(:,:,:), intent(in)  :: F
+	 type(LUT_Grid_t),       intent(in)  :: Grid
+	 type(GZero_t),          intent(in)  :: GZero
+         type(CTRL_t),           intent(in)  :: Ctrl
+	 real, dimension(:),     intent(out) :: FInt
+	 real, dimension(:,:),   intent(out) :: FGrads
+         integer,                intent(in)  :: icrpr
+         integer,                intent(out) :: status
       end subroutine Int_LUT_TauRe
    end interface
 
@@ -80,14 +82,14 @@ module Int_Routines_def
 
 	 implicit none
 
-	 real, dimension(:,:,:,:), intent(in)    :: F
-	 type(LUT_Grid_t),         intent(in)    :: Grid
-	 type(GZero_t),            intent(in)    :: GZero
-         type(CTRL_t),             intent(in)    :: Ctrl
-	 real, dimension(:),       intent(inout) :: FInt
-	 real, dimension(:,:),     intent(inout) :: FGrads
-         integer,                  intent(in)    :: icrpr
-         integer,                  intent(out)   :: status
+	 real, dimension(:,:,:,:), intent(in)  :: F
+	 type(LUT_Grid_t),         intent(in)  :: Grid
+	 type(GZero_t),            intent(in)  :: GZero
+         type(CTRL_t),             intent(in)  :: Ctrl
+	 real, dimension(:),       intent(out) :: FInt
+	 real, dimension(:,:),     intent(out) :: FGrads
+         integer,                  intent(in)  :: icrpr
+         integer,                  intent(out) :: status
 
       end subroutine Int_LUT_TauSolRe
    end interface
@@ -102,16 +104,16 @@ module Int_Routines_def
 
 	 implicit none
 
-	 real, dimension(:,:,:,:), intent(in)    :: F
-	 type(LUT_Grid_t),         intent(in)    :: Grid
-	 type(GZero_t),            intent(in)    :: GZero
-         type(CTRL_t),             intent(in)    :: Ctrl
-	 real, dimension(:),       intent(inout) :: FInt
-	 real, dimension(:,:),     intent(inout) :: FGrads
-         integer,                  intent(in)    :: icrpr
-         integer,                  intent(in)    :: i_chan_to_ctrl_offset
-         integer,                  intent(in)    :: i_chan_to_spixel_offset
-         integer,                  intent(out)   :: status
+	 real, dimension(:,:,:,:), intent(in)  :: F
+	 type(LUT_Grid_t),         intent(in)  :: Grid
+	 type(GZero_t),            intent(in)  :: GZero
+         type(CTRL_t),             intent(in)  :: Ctrl
+	 real, dimension(:),       intent(out) :: FInt
+	 real, dimension(:,:),     intent(out) :: FGrads
+         integer,                  intent(in)  :: icrpr
+         integer,                  intent(in)  :: i_chan_to_ctrl_offset
+         integer,                  intent(in)  :: i_chan_to_spixel_offset
+         integer,                  intent(out) :: status
       end subroutine Int_LUT_TauSatRe
    end interface
 
@@ -124,14 +126,14 @@ module Int_Routines_def
 
 	 implicit none
 
-	 real, dimension(:,:,:,:,:,:), intent(in)    :: F
-	 type(LUT_Grid_t),             intent(in)    :: Grid
-	 type(GZero_t),                intent(in)    :: GZero
-         type(CTRL_t),                 intent(in)    :: Ctrl
-	 real, dimension(:),           intent(inout) :: FInt
-	 real, dimension(:,:),         intent(inout) :: FGrads
-         integer,                      intent(in)    :: icrpr
-         integer,                      intent(out)   :: status
+	 real, dimension(:,:,:,:,:,:), intent(in)  :: F
+	 type(LUT_Grid_t),             intent(in)  :: Grid
+	 type(GZero_t),                intent(in)  :: GZero
+         type(CTRL_t),                 intent(in)  :: Ctrl
+	 real, dimension(:),           intent(out) :: FInt
+	 real, dimension(:,:),         intent(out) :: FGrads
+         integer,                      intent(in)  :: icrpr
+         integer,                      intent(out) :: status
       end subroutine Int_LUT_TauSatSolAziRe
    end interface
 
