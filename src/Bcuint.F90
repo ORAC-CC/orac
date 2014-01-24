@@ -1,32 +1,30 @@
+!-------------------------------------------------------------------------------
 ! BCuInt.F90
 !
 ! Purpose:
-!
 !	Performs a bicubic interpolation on the interval ((0,0),(0,1),
 !	(1,1),(1,0))
 !
 ! Description:
-!
 !	Bicubic Interpolation within a grid quare. Input quantities are
 !	y, y1, y2, y12, x1l, x1u, x2l, x2u, x1, x2 as described below.
-!	The interpolated function value is returned as ansy and the 
+!	The interpolated function value is returned as ansy and the
 !	interpolated gradient values as ansy1 and ansy2.
 !
 ! Calls:
-!	
 !	BCuCof.F90
 !
 ! Arguments:
 !    Name        Type    In/Out/Both    Description
 !    y           real array  In         Values of functions at each of
-!                                       the four vertices around the 
+!                                       the four vertices around the
 !                                       point to be interpolated to.
 !                                       Values should be listed in
 !                                       anti-clockwise order, starting
 !                                       at the bottom left.
-!    y1          real array  In         Derivatives wrt to the 
+!    y1          real array  In         Derivatives wrt to the
 !                                       "x-coordinate" at the vertices.
-!    y2          real array  In         Derivatives wrt to the 
+!    y2          real array  In         Derivatives wrt to the
 !                                       "y-coordinate" at the vertices.
 !    y12         real array  In         Second order cross-derivatives
 !                                       at the vertices.
@@ -38,9 +36,9 @@
 !					square in the 2- direction
 !    x2u	 real	     In		The upper coordinates of the grid
 !					square in the 2- direction
-!    x1		 real	     In		Coodinate of interpolation point
+!    x1		 real	     In		Coordinate of interpolation point
 !					in the 1- direction
-!    x2		 real	     In		Coodinate of interpolation point
+!    x2		 real	     In		Coordinate of interpolation point
 !					in the 2- direction
 !    ansy        real        Out        The interpolated value of the
 !                                       function at t,u
@@ -54,40 +52,44 @@
 !    Uses BcuCof.F90
 !
 ! History
-!    22nd April 2009 - Written by C. Arnold 
+!    22nd April 2009 - Written by C. Arnold
+!    23 December 2014, Greg McGarragh:
+!       Transpose the use of local variable c for compatibility with changes
+!       made in bcucof() plus some code clean up.
 !
 ! Bugs
 !    None known
 !
-!---------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
-Subroutine bcuint(y,y1,y2,y12,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
+subroutine bcuint(y,y1,y2,y12,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
 
     implicit none
 
 !   Define arguments
 
-    real, dimension(4), intent(in) :: y,y1,y2,y12
-    real, intent(in) :: x1l,x1u,x2l,x2u,x1,x2
-    real, intent(out) :: ansy,ansy1,ansy2
+    real, dimension(4), intent(in)  :: y,y1,y2,y12
+    real,               intent(in)  :: x1l,x1u,x2l,x2u,x1,x2
+    real,               intent(out) :: ansy,ansy1,ansy2
 
 !   Define local variables
 
-    integer :: i
-    real :: t,u
+    integer              :: i
+    real                 :: t,u
     real, dimension(4,4) :: c
 
-    Interface
-       Subroutine bcucof(y,y1,y2,y12,d1,d2,c)
-          real, intent(in) :: d1,d2
-          real, dimension(4), intent(in) :: y,y1,y2,y12
+    interface
+       subroutine bcucof(y,y1,y2,y12,d1,d2,c)
+          real, dimension(4),   intent(in)  :: y,y1,y2,y12
+          real,                 intent(in)  :: d1,d2
           real, dimension(4,4), intent(out) :: c
-       End Subroutine bcucof
-    End Interface
+       end subroutine bcucof
+    end interface
 
     call bcucof(y,y1,y2,y12,x1u-x1l,x2u-x2l,c)
     if (x1u == x1l .or. x2u == x2l) write(*,*) &
-         & 'BCuInt:problem with input values - boundary pair equal?', x1u, x1l, x2u, x2l
+       'BCuInt: problem with input values - boundary pair equal?', &
+       x1u, x1l, x2u, x2l
 
     t=x1
     u=x2
@@ -95,12 +97,11 @@ Subroutine bcuint(y,y1,y2,y12,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
     ansy2=0.0
     ansy1=0.0
     do i=4,1,-1
-        ansy=t*ansy+((c(i,4)*u+c(i,3))*u+c(i,2))*u+c(i,1)
-        ansy2=t*ansy2+(3.0*c(i,4)*u+2.0*c(i,3))*u+c(i,2)
-        ansy1=u*ansy1+(3.0*c(4,i)*t+2.0*c(3,i))*t+c(2,i)
+        ansy=t*ansy+((c(4,i)*u+c(3,i))*u+c(2,i))*u+c(1,i)
+        ansy2=t*ansy2+(3.0*c(4,i)*u+2.0*c(3,i))*u+c(2,i)
+        ansy1=u*ansy1+(3.0*c(i,4)*t+2.0*c(i,3))*t+c(i,2)
     end do
     ansy1=ansy1/(x1u-x1l)
     ansy2=ansy2/(x2u-x2l)
 
 end subroutine bcuint
-
