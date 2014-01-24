@@ -5,8 +5,9 @@ OBJS=/misc/cluster_home/cpoulsen/orac_svn/v17/src/
 F90=/opt/intel/composer_xe_2011_sp1.8.273/bin/intel64/ifort 
 
 #set compiler flags
-FFLAGS=-g -check all -heap-arrays -traceback -static
-LFLAGS=-g -check all -heap-arrays -traceback -static
+FFLAGS= -openmp -g -check all -heap-arrays -traceback -heap-arrays -traceback -fstack-protector -O0 -check bounds -check noarg_temp_created 
+# -check noarg_temp_created 
+LFLAGS= -openmp -g -check all -heap-arrays -traceback -heap-arrays -traceback  -warn all -fstack-protector -check noarg_temp_created 
 
 
 #FFLAGS=-O0  -check bounds  -traceback  -static 
