@@ -491,8 +491,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       J2plus_A = d2J_dX2 + (alpha * unit)
       minusdJ_dX=-dJ_dX
 
-!     delta_X=0.0 ! XXX
-
       call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
 
 #ifdef DEBUG
@@ -778,14 +776,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       if (SPixel%NxI > 0 .or. Ctrl%Eqmpn%Rs == 0) then
          Dy = matmul(Diag%St(1:SPixel%Nx,1:SPixel%Nx), KxT_SyI)
 
-         ! Kb(:, 1:SPixel%NxI) = Kx(:,SPixel%XI) XXX
-
          ! Kx isn't actually set for inactive vars so we use a scaled dY_dX).
          do m=1,SPixel%NxI
             Kb(:,m) = dY_dX(:,SPixel%XI(m)) / Ctrl%Invpar%XScale(SPixel%XI(m))
          end do
-
-         ! Sb = 0. XXX
 
          Sb(1:SPixel%NxI,1:SPixel%NxI) = SPixel%Sx(SPixel%XI,SPixel%XI)
 

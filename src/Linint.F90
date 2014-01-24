@@ -1,22 +1,20 @@
+!-------------------------------------------------------------------------------
 ! LinInt.F90
 !
 ! Purpose:
-!
 !	Performs a linear interpolation on the interval ((0,0),(0,1),
 !	(1,1),(1,0))
 !
 ! Description:
-!
 !	This routine is the linear equivalent of bcuint.f90
 !
 ! Calls:
-!	
 !	BCuCof.F90
 !
 ! Arguments:
 !    Name        Type    In/Out/Both    Description
 !    y           real array  In         Values of functions at each of
-!                                       the four vertices around the 
+!                                       the four vertices around the
 !                                       point to be interpolated to.
 !                                       Values should be listed in
 !                                       anti-clockwise order, starting
@@ -44,26 +42,28 @@
 !    Simple linear interpolation
 !
 ! History
-!    2nd October 2011 - Written by C. Arnold 
+!    2nd October 2011 - Written by C. Arnold
+!    23rd Jan 2014, Greg McGarragh:
+!       Cleaned up code.
 !
 ! Bugs
 !    None known
 !
-!---------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
-Subroutine linint(y,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
+subroutine linint(y,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
 
-  use ECP_Constants
+   use ECP_Constants
 
-    implicit none
+   implicit none
 
-!   Define arguments
+   ! Define arguments
 
-    real, dimension(4), intent(in) :: y
-    real, intent(in) :: x1l,x1u,x2l,x2u,x1,x2
-    real, intent(out) :: ansy,ansy1,ansy2
+   real, dimension(4), intent(in)  :: y
+   real,               intent(in)  :: x1l,x1u,x2l,x2u,x1,x2
+   real,               intent(out) :: ansy,ansy1,ansy2
 
-!   Define local variables
+   ! Define local variables
 
    real :: dh1, dh2, dl1, dl2
 
@@ -71,27 +71,26 @@ Subroutine linint(y,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
    dl1 = (1. - dh1)
    dh2 = (x2)
    dl2 = (1. - dh2)
-   
+
    ansy = ((y(1) * dl1 * dl2) + &
         (y(2) * dh1 * dl2) + &
         (y(3) * dh1 * dh2) + &
         (y(4) * dl1 * dh2))
 
    if(abs(x1u-x1l) .le. ditherm15) then
-      ansy1 =0.00
+      ansy1 = 0.0
    else
       ansy1 = (((y(2) * dl2) + (y(3) * dh2)) - &
-           ((y(1) * dl2) + (y(4) * dh2))) &
-           / (x1u-x1l)
+         ((y(1) * dl2) + (y(4) * dh2))) &
+         / (x1u-x1l)
    endif
 
    if(abs(x2u-x2l) .le. ditherm15) then
-      ansy2=0.00
+      ansy2 = 0.0
    else
       ansy2 = (((y(4) * dl1) + (y(3) * dh1)) - &
-           ((y(1) * dl1) + (y(2) * dh1))) &
-           / (x2u-x2l)
+         ((y(1) * dl1) + (y(2) * dh1))) &
+         / (x2u-x2l)
    endif
 
- end subroutine linint
-
+end subroutine linint
