@@ -48,14 +48,14 @@ SUBROUTINE nc_open(ncid,fname,ierr,wo)
   ierr = nf90_open(path=trim(adjustl(fname)),mode = nf90_nowrite,ncid = ncid)       !open file
   !write(*,*) ncid
    IF (ierr.NE.NF90_NOERR) THEN
-      write(*,*) 'path and file:', fname
+      write(*,*) 'path and file:', trim(fname)
       stop 'error open input file'
    ENDIF
 
    IF (wo.EQ.1) THEN
       write(*,*) '---------------------------------------------'
       write(*,*) '  '
-      write(*,*) 'open file: ', fname
+      write(*,*) 'open file: ', trim(fname)
       write(*,*) '  '
       write(*,*) '---------------------------------------------'
    ENDIF

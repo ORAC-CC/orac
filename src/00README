@@ -1,192 +1,236 @@
-Readme file for ORAC source code
--------------------------------
+An introduction to ORAC for a new user
+--------------------------------------
 
-Updated 23-May-2011, Andy Smith
+Documentation for ORAC is now managed through a Wiki system, found at:
+  http://proj.badc.rl.ac.uk/orac/wiki
+The text below is a copy of the text on 27 Jan 2014, though you are strongly
+encouraged to use the Wiki system as it will be the most up-to-date version.
 
-This version of the ORAC code has been developed and tested on a Linux platform 
-using the Intel ifort compiler (version 8.1).
+--------------------------------------
 
-Building the code
------------------
+The Optimal Retrieval of Aerosol and Cloud (ORAC) is an optimal
+estimation scheme that determines aerosol and cloud properties from
+multispectral imagery. There are two separate components to the
+software - the pre-processor and the processor itself. The
+pre-processor takes a number of satellite and other data files to
+produce a set of NetCDF files. Those files are the inputs for the main
+processor, which outputs the results of the retrieval into two further
+NetCDF files.
 
-The supplied Makefile contains targets for the main orac executable, several test 
-harness programs for different sections of the code, and some additional test 
-programs.
+You will require:
+- SVN, a version control package. It can be found at
+http://subversion.tigris.org/.
+- a Fortran 90 compiler. The author of these instructions used ifort
+on an Ubuntu 12 system.
 
-To build all targets, type 'make'
-To build the orac program, type 'make orac'
+The source code for ORAC is stored at
+http://proj.badc.rl.ac.uk/orac. The homepage of this site presents a
+wiki-style set of instructions. The source code itself can be viewed
+in a browser by clicking "Browse Source" along the top bar of the
+page. You will be asked for a login, which is managed through the
+BADC.
+- You must have an account with the BADC, which can be obtain at
+http://badc.nerc.ac.uk/reg/user_register_info.html.  
+- You must be added as a developer. To do so, email Don Grainger
+(r.grainger@…) and ask to be added as an SVN and trac user for
+ORAC. This may take a few days.
+- Once you have been made a developer, it is advised you join the ORAC
+developer's mailing list. To do so, create an account with
+http://www.jiscmail.ac.uk, go to http://www.jiscmail.ac.uk/devorac,
+click "Subscribe or Unsubscribe", select your desired preferences,
+click "Subscribe", and click the link in the confirmation email that
+you will eventually receive.
 
-The main build removes all object files before compiling. 
+Once logged in, the web interface presents you with a series of
+folders. 'trunk' is your primary concern, which contains all of the
+source code for ORAC. Files can be viewed through this interface and
+their various versions compared. However, this interface is primarily
+for inspecting the files, not altering or using them. Of particular
+use is the "Revision Log" link at the top right of the page for any
+code, which can be used to track changes over any number of revisions.
 
-In general you will only want to build the main orac program. If you have problems 
-at run-time, the test harnesses may help diagnose the problem. Otherwise they are 
-only useful for development. 
+To download a copy of the ORAC source code, open a terminal and change
+directory to the folder in which you wish to store the files. Use the
+command:
+   svn checkout http://proj.badc.rl.ac.uk/orac/trunk 
+This will produce a local working copy of the source code on your
+machine. For a brief description of the other SVN commands you will
+require to update the source, view
+http://proj.badc.rl.ac.uk/orac/trunk/docs/ORAC_Mini_SVN_guide.pdf
+and/or the SVN book (
+http://svnbook.red-bean.com/en/1.7/svn-book.pdf).
 
-Executables or targets currently supported are:
+Broadly, the folder structure is:
+docs - Documentation, largely similar to that shown in the wiki.  
+idl - Assorted plotting and visualisation codes for ORAC's output written
+in IDL.  
+pre_processing - The ORAC pre-processor, which converts a set of
+satellite and other data files into NCDF files that ORAC can read. The
+source code is within the folders 'C' and 'modis', with the others
+containing various data files.
+src - The ORAC processor source code.  Having obtained the ORAC source
+code, one must now compile it.
 
-Target: orac    HarnessInvMarq   HarnessFM    HarnessFMSolar   HarnessFMThermal
-Exe:    orac    HarInvMarq       HarFM        HarFMSolar       HarFMThermal
+--------------------------------------
+The Pre-processor
+--------------------------------------
 
-Target: HarnessReadDriver  HarnessReadSat   HarnessGetSPixel
-Exe:    HarReadDriver      HarReadSat       HarGetSPixel
+The pre-processor code is in the folder
+http://proj.badc.rl.ac.uk/orac/trunk/pre_preprocessing/src and is
+compiled with a Makefile. This is controlled by two files:
+- The archfile, which sets the Fortran and C compilers to be used and
+the settings for those compilers; 
+- The libfile, which lists the paths to all the libraries required by
+the compilers.
 
-(target and executable names differ slightly for ease of typing executable 
-names when running from the command line)
+Paths to these files are given at the top of the Makefile and they
+should be stored in this directory. Every group using ORAC has its own
+local version of these files, many of which are uploaded to the
+repository for your inspection. If you make your own version of these
+files, please edit your Makefile to point to them.
 
-To make HarnessFM, for example, type
+ORAC requires several libraries, which you will need to obtain and
+(most likely) compile. These are:
+- HDF4 and 5 which use the SZIP, ZLIB, and JPEG libraries. These can be
+found at http://www.hdfgroup.org;
+- HDF-EOS, which can be found at the same site;
+- NetCDF at http://www.unidata.ucar.edu; 
+- The ECMWF GRIB API at
+https://software.ecmwf.int/wiki/display/GRIB/Home;
+- JASPER at http://www.ece.uvic.ca/~frodo/jasper/;
+- RTTOV at
+http://research.metoffice.gov.uk/research/interproj/nwpsaf/rtm/;
+- BEAM, used to read ENVISAT files, at https://github.com/bcdev/epr-api;
+- OPENJPEG at http://www.openjpeg.org/index.php?menu=download.
 
-make HarnessFM 
+Having obtained these libraries and listed their locations in the
+libfile, the pre-processor is compiled with the command 'make'. The
+Fortran and C compilers will produce a number of object and module
+files, which are stored in a separate folder (defined in the archfile
+by the variable OBJS). The final result is the executable
+orac_preproc.x.
 
-A "tidy" target is provided to allow forced removal of ".o" files before 
-re-compilation.
+Due to the large number of arguments for the pre-processor, it is
+called with the shell script
+http://proj.badc.rl.ac.uk/orac/browser/trunk/pre_processing/src/run_preproc.sh. You
+should produce a local version of this file, corresponding to your own
+file structure. The first block of variables defined in that script
+are details to be added to the header of the output files. Then:
+- LD_LIBRARY_PATH is an environment variable listing the locations of
+the libraries mentioned above;
+- path_to_coeffs should point to the directory
+http://proj.badc.rl.ac.uk/orac/trunk/pre_preprocessing/coeffs or
+similar files setting the coefficients for RTTOV;
+- path_to_emiss_atlas should point to a folder containing 0.5 degree HSR
+emissivity data, which can be found at
+http://cimss.ssec.wisc.edu/iremis/;
+- path_to_calib should point to a folder of files specifying the AATSR
+drift correction, which can be found at
+http://www.aatsrops.rl.ac.uk/EDSX/OtherInfo/Details (the author uses
+AATSR_VIS_DRIFT_V02-05.DAT);
+- path_to_l1b and path_to_geo list the filenames of the satellite data
+and matching geolocation data. For AATSR, these are identical;
+- sensor is a string listing the name of the satellite processed (MODIS,
+AVHRR, AATSR); gridflag, dellon, and dellat are settings that control
+the ORAC grid that you likely do not need to change;
+- path_to_output lists the folder into which the output files should be
+written;
+- path_to_ecmwf should point to a folder of ECMWF reanalyses, at
+http://badc.nerc.ac.uk/data/ecmwf-era-interim/;
+- path_to_albedo should point to a folder of MODIS albedo measurements
+(MCF43C3), found at http://ladsweb.nascom.nasa.gov;
+- path_to_ice should point to a folder of daily grided ice and snow
+cover, found at ftp://n4ftl01u.ecs.nasa.gov/SAN/OTHR/;
+- path_to_emissivity should point to a folder of
+global_emis_inf10_monthFilled_MYD11C3 files, also found at
+http://ladsweb.nascom.nasa.gov;
+- badc is a binary flag that, when 1, indicates that BADC ECMWF files
+are in use; daynight is a control for ATSR. When set to 1, only day
+pixels are read, while 2 selects night;
+- chunkproc is a binary flag that, when 1 and processing an AATSR file,
+produces a series of files with no more than 4096 lines rather than a
+single output;
+- startx,endx are used to specify which pixels in the across-track
+direction should be processed, using Fortran-style array referencing
+(from 1). starty,endy similarly specify the along-track direction. Any
+of these settings are only considered if all four values are
+non-zero. Otherwise, the entire file is processed.
 
-The -cpp compiler flag is used to force compilation via the C pre-compiler.
-This flag may not apply with different systems. The C pre-compiler is used
-to allow breakpoint outputs to be included through conditional compilation. 
-(Not all ECP routines include breakpoints.) 
+After running the script, eleven NetCDF files should be
+produced. These have the same root name followed by the suffixes:
+- alb, the albedo and emissivity data;
+- clf, the cloud flag;
+- config, the configuration information for the main processor;
+- geo, the geolocation data (i.e. satellite and solar zenith angle);
+- loc, the latitude and longitude of each pixel;
+- lsf, the land-sea flag;
+- lwrtm, the longwave radiative transfer model output;
+- msi, the satellite radiances;
+- - prtm, the meteorological outputs of the radiative transfer model;
+swrtm, the shortwave radiative transfer model output;
+- uv, the scan indices of each pixel.
 
-Running the code
-----------------
+--------------------------------------
+The ORAC processor
+--------------------------------------
 
-Before running the code, a sufficiently large stack size is required. 
-Recent experience suggests 250,000 is a suitable value. 
-The commands
+The main processor is in the folder
+http://proj.badc.rl.ac.uk/orac/trunk/src and is compiled with a
+Makefile. This is controlled by two files:
+- The archfile, which sets the Fortran and C compilers to be used and
+the settings for those compilers;
+- The libfile, which lists the paths to all the libraries required by
+the compilers.
 
-ulimit -s 250000              (Bourne/Korn/Bash shell)
-or
-limit stacksize 250000        (C shell)
+Paths to these files are given at the top of the Makefile and they
+should be stored in this directory. Every group using ORAC has its own
+local version of these files, many of which are uploaded to the
+repository for your inspection. If you make your own version of these
+files, please edit your Makefile to point to them.
 
-must be issued before running ORAC executables.
+The main processor only needs to be linked to the NetCDF library.
 
-The driver file is located via an environment variable ORAC_DRIVER:
-e.g. export ORAC_DRIVER=<path>/HarFM.dri (ksh)
+Having obtained these libraries and listed their locations in the
+libfile, the pre-processor is compiled with the command 'make'. The
+Fortran and C compilers will produce a number of object and module
+files, which are stored in a separate folder (defined in the archfile
+by the variable OBJS). The final result is the executable orac.
 
-The code expects all Static Application Data (SAD) files to be in place in the
-SAD directory pointed to by the driver file. SAD files include:
-  the overall instrument configuration file (summary info on all supported 
-     instruments)
-  instrument channel characteristics
-  cloud class characteristics
-  cloud radiative properties for each supported cloud class in each instrument
-     channel (Look Up Tables)
+Before running ORAC, it is necessary to increase the stack size of
+your machine. To do so, run,
+   ulimit -s 250000
+on a Bourne, Korn, or Bash shell or,
+   limit stacksize 250000
+on a C shell.
 
+ORAC is driven by a driver file. The path to this text file should be
+passed to ORAC as a command line argument (or through the environment
+variable ORAC_TEXTIN). Examples of these files can be found at
+http://proj.badc.rl.ac.uk/orac/trunk/src/modis_driver.txt and
+http://proj.badc.rl.ac.uk/orac/trunk/src/aatsr_driver.txt. These
+comprise 9 lines:
 
-Breakpoint outputs
-------------------
+The folder in which the output of the pre-processor can be found.
+- The root filename of the ten files to be processed.
+- The folder into which the output of ORAC should be stored.
+- The folder in which the instrument channel look-up tables can be
+found. These are stored in the folder sad_dir on the repository.
+- The name of the instrument that will be processed.
+- The number of channels available in the input files.
+- A list of space-delimited flags indicating for each channel
+  available in the input files if it should be processed (1=yes; 0=no).
+- The cloud class to be used. Possibilities are WAT, for water cloud,
+and ICE, for ice cloud.
 
-To make with breakpoint outputs, type
+After running, two NetCDF files should be produced. These will start
+with the root filename, followed by the cloud class, then:
+- primary, which contains the retrieved variables, their uncertainty,
+quality control information, and geolocation information; 
+- secondary, summarises the measurements and a priori information input
+into the retrieval.
 
-make HarnessFM FFLAGS=-DBKP
-
-In order to re-build with breakpoints you must re-compile the main program as 
-well as the routine whose breakpoint outputs you require, otherwise the 
-breakpoint file will not be opened and cleared at the start of execution. 
-
-Note that breakpoint output from different routines within the ORAC can be
-switched in and out by changing the breakpoint level set in ECPConstants.f90,
-and setting the breakpoint level in the driver file.
-
-
-
-Moving the source code between platforms/compilers
---------------------------------------------------
-
-This version of the ORAC code has been developed and tested on a Linux platform 
-using the Intel Ifort compiler (version 8.1).
-
-You may need to make some changes if you move to a different platform or compiler. 
-The text below details experiences from several years ago, moving from DEC Unix to 
-Linux (Absoft compiler). This is clearly out of date but may provide a useful hint
-of where to expect problems. 
-
-1) The code makes use of the C preprocessor for conditional compilation to 
-   include or exclude breakpoint outputs. This requires different source code 
-   file extensions in order for the two different compilers to recognise that 
-   pre-compilation may be necessary.
-
-2) The code uses the getenv function to translate the ORAC_DRIVER environment 
-   variable. Different compilers may link to the getenv function in different ways.
-   The Ifort compiler picks up getenv automatically. Other compilers may need to 
-   link in a specific library. 
-
-Moving the code:
-
-1) Source code may need to be renamed to use different file extensions. To move
-  between the "DEC Unix" setting (.f90) and the "Linux" (.F90) or vice versa:
-
-  make DEC2Linux     (moves .f90 files to .F90)     or
-  make Linux2DEC     (moves .F90 files to .f90)
-
-  You will need to edit the Makefile to change the file extensions in 
-  the object/source code dependencies (take care not to change the SUFFIXES
-  and compilation rules).
-
-2) Edit Read_Driver to include/exclude the declaration of getenv as external,
-  and edit the link command in the Makefile to include/exclude the libU77.a
-  library, as required for the operating system/compiler.
-  
-  Ifort compiler:     declare getenv external       no link
-
-  Absoft compiler:    no declaration                link to libU77.a
-                                                       (-L$ABSOFT/lib -lU77)
-
-  For Absoft, the Makefile contains a line defining a LIBS macro for
-  inclusion in the link list for each executable. This line should be
-  un-commented for use on Linux, and the ${LIBS} macro added to the list of 
-  objects to link for each executable to be built.
-
-3) The SUFFIXES and compilation rules in the supplied Makefile should 
-   automatically handle the different file extensions when building the code.
-
-
-
-
-A few notes on conventions etc.
--------------------------------
-
-File names and routine names:
-  Routine names have underscores in them, file names generally don't,
-  e.g. function Read_SAD is in source file ReadSAD.F90. 
-  This is to take advantage of UNIX case sensitivity, but still make the
-  routine names legible when the FORTRAN compiler has turned them into upper
-  case and writes them out in error messages. 
-
-  The make file passes the source files to the C pre-compiler before compilation. 
-  This allows conditional compilation (handy for debugging:
-  put #ifdef DEBUG and #endif around the lines of code you want for debugging,
-  e.g. a write(*,*) statement, and type "make FFLAGS=-DDEBUG" - the double 
-  D is intentional).
-  
-Modules:
-  Modules are used to define data structures, i.e. to set out the templates
-  for what they look like, but not actually to declare them (this is done
-  in the code where they're used). 
-
-  Each module has it's own source file.
-
-  Module names for type definitions end in _def, filenames don't, so 
-  e.g. module CPL_def is in source file CPL.F90 .
-
-  The compiler creates a .mod file for each module, e.g. CPL_DEF.mod. 
-  If you want to use a module in a piece of code make sure the module is
-  compiled before the code that uses it (see the Makefile).
-  
-Interfaces:
-  Subroutines that use passed-length (or assumed-shape) arrays must have 
-  their interface declared to any subroutine that calls them. There is an
-  interface module (source file XXXRoutines.F90, module name 
-  XXX_Routines_def) for each set of subroutines. 
-  e.g. SAD_Routines_def defines interfaces for all routines called by 
-  Read_SAD, LUT_Routines_def is for all routines called by Read_LUT.
-  
-ECP_Constants
-  This module holds useful constants such as error code parameters, 
-  array size limits, format statements. Using parameters for constants
-  in this way should make for more readable and more easily maintainable 
-  code.
-
-Source code header comments
-  The file f90_header is a blank template for commenting the header part
-  of an ORAC source file. See existing code for examples of how to fill it
-  in (not all bits apply to all source files, e.g. "algorithm" doesn't 
-  make sense for a module defininng a structure type).
+In addition, two text files are produced - diag and log -
+which contain log information output by the code. In the current
+implimentation, these files are blank except in the event of an
+error. This behaviour can be controlled with the routines WriteDiag
+and WriteLog.
