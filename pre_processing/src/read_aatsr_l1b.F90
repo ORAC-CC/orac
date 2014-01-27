@@ -62,6 +62,7 @@
 !                constants rather than passing arrays around.
 !2013/10/10 MJ fixed small bug
 !2013/10/17 GM Hoist loop invariant call to aatsr_read_drift_table() out of loop.
+!2014/01/27 MJ: datatype corrections
 !
 ! $Id$
 !
@@ -124,7 +125,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(imager_time_s)         :: imager_time
    type(channel_info_s)        :: channel_info
    logical                     :: verbose
-   integer                     :: i, j, status
+   integer                     :: i,status
+   integer(kind=stint) :: j
    integer(sint)               :: view_selection
    real(sreal), dimension(4)   :: A
    type(aatsr_drift_lut)       :: lut

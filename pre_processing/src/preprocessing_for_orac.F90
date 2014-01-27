@@ -172,7 +172,7 @@
 !                '(I6)', as '(L6)' was causing a buffer overrun.
 ! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
 ! 2013/11/08: GM added missing call to deallocate_surface_structures()
-!2014/01/24: MJ fixed type mismatch in deallocation of surface structures.
+!2014/01/24: MJ fixed type mismatch in deallocation of surface structures and of variable nc.
 !
 ! $Id$
 !
@@ -261,8 +261,9 @@ program preprocessing
    type(channel_info_s)     :: channel_info
 
    integer :: nargs
-   integer :: nchunks1,leftover_chunk1,nc,chunkproc
+   integer :: nchunks1,leftover_chunk1,chunkproc
    integer :: nchunks2,leftover_chunk2, nchunks_total
+   integer(kind=stint) :: nc
 
    logical            :: verbose, check
    integer, parameter :: chunksize=4096
@@ -435,7 +436,8 @@ program preprocessing
       ! we're processing daylight data, we may want to chunk process after this
       call read_aatsr_dimensions(path_to_l1b_file, n_across_track, &
            & n_along_track, along_track_offset, &
-           & day_night, loc_limit, n_along_track2, along_track_offset2, verbose)
+           & day_night, loc_limit, &
+           & n_along_track2, along_track_offset2, verbose)
       ! force chunk processing for night ACP-FINISH THIS
       !if (n_along_track.gt.0 .and. n_along_track2.gt.0) chunkproc=1
 

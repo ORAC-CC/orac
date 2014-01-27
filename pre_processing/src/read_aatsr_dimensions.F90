@@ -44,7 +44,7 @@
 !                used for dealing with night time data.
 ! 2013/09/06: AP tidying
 ! 2013/10/08: AP altered call to C routine
-!
+!2013/01/24 MJ removed "optionality" of some arguments
 ! $Id$
 !
 ! Bugs:
@@ -54,6 +54,9 @@
 subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
      n_along_track,along_track_offset,day_night,loc_limit,n_along_track2, &
      along_track_offset2,verbose)
+!!$      call read_aatsr_dimensions(path_to_l1b_file, n_across_track, &
+!!$           & n_along_track, along_track_offset, &
+!!$           & day_night, loc_limit, n_along_track2, along_track_offset2, verbose)
 
    use preproc_constants
    use iso_c_binding
@@ -77,10 +80,11 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    end interface
    
    character(len=pathlength)                             :: path_to_l1b_file
-   integer(kind=stint), optional, intent(in)             :: day_night
-   real(kind=sreal), dimension(4), optional, intent(in)  :: loc_limit
-   integer(kind=lint), optional, intent(out)             :: n_along_track2
-   integer(kind=lint), optional, intent(out)             :: along_track_offset2
+   integer(kind=stint), intent(in)             :: day_night
+   real(kind=sreal), dimension(4), intent(in)  :: loc_limit
+   integer(kind=lint), intent(out)             :: n_along_track2
+   integer(kind=lint),  intent(out)             :: along_track_offset2
+
 
    character(len=pathlength,kind=c_char) :: l1b_file_C
    integer(c_short)                      :: tmp_dynght, half_orbit
@@ -104,17 +108,10 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
 
    ! Check for the presense of the optional day_night and lat-lon limit
    ! input variables and set defaults if not present.
-   if (present(day_night)) then
       tmp_dynght = day_night
-   else
-      tmp_dynght = 0
-   end if
 
-   if (present(loc_limit)) then
       tmp_limit = loc_limit
-   else
-      tmp_limit = (/ -90.0, -180.0, 90.0, 180.0 /)
-   end if
+
 
    ! If we are dealing with night time data, we need to call
    ! get_aatsr_dimension_ctof90 twice; once for the start of the orbit

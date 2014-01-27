@@ -39,6 +39,7 @@
 ! 2013/10/11: GM Changed the comparison lut%julday.eq.Tn to lut%julday(1:lut%n)
 !                .eq.Tn so that the comparison does go past the length of the
 !                lut (lut%n) to the static size of lut%julday.
+!20140127:: MJ datatype corrections
 !
 ! $Id$
 !
@@ -47,6 +48,7 @@
 !
 
 subroutine aatsr_corrections(start_date, vc1_file, lut, chan, new_drift, old_drift, drift_var)
+
    use aatsr_drift_structure
 
    implicit none
@@ -56,8 +58,8 @@ subroutine aatsr_corrections(start_date, vc1_file, lut, chan, new_drift, old_dri
    character(len=62), intent(in) :: vc1_file
    type(aatsr_drift_lut)         :: lut
    real(dreal), intent(out)      :: new_drift, old_drift, drift_var
-   real(dreal)                   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
-   integer(stint)                :: year, month, day, hour, minute
+   real(kind=dreal)                   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
+   integer(kind=stint)                :: year, month, day, hour, minute
    integer(stint)                :: vc_year, vc_month, vc_day, vc_hour
    integer(stint)                :: vc_minute, vc_second
    integer(stint)                :: chan, stat, ilow
@@ -72,17 +74,17 @@ subroutine aatsr_corrections(start_date, vc1_file, lut, chan, new_drift, old_dri
    A(3,:)=(/ 0.041, 9.6111E-4 /)
 
    ! define various dates on which drift correction changed
-   call GREG2JD(2002, 3, 1, T0) ! Envisat launch date
-   call GREG2JD(2005, 11, 29, T1)
+   call GREG2JD(2002_stint, 3_stint, 1_stint, T0) ! Envisat launch date
+   call GREG2JD(2005_stint, 11_stint, 29_stint, T1)
    T1 = T1 + (13_dreal + (20_dreal + 26_dreal/60_dreal)/60_dreal)/24_dreal
-   call GREG2JD(2006, 12, 18, T2)
-   call GREG2JD(2010,  4,  4, T3)
-   call GREG2JD(2010,  7, 13, T4)
+   call GREG2JD(2006_stint, 12_stint, 18_stint, T2)
+   call GREG2JD(2010_stint,  4_stint,  4_stint, T3)
+   call GREG2JD(2010_stint,  7_stint, 13_stint, T4)
 
    ! determine this record's date
    sdate = adjustl(start_date)
    read(sdate(8:11), '(I4)') year
-   month=1
+   month=1_stint
    do while (monthname(month).ne.sdate(4:6)) 
       month=month+1
    end do

@@ -75,12 +75,16 @@
 !               Fixed longitude bug in interpolation ECMWF wind fields (ECMWF
 !                 longitude runs from 0-360 degrees)
 ! 2013/09/02: AP Removed startyi, endye.
+!2014/01/17 MJ fixed doy datatype from sint to stint to comply with other defs.
 ! Bugs:
 ! NB channels are hardwired in this code and not selected automatically
 !
 subroutine get_surface_reflectance_lam(modis_surf_path, imager_flags, &
      & imager_geolocation, imager_angles, imager_measurements, channel_info, &
      & ecmwf_2d, surface,doy,cyear)
+!!$      call get_surface_reflectance_lam(albedo_path_file, imager_flags, &
+!!$           & imager_geolocation, imager_angles, imager_measurements,    &
+!!$           & channel_info, ecmwf_2d, surface,doy,cyear)
 
    use preproc_constants
    use preproc_structures
@@ -123,7 +127,7 @@ subroutine get_surface_reflectance_lam(modis_surf_path, imager_flags, &
    character(len=pathlength), intent(in)           :: modis_surf_path
    character(len=pathlength)         :: modis_surf_path_file
    character(len=datelength), intent(in)           :: cyear
-   integer(kind=sint)                              :: doy
+   integer(kind=stint)                              :: doy
    type(imager_flags_s), intent(in)                :: imager_flags
    type(imager_geolocation_s), intent(in)          :: imager_geolocation
    type(imager_measurements_s), intent(in)         :: imager_measurements
