@@ -43,7 +43,7 @@
 !    20th Dec 2014, Greg McGarragh:
 !       Cleaned up code.
 !    24th Dec 2014, Greg McGarragh:
-!       Some indent changes.
+!       Some intent changes.
 !
 ! Bugs:
 !    None known
