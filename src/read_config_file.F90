@@ -19,7 +19,7 @@ subroutine read_config_file(Ctrl,conf)
   integer :: ndim,nvar,nattr,dummyint
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   INTEGER(kind=nint) ::  xdim,ydim,cdim,albdim,emisdim
-  character(len=varlength), allocatable :: dname(:)
+  character(len=NetcdfVarLength), allocatable :: dname(:)
   character(len=FilenameLen) :: name
 
   wo=0

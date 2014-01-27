@@ -176,7 +176,7 @@ SUBROUTINE nc_dim_length(ncid,dname,did,n,wo)
 
   ! Input
   INTEGER,INTENT(IN) :: ncid,wo
-  CHARACTER(LEN=varlength) :: dname
+  CHARACTER(LEN=NetcdfVarLength) :: dname
 
   ! Output
   INTEGER :: did, n

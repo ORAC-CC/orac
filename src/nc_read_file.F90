@@ -263,7 +263,7 @@ SUBROUTINE nc_read_array_3d_float_orac(ncid,n1,n2,ichan,cv,v,wo)
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
       real(kind=sreal) :: fv
-      CHARACTER(LEN=unitlength) :: unit
+      CHARACTER(LEN=NetcdfUnitLength) :: unit
 
       ! Local
       INTEGER :: ierr, vid, start(3), counter(3),stride(3)
@@ -363,7 +363,7 @@ SUBROUTINE nc_read_array_1p1_float_orac(ncid,n1,ichan,cv,v,wo)
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
       real(kind=sreal) :: fv
-      CHARACTER(LEN=unitlength) :: unit
+      CHARACTER(LEN=NetcdfUnitLength) :: unit
 
       ! Local
       INTEGER :: ierr, vid, start(2), counter(2),stride(2)
@@ -482,7 +482,7 @@ SUBROUTINE nc_read_array_1p2_float_orac(ncid,n1,ichan,ilay,cv,v,wo)
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
       real(kind=sreal) :: fv
-      CHARACTER(LEN=unitlength) :: unit
+      CHARACTER(LEN=NetcdfUnitLength) :: unit
 
       ! Local
       INTEGER :: ierr, vid, start(3), counter(3),stride(3)

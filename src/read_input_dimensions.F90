@@ -13,9 +13,9 @@ SUBROUTINE read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)
   integer :: ncid,ierr
   character(len=FilenameLen) :: fname_msi,fname_geo,name
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
-  character(len=varlength), allocatable :: dname(:)
+  character(len=NetcdfVarLength), allocatable :: dname(:)
   
-  character (len=varlength), allocatable, dimension(:) ::  available_names(:)
+  character (len=NetcdfVarLength), allocatable, dimension(:) ::  available_names(:)
   INTEGER(kind=nint),INTENT(OUT) ::  xdim,ydim,cdim,vdim
 
   !open msi file
@@ -137,9 +137,9 @@ SUBROUTINE read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim,laydim,
   integer :: ncid,ierr
   character(len=FilenameLen) :: fname,name
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
-  character(len=varlength), allocatable :: dname(:)
+  character(len=NetcdfVarLength), allocatable :: dname(:)
   
-  character (len=varlength), allocatable, dimension(:) ::  available_names(:)
+  character (len=NetcdfVarLength), allocatable, dimension(:) ::  available_names(:)
   INTEGER(kind=nint) ::  xydim,xdim,ydim,levdim,laydim,channeldim,viewdim
 
   type(CTRL_t) :: Ctrl
@@ -241,9 +241,9 @@ SUBROUTINE read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim,chann
   integer :: ncid,ierr
   character(len=FilenameLen) :: fname,name
   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
-  character(len=varlength), allocatable :: dname(:)
+  character(len=NetcdfVarLength), allocatable :: dname(:)
   
-  character (len=varlength), allocatable, dimension(:) ::  available_names(:)
+  character (len=NetcdfVarLength), allocatable, dimension(:) ::  available_names(:)
   INTEGER(kind=nint),INTENT(OUT) ::  xydim,xdim,ydim,levdim,laydim,channeldim,viewdim
 
   !open file
