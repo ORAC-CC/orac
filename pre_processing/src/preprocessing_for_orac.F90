@@ -375,9 +375,25 @@ program preprocessing
    read(cendy(1:len_trim(cendy)), '(I6)') endy
    read(cchunkproc(1:len_trim(cchunkproc)), '(I6)') chunkproc
    read(cday_night(1:len_trim(cday_night)), '(I6)') day_night
-   if(trim(adjustl(cverbose)) .eq. 'T')    verbose=.true.
-   if(trim(adjustl(cverbose)) .eq. 'F')    verbose=.false.
-   !MJ ORG read(cverbose(1:len_trim(cverbose)), '(I6)') verbose
+   ! This should work:
+   ! read(cverbose, '(L7)') verbose
+   ! Instead we have this:
+   if (trim(adjustl(cverbose)) .eq. '1' .or.&
+       trim(adjustl(cverbose)) .eq. 't' .or. &
+       trim(adjustl(cverbose)) .eq. 'true' .or. &
+       trim(adjustl(cverbose)) .eq. 'T' .or. &
+       trim(adjustl(cverbose)) .eq. 'True') then
+        verbose=.true.
+   else if &
+      (trim(adjustl(cverbose)) .eq. '0' .or. &
+       trim(adjustl(cverbose)) .eq. 'f' .or. &
+       trim(adjustl(cverbose)) .eq. 'false' .or. &
+       trim(adjustl(cverbose)) .eq. 'F' .or. &
+       trim(adjustl(cverbose)) .eq. 'False') then
+        verbose=.false.
+   else
+        stop 'Illegal value for verbose option'
+   endif
 
    ! Initialise some counts, offset variables...
    nchunks1=0
