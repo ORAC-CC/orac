@@ -12,11 +12,9 @@
 #
 # History -
 # 2013/11/01: AP Original version
+# 2014/01/27: AP Altered formation of LD_LIBRARY_PATH to use library file.
+#                Fixed bug in passing header arguments.
 #
-
-# deal with command arguments
-if [[ "$1" == 'first' || "$2" == 'first' ]]; then first=1; else first=0; fi
-if [[ "$1" == 'short' || "$2" == 'short' ]]; then short=1; else short=0; fi
 
 #------------------------------------------------------------------------------
 # DEFINE LOCAL FOLDERS
@@ -24,11 +22,11 @@ if [[ "$1" == 'short' || "$2" == 'short' ]]; then short=1; else short=0; fi
 # path to ORAC preprocessor executable
 oracfolder=/home/jupiter/eodg2/povey/orac/trunk/pre_processing/src
 
+# path to this file
+toolfolder=/home/jupiter/eodg2/povey/orac/trunk/tools
+
 # path to IDL executable
 idlfolder=/usr/local/PACK/idl82/idl82/bin
-
-# path to (local) library files
-LIB_BASE=/home/jupiter/eodg/gthomas/orac/orac_for_cci/fortran_preprocessing/libs
 
 # path to ORAC data repository
 datafolder=/home/midi/eodg2/data
@@ -58,6 +56,10 @@ path_to_ice=$datafolder/ice_snow
 # path where modis emissivity files are located
 path_to_emissivity=$datafolder/emissivity
 
+# deal with command arguments
+if [[ "$1" == 'first' || "$2" == 'first' ]]; then first=1; else first=0; fi
+if [[ "$1" == 'short' || "$2" == 'short' ]]; then short=1; else short=0; fi
+
 # determine new revision number by asking SVN for current number and adding 1
 revstr=`svn info | grep 'Revision'`
 revind=$((`expr index "$revstr" '[0123456789]'`-1))
@@ -72,15 +74,24 @@ else
     echo "Revision number ${revision}"
 fi
 
-# Library paths for dynamic linking
-LD_LIBRARY_PATH=${LIB_BASE}/hdf4/lib:${LD_LIBRARY_PATH}
-LD_LIBRARY_PATH=${LIB_BASE}/hdf5/lib:${LD_LIBRARY_PATH}
-LD_LIBRARY_PATH=${LIB_BASE}/hdfeos/lib:${LD_LIBRARY_PATH}
-LD_LIBRARY_PATH=${LIB_BASE}/netcdf/lib:${LD_LIBRARY_PATH}
-LD_LIBRARY_PATH=${LIB_BASE}/grib/lib:${LD_LIBRARY_PATH}
-LD_LIBRARY_PATH=${LIB_BASE}/jasper/lib:${LD_LIBRARY_PATH}
-LD_LIBRARY_PATH=${LIB_BASE}/rttov/lib:${LD_LIBRARY_PATH}
-LD_LIBRARY_PATH=${LIB_BASE}/epr_api/lib:${LD_LIBRARY_PATH}
+# load library paths from Makefile lib file
+# 1) Read contents of lib file, whose location is given by $ORAC_LIB
+lib_contents=$(<${oracfolder}/${ORAC_LIB})
+# 2) Replace round braces with curly braces
+lib_commands=`echo "$lib_contents" | sed -e 's/(/\{/g' -e 's/)/\}/g'`
+# 3) Make a string that does everything before defining the variable $LIBS
+str='LIBS='
+not_libs="${lib_commands%%$str*}"
+# 4) Evaluate those lines
+eval "${lib_commands:0:${#not_libs}}"
+# 5) Now all of those variables are defined here so we can build LD_LIBRARY_PATH
+LD_LIBRARY_PATH=${EPR_APILIB}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=${GRIBLIB}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=${HDFLIB}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=${HDF5LIB}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=${NCDFLIB}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=${NCDF_FORTRAN_LIB}:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=${SZLIB}:${LD_LIBRARY_PATH}
 export LD_LIBRARY_PATH
 
 #------------------------------------------------------------------------------
@@ -154,20 +165,20 @@ fi
 # DEFINE FILE HEADER
 #------------------------------------------------------------------------------
 
-ncdf_version='3.6.3'
+ncdf_version='4.3.1'
 cf_convention='CF-1.4'
 processing_inst='UoOx'
 l2processor='ORAC'
 contact_email='povey@atm.ox.ac.uk'
-contact_website='www.esa-cloud-cci.info'
+contact_website='www2.physics.ox.ac.uk/contacts/people/povey'
 file_version='V1.0'
 reference='ATBD'
-history='xxx'
-summary='xxx'
-keywords='xxx'
+hist='xxx'
+summary='A file for code testing purposes only.'
+keywords='Debugging; Testing'
 comment='xxx'
 #project='ESA_Cloud_cci' --- Being misused for file naming
-license='xxx'
+license='http://proj.badc.rl.ac.uk/orac/wiki/License'
 
 # 1:ecmwf grid, 2:L3 grid, 3: own definition
 gridflag=1
@@ -181,7 +192,6 @@ chunkproc=0
 #------------------------------------------------------------------------------
 # RUN ORAC PREPROCESSOR
 #------------------------------------------------------------------------------
-
 #get uid and time information
 uuid_tag=`exec uuidgen -t`
 exec_time=`exec date +%Y%m%d%H%M%S`
@@ -197,18 +207,18 @@ for lp in ${!sensor[*]}; do
    echo '' 1>> $log_file
    echo 'Do this:' 1>> $log_file
 
-   # command line arguments changed at revision 1654
+   # command line arguments changed at revision 1654 (grouped as array)
    if [[ "$revision" -ge 1654 ]]; then
-       arg="${sensor[$lp]} ${path_to_l1b[$lp]} ${path_to_geo[$lp]} ${path_to_ecmwf} ${path_to_coeffs} ${path_to_emiss_atlas} ${path_to_ice} ${path_to_albedo} ${path_to_emissivity} ${gridflag} ${dellon} ${dellat} ${outfolder} ${startx[$lp]} ${endx[$lp]} ${starty[$lp]} ${endy[$lp]} ${ncdf_version} ${cf_convention} ${processing_inst} ${l2processor} ${revision} ${contact_email} ${contact_website} ${file_version} ${reference} ${history} ${summary} ${keywords} ${comment} ${label[$lp]} ${license} ${uuid_tag} ${exec_time} ${path_to_calib} ${badc_flag} ${path_to_ecmwf} ${path_to_ecmwf} ${chunkproc} ${daynight} ${verbose}"
+       arg=( "${sensor[$lp]}" "${path_to_l1b[$lp]}" "${path_to_geo[$lp]}" "${path_to_ecmwf}" "${path_to_coeffs}" "${path_to_emiss_atlas}" "${path_to_ice}" "${path_to_albedo}" "${path_to_emissivity}" "${gridflag}" "${dellon}" "${dellat}" "${outfolder}" "${startx[$lp]}" "${endx[$lp]}" "${starty[$lp]}" "${endy[$lp]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$lp]}" "${license}" "${uuid_tag}" "${exec_time}" "${path_to_calib}" "${badc_flag}" "${path_to_ecmwf}" "${path_to_ecmwf}" "${chunkproc}" "${daynight}" "${verbose}" )
    else
-       arg="${sensor[$lp]} ${path_to_l1b[$lp]} ${path_to_geo[$lp]} ${path_to_ecmwf} ${path_to_coeffs} ${path_to_emiss_atlas} ${path_to_ice} ${path_to_albedo} ${path_to_emissivity} ${gridflag} ${dellon} ${dellat} ${outfolder} 0 ${startx[$lp]} ${endx[$lp]} ${starty[$lp]} ${endy[$lp]} ${ncdf_version} ${cf_convention} ${processing_inst} ${l2processor} ${revision} ${contact_email} ${contact_website} ${file_version} ${reference} ${history} ${summary} ${keywords} ${comment} ${label[$lp]} ${license} ${uuid_tag} ${exec_time} ${path_to_calib} ${badc_flag} ${path_to_ecmwf} ${path_to_ecmwf} ${chunkproc} ${daynight}"
+       arg=( "${sensor[$lp]}" "${path_to_l1b[$lp]}" "${path_to_geo[$lp]}" "${path_to_ecmwf}" "${path_to_coeffs}" "${path_to_emiss_atlas}" "${path_to_ice}" "${path_to_albedo}" "${path_to_emissivity}" "${gridflag}" "${dellon}" "${dellat}" "${outfolder}" 0 "${startx[$lp]}" "${endx[$lp]}" "${starty[$lp]}" "${endy[$lp]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$lp]}" "${license}" "${uuid_tag}" "${exec_time}" "${path_to_calib}" "${badc_flag}" "${path_to_ecmwf}" "${path_to_ecmwf}" "${chunkproc}" "${daynight}" )
    fi
 
-   echo "${oracfolder}/orac_preproc.x" $arg 1>> $log_file
+   echo $oracfolder/orac_preproc.x "${arg[@]}" 1>> $log_file
    echo '' 1>> $log_file
 
    sec=`date +"%s"`
-   $oracfolder/orac_preproc.x $arg >> $log_file 2>&1
+   $oracfolder/orac_preproc.x "${arg[@]}" >> $log_file 2>&1
    if (( $? != 0 )); then
        echo "${label[$lp]}: Error."
        exit
@@ -223,5 +233,5 @@ done
 
 # call IDL routine to compare this output to the previous version
 if (( (! $first) && ($? == 0) )); then
-    $idlfolder/idl -rt=$oracfolder/compare_preproc.sav -args $outfolder $revision
+    $idlfolder/idl -rt=$toolfolder/compare_orac_out.sav -args $outfolder $revision 'preproc'
 fi

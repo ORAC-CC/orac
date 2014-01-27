@@ -1,21 +1,30 @@
 ;+
 ; NAME:
-;   COMPARE_PREPROC
-;
+;   COMPARE_ORAC_OUT
+; 
 ; PURPOSE:
-;   To compare the NetCDF files output by the ORAC preprocessor to determine
+;   To compare the NetCDF files output by the ORAC processor to determine
 ;   if changes to the code between your current working version and a previous
 ;   committed version have affected the results.
+;
+;   This is used in run-time mode by the scripts test_preproc.sh and 
+;   test_orac.sh. To produce the SAV file necessary for that, run the following
+;   in IDL:
+;      .COMPILE compare_orac_out
+;      RESOLVE_ALL
+;      SAVE,filename='compare_orac_out.sav',/routines
 ;
 ; CATEGORY:
 ;   ORAC test framework
 ;
 ; CALLING SEQUENCE:
-;   COMPARE_PREPROC, folder, revision_number
+;   COMPARE_ORAC_OUT, folder, revision_number
 ;
 ; INPUTS:
 ;   folder = full path of the folder in which the preprocessor files are found
 ;   revision_number = a string giving the revision number of your working copy
+;   mode   = if set to 'preproc', compares the preprocessor outputs. Otherwise,
+;            it compares the main processor outputs
 ;
 ; OPTIONAL INPUTS:
 ;   None
@@ -49,14 +58,19 @@
 ; MODIFICATION HISTORY:
 ;   Written by ACPovey (povey@atm.ox.ac.uk) 
 ;   01 Nov 2013 - V1.00
+;   27 Jan 2014 - V1.10: Added functionality for main processor
 ;-
-PRO COMPARE_PREPROC
+PRO COMPARE_ORAC_OUT
    args=COMMAND_LINE_ARGS()
    fdr=args[0]
    revision=args[1]
-
+   mode=args[2]
+   
    ;; determine the list of experiments to be considered from start of file name
-   a='.'+['alb','clf','geo','loc','lsf','msi','uv','lwrtm','prtm','swrtm']+'.nc'
+   if mode eq 'preproc' $
+      then a='.'+['alb','config','clf','geo','loc','lsf','msi','uv', $
+               'lwrtm','prtm','swrtm']+'.nc' $
+      else a='.'+['primary','secondary']+'.nc'
    f=FILE_SEARCH(fdr+'/*'+a[0],count=nf)
    for i=0,nf-1 do begin
       f[i]=STRMID(f[i],STRPOS(f[i],'/',/reverse_search)+1)
@@ -71,7 +85,10 @@ PRO COMPARE_PREPROC
       ;; find root name of the newest revision and latest revision before that
       fs=FILE_SEARCH(fdr+'/'+inst+'_ORACV'+'*'+a[0],count=nf1)
       p=WHERE(STRMATCH(fs,'*ORACV'+revision+'*'),np,comp=q,ncomp=nq)
-      if np eq 0 || nq eq 0 then MESSAGE,'All files of the same version.'
+      if np eq 0 || nq eq 0 then begin
+         PRINT,'All files of the same version.'
+         CONTINUE
+      endif
       newf=fs[p[(SORT(fs[p]))[np-1]]]
       newpath=STRMID(newf,0,STRLEN(newf)-STRLEN(a[0]))
       oldf=fs[q[(SORT(fs[q]))[nq-1]]]
