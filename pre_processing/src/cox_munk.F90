@@ -51,6 +51,7 @@
 !                            while the Cox and Munk expressions treat
 !                            backscatter as azi=0.
 !20131030 MJ corrects datatypes for variable initilizations and implements quick fix to avoid div by 0
+!20140128 MJ fixes div by zero
 ! Bugs:
 !
 !none known
@@ -183,7 +184,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
   real(kind=sreal)               :: Rwc(4)
   ! Other constants
   real(kind=sreal)               :: n_air, chlconc
-  integer(kind=lint)             :: npts, nbands, lloop
+  integer(kind=lint)             :: npts, nbands, lloop,ipts
   ! Wind speed and direction
   real(kind=sreal), allocatable  :: ws(:), wd(:)
   ! White cap reflection variables
@@ -369,7 +370,16 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
      c1 = tan(w - wprime)
      d1 = tan(w + wprime)
      ! Fresnel's equation
-     t_d(:) = 1.0 - 0.5*( (a1*a1)/(b1*b1) + (c1*c1)/(d1*d1) )
+     !This explicitly catches div by 0
+     do ipts=1,npts
+        if( b1(ipts) .le. dither_more .or. d1(ipts) .le. dither_more) then
+           t_d(ipts) = 0.0
+        else
+           t_d(ipts) = 1.0 - &
+                & 0.5*( (a1(ipts)*a1(ipts))/(b1(ipts)*b1(ipts)) + (c1(ipts)*c1(ipts))/(d1(ipts)*d1(ipts)) )
+        endif
+     enddo
+     !the check below might be obsolete now
      ! For cases of total surface reflection, Fresnel will give NaN rather
      ! than 0. Check for this
      where(t_d .ne. t_d) t_d = 0.0
