@@ -198,7 +198,7 @@
 !    15th Jan 2014, Greg McGarragh: Moved dynamic setting of the upper limit
 !       for CTP to the highest pressure in the profile from FM() to this routine.
 !    17th Jan 2014, Greg McGarragh: Cleaned up code.
-!
+!    20140129 MJ fixes case where alpha can get out of bounds.
 ! Bugs:
 !    None known
 !
@@ -274,6 +274,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                                   ! 2nd derivative of J wrt state variables
    real    :: Av_Hess             ! Average of Hessian (d2J_dX2) diagonal
    real    :: alpha               ! Marquardt control variable
+   real    :: huge_value !largest value of real datatype
    real    :: J2plus_A(SPixel%Nx, SPixel%Nx)
                                   ! Temporary array to hold sum of d2J_dX2 and
                                   ! alpha * unit.
@@ -649,7 +650,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
             ! Increase steepest descent part for next iteration and set values
             ! required for setting new deltaX using old cost derivatives.
-            alpha    = alpha * Ctrl%InvPar%MqStep
+            ! "if" inserted to catch (academic?) case of overflow if alpha get's huge.
+            if(alpha .lt. huge_value) then
+               alpha    = alpha * Ctrl%InvPar%MqStep
+            endif
             J2plus_A = d2J_dX2 + (alpha * unit)
             minusdJ_dX=-dJ_dX
             call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
