@@ -301,6 +301,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 #endif
 
    ! Initialise
+   huge_value=huge(1.0)
+   huge_value=huge_value/Ctrl%InvPar%MqStep
+
    stat      = 0
 
    Y         = 0.
