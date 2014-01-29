@@ -145,6 +145,8 @@
 #      Renewed object list and dependencies and some small clean ups.
 #   4th Dec 2013, Greg McGarragh:
 #      Added 'make depend' to automatically find all Fortran file dependencies.
+#   29th Jan 2014, Greg McGarragh:
+#      Changes related to renaming ECPparallel_ecmwf.F90 to ECP.F90.
 #
 # Notes:
 # 1) The C preprocessor is used to allow conditional compilation (files with
