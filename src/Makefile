@@ -338,9 +338,7 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
                   $(OBJS)/XSDAD.o \
                   $(OBJS)/ZeroDiag.o
 
-ORAC_OBJ_MAIN    =$(OBJS)/ECPparallel_ecmwf.o \
-
-ORAC_OBJ_MAIN_OLD=$(OBJS)/ECP.o \
+ORAC_OBJ_MAIN    =$(OBJS)/ECP.o \
 
 ORAC_INC         =def_vars_input.inc \
                   def_vars_primary.inc \
@@ -369,9 +367,7 @@ all: orac
 
 # Main program build
 orac: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
-	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECPparallel_ecmwf.o $(LIBS) -I./$(OBJS)
-orac_old: $(ORAC_OBJ) $(ORAC_OBJ_MAIN_OLD) Makefile
-	$(F90) -o orac_old $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECP.o $(LIBS) -I./$(OBJS)
+	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECP.o $(LIBS) -I./$(OBJS)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
