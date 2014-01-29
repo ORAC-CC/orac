@@ -46,7 +46,9 @@
 ; Cp. 20/06/2013 remove sea key word as command need external
 ; libraries
 ; cp : 20/06/2013 added in nosec keyword
-; cp : 11/11/2013 modified code to plot out uncertainties if requested.
+; cp : 11/11/2013 modified code to plot out uncertainties if
+; requested.
+; cp : 28/01/2014 tidy up of plots
 ; $Id: plot_ret_cldmodel.pro 1112 2011-08-08 09:06:42Z rsiddans $
 ;-
 pro quick_cim_prc,sg,u,v,d,_EXTRA=extra,ll=ll,ext=ext,chars=chs,brd=brd,crd=crd,pext=pext,cpos=cpos,axti=axti,nodata=nodata,kml=kmlfi,eop_col=eop_col,eop_thick=eop_thick,eop_y=eop_y,eop_x=eop_x
@@ -252,14 +254,16 @@ for k=0,4 do begin
          levres=indgen(20)*.01-0.1
       endelse
    endelse
-   
-   if k eq 3 then begin
-      set_a4,n=nx+8,/rs,landscape=land
-      mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
-   endif
+
+
+if max((xc.y(k,*)))  lt 200. then type_channel='ref'
+if max((xc.y(k,*)))  gt 200. then type_channel='BT'
+
+
    quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$
-                 position=ypos(p1,p2,mask=mask),chars=chs,title='ref Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
+                 position=ypos(p1,p2,mask=mask),chars=chs,title=type_channel+' Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
    
+;stop
    quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$
                  position=ypos(p1,p2,mask=mask),chars=chs,title='sim Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
    
@@ -272,6 +276,12 @@ for k=0,4 do begin
 if tag_exist(xc,'ymfit') then begin
    quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.ymfit(k),lev=levres,ur=ur,vr=vr,num=2,fac=fac,$
                  position=ypos(p1,p2,mask=mask),chars=chs,title='residual Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
+   endif
+
+   
+   if k eq 2 then begin
+      set_a4,n=nx+8,/rs,landscape=land
+      mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
    endif
    
 
@@ -288,14 +298,14 @@ if tag_exist(xc, 'solz') then begin
    quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.satz,lev=levang,ur=ur,vr=vr,$
                  num=2,fac=fac,$
                  position=ypos(p1,p2,mask=mask),chars=chs, $
-                 title='satzenith ',lcb=lcb,bcb=bcb,image=image, $
+                 title='sat zenith ',lcb=lcb,bcb=bcb,image=image, $
                  ext=ext,_EXTRA=extra,axti=axti
    
    levang=indgen(20)*9.
    quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.relaz,lev=levang,ur=ur,vr=vr, $
                  num=2,fac=fac,$
               position=ypos(p1,p2,mask=mask),chars=chs, $
-                 title='relaz ',lcb=lcb,bcb=bcb,image=image, $
+                 title='rel az ',lcb=lcb,bcb=bcb,image=image, $
                  ext=ext,_EXTRA=extra,axti=axti
    
    levang=indgen(36)*5.
@@ -306,12 +316,33 @@ if tag_exist(xc, 'solz') then begin
                  ext=ext,_EXTRA=extra,axti=axti
    levang=indgen(20)*5
    any_key
-   set_a4,n=nx+8,/rs,landscape=land
-   mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
 skipref:
 endif;solz
 
 
+
+if ~keyword_set(nosec) then begin
+;
+; plot 11-12 microns
+;
+
+
+	w0=where(h.s.iview eq h.s(0).iview,n0)
+	ich=w0(get_nns([10.5,12.],h.s(0).mwl))      ; identify split window
+	swlev=[-10,-7,-5,-3,-2,-1,-0.5]
+	swlev=[swlev,0,-reverse(swlev)]
+	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(0))-xc.y(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
+		position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+
+
+	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(ich(0))-xc.yn(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
+		position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 um - sim',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+     endif ;nosec
+
+
+
+   set_a4,n=nx+8,/rs,landscape=land
+   mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
 
 ;goto,skipconv
 
@@ -319,6 +350,13 @@ endif;solz
                       ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),chars=chs, $
                       title='Convergence',lcb=lcb,bcb=bcb,image=image, $
+                      ext=ext,_EXTRA=extra,axti=axti
+
+
+	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.ni,lev=indgen(26),$
+                      ur=ur,vr=vr,num=2,fac=fac,$
+                      position=ypos(p1,p2,mask=mask),chars=chs, $
+                      title='Iterations',lcb=lcb,bcb=bcb,image=image, $
                       ext=ext,_EXTRA=extra,axti=axti
 
 
@@ -383,10 +421,10 @@ if tag_exist(xc,'alb') then begin
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - measured',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 	if keyword_set(ofc) then return
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_sim,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - simulated',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - sim',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 endif
     endif else begin
 ;
@@ -396,35 +434,16 @@ endif
 	ich=w0(get_nns([10.5,12.],h.s(w0).mwl))      ; identify split window
 
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(0)),ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='11 um - measured',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x,nodata=-999.,lev=indgen(20)*5+200.
+		position=ypos(p1,p2,mask=mask),chars=chs,title='11 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x,nodata=-999.,lev=indgen(20)*5+200.
 
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(1)),ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='12 um - measured',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+		position=ypos(p1,p2,mask=mask),chars=chs,title='12 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
 ;
     endelse
 
 
 
-;
-; plot 11-12 microns
-;
-
-
-	w0=where(h.s.iview eq h.s(0).iview,n0)
-	ich=w0(get_nns([10.5,12.],h.s(0).mwl))      ; identify split window
-	swlev=[-10,-7,-5,-3,-2,-1,-0.5]
-	swlev=[swlev,0,-reverse(swlev)]
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(0))-xc.y(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 microns - measured',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-
-
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(ich(0))-xc.yn(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 microns - simulated',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-;
-; plot ret results
-;
-;plot ctt
      endif
                       ;nosec
 
@@ -536,14 +555,14 @@ endelse
                        image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
          
 ;plot the difference between fg and ret
- set_a4,n=nx+8,/rs,/landscape
+ 
             diff=xc.xn(i)-xc.x0(i)
             levdiff=indgen(20)*.5-5.
             pd=diff
             quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                           position=ypos(p1,p2,mask=mask),lev=levdiff,chars=chs,title='diff ts xn-xo '+ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                           image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-            
+set_a4,n=nx+8,/rs,/landscape            
          endif                  ;nosec
          
          
@@ -627,7 +646,7 @@ if ~keyword_set(nosec) then begin
 		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - measured',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 any_key
 
 
@@ -682,11 +701,11 @@ endfor
 
 
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - measured',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
 ;	if keyword_set(ofc) then return
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_sim,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - simulated',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - sim',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 ;endif
      endif
                       ;nosec
@@ -816,13 +835,13 @@ endelse
 
 if ~keyword_set(nosec) then begin
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - measured',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 endif
 	quick_cim_prc,kml=kmlfi,h.sg,uqc,vqc,xqc.itype,lev=findgen(5)-1,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='Phase',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
 		crd=crd,brd=brd,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
-
+     title,'with qc applied (convergence cost and optical depth)'
 
 
 
@@ -841,9 +860,9 @@ if keyword_set(noresid) then goto,skip
 	        im_mea=mk_cldmodel_false_color_cloud(xc,h,/pink)
         	im_sim=mk_cldmodel_false_color_cloud(xc,h,/sim,/pink)
 		quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - measured',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 		quick_cim_prc,kml=kmlfi,h.sg,u,v,im_sim,ur=ur,vr=vr,num=2,fac=fac,$
-			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - simulated',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - sim',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 ;
 ; also water vapour channels
 ;
@@ -852,9 +871,9 @@ if keyword_set(noresid) then goto,skip
 		for ii=0,n_elements(ich)-1 do begin
 			i=ich(ii)
 			quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(i),ur=ur,vr=vr,num=2,fac=fac,$
-				position=ypos(p1,p2,mask=mask1),chars=chs,title=h.s(i).name+' measurement',image=image,lev=lev,_EXTRA=extra,ext=ext,axti=axti,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+				position=ypos(p1,p2,mask=mask1),chars=chs,title=h.s(i).name+' meas',image=image,lev=lev,_EXTRA=extra,ext=ext,axti=axti,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 			quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(i),ur=ur,vr=vr,num=2,fac=fac,$
-				position=ypos(p1,p2,mask=mask1),chars=chs,title=h.s(i).name+' simulated',image=image,lev=lev,_EXTRA=extra,ext=ext,axti=axti,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+				position=ypos(p1,p2,mask=mask1),chars=chs,title=h.s(i).name+' sim',image=image,lev=lev,_EXTRA=extra,ext=ext,axti=axti,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 		endfor
 ;
 
@@ -863,9 +882,9 @@ if keyword_set(noresid) then goto,skip
 		im_mea=mk_cldmodel_false_color_cloud(xc,h,/i37)
 		im_sim=mk_cldmodel_false_color_cloud(xc,h,/sim,/i37)
 		quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - measured',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 		quick_cim_prc,kml=kmlfi,h.sg,u,v,im_sim,ur=ur,vr=vr,num=2,fac=fac,$
-			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - simulated',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+			position=ypos(p1,p2,mask=mask1),chars=chs,title='False colour - sim',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,/lcb,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 		any_key
 	endif
 ;
@@ -897,7 +916,7 @@ if keyword_set(noresid) then goto,skip
 		set_color,/rs,/ps
 		lev=clevels(median1(xc.y(i),pc=[2.,98.]))	; set levels to span most data
 		quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(i),ur=ur,vr=vr,num=2,fac=fac1,$
-			position=ypos(p1,p21,mask=mask),chars=chs,title=h.s(i).name+' measurement',image=image,lev=lev,_EXTRA=extra,ext=ext,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+			position=ypos(p1,p21,mask=mask),chars=chs,title=h.s(i).name+' meas',image=image,lev=lev,_EXTRA=extra,ext=ext,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 		dy=xc.y(i)-xc.yn(i)
 
 		lev=clevels(median1(dy(whc),pc=[2.,98.]))	; set levels based on half-decent cost

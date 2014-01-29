@@ -46,6 +46,7 @@
 ;       original file C. Poulsen created 2011 1st public release April 2013
 ;	
 ;       typical usage idl>x=read_orac_nc_pp(/plot,/ps,/wat)
+;       typical usage idl>x=read_orac_nc_pp(/plot,/ps,/ice,ext='_day')
 ;       typical usage idl>x=read_orac_nc_pp(/plot,/ps,/error) ;PP file
 ;       typical usage idl>x=read_orac_nc_pp(/plot,/dwd) ;PP file
 ;
@@ -65,21 +66,24 @@
 ; cp : 20/06/2013 added in nosec keyword
 ; cp fixed up reading out of uncertainty information
 ; cp 5/12/2013 changes to accomodate avhrr data
+; cp 22/01/2014 changes to deal with missing values
 ; $Id$
 ;-
 ;==========================================================================
-function read_orac_nc_pp,filein=filein,plot=plot,ps=ps,errflag=errflag,wat=wat,ice=ice,dirin=dirin,dwd=dwd,nosec=nosec,error=error,version=version
+function read_orac_nc_pp,filein=filein,plot=plot,ps=ps,errflag=errflag,wat=wat,ice=ice,dirin=dirin,dwd=dwd,nosec=nosec,error=error,version=version,ext=ext
 
-;if n_elements(version) eq 0 then version='_V3.0'
+
 if n_elements(version) eq 0 then version=''
 errflag=0
-if ~keyword_set(dirin) then dirin='/misc/wantage_static/cpoulsen/cloud_ecv/postproc/2008/05/13/'
+if ~keyword_set(dirin) then dirin='/disks/scratch/cpoulsen/2007/01/02/'
+if ~keyword_set(ext) then ext=''
+
+if ~keyword_set(filein) then filein= dirin+'/ESA_Cloud_cci_RAL_AATSR_1-10.2-4.66_ORACVR0_ENV_20140127091336_200701020720_V1.0ICE.primary'+ext+'.nc'
+
 
 
 if keyword_set(dwd) then begin
 dirin='/cmsaf/cmsaf-cld4/mjerg/test_plotting/'
-;dirin='/misc/cluster_home/rsg/Data/projects/ecv_clouds/matthias_test_files/'
-
 dirin='/cmsaf/cmsaf-cld4/mjerg/test_plotting/20080620_AVHRR_noaa16_proc_2_process_ID8206794_US1362069592/noaa16_20080620_0955_99999_satproj_00000_12180_avhrr/post/'
 filein=dirin+'20080620095500-ESACCI-L2_CLOUD-CLD_PRODUCTS-AVHRRGAC-NOAA16-fv1.0.nc'
 endif
@@ -96,9 +100,10 @@ files=file_search(filein,count=adim)
 if adim eq 0 then print,'cannot find any files check directory and filename'
 if adim eq 0  then stop
 
-if keyword_set(wat) or  keyword_set(ice) then fbphase=file_basename(filein,'.PP.primary.nc')
-if keyword_set(wat) then  filein=dirin+fbphase+'*WAT.prim*nc'
-if keyword_set(ice) then  filein=dirin+fbphase+'*ICE.prim*nc'
+if keyword_set(wat) or  keyword_set(ice) then fbphase=file_basename(filein,'.primary'+ext+'.nc')
+print,'fb',fbphase
+if keyword_set(wat) then  filein=dirin+fbphase+'*.prim*'+ext+'*nc'
+if keyword_set(ice) then  filein=dirin+fbphase+'*.prim*'+ext+'*nc'
 if keyword_set(wat) or  keyword_set(ice) then  files=file_search(filein,count=adim)
 print,'filein read_orac_nc_pp',filein
 
@@ -120,8 +125,8 @@ for i=0,adim-1 do begin
    
    if inst eq 'atsr'  then message,'routine not valid for this instrument must edit to adapt it!'+' '+inst
    
-   fb=file_basename(filein,'primary.nc')
-fb1=file_basename(filein,'.primary.nc')
+   fb=file_basename(filein,'primary'+ext+'.nc')
+fb1=file_basename(filein,'.primary'+ext+'.nc')
    fd=file_dirname(filein)
 
 psname=fd+'/'+fb1
@@ -140,8 +145,8 @@ if cdim gt 0 then goto, endloop
    if ~keyword_set(wat) and ~keyword_set(ice) and keyword_set(dwd) then fbs=file_basename(filein,'PP.primary.nc')
    print,'filein wat/ice',filein
 
-   if keyword_set(wat)  then fbs=file_basename(filein,'WAT.primary.nc')
-   if keyword_set(ice)  then fbs=file_basename(filein,'ICE.primary.nc')
+   if keyword_set(wat)  then fbs=file_basename(filein,'WAT.primary'+ext+'.nc')
+   if keyword_set(ice)  then fbs=file_basename(filein,'ICE.primary'+ext+'.nc')
 
    fdir=file_dirname(filein)
    print,'fbs',fbs
@@ -168,19 +173,21 @@ if cdim gt 0 then goto, endloop
    endif
    
 print,fdir+'/'+fb+'primary.nc'
-if ~keyword_set(nosec) then print,fdir+'/'+fbs+'ICE.secondary.nc'
+if ~keyword_set(nosec) and keyword_set(ice) then print,fdir+'/'+fbs+'ICE.secondary.nc'
+if ~keyword_set(nosec) and keyword_set(wat) then print,fdir+'/'+fbs+'WAT.secondary.nc'
 
 
-   xpwat=ncdf_read(fdir+'/'+fb+'primary.nc')
+   xpwat=ncdf_read(fdir+'/'+fb+'primary'+ext+'.nc')
 ; temporaray fudge until proper secondary file created
 print,'a'
-   if ~keyword_set(nosec) then xswat=ncdf_read(fdir+'/'+fbs+'ICE.secondary.nc')
-print,'b'
+   if ~keyword_set(nosec)  and keyword_set(ice) then xswat=ncdf_read(fdir+'/'+fbs+'ICE.secondary'+ext+'.nc')
+   if ~keyword_set(nosec)  and keyword_set(wat) then xswat=ncdf_read(fdir+'/'+fbs+'WAT.secondary'+ext+'.nc')
+
    if ~keyword_set(wat) and ~keyword_set(ice)  then begin
 ;get ice and water
       fb=strreplace(fb,'WAT','ICE')
       xpice=ncdf_read(fdir+'/'+fb+'primary.nc')
-      if ~keyword_set(nosec) then xsice=ncdf_read(fdir+'/'+fbs+'ICE.secondary.nc')
+      if ~keyword_set(nosec) then xsice=ncdf_read(fdir+'/'+fbs+'ICE.secondary'+ext+'.nc')
    endif 
 
 
@@ -254,7 +261,15 @@ endelse ;nosec
       yn=fltarr(nx,ny,nmeas)
       y0=fltarr(nx,ny,nmeas)
       alb=fltarr(nx,ny,nsol)
+
+
+;      xp.cot[WHERE(xp.cot ne xp.cot_ATT._fillvalue, /NULL)] = xp.cot*xp.cot_att.scale_factor
+;      xp.ref[WHERE(xp.ref ne xp.ref_ATT._fillvalue, /NULL)] = xp.ref*xp.ref_att.scale_factor
+;      xp.ctp[WHERE(xp.ctp ne xp.ctp_ATT._fillvalue, /NULL)] = xp.ctp*xp.ctp_att.scale_factor
+;      xp.stemp[WHERE(xp.stemp ne xp.stemp_ATT._fillvalue, /NULL)] = xp.stemp*xp.stemp_att.scale_factor
       
+;      xp.cc_total[WHERE(xp.cc_total ne xp.cc_total_ATT._fillvalue, /NULL)] = xp.cc_total*xp.cc_total_att.scale_factor
+
       xn(*,*,0)=xp.cot*xp.cot_att.scale_factor
       xn(*,*,1)=xp.ref*xp.ref_att.scale_factor
       xn(*,*,2)=xp.ctp*xp.ctp_att.scale_factor
@@ -263,6 +278,12 @@ endelse ;nosec
 
       if ~keyword_set(nosec) then begin
          if n_elements(xs) gt 0 then begin
+
+;      xs.cot_fg[WHERE(xs.cot_fg ne xs.cot_fg_ATT._fillvalue, /NULL)] = xs.cot_fg*xs.cot_fg_att.scale_factor
+;      xs.ref_fg[WHERE(xs.ref_fg ne xs.ref_fg_ATT._fillvalue, /NULL)] = xs.ref_fg*xs.ref_fg_att.scale_factor
+;      xs.ctp_fg[WHERE(xs.ctp_fg ne xs.ctp_fg_ATT._fillvalue, /NULL)] = xs.ctp_fg*xs.ctp_fg_att.scale_factor
+;      xs.stemp_fg[WHERE(xs.stemp_fg ne xs.stemp_fg_ATT._fillvalue, /NULL)] = xs.stemp_fg*xs.stemp_fg_att.scale_factor
+
             x0(*,*,0)=xs.cot_fg*xs.cot_fg_att.scale_factor
             x0(*,*,1)=xs.ref_fg*xs.ref_fg_att.scale_factor
             x0(*,*,2)=xs.ctp_fg*xs.ctp_fg_att.scale_factor
@@ -273,13 +294,17 @@ endelse ;nosec
           ;Err(OK) = Val(OK) * Err(OK) - not using natural logs!
 ;          CErr(OK) = CVal(OK) * alog(10) * CErr(OK)
 
-;      unc(*,*,0)=xp.cot_uncertainty*xp.cot_uncertainty_att.scale_factor
-      unc(*,*,0)=xp.cot*xp.cot_att.scale_factor* alog(10)*(xp.cot_uncertainty*xp.cot_uncertainty_att.scale_factor)
 
-;pd*xqc.xe(i)/alog10(exp(1.))
-      unc(*,*,1)=(xp.ref_uncertainty*xp.ref_uncertainty_att.scale_factor)
-      unc(*,*,2)=(xp.ctp_uncertainty*xp.ctp_uncertainty_att.scale_factor)
-      unc(*,*,3)=(xp.stemp_uncertainty*xp.stemp_uncertainty_att.scale_factor)
+;      xp.cot_uncertainty[WHERE(xp.cot_uncertainty ne xp.cot_uncertainty_ATT._fillvalue, /NULL)] = xp.cot_uncertainty*xp.cot_uncertainty_att.scale_factor
+;      xp.ref_uncertainty[WHERE(xp.ref_uncertainty ne xp.ref_uncertainty_ATT._fillvalue, /NULL)] = xp.ref_uncertainty*xp.ref_uncertainty_att.scale_factor
+;      xp.ctp_uncertainty[WHERE(xp.ctp_uncertainty ne xp.ctp_uncertainty_ATT._fillvalue, /NULL)] = xp.ctp_uncertainty*xp.ctp_uncertainty_att.scale_factor
+;      xp.stemp_uncertainty[WHERE(xp.stemp_uncertainty ne xp.stemp_uncertainty_ATT._fillvalue, /NULL)] = xp.stemp_uncertainty*xp.stemp_uncertainty_att.scale_factor
+;      xp.cc_total_uncertainty[WHERE(xp.cc_total_uncertainty ne xp.cc_total_uncertainty_ATT._fillvalue, /NULL)] = xp.cc_total_uncertainty*xp.cc_total_uncertainty_att.scale_factor
+
+      unc(*,*,0)=xp.cot_uncertainty*xp.cot_uncertainty_att.scale_factor
+      unc(*,*,1)=xp.ref_uncertainty*xp.ref_uncertainty_att.scale_factor
+      unc(*,*,2)=xp.ctp_uncertainty*xp.ctp_uncertainty_att.scale_factor
+      unc(*,*,3)=xp.stemp_uncertainty*xp.stemp_uncertainty_att.scale_factor
       unc(*,*,4)=xp.cc_total_uncertainty*xp.cc_total_uncertainty_att.scale_factor
 
       if ~keyword_set(nosec) then begin
@@ -322,11 +347,24 @@ endelse ;nosec
                alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
                alb(*,*,1)=xs.albedo_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
                alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
-               meas(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
-               meas(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
-               meas(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
-               meas(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.add_offset
-               meas(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset
+
+;      xs.REFLECTANCE_IN_CHANNEL_NO_2[WHERE(xs.REFLECTANCE_IN_CHANNEL_NO_2 ne xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT._fillvalue, /NULL)] = xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_att.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+
+;      xs.REFLECTANCE_IN_CHANNEL_NO_3[WHERE(xs.REFLECTANCE_IN_CHANNEL_NO_3 ne xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT._fillvalue, /NULL)] = xs.REFLECTANCE_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_att.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
+
+;      xs.REFLECTANCE_IN_CHANNEL_NO_4[WHERE(xs.REFLECTANCE_IN_CHANNEL_NO_4 ne xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT._fillvalue, /NULL)] = xs.REFLECTANCE_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_att.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
+
+;      xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6[WHERE(xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6 ne xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT._fillvalue, /NULL)] = xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_att.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.add_offset
+
+;      xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7[WHERE(xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7 ne xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT._fillvalue, /NULL)] = xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_att.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset
+
+
+
+               meas(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_att.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
+               meas(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_att.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
+               meas(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_att.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset
+               meas(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_att.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.add_offset
+               meas(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_att.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset
                
 ;      y0(*,*,0)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
 ;      y0(*,*,1)=xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_3*xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.FIRSTGUESS_REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset
@@ -335,17 +373,24 @@ endelse ;nosec
 ;      y0(*,*,4)=xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.scale_factor+xs.FIRSTGUESS_BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset
 ;
 ;nb note add_offset required
-;
-               ymfit(*,*,0)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.add_offset
-               ymfit(*,*,1)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3_ATT.add_offset
-               ymfit(*,*,2)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_ATT.add_offset
-               ymfit(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_ATT.add_offset
-               ymfit(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_ATT.add_offset
+; xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2
+
+
+               ymfit(*,*,0)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_att.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_2_ATT.add_offset
+               ymfit(*,*,1)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3_att.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_3_ATT.add_offset
+               ymfit(*,*,2)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_att.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_ATT.add_offset
+               ymfit(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_att.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_ATT.add_offset
+               ymfit(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_att.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_ATT.add_offset
+
+
+print,range(ymfit(*,*,3))
+
                
                yn(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset+ymfit(*,*,0)
                yn(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset+ymfit(*,*,1)
                yn(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset+ymfit(*,*,2)
                yn(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_6_ATT.add_offset+ymfit(*,*,3)
+
                yn(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_IN_CHANNEL_NO_7_ATT.add_offset+ymfit(*,*,4)
                
                alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset
@@ -379,7 +424,7 @@ endelse ;nosec
                ymfit(*,*,2)=xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4*xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_RESIDUAL_IN_CHANNEL_NO_4_ATT.add_offset
                ymfit(*,*,3)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_6_ATT.add_offset
                ymfit(*,*,4)=xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7*xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_ATT.scale_factor+xs.BRIGHTNESS_TEMPERATURE_RESIDUAL_IN_CHANNEL_NO_7_ATT.add_offset
-               
+
                yn(*,*,0)=xs.REFLECTANCE_IN_CHANNEL_NO_2*xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_2_ATT.add_offset+ymfit(*,*,0)
                yn(*,*,1)=xs.REFLECTANCE_IN_CHANNEL_NO_3*xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_3_ATT.add_offset+ymfit(*,*,1)
                yn(*,*,2)=xs.REFLECTANCE_IN_CHANNEL_NO_4*xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.scale_factor+xs.REFLECTANCE_IN_CHANNEL_NO_4_ATT.add_offset+ymfit(*,*,2)
@@ -413,6 +458,11 @@ if ~keyword_set(nosec) then begin
       print,range(meas(*,*,2))
       print,range(meas(*,*,3))
       print,range(meas(*,*,4))
+      print,'ymfit',range(ymfit(*,*,0))
+      print,range(ymfit(*,*,1))
+      print,range(ymfit(*,*,2))
+      print,range(ymfit(*,*,3))
+      print,range(ymfit(*,*,4))
    endif
 
 print,'costja',range(xp.costja)
@@ -495,13 +545,13 @@ print,'ngood1 read_orac',ngood2
       
       ret(p,*).alb(0:nsol-1)= reform(transpose(xin_alb(iretgood,*)),nsol,1,ngood)
       ret(p,*).Ymfit(0:nmeas-1)=reform(transpose(xin_ymfit(iretgood,*)),nmeas,1,ngood)
-      whbad=where(ret(p,*).ymfit(4) lt -30., nbad)
+;      whbad=where(ret(p,*).ymfit(4) lt -30., nbad)
       
-      if nbad gt 0 then begin
-         for ii=1,4 do ret(p,whbad).YN(ii)=-999.
-         for ii=1,4 do ret(p,whbad).Y(ii)=-999.
-         for ii=1,4 do ret(p,whbad).Ymfit(ii)=-999.
-      endif
+;      if nbad gt 0 then begin
+;         for ii=1,4 do ret(p,whbad).YN(ii)=-999.
+;         for ii=1,4 do ret(p,whbad).Y(ii)=-999.
+;         for ii=1,4 do ret(p,whbad).Ymfit(ii)=-999.
+;      endif
       
 print,'nbad read_orac',nbad     
       
@@ -580,6 +630,7 @@ print,'here b read_orac'
 ;
 ;now call the plotting routine
 ;
+;stop
 print,'here c read_orac'     
    if n_elements(plot) gt 0 then begin
       plot_ret_cldmodel_modis,ret,ha_temp,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop_x=eop_x,ps=ps,night=night,itype=itype,/noqc,/rotate,nosec=nosec,error=error;error=error
