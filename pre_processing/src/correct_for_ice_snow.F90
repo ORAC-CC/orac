@@ -66,6 +66,9 @@
 ! 2013/09/02: AP Removed startyi, endye.
 ! 2013/10/02: CP added fmonth so correct ice snow emissivity files are read 
 !                in 2009/2010
+!
+! $Id$
+!
 ! Bugs:
 !
 subroutine correct_for_ice_snow(nise_path, imager_geolocation, preproc_dims, surface,cyear,cmonth,cday,channel_info)

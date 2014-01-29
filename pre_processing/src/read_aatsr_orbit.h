@@ -19,6 +19,8 @@
 
    HISTORY:
    2013/10/08: AP Original version.
+
+   $Id$
 */
 #include <stdlib.h>
 #include <string.h>

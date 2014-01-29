@@ -5,6 +5,8 @@
    08/10/2013 Adam Povey: Original version.
    11/10/2013 Greg McGarragh: Fixed band names for the forward view which are
                               not *_forward_* but are actually *_fward_*.
+
+   $Id$
  **/
 
 #include "read_aatsr_orbit.h"

@@ -19,6 +19,7 @@
 ! History:
 !2012/02/24: Matthias Jerg produces initial code version.
 !2013 MJ implements untested OMP paralleization, not yet thread save, therefore tuned-off
+!
 ! $Id$
 !
 ! Bugs: Is very slow. Cloud compute some sums etc. outside and store them.

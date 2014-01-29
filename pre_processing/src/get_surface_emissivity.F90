@@ -51,7 +51,8 @@
 ! 05/11/2013 GM Removed my commented out original fixes for those of Matthias
 !               and otherwise fixed a small memory leak and cleaned up the code.
 !
-! ------------------------------------------------------------------------------
+! $Id$
+!
 ! Bugs:
 ! none known
 

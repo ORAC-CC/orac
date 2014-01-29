@@ -36,6 +36,9 @@ SUBROUTINE nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday,platf
 ! 2013/10/14: MJ fixed bug with writing of albedo and emissivity.
 ! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
 !20131127 MJ changes output from netcdf3 to netcdf4.
+  !
+  ! $Id$
+  !
   ! Applied SPRs:
   !
   !-----------------------------------------------------------------------

@@ -37,6 +37,9 @@
 !                            Carolines previous change means the variable is not
 !                            defined.
 ! 2012/08/20 MJ changed read_mcd43c3 from function to subroutine in order to iron out bugs and some slight change
+!
+! $Id$
+!
 ! Bugs:
 !2014/01/24 MJ corrects length of "path_to_file"
 !

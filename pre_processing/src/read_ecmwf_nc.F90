@@ -41,7 +41,7 @@
 ! 2013/03/20 GT Fixed a bug introduced in yesterday's changes (10 m wind components were
 !               not being writen to ECMWF structures)
 ! 2013/10/29 Changed array allocation of phi_lay and phi_lev
-!!
+!
 ! $Id$
 !
 ! Bugs:

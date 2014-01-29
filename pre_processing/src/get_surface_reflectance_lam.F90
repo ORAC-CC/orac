@@ -76,6 +76,9 @@
 !                 longitude runs from 0-360 degrees)
 ! 2013/09/02: AP Removed startyi, endye.
 !2014/01/17 MJ fixed doy datatype from sint to stint to comply with other defs.
+!
+! $Id$
+!
 ! Bugs:
 ! NB channels are hardwired in this code and not selected automatically
 !

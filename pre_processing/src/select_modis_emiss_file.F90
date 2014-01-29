@@ -29,6 +29,8 @@
 !             code is now 2100 ready:)
 ! 2013/11/01: Greg McGarragh: Cleaned up code.
 !
+! $Id$
+!
 subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_path_file)
 
   use preproc_structures

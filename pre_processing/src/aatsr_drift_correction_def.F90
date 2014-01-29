@@ -9,6 +9,8 @@
 ! History:
 ! 20 Jun 2012 Gareth Thomas: Original
 !
+! $Id$
+!
 ! Bugs:
 !
 module aatsr_drift_structure

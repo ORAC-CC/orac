@@ -25,6 +25,7 @@
 !14/12/2012 Cp changed howy loop was set changed starty to startyi to loop over
 !            a granule
 !20130516 MJ changed filtering of angles wrt fill value: multi-view is accounted for.
+!
 ! $Id$
 !
 ! Bugs:

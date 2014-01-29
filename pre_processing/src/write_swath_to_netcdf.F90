@@ -29,6 +29,9 @@
 ! 2013/11/05: MJ fixed bug with writing of albedo and emissivity (channel numbers).
 ! 2013/11/05: GM Fixed a copy-and-paste-and-forgot-to-change bug from the above
 !                fix.
+!
+! $Id$
+!
 subroutine write_swath_to_netcdf(imager_flags,imager_angles, &
      & imager_geolocation,imager_measurements,imager_time,&
      & netcdf_info,channel_info,surface)

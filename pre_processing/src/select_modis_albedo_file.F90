@@ -24,6 +24,8 @@
 ! 2013/03/07 GT Reverted change made by CP on 2012/08/06, and added code to check
 !               that the MODIS file exists and is readable.
 !
+! $Id$
+!
 ! Bugs: there must be a way of searching for wildcard in fortran to make this co!de cleaner
 ! code should be modified so selects files from year either side
 !
