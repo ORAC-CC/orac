@@ -167,6 +167,11 @@
 !    2013/12/10, MJ: initializes ymfit and y0 with missingxn
 !    2014/01/12, Greg McGarragh: Added some missing deallocates.
 !    2014/01/28, Greg McGarragh: Cleaned up code.
+!    2014/01/29, Greg McGarragh: Some OpenMP fixes.  Ctrl is actually shared.
+!       No need to make it private. Also many variables set to be 'privatefirst'
+!       should just be 'private', i.e. they do not need to enter the parallel
+!       loop initialised.  Finally status_line was not needed. Status is private
+!       within the loop.
 !
 ! Bugs:
 !    None known
@@ -281,8 +286,8 @@ program ECP
 
    ! Some more variables for OpenMP implementation
    integer, allocatable, dimension(:) :: totpix_line,totmissed_line,totconv_line, &
-                                         totmaxj_line,status_line
-   integer, allocatable, dimension(:) :: aviter_line, avphch_line
+                                         totmaxj_line
+   integer, allocatable, dimension(:) :: aviter_line,avphch_line
    real,    allocatable, dimension(:) :: avj_line
 
 #ifdef USE_TIMING
@@ -349,7 +354,6 @@ program ECP
 
    Ctrl%Ind%Xstart = 1
    Ctrl%Ind%Ystart = 1
-
    Ctrl%Resoln%SegSize = Ctrl%Ind%YMax
 
 
@@ -569,8 +573,6 @@ program ECP
       avphch_line=0
       allocate(avj_line(iystart:iystop))
       avj_line=0.0
-      allocate(status_line(iystart:iystop))
-      status_line=0
 
 #ifdef USE_TIMING
    m1=mclock()
@@ -591,18 +593,18 @@ program ECP
 
       ! Start OMP section by spawning the threads
       !$OMP PARALLEL &
-      !$OMP PRIVATE(j,jj,m,iviews,iinput,thread_id,SPixel_Alloc,RTM_Pc_Alloc) &
-      !$OMP FIRSTPRIVATE(status,i,iystart,iystop,conv,dummyreal,Ctrl,Diag,RTM_Pc,Spixel)
+      !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_id,RTM_Pc,Spixel,SPixel_Alloc,RTM_Pc_Alloc,Diag,conv,dummyreal) &
+      !$OMP FIRSTPRIVATE(status)
       thread_id = omp_get_thread_num()
       print *, 'Thread ', thread_id+1, 'is active'
 
 
       !  Allocate sizes of SPixel sub-structure arrays
-      call Alloc_SPixel(Ctrl, RTM, SPixel, status)
-      if (status == 0) SPixel_Alloc = .true.
-
       call Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
       if (status == 0) RTM_Pc_Alloc = .true.
+
+      call Alloc_SPixel(Ctrl, RTM, SPixel, status)
+      if (status == 0) SPixel_Alloc = .true.
 
 
       ! Set RTM pressure values in SPixel (will not change from here on)
@@ -626,12 +628,10 @@ program ECP
       i = ixstart
 
       ! Start OMP parallel loop for along track direction.
-      !$OMP DO SCHEDULE(DYNAMIC,1)
+      !$OMP DO SCHEDULE(GUIDED)
       do j = iystart,iystop,ystep
 
-         write(*,*) 'thread,iystart,iystop,iy: ', thread_id,iystart,iystop,j
-
-         status_line(j) = status
+!        write(*,*) 'thread,iystart,iystop,iy: ', thread_id,iystart,iystop,j
 
          ! Set the location of the pixel within the image (Y0) and within the
          ! current image segment (YSeg0).
@@ -662,13 +662,11 @@ program ECP
             TotPix_line(j) = TotPix_line(j)+1
 
             ! Set up the super-pixel data values.
-            if (status_line(j) == 0) then
+            if (status == 0) then
                call Get_SPixel(Ctrl, conf,SAD_Chan, MSI_Data, RTM, SPixel, status)
             endif
 
-            status_line(j) = status
-
-            if (status_line(j) == 0) then
+            if (status == 0) then
 
                ! If the super-pixel cannot be processed, zero the outputs and
                ! diag struct.
@@ -688,11 +686,10 @@ program ECP
                   ! inversion.
                   Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
                                         RTM_Pc, Diag, status)
-                  status_line(j) = status
 
                   ! Set values required for overall statistics 1st bit test on QC
                   ! flag determines whether convergence occurred.
-                  if (status_line(j) == 0) then
+                  if (status == 0) then
                      if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
 
 !                       TotConv = TotConv+1
@@ -718,13 +715,11 @@ program ECP
                      Spixel%Xn = MissingXn
                      Spixel%Sn = MissingSn
                      call Zero_Diag(Ctrl, Diag, status)
-                     status_line(j)=status
                   end if
                end if ! btest if closes
 
                ! Calculate the Cloud water path CWP
                call Calc_CWP(Ctrl,SPixel, status)
-               status_line(j) = status
 
                ! Write the outputs
 
@@ -811,7 +806,6 @@ program ECP
    deallocate(aviter_line)
    deallocate(avphch_line)
    deallocate(avj_line)
-   deallocate(status_line)
 
 
    !----------------------------------------------------------------------------
