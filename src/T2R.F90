@@ -29,6 +29,9 @@
 !                             (number of required channels). This was done
 !                             to be consistent with changed to R2T.
 !   21st Feb 2001, Andy Smith: comments on arguments corrected
+! 20140128 MJ fixes some overflow:
+! however, only symptoms are cured here not the actual reason for the overflow (unknown)
+!nor is this condition reported as status.
 !
 ! Bugs:
 !   None known.
@@ -51,6 +54,8 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
     real(4) :: d_R_d_T(NChan)
     integer :: status
 
+    real huge_value,log_huge_value
+
 !   Define local variables
 
     real(4) :: BB(NChan)
@@ -61,11 +66,15 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
     status = 0
 
+
+    huge_value=log(huge(1.0))
+    log_huge_value=log(huge_value)
+
 !   Begin calculating radiances
 
     T_eff = ( T * SAD_Chan%Thermal%T2 ) + SAD_Chan%Thermal%T1
 
-    BB = ( SAD_Chan%Thermal%B2 / T_eff )
+    BB = min(( SAD_Chan%Thermal%B2 / T_eff ),log_huge_value-1.0)
 
     C = exp( BB )
 
@@ -73,7 +82,9 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
 !   Calculate change in radiances with temperature
 
-    d_R_d_T = ( SAD_Chan%Thermal%B1 * BB * C * SAD_Chan%Thermal%T2) / &
-              ( T_eff * (C-1.0) * (C-1.0) )
+    d_R_d_T = min(( SAD_Chan%Thermal%B1 * BB * C * SAD_Chan%Thermal%T2) / &
+              ( T_eff * (C-1.0) * (C-1.0) ),huge_value)
+
+    
 
 end subroutine T2R
