@@ -20,6 +20,7 @@
 ! 2012/04/19: GT Added value of pi.
 ! 20131127 MJ adds parameters for netcdf4 compression
 ! 20140123 MJ switches nc4 shuffling off.
+! 20140130 MJ removes parameters for chunking.
 !
 ! $Id$
 !
@@ -76,13 +77,13 @@ module preproc_constants
 
   !some netcdf4 related parameters
   !compression levels for variables of different type (0:none,9:maximum)
-  integer(kind=lint), parameter :: compress_level_float=7
-  integer(kind=lint), parameter :: compress_level_double=7
-  integer(kind=lint), parameter :: compress_level_lint=7
-  integer(kind=lint), parameter :: compress_level_nint=7
-  integer(kind=lint), parameter :: compress_level_stint=7
-  integer(kind=lint), parameter :: compress_level_byte=7
-  integer(kind=lint), parameter :: compress_level_stint_flag=7
+  integer(kind=lint), parameter :: compress_level_float=0
+  integer(kind=lint), parameter :: compress_level_double=0
+  integer(kind=lint), parameter :: compress_level_lint=0
+  integer(kind=lint), parameter :: compress_level_nint=0
+  integer(kind=lint), parameter :: compress_level_stint=0
+  integer(kind=lint), parameter :: compress_level_byte=0
+  integer(kind=lint), parameter :: compress_level_stint_flag=0
 
 
   !turn on shuffling to improve compression
@@ -94,10 +95,6 @@ module preproc_constants
   logical, parameter :: shuffle_byte=.FALSE.
   logical, parameter :: shuffle_stint_flag=.FALSE.
 
-  !chunking array for internal file partitioning
-  !integer(kind=lint), parameter, dimension(3) :: chunksize3d=(/180,90,1/)
-  !for the 2D histogram
-  integer(kind=lint),dimension(6) :: chunksize6d
 
 
 end module preproc_constants
