@@ -213,7 +213,7 @@ program ECP
    type(SAD_LUT_t)     :: SAD_LUT
    type(SPixel_t)      :: SPixel
 
-   integer             :: i, j, jj, m
+   integer             :: i, ii, j, jj, m
    integer             :: ios        ! I/O status value from file operations
    integer             :: status = 0 ! Status value returned from subroutines
    integer             :: nargs

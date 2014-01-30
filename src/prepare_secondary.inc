@@ -5,6 +5,8 @@
 ! 20/09/2012 Caroline Poulsen remove scaling factor from albedo
 ! 20/09/2012 Caroline Poulsen chanaged how svan value is set
 ! 29/05/2013 Gareth Thomas added degrees of freedom for signal
+! 30/01/2014 Greg McGarragh fixed writing of the residuals and first guess in
+!    the case of nighttime pixels.
 
 
                 spixel_scan_out_sec%scanline_u(i,j)=i
@@ -90,37 +92,33 @@
 !residualsy
 !
 
-               do iinput=1,Ctrl%Ind%Ny!SPixel%Ind%NY!Ctrl%Ind%Ny
-	!	write(*,*) 'ii',iinput,Ctrl%Ind%Ny,SPixel%Ind%NY
-                  dummyreal=(Diag%YmFit(iinput)-spixel_scan_out_sec%res_offset(iinput))/&
-	                       & spixel_scan_out_sec%res_scale(iinput)
-
-                  if( dummyreal .ge. real(spixel_scan_out_sec%res_vmin(iinput),kind=sreal) .and. &
-                       & dummyreal .le. real(spixel_scan_out_sec%res_vmax(iinput),kind=sreal)) then
-                     spixel_scan_out_sec%residuals(i,j,iinput)=int(dummyreal, kind=sint)
+               do iinput=1,SPixel%Ind%NY
+                  ii = SPixel%spixel_y_to_ctrl_y_index(iinput)
+                  dummyreal=(Diag%YmFit(iinput)-spixel_scan_out_sec%res_offset(ii))/&
+	                       & spixel_scan_out_sec%res_scale(ii)
+                  if( dummyreal .ge. real(spixel_scan_out_sec%res_vmin(ii),kind=sreal) .and. &
+                       & dummyreal .le. real(spixel_scan_out_sec%res_vmax(ii),kind=sreal)) then
+                     spixel_scan_out_sec%residuals(i,j,ii)=int(dummyreal, kind=sint)
 
                   else
-                     spixel_scan_out_sec%residuals(i,j,iinput)=spixel_scan_out_sec%int_fill_value
+                     spixel_scan_out_sec%residuals(i,j,ii)=spixel_scan_out_sec%int_fill_value
                   endif
-
                enddo
 
 
 !
 !  firstguess forward modelled radiance
 !
-               do iinput=1,Ctrl%Ind%Ny!SPixel%Ind%NY!Ctrl%Ind%Ny
-
-                  dummyreal=(Diag%Y0(iinput)-spixel_scan_out_sec%y0_offset(iinput))/&
-                       & spixel_scan_out_sec%y0_scale(iinput)
-
-                  if( dummyreal .ge. real(spixel_scan_out_sec%y0_vmin(iinput),kind=sreal) .and. &
-                       & dummyreal .le. real(spixel_scan_out_sec%y0_vmax(iinput),kind=sreal)) then
-                     spixel_scan_out_sec%y0(i,j,iinput)=int(dummyreal, kind=sint)
+               do iinput=1,SPixel%Ind%NY
+                  ii = SPixel%spixel_y_to_ctrl_y_index(iinput)
+                  dummyreal=(Diag%Y0(iinput)-spixel_scan_out_sec%y0_offset(ii))/&
+                       & spixel_scan_out_sec%y0_scale(ii)
+                  if( dummyreal .ge. real(spixel_scan_out_sec%y0_vmin(ii),kind=sreal) .and. &
+                       & dummyreal .le. real(spixel_scan_out_sec%y0_vmax(ii),kind=sreal)) then
+                     spixel_scan_out_sec%y0(i,j,ii)=int(dummyreal, kind=sint)
                   else
-                     spixel_scan_out_sec%y0(i,j,iinput)=spixel_scan_out_sec%int_fill_value
+                     spixel_scan_out_sec%y0(i,j,ii)=spixel_scan_out_sec%int_fill_value
                   endif
-
               enddo
 
 
