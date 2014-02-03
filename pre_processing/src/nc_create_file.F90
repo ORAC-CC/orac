@@ -32,7 +32,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
 ! 2012/11/29: CP changed variables names from layers to levels
 ! 2013/02/26: CP inserted missing comment for adding noaa platform
 ! 2013/03/07: CP added in some diagnostics q and albedo
-! 2013/xx/xx" MJ adds PLATFORMUP varaible and output to comply with nomenclature.
+! 2013/xx/xx: MJ adds PLATFORMUP varaible and output to comply with nomenclature.
 ! 2013/10/14: MJ fixed bug with writing of albedo and emissivity.
 ! 2013/11/06: MJ adds config file to preprocessing output which holds all
 !    relevant dimensional information.
@@ -42,9 +42,11 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
 ! 2014/02/02: GM adds chunking on/off option and cleans up code.
 ! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
 !    all the nc_create_file_*() routines.
-! 2014/02/02: GM change the nlat x nlon 'unlimited' dimension size to a fixed
+! 2014/02/02, GM: Changed the nlat x nlon 'unlimited' dimension size to a fixed
 !    dimension size.  The 'unlimited' dimension size is not required and results
 !    in a significant performance hit.
+! 2014/02/03, GM: A small reordering of the variables in the SW RTM output to be
+!    consistent with the LW RTM output. 
 !
 ! $Id$
 !
@@ -428,6 +430,16 @@ endif
          chunksize2d(2)=nlon_x_nlat
       endif
 
+      ! define counter variable
+      ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'counter_sw', NF90_INT, &
+           & netcdf_info%xydim_sw, netcdf_info%counterid_sw, &
+           & deflate_level=compress_level_lint, shuffle=shuffle_lint)
+!          & chunksizes=chunksize3d)
+      if (ierr.ne.NF90_NOERR) stop 'def counter sw'
+      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%counterid_sw, &
+                          '_FillValue', long_int_fill_value)
+      if (ierr.ne.NF90_NOERR) write(*,*) 'error def var csw FillValue'
+
       ! define solar zenith
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'solza_sw', NF90_FLOAT, &
            & netcdf_info%xyvdim_sw, netcdf_info%solzaid_sw, &
@@ -457,16 +469,6 @@ endif
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%relaziid_sw, &
                           '_FillValue',real_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error def var relazi_sw FillValue'
-
-      ! define counter variable
-      ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'counter_sw', NF90_INT, &
-           & netcdf_info%xydim_sw, netcdf_info%counterid_sw, &
-           & deflate_level=compress_level_lint, shuffle=shuffle_lint)
-!          & chunksizes=chunksize3d)
-      if (ierr.ne.NF90_NOERR) stop 'def counter sw'
-      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%counterid_sw, &
-                          '_FillValue', long_int_fill_value)
-      if (ierr.ne.NF90_NOERR) write(*,*) 'error def var csw FillValue'
 if (.false.) then
       ! define longitude variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'lon_sw', NF90_FLOAT, &
