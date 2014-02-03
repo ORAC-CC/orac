@@ -188,8 +188,19 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-include $(ORAC_ARCH)
-include $(ORAC_LIB)
+#archfile=arch.ifort.ox
+#libfile=lib.ifort.ox
+
+# ral/ox files are above, this is for dwd/ecmwf:
+archfile=arch.ecmwf.xlf
+libfile=lib.ecmwf.xlf
+
+# Can even be set through env. variable
+#archfile=$(orac_arch)
+#libfile=$(orac_lib)
+
+include $(archfile)
+include $(libfile)
 
 
 # Define object files to be linked. N.B. files containing module definitions

@@ -304,7 +304,7 @@ program ECP
    real(kind=sreal)   :: range_lat(2),range_lon(2)
 #endif
 
-   include "sigtrap.F90"
+   !include "sigtrap.F90"
 
 #ifdef USE_TIMING
    ! Initialize timing
