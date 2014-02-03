@@ -42,6 +42,9 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
 ! 2014/02/02: GM adds chunking on/off option and cleans up code.
 ! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
 !    all the nc_create_file_*() routines.
+! 2014/02/02: GM change the nlat x nlon 'unlimited' dimension size to a fixed
+!    dimension size.  The 'unlimited' dimension size is not required and results
+!    in a significant performance hit.
 !
 ! $Id$
 !
@@ -80,6 +83,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
 
    ! Local
    integer                       :: ierr
+   integer                       :: nlon_x_nlat
    character(len=filelength)     :: ctitle
    character(len=platformlength) :: PLATFORMUP
    integer                       :: cposition,clength
@@ -88,6 +92,10 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
    integer(kind=lint)            :: chunksize1d(1)
    integer(kind=lint)            :: chunksize2d(2)
    integer(kind=lint)            :: chunksize3d(3)
+
+
+   nlon_x_nlat=(preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1) * &
+               (preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)
 
 
    ! open stuff related to LW
@@ -107,7 +115,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
 
       ! define horizontal dimension as one big vector containing all pixels
       ierr = NF90_DEF_DIM(netcdf_info%ncid_lwrtm, 'nlon_x_nlat_lwrtm', &
-             & NF90_UNLIMITED, netcdf_info%xydim_lw)
+             & nlon_x_nlat, netcdf_info%xydim_lw)
       if (ierr.ne.NF90_NOERR) stop 'create xy-d 2'
 
       ! define lon and lat just for reference
@@ -171,17 +179,15 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
       netcdf_info%xyvdim_lw(2)=netcdf_info%xydim_lw
 
       if (.not. use_chunking) then
-         chunksize1d(1)=1
+         chunksize1d(1)=nlon_x_nlat
 
          chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=1
+         chunksize2d(2)=nlon_x_nlat
       else
-         chunksize1d(1)=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)* &
-                      & (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+         chunksize1d(1)=nlon_x_nlat
 
          chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)* &
-                      & (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+         chunksize2d(2)=nlon_x_nlat
       endif
 
       ! define counter variable
@@ -241,17 +247,16 @@ if (.false.) then
       if (ierr.ne.NF90_NOERR) write(*,*) 'error def var FillValue lat'
 endif
 
-      !set up the combined dimensions for 3D fields (spatial+channel)
+      ! set up the combined dimensions for 3D fields (spatial+channel)
       netcdf_info%xycdim_lw(1)=netcdf_info%lwchanneldim
       netcdf_info%xycdim_lw(2)=netcdf_info%xydim_lw
 
       if (.not. use_chunking) then
          chunksize2d(1)=channel_info%nchannels_lw
-         chunksize2d(2)=1
+         chunksize2d(2)=nlon_x_nlat
       else
          chunksize2d(1)=1
-         chunksize2d(2)=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)*&
-                      & (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+         chunksize2d(2)=nlon_x_nlat
       endif
 
       ! define emissivity 3D
@@ -273,12 +278,11 @@ endif
       if (.not. use_chunking) then
          chunksize3d(1)=channel_info%nchannels_lw
          chunksize3d(2)=preproc_dims%kdim_pre
-         chunksize3d(3)=1
+         chunksize3d(3)=nlon_x_nlat
       else
          chunksize3d(1)=1
          chunksize3d(2)=1
-         chunksize3d(3)=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)*&
-                        (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+         chunksize3d(3)=nlon_x_nlat
       endif
 
       ! define tac profile at level centers as variable
@@ -349,7 +353,7 @@ endif
 
       ! define horizontal dimension as one big vector containing all pixels
       ierr = NF90_DEF_DIM(netcdf_info%ncid_swrtm, 'nlon_x_nlat_swrtm', &
-             & NF90_UNLIMITED, netcdf_info%xydim_sw)
+             & nlon_x_nlat, netcdf_info%xydim_sw)
       if (ierr.ne.NF90_NOERR) stop 'create xy-d 2'
 
       ! define lon and lat just for reference
@@ -411,6 +415,18 @@ endif
       ! combines viewing xy dims
       netcdf_info%xyvdim_sw(1)=netcdf_info%viewdim_sw
       netcdf_info%xyvdim_sw(2)=netcdf_info%xydim_sw
+
+      if (.not. use_chunking) then
+         chunksize1d(1)=nlon_x_nlat
+
+         chunksize2d(1)=imager_angles%nviews
+         chunksize2d(2)=nlon_x_nlat
+      else
+         chunksize1d(1)=nlon_x_nlat
+
+         chunksize2d(1)=imager_angles%nviews
+         chunksize2d(2)=nlon_x_nlat
+      endif
 
       ! define solar zenith
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'solza_sw', NF90_FLOAT, &
@@ -477,12 +493,11 @@ endif
       if (.not. use_chunking) then
          chunksize3d(1)=channel_info%nchannels_sw
          chunksize3d(2)=preproc_dims%kdim_pre
-         chunksize3d(3)=1
+         chunksize3d(3)=nlon_x_nlat
       else
          chunksize3d(1)=1
          chunksize3d(2)=1
-         chunksize3d(3)=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)*&
-                        (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+         chunksize3d(3)=nlon_x_nlat
       endif
 
       ! define tac profile at level centers as variable
@@ -523,7 +538,7 @@ endif
 
       ! define horizontal dimension as one big vector containing all pixels
       ierr = NF90_DEF_DIM(netcdf_info%ncid_prtm, 'nlon_x_nlat_prtm', &
-             & NF90_UNLIMITED, netcdf_info%xydim_pw)
+             & nlon_x_nlat, netcdf_info%xydim_pw)
       if (ierr.ne.NF90_NOERR) stop 'create xy-d 3'
 
       ! define lon and lat just for reference
@@ -562,10 +577,9 @@ if (.false.) then ! DO THIS RATHER VIA THE GLOBAL ATTRIBUTES, same for instrumen
 endif
 
       if (.not. use_chunking) then
-         chunksize1d(1)=1
+         chunksize1d(1)=nlon_x_nlat
       else
-         chunksize1d(1)=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)*&
-                      & (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+         chunksize1d(1)=nlon_x_nlat
       endif
 
       ! define i variable
@@ -675,11 +689,10 @@ endif
 
       if (.not. use_chunking) then
          chunksize2d(1)=preproc_dims%kdim_pre
-         chunksize2d(2)=1
+         chunksize2d(2)=nlon_x_nlat
       else
          chunksize2d(1)=1
-         chunksize2d(2)=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)*&
-                      & (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+         chunksize2d(2)=nlon_x_nlat
       endif
 
       ! define pressure profile at level centers as variable
@@ -1437,6 +1450,7 @@ subroutine nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday, &
 
    ! Local
    integer                       :: ierr
+   integer                       :: nlon_x_nlat
    character(len=filelength)     :: ctitle
    character(len=platformlength) :: PLATFORMUP
    integer                       :: cposition,clength
@@ -1548,8 +1562,11 @@ subroutine nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday, &
    if (ierr.ne.NF90_NOERR) write(*,*) 'error def var FillValue emis conf channel n abs'
 
 if (.false.) then
+   nlon_x_nlat=(preproc_dims%preproc_max_lat-preproc_dims%preproc_min_lat+1)* &
+             & (preproc_dims%preproc_max_lon-preproc_dims%preproc_min_lon+1)
+
    ! define horizontal dimension as one big vector containing all pixels
-   ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nlon_x_nlat_lwrtm', NF90_UNLIMITED, &
+   ierr = NF90_DEF_DIM(netcdf_info%ncid_config, 'nlon_x_nlat_lwrtm', nlon_x_nlat, &
           & netcdf_info%xydim_lw)
    if (ierr.ne.NF90_NOERR) stop 'create xy-d 2'
 
