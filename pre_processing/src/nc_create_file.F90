@@ -40,6 +40,8 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
 ! 2014/01/30: MJ implements chunking for the large variables which are actually
 !    read in later.
 ! 2014/02/02: GM adds chunking on/off option and cleans up code.
+! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
+!    all the nc_create_file_*() routines.
 !
 ! $Id$
 !
@@ -87,10 +89,6 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
    integer(kind=lint)            :: chunksize2d(2)
    integer(kind=lint)            :: chunksize3d(3)
 
-
-   !----------------------------------------------------------------------------
-   !
-   !----------------------------------------------------------------------------
 
    ! open stuff related to LW
    if (type .eq. 1) then
@@ -725,66 +723,14 @@ endif
    endif
 
 
-   !----------------------------------------------------------------------------
    ! set up attributes common to all output files
-   !----------------------------------------------------------------------------
    if (type .eq. 1) ncid=netcdf_info%ncid_lwrtm
    if (type .eq. 2) ncid=netcdf_info%ncid_swrtm
    if (type .eq. 3) ncid=netcdf_info%ncid_prtm
 
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Title',trim(adjustl(ctitle)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Project',trim(adjustl(script_input%project)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'NetCDF_Version',trim(adjustl(script_input%cncver)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'CF_Convention_Version',trim(adjustl(script_input%ccon)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Processing_Institution',trim(adjustl(script_input%cinst)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'L2_Processor',trim(adjustl(script_input%l2cproc)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'L2_Processor_Version',trim(adjustl(script_input%l2cprocver)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
+   call set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
+                              cday,ctitle,platform,sensor,path)
 
-   PLATFORMUP=platform
-   if (platform(1:4) .eq. 'noaa') PLATFORMUP(1:4)='NOAA'
-
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Platform',trim(adjustl(platformup)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Sensor_Name',trim(adjustl(sensor)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'uuid',trim(adjustl(script_input%uuid_tag)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-
-   cposition=index(trim(adjustl(path)),'/',back=.true.)
-   clength=len_trim(adjustl(path))
-   fname=trim(adjustl(path))
-
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Name',trim(adjustl(fname(cposition+1:clength))))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Email',trim(adjustl(script_input%contact)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Website',trim(adjustl(script_input%website)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Production_Time',trim(adjustl(script_input%exec_time)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Product_Date', &
-        & trim(adjustl(trim(adjustl(cyear))//trim(adjustl(cmonth))//&
-        & trim(adjustl(cday))//trim(adjustl(chour))//trim(adjustl(cminute)))))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Reference',trim(adjustl(script_input%reference)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'History',trim(adjustl(script_input%history)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Summary',trim(adjustl(script_input%summary)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Keywords',trim(adjustl(script_input%keywords)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Comment',trim(adjustl(script_input%comment)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'License',trim(adjustl(script_input%license)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
 
   ! close definition section
   ierr = NF90_ENDDEF(ncid)
@@ -829,6 +775,8 @@ subroutine nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday, &
 ! 2012/05/31: MJ initial routine version.
 ! 2012/07/04: CP removed nviews dimension of dat
 ! 2014/02/02: GM adds chunking on/off option and cleans up code.
+! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
+!    all the nc_create_file_*() routines.
 !
 ! Applied SPRs:
 !
@@ -875,10 +823,6 @@ subroutine nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday, &
    integer(kind=lint)            :: chunksize2d(2)
    integer(kind=lint)            :: chunksize3d(3)
 
-
-   !----------------------------------------------------------------------------
-   !
-   !----------------------------------------------------------------------------
 
    ! open stuff related to msi
    if (type .eq. 1) then
@@ -1408,9 +1352,7 @@ endif
    endif
 
 
-   !-------------------------------------------------------------------------------
    ! set up attributes common to all output files
-   !-------------------------------------------------------------------------------
    if (type .eq. 1) ncid=netcdf_info%ncid_msi
    if (type .eq. 2) ncid=netcdf_info%ncid_cf
    if (type .eq. 3) ncid=netcdf_info%ncid_lsf
@@ -1419,59 +1361,9 @@ endif
    if (type .eq. 6) ncid=netcdf_info%ncid_alb
    if (type .eq. 7) ncid=netcdf_info%ncid_scan
 
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Title',trim(adjustl(ctitle)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Project',trim(adjustl(script_input%project)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'NetCDF_Version',trim(adjustl(script_input%cncver)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'CF_Convention_Version',trim(adjustl(script_input%ccon)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Processing_Institution',trim(adjustl(script_input%cinst)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'L2_Processor',trim(adjustl(script_input%l2cproc)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'L2_Processor_Version',trim(adjustl(script_input%l2cprocver)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
+   call set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
+                              cday,ctitle,platform,sensor,path)
 
-   PLATFORMUP=platform
-   if (platform(1:4) .eq. 'noaa') PLATFORMUP(1:4)='NOAA'
-
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Platform',trim(adjustl(platformup)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Sensor_Name',trim(adjustl(sensor)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'uuid',trim(adjustl(script_input%uuid_tag)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-
-   cposition=index(trim(adjustl(path)),'/',back=.true.)
-   clength=len_trim(adjustl(path))
-   fname=trim(adjustl(path))
-
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Name',trim(adjustl(fname(cposition+1:clength))))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Email',trim(adjustl(script_input%contact)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Website',trim(adjustl(script_input%website)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Production_Time',trim(adjustl(script_input%exec_time)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Product_Date', &
-        & trim(adjustl(trim(adjustl(cyear))//trim(adjustl(cmonth))//&
-        & trim(adjustl(cday))//trim(adjustl(chour))//trim(adjustl(cminute)))))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Reference',trim(adjustl(script_input%reference)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'History',trim(adjustl(script_input%history)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Summary',trim(adjustl(script_input%summary)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Keywords',trim(adjustl(script_input%keywords)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Comment',trim(adjustl(script_input%comment)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
-   ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'License',trim(adjustl(script_input%license)))
-   if (ierr.ne.NF90_NOERR) stop 'error def conventions'
 
    ! close definition section
    ierr = NF90_ENDDEF(ncid)
@@ -1509,6 +1401,8 @@ subroutine nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday, &
 ! Modifications Log:
 ! 2013/11/06: MJ initial routine version
 ! 2014/02/02: GM adds chunking on/off option and cleans up code.
+! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
+!    all the nc_create_file_*() routines.
 !
 ! Applied SPRs:
 !
@@ -1550,9 +1444,6 @@ subroutine nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday, &
    character(len=filelength)     :: fname
 
 
-   !----------------------------------------------------------------------------
-   !
-   !----------------------------------------------------------------------------
    ctitle='ORAC Preprocessing config  file'
 
 
@@ -1686,9 +1577,52 @@ endif
    ncid=netcdf_info%ncid_config
 
 
-   !----------------------------------------------------------------------------
    ! set up attributes common to all output files
-   !----------------------------------------------------------------------------
+   call set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
+                              cday,ctitle,platform,sensor,path)
+
+
+   ! close definition section
+   ierr = NF90_ENDDEF(ncid)
+   if (ierr.ne.NF90_NOERR)  stop 'error enddef swath'
+
+   if (wo.eq.1) then
+      write(*,*) ''
+      write(*,*) 'New file created: ',TRIM(path)
+   endif
+
+   return
+
+end subroutine nc_create_file_config
+
+
+
+subroutine set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
+                                 cday,ctitle,platform,sensor,path)
+
+   use netcdf
+
+   use attribute_structures
+
+   implicit none
+
+   integer,                       intent(in) :: ncid
+   type(script_arguments_s),      intent(in) :: script_input
+   character(len=datelength),     intent(in) :: cyear
+   character(len=datelength),     intent(in) :: chour
+   character(len=datelength),     intent(in) :: cminute
+   character(len=datelength),     intent(in) :: cmonth
+   character(len=datelength),     intent(in) :: cday
+   character(len=filelength),     intent(in) :: ctitle
+   character(len=platformlength), intent(in) :: platform
+   character(len=sensorlength),   intent(in) :: sensor
+   character(len=*),              intent(in) :: path
+
+   integer                       :: ierr
+   character(len=platformlength) :: PLATFORMUP
+   integer                       :: cposition,clength
+   character(len=filelength)     :: fname
+
    ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Title',trim(adjustl(ctitle)))
    if (ierr.ne.NF90_NOERR) stop 'error def conventions'
    ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Project',trim(adjustl(script_input%project)))
@@ -1743,15 +1677,4 @@ endif
    ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'License',trim(adjustl(script_input%license)))
    if (ierr.ne.NF90_NOERR) stop 'error def conventions'
 
-   ! close definition section
-   ierr = NF90_ENDDEF(ncid)
-   if (ierr.ne.NF90_NOERR)  stop 'error enddef swath'
-
-   if (wo.eq.1) then
-      write(*,*) ''
-      write(*,*) 'New file created: ',TRIM(path)
-   endif
-
-   return
-
-end subroutine nc_create_file_config
+end subroutine set_common_attributes
