@@ -36,7 +36,7 @@
 ! Bugs:
 !    None known.
 !
-! $Id: DeallocSADLUT.f90 74 2011-08-16 16:11:53Z capoulse $
+! $Id$
 !
 !------------------------------------------------------------------------------------
 subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)

@@ -32,6 +32,8 @@
 ! Bugs:
 !    None known.
 ! 
+! $Id$
+!
 !---------------------------------------------------------------------
 subroutine Check_FloatArray(Nx, Ny, array, mask, ulim, llim, status)
 

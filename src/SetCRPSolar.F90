@@ -92,6 +92,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !-------------------------------------------------------------------------------
 
 subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)

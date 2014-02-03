@@ -52,7 +52,8 @@
 ! Bugs:
 !   None known.
 !
-!!
+! $Id$
+!
 !-------------------------------------------------------------------------------
 subroutine Read_Location_nc(Ctrl, NSegs, SegSize, &
    MSI_Data, status)

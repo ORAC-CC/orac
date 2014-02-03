@@ -30,6 +30,8 @@
 ! Bugs:
 !    None known.
 ! 
+! $Id$
+!
 !---------------------------------------------------------------------
 subroutine Check_ByteArray(Nx, Ny, array, mask, ulim, llim, status)
 

@@ -61,6 +61,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Read_ByteArray(lun, X, Y, Z, ch_index, out, row, ios)
 

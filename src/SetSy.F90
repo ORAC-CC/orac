@@ -42,6 +42,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 
 Subroutine Set_Sy(Ctrl, SPixel, Kbj, Sy, status)

@@ -52,6 +52,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Get_Location(Ctrl, SPixel, MSI_Data, status)
    

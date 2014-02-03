@@ -40,6 +40,8 @@
 ! Bugs:
 !    None known
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 
 Subroutine Zero_Diag (Ctrl, Diag, status)

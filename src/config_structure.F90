@@ -1,3 +1,28 @@
+! Name:
+!
+!
+! Purpose:
+!
+!
+! Description and Algorithm details:
+!
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
+!
+!
+! $Id$
+!
+! Bugs:
+!
+!
 module config_s
   
   use ECP_Constants

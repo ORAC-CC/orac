@@ -68,6 +68,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Read_INTArray(lun, X, Y, Zin, Zout, ch_index, out, row, ios)
 

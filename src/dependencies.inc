@@ -69,8 +69,7 @@ $(OBJS)/IntLUTTauSatSolAziRe.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o \
         $(OBJS)/GZero.o $(OBJS)/SADLUT.o
 $(OBJS)/IntLUTTauSolRe.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o $(OBJS)/GZero.o \
         $(OBJS)/SADLUT.o
-$(OBJS)/IntRoutines.o: $(OBJS)/Bcubic_def.o $(OBJS)/Ctrl.o $(OBJS)/GZero.o \
-        $(OBJS)/SADLUT.o
+$(OBJS)/IntRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/SADLUT.o
 $(OBJS)/InvertMarquardt.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
         $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o
 $(OBJS)/Linint.o: $(OBJS)/ECPConstants.o
@@ -147,12 +146,6 @@ $(OBJS)/XMDAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
         $(OBJS)/SPixel.o
 $(OBJS)/XSDAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/ZeroDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o
-$(OBJS)/ECPparallel_ecmwf.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
-        $(OBJS)/ECPConstants.o $(OBJS)/ECPRoutines.o $(OBJS)/RTM.o \
-        $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o \
-        $(OBJS)/config_structure.o $(OBJS)/input_structures.o \
-        def_vars_primary.inc def_vars_secondary.inc prepare_primary.inc \
-        write_primary.inc
 $(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/ECPRoutines.o $(OBJS)/RTM.o \
         $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o \

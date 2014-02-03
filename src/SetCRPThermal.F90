@@ -68,6 +68,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !-------------------------------------------------------------------------------
 
 subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)

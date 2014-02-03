@@ -60,6 +60,8 @@
 ! Bugs
 !    None known
 !
+! $Id$
+!
 !-------------------------------------------------------------------------------
 
 subroutine bcuint(y,y1,y2,y12,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)

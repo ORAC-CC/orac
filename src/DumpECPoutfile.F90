@@ -8,6 +8,9 @@
 !    01-Jun-2011, Andy Smith:
 !       Commented out read and write of lat, lon following update to main ECP source.
 !       Using trim() on out file name. 
+!
+! $Id$
+!
 
 Program DumpECPoutfile
 

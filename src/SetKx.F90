@@ -37,6 +37,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)
 

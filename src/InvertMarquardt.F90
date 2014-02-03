@@ -202,7 +202,7 @@
 ! Bugs:
 !    None known
 !
-! $Id: InvertMarquardt.f90 170 2011-10-03 08:05:16Z capoulse $
+! $Id$
 !
 !-------------------------------------------------------------------------------
 
@@ -294,6 +294,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                                   ! Product of Dy and Kb.
    real    :: Sb(SPixel%NxI+SPixel%Ind%NSolar, SPixel%NxI+SPixel%Ind%NSolar)
                                   ! "Model parameter" error covariance.
+   real    :: temp_arr(SPixel%Nx, SPixel%Nx)
+                                  ! work around "array temporary" warning
    character(120) :: message      ! String for error messages.
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
@@ -304,6 +306,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    huge_value=huge(1.0)/Ctrl%InvPar%MqStep
 
    stat      = 0
+   status    = 0
 
    Y         = 0.
    dY_dX     = 0.
@@ -756,9 +759,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    if (stat == 0) then
       ! State expected error from measurements=Diag%St(1:SPixel%Nx, 1:SPixel%Nx))
-
-      call Invert_Cholesky(d2J_dX2, Diag%St(1:SPixel%Nx, 1:SPixel%Nx), &
-                           SPixel%Nx, stat)
+      temp_arr=Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
+      call Invert_Cholesky(d2J_dX2, temp_arr, SPixel%Nx, stat)
 #ifdef DEBUG
       if (stat /= 0) &
          call Write_Log(Ctrl, 'Invert_Marquardt: Error in Invert_Cholesky', stat)

@@ -1,7 +1,30 @@
+! Name:
+!
+!
+! Purpose:
+!
+!
+! Description and Algorithm details:
+!
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
 !20131122: MJ writes routine which return ctp FG including uncertainty information
 !based on interpolation of brightness temperature.
 ! 20140123 CP puts in a condition to check minimum inversion level as false inversions over cold surfaces were causing mon_k values of 0 which subsequently crashed the program
 !20140127 MJ changes how minimum from above is implemented and catches division by zero if temperature is constant and some cleanup.
+!
+! $Id$
+!
+! Bugs:
+!
 subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
   use ECP_Constants

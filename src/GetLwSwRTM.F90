@@ -73,6 +73,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 

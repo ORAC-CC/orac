@@ -1,3 +1,28 @@
+! Name:
+!
+!
+! Purpose:
+!
+!
+! Description and Algorithm details:
+!
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
+!
+!
+! $Id$
+!
+! Bugs:
+!
+!
 !-----------------------------------------------
 !-----------------------------------------------
 SUBROUTINE nc_close( ncid,fname,wo,ierr )

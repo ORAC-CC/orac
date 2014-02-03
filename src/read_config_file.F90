@@ -1,4 +1,28 @@
+! Name:
+!
+!
+! Purpose:
+!
+!
+! Description and Algorithm details:
+!
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
 ! 2013/11/14 MJ initial file version
+!
+! $Id$
+!
+! Bugs:
+!
+!
 
 subroutine read_config_file(Ctrl,conf)
   

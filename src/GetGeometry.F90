@@ -87,6 +87,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------
 subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
 

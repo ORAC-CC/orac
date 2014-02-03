@@ -26,6 +26,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Get_Surface_Rs(Ctrl, Flag, Rs, SRs, status)
    

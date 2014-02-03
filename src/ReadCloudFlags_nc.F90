@@ -74,8 +74,8 @@
 ! Bugs:
 !   None known.
 !
-! $Id: ReadCloudFlags.f90 182 2011-10-05 10:03:40Z carnold $
-!!
+! $Id$
+!
 !-------------------------------------------------------------------------------
 subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, &
    MSI_Data, status)

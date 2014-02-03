@@ -69,6 +69,8 @@
 ! Bugs:
 !    None known
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 
 Subroutine Set_Diag (Ctrl, SPixel, convergence, J, Jm, Ja, iter, &

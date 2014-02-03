@@ -63,6 +63,8 @@
 ! Bugs:
 !    None known
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 
 subroutine Read_Inst_Config (Ctrl, status)

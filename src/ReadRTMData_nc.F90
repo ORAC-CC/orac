@@ -26,6 +26,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Read_RTMData_nc(Ctrl, RTM, status)
 

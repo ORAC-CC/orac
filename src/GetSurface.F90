@@ -132,6 +132,8 @@
 !   for channel 5, which presumably assumes that we are processing ATSR data 
 !   and makes this code harder to generalise to other instruments. 
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 

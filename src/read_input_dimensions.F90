@@ -1,3 +1,28 @@
+! Name:
+!
+!
+! Purpose:
+!
+!
+! Description and Algorithm details:
+!
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
+!
+!
+! $Id$
+!
+! Bugs:
+!
+!
 !--------------------------------------------------
 !--------------------------------------------------
 SUBROUTINE read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)

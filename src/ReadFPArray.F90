@@ -66,6 +66,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Read_FPArray(lun, X, Y, Zin, Zout, ch_index, out, row, ios)
 

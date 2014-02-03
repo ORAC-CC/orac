@@ -21,6 +21,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 subroutine X_AUX(SPixel, index, X, err, status)
 

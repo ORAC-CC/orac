@@ -46,6 +46,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Get_SwRTM(Ctrl, RTM, SPixel, status)
 

@@ -79,7 +79,7 @@
 ! Bugs:
 !   None known.
 !
-! $Id: ReadLocation.f90 182 2011-10-05 10:03:40Z carnold $
+! $Id$
 !
 !------------------------------------------------------------------------------------
 subroutine Read_Location(Ctrl, NSegs, SegSize, MSI_files_open, lun, &

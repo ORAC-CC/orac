@@ -47,6 +47,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 
 subroutine Write_Log (Ctrl, message, status)

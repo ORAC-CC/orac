@@ -35,7 +35,7 @@
 ! Bugs:
 !
 !
-! $Id: ReadIllum.f90 182 2011-10-05 10:03:40Z cpoulsen $
+! $Id$
 !
 !------------------------------------------------------------------------------------
 subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &

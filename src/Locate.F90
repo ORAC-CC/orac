@@ -14,6 +14,8 @@
 ! Bugs
 !    None known
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 function locate(xx,x)
   implicit none

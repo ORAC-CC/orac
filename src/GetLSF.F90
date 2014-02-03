@@ -31,7 +31,9 @@
 !     Original version 8/2/2012 Caroline Poulsen
 !
 ! Bugs:
+!  none known
 !
+! $Id$
 !
 !------------------------------------------------------------------------------------
 subroutine Get_lsf(Ctrl, SPixel, MSI_Data, status)

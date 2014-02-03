@@ -38,7 +38,7 @@
 ! Bugs:
 !    None known.
 !
-! $Id: DeallocData.f90 80 2011-08-16 16:13:01Z capoulse $
+! $Id$
 !
 !-------------------------------------------------------------------------------
 subroutine Dealloc_Data(Ctrl, MSI_Data, status)

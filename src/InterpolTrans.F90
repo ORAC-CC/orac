@@ -44,6 +44,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Interpol_Trans(Ctrl, Spixel, Pc, Tac, Tbc, &
                           d_Tac_d_Pc, d_Tbc_d_Pc, status)

@@ -37,6 +37,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
 

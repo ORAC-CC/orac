@@ -49,6 +49,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 
 Subroutine Set_Limits(Ctrl, SPixel, status)

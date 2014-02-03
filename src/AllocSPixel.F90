@@ -78,6 +78,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
 

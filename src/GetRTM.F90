@@ -42,6 +42,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------
 subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 

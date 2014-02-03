@@ -29,8 +29,10 @@
 !      SPixel%spixel_y_to_ctrl_y_index.
 !
 ! Bugs:
-!   None known.
-! At the moment only one view is specified
+!   At the moment only one view is specified
+!
+! $Id$
+!
 !------------------------------------------------------------------------------
 subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
 

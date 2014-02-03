@@ -68,7 +68,7 @@
 ! Bugs:
 !   None known.
 !
-! $Id: ReadSatData.f90 80 2011-08-16 16:13:01Z capoulse $
+! $Id$
 !
 !------------------------------------------------------------------------------------
 Subroutine Read_SatData(Ctrl, NSegs, SegSize, MSI_files_open, MSI_luns, &

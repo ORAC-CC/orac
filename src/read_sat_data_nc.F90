@@ -33,8 +33,8 @@
 ! Bugs:
 !   None known.
 !
-! $Id: read_dat_data_nc.F90 182 2011-10-05 10:03:40Z carnold $
-!!
+! $Id$
+!
 !------------------------------------------------------------------------------
 Subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, &
      & MSI_Data, SAD_Chan, status)

@@ -67,6 +67,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Get_CloudFlags(Ctrl, SPixel, MSI_Data, status)
    

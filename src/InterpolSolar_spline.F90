@@ -80,6 +80,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 

@@ -106,7 +106,7 @@
 ! Bugs:
 !   None known.
 !
-! $Id: ReadMSI.f90 182 2011-10-05 10:03:40Z carnold $
+! $Id$
 !
 !------------------------------------------------------------------------------------
 Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &

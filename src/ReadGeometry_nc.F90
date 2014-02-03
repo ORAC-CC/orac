@@ -55,7 +55,8 @@
 ! Bugs:
 !   None known.
 !
-!!
+! $Id$
+!
 !-------------------------------------------------------------------------------
 subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, &
    MSI_Data, status)

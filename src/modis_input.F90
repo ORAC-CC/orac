@@ -1,7 +1,30 @@
-!-------------------------------------------------------
+! Name:
+!
+!
+! Purpose:
+!
+!
+! Description and Algorithm details:
+!
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+!
+! Local variables:
+! Name Type Description
+!
+!
+! History:
+!
+!
+! $Id$
+!
+! Bugs:
+!
+!
 !-------------------------------------------------------
 subroutine open_modis_input(Ctrl,modis_input)
-!-------------------------------------------------------
 !-------------------------------------------------------
 
 !  use netcdf

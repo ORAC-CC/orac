@@ -47,6 +47,8 @@
 ! Bugs:
 !   None known.
 !
+! $Id$
+!
 !------------------------------------------------------------------------------------
 subroutine Interpol_Therm(Ctrl, Spixel, Pc, Tac, Tbc,         &
                           B, Rac_up, Rac_dwn, Rbc_up, d_B_d_Pc,        &

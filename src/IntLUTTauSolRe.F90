@@ -87,6 +87,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !-------------------------------------------------------------------------------
 
 subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)

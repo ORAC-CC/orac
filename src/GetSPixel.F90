@@ -212,7 +212,7 @@
 !   later changes made for development of aerosol retrieval etc, since the 
 !   source of changes is a copy of the code from 2006 (last recorded mod).
 !
-! $Id: GetSPixel.f90 173 2011-10-03 08:05:26Z capoulse $
+! $Id$
 !
 !------------------------------------------------------------------------------
 subroutine Get_SPixel(Ctrl, conf,SAD_Chan, MSI_Data, RTM, SPixel, &

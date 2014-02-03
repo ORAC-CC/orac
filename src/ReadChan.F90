@@ -81,6 +81,8 @@
 ! Bugs:
 !    None known.
 !
+! $Id$
+!
 !---------------------------------------------------------------------
 
 subroutine Read_Chan (Ctrl, SAD_Chan, status)
