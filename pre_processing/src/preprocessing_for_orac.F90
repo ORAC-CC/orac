@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name: preprocessing_for_orac.F90
 !
 !
@@ -170,18 +171,22 @@
 ! 2013/10/30: AP Continued tidying. Altered call for find_min_max_preproc.
 ! 2013/11/05: GT Changed type cast of cverbose to verbose variable to use
 !                '(I6)', as '(L6)' was causing a buffer overrun.
-! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
-! 2013/11/08: GM added missing call to deallocate_surface_structures()
-!2014/01/24: MJ fixed type mismatch in deallocation of surface structures and of variable nc.
+! 2013/11/06: MJ adds config file to preprocessing output which holds all
+!                relevant dimensional information.
+! 2013/11/08: GM Added missing call to deallocate_surface_structures().
+! 2014/01/24: MJ fixed type mismatch in deallocation of surface structures and
+!                of variable nc.
+! 2014/01/27: GM Made '1', 't', 'true', 'T', 'True', '0', 'f', 'false', 'F', and
+!                'False' all valid values for the preprocessor verbose option.
+! 2014/02/02: GM Added chunking on/off option.
 !
 ! $Id$
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
 !
+!-------------------------------------------------------------------------------
 
-!------------------------------------------------------------
-!------------------------------------------
 program preprocessing
 
    use hdf5
@@ -224,7 +229,7 @@ program preprocessing
    character(len=attribute_length) :: cdellon,cdellat
 
    character(len=pixellength) :: cstartx,cendx,cstarty,cendy,cchunkproc
-   character(len=pixellength) :: cday_night,cverbose
+   character(len=pixellength) :: cday_night,cverbose,cuse_chunking
 
    character(len=datelength) :: cyear,chour,cminute,cmonth,cday
 
@@ -266,7 +271,10 @@ program preprocessing
    integer(kind=stint) :: nc
 
    logical            :: verbose, check
+   logical            :: use_chunking
    integer, parameter :: chunksize=4096
+
+   logical            :: parse_logical
 
    include "sigtrap.F90"
 
@@ -315,6 +323,7 @@ program preprocessing
       CALL GET_COMMAND_ARGUMENT(39,cchunkproc)
       CALL GET_COMMAND_ARGUMENT(40,cday_night)
       CALL GET_COMMAND_ARGUMENT(41,cverbose)
+      CALL GET_COMMAND_ARGUMENT(42,cuse_chunking)
    else
       ! if just one argument => this is driver file which contains everything
       call get_command_argument(1,driver_path_and_file)
@@ -362,6 +371,7 @@ program preprocessing
       read(11,*) cchunkproc
       read(11,*) cday_night
       read(11,*) cverbose
+      read(11,*) cuse_chunking
       close(11)
    endif ! nargs gt 1
 
@@ -377,23 +387,10 @@ program preprocessing
    read(cday_night(1:len_trim(cday_night)), '(I6)') day_night
    ! This should work:
    ! read(cverbose, '(L7)') verbose
+   ! read(cuse_chunking, '(L7)') use_chunking
    ! Instead we have this:
-   if (trim(adjustl(cverbose)) .eq. '1' .or.&
-       trim(adjustl(cverbose)) .eq. 't' .or. &
-       trim(adjustl(cverbose)) .eq. 'true' .or. &
-       trim(adjustl(cverbose)) .eq. 'T' .or. &
-       trim(adjustl(cverbose)) .eq. 'True') then
-        verbose=.true.
-   else if &
-      (trim(adjustl(cverbose)) .eq. '0' .or. &
-       trim(adjustl(cverbose)) .eq. 'f' .or. &
-       trim(adjustl(cverbose)) .eq. 'false' .or. &
-       trim(adjustl(cverbose)) .eq. 'F' .or. &
-       trim(adjustl(cverbose)) .eq. 'False') then
-        verbose=.false.
-   else
-        stop 'Illegal value for verbose option'
-   endif
+   verbose=parse_logical(cverbose)
+   use_chunking=parse_logical(cuse_chunking)
 
    ! Initialise some counts, offset variables...
    nchunks1=0
@@ -697,7 +694,8 @@ program preprocessing
            & msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,&
            & platform,sensor,script_input,&
            & cyear,chour,cminute,cmonth,cday,&
-           & preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info)
+           & preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info,&
+           & use_chunking)
       write(*,*)'netcdf output_path: ',trim(output_pathout)
 
       !
@@ -779,7 +777,35 @@ program preprocessing
    call deallocate_channel_info(channel_info)
    write(*,*)'end deallocate'
 
-
-
-
 end program preprocessing
+
+
+
+function parse_logical(string) result(value)
+
+   use preproc_constants
+
+   implicit none
+
+   logical :: value
+
+   character(len=pixellength), intent(in) :: string
+
+   if (trim(adjustl(string)) .eq. '1' .or.&
+       trim(adjustl(string)) .eq. 't' .or. &
+       trim(adjustl(string)) .eq. 'true' .or. &
+       trim(adjustl(string)) .eq. 'T' .or. &
+       trim(adjustl(string)) .eq. 'True') then
+        value = .true.
+   else if &
+      (trim(adjustl(string)) .eq. '0' .or. &
+       trim(adjustl(string)) .eq. 'f' .or. &
+       trim(adjustl(string)) .eq. 'false' .or. &
+       trim(adjustl(string)) .eq. 'F' .or. &
+       trim(adjustl(string)) .eq. 'False') then
+        value = .false.
+   else
+        stop 'Error parsing logical'
+   endif
+
+end function parse_logical
