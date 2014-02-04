@@ -49,7 +49,7 @@
 ;
 ; RESTRICTIONS:
 ;   Only inspects the file extensions alb,clf,geo,loc,lsf,msi,uv,lwrtm,prtm,
-;   swrtm. 
+;   swrtm,config. 
 ;   Assumes filenames start with a common identifier, followed by ORACV
 ;   and the version number, followed by unique date/time information, ending
 ;   in an extension listed above.
@@ -59,6 +59,7 @@
 ;   Written by ACPovey (povey@atm.ox.ac.uk) 
 ;   01 Nov 2013 - V1.00
 ;   27 Jan 2014 - V1.10: Added functionality for main processor
+;   04 Feb 2013 - V1.11: Added CONFIG file.
 ;-
 PRO COMPARE_ORAC_OUT
    args=COMMAND_LINE_ARGS()
@@ -81,17 +82,21 @@ PRO COMPARE_ORAC_OUT
    ;; loop over all experiments
    foreach inst,list do begin
       PRINT,inst
+      pass=1
      
-      ;; find root name of the newest revision and latest revision before that
+      ;; find root name of specified revision and latest revision before that
       fs=FILE_SEARCH(fdr+'/'+inst+'_ORACV'+'*'+a[0],count=nf1)
-      p=WHERE(STRMATCH(fs,'*ORACV'+revision+'*'),np,comp=q,ncomp=nq)
-      if np eq 0 || nq eq 0 then begin
-         PRINT,'All files of the same version.'
+      fs=fs[SORT(fs)]
+      p=WHERE(STRMATCH(fs,'*ORACV'+revision+'*'),np)
+      if (np eq 0) || ((p[0]-1) lt 0) then begin
+         PRINT,'--- All files of the same version. ---'
          CONTINUE
       endif
-      newf=fs[p[(SORT(fs[p]))[np-1]]]
+      ;; most recent file of specified revision
+      newf=fs[p[np-1]]
       newpath=STRMID(newf,0,STRLEN(newf)-STRLEN(a[0]))
-      oldf=fs[q[(SORT(fs[q]))[nq-1]]]
+      ;; most recent file of a previous version
+      oldf=fs[p[0]-1]
       oldpath=STRMID(oldf,0,STRLEN(oldf)-STRLEN(a[0]))
 
       ;; open all files with that roof
@@ -108,19 +113,23 @@ PRO COMPARE_ORAC_OUT
             if ~ARRAY_EQUAL(c1,c2) then begin
                if N_ELEMENTS(c1) ne N_ELEMENTS(c2) then begin
                   PRINT,var.name+' ('+a[i]+','+ $
-                        STRING(j,format='(I0)')+' - Size mismatch: ['+ $
+                        STRING(j,format='(I0)')+') - Size mismatch: ['+ $
                         STRING(SIZE(c1,/dim),format='(I0)')+'] vs ['+ $
                         STRING(SIZE(c2,/dim),format='(I0)')+']'
+                  pass=0
                endif else begin
                   trash=WHERE(ABS((c2-c1)/c1) gt 2d-7,nt)
                   PRINT,var.name,a[i],j,nt, format='(A0," (",A0,",",I0,'+ $
                         '") - ",I0," points are different by > 2d-7")'
+                  pass=0
                endelse
             endif
          endfor
          NCDF_CLOSE,id1
          NCDF_CLOSE,id2
       endfor
+
+      if pass then PRINT,'--- PASSED ---'
    endforeach
 
 END
