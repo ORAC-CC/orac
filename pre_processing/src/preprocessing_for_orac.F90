@@ -72,13 +72,14 @@
 ! uuid_tag         string in A Universally Unique ID for these files
 ! exec_time        string in Date/time string for when this file was generated
 ! aatsr_calib_file string in Full path to the AATSR calibration file
-! badc             int in 1: use of BADC NetCDF ECMWF files; Otherwise: GRIB
-!                         ECMWF files
+! badc             logic  in T: use of BADC NetCDF ECMWF files; F: GRIB
+!                            ECMWF files
 ! ecmwf_path2      string in Folder containing ECMWF files (?)
 ! ecmwf_path3      string in Folder containing ECMWF files (?)
-! chunkproc        int    in 1: split AATSR orbit in 4096 row chunks, 0: don't
+! chunkproc        logic  in T: split AATSR orbit in 4096 row chunks, F: don't
 ! day_night        int    in 2: process only night data; 1: day
 ! verbose          logic  in F: minimise information printed to screen; T: don't
+! use_chunking     logic  in T: apply chunking when writing NCDF files; F: don't
 !
 ! Local variables:
 ! Name Type Description
@@ -179,6 +180,8 @@
 ! 2014/01/27: GM Made '1', 't', 'true', 'T', 'True', '0', 'f', 'false', 'F', and
 !                'False' all valid values for the preprocessor verbose option.
 ! 2014/02/02: GM Added chunking on/off option.
+! 2014/02/03: AP Ensured all arguments that are logical flags are treated
+!                identically
 !
 ! $Id$
 !
@@ -221,7 +224,7 @@ program preprocessing
    character(len=pathlength) :: ecmwf_path,coef_path,emiss_path
    character(len=pathlength) :: emiss2_PATH,albedo_path_file
    character(len=pathlength) :: ice_path_file,aatsr_calib_file,ecmwf_path2
-   character(len=pathlength) :: ecmwf_path3,badc,emiss_path_file,ecmwf_path2out
+   character(len=pathlength) :: ecmwf_path3,emiss_path_file,ecmwf_path2out
    character(len=pathlength) :: ecmwf_path3out,ecmwf_pathout
    character(len=flaglength)       :: cgrid_flag
    character(len=sensorlength)     :: sensor
@@ -229,7 +232,7 @@ program preprocessing
    character(len=attribute_length) :: cdellon,cdellat
 
    character(len=pixellength) :: cstartx,cendx,cstarty,cendy,cchunkproc
-   character(len=pixellength) :: cday_night,cverbose,cuse_chunking
+   character(len=pixellength) :: cbadc,cday_night,cverbose,cuse_chunking
 
    character(len=datelength) :: cyear,chour,cminute,cmonth,cday
 
@@ -270,13 +273,13 @@ program preprocessing
    integer :: nchunks2,leftover_chunk2, nchunks_total
    integer(kind=stint) :: nc
 
-   logical            :: verbose, check
+   logical            :: verbose, check, badc
    logical            :: use_chunking
    integer, parameter :: chunksize=4096
 
    logical            :: parse_logical
 
-   include "sigtrap.F90"
+   !include "sigtrap.F90"
 
    ! get number of arguments
    nargs = COMMAND_ARGUMENT_COUNT()  
@@ -317,7 +320,7 @@ program preprocessing
       CALL GET_COMMAND_ARGUMENT(33,script_input%uuid_tag)
       CALL GET_COMMAND_ARGUMENT(34,script_input%exec_time)
       CALL GET_COMMAND_ARGUMENT(35,aatsr_calib_file)
-      CALL GET_COMMAND_ARGUMENT(36,badc)
+      CALL GET_COMMAND_ARGUMENT(36,cbadc)
       CALL GET_COMMAND_ARGUMENT(37,ecmwf_path2)
       CALL GET_COMMAND_ARGUMENT(38,ecmwf_path3)
       CALL GET_COMMAND_ARGUMENT(39,cchunkproc)
@@ -365,7 +368,7 @@ program preprocessing
       read(11,*) script_input%uuid_tag
       read(11,*) script_input%exec_time
       read(11,*) aatsr_calib_file
-      read(11,*) badc
+      read(11,*) cbadc
       read(11,*) ecmwf_path2
       read(11,*) ecmwf_path3
       read(11,*) cchunkproc
@@ -383,12 +386,14 @@ program preprocessing
    read(cendx(1:len_trim(cendx)), '(I6)') endx
    read(cstarty(1:len_trim(cstarty)), '(I6)') starty
    read(cendy(1:len_trim(cendy)), '(I6)') endy
-   read(cchunkproc(1:len_trim(cchunkproc)), '(I6)') chunkproc
    read(cday_night(1:len_trim(cday_night)), '(I6)') day_night
    ! This should work:
+   ! read(cchunkproc(1:len_trim(cchunkproc)), '(I6)') chunkproc
    ! read(cverbose, '(L7)') verbose
    ! read(cuse_chunking, '(L7)') use_chunking
    ! Instead we have this:
+   badc=parse_logical(cbadc)
+   chunkproc=parse_logical(cchunkproc)
    verbose=parse_logical(cverbose)
    use_chunking=parse_logical(cuse_chunking)
 
@@ -480,7 +485,7 @@ program preprocessing
       imager_geolocation%startx=1
       imager_geolocation%endx=n_across_track
 
-      if(trim(adjustl(sensor)) .eq. 'AATSR' .and. chunkproc .eq. 1) then
+      if(trim(adjustl(sensor)) .eq. 'AATSR' .and. chunkproc) then
          ! How many chunks do we have?
          ! For a day-time orbit, there is only one section of orbit to process.
          nchunks1=floor(n_along_track/real(chunksize))
@@ -570,12 +575,12 @@ program preprocessing
       ! read ECMWF fields and grid information
       if (verbose) then
          write(*,*) 'START READING ECMWF ERA INTERIM GRIB FILE: ', &
-              trim(adjustl(ecmwf_pathout)),trim(adjustl(badc))
+              trim(adjustl(ecmwf_pathout)),badc
          write(*,*) 'ecmwf_path3: ',trim(ecmwf_path3out)
          write(*,*) 'ecmwf_path:  ',trim(ecmwf_pathout)
       end if
 
-      if (trim(adjustl(badc)) .eq. '1') then 
+      if (badc) then 
          call read_ecmwf_dimensions_nc(ecmwf_path3out,ecmwf_dims)
          if (verbose) write(*,*)'ecmwf_dims nc: ',ecmwf_dims%xdim_ec, &
               ecmwf_dims%ydim_ec
@@ -591,7 +596,7 @@ program preprocessing
 
       ! Read ERA Interim lat/lon grid
       if (verbose) write(*,*) 'read ECMWF lat/lon' 
-      if (trim(adjustl(badc)) .eq. '1') then
+      if (badc) then
          call read_ecmwf_lat_lon_nc(ecmwf_path3out,ecmwf_dims,ecmwf_2d)
       else
          call read_ecmwf_lat_lon(ecmwf_pathout,ecmwf_dims,ecmwf_2d)
@@ -628,7 +633,7 @@ program preprocessing
 
       write(*,*) 'START READING ECMWF ERA INTERIM FILE'
 
-      if (trim(adjustl(badc)) .eq. '1') then 
+      if (badc) then 
 
          surfaceflag=0
          write(*,*)'reading ecmwf path3: ',trim(ecmwf_path3out), ' ', surfaceflag

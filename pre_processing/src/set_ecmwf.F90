@@ -25,7 +25,7 @@
 !                           Otherwise, full path to appropriate GRB file.
 ! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
 ! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
-! badc           string in  1: Use BADC files as formatted by the BADC in NCDF
+! badc           logic  in  1: Use BADC files as formatted by the BADC in NCDF
 !                           format. Otherwise: Assume ERA_Interim GRB format.
 ! verbose        logic  in  T: print status information; F: don't
 !
@@ -45,6 +45,7 @@
 ! 2013/03/06: CP changed ggam from grb to netcdf file
 ! 2013/06/11: CP set default ecmwf paths
 ! 2013/10/21: AP removed redundant arguments. Tidying.
+! 2014/02/03: AP made badc a logical variable
 !
 ! $Id$
 !
@@ -63,7 +64,7 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
 
    integer(kind=stint)       :: hour
 
-   character(len=datelength) :: cyear,chour,cmonth,cday,badc
+   character(len=datelength) :: cyear,chour,cmonth,cday
 
    character(len=pathlength) :: ecmwf_path,ecmwf_path2, &
         ecmwf_path3,ecmwf_path_root,ecmwf_path_root2,ecmwf_path_root3
@@ -71,7 +72,7 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    character                 :: cera_hour*2
 
    integer(kind=stint)       :: era_hours,era_hour,diff_hour,diff_hour_old
-   logical                   :: verbose
+   logical                   :: verbose,badc
 
    !put in the known information
 
@@ -79,7 +80,7 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    ecmwf_path_root=trim(adjustl(ecmwf_path))//'/'
    ecmwf_path_root2 = ecmwf_path_root
    ecmwf_path_root3 = ecmwf_path_root
-   if (trim(adjustl(badc)) .ne. '1') then
+   if (.not. badc) then
       ecmwf_path_root=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
            & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
            & trim(adjustl(cday))//'_'
@@ -104,7 +105,7 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
    if (era_hour .lt. 10) cera_hour='0'//trim(adjustl(cera_hour))
 
    !finalize the path to the era interim file
-   if (trim(adjustl(badc)) .ne. '1') then
+   if (.not. badc) then
       ecmwf_pathout=trim(adjustl(ecmwf_path_root))// &
            & trim(adjustl(cera_hour))//'+00.grb'
    else

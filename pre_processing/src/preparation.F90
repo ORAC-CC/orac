@@ -37,7 +37,7 @@
 ! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
 ! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
 ! script_input   struct in  Summary of file header information.
-! badc           string in  1: Use BADC files as formatted by the BADC in NCDF
+! badc           logic  in  1: Use BADC files as formatted by the BADC in NCDF
 !                           format. Otherwise: Assume ERA_Interim GRB format.
 ! imager_geolocation        struct both Summary of pixel positions
 ! chunkflag      stint  in  The number of the current chunk (for AATSR).
@@ -61,6 +61,7 @@
 ! 2012/03/05: CP small change to work for gfortran
 ! 2013/09/02: AP Removed startyi, endye.
 ! 2013/10/21: AP Removed redundant arguments. Tidying.
+! 2014/02/03: AP made badc a logical variable
 !
 ! $Id$
 !
@@ -91,7 +92,7 @@ subroutine preparation(lwrtm_file,swrtm_file, &
    character(len=pathlength)  :: ecmwf_pathout,ecmwf_path2out,ecmwf_path3out
    character(len=filelength)  :: lwrtm_file,swrtm_file,prtm_file, config_file,&
         msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
-        scan_file,badc,range_name
+        scan_file,range_name
 
    integer(kind=stint)        :: hour,chunkflag
 
@@ -103,7 +104,7 @@ subroutine preparation(lwrtm_file,swrtm_file, &
    type(imager_geolocation_s) :: imager_geolocation
    real                       :: startr,endr
    character(len=30)          :: startc,endc,chunkc
-   logical                    :: verbose
+   logical                    :: verbose,badc
 
    !determine ecmwf path/filename
    if (sensor .eq. 'AATSR') then
