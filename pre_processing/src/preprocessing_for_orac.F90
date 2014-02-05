@@ -182,6 +182,7 @@
 ! 2014/02/02: GM Added chunking on/off option.
 ! 2014/02/03: AP Ensured all arguments that are logical flags are treated
 !                identically
+!2014/02/05: MJ corrected datatype of chunkproc from character to logical
 !
 ! $Id$
 !
@@ -269,7 +270,7 @@ program preprocessing
    type(channel_info_s)     :: channel_info
 
    integer :: nargs
-   integer :: nchunks1,leftover_chunk1,chunkproc
+   integer :: nchunks1,leftover_chunk1
    integer :: nchunks2,leftover_chunk2, nchunks_total
    integer(kind=stint) :: nc
 
@@ -277,7 +278,7 @@ program preprocessing
    logical            :: use_chunking
    integer, parameter :: chunksize=4096
 
-   logical            :: parse_logical
+   logical            :: parse_logical,chunkproc
 
    !include "sigtrap.F90"
 
