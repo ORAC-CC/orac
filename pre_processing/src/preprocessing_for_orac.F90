@@ -183,6 +183,7 @@
 ! 2014/02/03: AP Ensured all arguments that are logical flags are treated
 !                identically
 !2014/02/05: MJ corrected datatype of chunkproc from character to logical
+!2014/02/05 MJ adds verbose to argument list of rttov related routines to mute rttov
 !
 ! $Id$
 !
@@ -712,7 +713,7 @@ program preprocessing
       call calculate_rt(coef_path,emiss_path,sensor,platform, &
            & preproc_dims,preproc_geoloc,preproc_geo,&
            & preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles, &
-           & netcdf_info,channel_info,month,ecmwf_dims)
+           & netcdf_info,channel_info,month,ecmwf_dims,verbose)
 
 
       !
