@@ -21,6 +21,7 @@
 !2013/06/26: Caroline Poulsen modified to include swrtm information
 !2013/07/29: Caroline Poulsen added month variable required for emissivity
 !2012/12/01: Caroline Poulsen added in ecmwf argument
+!20140204 MJ adds verbose to argument list of calculate_rt
 !
 ! $Id$
 !
@@ -29,7 +30,7 @@
 !none known
 
 subroutine calculate_rt(coef_path,emiss_path,sensor,platform,preproc_dims,preproc_geoloc,preproc_geo,&
-     & preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles,netcdf_info,channel_info,month,ecmwf_dims)
+     & preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles,netcdf_info,channel_info,month,ecmwf_dims,verbose)
 
   use preproc_constants
   use preproc_structures
@@ -57,12 +58,14 @@ subroutine calculate_rt(coef_path,emiss_path,sensor,platform,preproc_dims,prepro
 
   character(len=pathlength) :: coef_path,emiss_path
 
+  logical :: verbose
+
   type(netcdf_info_s) :: netcdf_info
 
   call rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
        & preproc_geoloc,preproc_geo,&
        & preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles,&
-       & netcdf_info,channel_info,month,ecmwf_dims)
+       & netcdf_info,channel_info,month,ecmwf_dims,verbose)
 
 
 end subroutine calculate_rt
