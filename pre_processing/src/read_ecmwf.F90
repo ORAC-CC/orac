@@ -24,6 +24,7 @@
 !2012/08/06: CP modified so it deals with BADC style ecmwf files, improved readbility
 !2013/03/06: CP modified to rearrange grib files 
 !2013/10/29: CP changed array definition of phi_lay and phi_lev
+!2013/02/04: MJ fixes typo and indents some lines properly.
 !
 ! $Id$
 !
@@ -130,8 +131,6 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
   !Even if resolution remains unchanged, preprocessing grid is defined at cell centres,
   !thus interpolation of data from cell corners (original grib definition) to centres is necessary
 
-  !  write(*,*) 'Starting grib read'
-  
   do while(iret .ne. grib_end_of_file)
 
      !get the current level
@@ -143,10 +142,10 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
      endif
 
 
-!read the parameter number of the variable which is just processed by the loop
+     !read the parameter number of the variable which is just processed by the loop
      call grib_get(igrib,'parameter',parameter,status)
-     write(*,*)'grib paparemeter',parameter
-!everything OK?
+     write(*,*)'grib parameter',parameter
+     !everything OK?
      if(status .ne. 0 ) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING PARAMETER:',  trim(err_msg)
@@ -155,35 +154,35 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
 
 
 
-!read the data
+     !read the data
      call grib_get_data(igrib,dummyvector_lat,dummyvector_lon,dummyvector_value,status)
-!write(*,*)'dummyvector_value',dummyvector_value
-
-!write(*,*)'igrib',igrib
-
-
-!everything OK?
+     !write(*,*)'dummyvector_value',dummyvector_value
+     
+     !write(*,*)'igrib',igrib
+     
+     
+     !everything OK?
      if(status .ne. 0 ) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING DATA:',  trim(err_msg)
      endif
-
      
-!get the indices for the interpolation/nearest neighbor
+     
+     !get the indices for the interpolation/nearest neighbor
      if(lgetindices) then
-   write(*,*) 'Get indices'
-   !allocate temporary fields to hold the preproc grid in the succession and ordering of the ecmwf grid
-
+        write(*,*) 'Get indices'
+        !allocate temporary fields to hold the preproc grid in the succession and ordering of the ecmwf grid
+        
         allocate(shiftlon(preproc_dims%xdim_pre))
         shiftlon=double_fill_value
         allocate(shiftlat(preproc_dims%ydim_pre))
         shiftlat=double_fill_value
-  
-!shift preproc grid to comply with ecmwf grid ordering !now done differently, see below!
-!        shiftlon=dble(preproc_geoloc%longitude+preproc_dims%lon_offset)
-!        shiftlat=dble(-preproc_geoloc%latitude)
-
-!get only one nearest point (near neighbor) for each input point
+        
+        !shift preproc grid to comply with ecmwf grid ordering !now done differently, see below!
+        !        shiftlon=dble(preproc_geoloc%longitude+preproc_dims%lon_offset)
+        !        shiftlat=dble(-preproc_geoloc%latitude)
+        
+        !get only one nearest point (near neighbor) for each input point
         if(lnn) then
            
            allocate(nnoutlat(preproc_dims%xdim_pre,preproc_dims%ydim_pre))
@@ -202,12 +201,12 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
            do jdim=preproc_dims%preproc_min_lat,preproc_dims%preproc_max_lat
               do idim=preproc_dims%preproc_min_lon,preproc_dims%preproc_max_lon
 
-!MST included the following IF to shorten this here a little
-!to have this variable available here I switch the calls of read_ecmwf_grib()
-!and build_preproc_fields() in preprocerssinf_for_orac
-
+                 !MST included the following IF to shorten this here a little
+                 !to have this variable available here I switch the calls of read_ecmwf_grib()
+                 !and build_preproc_fields() in preprocerssinf_for_orac
+                 
                  if(preproc_dims%filter_array_lw(idim,jdim) .eq. 1) then
-
+                    
                  if(preproc_geoloc%longitude(idim) .lt. 0.00) then
                     shiftlon(idim)=dble(preproc_geoloc%longitude(idim)+360.00)
                  else
@@ -216,10 +215,10 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
                  shiftlat(jdim)=dble(preproc_geoloc%latitude(jdim))
                  
 
-            !OBS BUG                 shiftlon(idim)=dble(preproc_geoloc%longitude(idim)+preproc_dims%lon_offset)
-            !OBS BUG                 shiftlat(jdim)=dble(preproc_geoloc%latitude(jdim))
+                 !OBS BUG                 shiftlon(idim)=dble(preproc_geoloc%longitude(idim)+preproc_dims%lon_offset)
+                 !OBS BUG                 shiftlat(jdim)=dble(preproc_geoloc%latitude(jdim))
                  
-            !write(*,*) 'ij',idim,jdim,shiftlon(idim),shiftlat(jdim)
+                 !write(*,*) 'ij',idim,jdim,shiftlon(idim),shiftlat(jdim)
 
                  call grib_find_nearest_single(igrib,.false.,shiftlat(jdim),shiftlon(idim),&
                       & nnoutlat(idim,jdim),nnoutlon(idim,jdim),&
@@ -233,16 +232,15 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
 
 !!$                 write(*,*) 'idim,jdim', idim,jdim,shiftlon(idim),shiftlat(jdim),nnindex(idim,jdim),nndistance(idim,jdim),&
 !!$                      & dummyvector_lon(nnindex(idim,jdim)+1),dummyvector_lat(nnindex(idim,jdim)+1)
-
-!MST the following ENDIF; see above comments
+                 
                 endif
 
               enddo
            enddo
 
-      !get all four nearest points (in order to do a full bilinear interpolation/averaging)
+           !get all four nearest points (in order to do a full bilinear interpolation/averaging)
         else
-
+           
            allocate(intoutlats(preproc_dims%xdim_pre,preproc_dims%ydim_pre,1:4))
            intoutlats=double_fill_value
            allocate(intoutlons(preproc_dims%xdim_pre,preproc_dims%ydim_pre,1:4))
@@ -254,11 +252,11 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
            allocate(intindexes(preproc_dims%xdim_pre,preproc_dims%ydim_pre,1:4))
            intindexes=int(long_int_fill_value,kind=kindOfInt)
            
-!           do idim=1,preproc_dims%xdim_pre
-!              do jdim=1,preproc_dims%ydim_pre
+           !           do idim=1,preproc_dims%xdim_pre
+           !              do jdim=1,preproc_dims%ydim_pre
            do jdim=preproc_dims%preproc_min_lat,preproc_dims%preproc_max_lat
               do idim=preproc_dims%preproc_min_lon,preproc_dims%preproc_max_lon
-
+                 
                  if(preproc_geoloc%longitude(idim) .lt. 0.00) then
                     shiftlon(idim)=dble(preproc_geoloc%longitude(idim)+360.00)
                  else
@@ -266,7 +264,7 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
                  endif
                  shiftlat(jdim)=dble(preproc_geoloc%latitude(jdim))
                  
-!                 write(*,*) 'ij',idim,jdim,shiftlon(idim),shiftlat(jdim)
+                 !                 write(*,*) 'ij',idim,jdim,shiftlon(idim),shiftlat(jdim)
 
                  call grib_find_nearest_four_single(igrib,.false.,shiftlat(jdim),shiftlon(idim),&
                       & intoutlats(idim,jdim,1:4),intoutlons(idim,jdim,1:4),&
@@ -286,40 +284,35 @@ subroutine read_ecmwf_grib(ecmwf_path,ecmwf_dims,ecmwf_3d,ecmwf_2d,preproc_dims,
 
 
 
-   !write(*,*) 'After finding nearest point(s)'
-
-   !get the A,B for the vertical structure
-   !query if the information is present in the file header
+        !write(*,*) 'After finding nearest point(s)'
+        
+        !get the A,B for the vertical structure
+        !query if the information is present in the file header
         call grib_get(igrib,'PVPresent',PVPresent)
-   !get the number of entries:
-   !REMARK: This should return nb_pv=122=61(= # model levels+1)*2
-   !model levels are actually layer centres and there the archived fields are defined.
-   !the pressure and hence A,B are defined at the interfaces.
-   !The first 61 entries of pv_dummy are the As, the remianing 61 entries are the Bs.
-   !They are contained in the header information of the grib file, thus constant in space,
-   !thus there is no need to interpolate them to a different grid.
-   !Now get the damned stuff:
-
-
-
-
+        !get the number of entries:
+        !REMARK: This should return nb_pv=122=61(= # model levels+1)*2
+        !model levels are actually layer centres and there the archived fields are defined.
+        !the pressure and hence A,B are defined at the interfaces.
+        !The first 61 entries of pv_dummy are the As, the remianing 61 entries are the Bs.
+        !They are contained in the header information of the grib file, thus constant in space,
+        !thus there is no need to interpolate them to a different grid.
+        !Now get the damned stuff:
         if(PVPresent .eq. 1) then
-      !get the length of the pv_dummy array
+           !get the length of the pv_dummy array
            call grib_get_size(igrib,'pv',nb_pv)
            allocate(pv_dummy(nb_pv))
            pv_dummy=-999.0
-      !get the pv array
+           !get the pv array
            call grib_get(igrib,'pv',pv_dummy)
-          
-      !extract as and bs and store in seperate arrays
+           
+           !extract as and bs and store in seperate arrays
            avector=pv_dummy(1:ecmwf_dims%kdim_ec+1)
            bvector=pv_dummy(ecmwf_dims%kdim_ec+2:2*ecmwf_dims%kdim_ec+2)
-write(*,*)'pv_dummy',pv_dummy
            deallocate(pv_dummy)
-
+           
         endif
-
-   !set logical to .false. cause it needs to be done only once as indices are stored!
+        
+        !set logical to .false. cause it needs to be done only once as indices are stored!
         lgetindices=.false.
 
      endif
@@ -353,30 +346,29 @@ write(*,*)'pv_dummy',pv_dummy
      elseif(parameter .eq. 133) then
 
         ecmwf_3d%spec_hum(:,:,ilevel)=reshape(dummyvector_value, (/ecmwf_dims%xdim_ec,ecmwf_dims%ydim_ec/))
-!write(*,*) 'spec_hum',ecmwf_3d%spec_hum(:,:,ilevel)
-!write(*,*) 'spec_hum'
-dim1=ecmwf_dims%xdim_ec
-dim2=ecmwf_dims%ydim_ec
-dim3=1
 
-call rearrange_ecmwf3(ecmwf_3d%spec_hum(:,:,ilevel),ecmwf_dims, dim1,dim2,dim3)
-
-!now do the actual filling of the preprocessing grid by:
-!nearest neighbor
+        dim1=ecmwf_dims%xdim_ec
+        dim2=ecmwf_dims%ydim_ec
+        dim3=1
+        
+        call rearrange_ecmwf3(ecmwf_3d%spec_hum(:,:,ilevel),ecmwf_dims, dim1,dim2,dim3)
+        
+        !now do the actual filling of the preprocessing grid by:
+        !nearest neighbor
         if(lnn) then
 
            call nn_ecmwf(preproc_dims,igrib,nnindex,nnvalue)
            preproc_prtm%spec_hum(:,:,ilevel)=real(nnvalue,kind=sreal)
            
-!four point average
+           !four point average
         else
            
            call int_ecmwf(preproc_dims,igrib,intdistances,intindexes,intvalues)
            preproc_prtm%spec_hum(:,:,ilevel)=real(intvalues(:,:,1),kind=sreal)
         endif
 
-
-
+        
+        
 
 !!!!!!!!!!!!!!!
 !ozone mass mixing ratio
@@ -385,12 +377,12 @@ call rearrange_ecmwf3(ecmwf_3d%spec_hum(:,:,ilevel),ecmwf_dims, dim1,dim2,dim3)
 
 
         ecmwf_3d%ozone(:,:,ilevel)=reshape(dummyvector_value, (/ecmwf_dims%xdim_ec,ecmwf_dims%ydim_ec/))
-!write(*,*)'ozone',ecmwf_3d%ozone(:,:,ilevel)
-dim1=ecmwf_dims%xdim_ec
-dim2=ecmwf_dims%ydim_ec
-dim3=1
 
-call rearrange_ecmwf3(ecmwf_3d%ozone(:,:,ilevel),ecmwf_dims, dim1,dim2,dim3)
+        dim1=ecmwf_dims%xdim_ec
+        dim2=ecmwf_dims%ydim_ec
+        dim3=1
+
+        call rearrange_ecmwf3(ecmwf_3d%ozone(:,:,ilevel),ecmwf_dims, dim1,dim2,dim3)
 
 !
 !now do the actual filling of the preprocessing grid by:
@@ -422,19 +414,9 @@ call rearrange_ecmwf3(ecmwf_3d%ozone(:,:,ilevel),ecmwf_dims, dim1,dim2,dim3)
    !now do the actual filling of the preprocessing grid by:
    !nearest neighbor
         if(lnn) then
-           
-      !write(*,*) 'geopot start'
-      !write(*,*) ecmwf_2d%geopot(:,:)
-      !write(*,*) 'geopot end'
-     
 
-      !write(*,*) 'set geopot start'
            call nn_ecmwf(preproc_dims,igrib,nnindex,nnvalue)
            preproc_prtm%geopot(:,:)=real(nnvalue,kind=sreal)
-      !write(*,*) 'set geopot stop'
-      !write(*,*) preproc_prtm%geopot(:,:)
-      !write(*,*) minval(preproc_prtm%geopot(:,:)),maxval(preproc_prtm%geopot(:,:))
-      !write(*,*) 'set geopot'
      
 
       !four point average
