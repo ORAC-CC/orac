@@ -32,6 +32,7 @@
 ! 20140128 MJ fixes some overflow:
 ! however, only symptoms are cured here not the actual reason for the overflow (unknown)
 !nor is this condition reported as status.
+!20140204 MJ fixes bug in above fix.
 !
 ! Bugs:
 !   None known.
@@ -68,15 +69,14 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
     status = 0
 
-
-    huge_value=log(huge(1.0))
+    huge_value=huge(1.0)
     log_huge_value=log(huge_value)
 
 !   Begin calculating radiances
 
     T_eff = ( T * SAD_Chan%Thermal%T2 ) + SAD_Chan%Thermal%T1
 
-    BB = min(( SAD_Chan%Thermal%B2 / T_eff ),log_huge_value-1.0)
+    BB = min(( SAD_Chan%Thermal%B2 / T_eff ),log_huge_value)
 
     C = exp( BB )
 
@@ -85,8 +85,6 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 !   Calculate change in radiances with temperature
 
     d_R_d_T = min(( SAD_Chan%Thermal%B1 * BB * C * SAD_Chan%Thermal%T2) / &
-              ( T_eff * (C-1.0) * (C-1.0) ),huge_value)
-
-    
+         & ( T_eff * (C-1.0) * (C-1.0) ),huge_value)
 
 end subroutine T2R
