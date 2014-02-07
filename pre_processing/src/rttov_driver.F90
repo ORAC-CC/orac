@@ -82,6 +82,7 @@
 ! 2013/11/08, GM: added missing call to rttov_alloc_auxrad() in deallocate mode
 ! 2013/12/11, GM: Significant code clean up.
 ! 2014/01/15, GM: Removed some unnecessary RTTOV error handling calls.
+! 20140204 MJ implements if to set verbosity of RTTOV based on "verbose" variable
 !
 !
 ! $Id$
@@ -98,7 +99,7 @@
 subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                         preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
                         preproc_swrtm,imager_angles,netcdf_info,channel_info, &
-                        month,ecmwf_dims)
+                        month,ecmwf_dims,verbose)
 
    use netcdf
 
@@ -258,6 +259,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    real(kind=sreal),   allocatable, dimension(:,:)   :: dummy_real_2dveca
 
+   logical :: verbose
 
    ! Openmp variables
 #ifdef _OPENMP
@@ -289,9 +291,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    platform_id_string=''
 
    if (trim(sensor) .eq. 'AVHRR') then
+      !set the instrument id
       instrument(3,irttovid)=5
 
       ! Check which platform the instrument is on
+      !set the platform id
       if (index(trim(platform),'noaa') .ge. 1) then
          instrument(1,irttovid)=1  ! NOAA
       elseif (index(trim(platform),'metop') .ge. 1) then
@@ -306,6 +310,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          endif
       enddo
       platform_id_string=adjustl(platform_id_string)
+      !set the satellite id
       read(platform_id_string, '(i2)') instrument(2,irttovid)
    elseif (trim(sensor) .eq. 'MODIS') then
       instrument(3,irttovid)=13
@@ -313,12 +318,12 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
       if (trim(platform) .eq. 'TERRA') instrument(2,irttovid)=1
       if (trim(platform) .eq. 'AQUA')  instrument(2,irttovid)=2
+
    elseif (trim(sensor) .eq. 'ATSR' .or. trim(sensor) .eq. 'AATSR') then
       instrument(3,irttovid)=14
+      instrument(1,irttovid)=11
+     instrument(2,irttovid)=1
 
-!     instrument(1,irttovid)=?
-
-!     instrument(2,irttovid)=?
    endif
 
 
@@ -344,7 +349,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Initialise error management with default value for the error unit number
    ! and all error message output
    err_unit = -1
-   verbosity_level = 3_jpim
+   if(verbose) then
+      !everything
+      verbosity_level = 3_jpim
+      !only FATAL messages
+   else
+      verbosity_level = 1_jpim
+   endif
 
    call rttov_errorhandling(err_unit, verbosity_level)
 
