@@ -41,6 +41,7 @@
 !   2013 MJ implements code for MODIS and AVHRR processing
 !   24 Jul 2013 APovey: added MODIS-TERRA and AQUA as valid instruments
 ! 20131118 MJ fixes a number of problems with this subroutine:refch2 for modis is corrected from 19 to 20. ysolar_msi and ythermal_mis is now used in indexing the MSI array, as this gives the indices of the channels as they are stored in the MSI array.
+!20140131 MJ adds code for setting of AVHRR refch
 !
 ! Bugs:
 !
@@ -91,6 +92,12 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
       refch1=6
       refch2=20
       write(*,*) 'went in here'
+   endif
+
+   if   (trim(Ctrl%inst%name(1:5)) .eq. 'AVHRR') then
+      minrad=0.00
+      refch1=3
+      refch2=4
    endif
 
 

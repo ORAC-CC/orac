@@ -1266,6 +1266,7 @@ end subroutine Read_LUT_Td
 !       Added allocation of SAD_LUT%table_use* arrays.
 !    23th Jan 2014, Greg McGarragh:
 !       Cleaned up code.
+!20140204: MJ implements code for AVHRR to assign channel numbers for LUT names.
 !
 ! Bugs:
 !   None known.
@@ -1384,11 +1385,38 @@ subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
          endif
 
          !create "chXX" string
-         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) < 10) then
-            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j))
+!!$         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) < 10) then
+!!$            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j))
+!!$         else
+!!$            write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j))
+!!$         endif
+
+         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) < 10) then 
+            if(trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
+               write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) 
+            else
+               if(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) .eq. 1) then
+                  chan_num='Ch1'
+               elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) .eq. 2) then
+                  chan_num='Ch2'
+               elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) .eq. 3) then
+                  chan_num='Ch3a'
+               elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) .eq. 4) then
+                  chan_num='Ch3b'
+               elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) .eq. 5) then
+                  chan_num='Ch4'
+               elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) .eq. 6) then
+                  chan_num='Ch5'
+               endif
+               
+            endif
+
          else
-            write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j))
-         endif
+            write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(j)) 
+         end if
+         write(*,*) 'Channel number',trim(adjustl(chan_num))
+
+
 
          ! Read Rd, Td files for all channels (solar and thermal)
          LUT_file = trim(Ctrl%SAD_Dir) // '/' // trim(Ctrl%Inst%Name) &

@@ -102,6 +102,7 @@
 ! 2012/09/21  CP added channel index to y_id value
 ! 2012/11/03  MST and MJ  hard code in values for avhrr
 ! 20131118 MJ cleans and debugs
+! 20140131 MJ removed hardcoded parts for avhrr (obsolete)
 
 ! Bugs:
 !   None known.
@@ -221,38 +222,38 @@ Subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, &
      write(*,*) 'msi channel numbers',msi_instr_ch_numbers
      write(*,*)  'msi channel numbers y_id',Ctrl%Ind%Y_Id
 
-     !loop over channels and read if desired channel number is hit
-     !manually change of id, only needed here for avhrr-noaa18!!
-     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA15") then
-        Ctrl%Ind%Y_Id(1)=1
-        Ctrl%Ind%Y_Id(2)=2
-        Ctrl%Ind%Y_Id(3)=4
-        Ctrl%Ind%Y_Id(4)=5
-        Ctrl%Ind%Y_Id(5)=6
-     endif
-     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA16") then
-        Ctrl%Ind%Y_Id(1)=1
-        Ctrl%Ind%Y_Id(2)=2
-        Ctrl%Ind%Y_Id(3)=4
-        Ctrl%Ind%Y_Id(4)=5
-        Ctrl%Ind%Y_Id(5)=6
-     endif
-     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA17") then
-        !here channel 3a is on
-        Ctrl%Ind%Y_Id(1)=1
-        Ctrl%Ind%Y_Id(2)=2
-        Ctrl%Ind%Y_Id(3)=3
-        Ctrl%Ind%Y_Id(4)=5
-        Ctrl%Ind%Y_Id(5)=6
-     endif
-
-     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA18") then
-        Ctrl%Ind%Y_Id(1)=1
-        Ctrl%Ind%Y_Id(2)=2
-        Ctrl%Ind%Y_Id(3)=4
-        Ctrl%Ind%Y_Id(4)=5
-        Ctrl%Ind%Y_Id(5)=6
-     endif
+!!$     !loop over channels and read if desired channel number is hit
+!!$     !manually change of id, only needed here for avhrr-noaa18!!
+!!$     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA15") then
+!!$        Ctrl%Ind%Y_Id(1)=1
+!!$        Ctrl%Ind%Y_Id(2)=2
+!!$        Ctrl%Ind%Y_Id(3)=4
+!!$        Ctrl%Ind%Y_Id(4)=5
+!!$        Ctrl%Ind%Y_Id(5)=6
+!!$     endif
+!!$     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA16") then
+!!$        Ctrl%Ind%Y_Id(1)=1
+!!$        Ctrl%Ind%Y_Id(2)=2
+!!$        Ctrl%Ind%Y_Id(3)=4
+!!$        Ctrl%Ind%Y_Id(4)=5
+!!$        Ctrl%Ind%Y_Id(5)=6
+!!$     endif
+!!$     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA17") then
+!!$        !here channel 3a is on
+!!$        Ctrl%Ind%Y_Id(1)=1
+!!$        Ctrl%Ind%Y_Id(2)=2
+!!$        Ctrl%Ind%Y_Id(3)=3
+!!$        Ctrl%Ind%Y_Id(4)=5
+!!$        Ctrl%Ind%Y_Id(5)=6
+!!$     endif
+!!$
+!!$     if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA18") then
+!!$        Ctrl%Ind%Y_Id(1)=1
+!!$        Ctrl%Ind%Y_Id(2)=2
+!!$        Ctrl%Ind%Y_Id(3)=4
+!!$        Ctrl%Ind%Y_Id(4)=5
+!!$        Ctrl%Ind%Y_Id(5)=6
+!!$     endif
 
      print*,'Number of channels to read in',Ctrl%Ind%Ny
      print*,'chi',Ctrl%Ind%Chi

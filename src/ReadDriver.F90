@@ -63,6 +63,7 @@
 !       standard input indicated by drifile .eq. '-'.
 !    2014/01/16, GM: Use Selm* constants to set FG and AP instead of numbers.
 !    2014/01/16, GM: Cleaned up code.
+!   20140131 MJ adds code for default surface reflection for avhrr (=modis for the time being)
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -658,7 +659,9 @@ subroutine Read_Driver(Ctrl, conf, message, drifile, status)
 
    ! Set some default arrays for surface reflection
    if ((trim(Ctrl%Inst%Name) .eq. trim('MODIS-AQUA')) .or.&
-       (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA')) ) then
+       (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA')) .or. &
+       !this is a fudge but probably a harmless one:
+       (trim(Ctrl%Inst%Name(1:5)) .eq. trim('AVHRR')) ) then
       solar_store_sea(1)  = 2.0
       solar_store_sea(2)  = 1.0
       solar_store_sea(3)  = 0.0

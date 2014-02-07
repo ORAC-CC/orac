@@ -125,6 +125,7 @@
 !   20121103 MST  AVHRR chanid hardcoded
 !   20121114 CP changed layers to levels
 ! 20131121 MJ fixed reading of rad. information wrt channels
+! 20140131 MJ removed hardcoded parts for avhrr (obsolete)
 ! Bugs:
 !   None known.
 !
@@ -366,15 +367,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
          call nc_read_array_1d_int_to_int_orac(ncid,RTM%LW%NLWF,"lw_channel_instr_ids",ChanID,0)
          call nc_read_array_1d_float_to_float_orac(ncid,RTM%LW%NLWF,"lw_channel_wvl",WvNumber,0)
       endif
-
-
-
-      !MST do some hardcoding here for AVHRR
-      ! MJ ORG if(sensor .eq. 'AVHRR') ChanID(:)=(/3,4,5/)
-      if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA15") ChanID(:)=(/3,4,5/)
-      if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA16") ChanID(:)=(/3,4,5/)
-      if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA17") ChanID(:)=(/4,5/)
-      if(trim(Ctrl%Inst%Name) .eq. "AVHRR-NOAA18") ChanID(:)=(/3,4,5/)
 
       write(*,*) 'LW channel instrument ids for RTM in LW preprocessing file',ChanID
 
