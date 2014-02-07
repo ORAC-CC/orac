@@ -78,6 +78,7 @@
 !    20/09/2012 added channel index to y_id value
 ! 2013/11/14 MJ: some cleanup and bugfixing: Fixed bug with selection of mdad_sw/lw: 
 ! changed diff to abs(diff)
+!20140204: MJ implements code for AVHRR to assign channel numbers for LUT names.
 ! Bugs:
 !    None known.
 !
@@ -131,6 +132,7 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
  
    call Find_LUN(c_lun)
    write(*,*)'Number of channels used:Ctrl%Ind%Ny',Ctrl%Ind%Ny
+
    
    !loop over the channels which will be used
    do i=1, Ctrl%Ind%Ny
@@ -139,11 +141,32 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
 
       !Generate channel file name from Ctrl struct info
       !This sets the channel to be used in instrument notation for reading from the LUT.
+      write(*,*) trim(Ctrl%Inst%Name(1:5))
       if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) < 10) then 
-         write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) 
+         if(trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
+            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) 
+         else
+            if(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 1) then
+               chan_num='Ch1'
+               elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 2) then
+               chan_num='Ch2'
+               elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 3) then
+               chan_num='Ch3a'
+            elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 4) then
+               chan_num='Ch3b'
+            elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 5) then
+               chan_num='Ch4'
+            elseif(Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 6) then
+               chan_num='Ch5'
+            endif
+
+         endif
+
       else
          write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) 
       end if
+      write(*,*) trim(adjustl(chan_num))
+
 
       chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) &
            & // '_' // trim(chan_num) // '.sad'
