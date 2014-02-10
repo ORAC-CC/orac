@@ -15,10 +15,6 @@
 ! preproc_dims   struct in  Summary of preprocessing grid definitions
 ! preproc_geoloc struct out Summary of lat/lon values
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/02/21: MJ produces initial code version.
 ! 2012/05/02: GT Bug fixes: -Implicit none statement moved to correct location
@@ -49,14 +45,14 @@ subroutine make_preprop_grid(preproc_dims,preproc_geoloc)
    !create grid resolution lat
    fac = 1. / preproc_dims%dellat
    preproc_geoloc%latitude(1) = 0.5*fac - real(preproc_dims%lat_offset,sreal)
-   DO i=2,preproc_dims%ydim_pre
+   DO i=2,preproc_dims%ydim
       preproc_geoloc%latitude(i) = preproc_geoloc%latitude(i-1) + fac
    ENDDO
 
    !create grid resolution lon
    fac = 1. / preproc_dims%dellon
    preproc_geoloc%longitude(1) = 0.5*fac - real(preproc_dims%lon_offset,sreal)
-   DO i=2,preproc_dims%xdim_pre
+   DO i=2,preproc_dims%xdim
       preproc_geoloc%longitude(i) = preproc_geoloc%longitude(i-1) + fac      
    ENDDO
 

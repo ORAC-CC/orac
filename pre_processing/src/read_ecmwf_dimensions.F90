@@ -17,10 +17,6 @@
 ! ecmwf_path string in   Full path to ECMWF NCDF file to read.
 ! ecmwf_dims struct both Structure summarising dimensions of ECMWF files.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/01/13: MJ writes original code version.
 ! 2012/01/16: MJ adds error handling.
@@ -32,8 +28,6 @@
 ! none known
 !
 
-!---------------------------------------------------
-!---------------------------------------------------
 subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
 
   use grib_api
@@ -42,7 +36,7 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
 
   implicit none
 
-  integer(kind=lint) :: wo,status,gribid,igrib
+  integer(kind=lint) :: status,gribid,igrib
 
   character(len=pathlength) :: ecmwf_path
 
@@ -55,13 +49,10 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
 
   integer(kind=lint) :: PVPresent,nb_pv
 
-
-  wo=1
-
   !open the grib file for reading
   call grib_open_file(gribid,trim(ecmwf_path),'r',status)
   !everything OK?
-  if(status .ne. 0 ) then
+  if(status .ne. 0) then
      call grib_get_error_string(status,err_msg)
      write(*,*) 'GRIB API ERROR OPENING FILE:', trim(ecmwf_path),'msg:', &
           trim(err_msg)
@@ -70,7 +61,7 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
   !load the grib message?
   call grib_new_from_file(gribid,igrib,iret)
   !everything OK?
-  if(iret .ne. 0 ) then
+  if(iret .ne. 0) then
      call grib_get_error_string(status,err_msg)
      write(*,*) 'GRIB API ERROR GETTING GRIB_ID:',  trim(err_msg)
   endif
@@ -80,7 +71,7 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
   !REMARK: This should return nb_pv=122=61(= # model levels+1)*2
   !model levels are actually layer centres and there the archived fields are 
   !defined. the pressure and hence A,B are defined at the interfaces.
-  !The first 61 entries are the As, the remianing 61 entries are the Bs.
+  !The first 61 entries are the As, the remaining 61 entries are the Bs.
   !Now get the damned figure:
   if(PVPresent .eq. 1) then
      call grib_get_size(igrib,'pv',nb_pv)
@@ -104,7 +95,7 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
      !latitude = 161 ;
      !number_of_values=longitude*latitude (ni*nj, see below)
      call grib_get_size(igrib,'values',number_of_values,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING #values:', trim(ecmwf_path),'msg:', &
              trim(err_msg)
@@ -112,35 +103,32 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
 
      !number_of_points=number_of_values???
      call grib_get(igrib,'numberOfPoints',number_of_points,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING #ofpoints:',trim(ecmwf_path),'msg:',&
              trim(err_msg)
      endif
 
-     
      !vertical coordinate type?
      call grib_get(igrib,'indicatorOfTypeOfLevel',indik,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING VERTICAL COORDINATE TYPE:', &
              trim(ecmwf_path),'msg:', trim(err_msg)
      endif
      
-
      !query the type of grid: "0": latitude/longitude grid, meaning the data is
      !just stored one point after the other
      call grib_get(igrib,'dataRepresentationType',grid_type,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING GRID TYPE:',trim(ecmwf_path),'msg:',&
              trim(err_msg)
      endif
 
-     
      !number of points in longitudinal (x) direction
      call grib_get(igrib,'Ni',ni,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING NI:', trim(ecmwf_path),'msg:', &
              trim(err_msg)
@@ -148,14 +136,14 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
 
      !number of points in latitudinal (y) direction
      call grib_get(igrib,'Nj',nj,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING NJ:', trim(ecmwf_path),'msg:', &
              trim(err_msg)
      endif
 
      call grib_get(igrib,'numberOfVerticalCoordinateValues',levels,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING CURRENT LEVEL INDEX:', &
              trim(ecmwf_path),'msg:', trim(err_msg)
@@ -168,7 +156,7 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
      !read the parameter number of the variable which is just processed by the 
      !loop, levels are arranged from TOA (first level) down to BOA (last level).
      call grib_get(igrib,'parameter',parameter,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR GETTING PARAMETER:',trim(ecmwf_path),'msg:',&
              trim(err_msg)
@@ -176,14 +164,14 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
 
      !release the "message" (however, igrib never changed?)
      call grib_release(igrib,status)
-     if(status .ne. 0 ) then
+     if(status .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR RELEASING GRIB_ID:',  trim(err_msg)
      endif
 
      !load the (next) message?
      call grib_new_from_file(gribid,igrib,iret)
-     if(iret .ne. 0 ) then
+     if(iret .ne. 0) then
         call grib_get_error_string(status,err_msg)
         write(*,*) 'GRIB API ERROR (RE)GETTING GRIB_ID:',  trim(err_msg)
      endif
@@ -193,10 +181,10 @@ subroutine read_ecmwf_dimensions_grib(ecmwf_path, ecmwf_dims)
   call grib_close_file(gribid)
 
   !assign the local variables to the ecmwf_dims structure
-  ecmwf_dims%xdim_ec=ni
-  ecmwf_dims%ydim_ec=nj
+  ecmwf_dims%xdim=ni
+  ecmwf_dims%ydim=nj
   if (nb_pv/2-1 .eq. nlevels) then
-     ecmwf_dims%kdim_ec=nlevels
+     ecmwf_dims%kdim=nlevels
   else
      write(*,*) 'Vertical level information corrupted:',nlevels,nb_pv/2-1
   endif
