@@ -4,7 +4,6 @@
 ! Purpose:
 ! Read land/sea mask for AVHRR from physiography data
 ! 
-!
 ! Description and Algorithm details:
 ! 1) Set start, end, and stride of data read.
 ! 2) Open data group, data set, and allocate data space. Read data.
@@ -23,10 +22,6 @@
 ! stopy     lint   in   Last pixel to read along track
 ! btemp     lint   both Array into which data will be stored
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/05/15: MJ adds code to read AVHRR HDF5 land sea mask file.
 ! 2013/09/11: AP tidying
@@ -37,8 +32,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_avhrr_landseamask(fid,group,dataset,startx,stopx,starty,stopy, &
      btemp)
 

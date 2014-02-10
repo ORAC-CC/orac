@@ -12,7 +12,6 @@
 ! 4) Read data, valid range, scale factors, and offsets.
 ! 5) Apply scale factor and offset to data.
 !
-!
 ! Arguments:
 ! Name Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
@@ -27,10 +26,6 @@
 ! level1b_buffer   sreal  both Initialised array into which data will be stored
 ! verbose          logic  in   F: minimise information printed to screen;
 !                              T: don't
-!
-! Local variables:
-! Name Type Description
-!
 !
 ! History:
 ! 2011/12/??: MJ First version
@@ -47,9 +42,7 @@
 ! 2014/01/12: GM Fixed it so that the right scales and offsets are used.
 ! 2014/01/12: GM Cleaned up the code.
 !
-!
 ! $Id$
-!
 !
 ! Bugs:
 ! none known

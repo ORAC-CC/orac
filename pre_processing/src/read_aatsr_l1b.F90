@@ -28,10 +28,6 @@
 ! channel_info         struct in   Summary of channel information
 ! verbose              logic  in   T: print status information; F: don't
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/06/22: GT First version
 ! 2012/07/29: CP added header and changed filename to lower case
@@ -60,9 +56,9 @@
 !                exactly corresponds to c_float. The drift corrections have also
 !                been altered: aatsr_corrections now simply returns a few
 !                constants rather than passing arrays around.
-!2013/10/10 MJ fixed small bug
-!2013/10/17 GM Hoist loop invariant call to aatsr_read_drift_table() out of loop.
-!2014/01/27 MJ: datatype corrections
+! 2013/10/10: MJ fixed small bug
+! 2013/10/17: GM Hoist loop invariant call to aatsr_read_drift_table() out of loop.
+! 2014/01/27: MJ datatype corrections
 !
 ! $Id$
 !

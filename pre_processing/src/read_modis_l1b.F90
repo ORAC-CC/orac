@@ -23,10 +23,6 @@
 ! verbose             logic  in   F: minimise information printed to screen;
 !                                 T: don't
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/21: MJ produces draft code which opens and reads MODIS L1b hdf files
 ! 2013/09/06: AP tidying
@@ -37,8 +33,6 @@
 ! none known
 !
 
-!----------------------------------------
-!----------------------------------------
 subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
      imager_measurements,channel_info,verbose)
 
@@ -105,7 +99,5 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    !end access to l1b file
    err_code=sfend(l1b_id)
-
-   !stop
 
 end subroutine read_modis_l1b

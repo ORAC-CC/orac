@@ -21,10 +21,6 @@
 ! iystop   lint   in   Last pixel to read along track
 ! btemp    sint   both Initialised array into which data is stored
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/15: MJ produces draft code which opens and reads MODIS ls flag
 ! 2013/09/06: AP tidying, fixed bug where uninitialised array temp was used,
@@ -36,8 +32,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
 
    use preproc_constants

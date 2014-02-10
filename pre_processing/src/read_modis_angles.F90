@@ -22,10 +22,6 @@
 ! iystop   lint   in   Last pixel to read along track
 ! rtemp    real   both Initialised array into which data is stored
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/14: MJ produces draft code which reads modis angles
 ! 2013/09/06: AP tidying, switched to using MODIS file's fill value to be
@@ -38,8 +34,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
 
    use preproc_constants

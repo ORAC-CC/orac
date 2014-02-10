@@ -18,10 +18,6 @@
 ! startepochs lint   out  Start time for the orbit, in seconds
 ! endepochs   lint   out  End time for the orbit, in seconds
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/01/24: MJ adds code to read AVHRR HDF5 file.
 ! 2013/09/06: AP tidying
@@ -32,8 +28,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)
 
    use hdf5

@@ -27,10 +27,6 @@
 !                                       direction of travel
 ! verbose                   logic  in   T: print status information; F: don't
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/12: MJ produces draft code which opens and reads MODIS L1b file.
 ! 2012/01/24: MJ includes code to read AVHRR L1b file.
@@ -46,8 +42,6 @@
 ! none known
 !
 
-!---------------------------------------------------------------------------
-!---------------------------------------------------------------------------
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
      path_to_aatsr_drift_table, &
      imager_geolocation,imager_angles,imager_flags,imager_time, &

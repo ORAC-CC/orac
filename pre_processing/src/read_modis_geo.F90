@@ -19,10 +19,6 @@
 ! imager_time        struct both Summary of pixel observation time
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/12: MJ produces draft code which opens and reads MODIS geo hdf files
 ! 2012/04/24: GT Added a line assigning the solar azimuth angle
@@ -41,8 +37,6 @@
 ! none known
 !
 
-!----------------------------------------
-!----------------------------------------
 subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
      imager_flags,imager_time,n_along_track)
 

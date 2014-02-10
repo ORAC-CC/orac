@@ -4,9 +4,11 @@
 ! Purpose:
 ! Determines the names for the various output files.
 ! 
-!
 ! Description and Algorithm details:
-!
+! 1) Work out limits of ATSR chunks for file name.
+! 2) Compile base file name.
+! 3) Set paths for ECMWF processing.
+! 4) Produce filenames for all outputs.
 !
 ! Arguments:
 ! Name           Type   In/Out/Both Description
@@ -43,10 +45,6 @@
 ! chunkflag      stint  in  The number of the current chunk (for AATSR).
 ! verbose        logic  in  T: print status information; F: don't
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/12: MJ produces draft code which sets up output file names
 ! 2012/01/16: MJ includes subroutine to determine ERA interim file.
@@ -69,8 +67,6 @@
 ! none known
 !
 
-!-------------------------------------------------
-!-------------------------------------------------
 subroutine preparation(lwrtm_file,swrtm_file, &
      prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file, &
      loc_file,alb_file,scan_file, &
@@ -90,9 +86,9 @@ subroutine preparation(lwrtm_file,swrtm_file, &
 
    character(len=pathlength)  :: ecmwf_path,ecmwf_path2,ecmwf_path3
    character(len=pathlength)  :: ecmwf_pathout,ecmwf_path2out,ecmwf_path3out
-   character(len=filelength)  :: lwrtm_file,swrtm_file,prtm_file, config_file,&
-        msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
-        scan_file,range_name
+   character(len=filelength)  :: lwrtm_file,swrtm_file,prtm_file, config_file
+   character(len=filelength)  :: msi_file,cf_file,lsf_file,geo_file,loc_file
+   character(len=filelength)  :: alb_file,scan_file,range_name
 
    integer(kind=stint)        :: hour,chunkflag
 
@@ -106,7 +102,7 @@ subroutine preparation(lwrtm_file,swrtm_file, &
    character(len=30)          :: startc,endc,chunkc
    logical                    :: verbose,badc
 
-   !determine ecmwf path/filename
+   ! deal with ATSR chunking in filename
    if (sensor .eq. 'AATSR') then
       startr=imager_geolocation%latitude(imager_geolocation%startx,1)
       endr=imager_geolocation%latitude(imager_geolocation%endx, &
@@ -140,8 +136,9 @@ subroutine preparation(lwrtm_file,swrtm_file, &
         & trim(adjustl(cmonth))//trim(adjustl(cday))
    file_base=trim(adjustl(file_base))//trim(adjustl(chour))// &
         & trim(adjustl(cminute))//'_'//trim(adjustl(script_input%file_version))
-
    if (verbose) write(*,*) 'file_base: ', trim(file_base)
+   
+   !determine ecmwf path/filename
    call set_ecmwf(hour,cyear,cmonth,cday,chour, &
         ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_pathout, &
         ecmwf_path2out,ecmwf_path3out,badc,verbose)

@@ -31,10 +31,6 @@
 ! channel_info     struct both Structure summarising the channels to be
 !                              processed
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/09: MJ produces draft code for MODIS.
 ! 2012/01/17: MJ removed bug wrt determining the month for MODIS.
@@ -55,8 +51,6 @@
 ! none known
 !
 
-!---------------------------------------------------------
-!---------------------------------------------------------
 subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
@@ -142,9 +136,9 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
 end subroutine setup_modis
 
+!---------------------------------------------------------
+!---------------------------------------------------------
 
-!---------------------------------------------------------
-!---------------------------------------------------------
 subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
@@ -222,9 +216,9 @@ subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
 end subroutine setup_avhrr
 
+!---------------------------------------------------------
+!---------------------------------------------------------
 
-!---------------------------------------------------------
-!---------------------------------------------------------
 subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 

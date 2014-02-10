@@ -18,10 +18,6 @@
 ! preproc_dims struct Out Structure summarising dimensions of preprocessing.
 ! verbose      logic  In  in F: minimise information printed to screen; T: don't
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/01/19: MJ produces initial code version.
 ! 2012/05/02: GT implicit none statement moved to correct location
@@ -60,11 +56,11 @@ subroutine define_preprop_grid(grid_flag,ecmwf_2d,ecmwf_dims, &
       preproc_dims%dellon=1./abs(ecmwf_2d%longitude(2,1)-ecmwf_2d%longitude(1,1))
       preproc_dims%dellat=1./abs(ecmwf_2d%latitude(1,1)-ecmwf_2d%latitude(1,2))
 
-      preproc_dims%xdim_pre=ecmwf_dims%xdim_ec
-      preproc_dims%ydim_pre=ecmwf_dims%ydim_ec ! CP removed -1
+      preproc_dims%xdim=ecmwf_dims%xdim
+      preproc_dims%ydim=ecmwf_dims%ydim ! CP removed -1
 
       !Preprocessing has same vertical structure as ecmwf grid
-      preproc_dims%kdim_pre=ecmwf_dims%kdim_ec+1
+      preproc_dims%kdim=ecmwf_dims%kdim+1
 
       !modis L3 grid
    elseif(grid_flag .eq. 2) then
@@ -73,20 +69,20 @@ subroutine define_preprop_grid(grid_flag,ecmwf_2d,ecmwf_dims, &
       !user defined definition
    elseif(grid_flag .eq. 3) then
 
-      preproc_dims%xdim_pre=nint(2.*preproc_dims%lon_offset* &
+      preproc_dims%xdim=nint(2.*preproc_dims%lon_offset* &
            preproc_dims%dellon,kind=lint)
-      preproc_dims%ydim_pre=nint(2.*preproc_dims%lat_offset* &
+      preproc_dims%ydim=nint(2.*preproc_dims%lat_offset* &
            preproc_dims%dellat,kind=lint)     
 
       !Preprocessing has same vertical structure as ecmwf grid. added an extra 
       !level so surface information can be stored in the same profile
-      preproc_dims%kdim_pre=ecmwf_dims%kdim_ec+1
+      preproc_dims%kdim=ecmwf_dims%kdim+1
 
    endif
 
    if (verbose) then
-      write(*,*) 'preproc_dims: ',preproc_dims%xdim_pre, &
-           preproc_dims%ydim_pre,preproc_dims%kdim_pre
+      write(*,*) 'preproc_dims: ',preproc_dims%xdim, &
+           preproc_dims%ydim,preproc_dims%kdim
       write(*,*) 'dellon, dellat: ',preproc_dims%dellon,preproc_dims%dellat
    end if
 

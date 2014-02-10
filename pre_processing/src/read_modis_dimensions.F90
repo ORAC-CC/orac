@@ -18,10 +18,6 @@
 !                             direction of travel
 ! n_along_track    lint   out Number of pixels in the direction of travel
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/12: MJ produces draft code which opens and reads MODIS geo hdf files 
 ! 2013/09/11: AP tidying, removed path_to_l1b_file
@@ -32,8 +28,6 @@
 ! none known
 !
 
-!----------------------------------------
-!----------------------------------------
 subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
    use preproc_constants

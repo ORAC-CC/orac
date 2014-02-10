@@ -2,9 +2,8 @@
 !
 !
 ! Purpose:
-! Compute tome for each pixel from AVHRR start and end time of oribt
+! Compute time for each pixel from AVHRR start and end time of oribt
 ! 
-!
 ! Description and Algorithm details:
 ! 1) Assume each across track row is observed at once and each has the same
 !    duration.
@@ -12,10 +11,6 @@
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name          Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! ixstart       lint   in   First pixel to read across track
 ! ixstop        lint   in   Last pixel to read across track
@@ -37,8 +32,6 @@
 ! none known
 !
 
-!-------------------------------------------
-!-------------------------------------------
 subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop, &
      n_along_track,startepochs,endepochs,imager_time,refjulianday)
 

@@ -10,17 +10,12 @@
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
 ! ------------------------------------------------------------------------------
 ! fid      int    in   A file ID returned by SFSTART
 ! SDS_name string in   Name of the data field to read
 ! startyy  lint   in   First pixel to read across track
 ! stopyy   lint   in   Last pixel to read across track
 ! temp     dreal  both Initialised array into which data is stored
-!
 !
 ! History:
 ! 2011/12/16: MJ produces draft code
@@ -32,8 +27,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
 
    use preproc_constants

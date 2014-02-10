@@ -21,10 +21,6 @@
 ! imager_measurements struct both Satellite observations
 ! channel_info        struct in   Summary of channel information
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/02/01: MJ writes initial code for reading the L1B AVHRR file.
 ! 2012/03/13: MJ fixes AVHRR read bug.
@@ -39,8 +35,6 @@
 ! none known
 !
 
-!----------------------------------------
-!----------------------------------------
 subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
      imager_measurements,channel_info)
 

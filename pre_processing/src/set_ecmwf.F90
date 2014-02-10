@@ -29,10 +29,6 @@
 !                           format. Otherwise: Assume ERA_Interim GRB format.
 ! verbose        logic  in  T: print status information; F: don't
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/01/16: MJ writes initial code version.
 ! 2012/01/19: MJ fixed a potential bug in the file determination.
@@ -53,8 +49,6 @@
 ! none known
 !
 
-!-------------------------------------------------
-!-------------------------------------------------
 subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
      ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,badc,verbose)
 

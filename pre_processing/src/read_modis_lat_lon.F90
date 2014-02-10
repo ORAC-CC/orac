@@ -20,10 +20,6 @@
 ! stopy    lint   in   Last pixel to read along track
 ! temp     real   both Initialised array into which data is stored
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/13: MJ produces draft code which reads latitude and longitude modis
 !                geolocation data 
@@ -36,8 +32,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
 
    use preproc_constants

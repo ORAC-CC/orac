@@ -18,10 +18,6 @@
 ! imager_measurements struct both "
 ! channel_info        struct in   Structure giving the number of channels.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/19: MJ produces draft code for MODIS L1b data
 ! 2012/02/03: MJ adds uncertainty to measurements

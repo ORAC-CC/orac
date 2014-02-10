@@ -24,10 +24,6 @@
 ! channel_number string out  Descriptive label of this channel
 ! rtemp          sreal  both Array into which data will be stored
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/02/01: MJ adds code to read AVHRR HDF5 sensor information.
 ! 2013/09/06: AP tidying, removed channel_type argument, added read of channel
@@ -39,8 +35,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
    startx,stopx,starty,stopy,channel_number,rtemp)
 

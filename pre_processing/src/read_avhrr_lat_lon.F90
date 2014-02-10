@@ -4,7 +4,6 @@
 ! Purpose:
 ! Read latitude and longitude AVHRR geolocation data.
 ! 
-!
 ! Description and Algorithm details:
 ! 1) Open the data group, data set, and fetch a data space.
 ! 2) Read the data. Read the attributes.
@@ -25,10 +24,6 @@
 ! stopy     lint   in   Last pixel to read along track
 ! rtemp     sreal  both Array into which data will be stored
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/01/24: MJ adds code to read AVHRR HDF5 file.
 ! 2013/09/06: AP tidying
@@ -39,8 +34,6 @@
 ! none known
 !
 
-!-------------------------------------------------------
-!-------------------------------------------------------
 subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
      starty,stopy,rtemp)
 

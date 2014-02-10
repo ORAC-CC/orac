@@ -13,10 +13,6 @@
 ! ------------------------------------------------------------------------------
 ! channel_info struct both Structure to allocate arrays
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/06/04: MJ produces draft code
 ! 2013/09/06: AP removed redundant arguments

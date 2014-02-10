@@ -19,10 +19,6 @@
 ! imager_flags        struct both Summary of land/sea/ice flags
 ! imager_time         struct both Summary of pixel observation time
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/05/15: MJ writes code to read land/sea information for AVHRR.
 ! 2013/09/12: AP tidying, added check that file exists before opening
@@ -33,8 +29,6 @@
 ! none known
 !
 
-!----------------------------------------
-!----------------------------------------
 subroutine read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
      imager_angles,imager_flags,imager_time)
 

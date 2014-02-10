@@ -37,10 +37,6 @@
 ! ttemp10           dreal in   Reduced resolution field of observation times
 ! refjulianday      dreal in   Julian day number for beginning of satellite time
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2011/12/16: MJ produces draft code
 ! 2012/06/13: MJ reworks code and add ATBD formula
@@ -52,8 +48,6 @@
 ! none known
 !
 
-!-------------------------------------------
-!-------------------------------------------
 subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
      iread_stop,iread_startt,iread_stopt,ttemp,ttemp10,refjulianday)
 
@@ -96,74 +90,3 @@ subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
    ttemp=refjulianday+ttemp/real(86400,kind=dreal)
 
 end subroutine map_time_to_pixel
-
-
-!-------------------------------------------
-!-------------------------------------------
-subroutine map_time_to_pixel_old(along_track_ratio,ixstart,ixstop,iread_start,iread_stop,iread_startt,iread_stopt,ttemp,ttemp10)
-!-------------------------------------------
-!-------------------------------------------
-
-  use preproc_constants
-
-  use imager_structures
-
-  implicit none
-
-  integer(kind=lint) :: jy,jyt, ixstart,ixstop,iread_start,iread_stop,iread_startt,iread_stopt
-
-  real(kind=dreal) :: ttemp10(iread_startt:iread_stopt)
-
-  real(kind=dreal) :: ttemp(ixstart:ixstop,iread_start:iread_stop)
-
-  integer(kind=lint) :: along_track_ratio
-
-  do jy=iread_start,iread_stop
-
-     select case(mod(jy,along_track_ratio))
-
-     case(0)
-        
-        if(jy .lt. along_track_ratio) then
-           
-           jyt=1
-           
-        else
-
-           jyt=int(jy/along_track_ratio)
-
-        endif
-
-     case default
-
-        jyt=int(jy/along_track_ratio)+1
-
-     end select
-
-     ttemp(:,jy)=ttemp10(jyt)
-
-!     write(*,*) 'jy,jyt',jy,jyt
-
-  enddo
-
-!!$
-!!$  do jy=iread_start,iread_stop
-!!$
-!!$     select case(mod(jy,along_track_ratio))
-!!$        
-!!$     case(0)
-!!$        
-!!$        jyt=int(jy/along_track_ratio)
-!!$        
-!!$     case default
-!!$        
-!!$        jyt=int(jy/along_track_ratio)+1
-!!$
-!!$     end select
-!!$
-!!$     ttemp(:,jy)=ttemp10(jyt)
-!!$
-!!$  enddo
-!!$
-
-end subroutine map_time_to_pixel_old

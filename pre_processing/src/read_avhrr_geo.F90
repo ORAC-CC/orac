@@ -19,10 +19,6 @@
 ! imager_time        struct both Summary of pixel observation time
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/01/24: MJ writes code to read geolocation and geometry information for
 !                AVHRR.
@@ -34,8 +30,6 @@
 ! none known
 !
 
-!----------------------------------------
-!----------------------------------------
 subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
      imager_flags,imager_time,n_along_track)
 

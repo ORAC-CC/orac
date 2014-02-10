@@ -15,10 +15,6 @@
 ! imager_geolocation struct both "
 ! channel_info       struct in   Structure giving the number of channels.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/05/01: GT First version
 ! 2012/07/29: CP inialised variables
