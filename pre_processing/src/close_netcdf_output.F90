@@ -2,67 +2,63 @@
 !
 !
 ! Purpose:
-! Open netcdf output files
-! 
+! Close netcdf output files
 !
 ! Description and Algorithm details:
-!
+! 1) Call NF90_CLOSE several times.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
-!
+! Name        Type In/Out/Both Description
+! ------------------------------------------------------------------------------
+! netcdf_info struct In Summary of output file details
 !
 ! History:
-!2011/12/12: Matthias Jerg produces draft code which creates dummy output files
-! 2013/11/06: MJ adds config file to preprocessing output which holds all relevant dimensional information.
+! 2011/12/12: MJ produces draft code which creates dummy output files
+! 2013/11/06: MJ adds config file to preprocessing output which holds all
+!                relevant dimensional information.
+! 2014/02/06: AP removing unnecessary NCDF routines
 !
 ! $Id$
 !
 ! Bugs:
+! none known
 !
-!none known
 
-!---------------------------------------------------------------------------------
-!---------------------------------------------------------------------------------
-subroutine close_netcdf_output(output_path,&
-     & lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,&
-     & netcdf_info)
-!---------------------------------------------------------------------------------
-!---------------------------------------------------------------------------------
+subroutine close_netcdf_output(netcdf_info)
 
-  use preproc_constants 
+   use netcdf
+   use netcdf_structures
 
-  use netcdf_structures
+   implicit none
 
-  implicit none
- 
-  character(len=pathlength) :: output_path
-  character(len=filelength) :: lwrtm_file,swrtm_file,prtm_file,config_file,&
-       & msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file
-  
-  integer(kind=lint) :: wo
+   type(netcdf_info_s) :: netcdf_info
+   integer             :: ierr
 
-  type(netcdf_info_s) :: netcdf_info
-
-  wo=0
-
-  call nc_close(netcdf_info%ncid_lwrtm,trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)),wo)
-  call nc_close(netcdf_info%ncid_swrtm,trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)),wo)
-  call nc_close(netcdf_info%ncid_prtm,trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)),wo)
-
-  call nc_close(netcdf_info%ncid_config,trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),wo)
-  call nc_close(netcdf_info%ncid_msi,trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)),wo)
-  call nc_close(netcdf_info%ncid_geo,trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)),wo)
-  call nc_close(netcdf_info%ncid_lsf,trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)),wo)
-  call nc_close(netcdf_info%ncid_cf,trim(adjustl(output_path))//'/'//trim(adjustl(cf_file)),wo)
-  call nc_close(netcdf_info%ncid_loc,trim(adjustl(output_path))//'/'//trim(adjustl(loc_file)),wo)
-  call nc_close(netcdf_info%ncid_alb,trim(adjustl(output_path))//'/'//trim(adjustl(alb_file)),wo)
-  call nc_close(netcdf_info%ncid_scan,trim(adjustl(output_path))//'/'//trim(adjustl(scan_file)),wo)
-
-
+   ierr=nf90_close(netcdf_info%ncid_lwrtm)
+   if (ierr.ne.NF90_NOERR) &
+        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF LWRTM.'
+   ierr=nf90_close(netcdf_info%ncid_swrtm)
+   if (ierr.ne.NF90_NOERR) &
+        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF SWRTM.'
+   ierr=nf90_close(netcdf_info%ncid_prtm)
+   if (ierr.ne.NF90_NOERR) &
+        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF PRTM.'
+   ierr=nf90_close(netcdf_info%ncid_config)
+   if (ierr.ne.NF90_NOERR) &
+        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF CONFIG.'
+   ierr=nf90_close(netcdf_info%ncid_msi)
+   if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF MSI.'
+   ierr=nf90_close(netcdf_info%ncid_geo)
+   if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF GEO.'
+   ierr=nf90_close(netcdf_info%ncid_lsf)
+   if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF LSF.'
+   ierr=nf90_close(netcdf_info%ncid_cf)
+   if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF CF.'
+   ierr=nf90_close(netcdf_info%ncid_loc)
+   if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF LOC.'
+   ierr=nf90_close(netcdf_info%ncid_alb)
+   if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF ALB.'
+   ierr=nf90_close(netcdf_info%ncid_scan)
+   if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF UV.'
 
 end subroutine close_netcdf_output
