@@ -172,6 +172,7 @@
 !       should just be 'private', i.e. they do not need to enter the parallel
 !       loop initialised.  Finally status_line was not needed. Status is private
 !       within the loop.
+!  2014/02/10 Matthias Jerg: Put the correct boundaries lat/lon for adaptive processing back in.
 !
 ! Bugs:
 !    None known
@@ -502,11 +503,11 @@ program ECP
       if (index(trim(adjustl(Ctrl%Inst%Name)),'MODIS') .ge. 1) then
 
          ! Set special range
-         range_lat(1) = 0.
-         range_lat(2) = 0.
+         range_lat(1) = 42.0
+         range_lat(2) = 53.0
 
-         range_lon(1) = 0.
-         range_lon(2) = 0.
+         range_lon(1) = 0.0
+         range_lon(2) = 18.0
 
          ! Look if any pixel in current granule is in special range
          lhres=any(MSI_Data%Location%Lat .ge. range_lat(1) .and. &
@@ -650,7 +651,7 @@ program ECP
          ! Ctrl%Ind%Xstart to ixstop; for the remainder it is X0 to ixstop (in
          ! both cases the limits used are modified to whole numbers of SPixels).
          do
-!           write(*,*) '     ix: ', ix
+            !write(*,*) '(i,j)',i,j
 
             SPixel%Loc%X0 = i
 
