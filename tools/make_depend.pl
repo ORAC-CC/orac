@@ -31,6 +31,7 @@ $max_line_length = 80;
 foreach (@ARGV) {
 	if    (index($_, "\.o")   != -1) { push(@source_file_list,  $_); }
 	elsif (index($_, "\.inc") != -1) { push(@include_file_list, $_); }
+	elsif (index($_, "\.F90") != -1) { push(@include_file_list, $_); }
 }
 
 # Change from object to source extensions and strip paths from the object and

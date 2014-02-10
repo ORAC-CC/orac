@@ -16,10 +16,6 @@
 ! ecmwf_dims struct in  Structure summarising dimensions of ECMWF files.
 ! ecmwf_2d   struct out Structure containing 2-D ECMWF fields.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/02/22: MJ produces code which reads rlat/lon grid from ERA INTERIM
 !                GRIB files
@@ -27,6 +23,7 @@
 ! 2013/10/22: AP Tidying. Removed allocated arrays as unnecessary. Added
 !                nc_close. Removed unused variables.
 ! 2013/11/06: GM wo was unititialized, set to 0
+! 2014/02/06: AP Further tidying. Removed unnecessary components.
 !
 ! $Id$
 !
@@ -34,86 +31,52 @@
 ! none known
 !
 
-!---------------------------------------------------
-!---------------------------------------------------
 subroutine read_ecmwf_lat_lon_nc(ecmwf_path,ecmwf_dims,ecmwf_2d)
-
-   use netcdf
-   use preproc_constants
-   use preproc_structures
-   use ecmwf_structures
 
    implicit none
 
    character(len=pathlength) :: ecmwf_path
-
    type(ecmwf_dims_s)        :: ecmwf_dims
    type(ecmwf_2d_s)          :: ecmwf_2d
-   character(len=varlength)  :: dname
+
    real(kind=sreal), allocatable, dimension(:) :: lon,lat
    character(len=varlength)  :: available_names
 
-   character(len=varlength)  :: name
-   integer(kind=lint)        :: ncid,ierr,wo
-   integer(kind=lint)        :: ivar,ndim,nvar,nattr,dummyint,jdim,idim
-   integer                   :: dimid
+   integer(kind=lint)        :: ncid,ierr,verb
+   integer(kind=lint)        :: ivar,ndim,nvar,nattr,idim,jdim
 
-   integer (kind=lint)       :: xdim,ydim,levlistdim,levtypedim,timedim
-
-
-   ! open netcdf file
-   wo = 0
-
-   call nc_open(ncid,ecmwf_path,ierr,wo)
-
-   call nc_info(ncid,ndim,nvar,nattr,wo)
-
-   do idim=1,ndim
-      if(idim .eq. 1 ) name='longitude'
-      if(idim .eq. 2 ) name='latitude'
-      if(idim .eq. 3 ) name='hybrid_1'
-      if(idim .eq. 4 ) name='hybrid'
-      if(idim .eq. 5 ) name='t'
-
-      call nc_dim_id(ncid,name,dimid,wo)
-
-      call nc_dim_length(ncid,dname,dimid,dummyint,wo)
-
-      if(idim .eq. 1 ) xdim=int(dummyint,kind=lint)
-      if(idim .eq. 2 ) ydim=int(dummyint,kind=lint)
-      if(idim .eq. 3 ) levlistdim=int(dummyint,kind=lint)
-      if(idim .eq. 4 ) levtypedim=int(dummyint,kind=lint)
-      if(idim .eq. 5 ) timedim=int(dummyint,kind=lint)
-   enddo
-
+   verb=0
+   
+   call nc_open(ncid,ecmwf_path)
+   ierr=NF90_INQUIRE(ncid,ndim,nvar,nattr)
 
    do ivar=1,nvar
-      ierr=nf90_inquire_variable(ncid, ivar, available_names)
+      ierr=NF90_INQUIRE_VARIABLE(ncid, ivar, available_names)
 
       if (available_names .eq. 'longitude') then
-         allocate(lon(xdim))
+         allocate(lon(ecmwf_dims%xdim))
          lon=real_fill_value
-         call nc_read_array_float_1d(ncid,xdim,'longitude',lon,wo) 
+         call nc_read_array(ncid,'longitude',lon,verb) 
          !Latitude is counted from northpole to southpole 90 -> -90
 
          !Longitude is eastward from 0 to 358.875
       endif
 
       if (available_names .eq. 'latitude') then
-         allocate(lat(ydim))
+         allocate(lat(ecmwf_dims%ydim))
          lat=real_fill_value
-         call nc_read_array_float_1d(ncid,ydim,'latitude',lat,wo)  
+         call nc_read_array(ncid,'latitude',lat,verb)  
       endif
    enddo
 
-   do jdim=1,ecmwf_dims%xdim_ec
+   do jdim=1,ecmwf_dims%xdim
       ecmwf_2d%longitude(jdim,:)=lon(jdim)
    enddo
-   do idim=1,ecmwf_dims%ydim_ec
+   do idim=1,ecmwf_dims%ydim
       ecmwf_2d%latitude(:,idim)=lat(idim)
    enddo
 
-   ierr=nf90_close(ncid)
+   ierr=NF90_CLOSE(ncid)
    if (allocated(lon)) deallocate(lon)
    if (allocated(lat)) deallocate(lat)
 

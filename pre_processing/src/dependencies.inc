@@ -5,8 +5,6 @@ $(OBJS)/allocate_channel_info.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/allocate_ecmwf_structures.o: $(OBJS)/ecmwf_structures.o \
         $(OBJS)/preproc_constants.o
-$(OBJS)/allocate_ecmwf_structures_nc.o: $(OBJS)/ecmwf_structures.o \
-        $(OBJS)/preproc_constants.o
 $(OBJS)/allocate_imager_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/allocate_preproc_structures.o: $(OBJS)/channel_structures.o \
@@ -31,10 +29,7 @@ $(OBJS)/call_rtm_solar_rttov.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o
 $(OBJS)/channel_structures.o: $(OBJS)/preproc_constants.o
-$(OBJS)/close_netcdf_output.o: $(OBJS)/netcdf_structures.o \
-        $(OBJS)/preproc_constants.o
-$(OBJS)/compute_geopot_coordinate.o: $(OBJS)/ecmwf_structures.o \
-        $(OBJS)/preproc_constants.o
+$(OBJS)/close_netcdf_output.o: $(OBJS)/netcdf_structures.o
 $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/interpol_bilinear.o \
         $(OBJS)/nise_def.o $(OBJS)/preproc_constants.o \
@@ -84,14 +79,10 @@ $(OBJS)/make_preprop_grid.o: $(OBJS)/preproc_constants.o \
 $(OBJS)/map_time_to_pixel.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/modis2oraclsflag.o: $(OBJS)/preproc_constants.o
-
 $(OBJS)/nc_create_file.o: $(OBJS)/attribute_structures.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/netcdf_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o
-$(OBJS)/nc_dim_info.o: $(OBJS)/preproc_constants.o
-
-$(OBJS)/nc_read_file.o: $(OBJS)/preproc_constants.o
 $(OBJS)/netcdf_structures.o: $(OBJS)/preproc_constants.o
 
 $(OBJS)/nn_ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
@@ -99,14 +90,19 @@ $(OBJS)/open_netcdf_output.o: $(OBJS)/attribute_structures.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/netcdf_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o
+$(OBJS)/orac_ecmwf.o: $(OBJS)/ecmwf_structures.o $(OBJS)/orac_ncdf.o \
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/rearrange_ecmwf.o compute_geopot_coordinate.F90 \
+        read_ecmwf_dimensions_nc.F90 read_ecmwf_lat_lon_nc.F90 read_ecmwf_nc.F90
+$(OBJS)/orac_ncdf.o: $(OBJS)/preproc_constants.o ncdf_read.inc
 $(OBJS)/preparation.o: $(OBJS)/attribute_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/preproc_structures.o: $(OBJS)/preproc_constants.o
 $(OBJS)/preprocessing_for_orac.o: $(OBJS)/attribute_structures.o \
         $(OBJS)/channel_structures.o $(OBJS)/ecmwf_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/netcdf_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
-        $(OBJS)/surface_structures.o
+        $(OBJS)/orac_ecmwf.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/preproc_structures.o $(OBJS)/surface_structures.o
 $(OBJS)/read_aatsr_dimensions.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_aatsr_l1b.o: $(OBJS)/aatsr_drift_correction_def.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
@@ -124,17 +120,11 @@ $(OBJS)/read_avhrr_lsmask.o: $(OBJS)/imager_structures.o \
 $(OBJS)/read_avhrr_time.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_cimss_emissivity.o: $(OBJS)/emis_def.o $(OBJS)/preproc_constants.o
 $(OBJS)/read_ecmwf.o: $(OBJS)/ecmwf_structures.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o
+        $(OBJS)/preproc_structures.o $(OBJS)/rearrange_ecmwf.o
 $(OBJS)/read_ecmwf_dimensions.o: $(OBJS)/ecmwf_structures.o \
-        $(OBJS)/preproc_constants.o
-$(OBJS)/read_ecmwf_dimensions_nc.o: $(OBJS)/ecmwf_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/read_ecmwf_lat_lon.o: $(OBJS)/ecmwf_structures.o \
         $(OBJS)/preproc_constants.o
-$(OBJS)/read_ecmwf_lat_lon_nc.o: $(OBJS)/ecmwf_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
-$(OBJS)/read_ecmwf_nc.o: $(OBJS)/ecmwf_structures.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o
 $(OBJS)/read_imager.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/read_L1B_avhrr_reflectances_radiances.o: $(OBJS)/preproc_constants.o
@@ -152,9 +142,7 @@ $(OBJS)/read_modis_lsflag.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_modis_time.o: $(OBJS)/preproc_constants.o
 $(OBJS)/read_nsidc_nise.o: $(OBJS)/nise_def.o
 $(OBJS)/rearrange_ecmwf.o: $(OBJS)/ecmwf_structures.o \
-        $(OBJS)/preproc_structures.o
-$(OBJS)/rearrange_ecmwf3.o: $(OBJS)/ecmwf_structures.o \
-        $(OBJS)/preproc_structures.o
+        $(OBJS)/preproc_constants.o
 $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/netcdf_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o

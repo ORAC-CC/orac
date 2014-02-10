@@ -13,7 +13,7 @@
 ! Arguments:
 ! Name       Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ecmwf_path string in   Full path to ECMWF NCDF file to read.
+! ecmwf_path string in   Full path to ECMWF gpam NCDF file to read.
 ! ecmwf_dims struct both Structure summarising dimensions of ECMWF files.
 !
 ! History:
@@ -22,10 +22,7 @@
 !                with different dimensions
 ! 2012/11/13: CP removed hardwiring of levels kdim_ec
 ! 2013/10/22: AP Tidying
-!
-! Local variables:
-! Name       Type   In/Out/Both Description
-!
+! 2014/02/06: AP Further tidying. Removed unnecessary components.
 !
 ! $Id$
 !
@@ -33,55 +30,37 @@
 ! none known
 !
 
-!---------------------------------------------------
-!---------------------------------------------------
 subroutine read_ecmwf_dimensions_nc(ecmwf_path, ecmwf_dims)
-
-   use netcdf
-   use preproc_constants
-   use ecmwf_structures
 
    implicit none
 
    character(len=pathlength) :: ecmwf_path
    type(ecmwf_dims_s)        :: ecmwf_dims
 
-   integer(kind=lint)        :: ncid,ierr,wo,idim,ndim,nvar,nattr,dummyint
-   integer(kind=lint)        :: dimid
-   character(len=varlength)  :: dname,name
-   integer(kind=lint)        :: levtypedim,timedim
+   integer(kind=lint)        :: ncid,ierr,idim,ndim,nvar,nattr,dummyint
+   character(len=varlength)  :: dname
 
 
-   wo=0 ! do not print NCDF details
+   call nc_open(ncid,ecmwf_path)
 
-   call nc_open(ncid,ecmwf_path,ierr,wo)
-
-   call nc_info(ncid,ndim,nvar,nattr,wo)
-   ndim=3 ! ignore 'hybrid' and 't'
+   ierr=NF90_INQUIRE(ncid,ndim,nvar,nattr)
 
    do idim=1,ndim
-      !NB note that the dimension names are different for different netcdf files
-      !so need to be modified if different netcdf files are read
-      !i.e values are different for pressure level netcdf files.
-      if(idim .eq. 1) name='longitude'
-      if(idim .eq. 2) name='latitude'
-      if(idim .eq. 3) name='hybrid_1'
-      !     if(idim .eq. 3) name='p' ! netcdf pressure levels
-      !     if(idim .eq. 4) name='hybrid'
-      !     if(idim .eq. 5) name='time'
+      ierr=NF90_INQUIRE_DIMENSION(ncid,idim,dname,dummyint)
+      if (ierr.ne.NF90_NOERR) &
+           STOP 'READ_ECMWF_DIMENSIONS_NC: Error inspecting NCDF dimension.'
 
-      call nc_dim_id(ncid,name,dimid,wo)
-
-      call nc_dim_length(ncid,dname,dimid,dummyint,wo)
-
-      if(idim .eq. 1) ecmwf_dims%xdim_ec=int(dummyint,kind=lint)
-      if(idim .eq. 2) ecmwf_dims%ydim_ec=int(dummyint,kind=lint)
-      if(idim .eq. 3) ecmwf_dims%kdim_ec=int(dummyint,kind=lint)
-      if(idim .eq. 4) levtypedim=int(dummyint,kind=lint)
-      if(idim .eq. 5) timedim=int(dummyint,kind=lint)
+      if (dname == 'longitude') then
+         ecmwf_dims%xdim=int(dummyint,kind=lint)
+      else if (dname == 'latitude') then
+         ecmwf_dims%ydim=int(dummyint,kind=lint)
+      else if ((dname=='hybrid' .and. ndim.eq.4) .or. dname=='hybrid_1') then
+         ecmwf_dims%kdim=int(dummyint,kind=lint)
+      endif
+      !if (dname == 't') timedim=int(dummyint,kind=lint)
    enddo
 
-   ierr=nf90_close(ncid)
+   ierr=NF90_CLOSE(ncid)
 
 
 end subroutine read_ecmwf_dimensions_nc

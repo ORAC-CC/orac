@@ -41,7 +41,7 @@
 ! ice_path_file    string in Folder containing NISE ice cover files
 ! albedo_path_file string in Folder containing MODIS MCD43C3 albedo files
 ! emiss2_path      string in Folder containing MODIS monthly average emissivity 
-! grid_flag        sint    in 1:ECMWF grid, 2:L3 grid, 3: own definition
+! grid_flag        sint   in 1:ECMWF grid, 2:L3 grid, 3: own definition
 ! dellon           real   in 1 / longitude increment in degrees
 ! dellat           real   in 1 / latitude increment in degrees
 ! output_pathin    string in Folder into which outputs should be saved
@@ -80,10 +80,6 @@
 ! day_night        int    in 2: process only night data; 1: day
 ! verbose          logic  in F: minimise information printed to screen; T: don't
 ! use_chunking     logic  in T: apply chunking when writing NCDF files; F: don't
-!
-! Local variables:
-! Name Type Description
-!
 !
 ! History:
 ! 2011/12/09: MJ produces draft code which comprises the main programme
@@ -182,8 +178,10 @@
 ! 2014/02/02: GM Added chunking on/off option.
 ! 2014/02/03: AP Ensured all arguments that are logical flags are treated
 !                identically
-!2014/02/05: MJ corrected datatype of chunkproc from character to logical
-!2014/02/05 MJ adds verbose to argument list of rttov related routines to mute rttov
+! 2014/02/05: MJ corrected datatype of chunkproc from character to logical
+! 2014/02/10: AP changes to ECMWF routines
+! 2014/02/05: MJ adds verbose to argument list of rttov related routines to
+!                mute rttov
 !
 ! $Id$
 !
@@ -196,6 +194,7 @@ program preprocessing
 
    use hdf5
    use netcdf
+   use orac_ecmwf
    use preproc_constants
    use imager_structures
    use ecmwf_structures
@@ -219,7 +218,7 @@ program preprocessing
    ! nighttime data in an (A)ATSR orbit file:
    integer(kind=lint)  :: n_along_track2, along_track_offset2
 
-   integer(kind=stint) :: doy,year,month,day,hour,minute,surfaceflag,startyi
+   integer(kind=stint) :: doy,year,month,day,hour,minute,startyi
 
    character(len=pathlength) :: driver_path_and_file,path_to_l1b_file
    character(len=pathlength) :: path_to_geo_file,output_pathin,output_pathout
@@ -270,7 +269,7 @@ program preprocessing
 
    type(channel_info_s)     :: channel_info
 
-   integer :: nargs
+   integer :: nargs,ierr
    integer :: nchunks1,leftover_chunk1
    integer :: nchunks2,leftover_chunk2, nchunks_total
    integer(kind=stint) :: nc
@@ -455,9 +454,8 @@ program preprocessing
       ! Get array dimensions and along-track offset for the daylight side. If
       ! we're processing daylight data, we may want to chunk process after this
       call read_aatsr_dimensions(path_to_l1b_file, n_across_track, &
-           & n_along_track, along_track_offset, &
-           & day_night, loc_limit, &
-           & n_along_track2, along_track_offset2, verbose)
+           n_along_track, along_track_offset, day_night, loc_limit, &
+           n_along_track2, along_track_offset2, verbose)
       ! force chunk processing for night ACP-FINISH THIS
       !if (n_along_track.gt.0 .and. n_along_track2.gt.0) chunkproc=1
 
@@ -567,8 +565,8 @@ program preprocessing
       ! carry out any prepatory steps: identify required ECMWF and MODIS L3 
       ! information,set paths and filenames to those required  
       ! auxilliary/ancilliary input...
-      call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,cf_file, &
-           lsf_file,geo_file,loc_file,alb_file,scan_file, &
+      call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
+           cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, &
            sensor,platform,hour,cyear,chour,cminute,cmonth,cday,ecmwf_path, &
            ecmwf_path2,ecmwf_path3,ecmwf_pathout, &
            ecmwf_path2out,ecmwf_path3out,script_input,badc, &
@@ -584,12 +582,12 @@ program preprocessing
 
       if (badc) then 
          call read_ecmwf_dimensions_nc(ecmwf_path3out,ecmwf_dims)
-         if (verbose) write(*,*)'ecmwf_dims nc: ',ecmwf_dims%xdim_ec, &
-              ecmwf_dims%ydim_ec
+         if (verbose) write(*,*)'ecmwf_dims nc: ',ecmwf_dims%xdim, &
+              ecmwf_dims%ydim
       else
          call read_ecmwf_dimensions_grib(ecmwf_pathout,ecmwf_dims)
-         if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf_dims%xdim_ec, &
-              ecmwf_dims%ydim_ec
+         if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf_dims%xdim, &
+              ecmwf_dims%ydim
       endif
 
       ! allocate now the variable arrays in the structure
@@ -621,48 +619,37 @@ program preprocessing
       ! find the bounding indices of the imager data wrt the preprocessing grid
       call find_min_max_preproc(preproc_dims,imager_geolocation,verbose)
 
-      !
       ! Now read the actual data and interpolate it to the preprocessing grid.
-      ! Build vertical coordinate.
-      !
-
-      !MST next line introduces by me; took it away a few lines down
-      write(*,*) 'Build preprocessing grid'
-      call build_preproc_fields(preproc_dims,preproc_geo,imager_geolocation,imager_angles)
-      write(*,*) 'finished preprocessing grid'
+      if (verbose) write(*,*) 'Build preprocessing grid'
+      call build_preproc_fields(preproc_dims,preproc_geo,imager_geolocation, &
+           imager_angles)
+      if (verbose) write(*,*) 'finished preprocessing grid'
 
       ! read grib files
-
-      write(*,*) 'START READING ECMWF ERA INTERIM FILE'
-
+      if (verbose) write(*,*) 'START READING ECMWF ERA INTERIM FILE'
       if (badc) then 
+         if (verbose) write(*,*) 'Reading ecmwf path3: ',trim(ecmwf_path3out)
+         call read_ecmwf_nc(ecmwf_path3out,ecmwf_dims,ecmwf_2d, &
+              preproc_dims,preproc_geoloc,preproc_prtm,grid_flag)
 
-         surfaceflag=0
-         write(*,*)'reading ecmwf path3: ',trim(ecmwf_path3out), ' ', surfaceflag
+         if (verbose) write(*,*)'reading ecmwf path2: ',trim(ecmwf_path2out)
+         call read_ecmwf_nc(ecmwf_path2out,ecmwf_dims,ecmwf_2d, &
+              preproc_dims,preproc_geoloc,preproc_prtm,grid_flag)
 
-         call read_ecmwf_nc(ecmwf_path3out,ecmwf_dims,ecmwf_3d,ecmwf_2d, &
-              & preproc_dims,preproc_geoloc,preproc_prtm,surfaceflag)
-         surfaceflag=1
+         if (verbose) write(*,*)'reading ecmwf path:  ',trim(ecmwf_pathout)
+         call read_ecmwf_nc(ecmwf_pathout,ecmwf_dims,ecmwf_2d, &
+              & preproc_dims,preproc_geoloc,preproc_prtm,grid_flag)
 
-         write(*,*)'reading ecmwf path2: ',trim(ecmwf_path2out), ' ', surfaceflag
-
-         call read_ecmwf_nc(ecmwf_path2out,ecmwf_dims,ecmwf_3d,ecmwf_2d, &
-              & preproc_dims,preproc_geoloc,preproc_prtm,surfaceflag)
-
-         surfaceflag=0
-         write(*,*)'reading ecmwf path:  ',trim(ecmwf_pathout), ' ', surfaceflag
-
-         call read_ecmwf_nc(ecmwf_pathout,ecmwf_dims,ecmwf_3d,ecmwf_2d, &
-              & preproc_dims,preproc_geoloc,preproc_prtm,surfaceflag)
-
-
-         write(*,*) 'FINISHED READING ECMWF ERA INTERIM BADC FILE'
+         if (verbose) write(*,*) 'FINISHED READING ECMWF ERA INTERIM BADC FILE'
       else
          call read_ecmwf_grib(ecmwf_pathout,ecmwf_dims,ecmwf_3d,ecmwf_2d, &
               & preproc_dims,preproc_geoloc,preproc_prtm)
 
-         write(*,*) 'FINISHED READING ECMWF ERA INTERIM GRIB FILE'
+         if (verbose) write(*,*) 'FINISHED READING ECMWF ERA INTERIM GRIB FILE'
       endif
+      
+      call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf_dims)
+      
       !
       ! average imager angles to the preprocessing grid
       !
@@ -751,10 +738,7 @@ program preprocessing
       ! netcdf files are closed
       !
       write(*,*)'start close netcdf'
-      call close_netcdf_output(output_pathout,&
-           & lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,cf_file, &
-           & lsf_file,geo_file,loc_file,alb_file,scan_file,&
-           & netcdf_info)
+      call close_netcdf_output(netcdf_info)
       write(*,*)'end close netcdf'
 
 

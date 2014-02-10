@@ -22,19 +22,8 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-#archfile=arch.ifort.ox
-#libfile=lib.ifort.ox
-
-# ral/ox files are above, this is for dwd/ecmwf:
-archfile=arch.ifort.scarf
-libfile=lib.ifort.scarf
-
-# Can even be set through env. variable
-#archfile=$(orac_arch)
-#libfile=$(orac_lib)
-
-include $(archfile)
-include $(libfile)
+include $(ORAC_ARCH)
+include $(ORAC_LIB)
 
 
 # Define object files to be linked. N.B. files containing module definitions
@@ -44,7 +33,6 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/aatsr_drift_correction_def.o \
 	        $(OBJS)/allocate_channel_info.o \
                 $(OBJS)/allocate_ecmwf_structures.o \
-	        $(OBJS)/allocate_ecmwf_structures_nc.o \
 	        $(OBJS)/allocate_imager_structures.o \
 	        $(OBJS)/allocate_preproc_structures.o \
 	        $(OBJS)/allocate_surface_structures.o \
@@ -58,7 +46,6 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
 	        $(OBJS)/call_rtm_solar_rttov.o \
                 $(OBJS)/channel_structures.o \
 	        $(OBJS)/close_netcdf_output.o \
-                $(OBJS)/compute_geopot_coordinate.o \
 	        $(OBJS)/correct_for_ice_snow.o \
                 $(OBJS)/cox_munk.o \
 	        $(OBJS)/create_time_for_pixel.o \
@@ -88,15 +75,13 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
 	        $(OBJS)/mcd43c.o \
                 $(OBJS)/modis2oraclsflag.o \
                 $(OBJS)/modis_bright.o \
-	        $(OBJS)/nc_close.o \
                 $(OBJS)/nc_create_file.o \
-                $(OBJS)/nc_dim_info.o \
-	        $(OBJS)/nc_open.o \
-                $(OBJS)/nc_read_file.o \
                 $(OBJS)/netcdf_structures.o \
 	        $(OBJS)/nise_def.o \
                 $(OBJS)/nn_ecmwf.o \
                 $(OBJS)/open_netcdf_output.o \
+                $(OBJS)/orac_ecmwf.o \
+                $(OBJS)/orac_ncdf.o \
 	        $(OBJS)/preparation.o \
                 $(OBJS)/preproc_constants.o \
 	        $(OBJS)/preproc_structures.o \
@@ -114,10 +99,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
 	        $(OBJS)/read_cimss_emissivity.o \
                 $(OBJS)/read_ecmwf.o \
 	        $(OBJS)/read_ecmwf_dimensions.o \
-                $(OBJS)/read_ecmwf_dimensions_nc.o \
 	        $(OBJS)/read_ecmwf_lat_lon.o \
-                $(OBJS)/read_ecmwf_lat_lon_nc.o \
-	        $(OBJS)/read_ecmwf_nc.o \
                 $(OBJS)/read_imager.o \
 	        $(OBJS)/read_L1B_avhrr_reflectances_radiances.o \
 	        $(OBJS)/read_L1b_radiances_reflectances.o \
@@ -130,8 +112,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/read_modis_lsflag.o \
 	        $(OBJS)/read_modis_time.o \
                 $(OBJS)/read_nsidc_nise.o \
-	        $(OBJS)/rearrange_ecmwf.o \
-                $(OBJS)/rearrange_ecmwf3.o \
+                $(OBJS)/rearrange_ecmwf.o \
 	        $(OBJS)/rttov_driver.o \
                 $(OBJS)/select_modis_albedo_file.o \
 	        $(OBJS)/select_modis_emiss_file.o \
@@ -145,7 +126,12 @@ PREPROC_OBJ_C=  $(OBJS)/read_aatsr_orbit.o
 
 PREPROC_OBJ  =  $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
 
-PREPROC_INC  =  fundamental_constants.inc
+PREPROC_INC  =  compute_geopot_coordinate.F90 \
+                fundamental_constants.inc \
+                ncdf_read.inc \
+                read_ecmwf_dimensions_nc.F90 \
+                read_ecmwf_lat_lon_nc.F90 \
+                read_ecmwf_nc.F90
 
 
 # Compilation rules
