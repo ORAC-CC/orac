@@ -16,14 +16,11 @@
 ! ecmwf_dims struct in  Structure summarising dimensions of ECMWF files.
 ! ecmwf_2d   struct out Structure containing 2-D ECMWF fields.
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
 ! 2012/02/22: MJ produces code which reads rlat/lon grid from ERA INTERIM
 !                GRIB files
 ! 2013/10/22: AP Tidying.
+! 2014/02/10: AP variable renaming
 !
 ! $Id$
 !
@@ -71,11 +68,11 @@ subroutine read_ecmwf_lat_lon(ecmwf_path,ecmwf_dims,ecmwf_2d)
   endif
 
 
-  allocate(dummyvector_value(ecmwf_dims%xdim_ec*ecmwf_dims%ydim_ec))
+  allocate(dummyvector_value(ecmwf_dims%xdim*ecmwf_dims%ydim))
   dummyvector_value=real_fill_value
-  allocate(dummyvector_lat(ecmwf_dims%xdim_ec*ecmwf_dims%ydim_ec))
+  allocate(dummyvector_lat(ecmwf_dims%xdim*ecmwf_dims%ydim))
   dummyvector_lat=real_fill_value
-  allocate(dummyvector_lon(ecmwf_dims%xdim_ec*ecmwf_dims%ydim_ec))
+  allocate(dummyvector_lon(ecmwf_dims%xdim*ecmwf_dims%ydim))
   dummyvector_lon=real_fill_value
 
   ! This will just read the lat,lon grid. In horizontal direction data is stored
@@ -113,10 +110,10 @@ subroutine read_ecmwf_lat_lon(ecmwf_path,ecmwf_dims,ecmwf_2d)
   if(ilevel .eq. 1) then
      !Latitude is counted from northpole to southpole 90 -> -90
      ecmwf_2d%latitude=reshape(dummyvector_lat, &
-          (/ecmwf_dims%xdim_ec,ecmwf_dims%ydim_ec/))
+          (/ecmwf_dims%xdim,ecmwf_dims%ydim/))
      !Longitude is eastward from 0 to 358.875
      ecmwf_2d%longitude=reshape(dummyvector_lon, &
-          (/ecmwf_dims%xdim_ec,ecmwf_dims%ydim_ec/))
+          (/ecmwf_dims%xdim,ecmwf_dims%ydim/))
   endif
 
     

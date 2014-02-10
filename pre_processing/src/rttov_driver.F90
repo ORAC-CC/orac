@@ -4,7 +4,6 @@
 ! Purpose:
 ! Create environment within which all RTTOV related code is contained.
 !
-!
 ! Description and Algorithm details (rough):
 ! 1) Set up what hardware is required i.e which instrument.
 ! 2) Initialise options structure.
@@ -26,13 +25,9 @@
 ! 18)   End loop over pixels.
 ! 19) End loop over coefficients i.e lw and sw.
 !
-!
 ! Arguments:
 ! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
+! ------------------------------------------------------------------------------
 !
 !
 ! History:
@@ -82,11 +77,11 @@
 ! 2013/11/08, GM: added missing call to rttov_alloc_auxrad() in deallocate mode
 ! 2013/12/11, GM: Significant code clean up.
 ! 2014/01/15, GM: Removed some unnecessary RTTOV error handling calls.
-! 20140204 MJ implements if to set verbosity of RTTOV based on "verbose" variable
-!
+! 2014/02/04, MJ: implements if to set verbosity of RTTOV based on "verbose"
+!                  variable
+! 2014/02/10, AP: variable renaming
 !
 ! $Id$
-!
 !
 ! Bugs:
 ! 2012/11/14, CP: atsr ir coefficients are in reverse order a temporary code
@@ -199,8 +194,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    character(len=platformlength)     :: platform_id_string
 
-   integer(kind=lint)                :: maxlat,minlat,maxlon,minlon
-
    integer(kind=jpim)                :: test_rttov_flag
 
    real                              :: sza,lza,amf,za
@@ -247,7 +240,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    integer(kind=lint)                                :: dummy_lint_1d(1)
 
    real(kind=sreal)                                  :: dummy_real_1d(1)
-   real(kind=sreal)                                  :: dummy_real_2d(preproc_dims%kdim_pre,1)
+   real(kind=sreal)                                  :: dummy_real_2d(preproc_dims%kdim,1)
 
    real(kind=sreal),   allocatable, dimension(:,:,:) :: dummy_real_3d
 
@@ -609,7 +602,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
       asw=1 ! Tells RTTOV to allocate memory
 
-      write(*,*) 'Allocate RTTOV profile structure: ', preproc_dims%kdim_pre
+      write(*,*) 'Allocate RTTOV profile structure: ', preproc_dims%kdim
 
       allocate(profiles(iprof))
 
@@ -617,21 +610,21 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       if (test_rttov_flag .eq. 0) then
 
          call rttov_alloc_prof(errorstatus,iprof,profiles, &
-              & preproc_dims%kdim_pre,opts,asw,coefs=coefs(irttovid), &
+              & preproc_dims%kdim,opts,asw,coefs=coefs(irttovid), &
               & init=.true._jplm)
          write(*,*) 'errorstatus rttov_alloc_prof: ',errorstatus
 
-         profiles(1)%nlevels=preproc_dims%kdim_pre
+         profiles(1)%nlevels=preproc_dims%kdim
          profiles(1)%nlayers=profiles(1)%nlevels-1
 
       else
 
          call rttov_alloc_prof(errorstatus,iprof,profiles, &
-              & preproc_dims%kdim_pre,opts,asw,coefs=coefs(irttovid), &
+              & preproc_dims%kdim,opts,asw,coefs=coefs(irttovid), &
               & init=.true._jplm)
          write(*,*) 'errorstatus rttov_alloc_prof: ',errorstatus
 
-	 preproc_dims%kdim_pre=43
+	 preproc_dims%kdim=43
  	 profiles(1)%nlevels=43
      	 profiles(1)%nlayers=profiles(1)%nlevels-1
 
@@ -641,21 +634,21 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       end if
 
 
-      write(*,*) 'Allocate RTTOV radiance structure: ', preproc_dims%kdim_pre, profiles(1)%nlevels
+      write(*,*) 'Allocate RTTOV radiance structure: ', preproc_dims%kdim, profiles(1)%nlevels
 
       call rttov_alloc_rad(errorstatus,nchannels,radiance, &
-           & preproc_dims%kdim_pre-1,asw)
-      write(*,*) 'errorstatus rttov_alloc_rad: ', errorstatus, preproc_dims%kdim_pre
+           & preproc_dims%kdim-1,asw)
+      write(*,*) 'errorstatus rttov_alloc_rad: ', errorstatus, preproc_dims%kdim
 
       call rttov_alloc_auxrad(errorstatus,auxrad, profiles(1)%nlevels, &
            & nchannels,asw)
-      write(*,*) 'errorstatus rttov_alloc_auxrad: ', errorstatus, preproc_dims%kdim_pre
+      write(*,*) 'errorstatus rttov_alloc_auxrad: ', errorstatus, preproc_dims%kdim
 
 
-      write(*,*) 'Allocate RTTOV rtransmission structure: ', preproc_dims%kdim_pre, profiles(1)%nlevels
+      write(*,*) 'Allocate RTTOV rtransmission structure: ', preproc_dims%kdim, profiles(1)%nlevels
 
       call rttov_alloc_transmission(errorstatus,transmission, &
-      	   & preproc_dims%kdim_pre-1, nchannels,asw,init=.true._jplm)
+      	   & preproc_dims%kdim-1, nchannels,asw,init=.true._jplm)
       write(*,*) 'errorstatus rttov_alloc_transmission: ', errorstatus
 
 
@@ -665,15 +658,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       pixel_counter_sw=0
       pixel_counter_lw=0!
 
-      maxlat=preproc_dims%preproc_max_lat
-      maxlon=preproc_dims%preproc_max_lon
 
-      minlat=preproc_dims%preproc_min_lat
-      minlon=preproc_dims%preproc_min_lon
-
-
-      do jdim=minlat,maxlat
-         do idim=minlon,maxlon
+      do jdim=preproc_dims%min_lat,preproc_dims%max_lat
+         do idim=preproc_dims%min_lon,preproc_dims%max_lon
 
             ! Now assign the preprocessing grid data to the RTTOV structures
 
@@ -684,19 +671,19 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
             ! convert from Pa to hPa
 
 !           write(*,*) 'setting t'
-            profiles(1)%t(1:preproc_dims%kdim_pre)= &
+            profiles(1)%t(1:preproc_dims%kdim)= &
                preproc_prtm%temperature(idim,jdim,:)
 !           write(*,*)'temperature: ', preproc_prtm%temperature(idim,jdim,:)
 
 !           write(*,*) 'setting q'
             ! convert from kg/kg to ppmv by multiplying with dry air molecule
             ! weight(28.9644)/molcule weight of gas (e.g. o3  47.9982)*1.0E6
-            profiles(1)%q(1:preproc_dims%kdim_pre)= &
+            profiles(1)%q(1:preproc_dims%kdim)= &
                preproc_prtm%spec_hum(idim,jdim,:)*q_mixratio_to_ppmv
 !           write(*,*)'spechum: ', preproc_prtm%spec_hum(idim,jdim,:)
 
 !           write(*,*) 'setting o3'
-            profiles(1)%o3(1:preproc_dims%kdim_pre)= &
+            profiles(1)%o3(1:preproc_dims%kdim)= &
                preproc_prtm%ozone(idim,jdim,:)*o3_mixratio_to_ppmv
 !           write(*,*)'ozone: ', preproc_prtm%ozone(idim,jdim,:)
 
@@ -704,12 +691,12 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                ! surface pressure is read from BADC netcdf files
                profiles(1)%s2m%p=preproc_prtm%surface_pressure(idim,jdim)/pa2hpa
                profiles(1)%s2m%t=preproc_prtm%temp2(idim,jdim)
-               profiles(1)%p(1:preproc_dims%kdim_pre)= &
+               profiles(1)%p(1:preproc_dims%kdim)= &
                   preproc_prtm%pressure(idim,jdim,:)/pa2hpa
             else
                profiles(1)%s2m%p=exp(preproc_prtm%lnsp(idim,jdim))/pa2hpa
                profiles(1)%s2m%t=preproc_prtm%temp2(idim,jdim)
-               profiles(1)%p(1:preproc_dims%kdim_pre)= &
+               profiles(1)%p(1:preproc_dims%kdim)= &
                   preproc_prtm%pressure(idim,jdim,:)/pa2hpa
             end if
 
@@ -733,11 +720,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
             ! Add surface values to the profile. rttov documentataion states
             ! that 'The user profile lowest level should be equal or below
             ! the surface pressure'
-            profiles(1)%p(preproc_dims%kdim_pre)=profiles(1)%s2m%p
-            profiles(1)%t(preproc_dims%kdim_pre)=profiles(1)%skin%t
-            profiles(1)%q(preproc_dims%kdim_pre)=profiles(1)%q(preproc_dims%kdim_pre-1)
+            profiles(1)%p(preproc_dims%kdim)=profiles(1)%s2m%p
+            profiles(1)%t(preproc_dims%kdim)=profiles(1)%skin%t
+            profiles(1)%q(preproc_dims%kdim)=profiles(1)%q(preproc_dims%kdim-1)
 !           profiles(1)%s2m%q
-            profiles(1)%o3(preproc_dims%kdim_pre)=profiles(1)%o3(preproc_dims%kdim_pre-1)
+            profiles(1)%o3(preproc_dims%kdim)=profiles(1)%o3(preproc_dims%kdim-1)
 
             if (.false.) then
                write(*,*) 'pressure:  ', profiles(1)%p(:)
@@ -908,7 +895,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (ierr.NE.NF90_NOERR) stop 'err write iindex rttov'
 
                   ! iindex
-                  dummy_lint_1d(1)=idim-preproc_dims%preproc_min_lon+1
+                  dummy_lint_1d(1)=idim-preproc_dims%min_lon+1
                   ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
                          & netcdf_info%iid_pw,dummy_lint_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
@@ -916,7 +903,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (ierr.NE.NF90_NOERR) stop 'err write iindex rttov'
 
                   ! jindex
-                  dummy_lint_1d(1)=jdim-preproc_dims%preproc_min_lat+1
+                  dummy_lint_1d(1)=jdim-preproc_dims%min_lat+1
                   ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
                          & netcdf_info%jid_pw,dummy_lint_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
@@ -1113,7 +1100,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! Write out lwrtm 3d variables
                   allocate(dummy_real_3d(size(channel_info%channel_ids_rttov_coef_lw), &
-                     & preproc_dims%kdim_pre,1))
+                     & preproc_dims%kdim,1))
 
                   dummy_real_3d=real_fill_value
 
@@ -1247,7 +1234,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
 
                   allocate(dummy_real_3d(size(channel_info%channel_ids_rttov_coef_sw), &
-                  & preproc_dims%kdim_pre,1))
+                  & preproc_dims%kdim,1))
 
                   dummy_real_3d=real_fill_value
 
@@ -1296,16 +1283,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       asw=0 ! Tells RTTOV to deallocate memory
 
 
-      call rttov_alloc_transmission(errorstatus,transmission,preproc_dims%kdim_pre-1,nchannels,asw,init=.true._jplm)
+      call rttov_alloc_transmission(errorstatus,transmission,preproc_dims%kdim-1,nchannels,asw,init=.true._jplm)
       write(*,*) 'errorstatus dealloc tran: ', errorstatus
 
       call rttov_alloc_auxrad(errorstatus,auxrad,profiles(1)%nlevels,nchannels,asw)
       write(*,*) 'errorstatus dealloc tran: ', errorstatus
 
-      call rttov_alloc_rad(errorstatus,nchannels,radiance,preproc_dims%kdim_pre,asw)
+      call rttov_alloc_rad(errorstatus,nchannels,radiance,preproc_dims%kdim,asw)
       write(*,*) 'errorstatus dealloc rad: ', errorstatus
 
-      call rttov_alloc_prof(errorstatus,iprof,profiles,preproc_dims%kdim_pre,opts,asw,coefs=coefs(irttovid),init=.true._jplm)
+      call rttov_alloc_prof(errorstatus,iprof,profiles,preproc_dims%kdim,opts,asw,coefs=coefs(irttovid),init=.true._jplm)
       write(*,*) 'errorstatus dealloc prof: ', errorstatus
 
       call rttov_deallocate_atlas(coefs(irttovid)%coef)

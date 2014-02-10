@@ -5,15 +5,10 @@
 ! Define variables types which hold the preprocessing output information
 ! 
 ! Description and Algorithm details:
-!
+! None
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
-!
+! None
 !
 ! History:
 ! 2012/01/17: MJ produces initial version of code
@@ -27,6 +22,7 @@
 ! 2012/08/28: CP readded _lw _sw for filter_array and counter
 ! 2012/11/14: CP added surface pressure
 ! 2013/10/23: AP Tidying. Commented out unused types.
+! 2014/02/10: AP Shortened DIM names.
 !
 ! $Id$
 !
@@ -41,10 +37,9 @@ module preproc_structures
    implicit none
 
    type preproc_dims_s
-      integer(kind=lint) :: xdim_pre,ydim_pre,kdim_pre
+      integer(kind=lint) :: xdim,ydim,kdim
       integer(kind=lint) :: nchan_sw,nchan_lw
-      integer(kind=lint) ::  preproc_min_lat, preproc_max_lat, preproc_min_lon,&
-           preproc_max_lon,preproc_del_lon,preproc_del_lat
+      integer(kind=lint) ::  min_lat, max_lat, min_lon, max_lon,del_lon,del_lat
       real(kind=sreal)   ::  dellon,dellat
 
       real(kind=sreal)   :: lat_offset=90.0
@@ -135,21 +130,11 @@ module preproc_structures
 
    end type preproc_prtm_s
 
-   !land/sea mask
-   !type preproc_lsm_s
-   !   integer(kind=sint) :: dummy
-   !end type preproc_lsm_s
-
    ! Surface albedo and emissivity
    type preproc_surf_s
       real(kind=sreal), dimension(:,:,:), pointer :: emissivity
       !     real(kind=sreal), dimension(:,:,:), pointer :: albedo -- needed?
    end type preproc_surf_s
-
-   !surface albedo
-   !type preproc_salb_s
-   !   integer(kind=sint) :: dummy
-   !end type preproc_salb_s
 
    !geometry
    type preproc_geo_s
@@ -165,16 +150,6 @@ module preproc_structures
       real(kind=sreal), dimension(:), pointer ::  longitude
 
    end type preproc_geoloc_s
-
-   !output imager data
-   !type preproc_imager_s
-   !   integer(kind=sint) :: dummy
-   !end type preproc_imager_s
-
-   !cloud mask
-   !type preproc_cmask_s
-   !   integer(kind=sint) :: dummy
-   !end type preproc_cmask_s
 
 
 end module preproc_structures

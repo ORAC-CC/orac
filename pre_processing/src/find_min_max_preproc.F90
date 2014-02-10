@@ -5,17 +5,19 @@
 ! Find min/max indices of preproc grid cells. Use this information to speed up
 ! assigning of ECMWF values.
 ! 
-!
 ! Description and Algorithm details:
-!
+! 1) Convert lat/lon into grid references.
+! 2) Use max/minval to determine the range of values available.
+! 3) Increase that number by one to facilitate interpolation.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
-!
+! Name               Type  In/Out/Both Description
+! ------------------------------------------------------------------------------
+! preproc_dims       struct Both Structure summarising dimensions
+!                                of preprocessing
+! imager_geolocation struct In   Summary of pixel positions
+! verbose            logic  In   F: minimise information printed to screen;
+!                                T: don't
 !
 ! History:
 ! 2012/02/27: MJ produces initial code version.
@@ -29,6 +31,7 @@
 !                loop, uses preprop_dims rather than ecmwf (in case you ever
 !                define a different grid), and properly wraps the longitude
 !                (rather than only wrapping large longitudes around).
+! 2014/02/10: AP variable renaming
 !
 ! $Id$
 !
@@ -61,31 +64,31 @@ subroutine find_min_max_preproc(preproc_dims,imager_geolocation,verbose)
         preproc_dims%dellon + 1.
 
    ! only consider valid lat/lon values
-   mask =  imager_geolocation%latitude.ge.(real_fill_value+1.0) .and. &
-        imager_geolocation%longitude.ge.(real_fill_value+1.0)
+   mask =  imager_geolocation%latitude.gt.real_fill_value .and. &
+        imager_geolocation%longitude.gt.real_fill_value
 
    ! take one more pixel than is required for interpolation
-   preproc_dims%preproc_max_lat = maxval(ceiling(lat), mask) + 1
-   if (preproc_dims%preproc_max_lat .ge. preproc_dims%ydim_pre) &
-      preproc_dims%preproc_max_lat = preproc_dims%ydim_pre
+   preproc_dims%max_lat = maxval(ceiling(lat), mask) + 1
+   if (preproc_dims%max_lat .ge. preproc_dims%ydim) &
+      preproc_dims%max_lat = preproc_dims%ydim
    
-   preproc_dims%preproc_min_lat = minval(floor(lat), mask) - 1
-   if (preproc_dims%preproc_min_lat .lt. 1) preproc_dims%preproc_min_lat = 1
+   preproc_dims%min_lat = minval(floor(lat), mask) - 1
+   if (preproc_dims%min_lat .lt. 1) preproc_dims%min_lat = 1
 
    ! if longitude touches the grid edges, wrap around and use the whole grid
-   preproc_dims%preproc_max_lon = maxval(ceiling(lon), mask) + 1
-   preproc_dims%preproc_min_lon = minval(floor(lon), mask) - 1
-   if (preproc_dims%preproc_max_lon.ge.preproc_dims%xdim_pre .or. &
-        &        preproc_dims%preproc_min_lon.le.1) then
-      preproc_dims%preproc_max_lon = preproc_dims%xdim_pre
-      preproc_dims%preproc_min_lon = 1
+   preproc_dims%max_lon = maxval(ceiling(lon), mask) + 1
+   preproc_dims%min_lon = minval(floor(lon), mask) - 1
+   if (preproc_dims%max_lon.ge.preproc_dims%xdim .or. &
+        & preproc_dims%min_lon.le.1) then
+      preproc_dims%max_lon = preproc_dims%xdim
+      preproc_dims%min_lon = 1
    end if
 
    if (verbose) then
-      print*, 'preproc_dims%preproc_min_lat: ', preproc_dims%preproc_min_lat
-      print*, 'preproc_dims%preproc_max_lat: ', preproc_dims%preproc_max_lat
-      print*, 'preproc_dims%preproc_min_lon: ', preproc_dims%preproc_min_lon
-      print*, 'preproc_dims%preproc_max_lon: ', preproc_dims%preproc_max_lon
+      print*, 'preproc_dims%min_lat: ', preproc_dims%min_lat
+      print*, 'preproc_dims%max_lat: ', preproc_dims%max_lat
+      print*, 'preproc_dims%min_lon: ', preproc_dims%min_lon
+      print*, 'preproc_dims%max_lon: ', preproc_dims%max_lon
    end if
    
 
