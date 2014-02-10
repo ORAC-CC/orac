@@ -52,10 +52,10 @@ HDFEOS=-lGctp -lhdfeos
 #RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other
 
 ##parallel (OMP)
-#RTTOVLIB=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/lib
-#RTTOVINCLUDE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/include
-#RTTOVMODULE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/mod
-#RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_parallel -lrttov10.2.0_coef_io -lrttov10.2.0_other
+RTTOVLIB=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/lib
+RTTOVINCLUDE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/include
+RTTOVMODULE=/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-dwd_omp/mod
+RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_parallel -lrttov10.2.0_coef_io -lrttov10.2.0_other
 
 #debug parallel
 #RTTOVLIB=/c2a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-debug-dwd/lib
@@ -64,10 +64,10 @@ HDFEOS=-lGctp -lhdfeos
 #RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other
 
 #debug serial
-RTTOVLIB=/c2a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-debug_serial-dwd/lib
-RTTOVINCLUDE=/c2a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-debug_serial-dwd/include
-RTTOVMODULE=/c2a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-debug_serial-dwd/mod
-RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other
+#RTTOVLIB=/c2a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-debug_serial-dwd/lib
+#RTTOVINCLUDE=/c2a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-debug_serial-dwd/include
+#RTTOVMODULE=/c2a/perm/ms/de/sf4/esa_cci_c_proc/software/rttov/aix-ecmwf_pwr7-debug_serial-dwd/mod
+#RTTOV=-lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other
 
 
 
