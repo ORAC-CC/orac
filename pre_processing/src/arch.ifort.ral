@@ -6,8 +6,10 @@ OBJS=/misc/cluster_home/cpoulsen/orac_svn/v17/pre_processing/src/
 F90=/opt/intel/composer_xe_2011_sp1.8.273/bin/intel64/ifort 
 
 #set compiler flags					   
-FFLAGS=-g -check all -heap-arrays -traceback  -fstack-protector -assume protect_parens -check arg_temp_created -debug all
-LFLAGS=-g -check all -heap-arrays -traceback   -fstack-protector -assume protect_parens -check arg_temp_created -debug all
+#FFLAGS=-g -check all -heap-arrays -traceback  -fstack-protector -assume protect_parens -check arg_temp_created -debug all
+FFLAGS=-g -check all -heap-arrays -traceback 
+LFLAGS=-g -check all -heap-arrays -traceback 
+#  -fstack-protector -assume protect_parens -check arg_temp_created -debug all
 #- check pointers
 #including the static in lflags keyword means cannot find -lepri_api
 
