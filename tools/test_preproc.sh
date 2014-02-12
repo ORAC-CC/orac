@@ -357,7 +357,7 @@ fi
 # DEFINE INPUT DATA INFORMATION
 #------------------------------------------------------------------------------
 i=0
-badc_flag='1'
+
 #---- AATSR (day) ----
 if (( ($do_all) || ($do_DAYAATSR) )); then
     sensor[$i]=AATSR
