@@ -9,6 +9,8 @@ FFLAGS= -openmp -g -check all -heap-arrays -traceback -heap-arrays -traceback -f
 # -check noarg_temp_created 
 LFLAGS= -openmp -g -check all -heap-arrays -traceback -heap-arrays -traceback  -warn all -fstack-protector -check noarg_temp_created 
 
+#FFLAGS=-O0  -check bounds  -traceback
+#LFLAGS= -openmp -g 
 
 #FFLAGS=-O0  -check bounds  -traceback  -static 
 # gcc debugging flags for C code

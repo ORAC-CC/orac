@@ -1,5 +1,7 @@
 #ifort
-#setenv LD_LIBRARY_PATH /lib64/:/usr/lib/:/usr/local/lib/:/lib/:/home/cluster/cpoulsen/lib/linux64_2.6_x86_64:/home/cluster/rsiddans/idl/external/linux:/home/cluster/rsiddans/idl/external/CFI/lib:/home/cluster/rsiddans/bin/libs:/usr/local/sge/lib/linux-x64:/usr/local/gareth/szip/lib:/usr/lib64:/usr/local/netcdf4.3.1-intel/netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/lib/
+
+
+#setenv LD_LIBRARY_PATH /home/cluster/cpoulsen/lib/linux64_2.6_x86_64:/home/cluster/rsiddans/idl/external/linux:/home/cluster/rsiddans/idl/external/CFI/lib:/home/cluster/rsiddans/bin/libs:/usr/local/sge/lib/linux-x64:/usr/local/gareth/szip/lib:/opt/intel/composer_xe_2013.0.079/compiler/lib/intel64/:/usr/local/netcdf4.3.1-intel/netcdf-fortran-4.2-netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/lib/:/usr/local/netcdf4.3.1-intel/netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/lib/:/usr/lib64:/misc/oxford1/rsg/Data/projects/ecv_clouds/software/epr_api-2.2/build/release/:/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/:/usr/local/netcdf-4.3.0ifort64/lib/
 
 #netcdff
 NCDFLIB=/usr/local/netcdf4.3.1-intel/netcdf-fortran-4.2-netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/lib/
