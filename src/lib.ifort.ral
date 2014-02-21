@@ -1,0 +1,53 @@
+#ifort
+
+
+#setenv LD_LIBRARY_PATH /home/cluster/cpoulsen/lib/linux64_2.6_x86_64:/home/cluster/rsiddans/idl/external/linux:/home/cluster/rsiddans/idl/external/CFI/lib:/home/cluster/rsiddans/bin/libs:/usr/local/sge/lib/linux-x64:/usr/local/gareth/szip/lib:/opt/intel/composer_xe_2013.0.079/compiler/lib/intel64/:/usr/local/netcdf4.3.1-intel/netcdf-fortran-4.2-netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/lib/:/usr/local/netcdf4.3.1-intel/netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/lib/:/usr/lib64:/misc/oxford1/rsg/Data/projects/ecv_clouds/software/epr_api-2.2/build/release/:/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/:/usr/local/netcdf-4.3.0ifort64/lib/
+
+#netcdff
+NCDFLIB=/usr/local/netcdf4.3.1-intel/netcdf-fortran-4.2-netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/lib/
+NCDFINCLUDE=/usr/local/netcdf4.3.1-intel/netcdf-fortran-4.2-netcdf-c-4.3.1-rc2-hdf5-1.8.11-szip-2.1/include/
+
+#lnetcdff
+NCDFLIBB=/usr/local/netcdf-4.3.0ifort64/lib/
+NCDFINCLUDEB=/usr/local/netcdf-4.3.0ifort64/include/
+
+
+
+
+SZLIB=/usr/local/gareth/szip/lib/
+SZINC=/usr/local/gareth/szip/include/
+SZIP=-lsz -lz 
+#intel libraries
+INTELLIB=/opt/intel/composer_xe_2011_sp1.8.273/compiler/lib/intel64/
+INTELINC=//opt/intel/composer_xe_2011_sp1.8.273/compiler/include/intel64/
+
+#INTELLIB=/opt/intel/lib/intel64/
+#INTELINC=/opt/intel/include/intel64/
+
+#has lz
+# /usr/local/lib 
+
+HDF5LIB=/usr/local/hdf5-1.6.7intel/lib/
+HDF5INCLUDE=/usr/local/hdf5-1.6.7intel/include/
+
+HDF5MOD=/usr/local/hdf5-1.6.7intel/lib/
+HDF5= -lhdf5 
+#-lhdf5_fortran
+#-lhdf5_hl 
+# -lhdf5hl_fortran
+
+#Set up libraries and includes
+
+#INC=-I./  -I$(INTELINC)  -I$(SZINC) -I$(HDF5INCLUDE) -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB) -I$(INTELINC)
+
+#LIBS=-L$(HDF5LIB) $(HDF5) -L$(SZLIB) -lm -lz  $(SZIP) -L$(HDF5LIB) $(HDF5) -L$(NCDFLIB) -lnetcdff -L$(NCDFLIBB) -lnetcdf -limf -lintlc -lsvml -lifport -lifcore  -L$(INTELLIB) -lm -lz
+
+
+#INC=-I./  -I$(INTELINC)  -I$(SZINC)  -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB) -I$(INTELINC)
+
+#LIBS= -L$(SZLIB) -lm -lz  $(SZIP) -L$(NCDFLIB) -lnetcdff -L$(NCDFLIBB) -lnetcdf -limf  -lintlc -lsvml -lifport -lifcore  -L$(INTELLIB) -lm -lz
+
+INC=-I./   -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB) -I$(INTELINC)
+
+LIBS=  -L$(NCDFLIB) -lnetcdff -L$(NCDFLIBB) -lnetcdf 
+

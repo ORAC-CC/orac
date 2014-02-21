@@ -1,0 +1,7 @@
+#gfortran 337
+NCDFLIB=/cmsaf/cmsaf-cld4/mjerg/libs/netcdf_gfortran_337/lib
+NCDFINCLUDE=/cmsaf/cmsaf-cld4/mjerg/libs/netcdf_gfortran_337/include
+
+#Set up libraries and includes
+LIBS=-L$(NCDFLIB) -lnetcdf 
+INC=-I./  -I$(NCDFINCLUDE)
