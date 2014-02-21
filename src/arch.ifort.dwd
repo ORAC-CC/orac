@@ -1,4 +1,0 @@
-#ifort
-F90=ifort
-FFLAGS=-cpp -g -pg -CB -check arg_temp_created  -traceback
-LFLAGS=-cpp -g -pg  -CB -check arg_temp_created -traceback
