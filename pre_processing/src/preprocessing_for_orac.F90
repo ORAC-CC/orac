@@ -182,6 +182,7 @@
 ! 2014/02/10: AP changes to ECMWF routines
 ! 2014/02/05: MJ adds verbose to argument list of rttov related routines to
 !                mute rttov
+!2014/03/11: MJ adds writing out of soem flags to gain more information.
 !
 ! $Id$
 !
@@ -397,6 +398,8 @@ program preprocessing
    chunkproc=parse_logical(cchunkproc)
    verbose=parse_logical(cverbose)
    use_chunking=parse_logical(cuse_chunking)
+
+   write(*,*) 'Flags for verbosity and file chunking:',verbose, use_chunking
 
    ! Initialise some counts, offset variables...
    nchunks1=0
