@@ -21,7 +21,7 @@
 ! 20131127 MJ adds parameters for netcdf4 compression
 ! 20140123 MJ switches nc4 shuffling off.
 ! 20140130 MJ removes parameters for chunking.
-!
+! 20140311 MJ introduces variable for file chunking.
 ! $Id$
 !
 ! Bugs:
@@ -95,6 +95,7 @@ module preproc_constants
   logical, parameter :: shuffle_byte=.FALSE.
   logical, parameter :: shuffle_stint_flag=.FALSE.
 
-
+  integer(kind=lint), parameter :: max_chunk_latlon=10000
+  
 
 end module preproc_constants
