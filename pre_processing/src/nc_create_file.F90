@@ -48,7 +48,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
    ! 2014/02/03, GM: A small reordering of the variables in the SW RTM output to be
    !    consistent with the LW RTM output.
    ! 2014/02/10, AP: variable renaming
-   !
+   ! 2014/03/11 MJ: some modifications for chunking (only used when turned on)
    ! $Id$
    !
    ! Applied SPRs:
@@ -181,16 +181,19 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
       netcdf_info%xyvdim_lw(1)=netcdf_info%viewdim_lw
       netcdf_info%xyvdim_lw(2)=netcdf_info%xydim_lw
 
+      
+      !write(*,*) 'CHUNKSSS',nlon_x_nlat
+
       if (.not. use_chunking) then
          chunksize1d(1)=nlon_x_nlat
 
          chunksize2d(1)=imager_angles%nviews
          chunksize2d(2)=nlon_x_nlat
       else
-         chunksize1d(1)=nlon_x_nlat
+         chunksize1d(1)=min(nlon_x_nlat,max_chunk_latlon)
 
          chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=nlon_x_nlat
+         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
       ! define counter variable
@@ -259,7 +262,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
          chunksize2d(2)=nlon_x_nlat
       else
          chunksize2d(1)=1
-         chunksize2d(2)=nlon_x_nlat
+         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
       ! define emissivity 3D
@@ -285,7 +288,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
       else
          chunksize3d(1)=1
          chunksize3d(2)=1
-         chunksize3d(3)=nlon_x_nlat
+         chunksize3d(3)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
       ! define tac profile at level centers as variable
@@ -425,10 +428,10 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
          chunksize2d(1)=imager_angles%nviews
          chunksize2d(2)=nlon_x_nlat
       else
-         chunksize1d(1)=nlon_x_nlat
+         chunksize1d(1)=min(nlon_x_nlat,max_chunk_latlon)
 
          chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=nlon_x_nlat
+         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
       ! define counter variable
@@ -500,7 +503,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
       else
          chunksize3d(1)=1
          chunksize3d(2)=1
-         chunksize3d(3)=nlon_x_nlat
+         chunksize3d(3)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
       ! define tac profile at level centers as variable
@@ -582,7 +585,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
       if (.not. use_chunking) then
          chunksize1d(1)=nlon_x_nlat
       else
-         chunksize1d(1)=nlon_x_nlat
+         chunksize1d(1)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
       ! define i variable
@@ -695,7 +698,7 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
          chunksize2d(2)=nlon_x_nlat
       else
          chunksize2d(1)=1
-         chunksize2d(2)=nlon_x_nlat
+         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
       ! define pressure profile at level centers as variable
@@ -1270,7 +1273,7 @@ endif
       if (.not. use_chunking) then
          chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
          chunksize3d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-         chunksize3d(3)=channel_info%nchannels_lw
+         chunksize3d(3)=channel_info%nchannels_sw
       else
          chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
          chunksize3d(2)=imager_geolocation%ny
