@@ -199,6 +199,7 @@
 !       for CTP to the highest pressure in the profile from FM() to this routine.
 !    17th Jan 2014, Greg McGarragh: Cleaned up code.
 !    20140129 MJ fixes case where alpha can get out of bounds.
+!    20140227 CP added declaration of J
 ! Bugs:
 !    None known
 !
@@ -309,6 +310,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    status    = 0
 
    Y         = 0.
+   J         = 0.
    dY_dX     = 0.
    Kx        = 0.
    Kbj       = 0.
@@ -856,6 +858,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    ! state was good enough to use in SDAD first guess and a priori setting, and
    ! if so saves Xn and Sn in SPixel (XnSav and SnSav). Costs are divided by
    ! number of active instrument channels before output.
+
    if (stat == 0) then
       J  = J  / SPixel%Ind%Ny
       Jm = Jm / SPixel%Ind%Ny
