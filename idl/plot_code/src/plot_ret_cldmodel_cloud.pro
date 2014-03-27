@@ -60,11 +60,11 @@ pro quick_cim_prc,sg,u,v,d,_EXTRA=extra,ll=ll,ext=ext,chars=chs,brd=brd,crd=crd,
 		pl_boxmap,u,v,d,lonr=range(u),latr=range(v),brd=brd, $
                           crd=crd,_EXTRA=extra,ext=ext,$
 			chsrs=chs
+
 	endif else begin
 		if n_elements(nodata) eq 0 then nodata=md-999
 		di=standard_grid_1d2d(d,u,v,nodata=nodata,ur=ur,vr=vr,$
                                       ll=ll,lonr=lonr,latr=latr,rll=sg,ori=ori)
-
 		if keyword_set(pext) then call_procedure,pext,di, $
                                                          _EXTRA=extra,ur=ur,vr=vr
 		if sg.sd eq 1 then begin
@@ -76,15 +76,16 @@ pro quick_cim_prc,sg,u,v,d,_EXTRA=extra,ll=ll,ext=ext,chars=chs,brd=brd,crd=crd,
                       quick_cim_kml,kmlfi,di,_EXTRA=extra,$
                                     min_v=md-100,/add,/noclose,$
                                     lonr=lonr,latr=latr
+
                    endif else begin
                       quick_cim,di,_EXTRA=extra,min_v=md-100,$
                                 chars=chs,brd=brd,crd=crd,cpos=cpos
-                      
+
                       if n_elements(lonr) gt 0 then begin
                          !p.multi(0)=!p.multi(0)+1
                          plot,lonr,latr,/nodata,/xst,/yst, $
                               chars=chs*0.5,position=cpos,xminor=1,yminor=1
-                         
+
                          !p.multi(0)=!p.multi(0)+1
                          kmap_set,/adv,pos=cpos,lonr=lonr,latr=latr, $
                                   /nobo,/hir,ori=ori
@@ -101,7 +102,7 @@ pro quick_cim_prc,sg,u,v,d,_EXTRA=extra,ll=ll,ext=ext,chars=chs,brd=brd,crd=crd,
 	endelse
      end
 
-pro plot_ret_cldmodel_cloud,x,h,ps=ps,isel=isel,file=fi,fac=fac,ur=ur,vr=vr,image=image,itype=itype,sea=sea,mcot=mcot,mcost=mcost,ext=ext,_EXTRA=extra,noresid=noresid,noqc=noqc,latr=ulatr,lonr=ulonr,zran=zran,axti=axti,land=land,lcb=lcb,bcb=bcb,p1=p1,p2=p2,nset=nset,mask=mask,chars=chs,ofc=ofc,night=night,error=error,kml=kml,eop_col=eop_col,eop_thick=eop_thick,eop_y=eop_y,eop_x=eop_x,nosec=nosec
+pro plot_ret_cldmodel_cloud,x,h,ps=ps,isel=isel,file=fi,fac=fac,ur=ur,vr=vr,image=image,itype=itype,sea=sea,mcot=mcot,mcost=mcost,ext=ext,_EXTRA=extra,noresid=noresid,noqc=noqc,latr=ulatr,lonr=ulonr,zran=zran,axti=axti,land=land,lcb=lcb,bcb=bcb,p1=p1,p2=p2,nset=nset,mask=mask,chars=chs,ofc=ofc,night=night,error=error,kml=kml,eop_col=eop_col,eop_thick=eop_thick,eop_y=eop_y,eop_x=eop_x,nosec=nosec,fips=fips
 
 
 	if n_tags(x) eq 0 then begin
@@ -115,8 +116,8 @@ pro plot_ret_cldmodel_cloud,x,h,ps=ps,isel=isel,file=fi,fac=fac,ur=ur,vr=vr,imag
 ;
 ; choose type based on cost
 ;
-print,'n_elements(itype)',n_elements(itype)
-print,'itypes',x(*,0).itype
+;print,'n_elements(itype)',n_elements(itype)
+;print,'itypes',x(*,0).itype
 
 ;this line neede for str files
 ;if n_elements(itype) eq 0 then xc=ret_min_cost(x,h.types,h=h) else  xc=reform(x(itype,*,*))
@@ -139,19 +140,24 @@ print,'itypes',x(*,0).itype
 	nx=n_elements(xc(0).xn)
 	ny=n_elements(xc(0).yn)
 	fb=file_name(h.file,del='.')
-	psfi=new_name(h.ofile)+'.ps'
+	psfi=fips+'.ps'
+;new_name(h.ofile)+'.ps'
+;print,'aa',psfi
 
-	if keyword_set(error) then psfi=new_name(h.ofile)+'_error.ps'
+
         print,psfi
 	if keyword_set(kml) then begin
 		if strpos(h.sg.id,'neq') ne 0 then message,'Only works for sinusoidal grid - see plot_ret_cldmodel_modis.pro for forcing with other grids'
 		kmlfi='/disks/rdrive/Richard/cld_model/kml/'+file_name(psfi,/base)
 		quick_cim_kml,kmlfi,/open
              endif
-
+;print,'aa',psfi
         fb=file_basename(psfi,'.ps')
+;print,'aa',psfi
         fd=file_dirname(psfi)
-        psfi=fd+'/'+fb+'_extra'+'.ps'
+;print,'aa',psfi
+ 
+        psfi=fd+'/'+fb+'.ps'
         print,'plot_ret_cldmodel psfi',psfi
 
 	if keyword_set(ps) then ps_open,psfi
@@ -187,6 +193,8 @@ print,'itypes',x(*,0).itype
 		u=xc.u
 		v=xc.v
 	endelse
+
+
 ;
 ; apply lat/lon range if set
 ;
@@ -213,20 +221,18 @@ print,'itypes',x(*,0).itype
 		vq=v
 
 	endelse
-
+	if keyword_set(error) then goto, skip2error
 mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
 
 ;
 ; plot a map and approx position of data
 ;
-print,'latr',range(h.sg.latr)
-print,'latr',range(h.sg.lonr)
-print,range(xc.lat)
-print,range(xc.lon)
 
 if max(h.sg.latr) le -999 then goto,skip
 	map_loc,mean1(h.sg.latr),mean_lon(h.sg.lonr),$
 		position=ypos(p1,p2,mask=mask),chars=chs,/nop,zoom=0.25,/horiz
+
+
 	bg=setup_llbin(xc.lat,xc.lon,[-90,90,1],[-180,180,1])
 	wg=where(bg.n gt 0,ng)
 	if ng gt 0 then begin
@@ -236,116 +242,143 @@ if max(h.sg.latr) le -999 then goto,skip
 			bg.lat(iglat(ig)+[0,0,1,1,0]),col=2
 		map_continents
              endif
-;goto,skipref
-;diagnostic plotting
-if ~keyword_set(nosec) then begin
-for k=0,4 do begin
-   if k eq 2 then begin
-      lev=indgen(20)*.025
-      levres=indgen(20)*.025*2-0.5
-      levres=indgen(20)*.01-0.1
-   endif else begin
-      if k gt 2 then begin
-         lev=indgen(20)*5+210
-         levres=indgen(20)*.5-5
-      endif else begin
-         lev=indgen(20)*.05
-;         levres=indgen(20)*.05-0.5
-         levres=indgen(20)*.01-0.1
-      endelse
-   endelse
 
+;help,xc.lat
+;print,range(xc.lat)
+;print,range(bg.lat(iglat(0:ng-1))
 
-if max((xc.y(k,*)))  lt 200. then type_channel='ref'
-if max((xc.y(k,*)))  gt 200. then type_channel='BT'
-
-
-   quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$
-                 position=ypos(p1,p2,mask=mask),chars=chs,title=type_channel+' Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
-   
 ;stop
-   quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$
-                 position=ypos(p1,p2,mask=mask),chars=chs,title='sim Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
-   
-   
+;
+;false color plot
+;
+        if ~keyword_set(nosec) then begin
+           if tag_exist(xc,'alb') then begin
+              d16=min(abs(1.6-h.s.mwl))
+              d37=min(abs(3.7-h.s.mwl))
+              if d16 gt 0.5 and d37 lt 0.5 then i37=1 
+              
+              
+              
+              im_mea=mk_cldmodel_false_color_cloud(xc,h,i37=i37)
+              im_sim=mk_cldmodel_false_color_cloud(xc,h,/sim,i37=i37)
+              im_alb=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
+              
+              
+              quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
+                            position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+           endif
+        endif ;nosec
+
+
+
+        if ~keyword_set(nosec) then begin
+           for k=0,4 do begin
+              if k eq 2 then begin
+                 lev=indgen(20)*.025
+                 levres=indgen(20)*.025*2-0.5
+                 levres=indgen(20)*.01-0.1
+              endif else begin
+                 if k gt 2 then begin
+                    lev=indgen(20)*5+210
+                    levres=indgen(20)*.5-5
+                 endif else begin
+                    lev=indgen(20)*.05
+;         levres=indgen(20)*.05-0.5
+                    levres=indgen(20)*.01-0.1
+                 endelse
+              endelse
+              
+              
+              if max((xc.y(k,*)))  lt 200. then type_channel='ref'
+              if max((xc.y(k,*)))  gt 200. then type_channel='BT'
+              
+              
+              quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$
+                            position=ypos(p1,p2,mask=mask),chars=chs,title=type_channel+' Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
+              
+
+              quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$
+                            position=ypos(p1,p2,mask=mask),chars=chs,title='sim Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
+              
+              
 ;   quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y0(k),lev=lev,ur=ur,vr=vr,num=2,fac=fac,$
 ;                 position=ypos(p1,p2,mask=mask),chars=chs,title='firstguess Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
-   
+              
 ;residual
-
-if tag_exist(xc,'ymfit') then begin
-   quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.ymfit(k),lev=levres,ur=ur,vr=vr,num=2,fac=fac,$
-                 position=ypos(p1,p2,mask=mask),chars=chs,title='residual Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
-   endif
-
-   
-   if k eq 2 then begin
-      set_a4,n=nx+8,/rs,landscape=land
-      mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
-   endif
-   
-
-any_key
-endfor
-endif                           ;nosec
+              
+              if tag_exist(xc,'ymfit') then begin
+                 quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.ymfit(k),lev=levres,ur=ur,vr=vr,num=2,fac=fac,$
+                               position=ypos(p1,p2,mask=mask),chars=chs,title='residual Ch '+i2s(k+1),lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,axti=axti
+              endif
+              
+              
+              if k eq 2 then begin
+                 set_a4,n=nx+8,/rs,landscape=land
+                 mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
+              endif
+              
+              
+              any_key
+           endfor
+        endif                   ;nosec
 ;
 ;plot the angles
 ;
-
-if tag_exist(xc, 'solz') then begin
-   
-   levang=indgen(20)*5
-   quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.satz,lev=levang,ur=ur,vr=vr,$
-                 num=2,fac=fac,$
-                 position=ypos(p1,p2,mask=mask),chars=chs, $
-                 title='sat zenith ',lcb=lcb,bcb=bcb,image=image, $
-                 ext=ext,_EXTRA=extra,axti=axti
-   
-   levang=indgen(20)*9.
-   quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.relaz,lev=levang,ur=ur,vr=vr, $
-                 num=2,fac=fac,$
-              position=ypos(p1,p2,mask=mask),chars=chs, $
-                 title='rel az ',lcb=lcb,bcb=bcb,image=image, $
-                 ext=ext,_EXTRA=extra,axti=axti
-   
-   levang=indgen(36)*5.
-   quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.solz,lev=levang,ur=ur,vr=vr, $
-                 num=2,fac=fac,$
-                 position=ypos(p1,p2,mask=mask),chars=chs,$
-                 title='solar zenith ',lcb=lcb,bcb=bcb,image=image,$
-                 ext=ext,_EXTRA=extra,axti=axti
-   levang=indgen(20)*5
-   any_key
+        
+        if tag_exist(xc, 'solz') then begin
+           
+           levang=indgen(20)*5
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.satz,lev=levang,ur=ur,vr=vr,$
+                         num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs, $
+                         title='sat zenith ',lcb=lcb,bcb=bcb,image=image, $
+                         ext=ext,_EXTRA=extra,axti=axti
+           
+           levang=indgen(20)*9.
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.relaz,lev=levang,ur=ur,vr=vr, $
+                         num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs, $
+                         title='rel az ',lcb=lcb,bcb=bcb,image=image, $
+                         ext=ext,_EXTRA=extra,axti=axti
+           
+           levang=indgen(36)*5.
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.solz,lev=levang,ur=ur,vr=vr, $
+                         num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs,$
+                         title='solar zenith ',lcb=lcb,bcb=bcb,image=image,$
+                         ext=ext,_EXTRA=extra,axti=axti
+           levang=indgen(20)*5
+           any_key
 skipref:
-endif;solz
-
-
-
-if ~keyword_set(nosec) then begin
+        endif                   ;solz
+        
+        
+        
+        if ~keyword_set(nosec) then begin
 ;
 ; plot 11-12 microns
 ;
-
-
-	w0=where(h.s.iview eq h.s(0).iview,n0)
-	ich=w0(get_nns([10.5,12.],h.s(0).mwl))      ; identify split window
-	swlev=[-10,-7,-5,-3,-2,-1,-0.5]
-	swlev=[swlev,0,-reverse(swlev)]
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(0))-xc.y(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-
-
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(ich(0))-xc.yn(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 um - sim',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-     endif ;nosec
-
-
-
-   set_a4,n=nx+8,/rs,landscape=land
-   mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
-
+           
+           
+           w0=where(h.s.iview eq h.s(0).iview,n0)
+           ich=w0(get_nns([10.5,12.],h.s(0).mwl)) ; identify split window
+           swlev=[-10,-7,-5,-3,-2,-1,-0.5]
+           swlev=[swlev,0,-reverse(swlev)]
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(0))-xc.y(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+           
+           
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.yn(ich(0))-xc.yn(ich(1)),lev=swlev,ur=ur,vr=vr,num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs,title='11-12 um - sim',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+        endif                   ;nosec
+        
+        
+        
+        set_a4,n=nx+8,/rs,landscape=land
+        mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
+        
 ;goto,skipconv
-
+        
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.conv,lev=[-1.5,-0.5,0.5,1.5],$
                       ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),chars=chs, $
@@ -361,7 +394,7 @@ if ~keyword_set(nosec) then begin
 
 
 ;skipconv:
-costlev=[0.,1,2,3,5,6, 7, 8, 9,10, 11, 12,   15,20,30,50]
+        costlev=[0.,1,2,3,5,6, 7, 8, 9,10, 11, 12,   15,20,30,50]
 
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.cost/ny,$
 		lev=costlev,/cbs,$
@@ -376,11 +409,11 @@ costlev=[0.,1,2,3,5,6, 7, 8, 9,10, 11, 12,   15,20,30,50]
 ;
 ;plot ctt
 ;
-	pd=xc.tc;/100.0
-	levctt=indgen(20)*5+225
-	xd=u
-	yd=v
-	cbs=1
+        pd=xc.tc                ;/100.0
+        levctt=indgen(20)*5+225
+        xd=u
+        yd=v
+        cbs=1
 
         quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),lev=levctt,$
@@ -394,289 +427,311 @@ costlev=[0.,1,2,3,5,6, 7, 8, 9,10, 11, 12,   15,20,30,50]
 ;
 
 
-;help,h.sg
-;help,uq
-;help,xc,str
-
-;stop
 	quick_cim_prc,kml=kmlfi,h.sg,uq,vq,xq.itype,lev=findgen(5)-1,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='Phase',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
 		crd=crd,brd=brd,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
 
-if ~keyword_set(nosec) then begin
+        if ~keyword_set(nosec) then begin
 ;
 ; plot false colour images - usually 1.6,0.8,0.6 false colour unless it looks like
 ; 1.6 not present and 37 is
 ;
-if ~keyword_set(night) then begin
-
-if tag_exist(xc,'alb') then begin
-	d16=min(abs(1.6-h.s.mwl))
-	d37=min(abs(3.7-h.s.mwl))
-	if d16 gt 0.5 and d37 lt 0.5 then i37=1 
-        im_mea=mk_cldmodel_false_color_cloud(xc,h,i37=i37)
-        im_sim=mk_cldmodel_false_color_cloud(xc,h,/sim,i37=i37)
-        im_alb=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-	if keyword_set(ofc) then return
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_sim,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - sim',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-endif
-    endif else begin
+           if ~keyword_set(night) then begin
+              
+              if tag_exist(xc,'alb') then begin
+;                 d16=min(abs(1.6-h.s.mwl))
+;                 d37=min(abs(3.7-h.s.mwl))
+;                 if d16 gt 0.5 and d37 lt 0.5 then i37=1 
+                 
+                 
+                 
+;                 im_mea=mk_cldmodel_false_color_cloud(xc,h,i37=i37)
+;                 im_sim=mk_cldmodel_false_color_cloud(xc,h,/sim,i37=i37)
+;                 im_alb=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
+                 
+                 
+                 quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
+                               position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                 
+                 if keyword_set(ofc) then return
+                 quick_cim_prc,kml=kmlfi,h.sg,u,v,im_sim,ur=ur,vr=vr,num=2,fac=fac,$
+                               position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - sim',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                 
+                 quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
+                               position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                 
+              endif
+           endif else begin
 ;
 ;plot 11 and 12 microns of a night scene
 ;
-	w0=where(h.s.iview eq h.s(0).iview,n0)
-	ich=w0(get_nns([10.5,12.],h.s(w0).mwl))      ; identify split window
-
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(0)),ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='11 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x,nodata=-999.,lev=indgen(20)*5+200.
-
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(1)),ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='12 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-
+              w0=where(h.s.iview eq h.s(0).iview,n0)
+              ich=w0(get_nns([10.5,12.],h.s(w0).mwl)) ; identify split window
+              
+              quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(0)),ur=ur,vr=vr,num=2,fac=fac,$
+                            position=ypos(p1,p2,mask=mask),chars=chs,title='11 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x,nodata=-999.,lev=indgen(20)*5+200.
+              
+              quick_cim_prc,kml=kmlfi,h.sg,u,v,xc.y(ich(1)),ur=ur,vr=vr,num=2,fac=fac,$
+                            position=ypos(p1,p2,mask=mask),chars=chs,title='12 um - meas',lcb=lcb,bcb=bcb,image=image,/cbs,ext=ext,_EXTRA=extra,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+              
 ;
-    endelse
-
-
-
-     endif
-                      ;nosec
-
-
-for i=0,nx-2 do begin
-   
-   ti1=tis(i)
-   pd=xc.xn(i)
-   xd=u
-   yd=v
-   cbs=0
-   lev=0
-
-;make first guess just testing
-;if strpos(tis(i),'Ts') ge 0  then begin;
-;	xq.xn(i)=xq.x0(i)
-;     endif
-;	if strpos(tis(i),'PC') ge 0 then begin
-;	xq.xn(i)=xq.x0(i)
-;endif
-
-   if strpos(tis(i),'PC') ge 0  then begin
-      
-      ti1='Z* / km'
-      xd=uq
-      yd=vq
-      if h.sv.zstar eq 1 then begin
-         if keyword_set(error) then begin
-            pd=xq.xe(i)
-;stop
-         endif else begin
-            pd=xq.xn(i)
-         if keyword_set(error) then begin
-            pd(wh)=zstar(xq(wh).xn(i)-xq(wh).sx(i))-zstar(xq(wh).xn(i))
-
-         endif
-
-         endelse
-      endif else begin
-         pd=xq.xn(i)*0
-         wh=where(xq.xn(i) gt 0,nw)
-         pd(wh)=zstar((xq.xn(i))(wh))
-         if keyword_set(error) then begin
-            pd(wh)=zstar(xq(wh).xn(i)-xq(wh).sx(i))-zstar(xq(wh).xn(i))
-
-         endif
+           endelse
+           
+           
+           
+        endif
+                                ;nosec
+        
+        
+        for i=0,nx-2 do begin
+           
+           ti1=tis(i)
+           pd=xc.xn(i)
+           xd=u
+           yd=v
+           cbs=0
+           lev=0
+           
+           
+           if strpos(tis(i),'PC') ge 0  then begin
+              
+              ti1='Z* / km'
+              xd=uq
+              yd=vq
+              if h.sv.zstar eq 1 then begin
+                 if keyword_set(error) then begin
+                    pd=xq.xe(i)
+                    
+                 endif else begin
+                    pd=xq.xn(i)
+                    if keyword_set(error) then begin
+                       pd(wh)=zstar(xq(wh).xn(i)-xq(wh).sx(i))-zstar(xq(wh).xn(i))
+                       
+                    endif
+                    
+                 endelse
+              endif else begin
+                 pd=xq.xn(i)*0
+                 wh=where(xq.xn(i) gt 0,nw)
+                 pd(wh)=zstar((xq.xn(i))(wh))
+                 if keyword_set(error) then begin
+                    pd(wh)=zstar(xq(wh).xn(i)-xq(wh).sx(i))-zstar(xq(wh).xn(i))
+                    
+                 endif
 ;message,'Check SX!!!!'
-      endelse
-      if n_elements(zran) eq 0 then range=[0.,16.] else range=zran
-      if  keyword_set(error) then range=[0.,3.] 
-   endif else if strpos(tis(i),'LCOT') ge 0 then begin
-      ti1='Optical depth'
-      pd=xc.xn(i)               ; removed 10^
-      
-      if keyword_set(error) then pd=xq.xe(i);pd*xc.xe(i)/alog10(exp(1.))
+              endelse
+              if n_elements(zran) eq 0 then range=[0.,16.] else range=zran
+              if  keyword_set(error) then range=[0.,3.] 
+           endif else if strpos(tis(i),'LCOT') ge 0 then begin
+              ti1='Optical depth'
+              pd=xc.xn(i)       ; removed 10^
+              
+              if keyword_set(error) then pd=xq.xe(i) ;pd*xc.xe(i)/alog10(exp(1.))
 ;  if keyword_set(error) then stop
-      lev=[0.,0.05,0.1,0.2,0.4,0.7,1,2,5,10,20,50,100]
-      cbs=1
-   endif else if strpos(tis(i),'RE') ge 0 then begin
-      pd=xq.xn(i)
-      if keyword_set(error) then pd=xq.xe(i)
+              lev=[0.,0.05,0.1,0.2,0.4,0.7,1,2,5,10,20,50,100]
+              cbs=1
+           endif else if strpos(tis(i),'RE') ge 0 then begin
+              pd=xq.xn(i)
+              if keyword_set(error) then pd=xq.xe(i)
 ;if keyword_set(error) then stop
-      xd=uq
-      yd=vq
+              xd=uq
+              yd=vq
 ;			lev=[0.,0.01,0.2,0.05,0.1,0.2,0.5,1.,2.,5,10,20,50,100,200]
                                 ;                   		if n_elements(relev) eq 0 then $
-      lev=[0.,0.1,1.,2,4,6,8,10,12,15,20,25,30,50,100] 
-      if keyword_set(error) then lev=[0.,0.1,1.,2,4,6,8,10,12,15,20] 
+              lev=[0.,0.1,1.,2,4,6,8,10,12,15,20,25,30,50,100] 
+              if keyword_set(error) then lev=[0.,0.1,1.,2,4,6,8,10,12,15,20] 
 ;				else lev=relev
-      cbs=1
-   endif else     range=range(cldmodel_sv_levels(tis(i)))
-   
-   if n_elements(lev) lt 2 then lev=clevels(range)
-   
-   
-   if i eq nx-1 then begin
+              cbs=1
+           endif else     range=range(cldmodel_sv_levels(tis(i)))
+           
+           if n_elements(lev) lt 2 then lev=clevels(range)
+           
+           
+           if i eq nx-1 then begin
 ;
 ;plot iterations
 ;
-
-      quick_cim_prc,kml=kmlfi,h.sg,uq,vq,xq.ni,lev=findgen(22),ur=ur,vr=vr,num=2,fac=fac,$
-                    position=ypos(p1,p2,mask=mask),chars=chs,title='Iterations',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
-                    crd=crd,brd=brd,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-      
-      
-   endif else begin
-      
+              
+              quick_cim_prc,kml=kmlfi,h.sg,uq,vq,xq.ni,lev=findgen(22),ur=ur,vr=vr,num=2,fac=fac,$
+                            position=ypos(p1,p2,mask=mask),chars=chs,title='Iterations',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
+                            crd=crd,brd=brd,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+              
+              
+           endif else begin
+              
 ;if strpos(tis(i),'Ts') ge 0  then lev=levctt
 ;if strpos(tis(i),'Ts') ge 0  then
       
 ;endif
-if strpos(tis(i),'TS') ge 0  then begin
-      quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                    position=ypos(p1,p2,mask=mask),lev=levctt,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                    image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-      
-   endif else begin
-    quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                    position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                    image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-endelse
-      
-      
-      if strpos(tis(i),'TS') ge 0  then begin ;
-         pd=xc.x0(i)
-        if ~keyword_set(nosec) then begin 
-        quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                       position=ypos(p1,p2,mask=mask),lev=levctt,chars=chs,title='FG '+ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                       image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-         
+              if strpos(tis(i),'TS') ge 0  then begin
+                 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                               position=ypos(p1,p2,mask=mask),lev=levctt,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                               image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                 
+              endif else begin
+                 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                               position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                               image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+              endelse
+              
+              
+              if strpos(tis(i),'TS') ge 0  then begin ;
+                 pd=xc.x0(i)
+                 if ~keyword_set(nosec) then begin 
+                    quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                  position=ypos(p1,p2,mask=mask),lev=levctt,chars=chs,title='FG '+ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                  image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                    
 ;plot the difference between fg and ret
- 
-            diff=xc.xn(i)-xc.x0(i)
-            levdiff=indgen(20)*.5-5.
-            pd=diff
-            quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                          position=ypos(p1,p2,mask=mask),lev=levdiff,chars=chs,title='diff ts xn-xo '+ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                          image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-set_a4,n=nx+8,/rs,/landscape            
-         endif                  ;nosec
-         
-         
-         
-         
-         if strpos(tis(i),'PC') ge 0  then begin ;
-            
-            
-            levpc=indgen(20)*55
-            
-            if tag_exist(xc,'cth') then begin
-               pd=xc.cth
-               quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                             position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='CTH '+'km',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                             image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-            endif
-            
-            pd=xc.x0(i)
-       if ~keyword_set(nosec) then begin 
-            quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                          position=ypos(p1,p2,mask=mask),lev=levpc,chars=chs,title='FG '+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                          image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-            
-            pd=zstar(xc.x0(i))
-            quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                          position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                          image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-            any_key
-            endif
-                         
-            set_a4,n=nx+8,/rs,landscape=land
-            mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
-            print,range(xc.lsflag)
-            ;help,xc.lsflag
-            if ~keyword_set(nosec) then begin
-               pd=xc.lsflag+1
-               quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                             position=ypos(p1,p2,mask=mask),lev=indgen(4),chars=chs,title='land sea flag',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                             image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-            endif
-            
-            pd=xc.xn(i)
-            quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                          position=ypos(p1,p2,mask=mask),lev=levpc,chars=chs,title=''+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                          image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-            any_key
-         endif
-      
-      endif
- 
-   endelse
+                    
+                    diff=xc.xn(i)-xc.x0(i)
+                    levdiff=indgen(20)*.5-5.
+                    pd=diff
+                    quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                  position=ypos(p1,p2,mask=mask),lev=levdiff,chars=chs,title='diff ts xn-xo '+ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                  image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                    
+                 endif          ;nosec
+                 set_a4,n=nx+8,/rs,/landscape                     
+                 
+                 
+                 
+                 if strpos(tis(i),'PC') ge 0  then begin ;
+                    
+                    
+                    levpc=indgen(20)*55
+                    
+                    if tag_exist(xc,'cth') then begin
+                       pd=xc.cth
+                       quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                     position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='CTH '+'km',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                     image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                    endif
+                    
+                    pd=xc.x0(i)
+                    if ~keyword_set(nosec) then begin 
+                       quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                     position=ypos(p1,p2,mask=mask),lev=levpc,chars=chs,title='FG '+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                     image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                       
+                       pd=zstar(xc.x0(i))
+                       quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                     position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                     image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
-   title,file_name(h.ofile,/base),/no,strcat(trim_zero(indgen(h.nst))+':'+h.types,del='; ')
+
+
+                       any_key
+                    endif
+                    
+                    set_a4,n=nx+8,/rs,landscape=land
+                    mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
+                    print,range(xc.lsflag)
+                    
+                    if ~keyword_set(nosec) then begin
+                       pd=xc.lsflag+1
+                       quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                     position=ypos(p1,p2,mask=mask),lev=indgen(4),chars=chs,title='land sea flag',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                     image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                    endif
+                    
+                    pd=xc.xn(i)
+                    quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                  position=ypos(p1,p2,mask=mask),lev=levpc,chars=chs,title=''+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                  image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                    any_key
+                 endif
+                 
+              endif
+              
+           endelse
+           
+           title,file_name(h.ofile,/base),/no,strcat(trim_zero(indgen(h.nst))+':'+h.types,del='; ')
    
-
-endfor
-
-   if ~keyword_set(nosec) then begin
-            set_a4,n=nx+8,/rs,landscape=land
-            mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
-            endif
+           
+        endfor
+        
+        if ~keyword_set(nosec) then begin
+           set_a4,n=nx+8,/rs,landscape=land
+           mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
+        endif
 ;
 ;plot the cloud mask and neural net mask
 ;
-   quick_cim_prc,kml=kmlfi,h.sg,uq,vq,(xq.mask/100.0),lev=findgen(3)-1,ur=ur,vr=vr,num=2,fac=fac,$
-                 position=ypos(p1,p2,mask=mask),chars=chs,title='Cloud mask',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
-                 crd=crd,brd=brd,axti=axti
-
-	quick_cim_prc,kml=kmlfi,h.sg,uq,vq,(xc.cccot),lev=findgen(21)*.055,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='Neural Cloud mask',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
+        quick_cim_prc,kml=kmlfi,h.sg,uq,vq,(xq.mask/100.0),lev=findgen(3)-1,ur=ur,vr=vr,num=2,fac=fac,$
+                      position=ypos(p1,p2,mask=mask),chars=chs,title='Cloud mask',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
+                      crd=crd,brd=brd,axti=axti
+        
+        quick_cim_prc,kml=kmlfi,h.sg,uq,vq,(xc.cccot),lev=findgen(21)*.055,ur=ur,vr=vr,num=2,fac=fac,$
+                      position=ypos(p1,p2,mask=mask),chars=chs,title='Neural Cloud mask',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
 		crd=crd,brd=brd,axti=axti
-
-print,'range mask xq',range(xq.mask)
-print,'range mask xc',range(xc.mask)
-any_key
-
+        
+        print,'range mask xq',range(xq.mask)
+        print,'range mask xc',range(xc.mask)
+        any_key
+        
 ;
 ;plot false color
-if ~keyword_set(nosec) then begin
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+        if ~keyword_set(nosec) then begin
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+           
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+           any_key
+           
+           
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,(xc.mask/100.0)+1,lev=findgen(3),ur=ur,vr=vr,num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),chars=chs,title='Cloud mask',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
+                         crd=crd,brd=brd,axti=axti
 
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-any_key
-
-
-quick_cim_prc,kml=kmlfi,h.sg,u,v,(xc.mask/100.0)+1,lev=findgen(3),ur=ur,vr=vr,num=2,fac=fac,$
-		position=ypos(p1,p2,mask=mask),chars=chs,title='Cloud mask',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
-		crd=crd,brd=brd,axti=axti
-
-levpc2=indgen(20)*7+900
-
-		pd=xc.x0(2)
-quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                      position=ypos(p1,p2,mask=mask),lev=levpc2,chars=chs,title='FG '+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                      image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
-
+           levpc2=indgen(20)*7+900
+           
+           pd=xc.x0(2)
+           quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                         position=ypos(p1,p2,mask=mask),lev=levpc2,chars=chs,title='FG '+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                         image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+           
 lev=indgen(20)*.1
-		pd=zstar(xc.x0(2))
+pd=zstar(xc.x0(2))
 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                      position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                      image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+              position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+              image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+
+
+
+
+;
+;extended range
+;
+levpc=indgen(20)*55
+           pd=xc.x0(2)
+                       quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                     position=ypos(p1,p2,mask=mask),lev=levpc,chars=chs,title='FG '+'PC hPa',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                     image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+                       levz=indgen(20)
+                       pd=zstar(xc.x0(2))
+                       quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                                     position=ypos(p1,p2,mask=mask),lev=levz,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                                     image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+
+
+
+
+
+
 endif;nosec
 ;start new page
-if ~keyword_set(nosec) then begin
- set_a4,n=nx+8,/rs,landscape=land
-mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
-endif
+        if ~keyword_set(nosec) then begin
+           set_a4,n=nx+8,/rs,landscape=land
+           mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
+        endif
 ;
 ;plot albedo if first channel
 ;
 ;goto,skipalb
-
+        
 ;
 ;plot false color
 
@@ -711,12 +766,16 @@ endfor
                       ;nosec
 
 skipalb:
-
+skip2error:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;plot resultsw with quality control
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
  set_a4,n=nx+8,/rs,landscape=land
 mask=[[0,1,2,3,4,5,6],[7,8,9,10,11,12,13]]
+ex_t=''
+if keyword_set(error) then ex_t='unc'
+
 
 ; extra qc applied here
 		xqc=cldmodel_qc_pp(xc,iok=iok,mmask=mmask,mcost=mcost)
@@ -737,7 +796,7 @@ if n_elements(iok) le 1 then goto,skip
 		lev=0
 ;endif
 		if strpos(tis(i),'PC') ge 0  then begin
-print,'h.sv.zstar',h.sv.zstar
+;print,'h.sv.zstar',h.sv.zstar
                    ti1='Z* / km'
                    xd=uqc
                    yd=vqc
@@ -748,7 +807,7 @@ print,'h.sv.zstar',h.sv.zstar
                    pd=zstar(xqc.xn(i)-xqc.sx(i))-zstar(xqc.xn(i))
                    
                 endif
-print,'CTH',range(pd)
+;print,'CTH',range(pd)
                       endif else begin
                          pd=xqc.xn(i)
                       endelse
@@ -764,6 +823,7 @@ print,'CTH',range(pd)
                    endelse
                    if n_elements(zran) eq 0 then range=[0.,16.] else range=zran
                    if  keyword_set(error) then range=[0.,3.] 
+                   if  keyword_set(error) then range2=[0.,2.] 
                 endif else if strpos(tis(i),'LCOT') ge 0 then begin
 			ti1='Optical depth'
 			pd=xqc.xn(i); removed 10^
@@ -791,23 +851,31 @@ if keyword_set(error) then lev=[0.,0.1,1.,2,4,6,8,10,12,15,20]
 
                 endif else begin
 
-
+til=ex_t+' '+ti1
 
 if strpos(tis(i),'PC') ge 0  then begin;
 
 
 levpc=indgen(20)*55
 
+
 		pd=xqc.cth
                       if keyword_set(error) then begin
                          pd=zstar(xqc.xn(i)-xqc.sx(i))-zstar(xqc.xn(i))
 
                       endif
+
 print,ti1,range(pd)
 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
                       position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='CTH '+'km',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                       image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
+if keyword_set(error) then begin
+ lev=clevels(range2)
+quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
+                      position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='CTH '+'km',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                      image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+endif
 
 endif else begin
 
@@ -821,9 +889,6 @@ endif else begin
 ;	yd=v
 	cbs=1
 
-quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                      position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='CTT K',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
-                      image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
 
 
@@ -833,9 +898,20 @@ endelse
                 endelse
              endfor             ;loop over nx
 
-if ~keyword_set(nosec) then begin
+	quick_cim_prc,kml=kmlfi,h.sg,xd,yd,xqc.cost/ny,$
+		lev=costlev,/cbs,$
+		ur=ur,vr=vr,num=2,fac=fac,$
+		position=ypos(p1,p2,mask=mask),chars=chs, $
+                title='Cost',lcb=lcb,bcb=bcb, $
+                image=image,ext=ext,_EXTRA=extra,axti=axti,$
+                eop_col=eop_col,eop_thick=eop_thick,eop_y=eop_y,eop_x=eop_x
+
+if ~keyword_set(nosec)  then begin
+if ~keyword_set(error)  then begin
+
 	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+endif
 endif
 	quick_cim_prc,kml=kmlfi,h.sg,uqc,vqc,xqc.itype,lev=findgen(5)-1,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='Phase',lcb=lcb,bcb=bcb,image=image,ext=ext,_EXTRA=extra,$
@@ -951,7 +1027,7 @@ if keyword_set(noresid) then goto,skip
 		thic=thi,/bl
 	legend,line=[0,2],['Sea','Land'],size=chs*0.8,/box,/fill,/br
 skip:
-print,'ee'
+
 	if keyword_set(ps) then ps_close,/hqpdf
-print,'ff'
+
 end
