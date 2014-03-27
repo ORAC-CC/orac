@@ -151,11 +151,11 @@ pro plot_ret_cldmodel_cloud,x,h,ps=ps,isel=isel,file=fi,fac=fac,ur=ur,vr=vr,imag
 		kmlfi='/disks/rdrive/Richard/cld_model/kml/'+file_name(psfi,/base)
 		quick_cim_kml,kmlfi,/open
              endif
-;print,'aa',psfi
+
         fb=file_basename(psfi,'.ps')
-;print,'aa',psfi
+
         fd=file_dirname(psfi)
-;print,'aa',psfi
+
  
         psfi=fd+'/'+fb+'.ps'
         print,'plot_ret_cldmodel psfi',psfi
@@ -263,9 +263,9 @@ if max(h.sg.latr) le -999 then goto,skip
               im_sim=mk_cldmodel_false_color_cloud(xc,h,/sim,i37=i37)
 ;              im_alb=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
 
-xc.alb(0,*)=xc.alb(0,*)*abs(cos(!dtor*xc.solz))
-xc.alb(1,*)=xc.alb(1,*)*abs(cos(!dtor*xc.solz))
-xc.alb(2,*)=xc.alb(2,*)*abs(cos(!dtor*xc.solz))
+              xc.alb(0,*)=xc.alb(0,*)*abs(cos(!dtor*xc.solz))
+              xc.alb(1,*)=xc.alb(1,*)*abs(cos(!dtor*xc.solz))
+              xc.alb(2,*)=xc.alb(2,*)*abs(cos(!dtor*xc.solz))
 
               im_alb2=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
               
@@ -705,7 +705,7 @@ skipref:
            
 lev=indgen(20)*.1
 pd=zstar(xc.x0(2))
-stop
+
 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
               position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
               image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
@@ -762,7 +762,7 @@ lev=indgen(20)*.0025
 any_key
 endfor
 
-	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
+	quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb2,ur=ur,vr=vr,num=2,fac=fac,$
 		position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
 
 
