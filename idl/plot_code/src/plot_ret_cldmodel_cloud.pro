@@ -261,7 +261,13 @@ if max(h.sg.latr) le -999 then goto,skip
               
               im_mea=mk_cldmodel_false_color_cloud(xc,h,i37=i37)
               im_sim=mk_cldmodel_false_color_cloud(xc,h,/sim,i37=i37)
-              im_alb=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
+;              im_alb=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
+
+xc.alb(0,*)=xc.alb(0,*)*abs(cos(!dtor*xc.solz))
+xc.alb(1,*)=xc.alb(1,*)*abs(cos(!dtor*xc.solz))
+xc.alb(2,*)=xc.alb(2,*)*abs(cos(!dtor*xc.solz))
+
+              im_alb2=mk_cldmodel_false_color_cloud(xc,h,/alb,i37=i37)
               
               
               quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
@@ -458,9 +464,11 @@ skipref:
                  quick_cim_prc,kml=kmlfi,h.sg,u,v,im_sim,ur=ur,vr=vr,num=2,fac=fac,$
                                position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - sim',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
                  
-                 quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
+                 quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb2,ur=ur,vr=vr,num=2,fac=fac,$
                                position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
                  
+
+
               endif
            endif else begin
 ;
@@ -673,9 +681,11 @@ skipref:
         
 ;
 ;plot false color
+;
         if ~keyword_set(nosec) then begin
-           quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb,ur=ur,vr=vr,num=2,fac=fac,$
+           quick_cim_prc,kml=kmlfi,h.sg,u,v,im_alb2,ur=ur,vr=vr,num=2,fac=fac,$
                          position=ypos(p1,p2,mask=mask),chars=chs,title='False colour albedo',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
+
            
            quick_cim_prc,kml=kmlfi,h.sg,u,v,im_mea,ur=ur,vr=vr,num=2,fac=fac,$
                          position=ypos(p1,p2,mask=mask),chars=chs,title='False colour - meas',image=image,lev=lev,_EXTRA=extra,ext=ext,/tru,axti=axti,/b32,lcb=lcb,bcb=bcb,nodata=256l*256l*256l-1,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
@@ -695,6 +705,7 @@ skipref:
            
 lev=indgen(20)*.1
 pd=zstar(xc.x0(2))
+stop
 quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
               position=ypos(p1,p2,mask=mask),lev=lev,chars=chs,title='FG '+'zstarkm',lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
               image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
