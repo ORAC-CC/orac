@@ -62,9 +62,17 @@ im(*,*,2)=im(*,*,0)+(im(*,*,2)-im(*,*,0))*8
         	im=im*450
         	wh=where(im gt 255,nw) & if nw gt 0 then im(wh)=255
         	wh=where(im lt 0,nw) & if nw gt 0 then im(wh)=0
-        	im=((im/255)^0.7)*255
+        
+	im=((im/255)^0.7)*255
 	endelse
         im=reform(im)
-        if not keyword_set(n32) then im=mk_32bit_image(im(*,0),im(*,1),im(*,2))
+;
+;set cmax to full range so albedo and false color images plotted on
+;the same scale
+;
+        if not keyword_set(n32) then im=mk_32bit_image(im(*,0),im(*,1),im(*,2),cmax=255,cmin=0)
+
+
 	return,im
+
 end
