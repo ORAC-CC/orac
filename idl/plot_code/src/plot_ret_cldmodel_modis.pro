@@ -16,10 +16,12 @@
 ; R.S. 28/03/11
 ; CP 4 4/2013 CP added error keyword
 ; cp : 20/06/2013 added in nosec keyword
+; cp : 24/2/2014 added night variable
+
 ; $Id: plot_ret_cldmodel_modis.pro 937 2011-06-10 09:36:13Z rsiddans $
 ;-
 ;===============================================================================
-pro plot_ret_cldmodel_modis,x,h,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop_x=eop_x,kml=kml,rkml=rkml,error=error,nosec=nosec
+pro plot_ret_cldmodel_modis,x,h,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop_x=eop_x,kml=kml,rkml=rkml,error=error,nosec=nosec,fips=fips,night=night
 ;
 ; change v to be the index of along-track lines with valid data (avoid confusing
 ; null data gaps)
@@ -92,6 +94,14 @@ pro plot_ret_cldmodel_modis,x,h,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop
 			eop_x1=eop_x1(wy)
 		endif
 	endif
+if night gt 0 then begin
 	plot_ret_cldmodel_cloud,x,h1,/axti,_EXTRA=extra,mas=mask,p1=[0.01,0.01,0.99,0.98],chars=1.5,crd=0.2,cbl=0.5,$
-		p2=[0.14,0.01,0.99,0.92],ext=ext,eop_thick=eop_thick,eop_col=eop_col,eop_x=eop_x1,eop_y=eop_y1,kml=kml,error=error,/noresid,nosec=nosec
+		p2=[0.14,0.01,0.99,0.92],ext=ext,eop_thick=eop_thick,eop_col=eop_col,eop_x=eop_x1,eop_y=eop_y1,kml=kml,error=error,/noresid,nosec=nosec,fips=fips,/night
+     endif else begin
+
+plot_ret_cldmodel_cloud,x,h1,/axti,_EXTRA=extra,mas=mask,p1=[0.01,0.01,0.99,0.98],chars=1.5,crd=0.2,cbl=0.5,$
+		p2=[0.14,0.01,0.99,0.92],ext=ext,eop_thick=eop_thick,eop_col=eop_col,eop_x=eop_x1,eop_y=eop_y1,kml=kml,error=error,/noresid,nosec=nosec,fips=fips
+
+endelse
+
 end
