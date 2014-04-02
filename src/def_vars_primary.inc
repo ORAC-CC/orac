@@ -27,6 +27,7 @@
 !2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
   !2013 MJ: various changes to avoid cut-offs other fixes.
 !2013/10/06 CPbug fix  created relative azimuth angle in primary file
+!2014/04/01: MJ cleanup and fix for illum
 !
 ! $Id$
 !
@@ -631,11 +632,11 @@
       spixel_scan_out%illum_scale=1
       spixel_scan_out%illum_offset=0
       spixel_scan_out%illum_vmin=1!*spixel_scan_out%lon_scale
-      spixel_scan_out%illum_vmax=3!*spixel_scan_out%lon_scale
+      spixel_scan_out%illum_vmax=4!*spixel_scan_out%lon_scale
       !      write(*,*) ncid_primary
-!           & 'illumination_flag', 'Day(1)/Twilight(2)/Night(3)',&
+!           & 'illumination_flag', 'Day(1)/Twilight(2)/Night(3)/Daynore(4)',&
       CALL nc_defdata_byte_flag_value(ncid_primary, dims_var, 'illum', spixel_scan_out%vidillum, 'illumination flag', &
-           & 'illumination_flag', '1b, 2b, 3b','Day Twilight Night', &
+           & 'illumination_flag', '1b, 2b, 3b 4b','Day Twilight Night Daynore', &
            & spixel_scan_out%byte_fill_value, &
            & spixel_scan_out%illum_scale,spixel_scan_out%illum_offset, &
            & spixel_scan_out%illum_vmin,spixel_scan_out%illum_vmax, wo,ierr)
