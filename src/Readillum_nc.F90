@@ -42,6 +42,7 @@
 !   24 Jul 2013 APovey: added MODIS-TERRA and AQUA as valid instruments
 ! 20131118 MJ fixes a number of problems with this subroutine:refch2 for modis is corrected from 19 to 20. ysolar_msi and ythermal_mis is now used in indexing the MSI array, as this gives the indices of the channels as they are stored in the MSI array.
 !20140131 MJ adds code for setting of AVHRR refch
+!20140401 MJ rewrites routine partly to robustly set illumination
 !
 ! Bugs:
 !
@@ -135,7 +136,6 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
                   end if
                end if
                
-               !MJ ORG if (ic .le. 2) then
                !check the tau channels
                if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch1) .and. (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch2)) then
                   if (MSI_Data%MSI(i, j,Ctrl%Ind%ysolar_msi(ic)) .le. minrad) then 
@@ -155,28 +155,56 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
                end if
             end do
 
-            !
-            !make sure enough channels are present
-            !
-            !Day: information in solar channels for tau are there AND info in solar channels for ref are there
-            !AND solar zenith angle is OK
-            if ((nsbad  .le. 0) .and.&
-                 & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. (nref  .eq. 0)  ) then
-               MSI_Data%Illum(i,j,view) = IDay
-            !Twilight: if in more than one but less than 3 solar channels there is no information
-            !AND if solar zenith is larger than maximum but less than 90 deg. (sunset)
-            else if ((nsbad .gt. 1) .and. (nsbad .le. 3) &
-                 & .and. (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%MaxSolzen) &
-                 & .and. (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%Sunset)) then
-               MSI_Data%Illum(i,j,view) = ITwi
-            !Solar tau channels are present but no ref channel valid
-            else if ((nsbad .eq. 0) .and. (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. (nref  .gt. 0) ) then
-               MSI_Data%Illum(i,j,view) = IDaynore !but no effective radius channel i.e no 1.6 of 3.7 channel
-               !MJ ORGMSI_Data%MSI(i, j,:)=0.0
-            else
-               MSI_Data%Illum(i,j,view) = INight
-            end if
+            !Determine now illumination conditions
+            !based on solar illumination and amount of available channels
+            !all sw (component) channels are there
+            if(nref .eq. 0 .and. nsbad .eq. 0) then
+               
+               !sun high enough in the sky
+               if(MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) then
+                  
+                  MSI_Data%Illum(i,j,view) = IDay
 
+                  !sun close to sunset
+               else if((MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolzen) &
+                    & .and. (MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset)) then
+                  
+                  MSI_Data%Illum(i,j,view) = ITwi
+
+                  !sun below horizon
+               elseif(( MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset)) then
+
+                  MSI_Data%Illum(i,j,view) = INight
+
+               endif
+               
+               !some solar channels gone
+            elseif(nsbad .gt. 0 .or. nref .gt. 0) then
+
+               if((MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolzen) &
+                    & .and. (MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset)) then
+
+                  MSI_Data%Illum(i,j,view) = ITwi
+
+                  !sun below horizon
+               elseif(( MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset)) then
+
+                  MSI_Data%Illum(i,j,view) = INight
+
+               endif
+            
+            endif
+
+               
+
+
+
+!!$            write(*,*) Ctrl%Ind%Nsolar,Ctrl%Ind%Nthermal
+!!$            write(*,*) refch1,refch2,Ctrl%Ind%Y_id
+!!$            write(*,*) Ctrl%Ind%ysolar,Ctrl%Ind%ysolar_msi
+!!$            write(*,*) Ctrl%Ind%ythermal,Ctrl%Ind%ythermal_msi
+!!$            write(*,*) 'illum',nref,nsbad,ntbad,MSI_Data%Illum(i,j,view)
+            !STOP
 
 !MJ ORG
 !!$            if ((nsbad  .le. 1) .and.&
