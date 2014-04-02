@@ -182,7 +182,10 @@
 ! 2014/02/10: AP changes to ECMWF routines
 ! 2014/02/05: MJ adds verbose to argument list of rttov related routines to
 !                mute rttov
-!2014/03/11: MJ adds writing out of soem flags to gain more information.
+! 2014/03/11: MJ adds writing out of some flags to gain more information.
+! 2014/04/02: GM Get the NetCDF version from the library itself.  Left the
+!                obsolete input argument in place for now but it is over
+!                written.
 !
 ! $Id$
 !
@@ -379,6 +382,9 @@ program preprocessing
       read(11,*) cuse_chunking
       close(11)
    endif ! nargs gt 1
+
+   ! Get the NetCDF version
+   script_input%cncver = nf90_inq_libvers()
 
    ! cast input strings into appropriate variables
    read(cgrid_flag, '(i1)') grid_flag
