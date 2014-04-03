@@ -200,6 +200,7 @@
 !    17th Jan 2014, Greg McGarragh: Cleaned up code.
 !    20140129 MJ fixes case where alpha can get out of bounds.
 !    20140227 CP added declaration of J
+!    20140402 CP fixed bug where temp_arr was not reassined.
 ! Bugs:
 !    None known
 !
@@ -763,6 +764,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       ! State expected error from measurements=Diag%St(1:SPixel%Nx, 1:SPixel%Nx))
       temp_arr=Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
       call Invert_Cholesky(d2J_dX2, temp_arr, SPixel%Nx, stat)
+      Diag%St(1:SPixel%Nx, 1:SPixel%Nx)=temp_arr
 #ifdef DEBUG
       if (stat /= 0) &
          call Write_Log(Ctrl, 'Invert_Marquardt: Error in Invert_Cholesky', stat)
