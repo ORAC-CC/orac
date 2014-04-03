@@ -43,7 +43,7 @@
 ! 20131118 MJ fixes a number of problems with this subroutine:refch2 for modis is corrected from 19 to 20. ysolar_msi and ythermal_mis is now used in indexing the MSI array, as this gives the indices of the channels as they are stored in the MSI array.
 !20140131 MJ adds code for setting of AVHRR refch
 !20140401 MJ rewrites routine partly to robustly set illumination
-!20140403 Initialize illumination
+!20140403 Initialize illumination with fill value
 !
 ! Bugs:
 !
@@ -93,7 +93,6 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
       minrad=0.00
       refch1=6
       refch2=20
-      write(*,*) 'went in here'
    endif
 
    if   (trim(Ctrl%inst%name(1:5)) .eq. 'AVHRR') then
