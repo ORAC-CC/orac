@@ -201,6 +201,7 @@
 !    20140129 MJ fixes case where alpha can get out of bounds.
 !    20140227 CP added declaration of J
 !    20140402 CP fixed bug where temp_arr was not reassined.
+!    20140402 MJ fixed bug where Diag%ss was not initilized.
 ! Bugs:
 !    None known
 !
@@ -317,6 +318,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    Kbj       = 0.
    SPixel%Sn = 0.
    Diag%st   = 0.
+   Diag%ss   = 0.
    d2J_dX2   = 0.
    KxT_SyI   = 0.
 
@@ -826,6 +828,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       if (SPixel%Nx > 0  .and. SPixel%NxI == 0 ) then
          SPixel%Sn(SPixel%X, SPixel%X)   = &
               Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
+         !write(*,*) 'went in here'
       endif
 
       if (SPixel%NxI > 0) then
