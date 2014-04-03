@@ -43,6 +43,7 @@
 ! 20131118 MJ fixes a number of problems with this subroutine:refch2 for modis is corrected from 19 to 20. ysolar_msi and ythermal_mis is now used in indexing the MSI array, as this gives the indices of the channels as they are stored in the MSI array.
 !20140131 MJ adds code for setting of AVHRR refch
 !20140401 MJ rewrites routine partly to robustly set illumination
+!20140403 Initialize illumination
 !
 ! Bugs:
 !
@@ -81,7 +82,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
    status=0
 
    allocate(MSI_Data%illum(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
-
+   MSI_Data%illum=byte_fill_value
 
    !set channel number in instrument notation which can be used
    !for effective radius retrieval (could be made dynmic but set
@@ -192,11 +193,8 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
                   MSI_Data%Illum(i,j,view) = INight
 
                endif
-            
+
             endif
-
-               
-
 
 
 !!$            write(*,*) Ctrl%Ind%Nsolar,Ctrl%Ind%Nthermal
