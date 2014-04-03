@@ -1,6 +1,6 @@
 # folder for object files
 #OBJS=obj
-OBJS=/work/ralspace/rsg_group/cloud_ecv/code/code_v2/src/
+OBJS=/work/ralspace/rsg_group/cloud_ecv/code/code_v2/src
 #ifort (arch.irfort.oxford)
 F90=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233//bin/intel64/ifort
 #F90=ifort
@@ -16,11 +16,14 @@ F90=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233//bin/intel64/ifort
 #FFLAGS=-cpp -pg -CB -heap-arrays -O3 -xHOST
 #LFLAGS=-cpp -pg -CB -heap-arrays -O3 -xHOST
 
-FFLAGS=-g -check all -heap-arrays -traceback 
+FFLAGS=-g -check all -heap-arrays -traceback  -static
 #-assume nounderscore
 LFLAGS=-g -check all -heap-arrays -traceback
-FFLAGS=-O2 
+FFLAGS=-O2 -static
 #-openmp
 LFLAGS=-g -pg 
 
 AUXFLAGS=-module $(OBJS)
+
+#export ORAC_TEXTIN=/work/scratch/scarf182/ORAC_cloud_AATSR_20080620.866240.1/ESA_Cloud_cci_RAL_AATSR_1-59.3-77.5_ORACV17.0_ENV_200806200023_V17.0_orac_driver.txt
+#./orac

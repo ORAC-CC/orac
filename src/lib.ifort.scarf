@@ -1,4 +1,5 @@
 #ifort
+#nb must add netcdf paths or it will not run
 #export LD_LIBRARY_PATH=/work/ralspace/rsg_group/cloud_ecv/libraries/eprlibdir/:/work/ralspace/rsg_group/cloud_ecv/libraries/szlib/:/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/:/usr/lib64:/apps/netCDF/4.3.0/intel/lib/:/apps/netCDF/4.2/fortran/intel/lib/
 
 RSG_LIB_BASE=/work/ralspace/rsg_group/cloud_ecv/libraries
@@ -8,10 +9,21 @@ RSG_LIB_BASE=/work/ralspace/rsg_group/cloud_ecv/libraries
 #NCDFINCLUDE=$(LIBBASE)/netcdf/include
 
 NCDFLIB=/apps/netCDF/4.3.0/intel/lib/
+#NCDFLIB=/work/ralspace/rsg_group/cloud_ecv/libraries/ncdflib4b/
 NCDFINCLUDE=/apps/netCDF/4.3.0/intel/include/
 
 NCDFLIBB=/apps/netCDF/4.2/fortran/intel/lib/
+#NCDFLIBB=/work/ralspace/rsg_group/cloud_ecv/libraries/ncdflib4a/
 NCDFINCLUDEB=/apps/netCDF/4.2/fortran/intel/include/
+
+# /apps/netCDF/4.3.0/intel/lib/
+
+
+#netcdf libraries not found
+
+#NETCDF4INC=/usr/local/apps/netcdf4/4.1.3/LP64/include
+#NETCDF4=-lnetcdf -lnetcdff
+
 
 SZLIB=$(RSG_LIB_BASE)/szlib/
 SZINC=$(RSG_LIB_BASE)/szinc/
@@ -23,13 +35,10 @@ HDF5MOD=$(RSG_LIB_BASE)/hdf5mod/
 HDF5=-lhdf5_fortran -lhdf5 -lhdf5_hl
 # -lhdf5hl_fortran
 
+NCFB= -lhdf5_hl -lhdf5 -lz
+NCF= -lhdf5_hl -lhdf5 -lz
 #Set up libraries and includes
 
-INC=-I./   -I$(SZIINC) -I$(HDF5INCLUDE) -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB)
-LIBS=   -L$(SZILIB) $(SZIP) -L$(HDF5LIB) $(HDF5) -L$(NCDFLIB) -lnetcdff -L$(NCDFLIBB) -lnetcdf 
 
-#INC=-I./  -I$(NCDFINCLUDE) 
-#LIBS=  -L$(NCDFLIB) -lnetcdff
-
-#INC=-I./  -I$(NCDFINCLUDEB)
-#LIBS=   -L$(NCDFLIBB) -lnetcdf 
+INC=-I./   -I$(SZINC) -I$(HDF5INCLUDE) -I$(NCDFINCLUDE) -I$(NCDFINCLUDEB)
+LIBS=   -L$(SZLIB) $(SZIP) -L$(HDF5LIB) $(HDF5) -L$(NCDFLIB) -lnetcdff -L$(NCDFLIBB) -lnetcdf 
