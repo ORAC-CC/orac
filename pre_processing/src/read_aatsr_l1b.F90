@@ -318,9 +318,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    ! convert elevation angles read into zenith angles
    imager_angles%solzen = 90.0 - imager_angles%solzen
    imager_angles%satzen = 90.0 - imager_angles%satzen
-
+   if (verbose) print*,'calling read dift file ', stat
    call aatsr_read_drift_table(drift_file, lut, status)
-
+   if (verbose) print*,'finish drift table read returned with status ', stat
    ! correct channels 1-4
    do i=1,channel_info%nchannels_total
       j=channel_info%channel_ids_instr(i)
@@ -386,6 +386,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          end do
       end do
    end if
+
+   if (verbose) print*,'finished read_aatsr_l1b deallocate'
    
    deallocate(ch)
    deallocate(view)
