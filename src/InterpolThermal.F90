@@ -168,7 +168,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
         i = 1
         if (abs(Pc-SPixel%RTM%LW%p(1)) > 50.0) then
 !           When there is a difference of more than 50 hPa between Pc and RTM level
-            write(unit=message, fmt=*) 'Interpol_Therm: Extrapolation warning low' ,Pc,SPixel%RTM%LW%p(1)
+            write(unit=message, fmt=*) 'Interpol_Thermal: Extrapolation warning low' ,Pc,SPixel%RTM%LW%p(1)
             call Write_Log(Ctrl, trim(message), status) ! Write to log
         end if
     else if (Pc == SPixel%RTM%LW%P(SPixel%RTM%LW%Np)) then
