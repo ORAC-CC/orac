@@ -189,7 +189,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 !      If none of the above conditions are met (e.g. Pc = NaN) then return
 !      with a fatal error
        status = IntTransErr ! Set status to indicate failure of interpolation
-       write(unit=message, fmt=*) 'Interpol_Therm: Interpolation failure'
+       write(unit=message, fmt=*) 'Interpol_Thermal: Interpolation failure'
        call Write_Log(Ctrl, trim(message), status) ! Write to log
     else
 
