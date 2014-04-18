@@ -147,6 +147,9 @@
 #      Added 'make depend' to automatically find all Fortran file dependencies.
 #   29th Jan 2014, Greg McGarragh:
 #      Changes related to renaming ECPparallel_ecmwf.F90 to ECP.F90.
+#   18th Apr 2014, Greg McGarragh:
+#      include $(ORAC_ARCH) and include $(ORAC_LIB) instead of site specific
+#      hardwires.
 #
 # Notes:
 # 1) The C preprocessor is used to allow conditional compilation (files with
@@ -188,19 +191,8 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-#archfile=arch.ifort.ox
-#libfile=lib.ifort.ox
-
-# ral/ox files are above, this is for dwd/ecmwf:
-archfile=arch.ecmwf.xlf
-libfile=lib.ecmwf.xlf
-
-# Can even be set through env. variable
-#archfile=$(orac_arch)
-#libfile=$(orac_lib)
-
-include $(archfile)
-include $(libfile)
+include $(ORAC_ARCH)
+include $(ORAC_LIB)
 
 
 # Define object files to be linked. N.B. files containing module definitions
