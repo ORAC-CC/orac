@@ -1,7 +1,6 @@
 $(OBJS)/alloc_spixel_scan_out.o: $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/AllocRTMPc.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o
 $(OBJS)/AllocSPixel.o: $(OBJS)/Ctrl.o $(OBJS)/RTM.o $(OBJS)/SPixel.o
-$(OBJS)/b1_to_ui1.o: $(OBJS)/ECPConstants.o
 $(OBJS)/CalcCWP.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/ECPRoutines.o \
         $(OBJS)/SPixel.o
 $(OBJS)/CheckByteArray.o: $(OBJS)/ECPConstants.o
