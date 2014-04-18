@@ -201,8 +201,6 @@ include $(ORAC_LIB)
 ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
                   $(OBJS)/AllocRTMPc.o \
 	          $(OBJS)/AllocSPixel.o \
-                  $(OBJS)/b1_to_si1.o \
-                  $(OBJS)/b1_to_ui1.o \
 	          $(OBJS)/Bcubic_def.o \
                   $(OBJS)/Bcucof.o \
                   $(OBJS)/Bcuint.o \

@@ -126,7 +126,8 @@
 !
 !2013-11-19 MJ changes channel indices to ysolar_msi as this gives the indices of thr solar channels
 !as stored in the MSI array.
-
+!   01/10/2013 GM: Remove incorrect use of b1_to_ui1() for implicit conversion.
+!
 ! Bugs:
 !   AS, Mar 2011. The Aux method albedo code includes specific handling
 !   for channel 5, which presumably assumes that we are processing ATSR data 
@@ -208,7 +209,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
        
 !         Calculate b (sea then land, sea flags set at 0 in SPixel%Surface%Flags,
 !                                    land flags set at 1 in SPixel%Surface%Flags)
-          call b1_to_ui1(SPixel%Surface%Flags,intflag)
+          intflag = SPixel%Surface%Flags
 
           SPixel_b(i) =  float(-(intflag-1)) * &
 	                       float(SPixel%Mask) * b(i,1)
@@ -364,7 +365,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
          do i = 1, SPixel%Ind%NSolar
 !         On diagonals (sea then land)
 
-          call b1_to_ui1(SPixel%Surface%Flags,intflag)
+            intflag = SPixel%Surface%Flags
 
             if (SPixel%Surface%Sea == 1) then
                SPixel_Sb(i,i) =  float(-(SPixel%Surface%Flags-1)) * &
