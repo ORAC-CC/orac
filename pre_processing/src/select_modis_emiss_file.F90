@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name: select_modis_emiss_file.F90
 !
 ! Purpose:
@@ -7,22 +8,21 @@
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
-! ------------------------------------------------------------------------------
 !
 ! Local variables:
 ! Name Type Description
-! ------------------------------------------------------------------------------
 !
 ! History:
 ! 2012/08/06: Caroline Poulsen original version
-! 2012/08/16: Gareth Thomas. Extensive rewrite. The code now checks if we're looking
-!             at data for a leap year, and sets the day-of-year numbers (which are for
-!             the first of each month) accordingly. Date arrays are also no-longer
-!             dynamic.
-!             Also changed the way the appropriate day-of-year number is selected, so
-!             that it is always the closest smaller number to the actual date.
-! 2012/08/20: Matthias Jerg fixes bug (variable type from int to logical) in inquire
-!             statement reads files downloaded from
+! 2012/08/16: Gareth Thomas. Extensive rewrite. The code now checks if we're
+!             looking at data for a leap year, and sets the day-of-year numbers
+!             (which are for the first of each month) accordingly. Date arrays
+!             are also no-longer dynamic.
+!             Also changed the way the appropriate day-of-year number is
+!             selected, so that it is always the closest smaller number to the
+!             actual date.
+! 2012/08/20: Matthias Jerg fixes bug (variable type from int to logical) in
+!             inquire statement reads files downloaded from
 !             http://cimss.ssec.wisc.edu/iremis/download.php
 ! 2013/06/27: MJ implements file independent checking for leap year
 ! 2013/11/01: Greg McGarragh: Fixed leap year check to include all cases.  This
@@ -31,6 +31,7 @@
 !
 ! $Id$
 !
+!-------------------------------------------------------------------------------
 subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_path_file)
 
   use preproc_structures
@@ -43,11 +44,11 @@ subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_pat
   character(len=pathlength), intent(in)    :: emiss_surf_path
   character(len=pathlength), intent(out)   :: emiss_surf_path_file
 
-  integer                                  :: pos
-  logical                                  :: isleapyear
-  integer(kind=stint),       dimension(12) :: dates,newdates
-  character(len=3),          dimension(12) :: dates_s
-  character(len=3)                         :: emis_date_s
+  integer                            :: pos
+  logical                            :: isleapyear
+  integer(kind=stint), dimension(12) :: dates,newdates
+  character(len=3),    dimension(12) :: dates_s
+  character(len=3)                   :: emis_date_s
 
   isleapyear=.false.
 
