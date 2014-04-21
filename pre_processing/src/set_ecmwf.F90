@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Determines necessary ECMWF files for preprocessing.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Set root folder dependent on badc argument.
 ! 2) Round hour to nearest multiple of six on the same day to select file.
@@ -42,6 +42,7 @@
 ! 2013/06/11: CP set default ecmwf paths
 ! 2013/10/21: AP removed redundant arguments. Tidying.
 ! 2014/02/03: AP made badc a logical variable
+! 2014/04/21: GM Added logical option assume_full_path.
 !
 ! $Id$
 !
@@ -49,79 +50,92 @@
 ! none known
 !
 
-subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2, &
-     ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,badc,verbose)
+subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
+   ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,badc,&
+   verbose)
 
    use preproc_constants
 
    implicit none
 
-   integer(kind=stint)       :: hour
+   integer(kind=stint),       intent(in)  :: hour
+   character(len=datelength), intent(in)  :: cyear,chour,cmonth,cday
+   logical,                   intent(in)  :: assume_full_path
+   character(len=pathlength), intent(in)  :: ecmwf_path
+   character(len=pathlength), intent(in)  :: ecmwf_path2
+   character(len=pathlength), intent(in)  :: ecmwf_path3
+   character(len=pathlength), intent(out) :: ecmwf_pathout
+   character(len=pathlength), intent(out) :: ecmwf_path2out
+   character(len=pathlength), intent(out) :: ecmwf_path3out
+   logical,                   intent(in)  :: badc,verbose
 
-   character(len=datelength) :: cyear,chour,cmonth,cday
-
-   character(len=pathlength) :: ecmwf_path,ecmwf_path2, &
-        ecmwf_path3,ecmwf_path_root,ecmwf_path_root2,ecmwf_path_root3
-   character(len=pathlength) :: ecmwf_pathout,ecmwf_path2out,ecmwf_path3out
    character                 :: cera_hour*2
-
+   character(len=pathlength) :: ecmwf_path_root
+   character(len=pathlength) :: ecmwf_path_root2
+   character(len=pathlength) :: ecmwf_path_root3
    integer(kind=stint)       :: era_hours,era_hour,diff_hour,diff_hour_old
-   logical                   :: verbose,badc
 
-   !put in the known information
-
-   if (verbose) write(*,*) 'About to build full ecmwf path: ', trim(ecmwf_path)
-   ecmwf_path_root=trim(adjustl(ecmwf_path))//'/'
-   ecmwf_path_root2 = ecmwf_path_root
-   ecmwf_path_root3 = ecmwf_path_root
-   if (.not. badc) then
-      ecmwf_path_root=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
-           & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           & trim(adjustl(cday))//'_'
+   if (assume_full_path) then
+      ecmwf_pathout  = ecmwf_path
+      ecmwf_path2out = ecmwf_path2
+      ecmwf_path3out = ecmwf_path3
    else
+      if (verbose) write(*,*) 'About to build full ecmwf path: ', trim(ecmwf_path)
       ecmwf_path_root=trim(adjustl(ecmwf_path))//'/'
+      ecmwf_path_root2 = ecmwf_path_root
+      ecmwf_path_root3 = ecmwf_path_root
+      if (.not. badc) then
+         ecmwf_path_root=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
+              & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+              & trim(adjustl(cday))//'_'
+      else
+         ecmwf_path_root=trim(adjustl(ecmwf_path))//'/'
 
-      ecmwf_path_root2=trim(adjustl(ecmwf_path2))//'/'
+         ecmwf_path_root2=trim(adjustl(ecmwf_path2))//'/'
 
-      ecmwf_path_root3=trim(adjustl(ecmwf_path3))//'/'
-   end if
+         ecmwf_path_root3=trim(adjustl(ecmwf_path3))//'/'
+      endif
 
-   if (verbose) write(*,*) 'set_ecmwf ecmwf_path_root: ',trim(ecmwf_path_root)
+      if (verbose) write(*,*) 'set_ecmwf ecmwf_path_root: ',trim(ecmwf_path_root)
 
-   ! pick closest ERA interim time wrt sensor time (on same day)
-   diff_hour_old=999
-   do era_hours=0,18,6
-      diff_hour=hour-era_hours
-      if(abs(diff_hour) .le. diff_hour_old) era_hour=era_hours
-      diff_hour_old=diff_hour
-   enddo
-   write(cera_hour,'(i2)') era_hour
-   if (era_hour .lt. 10) cera_hour='0'//trim(adjustl(cera_hour))
+      ! pick closest ERA interim time wrt sensor time (on same day)
+      diff_hour_old=999
+      do era_hours=0,18,6
+         diff_hour=hour-era_hours
+         if(abs(diff_hour) .le. diff_hour_old) era_hour=era_hours
+         diff_hour_old=diff_hour
+      enddo
+      write(cera_hour,'(i2)') era_hour
+      if (era_hour .lt. 10) cera_hour='0'//trim(adjustl(cera_hour))
 
-   !finalize the path to the era interim file
-   if (.not. badc) then
-      ecmwf_pathout=trim(adjustl(ecmwf_path_root))// &
-           & trim(adjustl(cera_hour))//'+00.grb'
-   else
-      !note some files are now in netcdf format
-      ecmwf_path2out=trim(adjustl(ecmwf_path_root2))//'ggas'// &
-           & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           & trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
+      !finalize the path to the era interim file
+      if (.not. badc) then
+         ecmwf_pathout=trim(adjustl(ecmwf_path_root))// &
+              & trim(adjustl(cera_hour))//'+00.grb'
+      else
+         !note some files are now in netcdf format
+         ecmwf_path2out=trim(adjustl(ecmwf_path_root2))//'ggas'// &
+              & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+              & trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
 
-      ! o3 and q
-      ecmwf_pathout=trim(adjustl(ecmwf_path_root))//'ggam'// &
-           & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           & trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-      ! NB this must be called last
-      ! t geo surface lnsp
-      ecmwf_path3out=trim(adjustl(ecmwf_path_root3))//'gpam'// &
-           & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-           & trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-      if (verbose) then
-         write(*,*)'ecmwf_path3: ',trim(ecmwf_path3out)
+         ! o3 and q
+         ecmwf_pathout=trim(adjustl(ecmwf_path_root))//'ggam'// &
+              & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+              & trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
+         ! NB this must be called last
+         ! t geo surface lnsp
+         ecmwf_path3out=trim(adjustl(ecmwf_path_root3))//'gpam'// &
+              & trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+              & trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
+      endif
+   endif
+
+   if (verbose) then
+      write(*,*)'ecmwf_path:  ',trim(ecmwf_pathout)
+      if (badc) then
          write(*,*)'ecmwf_path2: ',trim(ecmwf_path2out)
-         write(*,*)'ecmwf_path:  ',trim(ecmwf_pathout)
-      end if
-   end if
+         write(*,*)'ecmwf_path3: ',trim(ecmwf_path3out)
+      endif
+   endif
 
 end subroutine set_ecmwf

@@ -38,8 +38,8 @@
 ! ecmwf_path       string in Folder containing ECMWF files
 ! coef_path        string in Folder containing RTTOV coefficient files
 ! emiss_path       string in Folder containing RTTOV emissivity files
-! ice_path_file    string in Folder containing NISE ice cover files
-! albedo_path_file string in Folder containing MODIS MCD43C3 albedo files
+! ice_path    string in Folder containing NISE ice cover files
+! albedo_path string in Folder containing MODIS MCD43C3 albedo files
 ! emiss2_path      string in Folder containing MODIS monthly average emissivity 
 ! grid_flag        sint   in 1:ECMWF grid, 2:L3 grid, 3: own definition
 ! dellon           real   in 1 / longitude increment in degrees
@@ -186,6 +186,7 @@
 ! 2014/04/02: GM Get the NetCDF version from the library itself.  Left the
 !                obsolete input argument in place for now but it is over
 !                written.
+! 2014/04/21: GM Added logical option assume_full_path.
 !
 ! $Id$
 !
@@ -224,20 +225,31 @@ program preprocessing
 
    integer(kind=stint) :: doy,year,month,day,hour,minute,startyi
 
-   character(len=pathlength) :: driver_path_and_file,path_to_l1b_file
-   character(len=pathlength) :: path_to_geo_file,output_pathin,output_pathout
-   character(len=pathlength) :: ecmwf_path,coef_path,emiss_path
-   character(len=pathlength) :: emiss2_PATH,albedo_path_file
-   character(len=pathlength) :: ice_path_file,aatsr_calib_file,ecmwf_path2
-   character(len=pathlength) :: ecmwf_path3,emiss_path_file,ecmwf_path2out
-   character(len=pathlength) :: ecmwf_path3out,ecmwf_pathout
+   character(len=pathlength) :: driver_path_and_file
+   character(len=pathlength) :: path_to_l1b_file
+   character(len=pathlength) :: path_to_geo_file
+   character(len=pathlength) :: ecmwf_path,ecmwf_pathout
+   character(len=pathlength) :: coef_path
+   character(len=pathlength) :: emiss_path
+   character(len=pathlength) :: ice_path
+   character(len=pathlength) :: albedo_path
+   character(len=pathlength) :: emiss2_path
+   character(len=pathlength) :: output_pathin,output_pathout
+   character(len=pathlength) :: aatsr_calib_file
+   character(len=pathlength) :: ecmwf_path2, ecmwf_path2out
+   character(len=pathlength) :: ecmwf_path3, ecmwf_path3out
    character(len=flaglength)       :: cgrid_flag
    character(len=sensorlength)     :: sensor
    character(len=platformlength)   :: platform
    character(len=attribute_length) :: cdellon,cdellat
 
-   character(len=pixellength) :: cstartx,cendx,cstarty,cendy,cchunkproc
-   character(len=pixellength) :: cbadc,cday_night,cverbose,cuse_chunking
+   character(len=pixellength) :: cstartx,cendx,cstarty,cendy
+   character(len=pixellength) :: cbadc
+   character(len=pixellength) :: cchunkproc
+   character(len=pixellength) :: cday_night
+   character(len=pixellength) :: cverbose
+   character(len=pixellength) :: cuse_chunking
+   character(len=pixellength) :: cassume_full_paths
 
    character(len=datelength) :: cyear,chour,cminute,cmonth,cday
 
@@ -278,11 +290,18 @@ program preprocessing
    integer :: nchunks2,leftover_chunk2, nchunks_total
    integer(kind=stint) :: nc
 
-   logical            :: verbose, check, badc
+   logical            :: check
+
+   logical            :: badc
+   logical            :: chunkproc
+   logical            :: verbose
    logical            :: use_chunking
+   logical            :: assume_full_paths
    integer, parameter :: chunksize=4096
 
-   logical            :: parse_logical,chunkproc
+   logical            :: parse_logical
+
+   integer, dimension(8) :: values
 
    !include "sigtrap.F90"
 
@@ -296,8 +315,8 @@ program preprocessing
       CALL GET_COMMAND_ARGUMENT(4,ecmwf_path)
       CALL GET_COMMAND_ARGUMENT(5,coef_path)
       CALL GET_COMMAND_ARGUMENT(6,emiss_path)
-      CALL GET_COMMAND_ARGUMENT(7,ice_path_file)
-      CALL GET_COMMAND_ARGUMENT(8,albedo_path_file)
+      CALL GET_COMMAND_ARGUMENT(7,ice_path)
+      CALL GET_COMMAND_ARGUMENT(8,albedo_path)
       CALL GET_COMMAND_ARGUMENT(9,emiss2_path)
       CALL GET_COMMAND_ARGUMENT(10,cgrid_flag)
       CALL GET_COMMAND_ARGUMENT(11,cdellon)
@@ -332,6 +351,7 @@ program preprocessing
       CALL GET_COMMAND_ARGUMENT(40,cday_night)
       CALL GET_COMMAND_ARGUMENT(41,cverbose)
       CALL GET_COMMAND_ARGUMENT(42,cuse_chunking)
+      CALL GET_COMMAND_ARGUMENT(43,cassume_full_paths)
    else
       ! if just one argument => this is driver file which contains everything
       call get_command_argument(1,driver_path_and_file)
@@ -344,8 +364,8 @@ program preprocessing
       read(11,*) ecmwf_path
       read(11,*) coef_path
       read(11,*) emiss_path
-      read(11,*) ice_path_file
-      read(11,*) albedo_path_file
+      read(11,*) ice_path
+      read(11,*) albedo_path
       read(11,*) emiss2_path
       read(11,*) cgrid_flag
       read(11,*) cdellon
@@ -380,11 +400,19 @@ program preprocessing
       read(11,*) cday_night
       read(11,*) cverbose
       read(11,*) cuse_chunking
+      read(11,*) cassume_full_paths
       close(11)
    endif ! nargs gt 1
 
    ! Get the NetCDF version
    script_input%cncver = nf90_inq_libvers()
+
+   ! Get the execution time in UTC
+!  call date_and_time(VALUES = values)
+!  write (script_input%exec_time, '(i4,i2.2,i2.2,i2.2,i2.2,i2.2)'), &
+!         values(1), values(2), values(3), values(5), values(6), values(7)
+!  print *, script_input%exec_time
+!  stop
 
    ! cast input strings into appropriate variables
    read(cgrid_flag, '(i1)') grid_flag
@@ -404,6 +432,7 @@ program preprocessing
    chunkproc=parse_logical(cchunkproc)
    verbose=parse_logical(cverbose)
    use_chunking=parse_logical(cuse_chunking)
+   assume_full_paths=parse_logical(cassume_full_paths)
 
    write(*,*) 'Flags for verbosity and file chunking:',verbose, use_chunking
 
@@ -574,19 +603,21 @@ program preprocessing
       ! carry out any prepatory steps: identify required ECMWF and MODIS L3 
       ! information,set paths and filenames to those required  
       ! auxilliary/ancilliary input...
-      call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-           cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, &
-           sensor,platform,hour,cyear,chour,cminute,cmonth,cday,ecmwf_path, &
-           ecmwf_path2,ecmwf_path3,ecmwf_pathout, &
-           ecmwf_path2out,ecmwf_path3out,script_input,badc, &
-           imager_geolocation,nc,verbose)
+      call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
+           cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, sensor,&
+           platform,hour,cyear,chour,cminute,cmonth,cday,assume_full_paths,&
+           ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,&
+           ecmwf_path3out,script_input,badc,imager_geolocation,nc,verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
-         write(*,*) 'START READING ECMWF ERA INTERIM GRIB FILE: ', &
-              trim(adjustl(ecmwf_pathout)),badc
-         write(*,*) 'ecmwf_path3: ',trim(ecmwf_path3out)
+         write(*,*) 'START READING ECMWF ERA INTERIM GRIB FILE:'
+         write(*,*) 'badc: ', badc
          write(*,*) 'ecmwf_path:  ',trim(ecmwf_pathout)
+         if (badc) then
+            write(*,*) 'ecmwf_path2: ',trim(ecmwf_path2out)
+            write(*,*) 'ecmwf_path3: ',trim(ecmwf_path3out)
+         endif
       end if
 
       if (badc) then 
@@ -676,12 +707,9 @@ program preprocessing
       !
       !select correct emissivity file and calculate the emissivity over land calculates emissivity for rttov
       !
-      call select_modis_emiss_file(year,cyear,doy,emiss2_path,emiss_path_file)
-      write(*,*)'emiss_path_file',trim(emiss_path_file)
-      call get_surface_emissivity(emiss_path_file, imager_flags, &
-           & imager_geolocation, &
-           & channel_info,preproc_dims, preproc_geoloc, surface, preproc_surf)  
-      !write(*,*)'surface%emissivity',surface%emissivity
+      call get_surface_emissivity(cyear, doy, assume_full_paths, emiss2_path, &
+           & imager_flags, imager_geolocation, channel_info,preproc_dims, &
+           & preproc_geoloc, surface, preproc_surf)  
 ! 1100  continue
 
       write(*,*)'create/open profile, lwrtm,swrtm, albedo/brdf netcdf files', &
@@ -716,21 +744,17 @@ program preprocessing
       ! The following routines are required to set the surface reflectance
       !
       !  goto 1200
-
-      write(*,*)'call get_surface_reflectance',trim(albedo_path_file)
-      call get_surface_reflectance_lam(albedo_path_file, imager_flags, &
-           & imager_geolocation, imager_angles, imager_measurements,    &
-           & channel_info, ecmwf_2d, surface,doy,cyear)
+      call get_surface_reflectance_lam(cyear, doy, assume_full_paths, albedo_path, &
+           & imager_flags, imager_geolocation, imager_angles, imager_measurements, &
+           & channel_info, ecmwf_2d, surface)
       !
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the 
       ! National Snow and Ice Data Center to detect ice and snow pixels,
       ! and correct the surface albedo.
       !
-      write(*,*)'ice_path_file',trim(ice_path_file)
-
-      call correct_for_ice_snow(ice_path_file, imager_geolocation, &
+      write(*,*)'ice_path: ',trim(ice_path)
+      call correct_for_ice_snow(assume_full_paths, ice_path, imager_geolocation, &
            & preproc_dims, surface,cyear,cmonth,cday,channel_info)
-      !write(*,*)'surface',surface%albedo(1,:,:)
 
 ! 1200  continue
 

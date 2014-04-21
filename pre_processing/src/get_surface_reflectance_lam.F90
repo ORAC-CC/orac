@@ -77,6 +77,7 @@
 ! 2013/09/02, AP: Removed startyi, endye.
 ! 2014/01/17, MJ: Fixed doy datatype from sint to stint to comply with other defs.
 ! 2014/04/20, GM: Cleaned up the code.
+! 2014/04/21, GM: Added logical option assume_full_path.
 !
 ! $Id$
 !
@@ -85,9 +86,9 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine get_surface_reflectance_lam(modis_surf_path, imager_flags, &
-   imager_geolocation, imager_angles, imager_measurements, channel_info, &
-   ecmwf_2d, surface,doy,cyear)
+subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
+   modis_surf_path, imager_flags, imager_geolocation, imager_angles, &
+   imager_measurements, channel_info, ecmwf_2d, surface)
 
    use channel_structures
    use ecmwf_structures
@@ -128,21 +129,22 @@ subroutine get_surface_reflectance_lam(modis_surf_path, imager_flags, &
    end interface
 
    ! Input variables
-   character(len=pathlength), intent(in)           :: modis_surf_path
-   character(len=pathlength)                       :: modis_surf_path_file
    character(len=datelength), intent(in)           :: cyear
-   integer(kind=stint)                             :: doy
+   integer(kind=stint), intent(in)                 :: doy
+   logical, intent(in)                             :: assume_full_path
+   character(len=pathlength), intent(in)           :: modis_surf_path
    type(imager_flags_s), intent(in)                :: imager_flags
    type(imager_geolocation_s), intent(in)          :: imager_geolocation
-   type(imager_measurements_s), intent(in)         :: imager_measurements
    type(imager_angles_s), intent(in)               :: imager_angles
+   type(imager_measurements_s), intent(in)         :: imager_measurements
+   type(channel_info_s), intent(in)                :: channel_info
    type(ecmwf_2d_s), intent(in)                    :: ecmwf_2d
    type(surface_s), intent(inout)                  :: surface
-   type(channel_info_s)  , intent(in)              :: channel_info
 
    ! Local variables
 
    ! Land surface reflectance
+   character(len=pathlength)                       :: modis_surf_path_file
    real(kind=sreal), allocatable, dimension(:)     :: latlnd, lonlnd
    type(mcd43c)                                    :: mcd
    integer(kind=stint), dimension(3)               :: modbands
@@ -220,11 +222,16 @@ subroutine get_surface_reflectance_lam(modis_surf_path, imager_flags, &
       where(channel_info%channel_ids_abs .lt. 4 .and. &
             channel_info%channel_ids_abs .gt. 0) bands(:) = modbands
 
-      ! Read the data itself
-
       ! Select correct modis file
-      call select_modis_albedo_file(cyear,doy,modis_surf_path,modis_surf_path_file)
+      if (assume_full_path) then
+         modis_surf_path_file = modis_surf_path
+      else
+         call select_modis_albedo_file(cyear,doy,modis_surf_path, &
+                                       modis_surf_path_file)
+      endif
+      write(*,*)'modis_surf_path_file: ',trim(modis_surf_path_file)
 
+      ! Read the data itself
       call read_mcd43c3(modis_surf_path_file, mcd, nswchannels, bands, ws, bs, &
                         qc,stat)
 

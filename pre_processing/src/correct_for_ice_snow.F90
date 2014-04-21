@@ -66,12 +66,14 @@
 ! 2013/09/02: AP Removed startyi, endye.
 ! 2013/10/02: CP added fmonth so correct ice snow emissivity files are read 
 !                in 2009/2010
+! 2014/04/21: GM Added logical option assume_full_path.
 !
 ! $Id$
 !
 ! Bugs:
 !
-subroutine correct_for_ice_snow(nise_path, imager_geolocation, preproc_dims, surface,cyear,cmonth,cday,channel_info)
+subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
+                                preproc_dims,surface,cyear,cmonth,cday,channel_info)
 
   use preproc_constants
   use preproc_structures
@@ -101,6 +103,7 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, preproc_dims, sur
   end interface
 
   ! Arguments
+  logical, intent(in)                    :: assume_full_path
   character(len=300), intent(in)         :: nise_path
   type(imager_geolocation_s), intent(in) :: imager_geolocation
   type(preproc_dims_s), intent(in)       :: preproc_dims
@@ -139,17 +142,18 @@ subroutine correct_for_ice_snow(nise_path, imager_geolocation, preproc_dims, sur
   if (any(imager_geolocation%latitude .le. 0)) south=1
 
   ! Load ice/snow data
-  if ((trim(adjustl(cyear)) .eq. '2010') .or. (trim(adjustl(cyear)) .eq. '2009' .and. fmonth .gt. 8 )) then
-!     nise_path_file=trim(adjustl(nise_path))//'/'//trim(adjustl(cyear))//'/'//'NISE_SSMISF17_'//&
-     nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'//&
-          & trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))//'.HDFEOS'
+  if (assume_full_path) then
+     nise_path_file = nise_path
   else
-     
-!     nise_path_file=trim(adjustl(nise_path))//'/'//trim(adjustl(cyear))//'/'//'NISE_SSMIF13_'//&
-     nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'//&
-          & trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))//'.HDFEOS'
+     if ((trim(adjustl(cyear)) .eq. '2010') .or. (trim(adjustl(cyear)) .eq. '2009' .and. fmonth .gt. 8 )) then
+        nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'//&
+             & trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))//'.HDFEOS'
+     else
+        nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'//&
+             & trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))//'.HDFEOS'
+     endif
   endif
-  write(*,*)' nise_path_file', trim(nise_path_file)
+  write(*,*)'nise_path_file: ', trim(nise_path_file)
 
   ! Check that the defined file exists and is readable
   inquire(file=trim(nise_path_file), exist=nise_file_exist, &

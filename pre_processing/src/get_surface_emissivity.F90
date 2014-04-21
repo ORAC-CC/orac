@@ -10,7 +10,7 @@
 ! Arguments:
 ! Name            Type      In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! emissivity_path    char   in   Path to CIMSS emis_inf10_month data
+! emis_path    char   in   Path to CIMSS emis_inf10_month data
 ! imager_flags       struct in   Imager structure containing land/sea flag
 ! imager_geolocation struct in   Imager structure containing lat/lon points
 ! preproc_dims       struct in   Preprocessing dimensions, including sw and lw
@@ -47,6 +47,7 @@
 ! 05/11/2013 GM Removed my commented out original fixes for those of Matthias
 !               and otherwise fixed a small memory leak and cleaned up the code.
 ! 10/02/2014 AP Variable renaming
+! 04/21/2014 GM Added logical option assume_full_path.
 !
 ! $Id$
 !
@@ -54,10 +55,9 @@
 ! none known
 !
 
-subroutine get_surface_emissivity(emissivity_path, imager_flags, &
-     imager_geolocation, channel_info, &
-     preproc_dims, preproc_geoloc, surface, &
-     preproc_surf)
+subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
+     imager_flags, imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
+     surface, preproc_surf)
 
    use preproc_constants
    use preproc_structures
@@ -93,16 +93,20 @@ subroutine get_surface_emissivity(emissivity_path, imager_flags, &
    end interface
 
    ! Input/output variables
-   character(len=pathlength),  intent(in)          :: emissivity_path
-   type(imager_flags_s),       intent(in)          :: imager_flags
-   type(imager_geolocation_s), intent(in)          :: imager_geolocation
-   type(channel_info_s),       intent(in)          :: channel_info
-   type(preproc_dims_s),       intent(in)          :: preproc_dims
-   type(preproc_geoloc_s),     intent(in)          :: preproc_geoloc
-   type(surface_s),            intent(inout)       :: surface
-   type(preproc_surf_s),       intent(inout)       :: preproc_surf
+   character(len=datelength),  intent(in)    :: cyear
+   integer(kind=stint),        intent(in)    :: doy
+   logical,                    intent(in)    :: assume_full_path
+   character(len=pathlength),  intent(in)    :: emis_path
+   type(imager_flags_s),       intent(in)    :: imager_flags
+   type(imager_geolocation_s), intent(in)    :: imager_geolocation
+   type(channel_info_s),       intent(in)    :: channel_info
+   type(preproc_dims_s),       intent(in)    :: preproc_dims
+   type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
+   type(surface_s),            intent(inout) :: surface
+   type(preproc_surf_s),       intent(inout) :: preproc_surf
 
    ! Local variables
+   character(len=pathlength)                          :: emis_path_file
    type(emis_s)                                       :: emis
    integer(kind=stint),              dimension(3)     :: embands
    integer(kind=stint), allocatable, dimension(:)     :: bands
@@ -165,8 +169,16 @@ subroutine get_surface_emissivity(emissivity_path, imager_flags, &
    write(*,*)'embands: ',embands
    write(*,*)'bands: ',bands
 
+   ! Select correct modis file
+   if (assume_full_path) then
+      emis_path_file = emis_path
+   else
+      call select_modis_emiss_file(cyear,doy,emis_path,emis_path_file)
+   endif
+   write(*,*)'emis_path_file: ',trim(emis_path_file)
+
    ! Read the data itself
-   stat = read_cimss_emissivity(emissivity_path, emis, bands, flag=1_stint)
+   stat = read_cimss_emissivity(emis_path_file, emis, bands, flag=1_stint)
 
    ! Resort the emission data so that latitude runs from -90 to 90, rather than
    ! 90 to -90

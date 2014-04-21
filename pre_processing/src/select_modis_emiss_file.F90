@@ -13,42 +13,45 @@
 ! Name Type Description
 !
 ! History:
-! 2012/08/06: Caroline Poulsen original version
-! 2012/08/16: Gareth Thomas. Extensive rewrite. The code now checks if we're
+! 2012/08/06, Caroline Poulsen: Original version
+! 2012/08/16, Gareth Thomas: Extensive rewrite. The code now checks if we're
 !             looking at data for a leap year, and sets the day-of-year numbers
 !             (which are for the first of each month) accordingly. Date arrays
 !             are also no-longer dynamic.
 !             Also changed the way the appropriate day-of-year number is
 !             selected, so that it is always the closest smaller number to the
 !             actual date.
-! 2012/08/20: Matthias Jerg fixes bug (variable type from int to logical) in
+! 2012/08/20, Matthias Jerg: fixes bug (variable type from int to logical) in
 !             inquire statement reads files downloaded from
 !             http://cimss.ssec.wisc.edu/iremis/download.php
-! 2013/06/27: MJ implements file independent checking for leap year
-! 2013/11/01: Greg McGarragh: Fixed leap year check to include all cases.  This
+! 2013/06/27, Matthias Jerg: Implements file independent checking for leap year
+! 2013/11/01, Greg McGarragh: Fixed leap year check to include all cases.  This
 !             code is now 2100 ready:)
-! 2013/11/01: Greg McGarragh: Cleaned up code.
+! 2013/11/01, Greg McGarragh: Cleaned up code.
+! 2014/04/21, Greg McGarragh: Added logical option assume_full_path.
 !
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-subroutine select_modis_emiss_file(year,cyear,doy,emiss_surf_path,emiss_surf_path_file)
+subroutine select_modis_emiss_file(cyear,doy,emiss_surf_path,emiss_surf_path_file)
 
   use preproc_structures
 
   implicit none
 
-  integer(kind=stint),       intent(in)    :: year
-  character(len=datelength), intent(in)    :: cyear
-  integer(kind=stint),       intent(in)    :: doy
-  character(len=pathlength), intent(in)    :: emiss_surf_path
-  character(len=pathlength), intent(out)   :: emiss_surf_path_file
+  character(len=datelength), intent(in)  :: cyear
+  integer(kind=stint),       intent(in)  :: doy
+  character(len=pathlength), intent(in)  :: emiss_surf_path
+  character(len=pathlength), intent(out) :: emiss_surf_path_file
 
+  integer                            :: year
   integer                            :: pos
   logical                            :: isleapyear
   integer(kind=stint), dimension(12) :: dates,newdates
   character(len=3),    dimension(12) :: dates_s
   character(len=3)                   :: emis_date_s
+
+  read(cyear, *) year
 
   isleapyear=.false.
 

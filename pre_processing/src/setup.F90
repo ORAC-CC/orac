@@ -252,6 +252,7 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'.N1',back=.true.)
    platform='ENV'
    write(*,*)'L1B file: ',trim(adjustl(path_to_l1b_file))
+   write(*,*)'Geo file: ',trim(adjustl(path_to_geo_file))
 
    !Get year, month,day,hour and minute as character
    cyear=trim(adjustl(path_to_l1b_file(intdummy1-45:intdummy1-42)))
