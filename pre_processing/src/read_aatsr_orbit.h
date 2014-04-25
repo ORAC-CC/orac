@@ -19,6 +19,8 @@
 
    HISTORY:
    2013/10/08: AP Original version.
+   2014/04/25: GM Add the "is_lut_drift_corrected" flag to the output from
+      read_aatsr_orbit().
 
    $Id$
 */
@@ -82,6 +84,8 @@
 !
 ! History:
 ! 2013/10/08: AP Original version
+! 2014/04/25: GM Add the "is_lut_drift_corrected" flag to the output from
+!    read_aatsr_orbit().
 !
 ! $Id$
 !
@@ -91,7 +95,7 @@
 void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       const short *nch, const short *ch, 
                       const short *view, const long *nx, const long *ny, 
-                      const long *startx, const long *starty, short *stat, 
+                      const long *startx, const long *starty, short *stat,
                       float **lat,  float **lon, 
                       float **nsza, float **niza, float **nsaz, float **nraz,  
                       short  *nflg, short  *nqul, double *nday,
@@ -105,7 +109,8 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       float **fch5, float **fch6, float **fch7, float **fer1, 
                       float **fer2, float **fer3, float **fer4, float **fer5, 
                       float **fer6, float **fer7,
-                      char start_date[30], char gc1_file[62], char vc1_file[62]);
+                      char start_date[30], char gc1_file[62], char vc1_file[62],
+                      bool *is_lut_drift_corrected);
 
 /*Name: fetch_aatsr_float_values AND fetch_aatsr_short_values
 !

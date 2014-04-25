@@ -59,6 +59,9 @@
 ! 2013/10/10: MJ fixed small bug
 ! 2013/10/17: GM Hoist loop invariant call to aatsr_read_drift_table() out of loop.
 ! 2014/01/27: MJ datatype corrections
+! 2014/04/25: GM Use the "is_lut_drift_corrected" flag from read_aatsr_orbit()
+!                to determine if the LUT based drift correction has already been
+!                applied to the data as in the 3rd reprocessing (V2.1) data. 
 !
 ! $Id$
 !
@@ -87,7 +90,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
            fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
            fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
            fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
-           start_date, gc1_file, vc1_file) bind(C,name='read_aatsr_orbit')
+           start_date, gc1_file, vc1_file, is_lut_drift_corrected) &
+           bind(C,name='read_aatsr_orbit')
          use iso_c_binding ! technically Fortran 2003
          use preproc_constants
  
@@ -101,7 +105,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          integer(c_long)                    :: nx, ny, startx, starty
          integer(c_short), dimension(nx,ny) :: nflg, nqul, fflg, fqul
          real(c_double), dimension(ny)      :: nday, fday
-         logical(c_bool)                    :: verb
+         logical(c_bool)                    :: verb, is_lut_drift_corrected
          type(c_ptr) :: lat, lon
          type(c_ptr) :: nsza, niza, nsaz, nraz
          type(c_ptr) :: nch1, nch2, nch3, nch4, nch5, nch6, nch7
@@ -122,14 +126,14 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(channel_info_s)        :: channel_info
    logical                     :: verbose
    integer                     :: i,status
-   integer(kind=stint) :: j
+   integer(kind=stint)         :: j
    integer(sint)               :: view_selection
    real(sreal), dimension(4)   :: A
    type(aatsr_drift_lut)       :: lut
    real(dreal)                 :: new_drift, old_drift, drift_var
 
    ! C variables
-   logical(c_bool)                       :: verb
+   logical(c_bool)                       :: verb, is_lut_drift_corrected
    integer(c_short)                      :: nch, stat, temp
    integer(c_long)                       :: nx, ny, startx, starty
    character(kind=c_char,len=pathlength) :: l1b_file_c
@@ -312,15 +316,17 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
         fsza, fiza, fsaz, fraz, fflg, fqul, fday, &
         fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
         fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
-        start_date, gc1_file, vc1_file)
+        start_date, gc1_file, vc1_file, is_lut_drift_corrected)
    if (verbose) print*,'C function returned with status ', stat
 
    ! convert elevation angles read into zenith angles
    imager_angles%solzen = 90.0 - imager_angles%solzen
    imager_angles%satzen = 90.0 - imager_angles%satzen
-   if (verbose) print*,'calling read dift file ', stat
-   call aatsr_read_drift_table(drift_file, lut, status)
-   if (verbose) print*,'finish drift table read returned with status ', stat
+   if (.not. is_lut_drift_corrected) then
+      if (verbose) print*,'calling read dift file ', stat
+      call aatsr_read_drift_table(drift_file, lut, status)
+      if (verbose) print*,'finish drift table read returned with status ', stat
+   endif
    ! correct channels 1-4
    do i=1,channel_info%nchannels_total
       j=channel_info%channel_ids_instr(i)
@@ -346,7 +352,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          end if
 
          ! determine drift correction to remove from data
-         if (status.eq.0) then
+         if (.not. is_lut_drift_corrected .and. status.eq.0) then
             ! drift = old correction / new correction
             call aatsr_corrections(start_date, vc1_file, lut, j, new_drift, &
                  old_drift, drift_var)

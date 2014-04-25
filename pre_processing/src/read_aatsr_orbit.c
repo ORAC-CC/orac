@@ -2,9 +2,11 @@
    See the header file "read_aatsr_orbit.h" for documentation.
 
    HISTORY:
-   08/10/2013 Adam Povey: Original version.
-   11/10/2013 Greg McGarragh: Fixed band names for the forward view which are
-                              not *_forward_* but are actually *_fward_*.
+   08/10/2013, Adam Povey: Original version.
+   11/10/2013, Greg McGarragh: Fixed band names for the forward view which are
+      not *_forward_* but are actually *_fward_*.
+   04/25/2014, Greg McGarragh: Add the "is_lut_drift_corrected" flag to the
+      output from read_aatsr_orbit().
 
    $Id$
  **/
@@ -30,7 +32,8 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                       float **fch5, float **fch6, float **fch7, float **fer1, 
                       float **fer2, float **fer3, float **fer4, float **fer5, 
                       float **fer6, float **fer7,
-                      char start_date[30], char gc1_file[62], char vc1_file[62])
+                      char start_date[30], char gc1_file[62], char vc1_file[62],
+                      bool *is_lut_drift_corrected)
 {
   float *iaz;
   const char *ax_label[2][4], *ch_label[2][7], *fg_label[2][2], *dy_label[2];
@@ -58,7 +61,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
   EPR_SDatasetId *did;
   const EPR_SField *fid;
   EPR_SRecord *mphid, *rec;
-  EPR_SDSD *vc1, *gc1;
+  EPR_SDSD *vc1, *gc1, *vdt;
   const EPR_STime *time;
 
   // Set the names for the fields that will be read
@@ -139,6 +142,12 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
             "read_aatsr_orbit: Didn't find GC file in %s. %s found instead.\n",
 	    l1b_file, gc1->ds_name);
   strcpy(gc1_file, gc1->filename);
+  // 4) vdt (VISCAL_DRIFT_TABLE)
+  vdt = epr_get_dsd_at(pid, 36);
+  if (! vdt)
+    *is_lut_drift_corrected = false;
+  else
+    *is_lut_drift_corrected = true;
 
   // Read auxilliary and flag data from nadir/forward views
   for (j=0; j<2; j++) {

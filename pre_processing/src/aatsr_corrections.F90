@@ -39,7 +39,7 @@
 ! 2013/10/11: GM Changed the comparison lut%julday.eq.Tn to lut%julday(1:lut%n)
 !                .eq.Tn so that the comparison does go past the length of the
 !                lut (lut%n) to the static size of lut%julday.
-!20140127:: MJ datatype corrections
+! 2014/01/27: MJ datatype corrections
 !
 ! $Id$
 !
