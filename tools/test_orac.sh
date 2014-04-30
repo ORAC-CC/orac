@@ -9,7 +9,8 @@
 #
 # Calling sequence:
 #    ./test_orac.sh [-first] [-short|-long] [-no_compare] [-revision NUMBER]
-#       [-do DAYAATSR|NITAATSR|AATSR|AVHRR|DAYMYD|NITMYD|MYD|MODIS|ALL|NONE]
+#       [-do DAYAATSR|NITAATSR|AATSR|DAYAVHRR|NITAVHRR|AVHRR|DAYMYD|NITMYD|MYD|
+#            MODIS|DAY|NIT|NIGHT|ALL|NONE] [-v21] [-drop]
 #       [-WAT|ICE] [-n_procs NUM] [-ld_set] [-orac_lib NAME]
 #       [-idl_folder PATH] [-orac_folder PATH] [-preproc_folder PATH] 
 #       [-tool_folder PATH] [-in_folder PATH] [-out_folder PATH] 
@@ -23,12 +24,19 @@
 #    DAYAATSR  The daytime section of an AATSR orbit.
 #    NITAATSR  The nighttime section of an AATSR orbit.
 #    AATSR     DAYAATS and NITAATSR.
-#    AVHRR     An entire AVHRR orbit.
+#    DAYAVHRR  The daytime section of an AVHRR orbit.
+#    NITAVHRR  The nighttime section of an AVHRR orbit.
+#    AVHRR     DAYAVHRR and NITAVHRR.
 #    DAYMYD    The daytime section of an MODIS-AQUA orbit.
 #    NITMYD    The nighttime section of an MODIS-AQUA orbit.
 #    MYD|MODIS DAYMYD and NITMYD.
+#    DAY       DAYAATSR, DAYAVHRR, DAYMYD.
+#    NIT|NIGHT NITAATSR, NITAVHRR, NITMYD.
 #    ALL       DAYAATS, NITAATSR, AVHRR, DAYMYD, and NITMYD. The default option.
 #    NONE      No processing is performed, only a comparison.
+# -v21         Use version 2.1 AATSR data. Default is version 2.0.
+# -drop        Don't use the second and fifth channels. Mostly intended for
+#              bug identification rather than useful processing.
 # -short       Process only a small segment of each of the test files (5 lines).
 #              This is significantly faster than the default processing of the
 #              full files but may not catch all possible circumstances.
@@ -76,7 +84,9 @@
 # 2014/01/28: AP Improved command line arguments.
 # 2014/02/04: AP Expanded print statements - now displays # converged and 
 #                average cost. Added xargs parallelisation.
+# 2014/04/30: AP New folder structure. Minor bug fixes. Added -drop.
 #
+set -e
 
 #------------------------------------------------------------------------------
 # DEFINE LOCAL FOLDERS
@@ -88,10 +98,10 @@ orac_repos=/home/jupiter/eodg2/povey/orac/trunk
 data_repos=/local/home/povey/povey/data
 
 # path to SAD repository
-sad_repos=/home/blt/orac_sad/sad_dir
+sad_repos=/local/home/povey/povey/sad_dir
 
 # path to IDL executable
-idl_folder=/usr/local/PACK/idl82/idl82/bin
+idl_folder=/usr/local/PACK/idl83/idl83/bin
 
 #------------------------------------------------------------------------------
 # DETERMINE NECESSARY FOLDERS
@@ -106,16 +116,6 @@ out_folder=$data_repos/testoutput
 #------------------------------------------------------------------------------
 # MANAGE SETTINGS
 #------------------------------------------------------------------------------
-# determine new revision number by asking SVN for current number and adding 1
-revstr=`svn info | grep 'Revision'`
-revind=$((`expr index "$revstr" '[0123456789]'`-1))
-if [[ "$revind" -lt 0 ]]; then
-    echo 'Unable to determine version number from SVN.'
-    revision=10000
-else
-    revision=$((${revstr:$revind}+1))
-fi
-
 # default settings
 phase="WAT"
 short=0
@@ -123,12 +123,16 @@ n_procs=5
 do_all=1
 do_DAYAATSR=0
 do_NITAATSR=0
-do_AVHRR=0
+do_DAYAVHRR=0
+do_NITAVHRR=0
 do_DAYMYD=0
 do_NITMYD=0
 do_compare=1
-rev_set=0
+new=1
+revision=0
+ver21=0
 ld_set=1
+drop=0
 
 # perl command used at end of script. specifies which lines of log file
 # are printed
@@ -140,6 +144,10 @@ while [[ $# > 0 ]]; do
         -orac_lib)
             shift
             ORAC_LIB="$1"
+            ;;
+        -idl_folder)
+            shift
+            idl_folder="$1"
             ;;
         -orac_folder)
             shift
@@ -167,7 +175,7 @@ while [[ $# > 0 ]]; do
             ;;
         -first)
             do_compare=0
-            if (( ! $rev_set )); then let revision-=1; fi
+            new=0
             ;;
         -short)
             short=1
@@ -190,6 +198,12 @@ while [[ $# > 0 ]]; do
         -ICE)
             phase="ICE"
             ;;
+        -v21)
+            ver21=1
+            ;;
+        -drop)
+            drop=1
+            ;;
         -do)
             shift
             case "$1" in
@@ -206,8 +220,17 @@ while [[ $# > 0 ]]; do
                     do_NITAATSR=1
                     do_all=0
                     ;;
+                DAYAVHRR)
+                    do_DAYAVHRR=1
+                    do_all=0
+                    ;;
+                NITAVHRR)
+                    do_NITAVHRR=1
+                    do_all=0
+                    ;;
                 AVHRR)
-                    do_AVHRR=1
+                    do_DAYAVHRR=1
+                    do_NITAVHRR=1
                     do_all=0
                     ;;
                 DAYMYD)
@@ -220,6 +243,18 @@ while [[ $# > 0 ]]; do
                     ;;
                 MYD|MODIS)
                     do_DAYMYD=1
+                    do_NITMYD=1
+                    do_all=0
+                    ;;
+                DAY)
+                    do_DAYAATSR=1
+                    do_DAYAVHRR=1
+                    d0_DAYMYD=1
+                    do_all=0
+                    ;;
+                NIT|NIGHT)
+                    do_NITAATSR=1
+                    do_NITAVHRR=1
                     do_NITMYD=1
                     do_all=0
                     ;;
@@ -238,6 +273,21 @@ while [[ $# > 0 ]]; do
     shift
 done
 
+# determine new revision number by asking SVN for current number and adding 1
+if [[ $revision -eq 0 ]]; then
+    revstr=`svn info | grep 'Revision'`
+    revind=$((`expr index "$revstr" '[0123456789]'`-1))
+    if [[ $revind -lt 0 ]]; then
+        echo 'Unable to determine version number from SVN.'
+        revision=10000
+    else
+        revision=${revstr:$revind}
+    fi
+    if (( $new )); then
+        let revision+=10000
+    fi
+fi
+
 if (( $ld_set )); then
     # load library paths from Makefile lib file
     # 1) Read contents of lib file, whose location is given by $ORAC_LIB
@@ -250,13 +300,15 @@ if (( $ld_set )); then
     # 4) Evaluate those lines
     eval "${lib_commands:0:${#not_libs}}"
     # 5) Now all of those variables are defined here so we can build the path
-    LD_LIBRARY_PATH=${EPR_APILIB}:${LD_LIBRARY_PATH}
-    LD_LIBRARY_PATH=${GRIBLIB}:${LD_LIBRARY_PATH}
-    LD_LIBRARY_PATH=${HDFLIB}:${LD_LIBRARY_PATH}
-    LD_LIBRARY_PATH=${HDF5LIB}:${LD_LIBRARY_PATH}
     LD_LIBRARY_PATH=${NCDFLIB}:${LD_LIBRARY_PATH}
     LD_LIBRARY_PATH=${NCDF_FORTRAN_LIB}:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${RTTOVLIB}:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${HDFLIB}:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${HDF5LIB}:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${GRIBLIB}:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${EPR_APILIB}:${LD_LIBRARY_PATH}
     LD_LIBRARY_PATH=${SZLIB}:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${EOSLIB}:${LD_LIBRARY_PATH}
     export LD_LIBRARY_PATH
 fi
 
@@ -265,50 +317,87 @@ fi
 #------------------------------------------------------------------------------
 i=0
 
-if (( ($do_all) || ($do_DAYAATSR) )); then
+if (( $do_all || $do_DAYAATSR )); then
     sensor[$i]=AATSR
-    label[$i]=DAYAATSR
+    if (( $ver21 )); then
+        label[$i]=DAYAATSRV21
+    else
+        label[$i]=DAYAATSR
+    fi
     let i+=1
 fi
-if (( ($do_all) || ($do_NITAATSR) )); then
+if (( $do_all || $do_NITAATSR )); then
     sensor[$i]=AATSR
-    label[$i]=NITAATSR
+    if (( $ver21 )); then
+        label[$i]=NITAATSRV21
+    else
+        label[$i]=NITAATSR
+    fi
     let i+=1
 fi
-if (( ($do_all) || ($do_AVHRR) )); then
-    sensor[$i]=AVHRR
-    label[$i]=AVHRR
+if (( $do_all || $do_DAYAVHRR || ( (! $short) && $do_NITAVHRR) )); then
+    sensor[$i]=AVHRR-NOAA18
+    if (( $short )); then
+        label[$i]=DAYAVHRR
+    else
+        label[$i]=AVHRR
+    fi
     let i+=1
 fi
-if (( ($do_all) || ($do_DAYMYD) )); then
+if (( $short && ($do_all || $do_NITAVHRR) )); then
+    sensor[$i]=AVHRR-NOAA18
+    label[$i]=NITAVHRR
+    let i+=1
+fi
+if (( $do_all || $do_DAYMYD )); then
     sensor[$i]=MODIS-AQUA
     label[$i]=DAYMYD
     let i+=1
 fi
-if (( ($do_all) || ($do_NITMYD) )); then
+if (( $do_all || $do_NITMYD )); then
     sensor[$i]=MODIS-AQUA
     label[$i]=NITMYD
     let i+=1
 fi
 
 # add distinction for short mode to labels
-if (( $short == 1 )); then for i in ${!label[*]}; do
+if (( $short )); then for i in ${!label[*]}; do
    label[i]=${label[i]}S
 done
+fi
+
+# set which channels should be used by the retrieval
+if (( $drop )); then
+    channels='1 0 1 1 0 1'
+else
+    channels='1 1 1 1 1 1'
 fi
 
 #------------------------------------------------------------------------------
 # RUN ORAC PROCESSOR
 #------------------------------------------------------------------------------
-# generate a driver file and start the processing
+# save driver file to output folder
 driver_file_base=$out_folder/test_driver_
 sec=`date +"%s"`
 com=()
 for j in ${!sensor[*]}; do
    echo "Processing ${label[$j]}"
 
+   # locate output folder
+   folder=$out_folder/'V'$revision/${label[$j]}
+   if [ ! -d $folder ]; then 
+       echo 'Preprocessor output folder does not exist for ${label[$j]}.'
+       continue
+   fi
+   if (( $drop )); then
+       output_folder=${folder}D
+       if [ ! -d $output_folder ]; then mkdir $output_folder; fi
+   else
+       output_folder=$folder
+   fi
+
    # find root file name
-   alb=`find $in_folder -name "${label[$j]}_*ORACV${revision}*alb.nc" -printf "%f\n"`
+   alb=`find $folder -name "${label[$j]}_*ORACV${revision}*alb.nc" -printf "%f\n"`
    if (( "${#alb}" == 0 )); then
        echo 'No files found. Check revision number.'
        continue
@@ -317,18 +406,20 @@ for j in ${!sensor[*]}; do
 
    # write driver file
    driver_file=$driver_file_base${label[$j]}.txt
-   driver="'$in_folder'
+   driver="'$folder'
 '$fileroot'
-'$out_folder'
+'$output_folder'
 '$sad_repos'
 ${sensor[$j]}
 6
-1 1 1 1 1 1
+$channels
 $phase"
    echo "$driver" 1> $driver_file
 
    # make header for log file
-   log_file=${out_folder}/${label[$j]}'_ORAC_V'$revision'_'`date +"%y%m%d_%H%M"`.log
+   log_file=$output_folder/${label[$j]}
+   if (( $drop )); then log_file=$log_file'D'; fi
+   log_file=$log_file'_ORAC_'$phase'_V'$revision'_'`date +"%y%m%d_%H%M"`.log
    echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" 1>> $log_file
    echo '' 1>> $log_file
    echo '-----DRIVER FILE-----' 1>> $log_file
@@ -364,6 +455,6 @@ rm -f $driver_file_base*
 # CHECK RESULTS
 #------------------------------------------------------------------------------
 # call IDL routine to compare this output to the previous version
-if (( ($do_compare) && ("$?" == 0) )); then
-    $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav -args $out_folder $revision 'main'
+if (( $do_compare && ("$?" == 0) )); then
+    $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav -args $out_folder $revision 'main' ${#label[@]} ${label[@]}
 fi

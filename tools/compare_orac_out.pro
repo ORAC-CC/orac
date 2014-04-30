@@ -18,13 +18,18 @@
 ;   ORAC test framework
 ;
 ; CALLING SEQUENCE:
-;   COMPARE_ORAC_OUT, folder, revision_number
+;   COMPARE_ORAC_OUT
 ;
 ; INPUTS:
+;   NOTE - These are provided as command line arguments and NOT passed to the
+;          routine in the usual fashion.
 ;   folder = full path of the folder in which the preprocessor files are found
 ;   revision_number = a string giving the revision number of your working copy
 ;   mode   = if set to 'preproc', compares the preprocessor outputs. Otherwise,
 ;            it compares the main processor outputs
+;   ninst  = an integer giving the number of instruments to be evaluated
+;   list   = the remaining arguments are ninst strings giving the labels for 
+;            the files to be evaluated
 ;
 ; OPTIONAL INPUTS:
 ;   None
@@ -57,52 +62,65 @@
 ;
 ; MODIFICATION HISTORY:
 ;   Written by ACPovey (povey@atm.ox.ac.uk) 
-;   01 Nov 2013 - V1.00
-;   27 Jan 2014 - V1.10: Added functionality for main processor
-;   04 Feb 2013 - V1.11: Added CONFIG file.
+;   01 Nov 2013 - V1.00: AP Original version
+;   27 Jan 2014 - V1.10: AP Added functionality for main processor
+;   04 Feb 2014 - V1.11: AP Added CONFIG file.
+;   14 Feb 2014 - V1.12: AP Added arguments NINST and LABELS to limit scope of
+;                 script when only processing a few cases. Fixed version number
+;                 bug.
+;   29 Apr 2014 - V1.13: AP New folder structure.
 ;-
 PRO COMPARE_ORAC_OUT
    args=COMMAND_LINE_ARGS()
    fdr=args[0]
    revision=args[1]
    mode=args[2]
+   ninst=FIX(args[3])
    
-   ;; determine the list of experiments to be considered from start of file name
+   ;; appropriate file extensions
    if mode eq 'preproc' $
       then a='.'+['alb','config','clf','geo','loc','lsf','msi','uv', $
                'lwrtm','prtm','swrtm']+'.nc' $
       else a='.'+['primary','secondary']+'.nc'
-   f=FILE_SEARCH(fdr+'/*'+a[0],count=nf)
-   for i=0,nf-1 do begin
-      f[i]=STRMID(f[i],STRPOS(f[i],'/',/reverse_search)+1)
-      f[i]=STRMID(f[i],0,STRPOS(f[i],'_ORACV'))
-   endfor
-   list=f[UNIQ(f,SORT(f))]
+
+   ;; available versions
+   ver=FILE_SEARCH(fdr+'/V*',/test_dir,count=nver)
+   if nver lt 2 then MESSAGE,'Insufficient file revisions found.'
+   ;; translate version # into numeral for sorting
+   ver=ver[SORT(FIX(STRMID(ver,TRANSPOSE(STRPOS(ver,'V'))+1)))]
+   p=WHERE(STRMATCH(ver,'*V'+revision),np)
+   if np ne 1 then MESSAGE,'Bad folder structure.'
+   old=ver[p-1]
+   new=ver[p]
+   PRINT, 'Comparing '+new+' against '+old
+
+   if ninst gt 0 then begin
+      list=STRARR(ninst)
+      for i=0,ninst-1 do list[i]=args[4+i]
+   endif else begin
+      f=FILE_SEARCH(new+'/*',/test_dir,count=nf)
+      for i=0,nf-1 do f[i]=STRMID(f[i],STRPOS(f[i],'/',/reverse_search)+1)
+   endelse
 
    ;; loop over all experiments
    foreach inst,list do begin
       PRINT,inst
       pass=1
-     
-      ;; find root name of specified revision and latest revision before that
-      fs=FILE_SEARCH(fdr+'/'+inst+'_ORACV'+'*'+a[0],count=nf1)
-      fs=fs[SORT(fs)]
-      p=WHERE(STRMATCH(fs,'*ORACV'+revision+'*'),np)
-      if (np eq 0) || ((p[0]-1) lt 0) then begin
-         PRINT,'--- All files of the same version. ---'
-         CONTINUE
-      endif
-      ;; most recent file of specified revision
-      newf=fs[p[np-1]]
-      newpath=STRMID(newf,0,STRLEN(newf)-STRLEN(a[0]))
-      ;; most recent file of a previous version
-      oldf=fs[p[0]-1]
-      oldpath=STRMID(oldf,0,STRLEN(oldf)-STRLEN(a[0]))
+
+      ;; find root file names
+      fs=FILE_SEARCH(old+'/'+inst+'/*'+a[0],count=nf1)
+      if nf1 eq 0 then MESSAGE,'No old files.'
+      oldf=fs[(SORT(fs))[nf1-1]]
+      oldroot=STRMID(oldf,0,STRLEN(oldf)-STRLEN(a[0]))
+      fs=FILE_SEARCH(new+'/'+inst+'/*'+a[0],count=nf1)
+      if nf1 eq 0 then MESSAGE,'No new files.'
+      newf=fs[(SORT(fs))[nf1-1]]
+      newroot=STRMID(newf,0,STRLEN(newf)-STRLEN(a[0]))
 
       ;; open all files with that roof
       for i=0,N_ELEMENTS(a)-1 do begin
-         id1=NCDF_OPEN(oldpath+a[i])
-         id2=NCDF_OPEN(newpath+a[i])
+         id1=NCDF_OPEN(oldroot+a[i])
+         id2=NCDF_OPEN(newroot+a[i])
 
          ;; loop over all variables in that file
          inq=NCDF_INQUIRE(id1)
@@ -114,8 +132,9 @@ PRO COMPARE_ORAC_OUT
                if N_ELEMENTS(c1) ne N_ELEMENTS(c2) then begin
                   PRINT,var.name+' ('+a[i]+','+ $
                         STRING(j,format='(I0)')+') - Size mismatch: ['+ $
-                        STRING(SIZE(c1,/dim),format='(I0)')+'] vs ['+ $
-                        STRING(SIZE(c2,/dim),format='(I0)')+']'
+                        STRJOIN(STRING(SIZE(c1,/dim),format='(I0)'),',')+ $
+                        '] vs ['+ $
+                        STRJOIN(STRING(SIZE(c2,/dim),format='(I0)'),',')+']'
                   pass=0
                endif else begin
                   trash=WHERE(ABS((c2-c1)/c1) gt 2d-7,nt)
