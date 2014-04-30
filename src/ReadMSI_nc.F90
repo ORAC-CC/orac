@@ -105,10 +105,11 @@
 !    20/01/2012, CP: Remove write statement
 !    2012/08/21, MJ: Uses original routine and implements reading of netcdf data.
 !    2012/09/21, CP: Added channel index to y_id value
-!    2012/11/03, MST and MJ:  Hard code in values for avhrr
+!    2012/11/03, MST and MJ: Hard code in values for avhrr
 !    2013/11/18, MJ: Cleans and debugs
 !    2014/01/31, MJ: Removed hardcoded parts for avhrr (obsolete)
 !    2014/04/18, GM: Cleaned up the code.
+!    2014/04/30, GM: Fixed a bug introduced by a previous change.
 !
 ! Bugs:
 !    None known.
@@ -147,7 +148,6 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    ! NetCDF related
    integer            :: ncid
    character(len=12)  :: prod_date
-   INTEGER(kind=nint) ::  ii
    integer(kind=nint), allocatable, dimension(:) :: msi_instr_ch_numbers
 
    ! On first call, the file is opened. It is then left open for all subsequent
@@ -215,9 +215,12 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
       msi_instr_ch_numbers=0_nint
       call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%Nyp,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
 
-      write(*,*) 'Read channel in MSI file'
-      call nc_read_array_3d_float_to_float_orac &
-           (ncid,Ctrl%Ind%Ny,Ctrl%Resoln%SegSize,Ctrl%Ind%Xmax,"msi_data",MSI_Data%MSI,1)
+      do i=1,Ctrl%Ind%Ny
+         write(*,*) 'Read data for channel in MSI file: ', &
+            & i,msi_instr_ch_numbers(Ctrl%Ind%Chi(i)),Ctrl%Ind%Chi(i),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+         call nc_read_array_3d_float_orac &
+            & (ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(i),"msi_data",MSI_Data%MSI(:,:,i),0)
+      enddo
 
       deallocate(msi_instr_ch_numbers)
 
