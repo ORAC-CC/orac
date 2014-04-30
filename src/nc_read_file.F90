@@ -21,7 +21,7 @@
 !    postprocessing code collections.
 ! 2014/04/20, Greg McGarragh: Cleaned up the code.
 ! 2014/04/20, Greg McGarragh: Added nc_read_array_2d_float_to_float_orac() and
-!                                  nc_read_array_2d_float_to_float_orac2().
+!                                   nc_read_array_2d_float_to_float_orac2().
 ! 2014/04/25, Greg McGarragh: Cleaned up the code.
 !
 ! $Id$

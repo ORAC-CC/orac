@@ -86,7 +86,7 @@
 !       value for double precision.
 !    2013/11/19, MJ: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
 !    2014/01/26, Greg McGarragh: Cleaned up code.
-!    2014/04/03 MJ adds some fill value definitions
+!    2014/04/03, MJ adds some fill value definitions
 !
 ! Bugs:
 !    None known.
@@ -425,23 +425,21 @@ module ECP_constants
    integer, parameter :: SecondaryFileCloseErr      = 1407
 
 
-
-
    real, parameter    :: d2r                        = 0.017453292 ! Pi / 180.0
 
-   integer, parameter :: sint                       = 2
    integer, parameter :: byte                       = 1
+   integer, parameter :: sint                       = 2
    integer, parameter :: nint                       = 4
 
    integer, parameter :: sreal                      = 4
    integer, parameter :: dreal                      = 8
 
 
-   real(kind=sreal), parameter    :: real_fill_value            = -999.0
-   real(kind=dreal), parameter :: double_fill_value = -999.0
-   real(kind=sreal), parameter :: real_fill_value_lat_lon=-999.0
-   integer(kind=sint), parameter :: int_fill_value=-32767
-   integer(kind=byte), parameter :: byte_fill_value=-127
+   real(kind=sreal), parameter   :: real_fill_value         = -999.0
+   real(kind=dreal), parameter   :: double_fill_value       = -999.0
+   real(kind=sreal), parameter   :: real_fill_value_lat_lon = -999.0
+   integer(kind=sint), parameter :: int_fill_value          = -32767
+   integer(kind=byte), parameter :: byte_fill_value         = -127
 
 
 end module ECP_constants

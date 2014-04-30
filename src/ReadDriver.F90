@@ -63,11 +63,12 @@
 !       standard input indicated by drifile .eq. '-'.
 !    2014/01/16, GM: Use Selm* constants to set FG and AP instead of numbers.
 !    2014/01/16, GM: Cleaned up code.
-!   20140131 MJ adds code for default surface reflection for avhrr (=modis for the time being)
+!    2014/01/31, MJ: Adds code for default surface reflection for avhrr
+!                    (=modis for the time being)
 !
 ! Bugs:
 !    NViews should be changed for dual view
-!    Not quiteworking for AVHRR
+!    Not quite working for AVHRR
 !
 ! IMPORTANT NOTE:
 !   If a new type of LUT i.e aerosol is added then new default values will have
@@ -528,10 +529,10 @@ subroutine Read_Driver(Ctrl, conf, message, drifile, status)
 
 
    ! Set first guess options (Tau,Re,Pc,F,Ts)
-   ! What do the numbers mean:
-   ! 1: Static apriori variable i.e does not change
-   ! 2: Use a dynamically chosen first guess dependant on measurements
-   ! 3: Use a value from an external auxillary file
+   ! What do the constants mean:
+   ! SelmCtrl: Static apriori variable i.e does not change
+   ! SelmMeas: Use a dynamically chosen first guess dependant on measurements
+   ! SelmAux: Use a value from an external auxillary file
    ! Ctrl%FG(statevariable, time of day)
 
    ! Day
@@ -716,7 +717,7 @@ subroutine Read_Driver(Ctrl, conf, message, drifile, status)
    deallocate(ref_solar_land)
 
    Ctrl%RS%Sb            = 20.0/100.0 ! Percentage error in surface reflectance
-   Ctrl%RS%Cb            = 0.2        ! Correlation between    surface reflectance
+   Ctrl%RS%Cb            = 0.2        ! Correlation between surface reflectance
 
 
    ! Set Ctrl%EqMPN
@@ -756,10 +757,10 @@ subroutine Read_Driver(Ctrl, conf, message, drifile, status)
 
    ! Upper limit on state Ctrl.Invpar.Xulim
    Ctrl%Invpar%Xulim(1) = 2.408
-   if (trim(Ctrl%CloudClass%Name) .eq. 'ICE') then
-      Ctrl%Invpar%Xulim(2) = 100.0
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
+   if (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
       Ctrl%Invpar%Xulim(2) = 35.0
+   else if (trim(Ctrl%CloudClass%Name) .eq. 'ICE') then
+      Ctrl%Invpar%Xulim(2) = 100.0
    else if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
             (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
             (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
