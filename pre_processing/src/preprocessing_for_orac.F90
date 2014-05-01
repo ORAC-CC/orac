@@ -187,6 +187,7 @@
 !                written.
 ! 2014/04/21: GM Added logical option assume_full_path.
 ! 2014/05/01: GM Cleaned up the code.
+! 2014/05/01: GM Move some allocations/deallocations to the proper subroutine.
 !
 ! $Id$
 !
@@ -441,16 +442,6 @@ program preprocessing
    along_track_offset2=0
    n_along_track2=0
 
-   ! allocate and initialize some preproc_dims fields
-   allocate(preproc_dims%instr_channel_sw(preproc_dims%maxchannels_sw))
-   preproc_dims%instr_channel_sw=-1
-   allocate(preproc_dims%instr_channel_lw(preproc_dims%maxchannels_lw))
-   preproc_dims%instr_channel_lw=-1
-   allocate(preproc_dims%coef_channel_sw(preproc_dims%maxchannels_sw))
-   preproc_dims%coef_channel_sw=-1
-   allocate(preproc_dims%coef_channel_lw(preproc_dims%maxchannels_lw))
-   preproc_dims%coef_channel_lw=-1
-
    ! allocate array for channel information
    imager_angles%nviews=1
    channel_info%nchannels_total=6
@@ -643,7 +634,7 @@ program preprocessing
       ! allocate preprocessing structures
       if (verbose) write(*,*) 'allocate preprocessing structures'
       call allocate_preproc_structures(imager_angles,preproc_geoloc, &
-           preproc_geo,preproc_prtm,preproc_dims, preproc_lwrtm,preproc_swrtm, &
+           preproc_geo,preproc_prtm,preproc_dims,preproc_lwrtm,preproc_swrtm, &
            preproc_surf,channel_info)
 
       ! set up now the preproc grid
@@ -744,11 +735,7 @@ program preprocessing
 
    enddo ! end looping over chunks
 
-   deallocate(preproc_dims%instr_channel_sw)
-   deallocate(preproc_dims%instr_channel_lw)
-   deallocate(preproc_dims%coef_channel_sw)
-   deallocate(preproc_dims%coef_channel_lw)
-
+   ! deallocate the array parts of the structures
    call deallocate_channel_info(channel_info)
 
 end program preprocessing

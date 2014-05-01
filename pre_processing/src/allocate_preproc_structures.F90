@@ -47,6 +47,7 @@
 ! 2013/11/08: GM Removed double allocations (allocated twice in a row) of
 !                preproc_prtm%temperature through preproc_prtm%ozone.
 ! 2014/02/10: AP simplifying variable names
+! 2014/05/01: GM Add some allocations that were being done outside.
 !
 ! $Id$
 !
@@ -77,6 +78,15 @@ subroutine allocate_preproc_structures(imager_angles, &
    type(channel_info_s)   :: channel_info
    type(imager_angles_s)  :: imager_angles
    integer                :: nchan_sw,nchan_lw
+
+   allocate(preproc_dims%instr_channel_sw(preproc_dims%maxchannels_sw))
+   preproc_dims%instr_channel_sw=-1
+   allocate(preproc_dims%instr_channel_lw(preproc_dims%maxchannels_lw))
+   preproc_dims%instr_channel_lw=-1
+   allocate(preproc_dims%coef_channel_sw(preproc_dims%maxchannels_sw))
+   preproc_dims%coef_channel_sw=-1
+   allocate(preproc_dims%coef_channel_lw(preproc_dims%maxchannels_lw))
+   preproc_dims%coef_channel_lw=-1
 
    allocate(preproc_dims%counter_sw(preproc_dims%xdim,preproc_dims%ydim))
    allocate(preproc_dims%counter_lw(preproc_dims%xdim,preproc_dims%ydim))
