@@ -633,9 +633,9 @@ program preprocessing
 
       ! allocate preprocessing structures
       if (verbose) write(*,*) 'allocate preprocessing structures'
-      call allocate_preproc_structures(imager_angles,preproc_geoloc, &
-           preproc_geo,preproc_prtm,preproc_dims,preproc_lwrtm,preproc_swrtm, &
-           preproc_surf,channel_info)
+      call allocate_preproc_structures(imager_angles,preproc_dims, &
+           preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
+           preproc_swrtm,preproc_surf,channel_info)
 
       ! set up now the preproc grid
       call make_preprop_grid(preproc_dims,preproc_geoloc)
@@ -726,8 +726,8 @@ program preprocessing
       ! deallocate the array parts of the structures
       write(*,*)'start deallocate'
       call deallocate_ecmwf_structures(ecmwf_dims,ecmwf_3d,ecmwf_2d)
-      call deallocate_preproc_structures(preproc_geoloc,preproc_geo, &
-           preproc_dims, preproc_prtm, preproc_lwrtm, preproc_swrtm, &
+      call deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
+           preproc_geo,preproc_prtm, preproc_lwrtm, preproc_swrtm, &
            preproc_surf)
       call deallocate_imager_structures(imager_geolocation,imager_angles, &
            imager_flags,imager_time,imager_measurements)
