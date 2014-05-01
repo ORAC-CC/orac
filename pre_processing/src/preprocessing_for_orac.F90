@@ -273,7 +273,7 @@ program preprocessing
 
    integer(kind=stint)             :: doy,year,month,day,hour,minute,startyi
 
-   character(len=datelength)       :: cyear,chour,cminute,cmonth,cday
+   character(len=datelength)       :: cyear,cmonth,cday,chour,cminute
 
    character(len=filelength)       :: lwrtm_file,swrtm_file,prtm_file
    character(len=filelength)       :: msi_file,cf_file,lsf_file,config_file
@@ -598,7 +598,7 @@ program preprocessing
       ! ancilliary input...
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, sensor, &
-           platform,hour,cyear,chour,cminute,cmonth,cday,assume_full_paths, &
+           platform,hour,cyear,cmonth,cday,chour,cminute,assume_full_paths, &
            ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out, &
            ecmwf_path3out,script_input,badc,imager_geolocation,nc,verbose)
 
@@ -696,7 +696,7 @@ program preprocessing
       call open_netcdf_output(imager_geolocation%nx,imager_geolocation%ny, &
            output_pathin,output_pathout,lwrtm_file,swrtm_file,prtm_file, &
            config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
-           scan_file,platform,sensor,script_input,cyear,chour,cminute,cmonth,cday, &
+           scan_file,platform,sensor,script_input,cyear,cmonth,cday,chour,cminute, &
            preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info, &
            use_chunking)
 

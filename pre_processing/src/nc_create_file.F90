@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
+subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,wo,type,preproc_dims,imager_angles,netcdf_info, &
      channel_info,use_chunking)
    !-------------------------------------------------------------------------------
@@ -49,7 +49,10 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
    !    consistent with the LW RTM output.
    ! 2014/02/10, AP: variable renaming
    ! 2014/03/11 MJ: some modifications for chunking (only used when turned on)
-   ! 2014/03/11 MJ: Commented out chunking completely in routines as I/O performance issues persisted.
+   ! 2014/03/11 MJ: Commented out chunking completely in routines as I/O performance
+   !    issues persisted.
+   ! 2014/05/01 GM: Reordered data/time arguments into a logical order.
+   !
    ! $Id$
    !
    ! Applied SPRs:
@@ -70,10 +73,10 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
    ! Input
    type(script_arguments_s),      intent(in)    :: script_input
    character(len=datelength),     intent(in)    :: cyear
-   character(len=datelength),     intent(in)    :: chour
-   character(len=datelength),     intent(in)    :: cminute
    character(len=datelength),     intent(in)    :: cmonth
    character(len=datelength),     intent(in)    :: cday
+   character(len=datelength),     intent(in)    :: chour
+   character(len=datelength),     intent(in)    :: cminute
    character(len=platformlength), intent(in)    :: platform
    character(len=sensorlength),   intent(in)    :: sensor
    character(len=*),              intent(in)    :: path
@@ -745,8 +748,8 @@ subroutine nc_create_file_rtm(script_input,cyear,chour,cminute,cmonth,cday, &
    if (type .eq. 2) ncid=netcdf_info%ncid_swrtm
    if (type .eq. 3) ncid=netcdf_info%ncid_prtm
 
-   call set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
-        cday,ctitle,platform,sensor,path)
+   call nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor,path, &
+                                 cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
@@ -766,7 +769,7 @@ end subroutine nc_create_file_rtm
 
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-subroutine nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday, &
+subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
    platform,sensor,path,wo,type,imager_geolocation,imager_angles,netcdf_info, &
    channel_info, use_chunking)
 !-------------------------------------------------------------------------------
@@ -812,10 +815,10 @@ subroutine nc_create_file_swath(script_input,cyear,chour,cminute,cmonth,cday, &
    ! Input
    type(script_arguments_s),      intent(in)    :: script_input
    character(len=datelength),     intent(in)    :: cyear
-   character(len=datelength),     intent(in)    :: chour
-   character(len=datelength),     intent(in)    :: cminute
    character(len=datelength),     intent(in)    :: cmonth
    character(len=datelength),     intent(in)    :: cday
+   character(len=datelength),     intent(in)    :: chour
+   character(len=datelength),     intent(in)    :: cminute
    character(len=platformlength), intent(in)    :: platform
    character(len=sensorlength),   intent(in)    :: sensor
    character(len=*),              intent(in)    :: path
@@ -1378,8 +1381,8 @@ endif
    if (type .eq. 6) ncid=netcdf_info%ncid_alb
    if (type .eq. 7) ncid=netcdf_info%ncid_scan
 
-   call set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
-                              cday,ctitle,platform,sensor,path)
+   call nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor,path, &
+                                 cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
@@ -1399,7 +1402,7 @@ end subroutine nc_create_file_swath
 
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
-subroutine nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday, &
+subroutine nc_create_file_config(script_input,cyear,cmonth,cday,chour,cminute, &
    platform,sensor,path,wo,preproc_dims,imager_geolocation,netcdf_info,channel_info)
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
@@ -1439,10 +1442,10 @@ subroutine nc_create_file_config(script_input,cyear,chour,cminute,cmonth,cday, &
    ! Input
    type(script_arguments_s),      intent(in)    :: script_input
    character(len=datelength),     intent(in)    :: cyear
-   character(len=datelength),     intent(in)    :: chour
-   character(len=datelength),     intent(in)    :: cminute
    character(len=datelength),     intent(in)    :: cmonth
    character(len=datelength),     intent(in)    :: cday
+   character(len=datelength),     intent(in)    :: chour
+   character(len=datelength),     intent(in)    :: cminute
    character(len=platformlength), intent(in)    :: platform
    character(len=sensorlength),   intent(in)    :: sensor
    character(len=*),              intent(in)    :: path
@@ -1599,8 +1602,8 @@ endif
 
 
    ! set up attributes common to all output files
-   call set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
-                              cday,ctitle,platform,sensor,path)
+   call nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor,path, &
+                                 cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
@@ -1618,8 +1621,8 @@ end subroutine nc_create_file_config
 
 
 
-subroutine set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
-                                 cday,ctitle,platform,sensor,path)
+subroutine nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor, &
+                                    path,cyear,cmonth,cday,chour,cminute)
 
    use netcdf
 
@@ -1629,15 +1632,15 @@ subroutine set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
 
    integer,                       intent(in) :: ncid
    type(script_arguments_s),      intent(in) :: script_input
-   character(len=datelength),     intent(in) :: cyear
-   character(len=datelength),     intent(in) :: chour
-   character(len=datelength),     intent(in) :: cminute
-   character(len=datelength),     intent(in) :: cmonth
-   character(len=datelength),     intent(in) :: cday
    character(len=filelength),     intent(in) :: ctitle
    character(len=platformlength), intent(in) :: platform
    character(len=sensorlength),   intent(in) :: sensor
    character(len=*),              intent(in) :: path
+   character(len=datelength),     intent(in) :: cyear
+   character(len=datelength),     intent(in) :: cmonth
+   character(len=datelength),     intent(in) :: cday
+   character(len=datelength),     intent(in) :: chour
+   character(len=datelength),     intent(in) :: cminute
 
    integer                       :: ierr
    character(len=platformlength) :: PLATFORMUP
@@ -1698,4 +1701,4 @@ subroutine set_common_attributes(ncid,script_input,cyear,chour,cminute,cmonth, &
    ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'License',trim(adjustl(script_input%license)))
    if (ierr.ne.NF90_NOERR) stop 'error def conventions'
 
-end subroutine set_common_attributes
+end subroutine nc_put_common_attributes
