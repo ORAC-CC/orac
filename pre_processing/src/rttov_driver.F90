@@ -91,6 +91,10 @@
 !                 the assignment of profiles and preproc_lwrtm%plevels to
 !                 preproc_lwrtm%players
 
+module rttov_driver_m
+
+contains
+
 subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                         preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
                         preproc_swrtm,imager_angles,netcdf_info,channel_info, &
@@ -1323,3 +1327,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
   deallocate(instrument)
 
 end subroutine rttov_driver
+
+include 'effective_2way_za.F90'
+include 'call_rtm_ir_rttov.F90'
+include 'call_rtm_solar_rttov.F90'
+
+end module rttov_driver_m

@@ -66,7 +66,7 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    use ecmwf_structures
    use imager_structures
    use preproc_constants
-   use preproc_structures
+!  use preproc_structures
 
    implicit none
 

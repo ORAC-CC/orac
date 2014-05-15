@@ -154,4 +154,9 @@ module preproc_structures
       real(kind=sreal), dimension(:,:,:), pointer :: emissivity
    end type preproc_surf_s
 
+contains
+
+  include 'allocate_preproc_structures.F90'
+  include 'deallocate_preproc_structures.F90'
+
 end module preproc_structures

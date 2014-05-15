@@ -31,11 +31,11 @@
 
 subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
 
-   use preproc_constants
-   use surface_structures
-   use preproc_structures
-   use imager_structures
    use channel_structures
+   use imager_structures
+   use preproc_constants
+   use preproc_structures
+!  use surface_structures
 
    implicit none
 

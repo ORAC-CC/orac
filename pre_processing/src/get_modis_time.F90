@@ -30,6 +30,7 @@
 
 subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
+   use calender
    use preproc_constants
    use imager_structures
 

@@ -1,3 +1,7 @@
+module setup_instrument
+
+contains
+
 ! Name: setup.F90
 !
 !
@@ -54,6 +58,7 @@
 subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
+   use calender
    use preproc_constants
    use preproc_structures
    use date_type_structures
@@ -142,6 +147,7 @@ end subroutine setup_modis
 subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
+   use calender
    use preproc_constants
    use preproc_structures
    use channel_structures
@@ -222,6 +228,7 @@ end subroutine setup_avhrr
 subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
+   use calender
    use preproc_constants
    use preproc_structures
    use channel_structures
@@ -298,3 +305,5 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    channel_info%channel_ids_rttov_coef_lw=(/ 1, 2, 3 /)
 
 end subroutine setup_aatsr
+
+end module setup_instrument

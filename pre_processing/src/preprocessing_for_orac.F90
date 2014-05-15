@@ -200,16 +200,26 @@ program preprocessing
 
    use attribute_structures
    use channel_structures
+   use calculate_rt_m
+   use correct_for_ice_snow_m
    use ecmwf_structures
    use imager_structures
    use hdf5
    use netcdf
+   use netcdf_output
    use netcdf_structures
    use orac_ecmwf
+   use preparation_m
    use preproc_constants
    use preproc_structures
+   use read_aatsr
+   use read_avhrr
+   use read_modis
+   use read_imager_m
+   use setup_instrument
+   use surface_emissivity
+   use surface_reflectance
    use surface_structures
-   use preproc_structures
 
    implicit none
 

@@ -37,8 +37,6 @@
 
 function extract_nise_grid(fid, name, gridlist, data) result(stat)
 
-  use nise_def
-
   implicit none
 
   ! Arguments
@@ -141,10 +139,10 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
 end function extract_nise_grid
 
 subroutine deallocate_nise(nise)
-  use nise_def
+
   implicit none
 
-  type(nise_s), intent(inout)   :: nise
+  type(nise_s), intent(inout) :: nise
   
   if (allocated(nise%north%age)) then
      deallocate(nise%north%age)
@@ -154,30 +152,16 @@ subroutine deallocate_nise(nise)
      deallocate(nise%south%age)
      deallocate(nise%south%extent)
   end if
+
 end subroutine deallocate_nise
 
 function read_nsidc_nise(path_to_file, nise, north, south) &
      result (stat)
-  use nise_def
 
   implicit none
 
   include "hdf.f90"
   include "dffunc.f90"
-
-  interface
-     function extract_nise_grid(fid, name, gridlist, data) result(stat)
-       use nise_def
-       implicit none
-       ! Arguments
-       integer(kind=4)              :: fid
-       character                    :: name*(*)
-       character                    :: gridlist*(*)
-       type(nise_grid)              :: data
-       ! Return value
-       integer(kind=4)              :: stat
-     end function extract_nise_grid
-  end interface
  
 ! Input variables
   character(len=300), intent(in) :: path_to_file 

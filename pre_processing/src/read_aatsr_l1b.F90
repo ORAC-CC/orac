@@ -77,7 +77,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    use preproc_constants
    use channel_structures
    use imager_structures
-   use aatsr_drift_structure
+   use aatsr_corrections
 
    implicit none
 
@@ -354,7 +354,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          ! determine drift correction to remove from data
          if (.not. is_lut_drift_corrected .and. status.eq.0) then
             ! drift = old correction / new correction
-            call aatsr_corrections(start_date, vc1_file, lut, j, new_drift, &
+            call aatsr_drift_correction(start_date, vc1_file, lut, j, new_drift, &
                  old_drift, drift_var)
             if (verbose) print*,'Corrections - new_drift:',new_drift, &
                  'old_drift:',old_drift,'drift_var:',drift_var

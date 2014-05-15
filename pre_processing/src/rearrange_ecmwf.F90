@@ -33,10 +33,13 @@
 !
 
 module rearrange
+
    interface rearrange_ecmwf
       module procedure rearrange_ecmwf_2d, rearrange_ecmwf_3d
    end interface rearrange_ecmwf
+
 contains
+
    subroutine rearrange_ecmwf_2d(var,ecmwf_dims,dim1,dim2)
 
       use ecmwf_structures, only: ecmwf_dims_s
@@ -92,4 +95,5 @@ contains
          var(:,dim2+1-i,:)=temp(:,i,:)
       enddo
    end subroutine rearrange_ecmwf_3d
+
 end module rearrange

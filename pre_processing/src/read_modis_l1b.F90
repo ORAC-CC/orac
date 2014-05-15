@@ -59,9 +59,6 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    logical                       :: lrefl, verbose
 
-   real                          :: modis_bright
-   external modis_bright
-
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
         & imager_geolocation%starty:imager_geolocation%endy))
 

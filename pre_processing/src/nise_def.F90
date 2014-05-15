@@ -1,4 +1,4 @@
-module nise_def
+module nise_m
 
   type nise_grid
      integer(kind=4)                              :: nx, ny
@@ -14,27 +14,8 @@ module nise_def
      type(nise_grid)                              :: south
   end type nise_s
 
-end module nise_def
+contains
 
-module nise_interface
+include 'read_nsidc_nise.F90'
 
-  interface
-     function read_nsidc_nise(path_to_file, nise, north, south) &
-          result (stat)
-       use nise_def
-       implicit none
-       character(len=300)           :: path_to_file 
-       integer(kind=1)              :: north
-       integer(kind=1)              :: south
-       type(nise_s)                 :: nise
-       integer*4                    :: stat
-     end function read_nsidc_nise
-
-     subroutine deallocate_nise(nise)
-       use nise_def
-       implicit none
-       type(nise_s)                 :: nise
-     end subroutine deallocate_nise
-  end interface
-
-end module nise_interface
+end module nise_m

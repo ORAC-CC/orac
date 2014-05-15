@@ -67,6 +67,8 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
   !C!END
   !C-----------------------------------------------------------------------
 
+  USE BRIGHT
+
   IMPLICIT NONE
   
   ! ... Include files
@@ -85,8 +87,8 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
   character*5 platform_name
 
   ! ... External functions
-  real bright_m, brite_m
-  external bright_m, brite_m
+! real bright_m, brite_m
+! external bright_m, brite_m
   
   ! ... Data statements
 

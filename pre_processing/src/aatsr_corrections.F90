@@ -47,14 +47,36 @@
 ! none known
 !
 
-subroutine aatsr_corrections(start_date, vc1_file, lut, chan, new_drift, old_drift, drift_var)
+module aatsr_corrections
 
-   use aatsr_drift_structure
+   use preproc_constants
 
    implicit none
 
-   character(len=28), intent(in) :: start_date
-   character(len=28)             :: sdate
+   type aatsr_drift_lut
+      integer(kind=lint)                   :: n
+      integer(kind=stint), dimension(4000) :: year, month, day
+      integer(kind=stint), dimension(4000) :: hour, minute, second
+      real(kind=dreal), dimension(4000)    :: julday
+      real(kind=sreal), dimension(4,4000)  :: ch
+      real(kind=sreal), dimension(4,4000)  :: er
+   end type aatsr_drift_lut
+
+   ! Month strings used in the LUT files
+   character(3), dimension(12), parameter  :: monthname &
+      = (/ 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', &
+           'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC' /)
+
+contains
+
+subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, old_drift, drift_var)
+
+   use calender
+
+   implicit none
+
+   character(len=30), intent(in) :: start_date
+   character(len=30)             :: sdate
    character(len=62), intent(in) :: vc1_file
    type(aatsr_drift_lut)         :: lut
    real(dreal), intent(out)      :: new_drift, old_drift, drift_var
@@ -157,7 +179,7 @@ subroutine aatsr_corrections(start_date, vc1_file, lut, chan, new_drift, old_dri
            lut%er(chan,ilow+1)*lut%er(chan,ilow+1)) * dT*dT
    end if
    
-end subroutine aatsr_corrections
+end subroutine aatsr_drift_correction
 
 ! Name: aatsr_read_drift_table.F90
 !
@@ -192,8 +214,9 @@ end subroutine aatsr_corrections
 !
 
 subroutine aatsr_read_drift_table(drift_table, lut, stat)
+
+   use calender
    use preproc_constants
-   use aatsr_drift_structure
    use date_type_structures
 
    implicit none
@@ -314,3 +337,5 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    lut%n = i
    
 end subroutine aatsr_read_drift_table
+
+end module aatsr_corrections

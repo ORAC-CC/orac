@@ -87,4 +87,9 @@ module imager_structures
 
   end type imager_time_s
 
+contains
+
+  include 'allocate_imager_structures.F90'
+  include 'deallocate_imager_structures.F90'
+
 end module imager_structures

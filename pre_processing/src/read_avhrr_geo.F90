@@ -33,6 +33,7 @@
 subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
      imager_flags,imager_time,n_along_track)
 
+   use calender
    use hdf5
    use preproc_constants
    use imager_structures

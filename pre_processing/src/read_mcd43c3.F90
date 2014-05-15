@@ -47,7 +47,7 @@
 
 subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, QC,stat)
 
-  use mcd43c_def
+! use mcd43c_def
   use preproc_constants
 
   implicit none

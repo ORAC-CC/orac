@@ -40,4 +40,9 @@ module surface_structures
      real(kind=sreal), dimension(:,:,:), pointer :: emissivity
   end type surface_s
 
+contains
+
+  include 'allocate_surface_structures.F90'
+  include 'deallocate_surface_structures.F90'
+
 end module surface_structures

@@ -1,3 +1,7 @@
+module calculate_rt_m
+
+contains
+
 ! Name: calculate_rt.f90
 !
 !
@@ -38,6 +42,7 @@ subroutine calculate_rt(coef_path,emiss_path,sensor,platform,preproc_dims,prepro
   use netcdf_structures
   use channel_structures
   use ecmwf_structures
+  use rttov_driver_m
 
   implicit none
 
@@ -67,5 +72,6 @@ subroutine calculate_rt(coef_path,emiss_path,sensor,platform,preproc_dims,prepro
        & preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles,&
        & netcdf_info,channel_info,month,ecmwf_dims,verbose)
 
-
 end subroutine calculate_rt
+
+end module calculate_rt_m

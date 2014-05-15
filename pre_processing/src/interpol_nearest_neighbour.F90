@@ -25,19 +25,6 @@
 ! Bugs:
 !
 
-module interpol_nearest_neighbour_def
-  interface
-     subroutine interpol_nearest_neighbour(xin, yin, datin, xout, yout, datout)
-       use preproc_constants
-       implicit none
-       real(kind=sreal), dimension(:)          :: xin,yin
-       real(kind=sreal), dimension(:,:)        :: datin
-       real(kind=sreal), dimension(:)          :: xout, yout
-       real(kind=sreal), dimension(:)          :: datout
-     end subroutine interpol_nearest_neighbour
-  end interface
-end module interpol_nearest_neighbour_def
-
 subroutine interpol_nearest_neighbour(xin, yin, datin, xout, yout, datout)
   
   use preproc_constants
@@ -135,4 +122,3 @@ endif
   deallocate(dy)
 
 end subroutine interpol_nearest_neighbour
-

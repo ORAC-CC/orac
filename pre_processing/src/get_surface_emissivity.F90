@@ -59,38 +59,16 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
      imager_flags, imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
      surface, preproc_surf)
 
+   use cimss_emissivity
    use preproc_constants
    use preproc_structures
    use channel_structures
    use imager_structures
    use surface_structures
    use emis_def
-   use interpol_bilinear_def
-   use interpol_nearest_neighbour_def
+   use interpol
 
    implicit none
-
-   interface
-      function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc) &
-           result (stat)
-
-         use preproc_constants
-         use emis_def
-         use netcdf
-
-         implicit none
-
-         ! Input variables
-         character(len=pathlength)           :: path_to_file
-         integer(kind=stint),  dimension(:)  :: bands
-         integer(kind=stint),       optional :: flag, wavenumber
-         character(len=pathlength), optional :: loc
-
-         ! Output variables
-         type(emis_s)                        :: emis
-         integer(kind=stint)                 :: stat
-      end function read_cimss_emissivity
-   end interface
 
    ! Input/output variables
    character(len=datelength),  intent(in)    :: cyear

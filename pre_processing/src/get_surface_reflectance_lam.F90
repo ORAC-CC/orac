@@ -91,42 +91,17 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
    imager_measurements, channel_info, ecmwf_2d, surface)
 
    use channel_structures
+   use cox_munk_m
    use ecmwf_structures
-   use fill_grid_def
+   use fill_grid_m
    use imager_structures
-   use interpol_bilinear_def
-   use interpol_nearest_neighbour_def
-   use mcd43c_def
+   use interpol
+   use mcd43c_m
    use preproc_constants
    use preproc_structures
    use surface_structures
 
    implicit none
-
-   interface
-      subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, &
-                              black_sky, QC,stat)
-         use mcd43c_def
-         use preproc_constants
-         integer*4                                 :: stat
-         character(len=pathlength), intent(in)     :: path_to_file
-         type(mcd43c)                              :: mcd
-         integer(kind=stint)                       :: nbands,doy
-         integer(kind=stint)                       :: bands(:)
-         integer(kind=sint)                        :: white_sky
-         integer(kind=sint)                        :: black_sky
-         integer(kind=sint)                        :: QC
-      end subroutine read_mcd43c3
-
-      subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
-         use preproc_constants
-         integer(kind=stint), dimension(:)         :: bands
-         real(kind=sreal), dimension(:)            :: solza, satza
-         real(kind=sreal), dimension(:)            :: solaz, relaz
-         real(kind=sreal), dimension(:)            :: u10, v10
-         real(kind=sreal), dimension(:,:)          :: rho
-      end subroutine cox_munk
-   end interface
 
    ! Input variables
    character(len=datelength), intent(in)           :: cyear

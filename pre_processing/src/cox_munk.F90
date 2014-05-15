@@ -59,69 +59,9 @@
 !
 !none known
 
-function zeisse_ba(theta, ws) result (ba)
+module cox_munk_m
 
-  use  preproc_constants
-
-  implicit none
-
-  ! Input variables
-  real(kind=sreal), dimension(:), intent(in) :: theta
-  real(kind=sreal), dimension(:), intent(in) :: ws
-  ! Return value
-  real(kind=sreal), allocatable, dimension(:) :: ba
-  ! Local variables
-  integer(kind=lint)                         :: npoints
-  real(kind=sreal), allocatable              :: tp(:),wp(:)
-  real(kind=sreal), allocatable              :: tp2(:),wp2(:)
-  real(kind=sreal), allocatable              :: delta(:)
-  real(kind=sreal)                           :: C(3,3)
-  ! C defines the coefficients of the delta polynomial as given by
-  ! the Zeisse paper
-  C(:,1) = (/  1.67530e-3, -1.66517e-4,  2.03068e-5 /)
-  C(:,2) = (/ -6.96112e-3, -5.55537e-3,  2.60686e-3 /)
-  C(:,3) = (/  2.86324e-3,  1.86059e-3, -4.69589e-4 /)
-
-  ! Allocate the output and local arrays, based on the size of the 
-  ! input arrays
-  npoints = size(theta)
-  allocate(ba(npoints)) ! Must be deallocated by calling routine
-  allocate(tp(npoints))
-  allocate(wp(npoints))
-  allocate(tp2(npoints))
-  allocate(wp2(npoints))
-  allocate(delta(npoints))
-
-  ba=0.
-  tp=0.
-  wp=0.
-  tp2=0.
-  wp2=0.
-  delta=0.
-  ! The delta correction is only applied at high solar zenith angles
-  ! and non-neglibible wind strength, otherwise just use cos(theta)
-  where((theta .ge. 70.0*d2r) .and. (ws .gt. 1.0))
-     tp = (theta - 70.0*d2r) / 5.0
-     wp = 4.0 * alog10(ws) / 1.30103
-     
-     wp2 = wp*wp
-     tp2 = tp*tp
-     
-     delta = C(1,1) + C(2,1)*wp     + C(3,1)*wp2 +    &
-          &  C(1,2)*tp     + C(1,3)*tp2 +    &
-          &  C(2,2)*wp*tp  + C(3,2)*wp2*tp + &
-          &  C(2,3)*wp*tp2 + C(3,3)*wp2*tp2
-     ba = delta + cos(theta)
-  elsewhere
-     ba = cos(theta)
-  end where
-  ! Clean up local arrays
-  deallocate(tp)
-  deallocate(wp)
-  deallocate(tp2)
-  deallocate(wp2)
-  deallocate(delta)
-end function zeisse_ba
+contains
 
 ! Main cox_munk subroutine
 !
@@ -157,16 +97,6 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
   use preproc_constants
 
   implicit none
-
-  interface
-     function zeisse_ba(theta, ws) result (ba)
-       use  preproc_constants
-       implicit none
-       real(kind=sreal), dimension(:) :: theta
-       real(kind=sreal), dimension(:) :: ws
-       real(kind=sreal), allocatable, dimension(:) :: ba
-     end function zeisse_ba
-  end interface
 
   ! Input arguments
   integer(kind=stint), dimension(:), intent(in) :: bands
@@ -554,3 +484,71 @@ dangle1=dither_more
   deallocate(ergodic)
 
 end subroutine cox_munk
+
+
+function zeisse_ba(theta, ws) result (ba)
+
+  use  preproc_constants
+
+  implicit none
+
+  ! Input variables
+  real(kind=sreal), dimension(:), intent(in) :: theta
+  real(kind=sreal), dimension(:), intent(in) :: ws
+  ! Return value
+  real(kind=sreal), allocatable, dimension(:) :: ba
+  ! Local variables
+  integer(kind=lint)                         :: npoints
+  real(kind=sreal), allocatable              :: tp(:),wp(:)
+  real(kind=sreal), allocatable              :: tp2(:),wp2(:)
+  real(kind=sreal), allocatable              :: delta(:)
+  real(kind=sreal)                           :: C(3,3)
+  ! C defines the coefficients of the delta polynomial as given by
+  ! the Zeisse paper
+  C(:,1) = (/  1.67530e-3, -1.66517e-4,  2.03068e-5 /)
+  C(:,2) = (/ -6.96112e-3, -5.55537e-3,  2.60686e-3 /)
+  C(:,3) = (/  2.86324e-3,  1.86059e-3, -4.69589e-4 /)
+
+  ! Allocate the output and local arrays, based on the size of the 
+  ! input arrays
+  npoints = size(theta)
+  allocate(ba(npoints)) ! Must be deallocated by calling routine
+  allocate(tp(npoints))
+  allocate(wp(npoints))
+  allocate(tp2(npoints))
+  allocate(wp2(npoints))
+  allocate(delta(npoints))
+
+  ba=0.
+  tp=0.
+  wp=0.
+  tp2=0.
+  wp2=0.
+  delta=0.
+  ! The delta correction is only applied at high solar zenith angles
+  ! and non-neglibible wind strength, otherwise just use cos(theta)
+  where((theta .ge. 70.0*d2r) .and. (ws .gt. 1.0))
+     tp = (theta - 70.0*d2r) / 5.0
+     wp = 4.0 * alog10(ws) / 1.30103
+     
+     wp2 = wp*wp
+     tp2 = tp*tp
+     
+     delta = C(1,1) + C(2,1)*wp     + C(3,1)*wp2 +    &
+          &  C(1,2)*tp     + C(1,3)*tp2 +    &
+          &  C(2,2)*wp*tp  + C(3,2)*wp2*tp + &
+          &  C(2,3)*wp*tp2 + C(3,3)*wp2*tp2
+     ba = delta + cos(theta)
+  elsewhere
+     ba = cos(theta)
+  end where
+  ! Clean up local arrays
+  deallocate(tp)
+  deallocate(wp)
+  deallocate(tp2)
+  deallocate(wp2)
+  deallocate(delta)
+
+end function zeisse_ba
+
+end module cox_munk_m

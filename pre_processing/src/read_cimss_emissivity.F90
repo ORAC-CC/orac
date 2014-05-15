@@ -1,3 +1,7 @@
+module cimss_emissivity
+
+contains
+
 ! Name: read_cimss_emissivity.F90
 !
 ! Purpose:
@@ -47,6 +51,7 @@
 !
 !could be a problem will deallocation of some arrays in this routine
 !
+
 function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc) &
      result (stat)
 
@@ -77,18 +82,6 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
 
   integer, dimension(2) :: start, cnt, stride
   integer(kind=1) :: gen_loc=1
-
-  ! External functions (namely the data reader wrapper)
-  interface
-     function read_cimss_2d(fid, did, fill, data) result(stat)
-       use netcdf
-       implicit none
-       integer                   :: fid, did
-       real                      :: fill
-       real, dimension(:,:)      :: data
-       integer                   :: stat
-     end function read_cimss_2d
-  end interface
 
   ! List of the band variable names in the data files
   BandList = (/ 'emis1 ', 'emis2 ', 'emis3 ', 'emis4 ', 'emis5 ', &
@@ -220,6 +213,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
   
 end function read_cimss_emissivity
 
+
 function read_cimss_2d(fid, did, fill, data) result(stat)
 
   use netcdf
@@ -268,3 +262,4 @@ function read_cimss_2d(fid, did, fill, data) result(stat)
 
 end function read_cimss_2d
 
+end module cimss_emissivity

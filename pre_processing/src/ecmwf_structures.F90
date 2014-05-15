@@ -50,5 +50,9 @@ module ecmwf_structures
 
   end type ecmwf_2d_s
 
+contains
+
+  include 'allocate_ecmwf_structures.F90'
+  include 'deallocate_ecmwf_structures.F90'
 
 end module ecmwf_structures

@@ -1,3 +1,7 @@
+module preparation_m
+
+contains
+
 ! Name: preparation.f90
 !
 !
@@ -160,3 +164,5 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
    scan_file=trim(adjustl(file_base))//'.uv.nc'
 
 end subroutine preparation
+
+end module preparation_m

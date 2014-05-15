@@ -28,9 +28,9 @@
 
 
 subroutine deallocate_channel_info(channel_info)
-  
-  use channel_structures
-  
+
+! use channel_structures
+
   implicit none
  
   type(channel_info_s) :: channel_info

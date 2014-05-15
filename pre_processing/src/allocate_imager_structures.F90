@@ -36,9 +36,9 @@
 subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
      imager_flags,imager_time,imager_measurements,channel_info)
 
-   use preproc_constants
-   use imager_structures
    use channel_structures
+!  use imager_structures
+   use preproc_constants
 
    implicit none
 

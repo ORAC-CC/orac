@@ -28,7 +28,7 @@
 subroutine deallocate_surface_structures(surface)
 
   use preproc_constants
-  use surface_structures
+! use surface_structures
 
   implicit none
 

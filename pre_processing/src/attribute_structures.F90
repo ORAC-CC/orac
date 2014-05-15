@@ -1,19 +1,16 @@
+!-------------------------------------------------------------------------------
 ! Name: attribute_structures.F90
-!
 !
 ! Purpose:
 ! Define variables types which hold the attribute input data.
-! 
-! Description and Algorithm details:
 !
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-!
 ! Local variables:
 ! Name Type Description
-!
 !
 ! History:
 ! 2012/02/13: MJ creates initial structure.
@@ -22,22 +19,33 @@
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 module attribute_structures
 
-  use preproc_constants
+   use preproc_constants
 
-  implicit none
-  
-  type script_arguments_s   
-     character(len=attribute_length) :: exec_time,cncver,ccon,cinst,l2cproc, &
-          l2cprocver,contact,website,project,file_version
-     character(len=description_length) :: reference,history,summary,keywords, &
-          comment,license
-     character(len=uuid_length) :: uuid_tag
+   implicit none
 
+   type script_arguments_s
+      character(len=attribute_length)   :: project
+      character(len=attribute_length)   :: cncver
+      character(len=attribute_length)   :: ccon
+      character(len=attribute_length)   :: cinst
+      character(len=attribute_length)   :: l2cproc
+      character(len=attribute_length)   :: l2cprocver
+      character(len=uuid_length)        :: uuid_tag
+      character(len=attribute_length)   :: contact
+      character(len=attribute_length)   :: website
+      character(len=attribute_length)   :: exec_time
+      character(len=description_length) :: reference
+      character(len=attribute_length)   :: history
+      character(len=attribute_length)   :: summary
+      character(len=attribute_length)   :: keywords
+      character(len=attribute_length)   :: comment
+      character(len=attribute_length)   :: license
+
+      character(len=attribute_length)   :: file_version
   end type script_arguments_s
-
 
 end module attribute_structures

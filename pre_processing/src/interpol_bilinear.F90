@@ -45,20 +45,6 @@
 ! Bugs:
 ! none
 
-module interpol_bilinear_def
-  interface
-     subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
-       use preproc_constants
-       implicit none
-       real(kind=sreal), dimension(:)          :: xin,yin
-       real(kind=sreal), dimension(:,:)        :: datin
-       real(kind=sreal), dimension(:)          :: xout, yout
-       real(kind=sreal), dimension(:)          :: datout
-       real(kind=sreal), optional              :: missing
-     end subroutine interpol_bilinear
-  end interface
-end module interpol_bilinear_def
-
 subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
   
   use preproc_constants

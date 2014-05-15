@@ -84,4 +84,9 @@ module channel_structures
 
   end type channel_info_s
 
+contains
+
+  include "allocate_channel_info.F90"
+  include "deallocate_channel_info.F90"
+
 end module channel_structures

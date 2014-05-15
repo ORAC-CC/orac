@@ -25,7 +25,7 @@
 ! Bugs:
 !
 !none known
-module mcd43c_def
+module mcd43c_m
 
   type mcd43c
 !    Data dimensions
@@ -70,4 +70,6 @@ module mcd43c_def
     
   end subroutine deallocate_mcd43c
 
-end module mcd43c_def
+  include 'read_mcd43c3.F90'
+
+end module mcd43c_m

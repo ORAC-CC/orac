@@ -1,5 +1,8 @@
+module read_imager_m
+
+contains
+
 ! Name: read_imager.F90
-!
 !
 ! Purpose:
 ! A wrapper to call the routine appropriate for reading L1B and geolocation
@@ -50,6 +53,9 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use preproc_constants
    use imager_structures
    use channel_structures
+   use read_aatsr
+   use read_avhrr
+   use read_modis
 
    implicit none
 
@@ -109,3 +115,5 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    endif
 
 end subroutine read_imager
+
+end module read_imager_m

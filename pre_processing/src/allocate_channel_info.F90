@@ -25,9 +25,8 @@
 
 subroutine allocate_channel_info(channel_info)
 
+!  use channel_structures
    use preproc_constants
-   use imager_structures
-   use channel_structures
 
    implicit none
 

@@ -39,7 +39,7 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
 
    use preproc_constants
    use channel_structures
-   use preproc_structures
+!  use preproc_structures
 
    implicit none
 

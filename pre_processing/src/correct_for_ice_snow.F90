@@ -1,3 +1,7 @@
+module correct_for_ice_snow_m
+
+contains
+
 ! Name: correct_for_ice_snow.F90
 !
 ! Purpose:
@@ -79,28 +83,10 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
   use preproc_structures
   use imager_structures
   use surface_structures
-  use nise_def
-  use nise_interface
+  use nise_m
   use channel_structures
 
   implicit none
-
-  interface
-     subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, preproc_dims, pixel_ref,channel_info)
-       use preproc_constants
-       use preproc_structures
-       use surface_structures
-       use interpol_bilinear_def
-       use channel_structures 
-      implicit none
-       real                           :: x, y
-       real, dimension(2,2)           :: nise
-       real, dimension(:)             :: ice_albedo, snow_albedo
-       type(preproc_dims_s)           :: preproc_dims
-       type(channel_info_s)           :: channel_info
-       real(kind=sreal), dimension(:) :: pixel_ref
-     end subroutine apply_ice_correction
-  end interface
 
   ! Arguments
   logical, intent(in)                    :: assume_full_path
@@ -334,7 +320,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, preproc_dim
 
   use preproc_constants
   use preproc_structures
-  use interpol_bilinear_def
+  use interpol
   use channel_structures
 
   implicit none
@@ -395,3 +381,5 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, preproc_dim
    end do
 
 end subroutine apply_ice_correction
+
+end module correct_for_ice_snow_m

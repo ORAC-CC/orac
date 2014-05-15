@@ -33,9 +33,8 @@
 
 subroutine deallocate_imager_structures(imager_geolocation,imager_angles,imager_flags,imager_time,imager_measurements)
 
+! use imager_structures
   use preproc_constants
-
-  use imager_structures
 
   implicit none
 

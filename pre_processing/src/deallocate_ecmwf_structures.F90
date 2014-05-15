@@ -27,9 +27,8 @@
 
 subroutine deallocate_ecmwf_structures(ecmwf_dims,ecmwf_3d,ecmwf_2d)
 
+! use ecmwf_structures
   use preproc_constants
-
-  use ecmwf_structures
 
   implicit none
 

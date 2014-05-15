@@ -35,21 +35,14 @@
 ! do this, but the code will not work!
 !
 
-module fill_grid_def
-  interface
-     subroutine fill_grid(grid, fillval, mask)
-       use preproc_constants
-       implicit none
-       real(kind=sreal), dimension(:,:)  :: grid
-       real(kind=sreal)                  :: fillval
-       integer(kind=sint), dimension(:,:) :: mask
-     end subroutine fill_grid
-  end interface
-end module fill_grid_def
+module fill_grid_m
+
+contains
 
 subroutine fill_grid(grid, fillval, mask)
 
   use preproc_constants
+
   implicit none
 
   ! Input/output variables
@@ -62,7 +55,6 @@ subroutine fill_grid(grid, fillval, mask)
   integer(kind=sint)                              :: flag
   real(kind=sreal), dimension(16)                 :: isearch, jsearch
   real(kind=sreal), allocatable, dimension(:,:)   :: Z
-  
 
   nx = size(grid, 1)
   ny = size(grid, 2)
@@ -110,3 +102,5 @@ subroutine fill_grid(grid, fillval, mask)
   deallocate(Z)
 
 end subroutine fill_grid
+
+end module fill_grid_m

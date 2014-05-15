@@ -1,3 +1,7 @@
+module calender
+
+contains
+
 ! Name: calender.F90 
 ! 
 ! 
@@ -84,8 +88,6 @@ subroutine DOY2GREG(doy,y,m,d)
          DATE_TYPE_DOY2GREG (1918,  31, 13, 352)  /)                                      ! 3: Russia 
      
     INTEGER, PARAMETER :: GREGORIAN_CHOICE = 1                                    ! set to 1 for 1582 date, 2 for 1752 date, etc. 
-     
-    LOGICAL :: GREGORIAN_DOY2GREG 
      
      
     !----------------------------------------------------------------------------------------------------------------------------------- 
@@ -196,8 +198,6 @@ subroutine DOY2GREG(doy,y,m,d)
             & DATE_TYPE_GREG2JD (1918,  1, 31, 1918,  2, 14)  /)                              ! 3: Russia 
   
        INTEGER, PARAMETER :: GREGORIAN_CHOICE = 1                                   ! set to 1 for 1582 date, 2 for 1752 date, etc. 
-  
-       LOGICAL :: GREGORIAN_GREG2JD 
   
  !----------------------------------------------------------------------------------------------------------------------------------- 
  !  Main program code 
@@ -459,9 +459,7 @@ subroutine DOY2GREG(doy,y,m,d)
              DATE_TYPE_GREG2DOY (1918,  1, 31, 1918,  2, 14, 13)  /)                          ! 3: Russia 
   
        INTEGER, PARAMETER :: GREGORIAN_CHOICE = 1                                    ! set to 1 for 1582 date, 2 for 1752 date, etc. 
-  
-       LOGICAL :: GREGORIAN_GREG2DOY
-  
+    
   
  !----------------------------------------------------------------------------------------------------------------------------------- 
  !  Main program code 
@@ -574,5 +572,5 @@ subroutine DOY2GREG(doy,y,m,d)
        END SELECT 
   
        END FUNCTION GREGORIAN_GREG2DOY 
-  
- 
+   
+end module calender
