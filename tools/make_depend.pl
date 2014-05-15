@@ -15,11 +15,12 @@
 # Usage: make_f90_depend.pl [object files] [include files]
 #
 # ... where object files have a '.o' extension and include files have a '.inc'
-# extension.
+# or .F90 extension.
 #
 # History
 # 2013/12/04, Greg McGarragh: Original version
-#
+# 2014/05/06, Greg McGarragh: Add support to recursively check include files for
+#    dependencies.
 #*******************************************************************************
 
 $objects_path    = "\$(OBJS)/";	# Path where the object files are to be located
@@ -66,10 +67,19 @@ sub uniq {
 	@words;
 }
 
-# Write dependencies for each source file to standard output
-foreach $source_file (@source_file_list) {
-	open(FILE, $source_file) or
-		die("Unable to open source file: $source_file");
+# Find dependencies for $current_file and write them as dependencies for
+# $sourcefile.  Recursively called for all included files in $current_file.
+sub write_file_depencies {
+	my $source_file   = $_[0];
+	my $current_file  = $_[1];
+
+	my @modules;
+	my @includes;
+	my @mod_bases;
+	my @dependencies;
+
+	open(FILE, $current_file) or
+		die("Unable to open source file: $current_file");
 
         # Find used modules and included files
 	while (<FILE>) {
@@ -79,10 +89,7 @@ foreach $source_file (@source_file_list) {
 
 	close(FILE);
 
-	if (defined @includes || defined @modules) {
-		$object_file = $source_file;
-		$object_file =~ s/\.F90/.o/;
-
+	if (@includes || @modules) {
 		# Apply module to file mapping
 		foreach (@modules) {
 			push(@mod_bases, $module_to_mod_base{$_});
@@ -115,32 +122,53 @@ foreach $source_file (@source_file_list) {
 			}
 		}
 
-		# Pretty print the dependencies for the Makefile
-		if (defined @dependencies2) {
-			print "$objects_path$object_file:";
-
-			$length = length($objects_path . $object_file) + 1;
-
-			foreach (@dependencies2) {
-				$length += 1 + length($_);
-
-				if ($length > $max_line_length) {
-					print " \\\n";
-					print " " x ($indent_length - 1);
-					$length = $indent_length + length($_);
-				}
-
-				print " $_"
+		# Call this subroutine for all included files passing along
+		# current list of dependencies
+		foreach (@includes) {
+			if ("$_" ~~ @include_file_list) {
+				write_file_depencies($source_file, $_)
 			}
+		}
+
+		undef @modules;
+		undef @includes;
+		undef @mod_bases;
+		undef @dependencies;
+	}
+}
+
+# Write dependencies for each source file to standard output
+foreach $source_file (@source_file_list) {
+	$object_file = $source_file;
+	$object_file =~ s/\.F90/.o/;
+
+	write_file_depencies($source_file, $source_file);
+
+	@dependencies2 = &uniq(sort(@dependencies2));
+
+	# Pretty print the dependencies for the Makefile
+	if (defined @dependencies2) {
+		$object_file = $source_file;
+		$object_file =~ s/\.F90/.o/;
+
+		print "$objects_path$object_file:";
+
+		$line_length = length($objects_path . $object_file) + 1;
+
+		foreach (@dependencies2) {
+			$line_length += 1 + length($_);
+
+			if ($line_length > $max_line_length) {
+				print " \\\n";
+				print " " x ($indent_length - 1);
+				$line_length = $indent_length + length($_);
+			}
+
+			print " $_"
 		}
 
 		print "\n";
 
-		undef @mod_bases;
-		undef @dependencies;
 		undef @dependencies2;
 	}
-
-	undef @modules;
-	undef @includes;
 }
