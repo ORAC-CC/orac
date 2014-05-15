@@ -21,7 +21,12 @@
 # 2013/12/04, Greg McGarragh: Original version
 # 2014/05/06, Greg McGarragh: Add support to recursively check include files for
 #    dependencies.
+# 2014/05/06, Greg McGarragh: Modified to assume that include files that exist
+#    in the current directory are local and subject to be a dependency whereas
+#    include files that do not exist in the current directory are assumed to be
+#    external and therefore not subject to be a dependency.
 #*******************************************************************************
+use File::Basename;
 
 $objects_path    = "\$(OBJS)/";	# Path where the object files are to be located
 $includes_path   = "";		# Path where the include files are to be located
@@ -69,7 +74,7 @@ sub uniq {
 
 # Find dependencies for $current_file and write them as dependencies for
 # $sourcefile.  Recursively called for all included files in $current_file.
-sub write_file_depencies {
+sub get_file_depencies {
 	my $source_file   = $_[0];
 	my $current_file  = $_[1];
 
@@ -100,7 +105,7 @@ sub write_file_depencies {
 
 		# If the module is local include it as a dependency
 		foreach (@mod_bases) {
-			if("$_.F90" ~~ @source_file_list) {
+			if ("$_.F90" ~~ @source_file_list) {
 				push(@dependencies, "$objects_path$_.o");
 			}
 		}
@@ -110,7 +115,11 @@ sub write_file_depencies {
 
 		# If the include is local include it as a dependency
 		foreach (@includes) {
-			if("$_" ~~ @include_file_list) {
+			if (-e basename($_)) {
+				push(@dependencies, "$includes_path$_");
+                        }
+
+			if ($_ ~~ @include_file_list) {
 				push(@dependencies, "$includes_path$_");
 			}
 		}
@@ -125,8 +134,12 @@ sub write_file_depencies {
 		# Call this subroutine for all included files passing along
 		# current list of dependencies
 		foreach (@includes) {
-			if ("$_" ~~ @include_file_list) {
-				write_file_depencies($source_file, $_)
+			if (-e basename($_)) {
+				get_file_depencies($source_file, $_)
+                        }
+
+			if ($_ ~~ @include_file_list) {
+				get_file_depencies($source_file, $_)
 			}
 		}
 
@@ -142,7 +155,7 @@ foreach $source_file (@source_file_list) {
 	$object_file = $source_file;
 	$object_file =~ s/\.F90/.o/;
 
-	write_file_depencies($source_file, $source_file);
+	get_file_depencies($source_file, $source_file);
 
 	@dependencies2 = &uniq(sort(@dependencies2));
 
