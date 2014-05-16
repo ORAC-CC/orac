@@ -175,17 +175,17 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
       Tac_v(i) = RTM_Pc%Tac(i) ** SPixel%Geom%SEC_v(SPixel%ViewIdx(i))
    end do
 
-   ! Calculate square of T_BC
+   ! Calculate square of T_bc
    Tbc2 = RTM_Pc%Tbc(1:SPixel%Ind%Nsolar) * RTM_Pc%Tbc(1:SPixel%Ind%Nsolar)
 
-   ! Calculate top of atmosphere 2-path transmittance for overcast (full cloud
-   ! cover) conditions
-   ! Above cloud transmittance for reflected radiation:
+   ! Calculate solar transmittance from TOA to cloud-top times the viewing
+   ! transmittance from cloud-top to TOACalculate square of T_bc
    T = Tac_o(1:SPixel%Ind%Nsolar) * Tac_v(1:SPixel%Ind%Nsolar)
 
-   ! Sum of direct and diffuse beam transmissions
    ! Referencing of different properties stored in CRP and d_CRP: the last index
-   !  of the CRP array refers to the property. Hence ITB is the index of TB, etc.
+   ! of the CRP array refers to the property. Hence ITB is the index of TB, etc.
+
+   ! Sum of direct and diffuse beam transmissions
    T_all = (CRP(:,ITB) + CRP(:,ITFBd))
 
    S_dnom = 1.0 - (SPixel%Rs * CRP(:,IRFd) * Tbc2)
@@ -199,7 +199,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    ! Calculate top of atmosphere reflectance for fractional cloud cover
    ! MJ: this is actualy obsolete as X(iFR)==1
-   REF = (X(IFr)*REF_over)   + ((1.0-X(IFr)) * SPixel%RTM%REF_clear)
+   REF = (X(IFr)*REF_over) + ((1.0-X(IFr)) * SPixel%RTM%REF_clear)
 
    ! Calculate derivatives of reflectance w.r.t. all other variables or part
    ! cloudy conditions
@@ -207,58 +207,44 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    ! Derivative w.r.t. cloud optical depth, Tau
    d_REF(:,ITau) = X(IFr) * T * &
-        & ( d_CRP(:,IRBd,ITau) + &
+        & (d_CRP(:,IRBd,ITau) + &
         & Sp * SPixel%Rs * &
-        & ( T_all * d_CRP(:,ITd,ITau) + &
+        & (T_all * d_CRP(:,ITd,ITau) + &
         & CRP(:,ITd) * (d_CRP(:,ITB,ITau) + d_CRP(:,ITFBd,ITau)) &
         & ) + &
         & S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,ITau) / S_dnom)
 
-   ! Derivative w.r.t. cloud drop size, r_e
-   d_REF(:,IRe) = X(IFr) * T * &
-        & ( d_CRP(:,IRBd,IRe) + &
+   ! Derivative w.r.t. effective radius, r_e
+   d_REF(:,IRe)  = X(IFr) * T * &
+        & (d_CRP(:,IRBd,IRe ) + &
         & Sp * SPixel%Rs * &
-        & ( T_all * d_CRP(:,ITd,IRe) +  &
-        & CRP(:,ITd) * (d_CRP(:,ITB,IRe) + d_CRP(:,ITFBd,IRe))) + &
-        & S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,Ire) / S_dnom)
+        & (T_all * d_CRP(:,ITd,IRe ) + &
+        & CRP(:,ITd) * (d_CRP(:,ITB,IRe ) + d_CRP(:,ITFBd,IRe )) &
+        & ) + &
+        & S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,Ire ) / S_dnom)
 
-!   d_REF(:,IRe) = X(IFr) * T * &
-!        & ( d_CRP(:,IRBd,IRe) + &
-!        & Sp * SPixel%Rs * &
-!        & ( T_all * d_CRP(:,ITd,IRe) +  &
-!        & CRP(:,ITd) * (d_CRP(:,ITB,IRe) + d_CRP(:,ITFBd,IRe))) + &
-!        & S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,Ire) / S_dnom)
-
-!   d_REF(:,IRe) = X(IFr) * T * &
-!        & ( d_CRP(:,IRBd,IRe) + &
-!        & Sp * SPixel%Rs * &
-!        & ( T_all * d_CRP(:,ITd,IRe) +  &
-!        & CRP(:,ITd) * (d_CRP(:,ITB,IRe) + d_CRP(:,ITFBd,IRe)) &
-!        & ) + &
-!        & S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,Ire) / S_dnom)
-
-!  Derivative w.r.t. cloud pressure, p_c
+   ! Derivative w.r.t. cloud-top pressure, P_c
    do i=1,SPixel%Ind%NSolar
       d_REF(i,IPc) = X(IFr) * &
-           & ( 1.0 * RTM_Pc%dTac_dPc(i) * &
+           & (1.0 * RTM_Pc%dTac_dPc(i) * &
            & (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) + SPixel%Geom%SEC_v(SPixel%ViewIdx(i))) &
            & * REF_over(i)/RTM_Pc%Tac(i))+ &
-           & ( 2.0 * RTM_Pc%dTbc_dPc(i) * T(i) * S(i) * RTM_Pc%Tbc(i) *  &
-           & ( (1.0/Tbc2(i)) + (CRP(i,IRFd) * SPixel%Rs(i) / &
-           & S_dnom(i)) ))
+           & (2.0 * RTM_Pc%dTbc_dPc(i) * T(i) * S(i) * RTM_Pc%Tbc(i) *  &
+           & ((1.0/Tbc2(i)) + (CRP(i,IRFd) * SPixel%Rs(i) / &
+           & S_dnom(i))))
    end do
 
-!  Derivative w.r.t. cloud fraction, f
-   d_REF(:,IFr) = ( REF_over - SPixel%RTM%REF_clear )
+   ! Derivative w.r.t. cloud fraction, f
+   d_REF(:,IFr) = (REF_over - SPixel%RTM%REF_clear)
 
-!  Derivative w.r.t. surface temperature, T_s
+   ! Derivative w.r.t. surface temperature, T_s
    d_REF(:,ITs) = 0.0 ! Constant and zero
 
-!  Derivative w.r.t. surface reflectance, R_s
+   ! Derivative w.r.t. surface reflectance, R_s
    do i=1,SPixel%Ind%NSolar
-      d_REF(i,IRs) =       &
-           & (  X(IFr) * T(i) * &
-           & ( Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc2(i)/S_dnom(i)) ) + &
+      d_REF(i,IRs) = &
+           & (X(IFr) * T(i) * &
+           & (Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc2(i)/S_dnom(i))) + &
            & (SPixel%RTM%dREF_clear_dRs(i) * (1.0-X(IFr))))/ &
            & SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
    end do

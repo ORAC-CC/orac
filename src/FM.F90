@@ -440,7 +440,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    deallocate(GZero%T1)
    deallocate(GZero%R1)
 
-! Open breakpoint file if required, and write our reflectances and gradients.
+   ! Open breakpoint file if required, and write our reflectances and gradients.
 
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_FM) then

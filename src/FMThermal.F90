@@ -166,7 +166,8 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
       RTM_Pc%Tbc(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast))
 
    ! Calculate overcast radiances at cloud pressure level
-   R_over = RTM_Pc%LW%Rbc_up(ThF:ThL)  * CRP(:,ITd) *              &
+   R_over = &
+      RTM_Pc%LW%Rbc_up(ThF:ThL)  * CRP(:,ITd) *                    &
       RTM_Pc%Tac(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast) + &
       RTM_Pc%LW%B(ThF:ThL)       * CRP(:,IEm) *                    &
       RTM_Pc%Tac(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast) + &
@@ -198,11 +199,12 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
 
    ! Gradient w.r.t. cloud pressure, Pc
    d_R(:,IPc) = X(IFr) * &
-      ( RTM_Pc%LW%dRac_up_dPc(ThF:ThL) + RTM_Pc%LW%dTac_dPc(ThF:ThL) * &
+      ( RTM_Pc%LW%dTac_dPc(ThF:ThL) *                  &
          ( RTM_Pc%LW%Rbc_up(ThF:ThL)  * CRP(:,ITd) +   &
            RTM_Pc%LW%B(ThF:ThL)       * CRP(:,IEm) +   &
            RTM_Pc%LW%Rac_dwn(ThF:ThL) * CRP(:,IRd)     &
          )                                             &
+        + RTM_Pc%LW%dRac_up_dPc(ThF:ThL)               &
       ) + fTac *                                       &
       ( RTM_Pc%LW%dRbc_up_dPc(ThF:ThL)  * CRP(:,ITd) + &
         RTM_Pc%LW%dB_dPc(ThF:ThL)       * CRP(:,IEm) + &
