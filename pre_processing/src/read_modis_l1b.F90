@@ -47,17 +47,17 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    integer(kind=lint) :: l1b_id, ix, jy,ich, err_code
 
-   character(len=pathlength)     :: path_to_l1b_file
-   character(len=sensorlength)   :: sensor
-   character(len=platformlength) :: platform
+   character(len=sensorlength), intent(in)    :: sensor
+   character(len=platformlength), intent(in)  :: platform
+   character(len=pathlength), intent(in)      :: path_to_l1b_file
+   type(imager_geolocation_s), intent(inout)  :: imager_geolocation
+   type(imager_measurements_s), intent(inout) :: imager_measurements
+   type(channel_info_s), intent(in)           :: channel_info
+   logical, intent(in)                        :: verbose
 
-   type(imager_geolocation_s)    :: imager_geolocation
-   type(imager_measurements_s)   :: imager_measurements
-   type(channel_info_s)          :: channel_info
+   logical                                       :: lrefl
 
    real(kind=sreal), allocatable, dimension(:,:) :: temp
-
-   logical                       :: lrefl, verbose
 
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
         & imager_geolocation%starty:imager_geolocation%endy))

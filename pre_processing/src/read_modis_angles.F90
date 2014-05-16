@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read angular information from MODIS geolocation data
-! 
+!
 ! Description and Algorithm details:
 ! 1) Set start, end, and stride of data read.
 ! 2) Read data with SFRDATA.
@@ -43,18 +43,18 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer(kind=lint)  :: ixstart, ixstop,iystart,iystop,ix,jy
-   
-   integer, intent(in) :: fid
-   
-   integer             :: file_id, var_id, err_code, start(2), stride(2)
-   integer             :: edge(2), attr_id
-   character(len=*)    :: SDS_name
-   
-   real(kind=sreal)    :: rtemp(ixstart:ixstop,iystart:iystop)
-   
+   integer, intent(in)            :: fid
+   character(len=*), intent(in)   :: SDS_name
+   integer(kind=lint), intent(in) :: ixstart,ixstop,iystart,iystop
+   real(kind=sreal), intent(out)  :: rtemp(ixstart:ixstop,iystart:iystop)
+
+   integer(kind=lint)  :: ix,jy
+   integer             :: err_code
+   integer             :: file_id, var_id, attr_id
+   integer             :: start(2), stride(2), edge(2)
+
    real(kind=dreal)    :: sf
-   
+
    integer(kind=stint) :: stemp(ixstart:ixstop,iystart:iystop),vr(2),fv
 
    start(1) = ixstart-1

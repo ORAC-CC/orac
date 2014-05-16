@@ -62,26 +62,28 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
   implicit none
 
   ! Input variables
-  character(len=pathlength), intent(in)         :: path_to_file
-  integer(kind=stint), intent(in), dimension(:) :: bands
-  integer(kind=stint), optional, intent(in)     :: flag, wavenumber
+  character(len=pathlength), intent(in)           :: path_to_file
+  integer(kind=stint), intent(in), dimension(:)   :: bands
+  integer(kind=stint), optional, intent(in)       :: flag, wavenumber
   character(len=pathlength), optional, intent(in) :: loc
-  ! Output variables
-  type(emis_s), intent(out)                     :: emis
-  integer(kind=stint)                           :: stat
-  ! Local variables
-  integer                                       :: fid, xid, yid, zid, did
-  integer                                       :: nbands
-  integer                                       :: xdim, ydim, zdim
-  integer                                       :: nDim, nVar, nAtt, uDimID, ForNM
-  integer(kind=2), allocatable, dimension(:)    :: tmpwavenumber
-  real, allocatable, dimension(:,:)             :: fdata
-  real                                          :: scale_factor, offset
-  character(len=6)                              :: BandList(10)
-  integer                                       :: i
 
-  integer, dimension(2) :: start, cnt, stride
-  integer(kind=1) :: gen_loc=1
+  ! Output variables
+  type(emis_s), intent(out)                       :: emis
+
+  ! Local variables
+  integer(kind=stint)                        :: stat
+  integer                                    :: fid, xid, yid, zid, did
+  integer                                    :: nbands
+  integer                                    :: xdim, ydim, zdim
+  integer                                    :: nDim, nVar, nAtt, uDimID, ForNM
+  integer(kind=2), allocatable, dimension(:) :: tmpwavenumber
+  real, allocatable, dimension(:,:)          :: fdata
+  real                                       :: scale_factor, offset
+  character(len=6)                           :: BandList(10)
+  integer                                    :: i
+
+  integer, dimension(2)                      :: start, cnt, stride
+  integer(kind=1)                            :: gen_loc=1
 
   ! List of the band variable names in the data files
   BandList = (/ 'emis1 ', 'emis2 ', 'emis3 ', 'emis4 ', 'emis5 ', &

@@ -70,15 +70,15 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
 
    implicit none
 
-   type(imager_angles_s),  intent(in)    :: imager_angles
-   type(preproc_dims_s),   intent(inout) :: preproc_dims
-   type(preproc_geoloc_s), intent(inout) :: preproc_geoloc
-   type(preproc_geo_s),    intent(inout) :: preproc_geo
-   type(preproc_prtm_s),   intent(inout) :: preproc_prtm
-   type(preproc_lwrtm_s),  intent(inout) :: preproc_lwrtm
-   type(preproc_swrtm_s),  intent(inout) :: preproc_swrtm
-   type(preproc_surf_s),   intent(inout) :: preproc_surf
-   type(channel_info_s),   intent(inout) :: channel_info
+   type(imager_angles_s),  intent(in)  :: imager_angles
+   type(preproc_dims_s),   intent(out) :: preproc_dims
+   type(preproc_geoloc_s), intent(out) :: preproc_geoloc
+   type(preproc_geo_s),    intent(out) :: preproc_geo
+   type(preproc_prtm_s),   intent(out) :: preproc_prtm
+   type(preproc_lwrtm_s),  intent(out) :: preproc_lwrtm
+   type(preproc_swrtm_s),  intent(out) :: preproc_swrtm
+   type(preproc_surf_s),   intent(out) :: preproc_surf
+   type(channel_info_s),   intent(out) :: channel_info
 
    integer :: nchan_sw,nchan_lw
 

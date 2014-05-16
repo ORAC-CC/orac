@@ -41,17 +41,15 @@ subroutine read_avhrr_landseamask(fid,group,dataset,startx,stopx,starty,stopy, &
    implicit none
 
    integer(kind=HID_T), intent(in) :: fid
+   character(len=*), intent(in)    :: dataset, group
+   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
+   integer(kind=lint), intent(out) :: btemp(startx:stopx,starty:stopy)
 
    integer               :: err_code
-   character(len=*)      :: dataset, group
 
    integer(kind=HID_T)   :: gr_id,dset_id,dspace_id,mem_id
 
    integer(kind=HSIZE_T) :: start(2), stride(2), edge(2)
-
-   integer(kind=lint)    :: startx,stopx,starty,stopy
-
-   integer(kind=lint)    :: btemp(startx:stopx,starty:stopy)
 
    !open the data group
    call h5gopen_f(fid,group,gr_id,err_code)

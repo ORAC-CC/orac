@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Map MODIS time data from EV frame to single imager pixels
-! 
+!
 ! Description and Algorithm details:
 ! 1) A MODIS scan observes 10 along track pixels at once. The time at which ch30
 !    (the edge of the focal plane) began collection is given by the
@@ -17,7 +17,7 @@
 !    number of field separating ch30 from the centre of the focal plane.
 ! 4) As the channels we use aren't all at the centre of the focal plane, this
 !    value will be strictly wrong. However, as dealing with a different time for
-!    each channel is far too complicated and the error is only significant for 
+!    each channel is far too complicated and the error is only significant for
 !    ch31-32, this error is ignored.
 ! 5) The Julian date is then determined by dividing this number of seconds by
 !    the number of seconds in a day.
@@ -56,19 +56,20 @@ subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
 
    implicit none
 
-   integer(kind=lint) :: ix,jy,jyt,ixstart,ixstop,iread_start, &
-        iread_stop,iread_startt,iread_stopt
-   
-   real(kind=dreal)   :: ttemp10(iread_startt:iread_stopt),refjulianday
+   integer(kind=lint), intent(in) :: along_track_ratio
+   integer(kind=lint), intent(in) :: ixstart,ixstop
+   integer(kind=lint), intent(in) :: iread_start,iread_stop
+   integer(kind=lint), intent(in) :: iread_startt,iread_stopt
+   real(kind=dreal), intent(out)  :: ttemp(ixstart:ixstop,iread_start:iread_stop)
+   real(kind=dreal), intent(in)   :: ttemp10(iread_startt:iread_stopt)
+   real(kind=dreal), intent(in)   :: refjulianday
 
    real(kind=dreal), parameter   :: tframe=333.333D-6
-   
+
    integer(kind=lint), parameter :: f30=-14_lint
-   
-   real(kind=dreal)   :: ttemp(ixstart:ixstop,iread_start:iread_stop)
-   
-   integer(kind=lint) :: along_track_ratio
-   
+
+   integer(kind=lint) :: ix,jy,jyt
+
    do jy=iread_start,iread_stop
       !compute in which 10-line block the current pixel lies
       jyt = int((jy-1)/along_track_ratio)+1

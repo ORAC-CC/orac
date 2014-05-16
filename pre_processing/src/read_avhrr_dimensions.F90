@@ -35,7 +35,8 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
    implicit none
 
-   character(len=pathlength) :: path_to_geo_file
+   character(len=pathlength), intent(in) :: path_to_geo_file
+   integer(kind=lint), intent(out)       :: n_across_track, n_along_track
 
    integer(kind=HID_T)       :: gr_id,dset_id,dspace_id
 
@@ -46,8 +47,6 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
    integer(kind=HSIZE_T)     :: dims(2),maxdims(2)
 
    integer(kind=HID_T)       :: geo_id
-
-   integer(kind=lint)        :: n_across_track, n_along_track
 
    !initialize the f90 interface for hdf5
    call h5open_f(err_code)

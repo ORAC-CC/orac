@@ -36,10 +36,10 @@ subroutine effective_2way_za(sza,lza,amf,za)
 
    implicit none
 
-   real :: sza
-   real :: lza
-   real :: amf
-   real :: za
+   real, intent(in) :: sza
+   real, intent(in) :: lza
+   real, intent(out) :: amf
+   real, intent(out) :: za
 
    real, parameter :: d2r = 0.017453292 ! pi/180.0
 

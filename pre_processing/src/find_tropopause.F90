@@ -31,12 +31,14 @@
 subroutine find_tropopause(t0,z0,ztp,nlevs)
 
   implicit none
-  integer ,intent(in) ::  nlevs
-  real ,intent(in), dimension(nlevs)  ::  t0,z0
-  real  ::  ztp,missing,xout, yout, datout,hh,gg,kk
-  real ,allocatable ::  dt(:),t(:),z(:)
-  real ::  gp,zt,ft,thr,sf
-  integer  ::  tdim,dim,nt,i,i0,dts,zdim,ncount,n
+  integer, intent(in) :: nlevs
+  real, intent(in), dimension(nlevs) :: t0,z0
+  real, intent(out) :: ztp
+
+  real :: missing,xout,yout,datout,hh,gg,kk
+  real, allocatable :: dt(:),t(:),z(:)
+  real :: gp,zt,ft,thr,sf
+  integer :: tdim,dim,nt,i,i0,dts,zdim,ncount,n
 
   sf=10000.0
   missing=-999.

@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Open and read L1b and geo input files
-! 
+!
 !
 ! Description and Algorithm details:
 ! 1) Set start, end, and stride of data read.
@@ -41,16 +41,15 @@ subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer             :: ixstart, ixstop, iystart, iystop
-!  integer             :: ix, jy
-   
-   integer, intent(in) :: fid
-   
-   integer             :: file_id, var_id, err_code, start(2), stride(2)
-   integer             :: edge(2), attr_id
-   character(len=*)    :: SDS_name
+   integer, intent(in)             :: fid
+   character(len=*), intent(in)    :: SDS_name
+   integer, intent(in)             :: ixstart, ixstop, iystart, iystop
+   integer(kind=sint), intent(out) :: btemp(ixstart:ixstop,iystart:iystop)
 
-   integer(kind=sint)  :: btemp(ixstart:ixstop,iystart:iystop)
+!  integer            :: ix, jy
+   integer            :: err_code
+   integer            :: file_id, var_id, attr_id
+   integer            :: start(2), stride(2), edge(2)
 
    integer(kind=sint) :: fv
 

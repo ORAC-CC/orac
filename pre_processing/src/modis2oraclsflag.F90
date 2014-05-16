@@ -35,7 +35,7 @@ subroutine modis2oraclsflag(temp)
 
   implicit none
 
-  integer(kind=sint) :: temp
+  integer(kind=sint), intent(inout) :: temp
 
 !!$  MODIS DEFINITIONS:
 !!$     DN values:

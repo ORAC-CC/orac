@@ -32,9 +32,9 @@ subroutine deallocate_ecmwf_structures(ecmwf_dims,ecmwf_3d,ecmwf_2d)
 
   implicit none
 
-  type(ecmwf_dims_s) :: ecmwf_dims
-  type(ecmwf_3d_s) :: ecmwf_3d
-  type(ecmwf_2d_s) :: ecmwf_2d
+  type(ecmwf_dims_s), intent(inout) :: ecmwf_dims
+  type(ecmwf_3d_s), intent(inout) :: ecmwf_3d
+  type(ecmwf_2d_s), intent(inout) :: ecmwf_2d
 
   deallocate(ecmwf_2d%longitude)
   deallocate(ecmwf_2d%latitude)

@@ -46,14 +46,15 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles, &
 
    implicit none
 
-   type(imager_angles_s)       :: imager_angles
-   type(imager_geolocation_s)  :: imager_geolocation
-   type(imager_flags_s)        :: imager_flags
-   type(imager_time_s)         :: imager_time
-   type(netcdf_info_s)         :: netcdf_info
-   type(channel_info_s)        :: channel_info
-   type(surface_s)             :: surface
-   type(imager_measurements_s) :: imager_measurements
+   type(imager_flags_s), intent(in)        :: imager_flags
+   type(imager_angles_s), intent(in)       :: imager_angles
+   type(imager_geolocation_s), intent(in)  :: imager_geolocation
+   type(imager_measurements_s), intent(in) :: imager_measurements
+   type(imager_time_s), intent(in)         :: imager_time
+   type(netcdf_info_s), intent(in)         :: netcdf_info
+   type(channel_info_s), intent(in)        :: channel_info
+   type(surface_s), intent(in)             :: surface
+
    integer                     :: ierr
    integer(kind=lint)          :: start1d(1),counter1d(1),stride1d(1),start2d(2),&
                                 & counter2d(2),stride2d(2),start3d(3),counter3d(3),&

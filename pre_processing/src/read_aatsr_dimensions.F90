@@ -71,23 +71,21 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
       end subroutine get_aatsr_dimension
    end interface
    
-   character(len=pathlength)                   :: path_to_l1b_file
-   integer(kind=stint), intent(in)             :: day_night
-   real(kind=sreal), dimension(4), intent(in)  :: loc_limit
-   integer(kind=lint), intent(out)             :: n_along_track2
-   integer(kind=lint),  intent(out)            :: along_track_offset2
+   character(len=pathlength), intent(in)      :: path_to_l1b_file
+   integer(kind=lint), intent(out)            :: n_across_track, n_along_track, &
+                                                 along_track_offset
+   integer(kind=stint), intent(in)            :: day_night
+   real(kind=sreal), dimension(4), intent(in) :: loc_limit
+   integer(kind=lint), intent(out)            :: n_along_track2
+   integer(kind=lint),  intent(out)           :: along_track_offset2
+   logical, intent(in)                        :: verbose
 
-   character(len=pathlength,kind=c_char)       :: l1b_file_C
-   integer(c_short)                            :: tmp_dynght, half_orbit
-   real(c_float), dimension(4)                 :: tmp_limit
-  
-   integer(c_short)   :: err_code
-   logical(c_bool)    :: verb
-   logical            :: verbose
-
-   integer(kind=lint) :: n_across_track, n_along_track, along_track_offset
-
-   integer(c_long)    :: tmp_nx, tmp_ny, tmp_miny
+   character(len=pathlength,kind=c_char) :: l1b_file_C
+   integer(c_short)                      :: tmp_dynght, half_orbit
+   real(c_float), dimension(4)           :: tmp_limit
+   integer(c_short)                      :: err_code
+   logical(c_bool)                       :: verb
+   integer(c_long)                       :: tmp_nx, tmp_ny, tmp_miny
 
    n_across_track = 2
    n_along_track = 3

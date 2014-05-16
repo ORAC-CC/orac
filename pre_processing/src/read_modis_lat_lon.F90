@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read latitude and longitude MODIS geolocation data
-! 
+!
 ! Description and Algorithm details:
 ! 1) Set start, end, and stride of data read.
 ! 2) Read data with SFRDATA.
@@ -22,7 +22,7 @@
 !
 ! History:
 ! 2011/12/13: MJ produces draft code which reads latitude and longitude modis
-!                geolocation data 
+!                geolocation data
 ! 2013/09/06: AP tidying, added code for WHERE statement (if desired), use
 !                real_fill_value rather than file's value
 !
@@ -41,15 +41,16 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer, intent(in) :: fid
-   
-   integer             :: var_id,err_code,start(2),stride(2),edge(2),attr_id
-   character(len=*)    :: SDS_name
-   
-   integer(kind=lint)  :: startx,stopx,starty,stopy 
-!  integer(kind=lint)  :: ix,jy
-   
-   real(kind=sreal)    :: temp(startx:stopx,starty:stopy),fv,vr(2)
+   integer, intent(in)            :: fid
+   character(len=*), intent(in)   :: SDS_name
+   integer(kind=lint), intent(in) :: startx,stopx,starty,stopy
+   real(kind=sreal), intent(out)  :: temp(startx:stopx,starty:stopy)
+
+!  integer(kind=lint) :: ix,jy
+   integer            :: err_code
+   integer            :: var_id,attr_id
+   integer            :: start(2),stride(2),edge(2)
+   real(kind=sreal)   :: fv,vr(2)
 
    start(1) = startx-1
    start(2) = starty-1

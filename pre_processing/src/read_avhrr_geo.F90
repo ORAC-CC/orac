@@ -40,18 +40,16 @@ subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
 
    implicit none
 
-   integer(kind=lint)         :: n_along_track
-
-   character(len=pathlength)  :: path_to_geo_file
+   character(len=pathlength), intent(in)     :: path_to_geo_file
+   type(imager_geolocation_s), intent(inout) :: imager_geolocation
+   type(imager_angles_s), intent(inout)      :: imager_angles
+   type(imager_flags_s), intent(inout)       :: imager_flags
+   type(imager_time_s), intent(inout)        :: imager_time
+   integer(kind=lint), intent(in)            :: n_along_track
 
    integer(kind=lint)         :: geo_id
 
-   type(imager_geolocation_s) :: imager_geolocation
-   type(imager_angles_s)      :: imager_angles
-   type(imager_flags_s)       :: imager_flags
-   type(imager_time_s)        :: imager_time
-
-   real(kind=sreal), allocatable, dimension(:,:)   :: temp,temp2
+   real(kind=sreal), allocatable, dimension(:,:) :: temp,temp2
 
    integer(kind=lint)         :: startepochs,endepochs
 

@@ -42,14 +42,16 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/define_preprop_grid.o \
                 $(OBJS)/ecmwf_structures.o \
                 $(OBJS)/emis_def.o \
+                $(OBJS)/extrap_into_tropopause.o \
                 $(OBJS)/fill_grid.o \
                 $(OBJS)/find_min_max_preproc.o \
-                $(OBJS)/surface_emissivity.o \
-                $(OBJS)/surface_reflectance.o \
+                $(OBJS)/find_tropopause.o \
+                $(OBJS)/hpsort.o \
                 $(OBJS)/imager_structures.o \
                 $(OBJS)/imager2oraclsflag.o \
                 $(OBJS)/int_ecmwf.o \
                 $(OBJS)/interpol.o \
+                $(OBJS)/interpolate_to3h2o.o \
                 $(OBJS)/ls.o \
                 $(OBJS)/make_preprop_grid.o \
                 $(OBJS)/map_time_to_pixel.o \
@@ -76,7 +78,10 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/rttov_driver.o \
                 $(OBJS)/set_ecmwf.o \
                 $(OBJS)/setup.o \
+                $(OBJS)/surface_emissivity.o \
+                $(OBJS)/surface_reflectance.o \
                 $(OBJS)/surface_structures.o \
+                $(OBJS)/t_extrap_tp1.o \
                 $(OBJS)/test_rttov.o
 
 PREPROC_OBJ_C=  $(OBJS)/read_aatsr_orbit.o

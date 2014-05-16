@@ -31,8 +31,9 @@ subroutine close_netcdf_output(netcdf_info)
 
    implicit none
 
-   type(netcdf_info_s) :: netcdf_info
-   integer             :: ierr
+   type(netcdf_info_s), intent(in) :: netcdf_info
+
+   integer :: ierr
 
    ierr=nf90_close(netcdf_info%ncid_lwrtm)
    if (ierr.ne.NF90_NOERR) &

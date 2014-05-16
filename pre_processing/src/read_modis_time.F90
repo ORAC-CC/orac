@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read MODIS time data from hdf file
-! 
+!
 ! Description and Algorithm details:
 ! 1) Set start, end, and stride of data read.
 ! 2) Read data with SFRDATA.
@@ -36,16 +36,15 @@ subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer(kind=lint)  :: startyy, stopyy
-   
-   integer, intent(in) :: fid
-   
-   integer             :: file_id, var_id, err_code, start(1), stride(1)
-   integer             :: edge(1)
-!  integer             :: attr_id
-   character(len=*)    :: SDS_name
-   
-   real(kind=dreal)    :: temp(startyy:stopyy-1)
+   integer, intent(in)            :: fid
+   character(len=*), intent(in)   :: SDS_name
+   integer(kind=lint), intent(in) :: startyy, stopyy
+   real(kind=dreal), intent(out)  :: temp(startyy:stopyy-1)
+
+   integer :: err_code
+
+   integer :: file_id, var_id !, attr_id
+   integer :: start(1), stride(1), edge(1)
 
    start(1) = startyy-1
    stride = 1

@@ -39,9 +39,9 @@ subroutine test_rttov(test_rttov_flag,profiles,preproc_dims)
 
    Implicit None
 
-   Integer  :: test_rttov_flag
-   Type(profile_Type), Allocatable   :: profiles(:)
-   type(preproc_dims_s) :: preproc_dims
+   Integer, intent(out) :: test_rttov_flag
+   Type(profile_Type), intent(out), Allocatable :: profiles(:)
+   type(preproc_dims_s), intent(inout) :: preproc_dims
 
    test_rttov_flag=0
    if (test_rttov_flag .eq. 1) then 

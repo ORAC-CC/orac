@@ -94,7 +94,9 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
   type(imager_geolocation_s), intent(in) :: imager_geolocation
   type(preproc_dims_s), intent(in)       :: preproc_dims
   type(surface_s), intent(inout)         :: surface
-  type(channel_info_s)                   :: channel_info
+  character(len=datelength), intent(in)  :: cyear,cmonth,cday
+  type(channel_info_s), intent(in)       :: channel_info
+
   ! Local variables
   real(kind=sreal), dimension(4)   :: snow_albedo, ice_albedo
   integer(kind=1)                  :: north=0, south=0
@@ -103,7 +105,6 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
   type(nise_s)                     :: nise
   real(kind=sreal), dimension(2,2) :: nise_tmp
   real(kind=sreal), dimension(8)   :: nise_tmp2
-  character(len=datelength)        :: cyear,cmonth,cday
   real                             :: fmonth
   character(len=300)               :: nise_path_file
   logical                          :: nise_file_exist

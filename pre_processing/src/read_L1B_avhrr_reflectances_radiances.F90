@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read solar and viewing geometry from HDF5 file.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Open data group, data set, data space, and crease memory space.
 ! 2) Read data and attributes.
@@ -43,26 +43,21 @@ subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
 
    implicit none
 
+   integer(kind=size_t), parameter :: dim=10
+
    integer(kind=HID_T), intent(in) :: fid
+   character(len=*), intent(in)    :: dataset, group, attrgroup
+   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
+   character(len=dim), intent(out) :: channel_number
+   real(kind=sreal), intent(out) :: rtemp(startx:stopx,starty:stopy)
 
+   integer(kind=lint)    :: ix,jy
    integer               :: err_code
-   integer(kind=size_t), parameter    :: dim=10
-   character(len=*)      :: dataset, group, attrgroup
-
    integer(kind=HID_T)   :: gr_id,dset_id,dset_id2,dspace_id,mem_id,attr_id, &
-        type_id
-   
+                            type_id
    integer(kind=HSIZE_T) :: start(2), stride(2), edge(2), adims(1)
-   
-   integer(kind=lint)    :: ix,jy,startx,stopx,starty,stopy
-   
    integer(kind=lint)    :: temp(startx:stopx,starty:stopy)
-
-   real(kind=sreal)      :: rtemp(startx:stopx,starty:stopy)
-   
    real(kind=sreal)      :: nodata,missingdata,scale,offset
-   
-   character(len=dim)    :: channel_number
 
    !open the data group
    call h5gopen_f(fid,group,gr_id,err_code)
@@ -88,13 +83,13 @@ subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
 
    ! all attributes are scalar
    adims(1)=1
-   
+
    ! Read channel # from attribute
    call h5aopen_name_f(gr_id,'channel',attr_id,err_code)
    ! generate a new STRING datatype
    call h5tcopy_f(H5T_FORTRAN_S1,type_id,err_code)
    ! make that type the same length as the variable channel_number
-   call h5tset_size_f(type_id,dim,err_code) 
+   call h5tset_size_f(type_id,dim,err_code)
    call h5aread_f(attr_id,type_id,channel_number,adims,err_code)
    call h5aclose_f(attr_id,err_code)
    call h5tclose_f(type_id,err_code)
@@ -119,7 +114,7 @@ subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
    call h5aclose_f(attr_id,err_code)
 
    !nodata
-   !get attribute id 
+   !get attribute id
    call h5aopen_name_f(dset_id2,'nodata',attr_id,err_code)
    !read now the attribute
    call h5aread_f(attr_id,H5T_NATIVE_REAL,nodata,adims,err_code)

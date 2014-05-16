@@ -49,17 +49,17 @@ subroutine call_rtm_solar_rttov(errorstatus,transmission,imager_angles, &
 
    implicit none
 
-   integer(kind=jpim)      :: errorstatus
-   type(transmission_type) :: transmission
-   type(imager_angles_s)   :: imager_angles
-   type(channel_info_s)    :: channel_info
-   type(preproc_swrtm_s)   :: preproc_swrtm
+   integer(kind=jpim),      intent(in)    :: errorstatus
+   type(transmission_type), intent(in)    :: transmission
+   type(imager_angles_s),   intent(in)    :: imager_angles
+   type(channel_info_s),    intent(in)    :: channel_info
+   type(preproc_swrtm_s),   intent(inout) :: preproc_swrtm
 
-   integer                 :: ii
-   integer                 :: nlevs,p
-   integer                 :: nchans_solar
-   integer(kind=jpim)      :: test_write
-   real                    :: amf,za
+   integer            :: ii
+   integer            :: nlevs,p
+   integer            :: nchans_solar
+   integer(kind=jpim) :: test_write
+   real               :: amf,za
    real(kind=sreal), allocatable :: c_tau_level(:,:)
    real(kind=sreal), allocatable :: new_trans_tau_level(:,:)
 

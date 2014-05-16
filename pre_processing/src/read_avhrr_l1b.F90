@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read the L1b AVHRR HDF5 file.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Allocate temporary array.
 ! 2) Open file.
@@ -45,17 +45,16 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    implicit none
 
+   character(len=sensorlength), intent(in)    :: sensor
+   character(len=platformlength), intent(in)  :: platform
+   character(len=pathlength), intent(in)      :: path_to_l1b_file
+   type(imager_geolocation_s), intent(inout)  :: imager_geolocation
+   type(imager_measurements_s), intent(inout) :: imager_measurements
+   type(channel_info_s), intent(in)           :: channel_info
+
    integer                       :: ichannel,err_code
-   
+
    integer(kind=lint)            :: l1b_id
-   
-   character(len=pathlength)     :: path_to_l1b_file
-   character(len=sensorlength)   :: sensor
-   character(len=platformlength) :: platform
-   
-   type(imager_geolocation_s)    :: imager_geolocation
-   type(imager_measurements_s)   :: imager_measurements
-   type(channel_info_s)          :: channel_info
 
    real(kind=sreal), allocatable, dimension(:,:) :: temp
 
@@ -89,19 +88,19 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
       ! BTs assigned to them already.
       select case(channel_number)
       case('1') !image 1 in the file is channel 1 of AVHRR
-         imager_measurements%data(:,:,1)=temp(:,:)/100.0 
+         imager_measurements%data(:,:,1)=temp(:,:)/100.0
       case('2') !image 2 in the file is channel 2 of AVHRR
          imager_measurements%data(:,:,2)=temp(:,:)/100.0
       case('3b') !image 3 in the file is channel 3B of AVHRR
-         imager_measurements%data(:,:,4)=temp(:,:)      
+         imager_measurements%data(:,:,4)=temp(:,:)
       case('4') !image 4 in the file is channel 4 of AVHRR
-         imager_measurements%data(:,:,5)=temp(:,:)      
+         imager_measurements%data(:,:,5)=temp(:,:)
       case('5') !image 5 in the file is channel 5 of AVHRR
-         imager_measurements%data(:,:,6)=temp(:,:)      
+         imager_measurements%data(:,:,6)=temp(:,:)
       case('3a') !image 6 in the file is channel 3A of AVHRR
-         imager_measurements%data(:,:,3)=temp(:,:)/100.0      
+         imager_measurements%data(:,:,3)=temp(:,:)/100.0
       case('3B') ! just in case
-         imager_measurements%data(:,:,4)=temp(:,:)      
+         imager_measurements%data(:,:,4)=temp(:,:)
       case('3A') ! just in case
          imager_measurements%data(:,:,3)=temp(:,:)/100.0
       case default
@@ -113,7 +112,7 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
    deallocate(temp)
 
    !close the file
-   call h5fclose_f(l1b_id, err_code) 
+   call h5fclose_f(l1b_id, err_code)
 
    !close access to hdf5 interface
    call h5close_f(err_code)

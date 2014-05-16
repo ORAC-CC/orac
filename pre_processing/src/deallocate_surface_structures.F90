@@ -32,7 +32,7 @@ subroutine deallocate_surface_structures(surface)
 
   implicit none
 
-  type(surface_s), intent(inout)         :: surface
+  type(surface_s), intent(inout) :: surface
 
   deallocate(surface%albedo_chan)
   deallocate(surface%emissivity_chan)

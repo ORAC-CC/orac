@@ -46,9 +46,9 @@ subroutine fill_grid(grid, fillval, mask)
   implicit none
 
   ! Input/output variables
-  real(kind=sreal), dimension(:,:), intent(INOUT) :: grid
-  real(kind=sreal), intent(IN)                    :: fillval
-  integer(kind=sint), dimension(:,:), intent(IN)  :: mask
+  real(kind=sreal), dimension(:,:), intent(inout) :: grid
+  real(kind=sreal), intent(in)                    :: fillval
+  integer(kind=sint), dimension(:,:), intent(in)  :: mask
   ! Local variables
   integer(kind=lint)                              :: nx, ny, i, j, k, m
   integer(kind=lint)                              :: a1, b1, count

@@ -66,15 +66,14 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    implicit none
 
-   character(len=platformlength) :: platform
-   character(len=pathlength)     :: path_to_l1b_file,path_to_geo_file
-   character(len=datelength)     :: cyear,cdoy,chour,cminute,cmonth,cday
+   character(len=pathlength), intent(in)      :: path_to_l1b_file,path_to_geo_file
+   character(len=platformlength), intent(out) :: platform
+   integer(kind=stint), intent(out)           :: doy,year,month,day,hour,minute
+   character(len=datelength), intent(out)     :: cyear,chour,cminute,cmonth,cday
+   type(channel_info_s), intent(inout)        :: channel_info
 
-   integer(kind=stint)  :: intdummy1,intdummy2
-
-   integer(kind=stint)  :: doy,year,month,day,hour,minute
-
-   type(channel_info_s) :: channel_info
+   character(len=datelength) :: cdoy
+   integer(kind=stint)       :: intdummy1,intdummy2
 
    !check if l1b and geo file are of the same granule
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'/',back=.true.)

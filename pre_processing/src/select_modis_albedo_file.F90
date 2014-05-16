@@ -42,8 +42,8 @@ subroutine select_modis_albedo_file(cyear,doy,modis_surf_path,modis_surf_path_fi
 
    implicit none
 
-   integer(kind=stint),       intent(in)  :: doy
    character(len=datelength), intent(in)  :: cyear
+   integer(kind=stint),       intent(in)  :: doy
    character(len=pathlength), intent(in)  :: modis_surf_path
    character(len=pathlength), intent(out) :: modis_surf_path_file
 

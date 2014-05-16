@@ -117,14 +117,15 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    end interface
 
    ! Fortran variables
-   character(len=pathlength)   :: l1b_file, drift_file
-   type(imager_geolocation_s)  :: imager_geolocation
-   type(imager_measurements_s) :: imager_measurements
-   type(imager_angles_s)       :: imager_angles
-   type(imager_flags_s)        :: imager_flags
-   type(imager_time_s)         :: imager_time
-   type(channel_info_s)        :: channel_info
-   logical                     :: verbose
+   character(len=pathlength), intent(in)      :: l1b_file, drift_file
+   type(imager_geolocation_s), intent(inout)  :: imager_geolocation
+   type(imager_measurements_s), intent(inout) :: imager_measurements
+   type(imager_angles_s), intent(inout)       :: imager_angles
+   type(imager_flags_s), intent(inout)        :: imager_flags
+   type(imager_time_s), intent(inout)         :: imager_time
+   type(channel_info_s), intent(in)           :: channel_info
+   logical, intent(in)                        :: verbose
+
    integer                     :: i,status
    integer(kind=stint)         :: j
    integer(sint)               :: view_selection

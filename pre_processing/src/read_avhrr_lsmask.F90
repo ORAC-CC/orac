@@ -38,23 +38,24 @@ subroutine read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
 
    implicit none
 
-   character(len=pathlength)  :: path_to_geo_file,path_to_lsmask_file
+   character(len=pathlength), intent(in)     :: path_to_geo_file
+   type(imager_geolocation_s), intent(inout) :: imager_geolocation
+   type(imager_angles_s), intent(inout)      :: imager_angles
+   type(imager_flags_s), intent(inout)       :: imager_flags
+   type(imager_time_s), intent(inout)        :: imager_time
+
+   character(len=pathlength)  :: path_to_lsmask_file
 
    integer(kind=lint)         :: geo_id,ix,jy,iunderscore
 
-   type(imager_geolocation_s) :: imager_geolocation
-   type(imager_angles_s)      :: imager_angles
-   type(imager_flags_s)       :: imager_flags
-   type(imager_time_s)        :: imager_time
-
-   integer(kind=lint), allocatable, dimension(:,:)  :: btemp
+   integer(kind=lint), allocatable, dimension(:,:) :: btemp
 
    integer                    :: err_code
    logical                    :: check
 
    iunderscore=scan(trim(adjustl(path_to_geo_file)),'_',back=.true.)
-   path_to_geo_file=trim(adjustl(path_to_geo_file))
-   path_to_lsmask_file=path_to_geo_file(1:iunderscore)//'physiography.h5'
+   path_to_lsmask_file=trim(adjustl(path_to_geo_file))
+   path_to_lsmask_file=path_to_lsmask_file(1:iunderscore)//'physiography.h5'
    inquire(file=path_to_lsmask_file,exist=check)
    if (.not. check) stop 'AVHRR physiography file does not exist.'
 

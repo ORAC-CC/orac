@@ -25,12 +25,11 @@
 
 subroutine allocate_channel_info(channel_info)
 
-!  use channel_structures
    use preproc_constants
 
    implicit none
 
-   type(channel_info_s) :: channel_info
+   type(channel_info_s), intent(out) :: channel_info
 
    allocate(channel_info%channel_ids_instr(channel_info%nchannels_total))
    channel_info%channel_ids_instr=long_int_fill_value

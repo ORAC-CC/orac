@@ -50,17 +50,17 @@ subroutine call_rtm_ir_rttov(errorstatus,transmission,radiance,imager_angles, &
    implicit none
 
 
-   integer(kind=jpim)      :: errorstatus
-   type(transmission_type) :: transmission
-   type(radiance_type)     :: radiance
-   type(imager_angles_s)   :: imager_angles
-   type(channel_info_s)    :: channel_info
-   type(preproc_lwrtm_s)   :: preproc_lwrtm
+   integer(kind=jpim),      intent(in)    :: errorstatus
+   type(transmission_type), intent(in)    :: transmission
+   type(radiance_type),     intent(in)    :: radiance
+   type(imager_angles_s),   intent(in)    :: imager_angles
+   type(channel_info_s),    intent(in)    :: channel_info
+   type(preproc_lwrtm_s),   intent(inout) :: preproc_lwrtm
 
-   integer                 :: ii
-   integer                 :: nlevs,p
-   integer                 :: nchans_ir
-   integer                 :: test_write
+   integer :: ii
+   integer :: nlevs,p
+   integer :: nchans_ir
+   integer :: test_write
 
 
    nlevs=size(transmission%tau_levels(:,1))

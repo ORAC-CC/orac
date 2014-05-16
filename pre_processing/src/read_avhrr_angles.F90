@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read solar and viewing geometry from HDF5 file.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Open the data group, data set, and fetch a data space.
 ! 2) Read the data. Read the attributes.
@@ -43,20 +43,20 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
    implicit none
 
    integer(kind=HID_T), intent(in) :: fid
-   
+   character(len=*), intent(in)    :: dataset, group, attrgroup
+   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
+   real(kind=sreal), intent(out)   :: rtemp(startx:stopx,starty:stopy)
+
    integer               :: err_code
-   character(len=*)      :: dataset, group, attrgroup
-   
+
    integer(kind=HID_T)   :: gr_id,dset_id,dset_id2,dspace_id,mem_id,attr_id
-   
+
    integer(kind=HSIZE_T) :: start(2), stride(2), edge(2), adims(1)
-   
-   integer(kind=lint)    :: ix,jy,startx,stopx,starty,stopy
-        
+
+   integer(kind=lint)    :: ix,jy
+
    integer(kind=lint)    :: temp(startx:stopx,starty:stopy)
-   
-   real(kind=sreal)      :: rtemp(startx:stopx,starty:stopy)
-   
+
    real(kind=sreal)      :: nodata,missingdata,scale,offset
 
    !open the data group
@@ -106,7 +106,7 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
    call h5aclose_f(attr_id,err_code)
 
    !nodata
-   !get attribute id 
+   !get attribute id
    call h5aopen_name_f(dset_id2,'nodata',attr_id,err_code)
    !read now the attribute
    call h5aread_f(attr_id,H5T_NATIVE_REAL,nodata,adims,err_code)

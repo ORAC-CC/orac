@@ -38,11 +38,11 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles,imager_
 
   implicit none
 
-  type(imager_geolocation_s) :: imager_geolocation
-  type(imager_angles_s) :: imager_angles
-  type(imager_flags_s) :: imager_flags
-  type(imager_time_s) :: imager_time
-  type(imager_measurements_s) :: imager_measurements
+  type(imager_geolocation_s), intent(inout) :: imager_geolocation
+  type(imager_angles_s), intent(inout) :: imager_angles
+  type(imager_flags_s), intent(inout) :: imager_flags
+  type(imager_time_s), intent(inout) :: imager_time
+  type(imager_measurements_s), intent(inout) :: imager_measurements
 
   deallocate(imager_geolocation%latitude)
   deallocate(imager_geolocation%longitude)

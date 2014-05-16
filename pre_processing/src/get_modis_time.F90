@@ -39,29 +39,22 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer(kind=lint)         :: geo_id,startyy,stopyy
-   
+   integer(kind=lint), intent(in)            :: geo_id
+   type(imager_geolocation_s), intent(inout) :: imager_geolocation
+   type(imager_time_s), intent(in)           :: imager_time
+   integer(kind=lint), intent(in)            :: n_along_track
+
    integer(kind=lint)         :: var_id
-
    integer(kind=lint)         :: err_code
-
-   integer(kind=lint)         :: dummy_type,dummy_numattrs,dummy_rank, &
-        dims_10
-
-   integer(kind=lint)         :: n_along_track,n_along_track_10, &
-        along_track_ratio
-
+   integer(kind=lint)         :: dummy_type,dummy_numattrs,dummy_rank,dims_10
+   integer(kind=lint)         :: n_along_track_10, along_track_ratio
    character(len=50)          :: dummy_name
 
-   type(imager_geolocation_s) :: imager_geolocation
-   type(imager_time_s)        :: imager_time
-   
    real(kind=dreal), allocatable, dimension(:)   :: ttemp10
-   
    real(kind=dreal), allocatable, dimension(:,:) :: ttemp
-
    real(kind=dreal)           :: refjulianday=0.00_dreal
-   
+   integer(kind=lint)         :: startyy,stopyy
+
    !reference point of time
    integer(kind=stint) :: refday=1_stint,refyear=1993_stint,refmonth=1_stint
 

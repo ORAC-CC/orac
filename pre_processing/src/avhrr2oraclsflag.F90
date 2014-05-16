@@ -34,7 +34,7 @@ subroutine avhrr2oraclsflag(temp)
 
   implicit none
 
-  integer(kind=lint) :: temp
+  integer(kind=lint), intent(inout) :: temp
 
 !!$  AVHRR DEFINITIONS:
 !!$                16:      water

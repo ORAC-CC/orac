@@ -31,9 +31,9 @@ subroutine allocate_ecmwf_structures(ecmwf_dims,ecmwf_3d,ecmwf_2d)
 
    implicit none
 
-   type(ecmwf_dims_s) :: ecmwf_dims
-   type(ecmwf_3d_s)   :: ecmwf_3d
-   type(ecmwf_2d_s)   :: ecmwf_2d
+   type(ecmwf_dims_s), intent(out) :: ecmwf_dims
+   type(ecmwf_3d_s), intent(out)   :: ecmwf_3d
+   type(ecmwf_2d_s), intent(out)   :: ecmwf_2d
 
    allocate(ecmwf_2d%longitude(ecmwf_dims%xdim,ecmwf_dims%ydim))
    ecmwf_2d%longitude=real_fill_value

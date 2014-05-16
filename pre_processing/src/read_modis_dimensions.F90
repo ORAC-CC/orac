@@ -37,7 +37,8 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
    include "hdf.f90"
    include "dffunc.f90"
 
-   character(len=pathlength) :: path_to_geo_file
+   character(len=pathlength), intent(in) :: path_to_geo_file
+   integer(kind=lint), intent(out)       :: n_across_track, n_along_track
 
    integer(kind=lint) :: dummy_var_id
   
@@ -45,8 +46,6 @@ subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
         dummy_rank
 
    integer(kind=lint) :: geo_id
-
-   integer(kind=lint) :: n_across_track, n_along_track
 
    character(len=50)  :: dummy_name
 

@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read AVHRR time geolocation data
-! 
+!
 !
 ! Description and Algorithm details:
 ! 1) Open the attribute group.
@@ -36,15 +36,14 @@ subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)
    implicit none
 
    integer(kind=HID_T), intent(in) :: fid
+   character(len=*), intent(in)    :: attrgroup
+   integer(kind=lint), intent(out) :: startepochs,endepochs
 
    integer               :: err_code
-   character(len=*)      :: attrgroup
 
    integer(kind=HID_T)   :: dset_id2,attr_id
-   
+
    integer(kind=HSIZE_T) :: adims(1)
-   
-   integer(kind=lint)    :: startepochs,endepochs
 
    !open data group where attributes are stored
    call h5gopen_f(fid,attrgroup,dset_id2,err_code)

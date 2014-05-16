@@ -34,12 +34,12 @@
 
 subroutine extrap_into_tropopause(preproc_prtm,preproc_dims )
   
-    use preproc_structures
+  use preproc_structures
 
   implicit none
   ! arguments
- type(preproc_prtm_s), intent(in) :: preproc_prtm
-  type(preproc_dims_s),      intent(in)    :: preproc_dims 
+  type(preproc_prtm_s), intent(inout) :: preproc_prtm
+  type(preproc_dims_s), intent(in)   :: preproc_dims 
 
   real ,allocatable ::  t(:),z(:),t2(:),t3(:)
   real ,allocatable ::  t2a(:)

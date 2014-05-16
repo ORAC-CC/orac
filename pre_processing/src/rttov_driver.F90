@@ -161,21 +161,21 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #endif
 
    ! Arguments
-   character(len=pathlength)         :: coef_path
-   character(len=pathlength)         :: emiss_path
-   character(len=sensorlength)       :: sensor
-   character(len=platformlength)     :: platform
-   type(preproc_dims_s)              :: preproc_dims
-   type(preproc_geoloc_s)            :: preproc_geoloc
-   type(preproc_geo_s)               :: preproc_geo
-   type(preproc_prtm_s)              :: preproc_prtm
-   type(preproc_lwrtm_s)             :: preproc_lwrtm
-   type(preproc_swrtm_s)             :: preproc_swrtm
-   type(imager_angles_s)             :: imager_angles
-   type(netcdf_info_s)               :: netcdf_info
-   type(channel_info_s)              :: channel_info
-   integer(kind=stint)               :: month
-   type(ecmwf_dims_s)                :: ecmwf_dims
+   character(len=pathlength), intent(in)         :: coef_path
+   character(len=pathlength), intent(in)         :: emiss_path
+   character(len=sensorlength), intent(in)       :: sensor
+   character(len=platformlength), intent(in)     :: platform
+   type(preproc_dims_s), intent(inout)           :: preproc_dims
+   type(preproc_geoloc_s), intent(in)            :: preproc_geoloc
+   type(preproc_geo_s), intent(in)               :: preproc_geo
+   type(preproc_prtm_s), intent(inout)              :: preproc_prtm
+   type(preproc_lwrtm_s), intent(inout)             :: preproc_lwrtm
+   type(preproc_swrtm_s), intent(inout)             :: preproc_swrtm
+   type(imager_angles_s), intent(in)             :: imager_angles
+   type(netcdf_info_s), intent(inout)            :: netcdf_info
+   type(channel_info_s), intent(in)              :: channel_info
+   integer(kind=stint), intent(in)               :: month
+   type(ecmwf_dims_s), intent(in)                :: ecmwf_dims
 
    ! Loop variables
    integer(kind=jpim)                :: j

@@ -4,17 +4,15 @@ subroutine interpolate_to3h2o(nlay,nlev,phi_lay,phi_lev,tlay,tlev,o3lay,o3lev,h2
 
   implicit none
 
+  integer(kind=lint), intent(in) :: nlay,nlev
+  real(kind=sreal), intent(out) :: phi_lay(nlay),phi_lev(nlev)
+  real(kind=sreal), intent(out) :: tlay(nlay),tlev(nlev)
+  real(kind=sreal), intent(out) :: o3lay(nlay),o3lev(nlev)
+  real(kind=sreal), intent(out) :: h2olay(nlay),h2olev(nlev)
+
   integer(kind=lint) :: kdim
 
-  integer(kind=lint) :: nlay,nlev
-
   real(kind=sreal) :: dx10,x0h,x1h
-
-  real(kind=sreal) :: phi_lev(nlev),phi_lay(nlay)
-  real(kind=sreal) :: tlev(nlev),tlay(nlay)
-  real(kind=sreal) :: o3lev(nlev),o3lay(nlay)
-  real(kind=sreal) :: h2olev(nlev),h2olay(nlay)
-  
 
   !interpolate here
   do kdim=2,nlev-1

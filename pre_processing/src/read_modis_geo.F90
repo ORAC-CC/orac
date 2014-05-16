@@ -48,14 +48,14 @@ subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    include "hdf.f90"
    include "dffunc.f90"
 
-   character(len=pathlength)  :: path_to_geo_file
+   character(len=pathlength), intent(in)   :: path_to_geo_file
+   type(imager_geolocation_s), intent(out) :: imager_geolocation
+   type(imager_angles_s), intent(out)      :: imager_angles
+   type(imager_flags_s), intent(in)        :: imager_flags
+   type(imager_time_s), intent(in)         :: imager_time
+   integer(kind=lint), intent(in)          :: n_along_track
 
-   integer(kind=lint)         :: geo_id,ix,jy,n_along_track
-
-   type(imager_geolocation_s) :: imager_geolocation
-   type(imager_angles_s)      :: imager_angles
-   type(imager_flags_s)       :: imager_flags
-   type(imager_time_s)        :: imager_time
+   integer(kind=lint)         :: geo_id,ix,jy
 
    real(kind=sreal), allocatable, dimension(:,:)    :: temp,temp2
 

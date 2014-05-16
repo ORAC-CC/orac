@@ -35,12 +35,12 @@ subroutine t_extrap_tp1(z,t,ztp,lr,t2,nlevs)
   
   
   implicit none
-  integer ,intent(in) ::  nlevs
-  real  ,intent(inout), dimension(nlevs) :: t2
-  real ,intent(inout), dimension(nlevs)  ::  t,z
-  real  ,intent(in) ::  ztp,lr
-  real ::  ttp,min,tdiff,tdiff_store,sf
-  integer  :: nt,zdim,t2dim,ii,index,n
+  integer, intent(in) ::  nlevs
+  real, intent(inout), dimension(nlevs) :: t2
+  real, intent(in), dimension(nlevs) :: t,z
+  real, intent(in) :: ztp,lr
+  real :: ttp,min,tdiff,tdiff_store,sf
+  integer :: nt,zdim,t2dim,ii,index,n
   
   
   if (ztp .eq. -999.) then 

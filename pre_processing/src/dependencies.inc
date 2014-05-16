@@ -22,20 +22,10 @@ $(OBJS)/define_preprop_grid.o: $(OBJS)/ecmwf_structures.o \
         $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf_structures.o: $(OBJS)/preproc_constants.o \
         allocate_ecmwf_structures.F90 deallocate_ecmwf_structures.F90
+$(OBJS)/extrap_into_tropopause.o: $(OBJS)/preproc_structures.o
 $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/find_min_max_preproc.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
-$(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o $(OBJS)/emis_def.o \
-        $(OBJS)/imager_structures.o $(OBJS)/interpol.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
-        $(OBJS)/read_cimss_emissivity.o $(OBJS)/surface_structures.o \
-        get_surface_emissivity.F90 select_modis_emiss_file.F90
-$(OBJS)/surface_reflectance.o: $(OBJS)/channel_structures.o $(OBJS)/cox_munk.o \
-        $(OBJS)/ecmwf_structures.o $(OBJS)/fill_grid.o \
-        $(OBJS)/imager_structures.o $(OBJS)/interpol.o $(OBJS)/mcd43c.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
-        $(OBJS)/surface_structures.o get_surface_reflectance_lam.F90 \
-        select_modis_albedo_file.F90
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o allocate_imager_structures.F90 \
         deallocate_imager_structures.F90
@@ -44,6 +34,7 @@ $(OBJS)/imager2oraclsflag.o: $(OBJS)/preproc_constants.o avhrr2oraclsflag.F90 \
 $(OBJS)/int_ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/interpol.o: $(OBJS)/preproc_constants.o interpol_bilinear.F90 \
         interpol_nearest_neighbour.F90
+$(OBJS)/interpolate_to3h2o.o: $(OBJS)/preproc_constants.o
 $(OBJS)/ls.o: $(OBJS)/preproc_constants.o
 $(OBJS)/make_preprop_grid.o: $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o
@@ -115,6 +106,17 @@ $(OBJS)/set_ecmwf.o: $(OBJS)/preproc_constants.o
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/date_type_structure.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o
+$(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o $(OBJS)/emis_def.o \
+        $(OBJS)/imager_structures.o $(OBJS)/interpol.o \
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/read_cimss_emissivity.o $(OBJS)/surface_structures.o \
+        get_surface_emissivity.F90 select_modis_emiss_file.F90
+$(OBJS)/surface_reflectance.o: $(OBJS)/channel_structures.o $(OBJS)/cox_munk.o \
+        $(OBJS)/ecmwf_structures.o $(OBJS)/fill_grid.o \
+        $(OBJS)/imager_structures.o $(OBJS)/interpol.o $(OBJS)/mcd43c.o \
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/surface_structures.o get_surface_reflectance_lam.F90 \
+        select_modis_albedo_file.F90
 $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o allocate_surface_structures.F90 \

@@ -40,19 +40,15 @@ subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop, &
 
    implicit none
 
-   integer(kind=lint)  :: jy,ixstart,ixstop,iystart,iystop
+   integer(kind=lint), intent(in)  :: ixstart,ixstop,iystart,iystop
+   integer(kind=lint), intent(in)  :: n_along_track
+   integer(kind=lint), intent(in)  :: startepochs,endepochs
+   type(imager_time_s), intent(inout) :: imager_time
+   real(kind=dreal), intent(in)    :: refjulianday
 
+   integer(kind=lint)  :: jy
    real(kind=dreal)    :: deltime
-
-   real(kind=dreal)    :: temp(ixstart:ixstop,iystart:iystop)
-
-   integer(kind=lint)  :: n_along_track
-  
-   integer(kind=lint)  :: startepochs,endepochs
-
-   real(kind=dreal)    :: refjulianday
-
-   type(imager_time_s) :: imager_time
+   real(kind=dreal)    :: temp(ixstart:ixstop,iystart:iystop)  
 
    deltime=(endepochs-startepochs)/real(n_along_track,kind=dreal)
 

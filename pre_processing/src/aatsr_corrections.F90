@@ -75,16 +75,18 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, ol
 
    implicit none
 
-   character(len=30), intent(in) :: start_date
-   character(len=30)             :: sdate
-   character(len=62), intent(in) :: vc1_file
-   type(aatsr_drift_lut)         :: lut
-   real(dreal), intent(out)      :: new_drift, old_drift, drift_var
-   real(kind=dreal)                   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
-   integer(kind=stint)                :: year, month, day, hour, minute
-   integer(stint)                :: vc_year, vc_month, vc_day, vc_hour
-   integer(stint)                :: vc_minute, vc_second
-   integer(stint)                :: chan, stat, ilow
+   character(len=30), intent(in)     :: start_date
+   character(len=62), intent(in)     :: vc1_file
+   type(aatsr_drift_lut), intent(in) :: lut
+   integer(stint), intent(in)        :: chan
+   real(dreal), intent(out)          :: new_drift, old_drift, drift_var
+
+   character(len=30)                 :: sdate
+   real(kind=dreal)                  :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
+   integer(kind=stint)               :: year, month, day, hour, minute
+   integer(stint)                    :: vc_year, vc_month, vc_day, vc_hour
+   integer(stint)                    :: vc_minute, vc_second
+   integer(stint)                    :: stat, ilow
 
    ! Yearly rates for exponential correction
    real(kind=sreal), parameter, dimension(4) :: K = &

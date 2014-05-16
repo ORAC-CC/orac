@@ -39,9 +39,9 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
 
    implicit none
 
-   type(surface_s), intent(inout)         :: surface
+   type(surface_s), intent(out)           :: surface
    type(imager_geolocation_s), intent(in) :: imager_geolocation
-   type(channel_info_s)                   :: channel_info
+   type(channel_info_s), intent(in)       :: channel_info
 
 
    allocate(surface%albedo_chan(channel_info%nchannels_sw))
