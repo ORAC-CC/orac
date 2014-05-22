@@ -334,10 +334,10 @@ ORAC_OBJ_MAIN    =$(OBJS)/ECP.o \
 # .F90 was originally the extension on DecUnix, but seems to be allowed by the
 # ifc/ifort compiler.
 $(OBJS)/%.o: %.f90
-	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $(OBJS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.F90
-	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $(OBJS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
 
 
 # Main target list
