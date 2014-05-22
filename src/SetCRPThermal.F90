@@ -111,13 +111,13 @@ subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    ! Td, Rd and Em are interpolated in Tau, SatZen and Re over a range of
    ! channels from First to NY.
-   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
-           SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:),  iTd, &
-           Ctrl%Ind%NSolar - Ctrl%Ind%NMixed, Ind%NSolar - Ind%NMixed, status)
-
    call Int_LUT_TauSatRe(SAD_LUT%Rd(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:), iRd, &
            Ctrl%Ind%NSolar - Ctrl%Ind%NMixed,Ind%NSolar - Ind%NMixed, status)
+
+   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
+           SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:),  iTd, &
+           Ctrl%Ind%NSolar - Ctrl%Ind%NMixed, Ind%NSolar - Ind%NMixed, status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Em(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
            SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,IEm), dCRPOut(:,IEm,:), iEm, &

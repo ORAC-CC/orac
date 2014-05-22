@@ -165,25 +165,25 @@ module ECP_constants
    integer, parameter, dimension(12) :: days_in_month = &
       (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /) ! For conversion from month, day to day number within year.
 
-   ! The following max sizes apply to the SAD_LUT arrays
-   integer, parameter :: MaxCRProps       = 9
-
    ! Codes for super-pixel averaging methods
    integer, parameter :: AMethAll         = 0       ! All pixels in super-pixel included
    integer, parameter :: AMethCloudy      = 1       ! Cloudy pixels only
    integer, parameter :: AMethCentral     = 2       ! Central pixel only
 
+   ! The following max sizes apply to the SAD_LUT arrays
+   integer, parameter :: MaxCRProps       = 9
+
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
 
    integer, parameter :: IRBd             = 1       ! Index of RBd data in array
-   integer, parameter :: ITB              = 2       !  "    "  TB   "   "   "
-   integer, parameter :: ITBd             = 3       !  "    "  TBd  "   "   "
-   integer, parameter :: ITFBd            = 4       !  "    "  TFBd "   "   "
-   integer, parameter :: ITd              = 5       !  "    "  Td   "   "   "
-   integer, parameter :: ITFd             = 6       !  "    "  TFd  "   "   "
-   integer, parameter :: IRd              = 7       !  "    "  Rd   "   "   "
-   integer, parameter :: IRFd             = 8       !  "    "  RFd  "   "   "
+   integer, parameter :: IRd              = 2       !  "    "  Rd   "   "   "
+   integer, parameter :: IRFd             = 3       !  "    "  RFd  "   "   "
+   integer, parameter :: ITB              = 4       !  "    "  TB   "   "   "
+   integer, parameter :: ITBd             = 5       !  "    "  TBd  "   "   "
+   integer, parameter :: ITd              = 6       !  "    "  Td   "   "   "
+   integer, parameter :: ITFBd            = 7       !  "    "  TFBd "   "   "
+   integer, parameter :: ITFd             = 8       !  "    "  TFd  "   "   "
    integer, parameter :: IEm              = 9       !  "    "  Em   "   "   "
 
    ! 3rd index of d_CRP array in functions FM_Thermal, FM_Solar and CRP LUT

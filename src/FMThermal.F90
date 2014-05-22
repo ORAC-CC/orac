@@ -106,7 +106,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
 
     implicit none
 
-!   Define arguments
+    ! Define arguments
 
     type(CTRL_t),     intent(in)    :: Ctrl
     type(SAD_LUT_t),  intent(in)    :: SAD_LUT
@@ -115,15 +115,15 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
     type(RTM_Pc_t),   intent(inout) :: RTM_Pc
     real,             intent(in)    :: X(MaxStateVar)
     type(GZero_t),    intent(in)    :: GZero
-    real,             intent(out)   :: CRP(SPixel%Ind%Nthermal, MaxCRProps)
-    real,             intent(out)   :: d_CRP(SPixel%Ind%Nthermal, MaxCRProps, 2)
+    real,             intent(out)   :: CRP(SPixel%Ind%NThermal, MaxCRProps)
+    real,             intent(out)   :: d_CRP(SPixel%Ind%NThermal, MaxCRProps, 2)
     real,             intent(out)   :: BT(SPixel%Ind%Nthermal)
     real,             intent(out)   :: d_BT(SPixel%Ind%Nthermal, MaxStateVar)
     real,             intent(out)   :: R(SPixel%Ind%Nthermal)
     real,             intent(out)   :: d_R(SPixel%Ind%Nthermal, MaxStateVar)
     integer,          intent(out)   :: status
 
-!   Define local variables
+    ! Define local variables
 
     integer :: i
     integer :: ThF, ThL ! First and last thermal channel indices for RTM_Pc%LW

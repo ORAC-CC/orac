@@ -175,12 +175,12 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
       Tac_v(i) = RTM_Pc%Tac(i) ** SPixel%Geom%SEC_v(SPixel%ViewIdx(i))
    end do
 
-   ! Calculate square of T_bc
-   Tbc2 = RTM_Pc%Tbc(1:SPixel%Ind%Nsolar) * RTM_Pc%Tbc(1:SPixel%Ind%Nsolar)
-
    ! Calculate solar transmittance from TOA to cloud-top times the viewing
-   ! transmittance from cloud-top to TOACalculate square of T_bc
+   ! transmittance from cloud-top to TOA
    T = Tac_o(1:SPixel%Ind%Nsolar) * Tac_v(1:SPixel%Ind%Nsolar)
+
+   ! Calculate square of T_bc (below cloud for diffuse transmission)
+   Tbc2 = RTM_Pc%Tbc(1:SPixel%Ind%Nsolar) * RTM_Pc%Tbc(1:SPixel%Ind%Nsolar)
 
    ! Referencing of different properties stored in CRP and d_CRP: the last index
    ! of the CRP array refers to the property. Hence ITB is the index of TB, etc.
@@ -192,18 +192,19 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    S = ( T_all * SPixel%Rs * CRP(:,ITd) * Tbc2 ) / S_dnom
 
-   Sp = Tbc2 / S_dnom
-
-   ! Below cloud transmittance for reflected radiation
-   REF_over = T * (CRP(:,IRBd) + S) ! Total
+   ! Overcast reflectance
+   REF_over = T * (CRP(:,IRBd) + S)
 
    ! Calculate top of atmosphere reflectance for fractional cloud cover
-   ! MJ: this is actualy obsolete as X(iFR)==1
    REF = (X(IFr)*REF_over) + ((1.0-X(IFr)) * SPixel%RTM%REF_clear)
 
    ! Calculate derivatives of reflectance w.r.t. all other variables or part
    ! cloudy conditions
-   TBTD = T_all * CRP(:,ITd) ! See ATBD, T_B * T_D
+
+   ! Auxillary quantities
+   Sp = Tbc2 / S_dnom
+
+   TBTD = T_all * CRP(:,ITd)
 
    ! Derivative w.r.t. cloud optical depth, Tau
    d_REF(:,ITau) = X(IFr) * T * &
@@ -227,9 +228,10 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    do i=1,SPixel%Ind%NSolar
       d_REF(i,IPc) = X(IFr) * &
            & (1.0 * RTM_Pc%dTac_dPc(i) * &
-           & (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) + SPixel%Geom%SEC_v(SPixel%ViewIdx(i))) &
+           & (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) + &
+              SPixel%Geom%SEC_v(SPixel%ViewIdx(i))) &
            & * REF_over(i)/RTM_Pc%Tac(i))+ &
-           & (2.0 * RTM_Pc%dTbc_dPc(i) * T(i) * S(i) * RTM_Pc%Tbc(i) *  &
+           & (2.0 * RTM_Pc%dTbc_dPc(i) * T(i) * S(i) * RTM_Pc%Tbc(i) * &
            & ((1.0/Tbc2(i)) + (CRP(i,IRFd) * SPixel%Rs(i) / &
            & S_dnom(i))))
    end do
