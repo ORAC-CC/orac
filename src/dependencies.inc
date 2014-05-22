@@ -51,8 +51,7 @@ $(OBJS)/GetX.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
         $(OBJS)/SPixel.o
 $(OBJS)/interpolate_to_ctp.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
-$(OBJS)/InterpolSolar.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o \
-        $(OBJS)/SPixel.o
+$(OBJS)/InterpolSolar.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o
 $(OBJS)/InterpolSolar_spline.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/IntRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o
 $(OBJS)/InterpolThermal.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
@@ -73,11 +72,9 @@ $(OBJS)/InvertMarquardt.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o 
         $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o
 $(OBJS)/Linint.o: $(OBJS)/ECPConstants.o
 $(OBJS)/locate.o: $(OBJS)/ECPConstants.o
-
 $(OBJS)/nc_create_global.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
 $(OBJS)/nc_defdata.o: $(OBJS)/ECPConstants.o
 $(OBJS)/nc_dim_info.o: $(OBJS)/ECPConstants.o
-
 $(OBJS)/nc_read_file.o: $(OBJS)/ECPConstants.o
 $(OBJS)/nc_write_L2.o: $(OBJS)/ECPConstants.o
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
@@ -85,7 +82,6 @@ $(OBJS)/R2T.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o
 $(OBJS)/read_config_file.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/config_structure.o
 $(OBJS)/read_input_dimensions.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
-
 $(OBJS)/read_sat_data_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SADChan.o
 $(OBJS)/ReadAlb.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SADChan.o
@@ -148,6 +144,6 @@ $(OBJS)/ZeroDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o
 $(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/ECPRoutines.o $(OBJS)/RTM.o \
         $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o \
-        $(OBJS)/input_structures.o def_vars_primary.inc def_vars_secondary.inc \
-        prepare_primary.inc prepare_secondary.inc write_primary.inc \
-        write_secondary.inc
+        $(OBJS)/config_structure.o $(OBJS)/input_structures.o \
+        def_vars_primary.inc def_vars_secondary.inc prepare_primary.inc \
+        prepare_secondary.inc write_primary.inc write_secondary.inc

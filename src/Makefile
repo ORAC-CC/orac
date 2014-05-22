@@ -330,18 +330,6 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
 
 ORAC_OBJ_MAIN    =$(OBJS)/ECP.o \
 
-ORAC_INC         =def_vars_input.inc \
-                  def_vars_primary.inc \
-                  def_vars_secondary.inc \
-                  fundamental_constants.inc \
-                  platform_name.inc \
-                  prepare_input.inc \
-                  prepare_primary.inc \
-                  prepare_secondary.inc \
-                  write_input.inc \
-                  write_primary.inc \
-                  write_secondary.inc
-
 
 # .F90 was originally the extension on DecUnix, but seems to be allowed by the
 # ifc/ifort compiler.
@@ -361,7 +349,7 @@ orac: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) $(ORAC_OBJ_MAIN_OLD) $(ORAC_INC) > dependencies.inc
+	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) $(ORAC_OBJ_MAIN_OLD) > dependencies.inc
 
 # Tidy up .cpp files produced by C pre-compiler when compilation errors occur
 # (screws up later attempts to compile - forces C++ compiler to be run)
