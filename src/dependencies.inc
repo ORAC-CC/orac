@@ -49,6 +49,7 @@ $(OBJS)/GetSurface.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
 $(OBJS)/GetX.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
         $(OBJS)/SPixel.o
+$(OBJS)/GZero.o: $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/interpolate_to_ctp.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
 $(OBJS)/InterpolSolar.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o

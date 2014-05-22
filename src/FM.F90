@@ -120,6 +120,7 @@
 !   20140117, MJ: Comments out usage of  some temp_* variables as they appear to
 !      be unnecessary.
 !   20140119, GM: Cleaned up code.
+!   20140522, GM: Use allocate and deallocate subroutines for GZero.
 !
 ! Bugs:
 !   None known.
@@ -193,61 +194,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    endif
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
-   allocate(GZero%iSaZ0(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iSaZ0=0
-   allocate(GZero%iSoZ0(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iSoZ0=0
-   allocate(GZero%iRA0(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iRA0=0
-   allocate(GZero%iSaZ1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iSaZ1=0
-   allocate(GZero%iSoZ1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iSoZ1=0
-   allocate(GZero%iRA1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iRA1=0
-   allocate(GZero%dSaZ(SPixel%Ind%Ny,MaxCRProps))
-   GZero%dSaZ=0.
-   allocate(GZero%dSoZ(SPixel%Ind%Ny,MaxCRProps))
-   GZero%dSoZ=0.
-   allocate(GZero%dRA(SPixel%Ind%Ny,MaxCRProps))
-   GZero%dRA=0.
-   allocate(GZero%Sa1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%Sa1=0.
-   allocate(GZero%So1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%So1=0.
-   allocate(GZero%Ra1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%Ra1=0.
-
-   allocate(GZero%iT0(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iT0=0
-   allocate(GZero%iT1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iT1=0
-   allocate(GZero%iTm1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iTm1=0
-   allocate(GZero%iTp1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iTp1=0
-
-   allocate(GZero%iR0(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iR0=0
-   allocate(GZero%iR1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iR1=0
-   allocate(GZero%iRm1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iRm1=0
-   allocate(GZero%iRp1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%iRp1=0
-
-   allocate(GZero%dT(SPixel%Ind%Ny,MaxCRProps))
-   GZero%dT=0.0
-   allocate(GZero%dR(SPixel%Ind%Ny,MaxCRProps))
-   GZero%dR=0.0
-
-   allocate(GZero%T1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%T1=0.0
-   allocate(GZero%R1(SPixel%Ind%Ny,MaxCRProps))
-   GZero%R1=0.0
-
-   CRP   = 0.0
-   d_CRP = 0.0
+   call Allocate_GZero(GZero, SPixel)
 
    if (status == 0) then
       call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT, GZero, status)
@@ -267,6 +214,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    ! (hence SPixel%Ind%ThermalFirst may not equal Ctrl%Ind%ThermalFirst). The
    ! problem does not occur with solar channels as we always use either all
    ! requested solar channels or none at all.
+
+   CRP   = 0.0
+   d_CRP = 0.0
 
    if (status == 0) then
       ! These next two lines exclude the mixed channel during twilight conditions
@@ -411,34 +361,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       end if
    end if
 
-   deallocate(GZero%iSaZ0)
-   deallocate(GZero%iSoZ0)
-   deallocate(GZero%iRA0)
-   deallocate(GZero%iSaZ1)
-   deallocate(GZero%iSoZ1)
-   deallocate(GZero%iRA1)
-   deallocate(GZero%dSaZ)
-   deallocate(GZero%dSoZ)
-   deallocate(GZero%dRA)
-   deallocate(GZero%Sa1)
-   deallocate(GZero%So1)
-   deallocate(GZero%Ra1)
-
-   deallocate(GZero%iT0)
-   deallocate(GZero%iT1)
-   deallocate(GZero%iTm1)
-   deallocate(GZero%iTp1)
-
-   deallocate(GZero%iR0)
-   deallocate(GZero%iR1)
-   deallocate(GZero%iRm1)
-   deallocate(GZero%iRp1)
-
-   deallocate(GZero%dT)
-   deallocate(GZero%dR)
-
-   deallocate(GZero%T1)
-   deallocate(GZero%R1)
+   call Deallocate_GZero(GZero)
 
    ! Open breakpoint file if required, and write our reflectances and gradients.
 
