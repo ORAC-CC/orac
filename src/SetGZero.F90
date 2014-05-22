@@ -178,14 +178,14 @@ subroutine Set_GZero (Tau, Re, Ctrl,Spixel, SAD_LUT, GZero, status)
          ii = Spixel%spixel_y_to_ctrl_y_index(i)
 
          if (SAD_LUT%table_used_for_channel(ii, j)) then
-            if(abs(SAD_LUT%Grid%Tau(ii,GZero%iT1(i,j),j) - &
+            if (abs(SAD_LUT%Grid%Tau(ii,GZero%iT1(i,j),j) - &
                    SAD_LUT%Grid%Tau(ii,GZero%iT0(i,j),j)) .le. ditherm15) then
                GZero%dT(i,j) = 0.0
             else
                GZero%dT(i,j) = (Tau - SAD_LUT%Grid%Tau(ii,GZero%iT0(i,j),j)) / &
                   (SAD_LUT%Grid%Tau(ii,GZero%iT1(i,j),j) - SAD_LUT%Grid%Tau(ii,GZero%iT0(i,j),j))
             endif
-            if(abs(SAD_LUT%Grid%Re(ii,GZero%iR1(i,j),j) - &
+            if (abs(SAD_LUT%Grid%Re(ii,GZero%iR1(i,j),j) - &
                    SAD_LUT%Grid%Re(ii,GZero%iR0(i,j),j)) .le. ditherm15) then
                GZero%dT(i,j) = 0.0
             else
@@ -194,7 +194,7 @@ subroutine Set_GZero (Tau, Re, Ctrl,Spixel, SAD_LUT, GZero, status)
             endif
 
             if (SAD_LUT%table_uses_satzen(j)) then
-               if(abs(SAD_LUT%Grid%SatZen(ii,GZero%iSaZ1(i,j),j) - &
+               if (abs(SAD_LUT%Grid%SatZen(ii,GZero%iSaZ1(i,j),j) - &
                       SAD_LUT%Grid%SatZen(ii,GZero%iSaZ0(i,j),j)) .le. ditherm15) then
                   GZero%dSaZ(i,j) = 0.0
                else
@@ -207,7 +207,7 @@ subroutine Set_GZero (Tau, Re, Ctrl,Spixel, SAD_LUT, GZero, status)
             ! The other two angles only exist when we have solar channels
             ! (including mixed)
             if (SAD_LUT%table_uses_solzen(j)) then
-               if(abs(SAD_LUT%Grid%SolZen(ii,GZero%iSoZ1(i,j),j) - &
+               if (abs(SAD_LUT%Grid%SolZen(ii,GZero%iSoZ1(i,j),j) - &
                       SAD_LUT%Grid%SolZen(ii,GZero%iSoZ0(i,j),j)) .le. ditherm15) then
                   GZero%dSoZ(i,j) = 0.0
                else
@@ -217,7 +217,7 @@ subroutine Set_GZero (Tau, Re, Ctrl,Spixel, SAD_LUT, GZero, status)
                endif
             endif
             if (SAD_LUT%table_uses_relazi(j)) then
-               if(abs(SAD_LUT%Grid%RelAzi(ii,GZero%iRA1(i,j),j) - &
+               if (abs(SAD_LUT%Grid%RelAzi(ii,GZero%iRA1(i,j),j) - &
                       SAD_LUT%Grid%RelAzi(ii,GZero%iRA0(i,j),j)) .le. ditherm15) then
                   GZero%dRA(i,j) = 0.0
                else

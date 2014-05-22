@@ -198,10 +198,10 @@
 !    15th Jan 2014, Greg McGarragh: Moved dynamic setting of the upper limit
 !       for CTP to the highest pressure in the profile from FM() to this routine.
 !    17th Jan 2014, Greg McGarragh: Cleaned up code.
-!    20140129 MJ fixes case where alpha can get out of bounds.
-!    20140227 CP added declaration of J
-!    20140402 CP fixed bug where temp_arr was not reassined.
-!    20140402 MJ fixed bug where Diag%ss was not initilized.
+!    2014/01/29, MJ: Fixed case where alpha can get out of bounds.
+!    2014/02/27, CP: Added declaration of J.
+!    2014/04/02, CP: Fixed bug where temp was not reassigned.
+!    2014/04/02, MJ: Fixed bug where Diag%ss was not initilized.
 ! Bugs:
 !    None known
 !
@@ -297,7 +297,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                                   ! Product of Dy and Kb.
    real    :: Sb(SPixel%NxI+SPixel%Ind%NSolar, SPixel%NxI+SPixel%Ind%NSolar)
                                   ! "Model parameter" error covariance.
-   real    :: temp_arr(SPixel%Nx, SPixel%Nx)
+   real    :: temp(SPixel%Nx, SPixel%Nx)
                                   ! work around "array temporary" warning
    character(120) :: message      ! String for error messages.
 #ifdef BKP
@@ -306,8 +306,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 #endif
 
    ! Initialise
-   huge_value=huge(1.0)/Ctrl%InvPar%MqStep
-
    stat      = 0
    status    = 0
 
@@ -322,6 +320,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    d2J_dX2   = 0.
    KxT_SyI   = 0.
 
+   huge_value = huge(1.0)/Ctrl%InvPar%MqStep
+
    ! Set state variable limits for initial phase
    call Set_Limits(Ctrl, SPixel, stat)
 
@@ -329,11 +329,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    ! pressure of current pixel.
    SPixel%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
 
-   ! Calculate measurements at first-guess state vector X0 (SPixel%X0.  X0
+   ! Calculate measurements at first-guess state vector X0 (SPixel%X0. X0
    ! should be provided un-scaled. Only used in the FM call and Xdiff(?)
    ! AS Mar 2011 assume only 1 cloud class in use so SAD_LUT dimension is 1
    if (stat == 0) &
-      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc,SPixel%X0, Y, dY_dX, stat)
+      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, stat)
 
    Diag%Y0(1:SPixel%Ind%Ny)=Y
 
@@ -593,8 +593,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
          ! Calculate Y for Xn + delta_X. Xplus_dX is currently un-scaled.
          if (stat == 0) &
-            call FM (Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
-                     dY_dX, stat)
+            call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
+                    dY_dX, stat)
 
          ! Set new Kx, Kbj, Sy and SyInv
          if (stat == 0) call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
@@ -661,8 +661,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
             ! Increase steepest descent part for next iteration and set values
             ! required for setting new deltaX using old cost derivatives.
             ! "if" inserted to catch (academic?) case of overflow if alpha get's huge.
-            if(alpha .lt. huge_value) then
-               alpha    = alpha * Ctrl%InvPar%MqStep
+            if (alpha .lt. huge_value) then
+               alpha = alpha * Ctrl%InvPar%MqStep
             endif
             J2plus_A = d2J_dX2 + (alpha * unit)
             minusdJ_dX=-dJ_dX
@@ -764,9 +764,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    if (stat == 0) then
       ! State expected error from measurements=Diag%St(1:SPixel%Nx, 1:SPixel%Nx))
-      temp_arr=Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
-      call Invert_Cholesky(d2J_dX2, temp_arr, SPixel%Nx, stat)
-      Diag%St(1:SPixel%Nx, 1:SPixel%Nx)=temp_arr
+      temp = Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
+      call Invert_Cholesky(d2J_dX2, temp, SPixel%Nx, stat)
+      Diag%St(1:SPixel%Nx, 1:SPixel%Nx) = temp
 #ifdef DEBUG
       if (stat /= 0) &
          call Write_Log(Ctrl, 'Invert_Marquardt: Error in Invert_Cholesky', stat)
@@ -878,7 +878,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
         NPhaseChanges, Y, Sy, Diag, stat)
 
 
-!  Write final solution and close breakpoint output file
+   ! Write final solution and close breakpoint output file
 
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_InvertMarquardt_1) then

@@ -96,32 +96,31 @@ module SAD_LUT_def
                        ! Bi-directional reflectance
 		       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
 
-      real, pointer :: Tbd(:,:,:,:,:,:)
-                       ! Bi-directional reflectance
-		       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
-
-
-      real, pointer :: Tb(:,:,:,:)
-                       ! Direct part of beam transmission
-		       ! Dimensions: channel, Tau, SolZen, Re
-
-      real, pointer :: Tfbd(:,:,:,:)
-                       ! Diffuse part of beam transmission (flux)
-		       ! Dimensions: channel, Tau, SolZen, Re
-
-      real, pointer :: Td(:,:,:,:)
-                       ! Diffuse transmission
-		       ! Dimensions: channel, Tau, SatZen, Re
-
-      real, pointer :: Tfd(:,:,:)
-                       ! Diffuse reflectivity
-		       ! Dimensions: channel, Tau, Re
-
       real, pointer :: Rd(:,:,:,:)
                        ! Diffuse reflectance
 		       ! Dimensions: channel, Tau, SatZen, Re
 
       real, pointer :: Rfd(:,:,:)
+                       ! Diffuse reflectivity
+		       ! Dimensions: channel, Tau, Re
+
+      real, pointer :: Tb(:,:,:,:)
+                       ! Direct part of beam transmission
+		       ! Dimensions: channel, Tau, SolZen, Re
+
+      real, pointer :: Tbd(:,:,:,:,:,:)
+                       ! Bi-directional reflectance
+		       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
+
+      real, pointer :: Td(:,:,:,:)
+                       ! Diffuse transmission
+		       ! Dimensions: channel, Tau, SatZen, Re
+
+      real, pointer :: Tfbd(:,:,:,:)
+                       ! Diffuse part of beam transmission (flux)
+		       ! Dimensions: channel, Tau, SolZen, Re
+
+      real, pointer :: Tfd(:,:,:)
                        ! Diffuse reflectivity
 		       ! Dimensions: channel, Tau, Re
 
