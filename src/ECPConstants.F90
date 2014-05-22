@@ -87,6 +87,7 @@
 !    2013/11/19, MJ: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
 !    2014/01/26, Greg McGarragh: Cleaned up code.
 !    2014/04/03, MJ adds some fill value definitions
+!    2014/05/22, Greg McGarragh: Added RTMIntMeth and LUTIntMeth constants.
 !
 ! Bugs:
 !    None known.
@@ -169,6 +170,14 @@ module ECP_constants
    integer, parameter :: AMethAll         = 0       ! All pixels in super-pixel included
    integer, parameter :: AMethCloudy      = 1       ! Cloudy pixels only
    integer, parameter :: AMethCentral     = 2       ! Central pixel only
+
+   ! Codes for RTM interpolation (to Pc) methods
+   integer, parameter :: RTMIntMethLinear = 0
+   integer, parameter :: RTMIntMethSpline = 1
+
+   ! Codes for FM LUT interpolation methods
+   integer, parameter :: LUTIntMethLinear  = 0
+   integer, parameter :: LUTIntMethBicubic = 1
 
    ! The following max sizes apply to the SAD_LUT arrays
    integer, parameter :: MaxCRProps       = 9

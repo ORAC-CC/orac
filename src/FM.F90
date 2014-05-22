@@ -179,11 +179,11 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
    ! Call routine to interpolate RTM data to the cloud pressure level.
    ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
-   if (Ctrl%RTMIntflag .eq. 0) then
+   if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
       call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
               RTM_Pc, status)
-   else if (Ctrl%RTMIntflag .eq. 1) then
+   else if (Ctrl%RTMIntflag .eq. LUTIntMethLinear) then
       call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
               RTM_Pc, status)
@@ -244,9 +244,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       if ((SPixel%Illum(1) .eq. IDay) .and. status == 0) then
          ! Call routine to interpolate RTM data to the cloud pressure level.
          ! Interpol_Solar populates the SW part of RTM_Pc.
-         if (Ctrl%RTMIntflag .eq. 0) then
+         if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
             call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc, status)
-         else if (Ctrl%RTMIntflag .eq. 1) then
+         else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
             call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
          else
             status = RTMIntflagErr

@@ -359,8 +359,8 @@ subroutine Read_Driver(Ctrl, conf, message, drifile, status)
    Ctrl%Diagl(13) = 0
    Ctrl%Diagl(14) = 0
 
-   Ctrl%LUTIntflag = 0  ! 0 =linear 1 = bicubic interpolation
-   Ctrl%RTMIntflag = 0  ! 0 =linear 1 = bicubic interpolation
+   Ctrl%RTMIntflag = RTMIntMethLinear
+   Ctrl%LUTIntflag = LUTIntMethLinear
 
    Ctrl%MaxSatZen  = 90 ! max satellite zenith angle
    Ctrl%MaxSolZen  = 80 ! max solar zenith angle > 90 = night image

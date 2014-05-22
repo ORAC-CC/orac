@@ -292,7 +292,7 @@ subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
    ! Now call the adapted Numerical Recipes BCuInt subroutine to perform the
    ! interpolation to our desired state vector [Or the equivalent linint
    ! subroutine - Oct 2011]
-   if (Ctrl%LUTIntflag .eq. 0) then
+   if (Ctrl%LUTIntflag .eq. LUTIntMethLinear) then
       do i = 1,NChans
          Yin=Y(i,1:4)
          call linint(Yin,Grid%tau(i,GZero%iT0(i,icrpr),icrpr), &
@@ -304,7 +304,7 @@ subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
          FGrads(i,1) = a2
          FGrads(i,2) = a3
       enddo
-   else if (Ctrl%LUTIntflag .eq. 1) then
+   else if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
       do i = 1,NChans
          Yinb=Y(i,1:4)
          dYdTauin=dYdTau(i,1:4)
