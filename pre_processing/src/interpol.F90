@@ -1,5 +1,7 @@
 module interpol
 
+implicit none
+
 contains
 
 include 'interpol_bilinear.F90'

@@ -1,5 +1,7 @@
 module imager2oraclsflag
 
+implicit none
+
 contains
 
 include 'avhrr2oraclsflag.F90'

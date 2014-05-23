@@ -1,5 +1,7 @@
 module read_imager_m
 
+implicit none
+
 contains
 
 ! Name: read_imager.F90

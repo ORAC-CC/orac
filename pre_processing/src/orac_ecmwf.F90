@@ -30,6 +30,8 @@ module orac_ecmwf
    use preproc_structures
    use preproc_constants
 
+   implicit none
+
    real, dimension(61) :: avector=[ &
                0.0000000E+00,20.00000, 38.42534, 63.64780, &
               95.63696,     134.4833, 180.5844, 234.7791, 298.4958, &

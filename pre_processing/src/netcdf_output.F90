@@ -1,5 +1,7 @@
 module netcdf_output
 
+implicit none
+
 contains
 
 include 'nc_create_file.F90'

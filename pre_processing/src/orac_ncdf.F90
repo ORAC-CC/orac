@@ -18,6 +18,9 @@
 !
 
 module orac_ncdf
+
+   implicit none
+
    interface nc_read_array
       module procedure float_1d, float_2d, float_3d, float_4d, float_5d, &
            int_1d, int_2d, int_3d, int_4d, int_5d

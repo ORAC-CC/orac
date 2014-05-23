@@ -1,5 +1,7 @@
 module read_avhrr
 
+implicit none
+
 contains
 
 include 'create_time_for_pixel.F90'

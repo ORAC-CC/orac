@@ -1,5 +1,7 @@
 module correct_for_ice_snow_m
 
+implicit none
+
 contains
 
 ! Name: correct_for_ice_snow.F90

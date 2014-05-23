@@ -61,6 +61,8 @@
 
 module cox_munk_m
 
+implicit none
+
 contains
 
 ! Main cox_munk subroutine

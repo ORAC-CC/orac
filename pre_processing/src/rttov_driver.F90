@@ -93,6 +93,8 @@
 
 module rttov_driver_m
 
+implicit none
+
 contains
 
 subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
@@ -130,7 +132,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    use rttov_coef_io_mod
 
 
-   Implicit None
+   implicit none
 
 
 !#define DEBUG
@@ -864,8 +866,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                         write(*,*) 'errorstatus rttov_direct: ', errorstatus
                      endif
 
-                     sza=profiles(1)%zenangle
-                     lza=profiles(1)%sunzenangle
+                     sza=profiles(1)%sunzenangle
+                     lza=profiles(1)%zenangle
 
                      ! Get airmass factor
                      call effective_2way_za(sza,lza,amf,za)

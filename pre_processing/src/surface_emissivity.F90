@@ -1,5 +1,7 @@
 module surface_emissivity
 
+implicit none
+
 contains
 
 include 'get_surface_emissivity.F90'

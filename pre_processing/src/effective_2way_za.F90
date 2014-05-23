@@ -11,10 +11,10 @@
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
-! SZA	    IN          Solar zenith of 2-way path
-! LZA	    IN          View zenith of 2-way path
-! AMF	    Out         The AMF
-! ZA	    Out         The effective 2 way angle
+! sza	    in          Solar zenith of 2-way path
+! lza	    in          View zenith of 2-way path
+! amf	    out         The AMF
+! za	    out         The effective 2 way angle
 !
 !
 ! Local variables:
@@ -42,7 +42,6 @@ subroutine effective_2way_za(sza,lza,amf,za)
    real, intent(out) :: za
 
    real, parameter :: d2r = 0.017453292 ! pi/180.0
-
 
    amf=1.0/cos(sza*d2r)+1.0/cos(lza*d2r)
 

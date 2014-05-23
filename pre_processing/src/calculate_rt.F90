@@ -1,5 +1,7 @@
 module calculate_rt_m
 
+implicit none
+
 contains
 
 ! Name: calculate_rt.f90

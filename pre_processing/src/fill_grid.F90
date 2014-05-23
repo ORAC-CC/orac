@@ -37,6 +37,8 @@
 
 module fill_grid_m
 
+implicit none
+
 contains
 
 subroutine fill_grid(grid, fillval, mask)

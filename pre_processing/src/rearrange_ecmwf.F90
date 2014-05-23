@@ -34,6 +34,8 @@
 
 module rearrange
 
+   implicit none
+
    interface rearrange_ecmwf
       module procedure rearrange_ecmwf_2d, rearrange_ecmwf_3d
    end interface rearrange_ecmwf

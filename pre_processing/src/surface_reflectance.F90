@@ -1,5 +1,7 @@
 module surface_reflectance
 
+implicit none
+
 contains
 
 include 'get_surface_reflectance_lam.F90'

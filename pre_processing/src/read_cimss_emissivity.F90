@@ -1,5 +1,7 @@
 module cimss_emissivity
 
+implicit none
+
 contains
 
 ! Name: read_cimss_emissivity.F90

@@ -1,5 +1,7 @@
 module preparation_m
 
+implicit none
+
 contains
 
 ! Name: preparation.f90

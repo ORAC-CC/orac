@@ -67,13 +67,12 @@ subroutine call_rtm_ir_rttov(errorstatus,transmission,radiance,imager_angles, &
 
    nchans_ir=size(channel_info%channel_ids_rttov_coef_lw)
 
-
   ! extract ir transmissions and upwelling and downwelling radiances
    do ii=1,nchans_ir
       do p=1,nlevs
 
-         preproc_lwrtm%taubc(ii,p)=transmission%tau_total(ii)/transmission%tau_levels(p,ii)
          preproc_lwrtm%tauac(ii,p)=transmission%tau_levels(p,ii)
+         preproc_lwrtm%taubc(ii,p)=transmission%tau_total(ii)/transmission%tau_levels(p,ii)
 
          ! convert layers information to levels
          if (p .gt. 1) then
@@ -86,8 +85,8 @@ subroutine call_rtm_ir_rttov(errorstatus,transmission,radiance,imager_angles, &
             preproc_lwrtm%radiance_up(ii,p)=radiance%up(p,ii)
             preproc_lwrtm%radiance_down(ii,p)=radiance%down(p,ii)
          end if
-      end do
 
+      end do
    end do
 
    test_write=0

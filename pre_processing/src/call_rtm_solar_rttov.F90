@@ -92,9 +92,8 @@ subroutine call_rtm_solar_rttov(errorstatus,transmission,imager_angles, &
 
    do ii=1,nchans_solar
       do p=1,nlevs
-
-         preproc_swrtm%taubc(ii,p)=new_trans_tau_level(nlevs,ii)/new_trans_tau_level(p,ii)
          preproc_swrtm%tauac(ii,p)=new_trans_tau_level(p,ii)
+         preproc_swrtm%taubc(ii,p)=new_trans_tau_level(nlevs,ii)/new_trans_tau_level(p,ii)
       end do
    end do
 
@@ -103,12 +102,12 @@ subroutine call_rtm_solar_rttov(errorstatus,transmission,imager_angles, &
 
    test_write=0
    if (test_write .eq. 1) then
-     write(*,*) ' tbc_stt(0,*)=[',preproc_swrtm%taubc(1,:),']'
-     write(*,*) ' tac_stt(0,*)=[',preproc_swrtm%tauac(1,:),']'
-     write(*,*) ' tbc_stt(1,*)= [',preproc_swrtm%taubc(2,:),']'
-     write(*,*) 'tac_stt(1,*)=[ ',preproc_swrtm%tauac(2,:),']'
-     write(*,*) ' tbc_stt(2,*)= [',preproc_swrtm%taubc(3,:),']'
-     write(*,*) 'tac_stt(2,*)=[ ',preproc_swrtm%tauac(3,:),']'
+     write(*,*) 'tbc_stt(0,*)=[',preproc_swrtm%taubc(1,:),']'
+     write(*,*) 'tac_stt(0,*)=[',preproc_swrtm%tauac(1,:),']'
+     write(*,*) 'tbc_stt(1,*)=[',preproc_swrtm%taubc(2,:),']'
+     write(*,*) 'tac_stt(1,*)=[',preproc_swrtm%tauac(2,:),']'
+     write(*,*) 'tbc_stt(2,*)=[',preproc_swrtm%taubc(3,:),']'
+     write(*,*) 'tac_stt(2,*)=[',preproc_swrtm%tauac(3,:),']'
    endif
 
 end subroutine call_rtm_solar_rttov

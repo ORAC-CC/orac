@@ -1,5 +1,7 @@
 module read_aatsr
 
+implicit none
+
 contains
 
 include 'read_aatsr_dimensions.F90'

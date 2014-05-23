@@ -1,5 +1,7 @@
 module read_modis
 
+implicit none
+
 contains
 
 include 'get_modis_time.F90'
