@@ -174,7 +174,7 @@ subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
       Y(i,3) = F(i,GZero%iT1(i,icrpr),GZero%iR1(i,icrpr))
       Y(i,2) = F(i,GZero%iT1(i,icrpr),GZero%iR0(i,icrpr))
 
-      if (Ctrl%LUTIntflag .eq. 1) then
+      if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
          ! Function derivatives at four LUT points around our X
 
          ! WRT to Tau

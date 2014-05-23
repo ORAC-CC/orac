@@ -208,7 +208,7 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero,Ctrl, FInt, FGrads, icrpr, &
       Y(i,3) = G(iX1,iX1)
       Y(i,2) = G(iX1,iX0)
 
-      if (Ctrl%LUTIntflag .eq. 1) then
+      if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
          ! Function derivatives at four LUT points around our X....
 
          ! WRT to Tau

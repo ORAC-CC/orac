@@ -20,9 +20,9 @@
 !    Name   Type       In/Out/Both Description
 !    F      real array In          Function to be interpolated, i.e. array of
 !                                  LUT values with dimensions (channels, Tau,
-!                                  SolZen, Re).
+!                                  SatZen, Re).
 !    Grid   struct     In          LUT Grid data: see SADLUT.F90
-!                                  Includes the grid values in Tau, Re, SolZen,
+!                                  Includes the grid values in Tau, Re, SatZen,
 !                                  no. of values and step size
 !    Gzero  struct     In          Structure containing "zero'th" point indices,
 !                                  i.e. LUT grid array indices for the nearest
@@ -130,7 +130,7 @@ subroutine Int_LUT_TauSatRe(F, Grid, GZero,Ctrl, FInt, FGrads, icrpr, &
    integer                       :: i, ii, ii2, j, jj, k, kk
    integer                       :: NChans    ! Number of channels in LUT arrays
                                               ! etc
-   real, dimension(-1:2,-1:2)    :: G         ! A Matrix of dimension NTau,Nre 
+   real, dimension(-1:2,-1:2)    :: G         ! A Matrix of dimension NTau,Nre
                                               ! used to store array only
                                               ! interpolated to current viewing
                                               ! geometry
@@ -201,7 +201,7 @@ subroutine Int_LUT_TauSatRe(F, Grid, GZero,Ctrl, FInt, FGrads, icrpr, &
       Y(i,3) = G(iX1,iX1)
       Y(i,2) = G(iX1,iX0)
 
-      if (Ctrl%LUTIntflag .eq. 1) then
+      if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
          ! Function derivatives at four LUT points around our X....
 
          ! WRT to Tau
