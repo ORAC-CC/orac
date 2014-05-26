@@ -1,9 +1,10 @@
+! ------------------------------------------------------------------------------
 ! Name: deallocate_surface_structures.F90
 !
 !
 ! Purpose:
 ! Allocate the array parts of the types defined in surface_structures.F90
-! 
+!
 !
 ! Description and Algorithm details:
 !
@@ -17,26 +18,25 @@
 !
 !
 ! History:
-! 2012/05/01: Gareth Thomas. First version
+! 2012/05/01, Gareth Thomas: First version
 !
 ! $Id$
 !
 ! Bugs:
-!
-!none known
+! None known
+! ------------------------------------------------------------------------------
 
 subroutine deallocate_surface_structures(surface)
 
-  use preproc_constants
-! use surface_structures
+   use preproc_constants
 
-  implicit none
+   implicit none
 
-  type(surface_s), intent(inout) :: surface
+   type(surface_s), intent(inout) :: surface
 
-  deallocate(surface%albedo_chan)
-  deallocate(surface%emissivity_chan)
-  deallocate(surface%albedo)
-  deallocate(surface%emissivity)
+   deallocate(surface%albedo_chan)
+   deallocate(surface%emissivity_chan)
+   deallocate(surface%albedo)
+   deallocate(surface%emissivity)
 
 end subroutine deallocate_surface_structures

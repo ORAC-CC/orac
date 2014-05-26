@@ -389,15 +389,15 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, netcdf_info%channels_id_lw, &
           & dummy_lint_1dveca, &
           & netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'err write lw index abs'
+   if (ierr.NE.NF90_NOERR) stop 'error: write lw index abs'
    ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
           & netcdf_info%channels_id_instr_lw,dummy_lint_1dvecb, &
           & netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'err write lw index instr'
+   if (ierr.NE.NF90_NOERR) stop 'error: write lw index instr'
    ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
           & netcdf_info%wvn_id_lw,dummy_real_1dveca, &
           & netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'err write lw wl'
+   if (ierr.NE.NF90_NOERR) stop 'error: write lw wl'
    deallocate(dummy_lint_1dveca)
    deallocate(dummy_lint_1dvecb)
    deallocate(dummy_real_1dveca)
@@ -425,15 +425,15 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
           & netcdf_info%channels_id_sw,dummy_lint_1dveca, &
           & netcdf_info%start_1d, netcdf_info%counter_1d, &
           & netcdf_info%stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'err write sw index abs'
+   if (ierr.NE.NF90_NOERR) stop 'error: write sw index abs'
    ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
           & netcdf_info%channels_id_instr_sw,dummy_lint_1dvecb, &
           & netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'err write sw index instr'
+   if (ierr.NE.NF90_NOERR) stop 'error: write sw index instr'
    ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
           & netcdf_info%wvn_id_sw,dummy_real_1dveca, &
           & netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'err write sw wl'
+   if (ierr.NE.NF90_NOERR) stop 'error: write sw wl'
    deallocate(dummy_lint_1dveca)
    deallocate(dummy_lint_1dvecb)
    deallocate(dummy_real_1dveca)
@@ -898,7 +898,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%counterid_pw,dummy_lint_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write iindex rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex rttov'
 
                   ! iindex
                   dummy_lint_1d(1)=idim-preproc_dims%min_lon+1
@@ -906,7 +906,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%iid_pw,dummy_lint_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write iindex rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex rttov'
 
                   ! jindex
                   dummy_lint_1d(1)=jdim-preproc_dims%min_lat+1
@@ -914,7 +914,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%jid_pw,dummy_lint_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write jindex rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write jindex rttov'
 
                   ! longitude
                   dummy_real_1d(1)=profiles(1)%longitude
@@ -922,7 +922,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%lonid_pw,dummy_real_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lon rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lon rttov'
 
                   ! latitude
                   dummy_real_1d(1)=profiles(1)%latitude
@@ -930,7 +930,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%latid_pw,dummy_real_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lat rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lat rttov'
 
                   ! satzen
                   dummy_real_1d(1)=profiles(1)%zenangle
@@ -938,7 +938,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%satzenid_pw,dummy_real_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lon rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lon rttov'
 
                   ! solzen
                   dummy_real_1d(1)=profiles(1)%sunzenangle
@@ -946,7 +946,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%solzenid_pw,dummy_real_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write solzen rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write solzen rttov'
 
                   ! skin temp
                   dummy_real_1d(1)=profiles(1)%skin%t
@@ -954,7 +954,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%skintid_pw,dummy_real_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write skin temp rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write skin temp rttov'
 
                   ! exp(lnsp)
                   dummy_real_1d(1)=profiles(1)%s2m%p
@@ -962,7 +962,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%lnspid_pw,dummy_real_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lnsp rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lnsp rttov'
 
                   ! (lsf)
                   dummy_real_1d(1)= preproc_prtm%land_sea_mask(idim,jdim)
@@ -970,7 +970,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%lsfid_pw,dummy_real_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lsf rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lsf rttov'
 
 
                   ! 2d variables
@@ -990,7 +990,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%pprofile_lev_id_pw,dummy_real_2d, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write pprof'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write pprof'
 
                   ! Temperature profile (at layer centers of preprocessing profile,
                   ! interfaces for RTTOV)
@@ -1000,7 +1000,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%tprofile_lev_id_pw,dummy_real_2d, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write pprof'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write pprof'
 
 
                   ! Geopotential height profile (at lever centers of preprocessing
@@ -1011,7 +1011,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%hprofile_lev_id_pw,dummy_real_2d, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write pot prof'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write pot prof'
 
 
                   ! Write the lw information
@@ -1029,7 +1029,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%counterid_lw,dummy_lint_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write iindex lw rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex lw rttov'
 
 
                   ! 2D variables
@@ -1053,7 +1053,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%emiss_id_lw,dummy_real_2dems, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write iindex lw rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex lw rttov'
 
                   deallocate(dummy_real_2dems)
 
@@ -1079,7 +1079,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%solzaid_lw,dummy_real_2dveca, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lw solazi angles'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lw solazi angles'
 
                   ! satazi
                   dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
@@ -1089,7 +1089,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%satzaid_lw,dummy_real_2dveca, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lw satazi angles'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lw satazi angles'
 
                   ! relazi
                   dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
@@ -1099,7 +1099,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%relaziid_lw,dummy_real_2dveca, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write lw relazi angles'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write lw relazi angles'
 
                   deallocate(dummy_real_2dveca)
 
@@ -1130,7 +1130,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%tac_id_lw,dummy_real_3d, &
                          & netcdf_info%start_3d, netcdf_info%counter_3d, &
                          & netcdf_info%stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write tac lw'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write tac lw'
 
                   ! tbc
                   dummy_real_3d(:,:,1)=preproc_lwrtm%taubc(:,:)
@@ -1140,7 +1140,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%tbc_id_lw,dummy_real_3d, &
                          & netcdf_info%start_3d, netcdf_info%counter_3d, &
                          & netcdf_info%stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write tbc lw'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write tbc lw'
 
                   ! radbc_up
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radbc(:,:)
@@ -1150,7 +1150,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%rbc_up_id_lw,dummy_real_3d, &
                          & netcdf_info%start_3d, netcdf_info%counter_3d, &
                          & netcdf_info%stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write rabc_up lw'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write rabc_up lw'
 
                   ! rac_up
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_up(:,:)
@@ -1160,7 +1160,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%rac_up_id_lw,dummy_real_3d, &
                          & netcdf_info%start_3d, netcdf_info%counter_3d, &
                          & netcdf_info%stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write rabc_up lw'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write rabc_up lw'
 
                   ! rac_down
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_down(:,:)
@@ -1170,7 +1170,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%rac_down_id_lw,dummy_real_3d, &
                          & netcdf_info%start_3d, netcdf_info%counter_3d, &
                          & netcdf_info%stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write rac_down lw'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write rac_down lw'
 
                   deallocate(dummy_real_3d)
 
@@ -1191,7 +1191,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%counterid_sw,dummy_lint_1d, &
                          & netcdf_info%start_1d, netcdf_info%counter_1d, &
                          & netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write iindex sw rttov'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex sw rttov'
 
                   ! Write out swrtm angles
                   allocate(dummy_real_2dveca(imager_angles%nviews,1))
@@ -1213,7 +1213,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%solzaid_sw,dummy_real_2dveca, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write sw solazi angles'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write sw solazi angles'
 
                   ! satazi
                   dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
@@ -1223,7 +1223,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%satzaid_sw,dummy_real_2dveca, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write sw satazi angles'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write sw satazi angles'
 
                   ! relazi
                   dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
@@ -1233,7 +1233,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                          & netcdf_info%relaziid_sw,dummy_real_2dveca, &
                          & netcdf_info%start_2d, netcdf_info%counter_2d, &
                          & netcdf_info%stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write sw relazi angles'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write sw relazi angles'
 
                   deallocate(dummy_real_2dveca)
 
@@ -1264,7 +1264,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 		         & netcdf_info%tac_id_sw,dummy_real_3d, &
                          & netcdf_info%start_3d, netcdf_info%counter_3d, &
 		         & netcdf_info%stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write tac sw'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write tac sw'
 
                   ! tbc
                   dummy_real_3d(:,:,1)=preproc_swrtm%taubc(:,:)
@@ -1274,7 +1274,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 		         & netcdf_info%tbc_id_sw,dummy_real_3d, &
                          & netcdf_info%start_3d, netcdf_info%counter_3d, &
 		         & netcdf_info%stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'err write tbc sw'
+                  if (ierr.NE.NF90_NOERR) stop 'error: write tbc sw'
 
                   deallocate(dummy_real_3d)
 

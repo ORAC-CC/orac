@@ -1,63 +1,64 @@
 !-------------------------------------------------------------------------------
+! This software was developed within the ESA Cloud CCI Project and is based on
+! routines developed during the ESA DUE GlobVapour Project.  Copyright 2011, DWD,
+! All Rights Reserved.
 !-------------------------------------------------------------------------------
+
+
+!-------------------------------------------------------------------------------
+! Name: nc_create_file.f90
+!
+! Purpose:
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! Local variables:
+! Name Type Description
+!
+! History:
+! 2011/12/11, MJ: Original version.
+! 2012/05/15, MJ: modifies file to write pixels in one loop successievely one
+!    after the other
+! 2012/05/24, MJ: adds some commenting.
+! 2012/08/02, MJ: adds some more code for writing of RTTOV output to netcdf file.
+! 2012/08/02, CP: bug fix in outputtting of msi files removed nviews ddimension
+! 2012/09/20, CP: added solzen and satzen tp prtm output
+! 2012/11/29, CP: changed variables names from layers to levels
+! 2013/02/26, CP: inserted missing comment for adding noaa platform
+! 2013/03/07, CP: added in some diagnostics q and albedo
+! 2013/xx/xx, MJ: adds PLATFORMUP varaible and output to comply with nomenclature.
+! 2013/10/14, MJ: fixed bug with writing of albedo and emissivity.
+! 2013/11/06, MJ: adds config file to preprocessing output which holds all
+!    relevant dimensional information.
+! 2013/11/27, MJ: changes output from netcdf3 to netcdf4.
+! 2014/01/30, MJ: implements chunking for the large variables which are actually
+!    read in later.
+! 2014/02/02, GM: adds chunking on/off option and cleans up code.
+! 2014/02/02, GM: puts setting up of common attributes in a subroutine used by
+!    all the nc_create_file_*() routines.
+! 2014/02/02, GM: Changed the nlat x nlon 'unlimited' dimension size to a fixed
+!    dimension size.  The 'unlimited' dimension size is not required and results
+!    in a significant performance hit.
+! 2014/02/03, GM: A small reordering of the variables in the SW RTM output to be
+!    consistent with the LW RTM output.
+! 2014/02/10, AP: variable renaming
+! 2014/03/11, MJ: some modifications for chunking (only used when turned on)
+! 2014/03/11, MJ: Commented out chunking completely in routines as I/O performance
+!    issues persisted.
+! 2014/05/01, GM: Reordered data/time arguments into a logical order.
+!
+! $Id$
+!
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
+
 subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,wo,type,preproc_dims,imager_angles,netcdf_info, &
      channel_info,use_chunking)
-   !-------------------------------------------------------------------------------
-   !-------------------------------------------------------------------------------
-   ! Description:
-   !
-   ! Creates new netcdf-file. (Output file)
-   !
-   !-------------------------------------------------------------------------------
-   ! This software was developed within the ESA Cloud CCI Project and is based on
-   ! routines developed during the ESA DUE GlobVapour Project.  Copyright 2011, DWD,
-   ! All Rights Reserved.
-   !-------------------------------------------------------------------------------
-   !
-   ! Unit Name:  nc_create_file_rtm.f90
-   !
-   ! Created on: 12/12/11
-   !             by Matthias Jerg, DWD/KU22
-   !             (matthias.jerg@dwd.de)
-   !             based on code provided by Nadine Schneider (nadine.schneider@dwd.de).
-   !
-   ! Modifications Log:
-   ! 2012/05/15: MJ modifies file to write pixels in one loop successievely one
-   !    after the other
-   ! 2012/05/24: MJ adds some commenting.
-   ! 2012/08/02: MJ adds some more code for writing of RTTOV output to netcdf file.
-   ! 2012/08/02: CP bug fix in outputtting of msi files removed nviews ddimension
-   ! 2012/09/20: CP added solzen and satzen tp prtm output
-   ! 2012/11/29: CP changed variables names from layers to levels
-   ! 2013/02/26: CP inserted missing comment for adding noaa platform
-   ! 2013/03/07: CP added in some diagnostics q and albedo
-   ! 2013/xx/xx: MJ adds PLATFORMUP varaible and output to comply with nomenclature.
-   ! 2013/10/14: MJ fixed bug with writing of albedo and emissivity.
-   ! 2013/11/06: MJ adds config file to preprocessing output which holds all
-   !    relevant dimensional information.
-   ! 2013/11/27: MJ changes output from netcdf3 to netcdf4.
-   ! 2014/01/30: MJ implements chunking for the large variables which are actually
-   !    read in later.
-   ! 2014/02/02: GM adds chunking on/off option and cleans up code.
-   ! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
-   !    all the nc_create_file_*() routines.
-   ! 2014/02/02, GM: Changed the nlat x nlon 'unlimited' dimension size to a fixed
-   !    dimension size.  The 'unlimited' dimension size is not required and results
-   !    in a significant performance hit.
-   ! 2014/02/03, GM: A small reordering of the variables in the SW RTM output to be
-   !    consistent with the LW RTM output.
-   ! 2014/02/10, AP: variable renaming
-   ! 2014/03/11 MJ: some modifications for chunking (only used when turned on)
-   ! 2014/03/11 MJ: Commented out chunking completely in routines as I/O performance
-   !    issues persisted.
-   ! 2014/05/01 GM: Reordered data/time arguments into a logical order.
-   !
-   ! $Id$
-   !
-   ! Applied SPRs:
-   !
-   !-------------------------------------------------------------------------------
 
    use netcdf
 
@@ -201,7 +202,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'counter_lw', NF90_INT, &
            netcdf_info%xydim_lw, netcdf_info%counterid_lw, &
            deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !           chunksizes=chunksize1d(1))
+!          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def counter lw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%counterid_lw, &
            '_FillValue', long_int_fill_value)
@@ -211,7 +212,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'solza_lw', NF90_FLOAT, &
            netcdf_info%xyvdim_lw, netcdf_info%solzaid_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-           !chunksizes=chunksize2d)
+!          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def solza_lw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,netcdf_info%solzaid_lw, &
            '_FillValue',real_fill_value)
@@ -221,7 +222,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'satza_lw', NF90_FLOAT, &
            netcdf_info%xyvdim_lw, netcdf_info%satzaid_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize2d)
+!          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def satza_lw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,netcdf_info%satzaid_lw, &
            '_FillValue',real_fill_value)
@@ -231,7 +232,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'relazi_lw', NF90_FLOAT, &
            netcdf_info%xyvdim_lw, netcdf_info%relaziid_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-           !chunksizes=chunksize2d)
+!          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def relazi_lw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,netcdf_info%relaziid_lw, &
            '_FillValue',real_fill_value)
@@ -270,7 +271,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'emiss_lw', &
            NF90_FLOAT, netcdf_info%xycdim_lw, netcdf_info%emiss_id_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize2d)
+!          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def lw emiss'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%emiss_id_lw, &
            '_FillValue',  real_fill_value)
@@ -296,7 +297,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'tac_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tac_id_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize3d)
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def lw tac'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%tac_id_lw, &
            '_FillValue',  real_fill_value)
@@ -306,7 +307,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'tbc_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tbc_id_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize3d)
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def lw tbc'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%tbc_id_lw, &
            '_FillValue',  real_fill_value)
@@ -316,7 +317,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'rbc_up_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rbc_up_id_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize3d)
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def lw rbc_up'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%rbc_up_id_lw, &
            '_FillValue',  real_fill_value)
@@ -325,7 +326,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'rac_up_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_up_id_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize3d)
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def lw rac_up'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%rac_up_id_lw, &
            '_FillValue',  real_fill_value)
@@ -335,7 +336,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_lwrtm, 'rac_down_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_down_id_lw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize3d)
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def lw rac_down'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%rac_down_id_lw, &
            '_FillValue',  real_fill_value)
@@ -438,8 +439,8 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define counter variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'counter_sw', NF90_INT, &
            netcdf_info%xydim_sw, netcdf_info%counterid_sw, &
-           deflate_level=compress_level_lint, shuffle=shuffle_lint)
-      !          chunksizes=chunksize3d)
+           deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def counter sw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%counterid_sw, &
            '_FillValue', long_int_fill_value)
@@ -448,8 +449,8 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define solar zenith
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'solza_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%solzaid_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)
-      !          chunksizes=chunksize3d)
+           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def solza_sw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%solzaid_sw, &
            '_FillValue',real_fill_value)
@@ -458,8 +459,8 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define satellite zenith
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'satza_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%satzaid_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)
-      !          chunksizes=chunksize3d)
+           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def satza_sw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%satzaid_sw, &
            '_FillValue',real_fill_value)
@@ -468,7 +469,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define rez azimuth
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'relazi_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%relaziid_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)
+           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def relazi_sw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%relaziid_sw, &
@@ -511,7 +512,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_swrtm, 'tac_sw', &
            NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tac_id_sw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize3d)
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def sw tac'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%tac_id_sw, &
            '_FillValue',  real_fill_value)
@@ -520,7 +521,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_swrtm, 'tbc_sw', &
            NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tbc_id_sw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize3d)
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def sw tbc'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%tbc_id_sw, &
            '_FillValue',  real_fill_value)
@@ -593,7 +594,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'i_pw', NF90_INT, &
            netcdf_info%xydim_pw, netcdf_info%iid_pw, &
            deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !chunksizes=chunksize1d(1))
+!chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def i'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%iid_pw, &
            '_FillValue', long_int_fill_value)
@@ -603,7 +604,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'j_pw', NF90_INT, &
            netcdf_info%xydim_pw, netcdf_info%jid_pw, &
            deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !chunksizes=chunksize1d(1))
+!chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def j'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%jid_pw, &
            '_FillValue', long_int_fill_value)
@@ -613,7 +614,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'counter_pw', NF90_INT, &
            netcdf_info%xydim_pw, netcdf_info%counterid_pw, &
            deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !chunksizes=chunksize1d(1))
+!          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def counter pw'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%counterid_pw, &
            '_FillValue', long_int_fill_value)
@@ -623,7 +624,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'lon_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%lonid_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize1d(1))
+!          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def lon'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%lonid_pw, &
            '_FillValue', real_fill_value)
@@ -633,7 +634,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'lat_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%latid_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize1d(1))
+!          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def lat'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%latid_pw, &
            '_FillValue',  real_fill_value)
@@ -643,7 +644,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'skint_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%skintid_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize1d(1))
+!          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def skint'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%skintid_pw, &
            '_FillValue', real_fill_value)
@@ -653,7 +654,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'explnsp_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%lnspid_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize1d(1))
+!          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def explnsp'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%lnspid_pw, &
            '_FillValue', real_fill_value)
@@ -663,7 +664,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'lsf_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%lsfid_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize1d(1))
+!          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'def lsf'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%lsfid_pw, &
            '_FillValue', real_fill_value)
@@ -672,8 +673,8 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define satzen variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'satzen_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%satzenid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)
-      !          chunksizes=chunksize3d)
+           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def satzen'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%satzenid_pw, &
            '_FillValue', real_fill_value)
@@ -682,8 +683,8 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define solzen variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'solzen_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%solzenid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)
-      !          chunksizes=chunksize3d)
+           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+!          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def solzen'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%solzenid_pw, &
            '_FillValue',  real_fill_value)
@@ -706,7 +707,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'pprofile_lev', &
            NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%pprofile_lev_id_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize2d)
+!          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def lat'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%pprofile_lev_id_pw, &
            '_FillValue',  real_fill_value)
@@ -716,7 +717,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'tprofile_lev', &
            NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%tprofile_lev_id_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize2d)
+!          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def lat'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%tprofile_lev_id_pw, &
            '_FillValue',  real_fill_value)
@@ -730,11 +731,12 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
               '_FillValue',  real_fill_value)
          if (ierr.ne.NF90_NOERR) write(*,*) 'error def var FillValue'
       endif
+
       ! define geopotential height profile at lever centers as variable
       ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'gphprofile_lev', &
            NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%hprofile_lev_id_pw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
-      !chunksizes=chunksize2d)
+!          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def lat'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%hprofile_lev_id_pw, &
            '_FillValue',  real_fill_value)
@@ -766,41 +768,20 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
 end subroutine nc_create_file_rtm
 
 
-
-!-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
-   platform,sensor,path,wo,type,imager_geolocation,imager_angles,netcdf_info, &
-   channel_info, use_chunking)
-!-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-! Description:
-!
-! Creates new netcdf-file. (Output file)
-!
-!-------------------------------------------------------------------------------
-! This software was developed within the ESA Cloud CCI Project and is based on
-! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
-! All Rights Reserved.
 !-------------------------------------------------------------------------------
 !
-! Unit Name:  nc_create_file_swath.f90
-!
-! Created on: 12/12/11
-!             by Matthias Jerg, DWD/KU22
-!             (matthias.jerg@dwd.de)
-!             based on code provided by Nadine Schneider (nadine.schneider@dwd.de).
-!
-! Modifications Log:
+! History:
 ! 2012/05/31: MJ initial routine version.
 ! 2012/07/04: CP removed nviews dimension of dat
 ! 2014/02/02: GM adds chunking on/off option and cleans up code.
 ! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
 !    all the nc_create_file_*() routines.
 !
-! Applied SPRs:
-!
 !-------------------------------------------------------------------------------
+
+subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
+   platform,sensor,path,wo,type,imager_geolocation,imager_angles,netcdf_info, &
+   channel_info, use_chunking)
 
    use netcdf
 
@@ -940,7 +921,7 @@ endif
       ! define time variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_msi, 'time_data', NF90_DOUBLE, &
              dims2d, netcdf_info%timeid, deflate_level=compress_level_double)!, &
-      !shuffle=shuffle_double, chunksizes=chunksize2d)
+!            shuffle=shuffle_double, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'def time'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_msi, netcdf_info%timeid, &
                           '_FillValue', double_fill_value)
@@ -963,8 +944,8 @@ endif
 
       ! define msi variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_msi, 'msi_data', NF90_FLOAT, dims3dd, &
-             netcdf_info%msid, deflate_level=compress_level_float, &
-             shuffle=shuffle_float)!, chunksizes=chunksize3d)
+             netcdf_info%msid, deflate_level=compress_level_float)!, &
+!            shuffle=shuffle_float, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'def msi'
       ierr = NF90_PUT_ATT(netcdf_info%ncid_msi, netcdf_info%msid, &
                           '_FillValue', real_fill_value)
@@ -1136,16 +1117,7 @@ endif
       ierr = NF90_PUT_ATT(netcdf_info%ncid_geo, netcdf_info%solazid, &
                           '_FillValue', real_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error def var FillValue solaz'
-if (.false.) then
-      ! define senazi variable
-      ierr = NF90_DEF_VAR(netcdf_info%ncid_geo, 'senaz', NF90_FLOAT, dims3d, &
-             netcdf_info%senazid, deflate_level=compress_level_float, &
-             shuffle=shuffle_float)!, chunksizes=chunksize3d)
-      if (ierr.ne.NF90_NOERR) stop 'def senaz'
-      ierr = NF90_PUT_ATT(netcdf_info%ncid_geo, netcdf_info%senazid, &
-                          '_FillValue', real_fill_value)
-      if (ierr.ne.NF90_NOERR) write(*,*) 'error def var FillValue senazi'
-endif
+
       ! define relazi variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_geo, 'relazi', NF90_FLOAT, dims3d, &
              netcdf_info%relazid, deflate_level=compress_level_float, &
@@ -1401,32 +1373,17 @@ end subroutine nc_create_file_swath
 
 
 !-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-subroutine nc_create_file_config(script_input,cyear,cmonth,cday,chour,cminute, &
-   platform,sensor,path,wo,preproc_dims,imager_geolocation,netcdf_info,channel_info)
-!-------------------------------------------------------------------------------
-!-------------------------------------------------------------------------------
-! Description:
 !
-! Creates new netcdf-file. (Output file)
-!
-!-------------------------------------------------------------------------------
-! This software was developed within the ESA Cloud CCI Project and is based on
-! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
-! All Rights Reserved.
-!-------------------------------------------------------------------------------
-!
-! Unit Name: nc_create_file_config.f90
-!
-! Modifications Log:
+! History:
 ! 2013/11/06: MJ initial routine version
 ! 2014/02/02: GM adds chunking on/off option and cleans up code.
 ! 2014/02/02: GM puts setting up of common attributes in a subroutine used by
 !    all the nc_create_file_*() routines.
 !
-! Applied SPRs:
-!
 !-------------------------------------------------------------------------------
+
+subroutine nc_create_file_config(script_input,cyear,cmonth,cday,chour,cminute, &
+   platform,sensor,path,wo,preproc_dims,imager_geolocation,netcdf_info,channel_info)
 
    use netcdf
 

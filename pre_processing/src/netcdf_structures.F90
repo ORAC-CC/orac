@@ -80,7 +80,7 @@ module netcdf_structures
       ! alb file
       integer :: albid,emisid,channelnalbid,channelnemisid
 
-      ! cf file
+      ! clf file
       integer :: cfid
 
       ! config file:
@@ -89,7 +89,7 @@ module netcdf_structures
                  channelnalbid_config,channelnemisid_config
 
       ! geo file
-      integer :: solzenid,satzenid,solazid,satazid,relazid,senazid
+      integer :: solzenid,satzenid,solazid,relazid
 
       ! loc file
       integer :: latid,lonid
