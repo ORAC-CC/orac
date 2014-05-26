@@ -29,7 +29,8 @@
 !             code is now 2100 ready:)
 ! 2013/11/01, Greg McGarragh: Cleaned up code.
 ! 2014/04/21, Greg McGarragh: Added logical option assume_full_path.
-!
+! 2014/05/26, Matthias Jear fixed error with datatype of year for mod-operation.
+
 ! $Id$
 !
 !-------------------------------------------------------------------------------
@@ -44,7 +45,7 @@ subroutine select_modis_emiss_file(cyear,doy,emiss_surf_path,emiss_surf_path_fil
   character(len=pathlength), intent(in)  :: emiss_surf_path
   character(len=pathlength), intent(out) :: emiss_surf_path_file
 
-  integer                            :: year
+  integer(kind=stint)                :: year
   integer                            :: pos
   logical                            :: isleapyear
   integer(kind=stint), dimension(12) :: dates,newdates
@@ -122,5 +123,7 @@ subroutine select_modis_emiss_file(cyear,doy,emiss_surf_path,emiss_surf_path_fil
      '/global_emis_inf10_monthFilled_MYD11C3.A'// &
      trim(adjustl(cyear))// &
      trim(adjustl(emis_date_s))//'.041'//'.nc'
+
+
 
 end subroutine select_modis_emiss_file
