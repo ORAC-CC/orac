@@ -25,6 +25,7 @@
 ! History:
 ! 2012/05/24:Original code C. Poulsen based on idl t_extrap_tp.pro
 ! 2014/03/14:CP debugged and tested
+! 2014/05/26: MJ removes "," after "write(*,*)". This does not seem to be standard F90.
 !
 ! $Id$
 !
@@ -69,7 +70,7 @@ subroutine extrap_into_tropopause(preproc_prtm,preproc_dims )
 ! this is atypical value for a moist adiabatic lapse rate (see wikipedia)
         lr=-5 !lapse rate K/km
         if (z(1) .le. z(2)) then
-           write(*,*),'z must be in descending order !'
+           write(*,*) 'z must be in descending order !'
         end if
         
 !
@@ -79,7 +80,7 @@ subroutine extrap_into_tropopause(preproc_prtm,preproc_dims )
         call find_tropopause(t,z,ztp,nlevs)
         
         if (ztp .eq. -999) then
-           write(*,*),'tropopause not found !',ztp
+           write(*,*) 'tropopause not found !',ztp
         end if
         
 !
