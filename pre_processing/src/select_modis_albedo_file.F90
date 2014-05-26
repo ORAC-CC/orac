@@ -29,6 +29,7 @@
 ! 2013/03/07, GT: Reverted change made by CP on 2012/08/06, and added code to
 !    check that the MODIS file exists and is readable.
 ! 2014/04/21, GM: Cleaned up the code.
+! 2014/05/26: MJ added "FAILED" to error output.
 !
 ! $Id$
 !
@@ -149,10 +150,10 @@ subroutine select_modis_albedo_file(cyear,doy,modis_surf_path,modis_surf_path_fi
    inquire(file=trim(modis_surf_path_file), exist=modis_surf_file_exist, &
          & read=modis_surf_file_read)
    if (.not.modis_surf_file_exist) then
-      write(*,*) 'STOP: MODIS surface albedo file does not exist: ', trim(modis_surf_path_file)
+      write(*,*) 'FAILED: STOP: MODIS surface albedo file does not exist: ', trim(modis_surf_path_file)
       stop
    else if (trim(modis_surf_file_read).eq.'NO') then
-      write(*,*) 'STOP: MODIS surface albedo file exists but is not readable: ', trim(modis_surf_path_file)
+      write(*,*) 'FAILED: STOP: MODIS surface albedo file exists but is not readable: ', trim(modis_surf_path_file)
       stop
    end if
 

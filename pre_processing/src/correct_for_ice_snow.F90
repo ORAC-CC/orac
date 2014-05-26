@@ -73,6 +73,7 @@ contains
 ! 2013/10/02: CP added fmonth so correct ice snow emissivity files are read 
 !                in 2009/2010
 ! 2014/04/21: GM Added logical option assume_full_path.
+! 2014/05/26: MJ added "FAILED" to error output.
 !
 ! $Id$
 !
@@ -148,10 +149,10 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
   inquire(file=trim(nise_path_file), exist=nise_file_exist, &
        & read=nise_file_read)
   if (.not.nise_file_exist) then
-     write(*,*) 'STOP: NISE ice/snow file does not exist'
+     write(*,*) 'FAILED: STOP: NISE ice/snow file does not exist'
      stop
   else if (trim(nise_file_read).eq.'NO') then
-     write(*,*) 'STOP: NISE ice/snow file exists but is not readable'
+     write(*,*) 'FAILED: STOP: NISE ice/snow file exists but is not readable'
      stop
   end if
 
