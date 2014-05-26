@@ -190,8 +190,8 @@ program ECP
    use Data_def
    use Diag_def
    use ECP_Constants
-   use ECP_Routines_def
    use input_structures
+   use Read_SAD_def
    use RTM_def
    use RTM_Pc_def
    use SAD_Chan_def

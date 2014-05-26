@@ -109,16 +109,14 @@
 
 subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
 
-   use bcubic_def
    use CTRL_def
    use GZero_def
+   use Int_Routines_def
    use SAD_LUT_def
 
    implicit none
 
    ! Argument declarations
-   ! Note if the arguments are changed, the interface definition in
-   ! IntRoutines.f90 must be updated to match.
 
    real, dimension(:,:,:), intent(in)  :: F
                                             ! The array to be interpolated.
@@ -139,7 +137,7 @@ subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, status)
    integer,                intent(in)  :: icrpr
    integer,                intent(out) :: status
 
-!  Local variables
+   ! Local variables
 
    integer                       :: i
    integer                       :: NChans  ! Number of Channels in LUT arrays

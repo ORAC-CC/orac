@@ -1,62 +1,63 @@
+!-------------------------------------------------------------------------------
 ! Name:
 !   Calc CWP
 !
 ! Description:
-!    This routine calculates the Cloud water path and the associated error on the Cloud waterPath
+!    This routine calculates the Cloud water path and the associated error on
+!    the Cloud waterPath
 !
 ! Arguments:
-!    Name       Type    In/Out/Both    Description
+!    Name Type In/Out/Both Description
 !    N/A
 !
 ! Algorithm:
-!    
+!
 !
 ! Local variables:
 !    Name       Type    Description
 !    Ctrl       struct  ECP control structure read from driver file
 !    SAD_CloudClass     Array of structures each containing info on a cloud
-
-!               logical
+!
+!    status     logical
 !
 ! History:
-
-! 8th Nov 2011 Caroline Poulsen original version adapted from idl version
-! 28th Nov2011 Caroline Poulsen remove log write statement
-! 20131114 MJ makes branch for ICE explicit
+!     8th Nov 2011, Caroline Poulsen: original version adapted from idl version
+!    28th Nov 2011, Caroline Poulsen: remove log write statement
+!    2013/11/14, MJ: makes branch for ICE explicit
+!    2013/11/14, GM: Some code clean up
 !
 ! Bugs:
 !   None known
 !
 ! $Id$
 !
-!---------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
-Subroutine Calc_CWP (Ctrl,SPixel, status)
+subroutine Calc_CWP (Ctrl,SPixel, status)
 
-!  Modules used by this program. 
-
-   use ECP_Constants
-   use ECP_Routines_def    ! Defines subroutine interfaces for ReadSAD etc
-   use SPixel_def
+   ! Modules used by this program.
    use CTRL_def
-!  Local variable declarations
+   use ECP_Constants
+   use SPixel_def
 
    implicit none
-   type(SPixel_t), intent(inout)  :: SPixel
-   type(CTRL_t), intent(in)    :: Ctrl
-   integer ,   intent(inout)   :: status  ! Status value returned from subroutines
-   integer          :: ios  =0.    ! I/O status value from file operations
-                                   ! ran successfully, arrays are allocated.
-   real             :: rho ! liquid or water denisty
-   real             :: fac !CWP factor
-   real             :: s_cot_cre  !co-variance cot, effective radius (from log10cot, effective radius)
-   real             :: s_cot  !variance in cot from variance in log10cot
-   real             :: tenpcot  !10^cot convert from log value to linear value
-   real              ::    al10e    =.434294  ! i.e  log10(exp(1.))  
-   real              ::   al10e2         
-! -------------------------------------------------------------------
-! ------------------ Data Preparation functions
-! -------------------------------------------------------------------
+
+   ! Argument declarations
+   type(CTRL_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(inout) :: SPixel
+   integer,        intent(inout) :: status
+
+   ! Local variable declarations
+   integer :: ios = 0.        ! I/O status value from file operations
+   real    :: rho             ! liquid or water denisty
+   real    :: fac             ! CWP factor
+   real    :: s_cot_cre       ! co-variance cot, effective radius (from
+                              ! log10 cot, effective radius)
+   real    :: s_cot           ! variance in cot from variance in log10cot
+   real    :: tenpcot         ! 10^cot convert from log value to linear value
+   real    :: al10e = .434294 ! i.e  log10(exp(1.))
+   real    :: al10e2
+
 
    if (trim(Ctrl%CloudClass%Name) == 'WAT') then
       rho=rhowat
@@ -70,38 +71,28 @@ Subroutine Calc_CWP (Ctrl,SPixel, status)
       return
    end if
 
-
-   al10e2=al10e*al10e 
+   al10e2=al10e*al10e
 
    tenpcot=10.**(Spixel%Xn(iTau))
-  
-   Spixel%cwp=fac* tenpcot *Spixel%Xn(iRe)
 
+   Spixel%cwp=fac* tenpcot*Spixel%Xn(iRe)
 
-! covariance 
+   ! covariance
    s_cot_cre=(Spixel%Sn(iTau,iRe)*tenpcot)/al10e
 
-
-   !error on optical depth
+   ! error on optical depth
    s_cot=(Spixel%Sn(iTau,iTau)*tenpcot*tenpcot)/al10e2
-   
+
+   ! based on
+   ! Spixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
+
    Spixel%cwp_error=Spixel%Xn(iRe)*Spixel%Xn(iRe)*s_cot+ &
-        tenpcot* tenpcot*Spixel%Sn(iRe,iRe)+ &
-        2.* tenpcot*Spixel%Xn(iRe)*s_cot_cre
-
-!   write(*,*)'lwp error',Spixel%cwp_error
- 
-
-  !based on
-   !Spixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
-   
+                    tenpcot*tenpcot*Spixel%Sn(iRe,iRe)+ &
+                    2.* tenpcot*Spixel%Xn(iRe)*s_cot_cre
 
    if (ios /= 0) then
       status = CWP_Calcerror
       call Write_Log(Ctrl,'Error calculating CWP',status)
    end if
 
- 
-   
- End Subroutine Calc_CWP
- 
+end subroutine Calc_CWP

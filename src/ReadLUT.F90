@@ -73,7 +73,6 @@ subroutine Read_LUT_Rd (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
-   use SAD_LUT_def
 
    implicit none
 
@@ -264,7 +263,6 @@ subroutine Read_LUT_Td (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
-   use SAD_LUT_def
 
    implicit none
 
@@ -450,7 +448,6 @@ subroutine Read_LUT_Rbd (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
-   use SAD_LUT_def
 
    implicit none
 
@@ -639,7 +636,6 @@ subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
-   use SAD_LUT_def
 
    implicit none
 
@@ -791,7 +787,6 @@ subroutine Read_LUT_Tbd (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
-   use SAD_LUT_def
 
    implicit none
 
@@ -1052,7 +1047,6 @@ subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
-   use SAD_LUT_def
 
    implicit none
 
@@ -1276,7 +1270,6 @@ subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
 
    use CTRL_def
    use SAD_Chan_def
-   use SAD_LUT_def
 
    implicit none
 

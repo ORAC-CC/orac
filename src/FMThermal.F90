@@ -101,7 +101,6 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
 
     use CTRL_def
     use ECP_Constants
-    use FM_Routines_def
     use GZero_def
     use RTM_Pc_def
     use SAD_Chan_def

@@ -76,7 +76,7 @@ subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    use Ctrl_def
    use GZero_def
-   use Int_Routines_def
+   use Int_LUT_Routines_def
    use SAD_LUT_def
    use SPixel_def
 

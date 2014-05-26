@@ -80,7 +80,6 @@ module SAD_LUT_def
    end type LUT_Grid_t
 
 
-
    type SAD_LUT_t
       integer          :: Index         ! Reference index
       character(80)    :: Name          ! Optional class name
@@ -131,5 +130,12 @@ module SAD_LUT_def
       type(LUT_Grid_t) :: Grid   ! Grid parameters
 
    end type SAD_LUT_t
+
+contains
+
+! Here we use a C preprocessor include instead of a Fortran include since
+! ReadLUT.F90 contains C preprocessor statements but the C preprocessor won't go
+! into Fortran included files.
+#include "ReadLUT.F90"
 
 end module SAD_LUT_def

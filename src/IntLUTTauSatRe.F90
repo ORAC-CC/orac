@@ -92,16 +92,14 @@
 subroutine Int_LUT_TauSatRe(F, Grid, GZero,Ctrl, FInt, FGrads, icrpr, &
    i_chan_to_ctrl_offset, i_chan_to_spixel_offset, status)
 
-   use bcubic_def
    use CTRL_def
    use GZero_def
+   use Int_Routines_def
    use SAD_LUT_def
 
    implicit none
 
    ! Argument declarations
-   ! Note if these arguments are changed the interface definition in
-   ! IntRoutines.f90 must be updated.
 
    real, dimension(:,:,:,:), intent(in)  :: F
                                 	      ! The array to be interpolated.
@@ -152,10 +150,7 @@ subroutine Int_LUT_TauSatRe(F, Grid, GZero,Ctrl, FInt, FGrads, icrpr, &
    real                          :: a1, a2, a3
                                               ! Temporary store for output of
 					      ! BiCubic subroutine
-#ifdef BKP
-   integer :: bkp_lun ! Unit number for breakpoint file
-   integer :: ios     ! I/O status for breakpoint file
-#endif
+
    integer, parameter       :: iXm1 = -1
    integer, parameter       :: iX0  =  0
    integer, parameter       :: iX1  =  1

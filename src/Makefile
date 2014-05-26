@@ -201,9 +201,6 @@ include $(ORAC_LIB)
 ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
                   $(OBJS)/AllocRTMPc.o \
 	          $(OBJS)/AllocSPixel.o \
-	          $(OBJS)/Bcubic_def.o \
-                  $(OBJS)/Bcucof.o \
-                  $(OBJS)/Bcuint.o \
                   $(OBJS)/BITS.o \
 	          $(OBJS)/CalcCWP.o \
                   $(OBJS)/CheckByteArray.o \
@@ -224,12 +221,8 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
 	          $(OBJS)/DecomposeCholesky.o \
                   $(OBJS)/Diag.o \
                   $(OBJS)/ECPConstants.o \
-	          $(OBJS)/ECPRoutines.o \
                   $(OBJS)/FindLUN.o \
-                  $(OBJS)/FM.o \
 	          $(OBJS)/FMRoutines.o \
-                  $(OBJS)/FMSolar.o \
-                  $(OBJS)/FMThermal.o \
 	          $(OBJS)/GetGeometry.o \
                   $(OBJS)/GetIllum.o \
                   $(OBJS)/GetLSF.o \
@@ -242,24 +235,17 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
 	          $(OBJS)/GetX.o \
                   $(OBJS)/GZero.o \
                   $(OBJS)/input_structures.o \
-	          $(OBJS)/Int.o \
-                  $(OBJS)/Interp3dLUT.o \
                   $(OBJS)/interpolate_to_ctp.o \
 	          $(OBJS)/InterpolSolar.o \
                   $(OBJS)/InterpolSolar_spline.o \
 	          $(OBJS)/InterpolThermal.o \
                   $(OBJS)/InterpolThermal_spline.o \
 	          $(OBJS)/InterpolTrans.o \
-                  $(OBJS)/IntLUTTauRe.o \
-	          $(OBJS)/IntLUTTauSatRe.o \
-                  $(OBJS)/IntLUTTauSatSolAziRe.o \
-	          $(OBJS)/IntLUTTauSolRe.o \
                   $(OBJS)/IntRoutines.o \
+                  $(OBJS)/IntLUTRoutines.o \
 	          $(OBJS)/InvertCholesky.o \
                   $(OBJS)/InvertCholeskyDC.o \
 	          $(OBJS)/InvertMarquardt.o \
-                  $(OBJS)/Linint.o \
-                  $(OBJS)/Locate.o \
 	          $(OBJS)/locate.o \
                   $(OBJS)/nc_close.o \
                   $(OBJS)/nc_create_global.o \
@@ -277,7 +263,6 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
                   $(OBJS)/ReadAlb.o \
                   $(OBJS)/ReadAlb_nc.o \
 	          $(OBJS)/ReadByteArray.o \
-                  $(OBJS)/ReadChan.o \
 	          $(OBJS)/ReadCloudFlags_nc.o \
                   $(OBJS)/ReadDataRTM.o \
 	          $(OBJS)/ReadDriver.o \
@@ -291,7 +276,6 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
 	          $(OBJS)/ReadLocation_nc.o \
                   $(OBJS)/ReadLSFlags.o \
 	          $(OBJS)/ReadLSFlags_nc.o \
-                  $(OBJS)/ReadLUT.o \
                   $(OBJS)/ReadLwRTM.o \
 	          $(OBJS)/ReadLwRTM_nc.o \
                   $(OBJS)/ReadMSI.o \
@@ -306,9 +290,6 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
                   $(OBJS)/SADChan.o \
                   $(OBJS)/SADCloudClass.o \
 	          $(OBJS)/SADLUT.o \
-                  $(OBJS)/SADRoutines.o \
-                  $(OBJS)/SetCRPSolar.o \
-	          $(OBJS)/SetCRPThermal.o \
                   $(OBJS)/SetDiag.o \
                   $(OBJS)/SetGZero.o \
 	          $(OBJS)/SetKx.o \
@@ -318,10 +299,8 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
 	          $(OBJS)/SolveCholesky.o \
                   $(OBJS)/SolveCholeskyDC.o \
                   $(OBJS)/SPixel.o \
-	          $(OBJS)/Spline.o \
                   $(OBJS)/SquareCholeskyDC.o \
                   $(OBJS)/T2R.o \
-	          $(OBJS)/Tridag.o \
                   $(OBJS)/WriteDiag.o \
                   $(OBJS)/WriteLog.o \
 	          $(OBJS)/XMDAD.o \

@@ -1,9 +1,10 @@
-! tridag.90
+!-------------------------------------------------------------------------------
+! tridag.f90
 !
 ! Purpose:
 !
-!    Given input vectors a,b,c,r solves the tridiagonal equations
-!    shown for output vector u
+!    Given input vectors a,b,c,r solves the tridiagonal equations shown for
+!    output vector u
 !
 !    |b(  1) c(  1)    0    ..              |   |u(  1)|   |n(  1)|
 !    |a(  2) b(  2) c(  2)  ..              |   |u(  2)|   |n(  2)|
@@ -14,37 +15,36 @@
 !    Called by spline.f90
 !
 ! Arguments:
-!    Name        Type    in/Out/Both    Description
-!    a           real array  in         Vectors a,b,c form a
-!                                       tridiagonal set
-!    b           real array  in
-!    c           real array  in
-!    r           real array  in		
-!    u		 real array  Out	The solution
+!    Name  Type       in/Out/Both Description
+!    a     real array in          Vectors a,b,c form a tridiagonal set
+!    b     real array in
+!    c     real array in
+!    r     real array in
+!    u     real array Out	  The solution
 !
 ! Algorithm
 !    From Numerical Recipes in Fortran 90 [Press, Flannery]
-!    
+!
 ! History
-!    31st April 2011 - Adapted for ORAC F90 by C. Arnold 
+!    31st April 2011 - Adapted for ORAC F90 by C. Arnold
 !
 ! Bugs
 !    None known
 !
 ! $Id$
 !
-!---------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 subroutine tridag_ser(a,b,c,r,u)
 
     implicit none
 
-!   Define arguments
+    ! Define arguments
 
     real, dimension(:), intent(in) :: a,b,c,r
     real, dimension(:), intent(out) :: u
 
-!   Define local variables
+    ! Define local variables
 
     real, dimension(size(b)) :: gam
     integer :: n,j
@@ -66,33 +66,23 @@ subroutine tridag_ser(a,b,c,r,u)
 	end do
 end subroutine tridag_ser
 
+
 recursive subroutine tridag_par(a,b,c,r,u)
 
     implicit none
 
-!   Define arguments
+    ! Define arguments
 
     real, dimension(:), intent(in) :: a,b,c,r
     real, dimension(:), intent(out) :: u
 
-!   Define local variables
+    ! Define local variables
 
     integer, parameter :: NPAR_TRIDAG=4
     integer :: n,n2,nm,nx
     real, dimension(size(b)/2) :: y,q,piva
     real, dimension(size(b)/2-1) :: x,z
     real, dimension(size(a)/2) :: pivc
-
-!   interface for tridag_ser (only called here)
-
-    interface
-	subroutine tridag_ser(a,b,c,r,u)
-
-            real, dimension(:), intent(in) :: a,b,c,r
-	    real, dimension(:), intent(out) :: u
-
-	end subroutine tridag_ser
-    end interface
 
     n = size(b)
     if (n < NPAR_TRIDAG) then
@@ -120,4 +110,3 @@ recursive subroutine tridag_par(a,b,c,r,u)
 	if (nm == n2) u(n)=(r(n)-a(n-1)*u(n-1))/b(n)
     end if
 end subroutine tridag_par
-

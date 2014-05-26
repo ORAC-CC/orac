@@ -44,62 +44,14 @@
 
 module FM_Routines_def
 
-   interface
-      subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, &
-         status)
+   implicit none
 
-	 use Ctrl_def
-	 use GZero_def
-	 use Int_Routines_def
-	 use SAD_LUT_def
-         use SPixel_def
+contains
 
-	 implicit none
-
-         ! Argument declarations
-	 type(Ctrl_t),           intent(in)  :: Ctrl
-         type(SPixel_Ind_t),     intent(in)  :: Ind
-	 type(GZero_t),          intent(in)  :: GZero
-                                                ! Struct containing "zero'th"
-                                                ! grid points
-	 type(SAD_LUT_t),        intent(in)  :: SAD_LUT
-	 real, dimension(:,:),   intent(out) :: CRPOut
-                        			! Interpolated values returned
-                        			! (CRPOut(1)=RBD, (2)=TB, ...)
-	 real, dimension(:,:,:), intent(out) :: dCRPOut
-                                		! Interpolated gradients of
-                                                ! CRPOut in Tau and Re
-	 integer,                intent(out) :: status
-      end subroutine Set_CRP_Solar
-   end interface
-
-   interface
-      subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, &
-         status)
-
-	 use Ctrl_def
-	 use GZero_def
-	 use Int_Routines_def
-	 use SAD_LUT_def
-         use SPixel_def
-
-	 implicit none
-
-         ! Argument declarations
-	 type(Ctrl_t),           intent(in)  :: Ctrl
-         type(SPixel_Ind_t),     intent(in)  :: Ind
-	 type(GZero_t),          intent(in)  :: GZero
-                                                ! Struct containing "zero'th"
-                                                ! grid points
-	 type(SAD_LUT_t),        intent(in)  :: SAD_LUT
-	 real, dimension(:,:),   intent(out) :: CRPOut
-                        			! Interpolated values returned
-                        			! (CRPOut(1)=RBD, (2)=TB, ...)
-	 real, dimension(:,:,:), intent(out) :: dCRPOut
-                                		! Interpolated gradients of
-                                                ! CRPOut in Tau and Re
-	 integer,                intent(out) :: status
-      end subroutine Set_CRP_Thermal
-   end interface
+#include "FM.F90"
+#include "FMSolar.F90"
+#include "FMThermal.F90"
+#include "SetCRPSolar.F90"
+#include "SetCRPThermal.F90"
 
 end module FM_Routines_def

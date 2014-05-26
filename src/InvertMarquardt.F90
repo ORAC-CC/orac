@@ -214,6 +214,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    use Ctrl_def
    use Diag_def
    use ECP_Constants
+   use FM_Routines_def
    use RTM_Pc_def
    use SAD_Chan_def
    use SAD_LUT_def
@@ -227,7 +228,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    type(SPixel_t),   intent(inout) :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
-   type(RTM_Pc_t),   intent(in)    :: RTM_Pc
+   type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    type(Diag_t),     intent(out)   :: Diag
    integer,          intent(out)   :: status
 
