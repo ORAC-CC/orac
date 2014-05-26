@@ -25,6 +25,8 @@
 #    in the current directory are local and subject to be a dependency whereas
 #    include files that do not exist in the current directory are assumed to be
 #    external and therefore not subject to be a dependency.
+# 2014/05/26, Greg McGarragh: Added support for C preprocessor includes.
+#
 #*******************************************************************************
 use File::Basename;
 
@@ -88,8 +90,8 @@ sub get_file_depencies {
 
         # Find used modules and included files
 	while (<FILE>) {
-		/^\s*use\s+([^\s,!]+)/i              && push(@modules, lc($1));
-		/^\s*include\s+["\']([^"\']+)["\']/i && push(@includes,   $1 );
+		/^\s*use\s+([^\s,!]+)/i                 && push(@modules, lc($1));
+		/^\#*\s*include\s+["\']([^"\']+)["\']/i && push(@includes,   $1 );
 	}
 
 	close(FILE);
