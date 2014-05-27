@@ -25,6 +25,7 @@
 ! Algorithm:
 !
 ! Local variables:
+!    Name Type Description
 !
 ! History:
 !    ????/??/??, Matthias Jerg: Orginial version.
@@ -37,6 +38,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
    use netcdf
@@ -61,14 +63,13 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    ! Call appropriate satellite data reading routines
    ! (Sections to be added as reading routines become available
 
-   write(*,*) 'Reading MSI data, status: ',status
-   call Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
+   if (Ctrl%RS%Flag == SelmAux) then
+      write(*,*) 'Reading Albedo data, status: ',status
+      if (status == 0) call Read_Alb_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   endif
 
    write(*,*) 'Reading Cloud Flag data, status: ',status
    if (status == 0) call Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
-
-   write(*,*) 'Reading LS Flag data, status: ',status
-   if (status == 0) call Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
    write(*,*) 'Reading Geometry data, status: ',status
    if (status == 0) call Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
@@ -76,15 +77,16 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    write(*,*) 'Reading Location data, status: ',status
    if (status == 0) call Read_Location_nc(Ctrl, NSegs, SegSize,MSI_Data, status)
 
-   write(*,*) 'Reading Illumination data, status: ',status
-   if (status == 0) call Read_illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   write(*,*) 'Reading LS Flag data, status: ',status
+   if (status == 0) call Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
-   if (Ctrl%RS%Flag == SelmAux) then
-      write(*,*) 'Reading Albedo data, status: ',status
-      if (status == 0) call Read_Alb_nc(Ctrl, NSegs, SegSize,MSI_Data, status)
-   endif
+   write(*,*) 'Reading MSI data, status: ',status
+   call Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
    write(*,*) 'Reading Scanline data, status: ',status
    if (status == 0) call Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+
+   write(*,*) 'Reading Illumination data, status: ',status
+   if (status == 0) call Read_illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
 end subroutine Read_SatData_nc

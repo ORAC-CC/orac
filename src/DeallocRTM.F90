@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name:
 !    Dealloc_RTM
 !
@@ -5,10 +6,10 @@
 !    Deallocate the RTM arrays at end of ECP execution.
 !
 ! Arguments:
-!    Name   Type         In/Out Description
-!    Ctrl   struct       In     Control structure
-!    RTM    alloc struct In     RTM structure
-!    status int          Out    Error status
+!    Name   Type         In/Out/Both Description
+!    Ctrl   struct       In          Control structure
+!    RTM    alloc struct In          RTM structure
+!    status int          Out         Error status
 !
 ! Algorithm:
 !    Deallocates all arrays in the RTM structure
@@ -22,18 +23,18 @@
 !
 ! Local variables:
 !    Name   Type   Description
-!    None
 !
 ! History:
 !    24th Oct 2001, Andy Smith: original version
-!    ******** ECV work starts here **********************
+!    **************** ECV work starts here *************************************
 !    21st Feb 2011, Andy Smith:
 !       Re-introducing changes made in late 2001/2002.
 !    12th Dec 2002, Caroline Poulsen: Added geopotential height
-!    22nd Sept 2011, Caroline Poulsen: Remove sw%p as now the same as lw%p
+!    22nd Sept 2011, Caroline Poulsen: Remove SW%P as now the same as LW%P
 !    13th Dec 2011, Caroline Poulsen: Deallocated RTM%SW%Lon
-!    16th Dec 2013, Greg McGarragh:
-!       Add deallocation of RTM%LW%skint and RTM%LW%sp and a bit cleanup.
+!    16th Dec 2013, Greg McGarragh: Add deallocation of RTM%LW%skint and
+!       RTM%LW%sp and a bit of cleanup.
+!    27th May 2014, Greg McGarragh: Some more cleanup.
 !
 ! Bugs:
 !    None known.
@@ -41,10 +42,10 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Dealloc_RTM(Ctrl, RTM, status)
 
    use Ctrl_def
-   use RTM_def
 
    implicit none
 

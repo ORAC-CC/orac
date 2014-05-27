@@ -198,10 +198,7 @@ include $(ORAC_LIB)
 # Define object files to be linked. N.B. files containing module definitions
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
-ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
-                  $(OBJS)/AllocRTMPc.o \
-	          $(OBJS)/AllocSPixel.o \
-                  $(OBJS)/BITS.o \
+ORAC_OBJ =        $(OBJS)/BITS.o \
 	          $(OBJS)/CalcCWP.o \
                   $(OBJS)/CheckByteArray.o \
                   $(OBJS)/CheckFloatArray.o \
@@ -211,13 +208,6 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
 	          $(OBJS)/CRP.o \
                   $(OBJS)/Ctrl.o \
                   $(OBJS)/Data.o \
-	          $(OBJS)/dealloc_spixel_scan_out.o \
-                  $(OBJS)/DeallocCtrl.o \
-	          $(OBJS)/DeallocData.o \
-                  $(OBJS)/DeallocRTM.o \
-                  $(OBJS)/DeallocRTMPc.o \
-	          $(OBJS)/DeallocSADLUT.o \
-                  $(OBJS)/DeallocSPixel.o \
 	          $(OBJS)/DecomposeCholesky.o \
                   $(OBJS)/Diag.o \
                   $(OBJS)/ECPConstants.o \
@@ -307,7 +297,7 @@ ORAC_OBJ=         $(OBJS)/alloc_spixel_scan_out.o \
                   $(OBJS)/XSDAD.o \
                   $(OBJS)/ZeroDiag.o
 
-ORAC_OBJ_MAIN    =$(OBJS)/ECP.o \
+ORAC_OBJ_MAIN =   $(OBJS)/ECP.o \
 
 
 # .F90 was originally the extension on DecUnix, but seems to be allowed by the

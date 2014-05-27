@@ -3,21 +3,17 @@
 !   Ctrl
 !
 ! Purpose:
-!   Module defining control structure (Ctrl) for the ECP
-!
-! Description:
-!   Defines the types and sub-types used in the Ctrl structure.
+!    Module defining control structure (Ctrl) for the ECP
 !
 ! Arguments:
-!   Name Type In/Out/Both Description
-!   N/A
+!    Name Type In/Out/Both Description
+!    N/A
 !
 ! Algorithm:
-!   N/A
+!    N/A
 !
 ! Local variables:
 !    Name Type Description
-!    N/A
 !
 ! History:
 !    17th Aug 2000, Andy Smith: original version
@@ -110,14 +106,14 @@
 !    2012/08/22, Matthias Jerg: adds Nyp
 !    2012/10/12, C. Poulsen: added defaultctrl%sx category!
 !    2014/01/15, Greg McGarragh: No need for Ctrl%DefaultSx anymore.
-!    2014/01/25, Greg McGarragh: Cleaned up code.
+!    2014/01/25, Greg McGarragh: Cleaned up the code.
 !
 ! Bugs:
 !   None known
 !
 ! $Id$
 !
-!---------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 module CTRL_def
 
@@ -275,6 +271,7 @@ module CTRL_def
    ! of channels since all could be solar? - Sb, Cb NOT ARRAYS?
    type SurfRef_t
       integer                :: Flag               ! Surface reflectance flag (1=Ctrl,2=SAD,...)
+      logical                :: use_full_brdf
       real, pointer          :: B(:,:)             ! Model parameter surface reflectance values
                                                    ! (chans, sea/land)
       real                   :: Sb                 ! % error in B
@@ -371,6 +368,10 @@ module CTRL_def
       type (Invpar_t)        :: Invpar
       type (QC_t)            :: QC                 ! Quality control structure
       type (SPix_t)          :: Spix
-    end type CTRL_t
+   end type CTRL_t
+
+contains
+
+   include 'DeallocCtrl.F90'
 
 end module CTRL_def

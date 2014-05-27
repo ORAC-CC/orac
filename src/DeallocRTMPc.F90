@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name:
 !    Dealloc_RTM_Pc
 !
@@ -5,11 +6,11 @@
 !    Deallocate the RTM_Pc arrays at end of ECP execution.
 !
 ! Arguments:
-!    Name        Type           In/Out   Description
-!    Ctrl        struct         In       Control structure
-!    RTM_Pc      alloc struct   In       RTM_Pc structure
-!    status      int            Out      Error status
-!    
+!    Name   Type         In/Out/Both Description
+!    Ctrl   struct       In          Control structure
+!    RTM_Pc alloc struct In          RTM_Pc structure
+!    status int          Out         Error status
+!
 ! Algorithm:
 !    Deallocates all arrays in the RTM_Pc structure
 !    If any solar channels were requested
@@ -18,32 +19,32 @@
 !      - Deallocates arrays in the LW sub-structure
 !
 ! Local variables:
-!    Name   Type   Description
-!    None
+!    Name Type Description
 !
 ! History:
-!    22nd Oct 2001, Andy Smith: original version
+!    22nd Oct 2001, Andy Smith: Original version
+!    27th May 2014, Greg McGarragh: Some cleanup.
 !
 ! Bugs:
 !    None known.
 !
 ! $Id$
 !
-!------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
+
 subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
 
    use Ctrl_def
-   use RTM_Pc_def
 
    implicit none
-   
-!  Declare arguments
+
+   ! Declare arguments
 
    type(Ctrl_t), intent(in)      :: Ctrl
-   type(RTM_Pc_t), intent(inout) :: RTM_Pc   
+   type(RTM_Pc_t), intent(inout) :: RTM_Pc
    integer, intent(inout)        :: status
 
-!  deallocate sizes of SW sub-structure arrays
+   ! Deallocate sizes of SW sub-structure arrays
 
    if (Ctrl%Ind%Ny-Ctrl%Ind%NThermal > 0) then
       deallocate(RTM_Pc%SW%Tac)
@@ -52,7 +53,7 @@ subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
       deallocate(RTM_Pc%SW%dTbc_dPc)
    end if
 
-!  deallocate sizes of LW sub-structure arrays
+   ! Deallocate sizes of LW sub-structure arrays
 
    if (Ctrl%Ind%NThermal > 0) then
       deallocate(RTM_Pc%LW%Tac)
@@ -69,7 +70,7 @@ subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
       deallocate(RTM_Pc%LW%dRbc_up_dPc)
    end if
 
-!  deallocate sizes of the main structure arrays
+   ! Deallocate sizes of the main structure arrays
 
    deallocate(RTM_Pc%Tac)
    deallocate(RTM_Pc%Tbc)

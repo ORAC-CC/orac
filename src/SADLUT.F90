@@ -3,11 +3,7 @@
 !    SAD_LUT
 !
 ! Purpose:
-!    Module containing Static Application Data Look-Up Table structure
-!
-! Description:
-!    Defines a set of structures used to hold Static Application Data for
-!    Look-Up Tables in the ECP.
+!    Module defining the Static Application Data Look-Up Table structure
 !
 ! Arguments:
 !    Name Type In/Out/Both Description
@@ -30,7 +26,7 @@
 !    12th Dec 2013, MJ: makes LUTs more flexible wrt channel and properties
 !    12th Jan 2014, Greg McGarragh: Increase nmaxre to 23 for the ice LUTs.
 !    16th Jan 2014, Greg McGarragh: Added SAD_LUT%table_use* arrays.
-!    23rd Jan 2014, Greg McGarragh: Cleaned up code.
+!    23rd Jan 2014, Greg McGarragh: Cleaned up the code.
 !
 ! Bugs:
 !    None known.
@@ -137,5 +133,6 @@ contains
 ! ReadLUT.F90 contains C preprocessor statements but the C preprocessor won't go
 ! into Fortran included files.
 #include "ReadLUT.F90"
+#include "DeallocSADLUT.F90"
 
 end module SAD_LUT_def

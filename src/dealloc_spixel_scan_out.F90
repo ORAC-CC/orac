@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name: dealloc_spixel_scan_out.F90
 !
 !
@@ -19,29 +20,24 @@
 !
 ! History:
 ! 2011/12/19, Matthias Jerg: creates initial file.
-! 5/1/2012, Caroline Poulsen: add in reflectances and brightness
-! 6/1/2012, Caroline Poulsen: add in cwp
-! 15/1/2012, Caroline Poulsen: added in chans definition
-! 28/1/2012, Caroline Poulsen: added in albedo
+! 2012/01/05, Caroline Poulsen: added in channel information
+! 2012/01/06, Caroline Poulsen: added in cwp
+! 2012/01/15, Caroline Poulsen: added in chan definitions
+! 2012/01/28, Caroline Poulsen: added in albedo
 ! 2012/08/21, Matthias Jerg: adds time variable
-!    temperature
 ! 2013/12/16, Greg McGarragh: Add deallocation of spixel_scan_out%ctt_error,
-!     spixel_scan_out%cth_error, and spixel_scan_out_sec%ds and a bit cleanup.
+!    spixel_scan_out%cth_error, and spixel_scan_out_sec%ds and a bit cleanup.
+! 2014/05/27, Greg McGarragh: Some cleanup.
 !
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known
+!-------------------------------------------------------------------------------
 
-!----------------------------------------------
-!----------------------------------------------
 subroutine dealloc_spixel_scan_out(spixel_scan_out)
-!----------------------------------------------
-!----------------------------------------------
 
   use ECP_Constants
-
-  use SPixel_def
 
   implicit none
 
@@ -56,42 +52,44 @@ subroutine dealloc_spixel_scan_out(spixel_scan_out)
   deallocate(spixel_scan_out%sat_zen)
   deallocate(spixel_scan_out%sol_zen)
   deallocate(spixel_scan_out%rel_azi)
-  deallocate(spixel_scan_out%cct)
-  deallocate(spixel_scan_out%cct_error)
+
   deallocate(spixel_scan_out%cot)
-  deallocate(spixel_scan_out%cot_error)
   deallocate(spixel_scan_out%ref)
-  deallocate(spixel_scan_out%ref_error)
   deallocate(spixel_scan_out%ctp)
-  deallocate(spixel_scan_out%ctp_error)
+  deallocate(spixel_scan_out%cct)
   deallocate(spixel_scan_out%stemp)
-  deallocate(spixel_scan_out%stemp_error)
+
   deallocate(spixel_scan_out%ctt)
-  deallocate(spixel_scan_out%ctt_error)
   deallocate(spixel_scan_out%cth)
-  deallocate(spixel_scan_out%cth_error)
   deallocate(spixel_scan_out%cwp)
+
+  deallocate(spixel_scan_out%cot_error)
+  deallocate(spixel_scan_out%ref_error)
+  deallocate(spixel_scan_out%ctp_error)
+  deallocate(spixel_scan_out%cct_error)
+  deallocate(spixel_scan_out%stemp_error)
+
+  deallocate(spixel_scan_out%ctt_error)
+  deallocate(spixel_scan_out%cth_error)
   deallocate(spixel_scan_out%cwp_error)
+
   deallocate(spixel_scan_out%convergence)
   deallocate(spixel_scan_out%niter)
   deallocate(spixel_scan_out%pchange)
+
   deallocate(spixel_scan_out%costja)
   deallocate(spixel_scan_out%costjm)
+
   deallocate(spixel_scan_out%lsflag)
   deallocate(spixel_scan_out%qcflag)
   deallocate(spixel_scan_out%illum)
 
 end subroutine dealloc_spixel_scan_out
 
-!----------------------------------------------
-!----------------------------------------------
+
 subroutine dealloc_spixel_scan_out_sec( spixel_scan_out_sec,lcovar)
-!----------------------------------------------
-!----------------------------------------------
 
   use ECP_Constants
-
-  use SPixel_def
 
   implicit none
 
@@ -104,24 +102,13 @@ subroutine dealloc_spixel_scan_out_sec( spixel_scan_out_sec,lcovar)
   deallocate(spixel_scan_out_sec%vidalb)
   deallocate(spixel_scan_out_sec%vidy0)
 
-  deallocate(spixel_scan_out_sec%scanline_u)
-  deallocate(spixel_scan_out_sec%scanline_v)
-
-  deallocate(spixel_scan_out_sec%cot_ap)
-  deallocate(spixel_scan_out_sec%cot_fg)
-  deallocate(spixel_scan_out_sec%ref_ap)
-  deallocate(spixel_scan_out_sec%ref_fg)
-  deallocate(spixel_scan_out_sec%ctp_ap)
-  deallocate(spixel_scan_out_sec%ctp_fg)
-
-  deallocate(spixel_scan_out_sec%stemp_fg)
-
   deallocate(spixel_scan_out_sec%res_scale)
   deallocate(spixel_scan_out_sec%res_offset)
-  deallocate(spixel_scan_out_sec%chans_scale)
-  deallocate(spixel_scan_out_sec%chans_offset)
   deallocate(spixel_scan_out_sec%res_vmin)
   deallocate(spixel_scan_out_sec%res_vmax)
+
+  deallocate(spixel_scan_out_sec%chans_scale)
+  deallocate(spixel_scan_out_sec%chans_offset)
   deallocate(spixel_scan_out_sec%chans_vmin)
   deallocate(spixel_scan_out_sec%chans_vmax)
 
@@ -135,11 +122,22 @@ subroutine dealloc_spixel_scan_out_sec( spixel_scan_out_sec,lcovar)
   deallocate(spixel_scan_out_sec%y0_scale)
   deallocate(spixel_scan_out_sec%y0_offset)
 
+  deallocate(spixel_scan_out_sec%scanline_u)
+  deallocate(spixel_scan_out_sec%scanline_v)
+
+  deallocate(spixel_scan_out_sec%cot_ap)
+  deallocate(spixel_scan_out_sec%cot_fg)
+  deallocate(spixel_scan_out_sec%ref_ap)
+  deallocate(spixel_scan_out_sec%ref_fg)
+  deallocate(spixel_scan_out_sec%ctp_ap)
+  deallocate(spixel_scan_out_sec%ctp_fg)
+
+  deallocate(spixel_scan_out_sec%stemp_fg)
+
   deallocate(spixel_scan_out_sec%residuals)
+  deallocate(spixel_scan_out_sec%channels)
   deallocate(spixel_scan_out_sec%albedo)
   deallocate(spixel_scan_out_sec%y0)
-  deallocate(spixel_scan_out_sec%channels)
-! deallocate(spixel_scan_out_sec%yn)
 
   if(lcovar) then
      deallocate(spixel_scan_out_sec%vidcovar)
@@ -151,31 +149,29 @@ subroutine dealloc_spixel_scan_out_sec( spixel_scan_out_sec,lcovar)
 end subroutine dealloc_spixel_scan_out_sec
 
 
-!----------------------------------------------
-!----------------------------------------------
 subroutine dealloc_spixel_scan_in( spixel_scan_in)
-!----------------------------------------------
-!----------------------------------------------
 
   use ECP_Constants
-
-  use SPixel_def
 
   implicit none
 
   type(spixel_scanline_input) :: spixel_scan_in
 
   deallocate(spixel_scan_in%vidinput)
+  deallocate(spixel_scan_in%viderror)
+
   deallocate(spixel_scan_in%input_scale)
   deallocate(spixel_scan_in%input_offset)
   deallocate(spixel_scan_in%input_vmin)
   deallocate(spixel_scan_in%input_vmax)
-  deallocate(spixel_scan_in%input)
-  deallocate(spixel_scan_in%viderror)
+
   deallocate(spixel_scan_in%error_scale)
   deallocate(spixel_scan_in%error_offset)
   deallocate(spixel_scan_in%error_vmin)
   deallocate(spixel_scan_in%error_vmax)
+
+  deallocate(spixel_scan_in%input)
+
   deallocate(spixel_scan_in%error)
 
 end subroutine dealloc_spixel_scan_in
