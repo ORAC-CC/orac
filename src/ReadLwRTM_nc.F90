@@ -125,6 +125,7 @@
 !    2014/01/31, MJ: removed hardcoded parts for avhrr (obsolete)
 !    2014/04/18, GM: Made reading of NetCDF input more efficient by avoiding
 !       inefficient access patterns and redundancy and cleaned up the code.
+!    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !
 ! Bugs:
 !   None known.
@@ -170,7 +171,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
    integer :: ik,ichan
    integer :: ncid
-   character(len=12) :: prod_date_prtm,prod_date_lwrtm
 !  integer(kind=nint), allocatable, dimension(:)     :: counter_lw,counter_pw, &
 !                                                       i_pw,j_pw
 !  integer(kind=nint), allocatable, dimension(:,:)   :: dummy2dint
@@ -198,15 +198,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
          call Write_Log(Ctrl, trim(message), status)
          stop
       else
-         ! Read attributes
-         ios=nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date_prtm)
-         if (ios /= 0) then
-            status = LwRTMProfDateErr
-            write(*,*) 'Read_LwRTM: Error reading profile file', status
-            call Write_Log(Ctrl, 'Read_LwRTM: Error reading profile file', status)
-            stop
-         end if
-
          if (status == 0) then
             ! Read cell indices of 1D arrays
 !           allocate(counter_pw(RTM%LW%Grid%NLatLon))
@@ -321,17 +312,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
                call Write_Log(Ctrl, &
                     & 'Read_LwRTM: RTM file; header instrument disagrees with filename',&
                     & status)
-               stop
-            end if
-         end if
-
-         if (status == 0) then
-            ! Read product date and time from netcdf global attributes
-            ios=nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date_lwrtm)
-            if (ios /= 0) then
-               status = LwRTMRTMDateErr ! Return error code
-               write(*,*) 'Read_LwRTM: error reading date', status
-               call Write_Log(Ctrl, 'Read_LwRTM: error reading date', status)
                stop
             end if
          end if

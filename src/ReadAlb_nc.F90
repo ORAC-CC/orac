@@ -68,6 +68,7 @@
 !       ysolar as ysolar halds the channel indices as they are stored in the
 !       preprocessing file.
 !    2014/04/20, GM: Cleaned up the code.
+!    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !
 ! Bugs:
 !    None known.
@@ -101,13 +102,12 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    character(180) :: message ! Error message to pass to Write_Log
 
    ! NetCDF related
-   integer            :: i
-   integer            :: ncid
-   character(len=12)  :: prod_date
+   integer        :: i
+   integer        :: ncid
    integer(kind=nint), allocatable, dimension(:) :: alb_instr_ch_numbers
 
-   !  On first call, the file is opened. It is then left open for all subsequent
-   !  calls.
+   ! On first call, the file is opened. It is then left open for all subsequent
+   ! calls.
 
    status = 0
 
@@ -130,8 +130,6 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
          "alb_abs_ch_numbers",alb_instr_ch_numbers,0)
 
       ! Loop over channels and read if desired channel number is hit
-      ios = nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date)
-
       do i=1,Ctrl%Ind%NSolar
          write(*,*) 'Ctrl%Ind%ysolar(i): ',Ctrl%Ind%ysolar(i)
          call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,&
@@ -140,7 +138,6 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
       enddo
 
       deallocate(alb_instr_ch_numbers)
-
      end if
 
      ! Close alb input file

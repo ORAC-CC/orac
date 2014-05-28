@@ -105,6 +105,7 @@
 !    2013/01/01, MJ: Irones out some bugs wrt old binary file implementation.
 !    2014/04/18, GM: Made reading of NetCDF input more efficient by avoiding
 !       inefficient access patterns and redundancy and cleaned up the code.
+!    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !
 ! Bugs:
 !    None known.
@@ -150,7 +151,6 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 
    integer :: ik,ichan
    integer :: ncid
-   character(len=12) :: prod_date_swrtm
 
    real(kind=sreal), allocatable, dimension(:,:)   :: dummy1p1
    real(kind=sreal), allocatable, dimension(:,:,:) :: dummy1p2
@@ -196,18 +196,6 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
                call Write_Log(Ctrl, &
                     & 'Read_SwRTM: RTM file; header instrument disagrees with filename',&
                     & status)
-               stop
-            end if
-         end if
-
-         if (status == 0) then
-            !Read product date and time from netcdf global attributes
-            ios=nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date_swrtm)
-            if (ios /= 0) then
-               status = SwRTMRTMDateErr ! Return error code
-               write(*,*) 'Read_SwRTM: error reading date'
-               call Write_Log(Ctrl, 'Read_SwRTM: error reading date', &
-                    status)
                stop
             end if
          end if
