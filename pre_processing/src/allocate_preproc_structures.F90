@@ -51,6 +51,7 @@
 ! 2014/02/10, AP: simplifying variable names
 ! 2014/05/01, GM: Add some allocations that were being done outside.
 ! 2014/05/01, GM: Cleaned up the code.
+! 2014/05/28, MJ: Fixed bug with intent statement for preproc_dims
 !
 ! $Id$
 !
@@ -66,12 +67,12 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    use ecmwf_structures
    use imager_structures
    use preproc_constants
-!  use preproc_structures
+  !use preproc_structures
 
    implicit none
 
    type(imager_angles_s),  intent(in)  :: imager_angles
-   type(preproc_dims_s),   intent(out) :: preproc_dims
+   type(preproc_dims_s),   intent(inout) :: preproc_dims
    type(preproc_geoloc_s), intent(out) :: preproc_geoloc
    type(preproc_geo_s),    intent(out) :: preproc_geo
    type(preproc_prtm_s),   intent(out) :: preproc_prtm
@@ -97,6 +98,7 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    allocate(preproc_dims%coef_channel_lw(preproc_dims%maxchannels_lw))
    preproc_dims%coef_channel_lw=-1
 
+   write(*,*) 'preproc_dims',preproc_dims%xdim,preproc_dims%ydim
    allocate(preproc_dims%counter_sw(preproc_dims%xdim,preproc_dims%ydim))
    preproc_dims%counter_sw=0
    allocate(preproc_dims%counter_lw(preproc_dims%xdim,preproc_dims%ydim))
