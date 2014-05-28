@@ -31,9 +31,6 @@
 !       Pass GZero and SAD_LUT info to the appropriate interpolation routine
 !          (depending on the array dimensions) and interpolate the Solar
 !          channels.
-!       Note in the case of Td the SAD_LUT arrays are only interpolated for
-!          channels that are entirely solar (i.e. no thermal component). Em is
-!          not interpolated here.
 !
 ! Local variables:
 !    Name Type Description
@@ -168,9 +165,9 @@ subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    ! calls are independnent so that contents of CRP and d_CRP do not need to be
    ! passed from the thermal call to the solar call.
 
-   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%ThermalFirst,:,:,:), &
-           SAD_LUT%Grid, GZero,Ctrl, CRPOut(Ind%SolarFirst:Ind%ThermalFirst,ITd), &
-           dCRPOut(Ind%SolarFirst:Ind%ThermalFirst,ITd,:),ITd,0,0,status)
+   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+           SAD_LUT%Grid, GZero,Ctrl, CRPOut(Ind%SolarFirst:Ind%SolarLast,ITd), &
+           dCRPOut(Ind%SolarFirst:Ind%SolarLast,ITd,:),ITd,0,0,status)
 
    ! RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
    call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd(Ind%SolarFirst:Ind%SolarLast,:,:,:,:,:), &
