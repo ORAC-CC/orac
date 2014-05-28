@@ -121,6 +121,11 @@
 !      be unnecessary.
 !   20140119, GM: Cleaned up code.
 !   20140522, GM: Use allocate and deallocate subroutines for GZero.
+!   20140528, GM: The sharing of CRP results for mixed channels from FMThermal
+!      with FMSolar was causing problems that were hard to debug and gained
+!      little in performance.  Now the Solar and Thermal forward model calls are
+!      independnent so that contents of CRP and d_CRP do not need to be passed
+!      from the thermal call to the solar call.
 !
 ! Bugs:
 !   None known.
@@ -205,6 +210,11 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    !
    ! Note: For channels that are both thermal and solar the transmittances are
    ! taken from the interpolated thermal RTM values.
+   !
+   ! 2014/05/28, GM: This was causing problems that were hard to debug and
+   ! gained little in performance.  Now the Solar and Thermal forward model
+   ! calls are independnent so that contents of CRP and d_CRP do not need to be
+   ! passed from the thermal call to the solar call.
 
    ! Assign long wave transmittances to the combined Tac and Tbc vectors.
 
@@ -214,9 +224,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    ! (hence SPixel%Ind%ThermalFirst may not equal Ctrl%Ind%ThermalFirst). The
    ! problem does not occur with solar channels as we always use either all
    ! requested solar channels or none at all.
-
-   CRP   = 0.0
-   d_CRP = 0.0
 
    if (status == 0) then
       ! These next two lines exclude the mixed channel during twilight conditions
@@ -236,6 +243,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
          RTM_Pc%LW%dTbc_dPc(ThF:ThL)
 
       ! Call thermal forward model (required for day, twilight and night)
+      CRP   = 0.0
+      d_CRP = 0.0
+
       call FM_Thermal(Ctrl, SAD_LUT, SPixel, &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
               RTM_Pc, X, GZero, CRP, d_CRP, BT, d_BT, Rad, d_Rad, status)
@@ -265,6 +275,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
          ! Call short wave forward model. Note that solar channels only are
          ! passed (including mixed channels).
+         CRP   = 0.0
+         d_CRP = 0.0
+
          Ref   = 0.0
          d_Ref = 0.0
 

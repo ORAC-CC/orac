@@ -84,10 +84,6 @@
 !       Cleaned up code.
 !    24th Dec 2014, Greg McGarragh:
 !       Some intent changes.
-!    22nd May 2014, Greg McGarragh:
-!       Changed leading dimension of CRP and d_CRP from SPixel%Ind%NThermal to
-!       SPixel%Ind%Ny to match a corresponding change in FM_Solar() since these
-!       routines share these arrays.
 !
 ! Bugs:
 !   None known.
@@ -118,8 +114,8 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
     type(RTM_Pc_t),   intent(inout) :: RTM_Pc
     real,             intent(in)    :: X(MaxStateVar)
     type(GZero_t),    intent(in)    :: GZero
-    real,             intent(inout) :: CRP(SPixel%Ind%Ny, MaxCRProps)
-    real,             intent(inout) :: d_CRP(SPixel%Ind%Ny, MaxCRProps, 2)
+    real,             intent(inout) :: CRP(SPixel%Ind%Nthermal, MaxCRProps)
+    real,             intent(inout) :: d_CRP(SPixel%Ind%Nthermal, MaxCRProps, 2)
     real,             intent(out)   :: BT(SPixel%Ind%Nthermal)
     real,             intent(out)   :: d_BT(SPixel%Ind%Nthermal, MaxStateVar)
     real,             intent(out)   :: R(SPixel%Ind%Nthermal)

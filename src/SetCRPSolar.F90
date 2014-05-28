@@ -88,6 +88,8 @@
 !       Cleaned up code.
 !    24th Dec 2014, Greg McGarragh:
 !       Some intent changes.
+!    28th May 2014, Greg McGarragh:
+!       Do not assume that Set_CRP_Solar() took care of the mixed channels.
 !
 ! Bugs:
 !    None known.
@@ -160,9 +162,15 @@ subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    ! Td is interpolated in Tau, SatZen and Re Only process the channels that are
    ! exclusively solar. Channels with a thermal component are interpolated by
    ! SetCRPThermal.
-   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%ThermalFirst-1,:,:,:), &
-           SAD_LUT%Grid, GZero,Ctrl, CRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd), &
-           dCRPOut(Ind%SolarFirst:Ind%ThermalFirst-1,ITd,:),ITd,0,0,status)
+   !
+   ! 2014/05/28, GM: This was causing problems that were hard to debug and
+   ! gained little in performance.  Now the Solar and Thermal forward model
+   ! calls are independnent so that contents of CRP and d_CRP do not need to be
+   ! passed from the thermal call to the solar call.
+
+   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%ThermalFirst,:,:,:), &
+           SAD_LUT%Grid, GZero,Ctrl, CRPOut(Ind%SolarFirst:Ind%ThermalFirst,ITd), &
+           dCRPOut(Ind%SolarFirst:Ind%ThermalFirst,ITd,:),ITd,0,0,status)
 
    ! RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
    call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd(Ind%SolarFirst:Ind%SolarLast,:,:,:,:,:), &
