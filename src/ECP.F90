@@ -173,6 +173,7 @@
 !       loop initialised.  Finally status_line was not needed. Status is private
 !       within the loop.
 !  2014/02/10 Matthias Jerg: Put the correct boundaries lat/lon for adaptive processing back in.
+! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated variables
 !
 ! Bugs:
 !    None known
@@ -181,7 +182,11 @@
 !
 !-------------------------------------------------------------------------------
 
+#ifndef WRAPPER
 program ECP
+#else
+subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
+#endif
 
    ! Modules used by this program.
 
@@ -305,6 +310,9 @@ program ECP
    real(kind=sreal)   :: range_lat(2),range_lon(2)
 #endif
 
+   !this is for the wrapper
+   integer :: mytask,ntasks,lower_bound,upper_bound
+
    !include "sigtrap.F90"
 
 #ifdef USE_TIMING
@@ -331,16 +339,21 @@ program ECP
    ! Look if path to driver file was given on the command line. If yes, then
    ! read it, if not leave it to the Read_Driver routine to deal with it
 
-   drifile=''
-
+#ifndef WRAPPER
    nargs=command_argument_count()
+#else
+   nargs=-1
+#endif
+
+   write(*,*) 'inside preproc',nargs
 
    if (nargs .eq. 1 ) then
+      drifile=''
       call get_command_argument(1,drifile)
    endif
 
    ! Read Ctrl struct from driver file
-   call Read_Driver(Ctrl, conf,message, drifile,status)
+   call Read_Driver(Ctrl, conf,message,nargs, drifile,status)
 
    ! Read dimensions of preprocessing swath files first:
    call read_input_dimensions_msi(Ctrl%Fid%MSI,Ctrl%FID%Geo, &
@@ -538,9 +551,11 @@ program ECP
 
       ! Open the netcdf output files
       if (status == 0) then
-         call nc_create_global_l2(Ctrl,trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file)),&
+         write(*,*) 'path1',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
+         call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_primary_outputpath_and_file),&
                  ncid_primary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,1,status)
-         call nc_create_global_l2(Ctrl,trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file)),&
+         write(*,*) 'path2',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
+         call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_secondary_outputpath_and_file),&
                  ncid_secondary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,2, status)
 
          ! Allocate output arrays
@@ -589,7 +604,8 @@ program ECP
 
       ! Along track loop is parallelized with openMP
 
-      nthreads = omp_get_num_threads()
+      !MJ did not work on CRAY      nthreads = omp_get_num_threads()
+      nthreads =omp_get_max_threads()
       write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
 
       ! Start OMP section by spawning the threads
@@ -891,4 +907,8 @@ program ECP
    write(*,115) cpu_secs
 #endif
 
+#ifdef WRAPPER
+end subroutine ECP
+#else
 end program ECP
+#endif

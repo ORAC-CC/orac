@@ -65,6 +65,7 @@
 !    2014/01/16, GM: Cleaned up code.
 !    2014/01/31, MJ: Adds code for default surface reflection for avhrr
 !                    (=modis for the time being)
+! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated variables
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -79,7 +80,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Driver(Ctrl, conf, message, drifile, status)
+subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
@@ -105,7 +106,7 @@ subroutine Read_Driver(Ctrl, conf, message, drifile, status)
    logical                         :: file_exists, found
    real, allocatable, dimension(:) :: solar_store_sea,solar_store_land
    real, allocatable, dimension(:) :: ref_solar_sea,ref_solar_land
-
+   integer :: nargs
 
    status = 0
 
@@ -120,7 +121,7 @@ subroutine Read_Driver(Ctrl, conf, message, drifile, status)
    endif
 
    ! If drifile is not '-' the check that the drifile exists
-   if (drifile .ne. '-') then
+   if (drifile .ne. '-' .or. nargs .eq. -1 ) then
       inquire(file=drifile, exist=file_exists)
       if (.not. file_exists) then
          status = DriverFileNotFound

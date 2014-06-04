@@ -191,9 +191,15 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-include $(ORAC_ARCH)
-include $(ORAC_LIB)
+#include $(ORAC_ARCH)
+#include $(ORAC_LIB)
 
+# ral/ox files are above, this is for dwd/ecmwf:
+archfile=arch.ecmwf.cray
+libfile=lib.ecmwf.cray
+
+include $(archfile)
+#include $(libfile)
 
 # Define object files to be linked. N.B. files containing module definitions
 # should be listed before main program units and subroutines that use those
@@ -315,6 +321,9 @@ all: orac
 # Main program build
 orac: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
 	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECP.o $(LIBS) -I./$(OBJS)
+
+orac.lib: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
+	ar -vr liborac.a $(OBJS)/*.o	
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
