@@ -22,8 +22,14 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-include $(ORAC_ARCH)
-include $(ORAC_LIB)
+#include $(ORAC_ARCH)
+#include $(ORAC_LIB)
+
+archfile=arch.ecmwf.cray
+libfile=lib.ecmwf.cray
+include $(archfile)
+include $(libfile)
+
 
 
 # Define object files to be linked. N.B. files containing module definitions
@@ -95,6 +101,7 @@ $(OBJS)/%.o: %.f90
 
 $(OBJS)/%.o: %.F90
 	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
+#	$(F90)  $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.c
 	$(CC) -o $@ -c $(CFLAGS) $(CINC) $<
@@ -107,6 +114,9 @@ $(OBJS)/%.o: %.c
 # Main program build
 orac_preproc.x: $(PREPROC_OBJ) Makefile
 	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ) $(LIBS) -I./$(OBJS)
+
+orac_preproc.lib: $(PREPROC_OBJ) Makefile
+	ar -vr libpre.a $(OBJS)/*.o
 
 # Rebuild dependencies housed in dependencies.inc
 depend:

@@ -188,7 +188,8 @@
 ! 2014/04/21: GM Added logical option assume_full_path.
 ! 2014/05/01: GM Cleaned up the code.
 ! 2014/05/01: GM Move some allocations/deallocations to the proper subroutine.
-!
+! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated variables
+
 ! $Id$
 !
 ! Bugs:
@@ -196,7 +197,11 @@
 !
 !-------------------------------------------------------------------------------
 
+#ifndef WRAPPER
 program preprocessing
+#else
+subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_file)
+#endif
 
    use attribute_structures
    use channel_structures
@@ -318,10 +323,20 @@ program preprocessing
 
 !  integer, dimension(8)           :: values
 
+   !this is for the wrapper	   
+   integer :: mytask,ntasks,lower_bound,upper_bound
+
 !  include "sigtrap.F90"
 
    ! get number of arguments
-   nargs = COMMAND_ARGUMENT_COUNT()
+#ifndef WRAPPER
+   nargs = COMMAND_ARGUMENT_COUNT()  
+#else
+   nargs=-1
+#endif
+
+   write(*,*) 'inside preproc',nargs
+
    ! if more than one argument passed, all inputs on command line
    if(nargs .gt. 1) then
       CALL GET_COMMAND_ARGUMENT(1,sensor)
@@ -368,8 +383,13 @@ program preprocessing
       CALL GET_COMMAND_ARGUMENT(42,cuse_chunking)
       CALL GET_COMMAND_ARGUMENT(43,cassume_full_paths)
    else
+      if(nargs .eq. 1) then
       ! if just one argument => this is driver file which contains everything
-      call get_command_argument(1,driver_path_and_file)
+         call get_command_argument(1,driver_path_and_file)
+      elseif(nargs .eq. -1) then
+         write(*,*) 'inside preproc ',trim(adjustl(driver_path_and_file))
+      endif
+
       open(11,file=trim(adjustl(driver_path_and_file)),status='old', &
            form='formatted')
 
@@ -459,9 +479,9 @@ program preprocessing
 
    ! determine platform, day, time, check if l1b and geo match
    inquire(file=path_to_l1b_file,exist=check)
-   if (.not. check) stop 'L1B file does not exist.'
+   if (.not. check) stop 'FAILED: L1B file does not exist.'
    inquire(file=path_to_geo_file,exist=check)
-   if (.not. check) stop 'Geo file does not exist.'
+   if (.not. check) stop 'FAILED: Geo file does not exist.'
    if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
            month,day,hour,minute, cyear,cmonth,cday,chour,cminute,channel_info)
@@ -748,8 +768,11 @@ program preprocessing
    ! deallocate the array parts of the structures
    call deallocate_channel_info(channel_info)
 
+#ifdef WRAPPER
+end subroutine preprocessing
+#else
 end program preprocessing
-
+#endif
 
 
 function parse_logical(string) result(value)
