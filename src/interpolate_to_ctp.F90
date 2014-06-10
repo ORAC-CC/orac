@@ -20,6 +20,7 @@
 !based on interpolation of brightness temperature.
 ! 20140123 CP puts in a condition to check minimum inversion level as false inversions over cold surfaces were causing mon_k values of 0 which subsequently crashed the program
 !20140127 MJ changes how minimum from above is implemented and catches division by zero if temperature is constant and some cleanup.
+!20140610 MJ catches another div. by zero.
 !
 ! $Id$
 !
@@ -132,9 +133,15 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
      upper_index=kspot+1
      lower_index=kspot
 
+     !write(*,*) 'indices',upper_index,lower_index
      !call the polynomial interpolation (so far linear), return interpolated ctp and uncertainty estimate delctp
-     call polint(invert_t(lower_index:upper_index),invert_p(lower_index:upper_index),&
-          & upper_index-lower_index+1,BT_o,BP_o,DBP_o)
+     if(invert_t(upper_index)-invert_t(lower_index) .gt. ditherm3) then
+        call polint(invert_t(lower_index:upper_index),invert_p(lower_index:upper_index),&
+             & upper_index-lower_index+1,BT_o,BP_o,DBP_o)
+     else
+        BP_o=invert_p(upper_index)
+        DBP_o=MDADErrPc
+     endif
 
   endif
 
