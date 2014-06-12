@@ -22,14 +22,8 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-#include $(ORAC_ARCH)
-#include $(ORAC_LIB)
-
-archfile=arch.ecmwf.cray
-libfile=lib.ecmwf.cray
-include $(archfile)
-include $(libfile)
-
+include $(ORAC_ARCH)
+include $(ORAC_LIB)
 
 
 # Define object files to be linked. N.B. files containing module definitions
