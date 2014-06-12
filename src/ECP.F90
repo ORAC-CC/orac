@@ -196,6 +196,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use Diag_def
    use ECP_Constants
    use input_structures
+   use omp_lib
    use Read_SAD_def
    use RTM_def
    use RTM_Pc_def
@@ -285,10 +286,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                        minvalue=100000.0,maxvalue=-100000.0
 
    ! OpenMP related variables
-!  integer           :: stat_omp
-   integer           :: nthreads,thread_id
-   integer           :: omp_get_num_threads,omp_get_thread_num
-!  character(len=15) :: comp_nthreads
+   integer :: nthreads,thread_id
 
    ! Some more variables for OpenMP implementation
    integer, allocatable, dimension(:) :: totpix_line,totmissed_line,totconv_line, &
@@ -310,7 +308,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    real(kind=sreal)   :: range_lat(2),range_lon(2)
 #endif
 
-   !this is for the wrapper
+   ! This is for the wrapper
    integer :: mytask,ntasks,lower_bound,upper_bound
 
    !include "sigtrap.F90"
@@ -603,9 +601,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
       ! Along track loop is parallelized with openMP
-
-      !MJ did not work on CRAY      nthreads = omp_get_num_threads()
-      nthreads =omp_get_max_threads()
+      nthreads = omp_get_max_threads()
       write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
 
       ! Start OMP section by spawning the threads
