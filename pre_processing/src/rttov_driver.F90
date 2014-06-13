@@ -78,8 +78,14 @@
 ! 2013/12/11, GM: Significant code clean up.
 ! 2014/01/15, GM: Removed some unnecessary RTTOV error handling calls.
 ! 2014/02/04, MJ: implements if to set verbosity of RTTOV based on "verbose"
-!                  variable
+!                 variable
 ! 2014/02/10, AP: variable renaming
+! 2014/06/13, GM: Mass-path removal from solar wavelength RTTOV calculated
+!                 transmittances should should not include the solar beam path
+!                 as the RTTOV calculated transmittances are only from a
+!                 particular level to TOA in the satellite viewing path.
+!                 As such, the sza input to effective_2way_za() has been set to
+!                 zero.
 !
 ! $Id$
 !
@@ -866,7 +872,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                         write(*,*) 'errorstatus rttov_direct: ', errorstatus
                      endif
 
-                     sza=profiles(1)%sunzenangle
+                     sza=0.
+!                    sza=profiles(1)%sunzenangle
                      lza=profiles(1)%zenangle
 
                      ! Get airmass factor
