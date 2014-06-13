@@ -237,6 +237,7 @@ ORAC_OBJ =        $(OBJS)/BITS.o \
                   $(OBJS)/InvertCholeskyDC.o \
 	          $(OBJS)/InvertMarquardt.o \
 	          $(OBJS)/locate.o \
+                  $(OBJS)/output_routines.o \
                   $(OBJS)/nc_close.o \
                   $(OBJS)/nc_create_global.o \
 	          $(OBJS)/nc_defdata.o \
@@ -317,7 +318,7 @@ orac: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
 	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECP.o $(LIBS) -I./$(OBJS)
 
 orac.lib: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
-	ar -vr liborac.a $(OBJS)/*.o	
+	ar -vr liborac.a $(OBJS)/*.o
 
 # Rebuild dependencies housed in dependencies.inc
 depend:

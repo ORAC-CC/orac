@@ -172,8 +172,14 @@
 !       should just be 'private', i.e. they do not need to enter the parallel
 !       loop initialised.  Finally status_line was not needed. Status is private
 !       within the loop.
-!  2014/02/10 Matthias Jerg: Put the correct boundaries lat/lon for adaptive processing back in.
-! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated variables
+!    2014/02/10, Matthias Jerg: Put the correct boundaries lat/lon for adaptive
+!       processing back in.
+!    2014/06/04, Matthias Jerg: Introduced "WRAPPER" for c-preprocessor and
+!       associated variables.
+!    2014/06/12, Greg McGarragh: OpenMP functions should be declared by the
+!       omp_lib module, not explicitly.
+!    2014/06/13, Greg McGarragh: Put NetCDF output related includes into
+!       subroutines.
 !
 ! Bugs:
 !    None known
@@ -197,6 +203,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use ECP_Constants
    use input_structures
    use omp_lib
+   use output_routines
    use Read_SAD_def
    use RTM_def
    use RTM_Pc_def
@@ -220,7 +227,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(SAD_LUT_t)     :: SAD_LUT
    type(SPixel_t)      :: SPixel
 
-   integer             :: i, ii, j, jj, m
+   integer             :: i, j, jj, m
    integer             :: ios        ! I/O status value from file operations
    integer             :: status = 0 ! Status value returned from subroutines
    integer             :: nargs
@@ -264,7 +271,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                                   ! has been called and ran successfully.
 
    ! netcdf related variables:
-   INTEGER :: ncid_primary,ncid_secondary,dims_var(2), wo = 0
+   integer :: ncid_primary,ncid_secondary,dims_var(2), wo = 0
 
    ! Write full covariance matrix to secondary output file, so far hardwired
    logical :: lcovar = .FALSE.
@@ -275,15 +282,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(spixel_scanline_secondary_output) :: spixel_scan_out_sec
 
    ! Some netcdf related indices and labels
-   integer            :: ierr
-   integer            :: iviews,iinput
-   integer            :: js,is
-   character(len=20)  :: input_num,input_num1,input_num2
-   character(len=500) :: input_dummy,s_input_dummy
+   integer :: ierr
+   integer :: iviews,iinput
 
    ! Variables to avoid out of bounds contents
-   real(kind=sreal) :: dummyreal, dummyreal_store, &
-                       minvalue=100000.0,maxvalue=-100000.0
+   real(kind=sreal) :: dummyreal
 
    ! OpenMP related variables
    integer :: nthreads,thread_id
@@ -562,9 +565,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          call alloc_spixel_scan_out_sec(ixstart,ixstop,iystart,iystop,Ctrl%Ind%Ny, &
                  MaxStateVar,lcovar,spixel_scan_out_sec)
 
-         ! Include definition of variables files
-         include "def_vars_primary.inc"
-         include "def_vars_secondary.inc"
+         ! Create NetCDF files and variables
+         call def_vars_primary(Ctrl, ncid_primary, dims_var, spixel_scan_out, &
+                               status)
+         call def_vars_secondary(Ctrl, conf, lcovar, ncid_secondary, dims_var, &
+                                 spixel_scan_in, spixel_scan_out_sec, status)
       endif
 
 
@@ -741,9 +746,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                   conv=0
                end if
 
-               ! Include variable preparation files
-               include "prepare_primary.inc"
-               include "prepare_secondary.inc"
+               ! Copy output to spixel_scan_out structures
+               call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
+                                    Diag, spixel_scan_out, status)
+               call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
+                                      spixel_scan_out, spixel_scan_out_sec, status)
 
             end if ! End of status check after Get_SPixel
 
@@ -779,9 +786,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       status = 0
 
       if (status == 0) then
-         ! Include netcdf write files
-         include "write_primary.inc"
-         include "write_secondary.inc"
+         ! Write output from spixel_scan_out structures NetCDF files
+         call write_primary(Ctrl, ncid_primary, ixstart, ixstop, iystart, iystop, &
+                            spixel_scan_out, status)
+         call write_secondary(Ctrl, lcovar, SPixel, ncid_secondary, ixstart, ixstop, &
+                              iystart, iystop, spixel_scan_out_sec, status)
       endif
 
 

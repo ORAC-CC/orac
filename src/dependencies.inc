@@ -46,11 +46,16 @@ $(OBJS)/IntRoutines.o: $(OBJS)/ECPConstants.o Bcucof.F90 Bcuint.F90 Linint.F90 \
         Locate.F90 Spline.F90 Tridag.F90
 $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
         $(OBJS)/SADLUT.o IntLUTTauRe.F90 IntLUTTauSatRe.F90 \
-        IntLUTTauSatSolAziRe.F90 IntLUTTauSolRe.F90 Interp3dLUT.F90
+        IntLUTTauSatReOnSol.F90 IntLUTTauSatSolAziRe.F90 IntLUTTauSolRe.F90 \
+        Interp3dLUT.F90
 $(OBJS)/InvertMarquardt.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
         $(OBJS)/FMRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o \
         $(OBJS)/SPixel.o
 $(OBJS)/locate.o: $(OBJS)/ECPConstants.o
+$(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
+        $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o $(OBJS)/config_structure.o \
+        def_vars_primary.F90 def_vars_secondary.F90 prepare_primary.F90 \
+        prepare_secondary.F90 write_primary.F90 write_secondary.F90
 $(OBJS)/nc_create_global.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
 $(OBJS)/nc_defdata.o: $(OBJS)/ECPConstants.o
 $(OBJS)/nc_dim_info.o: $(OBJS)/ECPConstants.o
@@ -120,5 +125,4 @@ $(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/RTM.o $(OBJS)/RTM_Pc.o $(OBJS)/ReadSAD.o \
         $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o \
         $(OBJS)/config_structure.o $(OBJS)/input_structures.o \
-        def_vars_primary.inc def_vars_secondary.inc prepare_primary.inc \
-        prepare_secondary.inc write_primary.inc write_secondary.inc
+        $(OBJS)/output_routines.o
