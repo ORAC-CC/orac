@@ -180,6 +180,8 @@
 !       omp_lib module, not explicitly.
 !    2014/06/13, Greg McGarragh: Put NetCDF output related includes into
 !       subroutines.
+!    2014/06/15, Greg McGarragh: Set CTH and CTT values to missing in the case
+!       when a retrieval is not possible.
 !
 ! Bugs:
 !    None known
@@ -552,10 +554,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
       ! Open the netcdf output files
       if (status == 0) then
-         write(*,*) 'path1',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
+         write(*,*) 'path1: ',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
          call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_primary_outputpath_and_file),&
                  ncid_primary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,1,status)
-         write(*,*) 'path2',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
+         write(*,*) 'path2: ',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
          call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_secondary_outputpath_and_file),&
                  ncid_secondary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,2, status)
 
@@ -681,7 +683,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
             ! Set up the super-pixel data values.
             if (status == 0) then
-               call Get_SPixel(Ctrl, conf,SAD_Chan, MSI_Data, RTM, SPixel, status)
+               call Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             endif
 
             if (status == 0) then
@@ -695,6 +697,14 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
                   Spixel%Xn = MissingXn
                   Spixel%Sn = MissingSn
+
+                  ! These are not filled as they are FM related products but
+                  ! they are actually output so we fill them here for lack of
+                  ! better place.
+                  RTM_Pc%Hc      = MissingXn
+                  RTM_Pc%dHc_dPc = MissingXn
+                  RTM_Pc%Tc      = MissingXn
+                  RTM_Pc%dTc_dPc = MissingXn
 
                   call Zero_Diag(Ctrl, Diag, status)
                else
@@ -737,7 +747,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                end if ! btest if closes
 
                ! Calculate the Cloud water path CWP
-               call Calc_CWP(Ctrl,SPixel, status)
+               call Calc_CWP(Ctrl, SPixel, status)
 
                ! Write the outputs
 
