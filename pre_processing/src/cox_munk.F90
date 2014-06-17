@@ -50,8 +50,12 @@
 !                            assumes that forward scatter equates to azi=0,
 !                            while the Cox and Munk expressions treat
 !                            backscatter as azi=0.
-!20131030 MJ corrects datatypes for variable initilizations and implements quick fix to avoid div by 0
-!20140128 MJ fixes div by zero
+! 30 Oct 2013 Matthias Jerg  Corrects datatypes for variable initilizations and
+!                            implements quick fix to avoid div by 0
+! 28 Oct 2014 Matthias Jerg  Fixes div by zero
+! 17 Jun 2014 Greg McGarragh Fixed a subtle indexing bug that would only show up
+!                            if the 0.65um channel was *not* being used.
+!
 !
 ! $Id$
 !
@@ -288,7 +292,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
      ! Now calculate the water body reflectance, which is the coefficient 
      ! of R * the backscatter, devided by the absorption (note if CDOM is
      ! included, it will appear on the bottom line of this equation)
-     R_wb = f*totbsc(bands(i)) / (baseabs(bands(i)) + chlabs(i))
+     R_wb = f*totbsc(bands(i)) / (baseabs(bands(i)) + chlabs(bands(i)))
      ! Now we need to use the Fresnel equation and Snell's Law to calculate
      ! how much light actually enters the water body through the surface (t_d)
      ! Upward transmission and reflectance can be taken as constant at
