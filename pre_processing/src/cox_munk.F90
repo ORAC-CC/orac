@@ -52,7 +52,7 @@
 !                            backscatter as azi=0.
 ! 30 Oct 2013 Matthias Jerg  Corrects datatypes for variable initilizations and
 !                            implements quick fix to avoid div by 0
-! 28 Oct 2014 Matthias Jerg  Fixes div by zero
+! 28 Jan 2014 Matthias Jerg  Fixes div by zero
 ! 17 Jun 2014 Greg McGarragh Fixed a subtle indexing bug that would only show up
 !                            if the 0.65um channel was *not* being used.
 !
