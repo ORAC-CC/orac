@@ -67,19 +67,18 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    use ecmwf_structures
    use imager_structures
    use preproc_constants
-  !use preproc_structures
 
    implicit none
 
-   type(imager_angles_s),  intent(in)  :: imager_angles
+   type(imager_angles_s),  intent(in)    :: imager_angles
    type(preproc_dims_s),   intent(inout) :: preproc_dims
-   type(preproc_geoloc_s), intent(out) :: preproc_geoloc
-   type(preproc_geo_s),    intent(out) :: preproc_geo
-   type(preproc_prtm_s),   intent(out) :: preproc_prtm
-   type(preproc_lwrtm_s),  intent(out) :: preproc_lwrtm
-   type(preproc_swrtm_s),  intent(out) :: preproc_swrtm
-   type(preproc_surf_s),   intent(out) :: preproc_surf
-   type(channel_info_s),   intent(out) :: channel_info
+   type(preproc_geoloc_s), intent(out)   :: preproc_geoloc
+   type(preproc_geo_s),    intent(out)   :: preproc_geo
+   type(preproc_prtm_s),   intent(out)   :: preproc_prtm
+   type(preproc_lwrtm_s),  intent(out)   :: preproc_lwrtm
+   type(preproc_swrtm_s),  intent(out)   :: preproc_swrtm
+   type(preproc_surf_s),   intent(out)   :: preproc_surf
+   type(channel_info_s),   intent(inout) :: channel_info
 
    integer :: nchan_sw,nchan_lw
 
