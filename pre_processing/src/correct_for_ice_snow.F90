@@ -73,7 +73,9 @@ contains
 ! 2013/10/02: CP added fmonth so correct ice snow emissivity files are read 
 !                in 2009/2010
 ! 2014/04/21: GM Added logical option assume_full_path.
-! 2014/05/26: MJ added "FAILED" to error output.
+! 2014/05/26: MJ Added "FAILED" to error output.
+! 2014/06/20: GM Handle case when imager_geolocation%latitude or
+!                imager_geolocation%longitude is equal to fill_value.
 !
 ! $Id$
 !
@@ -165,13 +167,17 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
 
   do i=imager_geolocation%startx,imager_geolocation%endx
      do j=1,imager_geolocation%ny
+
+        if (imager_geolocation%latitude (i,j) .eq. real_fill_value .or. &
+            imager_geolocation%longitude(i,j) .eq. real_fill_value) &
+           cycle
+
         ! Northern and Southern hemispheres are handled separately:
         ! - NISE data provides them as separate gridded products
         ! - Sea ice is handled differently for the North and South
         if (imager_geolocation%latitude(i,j) .gt. 0) then
            ! The NSIDC provide simple arithmetic functions for converting
            ! lat-lon points into the EASE-Grid used by NISE
-
 
            easex = 2.0 * nise%north%REarth / nise%north%res *              &
                 cos(d2r*(imager_geolocation%longitude(i,j)-90.0)) *        &
@@ -181,6 +187,10 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
                 sin(d2r*(imager_geolocation%longitude(i,j)+90.0)) *        &
                 sin(pi/4.0 - d2r*imager_geolocation%latitude(i,j) / 2.0) + &
                 nise%north%ny/2 + 1.0
+
+           if (easex .lt. 1)  write(*,*)'northern easex lt 1'
+           if (easey .lt. 1)  write(*,*)'northern easey lt 1'
+
            ! Create integer indexes of the pixel "below" and "left" of this
            ! fractional index.
            xi = floor(easex)
@@ -241,7 +251,6 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
 
         else ! Repeat for the Southern Hemisphere
 
-  
            easex = 2.0 * nise%south%REarth / nise%south%res *              &
                 cos(d2r*(imager_geolocation%longitude(i,j)-90.0)) *        &
                 sin(pi/4.0 + d2r*imager_geolocation%latitude(i,j) / 2.0) + &
@@ -251,8 +260,9 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
                 sin(pi/4.0 + d2r*imager_geolocation%latitude(i,j) / 2.0) + &
                 nise%south%ny/2 + 1.0
 
-           if (easex .lt. 1)  write(*,*)' easex lt 1' 
-              if (easey .lt. 1)  write(*,*)' easey lt 1' 
+           if (easex .lt. 1)  write(*,*)'southern easex lt 1'
+           if (easey .lt. 1)  write(*,*)'southern easey lt 1'
+
            ! Create integer indexes of the pixel "below" and "left" of this
            ! fractional index.
            xi = floor(easex)

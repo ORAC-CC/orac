@@ -47,7 +47,9 @@
 ! 05/11/2013 GM Removed my commented out original fixes for those of Matthias
 !               and otherwise fixed a small memory leak and cleaned up the code.
 ! 10/02/2014 AP Variable renaming
-! 04/21/2014 GM Added logical option assume_full_path.
+! 21/04/2014 GM Added logical option assume_full_path.
+! 20/06/2014 GM Handle case when imager_geolocation%latitude or
+!               imager_geolocation%longitude is equal to fill_value.
 !
 ! $Id$
 !
@@ -124,9 +126,12 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
          if (imager_flags%lsflag(j,i) .eq. 1) then
-            datlat(lndcount) = imager_geolocation%latitude(j,i)
-            datlon(lndcount) = imager_geolocation%longitude(j,i)
-            lndcount = lndcount+1
+            if (imager_geolocation%latitude (j,i) .ne. real_fill_value .and. &
+                imager_geolocation%longitude(j,i) .ne. real_fill_value) then
+               datlat(lndcount) = imager_geolocation%latitude(j,i)
+               datlon(lndcount) = imager_geolocation%longitude(j,i)
+               lndcount = lndcount+1
+            end if
          end if
       end do
    end do
@@ -201,8 +206,11 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
          if (imager_flags%lsflag(j,i) .ne. 0) then
-            surface%emissivity(j,i,:) = datemis(:,lndcount)
-            lndcount = lndcount+1
+            if (imager_geolocation%latitude (j,i) .ne. real_fill_value .and. &
+                imager_geolocation%longitude(j,i) .ne. real_fill_value) then
+               surface%emissivity(j,i,:) = datemis(:,lndcount)
+               lndcount = lndcount+1
+            end if
          end if
       end do
    end do

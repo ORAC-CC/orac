@@ -78,6 +78,8 @@
 ! 2014/01/17, MJ: Fixed doy datatype from sint to stint to comply with other defs.
 ! 2014/04/20, GM: Cleaned up the code.
 ! 2014/04/21, GM: Added logical option assume_full_path.
+! 2014/06/20, GM: Handle case when imager_geolocation%latitude or
+!    imager_geolocation%longitude is equal to fill_value.
 !
 ! $Id$
 !
@@ -148,13 +150,24 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
    integer(kind=lint)                              :: seacount=1
    integer(kind=lint)                              :: lndcount=1
 
-   real :: minlat,maxlat,minlon,maxlon
+   real                                            :: minlat,maxlat,minlon,maxlon
+
+   logical                                         :: include_full_brdf_sea
+
+   logical, allocatable, dimension(:,:)            :: mask
 
    write(*,*) 'In get_surface_reflectance_lam()'
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nsea  = count(imager_flags%lsflag .eq. 0)
    nland = count(imager_flags%lsflag .eq. 1)
+
+   allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
+                 1:imager_geolocation%ny))
+
+   mask = imager_geolocation%latitude  .ne. real_fill_value .and. &
+          imager_geolocation%longitude .ne. real_fill_value
+
 
    ! Extract land surface reflectance
    if (nland .gt. 0) then
@@ -172,12 +185,12 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
       lndcount = 1
       do i=1,imager_geolocation%ny
          do j=imager_geolocation%startx,imager_geolocation%endx
-            !do i=1,imager_geolocation%ny
-            !do j=1,imager_geolocation%nx
             if (imager_flags%lsflag(j,i) .eq. 1) then
-               latlnd(lndcount) = imager_geolocation%latitude(j,i)
-               lonlnd(lndcount) = imager_geolocation%longitude(j,i)
-               lndcount = lndcount+1
+               if (mask(j,i)) then
+                  latlnd(lndcount) = imager_geolocation%latitude(j,i)
+                  lonlnd(lndcount) = imager_geolocation%longitude(j,i)
+                  lndcount = lndcount+1
+               end if
             end if
          end do
       end do
@@ -221,10 +234,10 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
       allocate(fg_mask(mcd%nlon,mcd%nlat))
       fg_mask(:,:) = 0
 
-      minlat = minval(imager_geolocation%latitude)
-      maxlat = maxval(imager_geolocation%latitude)
-      minlon = minval(imager_geolocation%longitude)
-      maxlon = maxval(imager_geolocation%longitude)
+      minlat = minval(imager_geolocation%latitude,  mask)
+      maxlat = maxval(imager_geolocation%latitude,  mask)
+      minlon = minval(imager_geolocation%longitude, mask)
+      maxlon = maxval(imager_geolocation%longitude, mask)
       do j=1, mcd%nlat
          if ((mcd%lat(j) .ge. minlat) .and. &
               (mcd%lat(j) .le. maxlat)) then
@@ -307,9 +320,11 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
       do i=1,imager_geolocation%ny
          do j=imager_geolocation%startx,imager_geolocation%endx
             if (imager_flags%lsflag(j,i) .eq. 0) then
-               lonsea(seacount) = imager_geolocation%longitude(j,i)
-               latsea(seacount) = imager_geolocation%latitude(j,i)
-               seacount = seacount+1
+               if (mask(j,i)) then
+                  lonsea(seacount) = imager_geolocation%longitude(j,i)
+                  latsea(seacount) = imager_geolocation%latitude(j,i)
+                  seacount = seacount+1
+               end if
             end if
          end do
       end do
@@ -342,8 +357,6 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
       seacount = 1
       do i=1,imager_geolocation%ny
          do j=imager_geolocation%startx,imager_geolocation%endx
-            !do i=1,imager_geolocation%ny
-            !do j=1,imager_geolocation%nx
             if (imager_flags%lsflag(j,i) .eq. 0) then
                solzasea(seacount) = imager_angles%solzen(j,i,k)
 
@@ -390,27 +403,31 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
    seacount = 1
    do i=1,imager_geolocation%ny
       do j=imager_geolocation%startx,imager_geolocation%endx
-         if (imager_flags%lsflag(j,i) .ne. 0) then
-            surface%albedo(j,i,:) = wsalnd(:,lndcount)
+         if (mask(j,i)) then
+            if (imager_flags%lsflag(j,i) .ne. 0) then
+               surface%albedo(j,i,:) = wsalnd(:,lndcount)
 
-            ! The MCD43c3 product is of no use for the 3.7 micron channel. If
-            ! it has been selected, we use 1-emissivity as the land surface
-            ! reflectance
-            if (count(channel_info%channel_ids_abs .eq. 4) .gt. 0) then
-               surface%albedo(j,i,4) = 1.0 - surface%emissivity(j,i,1)
+               ! The MCD43c3 product is of no use for the 3.7 micron channel. If
+               ! it has been selected, we use 1-emissivity as the land surface
+               ! reflectance
+               if (count(channel_info%channel_ids_abs .eq. 4) .gt. 0) then
+                  surface%albedo(j,i,4) = 1.0 - surface%emissivity(j,i,1)
+               end if
+
+               lndcount = lndcount+1
+            else
+               surface%albedo(j,i,:) = refsea(:,seacount)
+
+               seacount = seacount+1
             end if
-
-            lndcount = lndcount+1
-         else
-            surface%albedo(j,i,:) = refsea(:,seacount)
-
-            seacount = seacount+1
          end if
       end do
    end do
 
    ! Check to see if the land and sea reflectance arrays have been created
    ! before deallocating them
+   deallocate(mask)
+
    if (allocated(refsea)) deallocate(refsea)
    if (allocated(wsalnd)) deallocate(wsalnd)
    if (allocated(bands))  deallocate(bands)
