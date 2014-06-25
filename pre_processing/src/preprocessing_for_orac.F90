@@ -174,7 +174,7 @@
 !                of variable nc.
 ! 2014/01/27: GM Made '1', 't', 'true', 'T', 'True', '0', 'f', 'false', 'F', and
 !                'False' all valid values for the preprocessor verbose option.
-! 2014/02/02: GM Added chunking on/off option.
+! 2014/02/02: GM Added NetCDF chunking on/off option.
 ! 2014/02/03: AP Ensured all arguments that are logical flags are treated
 !                identically
 ! 2014/02/05: MJ corrected datatype of chunkproc from character to logical
@@ -189,7 +189,10 @@
 ! 2014/05/01: GM Cleaned up the code.
 ! 2014/05/01: GM Move some allocations/deallocations to the proper subroutine.
 ! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated variables
-
+! 2014/06/25: GM Rewrote along track chunking code fixing a bug where the second
+!                segment in AATSR night processing was not being processed when
+!                chunking was off.
+!
 ! $Id$
 !
 ! Bugs:
@@ -272,11 +275,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    integer(kind=lint)              :: n_across_track,n_along_track
    integer(kind=lint)              :: along_track_offset
 
-   integer, parameter              :: chunksize=4096
-   integer(kind=stint)             :: nc
-   integer                         :: nchunks1,leftover_chunk1
-   integer                         :: nchunks2,leftover_chunk2
-   integer                         :: nchunks_total
+   integer                         :: segment_starts(2)
+   integer                         :: segment_ends(2)
+   integer                         :: n_segments
+   integer                         :: chunksize
+   integer(kind=stint)             :: i_chunk
+   integer                         :: n_chunks
+   integer, allocatable            :: chunk_starts(:)
+   integer, allocatable            :: chunk_ends(:)
+   integer                         :: calc_n_chunks
 
    real(kind=sreal), dimension(4)  :: loc_limit
 
@@ -323,14 +330,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
 !  integer, dimension(8)           :: values
 
-   !this is for the wrapper	   
+   ! this is for the wrapper
    integer :: mytask,ntasks,lower_bound,upper_bound
 
 !  include "sigtrap.F90"
 
    ! get number of arguments
 #ifndef WRAPPER
-   nargs = COMMAND_ARGUMENT_COUNT()  
+   nargs = COMMAND_ARGUMENT_COUNT()
 #else
    nargs=-1
 #endif
@@ -465,9 +472,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    assume_full_paths=parse_logical(cassume_full_paths)
 
    ! initialise some counts, offset variables...
-   nchunks1=0
-   nchunks2=0
-   nchunks_total=0
    along_track_offset=0
    along_track_offset2=0
    n_along_track2=0
@@ -513,13 +517,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            n_along_track2, along_track_offset2, verbose)
 
    endif ! end of sensor selection
+
    if (verbose) then
       write(*,*) 'File dimensions determined -'
-      write(*,*) 'n_along_track:       ', n_along_track
       write(*,*) 'along_track_offset:  ', along_track_offset
+      write(*,*) 'n_along_track:       ', n_along_track
       if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
-         write(*,*) 'n_along_track2:      ', n_along_track2
          write(*,*) 'along_track_offset2: ', along_track_offset2
+         write(*,*) 'n_along_track2:      ', n_along_track2
       endif
    endif
    write(*,*) 'WE ARE PROCESSING ',trim(platform),' FOR ORBIT',year,month,day, &
@@ -531,69 +536,58 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       imager_geolocation%startx=startx
       imager_geolocation%endx=endx
 
-      imager_geolocation%starty=starty
-      imager_geolocation%endy=endy
+      n_chunks = 1
+
+      allocate(chunk_starts(n_chunks))
+      allocate(chunk_ends(n_chunks))
+
+      chunk_starts(1) = starty
+      chunk_ends(1)   = endy
    else
-      ! choose to process the whole orbit/granule or break it up
       imager_geolocation%startx=1
       imager_geolocation%endx=n_across_track
 
-      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. chunkproc) then
-         ! How many chunks do we have?
-         ! For a day-time orbit, there is only one section of orbit to process.
-         nchunks1=floor(n_along_track/real(chunksize))
-         leftover_chunk1=n_along_track - (nchunks1*chunksize)
-         startyi=along_track_offset+1
-
-         ! If we are running the night-side of an orbit, there will be a second
-         ! group of chunks.
-         if (n_along_track2 .gt. 0) then
-            nchunks2=floor(n_along_track2/real(chunksize))
-            leftover_chunk2=n_along_track2 - (nchunks2*chunksize)
-            nchunks_total=nchunks1 + nchunks2 + 1
-         else
-            nchunks_total=nchunks1
-         endif
+      if (chunkproc) then
+         chunksize = 4096
       else
-         ! process everything
-         imager_geolocation%starty=along_track_offset+1
-         imager_geolocation%endy=along_track_offset + n_along_track
+         chunksize = n_along_track + n_along_track2
       endif
+
+      n_segments = 1
+      segment_starts(1) = along_track_offset + 1
+      segment_ends(1)   = along_track_offset + n_along_track
+
+      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
+         n_segments = n_segments + 1
+         segment_starts(n_segments) = along_track_offset2 + 1
+         segment_ends(n_segments)   = along_track_offset2 + n_along_track2
+      endif
+
+      n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
+                               chunksize)
+
+      allocate(chunk_starts(n_chunks))
+      allocate(chunk_ends(n_chunks))
+
+      call chunkify(n_segments, segment_starts, segment_ends, chunksize, &
+                    n_chunks, chunk_starts, chunk_ends)
+
    endif ! end of startx and starty selection
+
+   if (verbose) then
+      write(*,*) 'The chunks to be processed are:'
+      do i_chunk = 1, n_chunks
+         write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk)
+      enddo
+   endif
+
    imager_geolocation%nx=imager_geolocation%endx-imager_geolocation%startx+1
 
    ! begin looping over chunks
-   do nc=1,nchunks_total+1
-      if (nchunks_total .gt. 0) then
-         if (verbose) write(*,*) 'BEGINNING PROCESSING OF CHUNK ',nc,' of ', &
-              nchunks_total+1
-
-         ! As each chunk doesn't need to know anything about the others, starty,
-         ! endy, and ny are set for each chunk and passed to the routines.
-         imager_geolocation%starty=startyi+(nc-1)*chunksize
-         if (nc .eq. nchunks1+1) then
-            ! last of first block of chunks
-            imager_geolocation%endy=imager_geolocation%starty+leftover_chunk1-1
-            imager_geolocation%ny=leftover_chunk1
-
-            ! Now check to see if there is a second set of chunks to read
-            ! further on in the orbit. If there is, we redefine startyi to
-            ! correspond to the start of this second section.
-            if (nchunks2 .gt. 0) startyi = along_track_offset2 - nc*chunksize+1
-         elseif (nc .eq. nchunks_total+1) then
-            ! last of second block of chunks
-            imager_geolocation%endy=imager_geolocation%starty+leftover_chunk2-1
-            imager_geolocation%ny=leftover_chunk2
-         else
-            ! normal chunk
-            imager_geolocation%endy=imager_geolocation%starty+chunksize-1
-            imager_geolocation%ny=chunksize
-         endif
-      else
-         ! no chunks so starty, endy set above
-         imager_geolocation%ny=imager_geolocation%endy- &
-              imager_geolocation%starty+1
-      endif ! end nchunks_total .gt. 0
+   do i_chunk=1,n_chunks
+      imager_geolocation%starty = chunk_starts(i_chunk)
+      imager_geolocation%endy   = chunk_ends(i_chunk)
+      imager_geolocation%ny     = chunk_ends(i_chunk) - chunk_starts(i_chunk) + 1
 
       if (verbose) then
          write(*,*) 'startx: ',imager_geolocation%startx,', endx: ', &
@@ -621,7 +615,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, sensor, &
            platform,hour,cyear,cmonth,cday,chour,cminute,assume_full_paths, &
            ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out, &
-           ecmwf_path3out,script_input,badc,imager_geolocation,nc,verbose)
+           ecmwf_path3out,script_input,badc,imager_geolocation,i_chunk,verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
@@ -765,6 +759,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
    enddo ! end looping over chunks
 
+   deallocate(chunk_starts)
+   deallocate(chunk_ends)
+
    ! deallocate the array parts of the structures
    call deallocate_channel_info(channel_info)
 
@@ -803,3 +800,63 @@ function parse_logical(string) result(value)
    endif
 
 end function parse_logical
+
+
+
+function calc_n_chunks(n_segments, segment_starts, segment_ends, &
+                       chunk_size) result (n_chunks)
+
+   implicit none
+
+   integer, intent(in)  :: n_segments
+   integer, intent(in)  :: segment_starts(n_segments)
+   integer, intent(in)  :: segment_ends(n_segments)
+   integer, intent(in)  :: chunk_size
+   integer              :: n_chunks
+
+   integer :: i
+
+   n_chunks = 0
+
+   do i = 1, n_segments
+      n_chunks = n_chunks + (segment_ends(i) - segment_starts(i)) / chunk_size + 1
+   enddo
+
+end function calc_n_chunks
+
+
+
+subroutine chunkify(n_segments, segment_starts, segment_ends, &
+                    chunk_size, n_chunks, chunk_starts, chunk_ends)
+
+   implicit none
+
+   integer, intent(in)  :: n_segments
+   integer, intent(in)  :: segment_starts(n_segments)
+   integer, intent(in)  :: segment_ends(n_segments)
+   integer, intent(in)  :: chunk_size
+   integer, intent(out) :: n_chunks
+   integer, intent(out) :: chunk_starts(*)
+   integer, intent(out) :: chunk_ends(*)
+
+   integer :: i
+
+   n_chunks = 1
+
+   do i = 1, n_segments
+      chunk_starts(n_chunks) = segment_starts(i)
+
+      do while (chunk_starts(n_chunks) + chunk_size .lt. segment_ends(i))
+         chunk_ends(n_chunks) = chunk_starts(n_chunks) + chunk_size - 1
+         n_chunks = n_chunks + 1
+         chunk_starts(n_chunks) = chunk_starts(n_chunks - 1) + chunk_size
+      end do
+
+      chunk_ends(n_chunks) = segment_ends(i)
+
+      n_chunks = n_chunks + 1
+   enddo
+
+   n_chunks = n_chunks - 1
+
+end subroutine chunkify
