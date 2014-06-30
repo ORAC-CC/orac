@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name: aatsr_corrections.F90
 !
 ! Purpose:
@@ -40,12 +41,14 @@
 !                .eq.Tn so that the comparison does go past the length of the
 !                lut (lut%n) to the static size of lut%julday.
 ! 2014/01/27: MJ datatype corrections
+! 2014/06/30: GM Apply 12um nonlinearity brightness temperature correction.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
 !
+!-------------------------------------------------------------------------------
 
 module aatsr_corrections
 
@@ -67,9 +70,70 @@ module aatsr_corrections
       = (/ 'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', &
            'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC' /)
 
+   ! Nonlinearity correction LUT
+   integer, parameter :: N_NONLINEARITY_CORRECTION_LUT = 121
+
+   real(sreal), dimension(N_NONLINEARITY_CORRECTION_LUT), parameter :: &
+      nonlinearity_correction_T_scene = (/ &
+         200.000, 201.000, 202.000, 203.000, 204.000, 205.000, 206.000, 207.000, &
+         208.000, 209.000, 210.000, 211.000, 212.000, 213.000, 214.000, 215.000, &
+         216.000, 217.000, 218.000, 219.000, 220.000, 221.000, 222.000, 223.000, &
+         224.000, 225.000, 226.000, 227.000, 228.000, 229.000, 230.000, 231.000, &
+         232.000, 233.000, 234.000, 235.000, 236.000, 237.000, 238.000, 239.000, &
+         240.000, 241.000, 242.000, 243.000, 244.000, 245.000, 246.000, 247.000, &
+         248.000, 249.000, 250.000, 251.000, 252.000, 253.000, 254.000, 255.000, &
+         256.000, 257.000, 258.000, 259.000, 260.000, 261.000, 262.000, 263.000, &
+         264.000, 265.000, 266.000, 267.000, 268.000, 269.000, 270.000, 271.000, &
+         272.000, 273.000, 274.000, 275.000, 276.000, 277.000, 278.000, 279.000, &
+         280.000, 281.000, 282.000, 283.000, 284.000, 285.000, 286.000, 287.000, &
+         288.000, 289.000, 290.000, 291.000, 292.000, 293.000, 294.000, 295.000, &
+         296.000, 297.000, 298.000, 299.000, 300.000, 301.000, 302.000, 303.000, &
+         304.000, 305.000, 306.000, 307.000, 308.000, 309.000, 310.000, 311.000, &
+         312.000, 313.000, 314.000, 315.000, 316.000, 317.000, 318.000, 319.000, &
+         320.000/)
+
+   real(sreal), dimension(N_NONLINEARITY_CORRECTION_LUT), parameter :: &
+      nonlinearity_correction_delta_BT = (/ &
+         0.654,  0.637,  0.621,  0.605,  0.588,  0.573,  0.557,  0.541, &
+         0.526,  0.511,  0.496,  0.482,  0.467,  0.453,  0.439,  0.425, &
+         0.411,  0.398,  0.385,  0.372,  0.359,  0.346,  0.334,  0.322, &
+         0.310,  0.298,  0.286,  0.275,  0.264,  0.253,  0.242,  0.231, &
+         0.221,  0.211,  0.201,  0.191,  0.181,  0.172,  0.163,  0.154, &
+         0.145,  0.137,  0.128,  0.120,  0.112,  0.104,  0.097,  0.090, &
+         0.082,  0.076,  0.069,  0.062,  0.056,  0.050,  0.044,  0.038, &
+         0.033,  0.027,  0.022,  0.018,  0.013,  0.008,  0.004,  0.000, &
+        -0.004, -0.008, -0.011, -0.014, -0.017, -0.020, -0.023, -0.025, &
+        -0.027, -0.030, -0.031, -0.033, -0.034, -0.036, -0.037, -0.037, &
+        -0.038, -0.038, -0.039, -0.039, -0.038, -0.038, -0.037, -0.037, &
+        -0.036, -0.034, -0.033, -0.031, -0.030, -0.027, -0.025, -0.023, &
+        -0.020, -0.017, -0.014, -0.011, -0.008, -0.004,  0.000,  0.004, &
+         0.008,  0.013,  0.018,  0.022,  0.027,  0.033,  0.038,  0.044, &
+         0.050,  0.056,  0.062,  0.069,  0.076,  0.082,  0.090,  0.097, &
+         0.104/)
+
+   real(sreal), dimension(N_NONLINEARITY_CORRECTION_LUT), parameter :: &
+      nonlinearity_correction_u_delta_BT_2 = (/ &
+         0.079,  0.077,  0.075,  0.073,  0.070,  0.068,  0.066,  0.064, &
+         0.062,  0.061,  0.059,  0.057,  0.055,  0.053,  0.052,  0.050, &
+         0.048,  0.047,  0.045,  0.044,  0.042,  0.041,  0.040,  0.038, &
+         0.037,  0.036,  0.035,  0.034,  0.033,  0.032,  0.031,  0.030, &
+         0.029,  0.028,  0.027,  0.027,  0.026,  0.026,  0.025,  0.025, &
+         0.024,  0.024,  0.023,  0.023,  0.023,  0.022,  0.022,  0.022, &
+         0.022,  0.022,  0.021,  0.021,  0.021,  0.021,  0.021,  0.021, &
+         0.021,  0.021,  0.021,  0.021,  0.021,  0.020,  0.020,  0.020, &
+         0.020,  0.020,  0.020,  0.020,  0.020,  0.020,  0.019,  0.019, &
+         0.019,  0.019,  0.019,  0.019,  0.018,  0.018,  0.018,  0.018, &
+         0.018,  0.017,  0.017,  0.017,  0.017,  0.017,  0.017,  0.017, &
+         0.016,  0.016,  0.016,  0.016,  0.017,  0.017,  0.017,  0.017, &
+         0.018,  0.018,  0.019,  0.019,  0.020,  0.020,  0.021,  0.022, &
+         0.023,  0.024,  0.025,  0.026,  0.027,  0.028,  0.029,  0.031, &
+         0.032,  0.033,  0.035,  0.036,  0.038,  0.039,  0.041,  0.043, &
+         0.044/)
+
 contains
 
-subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, old_drift, drift_var)
+subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
+                                  old_drift, drift_var)
 
    use calender
 
@@ -78,7 +142,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, ol
    character(len=30), intent(in)     :: start_date
    character(len=62), intent(in)     :: vc1_file
    type(aatsr_drift_lut), intent(in) :: lut
-   integer(stint), intent(in)        :: chan
+   integer, intent(in)               :: chan
    real(dreal), intent(out)          :: new_drift, old_drift, drift_var
 
    character(len=30)                 :: sdate
@@ -90,9 +154,9 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, ol
 
    ! Yearly rates for exponential correction
    real(kind=sreal), parameter, dimension(4) :: K = &
-        (/ 0.034, 0.021, 0.013, 0.002 /) 
+        (/ 0.034, 0.021, 0.013, 0.002 /)
    ! Thin film drift model coefficients
-   real(kind=sreal), dimension(3,2) :: A 
+   real(kind=sreal), dimension(3,2) :: A
    A(1,:)=(/ 0.083, 1.5868E-3 /)
    A(2,:)=(/ 0.056, 1.2374E-3 /)
    A(3,:)=(/ 0.041, 9.6111E-4 /)
@@ -109,7 +173,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, ol
    sdate = adjustl(start_date)
    read(sdate(8:11), '(I4)') year
    month=1_stint
-   do while (monthname(month).ne.sdate(4:6)) 
+   do while (monthname(month).ne.sdate(4:6))
       month=month+1
    end do
    read(sdate(1:2), '(I2)') day
@@ -149,10 +213,10 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, ol
    ! Identify which processing period we're in for the correction to REMOVE
    if ((Tvc.lt.T1) .or. ((Tvc.ge.T3) .and. (Tvc.lt.T4))) then
       ! No drift correction applied
-      old_drift = 1.0 
+      old_drift = 1.0
    else if ((chan.eq.4) .or. ((Tvc.ge.T1) .and. (Tvc.lt.T2))) then
       ! Exponential drift correction applied
-      old_drift = exp(K(chan)*(Tn-T0)/365_dreal) 
+      old_drift = exp(K(chan)*(Tn-T0)/365_dreal)
    else
       ! Thin film drift correction applied
       old_drift = sin(A(chan,2)*(Tn-T0))
@@ -180,7 +244,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, ol
       drift_var = (lut%er(chan,ilow)*lut%er(chan,ilow) + &
            lut%er(chan,ilow+1)*lut%er(chan,ilow+1)) * dT*dT
    end if
-   
+
 end subroutine aatsr_drift_correction
 
 ! Name: aatsr_read_drift_table.F90
@@ -292,7 +356,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
       ! Convert the day and time values into a Julian day:
       read(line(9:10), '(i2)') lut%day(i)
       lut%month(i)=1
-      do while (monthname(lut%month(i)).ne.line(12:14)) 
+      do while (monthname(lut%month(i)).ne.line(12:14))
          lut%month(i)=lut%month(i)+1
       end do
       read(line(16:19), '(i4)') lut%year(i)
@@ -303,7 +367,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
       lut%julday(i) = lut%julday(i) + (real(lut%hour(i),dreal) + &
            (real(lut%minute(i),dreal) + (real(lut%second(i),dreal) &
            / 60_dreal))/60_dreal)/24_dreal
-      
+
       ! There are two different formats of drift file: one includes
       ! uncertainties on the drift correction, one doesn't
       if (len(line).gt.100) then
@@ -311,7 +375,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
          read(line(52:59),   '(f8.5)') lut%ch(2,i)
          read(line(73:80),   '(f8.5)') lut%ch(3,i)
          read(line(94:101),  '(f8.5)') lut%ch(4,i)
-         
+
          read(line(42:49),   '(f8.5)') lut%er(1,i)
          read(line(63:70),   '(f8.5)') lut%er(2,i)
          read(line(84:91),   '(f8.5)') lut%er(3,i)
@@ -337,7 +401,68 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    end if
 
    lut%n = i
-   
+
 end subroutine aatsr_read_drift_table
+
+
+
+!-------------------------------------------------------------------------------
+! Name: aatsr_12um_nonlinearity_correction
+!
+! Purpose:
+! Return the AATSR 12um nonlinearity brightness temperature correction.
+!
+! Description and Algorithm details:
+! Dave Smith: Empirical Nonlinearity Correction for 12um Channel, RAL Space
+! AATSR Technical note, Doc No: PO-TN-RAL-AT-0562, Issue: 1.1, Date: 27-Feb-2014.
+!
+! Arguments:
+! Name    Type  In/Out/Both Description
+! T       dreal In          Original scene temperature
+!
+! Return value:
+! Name    Type  Description
+! delta_T dreal Brightness temperature correction
+!
+! Local variables:
+! Name Type Description
+!
+! History:
+! 2014/06/16, GM: Original implementation.
+!
+! $Id$
+!
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
+function aatsr_12um_nonlinearity_correction(T, u_delta_BT_2) result(delta_BT)
+
+   implicit none
+
+   real(kind=sreal), intent(in)            :: T
+   real(kind=sreal)                        :: delta_BT
+   real(kind=sreal), intent(out), optional :: u_delta_BT_2
+
+   integer          :: i
+   real(kind=sreal) :: a
+
+   i = int(T - nonlinearity_correction_T_scene(1)) + 1
+   i = max(i, 1)
+   i = min(i, N_NONLINEARITY_CORRECTION_LUT)
+
+   a = (T - nonlinearity_correction_T_scene(i)) / &
+       (nonlinearity_correction_T_scene(i + 1) - &
+        nonlinearity_correction_T_scene(i))
+
+   delta_BT = (1. - a) * nonlinearity_correction_delta_BT(i) + &
+                    a  * nonlinearity_correction_delta_BT(i + 1)
+
+   if (present(u_delta_BT_2)) then
+      u_delta_BT_2 = (1. - a) * nonlinearity_correction_u_delta_BT_2(i) + &
+                           a  * nonlinearity_correction_u_delta_BT_2(i + 1)
+
+   endif
+
+end function aatsr_12um_nonlinearity_correction
 
 end module aatsr_corrections

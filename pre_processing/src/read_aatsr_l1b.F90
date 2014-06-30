@@ -1,9 +1,9 @@
-! Name: read_aatsr_l1b.F90 
+! Name: read_aatsr_l1b.F90
 !
 !
 ! Purpose:
 ! Read AATSR level 1b file using a C function. This routine passes a set of C
-! pointers to that function which point to the appropriate sections of 
+! pointers to that function which point to the appropriate sections of
 ! imager_measurements%data or other imager structures.
 !
 ! Description and Algorithm details:
@@ -41,7 +41,7 @@
 ! 2012/09/12: GT changed day array structure write
 ! 2012/09/12: GT assigned time to imager_time structure
 ! 2012/09/13: GT Reactivated calibration correction code.
-! 2012/09/14: GT Bug fix in indexing of nday array. Bug fix to 
+! 2012/09/14: GT Bug fix in indexing of nday array. Bug fix to
 !                read_aatsr_beam_ctof90 interface: fixed length strings are not
 !                supported by iso_c_binding and must be defined as
 !                   character(kind=c_char), intent(inout) :: var(*)
@@ -61,7 +61,8 @@
 ! 2014/01/27: MJ datatype corrections
 ! 2014/04/25: GM Use the "is_lut_drift_corrected" flag from read_aatsr_orbit()
 !                to determine if the LUT based drift correction has already been
-!                applied to the data as in the 3rd reprocessing (V2.1) data. 
+!                applied to the data as in the 3rd reprocessing (V2.1) data.
+! 2014/06/30: GM Apply 12um nonlinearity brightness temperature correction.
 !
 ! $Id$
 !
@@ -72,7 +73,7 @@
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
      imager_measurements, imager_angles, imager_flags, imager_time, &
      channel_info, verbose)
-   
+
    use iso_c_binding ! technically Fortran 2003
    use preproc_constants
    use channel_structures
@@ -94,9 +95,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
            bind(C,name='read_aatsr_orbit')
          use iso_c_binding ! technically Fortran 2003
          use preproc_constants
- 
+
          implicit none
-         
+
          character(c_char), dimension(pathlength) :: l1b_file
          character(c_char), dimension(30)   :: start_date
          character(c_char), dimension(62)   :: gc1_file, vc1_file
@@ -126,12 +127,11 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(channel_info_s), intent(in)           :: channel_info
    logical, intent(in)                        :: verbose
 
-   integer                     :: i,status
-   integer(kind=stint)         :: j
-   integer(sint)               :: view_selection
-   real(sreal), dimension(4)   :: A
-   type(aatsr_drift_lut)       :: lut
-   real(dreal)                 :: new_drift, old_drift, drift_var
+   integer                   :: i,ii,j,jj,status
+   integer(sint)             :: view_selection
+   real(sreal), dimension(4) :: A
+   type(aatsr_drift_lut)     :: lut
+   real(dreal)               :: new_drift, old_drift, drift_var
 
    ! C variables
    logical(c_bool)                       :: verb, is_lut_drift_corrected
@@ -238,7 +238,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       allocate(fqul(1,1))
       allocate(fday(1))
    endif
-   
+
    ! assign write pointers for required channels and views. Fortran pointers
    ! required for aatsr_apply_corrections as uncertain of last index
    do i=1,nch
@@ -328,9 +328,12 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       call aatsr_read_drift_table(drift_file, lut, status)
       if (verbose) print*,'finish drift table read returned with status ', stat
    endif
-   ! correct channels 1-4
+
+   ! apply corrections
    do i=1,channel_info%nchannels_total
       j=channel_info%channel_ids_instr(i)
+
+      ! SW drift correction
       if (j.le.4) then
          ! AATSR L1B reflectances are stored as percentage values, so scale to
          ! the fractional value used by ORAC
@@ -369,6 +372,16 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
                  *imager_measurements%data(:,:,i)) / new_drift
          end if
       end if
+
+      ! 12um nonlinearity_correction
+      if (j .eq. 7) then
+         do ii=imager_geolocation%startx,imager_geolocation%endx
+            do jj=1,imager_geolocation%ny
+               imager_measurements%data(ii,jj,i) = imager_measurements%data(ii,jj,i) - &
+                  aatsr_12um_nonlinearity_correction(imager_measurements%data(ii,jj,i))
+            enddo
+         enddo
+      endif
    end do
 
    ! copy time values into rows from nadir (which we're presumably viewing)
@@ -395,7 +408,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    end if
 
    if (verbose) print*,'finished read_aatsr_l1b deallocate'
-   
+
    deallocate(ch)
    deallocate(view)
    deallocate(nflg)
