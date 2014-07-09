@@ -64,7 +64,7 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    !get file id
    l1b_id=sfstart(path_to_l1b_file,DFACC_READ)
-   write(*,*) 'L1B FILE:',path_to_l1b_file,l1b_id
+   write(*,*) 'L1B FILE:',trim(path_to_l1b_file),l1b_id
 
    do ich=1,channel_info%nchannels_total
       ! use channel_info from SETUP.F90

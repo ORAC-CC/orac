@@ -78,6 +78,8 @@
 !       Implements code for AVHRR to assign channel numbers for LUT names.
 !    23rd May 2014, Greg McGarragh:
 !       Cleaned up code.
+!     1st Jul 2014, Adam Povey:
+!       Added check to see if SAD file exists to clarify error message.
 !
 ! Bugs:
 !    None known.
@@ -120,6 +122,7 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
                                               ! WN and 0.67 um
    real                   :: min_SW_diff      ! Smallest difference between channel
                                               ! central WN and 0.67 um
+   logical                :: file_exists
 
    status = 0
    ThermalFirstSet = 0 ! ThermalFirst not set
@@ -143,20 +146,20 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
          if (trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
             write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
          else
-            if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 1) then
+            select case (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)))
+            case (1)
                chan_num='Ch1'
-               elseif (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 2) then
+            case (2)
                chan_num='Ch2'
-               elseif (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 3) then
+            case (3)
                chan_num='Ch3a'
-            elseif (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 4) then
+            case (4)
                chan_num='Ch3b'
-            elseif (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 5) then
+            case (5)
                chan_num='Ch4'
-            elseif (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 6) then
+            case (6)
                chan_num='Ch5'
-            endif
-
+            end select
          endif
 
       else
@@ -169,24 +172,31 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
          & // '_' // trim(chan_num) // '.sad'
       write(*,*)'chan_file read in: ',trim(adjustl(chan_file))
       ! Open the file
-      open(unit=c_lun, file=chan_file, iostat=ios)
+      inquire(file=chan_file, exist=file_exists)
+      if (.not. file_exists) then
+         write(message, *) 'Read_Chan: SAD file not found.'
+         call Write_Log(Ctrl, trim(message), status)
+         ios=-1
+      else
+         open(unit=c_lun, file=chan_file, iostat=ios)
+      end if
       if (ios /= 0) then
          status = ChanFileOpenErr
          write(message, *) 'Read_Chan: Error opening file ', chan_file
          call Write_Log(Ctrl, trim(message), status)
       else
          ! Read the file contents into the SAD_Chan(i) structure
-         read(c_lun, *, err=999, iostat=ios)filename
+         read(c_lun, *, err=999, iostat=ios) filename
          read(c_lun, '(A10)', err=999, iostat=ios) SAD_Chan(i)%Desc
-         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%FileID
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%FileID
 
          ! Check FileID vs. expected value (i.e. value in filename vs. value in
          ! file)
          if (trim(SAD_Chan(i)%FileID) /= trim(chan_num)) then
             status = ChanFileDataErr
             write(message, *) &
-               & 'Read_Chan: channel ID inconsistent with file name in ', &
-               & chan_file
+               'Read_Chan: channel ID inconsistent with file name in ', &
+               chan_file
             call Write_Log(Ctrl, trim(message), status)
          end if
 
@@ -195,7 +205,7 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
             read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%Flag
 
             write(*,*)'Specs (wavenumber and t-flag):', &
-               & SAD_Chan(i)%WvN,SAD_Chan(i)%Thermal%Flag
+               SAD_Chan(i)%WvN,SAD_Chan(i)%Thermal%Flag
 
             if (SAD_Chan(i)%Thermal%Flag > 0) then
                if (ThermalFirstSet == 0) then
@@ -212,15 +222,15 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T1
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T2
                read(c_lun, *, err=999, iostat=ios) &
-                  & (SAD_Chan(i)%Thermal%NeHomog(j), j=1,MaxCloudType)
+                  (SAD_Chan(i)%Thermal%NeHomog(j), j=1,MaxCloudType)
                read(c_lun, *, err=999, iostat=ios) &
-                  & (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
+                  (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
 
                do j=1,MaxCloudType
 	          SAD_Chan(i)%Thermal%NeHomog(j) = &
-                     & SAD_Chan(i)%Thermal%NeHomog(j) ** 2
+                     SAD_Chan(i)%Thermal%NeHomog(j) ** 2
                   SAD_Chan(i)%Thermal%NeCoreg(j) = &
-                     & SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
+                     SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
                end do
 
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%NEBT
@@ -236,23 +246,23 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
 !	       Ctrl%Ind%YSolar(Ctrl%Ind%NSolar) = i
 
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
-                  & SAD_Chan(i)%Solar%F1
+                  SAD_Chan(i)%Solar%F1
                read(c_lun, *, err=999, iostat=ios) &
-                  & (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
+                  (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
                read(c_lun, *, err=999, iostat=ios) &
-                  & (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
+                  (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
 
                do j=1,MaxCloudType
                   SAD_Chan(i)%Solar%NeHomog(j) = &
-                     & (SAD_Chan(i)%Solar%NeHomog(j) / 100.0) ** 2
+                     (SAD_Chan(i)%Solar%NeHomog(j) / 100.0) ** 2
 
                   SAD_Chan(i)%Solar%NeCoreg(j) = &
-                     & (SAD_Chan(i)%Solar%NeCoreg(j) / 100.0) ** 2
+                     (SAD_Chan(i)%Solar%NeCoreg(j) / 100.0) ** 2
                end do
 
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%NedR
                SAD_Chan(i)%Solar%NedR = &
-                  & (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2
+                  (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2
 
                ! Convert Rs from a percentage to a fraction
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Rs
@@ -272,8 +282,8 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
 999      if (ios /= 0) then
             status = ChanFileReadErr
             write(message, *) &
-               & 'Read_Chan: Error reading channel description file ', &
-               & chan_file
+               'Read_Chan: Error reading channel description file ', &
+               chan_file
             call Write_Log(Ctrl, trim(message), status)
          end if
 
@@ -286,7 +296,7 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
    if (NSolar /= Ctrl%Ind%NSolar) then
       status = DriverFileDataErr
       call Write_Log(Ctrl, &
-         & 'Read_Chan: Error in NSolar value in driver file', status)
+         'Read_Chan: Error in NSolar value in driver file', status)
       stop
    end if
 
@@ -294,7 +304,7 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
    if (NThermal /= Ctrl%Ind%NThermal) then
       status = DriverFileDataErr
       call Write_Log(Ctrl, &
-         & 'Read_Chan: Error in NThermal value in driver file', status)
+         'Read_Chan: Error in NThermal value in driver file', status)
       stop
    end if
 
@@ -309,8 +319,8 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
    Ctrl%Ind%SolarFirst = 1
    Ctrl%Ind%ThermalLast = Ctrl%Ind%Ny
 
-   write(*,*) 'First/Last channels wrt number of channels used in successive '// &
-      & 'order (aka stored in MSI array)'
+   write(*,*) 'First/Last channels wrt number of channels used in '// &
+      & 'successive order (aka stored in MSI array)'
    write(*,*) 'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
    write(*,*) 'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
 

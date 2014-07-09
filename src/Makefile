@@ -249,8 +249,7 @@ ORAC_OBJ =        $(OBJS)/BITS.o \
 	          $(OBJS)/R2T.o \
                   $(OBJS)/read_config_file.o \
 	          $(OBJS)/read_input_dimensions.o \
-                  $(OBJS)/read_rtm_data_nc.o \
-	          $(OBJS)/read_sat_data_nc.o \
+                  $(OBJS)/read_sat_data_nc.o \
                   $(OBJS)/ReadAlb.o \
                   $(OBJS)/ReadAlb_nc.o \
 	          $(OBJS)/ReadByteArray.o \

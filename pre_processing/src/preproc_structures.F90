@@ -10,9 +10,6 @@
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 ! 2012/01/17, MJ: produces initial version of code
 ! 2012/05/30, GT: Added preproc_surf_s type (containing emissivity and possibly
@@ -27,6 +24,7 @@
 ! 2013/10/23, AP: Tidying. Commented out unused types.
 ! 2014/02/10, AP: Shortened DIM names.
 ! 2014/05/01, GM: Cleaned up the code.
+! 2015/05/07, AP: Removed unneccessary fields from preproc_dims.
 !
 ! $Id$
 !
@@ -41,28 +39,14 @@ module preproc_structures
    implicit none
 
    type preproc_dims_s
-      integer(kind=lint) :: xdim,ydim,kdim
-      integer(kind=lint) :: nchan_sw,nchan_lw
-      integer(kind=lint) :: min_lat, max_lat, min_lon, max_lon,del_lon,del_lat
-      real(kind=sreal)   :: dellon,dellat
+      integer(kind=lint) :: xdim, ydim, kdim
+      integer(kind=lint) :: nchan_sw, nchan_lw
+      integer(kind=lint) :: min_lat, max_lat, min_lon, max_lon
+      real(kind=sreal)   :: dellon, dellat
 
-      real(kind=sreal)   :: lat_offset=90.0
-      real(kind=sreal)   :: lon_offset=180.0
+      real(kind=sreal)   :: lat_offset=90.0, lon_offset=180.0
 
-      integer(kind=lint) :: maxchannels_sw=36, &
-                            maxchannels_lw=36
-
-      integer(kind=lint), dimension(:),pointer    :: instr_channel_sw, &
-                                                     instr_channel_lw
-
-      integer(kind=lint), dimension(:),pointer    :: coef_channel_sw, &
-                                                     coef_channel_lw
-
-      integer(kind=lint), dimension(:,:), pointer :: counter_sw, &
-                                                     counter_lw
-
-      integer(kind=sint), dimension(:,:), pointer :: filter_array_sw, &
-                                                     filter_array_lw
+      integer(kind=lint), dimension(:,:), pointer :: counter_sw, counter_lw
    end type preproc_dims_s
 
 

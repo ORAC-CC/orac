@@ -45,8 +45,8 @@ contains
 ! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
 ! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
 ! script_input   struct in  Summary of file header information.
-! badc           logic  in  1: Use BADC files as formatted by the BADC in NCDF
-!                           format. Otherwise: Assume ERA_Interim GRB format.
+! ecmwf_flag     int    in  0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
+!                           2: BADC GRIB files.
 ! imager_geolocation        struct both Summary of pixel positions
 ! i_chunk        stint  in  The number of the current chunk (for AATSR).
 ! verbose        logic  in  T: print status information; F: don't
@@ -68,6 +68,7 @@ contains
 ! 2014/02/03: AP made badc a logical variable
 ! 2014/04/21: GM Added logical option assume_full_path.
 ! 2014/05/01: GM Reordered data/time arguments into a logical order.
+! 2014/05/02: AP Made badc into ecmwf_flag.
 !
 ! $Id$
 !
@@ -79,7 +80,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
    cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor,platform,&
    hour,cyear,cmonth,cday,chour,cminute,assume_full_path,ecmwf_path,&
    ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,&
-   script_input,badc,imager_geolocation,i_chunk,verbose)
+   script_input,ecmwf_flag,imager_geolocation,i_chunk,verbose)
 
    use preproc_constants
    use imager_structures
@@ -101,7 +102,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
    character(len=pathlength),     intent(out) :: ecmwf_pathout,ecmwf_path2out,&
                                                  ecmwf_path3out
    type(script_arguments_s),      intent(in)  :: script_input
-   logical,                       intent(in)  :: badc
+   integer,                       intent(in)  :: ecmwf_flag
    type(imager_geolocation_s),    intent(in)  :: imager_geolocation
    integer(kind=stint),           intent(in)  :: i_chunk
    logical,                       intent(in)  :: verbose
@@ -150,7 +151,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
    !determine ecmwf path/filename
    call set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
                   ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,&
-                  ecmwf_path3out,badc,verbose)
+                  ecmwf_path3out,ecmwf_flag,verbose)
 
    !get preproc filenames
    lwrtm_file=trim(adjustl(file_base))//'.lwrtm.nc'

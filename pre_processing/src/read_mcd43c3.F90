@@ -21,22 +21,18 @@
 !                                   returned with the value -1, otherwise
 !                                   returned as 0.
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
-! 11 Apr 2012, Gareth Thomas: Original version
-! 23 Apr 2012, Gareth Thomas: Replaced where statements for dealing with fill
-!    values in input data (as they seem to cause seg-faults with ifort) with do
-!    if loops.
-! 26 Jun 2012, Caroline Poulsen: commented out gdprojinfo as causes unknown
-!    crash.
-! 16 Aug 2012, Gareth Thomas: Commented out check on projection type, as
-!    Carolines previous change means the variable is not defined.
-! 20 Aug 2012, MJ: Changed read_mcd43c3 from function to subroutine in order to
-!    iron out bugs and some slight change.
-! 24 Jan 2014, MJ: Correct length of "path_to_file"
-! 26 May 2014, GM: Code clean up and some error checking improvements.
+! 11 Apr 2012 GT Original
+! 23 Apr 2012 GT Replaced where statements for dealing with
+!                fill values in input data (as they seem to
+!                cause seg-faults with ifort) with do if loops
+! 26 Jun 2012 CP commented out gdprojinfo as causes unknown crash.
+! 16 Aug 2012 GT Commented out check on projection type, as
+!                Carolines previous change means the variable is not defined.
+! 20 Aug 2012 MJ changed read_mcd43c3 from function to subroutine in order to
+!                iron out bugs and some slight change
+! 24 Jan 2014 MJ corrects length of "path_to_file"
+! 11 Jun 2014 AP use standard fill value rather than unique one
 !
 ! $Id$
 !
@@ -285,7 +281,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%WSA(i,k,j) = mcd%fill
+                  mcd%WSA(i,k,j) = real_fill_value
                else
                   mcd%WSA(i,k,j) = tmpdata(k,j)*scale + offset
                end if
@@ -295,7 +291,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          ! Note, the following works with gfortran, but causes a segmentation
          ! fault if used with ifort (v11)
 !        where (tmpdata .eq. fill)
-!           mcd%WSA(i,:,:) = mcd%fill
+!           mcd%WSA(i,:,:) = real_fill_value
 !        elsewhere
 !           mcd%WSA(i,:,:) = real(tmpdata)*scale + offset
 !        endwhere
@@ -325,7 +321,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%BSA(i,k,j) = mcd%fill
+                  mcd%BSA(i,k,j) = real_fill_value
                else
                   mcd%BSA(i,k,j) = tmpdata(k,j)*scale + offset
                end if
@@ -335,7 +331,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          ! Note, the following works with gfortran, but causes a segmentation
          ! fault if used with ifort (v11)
 !        where (tmpdata .eq. fill)
-!           mcd%BSA(i,:,:) = mcd%fill
+!           mcd%BSA(i,:,:) = real_fill_value
 !        elsewhere
 !           mcd%BSA(i,:,:) = real(tmpdata)*scale + offset
 !        endwhere

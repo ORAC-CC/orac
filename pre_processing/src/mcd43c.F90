@@ -15,7 +15,8 @@
 ! Name Type Description
 !
 ! History:
-! 11 Apr 2012 Gareth Thomas: Orginal
+! 11 Apr 2012, GT: Orginal
+! 11 Jun 2014, AP: Remove unique fill value
 !
 ! $Id$
 !
@@ -48,9 +49,6 @@ module mcd43c_m
       real, allocatable          :: lon(:)
       real, allocatable          :: WSA(:,:,:)
       real, allocatable          :: BSA(:,:,:)
-
-      ! Missing data value
-      real                       :: fill=-999.0
    end type mcd43c
 
 contains

@@ -9,9 +9,6 @@
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 ! 2012/01/19, Matthias Jerg: produces draft code
 ! 2012/05/30, Gareth Thomas: Added deallocation of preproc_surf%emissivity
@@ -27,6 +24,7 @@
 !                 used in the call.
 ! 2014/05/01, GM: Add some deallocations that were being done outside.
 ! 2014/05/01, GM: Cleaned up the code.
+! 2015/05/07, AP: Removed unneccessary fields from preproc_dims.
 !
 ! $Id$
 !
@@ -38,8 +36,6 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    preproc_geo,preproc_prtm,preproc_lwrtm,preproc_swrtm,preproc_surf)
 
    use preproc_constants
-   use channel_structures
-!  use preproc_structures
 
    implicit none
 
@@ -52,14 +48,8 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    type(preproc_surf_s),   intent(inout) :: preproc_surf
 
    ! preproc_dims
-   deallocate(preproc_dims%instr_channel_sw)
-   deallocate(preproc_dims%instr_channel_lw)
-   deallocate(preproc_dims%coef_channel_sw)
-   deallocate(preproc_dims%coef_channel_lw)
    deallocate(preproc_dims%counter_sw)
    deallocate(preproc_dims%counter_lw)
-   deallocate(preproc_dims%filter_array_lw)
-   deallocate(preproc_dims%filter_array_sw)
 
    ! preproc_geoloc
    deallocate(preproc_geoloc%longitude)
@@ -80,7 +70,6 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    deallocate(preproc_prtm%phi_lay)
    deallocate(preproc_prtm%geopot)
    deallocate(preproc_prtm%lnsp)
-   deallocate(preproc_prtm%surface_pressure)
    deallocate(preproc_prtm%u10)
    deallocate(preproc_prtm%v10)
    deallocate(preproc_prtm%land_sea_mask)

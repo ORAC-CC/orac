@@ -50,6 +50,7 @@
 ! 21/04/2014 GM Added logical option assume_full_path.
 ! 20/06/2014 GM Handle case when imager_geolocation%latitude or
 !               imager_geolocation%longitude is equal to fill_value.
+! 01/07/2014 AP Tidying. Update to new structures.
 !
 ! $Id$
 !
@@ -58,8 +59,8 @@
 !
 
 subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
-     imager_flags, imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
-     surface, preproc_surf)
+     imager_flags, imager_geolocation, channel_info, preproc_dims, &
+     preproc_geoloc, surface, preproc_surf)
 
    use cimss_emissivity
    use preproc_constants
@@ -67,7 +68,6 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    use channel_structures
    use imager_structures
    use surface_structures
-   use emis_def
    use interpol
 
    implicit none
@@ -88,69 +88,25 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    ! Local variables
    character(len=pathlength)                          :: emis_path_file
    type(emis_s)                                       :: emis
-   integer(kind=stint),              dimension(3)     :: embands
-   integer(kind=stint), allocatable, dimension(:)     :: bands
-   real(kind=sreal),    allocatable, dimension(:)     :: datlat, datlon, emlat, emlon
-   real(kind=sreal)                                   :: latstep, lonstep
-   real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis
-   real(kind=sreal),    allocatable, dimension(:,:)   :: datemis
-   real(kind=sreal),    allocatable, dimension(:)     :: prelat, prelon
-   integer(kind=lint),  allocatable, dimension(:)     :: prelati, preloni
-   integer(kind=stint)                                :: stat
-   integer(kind=lint)                                 :: i,j,k
-   integer(kind=stint)                                :: nlwchannels
-   integer(kind=lint)                                 :: nland, lndcount
-   integer(kind=lint)                                 :: location1d(1)
-   integer(kind=lint)                                 :: sum_counter,ii,jj
-   real(kind=sreal)                                   :: summy
+   integer(kind=stint),              dimension(3)     :: embands=[1,8,9]
+   real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis, summat
+   real(kind=sreal),    allocatable, dimension(:,:)   :: counter
+   integer(kind=lint)                                 :: i,j,k,lat,lon
+   integer(kind=lint)                                 :: nland
+   real,                             dimension(1)     :: temp_lat, temp_lon
+   real,                             dimension(1)     :: temp_sur
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nland = count(imager_flags%lsflag .eq. 1)
-   write(*,*) 'channel_info%channel_ids_abs: ',channel_info%channel_ids_abs
-   nlwchannels = count(channel_info%channel_ids_abs .gt. 3)
-   write(*,*)'nland, nlwchannels: ',nland, nlwchannels
+   write(*,*)'nland: ',nland
 
    ! If there are no land pixels in the scene, we have nothing more to do
    if (nland .eq. 0) return
 
-   ! Allocate local arrays for lat, lon
-   allocate(datlat(nland))
-   allocate(datlon(nland))
-   allocate(datemis(nlwchannels,nland))
-   datlat=real_fill_value
-   datlon=real_fill_value
-   datemis=real_fill_value
-
-   ! Extract only the land pixels from the imager structures
-   lndcount = 1
-   do i=1,imager_geolocation%ny
-      do j=imager_geolocation%startx,imager_geolocation%endx
-         if (imager_flags%lsflag(j,i) .eq. 1) then
-            if (imager_geolocation%latitude (j,i) .ne. real_fill_value .and. &
-                imager_geolocation%longitude(j,i) .ne. real_fill_value) then
-               datlat(lndcount) = imager_geolocation%latitude(j,i)
-               datlon(lndcount) = imager_geolocation%longitude(j,i)
-               lndcount = lndcount+1
-            end if
-         end if
-      end do
-   end do
-
-   ! Read the emissivity data - file contains data for all of the MODIS thermal
-   ! bands. We need to reference these in terms of the legacy channels: 3.7, 11,
-   ! 12 microns
-   embands = (/ 1_stint, 8_stint, 9_stint /)
-   ! So, which of these have been selected in the preproc_dims%channels index?
-
-   allocate(bands(nlwchannels))
-   bands=0
-
    ! embands is modis numbering of IR channels where,
    ! channel_info%channel_ids_abs .gt. 3
-   bands(:) = embands
    write(*,*)'channel_info%channel_ids_abs: ',channel_info%channel_ids_abs
    write(*,*)'embands: ',embands
-   write(*,*)'bands: ',bands
 
    ! Select correct modis file
    if (assume_full_path) then
@@ -161,142 +117,71 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    write(*,*)'emis_path_file: ',trim(emis_path_file)
 
    ! Read the data itself
-   stat = read_cimss_emissivity(emis_path_file, emis, bands, flag=1_stint)
-
-   ! Resort the emission data so that latitude runs from -90 to 90, rather than
-   ! 90 to -90
-   allocate(transemis(emis%nbands,emis%nlon,emis%nlat))
-   do i=1,emis%nbands
-      transemis(i,:,:) = transpose(emis%emissivity(i,:,:))
-   end do
-
-   ! Note that we have not read the location (or wavenumber) data. Generate the
-   ! cimss lat-lon grid here:
-   allocate(emlat(emis%nlat))
-   allocate(emlon(emis%nlon))
-   emlat=real_fill_value
-   emlon=real_fill_value
-
-   latstep = 180.0 / real(emis%nlat)
-   ! interpol__nearest_neighbour expects the "y" dimension to be upside down...
-   emlat = 90. - (latstep*real((/ (i,i=1,emis%nlat) /)) - latstep/2.0)
-   lonstep = 360.0 / real(emis%nlon)
-   emlon = lonstep*real((/ (i,i=1,emis%nlon) /)) - 180. - lonstep/2.0
+   if (read_cimss_emissivity(emis_path_file, emis, embands) .ne. 0) &
+        STOP 'GET_SURFACE_EMISSIVITY: Bad read of cimss file.'
 
    ! This emissivity data has very few missing values, but there are some. Set
    ! these to 0.999 (as close to 1 as the emissitivty data itself gets). This is
    ! also a vaguely reasonable value for the water as well....
+   allocate(transemis(emis%nbands,emis%nlon,emis%nlat))
+   do i=1,emis%nbands
+      transemis(i,:,:) = transpose(emis%emissivity(i,:,:))
+   end do
    where(transemis .le. 0.0) transemis = 0.999
 
-   ! Now interpolate this data onto both the data grid and the RTTOV "preproc"
-   ! grid
-   do i=1,nlwchannels
-      ! Can use either bilinear or nearest neighbour...
-
-      !    call interpol_nearest_neighbour(emlon, emlat, transemis(i,:,:), &
-      !                                    datlon, datlat, datemis(i,:))
-
-      call interpol_bilinear(emlon, emlat, transemis(i,:,:), &
-           datlon, datlat, datemis(i,:))
-   end do
-
-   ! Now copy the values out of the 2D datemis array, into the 3D array contained
-   ! in the surface structure
-   lndcount=1
-   do i=1,imager_geolocation%ny
-      do j=imager_geolocation%startx,imager_geolocation%endx
-         if (imager_flags%lsflag(j,i) .ne. 0) then
-            if (imager_geolocation%latitude (j,i) .ne. real_fill_value .and. &
-                imager_geolocation%longitude(j,i) .ne. real_fill_value) then
-               surface%emissivity(j,i,:) = datemis(:,lndcount)
-               lndcount = lndcount+1
-            end if
+   ! Now interpolate this data onto the data grid
+   do j=1,imager_geolocation%ny
+      do i=imager_geolocation%startx,imager_geolocation%endx
+         if (imager_flags%lsflag(i,j) .eq. 1 .and. &
+              imager_geolocation%latitude(i,j) .ne. real_fill_value .and. &
+              imager_geolocation%longitude(i,j) .ne. real_fill_value) then
+            temp_lat=imager_geolocation%latitude(i,j)
+            temp_lon=imager_geolocation%longitude(i,j)
+            do k=1,channel_info%nchannels_lw
+               ! Can use either bilinear or nearest neighbour...
+               !call interpol_nearest_neighbour(emis%lon, emis%lat, &
+               !     transemis(i,:,:), temp_lat, temp_lon, temp_sur)
+               call interpol_bilinear(emis%lon, emis%lat, transemis(k,:,:), &
+                    temp_lon, temp_lat, temp_sur, real_fill_value)
+               
+               surface%emissivity(i,j,k)=temp_sur(1)
+            end do
          end if
       end do
    end do
 
-   ! For the much lower resolution RTTOV grid we calculate the mean in each
-   ! lat-lon grid box. For this we need to define the preproc lat/lon grid box
-   ! edges
-   allocate(prelat(preproc_dims%ydim+1))
-   allocate(prelon(preproc_dims%xdim+1))
-   allocate(prelati(preproc_dims%ydim+1))
-   allocate(preloni(preproc_dims%xdim+1))
-   prelat=real_fill_value
-   prelon=real_fill_value
-   prelati=long_int_fill_value
-   preloni=long_int_fill_value
-
-   ! The latitude/longitude arrays in preproc_geoloc store the bin centres, so we
-   ! need to convert to the edges.
-   ! Note that, strangely, dellat is defined as 1./(change in lat) in
-   ! define_proproc_grid. Likewise dellon
-   prelat(:preproc_dims%ydim) = preproc_geoloc%latitude - 0.5/preproc_dims%dellat
-   prelat(preproc_dims%ydim+1) = preproc_geoloc%latitude(preproc_dims%ydim) &
-        & + 0.5/preproc_dims%dellat
-
-   prelon(:preproc_dims%xdim) = preproc_geoloc%longitude - 0.5/preproc_dims%dellon
-   prelon(preproc_dims%xdim+1) = preproc_geoloc%longitude(preproc_dims%xdim) &
-        & + 0.5/preproc_dims%dellon
-
-   ! Define the index numbers in the emissivity lat-lon grid with correspond to
-   ! each of the grid cells in the preproc grid
-   location1d=minloc(emlat, mask=((emlat .ge. prelat(1)) .and. &
-        & (emlat .lt. prelat(2))))
-   prelati(1)=location1d(1)
-   do i=1,preproc_dims%ydim
-      location1d=maxloc(emlat, mask=((emlat .ge. prelat(i)) .and. &
-           & (emlat .lt. prelat(i+1))))
-      prelati(i+1) =location1d(1)
-   end do
-
-   location1d=minloc(emlon, mask=((emlon .ge. prelon(1)) .and. &
-        & (emlon .lt. prelon(2))))
-   preloni(1) = location1d(1)
-   do i=1,preproc_dims%xdim
-      location1d= maxloc(emlon, mask=((emlon .ge. prelon(i)) .and. &
-           & (emlon .lt. prelon(i+1))))
-      preloni(i+1) =location1d(1)
-   end do
-
-
-   ! Now calculate the mean emissivity in each preproc grid
-   do i=1,preproc_dims%ydim
-      do j=1,preproc_dims%xdim
-         do k=1,nlwchannels
-            summy=0.00_sreal
-            sum_counter=0_lint
-            do ii=i,i+1
-               do jj=j,j+1
-                  if(transemis(k,preloni(jj),prelati(ii)) .ge. 0.00) then
-!!$                    write(*,*) size(preloni)
-!!$                    write(*,*) size(prelati)
-!!$                    write(*,*) i,j,k
-                     summy=summy+transemis(k,preloni(jj),prelati(ii))
-                     sum_counter=sum_counter+1_lint
-                  endif
-               enddo
-            enddo
-
-            if(sum_counter .gt. 0) then
-               preproc_surf%emissivity(j,i,k)=summy/sum_counter
-            else
-               preproc_surf%emissivity(j,i,k)=real_fill_value
-            endif
+   ! calculate the mean emissivity in each preproc grid
+   allocate(counter(preproc_dims%min_lon:preproc_dims%max_lon, &
+        preproc_dims%min_lat:preproc_dims%max_lat))
+   allocate(summat(preproc_dims%min_lon:preproc_dims%max_lon, &
+        preproc_dims%min_lat:preproc_dims%max_lat, channel_info%nchannels_lw))
+   counter=0
+   summat=0.
+   do j=1,emis%nlat
+      lat=floor((emis%lat(j)+preproc_dims%lat_offset)*preproc_dims%dellat)+1
+      if (lat.ge.preproc_dims%min_lat .and. lat.le.preproc_dims%max_lat) then
+         do i=1,emis%nlon
+            lon=floor((emis%lon(i)+preproc_dims%lon_offset)* &
+                 preproc_dims%dellon)+1
+            if (lon.ge.preproc_dims%min_lon .and. &
+                 lon.le.preproc_dims%max_lon) then
+               summat(lon,lat,:)=summat(lon,lat,:)+transemis(:,i,j)
+               counter(lon,lat) =counter(lon,lat)+1
+            end if
          end do
+      end if
+   end do
+
+   do j=preproc_dims%min_lat,preproc_dims%max_lat
+      do i=preproc_dims%min_lon,preproc_dims%max_lon
+         if (counter(i,j) .gt. 0) &
+            preproc_surf%emissivity(i,j,:) = summat(i,j,:) / real(counter(i,j))
       end do
    end do
 
-   deallocate(datlat)
-   deallocate(datlon)
-   deallocate(datemis)
-   deallocate(bands)
    deallocate(transemis)
-   deallocate(emlat)
-   deallocate(emlon)
-   deallocate(prelat)
-   deallocate(prelon)
-   deallocate(prelati)
-   deallocate(preloni)
+   deallocate(counter)
+   deallocate(summat)
+   call deallocate_emis(emis)
 
 end subroutine get_surface_emissivity

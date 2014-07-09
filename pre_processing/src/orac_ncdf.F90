@@ -23,7 +23,7 @@ module orac_ncdf
 
    interface nc_read_array
       module procedure float_1d, float_2d, float_3d, float_4d, float_5d, &
-           int_1d, int_2d, int_3d, int_4d, int_5d
+           int_1d, int_2d, int_3d, int_4d, int_5d, sint_1d, sint_2d, sint_3d
    end interface nc_read_array
 
 contains
@@ -360,6 +360,93 @@ contains
       include "ncdf_read.inc"
 
    end SUBROUTINE int_5d
+   
+   SUBROUTINE sint_1d(ncid, name, val, verbose)
+      use netcdf
+      use preproc_constants
+
+      implicit none
+
+      integer,          intent(in)    :: ncid, verbose
+      character(len=*), intent(in)    :: name
+      integer(2),       intent(inout) :: val(:)
+
+      integer                         :: ierr, vid
+      integer(lint)                   :: fv, sf, of
+      character(len=unitlength)       :: unit
+      logical                         :: flag
+      integer,          dimension(1)  :: start, counter, stride
+
+      start = 1
+      counter = size(val,1)
+      stride = 1
+      ierr = 0
+      sf = 1
+      of = 0
+      flag = .false.
+
+      include "ncdf_read.inc"
+
+   end SUBROUTINE sint_1d
+
+   SUBROUTINE sint_2d(ncid, name, val, verbose)
+      use netcdf
+      use preproc_constants
+
+      implicit none
+
+      integer,          intent(in)    :: ncid, verbose
+      character(len=*), intent(in)    :: name
+      integer(2),       intent(inout) :: val(:,:)
+
+      integer                         :: ierr, vid
+      integer(lint)                   :: fv, sf, of
+      character(len=unitlength)       :: unit
+      logical                         :: flag
+      integer,          dimension(2)  :: start, counter, stride
+
+      start = 1
+      counter(1) = size(val,1)
+      counter(2) = size(val,2)
+      stride = 1
+      ierr = 0
+      sf = 1
+      of = 0
+      flag = .false.
+
+      include "ncdf_read.inc"
+
+   end SUBROUTINE sint_2d
+
+   SUBROUTINE sint_3d(ncid, name, val, verbose)
+      use netcdf
+      use preproc_constants
+
+      implicit none
+
+      integer,          intent(in)    :: ncid, verbose
+      character(len=*), intent(in)    :: name
+      integer(2),       intent(inout) :: val(:,:,:)
+
+      integer                         :: ierr, vid
+      integer(lint)                   :: fv, sf, of
+      character(len=unitlength)       :: unit
+      logical                         :: flag
+      integer,          dimension(3)  :: start, counter, stride
+
+      start = 1
+      counter(1) = size(val,1)
+      counter(2) = size(val,2)
+      counter(3) = size(val,3)
+      stride = 1
+      ierr = 0
+      sf = 1
+      of = 0
+      flag = .false.
+
+      include "ncdf_read.inc"
+
+   end SUBROUTINE sint_3d
 
 ! Name: nc_open
 !

@@ -17,11 +17,8 @@
 ! imager_angles   struct  in          Imager structure containing viewing geom.
 ! channel_info    struct  in          Preprocessing dimensions, including sw and
 !                                     lw channel counts
-! ecmwf_2d        struct  in          ECMWF 2D (near-surface) fields
+! ecmwf           struct  in          ECMWF fields
 ! surface         struct  both        Surface properties structure
-
-! Local variables:
-! Name Type Description
 !
 ! History:
 ! 30/04/2012, Gareth Thomas: Finished first version
@@ -80,21 +77,24 @@
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/06/20, GM: Handle case when imager_geolocation%latitude or
 !    imager_geolocation%longitude is equal to fill_value.
+! 2014/06/11, AP: Use standard fill value rather than unique one. Use new 
+!                 ecmwf structures.
 !
 ! $Id$
 !
 ! Bugs:
+! - NITAVHRR hangs somewhere in here.
 ! NB channels are hardwired in this code and not selected automatically
 !
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
    modis_surf_path, imager_flags, imager_geolocation, imager_angles, &
-   imager_measurements, channel_info, ecmwf_2d, surface)
+   imager_measurements, channel_info, ecmwf, surface)
 
    use channel_structures
    use cox_munk_m
-   use ecmwf_structures
+   use ecmwf_m, only : ecmwf_s
    use fill_grid_m
    use imager_structures
    use interpol
@@ -106,17 +106,17 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
    implicit none
 
    ! Input variables
-   character(len=datelength), intent(in)           :: cyear
-   integer(kind=stint), intent(in)                 :: doy
-   logical, intent(in)                             :: assume_full_path
-   character(len=pathlength), intent(in)           :: modis_surf_path
-   type(imager_flags_s), intent(in)                :: imager_flags
-   type(imager_geolocation_s), intent(in)          :: imager_geolocation
-   type(imager_angles_s), intent(in)               :: imager_angles
+   character(len=datelength),   intent(in)         :: cyear
+   integer(kind=stint),         intent(in)         :: doy
+   logical,                     intent(in)         :: assume_full_path
+   character(len=pathlength),   intent(in)         :: modis_surf_path
+   type(imager_flags_s),        intent(in)         :: imager_flags
+   type(imager_geolocation_s),  intent(in)         :: imager_geolocation
+   type(imager_angles_s),       intent(in)         :: imager_angles
    type(imager_measurements_s), intent(in)         :: imager_measurements
-   type(channel_info_s), intent(in)                :: channel_info
-   type(ecmwf_2d_s), intent(in)                    :: ecmwf_2d
-   type(surface_s), intent(inout)                  :: surface
+   type(channel_info_s),        intent(in)         :: channel_info
+   type(ecmwf_s),               intent(in)         :: ecmwf
+   type(surface_s),             intent(inout)      :: surface
 
    ! Local variables
 
@@ -252,7 +252,7 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
 
       do i=1,nswchannels
          tmp_WSA = mcd%WSA(i,:,:)
-         call fill_grid(tmp_WSA, mcd%fill, fg_mask)
+         call fill_grid(tmp_WSA, real_fill_value, fg_mask)
          mcd%WSA(i,:,:) = tmp_WSA
       end do
 
@@ -264,7 +264,7 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
 !                                        lonlnd, latlnd, wsalnd(i,:))
 
          call interpol_bilinear(mcd%lon, mcd%lat, mcd%WSA(i,:,:), &
-                                lonlnd, latlnd, wsalnd(i,:))
+                                lonlnd, latlnd, wsalnd(i,:), real_fill_value)
 
          write(*,*) 'Channel ',i,' land: ',minval(wsalnd(i,:)), maxval(wsalnd(i,:))
       end do
@@ -331,22 +331,22 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
 
       ! Interpolate the ECMWF wind fields onto the instrument grid
 
-      ! ECMWF longitude is runs from 0-360 unstead of -180-180. We have to convert
+      ! ECMWF longitude runs from 0-360 unstead of -180-180. We have to convert
       ! lonsea to match the ECMWF format (rather than the other way around) as we
       ! need longitude to be monotonically increasing for the interpolation routine
       where(lonsea .lt. 0.0) lonsea = lonsea + 360
 
-!     call interpol_nearest_neighbour(ecmwf_2d%longitude(:,1), ecmwf_2d%latitude(1,:), &
-!                                     ecmwf_2d%u10, lonsea, latsea, u10sea)
+!     call interpol_nearest_neighbour(ecmwf%lon, ecmwf%lat, &
+!                                     ecmwf%u10, lonsea, latsea, u10sea)
 
-!     call interpol_nearest_neighbour(ecmwf_2d%longitude(:,1), ecmwf_2d%latitude(1,:), &
-!                                     ecmwf_2d%v10, lonsea, latsea, v10sea)
+!     call interpol_nearest_neighbour(ecmwf%lon, ecmwf%lat, &
+!                                     ecmwf%v10, lonsea, latsea, v10sea)
 
-      call interpol_bilinear(ecmwf_2d%longitude(:,1), ecmwf_2d%latitude(1,:), &
-           ecmwf_2d%u10, lonsea, latsea, u10sea)
+      call interpol_bilinear(ecmwf%lon, ecmwf%lat, &
+           ecmwf%u10, lonsea, latsea, u10sea, real_fill_value)
 
-      call interpol_bilinear(ecmwf_2d%longitude(:,1), ecmwf_2d%latitude(1,:), &
-           ecmwf_2d%v10, lonsea, latsea, v10sea)
+      call interpol_bilinear(ecmwf%lon, ecmwf%lat, &
+           ecmwf%v10, lonsea, latsea, v10sea, real_fill_value)
 
       ! Code for looping over instrument views is disabled for now: we are using
       ! the lambertian forward model, for which there is no angular dependance

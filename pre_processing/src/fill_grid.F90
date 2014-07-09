@@ -23,8 +23,9 @@
 ! Name Type Description
 !
 ! History:
-! 23 Apr 2012 Gareth Thomas: Original - based on the fill_grid.pro IDL
-!                            code originally written by Don Grainger.
+! 23 Apr 2012, GT: Original - based on the fill_grid.pro IDL
+!                  code originally written by Don Grainger.
+! 11 Jun 2014, AP: extend range of interpolation
 !
 ! $Id$
 !
@@ -75,7 +76,7 @@ subroutine fill_grid(grid, fillval, mask)
            if (grid(i,j) .eq. fillval) then
               m = 0
               flag = 0
-              do while ((flag .eq. 0) .and. (m .lt. 4))
+              do while (flag .eq. 0)
                  m = m+1
                  if (m .eq. 1) then
                     count=8 

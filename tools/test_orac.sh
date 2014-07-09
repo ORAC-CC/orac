@@ -85,6 +85,8 @@
 # 2014/02/04: AP Expanded print statements - now displays # converged and 
 #                average cost. Added xargs parallelisation.
 # 2014/04/30: AP New folder structure. Minor bug fixes. Added -drop.
+# 2014/07/01: AP Changed processing order as MODIS is faster. Removed
+#                parallelisation as ORAC already parallel.
 #
 set -e
 
@@ -317,6 +319,16 @@ fi
 #------------------------------------------------------------------------------
 i=0
 
+if (( $do_all || $do_DAYMYD )); then
+    sensor[$i]=MODIS-AQUA
+    label[$i]=DAYMYD
+    let i+=1
+fi
+if (( $do_all || $do_NITMYD )); then
+    sensor[$i]=MODIS-AQUA
+    label[$i]=NITMYD
+    let i+=1
+fi
 if (( $do_all || $do_DAYAATSR )); then
     sensor[$i]=AATSR
     if (( $ver21 )); then
@@ -347,16 +359,6 @@ fi
 if (( $short && ($do_all || $do_NITAVHRR) )); then
     sensor[$i]=AVHRR-NOAA18
     label[$i]=NITAVHRR
-    let i+=1
-fi
-if (( $do_all || $do_DAYMYD )); then
-    sensor[$i]=MODIS-AQUA
-    label[$i]=DAYMYD
-    let i+=1
-fi
-if (( $do_all || $do_NITMYD )); then
-    sensor[$i]=MODIS-AQUA
-    label[$i]=NITMYD
     let i+=1
 fi
 
@@ -432,21 +434,21 @@ $phase"
    echo '' 1>> $log_file
 
 #  Non-parallel version:
-#   sec=`date +"%s"`
-#   $orac_folder/orac $driver_file >> $log_file 2>&1
-#   if (( $? != 0 )); then
-#       echo "${label[$j]}: Error."
-#       exit
-#   fi
-#   echo 'Processing took '$((`date +"%s"`-$sec))' s'
+   $orac_folder/orac $driver_file >> $log_file 2>&1
+   if (( $? != 0 )); then
+       echo "${label[$j]}: Error."
+       exit
+   fi
+   echo "Processed ${label[$j]}"
+   perl -ne "$perl" $log_file
 
    # parallel version
-   com="$com$orac_folder/orac $driver_file >> $log_file 2>&1 && "\
-"echo 'Processed ${label[$j]}' && perl -ne '$perl' $log_file"$'\n'
+#   com="$com$orac_folder/orac $driver_file >> $log_file 2>&1 && "\
+#"echo 'Processed ${label[$j]}' && perl -ne '$perl' $log_file"$'\n'
 # the second line prints 'Processed' and convergence data on completition
 done
 # parallelize the commands
-echo "$com" | xargs -0 -P $n_procs -n 1 -I COMMAND sh -c COMMAND
+#echo "$com" | xargs -0 -P $n_procs -n 1 -I COMMAND sh -c COMMAND
 echo 'Processing took '$((`date +"%s"`-$sec))' s'
 
 rm -f $driver_file_base*

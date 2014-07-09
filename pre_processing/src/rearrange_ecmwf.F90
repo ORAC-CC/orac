@@ -12,11 +12,7 @@
 ! Arguments:
 ! Name       Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! var        real    Both Array to be rearranged. The specific function called
-!                         determined by if this has 2 or 3 dimensions.
-! ecmwf_dims struct  In   Summary of dimensions of ECMWF fields
-! dim1,2,3   integer In   Size of the dimensions of the array. Dim3 should only
-!                         be included for 3 dimensional arrays.
+! ecmwf      struct  Both   Summary of contents of ECMWF files
 !
 ! History:
 ! 2013/03/06: CP Original code
@@ -25,6 +21,7 @@
 ! 2013/11/01: GM Cleaned up code and removed the use of several auxiliary arrays
 ! 2013/11/05: GT Bug fix. Moved declaration of dim1 & dim2 to before they
 !                are used in the definition of var.
+! 2014/05/07: AP Restructuring for smaller ECMWF structure.
 !
 ! $Id$
 !
@@ -32,70 +29,40 @@
 ! none known
 !
 
-module rearrange
+subroutine rearrange_ecmwf(ecmwf)
 
    implicit none
 
-   interface rearrange_ecmwf
-      module procedure rearrange_ecmwf_2d, rearrange_ecmwf_3d
-   end interface rearrange_ecmwf
+   type(ecmwf_s), intent(inout) :: ecmwf
 
-contains
+   integer                      :: date, ind, i
+   real(kind=sreal)             :: utemp(ecmwf%xdim,ecmwf%ydim)
+   real(kind=sreal)             :: vtemp(ecmwf%xdim,ecmwf%ydim)
+   real(kind=sreal)             :: lontemp(ecmwf%xdim), lattemp(ecmwf%ydim)
 
-   subroutine rearrange_ecmwf_2d(var,ecmwf_dims,dim1,dim2)
+   ! find dateline
+   date=1
+   do while (ecmwf%lon(date) .lt. 180.)
+      date = date + 1
+   end do
+   ind = ecmwf%xdim + 1 - date
 
-      use ecmwf_structures, only: ecmwf_dims_s
-      use preproc_constants, only: sreal
+   ! swap left and right halfs into a temp array
+   utemp(1:ind,:) = ecmwf%u10(date:,:)
+   vtemp(1:ind,:) = ecmwf%v10(date:,:)
+   lontemp(1:ind) = ecmwf%lon(date:) - 360.
+   utemp(date:,:) = ecmwf%u10(1:ind,:)
+   vtemp(date:,:) = ecmwf%v10(1:ind,:)
+   lontemp(date:) = ecmwf%lon(1:ind)
 
-      implicit none
+   ecmwf%lon = lontemp
 
-      integer,            intent(in)    :: dim1,dim2
-      real(kind=sreal),   intent(inout) :: var(dim1,dim2)
-      type(ecmwf_dims_s), intent(in)    :: ecmwf_dims
-
-      integer          :: i
-      integer          :: x_half,y_half
-      real(kind=sreal) :: temp(dim1,dim2)
-
-      x_half=int(ecmwf_dims%xdim/2.)
-      y_half=int(ecmwf_dims%ydim/2.)
-
-      ! swap left and right halfs into a temp array
-      temp(1:x_half,:) =var(x_half+1:,:)
-      temp(x_half+1:,:)=var(1:x_half,:)
-
-      ! flip in the y direction from the temp to the original
-      do i=1,dim2
-         var(:,dim2+1-i)=temp(:,i)
-      enddo
-   end subroutine rearrange_ecmwf_2d
-
-   subroutine rearrange_ecmwf_3d(var,ecmwf_dims,dim1,dim2,dim3)
-
-      use ecmwf_structures, only: ecmwf_dims_s
-      use preproc_constants, only: sreal
-
-      implicit none
-
-      integer,            intent(in)    :: dim1,dim2,dim3
-      real(kind=sreal),   intent(inout) :: var(dim1,dim2,dim3)
-      type(ecmwf_dims_s), intent(in)    :: ecmwf_dims
-
-      integer          :: i
-      integer          :: x_half,y_half
-      real(kind=sreal) :: temp(dim1,dim2,dim3)
-
-      x_half=int(ecmwf_dims%xdim/2)
-      y_half=int(ecmwf_dims%ydim/2)
-
-      ! swap left and right halfs into a temp array
-      temp(1:x_half,:,:) =var(x_half+1:,:,:)
-      temp(x_half+1:,:,:)=var(1:x_half,:,:)
-
-      ! flip in the y direction from the temp to the original
-      do i=1,dim2
-         var(:,dim2+1-i,:)=temp(:,i,:)
-      enddo
-   end subroutine rearrange_ecmwf_3d
-
-end module rearrange
+   ! flip in the y direction from the temp to the original
+   lattemp=ecmwf%lat
+   do i=1,ecmwf%ydim
+      ecmwf%u10(:,ecmwf%ydim+1-i) = utemp(:,i)
+      ecmwf%v10(:,ecmwf%ydim+1-i) = vtemp(:,i)
+      ecmwf%lat(ecmwf%ydim+1-i)   = lattemp(i)
+   enddo
+   
+end subroutine rearrange_ecmwf

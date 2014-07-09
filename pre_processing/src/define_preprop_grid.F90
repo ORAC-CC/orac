@@ -12,11 +12,10 @@
 ! Arguments:
 ! Name         Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! grid_flag    string In  1 - ECMWF grid; 2 - MODIS L3 grid; 3 - own definition
-! ecmwf_2d     struct In  Structure containing 2-D ECMWF fields.
-! ecmwf_dims   struct In  Structure summarising dimensions of ECMWF files.
-! preproc_dims struct Out Structure summarising dimensions of preprocessing.
-! verbose      logic  In  in F: minimise information printed to screen; T: don't
+! imager_geolocation
+!              struct both Summary of pixel positions
+! preproc_dims struct Out  Structure summarising dimensions of preprocessing.
+! verbose      logic  In   F: minimise information printed to screen; T: don't
 !
 ! History:
 ! 2012/01/19: MJ produces initial code version.
@@ -32,59 +31,61 @@
 ! none known
 ! 
 
-subroutine define_preprop_grid(grid_flag,ecmwf_2d,ecmwf_dims, &
-     preproc_dims,verbose)
+subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
 
-   use preproc_constants
    use imager_structures
-   use ecmwf_structures
+   use preproc_constants
    use preproc_structures
 
    implicit none
 
-   type(preproc_dims_s) :: preproc_dims
+   type(imager_geolocation_s), intent(in)    :: imager_geolocation
+   type(preproc_dims_s),       intent(inout) :: preproc_dims
+   logical,                    intent(in)    :: verbose
 
-   type(ecmwf_2d_s)     :: ecmwf_2d
-   type(ecmwf_dims_s)   :: ecmwf_dims
+   real(sreal), dimension(imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny)             :: lat, lon
+   logical, dimension(imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny)             :: mask
+   integer                                   :: xmax, ymax
+ 
+   ! determine which preproc grid points each pixels falls in (start at 1)
+   lat = (imager_geolocation%latitude + preproc_dims%lat_offset)* &
+        preproc_dims%dellat + 1.
+   lon = (imager_geolocation%longitude + preproc_dims%lon_offset)* &
+        preproc_dims%dellon + 1.
 
-   integer(kind=sint)   :: grid_flag !1:ecmwf grid, 2:L3 grid, 3: own definition
-   logical              :: verbose
+   ! only consider valid lat/lon values
+   mask =  imager_geolocation%latitude.gt.real_fill_value .and. &
+        imager_geolocation%longitude.gt.real_fill_value
 
-   !ecmwf grid but define everything at cell centres
-   if(grid_flag .eq. 1) then
+   ! take one more pixel than is required for interpolation
+   ymax = nint(2.*preproc_dims%lat_offset*preproc_dims%dellat,kind=lint)
+   preproc_dims%max_lat = maxval(ceiling(lat), mask) + 1
+   if (preproc_dims%max_lat .gt. ymax) preproc_dims%max_lat = ymax
+   preproc_dims%min_lat = minval(floor(lat), mask) - 1
+   if (preproc_dims%min_lat .lt. 1) preproc_dims%min_lat = 1
 
-      preproc_dims%dellon=1./abs(ecmwf_2d%longitude(2,1)-ecmwf_2d%longitude(1,1))
-      preproc_dims%dellat=1./abs(ecmwf_2d%latitude(1,1)-ecmwf_2d%latitude(1,2))
+   ! if longitude touches the grid edges, wrap around and use the whole grid
+   xmax = nint(2.*preproc_dims%lon_offset*preproc_dims%dellon,kind=lint)
+   preproc_dims%max_lon = maxval(ceiling(lon), mask) + 1
+   preproc_dims%min_lon = minval(floor(lon), mask) - 1
+   if (preproc_dims%max_lon.ge.xmax .or. preproc_dims%min_lon.le.1) then
+      preproc_dims%max_lon = xmax
+      preproc_dims%min_lon = 1
+   end if
 
-      preproc_dims%xdim=ecmwf_dims%xdim
-      preproc_dims%ydim=ecmwf_dims%ydim ! CP removed -1
-
-      !Preprocessing has same vertical structure as ecmwf grid
-      preproc_dims%kdim=ecmwf_dims%kdim+1
-
-      !modis L3 grid
-   elseif(grid_flag .eq. 2) then
-      print*,'DEFINE_PREPROP_GRID: !!!Option 2 does not currently function!!!'
-
-      !user defined definition
-   elseif(grid_flag .eq. 3) then
-
-      preproc_dims%xdim=nint(2.*preproc_dims%lon_offset* &
-           preproc_dims%dellon,kind=lint)
-      preproc_dims%ydim=nint(2.*preproc_dims%lat_offset* &
-           preproc_dims%dellat,kind=lint)     
-
-      !Preprocessing has same vertical structure as ecmwf grid. added an extra 
-      !level so surface information can be stored in the same profile
-      preproc_dims%kdim=ecmwf_dims%kdim+1
-
-   endif
-
+   preproc_dims%xdim = preproc_dims%max_lon - preproc_dims%min_lon + 1
+   preproc_dims%ydim = preproc_dims%max_lat - preproc_dims%min_lat + 1
+   
    if (verbose) then
       write(*,*) 'preproc_dims: ',preproc_dims%xdim, &
            preproc_dims%ydim,preproc_dims%kdim
       write(*,*) 'dellon, dellat: ',preproc_dims%dellon,preproc_dims%dellat
+      print*, 'preproc_dims%min_lat: ', preproc_dims%min_lat
+      print*, 'preproc_dims%max_lat: ', preproc_dims%max_lat
+      print*, 'preproc_dims%min_lon: ', preproc_dims%min_lon
+      print*, 'preproc_dims%max_lon: ', preproc_dims%max_lon
    end if
-
 
 end subroutine define_preprop_grid

@@ -71,12 +71,12 @@
 ! uuid_tag         string in A Universally Unique ID for these files
 ! exec_time        string in Date/time string for when this file was generated
 ! aatsr_calib_file string in Full path to the AATSR calibration file
-! badc             logic  in T: use of BADC NetCDF ECMWF files; F: GRIB ECMWF
-!                            files
+! ecmwf_flag       int    in 0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
+!                            2: BADC GRIB files.
 ! ecmwf_path2      string in Folder containing ECMWF files (?)
 ! ecmwf_path3      string in Folder containing ECMWF files (?)
 ! chunkproc        logic  in T: split AATSR orbit in 4096 row chunks, F: don't
-! day_night        int    in 2: process only night data; 1: day
+! day_night        int    in 2: process only night data; 1: day (default)
 ! verbose          logic  in F: minimise information printed to screen; T: don't
 ! use_chunking     logic  in T: apply chunking when writing NCDF files; F: don't
 !
@@ -192,6 +192,7 @@
 ! 2014/06/25: GM Rewrote along track chunking code fixing a bug where the second
 !                segment in AATSR night processing was not being processed when
 !                chunking was off.
+! 2014/07/01: AP Update to ECMWF code.
 !
 ! $Id$
 !
@@ -208,15 +209,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
    use attribute_structures
    use channel_structures
-   use calculate_rt_m
    use correct_for_ice_snow_m
-   use ecmwf_structures
+   use ecmwf_m
    use imager_structures
    use hdf5
    use netcdf
    use netcdf_output
    use netcdf_structures
-   use orac_ecmwf
    use preparation_m
    use preproc_constants
    use preproc_structures
@@ -224,6 +223,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    use read_avhrr
    use read_modis
    use read_imager_m
+   use rttov_driver_m
    use setup_instrument
    use surface_emissivity
    use surface_reflectance
@@ -245,12 +245,12 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    character(len=pathlength)       :: emiss2_path
    character(len=pathlength)       :: output_pathin,output_pathout
    character(len=pathlength)       :: aatsr_calib_file
-   character(len=pathlength)       :: ecmwf_path2,ecmwf_path2out
-   character(len=pathlength)       :: ecmwf_path3,ecmwf_path3out
+   character(len=pathlength)       :: ecmwf_path2,ecmwf2pathout
+   character(len=pathlength)       :: ecmwf_path3,ecmwf3pathout
    character(len=flaglength)       :: cgrid_flag
    character(len=attribute_length) :: cdellon,cdellat
    character(len=pixellength)      :: cstartx,cendx,cstarty,cendy
-   character(len=pixellength)      :: cbadc
+   character(len=pixellength)      :: cecmwf_flag
    character(len=pixellength)      :: cchunkproc
    character(len=pixellength)      :: cday_night
    character(len=pixellength)      :: cverbose
@@ -260,7 +260,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    type(script_arguments_s)        :: script_input
 
    integer(kind=sint)              :: grid_flag
-   logical                         :: badc
+   integer                         :: ecmwf_flag
    logical                         :: chunkproc
    integer(kind=stint)             :: day_night
    logical                         :: verbose
@@ -310,9 +310,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    type(imager_measurements_s)     :: imager_measurements
    type(imager_time_s)             :: imager_time
 
-   type(ecmwf_dims_s)              :: ecmwf_dims
-   type(ecmwf_2d_s)                :: ecmwf_2d
-   type(ecmwf_3d_s)                :: ecmwf_3d
+   type(ecmwf_s)                   :: ecmwf
 
    type(surface_s)                 :: surface
 
@@ -381,7 +379,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       CALL GET_COMMAND_ARGUMENT(33,script_input%uuid_tag)
       CALL GET_COMMAND_ARGUMENT(34,script_input%exec_time)
       CALL GET_COMMAND_ARGUMENT(35,aatsr_calib_file)
-      CALL GET_COMMAND_ARGUMENT(36,cbadc)
+      CALL GET_COMMAND_ARGUMENT(36,cecmwf_flag)
       CALL GET_COMMAND_ARGUMENT(37,ecmwf_path2)
       CALL GET_COMMAND_ARGUMENT(38,ecmwf_path3)
       CALL GET_COMMAND_ARGUMENT(39,cchunkproc)
@@ -435,7 +433,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       read(11,*) script_input%uuid_tag
       read(11,*) script_input%exec_time
       read(11,*) aatsr_calib_file
-      read(11,*) cbadc
+      read(11,*) cecmwf_flag
       read(11,*) ecmwf_path2
       read(11,*) ecmwf_path3
       read(11,*) cchunkproc
@@ -465,7 +463,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    read(cstarty(1:len_trim(cstarty)), '(I6)') starty
    read(cendy(1:len_trim(cendy)), '(I6)') endy
    read(cday_night(1:len_trim(cday_night)), '(I6)') day_night
-   badc=parse_logical(cbadc)
+   read(cecmwf_flag(1:len_trim(cecmwf_flag)), '(I6)') ecmwf_flag
    chunkproc=parse_logical(cchunkproc)
    verbose=parse_logical(cverbose)
    use_chunking=parse_logical(cuse_chunking)
@@ -614,90 +612,92 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, sensor, &
            platform,hour,cyear,cmonth,cday,chour,cminute,assume_full_paths, &
-           ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out, &
-           ecmwf_path3out,script_input,badc,imager_geolocation,i_chunk,verbose)
+           ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf2pathout, &
+           ecmwf3pathout,script_input,ecmwf_flag,imager_geolocation,i_chunk, &
+           verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
          write(*,*) 'START READING ECMWF ERA INTERIM GRIB FILE:'
-         write(*,*) 'badc: ', badc
+         write(*,*) 'ecmwf_flag: ', ecmwf_flag
          write(*,*) 'ecmwf_path:  ',trim(ecmwf_pathout)
-         if (badc) then
-            write(*,*) 'ecmwf_path2: ',trim(ecmwf_path2out)
-            write(*,*) 'ecmwf_path3: ',trim(ecmwf_path3out)
+         if (ecmwf_flag.gt.0) then
+            write(*,*) 'ecmwf_path2: ',trim(ecmwf2pathout)
+            write(*,*) 'ecmwf_path3: ',trim(ecmwf3pathout)
          endif
       endif
 
-      if (badc) then
-         call read_ecmwf_dimensions_nc(ecmwf_path3out,ecmwf_dims)
-         if (verbose) write(*,*)'ecmwf_dims nc: ',ecmwf_dims%xdim, &
-              ecmwf_dims%ydim
-      else
-         call read_ecmwf_dimensions_grib(ecmwf_pathout,ecmwf_dims)
-         if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf_dims%xdim, &
-              ecmwf_dims%ydim
-      endif
+      ! read surface wind fields and ECMWF dimensions
+      select case (ecmwf_flag)
+      case(0)
+         call read_ecmwf_wind_grib(ecmwf_pathout,ecmwf)
+         if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
+      case(1)
+         call read_ecmwf_wind_nc(ecmwf_pathout,ecmwf2pathout, &
+              ecmwf3pathout,ecmwf)
+         if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
+      case(2)
+         call read_ecmwf_wind_badc(ecmwf_pathout,ecmwf2pathout, &
+              ecmwf3pathout,ecmwf)
+         if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
+      end select
+      if (verbose) then
+         print*,'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
+         print*,'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
+      end if
+      call rearrange_ecmwf(ecmwf)
 
-      ! allocate now the variable arrays in the structure
-      if (verbose) write(*,*) 'allocate ecmwf structure'
-      call allocate_ecmwf_structures(ecmwf_dims,ecmwf_3d,ecmwf_2d)
-
-      ! read ERA Interim lat/lon grid
-      if (verbose) write(*,*) 'read ECMWF lat/lon'
-      if (badc) then
-         call read_ecmwf_lat_lon_nc(ecmwf_path3out,ecmwf_dims,ecmwf_2d)
-      else
-         call read_ecmwf_lat_lon(ecmwf_pathout,ecmwf_dims,ecmwf_2d)
-      endif
-
-      ! define a preprocessing grid which can be ecmwf grid or user defined.
+      ! define preprocessing grid from user grid spacing and satellite limits
       if (verbose) write(*,*) 'define preprocessing grid'
-      call define_preprop_grid(grid_flag,ecmwf_2d,ecmwf_dims,preproc_dims, &
-           verbose)
+      preproc_dims%kdim = ecmwf%kdim + 1
+      call define_preprop_grid(imager_geolocation,preproc_dims,verbose)
 
       ! allocate preprocessing structures
       if (verbose) write(*,*) 'allocate preprocessing structures'
       call allocate_preproc_structures(imager_angles,preproc_dims, &
-           preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
-           preproc_swrtm,preproc_surf,channel_info)
-
-      ! set up now the preproc grid
-      call make_preprop_grid(preproc_dims,preproc_geoloc)
-
-      ! find the bounding indices of the imager data wrt the preprocessing grid
-      call find_min_max_preproc(preproc_dims,imager_geolocation,verbose)
+           preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm,preproc_swrtm, &
+           preproc_surf,channel_info)
 
       ! now read the actual data and interpolate it to the preprocessing grid
       if (verbose) write(*,*) 'Build preprocessing grid'
-      call build_preproc_fields(preproc_dims,preproc_geo,imager_geolocation, &
-           imager_angles)
+      call build_preproc_fields(preproc_dims,preproc_geoloc,preproc_geo, &
+           imager_geolocation,imager_angles)
       if (verbose) write(*,*) 'finished preprocessing grid'
 
       ! read grib files
       if (verbose) write(*,*) 'START READING ECMWF ERA INTERIM FILE'
-      if (badc) then
-         if (verbose) write(*,*) 'Reading ecmwf path3: ',trim(ecmwf_path3out)
-         call read_ecmwf_nc(ecmwf_path3out,ecmwf_dims,ecmwf_2d,preproc_dims, &
-              preproc_geoloc,preproc_prtm,grid_flag)
+      select case (ecmwf_flag)
+      case(0)
+         call read_ecmwf_grib(ecmwf_pathout,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose)
+      case(1)
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_pathout)
+         call read_ecmwf_nc(ecmwf_pathout,ecmwf,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose)
 
-         if (verbose) write(*,*)'reading ecmwf path2: ',trim(ecmwf_path2out)
-         call read_ecmwf_nc(ecmwf_path2out,ecmwf_dims,ecmwf_2d,preproc_dims,&
-              preproc_geoloc,preproc_prtm,grid_flag)
+         if (verbose) write(*,*) 'Reading ecmwf path2: ',trim(ecmwf2pathout)
+         call read_ecmwf_nc(ecmwf2pathout,ecmwf,preproc_dims,&
+              preproc_geoloc,preproc_prtm,verbose)
 
-         if (verbose) write(*,*)'reading ecmwf path:  ',trim(ecmwf_pathout)
-         call read_ecmwf_nc(ecmwf_pathout,ecmwf_dims,ecmwf_2d,preproc_dims, &
-              preproc_geoloc,preproc_prtm,grid_flag)
-
-         if (verbose) write(*,*) 'FINISHED READING ECMWF ERA INTERIM BADC FILE'
-      else
-         call read_ecmwf_grib(ecmwf_pathout,ecmwf_dims,ecmwf_3d,ecmwf_2d, &
-              preproc_dims,preproc_geoloc,preproc_prtm)
-
-         if (verbose) write(*,*) 'FINISHED READING ECMWF ERA INTERIM GRIB FILE'
-      endif ! end badc
-
+         if (verbose) write(*,*) 'Reading ecmwf path3:  ',trim(ecmwf3pathout)
+         call read_ecmwf_nc(ecmwf3pathout,ecmwf,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose)
+      case(2)
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_pathout)
+         call read_ecmwf_nc(ecmwf_pathout,ecmwf,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose)
+      
+         if (verbose) write(*,*) 'Reading ecmwf path2: ',trim(ecmwf2pathout)
+         call read_ecmwf_grib(ecmwf2pathout,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose)
+         
+         if (verbose) write(*,*) 'Reading ecmwf path3: ',trim(ecmwf3pathout)
+         call read_ecmwf_grib(ecmwf3pathout,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose)
+      end select
+      if (verbose) write(*,*) 'FINISHED READING ECMWF ERA INTERIM FILE'
       ! compute geopotential vertical coorindate from pressure cooordinate
-      call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf_dims)
+      call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! select correct emissivity file and calculate the emissivity over land
       ! calculates emissivity for rttov
@@ -707,25 +707,25 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
       ! create/open output netcdf files.
       write(*,*)'create/open output netcdf files'
-      write(*,*)'netcdf output_path: ',trim(output_pathout)
+      write(*,*)'netcdf output_path: ',trim(output_pathin)
       call open_netcdf_output(imager_geolocation%nx,imager_geolocation%ny, &
            output_pathin,output_pathout,lwrtm_file,swrtm_file,prtm_file, &
            config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
-           scan_file,platform,sensor,script_input,cyear,cmonth,cday,chour,cminute, &
-           preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info, &
-           use_chunking)
+           scan_file,platform,sensor,script_input,cyear,cmonth,cday,chour, &
+           cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
+           channel_info,use_chunking)
 
       ! perform RTTOV calculations
       write(*,*) 'Start RT calculations'
-      call calculate_rt(coef_path,emiss_path,sensor,platform, &
-           preproc_dims,preproc_geoloc,preproc_geo, &
-           preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles, &
-           netcdf_info,channel_info,month,ecmwf_dims,verbose)
+      call rttov_driver(coef_path,emiss_path,sensor,platform, &
+           preproc_dims,preproc_geoloc,preproc_geo,&
+           preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles,&
+           netcdf_info,channel_info,month,verbose)
 
       ! set the surface reflectance.
-      call get_surface_reflectance_lam(cyear, doy, assume_full_paths, albedo_path, &
-           imager_flags, imager_geolocation, imager_angles, imager_measurements, &
-           channel_info, ecmwf_2d, surface)
+      call get_surface_reflectance_lam(cyear, doy, assume_full_paths, &
+           albedo_path, imager_flags, imager_geolocation, imager_angles, &
+           imager_measurements, channel_info, ecmwf, surface)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
@@ -749,7 +749,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
       ! deallocate the array parts of the structures
       write(*,*)'start deallocate'
-      call deallocate_ecmwf_structures(ecmwf_dims,ecmwf_3d,ecmwf_2d)
+      call deallocate_ecmwf_structures(ecmwf)
       call deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
            preproc_geo,preproc_prtm, preproc_lwrtm, preproc_swrtm, &
            preproc_surf)

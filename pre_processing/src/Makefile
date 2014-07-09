@@ -13,6 +13,7 @@
 #    small clean ups.
 # 2013/12/04, Greg McGarragh: Added 'make depend' to automatically find all
 #    Fortran file dependencies.
+# 2014/07/01, Adam Povey: Updated after I changed ECMWF routines.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -33,34 +34,26 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/attribute_structures.o \
                 $(OBJS)/bright_m.o \
                 $(OBJS)/build_preproc_fields.o \
-                $(OBJS)/calculate_rt.o \
                 $(OBJS)/calender.o \
                 $(OBJS)/channel_structures.o \
                 $(OBJS)/correct_for_ice_snow.o \
                 $(OBJS)/cox_munk.o \
                 $(OBJS)/date_type_structure.o \
                 $(OBJS)/define_preprop_grid.o \
-                $(OBJS)/ecmwf_structures.o \
-                $(OBJS)/emis_def.o \
+                $(OBJS)/ecmwf.o \
                 $(OBJS)/extrap_into_tropopause.o \
                 $(OBJS)/fill_grid.o \
-                $(OBJS)/find_min_max_preproc.o \
                 $(OBJS)/find_tropopause.o \
                 $(OBJS)/hpsort.o \
                 $(OBJS)/imager_structures.o \
                 $(OBJS)/imager2oraclsflag.o \
-                $(OBJS)/int_ecmwf.o \
                 $(OBJS)/interpol.o \
                 $(OBJS)/interpolate_to3h2o.o \
-                $(OBJS)/ls.o \
-                $(OBJS)/make_preprop_grid.o \
                 $(OBJS)/map_time_to_pixel.o \
                 $(OBJS)/mcd43c.o \
                 $(OBJS)/netcdf_output.o \
                 $(OBJS)/netcdf_structures.o \
                 $(OBJS)/nise_def.o \
-                $(OBJS)/nn_ecmwf.o \
-                $(OBJS)/orac_ecmwf.o \
                 $(OBJS)/orac_ncdf.o \
                 $(OBJS)/preparation.o \
                 $(OBJS)/preproc_constants.o \
@@ -69,12 +62,8 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/read_aatsr.o \
                 $(OBJS)/read_avhrr.o \
                 $(OBJS)/read_cimss_emissivity.o \
-                $(OBJS)/read_ecmwf.o \
-                $(OBJS)/read_ecmwf_dimensions.o \
-                $(OBJS)/read_ecmwf_lat_lon.o \
                 $(OBJS)/read_imager.o \
                 $(OBJS)/read_modis.o \
-                $(OBJS)/rearrange_ecmwf.o \
                 $(OBJS)/rttov_driver.o \
                 $(OBJS)/set_ecmwf.o \
                 $(OBJS)/setup.o \

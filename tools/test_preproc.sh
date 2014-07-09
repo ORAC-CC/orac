@@ -9,7 +9,7 @@
 # Calling sequence -
 #    ./test_preproc.sh [-first] [-short|-long] [-no_compare] [-revision NUMBER]
 #       [-do DAYAATSR|NITAATSR|AATSR|DAYAVHRR|NITAVHRR|AVHRR|DAYMYD|NITMYD|MYD|
-#            MODIS|DAY|NIT|NIGHT|ALL|NONE] [-v21]
+#            MODIS|DAY|NIT|NIGHT|ALL|NONE] [-v21] [-badc 0|1|2]
 #       [-verbose|-quiet] [-n_procs NUM] [-ld_set] [-orac_lib NAME]
 #       [-idl_folder PATH] [-preproc_folder PATH] [-emiss_folder PATH]
 #       [-tool_folder PATH] [-in_folder PATH] [-out_folder PATH] 
@@ -53,6 +53,9 @@
 # -quiet       The opposite of -verbose.
 # -n_procs     The maximum number of simultaneous processes allowed. The default
 #              is 5.
+# -ecmwf       Value to be used for the ECMWF flag. 0 = A single GRIB file output
+#              by the MARS server; 1 = Three NCDF files produced from BADC files;
+#              2 = One NCDF file and two GRIB files from the BADC.
 # -ld_set      Do not set the LD_LIBRARY_PATH variable.
 # -orac_lib    Name of the library file for the ORAC preprocessor, from which
 #              LD_LIBRARY_PATH will be generated.
@@ -86,6 +89,7 @@
 # 2014/02/04: AP Improved command line arguments.
 # 2014/04/30: AP New folder structure. Minor bug fixes. Correctly assigned
 #                NITMYD files. Updated AVHRR. Added -v21.
+# 2014/07/01: AP Changed processing order as MODIS is faster.
 #
 set -e
 
@@ -120,10 +124,12 @@ comment='xxx'
 license='http://proj.badc.rl.ac.uk/orac/wiki/License'
 
 # 1:ecmwf grid, 2:L3 grid, 3: own definition
-gridflag=1
+gridflag=3
 # this is the inverse of the actual lat/lon increment
-dellon=2.0
-dellat=2.0
+dellon=1.38888889
+dellat=1.38888889
+#dellon=1.422222
+#dellat=1.436783
 
 # set flag to break ATSR files into smaller chunks
 chunkproc=0
@@ -133,6 +139,9 @@ ncdf_chunk=0
 
 # set flag to print maximal output
 verbose=true
+
+# set ECMWF EMOS library to print debugging output
+#export JDCNDBG=1
 
 #------------------------------------------------------------------------------
 # DETERMINE NECESSARY FOLDERS
@@ -178,6 +187,7 @@ new=1
 revision=0
 ver21=0
 ld_set=1
+badc_flag=1
 
 # deal with command arguments
 while [[ $# > 0 ]]; do
@@ -286,6 +296,14 @@ while [[ $# > 0 ]]; do
         -v21)
             ver21=1
             ;;
+        -ecmwf)
+            shift
+            badc_flag="$1"
+            ;;
+        -badc)
+            shift
+            badc_flag="$1"
+            ;;
         -do)
             shift
             case "$1" in
@@ -370,13 +388,6 @@ if [[ $revision -eq 0 ]]; then
     fi
 fi
 
-# set flag if using badc NCDF files
-if [[ $revision -ge 1966 ]]; then
-    badc_flag=true
-else
-    badc_flag=1
-fi
-
 if (( $ld_set )); then
     # load library paths from Makefile lib file
     # 1) Read contents of lib file, whose location is given by $ORAC_LIB
@@ -405,6 +416,36 @@ fi
 # DEFINE INPUT DATA INFORMATION
 #------------------------------------------------------------------------------
 i=0
+
+#---- AQUA MODIS from LAADS (day) ----
+if (( $do_all || $do_DAYMYD )); then
+    sensor[$i]=MODIS-AQUA
+    label[$i]=DAYMYD
+    path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.0405.005.2009317014309.hdf
+    # if you don't want to check against LAADSweb full files, use this instead
+    #path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.0405.005.2009317014309.bscs_000500531943.hdf
+    path_to_geo[$i]=$in_folder/MYD03.A2008172.0405.005.2009316101940.hdf
+    if (( $short )); then startx[$i]=700; else startx[$i]=0 ; fi
+    endx[$i]=1299
+    starty[$i]=1200
+    endy[$i]=1204
+    daynight[$i]=0
+    let i+=1
+fi
+
+#---- AQUA MODIS from DWD (night) ----
+if (( $do_all || $do_NITMYD )); then
+    sensor[$i]=MODIS-AQUA
+    label[$i]=NITMYD
+    path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.1630.005.2009317021545.bscs_000500531943.hdf
+    path_to_geo[$i]=$in_folder/MYD03.A2008172.1630.005.2009316104244.hdf
+    if (( $short )); then startx[$i]=500; else startx[$i]=0 ; fi
+    endx[$i]=1099
+    starty[$i]=900
+    endy[$i]=904
+    daynight[$i]=0
+    let i+=1
+fi
 
 #---- AATSR (day) ----
 if (( $do_all || $do_DAYAATSR )); then
@@ -435,7 +476,7 @@ if (( $do_all || $do_NITAATSR )); then
         label[$i]=NITAATSR
         path_to_l1b[$i]=$in_folder/ATS_TOA_1PRUPA20080620_002337_000065272069_00345_32964_0666.N1
     fi
-    path_to_geo[$i]=${path_to_l1b[0]}
+    path_to_geo[$i]=${path_to_l1b[$i]}
     if (( $short )); then startx[$i]=1; else startx[$i]=0 ; fi
     endx[$i]=512
     starty[$i]=37450
@@ -477,36 +518,6 @@ if (( $short && ($do_all || $do_NITAVHRR) )); then
     let i+=1
 fi
 
-#---- AQUA MODIS from LAADS (day) ----
-if (( $do_all || $do_DAYMYD )); then
-    sensor[$i]=MODIS-AQUA
-    label[$i]=DAYMYD
-    path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.0405.005.2009317014309.hdf
-    # if you don't want to check against LAADSweb full files, use this instead
-    #path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.0405.005.2009317014309.bscs_000500531943.hdf
-    path_to_geo[$i]=$in_folder/MYD03.A2008172.0405.005.2009316101940.hdf
-    if (( $short )); then startx[$i]=700; else startx[$i]=0 ; fi
-    endx[$i]=1299
-    starty[$i]=1200
-    endy[$i]=1204
-    daynight[$i]=0
-    let i+=1
-fi
-
-#---- AQUA MODIS from DWD (night) ----
-if (( $do_all || $do_NITMYD )); then
-    sensor[$i]=MODIS-AQUA
-    label[$i]=NITMYD
-    path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.1630.005.2009317021545.bscs_000500531943.hdf
-    path_to_geo[$i]=$in_folder/MYD03.A2008172.1630.005.2009316104244.hdf
-    if (( $short )); then startx[$i]=500; else startx[$i]=0 ; fi
-    endx[$i]=1099
-    starty[$i]=900
-    endy[$i]=904
-    daynight[$i]=0
-    let i+=1
-fi
-
 # add distinction for short mode to labels
 if (( $short )); then for j in ${!label[*]}; do
    label[j]=${label[j]}S
@@ -517,7 +528,8 @@ fi
 # RUN ORAC PREPROCESSOR
 #------------------------------------------------------------------------------
 #get uid and time information
-uuid_tag=`exec uuidgen -t`
+#uuid_tag=`exec uuidgen -t`
+uuid_tag=0
 exec_time=`exec date +%Y%m%d%H%M%S`
 
 #start the preprocessing and pass the variables to the binary on the command line

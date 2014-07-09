@@ -18,6 +18,7 @@
 ! 2012/06/26: MJ writes original code version.
 ! 2014/02/10: AP Improved summations. Added loop over lat,lon to move this
 !                call outside of read_ecmwf_nc.
+! 2014/05/08: AP Updated to new ecmwf structure.
 !
 ! $Id$
 !
@@ -25,13 +26,16 @@
 ! none known
 !
 
-subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf_dims)
+subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
+
+   use preproc_constants
+   use preproc_structures
 
    implicit none
 
    type(preproc_prtm_s), intent(inout) :: preproc_prtm
    type(preproc_dims_s), intent(in)    :: preproc_dims
-   type(ecmwf_dims_s),   intent(in)    :: ecmwf_dims
+   type(ecmwf_s),        intent(in)    :: ecmwf
    
    integer                             :: ii,ij,ik
    real(kind=sreal)                    :: virt_temp,p,pp1,logpp,r_ratio,alpha,sp
@@ -39,27 +43,23 @@ subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf_dims)
 
    r_ratio=r_water_vap/(r_dry_air-1.0_sreal)
 
-   ! convert model levels to pressure levels.
-   do ik=1,ecmwf_dims%kdim
-      preproc_prtm%pressure(:,:,ik)=0.5*(avector(ik) + avector(ik+1) + &
-           (bvector(ik)+bvector(ik+1))*exp(preproc_prtm%lnsp))
-   enddo
-   
    ! compute the summation terms of the sum in (2.21) and necessary terms in 
    ! (2.22) & (2.23) from TOA down (index ik represents cell centers and cell
    ! upper boundaries (wrt height))
    do ij=preproc_dims%min_lat,preproc_dims%max_lat
       do ii=preproc_dims%min_lon,preproc_dims%max_lon
          ! this is the lowest level=surface, it also has the surface pressure
-         preproc_prtm%phi_lev(ii,ij,ecmwf_dims%kdim+1)= &
-              preproc_prtm%geopot(ii,ij)
+         preproc_prtm%phi_lev(ii,ij,ecmwf%kdim+1)=preproc_prtm%geopot(ii,ij)
          sp=exp(preproc_prtm%lnsp(ii,ij))
 
-         ! sum from TOA down according to (2.21)
-         do ik=ecmwf_dims%kdim,1,-1
-            
-            p=avector(ik)+bvector(ik)*sp !pressure at cell upper boundary
-            pp1=avector(ik+1)+bvector(ik+1)*sp !pressure at cell lower boundary
+         !pressure at cell lower boundary
+         pp1=ecmwf%avec(ecmwf%kdim+1)+ecmwf%bvec(ecmwf%kdim+1)*sp
+
+         ! sum from surface up according to (2.21)
+         do ik=ecmwf%kdim,1,-1
+            !pressure at cell upper boundary
+            p=ecmwf%avec(ik)+ecmwf%bvec(ik)*sp 
+            preproc_prtm%pressure(ii,ij,ik)=0.5*(p+pp1)
 
             !logpp is logarithmic pressure difference, defined on cell centers
             if(p .gt. dither) then 
@@ -86,8 +86,10 @@ subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf_dims)
             ! perform sum
             preproc_prtm%phi_lev(ii,ij,ik)=preproc_prtm%phi_lev(ii,ij,ik+1) + &
                  sum_term
-            preproc_prtm%phi_lay(ii,ij,ik)=preproc_prtm%phi_lev(ii,ij,ik+1) +&
+            preproc_prtm%phi_lay(ii,ij,ik)=preproc_prtm%phi_lev(ii,ij,ik+1) + &
                  add_term
+
+            pp1=p
          enddo
       end do
    end do
