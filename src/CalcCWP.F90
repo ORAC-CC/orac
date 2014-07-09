@@ -25,6 +25,7 @@
 !    28th Nov 2011, Caroline Poulsen: remove log write statement
 !    2013/11/14, MJ: makes branch for ICE explicit
 !    2013/11/14, GM: Some code clean up
+! 20140611 CP removes automatic crash if ice wat class not specified so can cope with aerosl class
 !
 ! Bugs:
 !   None known
@@ -66,12 +67,16 @@ subroutine Calc_CWP (Ctrl,SPixel, status)
       rho=rhoice
       fac=(4./3.)*rho/qextice
    else
-      status = CWP_Calcerror
-      call Write_Log(Ctrl,'ERROR: Calc_CWP(), invalid Ctrl%CloudClass%Name',status)
+! most likely aerosol but could be some other crash
+ 
+	 Spixel%cwp=real_fill_value
+ 	Spixel%cwp_error=real_fill_value
+
       return
    end if
 
-   al10e2=al10e*al10e
+! do not calculate for aerosl class
+ if (trim(Ctrl%CloudClass%Name) == 'WAT' .or. trim(Ctrl%CloudClass%Name) == 'ICE') then
 
    tenpcot=10.**(Spixel%Xn(iTau))
 
@@ -95,4 +100,8 @@ subroutine Calc_CWP (Ctrl,SPixel, status)
       call Write_Log(Ctrl,'Error calculating CWP',status)
    end if
 
-end subroutine Calc_CWP
+ endif
+
+   
+ End Subroutine Calc_CWP
+ 
