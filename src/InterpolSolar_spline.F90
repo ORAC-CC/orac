@@ -76,7 +76,7 @@
 !	  replaced with ->
 !         call spline(SPixel%RTM%SW%p(1:SPixel%RTM%SW%Np),&
 !              & SPixel%RTM%SW%Tbc(k,1:SPixel%RTM%SW%Np),d2Tbc_dP2(k,1:SPixel%RTM%SW%Np)) 
-!
+!    8/7/2014 CP small bug fix to BKP readout
 ! Bugs:
 !   None known.
 !
@@ -129,7 +129,7 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
     character(180) :: message
     integer        :: k ! for testing
 #ifdef BKP
-   integer :: j       ! For breakpoint output loops
+   integer :: jj       ! For breakpoint output loops
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
