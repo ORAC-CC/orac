@@ -27,7 +27,7 @@
 ! 13) deallocate structures!
 !
 ! Arguments:
-! Name            Type In/Out/Both      Description
+! Name             Type In/Out/Both      Description
 ! ------------------------------------------------------------------------------
 ! sensor           string in Name of instrument (only AATSR, MODIS or AVHRR are
 !                            valid)
@@ -702,12 +702,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       ! create/open output netcdf files.
       write(*,*)'create/open output netcdf files'
       write(*,*)'netcdf output_path: ',trim(output_pathin)
-      call open_netcdf_output(imager_geolocation%nx,imager_geolocation%ny, &
-           output_pathin,output_pathout,lwrtm_file,swrtm_file,prtm_file, &
-           config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
-           scan_file,platform,sensor,script_input,cyear,cmonth,cday,chour, &
-           cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
-           channel_info,use_chunking)
+      call open_netcdf_output(output_pathin,output_pathout,lwrtm_file, &
+           swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
+           geo_file,loc_file,alb_file,scan_file,platform,sensor,script_input, &
+           cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
+           imager_geolocation,netcdf_info,channel_info,use_chunking)
 
       ! perform RTTOV calculations
       write(*,*) 'Start RT calculations'
