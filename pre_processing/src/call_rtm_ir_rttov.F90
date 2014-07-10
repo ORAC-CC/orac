@@ -1,38 +1,40 @@
+!-------------------------------------------------------------------------------
 ! Name: call_rtm_ir_rttov.f90
 !
-!
 ! Purpose:
-!
+! Copy contents of RTTOV structures into ORAC structures.
 !
 ! Description and Algorithm details:
-!
+! 1) Loop over channels and levels, copying contents of transmission and
+!    radiance into preproc_lwrtm
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
-!
+! Name           Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! transmission   struct in   RTTOV-derived atmospheric transmission
+! radiance       struct in   RTTOV-derived atmospheric radiance
+! imager_angles  struct in   Summary of satellite geometry
+! channel_info   struct in   Structure summarising the channels to be processed
+! preproc_lwrtm  struct both Summary of longwave RTM data
 !
 ! History:
-! 2012/05/22, C. Poulsen: Initial version first version extracted form
+! 2012/05/22, CP: Initial version first version extracted form
 !             code by M. Jerg
-! 2012/07/04, C. Poulsen: Removed nviews
-! 2012/17/07, C. Poulsen: Complete rewrite
-! 2012/29/07, C. Poulsen: Fixed many bugs
-! 2012/08/01, M. Jerg: Adds rac_up,rac_down
-! 2012/08/14, C. Poulsen: Fixed tbc
-! 2013/12/11, G. McGarragh: Significant code clean up.
-!
+! 2012/07/04, CP: Removed nviews
+! 2012/17/07, CP: Complete rewrite
+! 2012/29/07, CP: Fixed many bugs
+! 2012/08/01, MJ: Adds rac_up,rac_down
+! 2012/08/14, CP: Fixed tbc
+! 2013/12/11, GM: Significant code clean up.
+! 2014/07/10, AP: Slight tidying. Removed errorstatus as not used.
 !
 ! $Id$
 !
-!
 ! Bugs:
 ! none known
+!-------------------------------------------------------------------------------
 
-subroutine call_rtm_ir_rttov(errorstatus,transmission,radiance,imager_angles, &
+subroutine call_rtm_ir_rttov(transmission,radiance,imager_angles, &
                              channel_info,preproc_lwrtm)
 
    use netcdf
@@ -50,7 +52,6 @@ subroutine call_rtm_ir_rttov(errorstatus,transmission,radiance,imager_angles, &
    implicit none
 
 
-   integer(kind=jpim),      intent(in)    :: errorstatus
    type(transmission_type), intent(in)    :: transmission
    type(radiance_type),     intent(in)    :: radiance
    type(imager_angles_s),   intent(in)    :: imager_angles
@@ -60,28 +61,29 @@ subroutine call_rtm_ir_rttov(errorstatus,transmission,radiance,imager_angles, &
    integer :: ii
    integer :: nlevs,p
    integer :: nchans_ir
-   integer :: test_write
 
 
    nlevs=size(transmission%tau_levels(:,1))
 
    nchans_ir=size(channel_info%channel_ids_rttov_coef_lw)
 
-  ! extract ir transmissions and upwelling and downwelling radiances
+   ! extract ir transmissions and upwelling and downwelling radiances
    do ii=1,nchans_ir
       do p=1,nlevs
 
          preproc_lwrtm%tauac(ii,p)=transmission%tau_levels(p,ii)
-         preproc_lwrtm%taubc(ii,p)=transmission%tau_total(ii)/transmission%tau_levels(p,ii)
+         preproc_lwrtm%taubc(ii,p)=transmission%tau_total(ii) / &
+              transmission%tau_levels(p,ii)
 
          ! convert layers information to levels
          if (p .gt. 1) then
-            preproc_lwrtm%radbc(ii,p)=(radiance%clear(ii)-radiance%up(p-1,ii))/preproc_lwrtm%tauac(ii,p)
+            preproc_lwrtm%radbc(ii,p)=(radiance%clear(ii)-radiance%up(p-1,ii))/&
+                 preproc_lwrtm%tauac(ii,p)
             preproc_lwrtm%radiance_up(ii,p)=radiance%up(p-1,ii)
             preproc_lwrtm%radiance_down(ii,p)=radiance%down(p-1,ii)
-         end if
-         if (p .eq. 1) then
-            preproc_lwrtm%radbc(ii,p)=(radiance%clear(ii)-radiance%up(p,ii))/preproc_lwrtm%tauac(ii,p)
+         else if (p .eq. 1) then
+            preproc_lwrtm%radbc(ii,p)=(radiance%clear(ii)-radiance%up(p,ii))/ &
+                 preproc_lwrtm%tauac(ii,p)
             preproc_lwrtm%radiance_up(ii,p)=radiance%up(p,ii)
             preproc_lwrtm%radiance_down(ii,p)=radiance%down(p,ii)
          end if
@@ -89,8 +91,7 @@ subroutine call_rtm_ir_rttov(errorstatus,transmission,radiance,imager_angles, &
       end do
    end do
 
-   test_write=0
-   if (test_write .eq. 1) then
+   if (.false.) then
       ! these are not filled could be removed
       write(*,*) 'tbc(0,*)=[', preproc_lwrtm%taubc(1,:),']'
       write(*,*) 'tac(0,*)=[', preproc_lwrtm%tauac(1,:),']'
