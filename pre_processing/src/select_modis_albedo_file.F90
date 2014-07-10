@@ -10,34 +10,32 @@
 !
 ! Arguments:
 ! Name                 Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
 ! year                 character  in          Year
 ! doy                  integer    in          Day of year
 ! modis_surf_path      character  in          Path to directory with the
 !                                             MCD43C3.A* files
 ! modis_surf_path_file character  out         Path the the required MCD43C3.A*
 !                                             file
-!
-! Local variables:
-! Name Type Description
-!
 ! History:
-! 2012/08/06, Caroline Poulsen: Original version
-! 2012/08/16, Gareth Thomas Bug fix: removed unused variable "mcd_date"
+! 2012/08/06, CP: Original version
+! 2012/08/16, GT: removed unused variable "mcd_date"
 ! 2012/08/06, CP: added in file name extension for 2009 changed how path is
 !    defined i.e year no longer required in path name
 ! 2012/02/25, CP: added in 2010 and 2007 data
 ! 2013/03/07, GT: Reverted change made by CP on 2012/08/06, and added code to
 !    check that the MODIS file exists and is readable.
 ! 2014/04/21, GM: Cleaned up the code.
-! 2014/05/26: MJ added "FAILED" to error output.
+! 2014/05/26, MJ: added "FAILED" to error output.
 !
 ! $Id$
 !
-! Bugs: There must be a way of searching for wildcard in fortran to make this
-!    code cleaner code should be modified so selects files from year either side
-!
+! Bugs: 
+! There must be a way of searching for wildcard in fortran to make this
+! code cleaner code should be modified so selects files from year either side
 !-------------------------------------------------------------------------------
-subroutine select_modis_albedo_file(cyear,doy,modis_surf_path,modis_surf_path_file)
+subroutine select_modis_albedo_file(cyear,doy,modis_surf_path, &
+     modis_surf_path_file)
 
    use preproc_structures
 

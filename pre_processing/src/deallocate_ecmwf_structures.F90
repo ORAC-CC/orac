@@ -1,5 +1,5 @@
-! Name: allocate_ecmwf_structures.f90
-!
+!-------------------------------------------------------------------------------
+! Name: deallocate_ecmwf_structures.f90
 !
 ! Purpose:
 ! Deallocate the array parts of the types defined in ecmwf_structures.f90
@@ -8,19 +8,19 @@
 ! 1) Deallocate all arrays.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name  Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! ecmwf struct both Structure summarising contents of ECMWF files.
 !
 ! History:
-! 2012/01/13: MJ produces draft code for ERA Interim grib 1 parameters required
-! 2014/05/07: AP new version of structures
+! 2012/01/13, MJ: produces draft code for ERA Interim grib 1 parameters required
+! 2014/05/07, AP: new version of structures
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine deallocate_ecmwf_structures(ecmwf)
 
@@ -28,7 +28,7 @@ subroutine deallocate_ecmwf_structures(ecmwf)
 
    implicit none
 
-   type(ecmwf_s) :: ecmwf
+   type(ecmwf_s), intent(inout) :: ecmwf
 
    deallocate(ecmwf%lon)
    deallocate(ecmwf%lat)

@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: map_time_to_pixel.F90
-!
 !
 ! Purpose:
 ! Map MODIS time data from EV frame to single imager pixels
@@ -38,15 +38,15 @@
 ! refjulianday      dreal in   Julian day number for beginning of satellite time
 !
 ! History:
-! 2011/12/16: MJ produces draft code
-! 2012/06/13: MJ reworks code and add ATBD formula
-! 2013/09/06: AP tidying
+! 2011/12/16, MJ: produces draft code
+! 2012/06/13, MJ: reworks code and add ATBD formula
+! 2013/09/06, AP: tidying
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
      iread_stop,iread_startt,iread_stopt,ttemp,ttemp10,refjulianday)

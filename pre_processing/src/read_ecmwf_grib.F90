@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_ecmwf_grib.F90
-!
 !
 ! Purpose:
 ! Read ECMWF data from a GRIB file, having interpolated it onto the
@@ -45,14 +45,14 @@
 ! verbose        logic  in   T: Print min/max of each field; F: Don't.
 !
 ! History:
-! 2014/05/07: AP First version.
+! 2014/05/07, AP: First version.
 !
 ! $Id$
 !
 ! Bugs:
 ! - If you're having problems with INTF, set the environment variable JDCNDBG=1
 ! for additional debugging output.
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
      preproc_prtm,verbose)

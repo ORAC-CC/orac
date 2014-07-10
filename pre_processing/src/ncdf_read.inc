@@ -1,15 +1,23 @@
+!-------------------------------------------------------------------------------
 ! Name: ncdf_read.inc
-!
 !
 ! Purpose:
 ! Code shared by all version of nc_read_array function. See orac_ncdf.F90 for
 ! detailed header information.
 !
+! Description and Algorithm details:
+! 1) Locate variable in file
+! 2) Read data
+! 3) Replace fill values, apply scale factor, add offset
+!
 ! History:
-! 2014/02/10: AP Original version
+! 2014/02/10, AP: Original version
 !
 ! $Id$
 !
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
    
    ! locate variable in file
    ierr = NF90_INQ_VARID(ncid, name, vid)

@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_avhrr_geo.F90
-!
 !
 ! Purpose:
 ! Open and read AVHRR geo input files.
@@ -10,7 +10,7 @@
 ! 3) Deallocate arrays and close files.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name               Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! path_to_geo_file   string in   Full path to geolocation data 
 ! imager_geolocation struct both Summary of pixel positions
@@ -20,15 +20,15 @@
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 !
 ! History:
-! 2012/01/24: MJ writes code to read geolocation and geometry information for
-!                AVHRR.
-! 2013/09/06: AP tidying, removed array initilisations as read routines cover it
+! 2012/01/24, MJ: writes code to read geolocation and geometry information for
+!   AVHRR.
+! 2013/09/06, AP: tidying, removed array initilisations as read routines cover it
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
      imager_flags,imager_time,n_along_track)
@@ -40,12 +40,12 @@ subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
 
    implicit none
 
-   character(len=pathlength), intent(in)     :: path_to_geo_file
+   character(len=pathlength),  intent(in)    :: path_to_geo_file
    type(imager_geolocation_s), intent(inout) :: imager_geolocation
-   type(imager_angles_s), intent(inout)      :: imager_angles
-   type(imager_flags_s), intent(inout)       :: imager_flags
-   type(imager_time_s), intent(inout)        :: imager_time
-   integer(kind=lint), intent(in)            :: n_along_track
+   type(imager_angles_s),      intent(inout) :: imager_angles
+   type(imager_flags_s),       intent(inout) :: imager_flags
+   type(imager_time_s),        intent(inout) :: imager_time
+   integer(kind=lint),         intent(in)    :: n_along_track
 
    integer(kind=lint)         :: geo_id
 
@@ -76,9 +76,10 @@ subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    !read start and endtime of orbit
    call read_avhrr_time(geo_id,"how",startepochs,endepochs)
 
-   call create_time_for_pixel(imager_geolocation%startx,imager_geolocation%endx, &
-        imager_geolocation%starty,imager_geolocation%endy, &
-        n_along_track,startepochs,endepochs,imager_time,refjulianday)
+   call create_time_for_pixel(imager_geolocation%startx, &
+        imager_geolocation%endx,imager_geolocation%starty, &
+        imager_geolocation%endy,n_along_track,startepochs,endepochs, &
+        imager_time,refjulianday)
 
    !read longitude
    call read_avhrr_lat_lon(geo_id,"where/lon","data","where/lon/what", &

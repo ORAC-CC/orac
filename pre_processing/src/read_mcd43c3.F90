@@ -8,6 +8,7 @@
 !
 ! Arguments:
 ! Name         Type     In/Out/Both Description
+! ------------------------------------------------------------------------------
 ! path_to_file character    in      File name (and path) to read
 ! mcd          type(mcd43c) out     MCD output structure
 ! nbands       integer      in      Number of bands to read
@@ -22,17 +23,16 @@
 !                                   returned as 0.
 !
 ! History:
-! 11 Apr 2012 GT Original
-! 23 Apr 2012 GT Replaced where statements for dealing with
-!                fill values in input data (as they seem to
-!                cause seg-faults with ifort) with do if loops
-! 26 Jun 2012 CP commented out gdprojinfo as causes unknown crash.
-! 16 Aug 2012 GT Commented out check on projection type, as
-!                Carolines previous change means the variable is not defined.
-! 20 Aug 2012 MJ changed read_mcd43c3 from function to subroutine in order to
-!                iron out bugs and some slight change
-! 24 Jan 2014 MJ corrects length of "path_to_file"
-! 11 Jun 2014 AP use standard fill value rather than unique one
+! 11 Apr 2012, GT: Original
+! 23 Apr 2012, GT: Replaced where statements for dealing with fill values in
+!   input data (as they seem to cause seg-faults with ifort) with do if loops
+! 26 Jun 2012, CP: commented out gdprojinfo as causes unknown crash.
+! 16 Aug 2012, GT: Commented out check on projection type, as
+!   Carolines previous change means the variable is not defined.
+! 20 Aug 2012, MJ: changed read_mcd43c3 from function to subroutine in order to
+!   iron out bugs and some slight change
+! 24 Jan 2014, MJ: corrects length of "path_to_file"
+! 11 Jun 2014, AP: use standard fill value rather than unique one
 !
 ! $Id$
 !
@@ -51,16 +51,16 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    include "dffunc.f90"
 
    ! Input variables
-   character(len=pathlength), intent(in) :: path_to_file
-   integer(kind=stint), intent(in)       :: nbands
-   integer(kind=stint), intent(in)       :: bands(:)
-   integer(kind=sint), intent(in)        :: white_sky
-   integer(kind=sint), intent(in)        :: black_sky
-   integer(kind=sint), intent(in)        :: QC
+   character(len=pathlength), intent(in)  :: path_to_file
+   integer(kind=stint),       intent(in)  :: nbands
+   integer(kind=stint),       intent(in)  :: bands(:)
+   integer(kind=sint),        intent(in)  :: white_sky
+   integer(kind=sint),        intent(in)  :: black_sky
+   integer(kind=sint),        intent(in)  :: QC
 
    ! Output variables
-   type(mcd43c), intent(out)             :: mcd
-   integer*4, intent(out)                :: stat
+   type(mcd43c),              intent(out) :: mcd
+   integer*4,                 intent(out) :: stat
 
    ! Local variables
    integer                :: i,j,k

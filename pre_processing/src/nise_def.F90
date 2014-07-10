@@ -1,3 +1,24 @@
+!-------------------------------------------------------------------------------
+! Name: nise_def.F90
+!
+! Purpose:
+! Container for NISE sea ice data read routines.
+!
+! Description and Algorithm details:
+! None
+!
+! Arguments:
+! None
+!
+! History:
+! 2014/05/23, GM: First version.
+!
+! $Id$
+!
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
+
 module nise_m
 
    implicit none

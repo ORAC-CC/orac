@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_ecmwf_wind_badc.F90
-!
 !
 ! Purpose:
 ! Read surface wind components and lat/lon from ECMWF file. Intended for use
@@ -22,13 +22,13 @@
 ! ecmwf      struct both Structure summarising contents of ECMWF files.
 !
 ! History:
-! 2014/05/07: AP First version.
+! 2014/05/07, AP: First version.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
 

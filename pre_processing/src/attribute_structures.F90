@@ -5,15 +5,13 @@
 ! Define variables types which hold the attribute input data.
 !
 ! Description and Algorithm details:
+! None
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Local variables:
-! Name Type Description
+! None
 !
 ! History:
-! 2012/02/13: MJ creates initial structure.
+! 2012/02/13, MJ: creates initial structure.
 !
 ! $Id$
 !

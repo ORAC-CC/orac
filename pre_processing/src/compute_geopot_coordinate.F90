@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: compute_geopot_coordinate.F90
-!
 !
 ! Purpose:
 ! Compute geopotential vertical coorindate from pressure cooordinate
@@ -15,16 +15,16 @@
 ! ecmwf_dims   struct In   Dimensions of the ECMWF data.
 !
 ! History:
-! 2012/06/26: MJ writes original code version.
-! 2014/02/10: AP Improved summations. Added loop over lat,lon to move this
-!                call outside of read_ecmwf_nc.
-! 2014/05/08: AP Updated to new ecmwf structure.
+! 2012/06/26, MJ: writes original code version.
+! 2014/02/10, AP: Improved summations. Added loop over lat,lon to move this
+!   call outside of read_ecmwf_nc.
+! 2014/05/08, AP: Updated to new ecmwf structure.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 

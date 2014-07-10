@@ -1,47 +1,22 @@
-! Name:
-!   sigtrap
+!-------------------------------------------------------------------------------
+! Name: sigtrap.f90
 !
-! Description:
-!  ECMWF signal trapping part
+! Purpose:
+! ECMWF signal trapping part
 !
-!   License/Copyright
-!   Copyright 2011, RAL Space, Science and Technology Facilities Council and University
-!   of Oxford. DWD 
-!
-!   This file and the associated documentation and source code files are part of ORAC.
-!
-!   ORAC is free software: you can redistribute it and/or modify
-!   it under the terms of the GNU General Public License as published by
-!   the Free Software Foundation, either version 3 of the License, or
-!   (at your option) any later version.
-!
-!   ORAC is distributed in the hope that it will be useful,
-!   but WITHOUT ANY WARRANTY; without even the implied warranty of
-!   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!   GNU General Public License for more details.
-!
-!   You should have received a copy of the GNU General Public License
-!   along with ORAC. If not, see http://www.gnu.org/licenses/
-!
+! Description and Algorithm details:
 !
 ! Arguments:
-!    Name       Type    In/Out/Both    Description
-!    N/A
-!
-! Algorithm:
-!
-! Local variables:
-!    Name       Type    Description
+! None
 !
 ! History:
-!     13th Jul 2012, Matthias Jerg : Original version
-!!
-! Bugs:
-!   None known
+! 2012/07/13, MJ: Original version
 !
 ! $Id$
 !
-!---------------------------------------------------------------------
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
 
 integer*4 core_dump_flag,ireturn,signals(1),signal_trap
 

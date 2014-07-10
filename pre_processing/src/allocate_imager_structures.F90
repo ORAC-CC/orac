@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: allocate_imager_structures.F90
-!
 !
 ! Purpose:
 ! Allocate the array parts of the types defined in imager_structures.f90
@@ -19,19 +19,19 @@
 ! channel_info        struct in   Structure giving the number of channels.
 !
 ! History:
-! 2011/12/19: MJ produces draft code for MODIS L1b data
-! 2012/02/03: MJ adds uncertainty to measurements
-! 2012/04/24: GT Added solar azimuth angle to the imager_angles 
-!                structure (needed by surface reflectance routines)
-! 2012/07/04: CP removed nviews from data
-! 2012/12/13: CP changed ydimension to imager_geolocation%ny
-! 2013/09/11: AP Removed startyi, endye.
+! 2011/12/19, MJ: produces draft code for MODIS L1b data
+! 2012/02/03, MJ: adds uncertainty to measurements
+! 2012/04/24, GT: Added solar azimuth angle to the imager_angles structure
+!   (needed by surface reflectance routines)
+! 2012/07/04, CP: removed nviews from data
+! 2012/12/13, CP: changed ydimension to imager_geolocation%ny
+! 2013/09/11, AP: Removed startyi, endye.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
      imager_flags,imager_time,imager_measurements,channel_info)

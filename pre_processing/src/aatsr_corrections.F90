@@ -29,25 +29,20 @@
 ! drift_var  dreal  Out  The variance of the drift correction, which is needed
 !                        to update the uncertainty estimate
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
-! 2013/10/07: AP Original
-! 2013/10/11: GM Fixed format specification for the read of seconds from the
-!                string sdate in aatsr_corrections.F90: aatsr_corrections().
-! 2013/10/11: GM Changed the comparison lut%julday.eq.Tn to lut%julday(1:lut%n)
-!                .eq.Tn so that the comparison does go past the length of the
-!                lut (lut%n) to the static size of lut%julday.
-! 2014/01/27: MJ datatype corrections
-! 2014/06/30: GM Apply 12um nonlinearity brightness temperature correction.
+! 2013/10/07, AP: Original
+! 2013/10/11, GM: Fixed format specification for the read of seconds from the
+!   string sdate in aatsr_corrections.F90: aatsr_corrections().
+! 2013/10/11, GM: Changed the comparison lut%julday.eq.Tn to 
+!   lut%julday(1:lut%n).eq.Tn so that the comparison does go past the length of 
+!   the lut (lut%n) to the static size of lut%julday.
+! 2014/01/27, MJ: datatype corrections
+! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
 !-------------------------------------------------------------------------------
 
 module aatsr_corrections
@@ -75,21 +70,21 @@ module aatsr_corrections
 
    real(sreal), dimension(N_NONLINEARITY_CORRECTION_LUT), parameter :: &
       nonlinearity_correction_T_scene = (/ &
-         200.000, 201.000, 202.000, 203.000, 204.000, 205.000, 206.000, 207.000, &
-         208.000, 209.000, 210.000, 211.000, 212.000, 213.000, 214.000, 215.000, &
-         216.000, 217.000, 218.000, 219.000, 220.000, 221.000, 222.000, 223.000, &
-         224.000, 225.000, 226.000, 227.000, 228.000, 229.000, 230.000, 231.000, &
-         232.000, 233.000, 234.000, 235.000, 236.000, 237.000, 238.000, 239.000, &
-         240.000, 241.000, 242.000, 243.000, 244.000, 245.000, 246.000, 247.000, &
-         248.000, 249.000, 250.000, 251.000, 252.000, 253.000, 254.000, 255.000, &
-         256.000, 257.000, 258.000, 259.000, 260.000, 261.000, 262.000, 263.000, &
-         264.000, 265.000, 266.000, 267.000, 268.000, 269.000, 270.000, 271.000, &
-         272.000, 273.000, 274.000, 275.000, 276.000, 277.000, 278.000, 279.000, &
-         280.000, 281.000, 282.000, 283.000, 284.000, 285.000, 286.000, 287.000, &
-         288.000, 289.000, 290.000, 291.000, 292.000, 293.000, 294.000, 295.000, &
-         296.000, 297.000, 298.000, 299.000, 300.000, 301.000, 302.000, 303.000, &
-         304.000, 305.000, 306.000, 307.000, 308.000, 309.000, 310.000, 311.000, &
-         312.000, 313.000, 314.000, 315.000, 316.000, 317.000, 318.000, 319.000, &
+         200.000, 201.000, 202.000, 203.000, 204.000, 205.000, 206.000, 207.000,&
+         208.000, 209.000, 210.000, 211.000, 212.000, 213.000, 214.000, 215.000,&
+         216.000, 217.000, 218.000, 219.000, 220.000, 221.000, 222.000, 223.000,&
+         224.000, 225.000, 226.000, 227.000, 228.000, 229.000, 230.000, 231.000,&
+         232.000, 233.000, 234.000, 235.000, 236.000, 237.000, 238.000, 239.000,&
+         240.000, 241.000, 242.000, 243.000, 244.000, 245.000, 246.000, 247.000,&
+         248.000, 249.000, 250.000, 251.000, 252.000, 253.000, 254.000, 255.000,&
+         256.000, 257.000, 258.000, 259.000, 260.000, 261.000, 262.000, 263.000,&
+         264.000, 265.000, 266.000, 267.000, 268.000, 269.000, 270.000, 271.000,&
+         272.000, 273.000, 274.000, 275.000, 276.000, 277.000, 278.000, 279.000,&
+         280.000, 281.000, 282.000, 283.000, 284.000, 285.000, 286.000, 287.000,&
+         288.000, 289.000, 290.000, 291.000, 292.000, 293.000, 294.000, 295.000,&
+         296.000, 297.000, 298.000, 299.000, 300.000, 301.000, 302.000, 303.000,&
+         304.000, 305.000, 306.000, 307.000, 308.000, 309.000, 310.000, 311.000,&
+         312.000, 313.000, 314.000, 315.000, 316.000, 317.000, 318.000, 319.000,&
          320.000/)
 
    real(sreal), dimension(N_NONLINEARITY_CORRECTION_LUT), parameter :: &
@@ -139,18 +134,18 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
 
    implicit none
 
-   character(len=30), intent(in)     :: start_date
-   character(len=62), intent(in)     :: vc1_file
-   type(aatsr_drift_lut), intent(in) :: lut
-   integer, intent(in)               :: chan
-   real(dreal), intent(out)          :: new_drift, old_drift, drift_var
+   character(len=30),     intent(in)  :: start_date
+   character(len=62),     intent(in)  :: vc1_file
+   type(aatsr_drift_lut), intent(in)  :: lut
+   integer,               intent(in)  :: chan
+   real(dreal),           intent(out) :: new_drift, old_drift, drift_var
 
-   character(len=30)                 :: sdate
-   real(kind=dreal)                  :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
-   integer(kind=stint)               :: year, month, day, hour, minute
-   integer(stint)                    :: vc_year, vc_month, vc_day, vc_hour
-   integer(stint)                    :: vc_minute, vc_second
-   integer(stint)                    :: stat, ilow
+   character(len=30)                  :: sdate
+   real(kind=dreal)                   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
+   integer(kind=stint)                :: year, month, day, hour, minute
+   integer(stint)                     :: vc_year, vc_month, vc_day, vc_hour
+   integer(stint)                     :: vc_minute, vc_second
+   integer(stint)                     :: stat, ilow
 
    ! Yearly rates for exponential correction
    real(kind=sreal), parameter, dimension(4) :: K = &
@@ -247,6 +242,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
 
 end subroutine aatsr_drift_correction
 
+!-------------------------------------------------------------------------------
 ! Name: aatsr_read_drift_table.F90
 !
 ! Purpose:
@@ -268,16 +264,12 @@ end subroutine aatsr_drift_correction
 ! lut         struct Out Correction look-up table read by aatsr_read_drift_table
 ! stat        stint  Out 0: Returned normally; Otherwise: Error
 !
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
-! 2013/10/07: AP Original
+! 2013/10/07, AP: Original
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
@@ -287,11 +279,13 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
    implicit none
 
-   integer                   :: stat, lun, i
-   character(len=pathlength) :: drift_table
-   character(len=200)        :: line
-   type(aatsr_drift_lut)     :: lut
-   logical                   :: file_exists, no_lun, lun_exists, lun_used
+   character(len=pathlength), intent(in)    :: drift_table
+   integer,                   intent(out)   :: stat
+   type(aatsr_drift_lut),     intent(inout) :: lut
+
+   integer            :: i, lun
+   character(len=200) :: line
+   logical            :: file_exists, no_lun, lun_exists, lun_used
 
    ! Does the drift correction LUT exist?
    inquire(file=drift_table, exist=file_exists)
@@ -404,8 +398,6 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
 end subroutine aatsr_read_drift_table
 
-
-
 !-------------------------------------------------------------------------------
 ! Name: aatsr_12um_nonlinearity_correction
 !
@@ -418,14 +410,12 @@ end subroutine aatsr_read_drift_table
 !
 ! Arguments:
 ! Name    Type  In/Out/Both Description
+! ------------------------------------------------------------------------------
 ! T       dreal In          Original scene temperature
 !
 ! Return value:
 ! Name    Type  Description
 ! delta_T dreal Brightness temperature correction
-!
-! Local variables:
-! Name Type Description
 !
 ! History:
 ! 2014/06/16, GM: Original implementation.
@@ -435,6 +425,7 @@ end subroutine aatsr_read_drift_table
 ! Bugs:
 ! None known
 !-------------------------------------------------------------------------------
+
 function aatsr_12um_nonlinearity_correction(T, u_delta_BT_2) result(delta_BT)
 
    implicit none

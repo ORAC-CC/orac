@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: allocate_channel_info.F90
-!
 !
 ! Purpose:
 ! Allocate the arrays within the type defined in channel_info.F90
@@ -14,14 +14,14 @@
 ! channel_info struct both Structure to allocate arrays
 !
 ! History:
-! 2012/06/04: MJ produces draft code
-! 2013/09/06: AP removed redundant arguments
+! 2012/06/04, MJ: produces draft code
+! 2013/09/06, AP: removed redundant arguments
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine allocate_channel_info(channel_info)
 

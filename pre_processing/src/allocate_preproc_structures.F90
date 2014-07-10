@@ -11,10 +11,10 @@
 ! Name           Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! imager_angles  struct in          sun/satellite viewing angles
+! preproc_dims   struct out         preprocessing grid definitions
 ! preproc_geoloc struct out         lat/lon values
 ! preproc_geo    struct out         geometry
 ! preproc_prtm   struct out         profiles and surface fields
-! preproc_dims   struct out         preprocessing grid definitions
 ! preproc_lwrtm  struct out         longwave RTM data
 ! preproc_swrtm  struct out         shortwave RTM data
 ! preproc_surf   struct out         surface albedo and emissivity

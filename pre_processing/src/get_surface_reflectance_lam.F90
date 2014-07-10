@@ -10,6 +10,11 @@
 !
 ! Arguments:
 ! Name            Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! cyear           string  in          Year, as a 4 character string.
+! doy             integer in          Day of year.
+! assume_full_path
+!                 logic   in          T: inputs are filenames; F: folder names
 ! modis_surf_path char    in          Path to MODIS MCD43C data
 ! imager_flags    struct  in          Imager structure containing land/sea flag
 ! imager_geolocation      in          Imager structure containing lat/lon points
@@ -21,31 +26,31 @@
 ! surface         struct  both        Surface properties structure
 !
 ! History:
-! 30/04/2012, Gareth Thomas: Finished first version
-! 30/05/2012, Gareth Thomas: Bug fixes:
+! 30/04/2012, GT: Finished first version
+! 30/05/2012, GT: Bug fixes:
 !    - Changed limit on do loops for populating tmp_WSA and wsalnd from
 !      imager_measurements%nchannels to preproc_dims%nchan_sw
 !    - Reversed index order of nested do loops to make efficient use of
 !      column-major indexing
 !    - lndcount and seacount reset to 1 before populating surface%albedo output
 !      array.
-! 26/06/2012, Caroline Poulsen: Bug fixes
+! 26/06/2012, CP: Bug fixes
 !    - Changed indexing
 !    - Defined preproc_dims%channels this is hardwired so should really be
 !      changed along with band info
 !    - Changed count conditions may have to change back after channel info
 !      correctly implemented.
 !    - Changed code to use chahnel structure information
-! 27/06/2012, Gareth Thomas: Changed from bilinear interpolation of MODIS land
+! 27/06/2012, GT: Changed from bilinear interpolation of MODIS land
 !    surface albedo to nearest neighbour, hopefully with a resulting significant
 !    speed improvement
-! 27/06/2012, Caroline Poulsen: changed modbands from 1,2,6 to 1,2,3
-! 02/07/2012, Gareth Thomas: Bug fix. Fill grid was attempting to use the imager
+! 27/06/2012, CP: changed modbands from 1,2,6 to 1,2,3
+! 02/07/2012, GT: Bug fix. Fill grid was attempting to use the imager
 !    grid to mask the MCD grid. The code now generates a mask for fill_grid based
 !    on the lat-lon limits of the imager_geolocation arrays.
-! 2012/07/04, C. Poulsen: removed nview dependance
-! 2012/07/30, C. Poulsen: initialised allocated arrays
-! 2012/08/07, C. Poulsen: reformated albedo array to be consistent with msi file
+! 2012/07/04, CP: removed nview dependance
+! 2012/07/30, CP: initialised allocated arrays
+! 2012/08/07, CP: reformated albedo array to be consistent with msi file
 !    routine added that automatically selects MCD file added doy
 ! 2012/08/08, CP: Changed modband to 12,6 and created coxbands  2 3 4
 ! 2012/08/15, MJ: Speeds up code.
@@ -72,20 +77,19 @@
 !    Fixed longitude bug in interpolation ECMWF wind fields (ECMWF longitude runs
 !    from 0-360 degrees)
 ! 2013/09/02, AP: Removed startyi, endye.
-! 2014/01/17, MJ: Fixed doy datatype from sint to stint to comply with other defs.
+! 2014/01/17, MJ: Fixed doy datatype from sint to stint to comply with other defs
 ! 2014/04/20, GM: Cleaned up the code.
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/06/20, GM: Handle case when imager_geolocation%latitude or
 !    imager_geolocation%longitude is equal to fill_value.
 ! 2014/06/11, AP: Use standard fill value rather than unique one. Use new 
-!                 ecmwf structures.
+!    ecmwf structures.
 !
 ! $Id$
 !
 ! Bugs:
 ! - NITAVHRR hangs somewhere in here.
 ! NB channels are hardwired in this code and not selected automatically
-!
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
@@ -266,7 +270,8 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
          call interpol_bilinear(mcd%lon, mcd%lat, mcd%WSA(i,:,:), &
                                 lonlnd, latlnd, wsalnd(i,:), real_fill_value)
 
-         write(*,*) 'Channel ',i,' land: ',minval(wsalnd(i,:)), maxval(wsalnd(i,:))
+         write(*,*) 'Channel ',i,' land: ',minval(wsalnd(i,:)), &
+              maxval(wsalnd(i,:))
       end do
 
       ! Do some clean-up
@@ -333,7 +338,8 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
 
       ! ECMWF longitude runs from 0-360 unstead of -180-180. We have to convert
       ! lonsea to match the ECMWF format (rather than the other way around) as we
-      ! need longitude to be monotonically increasing for the interpolation routine
+      ! need longitude to be monotonically increasing for the interpolation
+      ! routine
       where(lonsea .lt. 0.0) lonsea = lonsea + 360
 
 !     call interpol_nearest_neighbour(ecmwf%lon, ecmwf%lat, &

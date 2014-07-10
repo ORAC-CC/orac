@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_aatsr_l1b.F90
-!
 !
 ! Purpose:
 ! Read AATSR level 1b file using a C function. This routine passes a set of C
@@ -18,8 +18,8 @@
 ! Arguments:
 ! Name                 Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! l1b_file     string in   Full path to level 1B data
-! drift_file    string in   Full path to the AATSR calibration file
+! l1b_file             string in   Full path to level 1B data
+! drift_file           string in   Full path to the AATSR calibration file
 ! imager_geolocation   struct both Summary of pixel positions
 ! imager_measurements  struct both Satellite observations
 ! imager_angles        struct both Summary of sun/satellite viewing angles
@@ -29,46 +29,46 @@
 ! verbose              logic  in   T: print status information; F: don't
 !
 ! History:
-! 2012/06/22: GT First version
-! 2012/07/29: CP added header and changed filename to lower case
-! 2012/08/01: GT Bug fix: solzen, satzen, solazi and relazi were
-!                all being stored in imager_angles%solzen!
-! 2012/08/20: MJ fixes several programming errors
-! 2012/08/21: GT Further syntax fixes
-! 2012/08/28: GT Changed C calls to use iso_c_binding. Temporarily commented out
-!                calibration correction code until it can be updated.
-! 2012/09/12: GT Changed size of arrays that took output of C data
-! 2012/09/12: GT changed day array structure write
-! 2012/09/12: GT assigned time to imager_time structure
-! 2012/09/13: GT Reactivated calibration correction code.
-! 2012/09/14: GT Bug fix in indexing of nday array. Bug fix to
-!                read_aatsr_beam_ctof90 interface: fixed length strings are not
-!                supported by iso_c_binding and must be defined as
-!                   character(kind=c_char), intent(inout) :: var(*)
-!                not
-!                   character(kind=c_char,len=X), intent(inout) :: var
-! 2012/11/29: CP changed type and initialise channels_short
-! 2013/09/02: AP Removed startyi, endye.
-! 2013/09/10: AP tidying
-! 2013/10/07: AP Complete rewrite. Rather than allocate arrays for the C
-!                function to read into, this now passes a set of pointers. This
-!                relies on imager_measurements%data being real(sreal) as that
-!                exactly corresponds to c_float. The drift corrections have also
-!                been altered: aatsr_corrections now simply returns a few
-!                constants rather than passing arrays around.
-! 2013/10/10: MJ fixed small bug
-! 2013/10/17: GM Hoist loop invariant call to aatsr_read_drift_table() out of loop.
-! 2014/01/27: MJ datatype corrections
-! 2014/04/25: GM Use the "is_lut_drift_corrected" flag from read_aatsr_orbit()
-!                to determine if the LUT based drift correction has already been
-!                applied to the data as in the 3rd reprocessing (V2.1) data.
-! 2014/06/30: GM Apply 12um nonlinearity brightness temperature correction.
+! 2012/06/22, GT: First version
+! 2012/07/29, CP: added header and changed filename to lower case
+! 2012/08/01, GT: Bug fix: solzen, satzen, solazi and relazi were
+!   all being stored in imager_angles%solzen!
+! 2012/08/20, MJ: fixes several programming errors
+! 2012/08/21, GT: Further syntax fixes
+! 2012/08/28, GT: Changed C calls to use iso_c_binding. Temporarily commented out
+!   calibration correction code until it can be updated.
+! 2012/09/12, GT: Changed size of arrays that took output of C data
+! 2012/09/12, GT: changed day array structure write
+! 2012/09/12, GT: assigned time to imager_time structure
+! 2012/09/13, GT: Reactivated calibration correction code.
+! 2012/09/14, GT: Bug fix in indexing of nday array. Bug fix to
+!   read_aatsr_beam_ctof90 interface: fixed length strings are not supported by
+!   iso_c_binding and must be defined as
+!      character(kind=c_char), intent(inout) :: var(*)
+!   not
+!      character(kind=c_char,len=X), intent(inout) :: var
+! 2012/11/29, CP: changed type and initialise channels_short
+! 2013/09/02, AP: Removed startyi, endye.
+! 2013/09/10, AP: tidying
+! 2013/10/07, AP: Complete rewrite. Rather than allocate arrays for the C
+!   function to read into, this now passes a set of pointers. This relies on
+!   imager_measurements%data being real(sreal) as that exactly corresponds to
+!   c_float. The drift corrections have also been altered: aatsr_corrections now
+!   simply returns a few constants rather than passing arrays around.
+! 2013/10/10, MJ: fixed small bug
+! 2013/10/17, GM: Hoist loop invariant call to aatsr_read_drift_table() out
+!   of loop.
+! 2014/01/27, MJ: datatype corrections
+! 2014/04/25, GM: Use the "is_lut_drift_corrected" flag from read_aatsr_orbit()
+!   to determine if the LUT based drift correction has already been applied to 
+!   the data as in the 3rd reprocessing (V2.1) data.
+! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
      imager_measurements, imager_angles, imager_flags, imager_time, &
@@ -118,14 +118,14 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    end interface
 
    ! Fortran variables
-   character(len=pathlength), intent(in)      :: l1b_file, drift_file
-   type(imager_geolocation_s), intent(inout)  :: imager_geolocation
+   character(len=pathlength),   intent(in)    :: l1b_file, drift_file
+   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
    type(imager_measurements_s), intent(inout) :: imager_measurements
-   type(imager_angles_s), intent(inout)       :: imager_angles
-   type(imager_flags_s), intent(inout)        :: imager_flags
-   type(imager_time_s), intent(inout)         :: imager_time
-   type(channel_info_s), intent(in)           :: channel_info
-   logical, intent(in)                        :: verbose
+   type(imager_angles_s),       intent(inout) :: imager_angles
+   type(imager_flags_s),        intent(inout) :: imager_flags
+   type(imager_time_s),         intent(inout) :: imager_time
+   type(channel_info_s),        intent(in)    :: channel_info
+   logical,                     intent(in)    :: verbose
 
    integer                   :: i,ii,j,jj,status
    integer(sint)             :: view_selection
@@ -358,8 +358,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          ! determine drift correction to remove from data
          if (.not. is_lut_drift_corrected .and. status.eq.0) then
             ! drift = old correction / new correction
-            call aatsr_drift_correction(start_date, vc1_file, lut, j, new_drift, &
-                 old_drift, drift_var)
+            call aatsr_drift_correction(start_date, vc1_file, lut, j, &
+                 new_drift, old_drift, drift_var)
             if (verbose) print*,'Corrections - new_drift:',new_drift, &
                  'old_drift:',old_drift,'drift_var:',drift_var
             imager_measurements%data(:,:,i) = &
@@ -377,8 +377,10 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       if (j .eq. 7) then
          do ii=imager_geolocation%startx,imager_geolocation%endx
             do jj=1,imager_geolocation%ny
-               imager_measurements%data(ii,jj,i) = imager_measurements%data(ii,jj,i) - &
-                  aatsr_12um_nonlinearity_correction(imager_measurements%data(ii,jj,i))
+               imager_measurements%data(ii,jj,i) = &
+                    imager_measurements%data(ii,jj,i) - &
+                    aatsr_12um_nonlinearity_correction( &
+                    imager_measurements%data(ii,jj,i))
             enddo
          enddo
       endif

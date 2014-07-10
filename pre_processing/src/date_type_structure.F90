@@ -1,3 +1,24 @@
+!-------------------------------------------------------------------------------
+! Name: date_type_structure.F90
+!
+! Purpose:
+! Definition of date structures used by calendar.F90
+!
+! Description and Algorithm details:
+! None
+!
+! Arguments:
+! None
+!
+! History:
+!     /  /  ,   : First version.
+!
+! $Id$
+!
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
+
 MODULE DATE_TYPE_STRUCTURES
 
    USE PREPROC_CONSTANTS
@@ -5,10 +26,10 @@ MODULE DATE_TYPE_STRUCTURES
    IMPLICIT NONE
 
    TYPE DATE_TYPE_DOY2GREG           ! DATE_TYPE definition
-      INTEGER(kind=stint) :: YEAR_J  !  year of end of Julian calendar
-      INTEGER(kind=stint) :: DOY_J   !  day of year of end of Julian calendar
-      INTEGER(kind=stint) :: NDAYS   !  num of days dropped from calendar at switch
-      INTEGER(kind=stint) :: TTLDAYS !  number of days in year of switch
+      INTEGER(kind=stint) :: YEAR_J  ! year of end of Julian calendar
+      INTEGER(kind=stint) :: DOY_J   ! day of year of end of Julian calendar
+      INTEGER(kind=stint) :: NDAYS   ! num of days dropped from calendar at switch
+      INTEGER(kind=stint) :: TTLDAYS ! number of days in year of switch
    END TYPE DATE_TYPE_DOY2GREG
 
    TYPE :: DATE_TYPE_GREG2JD
@@ -27,7 +48,7 @@ MODULE DATE_TYPE_STRUCTURES
       INTEGER(kind=stint) :: YEAR_G  ! year of start of Gregorian calendar
       INTEGER(kind=stint) :: MONTH_G ! month of start of Gregorian calendar
       INTEGER(kind=stint) :: DAY_G   ! day of start of Gregorian calendar
-      INTEGER(kind=stint) :: NDAYS   !  num of days dropped from calendar at switch
+      INTEGER(kind=stint) :: NDAYS   ! num of days dropped from calendar at switch
    END TYPE DATE_TYPE_GREG2DOY
 
 END MODULE DATE_TYPE_STRUCTURES

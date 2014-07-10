@@ -4,8 +4,8 @@ implicit none
 
 contains
 
+!-------------------------------------------------------------------------------
 ! Name: preparation.f90
-!
 !
 ! Purpose:
 ! Determines the names for the various output files.
@@ -22,6 +22,7 @@ contains
 ! lwrtm_file     string out Full path to output file LW RTM.
 ! swrtm_file     string out Full path to output file SW RTM.
 ! prtm_file      string out Full path to output file pressure RTM.
+! config_file    string out Full path to output file configuration data.
 ! msi_file       string out Full path to output file multispectral imagery.
 ! cf_file        string out Full path to output file cloud flag.
 ! lsf_file       string out Full path to output file land/sea flag.
@@ -36,6 +37,9 @@ contains
 ! cmonth         string in  Month of year, as a 2 character string
 ! cday           string in  Day of month, as a 2 character string
 ! chour          string in  Hour of day, as a 2 character string
+! cminute        string in  Minute of day, as a 2 character string
+! assume_full_path
+!                logic  in  T: inputs are filenames; F: folder names
 ! ecmwf_path     string in  If badc, folder in which to find GGAM files.
 !                           Otherwise, folder in which to find GRB files.
 ! ecmwf_path2    string in  If badc, folder in which to find GGAS files.
@@ -52,29 +56,29 @@ contains
 ! verbose        logic  in  T: print status information; F: don't
 !
 ! History:
-! 2011/12/12: MJ produces draft code which sets up output file names
-! 2012/01/16: MJ includes subroutine to determine ERA interim file.
-! 2012/02/14: MJ implements filenames and attributes for netcdf output.
-! 2012/07/29: CP removed old comments
-! 2012/08/06: CP added in badc flag
-! 2012/12/06: CP added in option to break aatsr orbit into chunks for faster
-!                processing added imager_structure to input and tidied up the file
-! 2012/12/06: CP changed how ecmwf paths are defined because of looping chunks
-! 2012/12/14: CP changed how file is named if the orbit is broken into
-!                granules then the file name is given a latitude range
-! 2012/03/05: CP small change to work for gfortran
-! 2013/09/02: AP Removed startyi, endye.
-! 2013/10/21: AP Removed redundant arguments. Tidying.
-! 2014/02/03: AP made badc a logical variable
-! 2014/04/21: GM Added logical option assume_full_path.
-! 2014/05/01: GM Reordered data/time arguments into a logical order.
-! 2014/05/02: AP Made badc into ecmwf_flag.
+! 2011/12/12, MJ: produces draft code which sets up output file names
+! 2012/01/16, MJ: includes subroutine to determine ERA interim file.
+! 2012/02/14, MJ: implements filenames and attributes for netcdf output.
+! 2012/07/29, CP: removed old comments
+! 2012/08/06, CP: added in badc flag
+! 2012/12/06, CP: added in option to break aatsr orbit into chunks for faster
+!   processing added imager_structure to input and tidied up the file
+! 2012/12/06, CP: changed how ecmwf paths are defined because of looping chunks
+! 2012/12/14, CP: changed how file is named if the orbit is broken into
+!   granules then the file name is given a latitude range
+! 2012/03/05, CP: small change to work for gfortran
+! 2013/09/02, AP: Removed startyi, endye.
+! 2013/10/21, AP: Removed redundant arguments. Tidying.
+! 2014/02/03, AP: made badc a logical variable
+! 2014/04/21, GM: Added logical option assume_full_path.
+! 2014/05/01, GM: Reordered data/time arguments into a logical order.
+! 2014/05/02, AP: Made badc into ecmwf_flag.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
    cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor,platform,&
@@ -88,18 +92,19 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
 
    implicit none
 
-   character(len=filelength),     intent(out) :: lwrtm_file,swrtm_file,prtm_file, &
-                                                 config_file,msi_file,cf_file,&
-                                                 lsf_file,geo_file,loc_file,&
-                                                 alb_file,scan_file
+   character(len=filelength),     intent(out) :: lwrtm_file,swrtm_file, &
+                                                 prtm_file,config_file, &
+                                                 msi_file,cf_file,lsf_file, &
+                                                 geo_file,loc_file,alb_file, &
+                                                 scan_file
    character(len=sensorlength),   intent(in)  :: sensor
    character(len=platformlength), intent(in)  :: platform
    integer(kind=stint),           intent(in)  :: hour
    character(len=datelength),     intent(in)  :: cyear,cmonth,cday,chour,cminute
    logical,                       intent(in)  :: assume_full_path
-   character(len=pathlength),     intent(in)  :: ecmwf_path,ecmwf_path2,&
+   character(len=pathlength),     intent(in)  :: ecmwf_path,ecmwf_path2, &
                                                  ecmwf_path3
-   character(len=pathlength),     intent(out) :: ecmwf_pathout,ecmwf_path2out,&
+   character(len=pathlength),     intent(out) :: ecmwf_pathout,ecmwf_path2out, &
                                                  ecmwf_path3out
    type(script_arguments_s),      intent(in)  :: script_input
    integer,                       intent(in)  :: ecmwf_flag

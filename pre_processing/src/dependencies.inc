@@ -25,11 +25,8 @@ $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o allocate_imager_structures.F90 \
         deallocate_imager_structures.F90
-$(OBJS)/imager2oraclsflag.o: $(OBJS)/preproc_constants.o avhrr2oraclsflag.F90 \
-        modis2oraclsflag.F90
 $(OBJS)/interpol.o: $(OBJS)/preproc_constants.o interpol_bilinear.F90 \
         interpol_nearest_neighbour.F90
-$(OBJS)/interpolate_to3h2o.o: $(OBJS)/preproc_constants.o
 $(OBJS)/map_time_to_pixel.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/mcd43c.o: $(OBJS)/preproc_constants.o read_mcd43c3.F90

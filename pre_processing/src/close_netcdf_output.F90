@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: close_netcdf_output.f90
-!
 !
 ! Purpose:
 ! Close netcdf output files
@@ -13,16 +13,16 @@
 ! netcdf_info struct In Summary of output file details
 !
 ! History:
-! 2011/12/12: MJ produces draft code which creates dummy output files
-! 2013/11/06: MJ adds config file to preprocessing output which holds all
-!                relevant dimensional information.
-! 2014/02/06: AP removing unnecessary NCDF routines
+! 2011/12/12, MJ: produces draft code which creates dummy output files
+! 2013/11/06, MJ: adds config file to preprocessing output which holds all
+!   relevant dimensional information.
+! 2014/02/06, AP: removing unnecessary NCDF routines
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine close_netcdf_output(netcdf_info)
 

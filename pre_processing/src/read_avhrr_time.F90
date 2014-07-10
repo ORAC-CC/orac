@@ -1,9 +1,8 @@
+!-------------------------------------------------------------------------------
 ! Name: read_avhrr_lat_lon.F90
-!
 !
 ! Purpose:
 ! Read AVHRR time geolocation data
-!
 !
 ! Description and Algorithm details:
 ! 1) Open the attribute group.
@@ -19,14 +18,14 @@
 ! endepochs   lint   out  End time for the orbit, in seconds
 !
 ! History:
-! 2012/01/24: MJ adds code to read AVHRR HDF5 file.
-! 2013/09/06: AP tidying
+! 2012/01/24, MJ: adds code to read AVHRR HDF5 file.
+! 2013/09/06, AP: tidying
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)
 
@@ -35,9 +34,9 @@ subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)
 
    implicit none
 
-   integer(kind=HID_T), intent(in) :: fid
-   character(len=*), intent(in)    :: attrgroup
-   integer(kind=lint), intent(out) :: startepochs,endepochs
+   integer(kind=HID_T), intent(in)  :: fid
+   character(len=*),    intent(in)  :: attrgroup
+   integer(kind=lint),  intent(out) :: startepochs,endepochs
 
    integer               :: err_code
 

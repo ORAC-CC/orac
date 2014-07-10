@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_aatsr_dimensions.F90
-!
 !
 ! Purpose:
 ! Determine the dimensions of AATSR data to read in, based on a day_night flag
@@ -30,21 +30,21 @@
 !                                a secondchunk for night data.
 !
 ! History:
-! 2012/06/22: GT First version
-! 2012/07/29: CP changed filename to lower case
-! 2012/08/21: GT Tidied up unused variables
-! 2012/08/27: GT Changed C call to use ISO C binding
-! 2013/08/14: GT Added half_orbit optional input parameter
-!                used for dealing with night time data.
-! 2013/09/06: AP tidying
-! 2013/10/08: AP altered call to C routine
-! 2013/01/24: MJ removed "optionality" of some arguments
+! 2012/06/22, GT: First version
+! 2012/07/29, CP: changed filename to lower case
+! 2012/08/21, GT: Tidied up unused variables
+! 2012/08/27, GT: Changed C call to use ISO C binding
+! 2013/08/14, GT: Added half_orbit optional input parameter used for dealing
+!   with night time data.
+! 2013/09/06, AP: tidying
+! 2013/10/08, AP: altered call to C routine
+! 2013/01/24, MJ: removed "optionality" of some arguments
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
      n_along_track,along_track_offset,day_night,loc_limit,n_along_track2, &
@@ -71,14 +71,14 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
       end subroutine get_aatsr_dimension
    end interface
    
-   character(len=pathlength), intent(in)      :: path_to_l1b_file
-   integer(kind=lint), intent(out)            :: n_across_track, n_along_track, &
-                                                 along_track_offset
-   integer(kind=stint), intent(in)            :: day_night
-   real(kind=sreal), dimension(4), intent(in) :: loc_limit
-   integer(kind=lint), intent(out)            :: n_along_track2
-   integer(kind=lint),  intent(out)           :: along_track_offset2
-   logical, intent(in)                        :: verbose
+   character(len=pathlength),      intent(in)  :: path_to_l1b_file
+   integer(kind=lint),             intent(out) :: n_across_track, n_along_track
+   integer(kind=lint),             intent(out) :: along_track_offset
+   integer(kind=stint),            intent(in)  :: day_night
+   real(kind=sreal), dimension(4), intent(in)  :: loc_limit
+   integer(kind=lint),             intent(out) :: n_along_track2
+   integer(kind=lint),             intent(out) :: along_track_offset2
+   logical,                        intent(in)  :: verbose
 
    character(len=pathlength,kind=c_char) :: l1b_file_C
    integer(c_short)                      :: tmp_dynght, half_orbit

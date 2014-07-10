@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: get_modis_time.F90
-!
 !
 ! Purpose:
 ! Read MODIS time data and map to imager pixels
@@ -18,15 +18,15 @@
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 !
 ! History:
-! 2011/12/16: MJ produces draft code
-! 2012/06/13: MJ reworks code.
-! 2013/09/11: AP tidying, added n_along_track, removed tfv
+! 2011/12/16, MJ: produces draft code
+! 2012/06/13, MJ: reworks code.
+! 2013/09/11, AP: tidying, added n_along_track, removed tfv
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
@@ -39,10 +39,10 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer(kind=lint), intent(in)            :: geo_id
+   integer(kind=lint),         intent(in)    :: geo_id
    type(imager_geolocation_s), intent(inout) :: imager_geolocation
-   type(imager_time_s), intent(in)           :: imager_time
-   integer(kind=lint), intent(in)            :: n_along_track
+   type(imager_time_s),        intent(in)    :: imager_time
+   integer(kind=lint),         intent(in)    :: n_along_track
 
    integer(kind=lint)         :: var_id
    integer(kind=lint)         :: err_code

@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_avhrr_angles.F90
-!
 !
 ! Purpose:
 ! Read solar and viewing geometry from HDF5 file.
@@ -12,7 +12,7 @@
 ! 4) Close the file.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name      Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! fid       HID_T  in   HDF file ID from H5Fopen_f
 ! group     string in   Name of the group to open
@@ -25,14 +25,14 @@
 ! rtemp     sreal  both Array into which data will be stored
 !
 ! History:
-! 2012/01/27: MJ adds code to read AVHRR HDF5 file.
-! 2013/09/06: AP tidying
+! 2012/01/27, MJ: adds code to read AVHRR HDF5 file.
+! 2013/09/06, AP: tidying
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
      stopy,rtemp)
@@ -42,10 +42,10 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
 
    implicit none
 
-   integer(kind=HID_T), intent(in) :: fid
-   character(len=*), intent(in)    :: dataset, group, attrgroup
-   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
-   real(kind=sreal), intent(out)   :: rtemp(startx:stopx,starty:stopy)
+   integer(kind=HID_T), intent(in)  :: fid
+   character(len=*),    intent(in)  :: dataset, group, attrgroup
+   integer(kind=lint),  intent(in)  :: startx,stopx,starty,stopy
+   real(kind=sreal),    intent(out) :: rtemp(startx:stopx,starty:stopy)
 
    integer               :: err_code
 
@@ -148,7 +148,7 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
    call h5sclose_f(dspace_id,err_code)
 
    !close dataset
-   call  h5dclose_f(dset_id, err_code)
+   call h5dclose_f(dset_id, err_code)
 
    !close data group
    call h5gclose_f( gr_id, err_code)

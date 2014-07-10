@@ -1,9 +1,8 @@
+!-------------------------------------------------------------------------------
 ! Name: read_modis_lsflag.F90
-!
 !
 ! Purpose:
 ! Open and read L1b and geo input files
-!
 !
 ! Description and Algorithm details:
 ! 1) Set start, end, and stride of data read.
@@ -11,7 +10,7 @@
 ! 3) Set all fill values to -1.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name     Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! fid      int    in   A file ID returned by SFSTART
 ! SDS_name string in   Name of the data field to read
@@ -22,15 +21,15 @@
 ! btemp    sint   both Initialised array into which data is stored
 !
 ! History:
-! 2011/12/15: MJ produces draft code which opens and reads MODIS ls flag
-! 2013/09/06: AP tidying, fixed bug where uninitialised array temp was used,
-!                added where statement (if desired)
+! 2011/12/15, MJ: produces draft code which opens and reads MODIS ls flag
+! 2013/09/06, AP: tidying, fixed bug where uninitialised array temp was used,
+!   added where statement (if desired)
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
 
@@ -41,9 +40,9 @@ subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer, intent(in)             :: fid
-   character(len=*), intent(in)    :: SDS_name
-   integer, intent(in)             :: ixstart, ixstop, iystart, iystop
+   integer,            intent(in)  :: fid
+   character(len=*),   intent(in)  :: SDS_name
+   integer,            intent(in)  :: ixstart, ixstop, iystart, iystop
    integer(kind=sint), intent(out) :: btemp(ixstart:ixstop,iystart:iystop)
 
 !  integer            :: ix, jy

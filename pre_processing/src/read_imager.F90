@@ -4,6 +4,7 @@ implicit none
 
 contains
 
+!-------------------------------------------------------------------------------
 ! Name: read_imager.F90
 !
 ! Purpose:
@@ -33,19 +34,19 @@ contains
 ! verbose                   logic  in   T: print status information; F: don't
 !
 ! History:
-! 2011/12/12: MJ produces draft code which opens and reads MODIS L1b file.
-! 2012/01/24: MJ includes code to read AVHRR L1b file.
-! 2012/06/22: GT Added code to read AATSR L1b file.
-! 2012/08/28:    Set imager_flags%cflag = 1 for MODIS, AVHHR, and AATSR as we
-!                don't have proper masks.
-! 2012/09/04: GT Corrected AATSR sensor name
-! 2013/09/06: AP tidying
+! 2011/12/12, MJ: produces draft code which opens and reads MODIS L1b file.
+! 2012/01/24, MJ: includes code to read AVHRR L1b file.
+! 2012/06/22, GT: Added code to read AATSR L1b file.
+! 2012/08/28,   : Set imager_flags%cflag = 1 for MODIS, AVHHR, and AATSR as we
+!   don't have proper masks.
+! 2012/09/04, GT: Corrected AATSR sensor name
+! 2013/09/06, AP: tidying
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
      path_to_aatsr_drift_table, &
@@ -61,18 +62,19 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
 
    implicit none
 
-   character(len=sensorlength), intent(in)    :: sensor
-   character(len=platformlength), intent(in)  :: platform
-   character(len=pathlength), intent(in)      :: path_to_l1b_file,path_to_geo_file, &
-                                                 path_to_aatsr_drift_table
-   type(imager_geolocation_s), intent(inout)  :: imager_geolocation
-   type(imager_angles_s), intent(inout)       :: imager_angles
-   type(imager_flags_s), intent(inout)        :: imager_flags
-   type(imager_time_s), intent(inout)         :: imager_time
-   type(imager_measurements_s), intent(inout) :: imager_measurements
-   type(channel_info_s), intent(in)           :: channel_info
-   integer(kind=lint), intent(in)             :: n_along_track
-   logical, intent(in)                        :: verbose
+   character(len=sensorlength),   intent(in)    :: sensor
+   character(len=platformlength), intent(in)    :: platform
+   character(len=pathlength),     intent(in)    :: path_to_l1b_file
+   character(len=pathlength),     intent(in)    :: path_to_geo_file
+   character(len=pathlength),     intent(in)    :: path_to_aatsr_drift_table
+   type(imager_geolocation_s),    intent(inout) :: imager_geolocation
+   type(imager_angles_s),         intent(inout) :: imager_angles
+   type(imager_flags_s),          intent(inout) :: imager_flags
+   type(imager_time_s),           intent(inout) :: imager_time
+   type(imager_measurements_s),   intent(inout) :: imager_measurements
+   type(channel_info_s),          intent(in)    :: channel_info
+   integer(kind=lint),            intent(in)    :: n_along_track
+   logical,                       intent(in)    :: verbose
 
    !branches for the sensors
    if(trim(adjustl(sensor)) .eq. 'MODIS') then

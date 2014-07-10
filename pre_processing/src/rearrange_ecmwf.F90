@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name: rearrange_ecmwf.F90
 !
 ! Purpose:
@@ -15,19 +16,19 @@
 ! ecmwf      struct  Both   Summary of contents of ECMWF files
 !
 ! History:
-! 2013/03/06: CP Original code
-! 2013/03/07: CP fixed latitudinal bug switch!
-! 2013/03/19: GT Commented debugging write statements
-! 2013/11/01: GM Cleaned up code and removed the use of several auxiliary arrays
-! 2013/11/05: GT Bug fix. Moved declaration of dim1 & dim2 to before they
-!                are used in the definition of var.
-! 2014/05/07: AP Restructuring for smaller ECMWF structure.
+! 2013/03/06, CP: Original code
+! 2013/03/07, CP: fixed latitudinal bug switch!
+! 2013/03/19, GT: Commented debugging write statements
+! 2013/11/01, GM: Cleaned up code and removed the use of several auxiliary arrays
+! 2013/11/05, GT: Bug fix. Moved declaration of dim1 & dim2 to before they
+!   are used in the definition of var.
+! 2014/05/07, AP: Restructuring for smaller ECMWF structure.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine rearrange_ecmwf(ecmwf)
 

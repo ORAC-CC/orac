@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_modis_geo.F90
-!
 !
 ! Purpose:
 ! Open and read MODIS geolocation input files.
@@ -20,22 +20,22 @@
 ! n_along_track      lint   in   Number of pixels in the direction of travel
 !
 ! History:
-! 2011/12/12: MJ produces draft code which opens and reads MODIS geo hdf files
-! 2012/04/24: GT Added a line assigning the solar azimuth angle
-!                to imager structure (needed by surface reflectance routines) 
-! 2013/05/21: GT Removed 180.0 degree correction to relative
-!                azimuth to match the convention used in ORAC lookup table code
-!                and surface reflectance calculation.
-! 2013/05/21: GT On further investigation, reintroduced the 180
-!                degree correction to relative azimuth. This means that forward
-!                scattering = 0 relative azimuth.
-! 2013/09/11: AP tidying, added n_along_track, removed modis2oraclsflag
+! 2011/12/12, MJ: produces draft code which opens and reads MODIS geo hdf files
+! 2012/04/24, GT: Added a line assigning the solar azimuth angle
+!   to imager structure (needed by surface reflectance routines) 
+! 2013/05/21, GT: Removed 180.0 degree correction to relative
+!   azimuth to match the convention used in ORAC lookup table code and surface
+!   reflectance calculation.
+! 2013/05/21, GT: On further investigation, reintroduced the 180 degree
+!   correction to relative azimuth. This means that
+!   forward scattering = 0 relative azimuth.
+! 2013/09/11, AP: tidying, added n_along_track, removed modis2oraclsflag
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
      imager_flags,imager_time,n_along_track)
@@ -48,24 +48,24 @@ subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    include "hdf.f90"
    include "dffunc.f90"
 
-   character(len=pathlength), intent(in)   :: path_to_geo_file
+   character(len=pathlength),  intent(in)  :: path_to_geo_file
    type(imager_geolocation_s), intent(out) :: imager_geolocation
-   type(imager_angles_s), intent(out)      :: imager_angles
-   type(imager_flags_s), intent(in)        :: imager_flags
-   type(imager_time_s), intent(in)         :: imager_time
-   integer(kind=lint), intent(in)          :: n_along_track
+   type(imager_angles_s),      intent(out) :: imager_angles
+   type(imager_flags_s),       intent(in)  :: imager_flags
+   type(imager_time_s),        intent(in)  :: imager_time
+   integer(kind=lint),         intent(in)  :: n_along_track
 
-   integer(kind=lint)         :: geo_id,ix,jy
+   integer(kind=lint)                      :: geo_id,ix,jy
 
-   real(kind=sreal), allocatable, dimension(:,:)    :: temp,temp2
+   real(kind=sreal),   allocatable, dimension(:,:) :: temp,temp2
 
-   integer(kind=sint), allocatable, dimension(:,:)  :: btemp
+   integer(kind=sint), allocatable, dimension(:,:) :: btemp
 
-   integer                    :: err_code
+   integer                                         :: err_code
 
    !allocate temporary data
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
-        & imager_geolocation%starty:imager_geolocation%endy))
+        imager_geolocation%starty:imager_geolocation%endy))
 
    !get file id
    geo_id=sfstart(path_to_geo_file,DFACC_READ)

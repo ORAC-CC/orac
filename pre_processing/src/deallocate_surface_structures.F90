@@ -1,30 +1,25 @@
-! ------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Name: deallocate_surface_structures.F90
 !
-!
 ! Purpose:
-! Allocate the array parts of the types defined in surface_structures.F90
-!
+! Deallocate the array parts of the types defined in surface_structures.F90
 !
 ! Description and Algorithm details:
-!
+! 1) Deallocate all fields of structure.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
-!
+! Name    Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! surface struct both Summary of surface properties
 !
 ! History:
-! 2012/05/01, Gareth Thomas: First version
+! 2012/05/01, GT: First version
 !
 ! $Id$
 !
 ! Bugs:
 ! None known
-! ------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 subroutine deallocate_surface_structures(surface)
 

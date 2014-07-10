@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: set_ecmwf.F90
-!
 !
 ! Purpose:
 ! Determines necessary ECMWF files for preprocessing.
@@ -17,6 +17,8 @@
 ! cmonth         string in  Month of year, as a 2 character string
 ! cday           string in  Day of month, as a 2 character string
 ! chour          string in  Hour of day, as a 2 character string
+! assume_full_path
+!                logic  in  T: inputs are filenames; F: folder names
 ! ecmwf_path     string in  If badc, folder in which to find GGAM files.
 !                           Otherwise, folder in which to find GRB files.
 ! ecmwf_path2    string in  If badc, folder in which to find GGAS files.
@@ -29,26 +31,26 @@
 ! verbose        logic  in  T: print status information; F: don't
 !
 ! History:
-! 2012/01/16: MJ writes initial code version.
-! 2012/01/19: MJ fixed a potential bug in the file determination.
-! 2012/08/06: CP modified to include 3 new ecmwf pths to read data from the
-!                BADC added in badc flag
-! 2012/08/13: CP modified badc paths
-! 2012/11/14: CP modified badc paths to include year/month/day changed gpam ggap
-! 2012/12/06: CP changed how ecmwf paths are defined because of looping chunks
-!                and tidied up file
-! 2013/03/06: CP changed ggam from grb to netcdf file
-! 2013/06/11: CP set default ecmwf paths
-! 2013/10/21: AP removed redundant arguments. Tidying.
-! 2014/02/03: AP made badc a logical variable
-! 2014/04/21: GM Added logical option assume_full_path.
-! 2014/05/02: AP Replaced code with CASE statements. Added third option.
+! 2012/01/16, MJ; writes initial code version.
+! 2012/01/19, MJ: fixed a potential bug in the file determination.
+! 2012/08/06, CP: modified to include 3 new ecmwf pths to read data from the
+!   BADC added in badc flag
+! 2012/08/13, CP: modified badc paths
+! 2012/11/14, CP: modified badc paths to include year/month/day changed gpam ggap
+! 2012/12/06, CP: changed how ecmwf paths are defined because of looping chunks
+!   and tidied up file
+! 2013/03/06, CP: changed ggam from grb to netcdf file
+! 2013/06/11, CP: set default ecmwf paths
+! 2013/10/21, AP: removed redundant arguments. Tidying.
+! 2014/02/03, AP: made badc a logical variable
+! 2014/04/21, GM: Added logical option assume_full_path.
+! 2014/05/02, AP: Replaced code with CASE statements. Added third option.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
    ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,&

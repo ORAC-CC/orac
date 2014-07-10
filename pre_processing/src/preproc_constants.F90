@@ -1,32 +1,28 @@
+!-------------------------------------------------------------------------------
 ! Name: preproc_constants.f90
-!
 !
 ! Purpose:
 ! Define here data types, string lengths, constants etc.
 ! 
 ! Description and Algorithm details:
-!
+! None
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
-!
+! None
 !
 ! History:
-! 2011/12/09: MJ produces draft code with basic data types and lengths
-! 2012/04/19: GT Added value of pi.
-! 20131127 MJ adds parameters for netcdf4 compression
-! 20140123 MJ switches nc4 shuffling off.
-! 20140130 MJ removes parameters for chunking.
-! 20140311 MJ introduces variable for file chunking.
+! 2011/12/09, MJ: produces draft code with basic data types and lengths
+! 2012/04/19, GT: Added value of pi.
+! 2013/11/27, MJ: adds parameters for netcdf4 compression
+! 2014/01/23, MJ: switches nc4 shuffling off.
+! 2014/01/30, MJ: removes parameters for chunking.
+! 2014/03/11, MJ: introduces variable for file chunking.
+!
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 module preproc_constants
 

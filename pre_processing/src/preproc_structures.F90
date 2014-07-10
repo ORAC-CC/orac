@@ -8,7 +8,7 @@
 ! None
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! None
 !
 ! History:
 ! 2012/01/17, MJ: produces initial version of code

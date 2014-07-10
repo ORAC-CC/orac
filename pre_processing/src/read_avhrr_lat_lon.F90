@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_avhrr_lat_lon.F90
-!
 !
 ! Purpose:
 ! Read latitude and longitude AVHRR geolocation data.
@@ -25,14 +25,14 @@
 ! rtemp     sreal  both Array into which data will be stored
 !
 ! History:
-! 2012/01/24: MJ adds code to read AVHRR HDF5 file.
-! 2013/09/06: AP tidying
+! 2012/01/24, MJ: adds code to read AVHRR HDF5 file.
+! 2013/09/06, AP: tidying
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
      starty,stopy,rtemp)
@@ -42,10 +42,10 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
 
    implicit none
 
-   integer(kind=HID_T), intent(in) :: fid
-   character(len=*), intent(in)    :: dataset, group, attrgroup
-   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
-   real(kind=sreal), intent(out)   :: rtemp(startx:stopx,starty:stopy)
+   integer(kind=HID_T), intent(in)  :: fid
+   character(len=*),    intent(in)  :: dataset, group, attrgroup
+   integer(kind=lint),  intent(in)  :: startx,stopx,starty,stopy
+   real(kind=sreal),    intent(out) :: rtemp(startx:stopx,starty:stopy)
 
    integer               :: err_code
 

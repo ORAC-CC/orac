@@ -1,3 +1,24 @@
+!-------------------------------------------------------------------------------
+! Name: ncdf_output.F90
+!
+! Purpose:
+! Container for NCDF output write routines.
+!
+! Description and Algorithm details:
+! None
+!
+! Arguments:
+! None
+!
+! History:
+! 2014/05/23, GM: First version.
+!
+! $Id$
+!
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
+
 module netcdf_output
 
 implicit none

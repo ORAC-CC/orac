@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_avhrr_l1b.F90
-!
 !
 ! Purpose:
 ! Read the L1b AVHRR HDF5 file.
@@ -12,7 +12,7 @@
 ! 5) Close file.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name                Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! sensor              string in   Name of instrument
 ! platform            string in   Name of satellite
@@ -22,18 +22,18 @@
 ! channel_info        struct in   Summary of channel information
 !
 ! History:
-! 2012/02/01: MJ writes initial code for reading the L1B AVHRR file.
-! 2012/03/13: MJ fixes AVHRR read bug.
-! 2012/07/04: CP removed iangle dependance of %data array
-! 2012/07/05: CP changed nmax channels to channel_info%nchannels_total
-! 2013/09/06: AP tidying, changed channel identification to use 'channel'
-!                attribute within the file
+! 2012/02/01, MJ: writes initial code for reading the L1B AVHRR file.
+! 2012/03/13, MJ: fixes AVHRR read bug.
+! 2012/07/04, CP: removed iangle dependance of %data array
+! 2012/07/05, CP: changed nmax channels to channel_info%nchannels_total
+! 2013/09/06, AP: tidying, changed channel identification to use 'channel'
+!   attribute within the file
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
      imager_measurements,channel_info)
@@ -45,12 +45,12 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
 
    implicit none
 
-   character(len=sensorlength), intent(in)    :: sensor
-   character(len=platformlength), intent(in)  :: platform
-   character(len=pathlength), intent(in)      :: path_to_l1b_file
-   type(imager_geolocation_s), intent(inout)  :: imager_geolocation
-   type(imager_measurements_s), intent(inout) :: imager_measurements
-   type(channel_info_s), intent(in)           :: channel_info
+   character(len=sensorlength),   intent(in)    :: sensor
+   character(len=platformlength), intent(in)    :: platform
+   character(len=pathlength),     intent(in)    :: path_to_l1b_file
+   type(imager_geolocation_s),    intent(inout) :: imager_geolocation
+   type(imager_measurements_s),   intent(inout) :: imager_measurements
+   type(channel_info_s),          intent(in)    :: channel_info
 
    integer                       :: ichannel,err_code
 

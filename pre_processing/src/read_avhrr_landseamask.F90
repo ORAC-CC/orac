@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_avhrr_landseamask.F90
-!
 !
 ! Purpose:
 ! Read land/sea mask for AVHRR from physiography data
@@ -10,7 +10,7 @@
 ! 3) Close file.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name      Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! fid       HID_T  in   HDF file ID from H5Fopen_f
 ! group     string in   Name of the group to open
@@ -23,14 +23,14 @@
 ! btemp     lint   both Array into which data will be stored
 !
 ! History:
-! 2012/05/15: MJ adds code to read AVHRR HDF5 land sea mask file.
-! 2013/09/11: AP tidying
+! 2012/05/15, MJ: adds code to read AVHRR HDF5 land sea mask file.
+! 2013/09/11, AP: tidying
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_avhrr_landseamask(fid,group,dataset,startx,stopx,starty,stopy, &
      btemp)
@@ -40,10 +40,10 @@ subroutine read_avhrr_landseamask(fid,group,dataset,startx,stopx,starty,stopy, &
 
    implicit none
 
-   integer(kind=HID_T), intent(in) :: fid
-   character(len=*), intent(in)    :: dataset, group
-   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
-   integer(kind=lint), intent(out) :: btemp(startx:stopx,starty:stopy)
+   integer(kind=HID_T), intent(in)  :: fid
+   character(len=*),    intent(in)  :: dataset, group
+   integer(kind=lint),  intent(in)  :: startx,stopx,starty,stopy
+   integer(kind=lint),  intent(out) :: btemp(startx:stopx,starty:stopy)
 
    integer               :: err_code
 

@@ -2,8 +2,8 @@ module setup_instrument
 
 contains
 
+!-------------------------------------------------------------------------------
 ! Name: setup.F90
-!
 !
 ! Purpose:
 ! Three equivalent routines (one for each satellite) that determine the date and
@@ -36,24 +36,24 @@ contains
 !                              processed
 !
 ! History:
-! 2011/12/09: MJ produces draft code for MODIS.
-! 2012/01/17: MJ removed bug wrt determining the month for MODIS.
-! 2012/01/24: MJ added code for AVHRR.
-! 2012/07/17: CP default code for AATSR
-! 2012/07/29: CP added in nchannels_total
-! 2012/08/10: CP debugged AATSR settings
-! 2012/08/22: GT Further debugging related to AATSR
-! 2012/09/12: CP added in gregorian to doy conversion into aatsr setup GREG2DOY
-! 2012/09/13: CP changed coeff numbering in sw file
-! 2012/11/14: CP remove platform name from aatsr
-! 2013/08/14: GT Added trim to write statement of L1b filename  
-! 2013/09/16: AP removed channel_flag, preproc_dims, date
+! 2011/12/09, MJ: produces draft code for MODIS.
+! 2012/01/17, MJ: removed bug wrt determining the month for MODIS.
+! 2012/01/24, MJ: added code for AVHRR.
+! 2012/07/17, CP: default code for AATSR
+! 2012/07/29, CP: added in nchannels_total
+! 2012/08/10, CP: debugged AATSR settings
+! 2012/08/22, GT: Further debugging related to AATSR
+! 2012/09/12, CP: added in gregorian to doy conversion into aatsr setup GREG2DOY
+! 2012/09/13, CP: changed coeff numbering in sw file
+! 2012/11/14, CP: remove platform name from aatsr
+! 2013/08/14, GT: Added trim to write statement of L1b filename  
+! 2013/09/16, AP: removed channel_flag, preproc_dims, date
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
@@ -66,14 +66,15 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    implicit none
 
-   character(len=pathlength), intent(in)      :: path_to_l1b_file,path_to_geo_file
+   character(len=pathlength),     intent(in)  :: path_to_l1b_file
+   character(len=pathlength),     intent(in)  :: path_to_geo_file
    character(len=platformlength), intent(out) :: platform
-   integer(kind=stint), intent(out)           :: doy,year,month,day,hour,minute
-   character(len=datelength), intent(out)     :: cyear,chour,cminute,cmonth,cday
-   type(channel_info_s), intent(inout)        :: channel_info
+   integer(kind=stint),           intent(out) :: doy,year,month,day,hour,minute
+   character(len=datelength),     intent(out) :: cyear,chour,cminute,cmonth,cday
+   type(channel_info_s),          intent(inout) :: channel_info
 
-   character(len=datelength) :: cdoy
-   integer(kind=stint)       :: intdummy1,intdummy2
+   character(len=datelength)                  :: cdoy
+   integer(kind=stint)                        :: intdummy1,intdummy2
 
    !check if l1b and geo file are of the same granule
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'/',back=.true.)
@@ -153,15 +154,14 @@ subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    implicit none
 
-   character(len=platformlength) :: platform
-   character(len=pathlength)     :: path_to_l1b_file,path_to_geo_file
-   character(len=datelength)     :: cyear,chour,cminute,cmonth,cday
+   character(len=pathlength),     intent(in)  :: path_to_l1b_file
+   character(len=pathlength),     intent(in)  :: path_to_geo_file
+   character(len=platformlength), intent(out) :: platform
+   integer(kind=stint),           intent(out) :: doy,year,month,day,hour,minute
+   character(len=datelength),     intent(out) :: cyear,chour,cminute,cmonth,cday
+   type(channel_info_s),          intent(inout) :: channel_info
 
-   integer(kind=stint)  :: intdummy1,intdummy2
-
-   integer(kind=stint)  :: doy,year,month,day,hour,minute
-
-   type(channel_info_s) :: channel_info
+   integer(kind=stint)                        :: intdummy1,intdummy2
 
    !check if l1b and angles file are or the same orbit
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'_avhrr',back=.true.)
@@ -234,15 +234,14 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    implicit none
 
-   character(len=platformlength) :: platform
-   character(len=pathlength)     :: path_to_l1b_file,path_to_geo_file
-   character(len=datelength)     :: cyear,chour,cminute,cmonth,cday
+   character(len=pathlength),     intent(in)  :: path_to_l1b_file
+   character(len=pathlength),     intent(in)  :: path_to_geo_file
+   character(len=platformlength), intent(out) :: platform
+   integer(kind=stint),           intent(out) :: doy,year,month,day,hour,minute
+   character(len=datelength),     intent(out) :: cyear,chour,cminute,cmonth,cday
+   type(channel_info_s),          intent(inout) :: channel_info
 
-   integer(kind=stint)  :: intdummy1
-
-   integer(kind=stint)  :: hour,minute,doy,year,month,day
-
-   type(channel_info_s) :: channel_info
+   integer(kind=stint)                        :: intdummy1
 
    !check if l1b and angles files identical
    if(trim(adjustl(path_to_l1b_file)) .ne. trim(adjustl(path_to_geo_file))) then

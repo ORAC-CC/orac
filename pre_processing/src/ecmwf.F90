@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: ecmwf.F90
-!
 !
 ! Purpose:
 ! Define variables types which hold the ecmwf input data.
@@ -11,18 +11,18 @@
 ! None
 !
 ! History:
-! 2012/01/10: MJ writes sample code for ERA Interim data.
-! 2012/08/02: CP changed to accomodate badc netcdf files
-!                with different dimensions
-! 2013/10/23: AP Tidying
-! 2014/02/10: AP removed _nc_ structures as redundant. Shortened DIM names.
-! 2014/05/06: AP Simplified to just one structure.
+! 2012/01/10, MJ: writes sample code for ERA Interim data.
+! 2012/08/02, CP: changed to accomodate badc netcdf files with different
+!   dimensions
+! 2013/10/23, AP: Tidying
+! 2014/02/10, AP: removed _nc_ structures as redundant. Shortened DIM names.
+! 2014/05/06, AP: Simplified to just one structure.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 module ecmwf_m
 

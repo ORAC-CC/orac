@@ -2,20 +2,28 @@
 ! Name: deallocate_preproc_structures.f90
 !
 ! Purpose:
-! Allocate the array parts of the types defined in preproc_structures.f90
+! Deallocate the array parts of the types defined in preproc_structures.f90
 !
 ! Description and Algorithm details:
+! 1) Deallocate all fields of structure.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name           Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! preproc_dims   struct out         preprocessing grid definitions
+! preproc_geoloc struct out         lat/lon values
+! preproc_geo    struct out         geometry
+! preproc_prtm   struct out         profiles and surface fields
+! preproc_lwrtm  struct out         longwave RTM data
+! preproc_swrtm  struct out         shortwave RTM data
+! preproc_surf   struct out         surface albedo and emissivity
 !
 ! History:
-! 2012/01/19, Matthias Jerg: produces draft code
-! 2012/05/30, Gareth Thomas: Added deallocation of preproc_surf%emissivity
-! 2012/06/26, Caroline Pouslen: Added allocation swrtm information
-!                               added definitions of nchan_sw and nchan_lw
-!                               included channel_info structure!
-! 2012/07/29, Caroline Poulsen: deallocated levels and layers variable
+! 2012/01/19, MJ: produces draft code
+! 2012/05/30, GT: Added deallocation of preproc_surf%emissivity
+! 2012/06/26, CP: Added allocation swrtm information. added definitions of 
+!   nchan_sw and nchan_lw. included channel_info structure!
+! 2012/07/29, CP: deallocated levels and layers variable
 ! 2012/07/30, CP: added in solazi
 ! 2012/08/01, MJ: adds geopotential height coordinates
 ! 2012/11/14, CP: adds surface pressure

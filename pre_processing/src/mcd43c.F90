@@ -6,13 +6,12 @@
 ! deallocation routine for deleting the same structure.
 !
 ! Description and Algorithm details:
+! 1) Deallocate all fields of the structure.
 !
 ! Arguments deallocate_mcd43c :
 ! Name Type      In/Out/Both Description
+! ------------------------------------------------------------------------------
 ! mcd  type(mcd) Both        The mcd structure to be deallocated
-!
-! Local variables:
-! Name Type Description
 !
 ! History:
 ! 11 Apr 2012, GT: Orginal
@@ -53,25 +52,25 @@ module mcd43c_m
 
 contains
 
-   subroutine deallocate_mcd43c(mcd)
+subroutine deallocate_mcd43c(mcd)
 
-      implicit none
+   implicit none
+   
+   type(mcd43c), intent(inout) :: mcd
+   
+   deallocate(mcd%quality)
+   deallocate(mcd%local_solar_noon)
+   deallocate(mcd%percent_snow)
+   deallocate(mcd%percent_inputs)
+   deallocate(mcd%bandids)
+   deallocate(mcd%bands)
+   deallocate(mcd%lat)
+   deallocate(mcd%lon)
+   deallocate(mcd%WSA)
+   deallocate(mcd%BSA)
+   
+end subroutine deallocate_mcd43c
 
-      type(mcd43c), intent(inout) :: mcd
-
-      deallocate(mcd%quality)
-      deallocate(mcd%local_solar_noon)
-      deallocate(mcd%percent_snow)
-      deallocate(mcd%percent_inputs)
-      deallocate(mcd%bandids)
-      deallocate(mcd%bands)
-      deallocate(mcd%lat)
-      deallocate(mcd%lon)
-      deallocate(mcd%WSA)
-      deallocate(mcd%BSA)
-
-   end subroutine deallocate_mcd43c
-
-   include 'read_mcd43c3.F90'
+include 'read_mcd43c3.F90'
 
 end module mcd43c_m

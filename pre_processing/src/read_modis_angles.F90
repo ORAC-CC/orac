@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_modis_angles.F90
-!
 !
 ! Purpose:
 ! Read angular information from MODIS geolocation data
@@ -23,16 +23,16 @@
 ! rtemp    real   both Initialised array into which data is stored
 !
 ! History:
-! 2011/12/14: MJ produces draft code which reads modis angles
-! 2013/09/06: AP tidying, switched to using MODIS file's fill value to be
-!                consistent with read_modis_lat_lon.F90, use real_fill_value
-!                rather than file's own value
+! 2011/12/14, MJ: produces draft code which reads modis angles
+! 2013/09/06, AP: tidying, switched to using MODIS file's fill value to be
+!   consistent with read_modis_lat_lon.F90, use real_fill_value rather than
+!   file's own value
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
 
@@ -43,10 +43,10 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer, intent(in)            :: fid
-   character(len=*), intent(in)   :: SDS_name
-   integer(kind=lint), intent(in) :: ixstart,ixstop,iystart,iystop
-   real(kind=sreal), intent(out)  :: rtemp(ixstart:ixstop,iystart:iystop)
+   integer,            intent(in)  :: fid
+   character(len=*),   intent(in)  :: SDS_name
+   integer(kind=lint), intent(in)  :: ixstart,ixstop,iystart,iystop
+   real(kind=sreal),   intent(out) :: rtemp(ixstart:ixstop,iystart:iystop)
 
    integer(kind=lint)  :: ix,jy
    integer             :: err_code

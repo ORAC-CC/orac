@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_L1B_avhrr_reflectances_radiances.F90
-!
 !
 ! Purpose:
 ! Read solar and viewing geometry from HDF5 file.
@@ -11,7 +11,7 @@
 ! 4) Close files and HDF items.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name           Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! fid            HID_T  in   HDF file ID from H5Fopen_f
 ! group          string in   Name of the group to open
@@ -25,15 +25,15 @@
 ! rtemp          sreal  both Array into which data will be stored
 !
 ! History:
-! 2012/02/01: MJ adds code to read AVHRR HDF5 sensor information.
-! 2013/09/06: AP tidying, removed channel_type argument, added read of channel
-!                attribute within file for identification
+! 2012/02/01, MJ: adds code to read AVHRR HDF5 sensor information.
+! 2013/09/06, AP: tidying, removed channel_type argument, added read of channel
+!   attribute within file for identification
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
    startx,stopx,starty,stopy,channel_number,rtemp)
@@ -45,11 +45,11 @@ subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
 
    integer(kind=size_t), parameter :: dim=10
 
-   integer(kind=HID_T), intent(in) :: fid
-   character(len=*), intent(in)    :: dataset, group, attrgroup
-   integer(kind=lint), intent(in)  :: startx,stopx,starty,stopy
-   character(len=dim), intent(out) :: channel_number
-   real(kind=sreal), intent(out) :: rtemp(startx:stopx,starty:stopy)
+   integer(kind=HID_T), intent(in)  :: fid
+   character(len=*),    intent(in)  :: dataset, group, attrgroup
+   integer(kind=lint),  intent(in)  :: startx,stopx,starty,stopy
+   character(len=dim),  intent(out) :: channel_number
+   real(kind=sreal),    intent(out) :: rtemp(startx:stopx,starty:stopy)
 
    integer(kind=lint)    :: ix,jy
    integer               :: err_code

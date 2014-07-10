@@ -1,6 +1,5 @@
-! ------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Name: allocate_surface_structures.F90
-!
 !
 ! Purpose:
 ! Allocate the array parts of the types defined in surface_structures.F90
@@ -16,9 +15,6 @@
 ! imager_geolocation struct both Structure giving the imager dimensions.
 ! channel_info       struct in   Structure giving the number of channels.
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 ! 2012/05/01, GT: First version
 ! 2012/07/29, CP: inialised variables
@@ -31,7 +27,7 @@
 !
 ! Bugs:
 ! None known
-! ------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
 
@@ -42,9 +38,9 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
 
    implicit none
 
-   type(surface_s), intent(out)           :: surface
-   type(imager_geolocation_s), intent(in) :: imager_geolocation
-   type(channel_info_s), intent(in)       :: channel_info
+   type(surface_s),            intent(out) :: surface
+   type(imager_geolocation_s), intent(in)  :: imager_geolocation
+   type(channel_info_s),       intent(in)  :: channel_info
 
    allocate(surface%albedo_chan(channel_info%nchannels_sw))
    surface%albedo_chan=real_fill_value
@@ -52,11 +48,12 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
    allocate(surface%emissivity_chan(channel_info%nchannels_lw))
    surface%emissivity_chan=real_fill_value
 
-   allocate(surface%albedo(imager_geolocation%startx:imager_geolocation%endx,&
+   allocate(surface%albedo(imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny,channel_info%nchannels_sw))
    surface%albedo=real_fill_value
 
-   allocate(surface%emissivity(imager_geolocation%startx:imager_geolocation%endx,&
+   allocate(surface%emissivity( &
+            imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny,channel_info%nchannels_lw))
    surface%emissivity=real_fill_value
 

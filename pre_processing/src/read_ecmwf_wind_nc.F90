@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_ecmwf_wind_nc.F90
-!
 !
 ! Purpose:
 ! Read surface wind components and lat/lon from ECMWF file. Intended for use
@@ -19,13 +19,13 @@
 ! ecmwf      struct both Structure summarising contents of ECMWF files.
 !
 ! History:
-! 2014/05/07: AP First version.
+! 2014/05/07, AP: First version.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
 
@@ -83,8 +83,8 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    
 end subroutine read_ecmwf_wind_nc
 
+!-------------------------------------------------------------------------------
 ! Name: read_ecmwf_wind_file
-!
 !
 ! Purpose:
 ! Read surface wind components and lat/lon from ECMWF file. Intended for use
@@ -106,11 +106,11 @@ end subroutine read_ecmwf_wind_nc
 ! ecmwf      struct both Structure summarising contents of ECMWF files.
 !
 ! History:
-! 2014/05/07: AP First version.
+! 2014/05/07, AP: First version.
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
 

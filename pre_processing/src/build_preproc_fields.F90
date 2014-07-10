@@ -1,39 +1,41 @@
+!-------------------------------------------------------------------------------
 ! Name: build_preproc_fields.f90
-!
 !
 ! Purpose:
 ! Grid and average the imager data to the preprocessing grid.
 ! 
 ! Description and Algorithm details:
-! 1) Average imager angles over preprocessor grid cells.
-! 2)
+! 1) Create regular lat/lon grids for preprocessor array.
+! 2) Sum all imager angles within each preprocessor grid cell.
+! 3) Divide each grid cell by the number of measurements in it.
 !
 ! Arguments:
 ! Name               Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! preproc_dims       struct both Summary of preprocessing grid definitions
+! preproc_geoloc     struct both Summary of preprocessing lat/lon
 ! preproc_geo        struct both Summary of preprocessing geometry
 ! imager_geolocation struct both Summary of satellite grid definitions
 ! imager_angles      struct both Summary of satellite geometry
 !
 ! History:
-! 2012/02/24: MJ produces initial code version.
-! 2012/04/19: GT Bug fix - relazi was being refereneced by idim
-!                in both dimensions (rather idim for x and jdim for y)
-! 2012/07/30: CP added in solazi
-! 2012/08/24: MJ seperated filtering in lw and sw to avoid issues on night side
-!                of orbits
-! 2012/12/14: CP changed howy loop was set changed starty to startyi to loop
-!                over a granule
-! 2013/05/16: MJ changed filtering of angles wrt fill value: multi-view is
-!                accounted for.
-! 2014/05/07: AP Move contents of make_preproc_grid here. Update structures.
+! 2012/02/24, MJ: produces initial code version.
+! 2012/04/19, GT: Bug fix - relazi was being refereneced by idim
+!   in both dimensions (rather idim for x and jdim for y)
+! 2012/07/30, CP: added in solazi
+! 2012/08/24, MJ: seperated filtering in lw and sw to avoid issues on night side
+!   of orbits
+! 2012/12/14, CP: changed howy loop was set changed starty to startyi to loop
+!   over a granule
+! 2013/05/16, MJ: changed filtering of angles wrt fill value: multi-view is
+!   accounted for.
+! 2014/05/07, AP: Move contents of make_preproc_grid here. Update structures.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
   
 subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
      imager_geolocation, imager_angles)

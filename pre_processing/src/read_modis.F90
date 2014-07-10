@@ -1,3 +1,24 @@
+!-------------------------------------------------------------------------------
+! Name: read_modis.F90
+!
+! Purpose:
+! Container for MODIS read routines.
+!
+! Description and Algorithm details:
+! None
+!
+! Arguments:
+! None
+!
+! History:
+! 2014/05/15, GM: First version.
+!
+! $Id$
+!
+! Bugs:
+! None known
+!-------------------------------------------------------------------------------
+
 module read_modis
 
 implicit none

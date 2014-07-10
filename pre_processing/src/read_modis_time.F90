@@ -1,5 +1,5 @@
+!-------------------------------------------------------------------------------
 ! Name: read_modis_time.F90
-!
 !
 ! Purpose:
 ! Read MODIS time data from hdf file
@@ -9,7 +9,7 @@
 ! 2) Read data with SFRDATA.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name     Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! fid      int    in   A file ID returned by SFSTART
 ! SDS_name string in   Name of the data field to read
@@ -18,14 +18,14 @@
 ! temp     dreal  both Initialised array into which data is stored
 !
 ! History:
-! 2011/12/16: MJ produces draft code
-! 2013/09/11: AP tidying, removed fv
+! 2011/12/16, MJ: produces draft code
+! 2013/09/11, AP: tidying, removed fv
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
 
@@ -36,10 +36,10 @@ subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)
    include "hdf.f90"
    include "dffunc.f90"
 
-   integer, intent(in)            :: fid
-   character(len=*), intent(in)   :: SDS_name
-   integer(kind=lint), intent(in) :: startyy, stopyy
-   real(kind=dreal), intent(out)  :: temp(startyy:stopyy-1)
+   integer,            intent(in)  :: fid
+   character(len=*),   intent(in)  :: SDS_name
+   integer(kind=lint), intent(in)  :: startyy, stopyy
+   real(kind=dreal),   intent(out) :: temp(startyy:stopyy-1)
 
    integer :: err_code
 

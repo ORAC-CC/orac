@@ -1,9 +1,8 @@
+!-------------------------------------------------------------------------------
 ! Name: read_L1B_radiances_reflectances.F90
-!
 !
 ! Purpose:
 ! Read the radiance values from an already open MODIS M*D02!KM file
-!
 !
 ! Description and Algorithm details:
 ! 1) Select appropriate resolution band for requested channel.
@@ -13,7 +12,7 @@
 ! 5) Apply scale factor and offset to data.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name             Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! fid              HID_T  in   File ID from SFstart
 ! band             int    in   Instrument channel number to read
@@ -28,25 +27,25 @@
 !                              T: don't
 !
 ! History:
-! 2011/12/??: MJ First version
-! 2013/03/22: GT Added code to assign the band index number dynamically using
-!                information contained in the M*D02 file itself.
-! 2013/09/12: AP tidying, added where statement
-! 2013/10/15: MJ changes reading of band names for MODIS.
-! 2013/10/22: AP when a field in the spectrally subsetted files contained only
-!                one channel, the band_names field ended in NULL characters
-!                which Fortran could not manage. Those have been removed.
-! 2013/11/05: GM Moved the verbose statement that prints band_names from just
-!                before Adam's removing of NULL characters to just after as some
-!                text operations can be affected by them.
-! 2014/01/12: GM Fixed it so that the right scales and offsets are used.
-! 2014/01/12: GM Cleaned up the code.
+! 2011/12/??, MJ: First version
+! 2013/03/22, GT: Added code to assign the band index number dynamically using
+!   information contained in the M*D02 file itself.
+! 2013/09/12, AP: tidying, added where statement
+! 2013/10/15, MJ: changes reading of band names for MODIS.
+! 2013/10/22, AP: when a field in the spectrally subsetted files contained only
+!   one channel, the band_names field ended in NULL characters which Fortran
+!   could not manage. Those have been removed.
+! 2013/11/05, GM: Moved the verbose statement that prints band_names from just
+!   before Adam's removing of NULL characters to just after as some text
+!   operations can be affected by them.
+! 2014/01/12, GM: Fixed it so that the right scales and offsets are used.
+! 2014/01/12, GM: Cleaned up the code.
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
      ixstart, ixstop, iystart, iystop, level1b_buffer, verbose)
@@ -63,7 +62,8 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    integer,            intent(in)    :: band
    logical,            intent(in)    :: Cal_type_is_refl
    integer(kind=lint), intent(in)    :: ixstart, ixstop, iystart, iystop
-   real(kind=sreal),   intent(inout) :: level1b_buffer(ixstart:ixstop,iystart:iystop)
+   real(kind=sreal),   intent(inout) :: level1b_buffer(ixstart:ixstop, &
+        iystart:iystop)
    logical,            intent(in)    :: verbose
 
    integer(kind=lint)    :: ix, jy
@@ -75,7 +75,8 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    integer               :: number_of_bands
    character(len=100)    :: band_names
    logical               :: flag
-   integer               :: iband,comma_i,comma_i_old,band_name_length,current_band
+   integer               :: iband,comma_i,comma_i_old
+   integer               :: band_name_length,current_band
    integer(kind=stint)   :: fv, vr(2)
    real(kind=sreal)      :: scale_factors(20), offsets(20)
    integer(kind=lint)    :: start(3), stride(3), edge(3)

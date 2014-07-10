@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name: create_time_for_pixel.F90
 !
 ! Purpose:
@@ -9,27 +10,27 @@
 ! 2) Convert into a Julian date and output.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name          Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! ixstart       lint   in   First pixel to read across track
 ! ixstop        lint   in   Last pixel to read across track
 ! iystart       lint   in   First pixel to read along track
 ! iystop        lint   in   Last pixel to read along track
 ! n_along_track lint   in   Number of pixels available in the
-! imager_time   struct both Summary of pixel observation time
 ! startepochs   lint   in   Start time for the orbit, in seconds
 ! endepochs     lint   in   End time for the orbit, in seconds
+! imager_time   struct both Summary of pixel observation time
 ! refjulianday  dreal  in   Julian day number for reference date
 !
 ! History:
-! 2012/06/14: MJ produces draft code
-! 2013/09/06: AP tidying
+! 2012/06/14, MJ: produces draft code
+! 2013/09/06, AP: tidying
 !
 ! $Id$
 !
 ! Bugs:
 ! none known
-!
+!-------------------------------------------------------------------------------
 
 subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop,n_along_track, &
    startepochs,endepochs,imager_time,refjulianday)
