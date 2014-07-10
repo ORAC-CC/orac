@@ -46,9 +46,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/find_tropopause.o \
                 $(OBJS)/hpsort.o \
                 $(OBJS)/imager_structures.o \
-                $(OBJS)/imager2oraclsflag.o \
                 $(OBJS)/interpol.o \
-                $(OBJS)/interpolate_to3h2o.o \
                 $(OBJS)/map_time_to_pixel.o \
                 $(OBJS)/mcd43c.o \
                 $(OBJS)/netcdf_output.o \
