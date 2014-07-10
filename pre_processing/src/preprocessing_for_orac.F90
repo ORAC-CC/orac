@@ -40,7 +40,6 @@
 ! ice_path         string in Folder containing NISE ice cover files
 ! albedo_path      string in Folder containing MODIS MCD43C3 albedo files
 ! emiss2_path      string in Folder containing MODIS monthly average emissivity
-! grid_flag        sint   in 1:ECMWF grid, 2:L3 grid, 3: own definition
 ! dellon           real   in 1 / longitude increment in degrees
 ! dellat           real   in 1 / latitude increment in degrees
 ! output_pathin    string in Folder into which outputs should be saved
@@ -247,7 +246,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    character(len=pathlength)       :: aatsr_calib_file
    character(len=pathlength)       :: ecmwf_path2,ecmwf2pathout
    character(len=pathlength)       :: ecmwf_path3,ecmwf3pathout
-   character(len=flaglength)       :: cgrid_flag
    character(len=attribute_length) :: cdellon,cdellat
    character(len=pixellength)      :: cstartx,cendx,cstarty,cendy
    character(len=pixellength)      :: cecmwf_flag
@@ -259,7 +257,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
    type(script_arguments_s)        :: script_input
 
-   integer(kind=sint)              :: grid_flag
    integer                         :: ecmwf_flag
    logical                         :: chunkproc
    integer(kind=stint)             :: day_night
@@ -353,40 +350,39 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       CALL GET_COMMAND_ARGUMENT(7,ice_path)
       CALL GET_COMMAND_ARGUMENT(8,albedo_path)
       CALL GET_COMMAND_ARGUMENT(9,emiss2_path)
-      CALL GET_COMMAND_ARGUMENT(10,cgrid_flag)
-      CALL GET_COMMAND_ARGUMENT(11,cdellon)
-      CALL GET_COMMAND_ARGUMENT(12,cdellat)
-      CALL GET_COMMAND_ARGUMENT(13,output_pathin)
-      CALL GET_COMMAND_ARGUMENT(14,cstartx)
-      CALL GET_COMMAND_ARGUMENT(15,cendx)
-      CALL GET_COMMAND_ARGUMENT(16,cstarty)
-      CALL GET_COMMAND_ARGUMENT(17,cendy)
-      CALL GET_COMMAND_ARGUMENT(18,script_input%cncver)
-      CALL GET_COMMAND_ARGUMENT(19,script_input%ccon)
-      CALL GET_COMMAND_ARGUMENT(20,script_input%cinst)
-      CALL GET_COMMAND_ARGUMENT(21,script_input%l2cproc)
-      CALL GET_COMMAND_ARGUMENT(22,script_input%l2cprocver)
-      CALL GET_COMMAND_ARGUMENT(23,script_input%contact)
-      CALL GET_COMMAND_ARGUMENT(24,script_input%website)
-      CALL GET_COMMAND_ARGUMENT(25,script_input%file_version)
-      CALL GET_COMMAND_ARGUMENT(26,script_input%reference)
-      CALL GET_COMMAND_ARGUMENT(27,script_input%history)
-      CALL GET_COMMAND_ARGUMENT(28,script_input%summary)
-      CALL GET_COMMAND_ARGUMENT(29,script_input%keywords)
-      CALL GET_COMMAND_ARGUMENT(30,script_input%comment)
-      CALL GET_COMMAND_ARGUMENT(31,script_input%project)
-      CALL GET_COMMAND_ARGUMENT(32,script_input%license)
-      CALL GET_COMMAND_ARGUMENT(33,script_input%uuid_tag)
-      CALL GET_COMMAND_ARGUMENT(34,script_input%exec_time)
-      CALL GET_COMMAND_ARGUMENT(35,aatsr_calib_file)
-      CALL GET_COMMAND_ARGUMENT(36,cecmwf_flag)
-      CALL GET_COMMAND_ARGUMENT(37,ecmwf_path2)
-      CALL GET_COMMAND_ARGUMENT(38,ecmwf_path3)
-      CALL GET_COMMAND_ARGUMENT(39,cchunkproc)
-      CALL GET_COMMAND_ARGUMENT(40,cday_night)
-      CALL GET_COMMAND_ARGUMENT(41,cverbose)
-      CALL GET_COMMAND_ARGUMENT(42,cuse_chunking)
-      CALL GET_COMMAND_ARGUMENT(43,cassume_full_paths)
+      CALL GET_COMMAND_ARGUMENT(10,cdellon)
+      CALL GET_COMMAND_ARGUMENT(11,cdellat)
+      CALL GET_COMMAND_ARGUMENT(12,output_pathin)
+      CALL GET_COMMAND_ARGUMENT(13,cstartx)
+      CALL GET_COMMAND_ARGUMENT(14,cendx)
+      CALL GET_COMMAND_ARGUMENT(15,cstarty)
+      CALL GET_COMMAND_ARGUMENT(16,cendy)
+      CALL GET_COMMAND_ARGUMENT(17,script_input%cncver)
+      CALL GET_COMMAND_ARGUMENT(18,script_input%ccon)
+      CALL GET_COMMAND_ARGUMENT(19,script_input%cinst)
+      CALL GET_COMMAND_ARGUMENT(20,script_input%l2cproc)
+      CALL GET_COMMAND_ARGUMENT(21,script_input%l2cprocver)
+      CALL GET_COMMAND_ARGUMENT(22,script_input%contact)
+      CALL GET_COMMAND_ARGUMENT(23,script_input%website)
+      CALL GET_COMMAND_ARGUMENT(24,script_input%file_version)
+      CALL GET_COMMAND_ARGUMENT(25,script_input%reference)
+      CALL GET_COMMAND_ARGUMENT(26,script_input%history)
+      CALL GET_COMMAND_ARGUMENT(27,script_input%summary)
+      CALL GET_COMMAND_ARGUMENT(28,script_input%keywords)
+      CALL GET_COMMAND_ARGUMENT(29,script_input%comment)
+      CALL GET_COMMAND_ARGUMENT(30,script_input%project)
+      CALL GET_COMMAND_ARGUMENT(31,script_input%license)
+      CALL GET_COMMAND_ARGUMENT(32,script_input%uuid_tag)
+      CALL GET_COMMAND_ARGUMENT(33,script_input%exec_time)
+      CALL GET_COMMAND_ARGUMENT(34,aatsr_calib_file)
+      CALL GET_COMMAND_ARGUMENT(35,cecmwf_flag)
+      CALL GET_COMMAND_ARGUMENT(36,ecmwf_path2)
+      CALL GET_COMMAND_ARGUMENT(37,ecmwf_path3)
+      CALL GET_COMMAND_ARGUMENT(38,cchunkproc)
+      CALL GET_COMMAND_ARGUMENT(39,cday_night)
+      CALL GET_COMMAND_ARGUMENT(40,cverbose)
+      CALL GET_COMMAND_ARGUMENT(41,cuse_chunking)
+      CALL GET_COMMAND_ARGUMENT(42,cassume_full_paths)
    else
       if(nargs .eq. 1) then
       ! if just one argument => this is driver file which contains everything
@@ -407,7 +403,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       read(11,*) ice_path
       read(11,*) albedo_path
       read(11,*) emiss2_path
-      read(11,*) cgrid_flag
       read(11,*) cdellon
       read(11,*) cdellat
       read(11,*) output_pathin
@@ -455,7 +450,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 !  stop
 
    ! cast input strings into appropriate variables
-   read(cgrid_flag, '(i1)') grid_flag
    read(cdellon, '(f10.5)') preproc_dims%dellon
    read(cdellat, '(f10.5)') preproc_dims%dellat
    read(cstartx(1:len_trim(cstartx)), '(I6)') startx
