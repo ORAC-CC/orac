@@ -692,10 +692,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
             profiles(1)%o3(1:preproc_dims%kdim)= &
                  preproc_prtm%ozone(idim,jdim,:)*o3_mixratio_to_ppmv
 
-            profiles(1)%s2m%p=exp(preproc_prtm%lnsp(idim,jdim))/pa2hpa
+            profiles(1)%s2m%p=exp(preproc_prtm%lnsp(idim,jdim))*hpa2pa
             profiles(1)%s2m%t=preproc_prtm%temp2(idim,jdim)
             profiles(1)%p(1:preproc_dims%kdim)= &
-                 preproc_prtm%pressure(idim,jdim,:)/pa2hpa
+                 preproc_prtm%pressure(idim,jdim,:)*hpa2pa
 
             ! Check the pressure values against the RTTOV max pressure value
             ! and round down if required
@@ -726,7 +726,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
             ! Hardwire surface types
             profiles(1)%skin%surftype  = 0
             profiles(1)%skin%watertype = 1
-            profiles(1)%elevation=filter_micro
+            profiles(1)%elevation=0.0
 
             profiles(1)%latitude=preproc_geoloc%latitude(jdim)
 
@@ -738,7 +738,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
 
             ! Handle snow fraction with poor man's approach
-            if (preproc_prtm%snow_albedo(idim,jdim) .gt. filter_micro) &
+            if (preproc_prtm%snow_albedo(idim,jdim) .gt. 0.0) &
                  profiles(1)%snow_frac=1.0
 
 
@@ -786,7 +786,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      ! use it.
                      if (minval(emissivity) .le. dither) then
                         calcemis=.true.
-                        emissivity=filter_micro
+                        emissivity=0.0
                         emissivity_in=emissivity
                      else
                         calcemis=.false.
@@ -795,8 +795,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      endif
                      !                 else
                      !                    calcemis=.false.
-                     !                    emissivity_in=filter_micro
-                     !                    emissivity=filter_micro
+                     !                    emissivity_in=0.0
+                     !                    emissivity=0.0
                   endif
 
                   ! If this is a good preprocessing pixel do the RT computation.

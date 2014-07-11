@@ -101,15 +101,15 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    preproc_geoloc%latitude=real_fill_value
 
 
-   ! preproc_geo
+   ! preproc_geo (init to 0 as used for summation in build_preproc_fields)
    allocate(preproc_geo%solza(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%solza=filter_micro
+   preproc_geo%solza=0.0
    allocate(preproc_geo%solazi(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%solazi=filter_micro
+   preproc_geo%solazi=0.0
    allocate(preproc_geo%satza(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%satza=filter_micro
+   preproc_geo%satza=0.0
    allocate(preproc_geo%relazi(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%relazi=filter_micro
+   preproc_geo%relazi=0.0
 
 
    ! preproc_prtm

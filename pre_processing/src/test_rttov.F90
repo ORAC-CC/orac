@@ -90,7 +90,7 @@ subroutine test_rttov(profiles,preproc_dims)
 
    !2m/10m variables
    !profiles(1)%s2m%t=
-   !              profiles(1)%s2m%p=exp(preproc_prtm%lnsp(idim,jdim))/pa2hpa
+   !              profiles(1)%s2m%p=exp(preproc_prtm%lnsp(idim,jdim))*hpa2pa
    !              profiles(1)%s2m%u=
    !              profiles(1)%s2m%v=
 
@@ -99,7 +99,7 @@ subroutine test_rttov(profiles,preproc_dims)
    !              !Hardwire surface types
    profiles(1) % skin % surftype  = 0
    profiles(1) % skin % watertype = 1
-   !              profiles(1)%elevation=filter_micro
+   !              profiles(1)%elevation=0.0
 
    !profiles(1)%zenangle=54
    !                 profiles(1)%azangle=0.0
