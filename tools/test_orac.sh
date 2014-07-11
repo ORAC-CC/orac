@@ -398,17 +398,24 @@ for j in ${!sensor[*]}; do
        output_folder=$folder
    fi
 
-   # find root file name
-   alb=`find $folder -name "${label[$j]}_*ORACV${revision}*alb.nc" -printf "%f\n"`
-   if (( "${#alb}" == 0 )); then
+   # find root file names
+   unset files i
+   while IFS= read -r -d $'\0' tmp; do
+       files[i++]="$tmp"
+   done < <(find $folder -name "${label[$j]}_*ORACV${revision}*alb.nc" \
+       -printf "%f\0")
+   if (( "${#files}" == 0 )); then
        echo 'No files found. Check revision number.'
        continue
    fi
-   fileroot=${alb:0:$((${#alb}-7))}
 
-   # write driver file
-   driver_file=$driver_file_base${label[$j]}.txt
-   driver="'$folder'
+   # loop over files found
+   for alb in ${files[*]}; do
+       fileroot=${alb:0:$((${#alb}-7))}
+
+       # write driver file
+       driver_file=$driver_file_base${label[$j]}.txt
+       driver="'$folder'
 '$fileroot'
 '$output_folder'
 '$sad_repos'
@@ -416,36 +423,37 @@ ${sensor[$j]}
 6
 $channels
 $phase"
-   echo "$driver" 1> $driver_file
+       echo "$driver" 1> $driver_file
 
-   # make header for log file
-   log_file=$output_folder/${label[$j]}
-   if (( $drop )); then log_file=$log_file'D'; fi
-   log_file=$log_file'_ORAC_'$phase'_V'$revision'_'`date +"%y%m%d_%H%M"`.log
-   echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" 1>> $log_file
-   echo '' 1>> $log_file
-   echo '-----DRIVER FILE-----' 1>> $log_file
-   echo "$driver" 1>> $log_file
-   echo '---------------------' 1>> $log_file
-   echo '' 1>> $log_file
-   echo '-----Do this-----' 1>> $log_file
-   echo "${orac_folder}/orac" $driver_file 1>> $log_file
-   echo '-----------------' 1>> $log_file
-   echo '' 1>> $log_file
+       # make header for log file
+       log_file=$output_folder/${label[$j]}
+       if (( $drop )); then log_file=$log_file'D'; fi
+       log_file=$log_file'_ORAC_'$phase'_V'$revision'_'`date +"%y%m%d_%H%M"`.log
+       echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" 1>> $log_file
+       echo '' 1>> $log_file
+       echo '-----DRIVER FILE-----' 1>> $log_file
+       echo "$driver" 1>> $log_file
+       echo '---------------------' 1>> $log_file
+       echo '' 1>> $log_file
+       echo '-----Do this-----' 1>> $log_file
+       echo "${orac_folder}/orac" $driver_file 1>> $log_file
+       echo '-----------------' 1>> $log_file
+       echo '' 1>> $log_file
+       
+       #  Non-parallel version:
+       $orac_folder/orac $driver_file >> $log_file 2>&1
+       if (( $? != 0 )); then
+           echo "${label[$j]}: Error."
+           exit
+       fi
+       echo "Processed ${label[$j]}"
+       perl -ne "$perl" $log_file
 
-#  Non-parallel version:
-   $orac_folder/orac $driver_file >> $log_file 2>&1
-   if (( $? != 0 )); then
-       echo "${label[$j]}: Error."
-       exit
-   fi
-   echo "Processed ${label[$j]}"
-   perl -ne "$perl" $log_file
-
-   # parallel version
-#   com="$com$orac_folder/orac $driver_file >> $log_file 2>&1 && "\
+       # parallel version
+#       com="$com$orac_folder/orac $driver_file >> $log_file 2>&1 && "\
 #"echo 'Processed ${label[$j]}' && perl -ne '$perl' $log_file"$'\n'
 # the second line prints 'Processed' and convergence data on completition
+   done
 done
 # parallelize the commands
 #echo "$com" | xargs -0 -P $n_procs -n 1 -I COMMAND sh -c COMMAND

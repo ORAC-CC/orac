@@ -47,7 +47,7 @@
 ;      two arrays.
 ;   3) If the variables are of the same size but their elements are not, it
 ;      will print a similar line, but giving the number of points that have a
-;      fractional difference greater than 2d-7 (~ rounding error).
+;      fractional difference greater than 1d-6 (~ rounding error).
 ; 
 ; OPTIONAL OUTPUTS:
 ;   None
@@ -62,13 +62,14 @@
 ;
 ; MODIFICATION HISTORY:
 ;   Written by ACPovey (povey@atm.ox.ac.uk) 
-;   01 Nov 2013 - V1.00: AP Original version
-;   27 Jan 2014 - V1.10: AP Added functionality for main processor
-;   04 Feb 2014 - V1.11: AP Added CONFIG file.
-;   14 Feb 2014 - V1.12: AP Added arguments NINST and LABELS to limit scope of
+;   01 Nov 2013 - AP: Original version
+;   27 Jan 2014 - AP: Added functionality for main processor
+;   04 Feb 2014 - AP: Added CONFIG file.
+;   14 Feb 2014 - AP: Added arguments NINST and LABELS to limit scope of
 ;                 script when only processing a few cases. Fixed version number
 ;                 bug.
-;   29 Apr 2014 - V1.13: AP New folder structure.
+;   29 Apr 2014 - AP: New folder structure.
+;   11 Jul 2014 - AP: Changed threshold to 1d-6 rather than 2d-7.
 ;-
 PRO COMPARE_ORAC_OUT
    args=COMMAND_LINE_ARGS()
@@ -137,9 +138,9 @@ PRO COMPARE_ORAC_OUT
                         STRJOIN(STRING(SIZE(c2,/dim),format='(I0)'),',')+']'
                   pass=0
                endif else begin
-                  trash=WHERE(ABS((c2-c1)/c1) gt 2d-7,nt)
+                  trash=WHERE(ABS((c2-c1)/c1) gt 1d-6,nt)
                   PRINT,var.name,a[i],j,nt, format='(A0," (",A0,",",I0,'+ $
-                        '") - ",I0," points are different by > 2d-7")'
+                        '") - ",I0," points are different by > 1d-6")'
                   pass=0
                endelse
             endif
