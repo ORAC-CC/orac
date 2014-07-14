@@ -9,13 +9,14 @@
 # Calling sequence -
 #    ./test_preproc.sh [-first] [-short|-long] [-no_compare] [-revision NUMBER]
 #       [-do DAYAATSR|NITAATSR|AATSR|DAYAVHRR|NITAVHRR|AVHRR|DAYMYD|NITMYD|MYD|
-#            MODIS|DAY|NIT|NIGHT|ALL|NONE] [-v21] [-badc 0|1|2]
+#            MODIS|DAY|NIT|NIGHT|ALL|NONE] [-v21] [-ecmwf 0|1|2] [-thresh NUMBER]
 #       [-verbose|-quiet] [-n_procs NUM] [-ld_set] [-orac_lib NAME]
 #       [-idl_folder PATH] [-preproc_folder PATH] [-emiss_folder PATH]
 #       [-tool_folder PATH] [-in_folder PATH] [-out_folder PATH] 
 #       [-albedo_folder PATH] [-coeffs_folder PATH] [-emiss_atlas_folder PATH] 
 #       [-calib_folder PATH]  [-ice_folder PATH] 
 #       [-ggam_folder PATH -ggas_folder PATH -gpam_folder PATH|-e_folder PATH]
+#       [-only_compare]
 #
 # Command line arguments -
 # -do          Select which of the test cases to process. This argument may
@@ -35,30 +36,32 @@
 #    NIT|NIGHT NITAATSR, NITAVHRR, NITMYD.
 #    ALL       All of the above; the default option.
 #    NONE      No processing is performed, only a comparison.
-# -v21         Use version 2.1 AATSR data. Default is version 2.0.
-# -short       Process only a small segment of each of the test files (5 lines).
-#              This is significantly faster than the default processing of the
-#              full files but may not catch all possible circumstances.
-# -long        The opposite of -short and default behaviour.
-# -no_compare  Do not compare the output files to a previous version after
-#              processing.
+# -ecmwf       Value to be used for the ECMWF flag. 0 = A single GRIB file output
+#              by the MARS server; 1 = Three NCDF files produced from BADC files;
+#              2 = One NCDF file and two GRIB files from the BADC.
 # -first       By default, the script determines the revision number from svn
 #              and then increments it by 1 as you are comparing altered code
 #              to the previous commited revision. Set this argument to not
 #              increment the counter (presumably because you are processing
 #              unaltered code). Implies -no_compare.
-# -revision    Force the code to use the given revision number. Implies
-#              -first but not -no_compare.
-# -verbose     Print maximal information to the log file and default behaviour.
-# -quiet       The opposite of -verbose.
+# -v21         Use version 2.1 AATSR data. Default is version 2.0.
+# -ld_set      Do not set the LD_LIBRARY_PATH variable.
+# -long        The opposite of -short and default behaviour.
 # -n_procs     The maximum number of simultaneous processes allowed. The default
 #              is 5.
-# -ecmwf       Value to be used for the ECMWF flag. 0 = A single GRIB file output
-#              by the MARS server; 1 = Three NCDF files produced from BADC files;
-#              2 = One NCDF file and two GRIB files from the BADC.
-# -ld_set      Do not set the LD_LIBRARY_PATH variable.
+# -no_compare  Do not compare the output files to a previous version after
+#              processing.
+# -only_compare Do not run processor. Only run the regression test.
 # -orac_lib    Name of the library file for the ORAC preprocessor, from which
 #              LD_LIBRARY_PATH will be generated.
+# -quiet       The opposite of -verbose.
+# -revision    Force the code to use the given revision number. Implies
+#              -first but not -no_compare.
+# -short       Process only a small segment of each of the test files (5 lines).
+#              This is significantly faster than the default processing of the
+#              full files but may not catch all possible circumstances.
+# -thresh      The threshold to be used in the rounding error regression test.
+# -verbose     Print maximal information to the log file and default behaviour.
 # -idl_folder     The path of your IDL executable.
 # -preproc_folder The path containing the ORAC preprocessor executable.
 # -tool_folder    The path containing the ORAC tools (i.e. these scripts).
@@ -90,6 +93,7 @@
 # 2014/04/30: AP New folder structure. Minor bug fixes. Correctly assigned
 #                NITMYD files. Updated AVHRR. Added -v21.
 # 2014/07/01: AP Changed processing order as MODIS is faster.
+# 2014/07/14: AP Added THRESH and ONLY_COMPARE arguments.
 #
 set -e
 
@@ -181,6 +185,7 @@ do_NITAVHRR=0
 do_DAYMYD=0
 do_NITMYD=0
 do_compare=1
+skip_proc=0
 new=1
 revision=0
 ver21=0
@@ -284,6 +289,9 @@ while [[ $# > 0 ]]; do
         -no_compare)
             do_compare=0
             ;;
+        -only_compare)
+            skip_proc=1
+            ;;
         -n_procs)
             shift
             n_procs="$1"
@@ -301,6 +309,10 @@ while [[ $# > 0 ]]; do
         -badc)
             shift
             badc_flag="$1"
+            ;;
+        -thresh)
+            shift
+            thresh="$1"
             ;;
         -do)
             shift
@@ -522,6 +534,11 @@ if (( $short )); then for j in ${!label[*]}; do
 done
 fi
 
+# for only_compare, kill $sensor whilst leaving $label alone
+if (( $skip_proc )); then
+    unset sensor
+fi
+
 #------------------------------------------------------------------------------
 # RUN ORAC PREPROCESSOR
 #------------------------------------------------------------------------------
@@ -584,5 +601,5 @@ echo 'Processing took '$((`date +"%s"`-$sec))' s'
 # call IDL routine to compare this output to the previous version
 if (( $do_compare && ("$?" == 0) )); then
     $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav -args $out_folder \
-        $revision 'preproc' ${#label[@]} ${label[@]}
+        $revision 'preproc' ${#label[@]} ${label[@]} $thresh
 fi

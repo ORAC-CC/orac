@@ -30,6 +30,9 @@
 ;   ninst  = an integer giving the number of instruments to be evaluated
 ;   list   = the remaining arguments are ninst strings giving the labels for 
 ;            the files to be evaluated
+;   thresh = OPTIONAL. The check for numerical changes includes an output of how
+;            many values have changed by more than the expected rounding error.
+;            This sets that threshold. Default 1d-6.
 ;
 ; OPTIONAL INPUTS:
 ;   None
@@ -47,7 +50,7 @@
 ;      two arrays.
 ;   3) If the variables are of the same size but their elements are not, it
 ;      will print a similar line, but giving the number of points that have a
-;      fractional difference greater than 1d-6 (~ rounding error).
+;      fractional difference greater than THRESH (~ rounding error).
 ; 
 ; OPTIONAL OUTPUTS:
 ;   None
@@ -70,14 +73,18 @@
 ;                 bug.
 ;   29 Apr 2014 - AP: New folder structure.
 ;   11 Jul 2014 - AP: Changed threshold to 1d-6 rather than 2d-7.
+;   14 Jul 2014 - AP: Made threshold an argument.
 ;-
 PRO COMPARE_ORAC_OUT
-   args=COMMAND_LINE_ARGS()
+   args=COMMAND_LINE_ARGS(count=nargs)
    fdr=args[0]
    revision=args[1]
    mode=args[2]
    ninst=FIX(args[3])
-   
+   thres = nargs gt 4+ninst ? FLOAT(args[4+ninst]) : 1d-6
+
+   sthres = STRING(thres,format='(g0.1)')
+
    ;; appropriate file extensions
    if mode eq 'preproc' $
       then a='.'+['alb','config','clf','geo','loc','lsf','msi','uv', $
@@ -138,9 +145,9 @@ PRO COMPARE_ORAC_OUT
                         STRJOIN(STRING(SIZE(c2,/dim),format='(I0)'),',')+']'
                   pass=0
                endif else begin
-                  trash=WHERE(ABS((c2-c1)/c1) gt 1d-6,nt)
+                  trash=WHERE(ABS((c2-c1)/c1) gt thres,nt)
                   PRINT,var.name,a[i],j,nt, format='(A0," (",A0,",",I0,'+ $
-                        '") - ",I0," points are different by > 1d-6")'
+                        '") - ",I0," points are different by > '+sthres+'")'
                   pass=0
                endelse
             endif
