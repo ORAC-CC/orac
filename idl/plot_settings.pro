@@ -1,5 +1,65 @@
-FUNCTION PLOT_SETTINGS, suffix, inst
-   ON_ERROR, 0
+;+
+; NAME:
+;   PLOT_SETTINGS
+;
+; PURPOSE:
+;   Specifies the properties of diagrams made with PLOT_ORAC. This routine needs
+;   to be recompiled after any changes are made. 
+;
+; CATEGORY:
+;   ORAC plotting tools
+;
+; CALLING SEQUENCE:
+;   settings = PLOT_SETTINGS(suffix)
+;
+; INPUTS:
+;   suffix = The file suffix for the file to be plotted. Possibilities are:
+;      ALB, CLF, CONFIG, GEO, LOC, LSF, LWRTM, MSI, PRTM, SWRTM, UV, 
+;      PRIMARY, SECONDARY
+;
+; OPTIONAL INPUTS:
+;   None.
+;	
+; KEYWORD PARAMETERS:
+;   None.
+;	
+; OUTPUTS:
+;   suffix = An array of structures (one per field in the file) each containing:
+;      NAME:    Name of the field in the NCDF file.
+;      MODE:    The format of the data, denoting the style of plot. Values are:
+;         0) Line plot [n]; 1) One map plot [nx,ny];
+;         2) Series of map plots [nx,ny,n]; 3) One map plot [nxy]; 
+;         4) Series of map plots [n,nxy]; 5) Levels of map plots [nl,nxy];
+;         6) Two series of map plots [n,nl,nxy].
+;      TITLE:   The description to be written above the plot.
+;      LOG:     If nonzero, use a logarithmic colourbar.
+;      BOTTOM:  If nonzero, use a colourbar that does not start at zero.
+;      ABS:     If nonzero, use a colourbar centred on zero.
+;      FILTER:  When plotting PRIMARY or SECONDARY, apply a filter. Values are:
+;         0) Plot all valid values; 1) Plot all points that converged;
+;         2) Plot only points with a quality flag of 0.
+;      BTF:     The print format of the colourbar labels. Default (G0.4).
+;      OUTLINE: If nonzero, draw a border around the satellite swath. Default on.
+;      FULL:    If nonzero, use a typical [minimum value, maximum value] 
+;         colourbar range rather than the preferred percentile version.
+;      RANGE:   Override the automated colourbar range selection.
+;      BLABELS: For flag data, the descriptions to print on the colourbar rather
+;         than numbers.
+;      NLEVELS: The number of colour levels to be used in the plot. Default 250.
+; 
+; OPTIONAL OUTPUTS:
+;   None.
+;
+; RESTRICTIONS:
+;   This routine needs to be recompiled after any changes are made for them to
+;   be expressed in plotting. Recommendations on how to avoid that gladly 
+;   accepted.
+;
+; MODIFICATION HISTORY:
+;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;-
+FUNCTION PLOT_SETTINGS, suffix
+   ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; cut out first full stop
@@ -8,7 +68,7 @@ FUNCTION PLOT_SETTINGS, suffix, inst
    suff=STRUPCASE(suff)
 
    str={name:'', mode:-1, title:'', log:0, bottom:0, abs:0, filter:0, $
-        btf:'(g0.4)', outline:1, full:0, syms:0.1, range:[!values.f_nan,0.], $
+        btf:'(g0.4)', outline:1, full:0, range:[!values.f_nan,0.], $
         blabels: STRARR(10), nlevels:250}
 
    ;; Mode key:
@@ -247,6 +307,7 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[0].name='msi_data'
          out[0].mode=2
          out[0].title=FMT('Imager data','% || K')
+         out[0].full=1
       end
       'PRTM': begin
          out=REPLICATE(str,13)

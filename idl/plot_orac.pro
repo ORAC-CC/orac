@@ -1,5 +1,82 @@
-PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, font_size=font_s, scale=scale, label=label, relative=rel, lines=lines, keep_ps=keep_ps, ice=ice, secondary=secondary
-   ON_ERROR, 0
+;+
+; NAME:
+;   PLOT_ORAC
+;
+; PURPOSE:
+;   Produce quick-look plots for the outputs of ORAC. The parameters of these
+;   plots are automatically selected where possible, though most can be
+;   controlled through the PLOT_SETTINGS routine.
+;
+; CATEGORY:
+;   ORAC plotting tools
+;
+; CALLING SEQUENCE:
+;   PLOT_ORAC, instrument, revision, folder [, /compare] [, /preproc] 
+;              [, prev_revision=value] [, root=string] [, xsize=value] 
+;              [, ysize=value] [, nx=value] [, ny=value] [, font_size=value] 
+;              [, scale=value] [, label=string] [, /relative] [, lines=value] 
+;              [, /keep_ps] [, /ice] [, /secondary]
+;
+; INPUTS:
+;   instrument = A string specifying the swath to be plotted. This is expected
+;      to be one of the values of $label in trunk/tools/test-preproc.sh
+;   revision   = The revision number to be plotted.
+;
+; OPTIONAL INPUTS:
+;   folder     = The path to the testoutput folder. Defaults to the values of
+;      the enviroment variable TESTOUT.
+;   PREV_REVISION = When using COMPARE, use this keyword to specify the previous
+;      revision to be compared against if you do not want the software to
+;      determine that automatically.
+;   ROOT       = Root path of the files to be plotted (i.e. $TESTOUT/V1/DAYMYD/
+;      DAYMYD_UoOx_MODIS_ORACV1_AQUA_20000101000000_200806200405_V1.0).
+;      Overrides the automatic file selection. If used with COMPARE, that keyword
+;      should be set to the appropriate root path for the previous revision.
+;   X|YSIZE    = Horizontal|Vertical extent of the output panes.
+;   NX|Y       = Horizontal|Vertical number of plots.
+;   FONT_SIZE  = Desired font size.
+;   SCALE      = A number to multiply both NX|Y. A useful way to zoom in.
+;   LABEL      = A very short description that should be printed at the top-left
+;      of each page.
+;   LINES      = The number of along-track lines to plot in each figure.
+;	
+; KEYWORD PARAMETERS:
+;   COMPARE    = Plot the differences between this revsion and the previous.
+;   PREPROC    = Plot the contents of the preprocessor output rather than the
+;      main processor.
+;   RELATIVE   = In a COMPARE plot, rather than plotting the absolute difference
+;      between the revisions, plot the relative difference.
+;   KEEP_PS    = Do not delete the postscript plots after combining them into
+;      a PDF.
+;   ICE        = Search for the ICE cloud phase outputs rather than WAT.
+;   SECONDARY  = Plot the contents of the secondary output file after the primary
+;	
+; OUTPUTS:
+;   - All outputs are made into the same folder as the input data.
+;   - During processing, scratch postscripts are produced named ROOT.N###.eps.
+;   - After processing, these are combined into a single PDF file called:
+;      Default) ROOT.orac.pdf
+;      COMPARE) ROOT.orac.comp.pdf
+;      PREPROC) ROOT.preproc.pdf
+;      PREPROC, COMPARE) ROOT.preproc.comp.pdf
+; 
+; OPTIONAL OUTPUTS:
+;   None.
+;
+; RESTRICTIONS:
+;   When not using the ROOT keyword, assumes the folder structure of ORAC outputs
+;   is $TESTOUT/V####/INST/*.SUFFIX.nc, where # is a number; INST is the label
+;   for the datafile (such as DAYMYD); and SUFFIX is one of the suffixes accepted
+;   by PLOT_SETTINGS.
+;
+; MODIFICATION HISTORY:
+;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;-
+PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
+               prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
+               font_size=font_s, scale=scale, label=label, relative=rel, $
+               lines=lines, keep_ps=keep_ps, ice=ice, secondary=secondary
+   ON_ERROR, KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; process inputs
@@ -86,9 +163,14 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, prev_re
       ;; determine field sizes (for chunked plotting)
       sze=SIZE(lat,/dim)
       nl1=sze[0]
-      line1=sze[1]
       nl2=MAX(i_rtm)
-      line2=MAX(j_rtm)
+      if KEYWORD_SET(lines) then begin
+         line1=lines
+         line2=lines*MAX(j_rtm)/sze[1]
+      endif else begin
+         line1=sze[1]
+         line2=MAX(j_rtm)
+      endelse
    endif else begin
       ;; plot ORAC retrieval
       tag='.orac'
@@ -106,9 +188,14 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, prev_re
       ;; determine field size (for chunked plotting)
       sze=SIZE(lat,/dim)
       nl1=sze[0]
-      line1=sze[1]
+      if KEYWORD_SET(lines) then begin
+         line1=lines
+      endif else begin
+         line1=sze[1]
+      endelse
    endelse
    if kc then tag+='.comp'
+      
 
    ;; save current colourbar and set greyscale for plot titles
    TVLCT, save_ct, /get
@@ -153,7 +240,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, prev_re
          inq=NCDF_INQUIRE(fid)
 
          ;; loop over variables
-         set=PLOT_SETTINGS(suff[j], inst)
+         set=PLOT_SETTINGS(suff[j])
          for k=0,N_ELEMENTS(set)-1 do begin
             ;; read values
             data=NCDF_OBTAIN(fid, set[k].name, fill)
@@ -198,7 +285,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, prev_re
             case set[k].mode of
                0: begin
                   ;; if at end of page, start new sheet
-                  PLOT_POSITION, plot_set, pos, bpos
+                  PLOT_POSITION, plot_set, pos, bpos, debug=stop
 
                   ;; determine range for plot colourbar
                   ran = FINITE(set[k].range[0]) ? set[k].range : $
@@ -216,22 +303,22 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, prev_re
                        xrange=[0,N_ELEMENTS(data)-1],xstyle=1, $
                        yrange=ran,ystyle=1,ylog=set[k].log,psym=-4
                end
-               1: WRAP_MAPPOINTS, data, lat, lon, $
+               1: WRAP_MAPPOINTS, data, lat, lon, debug=stop, $
                                   set[k],plot_set,filt,line1,nl1,0.1
                2: for l=0,N_ELEMENTS(data[0,0,*])-1 do $
-                  WRAP_MAPPOINTS, data[*,*,l], lat, lon, $
+                  WRAP_MAPPOINTS, data[*,*,l], lat, lon, debug=stop, $
                                   set[k],plot_set,filt[*,*,l],line1,nl1,0.1,l
-               3: WRAP_MAPPOINTS, data, lat_rtm, lon_rtm, $
+               3: WRAP_MAPPOINTS, data, lat_rtm, lon_rtm, debug=stop, $
                                   set[k],plot_set,filt,line2,nl2,0.5
                4: for l=0,N_ELEMENTS(data[*,0])-1 do $
-                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, $
+                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, debug=stop, $
                                   set[k],plot_set,filt[l,*],line2,nl2,0.5,l
                5: for l=0,N_ELEMENTS(data[*,0])-1,20 do $
-                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, $
+                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, debug=stop, $
                                   set[k],plot_set,filt[l,*],line2,nl2,0.5,l
                6: for m=0,N_ELEMENTS(data[*,0,0])-1 do $
                   for l=0,N_ELEMENTS(data[0,*,0])-1,20 do $
-                  WRAP_MAPPOINTS, data[m,l,*], lat_rtm, lon_rtm, $
+                  WRAP_MAPPOINTS, data[m,l,*], lat_rtm, lon_rtm, debug=stop, $
                                   set[k],plot_set,filt[m,l,*],line2,nl2,0.5,l,m
             endcase
          endfor

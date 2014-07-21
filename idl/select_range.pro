@@ -1,5 +1,40 @@
+;+
+; NAME:
+;   SELECT_RANGE
+;
+; PURPOSE:
+;   Determine an appropriate scale of a colour plot.
+;
+; CATEGORY:
+;   ORAC plotting tools.
+;
+; CALLING SEQUENCE:
+;   range = SELECT_RANGE(values, settings)
+;
+; INPUTS:
+;   values   = The values to be plotted.
+;   settings = A structure (as outlined in PLOT_SETTINGS).
+;
+; OPTIONAL INPUTS:
+;   None.
+;	
+; KEYWORD PARAMETERS:
+;   None.
+;	
+; OUTPUTS:
+;   range    = A two-element array giving the min and max of the colourbar.
+; 
+; OPTIONAL OUTPUTS:
+;   None.
+;
+; RESTRICTIONS:
+;   CGPERCENTILES (from the Coyote library).
+;
+; MODIFICATION HISTORY:
+;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;-
 FUNCTION SELECT_RANGE, tmp, set
-   ON_ERROR, 0
+   ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    if set.full then ran=[MIN(tmp,max=m,/nan),m] else begin
