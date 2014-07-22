@@ -14,7 +14,7 @@
 ;   PLOT_ORAC, instrument, revision, folder [, /compare] [, /preproc] 
 ;              [, prev_revision=value] [, root=string] [, xsize=value] 
 ;              [, ysize=value] [, nx=value] [, ny=value] [, font_size=value] 
-;              [, scale=value] [, label=string] [, /relative] [, lines=value] 
+;              [, scale=value] [, label=string] [, /relative] [, frames=value] 
 ;              [, /keep_ps] [, /ice] [, /secondary]
 ;
 ; INPUTS:
@@ -38,7 +38,7 @@
 ;   SCALE      = A number to multiply both NX|Y. A useful way to zoom in.
 ;   LABEL      = A very short description that should be printed at the top-left
 ;      of each page.
-;   LINES      = The number of along-track lines to plot in each figure.
+;   FRAMES      = The number of figures across which to plot the swath.
 ;	
 ; KEYWORD PARAMETERS:
 ;   COMPARE    = Plot the differences between this revsion and the previous.
@@ -70,12 +70,13 @@
 ;   by PLOT_SETTINGS.
 ;
 ; MODIFICATION HISTORY:
-;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
+;   22 Jul 2014 - ACP: Replaced LINES with FRAMES.
 ;-
 PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
                font_size=font_s, scale=scale, label=label, relative=rel, $
-               lines=lines, keep_ps=keep_ps, ice=ice, secondary=secondary
+               frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary
    ON_ERROR, KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -93,6 +94,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
       xs*=scale
       ys*=scale
    endif
+   if ~KEYWORD_SET(frames) then frames=1
    SET_PLOT,'ps'
    
    if KEYWORD_SET(root) then begin
@@ -164,13 +166,8 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
       sze=SIZE(lat,/dim)
       nl1=sze[0]
       nl2=MAX(i_rtm)
-      if KEYWORD_SET(lines) then begin
-         line1=lines
-         line2=lines*MAX(j_rtm)/sze[1]
-      endif else begin
-         line1=sze[1]
-         line2=MAX(j_rtm)
-      endelse
+      line1=sze[1]
+      line2=MAX(j_rtm)
    endif else begin
       ;; plot ORAC retrieval
       tag='.orac'
@@ -188,14 +185,52 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
       ;; determine field size (for chunked plotting)
       sze=SIZE(lat,/dim)
       nl1=sze[0]
-      if KEYWORD_SET(lines) then begin
-         line1=lines
-      endif else begin
-         line1=sze[1]
-      endelse
+      line1=sze[1]
    endelse
    if kc then tag+='.comp'
       
+   ;; determine limits of swath (to minimise plot area)
+   length=CEIL(FLOAT(line1) / frames)
+   cent=FLTARR(2,frames)
+   lim=FLTARR(4,frames)
+   for i=0,frames-1 do begin
+      start = i*length
+      endl = ((i+1)*length-1) < (line1-1)
+      middle = (start + endl)/2
+
+      minlat=MIN(lat[*,start : endl],max=maxlat)
+      if maxlat gt 89.8 then begin
+         cent[*,i]=[90.,lon[nl1/2, middle]]
+         lim[*,i]=[minlat,-180.,90.,180.]
+      endif else if minlat lt -89.8 then begin
+         cent[*,i]=[-90.,lon[nl1/2, middle]]
+         lim[*,i]=[-90.,-180.,maxlat,180.] 
+      endif else begin
+         cent[*,i]=[lat[nl1/2, middle], lon[nl1/2, middle]]
+         ;; Determine the left and right-most lons of first swath edge
+         if lon[0,start] gt lon[1,start] OR $
+            lon[1,start] gt lon[2,start] then begin
+            minl1=lon[nl1-1,start]
+            maxl1=lon[0,start]
+         endif else begin
+            minl1=lon[0,start]
+            maxl1=lon[nl1-1,start]
+         endelse
+         ;; Determine the left and right-most lons of second swath edge
+         if lon[0,endl] gt lon[1,endl] OR $
+            lon[1,endl] gt lon[2,endl] then begin
+            minl2=lon[nl1-1,endl]
+            maxl2=lon[0,endl]
+         endif else begin
+            minl2=lon[0,endl]
+            maxl2=lon[nl1-1,endl]
+         endelse
+         ;; Check if dateline crosses swath
+         minlon = ABS(minl1-minl2) gt 180. XOR minl1 lt minl2 ? minl1 : minl2
+         maxlon = ABS(maxl1-maxl2) gt 180. XOR maxl1 gt maxl2 ? maxl1 : maxl2
+         lim[*,i]=[minlat,minlon,maxlat,maxlon]      
+      endelse
+   endfor
 
    ;; save current colourbar and set greyscale for plot titles
    TVLCT, save_ct, /get
@@ -204,7 +239,8 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
    ;; form plot settings structure
    plot_set = {tag:'', label:'', sheet:-1, font_s:font_s, xs:xs, ys:ys, cs:0., $
                nx:nx, ny:ny, x0:FLTARR(nx), x1:FLTARR(nx), y0:FLTARR(ny), $
-               y1:FLTARR(ny), gridi:0, gridj:0, col:0}
+               y1:FLTARR(ny), gridi:0, gridj:0, col:0, $
+               frames:frames, limit:lim, centre:cent}
 
    ;; determine character size in PS plot
    DEVICE, /encapsulated, font_s=plot_set.font_s, $
@@ -240,7 +276,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
          inq=NCDF_INQUIRE(fid)
 
          ;; loop over variables
-         set=PLOT_SETTINGS(suff[j])
+         set=PLOT_SETTINGS(suff[j], inst)
          for k=0,N_ELEMENTS(set)-1 do begin
             ;; read values
             data=NCDF_OBTAIN(fid, set[k].name, fill)

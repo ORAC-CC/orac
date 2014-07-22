@@ -10,12 +10,14 @@
 ;   ORAC plotting tools
 ;
 ; CALLING SEQUENCE:
-;   settings = PLOT_SETTINGS(suffix)
+;   settings = PLOT_SETTINGS(suffix, instrument)
 ;
 ; INPUTS:
-;   suffix = The file suffix for the file to be plotted. Possibilities are:
+;   suffix     = The file suffix for the file to be plotted. Possibilities are:
 ;      ALB, CLF, CONFIG, GEO, LOC, LSF, LWRTM, MSI, PRTM, SWRTM, UV, 
 ;      PRIMARY, SECONDARY
+;   instrument = A string specifying the swath to be plotted. This is expected
+;      to be one of the values of $label in trunk/tools/test-preproc.sh
 ;
 ; OPTIONAL INPUTS:
 ;   None.
@@ -39,7 +41,6 @@
 ;         0) Plot all valid values; 1) Plot all points that converged;
 ;         2) Plot only points with a quality flag of 0.
 ;      BTF:     The print format of the colourbar labels. Default (G0.4).
-;      OUTLINE: If nonzero, draw a border around the satellite swath. Default on.
 ;      FULL:    If nonzero, use a typical [minimum value, maximum value] 
 ;         colourbar range rather than the preferred percentile version.
 ;      RANGE:   Override the automated colourbar range selection.
@@ -56,9 +57,11 @@
 ;   accepted.
 ;
 ; MODIFICATION HISTORY:
-;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
+;   22 Jul 2014 - ACP: More sensible array indexing (using variable i). Removed
+;      Ch number fields from plotting.
 ;-
-FUNCTION PLOT_SETTINGS, suffix
+FUNCTION PLOT_SETTINGS, suffix, inst
    ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -67,9 +70,9 @@ FUNCTION PLOT_SETTINGS, suffix
    suff=STRMID(suff,0,STRPOS(suff,'.'))
    suff=STRUPCASE(suff)
 
-   str={name:'', mode:-1, title:'', log:0, bottom:0, abs:0, filter:0, $
-        btf:'(g0.4)', outline:1, full:0, range:[!values.f_nan,0.], $
-        blabels: STRARR(10), nlevels:250}
+   out=REPLICATE({name:'', mode:-1, title:'', log:0, bottom:0, abs:0, filter:0, $
+        btf:'(g0.4)', full:0, range:[!values.f_nan,0.], $
+        blabels: STRARR(10), nlevels:250},35)
 
    ;; Mode key:
    ;; 0) Line plot [n]
@@ -79,659 +82,741 @@ FUNCTION PLOT_SETTINGS, suffix
    ;; 4) Series of map plots [n,nxy]
    ;; 5) Levels of map plots [nl,nxy]
    ;; 6) Two series of map plots [n,nl,nxy]
+   i=0
    case suff of
       'ALB': begin
-         out=REPLICATE(str,4)
+         out[i].name='alb_data'
+         out[i].mode=2
+         out[i].log=1
+         out[i].title=FMT('Surface albedo','%')
+         ++i
 
-         out[2].name='alb_abs_ch_numbers'
-         out[2].mode=0
-         out[2].full=1
-         out[2].outline=0
+         out[i].name='emis_data'
+         out[i].mode=2
+         out[i].log=1
+         out[i].title=FMT('Surface emissivity','%')
+         ++i
 
-         out[3].name='emis_abs_ch_numbers'
-         out[3].mode=0
-         out[3].full=1
-         out[3].outline=0
+         out[i].name='alb_abs_ch_numbers'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-         out[0].name='alb_data'
-         out[0].mode=2
-         out[0].log=1
-         out[0].title=FMT('Surface albedo','%')
-
-         out[1].name='emis_data'
-         out[1].mode=2
-         out[1].log=1
-         out[1].title=FMT('Surface emissivity','%')
+         out[i].name='emis_abs_ch_numbers'
+         out[i].mode=0
+         out[i].full=1
+         ++i
       end
       'CLF': begin
-         out=str
-         
-         out.name='cflag'
-         out.mode=1
-         out.full=1
-         out.title=FMT('Cloud flag')
-         out.btf=''
-         out.blabels[0:1]=['Clear','Cloudy']
-         out.range=[0,1]
-         out.nlevels=2
+         out[i].name='cflag'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Cloud flag')
+         out[i].btf=''
+         out[i].blabels[0:1]=['Clear','Cloudy']
+         out[i].range=[0,1]
+         out[i].nlevels=2
+         ++i
       end
       'CONFIG': begin
-         out=REPLICATE(str,8)
-         
-         out[0].name='msi_instr_ch_numbers'
-         out[0].mode=0
-         out[0].full=1
-         out[0].outline=0
+         out[i].name='msi_instr_ch_numbers'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-         out[1].name='msi_abs_ch_numbers'
-         out[1].mode=0
-         out[1].full=1
-         out[1].outline=0
+         out[i].name='msi_abs_ch_numbers'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-         out[2].name='msi_abs_ch_wl'
-         out[2].mode=0
-         out[2].full=1
-         out[2].outline=0
+         out[i].name='msi_abs_ch_wl'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-         out[3].name='msi_ch_swflag'
-         out[3].mode=0
-         out[3].full=1
-         out[3].outline=0
+         out[i].name='msi_ch_swflag'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-         out[4].name='msi_ch_lwflag'
-         out[4].mode=0
-         out[4].full=1
-         out[4].outline=0
+         out[i].name='msi_ch_lwflag'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-         out[5].name='msi_ch_procflag'
-         out[5].mode=0
-         out[5].full=1
-         out[5].outline=0
+         out[i].name='msi_ch_procflag'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-         out[6].name='alb_abs_ch_numbers'
-         out[6].mode=0
-         out[6].full=1
-         out[6].outline=0
+;         out[i].name='alb_abs_ch_numbers'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[7].name='emis_abs_ch_numbers'
-         out[7].mode=0
-         out[7].full=1
+;         out[i].name='emis_abs_ch_numbers'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
       end
       'GEO': begin
-         out=REPLICATE(str,4)
+         out[i].name='solzen'
+         out[i].mode=2
+         out[i].full=1
+         out[i].title=FMT('Solar zenith angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[0].name='solzen'
-         out[0].mode=2
-         out[0].full=1
-         out[0].title=FMT('Solar zenith angle','!9'+STRING(176b)+'!X')
+         out[i].name='satzen'
+         out[i].mode=2
+         out[i].full=1
+         out[i].title=FMT('Satellite zenith angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[1].name='satzen'
-         out[1].mode=2
-         out[1].full=1
-         out[1].title=FMT('Satellite zenith angle','!9'+STRING(176b)+'!X')
+         out[i].name='solaz'
+         out[i].mode=2
+         out[i].full=1
+         out[i].title=FMT('Solar azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[2].name='solaz'
-         out[2].mode=2
-         out[2].full=1
-         out[2].title=FMT('Solar azimuth angle','!9'+STRING(176b)+'!X')
-
-         out[3].name='relazi'
-         out[3].mode=2
-         out[3].full=1
-         out[3].title=FMT('Relative azimuth angle','!9'+STRING(176b)+'!X')
+         out[i].name='relazi'
+         out[i].mode=2
+         out[i].full=1
+         out[i].title=FMT('Relative azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
       end
       'LOC': begin
-         out=REPLICATE(str,2)
+         out[i].name='lon'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Longitude','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[0].name='lon'
-         out[0].mode=1
-         out[0].full=1
-         out[0].title=FMT('Longitude','!9'+STRING(176b)+'!X')
-
-         out[1].name='lat'
-         out[1].mode=1
-         out[1].full=1
-         out[1].title=FMT('Latitude','!9'+STRING(176b)+'!X')
+         out[i].name='lat'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Latitude','!9'+STRING(176b)+'!X')
+         ++i
       end
       'LSF': begin
-         out=str
-
-         out.name='lsflag'
-         out.mode=1
-         out.full=1
-         out.title=FMT('Land sea flag')
-         out.btf=''
-         out.blabels[0:1]=['Sea','Land']
-         out.range=[0,1]
-         out.nlevels=2
+         out[i].name='lsflag'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Land sea flag')
+         out[i].btf=''
+         out[i].blabels[0:1]=['Sea','Land']
+         out[i].range=[0,1]
+         out[i].nlevels=2
+         ++i
       end
       'LWRTM': begin
-         out=REPLICATE(str,13)
+;         out[i].name='lw_channel_abs_ids'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[0].name='lw_channel_abs_ids'
-         out[0].mode=0
-         out[0].full=1
-         out[0].outline=0
+;         out[i].name='lw_channel_instr_ids'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[1].name='lw_channel_instr_ids'
-         out[1].mode=0
-         out[1].full=1
-         out[1].outline=0
+;         out[i].name='lw_channel_wvl'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[2].name='lw_channel_wvl'
-         out[2].mode=0
-         out[2].full=1
-         out[2].outline=0
+         out[i].name='counter_lw'
+         out[i].full=1
+         out[i].mode=3
+         ++i
 
-         out[3].name='counter_lw'
-         out[3].full=1
-         out[3].mode=3
+         out[i].name='solza_lw'
+         out[i].full=1
+         out[i].mode=4
+         out[i].title=FMT('RTM LW solar azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[4].name='solza_lw'
-         out[4].full=1
-         out[4].mode=4
-         out[4].title=FMT('RTM LW solar azimuth angle','!9'+STRING(176b)+'!X')
+         out[i].name='satza_lw'
+         out[i].full=1
+         out[i].mode=4
+         out[i].title=FMT('RTM LW satellite azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[5].name='satza_lw'
-         out[5].full=1
-         out[5].mode=4
-         out[5].title=FMT('RTM LW satellite azimuth angle','!9'+STRING(176b)+'!X')
+         out[i].name='relazi_lw'
+         out[i].full=1
+         out[i].mode=4
+         out[i].title=FMT('RTM LW relative azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[6].name='relazi_lw'
-         out[6].full=1
-         out[6].mode=4
-         out[6].title=FMT('RTM LW relative azimuth angle','!9'+STRING(176b)+'!X')
+         out[i].name='emiss_lw'
+         out[i].log=1
+         out[i].mode=4
+         out[i].title=FMT('RTM LW atmospheric emissivity','%')
+         ++i
 
-         out[7].name='emiss_lw'
-         out[7].log=1
-         out[7].mode=4
-         out[7].title=FMT('RTM LW atmospheric emissivity','%')
+         out[i].name='tac_lw'
+         out[i].full=1
+         out[i].mode=6
+         ++i
 
-         out[8].name='tac_lw'
-         out[8].full=1
-         out[8].mode=6
+         out[i].name='tbc_lw'
+         out[i].full=1
+         out[i].mode=6
+         ++i
 
-         out[9].name='tbc_lw'
-         out[9].full=1
-         out[9].mode=6
+         out[i].name='rbc_up_lw'
+         out[i].full=1
+         out[i].mode=6
+         ++i
 
-         out[10].name='rbc_up_lw'
-         out[10].full=1
-         out[10].mode=6
+         out[i].name='rac_up_lw'
+         out[i].full=1
+         out[i].mode=6
+         ++i
 
-         out[11].name='rac_up_lw'
-         out[11].full=1
-         out[11].mode=6
-
-         out[12].name='rac_down_lw'
-         out[12].full=1
-         out[12].mode=6
+         out[i].name='rac_down_lw'
+         out[i].full=1
+         out[i].mode=6
+         ++i
       end
       'MSI': begin
-         out=REPLICATE(str,8)
+         out[i].name='msi_data'
+         out[i].mode=2
+         out[i].title=FMT('Imager data','% || K')
+         out[i].full=1
+         ++i
 
-         out[1].name='msi_instr_ch_numbers'
-         out[1].mode=0
-         out[1].full=1
-         out[1].outline=0
+;         out[i].name='msi_instr_ch_numbers'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[2].name='msi_abs_ch_numbers'
-         out[2].mode=0
-         out[2].full=1
-         out[2].outline=0
+;         out[i].name='msi_abs_ch_numbers'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[3].name='msi_abs_ch_wl'
-         out[3].mode=0
-         out[3].full=1
-         out[3].outline=0
+;         out[i].name='msi_abs_ch_wl'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[4].name='msi_ch_swflag'
-         out[4].mode=0
-         out[4].full=1
-         out[4].outline=0
+;         out[i].name='msi_ch_swflag'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[5].name='msi_ch_lwflag'
-         out[5].mode=0
-         out[5].full=1
-         out[5].outline=0
+;         out[i].name='msi_ch_lwflag'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[6].name='msi_ch_procflag'
-         out[6].mode=0
-         out[6].full=1
-         out[6].outline=0
+;         out[i].name='msi_ch_procflag'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[7].name='time_data'
-         out[7].mode=1
-         out[7].full=1
-
-         out[0].name='msi_data'
-         out[0].mode=2
-         out[0].title=FMT('Imager data','% || K')
-         out[0].full=1
+         out[i].name='time_data'
+         out[i].mode=1
+         out[i].full=1
+         ++i
       end
       'PRTM': begin
-         out=REPLICATE(str,13)
+         out[i].name='i_pw'
+         out[i].mode=3
+         out[i].full=1
+         ++i
 
-         out[0].name='i_pw'
-         out[0].mode=3
-         out[0].full=1
+         out[i].name='j_pw'
+         out[i].mode=3
+         out[i].full=1
+         ++i
 
-         out[1].name='j_pw'
-         out[1].mode=3
-         out[1].full=1
+         out[i].name='counter_pw'
+         out[i].mode=3
+         out[i].full=1
+         ++i
 
-         out[2].name='counter_pw'
-         out[2].mode=3
-         out[2].full=1
+         out[i].name='lon_pw'
+         out[i].mode=3
+         out[i].full=1
+         out[i].title=FMT('RTM longitude','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[3].name='lon_pw'
-         out[3].mode=3
-         out[3].full=1
-         out[3].title=FMT('RTM longitude','!9'+STRING(176b)+'!X')
+         out[i].name='lat_pw'
+         out[i].mode=3
+         out[i].full=1
+         out[i].title=FMT('RTM latitude','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[4].name='lat_pw'
-         out[4].mode=3
-         out[4].full=1
-         out[4].title=FMT('RTM latitude','!9'+STRING(176b)+'!X')
+         out[i].name='skint_pw'
+         out[i].mode=3
+         out[i].bottom=1
+         out[i].title=FMT('RTM skin temperature','K')
+         ++i
 
-         out[5].name='skint_pw'
-         out[5].mode=3
-         out[5].bottom=1
-         out[5].title=FMT('RTM skin temperature','K')
+         out[i].name='explnsp_pw'
+         out[i].mode=3
+         out[i].bottom=1
+         out[i].title=FMT('RTM surface pressure','hPa')
+         ++i
 
-         out[6].name='explnsp_pw'
-         out[6].mode=3
-         out[6].bottom=1
-         out[6].title=FMT('RTM surface pressure','hPa')
+         out[i].name='lsf_pw'
+         out[i].mode=3
+         out[i].full=1
+         out[i].title=FMT('RTM surface albedo','%')
+         ++i
 
-         out[7].name='lsf_pw'
-         out[7].mode=3
-         out[7].full=1
-         out[7].title=FMT('RTM surface albedo','%')
+         out[i].name='satzen_pw'
+         out[i].mode=3
+         out[i].full=1
+         out[i].title=FMT('RTM satellite zenith angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[8].name='satzen_pw'
-         out[8].mode=3
-         out[8].full=1
-         out[8].title=FMT('RTM satellite zenith angle','!9'+STRING(176b)+'!X')
+         out[i].name='solzen_pw'
+         out[i].mode=3
+         out[i].full=1
+         out[i].title=FMT('RTM solar zenith angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[9].name='solzen_pw'
-         out[9].mode=3
-         out[9].full=1
-         out[9].title=FMT('RTM solar zenith angle','!9'+STRING(176b)+'!X')
+         out[i].name='pprofile_lev'
+         out[i].mode=5
+         out[i].bottom=1
+         out[i].title=FMT('RTM pressure','hPa')
+         ++i
 
-         out[10].name='pprofile_lev'
-         out[10].mode=5
-         out[10].bottom=1
-         out[10].title=FMT('RTM pressure','hPa')
+         out[i].name='tprofile_lev'
+         out[i].mode=5
+         out[i].bottom=1
+         out[i].title=FMT('RTM temperature','K')
+         ++i
 
-         out[11].name='tprofile_lev'
-         out[11].mode=5
-         out[11].bottom=1
-         out[11].title=FMT('RTM temperature','K')
-
-         out[12].name='gphprofile_lev'
-         out[12].mode=5
-         out[12].bottom=1
-         out[12].title=FMT('RTM geopotential','m')
+         out[i].name='gphprofile_lev'
+         out[i].mode=5
+         out[i].bottom=1
+         out[i].title=FMT('RTM geopotential','m')
+         ++i
       end
       'SWRTM': begin
-         out=REPLICATE(str,9)
+;         out[i].name='sw_channel_abs_ids'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[0].name='sw_channel_abs_ids'
-         out[0].mode=0
-         out[0].full=1
-         out[0].outline=0
+;         out[i].name='sw_channel_instr_ids'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[1].name='sw_channel_instr_ids'
-         out[1].mode=0
-         out[1].full=1
-         out[1].outline=0
+;         out[i].name='sw_channel_wvl'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
-         out[2].name='sw_channel_wvl'
-         out[2].mode=0
-         out[2].full=1
-         out[2].outline=0
+         out[i].name='counter_sw'
+         out[i].full=1
+         out[i].mode=3
+         ++i
 
-         out[3].name='counter_sw'
-         out[3].full=1
-         out[3].mode=3
+         out[i].name='solza_sw'
+         out[i].full=1
+         out[i].mode=4
+         out[i].title=FMT('RTM SW solar azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[4].name='solza_sw'
-         out[4].full=1
-         out[4].mode=4
-         out[4].title=FMT('RTM SW solar azimuth angle','!9'+STRING(176b)+'!X')
+         out[i].name='satza_sw'
+         out[i].full=1
+         out[i].mode=4
+         out[i].title=FMT('RTM SW satellite azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[5].name='satza_sw'
-         out[5].full=1
-         out[5].mode=4
-         out[5].title=FMT('RTM SW satellite azimuth angle','!9'+STRING(176b)+'!X')
+         out[i].name='relazi_sw'
+         out[i].full=1
+         out[i].mode=4
+         out[i].title=FMT('RTM SW relative azimuth angle','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[6].name='relazi_sw'
-         out[6].full=1
-         out[6].mode=4
-         out[6].title=FMT('RTM SW relative azimuth angle','!9'+STRING(176b)+'!X')
+         out[i].name='tac_sw'
+         out[i].mode=6
+         out[i].full=1
+         ++i
 
-         out[7].name='tac_sw'
-         out[7].mode=6
-         out[7].full=1
-
-         out[8].name='tbc_sw'
-         out[8].mode=6
-         out[8].full=1
+         out[i].name='tbc_sw'
+         out[i].mode=6
+         out[i].full=1
+         ++i
       end
       'UV': begin
-         out=REPLICATE(str,2)
+         out[i].name='uscan'
+         out[i].mode=1
+         out[i].full=1
+         ++i
 
-         out[0].name='uscan'
-         out[0].mode=1
-         out[0].full=1
-
-         out[1].name='vscan'
-         out[1].mode=1
-         out[1].full=1
+         out[i].name='vscan'
+         out[i].mode=1
+         out[i].full=1
+         ++i
       end
       'PRIMARY': begin
-         out=REPLICATE(str,30)
-         out.filter=01
+         out.filter=1
 
-         out[0].name='cot'
-         out[0].mode=1
-         out[0].log=1
-         out[0].title=FMT('Optical thickness','-')
+         out[i].name='cot'
+         out[i].mode=1
+         out[i].log=1
+         out[i].title=FMT('Optical thickness','-')
+         ++i
 
-         out[1].name='cot_uncertainty'
-         out[1].mode=1
-         out[1].title=FMT('Optical thickness !Ms!N','-')
+         out[i].name='cot_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Optical thickness !Ms!N','-')
+         ++i
 
-         out[2].name='ref'
-         out[2].mode=1
-         out[2].title=FMT('Effective radius','!Mm!Xm')
+         out[i].name='ref'
+         out[i].mode=1
+         out[i].title=FMT('Effective radius','!Mm!Xm')
+         ++i
 
-         out[3].name='ref_uncertainty'
-         out[3].mode=1
-         out[3].title=FMT('Effective radius !Ms!N','!Mm!Xm')
+         out[i].name='ref_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Effective radius !Ms!N','!Mm!Xm')
+         ++i
 
-         out[4].name='ctp'
-         out[4].mode=1
-         out[4].title=FMT('Cloud top pressure','Pa')
+         out[i].name='ctp'
+         out[i].mode=1
+         out[i].title=FMT('Cloud top pressure','Pa')
+         ++i
 
-         out[5].name='ctp_uncertainty'
-         out[5].mode=1
-         out[5].title=FMT('Cloud top pressure !Ms!N','Pa')
+         out[i].name='ctp_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Cloud top pressure !Ms!N','Pa')
+         ++i
 
-         out[6].name='stemp'
-         out[6].mode=1
-         out[6].bottom=1
-         out[6].title=FMT('Surface temperature','K')
+         out[i].name='stemp'
+         out[i].mode=1
+         out[i].bottom=1
+         out[i].title=FMT('Surface temperature','K')
+         ++i
 
-         out[7].name='stemp_uncertainty'
-         out[7].mode=1
-         out[7].title=FMT('Surface temperature !Ms!N','K')
+         out[i].name='stemp_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Surface temperature !Ms!N','K')
+         ++i
 
-         out[8].name='cwp'
-         out[8].mode=1
-         out[8].title=FMT('Cloud water path','g m!E-2!N')
+         out[i].name='cwp'
+         out[i].mode=1
+         out[i].title=FMT('Cloud water path','g m!E-2!N')
+         ++i
 
-         out[9].name='cwp_uncertainty'
-         out[9].mode=1
-         out[9].title=FMT('Cloud water path !Ms!N','g m!E-2!N')
+         out[i].name='cwp_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Cloud water path !Ms!N','g m!E-2!N')
+         ++i
 
-         out[10].name='cc_total'
-         out[10].mode=1
-         out[10].title=FMT('Cloud fraction','%')
+         out[i].name='cc_total'
+         out[i].mode=1
+         out[i].title=FMT('Cloud fraction','%')
+         ++i
 
-         out[11].name='cc_total_uncertainty'
-         out[11].mode=1
-         out[11].title=FMT('Cloud fraction !Ms!N','%')
+         out[i].name='cc_total_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Cloud fraction !Ms!N','%')
+         ++i
 
-         out[12].name='cth'
-         out[12].mode=1
-         out[12].title=FMT('Cloud top height','km')
+         out[i].name='cth'
+         out[i].mode=1
+         out[i].title=FMT('Cloud top height','km')
+         ++i
 
-         out[13].name='cth_uncertainty'
-         out[13].mode=1
-         out[13].title=FMT('Cloud top height !Ms!N','K')
+         out[i].name='cth_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Cloud top height !Ms!N','K')
+         ++i
 
-         out[14].name='ctt'
-         out[14].mode=1
-         out[14].title=FMT('Cloud top temperature','K')
+         out[i].name='ctt'
+         out[i].mode=1
+         out[i].title=FMT('Cloud top temperature','K')
+         ++i
 
-         out[15].name='ctt_uncertainty'
-         out[15].mode=1
-         out[15].title=FMT('Cloud top temperature !Ms!N','K')
+         out[i].name='ctt_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Cloud top temperature !Ms!N','K')
+         ++i
 
-         out[16].name='convergence'
-         out[16].mode=1
-         out[16].full=1
-         out[16].title=FMT('Convergence flag')
-         out[16].btf=''
-         out[16].blabels[0:1]=['Yes','No']
-         out[16].range=[0,1]
-         out[16].nlevels=2
+         out[i].name='convergence'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Convergence flag')
+         out[i].btf=''
+         out[i].blabels[0:1]=['Yes','No']
+         out[i].range=[0,1]
+         out[i].nlevels=2
+         ++i
 
-         out[17].name='niter'
-         out[17].mode=1
-         out[17].full=1
-         out[17].title=FMT('Iterations','-')
+         out[i].name='niter'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Iterations','-')
+         ++i
 
-         out[18].name='qcflag'
-         out[18].mode=1
-         out[18].full=1
-         out[18].title=FMT('Quality control flag','-')
+         out[i].name='qcflag'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Quality control flag','-')
+         ++i
 
-         out[19].name='phase'
-         out[19].mode=1
-         out[19].full=1
-         out[19].title=FMT('Phase selection')
-         out[19].btf=''
-         out[19].blabels[0:1]=['Ice','Water']
-         out[19].range=[0,1]
-         out[19].nlevels=2
+         out[i].name='phase'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Phase selection')
+         out[i].btf=''
+         out[i].blabels[0:1]=['Ice','Water']
+         out[i].range=[0,1]
+         out[i].nlevels=2
+         ++i
 
-         out[20].name='costja'
-         out[20].mode=1
-         out[20].title=FMT('A priori cost','-')
+         out[i].name='costja'
+         out[i].mode=1
+         out[i].title=FMT('A priori cost','-')
+         ++i
 
-         out[21].name='costjm'
-         out[21].mode=1
-         out[21].title=FMT('Measurement cost','-')
+         out[i].name='costjm'
+         out[i].mode=1
+         out[i].title=FMT('Measurement cost','-')
+         ++i
 
-         out[22].name='lsflag'
-         out[22].mode=1
-         out[22].full=1
-         out[22].title=FMT('Land sea flag')
-         out[22].btf=''
-         out[22].blabels[0:1]=['Sea','Land']
-         out[22].range=[0,1]
-         out[22].nlevels=2
+         out[i].name='lsflag'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Land sea flag')
+         out[i].btf=''
+         out[i].blabels[0:1]=['Sea','Land']
+         out[i].range=[0,1]
+         out[i].nlevels=2
+         ++i
 
-         out[23].name='illum'
-         out[23].mode=1
-         out[23].full=1
-         out[23].title=FMT('Illumination flag')
-         out[23].btf=''
-         out[23].blabels[0:3]=['Day','Twilight','Night','Daynore']
-         out[23].range=[1,4]
-         out[23].nlevels=4
+         out[i].name='illum'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Illumination flag')
+         out[i].btf=''
+         out[i].blabels[0:3]=['Day','Twilight','Night','Daynore']
+         out[i].range=[1,4]
+         out[i].nlevels=4
+         ++i
 
-         out[24].name='satellite_zenith_view_no1'
-         out[24].mode=1
-         out[24].full=1
-         out[24].title=FMT('Nadir satellite zenith','!9'+STRING(176b)+'!X')
+         out[i].name='satellite_zenith_view_no1'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Nadir satellite zenith','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[25].name='solar_zenith_view_no1'
-         out[25].mode=1
-         out[25].full=1
-         out[25].title=FMT('Nadir solar zenith','!9'+STRING(176b)+'!X')
+         out[i].name='solar_zenith_view_no1'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Nadir solar zenith','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[26].name='rel_azimuth_view_no1'
-         out[26].mode=1
-         out[26].full=1
-         out[26].title=FMT('Nadir relative azimuth','!9'+STRING(176b)+'!X')
+         out[i].name='rel_azimuth_view_no1'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Nadir relative azimuth','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[27].name='lon'
-         out[27].mode=1
-         out[27].full=1
-         out[27].title=FMT('Longitude','!9'+STRING(176b)+'!X')
+         out[i].name='lon'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Longitude','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[28].name='lat'
-         out[28].mode=1
-         out[28].full=1
-         out[28].title=FMT('Latitude','!9'+STRING(176b)+'!X')
+         out[i].name='lat'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Latitude','!9'+STRING(176b)+'!X')
+         ++i
 
-         out[29].name='time'
-         out[29].mode=1
-         out[29].full=1
-         out[29].title=FMT('Observation time','JDN')
+         out[i].name='time'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Observation time','JDN')
+         ++i
       end
       'SECONDARY': begin 
-         out=REPLICATE(str,32)
+         out[i].name='scanline_u'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Scan u','-')
+         ++i
 
-         out[0].name='scanline_u'
-         out[0].mode=1
-         out[0].full=1
-         out[0].title=FMT('Scan u','-')
+         out[i].name='scanline_v'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Scan v','-')
+         ++i
 
-         out[1].name='scanline_v'
-         out[1].mode=1
-         out[1].full=1
-         out[1].title=FMT('Scan v','-')
+         out[i].name='cot_ap'
+         out[i].mode=1
+         out[i].title=FMT('A priori: Optical thickness','-')
+         ++i
 
-         out[2].name='cot_ap'
-         out[2].mode=1
-         out[2].title=FMT('A priori: Optical thickness','-')
+         out[i].name='cot_fg'
+         out[i].mode=1
+         out[i].title=FMT('First guess: Optical thickness','-')
+         ++i
 
-         out[3].name='cot_fg'
-         out[3].mode=1
-         out[3].title=FMT('First guess: Optical thickness','-')
+         out[i].name='ref_ap'
+         out[i].mode=1
+         out[i].title=FMT('A priori: Effective radius','!Mm!Xm')
+         ++i
 
-         out[4].name='ref_ap'
-         out[4].mode=1
-         out[4].title=FMT('A priori: Effective radius','!Mm!Xm')
+         out[i].name='ref_fg'
+         out[i].mode=1
+         out[i].title=FMT('First guess: Effective radius','!Mm!Xm')
+         ++i
 
-         out[5].name='ref_fg'
-         out[5].mode=1
-         out[5].title=FMT('First guess: Effective radius','!Mm!Xm')
+         out[i].name='ctp_ap'
+         out[i].mode=1
+         out[i].title=FMT('A priori: Cloud top pressure','Pa')
+         ++i
 
-         out[6].name='ctp_ap'
-         out[6].mode=1
-         out[6].title=FMT('A priori: Cloud top pressure','Pa')
+         out[i].name='ctp_fg'
+         out[i].mode=1
+         out[i].title=FMT('First guess: cloud top pressure','Pa')
+         ++i
 
-         out[7].name='ctp_fg'
-         out[7].mode=1
-         out[7].title=FMT('First guess: cloud top pressure','Pa')
+         out[i].name='reflectance_residual_in_channel_no_'
+         out[i].mode=1
+         out[i].abs=1
+         out[i].title=FMT('Ref residual Ch 1','%')
+         ++i
 
-         out[8].name='reflectance_residual_in_channel_no_'
-         out[8].mode=1
-         out[8].abs=1
-         out[8].title=FMT('Ref residual Ch 1','%')
+         out[i].name='reflectance_residual_in_channel_no_'
+         out[i].mode=1
+         out[i].abs=1
+         out[i].title=FMT('Ref residual Ch 2','%')
+         ++i
 
-         out[9].name='reflectance_residual_in_channel_no_'
-         out[9].mode=1
-         out[9].abs=1
-         out[9].title=FMT('Ref residual Ch 2','%')
+         out[i].name='reflectance_residual_in_channel_no_'
+         out[i].mode=1
+         out[i].abs=1
+         out[i].title=FMT('Ref residual Ch 3','%')
+         ++i
 
-         out[10].name='reflectance_residual_in_channel_no_'
-         out[10].mode=1
-         out[10].abs=1
-         out[10].title=FMT('Ref residual Ch 3','%')
+         out[i].name='brightness_temperature_residual_in_channel_no_'
+         out[i].mode=1
+         out[i].abs=1
+         out[i].btf='(i3)'
+         out[i].title=FMT('BT residual Ch 4','K')
+         ++i
 
-         out[11].name='brightness_temperature_residual_in_channel_no_'
-         out[11].mode=1
-         out[11].abs=1
-         out[11].btf='(i3)'
-         out[11].title=FMT('BT residual Ch 4','K')
+         out[i].name='brightness_temperature_residual_in_channel_no_'
+         out[i].mode=1
+         out[i].abs=1
+         out[i].btf='(i3)'
+         out[i].title=FMT('BT residual Ch 5','K')
+         ++i
 
-         out[12].name='brightness_temperature_residual_in_channel_no_'
-         out[12].mode=1
-         out[12].abs=1
-         out[12].btf='(i3)'
-         out[12].title=FMT('BT residual Ch 5','K')
+         out[i].name='brightness_temperature_residual_in_channel_no_'
+         out[i].mode=1
+         out[i].abs=1
+         out[i].btf='(i3)'
+         out[i].title=FMT('BT residual Ch 6','K')
+         ++i
 
-         out[13].name='brightness_temperature_residual_in_channel_no_'
-         out[13].mode=1
-         out[13].abs=1
-         out[13].btf='(i3)'
-         out[13].title=FMT('BT residual Ch 6','K')
+         out[i].name='reflectance_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('Reflectance Ch 1','%')
+         ++i
 
-         out[14].name='reflectance_in_channel_no_'
-         out[14].mode=1
-         out[14].title=FMT('Reflectance Ch 1','%')
+         out[i].name='reflectance_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('Reflectance Ch 2','%')
+         ++i
 
-         out[15].name='reflectance_in_channel_no_'
-         out[15].mode=1
-         out[15].title=FMT('Reflectance Ch 2','%')
+         out[i].name='reflectance_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('Reflectance Ch 3','%')
+         ++i
 
-         out[16].name='reflectance_in_channel_no_'
-         out[16].mode=1
-         out[16].title=FMT('Reflectance Ch 3','%')
+         out[i].name='brightness_temperature_in_channel_no_'
+         out[i].mode=1
+         out[i].bottom=1
+         out[i].title=FMT('BT Ch 4','K')
+         ++i
 
-         out[17].name='brightness_temperature_in_channel_no_'
-         out[17].mode=1
-         out[17].bottom=1
-         out[17].title=FMT('BT Ch 4','K')
+         out[i].name='brightness_temperature_in_channel_no_'
+         out[i].mode=1
+         out[i].bottom=1
+         out[i].title=FMT('BT Ch 5','K')
+         ++i
 
-         out[18].name='brightness_temperature_in_channel_no_'
-         out[18].mode=1
-         out[18].bottom=1
-         out[18].title=FMT('BT Ch 5','K')
+         out[i].name='brightness_temperature_in_channel_no_'
+         out[i].mode=1
+         out[i].bottom=1
+         out[i].title=FMT('BT Ch 6','K')
+         ++i
 
-         out[19].name='brightness_temperature_in_channel_no_'
-         out[19].mode=1
-         out[19].bottom=1
-         out[19].title=FMT('BT Ch 6','K')
+         out[i].name='albedo_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('Albedo Ch 1','-')
+         ++i
 
-         out[20].name='albedo_in_channel_no_'
-         out[20].mode=1
-         out[20].title=FMT('Albedo Ch 1','-')
+         out[i].name='albedo_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('Albedo Ch 2','-')
+         ++i
 
-         out[21].name='albedo_in_channel_no_'
-         out[21].mode=1
-         out[21].title=FMT('Albedo Ch 2','-')
+         out[i].name='albedo_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('Albedo Ch 3','-')
+         ++i
 
-         out[22].name='albedo_in_channel_no_'
-         out[22].mode=1
-         out[22].title=FMT('Albedo Ch 3','-')
+         out[i].name='albedo_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('Albedo Ch 4','-')
+         ++i
 
-         out[23].name='albedo_in_channel_no_'
-         out[23].mode=1
-         out[23].title=FMT('Albedo Ch 4','-')
+         out[i].name='firstguess_reflectance_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('First guess: Ref Ch 1','%')
+         ++i
 
-         out[24].name='firstguess_reflectance_in_channel_no_'
-         out[24].mode=1
-         out[24].title=FMT('First guess: Ref Ch 1','%')
+         out[i].name='firstguess_reflectance_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('First guess: Ref Ch 2','%')
+         ++i
 
-         out[25].name='firstguess_reflectance_in_channel_no_'
-         out[25].mode=1
-         out[25].title=FMT('First guess: Ref Ch 2','%')
+         out[i].name='firstguess_reflectance_in_channel_no_'
+         out[i].mode=1
+         out[i].title=FMT('First guess: Ref Ch 3','%')
+         ++i
 
-         out[26].name='firstguess_reflectance_in_channel_no_'
-         out[26].mode=1
-         out[26].title=FMT('First guess: Ref Ch 3','%')
+         out[i].name='firstguess_brightness_temperature_in_channel_no_'
+         out[i].mode=1
+         out[i].bottom=1
+         out[i].title=FMT('First guess: BT Ch 4','K')
+         ++i
 
-         out[27].name='firstguess_brightness_temperature_in_channel_no_'
-         out[27].mode=1
-         out[27].bottom=1
-         out[27].title=FMT('First guess: BT Ch 4','K')
+         out[i].name='firstguess_brightness_temperature_in_channel_no_'
+         out[i].mode=1
+         out[i].bottom=1
+         out[i].title=FMT('First guess: BT Ch 5','K')
+         ++i
 
-         out[28].name='firstguess_brightness_temperature_in_channel_no_'
-         out[28].mode=1
-         out[28].bottom=1
-         out[28].title=FMT('First guess: BT Ch 5','K')
+         out[i].name='firstguess_brightness_temperature_in_channel_no_'
+         out[i].mode=1
+         out[i].bottom=1
+         out[i].title=FMT('First guess: BT Ch 6','K')
+         ++i
 
-         out[29].name='firstguess_brightness_temperature_in_channel_no_'
-         out[29].mode=1
-         out[29].bottom=1
-         out[29].title=FMT('First guess: BT Ch 6','K')
+         out[i].name='stemp_fg'
+         out[i].mode=1
+         out[i].title=FMT('First guess: Surface temperature','K')
+         ++i
 
-         out[30].name='stemp_fg'
-         out[30].mode=1
-         out[30].title=FMT('First guess: Surface temperature','K')
-
-         out[31].name='degrees_of_freedom_signal'
-         out[31].mode=1
-         out[31].full=1
-         out[31].title=FMT('Signal degrees of freedom','-')
+         out[i].name='degrees_of_freedom_signal'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Signal degrees of freedom','-')
+         ++i
 
          vars=[8,14,24,20]
          if STREGEX(inst,'.*M[OY]D.*',/boolean) then begin
@@ -759,7 +844,7 @@ FUNCTION PLOT_SETTINGS, suffix
       end
    endcase
 
-   RETURN, out
+   RETURN, out[WHERE(out.name ne '')]
 
 END
 
