@@ -106,6 +106,7 @@
 !    2014/04/18, GM: Made reading of NetCDF input more efficient by avoiding
 !       inefficient access patterns and redundancy and cleaned up the code.
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
+!    2014/07/23, AP: Commented out unused code for future deletion.
 !
 ! Bugs:
 !    None known.
@@ -301,42 +302,42 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 
       if (status==0) write(*,*)'Read SW RTM data OK'
 
-      if (status == 0) then
-         allocate(RTM%SW%lat(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon))
-         allocate(RTM%SW%lon(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon))
-         RTM%SW%Lat=RTM%LW%Lat
-         RTM%SW%Lon=RTM%LW%Lon
-
-         ! Calculate grid parameters for use in Get_SwRTM
-
-         ! Corners of the grid
-         RTM%SW%Grid%Lat0 = RTM%SW%Lat(1,1)
-         RTM%SW%Grid%LatN = RTM%SW%Lat(RTM%SW%Grid%NLat,1)
-         RTM%SW%Grid%Lon0 = RTM%SW%Lon(1,1)
-         RTM%SW%Grid%LonN = RTM%SW%Lon(1,RTM%SW%Grid%NLon)
-
-         RTM%SW%Grid%delta_Lat = (RTM%SW%Grid%LatN - RTM%SW%Grid%Lat0) &
-                                 / (RTM%SW%Grid%NLat-1)
-         if (RTM%SW%Grid%delta_Lat .lt. ditherm3) then
-            RTM%SW%Grid%inv_delta_Lat = ditherm3
-         else
-            RTM%SW%Grid%inv_delta_Lat = 1 / RTM%SW%Grid%delta_Lat
-         endif
-
-         RTM%SW%Grid%delta_Lon = (RTM%SW%Grid%LonN - RTM%SW%Grid%Lon0) &
-                                  / (RTM%SW%Grid%NLon-1)
-         if (RTM%SW%Grid%delta_Lon .lt. ditherm3) then
-            RTM%SW%Grid%inv_delta_Lon = ditherm3
-         else
-            RTM%SW%Grid%inv_delta_Lon = 1 / RTM%SW%Grid%delta_Lon
-         endif
-
-         ! Max and Min grid values
-         RTM%SW%Grid%MinLat = min(RTM%SW%Grid%Lat0, RTM%SW%Grid%LatN)
-         RTM%SW%Grid%MaxLat = max(RTM%SW%Grid%Lat0, RTM%SW%Grid%LatN)
-         RTM%SW%Grid%MinLon = min(RTM%SW%Grid%Lon0, RTM%SW%Grid%LonN)
-         RTM%SW%Grid%MaxLon = max(RTM%SW%Grid%Lon0, RTM%SW%Grid%LonN)
-      end if
+!      if (status == 0) then
+!         allocate(RTM%SW%lat(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon))
+!         allocate(RTM%SW%lon(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon))
+!         RTM%SW%Lat=RTM%LW%Lat
+!         RTM%SW%Lon=RTM%LW%Lon
+!
+!         ! Calculate grid parameters for use in Get_SwRTM
+!
+!         ! Corners of the grid
+!         RTM%SW%Grid%Lat0 = RTM%SW%Lat(1,1)
+!         RTM%SW%Grid%LatN = RTM%SW%Lat(RTM%SW%Grid%NLat,1)
+!         RTM%SW%Grid%Lon0 = RTM%SW%Lon(1,1)
+!         RTM%SW%Grid%LonN = RTM%SW%Lon(1,RTM%SW%Grid%NLon)
+!
+!         RTM%SW%Grid%delta_Lat = (RTM%SW%Grid%LatN - RTM%SW%Grid%Lat0) &
+!                                 / (RTM%SW%Grid%NLat-1)
+!         if (RTM%SW%Grid%delta_Lat .lt. ditherm3) then
+!            RTM%SW%Grid%inv_delta_Lat = ditherm3
+!         else
+!            RTM%SW%Grid%inv_delta_Lat = 1 / RTM%SW%Grid%delta_Lat
+!         endif
+!
+!         RTM%SW%Grid%delta_Lon = (RTM%SW%Grid%LonN - RTM%SW%Grid%Lon0) &
+!                                  / (RTM%SW%Grid%NLon-1)
+!         if (RTM%SW%Grid%delta_Lon .lt. ditherm3) then
+!            RTM%SW%Grid%inv_delta_Lon = ditherm3
+!         else
+!            RTM%SW%Grid%inv_delta_Lon = 1 / RTM%SW%Grid%delta_Lon
+!         endif
+!
+!         ! Max and Min grid values
+!         RTM%SW%Grid%MinLat = min(RTM%SW%Grid%Lat0, RTM%SW%Grid%LatN)
+!         RTM%SW%Grid%MaxLat = max(RTM%SW%Grid%Lat0, RTM%SW%Grid%LatN)
+!         RTM%SW%Grid%MinLon = min(RTM%SW%Grid%Lon0, RTM%SW%Grid%LonN)
+!         RTM%SW%Grid%MaxLon = max(RTM%SW%Grid%Lon0, RTM%SW%Grid%LonN)
+!      end if
    end if
 
 end subroutine Read_SWRTM_nc

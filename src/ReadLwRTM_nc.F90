@@ -114,7 +114,7 @@
 !       error occurs on prtm file.
 !     7th Nov 2011, C Poulsen:
 !       Tidied up comments but no aculacode change
-!    2012/01/20, C. Poulsen changed reading of buf prtm array
+!    2012/01/20, CP: changed reading of buf prtm array
 !    2012/08/23, MJ: Uses initial file as template for netcdf read.
 !    2012/08/24, MJ: Implements prtm file read
 !    2012/09/20, CP: Assigned channel index to y_id
@@ -126,6 +126,8 @@
 !    2014/04/18, GM: Made reading of NetCDF input more efficient by avoiding
 !       inefficient access patterns and redundancy and cleaned up the code.
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
+!    2014/07/23, AP: Grid no longer assumed to defined points rather than the
+!       cells centres (as is actually the case).
 !
 ! Bugs:
 !   None known.
@@ -448,25 +450,21 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
          ! Grid spacing and inverse
          RTM%LW%Grid%delta_Lat = (RTM%LW%Grid%LatN - RTM%LW%Grid%Lat0) &
                                  / (RTM%LW%Grid%NLat-1)
-         if (RTM%LW%Grid%delta_Lat .lt. ditherm3) then
-            RTM%SW%Grid%inv_delta_Lat = ditherm3
-         else
-            RTM%LW%Grid%inv_delta_Lat = 1 / RTM%LW%Grid%delta_Lat
-         endif
+         RTM%LW%Grid%inv_delta_Lat = 1. / RTM%LW%Grid%delta_Lat
 
          RTM%LW%Grid%delta_Lon = (RTM%LW%Grid%LonN - RTM%LW%Grid%Lon0) &
                                  / (RTM%LW%Grid%NLon-1)
-         if (RTM%LW%Grid%delta_Lon .lt. ditherm3) then
-            RTM%SW%Grid%inv_delta_Lon = ditherm3
-         else
-            RTM%LW%Grid%inv_delta_Lon = 1 / RTM%LW%Grid%delta_Lon
-         endif
+         RTM%LW%Grid%inv_delta_Lon = 1. / RTM%LW%Grid%delta_Lon
 
          ! Max and Min grid values
-         RTM%LW%Grid%MinLat = min(RTM%LW%Grid%Lat0, RTM%LW%Grid%LatN)
-         RTM%LW%Grid%MaxLat = max(RTM%LW%Grid%Lat0, RTM%LW%Grid%LatN)
-         RTM%LW%Grid%MinLon = min(RTM%LW%Grid%Lon0, RTM%LW%Grid%LonN)
-         RTM%LW%Grid%MaxLon = max(RTM%LW%Grid%Lon0, RTM%LW%Grid%LonN)
+         RTM%LW%Grid%MinLat = min(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
+              RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
+         RTM%LW%Grid%MaxLat = max(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
+              RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
+         RTM%LW%Grid%MinLon = min(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
+              RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
+         RTM%LW%Grid%MaxLon = max(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
+              RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
       end if
    end if
 

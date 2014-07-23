@@ -64,18 +64,21 @@
 !       size Ctrl%Ind%NThermal and left at this size for the whole image. 
 !    ******** ECV work starts here **********************
 !   21st Feb 2011, Andy Smith:
-!     Re-introducing changes made in late 2001/2002.
-!  12th December 2003 Caroline Poulsen added geopotential height    
-!   22nd Sept 2011 Caroline Poulsen added in swrtm variables     
-!   7th November C. Poulsen tidied up comments no actual change
-!   15/09/2012 M. Stengel puts in coeffs fudge to account for missing values
-!   03/11/2012 MJ changed coeffs if block
+!       Re-introducing changes made in late 2001/2002.
+!   12th December 2003, Caroline Poulsen: added geopotential height    
+!   22nd Sept 2011, Caroline Poulsen: added in swrtm variables     
+!   7th November 2011, C. Poulsen: tidied up comments no actual change
+!   15/09/2012, M. Stengel: puts in coeffs fudge to account for missing values
+!   03/11/2012, MJ: changed coeffs if block
+!   23/07/2014, AP: Grid no longer assumed to defined points rather than the
+!       cells centres (as is actually the case).
+!
 ! Bugs:
 !   None known.
 !
 ! $Id$
 !
-!------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
     use Ctrl_def
@@ -123,14 +126,14 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
 
     X   = SPixel%Loc%Lat - RTM%LW%Grid%Lat0        ! Latitude relative to grid origin
-    Nx  = 1 + int( X * RTM%LW%Grid%inv_delta_Lat ) ! Integer number of grid points from origin to X
+    Nx  = 1 + int( X * RTM%LW%Grid%inv_delta_Lat + 0.5 ) ! Integer number of grid points from origin to X
     XN  = RTM%LW%Lat(Nx,1)                         ! Latitude at Nx grid points
     d_X = SPixel%Loc%Lat - XN                      ! Latitude relative to XN
     t   = d_X * RTM%LW%Grid%inv_delta_Lat          ! Ratio of d_X and latitude grid spacing 
 
 !   Longitude
      Y   = SPixel%Loc%Lon - RTM%LW%Grid%Lon0        ! Longitude relative to grid origin
-    Ny  = 1 + int( Y * RTM%LW%Grid%inv_delta_Lon ) ! Integer number of grid points from origin to Y
+    Ny  = 1 + int( Y * RTM%LW%Grid%inv_delta_Lon + 0.5 ) ! Integer number of grid points from origin to Y
     YN  = RTM%LW%Lon(Nx,Ny)                        ! Longitude at Ny grid points
     d_Y = SPixel%Loc%Lon - YN                      ! Longitude relative to YN
     u   = d_Y * RTM%LW%Grid%inv_delta_Lon          ! Ratio of d_Y and longitude grid spacing
@@ -144,17 +147,29 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 !   Check that required coordinates are within range (skip super pixel if not)   
 
     if (Nx1 > RTM%LW%Grid%NLat) then
-       status = GetLwSwRTMLat
-       write(unit=message, fmt=*) 'Get_LwSwRTM: Latitude outside RTM coverage in super pixel starting at:', &
-		                   SPixel%Loc%X0, SPixel%Loc%Y0
-       call Write_log(Ctrl, trim(message), status)    
+       if (Nx == RTM%LW%Grid%NLat) then
+          ! if in last grid cell, extrapolate
+          Nx1 = Nx
+          Nx = Nx-1
+       else
+          status = GetLwSwRTMLat
+          write(unit=message, fmt=*) 'Get_LwSwRTM: Latitude outside RTM coverage in super pixel starting at:', &
+               SPixel%Loc%X0, SPixel%Loc%Y0
+          call Write_log(Ctrl, trim(message), status)
+       end if
     end if
 
     if (Ny1 > RTM%LW%Grid%NLon) then
-       status = GetLwSwRTMLon
-       write(unit=message, fmt=*) 'Get_LwSwRTM: Longitude outside RTM coverage in super pixel starting at:', &
-		                   SPixel%Loc%X0, SPixel%Loc%Y0
-       call Write_log(Ctrl, trim(message), status)    
+       if (Ny == RTM%LW%Grid%NLon) then
+          ! if in last grid cell, extrapolate
+          Ny1 = Ny
+          Ny = Ny-1
+       else
+          status = GetLwSwRTMLon
+          write(unit=message, fmt=*) 'Get_LwSwRTM: Longitude outside RTM coverage in super pixel starting at:', &
+               SPixel%Loc%X0, SPixel%Loc%Y0
+          call Write_log(Ctrl, trim(message), status)
+       end if
     end if    
     
     if (status == 0) then

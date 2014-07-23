@@ -25,7 +25,9 @@
 !    28th Nov 2011, Caroline Poulsen: remove log write statement
 !    2013/11/14, MJ: makes branch for ICE explicit
 !    2013/11/14, GM: Some code clean up
-! 20140611 CP removes automatic crash if ice wat class not specified so can cope with aerosl class
+!    2014/06/11, CP: removes automatic crash if ice wat class not specified so
+!      can cope with aerosl class
+!    2014/07/23, AP: added value for al10e2.
 !
 ! Bugs:
 !   None known
@@ -57,7 +59,7 @@ subroutine Calc_CWP (Ctrl,SPixel, status)
    real    :: s_cot           ! variance in cot from variance in log10cot
    real    :: tenpcot         ! 10^cot convert from log value to linear value
    real    :: al10e = .434294 ! i.e  log10(exp(1.))
-   real    :: al10e2
+   real    :: al10e2 =.188612 ! =al10e*al10e
 
 
    if (trim(Ctrl%CloudClass%Name) == 'WAT') then
