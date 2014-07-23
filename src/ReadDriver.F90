@@ -216,6 +216,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          Ctrl%Ind%Chi(ii)=conf%channel_ids_abs(i)
       endif
    enddo
+! Thses are the channels to be used
    write(*,*) 'CHI: ',Ctrl%Ind%Chi
 
    ! These are the channels available in the file wrt numbering in the instrument
@@ -342,7 +343,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
 
    ! The level of breakpoint output when the code is comiled with breakpoint
    ! option Ctrl%Bkpl
-   Ctrl%Bkpl=2
+   Ctrl%Bkpl=3
 
    ! Set diagnostic flags
    Ctrl%Diagl(1)  = 1
@@ -563,7 +564,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    if (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
       Ctrl%XB(1) = 0.8
       Ctrl%XB(2) = 12.
-      Ctrl%XB(3) = 700.
+      Ctrl%XB(3) = 900.
       Ctrl%XB(4) = 1.
       Ctrl%XB(5) = 300.0
    else if (trim(Ctrl%CloudClass%Name) .eq. 'ICE') then
@@ -627,7 +628,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       Ctrl%X0(4) = 1.
       Ctrl%X0(5) = 300.
    endif
-
+! maywant to put thses in getillum routine at some point
    ! Set default a priori error covariance
    if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
        (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
