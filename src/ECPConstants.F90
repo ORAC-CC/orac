@@ -120,6 +120,7 @@ module ECP_constants
    real, parameter    :: ditherm6         = 1.0E-6  ! Some even smaller value
    real, parameter    :: ditherm15        = 1.0E-15 ! Tiny value
 
+
    ! Parameters for range checking of data values (used in Get_SPixel)
    integer, parameter :: FlagMin          = 0       ! Checking for flag values (land/sea or cloud flags)                                    !
    integer, parameter :: FlagMax          = 1       ! Max. and min. values used in range
@@ -222,6 +223,14 @@ module ECP_constants
    integer, parameter :: ITwi             = 2
    integer, parameter :: INight           = 3
    integer, parameter :: IDaynore         = 4
+   integer, parameter :: IDaysinglevisfirst    = 5
+   integer, parameter :: IDaysinglevissecond     = 6
+   integer, parameter :: IDaysingleirfirst    = 7
+   integer, parameter :: IDaysingleirsecond     = 8
+   integer, parameter :: IDaysingleirthird     = 9
+   integer, parameter :: INightsingleirfirst    = 10
+   integer, parameter :: INightsingleirsecond     = 11
+   integer, parameter :: INightsingleirthird     = 12
 
    ! Constant values used for selection method
    integer, parameter :: SelmCtrl         = 1

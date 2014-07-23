@@ -44,6 +44,7 @@
 !20140131 MJ adds code for setting of AVHRR refch
 !20140401 MJ rewrites routine partly to robustly set illumination
 !20140403 Initialize illumination with fill value
+!20140703 CP added in options for when only a single IR channel is present replace 0.o with missingvalue
 !
 ! Bugs:
 !
@@ -76,7 +77,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
                                ! Holds 1 row of data from the file
    integer        :: view,i,j,ic,nsbad,ntbad,nref!, icnew,jcount,navail,nsolar,nthermal,row
 !   integer        ::  ii,jj,jin
-   integer        ::refch1,refch2
+   integer        ::refch1,refch2,missing_vis,missing_ir,it
    real            :: minrad
 
    status=0
@@ -114,7 +115,9 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
    ! loop over observations in y direction
    
 !!$   write(*,*) '1'
-!!$   write(*,*) minval(MSI_Data%MSI(:,:,1))
+!   write(*,*) minval(MSI_Data%MSI(:,:,:))
+! write(*,*)'Ctrl%Ind%ysolar_msi',Ctrl%Ind%ysolar_msi(:)
+!write(*,*)'Ctrl%Ind%ythermal_msi',Ctrl%Ind%ythermal_msi(:)
 !!$   write(*,*) minval(MSI_Data%MSI(:,:,2))
 !!$   write(*,*) minval(MSI_Data%MSI(:,:,3))
 !!$   write(*,*) minval(MSI_Data%MSI(:,:,4))
@@ -123,16 +126,19 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
 
    do i = 1,Ctrl%Ind%Xmax
       do j = 1,Ctrl%Resoln%SegSize
+
          do view = 1,Ctrl%Ind%NViews
             nref=0
             nsbad=0
+	missing_ir=0	
+	missing_vis=0	
             do ic=1,Ctrl%Ind%Nsolar
                
                !check the ref channels
                if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .eq. refch1) .or. (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .eq. refch2)) then
                   if (MSI_Data%MSI(i, j,Ctrl%Ind%ysolar_msi(ic)) .le. minrad) then 
                      nref=nref+1
-                     MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic))=0.0
+                     MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic))=MissingXn !0.0
                   end if
                end if
                
@@ -140,32 +146,69 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
                if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch1) .and. (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch2)) then
                   if (MSI_Data%MSI(i, j,Ctrl%Ind%ysolar_msi(ic)) .le. minrad) then 
                      nsbad=nsbad+1
-                     MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic))=0.0
+	missing_vis=ic
+                     MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic))=MissingXn !0.0
                   end if
                end if
 
-            end do !nsolar
+	enddo
 
+
+	it =1
             ntbad=0
             ! check the cloud top property channels
+! check pure Ir channels
             do ic=1,Ctrl%Ind%Nthermal
                if (MSI_Data%MSI(i, j,Ctrl%Ind%ythermal_msi(ic)) .le. minrad) then
                   ntbad=ntbad+1
-                  MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic))=0.0
+ missing_ir=it	
+                  MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic))=MissingXn 
+	
                end if
+it=it+1
             end do
 
             !Determine now illumination conditions
             !based on solar illumination and amount of available channels
             !all sw (component) channels are there
-            if(nref .eq. 0 .and. nsbad .eq. 0) then
+            if(nref .eq. 0) then
                
                !sun high enough in the sky
-               if(MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) then
+               if(MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen .and. ntbad .eq. 0 .and. nsbad .eq. 0) then
                   
                   MSI_Data%Illum(i,j,view) = IDay
 
                   !sun close to sunset
+
+		else if ((nsbad .eq. 1)   .and. (nref  .eq. 0) .and.&
+                 & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen))  then
+
+		if (missing_vis .eq. 1 )  then 
+			MSI_Data%Illum(i,j,view) = IDaysinglevisfirst
+		endif
+		if (missing_vis .eq. 2 )  then
+			 MSI_Data%Illum(i,j,view) = IDaysinglevissecond
+		endif
+		
+!
+! a single ir channel missing good retrieval still possible
+!
+
+
+	    else if ((nsbad .eq. 0)   .and. (nref  .eq. 0) .and.&
+                 & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. ntbad .eq. 1)  then
+		if (missing_ir .eq. 1 )  then 
+			MSI_Data%Illum(i,j,view) = IDaysingleirfirst
+		endif
+
+		if (missing_ir .eq. 2 )  then
+			 MSI_Data%Illum(i,j,view) = IDaysingleirsecond
+		endif
+
+		if (missing_ir .eq. 3 )  then
+			 MSI_Data%Illum(i,j,view) = IDaysingleirthird
+		endif
+
                else if((MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolzen) &
                     & .and. (MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset)) then
                   
@@ -178,7 +221,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
 
                endif
                
-               !some solar channels gone
+               !some solar channels gone only do night retrieval
             elseif(nsbad .gt. 0 .or. nref .gt. 0) then
 
                if((MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolzen) &
@@ -191,41 +234,40 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
 
                   MSI_Data%Illum(i,j,view) = INight
 
+                if (missing_ir .eq. 1 )  then 
+			MSI_Data%Illum(i,j,view) = INightsingleirfirst
+		endif
+
+		if (missing_ir .eq. 2 )  then
+			 MSI_Data%Illum(i,j,view) = INightsingleirsecond
+		endif
+
+		if (missing_ir .eq. 3 )  then
+			 MSI_Data%Illum(i,j,view) = INightsingleirthird
+		endif
+
                endif
 
             endif
 
 
-!!$            write(*,*) Ctrl%Ind%Nsolar,Ctrl%Ind%Nthermal
-!!$            write(*,*) refch1,refch2,Ctrl%Ind%Y_id
-!!$            write(*,*) Ctrl%Ind%ysolar,Ctrl%Ind%ysolar_msi
-!!$            write(*,*) Ctrl%Ind%ythermal,Ctrl%Ind%ythermal_msi
-!!$            write(*,*) 'illum',nref,nsbad,ntbad,MSI_Data%Illum(i,j,view)
+
+!if (MSI_Data%MSI(i,j,4)  .lt. 1 .or. MSI_Data%MSI(i,j,5) .lt. 1) then
+!   write(*,*) MSI_Data%MSI(i,j,:)
+!            write(*,*) 'illum',nref,nsbad,ntbad,MSI_Data%Illum(i,j,view)
+!	    write(*,*) 'illum missing',missing_ir,missing_vis
+!endif
             !STOP
-
-!MJ ORG
-!!$            if ((nsbad  .le. 1) .and.&
-!!$                 & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. (nref  .eq. 0)  ) then
-!!$               MSI_Data%Illum(i,j,view) = IDay
-!!$            else if ((nsbad .ge. 0) .and. (nsbad .le. 3) &
-!!$                 & .and. (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%MaxSolzen) &
-!!$                 & .and. (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%Sunset)) then
-!!$               MSI_Data%Illum(i,j,view) = ITwi
-!!$            else
-!!$               MSI_Data%Illum(i,j,view) = INight
-!!$            end if
-
-
-!!!!!!!!!!!!!!!!!!!now caculate values for retrieval
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !MJ write(*,*) 'nref,nsbad,ntbad',nref,nsbad,ntbad            
 
 
          end do !view
-      end do !y
+ 
+!if (MSI_Data%MSI(i,j,4)  .lt. 1 .or. MSI_Data%MSI(i,j,5) .lt. 1) then
+!   write(*,*) 'aftewards'
+!            write(*,*) 'nref nsbad ntbad illum status',nref,nsbad,ntbad,MSI_Data%Illum(i,j,1),status
+!endif
+
+     end do !y
    end do !x
 
 !!$   write(*,*)'minmax thermal channels 1',&
@@ -245,6 +287,8 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize,&
    else if (ios < 0) then
 
    end if
+
+!                write(*,*) 'illum msi_data', MSI_Data%Illum(:,:,1)
 
 !!$   write(*,*) '2'
 !!$   write(*,*) minval(MSI_Data%MSI(:,:,1))
