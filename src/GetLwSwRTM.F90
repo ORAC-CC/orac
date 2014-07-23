@@ -72,6 +72,7 @@
 !   03/11/2012, MJ: changed coeffs if block
 !   23/07/2014, AP: Grid no longer assumed to defined points rather than the
 !       cells centres (as is actually the case).
+!   23/07/2014 CP: added in extrapolation into stratosphere
 !
 ! Bugs:
 !   None known.
@@ -289,6 +290,15 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
                          ( coeff(3) * RTM%LW%T(Nx1, Ny1, :) ) + &
 			 ( coeff(4) * RTM%LW%T(Nx,  Ny1, :) )	
 
+!
+!modify profile in boundary layer inversion not implemented yet
+!	
+!	call Blmodification(SPixel)
+
+!
+!extrapolate temperature profile into stratosphere to deal with deep convective clouds primarily in tropics that push through the trop.
+!
+        call extrap_into_tropopause(Spixel)
 
 !      skint
 
