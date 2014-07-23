@@ -30,7 +30,8 @@
 ! 2014/04/01, MJ: Cleanup and fix for illum
 ! 2014/06/13, GM: Put the code into a subroutine.
 ! 2014/06/13, GM: Cleaned up the code.
-!
+! 2014/07/13, CP added AATSR time string and changed definition of land/sea mask
+!2014/04/01: CP added extra illumination options!
 ! $Id$
 !
 ! Bugs:
@@ -52,6 +53,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
 
    character(len=20)  :: input_num
    character(len=500) :: input_dummy
+   character(len=100) :: time_string
    character(len=500) :: s_input_dummy
    integer            :: ierr
    integer            :: iviews
@@ -66,12 +68,22 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    spixel_scan_out%time_vmax=1.0D10
    spixel_scan_out%time_fv=-32767.0
 
+
+ if   (trim(Ctrl%inst%name) .eq. 'AATSR') then
+
+time_string='Julian Date, days elapsed since 12:00 January 1, 2000'
+else
+time_string='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
+endif
+
+
+
    CALL nc_defdata_double(ncid, dims_var, &
            'time', &
            spixel_scan_out%vidtime, &
            'time', &
            'time', &
-           'Julian Date, days elapsed since 12:00 January 1, 4713 BC', &
+           time_string, &
            spixel_scan_out%time_fv, &
            spixel_scan_out%time_scale,spixel_scan_out%time_offset, &
            spixel_scan_out%time_vmin,spixel_scan_out%time_vmax,wo,ierr)
@@ -619,14 +631,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    spixel_scan_out%ls_scale=1
    spixel_scan_out%ls_offset=0
    spixel_scan_out%ls_vmin=0
-   spixel_scan_out%ls_vmax=1
+   spixel_scan_out%ls_vmax=6
 
    CALL nc_defdata_byte_flag_value(ncid, dims_var, &
            'lsflag', &
            spixel_scan_out%vidlsflag, &
            'land/sea flag', &
-           'land_binary_mask', '0b, 1b', &
-           'sea land', &
+           'land_binary_mask', '0b, 1b 2b 3b 4b 5b 6b', &
+           'sea land sunglint snow ice snow_and_ice', &
            spixel_scan_out%byte_fill_value, &
            spixel_scan_out%ls_scale,spixel_scan_out%ls_offset, &
            spixel_scan_out%ls_vmin,spixel_scan_out%ls_vmax,wo,ierr)
@@ -664,14 +676,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    spixel_scan_out%illum_scale=1
    spixel_scan_out%illum_offset=0
    spixel_scan_out%illum_vmin=1
-   spixel_scan_out%illum_vmax=4
+   spixel_scan_out%illum_vmax=12
 
    CALL nc_defdata_byte_flag_value(ncid, dims_var, &
            'illum', &
            spixel_scan_out%vidillum, &
            'illumination flag', &
-           'illumination_flag', '1b, 2b, 3b 4b', &
-           'Day Twilight Night Daynore', &
+           'illumination_flag', '1b, 2b, 3b 4b 6b 7b 8b 9b 10b 11b 12b', &
+           'Day Twilight Night Daynore IDaysinglevisfirst IDaysinglevissecond IDaysingleirfirst   IDaysingleirsecond  IDaysingleirthird   INightsingleirfirst INightsingleirsecond INightsingleirthird', &
            spixel_scan_out%byte_fill_value, &
            spixel_scan_out%illum_scale,spixel_scan_out%illum_offset, &
            spixel_scan_out%illum_vmin,spixel_scan_out%illum_vmax,wo,ierr)
