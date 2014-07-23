@@ -40,9 +40,9 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
   type(Ctrl_t), intent(in)      :: Ctrl
   real            :: BT_o,BP_o,DBP_o,dx,dy,xd
   real            :: invert_t(SPixel%RTM%LW%Np),&
-       & invert_p(SPixel%RTM%LW%Np),invert_h(SPixel%RTM%LW%Np)
-  integer :: kspot,ik,mon_k,upper_index,lower_index
-  integer :: min_prof_lev
+       & invert_p(SPixel%RTM%LW%Np),invert_h(SPixel%RTM%LW%Np),invert_temp(SPixel%RTM%LW%Np)
+  integer :: kspot,ik,mon_k,upper_index,lower_index,kspot_min,kspot_trop,ii
+  integer :: min_prof_lev,mon_k_trop,wc,mon_min
 
   !set default values if anything goes wrong
   BP_o=Ctrl%X0(3)
@@ -64,35 +64,107 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
   !default value for inversion: TOA
   mon_k=SPixel%RTM%LW%Np
-  !determine where temperature inversion is, counting from ground up
+mon_k_trop=mon_k
+	
+!may need to split into 2 searches
+  !determine where tropospheric temperature inversion is, counting from ground up
   do ik=1,SPixel%RTM%LW%Np-1
-
-     if(invert_t(ik+1) .gt. invert_t(ik)) then
-        mon_k=ik
+! > 700HP means you do not get trapped under a boundary layer inversion or polar inversion
+! this might need to be changed when interpolate profile into stratosphere
+!write(*,*)'ik',ik,invert_t(ik+1),invert_t(ik) ,invert_p(ik)
+	if (ik .ge.  SPixel%RTM%LW%Np-1) then 
+		mon_k_trop=SPixel%RTM%LW%Np-1
+		exit
+! this catches when the tropopause is extrapolated
+	endif
+     if((invert_t(ik+1) .gt. invert_t(ik)) .and. invert_p(ik) .lt. 700.) then
+        mon_k_trop=ik
+	
         exit
      endif
   enddo
-  !set mon_k at least to level three to avoid problems with cold surfaces
-  mon_k=max(mon_k,min_prof_lev)
+
+
+!set mon_k at least to level three to avoid problems with cold surfaces
+  mon_k_trop=max(mon_k_trop,min_prof_lev)
 
   !locate kspot (within profile up tp mon_k), with invert_t(kspot) <= bt_o < invert_t(kspot+1)
   !we interpolate between those two below then
-  call locate_int(invert_t(1:mon_k),mon_k,BT_o,kspot)
+!write(*,*)'mon_k_trop',mon_k_trop
+  call locate_int(invert_t(1:mon_k_trop),mon_k_trop,BT_o,kspot)
+
+   if (kspot .ne. 0 ) then
+      mon_k=mon_k_trop
+   endif
+
+if (kspot .eq. 0) then
+! profile  may have unusual inversions
+
+	invert_temp(1:mon_k_trop)=invert_t(1:mon_k_trop)
+
+!sort into ascending order
+!write(*,*)'mon_k_trop hpsort',mon_k_trop
+	call hpsort(mon_k_trop,invert_temp(1:mon_k_trop))
+
+! try to find match in this sorted profile
+!write(*,*)'invert_temp(1:mon_k_trop)',invert_temp(1:mon_k_trop)
+!write(*,*)'mon_k_trop b',mon_k_trop,kspot
+ 	call locate_int(invert_temp(1:mon_k_trop),mon_k_trop,BT_o,kspot)
+
+!write(*,*)'kspot after hpsort',kspot
+	if (kspot .ne. 0) then
+		do ii=1,mon_k_trop
+			if (invert_temp(kspot) .eq. invert_t(ii)) then
+				mon_k=ii
+			endif
+		enddo
+	endif
+
+endif !kspot eq 0
+
+
 
   !If locate routine cannot find a pair of points in the temperature profile between which the BT falls.
   !In other words the BT is outside the temperature profile 
   !(or at least this monotonous stretch of it which is investigated).
   !1.) if kspot is too low (unlikely)
+
+
   if( kspot .eq. 0) then
+
+
 #ifdef DEBUG
      write(*,*) 'WARNING: Locating kspot for FG/AP CTP FAILED'
      write(*,*) 'kspot',kspot
-     write(*,*) 'mon_k',mon_k
-     write(*,*) 'invert_t',invert_t(1:mon_k)
-     write(*,*) 'BT',BT_o
+     write(*,*) 'mon_k',mon_k,mon_min,mon_k_trop 
+
+     write(*,*) 'invert_p',invert_p!(1:mon_k)
+     write(*,*) 'invert_t',invert_t!(1:mon_k)
+!     write(*,*) 'invert_h',invert_h!(1:mon_k)
+
+
 #endif
+
+     ! I think this is being set incorrectly over polar regions resulting in bad retrievals over snow
      !if no interpolation possible set BP_o and DBP_o to hardcoded values to recover:
-     BP_o=Ctrl%X0(3)
+	if ( BT_o .gt. invert_t(1)) then
+! most likely at the surface
+	   BP_o=invert_p(1)
+	 else
+           BP_o=Ctrl%X0(3)
+	endif
+   
+	if ( BP_o .lt. 20.0) then
+! too warm more likely surface
+          BP_o=invert_p(1)
+	endif
+
+!if( kspot .eq. 0) then
+     write(*,*) 'BT BP X0',BT_o,BP_o,Ctrl%X0(3)
+	write(*,*) 'SPixel%Illum(1)',SPixel%Illum
+!endif
+
+     !BP_o=invert_p(1)
      !FG does not need Error but AP does
      DBP_o=MDADErrPc
      !2.) if point too high up just use highest point for extrapolation
@@ -105,10 +177,13 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
         dy=invert_p(mon_k-1)-invert_p(mon_k)
         xd=BT_o-invert_t(mon_k)
         BP_o=invert_p(mon_k)+dy*xd/dx
-        !if profile is isothermal just use this last pressure
+
+        !else if profile is isothermal just use this last pressure
      else
         BP_o=invert_p(mon_k)
      endif
+
+
      DBP_o=MDADErrPc
 
      !if extrapolation goes too far use just highest point
@@ -150,6 +225,6 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
      BP_o=Ctrl%Invpar%Xllim(3)
      DBP_o=MDADErrPc
   endif
-  
+!     write(*,*) 'BT BP X0',BT_o,BP_o,Ctrl%X0(3)  
 
 end subroutine interpolate2ctp
