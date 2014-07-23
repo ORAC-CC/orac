@@ -342,11 +342,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Look if path to driver file was given on the command line. If yes, then
    ! read it, if not leave it to the Read_Driver routine to deal with it
 
-#ifndef WRAPPER
-   nargs=command_argument_count()
-#else
-   nargs=-1
-#endif
+nargs=1
+!#ifndef WRAPPER
+!   nargs=command_argument_count()
+!#else
+!   nargs=-1
+!#endif
 
    write(*,*) 'inside preproc',nargs
 
@@ -608,15 +609,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
       ! Along track loop is parallelized with openMP
-      nthreads = omp_get_max_threads()
+!      nthreads = omp_get_max_threads()
       write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
 
       ! Start OMP section by spawning the threads
       !$OMP PARALLEL &
       !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_id,RTM_Pc,Spixel,SPixel_Alloc,RTM_Pc_Alloc,Diag,conv,dummyreal) &
       !$OMP FIRSTPRIVATE(status)
-      thread_id = omp_get_thread_num()
-      print *, 'Thread ', thread_id+1, 'is active'
+!      thread_id = omp_get_thread_num()
+!      print *, 'Thread ', thread_id+1, 'is active'
 
 
       !  Allocate sizes of SPixel sub-structure arrays
