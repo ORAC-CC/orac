@@ -31,6 +31,7 @@
 ! History:
 !  18/06/2012 C. Poulsen original version
 !  8/07/2012 C. Poulsen initialised ios value
+!  14/06/2014 C. Poulsen modified to include scenarios where a single visible of a single Ir channel are missing
 !
 ! Bugs:
 !
@@ -61,8 +62,8 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
 
    integer        :: ios       ! I/O status from file operations
    character(180) :: message   ! Error message to pass to Write_Log
-   integer        :: view,i,j,ic,nsbad,ntbad,nref
-   integer ::refch1,refch2
+   integer        :: view,i,j,ic,nsbad,ntbad,nref,it
+   integer ::refch1,refch2,missing_vis,missing_ir
    real            :: minrad
  
    status=0
@@ -91,6 +92,8 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
    !loop over all channels and set values to zero where missing
    !Make sure that enough channels are present
    !
+   ! identify channels that are needed to do effective radius retrieval
+
    if ((trim(Ctrl%inst%name) .eq. trim('MODIS-AQUA')) .or. &
         & (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA'))) then
       refch1=6
@@ -112,7 +115,7 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
             do ic=1,Ctrl%Ind%NSolar	
                
                if ((Ctrl%Ind%Y_id(ic) .eq. refch1) .or. (Ctrl%Ind%Y_id(ic) .eq. refch2)) then
-
+! count number of bad effectve radius channels
                   if (MSI_Data%MSI(i, j, &
                        & Ctrl%Ind%Chi(ic)) .le. minrad) then 
                      nref=nref+1
@@ -121,10 +124,13 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
                   end if
                end if
                
+!count number of good visible reflectance channels i.e have value greater than minimum
+
                if (ic .le. 2) then
                   if (MSI_Data%MSI(i, j, &
                        Ctrl%Ind%Chi(ic)) .le. minrad) then 
                      nsbad=nsbad+1.0
+		     missing_vis=ic	
                      MSI_Data%MSI(i,j,Ctrl%Ind%Chi(ic))=0.0
                      !if (ic .le. 2) then
                      !write(*,*)'after',MSI_Data%MSI(i, j,:)
@@ -134,17 +140,20 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
                
                
             end do !nsolar
+
             ntbad=0
-            ! check all channels
-            
+            ! check all other channels
+            ! count number of good thermal channels
+		it =1
             do ic=Ctrl%Ind%NSolar+1,Ctrl%Ind%Navail	
-               
+            write(*,*)  'msi check1', MSI_Data%MSI(i, j,Ctrl%Ind%Chi(ic)),minrad
                if (MSI_Data%MSI(i, j, &
                     Ctrl%Ind%Chi(ic)) .le. minrad) then 
                   ntbad=ntbad+1.0
+		  missing_ir=it		
                   MSI_Data%MSI(i,j,Ctrl%Ind%Chi(ic))=0.0
                end if
-               
+               it=it+1
             end do !nthermal
             
             !
@@ -152,11 +161,30 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
             !
             
             
+        write(*,*)'ntbad nsbad nref',ntbad, nsbad,nref    
             
-            
-            if ((nsbad  .le. 1) .and.&
+            if ((nsbad  .eq. 0) .and.&
                  & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. (nref  .eq. 0)  ) then
                MSI_Data%Illum(i,j,view) = IDay
+            else if ((nsbad .eq. 1)   .and. (nref  .eq. 0) .and.&
+                 & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen))  then
+		if (missing_vis .eq. 1 )  then 
+			MSI_Data%Illum(i,j,view) = IDaysinglevisfirst
+		endif
+		if (missing_vis .eq. 2 )  then
+			 MSI_Data%Illum(i,j,view) = IDaysinglevissecond
+		endif
+
+	    else if ((nsbad .eq. 0)   .and. (nref  .eq. 0) .and.&
+                 & (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) .and. ntbad .eq. 1)  then
+		if (missing_ir .eq. 1 )  then 
+			MSI_Data%Illum(i,j,view) = IDaysingleirfirst
+		endif
+
+		if (missing_ir .eq. 2 )  then
+			 MSI_Data%Illum(i,j,view) = IDaysingleirsecond
+		endif
+
             else if ((nsbad .ge. 0) .and. (nsbad .le. 3) &
                  & .and. (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%MaxSolzen) &
                  & .and. (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%Sunset)) then
@@ -165,7 +193,7 @@ subroutine Read_Illum(Ctrl, NSegs, SegSize, MSI_files_open, lun, &
                MSI_Data%Illum(i,j,view) = INight
             end if
 
-
+ write(*,*)'msi illum',MSI_Data%Illum(i,j,view),missing_ir,missing_vis 
 !!!!!!!!!!!!!!!!!!!now caculate values for retrieval
 
 

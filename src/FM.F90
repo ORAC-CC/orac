@@ -126,6 +126,7 @@
 !      little in performance.  Now the Solar and Thermal forward model calls are
 !      independnent so that contents of CRP and d_CRP do not need to be passed
 !      from the thermal call to the solar call.
+!   20140715 CP changed illumination logic
 !
 ! Bugs:
 !   None known.
@@ -251,7 +252,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
               RTM_Pc, X, GZero, CRP, d_CRP, BT, d_BT, Rad, d_Rad, status)
 
       ! Daytime
-      if ((SPixel%Illum(1) .eq. IDay) .and. status == 0) then
+      if ((SPixel%Illum(1) .ne. Inight .and. SPixel%Illum(1) .ne. Itwi ) .and. status == 0) then
          ! Call routine to interpolate RTM data to the cloud pressure level.
          ! Interpol_Solar populates the SW part of RTM_Pc.
          if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then

@@ -204,6 +204,7 @@
 !       errors when night views were processed.
 !    24th Jul 2013, Adam Povey: Fixed BKP code
 !    30th Apr 2014, Greg McGarragh: Cleaned up the code.
+!    17th June 2014, Caroline Poulsen modified code so retrieval performed if a single ir channel is missing
 !
 ! Bugs:
 !   Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -239,7 +240,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! Define local variables
 
-   integer        :: i, j, view
+   integer        :: i, j, view, irbad
    real           :: minsolzen
    integer        :: stat ! Local status value
 #ifdef DEBUG
@@ -277,7 +278,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
       write(unit=message, fmt=*) &
            & 'Get_SPixel: WARNING - Found cloud flag out of range in pixel at:', &
            & SPixel%Loc%X0, SPixel%Loc%Y0
-      write(*,*) trim(message)
+      !write(*,*) trim(message)
       call Write_log(Ctrl, trim(message), stat)
 #endif
        SPixel%QC = ibset(SPixel%QC, SPixCloudFl)
@@ -416,12 +417,14 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! MSI - Temperatures (between 150.0K and 330.0K)
    stat = 0
-
+irbad=0
    do i = 1,Ctrl%Ind%Nthermal
       call Check_FloatArray(1, 1, &
            & MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, Ctrl%Ind%ythermal_msi(i)), SPixel%Mask, &
            & BTMax, BTMin, stat)
       if (stat > 0) then
+	irbad =irbad+1
+
 #ifdef DEBUG
          write(unit=message, fmt=*) &
                & 'Get_SPixel: WARNING - Found MSI temperature out of range in pixel at: ', &
@@ -430,7 +433,16 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
          write(*,*) trim(message)
          call Write_log(Ctrl, trim(message), stat)
 #endif
-         SPixel%QC = ibset(SPixel%QC, SPixTemp)
+	if (irbad > 1) then
+
+         	SPixel%QC = ibset(SPixel%QC, SPixTemp)
+		SPixel%Mask=0
+	else 
+! its ok to have one missing ir channel
+		stat=0
+		SPixel%Mask=1
+	end if
+
       end if
    end do
 
@@ -462,6 +474,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! If all Mask flags are 0 there are no good pixels in the current SPixel, do
    ! not process. Set QC flag and report to the log.
 
+
    if (SPixel%NMask == 0) then
       Spixel%QC = ibset(Spixel%QC, SPixAll)
       stat = SPixelInvalid ! Entire super-pixel is invalid
@@ -471,6 +484,10 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
        write(*,*) trim(message)
        call Write_log(Ctrl, trim(message), stat)
 #endif
+
+
+
+stat=0
    else
       ! Get cloud flags before checking for cloudy method
 
@@ -481,6 +498,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
       SPixel%Cloud%Flags = MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
       Spixel%Cloud%Fraction = SPixel%Cloud%Flags
+
 
       if (SPixel%Cloud%Fraction == 0) then
          ! No cloud in SPixel. Don't process.
@@ -502,17 +520,20 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
          ! pixel data problem.
 
          if (stat == 0) then
+	! write(*,*)'getspixl msi',MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,:)
             call Get_illum(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-               write(*,*) 'WARNING: Get_illum', stat
+               !write(*,*) 'WARNING: Get_illum', stat
                Spixel%QC = ibset(Spixel%QC, SPixillum)
             endif
          end if
 
+
+
          if (stat == 0) then
             call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-               write(*,*)  'WARNING: Get_Geometry', stat
+               !write(*,*)  'WARNING: Get_Geometry', stat
                Spixel%QC = ibset(Spixel%QC, SPixGeom)
             endif
          end if
@@ -521,7 +542,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
             if (stat /= 0) then
                Spixel%QC = ibset(Spixel%QC, SPixRTM)
-               write(*,*)  'WARNING: Get_RTM', stat
+!               write(*,*)  'WARNING: Get_RTM', stat
             endif
          end if
 
@@ -533,11 +554,12 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             endif
          end if
 
+
          ! Get surface parameters and reduce reflectance by solar angle effect.
          if (stat == 0 .and. SPixel%Ind%NSolar /= 0) then
             call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-               write(*,*)  'WARNING: Get_Surface', stat
+!               write(*,*)  'WARNING: Get_Surface', stat
                Spixel%QC = ibset(Spixel%QC, SPixSurf)
             else
                do i=1,Ctrl%Ind%NSolar
@@ -559,6 +581,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
                Spixel%QC = ibset(Spixel%QC, SPixFGAP)
             endif
          end if
+
 
       end if ! End of "if stat" after cloud fraction check
 
@@ -582,6 +605,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
                     & ** SPixel%Geom%SEC_v(Spixel%ViewIdx(i))
             end do
          end if
+
 
          ! LW Tsf array is of size NThermal, but we only want the mixed channels.
          ! The Tsf_o, v calculations differ for LW, because here the Tac value
@@ -615,6 +639,8 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! flag bit to indicate no processing.
 
    if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixNoProc)
+
+
 
    ! If the super-pixel will not be processed, zero the first guess and a priori
    ! state vectors for output into the diag file. Check the QC flag rather than

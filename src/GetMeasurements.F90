@@ -98,6 +98,8 @@
 !       Added illum array
 !    21th May 2014, Greg McGarragh:
 !       Cleaned up the code.
+! 8th July 2012 CP changed ilumination logic
+!
 !
 ! Bugs:
 !   None known.
@@ -182,7 +184,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          end if
 
          ! Daylight
-         if (SPixel%Illum(1) == IDay) then
+         if (SPixel%Illum(1) .ne. INight .and. SPixel%Illum(1) .ne. ITwi) then
             if (SAD_Chan(j)%Solar%Flag /= 0) then
                if (SAD_Chan(j)%Thermal%Flag /= 0) then
                   ! Both solar and thermal => mixed
