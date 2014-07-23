@@ -1,0 +1,117 @@
+! Name: extrap_into_tropopause.f90
+!
+!
+! Purpose:
+! find troppuaes given temperature and height profile and remove by extrapolating into stratosphere
+! 
+!
+! Description and Algorithm details:
+!
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!	Z0	Corresponding altitudes / km
+!	T0	Temperature profile / K
+!
+!
+! Local variables:
+! ztp : tropopause
+!
+!
+!
+! Name Type Description
+!
+!
+! History:
+! 2012/05/24:Original code C. Poulsen based on idl t_extrap_tp.pro
+! 2014/03/14:CP debugged and tested
+!
+! $Id$
+!
+! Bugs:
+!not tested bfull of bugs
+!none known
+
+subroutine extrap_into_tropopause(SPixel )
+
+use SPixel_def  
+
+  implicit none
+  ! arguments
+
+  type(SPixel_t), intent(inout) :: SPixel 
+
+
+  real ,allocatable ::  t(:),z(:),t2(:),t3(:)
+  real ,allocatable ::  t2a(:)
+  real ::  lr,ztp,ttp,min_t,maxz,ztp2
+  integer  :: nt,zdim,t2adim,i,j,nlevs,index_ztp,k
+ 
+index_ztp=-999.0  
+
+        nlevs=SPixel%RTM%LW%Np
+
+        allocate(t(nlevs))
+        allocate(t2(nlevs))
+        allocate(t2a(nlevs))
+        allocate(t3(nlevs))
+        allocate(z(nlevs))
+
+        
+      do k=1,SPixel%RTM%LW%Np-1
+!         write(*,*)'xx',SPixel%RTM%LW%T(k), SPixel%RTM%LW%T(k+1),k,SPixel%RTM%LW%P(k)
+         if (SPixel%RTM%LW%T(k+1) .gt. SPixel%RTM%LW%T(k)) then
+	   if (SPixel%RTM%LW%P(k) .gt. 80.) then
+!check lapse rate is large enough
+!write(*,*)'lr',SPixel%RTM%LW%T(k+3)-SPixel%RTM%LW%T(k+2) 
+             if (SPixel%RTM%LW%T(k+3)-SPixel%RTM%LW%T(k+2) .gt. 2.) then	
+            index_ztp=k+1
+		ztp=SPixel%RTM%LW%P(k+1)
+            ! exit out of loop to improve the speed
+            exit
+	endif ! lapse raet
+	endif ! gt 80.0
+         endif
+         
+      enddo
+      
+
+
+        t=SPixel%RTM%LW%T
+
+
+!        z=SPixel%RTM%LW%H
+!	write(*,*)'SPixel%RTM%LW%H',SPixel%RTM%LW%H
+
+! this is atypical value for a moist adiabatic lapse rate (see wikipedia)
+!        lr=-5 !lapse rate K/km
+!        if (z(1) .le. z(2)) then
+!           write(*,*),'z must be in descending order !'
+!        end if
+        
+!
+!find location of tropopause
+!
+
+!        call find_tropopause(t,z,ztp,nlevs,index_ztp)
+        
+        if (ztp .eq. -999) then
+           write(*,*),'tropopause not found !',ztp
+        end if
+        
+!
+!now extrapolate the tropopause into stratosphere
+!
+        if (ztp .ne. -999) then
+
+        call t_extrap_strat(Spixel,ztp,index_ztp)
+	end if
+
+        deallocate(t)
+        deallocate(t2)
+        deallocate(t2a)
+        deallocate(t3)
+        deallocate(z)
+    
+
+end subroutine  extrap_into_tropopause
