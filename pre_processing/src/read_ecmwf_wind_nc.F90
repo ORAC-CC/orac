@@ -20,6 +20,7 @@
 !
 ! History:
 ! 2014/05/07, AP: First version.
+! 2014/07/24, GM: Nullify pointers to saftely use the associated intrinsic.
 !
 ! $Id$
 !
@@ -75,7 +76,11 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
                0.9078839,     0.9319403,     0.9518215,     0.9676452,     &
                0.9796627,     0.9882701,     0.9940194,     0.9976301,     &
                1.0000000 ]
-   
+   nullify(ecmwf%lon)
+   nullify(ecmwf%lat)
+   nullify(ecmwf%u10)
+   nullify(ecmwf%v10)
+
    ! loop over given files (order not necessarily known)
    call read_ecmwf_wind_file(ecmwf_path,ecmwf)
    call read_ecmwf_wind_file(ecmwf2path,ecmwf)
