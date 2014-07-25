@@ -88,6 +88,7 @@
 !    2014/01/26, Greg McGarragh: Cleaned up code.
 !    2014/04/03, MJ adds some fill value definitions
 !    2014/05/22, Greg McGarragh: Added RTMIntMeth and LUTIntMeth constants.
+!    2014/07/24, Adam Povey: made FlagMin|Max type byte
 !
 ! Bugs:
 !    None known.
@@ -97,6 +98,13 @@
 !-------------------------------------------------------------------------------
 
 module ECP_constants
+
+   integer, parameter :: byte                       = 1
+   integer, parameter :: sint                       = 2
+   integer, parameter :: nint                       = 4
+
+   integer, parameter :: sreal                      = 4
+   integer, parameter :: dreal                      = 8
 
    ! Maximum string lengths
    integer, parameter :: ECPLogReclen     = 132     ! Record length in ECP log file,
@@ -122,8 +130,8 @@ module ECP_constants
 
 
    ! Parameters for range checking of data values (used in Get_SPixel)
-   integer, parameter :: FlagMin          = 0       ! Checking for flag values (land/sea or cloud flags)                                    !
-   integer, parameter :: FlagMax          = 1       ! Max. and min. values used in range
+   integer(byte), parameter :: FlagMin          = 0 ! Checking for flag values (land/sea or cloud flags)                                    !
+   integer(byte), parameter :: FlagMax          = 1 ! Max. and min. values used in range
    real, parameter    :: CloudMin         = 0.0
    real, parameter    :: CloudMax         = 1.0     ! Max. and min. values used in range checking for cloud flag values
    real, parameter    :: SatZenMin        = 0.0     ! Satellite zenith angle
@@ -445,12 +453,6 @@ module ECP_constants
 
    real, parameter    :: d2r                        = 0.017453292 ! Pi / 180.0
 
-   integer, parameter :: byte                       = 1
-   integer, parameter :: sint                       = 2
-   integer, parameter :: nint                       = 4
-
-   integer, parameter :: sreal                      = 4
-   integer, parameter :: dreal                      = 8
 
 
    real(kind=sreal), parameter   :: real_fill_value         = -999.0

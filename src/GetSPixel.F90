@@ -204,7 +204,10 @@
 !       errors when night views were processed.
 !    24th Jul 2013, Adam Povey: Fixed BKP code
 !    30th Apr 2014, Greg McGarragh: Cleaned up the code.
-!    17th June 2014, Caroline Poulsen modified code so retrieval performed if a single ir channel is missing
+!    17th Jun 2014, Caroline Poulsen: modified code so retrieval performed if a
+!       single ir channel is missing
+!    25th Jul 2014, Adam Povey: Tidying code with check_value subroutine.
+!       Fixing bug that meant SPixAll wasn't necessarily set if pixel failed.
 !
 ! Bugs:
 !   Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -216,6 +219,7 @@
 !-------------------------------------------------------------------------------
 subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
+   use check_value_m
    use config_s
    use CTRL_def
    use Data_def
@@ -236,16 +240,14 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    type(SPixel_t), intent(inout) :: SPixel
    integer, intent(out)          :: status
 
-!#define DEBUG
+   !#define DEBUG
 
    ! Define local variables
 
-   integer        :: i, j, view, irbad
-   real           :: minsolzen
-   integer        :: stat ! Local status value
-#ifdef DEBUG
-   character(180) :: message
-#endif
+   integer           :: i, j
+   real              :: minsolzen
+   integer           :: stat ! Local status value
+   real, allocatable :: thermal(:)
 #ifdef BKP
    integer :: bkp_lun   ! Unit number for breakpoint file
    integer :: ios       ! I/O status for breakpoint file
@@ -253,9 +255,8 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
 #endif
 
    ! Set status to zero
+   stat = 0
    status = 0
-
-   ! Perform quality control and pixel error checking
 
    ! Initialise Mask
    SPixel%Mask = 1
@@ -264,212 +265,68 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    SPixel%QC = 0
 
    ! Check for pixel values out of range. QC is set as information to accompany
-   ! a retrieval. stat is reset to 0 after each test. The SPixel Mask is set to
-   ! flag problems in particular pixels within the Super-Pixel. If any one pixel
-   ! has a problem (flagged by a 0 value) this is ok, but if all pixels are
-   ! flagged the super-pixel cannot be used (checked after these tests).
+   ! a retrieval. The SPixel Mask is set to flag problems in particular pixels.
 
    ! Check Cloud flags (0 or 1)
-   stat = 0
-   call Check_FloatArray(1, 1, MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
-        & SPixel%Mask, CloudMax, CloudMin, stat)
-   if (stat > 0) then
-#ifdef DEBUG
-      write(unit=message, fmt=*) &
-           & 'Get_SPixel: WARNING - Found cloud flag out of range in pixel at:', &
-           & SPixel%Loc%X0, SPixel%Loc%Y0
-      !write(*,*) trim(message)
-      call Write_log(Ctrl, trim(message), stat)
-#endif
-       SPixel%QC = ibset(SPixel%QC, SPixCloudFl)
-   end if
+   call check_value(MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+        CloudMax, CloudMin, SPixel, 'cloud flag', SPixCloudFl)
 
    ! Land/Sea flags (0 or 1)
-   stat = 0
-   call Check_ByteArray(1, 1, &
-        & MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), SPixel%Mask, &
-        & FlagMax, FlagMin, stat)
-   if (stat > 0) then
-#ifdef DEBUG
-      write(unit=message, fmt=*) &
-           & 'Get_SPixel: WARNING - Found land/sea flag out of range in pixel at:', &
-           & SPixel%Loc%X0, SPixel%Loc%Y0
-      write(*,*) trim(message)
-      call Write_log(Ctrl, trim(message), stat)
-#endif
-      SPixel%QC = ibset(SPixel%QC, SPixLandFl)
-    end if
+   call check_value(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+        FlagMax, FlagMin, SPixel, 'land/sea flag', SPixLandFl)
 
-!  Make this work if pixel is in daylight
-!
-!  Geometry - Solar zenith (between 0o and 90o)
-!  stat = 0
-!  call Check_FloatArray(Ctrl%Resoln%Space, Ctrl%Resoln%Space, &
-!       MSI_Data%Geometry%Sol(SPixel%Loc%X0:SPixel%Loc%Xn, &
-!       SPixel%Loc%YSeg0:SPixel%Loc%YSegn), SPixel%Mask, 90.0, 0.0, stat)
-!
-!  if (stat > 0) then
-!     write(unit=message, fmt=*) 'Get_SPixel: WARNING - Found solar zenith angle &
-!                                 out of range in super pixel starting at:', &
-!                                 SPixel%Loc%X0, SPixel%Loc%Y0
-!     write(*,*) trim(message)
-!     call Write_log(Ctrl, trim(message), stat)
-!     SPixel%QC = ibset(SPixel%QC, SPixSolZen)
-!  end if
+   !  Make this work if pixel is in daylight
+   !  Geometry - Solar zenith (between 0o and 90o)
+   !call check_value(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+   !     90.0, 0.0, SPixel, 'solar zenith angle', SPixSolZen)
 
    ! Geometry - Satellite zenith (between 0o and 90o)
-   stat = 0
-   do view=1,Ctrl%Ind%Nviews
-      call Check_FloatArray(1, 1, &
-           & MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0, view), SPixel%Mask, &
-           & SatZenMax, SatZenMin, stat)
-      if (stat > 0) then
-#ifdef DEBUG
-         write(unit=message, fmt=*) &
-              & 'Get_SPixel: WARNING - Found satellite zenith angle out of range ' &
-              & // 'in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0 , &
-              & MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0, view)
-         write(*,*) trim(message)
-         call Write_log(Ctrl, trim(message), stat)
-#endif
-         SPixel%QC = ibset(SPixel%QC, SPixSatZen)
-      end if
-   end do
+   call check_value(MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0, :), &
+        SatZenMax, SatZenMin, SPixel, 'satellite zenith angl', SPixSatZen)
 
    ! Geometry - Azimuth (between 0o and 180o)
-   stat = 0
-   do view=1,Ctrl%Ind%Nviews
-      call Check_FloatArray(1, 1, &
-           & MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0, view), SPixel%Mask, &
-           & RelAziMax, RelAziMin, stat)
-
-      if (stat > 0) then
-#ifdef DEBUG
-         write(unit=message, fmt=*) &
-              & 'Get_SPixel: WARNING - Found azimuth angle out of range in pixel at:', &
-              & SPixel%Loc%X0, SPixel%Loc%Y0, &
-              & MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0, view)
-         write(*,*) trim(message)
-         call Write_log(Ctrl, trim(message), stat)
-#endif
-         SPixel%QC = ibset(SPixel%QC, SPixRelAzi)
-      end if
-   end do
+   call check_value(MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0, :), &
+        RelAziMax, RelAziMin, SPixel, 'azimuth angle', SPixRelAzi)
 
    ! Location - Latitude (between -90o and 90o)
-   stat = 0
-   call Check_FloatArray(1, 1, &
-        & MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0), SPixel%Mask, &
-        & LatMax, LatMin, stat)
-   if (stat > 0) then
-#ifdef DEBUG
-      write(unit=message, fmt=*) &
-           & 'Get_SPixel: WARNING - Found location latitude out of range in pixel at: ', &
-           & SPixel%Loc%X0, SPixel%Loc%Y0
-      write(*,*) trim(message)
-      call Write_log(Ctrl, trim(message), stat)
-#endif
-      SPixel%QC = ibset(SPixel%QC, SPixLat)
-   end if
+   call check_value(MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+        LatMax, LatMin, SPixel, 'location latitude', SPixLat)
 
    ! Location - Longitude (between -180o and 180o)
-   stat = 0
-   call Check_FloatArray(1, 1, &
-        MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0), SPixel%Mask, &
-        & LonMax, LonMin, stat)
-   if (stat > 0) then
-#ifdef DEBUG
-      write(unit=message, fmt=*) &
-           & 'Get_SPixel: WARNING - Found location longitude out of range in pixel at: ', &
-           & SPixel%Loc%X0, SPixel%Loc%Y0
-      write(*,*) trim(message)
-      call Write_log(Ctrl, trim(message), stat)
-#endif
-      SPixel%QC = ibset(SPixel%QC, SPixLon)
-   end if
+   call check_value(MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+        LonMax, LonMin, SPixel, 'location longitude', SPixLon)
 
    ! MSI - Reflectances (between 0 and 1)
-   !
-   ! Loop over shortwave channels
    minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0, :))
    if (minsolzen < Ctrl%MaxSolzen) then
-      stat = 0
-
       do i = 1,Ctrl%Ind%Nsolar
-         if (conf%channel_mixed_flag_use(Ctrl%Ind%ysolar_msi(i)) .eq. 0) then
-            call Check_FloatArray(1, 1, &
-                 & MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,Ctrl%Ind%ysolar_msi(i)), SPixel%Mask, &
-                 & RefMax, RefMin, stat)
-         endif
-         if (stat > 0) then
-#ifdef DEBUG
-            write(unit=message, fmt=*) &
-                 & 'Get_SPixel: WARNING - Found MSI reflectance out of range in pixel at: ', &
-                 & SPixel%Loc%X0, SPixel%Loc%Y0, &
-                 & MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, Ctrl%Ind%ysolar_msi(i)),'ch:',Ctrl%Ind%ysolar_msi(i)
-            write(*,*) trim(message)
-            call Write_log(Ctrl, trim(message), stat)
-#endif
-            SPixel%QC = ibset(SPixel%QC, SPixRef)
-         end if
+         if (conf%channel_mixed_flag_use(Ctrl%Ind%ysolar_msi(i)) .eq. 0) &
+            call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+                                     Ctrl%Ind%ysolar_msi(i)), &
+                 RefMax, RefMin, SPixel, 'MSI reflectance', SPixRef)
       end do
    endif
 
    ! MSI - Temperatures (between 150.0K and 330.0K)
-   stat = 0
-irbad=0
+   allocate(thermal(Ctrl%Ind%Nthermal))
    do i = 1,Ctrl%Ind%Nthermal
-      call Check_FloatArray(1, 1, &
-           & MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, Ctrl%Ind%ythermal_msi(i)), SPixel%Mask, &
-           & BTMax, BTMin, stat)
-      if (stat > 0) then
-	irbad =irbad+1
-
-#ifdef DEBUG
-         write(unit=message, fmt=*) &
-               & 'Get_SPixel: WARNING - Found MSI temperature out of range in pixel at: ', &
-               & SPixel%Loc%X0, SPixel%Loc%Y0, ' chan ',Ctrl%Ind%ythermal_msi(i), &
-               & MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, Ctrl%Ind%ythermal_msi(i))
-         write(*,*) trim(message)
-         call Write_log(Ctrl, trim(message), stat)
-#endif
-	if (irbad > 1) then
-
-         	SPixel%QC = ibset(SPixel%QC, SPixTemp)
-		SPixel%Mask=0
-	else 
-! its ok to have one missing ir channel
-		stat=0
-		SPixel%Mask=1
-	end if
-
-      end if
+      thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+                                Ctrl%Ind%ythermal_msi(i))
    end do
-
-   stat = 0
+   call check_value(thermal, &
+           BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp, limit=1)
+   deallocate(thermal)
 
    ! End of range checking. From here on any non-zero stat value is fatal for
    ! the super-pixel. Set the QC flag bits both for the individual error
    ! condition and to indicate no processing for the SPixel.
 
-   ! Get_Location call moved here so that lat-lon info is available for every
-   ! super-pixel. Leave the stat value - don't re-set to 0 after the call - if
-   ! there was an error retrieving loc information we want to know.
-   !
    ! Calculate NMask: the tests above have been setting 0's in the super-pixel
    ! mask where the data for a given pixel fails each check.
-   !
-   ! Removal of super-pixel averaging: Get_Location redundant. Just assign lat
-   ! and lon values directly. QC setting redundant: Get_Location had no
-   ! functionality to set stat non-0.
 
-   if (stat == 0) then
-      SPixel%NMask = SPixel%Mask
-      SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0)
-      SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0)
-!     call Get_Location(Ctrl, SPixel, MSI_Data, stat)
-!     if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixLoc)
-   end if
+   SPixel%NMask = SPixel%Mask
+   SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+   SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0)
 
    ! If all Mask flags are 0 there are no good pixels in the current SPixel, do
    ! not process. Set QC flag and report to the log.
@@ -477,24 +334,18 @@ irbad=0
 
    if (SPixel%NMask == 0) then
       Spixel%QC = ibset(Spixel%QC, SPixAll)
-      stat = SPixelInvalid ! Entire super-pixel is invalid
+      stat = SPixelInvalid ! pixel is invalid
 #ifdef DEBUG
       write(unit=message, fmt=*) &
            & 'Get_SPixel: NMask zero in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0
-       write(*,*) trim(message)
-       call Write_log(Ctrl, trim(message), stat)
+      call Write_log(Ctrl, trim(message), stat)
 #endif
 
-
-
-stat=0
    else
       ! Get cloud flags before checking for cloudy method
 
       ! Removal of Super-pixel averaging: replace call to GetCloudFlags with a
       ! simple assignment. "Flags" is now 1 single flag.
-
-!     call Get_CloudFlags(Ctrl, SPixel, MSI_Data, stat)
 
       SPixel%Cloud%Flags = MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
       Spixel%Cloud%Fraction = SPixel%Cloud%Flags
@@ -507,28 +358,22 @@ stat=0
          stat = SPixelCloudFrac
 #ifdef DEBUG
          write(unit=message, fmt=*) &
-            'Get_SPixel: zero cloud fraction in super pixel starting at:' &
-            , SPixel%Loc%X0, SPixel%Loc%Y0
-         write(*,*) trim(message)
+              'Get_SPixel: zero cloud fraction in super pixel starting at:' &
+              , SPixel%Loc%X0, SPixel%Loc%Y0
          call Write_log(Ctrl, trim(message), stat)
 #endif
-      end if
-
-      if (stat == 0) then
+      else
          ! Call 'Get_' subroutines. Use of stat here assumes that no subordinate
          ! routine returns a non-zero status value unless it is to flag a super-
          ! pixel data problem.
 
          if (stat == 0) then
-	! write(*,*)'getspixl msi',MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,:)
             call Get_illum(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
                !write(*,*) 'WARNING: Get_illum', stat
                Spixel%QC = ibset(Spixel%QC, SPixillum)
             endif
          end if
-
-
 
          if (stat == 0) then
             call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
@@ -541,8 +386,8 @@ stat=0
          if (stat == 0) then
             call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
             if (stat /= 0) then
+               !write(*,*)  'WARNING: Get_RTM', stat
                Spixel%QC = ibset(Spixel%QC, SPixRTM)
-!               write(*,*)  'WARNING: Get_RTM', stat
             endif
          end if
 
@@ -554,24 +399,23 @@ stat=0
             endif
          end if
 
-
          ! Get surface parameters and reduce reflectance by solar angle effect.
          if (stat == 0 .and. SPixel%Ind%NSolar /= 0) then
             call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-!               write(*,*)  'WARNING: Get_Surface', stat
+               !write(*,*)  'WARNING: Get_Surface', stat
                Spixel%QC = ibset(Spixel%QC, SPixSurf)
             else
                do i=1,Ctrl%Ind%NSolar
-                   SPixel%Rs(i) = SPixel%Rs(i) &
-                      / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+                  SPixel%Rs(i) = SPixel%Rs(i) &
+                       / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
                end do
             end if
          end if
 
          if (stat == 0 .and. SPixel%Ind%NSolar == 0) then
             call Get_LSF(Ctrl, SPixel, MSI_Data, stat)
-            if (stat .ne. 0 ) write(*,*) 'WARNING: Get_LSF', stat
+            if (stat /= 0) write(*,*) 'WARNING: Get_LSF', stat
          endif
 
          if (stat == 0) then
@@ -615,13 +459,13 @@ stat=0
             j=1
             do i = SPixel%Ind%ThermalFirst, SPixel%Ind%SolarLast
                SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(j) &
-                  ** (SPixel%Geom%SEC_o(Spixel%ViewIdx(i)) / &
-                     SPixel%Geom%SEC_v(Spixel%ViewIdx(i)))
+                    ** (SPixel%Geom%SEC_o(Spixel%ViewIdx(i)) / &
+                    SPixel%Geom%SEC_v(Spixel%ViewIdx(i)))
                j = j+1
             end do
 
             SPixel%RTM%Tsf_v(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast) = &
-               SPixel%RTM%LW%Tsf(1:SPixel%Ind%NMixed)
+                 SPixel%RTM%LW%Tsf(1:SPixel%Ind%NMixed)
          end if
 
          ! Calculate top of atmosphere reflectance for clear conditions
@@ -673,10 +517,10 @@ stat=0
       write(bkp_lun,'(a,i2)')' Land flag ',SPixel%Surface%Flags
       do view=1,SPixel%Ind%NViews
          write(bkp_lun,'(a,i3,3(a,f7.1))')' View ', view,' sat zen ',SPixel%Geom%SatZen(view),&
-        '  sol zen ',SPixel%Geom%SolZen(view), ' rel azi ',SPixel%Geom%RelAzi(view)
+              '  sol zen ',SPixel%Geom%SolZen(view), ' rel azi ',SPixel%Geom%RelAzi(view)
       end do
       write(bkp_lun,'(a,i4)')' Status: ',status
-!     write(bkp_lun,'(a,i4)')' QC flag: ',SPixel%QC
+      !     write(bkp_lun,'(a,i4)')' QC flag: ',SPixel%QC
       write(bkp_lun,*)' QC flag: ',SPixel%QC
 
       write(bkp_lun,*)'Bit tests'
@@ -703,19 +547,19 @@ stat=0
 
       do view=1,SPixel%Ind%NViews
          write(bkp_lun,'(a,i2,2(a,f9.4))')' View ',view,', Sec_o: ', &
-            SPixel%Geom%SEC_o(view), ' Sec_v: ',SPixel%Geom%SEC_v(view)
+              SPixel%Geom%SEC_o(view), ' Sec_v: ',SPixel%Geom%SEC_v(view)
       end do
       do i=1, SPixel%Ind%NSolar
          write(bkp_lun,'(2a,2(a,f9.4))') 'Channel: ', SAD_Chan(i)%Desc, &
-            ' Tsf_o: ', SPixel%RTM%Tsf_o(i), &
-            ' Tsf_v: ', SPixel%RTM%Tsf_v(i)
+              ' Tsf_o: ', SPixel%RTM%Tsf_o(i), &
+              ' Tsf_v: ', SPixel%RTM%Tsf_v(i)
       end do
 
       if (SPixel%Ind%Ny-SPixel%Ind%NThermal > 0 .and. SPixel%Ind%NSolar /= 0) then
          write(bkp_lun,'(/a)') 'Purely solar channels Tsf and Rs'
          do i=1, (SPixel%Ind%Ny-SPixel%Ind%NThermal)
             write(bkp_lun,'(2a,2(a,f9.6))') 'Channel: ', SAD_Chan(i)%Desc, &
-               ' Tsf:   ', SPixel%RTM%SW%Tsf(i), ' Rs:    ', SPixel%Rs(i)
+                 ' Tsf:   ', SPixel%RTM%SW%Tsf(i), ' Rs:    ', SPixel%Rs(i)
          end do
       end if
 
@@ -723,18 +567,18 @@ stat=0
          write(bkp_lun,'(/a)') 'Mixed Solar/Thermal channels Tsf and Rs'
          do i=SPixel%Ind%ThermalFirst, SPixel%Ind%SolarLast
             write(bkp_lun,'(2a,2(a,f9.6))') 'Channel: ', &
-               SAD_Chan(i)%Desc, ' Tsf:   ', &
-               SPixel%RTM%LW%Tsf(i-(SPixel%Ind%Ny-SPixel%Ind%NThermal)), &
-               ' Rs:    ', SPixel%Rs(i)
+                 SAD_Chan(i)%Desc, ' Tsf:   ', &
+                 SPixel%RTM%LW%Tsf(i-(SPixel%Ind%Ny-SPixel%Ind%NThermal)), &
+                 ' Rs:    ', SPixel%Rs(i)
          end do
       end if
 
       write(bkp_lun,'(/)')
       if (SPixel%Ind%NSolar /= 0) then
          do i=SPixel%Ind%SolarFirst, SPixel%Ind%SolarLast
-                  write(bkp_lun,'(2a,2(a,f9.4))') 'Channel: ', SAD_Chan(i)%Desc, &
-               ' Ref_clear: ', SPixel%RTM%Ref_clear(i), &
-               ' dRef_clear_dRs: ', SPixel%RTM%dRef_clear_dRs(i)
+            write(bkp_lun,'(2a,2(a,f9.4))') 'Channel: ', SAD_Chan(i)%Desc, &
+                 ' Ref_clear: ', SPixel%RTM%Ref_clear(i), &
+                 ' dRef_clear_dRs: ', SPixel%RTM%dRef_clear_dRs(i)
          end do
       end if
 
@@ -746,8 +590,8 @@ stat=0
          StartChan = SPixel%Ind%SolarFirst
       end if
       do i=1,Spixel%Ind%Ny
-!        write(bkp_lun,'(3a,f9.4,a,i)') 'Channel: ', SAD_Chan(i+StartChan-1)%Desc, &
-!           ' : ', SPixel%Ym(i), ' view ', SPixel%ViewIdx(i)
+         !        write(bkp_lun,'(3a,f9.4,a,i)') 'Channel: ', SAD_Chan(i+StartChan-1)%Desc, &
+         !           ' : ', SPixel%Ym(i), ' view ', SPixel%ViewIdx(i)
       end do
       write(bkp_lun, '(a,/)') 'Get_SPixel: end'
       close(unit=bkp_lun)
