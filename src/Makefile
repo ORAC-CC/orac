@@ -200,9 +200,8 @@ include $(ORAC_LIB)
 # modules so that the modules are known to the compiler.
 ORAC_OBJ =        $(OBJS)/BITS.o \
 	          $(OBJS)/CalcCWP.o \
-                  $(OBJS)/CheckByteArray.o \
-                  $(OBJS)/CheckFloatArray.o \
 	          $(OBJS)/CheckLimits.o \
+		  $(OBJS)/check_value.o \
                   $(OBJS)/config_structure.o \
                   $(OBJS)/CPL.o \
 	          $(OBJS)/CRP.o \
@@ -211,6 +210,7 @@ ORAC_OBJ =        $(OBJS)/BITS.o \
 	          $(OBJS)/DecomposeCholesky.o \
                   $(OBJS)/Diag.o \
                   $(OBJS)/ECPConstants.o \
+                  $(OBJS)/extrap_into_tropopause.o \
                   $(OBJS)/FindLUN.o \
 	          $(OBJS)/FMRoutines.o \
 	          $(OBJS)/GetGeometry.o \
@@ -224,6 +224,7 @@ ORAC_OBJ =        $(OBJS)/BITS.o \
                   $(OBJS)/GetSurface.o \
 	          $(OBJS)/GetX.o \
                   $(OBJS)/GZero.o \
+                  $(OBJS)/hpsort.o \
                   $(OBJS)/input_structures.o \
                   $(OBJS)/interpolate_to_ctp.o \
 	          $(OBJS)/InterpolSolar.o \
@@ -290,6 +291,7 @@ ORAC_OBJ =        $(OBJS)/BITS.o \
                   $(OBJS)/SolveCholeskyDC.o \
                   $(OBJS)/SPixel.o \
                   $(OBJS)/SquareCholeskyDC.o \
+                  $(OBJS)/t_extrap_strat.o \
                   $(OBJS)/T2R.o \
                   $(OBJS)/WriteDiag.o \
                   $(OBJS)/WriteLog.o \

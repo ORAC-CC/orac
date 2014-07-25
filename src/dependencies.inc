@@ -1,12 +1,13 @@
 $(OBJS)/CalcCWP.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
-$(OBJS)/CheckByteArray.o: $(OBJS)/ECPConstants.o
 $(OBJS)/CheckLimits.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o \
         $(OBJS)/SPixel.o
+$(OBJS)/check_value.o: $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o check_value.inc
 $(OBJS)/config_structure.o: $(OBJS)/ECPConstants.o
 $(OBJS)/Ctrl.o: $(OBJS)/ECPConstants.o DeallocCtrl.F90
 $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o DeallocData.F90
 $(OBJS)/DecomposeCholesky.o: $(OBJS)/ECPConstants.o
 $(OBJS)/Diag.o: $(OBJS)/ECPConstants.o
+$(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o
 $(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GZero.o \
         $(OBJS)/IntLUTRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
         $(OBJS)/SADLUT.o $(OBJS)/SPixel.o FM.F90 FMSolar.F90 FMThermal.F90 \
@@ -25,7 +26,7 @@ $(OBJS)/GetRs.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SPixel.o
 $(OBJS)/GetRTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o \
         $(OBJS)/SADChan.o $(OBJS)/SPixel.o
 $(OBJS)/GetSPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-        $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o \
+        $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o $(OBJS)/check_value.o \
         $(OBJS)/config_structure.o
 $(OBJS)/GetSurface.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
@@ -112,6 +113,7 @@ $(OBJS)/SetUnit.o: $(OBJS)/SPixel.o
 $(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o \
         AllocSPixel.F90 DeallocSPixel.F90 alloc_spixel_scan_out.F90 \
         dealloc_spixel_scan_out.F90
+$(OBJS)/t_extrap_strat.o: $(OBJS)/SPixel.o
 $(OBJS)/T2R.o: $(OBJS)/SADChan.o
 $(OBJS)/WriteDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o

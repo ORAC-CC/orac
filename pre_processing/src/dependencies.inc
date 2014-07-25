@@ -20,7 +20,6 @@ $(OBJS)/ecmwf.o: $(OBJS)/orac_ncdf.o $(OBJS)/preproc_constants.o \
         deallocate_ecmwf_structures.F90 read_ecmwf_grib.F90 read_ecmwf_nc.F90 \
         read_ecmwf_wind_badc.F90 read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 \
         rearrange_ecmwf.F90
-$(OBJS)/extrap_into_tropopause.o: $(OBJS)/preproc_structures.o
 $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o allocate_imager_structures.F90 \

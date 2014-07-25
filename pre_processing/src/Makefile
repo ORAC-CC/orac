@@ -41,10 +41,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/date_type_structure.o \
                 $(OBJS)/define_preprop_grid.o \
                 $(OBJS)/ecmwf.o \
-                $(OBJS)/extrap_into_tropopause.o \
                 $(OBJS)/fill_grid.o \
-                $(OBJS)/find_tropopause.o \
-                $(OBJS)/hpsort.o \
                 $(OBJS)/imager_structures.o \
                 $(OBJS)/interpol.o \
                 $(OBJS)/map_time_to_pixel.o \
@@ -68,7 +65,6 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/surface_emissivity.o \
                 $(OBJS)/surface_reflectance.o \
                 $(OBJS)/surface_structures.o \
-                $(OBJS)/t_extrap_tp1.o \
                 $(OBJS)/test_rttov.o
 
 PREPROC_OBJ_C=  $(OBJS)/read_aatsr_orbit.o
