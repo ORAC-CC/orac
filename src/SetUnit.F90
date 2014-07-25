@@ -24,6 +24,8 @@
 !       Size value now comes from SPixel rather than Ctrl.
 !    21th May 2014, Greg McGarragh:
 !       Cleaned up the code.
+!    24th Jul 2014, Adam Povey:
+!       Removed unused status variable.
 !
 ! Bugs:
 !   None known.
@@ -32,7 +34,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_Unit(Spixel, Unit, status)
+subroutine Set_Unit(Spixel, Unit)
 
    use Spixel_def
 
@@ -42,7 +44,6 @@ subroutine Set_Unit(Spixel, Unit, status)
 
    type(SPixel_t), intent(in) :: SPixel
    real, intent(inout)        :: Unit(SPixel%Nx, SPixel%Nx)
-   integer, intent(out)       :: status
 
    ! Declare local variables
 

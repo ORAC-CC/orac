@@ -202,6 +202,8 @@
 !    2014/02/27, CP: Added declaration of J.
 !    2014/04/02, CP: Fixed bug where temp was not reassigned.
 !    2014/04/02, MJ: Fixed bug where Diag%ss was not initilized.
+!    2014/07/24, AP: Removed unusued status variable.
+!
 ! Bugs:
 !    None known
 !
@@ -444,7 +446,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    ! Set up unit matrix (size matches number of active state variables) for
    ! Marquardt calculations.
-   call Set_Unit(SPixel, unit, stat)
+   call Set_Unit(SPixel, unit)
 
    ! Adjust cost convergence criteria for the number of active channels in the
    ! super-pixel, since final costs will be divided by Ny for output.
