@@ -40,6 +40,7 @@
 !   operations can be affected by them.
 ! 2014/01/12, GM: Fixed it so that the right scales and offsets are used.
 ! 2014/01/12, GM: Cleaned up the code.
+! 2014/07/23, AP: more efficient array writing
 !
 ! $Id$
 !
@@ -192,8 +193,8 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
    var_id = sfselect(file_id, sfn2index(file_id, SDS_name))
    err_code = sfrdata(var_id, start, stride, edge, temp)
 
-   do ix=ixstart,ixstop
-      do jy=iystart,iystop
+   do jy=iystart,iystop
+      do ix=ixstart,ixstop
          if(temp(ix,jy) .ge. vr(1) .and. temp(ix,jy) .le. vr(2)) then
             level1b_buffer(ix,jy) = (real(temp(ix,jy),kind=sreal) - &
                  offsets(iband)) * scale_factors(iband)

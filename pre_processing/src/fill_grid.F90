@@ -72,7 +72,7 @@ subroutine fill_grid(grid, fillval, mask)
             if (grid(i,j) .eq. fillval) then
                m = 0
                flag = 0
-               do while (flag .eq. 0)
+               do while (flag .eq. 0 .and. m .lt. 10)
                   m = m+1
                   if (m .eq. 1) then
                      count=8 

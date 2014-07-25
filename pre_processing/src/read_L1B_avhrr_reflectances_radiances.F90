@@ -28,6 +28,7 @@
 ! 2012/02/01, MJ: adds code to read AVHRR HDF5 sensor information.
 ! 2013/09/06, AP: tidying, removed channel_type argument, added read of channel
 !   attribute within file for identification
+! 2014/07/23, AP: more efficient array writing
 !
 ! $Id$
 !
@@ -138,8 +139,8 @@ subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
 !   elsewhere
 !      rtemp=temp*scale+offset
 !   end where
-   do ix=startx,stopx
-      do jy=starty,stopy
+   do jy=starty,stopy
+      do ix=startx,stopx
          if(float(temp(ix,jy)) .eq. missingdata .or. &
               float(temp(ix,jy)) .eq. nodata) then
             rtemp(ix,jy)=real_fill_value
