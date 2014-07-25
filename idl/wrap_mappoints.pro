@@ -46,7 +46,7 @@
 ;   21 Jul 2014 - ACP: Fixed bug when using LINE.
 ;-
 PRO WRAP_MAPPOINTS, d, lat, lon, set, plot_set, filt, line, nl, syms, l, m, $
-                    debug=debug
+                    debug=debug, short=short
    ON_ERROR, KEYWORD_SET(debug) ? 0 : 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -75,13 +75,20 @@ PRO WRAP_MAPPOINTS, d, lat, lon, set, plot_set, filt, line, nl, syms, l, m, $
       endif
 
       ;; plot field
-      MAPPOINTS, d, lat, lon, $
-                 bposition=bpos, btickformat=set.btf, $
-                 centre=plot_set.centre[*,i], colourbar_labels=labels, $
-                 debug=debug, diffcolourbar=set.abs, dpcm=150, filter=filt, $
-                 limit=plot_set.limit[*,i], log=set.log, $
-                 nlevels=set.nlevels, /noerase, plot_colour=plot_set.col, $
-                 position=pos, range=ran, /silent, syms=syms
+      if KEYWORD_SET(short) then $
+         IMAGE_PLOT, d, $
+                     bar_position=bpos, cbar_labels=labels, $
+                     diffcolourbar=set.abs, filter=filt, $
+                     log=set.log, nlevels=set.nlevels, /noerase, $
+                     color=plot_set.col, position=pos, range=ran $
+      else $
+         MAPPOINTS, d, lat, lon, $
+                    bposition=bpos, btickformat=set.btf, $
+                    centre=plot_set.centre[*,i], colourbar_labels=labels, $
+                    debug=debug, diffcolourbar=set.abs, dpcm=150, filter=filt, $
+                    limit=plot_set.limit[*,i], log=set.log, $
+                    nlevels=set.nlevels, /noerase, plot_colour=plot_set.col, $
+                    position=pos, range=ran, /silent, syms=syms
    endfor
 
 END

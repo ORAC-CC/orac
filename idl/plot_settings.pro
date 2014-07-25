@@ -60,6 +60,7 @@
 ;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
 ;   22 Jul 2014 - ACP: More sensible array indexing (using variable i). Removed
 ;      Ch number fields from plotting.
+;   25 Jul 2014 - ACP: Added additional illumination flags.
 ;-
 FUNCTION PLOT_SETTINGS, suffix, inst
    ON_ERROR, 2
@@ -72,7 +73,7 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 
    out=REPLICATE({name:'', mode:-1, title:'', log:0, bottom:0, abs:0, filter:0, $
         btf:'(g0.4)', full:0, range:[!values.f_nan,0.], $
-        blabels: STRARR(10), nlevels:250},35)
+        blabels: STRARR(20), nlevels:250},35)
 
    ;; Mode key:
    ;; 0) Line plot [n]
@@ -598,9 +599,11 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].full=1
          out[i].title=FMT('Illumination flag')
          out[i].btf=''
-         out[i].blabels[0:3]=['Day','Twilight','Night','Daynore']
-         out[i].range=[1,4]
-         out[i].nlevels=4
+         out[i].blabels[0:11]=['Day','Twilight','Night','Daynore','Day -VIS1', $
+                               'Day -VIS2','Day -IR1','Day -IR2','Day -IR3', $
+                               'Night -IR1','Night -IR2','Night -IR3']
+         out[i].range=[1,12]
+         out[i].nlevels=12
          ++i
 
          out[i].name='satellite_zenith_view_no1'

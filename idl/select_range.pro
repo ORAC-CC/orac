@@ -31,27 +31,39 @@
 ;   CGPERCENTILES (from the Coyote library).
 ;
 ; MODIFICATION HISTORY:
-;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk)
+;   23 Jul 2014 - ACP: Altered use of LOG plots.
 ;-
 FUNCTION SELECT_RANGE, tmp, set
    ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
+   if set.log then begin
+      ;; log plots need to consider only positive values
+      p=WHERE(tmp gt 0., np)
+      if np le 0 then RETURN, [1.,10.]
+      if N_ELEMENTS(UNIQ(tmp[p])) eq 1 then RETURN, [tmp[p[0]]*0.1,tmp[p[0]]]
+      RETURN, EXP(CGPERCENTILES(ALOG(tmp[p]),perc=[.1,.9]))
+   endif
+
+   if N_ELEMENTS(UNIQ(tmp)) eq 1 then begin
+      ;; if there is only one valid value, select a placeholder range
+      if set.abs then RETURN, tmp[0] eq 0 ? [-1.,1.] : [-ABS(tmp[0]),ABS(tmp[0])]
+      if tmp[0] eq 0 then RETURN, [0.,1.]
+      RETURN, tmp[0] lt 0 ? [tmp[0],0.] : [0., tmp[0]]
+   endif
+
+   ;; otherwise, consider desired settings
    if set.full then ran=[MIN(tmp,max=m,/nan),m] else begin
       if set.abs then begin
          ;; for a difference plot, ensure top and bottom range are equal
-         ;; firstly, check there is variation in the field
-         if N_ELEMENTS(UNIQ(tmp)) eq 1 then RETURN, [0.,1.]
-         
          perc=[.79]
          repeat begin
             perc+=.01
             l=CGPERCENTILES(ABS(tmp),perc=perc)
          endrep until l ne 0
          ran=[-l,l]
-      endif else if set.log then $
-         ran=EXP(CGPERCENTILES(ALOG(tmp[WHERE(tmp gt 0.)]),perc=[.1,.9])) $
-      else if set.bottom then ran=CGPERCENTILES(tmp,perc=[.1,.9]) $
+      endif else if set.bottom then ran=CGPERCENTILES(tmp,perc=[.1,.9]) $
       else ran=[0.,CGPERCENTILES(tmp,perc=[.9])]
    endelse
 

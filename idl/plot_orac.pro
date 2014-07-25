@@ -41,7 +41,8 @@
 ;   FRAMES      = The number of figures across which to plot the swath.
 ;	
 ; KEYWORD PARAMETERS:
-;   COMPARE    = Plot the differences between this revsion and the previous.
+;   COMPARE    = Plot the differences between this revision and the previous.
+;      If there are none, plot the image with a grey border.
 ;   PREPROC    = Plot the contents of the preprocessor output rather than the
 ;      main processor.
 ;   RELATIVE   = In a COMPARE plot, rather than plotting the absolute difference
@@ -50,6 +51,8 @@
 ;      a PDF.
 ;   ICE        = Search for the ICE cloud phase outputs rather than WAT.
 ;   SECONDARY  = Plot the contents of the secondary output file after the primary
+;   DIFF_ONLY  = When COMPARE plotting, only plot fields that have changed 
+;      (leaving out the grey-bordered plots).
 ;	
 ; OUTPUTS:
 ;   - All outputs are made into the same folder as the input data.
@@ -76,7 +79,8 @@
 PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
                font_size=font_s, scale=scale, label=label, relative=rel, $
-               frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary
+               frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary, $
+               diff_only=diff_only, short=short
    ON_ERROR, KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -237,19 +241,19 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
    LOADCT,0,/silent
 
    ;; form plot settings structure
-   plot_set = {tag:'', label:'', sheet:-1, font_s:font_s, xs:xs, ys:ys, cs:0., $
-               nx:nx, ny:ny, x0:FLTARR(nx), x1:FLTARR(nx), y0:FLTARR(ny), $
+   plot_set = {tag:'', label:label, sheet:-1, font_s:font_s, xs:xs, ys:ys,  $
+               cs:0.,nx:nx, ny:ny, x0:FLTARR(nx), x1:FLTARR(nx), y0:FLTARR(ny), $
                y1:FLTARR(ny), gridi:0, gridj:0, col:0, $
                frames:frames, limit:lim, centre:cent}
 
    ;; determine character size in PS plot
+   test_file='plot_preproc_test.eps'
    DEVICE, /encapsulated, font_s=plot_set.font_s, $
-           xsize=plot_set.xs, ysize=plot_set.ys, $
-           filen='plot_preproc_test.eps'
+           xsize=plot_set.xs, ysize=plot_set.ys, filen=test_file
    PLOT,[0,1]
    plot_set.cs=plot_set.ys*!d.y_ch_size/!d.y_size
    DEVICE,/close
-   FILE_DELETE,'plot_preproc_test.eps'
+   if FILE_TEST(test_file,/regular) then FILE_DELETE,test_file
 
    ;; determine plot grid in normalised coordinates
    sx=9.0*plot_set.cs           ; horizontal padding around plot
@@ -303,7 +307,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
             if kc then begin
                pq=WHERE(filt)
                if ARRAY_EQUAL(data[pq],data2[pq]) $
-               then plot_set.col=100 $
+               then if KEYWORD_SET(diff_only) then BREAK else plot_set.col=100 $
                else begin
                   ;; make a difference plot, overriding plot settings
                   set[k].abs=1
@@ -339,22 +343,22 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                        xrange=[0,N_ELEMENTS(data)-1],xstyle=1, $
                        yrange=ran,ystyle=1,ylog=set[k].log,psym=-4
                end
-               1: WRAP_MAPPOINTS, data, lat, lon, debug=stop, $
+               1: WRAP_MAPPOINTS, data, lat, lon, debug=stop, short=short, $
                                   set[k],plot_set,filt,line1,nl1,0.1
                2: for l=0,N_ELEMENTS(data[0,0,*])-1 do $
-                  WRAP_MAPPOINTS, data[*,*,l], lat, lon, debug=stop, $
+                  WRAP_MAPPOINTS, data[*,*,l], lat, lon, debug=stop, short=short, $
                                   set[k],plot_set,filt[*,*,l],line1,nl1,0.1,l
-               3: WRAP_MAPPOINTS, data, lat_rtm, lon_rtm, debug=stop, $
+               3: WRAP_MAPPOINTS, data, lat_rtm, lon_rtm, debug=stop, short=short, $
                                   set[k],plot_set,filt,line2,nl2,0.5
                4: for l=0,N_ELEMENTS(data[*,0])-1 do $
-                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, debug=stop, $
+                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, debug=stop, short=short, $
                                   set[k],plot_set,filt[l,*],line2,nl2,0.5,l
                5: for l=0,N_ELEMENTS(data[*,0])-1,20 do $
-                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, debug=stop, $
+                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, debug=stop, short=short, $
                                   set[k],plot_set,filt[l,*],line2,nl2,0.5,l
                6: for m=0,N_ELEMENTS(data[*,0,0])-1 do $
                   for l=0,N_ELEMENTS(data[0,*,0])-1,20 do $
-                  WRAP_MAPPOINTS, data[m,l,*], lat_rtm, lon_rtm, debug=stop, $
+                  WRAP_MAPPOINTS, data[m,l,*], lat_rtm, lon_rtm, debug=stop, short=short, $
                                   set[k],plot_set,filt[m,l,*],line2,nl2,0.5,l,m
             endcase
          endfor
