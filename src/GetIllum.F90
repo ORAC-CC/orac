@@ -85,8 +85,8 @@ subroutine Get_illum(Ctrl, SPixel, MSI_Data, status)
 !
 !
 if (MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,4)  .lt. 1 .or. MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,5) .lt. 1) then
-   write(*,*) 'illum ir missing ',MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,:)
-write(*,*) 'illum value', SPixel%Illum(1)
+!   write(*,*) 'illum ir missing ',MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0,:)
+!write(*,*) 'illum value', SPixel%Illum(1)
 endif
 
 
@@ -310,7 +310,7 @@ endif
 	     endif
 
           enddo
-	write(*,*)'irsingle third channel missing',SPixel%spixel_y_to_ctrl_y_index
+!	write(*,*)'irsingle third channel missing',SPixel%spixel_y_to_ctrl_y_index
           SPixel%Nx = Ctrl%Ind%Nx_Dy
           deallocate(SPixel%X)
           allocate(SPixel%X(SPixel%Nx))
@@ -332,7 +332,7 @@ endif
 ! could be thrid channel if 3.7 present genrally 12um chhannel is the first channel to saturate
        	else if (SPixel%illum(view)  .eq. IDaysingleirthird) then 
 
-write(*,*)'IDaysingleirthird',IDaysingleirthird
+!write(*,*)'IDaysingleirthird',IDaysingleirthird
           SPixel%Illum(view) = IDaysingleirthird
           
           !   a single ir channel is missing
@@ -419,16 +419,15 @@ write(*,*)'IDaysingleirthird',IDaysingleirthird
           SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
           SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
 
-! add in night only options with missing channels
+! add in night only options with missing channels !!TO BE COMPLETED!!
  else if (SPixel%illum(view)  .eq. Inightsingleirfirst) then 
-
-
+status=1
 
 else if (SPixel%illum(view)  .eq. Inightsingleirsecond) then 
-
+status=1
 
 else if (SPixel%illum(view)  .eq. Inightsingleirthird) then 
-
+status=1
 
          
        else

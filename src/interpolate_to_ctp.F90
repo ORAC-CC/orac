@@ -160,8 +160,8 @@ endif !kspot eq 0
 	endif
 
 !if( kspot .eq. 0) then
-     write(*,*) 'BT BP X0',BT_o,BP_o,Ctrl%X0(3)
-	write(*,*) 'SPixel%Illum(1)',SPixel%Illum
+!     write(*,*) 'BT BP X0',BT_o,BP_o,Ctrl%X0(3)
+!	write(*,*) 'SPixel%Illum(1)',SPixel%Illum
 !endif
 
      !BP_o=invert_p(1)
