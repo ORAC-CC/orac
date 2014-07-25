@@ -33,8 +33,8 @@
 ! 2013/10/07, AP: Original
 ! 2013/10/11, GM: Fixed format specification for the read of seconds from the
 !   string sdate in aatsr_corrections.F90: aatsr_corrections().
-! 2013/10/11, GM: Changed the comparison lut%julday.eq.Tn to 
-!   lut%julday(1:lut%n).eq.Tn so that the comparison does go past the length of 
+! 2013/10/11, GM: Changed the comparison lut%julday.eq.Tn to
+!   lut%julday(1:lut%n).eq.Tn so that the comparison does go past the length of
 !   the lut (lut%n) to the static size of lut%julday.
 ! 2014/01/27, MJ: datatype corrections
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
@@ -419,6 +419,7 @@ end subroutine aatsr_read_drift_table
 !
 ! History:
 ! 2014/06/16, GM: Original implementation.
+! 2014/07/25, GM: Fixed out of bounds indexing bug.
 !
 ! $Id$
 !
@@ -439,7 +440,7 @@ function aatsr_12um_nonlinearity_correction(T, u_delta_BT_2) result(delta_BT)
 
    i = int(T - nonlinearity_correction_T_scene(1)) + 1
    i = max(i, 1)
-   i = min(i, N_NONLINEARITY_CORRECTION_LUT)
+   i = min(i, N_NONLINEARITY_CORRECTION_LUT - 1)
 
    a = (T - nonlinearity_correction_T_scene(i)) / &
        (nonlinearity_correction_T_scene(i + 1) - &
@@ -451,7 +452,6 @@ function aatsr_12um_nonlinearity_correction(T, u_delta_BT_2) result(delta_BT)
    if (present(u_delta_BT_2)) then
       u_delta_BT_2 = (1. - a) * nonlinearity_correction_u_delta_BT_2(i) + &
                            a  * nonlinearity_correction_u_delta_BT_2(i + 1)
-
    endif
 
 end function aatsr_12um_nonlinearity_correction
