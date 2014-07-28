@@ -26,14 +26,31 @@
 #    include files that do not exist in the current directory are assumed to be
 #    external and therefore not subject to be a dependency.
 # 2014/05/26, Greg McGarragh: Added support for C preprocessor includes.
+# 2014/07/27, Greg McGarragh: Removed use of "defined" which is depricated in
+#    Perl 5, version 18.  Added "use strict" and implemented explicit variable
+#    declarations required by use strict.  Finally, some rearranging.
 #
 #*******************************************************************************
+use strict;
+
 use File::Basename;
 
-$objects_path    = "\$(OBJS)/";	# Path where the object files are to be located
-$includes_path   = "";		# Path where the include files are to be located
-$indent_length   = 8;
-$max_line_length = 80;
+my $objects_path    = "\$(OBJS)/";	# Path where the object files are to be located
+my $includes_path   = "";		# Path where the include files are to be located
+my $indent_length   = 8;
+my $max_line_length = 80;
+
+my $source_file;
+my $object_file;
+my $dependency;
+
+my @source_file_list;
+my @include_file_list;
+my @include_file_list;
+
+my @dependencies2;
+
+my %module_to_mod_base;
 
 # Read command line arguments
 foreach (@ARGV) {
@@ -63,14 +80,54 @@ foreach $source_file (@source_file_list) {
 	close(FILE);
 }
 
+# Write dependencies for each source file to standard output
+foreach $source_file (@source_file_list) {
+	$object_file = $source_file;
+	$object_file =~ s/\.F90/.o/;
+
+	get_file_depencies($source_file, $source_file);
+
+	# Pretty print the dependencies for the Makefile
+	if (@dependencies2) {
+                my $line_length;
+
+		@dependencies2 = &uniq(sort(@dependencies2));
+
+		$object_file = $source_file;
+		$object_file =~ s/\.F90/.o/;
+
+		print "$objects_path$object_file:";
+
+		$line_length = length($objects_path . $object_file) + 1;
+
+		foreach $dependency (@dependencies2) {
+			$line_length += 1 + length($dependency);
+
+			if ($line_length > $max_line_length) {
+				print " \\\n";
+				print " " x ($indent_length - 1);
+				$line_length = $indent_length + length($dependency);
+			}
+
+			print " $dependency"
+		}
+
+		print "\n";
+
+		undef @dependencies2;
+	}
+}
+
 # Like UNIX uniq except operates on a list and returns a new list
 sub uniq {
-	local(@words);
-	foreach $word (@_) {
-		if ($word ne $words[$#words]) {
-			push(@words, $word);
+	my @words;
+
+	foreach (@_) {
+		if ($_ ne $words[$#words]) {
+			push(@words, $_);
 		}
 	}
+
 	@words;
 }
 
@@ -96,7 +153,7 @@ sub get_file_depencies {
 
 	close(FILE);
 
-	if (@includes || @modules) {
+	if (@modules || @includes) {
 		# Apply module to file mapping
 		foreach (@modules) {
 			push(@mod_bases, $module_to_mod_base{$_});
@@ -149,41 +206,5 @@ sub get_file_depencies {
 		undef @includes;
 		undef @mod_bases;
 		undef @dependencies;
-	}
-}
-
-# Write dependencies for each source file to standard output
-foreach $source_file (@source_file_list) {
-	$object_file = $source_file;
-	$object_file =~ s/\.F90/.o/;
-
-	get_file_depencies($source_file, $source_file);
-
-	@dependencies2 = &uniq(sort(@dependencies2));
-
-	# Pretty print the dependencies for the Makefile
-	if (defined @dependencies2) {
-		$object_file = $source_file;
-		$object_file =~ s/\.F90/.o/;
-
-		print "$objects_path$object_file:";
-
-		$line_length = length($objects_path . $object_file) + 1;
-
-		foreach (@dependencies2) {
-			$line_length += 1 + length($_);
-
-			if ($line_length > $max_line_length) {
-				print " \\\n";
-				print " " x ($indent_length - 1);
-				$line_length = $indent_length + length($_);
-			}
-
-			print " $_"
-		}
-
-		print "\n";
-
-		undef @dependencies2;
 	}
 }
