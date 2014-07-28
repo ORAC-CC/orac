@@ -110,21 +110,23 @@
 ;
 ; MODIFICATION HISTORY:
 ;   Written by ACPovey (povey@atm.ox.ac.uk) 
-;   16 Jul 2013 - V1.00: Replaces previous MAPPOINTS. A wrapper has been made 
-;                 to permit calls to the original with the keyword OLD.
-;   27 Jul 2013 - (AJAS) Corrected bug with AXIS, yaxis=1 for colourbar_labels 
-;                 keyword.
-;   26 Sep 2013 - (AJAS) Corrected bug with /CARTESIAN keyword.
-;   11 Nov 2013 - (ACP) Added CENTRE functionality for /CARTESIAN. Doesn't plot 
-;                 NaN.
-;   03 Dec 2013 - (ACP) Standardised indentation and line length.
-;   16 Jan 2014 - (ACP) FALSECOLOUR bug fixes.
-;   10 Apr 2014 - (ACP) Added BPOSITION. Automated LIMIT determination now
-;                 considers FILTER.
-;   13 Jun 2014 - (ACP) Points equal to the maximum of RANGE now plot as the
-;                 last level colour rather than the 'greater than' colour.
-;   15 Jul 2014 - (ACP) Added COLOUR keyword. Changed behaviour when using
-;                 COLOURBAR_LABELS.
+;   16 Jul 2013 - ACP: Replaces previous MAPPOINTS. A wrapper has been made 
+;      to permit calls to the original with the keyword OLD.
+;   27 Jul 2013 - AJAS; Corrected bug with AXIS, yaxis=1 for colourbar_labels 
+;      keyword.
+;   26 Sep 2013 - AJAS: Corrected bug with /CARTESIAN keyword.
+;   11 Nov 2013 - ACP: Added CENTRE functionality for /CARTESIAN. Doesn't plot 
+;       NaN.
+;   03 Dec 2013 - ACP: Standardised indentation and line length.
+;   16 Jan 2014 - ACP: FALSECOLOUR bug fixes.
+;   10 Apr 2014 - ACP: Added BPOSITION. Automated LIMIT determination now
+;       considers FILTER.
+;   13 Jun 2014 - ACP: Points equal to the maximum of RANGE now plot as the
+;      last level colour rather than the 'greater than' colour.
+;   15 Jul 2014 - ACP: Added COLOUR keyword. Changed behaviour when using
+;      COLOURBAR_LABELS.
+;   28 Jul 2014 - ACP: Fixed bug in with FALSECOLOUR that allocated the wrong
+;      background colour.
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -430,7 +432,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
 
    ;; add desired features
    LOADCT,0,/silent
-   cblack = KEYWORD_SET(colour) ? colour : (prev_plot eq 'PS' ? 0 : 255)
+   cblack = KEYWORD_SET(colour) ? -1 : (prev_plot eq 'PS' ? 0 : 255)
    if ~KEYWORD_SET(nogrid) then $
       MAP_GRID,box=~KEYWORD_SET(nobox),label=label,/nogrid, $
                charsize=charsize,color=cblack

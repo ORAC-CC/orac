@@ -44,14 +44,18 @@
 ; MODIFICATION HISTORY:
 ;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
 ;   21 Jul 2014 - ACP: Fixed bug when using LINE.
+;   28 Jul 2014 - ACP: Altered range behaviour for FALSECOLOUR plots.
 ;-
 PRO WRAP_MAPPOINTS, d, lat, lon, set, plot_set, filt, line, nl, syms, l, m, $
-                    debug=debug, short=short
+                    debug=debug, short=short, false=false
    ON_ERROR, KEYWORD_SET(debug) ? 0 : 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; determine range for plot colourbar
-   ran = FINITE(set.range[0]) ? set.range : SELECT_RANGE(d[WHERE(filt)], set)
+   if KEYWORD_SET(false) then begin
+      if FINITE(set.range[0]) then fcnorm=set.range 
+   endif else $
+      ran = FINITE(set.range[0]) ? set.range : SELECT_RANGE(d[WHERE(filt)], set)
 
    for i=0,plot_set.frames-1 do begin
       PLOT_POSITION, plot_set, pos, bpos, debug=debug
@@ -86,9 +90,9 @@ PRO WRAP_MAPPOINTS, d, lat, lon, set, plot_set, filt, line, nl, syms, l, m, $
                     bposition=bpos, btickformat=set.btf, $
                     centre=plot_set.centre[*,i], colourbar_labels=labels, $
                     debug=debug, diffcolourbar=set.abs, dpcm=150, filter=filt, $
-                    limit=plot_set.limit[*,i], log=set.log, $
+                    limit=plot_set.limit[*,i], log=set.log, fcnorm=fcnorm, $
                     nlevels=set.nlevels, /noerase, plot_colour=plot_set.col, $
-                    position=pos, range=ran, /silent, syms=syms
+                    position=pos, range=ran, /silent, syms=syms, false=false
    endfor
 
 END

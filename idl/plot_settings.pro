@@ -37,9 +37,9 @@
 ;      LOG:     If nonzero, use a logarithmic colourbar.
 ;      BOTTOM:  If nonzero, use a colourbar that does not start at zero.
 ;      ABS:     If nonzero, use a colourbar centred on zero.
-;      FILTER:  When plotting PRIMARY or SECONDARY, apply a filter. Values are:
-;         0) Plot all valid values; 1) Plot all points that converged;
-;         2) Plot only points with a quality flag of 0.
+;      FILTER:  When plotting PRIMARY or SECONDARY, apply a filter. The given
+;         value sets which bits of the quality control flag to discount a point
+;         from plotting.
 ;      BTF:     The print format of the colourbar labels. Default (G0.4).
 ;      FULL:    If nonzero, use a typical [minimum value, maximum value] 
 ;         colourbar range rather than the preferred percentile version.
@@ -61,6 +61,7 @@
 ;   22 Jul 2014 - ACP: More sensible array indexing (using variable i). Removed
 ;      Ch number fields from plotting.
 ;   25 Jul 2014 - ACP: Added additional illumination flags.
+;   28 Jul 2014 - ACP: Added falsecolour and difference plots.
 ;-
 FUNCTION PLOT_SETTINGS, suffix, inst
    ON_ERROR, 2
@@ -83,6 +84,7 @@ FUNCTION PLOT_SETTINGS, suffix, inst
    ;; 4) Series of map plots [n,nxy]
    ;; 5) Levels of map plots [nl,nxy]
    ;; 6) Two series of map plots [n,nl,nxy]
+   ;; 10) Other
    i=0
    case suff of
       'ALB': begin
@@ -458,7 +460,7 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          ++i
       end
       'PRIMARY': begin
-         out.filter=1
+         out.filter=64
 
          out[i].name='cot'
          out[i].mode=1
@@ -845,9 +847,20 @@ FUNCTION PLOT_SETTINGS, suffix, inst
             out[vars[0:2]+5].name+='6'
          endif else MESSAGE,'No match found for inst.'
       end
+      'FALSE': begin
+         out[i].name='false_colour'
+         out[i].title=FMT('False colour')
+         out[i].range=[0,1]
+         out[i].mode=10
+      end
+      'DIFF': begin
+         out[i].name='difference'
+         out[i].range=[0,3]
+         out[i].mode=10
+      end
+      else: out[i].name=' '
    endcase
 
    RETURN, out[WHERE(out.name ne '')]
 
 END
-

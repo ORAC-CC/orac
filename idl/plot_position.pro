@@ -51,7 +51,7 @@
 ;   None.
 ;
 ; MODIFICATION HISTORY:
-;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
 ;-
 PRO PLOT_POSITION, plot_set, pos, bpos, debug=debug
    ON_ERROR, KEYWORD_SET(debug) ? 0 : 2

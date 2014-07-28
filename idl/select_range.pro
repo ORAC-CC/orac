@@ -43,7 +43,12 @@ FUNCTION SELECT_RANGE, tmp, set
       p=WHERE(tmp gt 0., np)
       if np le 0 then RETURN, [1.,10.]
       if N_ELEMENTS(UNIQ(tmp[p])) eq 1 then RETURN, [tmp[p[0]]*0.1,tmp[p[0]]]
-      RETURN, EXP(CGPERCENTILES(ALOG(tmp[p]),perc=[.1,.9]))
+      perc=.11
+      repeat begin
+         perc-=.01
+         ran=EXP(CGPERCENTILES(ALOG(tmp[p]),perc=[perc,1.-perc]))
+      endrep until ran[0] ne ran[1]
+      RETURN, ran
    endif
 
    if N_ELEMENTS(UNIQ(tmp)) eq 1 then begin
