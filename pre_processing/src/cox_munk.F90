@@ -3,7 +3,7 @@
 ! See below for main cox_munk subroutine....
 !
 ! zeisse_ba function
-! 
+!
 ! Purpose:
 ! Calculates the B/A value defined in the paper:
 ! Zeisse, C.R.: Radiance of the ocean horizon, J. Opt. Soc. Am. A, 12,
@@ -31,7 +31,7 @@
 !                            zeisse_ba.pro IDL functions
 ! 24 Apr 2012 Gareth Thomas: Added estimates for coefficients (refractive
 !                            index, absorption coefficient etc) at 3.7 um
-! 30/7/2012 C. Poulsen initialised all allocated variables
+! 30 Jul 2012 C. Poulsen     Initialised all allocated variables
 ! 30 Aug 2012 Gareth Thomas: Made some corrections to underlight calculations
 ! 30 Aug 2012 Gareth Thomas: Changed call to zeisse_ba function so that
 !                            theta is passed in Radians as is expected by the
@@ -55,7 +55,9 @@
 ! 28 Jan 2014 Matthias Jerg  Fixes div by zero
 ! 17 Jun 2014 Greg McGarragh Fixed a subtle indexing bug that would only show up
 !                            if the 0.65um channel was *not* being used.
-! 12 Jun 2014 AP             Tidying and fixing div by 0 coding bugs.
+! 12 Jun 2014 Adam Povey     Tidying and fixing div by 0 coding bugs.
+! 27 Jul 2014 Greg McGarragh Bug fix: rsolaz was being used uninitialized.  Now
+!                            it is appropriately set to zero.
 !
 !
 ! $Id$
@@ -113,7 +115,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
 
    ! Output arguments
    real(kind=sreal), dimension(:,:), intent(out) :: rho
-   
+
    ! Local arguments
    ! Wavelength dependent constants
    real(kind=sreal)               :: lambda(4)
@@ -250,6 +252,8 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
    rsolza = d2r * solza
    rsatza = d2r * satza
 
+   rsolaz = 0.
+
    ! Next, calculate the reflectance of the water body, using the average
    ! CHL concentration and CDOM absorption defined above.
    ! Combine the various scattering coefficients defined above to give the
@@ -266,7 +270,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
       f = 0.6279 - (0.2227*eta_oc(bands(i))) - &
            ( 0.00513*eta_oc(bands(i)) * eta_oc(bands(i)) ) + &
            ( 0.2465 *eta_oc(bands(i)) - 0.3119 )*cos(rsolza)
-      ! Now calculate the water body reflectance, which is the coefficient 
+      ! Now calculate the water body reflectance, which is the coefficient
       ! of R * the backscatter, devided by the absorption (note if CDOM is
       ! included, it will appear on the bottom line of this equation)
       R_wb = f*totbsc(bands(i)) / (baseabs(bands(i)) + chlabs(bands(i)))
@@ -294,8 +298,8 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
    ! Now calculate the reflectance from the wind-roughened surface. This
    ! is the actual Cox and Munk bit
    ! Note that the relative azimuth used in Cox and Munk is the other
-   ! way round from the convention used in the rest of ORAC. Here 
-   ! backscattering equates to a zero relative azimuth (i.e. if the 
+   ! way round from the convention used in the rest of ORAC. Here
+   ! backscattering equates to a zero relative azimuth (i.e. if the
    ! satellite is looking away from the sun, azi = 0). Hence the 180
    ! degree correction.
    rrelaz = d2r * (180. - relaz) ! relative azimuth
@@ -431,8 +435,8 @@ function zeisse_ba(theta, ws) result (ba)
    C(:,1) = (/  1.67530e-3, -1.66517e-4,  2.03068e-5 /)
    C(:,2) = (/ -6.96112e-3, -5.55537e-3,  2.60686e-3 /)
    C(:,3) = (/  2.86324e-3,  1.86059e-3, -4.69589e-4 /)
-   
-   ! Allocate the output and local arrays, based on the size of the 
+
+   ! Allocate the output and local arrays, based on the size of the
    ! input arrays
    npoints = size(theta)
    allocate(ba(npoints)) ! Must be deallocated by calling routine
@@ -441,16 +445,16 @@ function zeisse_ba(theta, ws) result (ba)
    allocate(tp2(npoints))
    allocate(wp2(npoints))
    allocate(delta(npoints))
-   
+
    ! The delta correction is only applied at high solar zenith angles
    ! and non-neglibible wind strength, otherwise just use cos(theta)
    where((theta .ge. 70.0*d2r) .and. (ws .gt. 1.0))
       tp = (theta - 70.0*d2r) / 5.0
       wp = 4.0 * alog10(ws) / 1.30103
-      
+
       wp2 = wp*wp
       tp2 = tp*tp
-     
+
       delta =      C(1,1) + C(2,1)*wp + C(3,1)*wp2 +  &
               tp* (C(1,2) + C(2,2)*wp + C(3,2)*wp2) + &
               tp2*(C(1,3) + C(2,3)*wp + C(3,3)*wp2)
@@ -458,14 +462,14 @@ function zeisse_ba(theta, ws) result (ba)
    elsewhere
       ba = cos(theta)
    end where
-   
+
    ! Clean up local arrays
    deallocate(tp)
    deallocate(wp)
    deallocate(tp2)
    deallocate(wp2)
    deallocate(delta)
-   
+
 end function zeisse_ba
 
 end module cox_munk_m
