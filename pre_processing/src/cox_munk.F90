@@ -58,6 +58,8 @@
 ! 12 Jun 2014 Adam Povey     Tidying and fixing div by 0 coding bugs.
 ! 27 Jul 2014 Greg McGarragh Bug fix: rsolaz was being used uninitialized.  Now
 !                            it is appropriately set to zero.
+! 27 Jul 2014 Greg McGarragh Bug fix: w was not initialized for the computation
+!                            of the coefficients of Fresnel's equation.
 !
 !
 ! $Id$
@@ -277,6 +279,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
       ! Now we need to use the Fresnel equation and Snell's Law to calculate
       ! how much light actually enters the water body through the surface (t_d)
       ! Snell's law
+      w = satza(:)*d2r
       wprime = asin(n_air*sin(rsatza) / nr(bands(i)))
       ! Coefficients of Fresnel's equation
       a1 = sin(w - wprime)
