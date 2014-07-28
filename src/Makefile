@@ -251,29 +251,17 @@ ORAC_OBJ =        $(OBJS)/BITS.o \
                   $(OBJS)/read_config_file.o \
 	          $(OBJS)/read_input_dimensions.o \
                   $(OBJS)/read_sat_data_nc.o \
-                  $(OBJS)/ReadAlb.o \
                   $(OBJS)/ReadAlb_nc.o \
-	          $(OBJS)/ReadByteArray.o \
 	          $(OBJS)/ReadCloudFlags_nc.o \
-                  $(OBJS)/ReadDataRTM.o \
 	          $(OBJS)/ReadDriver.o \
-                  $(OBJS)/ReadFPArray.o \
-                  $(OBJS)/ReadGeometry.o \
 	          $(OBJS)/ReadGeometry_nc.o \
-                  $(OBJS)/Readillum.o \
                   $(OBJS)/Readillum_nc.o \
-	          $(OBJS)/ReadIntArray.o \
-                  $(OBJS)/ReadLocation.o \
 	          $(OBJS)/ReadLocation_nc.o \
-                  $(OBJS)/ReadLSFlags.o \
 	          $(OBJS)/ReadLSFlags_nc.o \
-                  $(OBJS)/ReadLwRTM.o \
 	          $(OBJS)/ReadLwRTM_nc.o \
-                  $(OBJS)/ReadMSI.o \
                   $(OBJS)/ReadMSI_nc.o \
 	          $(OBJS)/ReadRTMData_nc.o \
                   $(OBJS)/ReadSAD.o \
-                  $(OBJS)/ReadScanLines.o \
 	          $(OBJS)/ReadScanLines_nc.o \
                   $(OBJS)/ReadSwRTM_nc.o \
                   $(OBJS)/RTM.o \
