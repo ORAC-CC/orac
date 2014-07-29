@@ -68,8 +68,9 @@ PRO WRAP_MAPPOINTS, d, lat, lon, set, plot_set, filt, line, nl, syms, l, m, $
                   STRING(l,format='(i0)')+')' $
          else tit=title+' ('+STRING(l,format='(i0)')+')'
       endif else tit=title
+      offset = set.mode le 0 || KEYWORD_SET(short) ? .5 : 2.
       XYOUTS,/normal,align=0.5,.5*(pos[0]+pos[2]),color=plot_set.col, $
-             pos[3] + (set.mode gt 0 ? 2.:.5)*!d.y_ch_size/!d.y_size, $
+             pos[3] + offset*!d.y_ch_size/!d.y_size, $
              tit
 
       ;; difference plots shouldn't have flag labels
@@ -79,13 +80,15 @@ PRO WRAP_MAPPOINTS, d, lat, lon, set, plot_set, filt, line, nl, syms, l, m, $
       endif
 
       ;; plot field
-      if KEYWORD_SET(short) then $
+      if KEYWORD_SET(short) then begin
+         bpos=[bpos[0]/!d.x_size,bpos[1]/!d.y_size, $
+               bpos[2]/!d.x_size,bpos[3]/!d.y_size]
          IMAGE_PLOT, d, $
-                     bar_position=bpos, cbar_labels=labels, $
+                     bar_position=bpos, cbar_labels=labels, /side, $
                      diffcolourbar=set.abs, filter=filt, $
                      log=set.log, nlevels=set.nlevels, /noerase, $
-                     color=plot_set.col, position=pos, range=ran $
-      else $
+                     color=plot_set.col, position=pos, range=ran
+      endif else $
          MAPPOINTS, d, lat, lon, $
                     bposition=bpos, btickformat=set.btf, $
                     centre=plot_set.centre[*,i], colourbar_labels=labels, $

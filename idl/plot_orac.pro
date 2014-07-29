@@ -191,17 +191,16 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
             data=NCDF_OBTAIN(fid, set[k].name, fill)
             if kc then data2=NCDF_OBTAIN(fid2, set[k].name, fill2)
 
-            ;; apply requested filter
-            filt = ~(qcf AND set[k].filter)
-
             ;; filter out missing values
             if FINITE(fill) then begin
-               filt = filt AND data ne fill
+               filt = data ne fill
                if kc then filt = filt AND data2 ne fill2
             endif else begin
-               filt = filt AND FINITE(data)
+               filt = FINITE(data)
                if kc then filt = filt AND FINITE(data2)
             endelse
+            ;; apply requested filter
+            if KEYWORD_SET(qcf) then filt = filt AND ~(qcf AND set[k].filter)
 
             ;; set output if plotting a comparison
             plot_set.col=0

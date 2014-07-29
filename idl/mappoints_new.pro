@@ -325,7 +325,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
 
       ;; process colours
       if prev_plot eq 'PS' then TVLCT,BINDGEN(256),BINDGEN(256),BINDGEN(256)
-      colour=TEMPORARY(red) + 256l*(TEMPORARY(green) +256l*TEMPORARY(blue))
+      if ~KEYWORD_SET(colour) then colour=-1
 
       ;; plot points
       for j=0l,nok-1 do $
@@ -432,7 +432,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
 
    ;; add desired features
    LOADCT,0,/silent
-   cblack = KEYWORD_SET(colour) ? -1 : (prev_plot eq 'PS' ? 0 : 255)
+   cblack = KEYWORD_SET(colour) ? colour : (prev_plot eq 'PS' ? 0 : 255)
    if ~KEYWORD_SET(nogrid) then $
       MAP_GRID,box=~KEYWORD_SET(nobox),label=label,/nogrid, $
                charsize=charsize,color=cblack
