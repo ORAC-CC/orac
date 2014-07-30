@@ -53,6 +53,7 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    use Ctrl_def
    use ECP_Constants
+   use Get_LwSwRTM_m
    use RTM_def
    use SAD_Chan_def
    use SPixel_def
