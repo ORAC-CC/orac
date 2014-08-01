@@ -59,18 +59,19 @@ FUNCTION SELECT_RANGE, tmp, set
    endif
 
    ;; otherwise, consider desired settings
-   if set.full then ran=[MIN(tmp,max=m,/nan),m] else begin
-      if set.abs then begin
+   if set.abs then begin
+      if set.full then l=MAX(ABS(tmp),/nan) else begin
          ;; for a difference plot, ensure top and bottom range are equal
          perc=[.79]
          repeat begin
             perc+=.01
             l=CGPERCENTILES(ABS(tmp),perc=perc)
          endrep until l ne 0
-         ran=[-l,l]
-      endif else if set.bottom then ran=CGPERCENTILES(tmp,perc=[.1,.9]) $
-      else ran=[0.,CGPERCENTILES(tmp,perc=[.9])]
-   endelse
+      endelse
+      ran=[-l,l]
+   endif else if set.full then ran=[MIN(tmp,max=m,/nan),m] $
+   else if set.bottom then ran=CGPERCENTILES(tmp,perc=[.1,.9]) $
+   else ran=[0.,CGPERCENTILES(tmp,perc=[.9])]
 
    ;; for bad fields, select 0:1 or 0:value
    if ran[0] ge ran[1] then ran[ran[0] le 0] = ran[0] eq 0
