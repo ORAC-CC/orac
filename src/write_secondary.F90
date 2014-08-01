@@ -22,7 +22,7 @@
 ! 2013/01/24, Caroline Poulsen: Changed how input_dummy is set input_dummy now
 !    has name matching channel number
 ! 2014/06/13, Greg McGarragh: Put the code into a subroutine.
-! 2014/06/13, GM: Cleaned up the code.
+! 2014/06/13, Greg McGarragh: Cleaned up the code.
 !
 ! $Id$
 !

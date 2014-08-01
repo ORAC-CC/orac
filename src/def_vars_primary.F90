@@ -30,8 +30,9 @@
 ! 2014/04/01, MJ: Cleanup and fix for illum
 ! 2014/06/13, GM: Put the code into a subroutine.
 ! 2014/06/13, GM: Cleaned up the code.
-! 2014/07/13, CP added AATSR time string and changed definition of land/sea mask
-!2014/04/01: CP added extra illumination options!
+! 2014/07/13, CP: Added AATSR time string and changed definition of land/sea mask
+! 2014/xx/xx: CP: Added extra illumination options!
+!
 ! $Id$
 !
 ! Bugs:

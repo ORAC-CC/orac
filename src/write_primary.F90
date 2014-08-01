@@ -23,7 +23,7 @@
 ! 2013/01/17, Matthias Jerg: Adds code to accommodate uncertainties of ctt and
 !    cth
 ! 2014/06/13, Greg McGarragh: Put the code into a subroutine.
-! 2014/06/13, GM: Cleaned up the code.
+! 2014/06/13, Greg McGarragh: Cleaned up the code.
 !
 ! $Id$
 !

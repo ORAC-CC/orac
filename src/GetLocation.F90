@@ -52,7 +52,7 @@
 !       Cloud flags converted to real to match current ORAC data.
 !
 ! Bugs:
-!   None known.
+!   Legacy code for super pixeling.
 !
 ! $Id$
 !

@@ -42,7 +42,6 @@ $(OBJS)/InterpolThermal.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
         $(OBJS)/SPixel.o
 $(OBJS)/InterpolThermal_spline.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o \
         $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o
-$(OBJS)/InterpolTrans.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/IntRoutines.o: $(OBJS)/ECPConstants.o Bcucof.F90 Bcuint.F90 Linint.F90 \
         Locate.F90 Spline.F90 Tridag.F90
 $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \

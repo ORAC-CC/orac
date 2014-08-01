@@ -68,7 +68,7 @@
 !       Bug fix: Xc, Yc were declared as real, not integer.
 !
 ! Bugs:
-!   None known.
+!   Legacy code for super pixeling.
 !
 ! $Id$
 !

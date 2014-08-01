@@ -198,84 +198,82 @@ include $(ORAC_LIB)
 # Define object files to be linked. N.B. files containing module definitions
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
-ORAC_OBJ =        $(OBJS)/BITS.o \
-	          $(OBJS)/CalcCWP.o \
-	          $(OBJS)/CheckLimits.o \
-		  $(OBJS)/check_value.o \
+ORAC_OBJ =        $(OBJS)/CalcCWP.o \
+                  $(OBJS)/CheckLimits.o \
+                  $(OBJS)/check_value.o \
                   $(OBJS)/config_structure.o \
                   $(OBJS)/CPL.o \
-	          $(OBJS)/CRP.o \
+                  $(OBJS)/CRP.o \
                   $(OBJS)/Ctrl.o \
                   $(OBJS)/Data.o \
-	          $(OBJS)/DecomposeCholesky.o \
+                  $(OBJS)/DecomposeCholesky.o \
                   $(OBJS)/Diag.o \
                   $(OBJS)/ECPConstants.o \
                   $(OBJS)/extrap_into_tropopause.o \
                   $(OBJS)/FindLUN.o \
-	          $(OBJS)/FMRoutines.o \
-	          $(OBJS)/GetGeometry.o \
+                  $(OBJS)/FMRoutines.o \
+                  $(OBJS)/GetGeometry.o \
                   $(OBJS)/GetIllum.o \
                   $(OBJS)/GetLSF.o \
-	          $(OBJS)/GetLwSwRTM.o \
+                  $(OBJS)/GetLwSwRTM.o \
                   $(OBJS)/GetMeasurements.o \
                   $(OBJS)/GetRs.o \
-	          $(OBJS)/GetRTM.o \
+                  $(OBJS)/GetRTM.o \
                   $(OBJS)/GetSPixel.o \
                   $(OBJS)/GetSurface.o \
-	          $(OBJS)/GetX.o \
+                  $(OBJS)/GetX.o \
                   $(OBJS)/GZero.o \
                   $(OBJS)/hpsort.o \
                   $(OBJS)/input_structures.o \
                   $(OBJS)/interpolate_to_ctp.o \
-	          $(OBJS)/InterpolSolar.o \
+                  $(OBJS)/InterpolSolar.o \
                   $(OBJS)/InterpolSolar_spline.o \
-	          $(OBJS)/InterpolThermal.o \
+                  $(OBJS)/InterpolThermal.o \
                   $(OBJS)/InterpolThermal_spline.o \
-	          $(OBJS)/InterpolTrans.o \
                   $(OBJS)/IntRoutines.o \
                   $(OBJS)/IntLUTRoutines.o \
-	          $(OBJS)/InvertCholesky.o \
+                  $(OBJS)/InvertCholesky.o \
                   $(OBJS)/InvertCholeskyDC.o \
-	          $(OBJS)/InvertMarquardt.o \
-	          $(OBJS)/locate.o \
+                  $(OBJS)/InvertMarquardt.o \
+                  $(OBJS)/locate.o \
                   $(OBJS)/output_routines.o \
                   $(OBJS)/nc_close.o \
                   $(OBJS)/nc_create_global.o \
-	          $(OBJS)/nc_defdata.o \
+                  $(OBJS)/nc_defdata.o \
                   $(OBJS)/nc_dim_info.o \
                   $(OBJS)/nc_open.o \
-	          $(OBJS)/nc_read_file.o \
+                  $(OBJS)/nc_read_file.o \
                   $(OBJS)/nc_write_L2.o \
                   $(OBJS)/polint.o \
-	          $(OBJS)/R2T.o \
+                  $(OBJS)/R2T.o \
                   $(OBJS)/read_config_file.o \
-	          $(OBJS)/read_input_dimensions.o \
+                  $(OBJS)/read_input_dimensions.o \
                   $(OBJS)/read_sat_data_nc.o \
                   $(OBJS)/ReadAlb_nc.o \
-	          $(OBJS)/ReadCloudFlags_nc.o \
-	          $(OBJS)/ReadDriver.o \
-	          $(OBJS)/ReadGeometry_nc.o \
+                  $(OBJS)/ReadCloudFlags_nc.o \
+                  $(OBJS)/ReadDriver.o \
+                  $(OBJS)/ReadGeometry_nc.o \
                   $(OBJS)/Readillum_nc.o \
-	          $(OBJS)/ReadLocation_nc.o \
-	          $(OBJS)/ReadLSFlags_nc.o \
-	          $(OBJS)/ReadLwRTM_nc.o \
+                  $(OBJS)/ReadLocation_nc.o \
+                  $(OBJS)/ReadLSFlags_nc.o \
+                  $(OBJS)/ReadLwRTM_nc.o \
                   $(OBJS)/ReadMSI_nc.o \
-	          $(OBJS)/ReadRTMData_nc.o \
+                  $(OBJS)/ReadRTMData_nc.o \
                   $(OBJS)/ReadSAD.o \
-	          $(OBJS)/ReadScanLines_nc.o \
+                  $(OBJS)/ReadScanLines_nc.o \
                   $(OBJS)/ReadSwRTM_nc.o \
                   $(OBJS)/RTM.o \
-	          $(OBJS)/RTM_Pc.o \
+                  $(OBJS)/RTM_Pc.o \
                   $(OBJS)/SADChan.o \
                   $(OBJS)/SADCloudClass.o \
-	          $(OBJS)/SADLUT.o \
+                  $(OBJS)/SADLUT.o \
                   $(OBJS)/SetDiag.o \
                   $(OBJS)/SetGZero.o \
-	          $(OBJS)/SetKx.o \
+                  $(OBJS)/SetKx.o \
                   $(OBJS)/SetLimits.o \
                   $(OBJS)/SetSy.o \
                   $(OBJS)/SetUnit.o \
-	          $(OBJS)/SolveCholesky.o \
+                  $(OBJS)/SolveCholesky.o \
                   $(OBJS)/SolveCholeskyDC.o \
                   $(OBJS)/SPixel.o \
                   $(OBJS)/SquareCholeskyDC.o \
@@ -283,7 +281,7 @@ ORAC_OBJ =        $(OBJS)/BITS.o \
                   $(OBJS)/T2R.o \
                   $(OBJS)/WriteDiag.o \
                   $(OBJS)/WriteLog.o \
-	          $(OBJS)/XMDAD.o \
+                  $(OBJS)/XMDAD.o \
                   $(OBJS)/XSDAD.o \
                   $(OBJS)/ZeroDiag.o
 

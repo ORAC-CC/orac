@@ -1,26 +1,26 @@
+!-------------------------------------------------------------------------------
 ! Name:
 !    Write_Diag
 !
 ! Description:
-!    Writes out the requested parts of the diagnostic structure from a 
+!    Writes out the requested parts of the diagnostic structure from a
 !    particular ECP inversion.
 !
 ! Arguments:
-!    Name       Type    In/Out/Both    Description
-!    Ctrl       struct  In             ECP control structure.
-!    SPixel     struct  In             Super-pixel structure. Required for 
-!                                      nos. of active measurement channels and
-!                                      state variables.
-!    Diag       struct  In             The diagnostic structure.
-!    diag_lun   int     In             logical unit number for the diagnostic 
-!                                      output file. This file is left open for 
-!                                      the duration of image processing.
-!    status     int     Out            Status/error value.
+!    Name     Type   In/Out/Both Description
+!    Ctrl     struct In          ECP control structure.
+!    SPixel   struct In          Super-pixel structure. Required for nos. of
+!                                active measurement channels and state variables.
+!    Diag     struct In          The diagnostic structure.
+!    diag_lun int    In          Logical unit number for the diagnostic output
+!                                file. This file is left open for the duration
+!                                of image processing.
+!    status   int    Out         Status/error value.
 !
 ! Algorithm:
-!    File pointed to by diag_lun should already be open for writing as 
+!    File pointed to by diag_lun should already be open for writing as
 !    unformatted.
-!    write out SPixel values for number of active channels and state variables
+!    Write out SPixel values for number of active channels and state variables
 !    Check each of the diagnostic flags in array Ctrl%Diagl in turn and output
 !    the relevant data if the flag is set, as follows:
 !    if (Qc requested) write QC flag
@@ -33,7 +33,7 @@
 !        matrix Ss from 'model parameter' noise
 !    if (St 2 requested) write full error covariance matrix St
 !    if (Ss 2 requested) write full error covariance matrix Ss
-!    if (Measurement fit requested) write measurement fit array 
+!    if (Measurement fit requested) write measurement fit array
 !    if (A priori fit requested) write a priori fit array
 !    if (A priori value requested) write Spixel a priori array
 !    if (First guess value requested) write SPixel first guess array
@@ -41,50 +41,51 @@
 !    if (Measurement error requested) write Spixel first guess error array
 !
 ! Local variables:
-!    Name       Type    Description
-!    m          int     Loop counter
-!    ios        int     I/O status value from file operations.
+!    Name Type Description
 !
 ! History:
-!     9th July 2001, Andy Smith: original version
+!     9th July 2001, Andy Smith: Original version
 !    17th July 2001, Andy Smith:
-!       Bug fix: St and Ss arrays now o/p as square root when 1st St/Ss 
-!       option selected. These arrays also required de-scaling.
-!     8th June 2011 caroline poulsen     remove variables from diag output
-!     18th June 2012 caroline poulsen changed illum definition
+!       Bug fix: St and Ss arrays now o/p as square root when 1st St/Ss option
+!       selected. These arrays also required de-scaling.
+!     8th June 2011, Caroline Poulsen:
+!       Remove variables from diag output.
+!    18th June 2012, Caroline Poulsen:
+!       Changed illum definition.
+!
 ! Bugs:
 !    None known
 !
 ! $Id$
 !
-!---------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
-Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
-   
-   use ECP_Constants
+subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
+
    use Ctrl_def
-   use SPixel_def
    use Diag_def
-   
-   Implicit none
+   use ECP_Constants
+   use SPixel_def
 
-!  Argument declarations
+   implicit none
 
-   type(Ctrl_t), intent(in)   :: Ctrl
-   type(SPixel_t), intent(in) :: SPixel
-   type(Diag_t), intent(in)   :: Diag         ! Diagnostic structure
-   integer, intent(in)        :: diag_lun
-   integer, intent(out)       :: status
+   ! Argument declarations
 
-!  Local variables
+   type(Ctrl_t),   intent(in)  :: Ctrl
+   type(SPixel_t), intent(in)  :: SPixel
+   type(Diag_t),   intent(in)  :: Diag
+   integer,        intent(in)  :: diag_lun
+   integer,        intent(out) :: status
 
-   integer    :: m        ! Loop counter
-   integer    :: ios      ! I/O status value from file operations
+   ! Local variables
+
+   integer    :: m   ! Loop counter
+   integer    :: ios ! I/O status value from file operations
 
 
-!  Write super-pixel specific values that determine arrays sizes with Diag
-!  (no. of active state variables and channels). Also write out the active
-!  state variable indices and channel IDs.
+   ! Write super-pixel specific values that determine arrays sizes with Diag
+   ! (no. of active state variables and channels). Also write out the active
+   ! state variable indices and channel IDs.
 
    write(unit=diag_lun, iostat=ios, err=999) Spixel%NX
    write(unit=diag_lun, iostat=ios, err=999) Spixel%Ind%Ny
@@ -98,11 +99,11 @@ Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
          Ctrl%Ind%Y_ID(Spixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast)
    end select
 
-!  Write super-pixel quality control flag
+   ! Write super-pixel quality control flag
 
    write(unit=diag_lun, iostat=ios, err=999) Spixel%QC
 
-!  Check diagnostic flags and write out required values.
+   ! Check diagnostic flags and write out required values.
 
 !   if (Ctrl%Diagl(DiFlagQC) > 0) &
 !      write(unit=diag_lun, iostat=ios, err=999) Diag%QCFlag
@@ -116,22 +117,22 @@ Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
 !   if (Ctrl%Diagl(DiFlagCost) > 0) &
 !      write(unit=diag_lun, iostat=ios, err=999) Diag%Jm, Diag%Ja
 
-!  State expected errors from null space: level 1, square roots of diagonals
-!  Values set only for active state variables.
+   ! State expected errors from null space: level 1, square roots of diagonals
+   ! Values set only for active state variables.
 
    if (Ctrl%Diagl(DiFlagSt1) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) &
       (sqrt(Diag%St(m,m)) / Ctrl%Invpar%XScale(SPixel%X(m)), m = 1,Spixel%NX)
 
-!  State expected errors from model parameters: level 1, square roots of 
-!  diagonals. Values set only for active state variables.
+   ! State expected errors from model parameters: level 1, square roots of
+   ! diagonals. Values set only for active state variables.
 
    if (Ctrl%Diagl(DiFlagSs1) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) &
       (sqrt(Diag%Ss(m,m)) / Ctrl%Invpar%XScale(SPixel%X(m)), m = 1,Spixel%NX)
 
-!  State expected errors from null space: level 2, full matrix.
-!  Values set only for active state variables.
+   ! State expected errors from null space: level 2, full matrix.
+   ! Values set only for active state variables.
 
    if (Ctrl%Diagl(DiFlagSt2) > 0) then
       write(unit=diag_lun, iostat=ios, err=999) &
@@ -140,8 +141,8 @@ Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
 	 m = 1,Spixel%NX)
    end if
 
-!  State expected errors from model parameters: level 2, full matrix.
-!  Values set only for active state variables.
+   ! State expected errors from model parameters: level 2, full matrix.
+   ! Values set only for active state variables.
 
    if (Ctrl%Diagl(DiFlagSs2) > 0) then
       write(unit=diag_lun, iostat=ios, err=999) &
@@ -150,7 +151,7 @@ Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
 	 m = 1,Spixel%NX)
    end if
 
-!  Measurement and a priori fit
+   ! Measurement and a priori fit
 
    if (Ctrl%Diagl(DiFlagYFit) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) Diag%YmFit(1:SPixel%Ind%Ny)
@@ -158,7 +159,7 @@ Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
    if (Ctrl%Diagl(DiFlagXFit) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) Diag%APFit(1:SPixel%Nx)
 
-!  A priori and first guess values. 
+   ! A priori and first guess values.
 
 !   if (Ctrl%Diagl(DiFlagAP) > 0) &
 !      write(unit=diag_lun, iostat=ios, err=999) Spixel%Xb
@@ -166,8 +167,8 @@ Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
 !   if (Ctrl%Diagl(DiFlagFG) > 0) &
 !      write(unit=diag_lun, iostat=ios, err=999) Spixel%X0
 
-!  A priori and measurement error covariances (square roots of diagonals)
-!  YError is already set to the square root values.
+  ! A priori and measurement error covariances (square roots of diagonals)
+  ! YError is already set to the square root values.
 
    if (Ctrl%Diagl(DiFlagSx) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) &
@@ -176,12 +177,11 @@ Subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
    if (Ctrl%Diagl(DiFlagSy) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) Diag%YError(1:SPixel%Ind%Ny)
 
-
-!  Error handling
+   !  Error handling
 
 999 if (ios /= 0) then
       status = DiagFileWriteErr
       call Write_Log(Ctrl, 'Error writing to diagnostic file',status)
    end if
 
-End Subroutine Write_Diag 
+end subroutine Write_Diag
