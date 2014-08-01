@@ -74,6 +74,7 @@
 ;   29 Apr 2014 - AP: New folder structure.
 ;   11 Jul 2014 - AP: Changed threshold to 1d-6 rather than 2d-7.
 ;   14 Jul 2014 - AP: Made threshold an argument.
+;   01 Aug 2014 - AP: Can deal with fields being removed.
 ;-
 PRO COMPARE_ORAC_OUT
    args=COMMAND_LINE_ARGS(count=nargs)
@@ -131,10 +132,10 @@ PRO COMPARE_ORAC_OUT
          id2=NCDF_OPEN(newroot+a[i])
 
          ;; loop over all variables in that file
-         inq=NCDF_INQUIRE(id1)
+         inq=NCDF_INQUIRE(id2)
          for j=0,inq.nvars-1 do begin
-            var=NCDF_VARINQ(id1,j)
-            NCDF_VARGET,id1,j,c1
+            var=NCDF_VARINQ(id2,j)
+            NCDF_VARGET,id1,NCDF_VARID(id1,var.name),c1
             NCDF_VARGET,id2,j,c2
             if ~ARRAY_EQUAL(c1,c2) then begin
                if N_ELEMENTS(c1) ne N_ELEMENTS(c2) then begin

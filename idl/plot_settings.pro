@@ -227,10 +227,10 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].full=1
 ;         ++i
 
-         out[i].name='counter_lw'
-         out[i].full=1
-         out[i].mode=3
-         ++i
+;         out[i].name='counter_lw'
+;         out[i].full=1
+;         out[i].mode=3
+;         ++i
 
          out[i].name='solza_lw'
          out[i].full=1
@@ -324,20 +324,20 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          ++i
       end
       'PRTM': begin
-         out[i].name='i_pw'
-         out[i].mode=3
-         out[i].full=1
-         ++i
+;         out[i].name='i_pw'
+;         out[i].mode=3
+;         out[i].full=1
+;         ++i
 
-         out[i].name='j_pw'
-         out[i].mode=3
-         out[i].full=1
-         ++i
+;         out[i].name='j_pw'
+;         out[i].mode=3
+;         out[i].full=1
+;         ++i
 
-         out[i].name='counter_pw'
-         out[i].mode=3
-         out[i].full=1
-         ++i
+;         out[i].name='counter_pw'
+;         out[i].mode=3
+;         out[i].full=1
+;         ++i
 
          out[i].name='lon_pw'
          out[i].mode=3
@@ -415,10 +415,10 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].full=1
 ;         ++i
 
-         out[i].name='counter_sw'
-         out[i].full=1
-         out[i].mode=3
-         ++i
+;         out[i].name='counter_sw'
+;         out[i].full=1
+;         out[i].mode=3
+;         ++i
 
          out[i].name='solza_sw'
          out[i].full=1

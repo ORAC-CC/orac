@@ -83,7 +83,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
                font_size=font_s, scale=scale, label=label, relative=rel, $
                frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary, $
-               diff_only=diff_only, short=short, wat=wat
+               diff_only=diff_only, short=short, wat=wat, suffix=suff, full=full
    ON_ERROR, KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -112,13 +112,15 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
    if KEYWORD_SET(preproc) then begin
       ;; plot preprocessor outputs
       tag='.preproc'
-      suff='.' + ['msi','clf','lsf','alb','geo','loc', $
-                  'prtm','lwrtm','swrtm','uv','config'] + '.nc'
+      if ~KEYWORD_SET(suff) then $
+         suff='.' + ['msi','clf','lsf','alb','geo','loc', $
+                     'prtm','lwrtm','swrtm','uv','config'] + '.nc'
    endif else begin
       ;; plot ORAC retrieval
       tag='.orac'
-      suff = (KEYWORD_SET(secondary) ? (['.primary.nc','.secondary.nc']) : $
-              (['.primary.nc']))
+      if ~KEYWORD_SET(suff) then $
+         suff = (KEYWORD_SET(secondary) ? (['.primary.nc','.secondary.nc']) : $
+                 (['.primary.nc']))
       if KEYWORD_SET(wat) then begin
          tag='WAT'+tag
          suff='WAT'+suff
@@ -145,16 +147,14 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
          fid=NCDF_OPEN(root[i]+'.prtm.nc')
          lat_rtm=NCDF_OBTAIN(fid,'lat_pw')
          lon_rtm=NCDF_OBTAIN(fid,'lon_pw')
-         i_rtm=NCDF_OBTAIN(fid,'i_pw')
-         j_rtm=NCDF_OBTAIN(fid,'j_pw')
+         NCDF_DIMINQ,fid,NCDF_DIMID(fid,'nlon_prtm'),nm,nl2
+         NCDF_DIMINQ,fid,NCDF_DIMID(fid,'nlat_prtm'),nm,line2
          NCDF_CLOSE,fid
 
          ;; determine field sizes (for chunked plotting)
          sze=SIZE(lat,/dim)
          nl1=sze[0]
-         nl2=MAX(i_rtm)
          line1=sze[1]
-         line2=MAX(j_rtm)
       endif else begin
          ;; fetch lat/lon
          fid=NCDF_OPEN(root[i]+suff[0])
@@ -212,7 +212,6 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                   ;; make a difference plot, overriding plot settings
                   set[k].abs=1
                   set[k].log=0
-                  set[k].full=0
                   set[k].nlevels=250
                   set[k].btf='(g0.4)'
                   set[k].range[0] = !values.f_nan
@@ -220,6 +219,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                   else data=DOUBLE(data)-DOUBLE(data2)
                endelse
             endif
+            if KEYWORD_SET(full) then set[k].full=1
 
             ;; select appropriate plot
             case set[k].mode of
