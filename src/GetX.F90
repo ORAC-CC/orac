@@ -86,7 +86,7 @@
 !    15th Jan 2014, Greg McGarragh:
 !       Fixed setting of SPixel%Sx for inactive state variables so that Ctrl%Sx
 !       is not modified.
-!    30th Jul 2014, Greg McGarragh:
+!     1st Aug 2014, Greg McGarragh:
 !       Cleaned up the code.
 !
 ! Bugs:
@@ -161,7 +161,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
       ! Ctrl%Sx is squared after reading in.
       if (SPixel%AP(i) == SelmCtrl .or. &
           (SPixel%AP(i) == SelmMeas .and. status == XMDADMeth) ) then
-         SPixel%Xb(i)   = Ctrl%Xb(i)
+         SPixel%Xb(i) = Ctrl%Xb(i)
 
          if (any(SPixel%X .eq. i)) then
             SPixel%Sx(i,i) = (Ctrl%Sx(i) * Ctrl%Invpar%XScale(i)) ** 2
@@ -204,7 +204,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
          case (SelmMeas)  ! MDAD method. Not supported for all variables.
             call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
-            if( status .ne. 0 ) then
+            if (status .ne. 0) then
                write(*,*) 'X_MDAD failed with status:',status
                exit
             endif

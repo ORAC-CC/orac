@@ -32,6 +32,8 @@
 !       of year rather than just using an annual mean value.
 !    23rd May 2014, Greg McGarragh:
 !       Cleaned up code.
+!     1st Aug 2014, Greg McGarragh:
+!       Added Find_MDAD_SW() and Find_MDAD_LW().
 !
 ! Bugs:
 !    None known.
@@ -77,6 +79,93 @@ module SAD_Chan_def
 
 contains
 
-   include 'ReadChan.F90'
+function Find_MDAD_SW(Ny, SAD_Chan, index) result(MDAD_SW)
+
+   implicit none
+
+   integer,          intent(in)           :: Ny
+   type(SAD_Chan_t), intent(in)           :: SAD_Chan(:)
+   integer,          intent(in), optional :: index(:)
+
+   integer                                :: MDAD_SW
+
+   integer :: i
+   integer :: ii
+   real    :: diff
+   real    :: min_diff
+
+   MDAD_SW = 0
+
+   min_diff = huge(0.)
+
+   ! Loop over all channels
+   do i = 1, Ny
+      if (.not. present(index)) then
+         ii = i
+      else
+         ii = index(i)
+      endif
+
+      ! If the channel WN is greater then 10000 cm-1 and less than 20000 cm-1
+      ! then check how close it is to 0.67 um. If it is the closest of the
+      ! channels tried so far, update the minimum difference and set the channel
+      ! index
+      if (SAD_Chan(ii)%WvN > 10000.0 .and. SAD_Chan(ii)%WvN < 20000.0) then
+         ! Difference between central WN and 0.67 um
+         diff = abs(SAD_Chan(ii)%WvN - 14925.0)
+         if (diff < min_diff) then
+            min_diff = diff
+            MDAD_SW = i
+         end if
+      end if
+   end do
+
+end function Find_MDAD_SW
+
+
+function Find_MDAD_LW(Ny, SAD_Chan, index) result(MDAD_LW)
+
+   implicit none
+
+   integer,          intent(in)           :: Ny
+   type(SAD_Chan_t), intent(in)           :: SAD_Chan(:)
+   integer,          intent(in), optional :: index(:)
+
+   integer                                :: MDAD_LW
+
+   integer :: i
+   integer :: ii
+   real    :: diff
+   real    :: min_diff
+
+   MDAD_LW = 0
+
+   min_diff = huge(0.)
+
+   ! Loop over all channels
+   do i = 1, Ny
+      if (.not. present(index)) then
+         ii = i
+      else
+         ii = index(i)
+      endif
+
+      ! If the channel WN is less than 2500 cm-1 then check how close it is to
+      ! 11 um. If it is the closest of the channels tried so far, update the
+      ! minimum difference and set the channel index
+      if (SAD_Chan(ii)%WvN < 2500.0) then
+         ! Difference between central WN and 11 um
+         diff = abs(SAD_Chan(ii)%WvN - 909.0)
+         if (diff < min_diff) then
+            min_diff = diff
+            MDAD_LW = i
+         end if
+      end if
+   end do
+
+end function Find_MDAD_LW
+
+
+include 'ReadChan.F90'
 
 end module SAD_Chan_def

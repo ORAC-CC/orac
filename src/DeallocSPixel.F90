@@ -41,6 +41,8 @@
 !       Added deallocation of SPixel%spixel_y_to_ctrl_y_index.
 !    27th May 2014, Greg McGarragh:
 !       Some cleanup.
+!     1st Aug 2014, Greg McGarragh:
+!       Added more SPixel to Ctrl map indexes.
 !
 ! Bugs:
 !   None known.
@@ -129,5 +131,9 @@ subroutine Dealloc_SPixel(Ctrl, SPixel, status)
    deallocate(Spixel%X)
    deallocate(Spixel%XI)
    deallocate(SPixel%spixel_y_to_ctrl_y_index)
+   deallocate(SPixel%spixel_y_solar_to_ctrl_y_index)
+   deallocate(SPixel%spixel_y_thermal_to_ctrl_y_index)
+   deallocate(SPixel%spixel_y_solar_to_ctrl_y_solar_index)
+   deallocate(SPixel%spixel_y_thermal_to_ctrl_y_thermal_index)
 
 end subroutine Dealloc_SPixel

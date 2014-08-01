@@ -21,19 +21,19 @@
 !    N/A
 !
 ! History:
-!     3rd Aug 2000, Andy Smith : Original version.
-!    23rd Nov 2000, Andy Smith :
+!     3rd Aug 2000, Andy Smith: Original version.
+!    23rd Nov 2000, Andy Smith:
 !       SADChanForm updated.
-!    24th Nov 2000, Andy Smith :
+!    24th Nov 2000, Andy Smith:
 !       Added MaxPLevels.
-!     1st Dec 2000, Andy Smith :
+!     1st Dec 2000, Andy Smith:
 !       Now using an environment variable for driver file name.
 !       Hard-coded path removed. New error code added.
 !       Renamed MaxNumSunZen MaxNumSolZen
-!    17th Jan 2001, Andy Smith :
+!    17th Jan 2001, Andy Smith:
 !       Added index for Em and increased MaxCRProps to allow for Em in CRPOut
 !       array in FM Solar and Thermal routines.
-!    24th Jan 2001, Andy Smith :
+!    24th Jan 2001, Andy Smith:
 !       Added index constants for the state vector array.
 !     9th Feb 2001, Andy Smith:
 !       Started using constants to denote breakpoint levels for individual
@@ -89,6 +89,8 @@
 !    2014/04/03, MJ adds some fill value definitions
 !    2014/05/22, Greg McGarragh: Added RTMIntMeth and LUTIntMeth constants.
 !    2014/07/24, Adam Povey: made FlagMin|Max type byte
+!    2014/08/01, Greg McGarragh: Rename illumination conditions for missing
+!       conditions.
 !
 ! Bugs:
 !    None known.
@@ -99,12 +101,14 @@
 
 module ECP_constants
 
-   integer, parameter :: byte                       = 1
-   integer, parameter :: sint                       = 2
-   integer, parameter :: nint                       = 4
+   implicit none
 
-   integer, parameter :: sreal                      = 4
-   integer, parameter :: dreal                      = 8
+   integer, parameter :: byte             = 1
+   integer, parameter :: sint             = 2
+   integer, parameter :: nint             = 4
+
+   integer, parameter :: sreal            = 4
+   integer, parameter :: dreal            = 8
 
    ! Maximum string lengths
    integer, parameter :: ECPLogReclen     = 132     ! Record length in ECP log file,
@@ -130,8 +134,8 @@ module ECP_constants
 
 
    ! Parameters for range checking of data values (used in Get_SPixel)
-   integer(byte), parameter :: FlagMin          = 0 ! Checking for flag values (land/sea or cloud flags)                                    !
-   integer(byte), parameter :: FlagMax          = 1 ! Max. and min. values used in range
+   integer(byte), parameter :: FlagMin    = 0 ! Checking for flag values (land/sea or cloud flags)                                    !
+   integer(byte), parameter :: FlagMax    = 1 ! Max. and min. values used in range
    real, parameter    :: CloudMin         = 0.0
    real, parameter    :: CloudMax         = 1.0     ! Max. and min. values used in range checking for cloud flag values
    real, parameter    :: SatZenMin        = 0.0     ! Satellite zenith angle
@@ -227,18 +231,18 @@ module ECP_constants
    integer, parameter :: IPhaseIce        = 2       ! Ice
 
    ! Illumination conditions (day/twilight/night) for arrays Ctrl%FG and AP
-   integer, parameter :: IDay             = 1
-   integer, parameter :: ITwi             = 2
-   integer, parameter :: INight           = 3
-   integer, parameter :: IDaynore         = 4
-   integer, parameter :: IDaysinglevisfirst    = 5
-   integer, parameter :: IDaysinglevissecond     = 6
-   integer, parameter :: IDaysingleirfirst    = 7
-   integer, parameter :: IDaysingleirsecond     = 8
-   integer, parameter :: IDaysingleirthird     = 9
-   integer, parameter :: INightsingleirfirst    = 10
-   integer, parameter :: INightsingleirsecond     = 11
-   integer, parameter :: INightsingleirthird     = 12
+   integer, parameter :: IDay                        = 1
+   integer, parameter :: ITwi                        = 2
+   integer, parameter :: INight                      = 3
+   integer, parameter :: IDaynore                    = 4
+   integer, parameter :: IDayMissingSingleVisFirst   = 5
+   integer, parameter :: IDayMissingSingleVisSecond  = 6
+   integer, parameter :: IDayMissingSingleIRFirst    = 7
+   integer, parameter :: IDayMissingSingleIRSecond   = 8
+   integer, parameter :: IDayMissingSingleIRThird    = 9
+   integer, parameter :: INightMissingSingleIRFirst  = 10
+   integer, parameter :: INightMissingSingleIRSecond = 11
+   integer, parameter :: INightMissingSingleIRThird  = 12
 
    ! Constant values used for selection method
    integer, parameter :: SelmCtrl         = 1
@@ -272,7 +276,7 @@ module ECP_constants
    integer, parameter :: SPixSurf         = 16      ! Problem from Get_Surface
    integer, parameter :: SPixFGAP         = 17      ! Problem from Get_X (First Guess/A Priori setting)
    integer, parameter :: SPixIllum        = 18      ! Problem from Get_illum routine
-   integer, parameter :: SpixNoProc       = 31      ! Do not process super-pixel. Earlier flags indicate why not.
+   integer, parameter :: SPixNoProc       = 31      ! Do not process super-pixel. Earlier flags indicate why not.
 
    ! Indices of diagnostic flags in array Ctrl%Diagl
    ! See structure definition for Diag to get full meaning of diagnostic params.
@@ -321,7 +325,6 @@ module ECP_constants
    integer, parameter :: BkpL_InvertMarquardt_2 = 2
    integer, parameter :: BkpL_InvertMarquardt_3 = 3
    integer, parameter :: BkpL_InvertMarquardt_4 = 4
-
 
    ! Error conditions: starting from 1000, a range of 10 error conditions is
    ! allowed for each function. So errorvalues 1000 - 10009 relate to the read
@@ -435,12 +438,12 @@ module ECP_constants
    integer, parameter :: ScanFileCloseErr           = 1280
    integer, parameter :: LUTIntflagErr              = 1284
    integer, parameter :: RTMIntflagErr              = 1285
-   integer, parameter :: Spixelillum                = 1290
+   integer, parameter :: SPixelIllum                = 1290
    integer, parameter :: CWP_Calcerror              = 1300
-   integer, parameter :: illumFileOpenErr           = 1310
-   integer, parameter :: illumFileReadHeadErr       = 1311
-   integer, parameter :: illumFileReadDataErr       = 1312
-   integer, parameter :: illumFileEOFErr            = 1313
+   integer, parameter :: IllumFileOpenErr           = 1310
+   integer, parameter :: IllumFileReadHeadErr       = 1311
+   integer, parameter :: IllumFileReadDataErr       = 1312
+   integer, parameter :: IllumFileEOFErr            = 1313
    integer, parameter :: PrimaryFileOpenErr         = 1400
    integer, parameter :: SecondaryFileOpenErr       = 1401
    integer, parameter :: PrimaryFileDefinitionErr   = 1402
@@ -450,16 +453,12 @@ module ECP_constants
    integer, parameter :: PrimaryFileCloseErr        = 1406
    integer, parameter :: SecondaryFileCloseErr      = 1407
 
-
    real, parameter    :: d2r                        = 0.017453292 ! Pi / 180.0
 
-
-
-   real(kind=sreal), parameter   :: real_fill_value         = -999.0
-   real(kind=dreal), parameter   :: double_fill_value       = -999.0
-   real(kind=sreal), parameter   :: real_fill_value_lat_lon = -999.0
+   real(kind=sreal),   parameter :: real_fill_value         = -999.0
+   real(kind=dreal),   parameter :: double_fill_value       = -999.0
+   real(kind=sreal),   parameter :: real_fill_value_lat_lon = -999.0
    integer(kind=sint), parameter :: int_fill_value          = -32767
    integer(kind=byte), parameter :: byte_fill_value         = -127
-
 
 end module ECP_constants

@@ -119,7 +119,7 @@
 !       Added output of latitude and longitude to output file.
 !    30th Mar 2011, Andy Smith:
 !       Removal of super-pixel averaging. All super-pixelling will now be done
-!       in pre-processing. The Spixel structure used here now refers to a single
+!       in pre-processing. The SPixel structure used here now refers to a single
 !       pixel from the input files.
 !       Removed the modification of image (x,y) processing ranges to whole number
 !       of super-pixels. Remove use of Ctrl%Resoln%Space.
@@ -614,7 +614,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
       ! Start OMP section by spawning the threads
       !$OMP PARALLEL &
-      !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_id,RTM_Pc,Spixel,SPixel_Alloc,RTM_Pc_Alloc,Diag,conv,dummyreal) &
+      !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_id,RTM_Pc,SPixel,SPixel_Alloc,RTM_Pc_Alloc,Diag,conv,dummyreal) &
       !$OMP FIRSTPRIVATE(status)
       thread_id = omp_get_thread_num()
       print *, 'Thread ', thread_id+1, 'is active'
@@ -656,13 +656,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
          ! Set the location of the pixel within the image (Y0) and within the
          ! current image segment (YSeg0).
-         Spixel%Loc%Y0 = j
+         SPixel%Loc%Y0 = j
 
-         if (mod(Spixel%Loc%Y0, SegSize) == 0) then
-            Spixel%Loc%YSeg0 = SegSize
+         if (mod(SPixel%Loc%Y0, SegSize) == 0) then
+            SPixel%Loc%YSeg0 = SegSize
          else
-            Spixel%Loc%YSeg0 = Spixel%Loc%Y0 - &
-               ((Spixel%Loc%Y0/SegSize) * SegSize)
+            SPixel%Loc%YSeg0 = SPixel%Loc%Y0 - &
+               ((SPixel%Loc%Y0/SegSize) * SegSize)
          end if
 
 
@@ -692,12 +692,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                ! If the super-pixel cannot be processed, zero the outputs and
                ! diag struct.
 
-               if (btest(Spixel%QC, SpixNoProc)) then
+               if (btest(SPixel%QC, SPixNoProc)) then
 !                 TotMissed = TotMissed+1
                   Totmissed_line(j) = Totmissed_line(j)+1
 
-                  Spixel%Xn = MissingXn
-                  Spixel%Sn = MissingSn
+                  SPixel%Xn = MissingXn
+                  SPixel%Sn = MissingSn
 
                   ! These are not filled as they are FM related products but
                   ! they are actually output so we fill them here for lack of
@@ -741,8 +741,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                      end if
                   else
                      Diag%YmFit= MissingXn
-                     Spixel%Xn = MissingXn
-                     Spixel%Sn = MissingSn
+                     SPixel%Xn = MissingXn
+                     SPixel%Sn = MissingSn
                      call Zero_Diag(Ctrl, Diag, status)
                   end if
                end if ! btest if closes

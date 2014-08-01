@@ -104,7 +104,6 @@
 !       albedo data - may change in future and may be specific to one instrument.
 !     8th Jun 2011, Andy Smith:
 !       Removed calls to Write_Log to improve performance (add ifdef DEBUG).
-!
 !     8th Dec 2011, Caroline poulsen:
 !       Changed y_id to chi.
 !    13th Dec 2011, Caroline poulsen:
@@ -124,6 +123,8 @@
 !       indices of the solar channels as stored in the MSI array.
 !    2014/04/19, GM: Remove incorrect use of b1_to_ui1() for implicit conversion.
 !    2014/04/20, GM: Cleaned up the code.
+!    2014/08/01, GM: Use of SPixel%spixel_*_y_to_ctrl_y_index(:) to properly
+!       index the right channels from the surface fields.
 !
 ! Bugs:
 !    AS, Mar 2011. The Aux method albedo code includes specific handling for
@@ -155,7 +156,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    real            :: Sb(SPixel%Ind%NSolar, 2)
    real            :: SPixel_b(SPixel%Ind%NSolar)
    real            :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
-   integer         :: i,j,jj,intflag
+   integer         :: i,ii,j,jj,intflag
 !  integer         :: qc1,qc2 ! N.B. qc vars are set but not used
    real            :: solar_factor
 #ifdef DEBUG
@@ -199,14 +200,15 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       b  = Ctrl%Rs%b
 
       do i = 1, SPixel%Ind%NSolar
+         ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
          ! Calculate b (sea then land, sea flags set at 0 in SPixel%Surface%Flags,
          !                            land flags set at 1 in SPixel%Surface%Flags)
          intflag = SPixel%Surface%Flags
 
-         SPixel_b(i) = float(-(intflag-1)) * float(SPixel%Mask) * b(i,1)
+         SPixel_b(i) = float(-(intflag-1)) * float(SPixel%Mask) * b(ii,1)
 
-         SPixel_b(i) = SPixel_b(i) + (float(intflag) * float(SPixel%Mask) * b(i,2))
+         SPixel_b(i) = SPixel_b(i) + (float(intflag) * float(SPixel%Mask) * b(ii,2))
 
          ! Calculate Sb
 
@@ -214,25 +216,27 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
          ! Sea
          SPixel_Sb(i,i) = float(-(intflag-1)) * float(SPixel%Mask) * &
-			  b(i,1) * b(i,1) * Sb(i,1) * Sb(i,1)
+			  b(ii,1) * b(ii,1) * Sb(ii,1) * Sb(ii,1)
 
          ! Land
-	 SPixel_Sb(i,i) = SPixel_Sb(i,i) + (float(intflag) * float(SPixel%Mask) * &
-                          b(i,2) * b(i,2) * Sb(i,2) * Sb(i,2))
+	 SPixel_Sb(i,i) = SPixel_Sb(ii,ii) + (float(intflag) * float(SPixel%Mask) * &
+                          b(ii,2) * b(ii,2) * Sb(ii,2) * Sb(ii,2))
 
          ! Off diagonals (loop over half of the matrix, and swap indices for
          ! other half, sea then land)
 
          do j = i+1, SPixel%ind%NSolar
+            jj = SPixel%spixel_y_to_ctrl_y_index(j)
+
             ! Sea
 	    SPixel_Sb(i,j) = float(-(intflag-1)) * float(SPixel%Mask) * &
-	                     b(i,1) * b(j,1) * Sb(i,1) * Sb(j,1) * Ctrl%Rs%Cb
+	                     b(ii,1) * b(jj,1) * Sb(ii,1) * Sb(jj,1) * Ctrl%Rs%Cb
 
 	    SPixel_Sb(j,i) = SPixel_Sb(i,j)
 
             ! Land
 	    SPixel_Sb(i,j) = SPixel_Sb(i,j) + (float(intflag) * float(SPixel%Mask) * &
-                             b(i,2) * b(j,2) * Sb(i,2) * Sb(j,2) * Ctrl%Rs%Cb)
+                             b(ii,2) * b(jj,2) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
 
 	    SPixel_Sb(j,i) = SPixel_Sb(i,j)
          end do
@@ -257,18 +261,19 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
       Sb = Ctrl%Rs%Sb
       do i = 1,SPixel%Ind%NSolar
+         ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
-         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 5 .and. Ctrl%Inst%Name .eq. 'AATSR') then
+         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(ii)) .eq. 5 .and. Ctrl%Inst%Name .eq. 'AATSR') then
             if (SPixel%Surface%Flags == 0) then ! sea
-               SPixel_b(i) = Ctrl%Rs%b(i,1)
+               SPixel_b(i) = Ctrl%Rs%b(ii,1)
             else
-               SPixel_b(i) = Ctrl%Rs%b(i,2)
+               SPixel_b(i) = Ctrl%Rs%b(ii,2)
             endif
          else
             solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
 
             SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                          Ctrl%Ind%ysolar_msi(i)) / solar_factor
+                          Ctrl%Ind%ysolar_msi(ii)) / solar_factor
 
             ! If sea and then sun glint replace by Ctrl value, otherwise if land,
             ! check for missing values and replace by Ctrl value
@@ -292,16 +297,16 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                endif
 
             else if (SPixel_b(i) == 0.0) then ! missing land
-               SPixel_b(i) = Ctrl%Rs%b(i,2)
+               SPixel_b(i) = Ctrl%Rs%b(ii,2)
             else if (Spixel_b(i) >  1.0) then ! odd value for land
-               SPixel_b(i) = Ctrl%Rs%b(i,2)
+               SPixel_b(i) = Ctrl%Rs%b(ii,2)
             ! Comment out this section to install loose qc
 !           else if (( qc1 == 1) .and. (qc2 >= 9 )) then
                ! Use the default value MODIS not reliable
-!              Spixel_b(i) = Ctrl%Rs%b(i,2)
+!              Spixel_b(i) = Ctrl%Rs%b(ii,2)
 !           else if (( qc1 > 1)) then
                ! Use the default value MODIS not reliable
-!              Spixel_b(i) = Ctrl%Rs%b(i,2)
+!              Spixel_b(i) = Ctrl%Rs%b(ii,2)
             end if
          endif
       enddo
@@ -315,16 +320,18 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
          if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
 
          do i = 1, SPixel%Ind%NSolar
+            ii = SPixel%spixel_y_to_ctrl_y_index(i)
+
             ! On diagonals
             intflag = SPixel%Surface%Flags
 
             if (SPixel%Surface%Sea == 1) then
                SPixel_Sb(i,i) = float(-(SPixel%Surface%Flags-1)) * float(SPixel%Mask) * &
-                                SPixel_b(i) * SPixel_b(i) * Sb(i,1) * Sb(i,1)
+                                SPixel_b(i) * SPixel_b(i) * Sb(ii,1) * Sb(ii,1)
 
             else
                SPixel_Sb(i,i) = SPixel_Sb(i,i) + (float(intflag) * float(SPixel%Mask) * &
-                                SPixel_b(i) * SPixel_b(i) * Sb(i,2) * Sb(i,2))
+                                SPixel_b(i) * SPixel_b(i) * Sb(ii,2) * Sb(ii,2))
             endif
 
             ! Calculate SPixel_b
@@ -333,17 +340,19 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
             ! Off diagonals (loop over half of the matrix, and swap indices for
             ! other half)
-            do jj = i+1, SPixel%ind%NSolar
+            do j = i+1, SPixel%ind%NSolar
+               jj = SPixel%spixel_y_to_ctrl_y_index(j)
+
                if (SPixel%Surface%Sea == 1) then
-                  SPixel_Sb(i,jj) = float(-(intflag-1)) * float(SPixel%Mask) * &
-                                    Spixel_b(i) * Spixel_b(jj) * Sb(i,1) * Sb(jj,1) * Ctrl%Rs%Cb
+                  SPixel_Sb(i,j) = float(-(intflag-1)) * float(SPixel%Mask) * &
+                                    Spixel_b(i) * Spixel_b(j) * Sb(ii,1) * Sb(jj,1) * Ctrl%Rs%Cb
 
                else
-                  SPixel_Sb(i,jj) = SPixel_Sb(i,jj) + (float(intflag) * float(SPixel%Mask) * &
-                                    Spixel_b(i) * Spixel_b(jj)* Sb(i,2) * Sb(jj,2) * Ctrl%Rs%Cb)
+                  SPixel_Sb(i,j) = SPixel_Sb(i,j) + (float(intflag) * float(SPixel%Mask) * &
+                                    Spixel_b(i) * Spixel_b(j) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
                endif
 
-               SPixel_Sb(jj,i) =  SPixel_Sb(i,jj)
+               SPixel_Sb(j,i) =  SPixel_Sb(i,j)
             end do
          end do
 

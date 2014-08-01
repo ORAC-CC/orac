@@ -192,12 +192,11 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    allocate(conf%channel_proc_flag(conf%nc))
    read(dri_lun, *, err=999, iostat=ios)(conf%channel_proc_flag(i),i=1,conf%nc)
    if (sum(conf%channel_proc_flag) .lt. 1 .or. sum(conf%channel_proc_flag) .gt. conf%nc .or. &
-      .not. &
-      (any(conf%channel_proc_flag .eq. 0) .or. any(conf%channel_proc_flag .eq. 1)))  then
-      write(*,*) 'ERROR: processing flag from driver wrong: ',conf%channel_proc_flag
+       .not. (any(conf%channel_proc_flag .eq. 0) .or. any(conf%channel_proc_flag .eq. 1))) then
+      write(*,*) 'ERROR: channel flag from driver wrong: ',conf%channel_proc_flag
       stop
    endif
-   write(*,*) 'processing flag from driver: ',conf%channel_proc_flag
+   write(*,*) 'channel flag from driver: ',conf%channel_proc_flag
 
    ! Determine the number of channels to be used. Some of the follolwing is not
    ! (yet) used leave in there for potential later use for the time being

@@ -42,7 +42,7 @@
 !       levels and channels to improve performance.
 !       Bs calculation removed. Bs is not used by subsequent code.
 !    20th Jul 2001, Andy Smith:
-!       dB_dTs calculation fixed: was using no. of thermal channels from Spixel,
+!       dB_dTs calculation fixed: was using no. of thermal channels from SPixel,
 !       should have used Ctrl values as the RTM Lw arrays are all allocated to
 !       size Ctrl%Ind%NThermal and left at this size for the whole image.
 !    **************** ECV work starts here *************************************
@@ -186,38 +186,38 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
       ! LW
 
       ! P
-      call Interp_Field_1d(RTM%LW%P, SPixel%RTM%LW%P, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_1d(RTM%LW%P, SPixel%RTM%LW%P, Nx, Nx1, Ny, Ny1, coef)
 
       ! T
-      call Interp_Field_1d(RTM%LW%T, SPixel%RTM%LW%T, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_1d(RTM%LW%T, SPixel%RTM%LW%T, Nx, Nx1, Ny, Ny1, coef)
 
       ! H
-      call Interp_Field_1d(RTM%LW%H, SPixel%RTM%LW%H, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_1d(RTM%LW%H, SPixel%RTM%LW%H, Nx, Nx1, Ny, Ny1, coef)
 
       ! skint
-      call Interp_Field_0d(RTM%LW%skint, SPixel%RTM%LW%skint, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_0d(RTM%LW%skint, SPixel%RTM%LW%skint, Nx, Nx1, Ny, Ny1, coef)
 
       ! sp
-      call Interp_Field_0d(RTM%LW%sp, SPixel%RTM%LW%sp, Nx, Nx1, Ny, Ny1, coef)
-
+      call interp_field_0d(RTM%LW%sp, SPixel%RTM%LW%sp, Nx, Nx1, Ny, Ny1, coef)
+!-----
       ! LW Ems
-      call Interp_Field_1d(RTM%LW%ems, SPixel%RTM%LW%ems, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_1d(RTM%LW%Ems, SPixel%RTM%LW%ems, Nx, Nx1, Ny, Ny1, coef)
 
       ! LW Tbc
-      call Interp_Field_2d(RTM%LW%Tbc, SPixel%RTM%LW%Tbc, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_2d(RTM%LW%Tbc, SPixel%RTM%LW%Tbc, Nx, Nx1, Ny, Ny1, coef)
 
       ! LW Tac
-      call Interp_Field_2d(RTM%LW%Tac, SPixel%RTM%LW%Tac, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_2d(RTM%LW%Tac, SPixel%RTM%LW%Tac, Nx, Nx1, Ny, Ny1, coef)
 
       ! Rac_up
-      call Interp_Field_2d(RTM%LW%Rac_up, SPixel%RTM%LW%Rac_up, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_2d(RTM%LW%Rac_up, SPixel%RTM%LW%Rac_up, Nx, Nx1, Ny, Ny1, coef)
 
       ! Rac_dwn
-      call Interp_Field_2d(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_2d(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, Nx, Nx1, Ny, Ny1, coef)
 
       ! Rbc_up
-      call Interp_Field_2d(RTM%LW%Rbc_up, SPixel%RTM%LW%Rbc_up, Nx, Nx1, Ny, Ny1, coef)
-
+      call interp_field_2d(RTM%LW%Rbc_up, SPixel%RTM%LW%Rbc_up, Nx, Nx1, Ny, Ny1, coef)
+!-----
       ! Set surface level to TOA transmittances
       SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%LW%Np)
 
@@ -228,14 +228,14 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
       ! SW
 
       ! P
-      call Interp_Field_1d(RTM%LW%P, SPixel%RTM%SW%P, Nx, Nx1, Ny, Ny1, coef)
-
+      call interp_field_1d(RTM%LW%P, SPixel%RTM%SW%P, Nx, Nx1, Ny, Ny1, coef)
+!-----
       ! SW Tbc
-      call Interp_Field_2d(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_2d(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, Nx, Nx1, Ny, Ny1, coef)
 
       ! SW Tac
-      call Interp_Field_2d(RTM%SW%Tac, SPixel%RTM%SW%Tac, Nx, Nx1, Ny, Ny1, coef)
-
+      call interp_field_2d(RTM%SW%Tac, SPixel%RTM%SW%Tac, Nx, Nx1, Ny, Ny1, coef)
+!-----
       ! Set surface level to TOA transmittances
       SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)
 
@@ -245,7 +245,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
       ! Extrapolate temperature profile into stratosphere to deal with deep
       ! convective clouds primarily in tropics that push through the trop.
-      call extrap_into_tropopause(Spixel)
+      call extrap_into_tropopause(SPixel)
 
 
       ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
@@ -260,7 +260,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 end subroutine Get_LwSwRTM
 
 
-subroutine Interp_Field_0d(in, out, Nx, Nx1, Ny, Ny1, coef)
+subroutine interp_field_0d(in, out, Nx, Nx1, Ny, Ny1, coef)
 
    implicit none
 
@@ -272,15 +272,15 @@ subroutine Interp_Field_0d(in, out, Nx, Nx1, Ny, Ny1, coef)
    integer, intent(in)    :: Ny1
    real,    intent(in)    :: coef(:)
 
-   out = ( coef(1) * in(Nx,  Ny) ) + &
-         ( coef(2) * in(Nx1, Ny) ) + &
-         ( coef(3) * in(Nx1, Ny1) ) + &
-         ( coef(4) * in(Nx,  Ny1) )
+   out = (coef(1) * in(Nx,  Ny)) + &
+         (coef(2) * in(Nx1, Ny)) + &
+         (coef(3) * in(Nx1, Ny1)) + &
+         (coef(4) * in(Nx,  Ny1))
 
-end subroutine Interp_Field_0d
+end subroutine interp_field_0d
 
 
-subroutine Interp_Field_1d(in, out, Nx, Nx1, Ny, Ny1, coef)
+subroutine interp_field_1d(in, out, Nx, Nx1, Ny, Ny1, coef)
 
    implicit none
 
@@ -292,15 +292,15 @@ subroutine Interp_Field_1d(in, out, Nx, Nx1, Ny, Ny1, coef)
    integer, intent(in)    :: Ny1
    real,    intent(in)    :: coef(:)
 
-   out = ( coef(1) * in(Nx,  Ny,  :) ) + &
-         ( coef(2) * in(Nx1, Ny,  :) ) + &
-         ( coef(3) * in(Nx1, Ny1, :) ) + &
-         ( coef(4) * in(Nx,  Ny1, :) )
+   out = (coef(1) * in(Nx,  Ny,  :)) + &
+         (coef(2) * in(Nx1, Ny,  :)) + &
+         (coef(3) * in(Nx1, Ny1, :)) + &
+         (coef(4) * in(Nx,  Ny1, :))
 
-end subroutine Interp_Field_1d
+end subroutine interp_field_1d
 
 
-subroutine Interp_Field_2d(in, out, Nx, Nx1, Ny, Ny1, coef)
+subroutine interp_field_2d(in, out, Nx, Nx1, Ny, Ny1, coef)
 
    implicit none
 
@@ -312,11 +312,11 @@ subroutine Interp_Field_2d(in, out, Nx, Nx1, Ny, Ny1, coef)
    integer, intent(in)    :: Ny1
    real,    intent(in)    :: coef(:)
 
-   out = ( coef(1) * in(Nx,  Ny,  :, :) ) + &
-         ( coef(2) * in(Nx1, Ny,  :, :) ) + &
-         ( coef(3) * in(Nx1, Ny1, :, :) ) + &
-         ( coef(4) * in(Nx,  Ny1, :, :) )
+   out = (coef(1) * in(Nx,  Ny,  :, :)) + &
+         (coef(2) * in(Nx1, Ny,  :, :)) + &
+         (coef(3) * in(Nx1, Ny1, :, :)) + &
+         (coef(4) * in(Nx,  Ny1, :, :))
 
-end subroutine Interp_Field_2d
+end subroutine interp_field_2d
 
 end module Get_LwSwRTM_m

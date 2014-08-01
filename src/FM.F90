@@ -126,7 +126,7 @@
 !      little in performance.  Now the Solar and Thermal forward model calls are
 !      independnent so that contents of CRP and d_CRP do not need to be passed
 !      from the thermal call to the solar call.
-!   20140715 CP changed illumination logic
+!   20140715, CP: Changed illumination logic.
 !
 ! Bugs:
 !   None known.
@@ -355,7 +355,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
          end if ! status == 0 from FM_Solar
 
       ! Twilight and nighttime
-      else if ((SPixel%Illum(1) .eq.  ITwi .or. SPixel%Illum(1) .eq. INight ) &
+      else if ((SPixel%Illum(1) .eq.  ITwi .or. SPixel%Illum(1) .eq. INight) &
               .and. status == 0) then
          ! Solar channels are set to zeros as these are not used (replace
          ! previous SPixel values)

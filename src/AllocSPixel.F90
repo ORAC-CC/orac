@@ -31,7 +31,7 @@
 !    Name Type Description
 !
 ! History:
-!    31th Jan, 2001, Kevin M. Smith: Original version
+!    31th Jan 2001, Kevin M. Smith: Original version
 !    16th Feb 2001, Andy Smith:
 !       Changed SW allocations to use Ny-NThermal, not ThermalFirst-SolarFirst
 !       (for consistency with other routines).
@@ -80,6 +80,8 @@
 !       Added allocation of SPixel%spixel_y_to_ctrl_y_index.
 !    27th May 2014, Greg McGarragh:
 !       Some cleanup.
+!     1st Aug 2014, Greg McGarragh:
+!       Added more SPixel to Ctrl map indexes.
 !
 ! Bugs:
 !   None known.
@@ -163,7 +165,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
    ! Get_Surface arrays
 
    allocate(SPixel%Rs                (Ctrl%Ind%NSolar))
-   allocate(SPixel%SRs               (Ctrl%Ind%NSolar,   Ctrl%Ind%NSolar))
+   allocate(SPixel%SRs               (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
 
    !  Solar constant
 
@@ -195,5 +197,9 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
    Spixel%XI = 0
 
    allocate(SPixel%spixel_y_to_ctrl_y_index(Ctrl%Ind%Ny))
+   allocate(SPixel%spixel_y_solar_to_ctrl_y_index(Ctrl%Ind%Ny))
+   allocate(SPixel%spixel_y_thermal_to_ctrl_y_index(Ctrl%Ind%Ny))
+   allocate(SPixel%spixel_y_solar_to_ctrl_y_solar_index(Ctrl%Ind%Ny))
+   allocate(SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(Ctrl%Ind%Ny))
 
 end subroutine Alloc_SPixel

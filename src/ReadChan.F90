@@ -72,7 +72,7 @@
 !    20th Sep 2012, Somebody:
 !       Added channel index to y_id value.
 !    14th Nov 2013, MJ:
-!       Some cleanup and bugfixing: Fixed bug with selection of mdad_sw/lw:
+!       Some cleanup and bugfixing: Fixed bug with selection of MDAD_SW/LW:
 !       changed diff to abs(diff)
 !     4th Feb 2014, MJ:
 !       Implements code for AVHRR to assign channel numbers for LUT names.
@@ -80,6 +80,9 @@
 !       Cleaned up code.
 !     1st Jul 2014, Adam Povey:
 !       Added check to see if SAD file exists to clarify error message.
+!     1st Aug 2014, Greg McGarragh:
+!          Use refactored code into Find_MDAD_LW() and Find_MDAD_SW() to use
+!          here and elsewhere.
 !
 ! Bugs:
 !    None known.
@@ -88,7 +91,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Chan (Ctrl, SAD_Chan, status)
+subroutine Read_Chan(Ctrl, SAD_Chan, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -328,42 +331,7 @@ subroutine Read_Chan (Ctrl, SAD_Chan, status)
    Ctrl%Ind%NMixed = Ctrl%Ind%NSolar + Ctrl%Ind%NThermal - Ctrl%Ind%Ny
 
    ! Find indices of channels required for calculation of MDAD FG state parameters
-   Ctrl%Ind%MDAD_LW = 0
-   Ctrl%Ind%MDAD_SW = 0
-
-   ! Set the smallest differences between channel central WNs and optimum
-   ! wavenumbers (11 and 0.67 um) to very large values
-   min_LW_diff=5000.0
-   min_SW_diff=5000.0
-
-   ! Loop over all channels
-   do i = 1, Ctrl%Ind%Ny
-
-      ! If the channel WN is less than 2500 cm-1 then check how close it is to
-      ! 11 um. If it is the closest of the channels tried so far, update the
-      ! minimum difference and set the channel index in Ctrl%Ind%MDAD_LW.
-      if (SAD_Chan(i)%WvN < 2500.0) then
-         !Difference between central WN and 11 um
-         LW_diff = abs(SAD_Chan(i)%WvN - 909.0)
-         if (LW_diff < min_LW_diff) then
-            min_LW_diff = LW_diff
-            Ctrl%Ind%MDAD_LW = i
-         end if
-      end if
-
-      ! If the channel WN is greater then 10000 cm-1 and less than 20000 cm-1
-      ! then check how close it is to 0.67 um. If it is the closest of the
-      ! channels tried so far, update the minimum difference and set the channel
-      ! index in Ctrl%Ind%MDAD_SW.
-      if (SAD_Chan(i)%WvN > 10000.0 .and. SAD_Chan(i)%WvN < 20000.0) then
-         ! Difference between central WN and 0.67 um
-         SW_diff = abs(SAD_Chan(i)%WvN - 14925.0)
-         if (SW_diff < min_SW_diff) then
-            min_SW_diff = SW_diff
-            Ctrl%Ind%MDAD_SW = i
-         end if
-      end if
-
-   end do
+   Ctrl%Ind%MDAD_LW = Find_MDAD_LW(Ctrl%Ind%Ny, SAD_Chan)
+   Ctrl%Ind%MDAD_SW = Find_MDAD_SW(Ctrl%Ind%Ny, SAD_Chan)
 
 end subroutine Read_Chan

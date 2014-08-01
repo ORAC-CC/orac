@@ -120,6 +120,7 @@
 !    2014/01/16, Greg McGarragh: Added spixel_y_to_ctrl_y_index.
 !    2014/05/27, Greg McGarragh: Removed unused structure members and code
 !       cleanup.
+!    2014/08/01, Greg McGarragh: Added more SPixel to Ctrl map indexes.
 !
 ! Bugs:
 !    None known.
@@ -131,6 +132,8 @@
 module SPixel_def
 
    use ECP_Constants
+
+   implicit none
 
    ! Define a type for the Short Wave RTM parameters
 
@@ -318,11 +321,12 @@ module SPixel_def
                                           ! covariances
       real, pointer       :: f0(:)        ! Solar constant
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
-                                          ! Index: SPixel measurment
-                                          ! space to CRTL measuement space
-      integer, pointer    :: spixel_y_thermal_to_ctrl_y(:)
-      integer, pointer    :: spixel_y_solar_to_spixel_y(:)
-      integer, pointer    :: spixel_y_thermal_to_spixel_y(:)
+                                          ! Map SPixel measurment index space to
+                                          !     CRTL   measuement index space
+      integer, pointer    :: spixel_y_solar_to_ctrl_y_index(:)
+      integer, pointer    :: spixel_y_thermal_to_ctrl_y_index(:)
+      integer, pointer    :: spixel_y_solar_to_ctrl_y_solar_index(:)
+      integer, pointer    :: spixel_y_thermal_to_ctrl_y_thermal_index(:)
    end type SPixel_t
 
 
