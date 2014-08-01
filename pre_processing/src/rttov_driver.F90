@@ -97,6 +97,7 @@
 !   satellite viewing path. As such, the sza input to effective_2way_za() has
 !   been set to zero.
 ! 2014/07/01, AP: More variable renaming. Altered treatment of surface pressure.
+! 2014/08/01, AP: Remove unused counter fields.
 !
 ! $Id$
 !
@@ -865,30 +866,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   netcdf_info%counter_1d(1)=1
                   netcdf_info%stride_1d(1)=1
 
-                  ! counter
-                  dummy_lint_1d(1)=pixel_counter_pw
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
-                       netcdf_info%counterid_pw,dummy_lint_1d, &
-                       netcdf_info%start_1d, netcdf_info%counter_1d, &
-                       netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex rttov'
-
-                  ! iindex
-                  dummy_lint_1d(1)=idim-preproc_dims%min_lon+1
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
-                       netcdf_info%iid_pw,dummy_lint_1d, &
-                       netcdf_info%start_1d, netcdf_info%counter_1d, &
-                       netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex rttov'
-
-                  ! jindex
-                  dummy_lint_1d(1)=jdim-preproc_dims%min_lat+1
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
-                       netcdf_info%jid_pw,dummy_lint_1d, &
-                       netcdf_info%start_1d, netcdf_info%counter_1d, &
-                       netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'error: write jindex rttov'
-
                   ! longitude
                   dummy_real_1d(1)=profiles(1)%longitude
                   ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
@@ -989,20 +966,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! Write the lw information
                   pixel_counter_lw=pixel_counter_lw+1
-
-
-                  ! 1D variables
-
-                  ! counter
-                  netcdf_info%start_1d(1)=pixel_counter_lw
-                  netcdf_info%counter_1d(1)=1
-                  netcdf_info%stride_1d(1)=1
-                  dummy_lint_1d(1)=pixel_counter_lw
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%counterid_lw,dummy_lint_1d, &
-                       netcdf_info%start_1d, netcdf_info%counter_1d, &
-                       netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex lw rttov'
 
 
                   ! 2D variables
@@ -1157,14 +1120,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   netcdf_info%start_1d(1)=pixel_counter_sw
                   netcdf_info%counter_1d(1)=1
                   netcdf_info%stride_1d(1)=1
-
-                  ! counter
-                  dummy_lint_1d(1)=pixel_counter_sw
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
-                       netcdf_info%counterid_sw,dummy_lint_1d, &
-                       netcdf_info%start_1d, netcdf_info%counter_1d, &
-                       netcdf_info%stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'error: write iindex sw rttov'
 
                   ! Write out swrtm angles
                   allocate(dummy_real_2dveca(imager_angles%nviews,1))

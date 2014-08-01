@@ -66,6 +66,7 @@
 !    performance issues persisted.
 ! 2014/05/01, GM: Reordered data/time arguments into a logical order.
 ! 2014/05/26, GM: Fixes/improvements to error reporting.
+! 2014/08/01, AP: Remove unused counter fields.
 !
 ! $Id$
 !
@@ -217,16 +218,6 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
          chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
-      ! define counter variable
-      ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'counter_lw', NF90_INT, &
-           netcdf_info%xydim_lw, netcdf_info%counterid_lw, &
-           deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !          chunksizes=chunksize1d(1))
-      if (ierr.ne.NF90_NOERR) stop 'error: def counter lw'
-      ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%counterid_lw, &
-           '_FillValue', long_int_fill_value)
-      if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var clw FillValue'
-
       ! define solar zenith
       ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'solza_lw', NF90_FLOAT, &
            netcdf_info%xyvdim_lw, netcdf_info%solzaid_lw, &
@@ -256,23 +247,6 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm,netcdf_info%relaziid_lw, &
            '_FillValue',real_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var relazi_lw FillValue'
-      if (.false.) then
-         ! define longitude variable
-         ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'lon_lw', NF90_FLOAT, &
-              netcdf_info%xydim_lw, netcdf_info%lonid_lw)
-         if (ierr.ne.NF90_NOERR) stop 'error: def lon lw'
-         ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%lonid_lw, &
-              '_FillValue', real_fill_value)
-         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue lon'
-
-         ! define latitude variable
-         ierr = NF90_DEF_VAR(netcdf_info%ncid_lwrtm, 'lat_lw', NF90_FLOAT, &
-              netcdf_info%xydim_lw, netcdf_info%latid_lw)
-         if (ierr.ne.NF90_NOERR) stop 'error: def lat lw'
-         ierr = NF90_PUT_ATT(netcdf_info%ncid_lwrtm, netcdf_info%latid_pw, &
-              '_FillValue',  real_fill_value)
-         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue lat'
-      endif
 
       ! set up the combined dimensions for 3D fields (spatial+channel)
       netcdf_info%xycdim_lw(1)=netcdf_info%lwchanneldim
@@ -457,16 +431,6 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
          chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
       endif
 
-      ! define counter variable
-      ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'counter_sw', NF90_INT, &
-           netcdf_info%xydim_sw, netcdf_info%counterid_sw, &
-           deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !          chunksizes=chunksize3d)
-      if (ierr.ne.NF90_NOERR) stop 'error: def counter sw'
-      ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%counterid_sw, &
-           '_FillValue', long_int_fill_value)
-      if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var csw FillValue'
-
       ! define solar zenith
       ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'solza_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%solzaid_sw, &
@@ -496,23 +460,6 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm,netcdf_info%relaziid_sw, &
            '_FillValue',real_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var relazi_sw FillValue'
-      if (.false.) then
-         ! define longitude variable
-         ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'lon_sw', NF90_FLOAT, &
-              netcdf_info%xydim_sw, netcdf_info%lonid_sw)
-         if (ierr.ne.NF90_NOERR) stop 'error: def lon sw'
-         ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%lonid_sw, &
-              '_FillValue', real_fill_value)
-         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue lon'
-
-         ! define latitude variable
-         ierr = NF90_DEF_VAR(netcdf_info%ncid_swrtm, 'lat_sw', NF90_FLOAT, &
-              netcdf_info%xydim_sw, netcdf_info%latid_sw)
-         if (ierr.ne.NF90_NOERR) stop 'error: def lat sw'
-         ierr = NF90_PUT_ATT(netcdf_info%ncid_swrtm, netcdf_info%latid_pw, &
-              '_FillValue',  real_fill_value)
-         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue lat'
-      endif
 
       ! set up the combined dimensions for 4D fields
       netcdf_info%xyzcdim_sw(1)=netcdf_info%swchanneldim
@@ -590,56 +537,11 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            preproc_dims%kdim, netcdf_info%leveldim_pw)
       if (ierr.ne.NF90_NOERR) stop 'error: create nlev prtm'
 
-      if (.false.) then ! DO THIS RATHER VIA THE GLOBAL ATTRIBUTES, same for 
-         ! instrument date dimension
-         ierr = NF90_DEF_DIM( netcdf_info%ncid_prtm, 'ndate_prtm',1, &
-              netcdf_info%datedim_pw)
-         if (ierr.ne.NF90_NOERR) stop 'error: create date-d'
-
-         ! define date variable
-         ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'date', NF90_INT, &
-              netcdf_info%datedim_pw, netcdf_info%date_id_pw)
-         if (ierr.ne.NF90_NOERR) stop 'error: def date'
-         ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%date_id_pw, &
-              '_FillValue',long_int_fill_value)
-         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
-      endif
-
       if (.not. use_chunking) then
          chunksize1d(1)=nlon_x_nlat
       else
          chunksize1d(1)=min(nlon_x_nlat,max_chunk_latlon)
       endif
-
-      ! define i variable
-      ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'i_pw', NF90_INT, &
-           netcdf_info%xydim_pw, netcdf_info%iid_pw, &
-           deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !chunksizes=chunksize1d(1))
-      if (ierr.ne.NF90_NOERR) stop 'error: def i'
-      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%iid_pw, &
-           '_FillValue', long_int_fill_value)
-      if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var i FillValue'
-
-      ! define j variable
-      ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'j_pw', NF90_INT, &
-           netcdf_info%xydim_pw, netcdf_info%jid_pw, &
-           deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !chunksizes=chunksize1d(1))
-      if (ierr.ne.NF90_NOERR) stop 'error: def j'
-      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%jid_pw, &
-           '_FillValue', long_int_fill_value)
-      if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var j FillValue'
-
-      ! define counter variable
-      ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'counter_pw', NF90_INT, &
-           netcdf_info%xydim_pw, netcdf_info%counterid_pw, &
-           deflate_level=compress_level_lint, shuffle=shuffle_lint)!, &
-      !          chunksizes=chunksize1d(1))
-      if (ierr.ne.NF90_NOERR) stop 'error: def counter pw'
-      ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, netcdf_info%counterid_pw, &
-           '_FillValue', long_int_fill_value)
-      if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var i FillValue'
 
       ! define longitude variable
       ierr = NF90_DEF_VAR(netcdf_info%ncid_prtm, 'lon_pw', NF90_FLOAT, &
@@ -743,15 +645,6 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, &
            netcdf_info%tprofile_lev_id_pw, '_FillValue',  real_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
-      if (.false.) then
-         ! define spec_hum profile at lever centers as variable
-         ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'qprofile_lev', &
-              NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%qprofile_lev_id_pw)
-         if (ierr.ne.NF90_NOERR) stop 'error: def lat'
-         ierr = NF90_PUT_ATT(netcdf_info%ncid_prtm, &
-              netcdf_info%qprofile_lev_id_pw, '_FillValue',  real_fill_value)
-         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
-      endif
 
       ! define geopotential height profile at lever centers as variable
       ierr = NF90_DEF_VAR( netcdf_info%ncid_prtm, 'gphprofile_lev', &

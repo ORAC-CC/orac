@@ -128,6 +128,7 @@
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !    2014/07/23, AP: Grid no longer assumed to defined points rather than the
 !       cells centres (as is actually the case).
+!    2014/08/01, AP: Remove unused counter fields.
 !
 ! Bugs:
 !   None known.
@@ -173,8 +174,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
    integer :: ik,ichan
    integer :: ncid
-!  integer(kind=nint), allocatable, dimension(:)     :: counter_lw,counter_pw, &
-!                                                       i_pw,j_pw
 !  integer(kind=nint), allocatable, dimension(:,:)   :: dummy2dint
    real(kind=sreal),   allocatable, dimension(:,:)   :: dummy1p1
    real(kind=sreal),   allocatable, dimension(:,:,:) :: dummy1p2
@@ -201,21 +200,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
          stop
       else
          if (status == 0) then
-            ! Read cell indices of 1D arrays
-!           allocate(counter_pw(RTM%LW%Grid%NLatLon))
-!           allocate(i_pw(RTM%LW%Grid%NLatLon))
-!           allocate(j_pw(RTM%LW%Grid%NLatLon))
-!           allocate(dummy2dint(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon))
-
-            ! Succeesive cell count in preprocessing
-!           call nc_read_array_1d_int_to_int_orac(ncid,RTM%LW%Grid%NLatLon,"counter_pw",counter_pw,0)
-!           dummy2dint=transpose(reshape(counter_pw,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/)))
-
-            ! i is longitude in preprocessing
-!            call nc_read_array_1d_int_to_int_orac(ncid,RTM%LW%Grid%NLatLon,"i_pw",i_pw,0)
-            ! j is latitude in preprocessing
-!            call nc_read_array_1d_int_to_int_orac(ncid,RTM%LW%Grid%NLatLon,"j_pw",j_pw,0)
-
             ! Allocate arrays
             allocate(RTM%LW%lat(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon))
             allocate(RTM%LW%lon(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon))
@@ -258,9 +242,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
             deallocate(dummy2df)
 
-!           deallocate(counter_pw)
-!           deallocate(i_pw)
-!           deallocate(j_pw)
          end if
 
          ! Close PRTM input file
@@ -385,9 +366,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
             ! Succeesive cell count in preprocessing
 
-!           allocate(counter_lw(RTM%LW%Grid%NLatLon))
-!           call nc_read_array_1d_int_to_int_orac(ncid,RTM%LW%Grid%NLatLon,"counter_lw",counter_lw,0)
-
             ! Read data into arrays
             allocate(dummy1df(RTM%LW%Grid%NLatLon))
             allocate(dummy2df(RTM%LW%Grid%NLatLon,RTM%LW%NP))
@@ -422,8 +400,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
             deallocate(dummy1df)
             deallocate(dummy2df)
          endif
-
-!        deallocate(counter_lw)
 
          if (allocated(WvNumber)) deallocate(WvNumber)
          if (allocated(ChanID))   deallocate(ChanID)
