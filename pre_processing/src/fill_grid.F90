@@ -25,6 +25,7 @@
 ! 2012/04/23, GT: Original - based on the fill_grid.pro IDL
 !    code originally written by Don Grainger.
 ! 2014/06/11, AP: extend range of interpolation
+! 2014/08/01, AP: Restricted it again.
 !
 ! $Id$
 !
@@ -60,7 +61,7 @@ subroutine fill_grid(grid, fillval, mask)
 
    isearch = (/ -1.0,  1.0,  0.0,  0.0,  1.0,  1.0, -1.0, -1.0,  1.0, &
         1.0,  0.5,  0.5, -0.5, -0.5, -1.0, -1.0 /)
-   jsearch = (/  0.0,  0.5,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0,  0.5, &
+   jsearch = (/  0.0,  0.0,  1.0, -1.0,  1.0, -1.0,  1.0, -1.0,  0.5, &
         -0.5,  1.0, -1.0,  1.0, -1.0, -0.5,  0.5 /)
 
    allocate(Z(nx,ny))
@@ -72,13 +73,9 @@ subroutine fill_grid(grid, fillval, mask)
             if (grid(i,j) .eq. fillval) then
                m = 0
                flag = 0
-               do while (flag .eq. 0 .and. m .lt. 10)
+               count=8 
+               do while (flag .eq. 0 .and. m .lt. 4)
                   m = m+1
-                  if (m .eq. 1) then
-                     count=8 
-                  else 
-                     count=16
-                  end if
                   do k=1,count
                      a1 = i + int(real(m)*isearch(k))
                      b1 = j + int(real(m)*jsearch(k))
@@ -92,6 +89,7 @@ subroutine fill_grid(grid, fillval, mask)
                         exit
                      end if
                   end do ! k loop
+                  count=16
                end do ! do while
             end if ! if (grid(i,j) eq fillval)
          end if ! if (skip(i,j) eq 0)

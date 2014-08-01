@@ -130,6 +130,7 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
          ! Linearly interpolate in the x-direction
          if (iitop .eq. iibot) then
             intxbot = datin(iibot,jjbot)
+            intxtop = datin(iibot,jjtop)
          else
             intxbot = datin(iibot,jjbot) + &
                  (xout(out)-xin(iibot)) * &

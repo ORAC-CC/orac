@@ -149,12 +149,12 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
    real(kind=sreal), allocatable, dimension(:,:)   :: refsea
 
    ! General
-   integer(kind=lint)                              :: i,j,k
+   integer(kind=lint)                              :: i,j,k,i_mcd,j_mcd
    integer(kind=lint)                              :: nsea=0, nland=0
    integer(kind=lint)                              :: seacount=1
    integer(kind=lint)                              :: lndcount=1
 
-   real                                            :: minlat,maxlat,minlon,maxlon
+   real                                            :: lat_res,lon_res
 
    logical                                         :: include_full_brdf_sea
 
@@ -184,20 +184,6 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
       latlnd = 0
       lonlnd = 0
       wsalnd = 0
-
-      ! Extract only the land pixels from the imager structures
-      lndcount = 1
-      do i=1,imager_geolocation%ny
-         do j=imager_geolocation%startx,imager_geolocation%endx
-            if (imager_flags%lsflag(j,i) .eq. 1) then
-               if (mask(j,i)) then
-                  latlnd(lndcount) = imager_geolocation%latitude(j,i)
-                  lonlnd(lndcount) = imager_geolocation%longitude(j,i)
-                  lndcount = lndcount+1
-               end if
-            end if
-         end do
-      end do
 
       ! Read MODIS MCD43C3 surface reflectance data
       ! Need to set the band numbers in terms of MODIS band numbering. These are
@@ -238,36 +224,44 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
       allocate(fg_mask(mcd%nlon,mcd%nlat))
       fg_mask(:,:) = 0
 
-      minlat = minval(imager_geolocation%latitude,  mask)
-      maxlat = maxval(imager_geolocation%latitude,  mask)
-      minlon = minval(imager_geolocation%longitude, mask)
-      maxlon = maxval(imager_geolocation%longitude, mask)
-      do j=1, mcd%nlat
-         if ((mcd%lat(j) .ge. minlat) .and. &
-              (mcd%lat(j) .le. maxlat)) then
-            do i=1, mcd%nlon
-               if ((mcd%lon(i) .ge. minlon) .and. &
-                    (mcd%lon(i) .le. maxlon)) then
-                  fg_mask(i,j) = 1
+
+      ! Extract only the land pixels from the imager structures
+      ! Also flag required pixels from MCD array assuming a regular grid
+      lat_res=mcd%lat(2)-mcd%lat(1)
+      lon_res=mcd%lon(2)-mcd%lon(1)
+      lndcount = 1
+      do i=1,imager_geolocation%ny
+         do j=imager_geolocation%startx,imager_geolocation%endx
+            if (imager_flags%lsflag(j,i) .eq. 1) then
+               if (mask(j,i)) then
+                  latlnd(lndcount) = imager_geolocation%latitude(j,i)
+                  lonlnd(lndcount) = imager_geolocation%longitude(j,i)
+
+                  ! flag pixels for which there will be albedo data
+                  if (abs(latlnd(lndcount)) < 80.2) then
+                     i_mcd=floor((latlnd(lndcount) - mcd%lat(1)) / lat_res + 1.5)
+                     j_mcd=floor((lonlnd(lndcount) - mcd%lon(1)) / lon_res + 1.5)
+                     if (j_mcd > mcd%nlon-1) j_mcd = mcd%nlon-1
+                     fg_mask(j_mcd:j_mcd+1,i_mcd:i_mcd+1)=1
+                  end if
+                  
+                  lndcount = lndcount+1
                end if
-            end do
-         end if
+            end if
+         end do
       end do
 
       do i=1,nswchannels
          tmp_WSA = mcd%WSA(i,:,:)
          call fill_grid(tmp_WSA, real_fill_value, fg_mask)
-         mcd%WSA(i,:,:) = tmp_WSA
-      end do
 
       ! Use bilinear interpolation to put the MODIS surface reflectances onto
       ! the preprocessing grid (uses the numerical recipes polin2 subroutine)
-      do i=1,nswchannels
 
 !        call interpol_nearest_neighbour(mcd%lon, mcd%lat, mcd%WSA(i,:,:), &
 !                                        lonlnd, latlnd, wsalnd(i,:))
 
-         call interpol_bilinear(mcd%lon, mcd%lat, mcd%WSA(i,:,:), &
+         call interpol_bilinear(mcd%lon, mcd%lat, tmp_WSA, &
                                 lonlnd, latlnd, wsalnd(i,:), real_fill_value)
 
          write(*,*) 'Channel ',i,' land: ',minval(wsalnd(i,:)), &
@@ -335,12 +329,6 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
       end do
 
       ! Interpolate the ECMWF wind fields onto the instrument grid
-
-      ! ECMWF longitude runs from 0-360 unstead of -180-180. We have to convert
-      ! lonsea to match the ECMWF format (rather than the other way around) as we
-      ! need longitude to be monotonically increasing for the interpolation
-      ! routine
-      where(lonsea .lt. 0.0) lonsea = lonsea + 360
 
 !     call interpol_nearest_neighbour(ecmwf%lon, ecmwf%lat, &
 !                                     ecmwf%u10, lonsea, latsea, u10sea)
