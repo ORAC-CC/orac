@@ -18,7 +18,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_config_file(Ctrl, conf)
