@@ -64,17 +64,17 @@
 !    2014/01/16, GM: Use Selm* constants to set FG and AP instead of numbers.
 !    2014/01/16, GM: Cleaned up code.
 !    2014/01/31, MJ: Adds code for default surface reflection for avhrr
-!                    (=modis for the time being)
-! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated variables
+!       (=modis for the time being)
+!    2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
+!       variables
 !
 ! Bugs:
 !    NViews should be changed for dual view
 !    Not quite working for AVHRR
 !
 ! IMPORTANT NOTE:
-!   If a new type of LUT i.e aerosol is added then new default values will have
-!   to be added to this routine
-!   None known.
+!    If a new type of LUT i.e aerosol is added then new default values will have
+!    to be added to this routine
 !
 ! $Id$
 !

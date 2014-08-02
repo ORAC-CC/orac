@@ -131,7 +131,7 @@
 !    2014/08/01, AP: Remove unused counter fields.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !

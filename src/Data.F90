@@ -36,7 +36,7 @@
 !    22/08/2012, MJ: includes time in MSI structure
 !    20/09/2012, CP: changed albedo to real 8
 !    XX/XX/2013, MJ: explicitly defines LSFLag byte array type
-!    27/05/2014, GM: Some clean up.
+!    27/05/2014, GM: Some cleanup.
 !
 ! Bugs:
 !    None known.

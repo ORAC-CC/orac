@@ -37,7 +37,7 @@
 !    23 December 2014, Greg McGarragh:
 !       Performance improvements gained by unrolling the sparse matrix-vector
 !       multiplication and eliminating some un-needed memory copies plus some
-!       code clean up.
+!       code cleanup.
 !
 ! Bugs
 !    None known

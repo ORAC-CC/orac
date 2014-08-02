@@ -29,7 +29,7 @@
 !       Some cleanup.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !

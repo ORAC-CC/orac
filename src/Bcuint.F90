@@ -55,7 +55,7 @@
 !    22nd April 2009 - Written by C. Arnold
 !    23 December 2014, Greg McGarragh:
 !       Transpose the use of local variable c for compatibility with changes
-!       made in bcucof() plus some code clean up.
+!       made in bcucof() plus some code cleanup.
 !
 ! Bugs
 !    None known

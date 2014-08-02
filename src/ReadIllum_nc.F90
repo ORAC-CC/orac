@@ -65,8 +65,9 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    ! Argument declarations
 
    type(CTRL_t), intent(inout) :: Ctrl
-   integer,      intent(in)    :: NSegs
-   integer,      intent(in)    :: SegSize
+   integer,      intent(in)    :: NSegs    ! Number of segments read so far
+   integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
+                                           ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
    integer,      intent(out)   :: status
 
@@ -150,9 +151,9 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
                end if
             end do
 
-!          print *, n_vis_bad_ref, n_vis_bad_tau, n_ir_bad, &
-!                   i_missing_vis_ref, i_missing_vis_tau, i_missing_ir, &
-!                   MSI_Data%Geometry%Sol(i, j, 1)
+!           print *, n_vis_bad_ref, n_vis_bad_tau, n_ir_bad, &
+!                    i_missing_vis_ref, i_missing_vis_tau, i_missing_ir, &
+!                    MSI_Data%Geometry%Sol(i, j, 1)
 
             ! Now determine illumination conditions based on solar illumination
             ! and amount of available channels.

@@ -24,7 +24,7 @@
 !     8th Nov 2011, Caroline Poulsen: original version adapted from idl version
 !    28th Nov 2011, Caroline Poulsen: remove log write statement
 !    2013/11/14, MJ: makes branch for ICE explicit
-!    2013/11/14, GM: Some code clean up
+!    2013/11/14, GM: Some code cleanup
 !    2014/06/11, CP: removes automatic crash if ice wat class not specified so
 !      can cope with aerosl class
 !    2014/07/23, AP: added value for al10e2.

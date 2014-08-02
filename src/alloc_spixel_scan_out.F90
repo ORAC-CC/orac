@@ -26,7 +26,7 @@
 ! 2013/10/02, CP/GT: Added allocation statement for DOFS
 ! 2014/01/01, Greg McGarragh: Fixed the range in NY for initializations. Plus,
 !    no need for explicit indexing in these cases anyway.
-! 2014/05/27, Greg McGarragh: Some clean up.
+! 2014/05/27, Greg McGarragh: Some cleanup.
 !
 ! $Id$
 !

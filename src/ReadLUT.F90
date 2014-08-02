@@ -1,6 +1,8 @@
-! Read_LUT. This file contains all the Read_LUT_xxx subroutines as well as the
-! Read_LUT routine that calls them. Each routine has it's own header comment
-! section.
+!-------------------------------------------------------------------------------
+! Read_LUT.F90
+!
+! This file contains all the Read_LUT_xxx subroutines as well as the Read_LUT
+! routine that calls them. Each routine has it's own header comment section.
 !
 ! Header comments common to all Read_LUT_xxx subroutines are below.
 !

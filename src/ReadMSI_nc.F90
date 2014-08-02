@@ -14,11 +14,6 @@
 !                                       previous calls to this routine.
 !    SegSize  int           In          Number of rows of pixels in an image
 !                                       segment.
-!    MSI_files_open Logical In          Indicates whether the MSI data file is
-!                                       open (if not, open it).
-!    lun      int           In/Out      File unit number set by this routine
-!                                       when file is opened, passed back and
-!                                       forth for subsequent reads.
 !    MSI_Data struct        In/Out      Data structure: the MSI data part of
 !                                       this struct is populated by this
 !                                       routine, and is overwritten on
@@ -132,9 +127,9 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    ! Argument declarations
 
    type(CTRL_t),     intent(inout) :: Ctrl
-   integer,          intent(in)    :: NSegs   ! Number of segments read so far
-   integer,          intent(inout) :: SegSize ! Size of image segment in rows of
-                                              ! pixels.
+   integer,          intent(in)    :: NSegs    ! Number of segments read so far
+   integer,          intent(inout) :: SegSize  ! Size of image segment in rows of
+                                               ! pixels.
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
    integer, intent(out)            :: status
