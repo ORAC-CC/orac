@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_LwRTM
+!    Read_LwRTM_nc
 !
 ! Purpose:
 !    Reads the longwave Radiative Transfer Model (atmospheric) file and loads
@@ -136,6 +136,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
    use CTRL_def

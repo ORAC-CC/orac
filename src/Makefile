@@ -201,7 +201,7 @@ include $(ORAC_LIB)
 ORAC_OBJ =        $(OBJS)/CalcCWP.o \
                   $(OBJS)/CheckLimits.o \
                   $(OBJS)/check_value.o \
-                  $(OBJS)/config_structure.o \
+                  $(OBJS)/config.o \
                   $(OBJS)/CPL.o \
                   $(OBJS)/CRP.o \
                   $(OBJS)/Ctrl.o \
@@ -224,7 +224,6 @@ ORAC_OBJ =        $(OBJS)/CalcCWP.o \
                   $(OBJS)/GetX.o \
                   $(OBJS)/GZero.o \
                   $(OBJS)/hpsort.o \
-                  $(OBJS)/input_structures.o \
                   $(OBJS)/interpolate_to_ctp.o \
                   $(OBJS)/InterpolSolar.o \
                   $(OBJS)/InterpolSolar_spline.o \
@@ -249,11 +248,11 @@ ORAC_OBJ =        $(OBJS)/CalcCWP.o \
                   $(OBJS)/read_config_file.o \
                   $(OBJS)/read_input_dimensions.o \
                   $(OBJS)/read_sat_data_nc.o \
-                  $(OBJS)/ReadAlb_nc.o \
+                  $(OBJS)/ReadALB_nc.o \
                   $(OBJS)/ReadCloudFlags_nc.o \
                   $(OBJS)/ReadDriver.o \
                   $(OBJS)/ReadGeometry_nc.o \
-                  $(OBJS)/Readillum_nc.o \
+                  $(OBJS)/ReadIllum_nc.o \
                   $(OBJS)/ReadLocation_nc.o \
                   $(OBJS)/ReadLSFlags_nc.o \
                   $(OBJS)/ReadLwRTM_nc.o \

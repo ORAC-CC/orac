@@ -1,5 +1,5 @@
 ! ------------------------------------------------------------------------------
-! Name: nc_read_file.f90
+! Name: nc_read_file.F90
 !
 ! Purpose:
 ! File contains subroutines to read netcdf files for various variable types.

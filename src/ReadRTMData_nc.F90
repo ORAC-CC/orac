@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_RTMData
+!    Read_RTMData_nc
 !
 ! Purpose:
 !    Controls the reading of the long- and short-wave RTM data files.
@@ -34,6 +34,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Read_RTMData_nc(Ctrl, RTM, status)
 
    use CTRL_def

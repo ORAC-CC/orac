@@ -44,7 +44,7 @@
 !    If averaging method 'cloudy'
 !       Calculate number of good pixels in super pixel (if there are no good
 !       cloudy pixels then abort current super pixel).
-!    Call Get_illum
+!    Call Get_Illum
 !    Call Get_Geometry
 !    Call Get_RTM
 !    Call Get_Measurements
@@ -221,14 +221,15 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    use check_value_m
-   use config_s
+   use config_def
    use CTRL_def
    use Data_def
    use ECP_Constants
-   use Get_illum_m
+   use Get_Illum_m
    use RTM_def
    use SAD_Chan_def
    use SPixel_def
@@ -306,7 +307,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! condition allowing finer control. So the zeroing of SPixel%Mask has been
    ! disabled (located in check_value.inc).  Now, an invalid condition (which
    ! includes cases with to much missing data) will result in a non-zero status
-   ! from Get_illum() below. For now these loops are still here to set SPixel%QC.
+   ! from Get_Illum() below. For now these loops are still here to set SPixel%QC.
 
    ! MSI - Reflectances (between 0 and 1)
    minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0, :))
@@ -378,9 +379,9 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
          ! routine returns a non-zero status value unless it is to flag a super-
          ! pixel data problem.
          if (stat == 0) then
-            call Get_illum(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
+            call Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-!              write(*,*) 'WARNING: Get_illum', stat
+!              write(*,*) 'WARNING: Get_Illum', stat
                Spixel%QC = ibset(Spixel%QC, SPixillum)
             endif
          end if

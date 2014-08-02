@@ -1,22 +1,17 @@
 !-------------------------------------------------------------------------------
 ! Name: alloc_spixel_scan_out.F90
 !
-!
 ! Purpose:
 ! The file contains a collection of three subroutines which allocate the array
 ! parts of the output variable types.
 !
-!
 ! Description and Algorithm details:
-!
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-!
 ! Local variables:
 ! Name Type Description
-!
 !
 ! History:
 ! 2011/12/19, Matthias Jerg: creates initial file.

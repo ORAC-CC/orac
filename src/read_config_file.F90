@@ -32,7 +32,7 @@ subroutine read_config_file(Ctrl,conf)
 
   use CTRL_def
 
-  use config_s
+  use config_def
 
   implicit none
 

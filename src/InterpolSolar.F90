@@ -66,6 +66,7 @@
 ! $Id$
 !
 !------------------------------------------------------------------------------------
+
 subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
     use CTRL_def

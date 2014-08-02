@@ -69,7 +69,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LUT_Rd (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
+subroutine Read_LUT_Rd(Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -259,7 +259,7 @@ end subroutine Read_LUT_Rd
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LUT_Td (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
+subroutine Read_LUT_Td(Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -444,7 +444,7 @@ end subroutine Read_LUT_Td
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LUT_Rbd (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
+subroutine Read_LUT_Rbd(Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -632,7 +632,7 @@ end subroutine Read_LUT_RBD
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LUT_Tb (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
+subroutine Read_LUT_Tb(Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -783,7 +783,7 @@ end subroutine Read_LUT_Tb
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LUT_Tbd (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
+subroutine Read_LUT_Tbd(Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -1043,7 +1043,7 @@ end subroutine Read_LUT_Tbd
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LUT_Em (Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
+subroutine Read_LUT_Em(Ctrl, l_lun, LUT_file, chan, SAD_LUT, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -1266,7 +1266,7 @@ end subroutine Read_LUT_Em
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LUT (Ctrl, SAD_Chan, SAD_LUT, status)
+subroutine Read_LUT(Ctrl, SAD_Chan, SAD_LUT, status)
 
    use CTRL_def
    use SAD_Chan_def

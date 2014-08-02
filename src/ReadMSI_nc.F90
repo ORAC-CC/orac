@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_MSI
+!    Read_MSI_nc
 !
 ! Purpose:
 !    Controls the reading of Multi Spectral Image (MSI) values from ATSR-type
@@ -117,6 +117,7 @@
 ! $Id$
 !
 !------------------------------------------------------------------------------------
+
 subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
    use CTRL_def

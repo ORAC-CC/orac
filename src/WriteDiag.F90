@@ -60,7 +60,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Write_Diag (Ctrl, SPixel, Diag, diag_lun, status)
+subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
 
    use Ctrl_def
    use Diag_def

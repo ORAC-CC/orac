@@ -61,6 +61,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)
 
    use CTRL_def

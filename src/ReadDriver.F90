@@ -84,7 +84,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
-   use config_s
+   use config_def
    use CTRL_def
    use ECP_constants
 

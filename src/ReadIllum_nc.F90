@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_illum
+!    Read_Illum_nc
 !
 ! Purpose:
 !    Controls the reading of illumination data
@@ -53,6 +53,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
    use CTRL_def

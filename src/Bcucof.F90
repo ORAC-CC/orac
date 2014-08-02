@@ -1,5 +1,7 @@
 !-------------------------------------------------------------------------------
-! BCuCof.F90
+! Bcucof.F90
+!
+! Purpose:
 !	Calculates the coefficients for a bicubic interpolation
 !
 ! Description:

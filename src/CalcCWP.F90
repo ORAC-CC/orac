@@ -36,7 +36,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Calc_CWP (Ctrl,SPixel, status)
+subroutine Calc_CWP(Ctrl,SPixel, status)
 
    ! Modules used by this program.
    use CTRL_def

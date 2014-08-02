@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name:
+! Name: interpolate2ctp
 !
 ! Purpose:
 !
@@ -27,6 +27,7 @@
 ! Bugs:
 ! None known
 !-------------------------------------------------------------------------------
+
 subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
    use Ctrl_def

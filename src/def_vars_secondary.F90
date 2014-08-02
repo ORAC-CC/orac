@@ -42,7 +42,7 @@
 subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in, &
                               spixel_scan_out_sec, status)
 
-   use config_s
+   use config_def
    use CTRL_def
    use SPixel_def
 

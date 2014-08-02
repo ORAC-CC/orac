@@ -167,10 +167,10 @@
 !    2013/12/10, MJ: initializes ymfit and y0 with missingxn
 !    2014/01/12, Greg McGarragh: Added some missing deallocates.
 !    2014/01/28, Greg McGarragh: Cleaned up code.
-!    2014/01/29, Greg McGarragh: Some OpenMP fixes.  Ctrl is actually shared.
+!    2014/01/29, Greg McGarragh: Some OpenMP fixes. Ctrl is actually shared.
 !       No need to make it private. Also many variables set to be 'privatefirst'
 !       should just be 'private', i.e. they do not need to enter the parallel
-!       loop initialised.  Finally status_line was not needed. Status is private
+!       loop initialised. Finally status_line was not needed. Status is private
 !       within the loop.
 !    2014/02/10, Matthias Jerg: Put the correct boundaries lat/lon for adaptive
 !       processing back in.
@@ -198,12 +198,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Modules used by this program.
 
-   use config_s
+   use config_def
    use CTRL_def
    use Data_def
    use Diag_def
    use ECP_Constants
-   use input_structures
    use omp_lib
    use output_routines
    use Read_SAD_def

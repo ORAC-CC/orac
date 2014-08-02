@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_SwRTM
+!    Read_SwRTM_nc
 !
 ! Purpose:
 !    Reads the shortwave Radiative Transfer Model (atmospheric) file and loads
@@ -114,6 +114,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 
    use CTRL_def

@@ -1,4 +1,4 @@
-! Name: extrap_into_tropopause.f90
+! Name: extrap_into_tropopause.F90
 !
 !
 ! Purpose:

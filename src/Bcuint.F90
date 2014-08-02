@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! BCuInt.F90
+! Bcuint.F90
 !
 ! Purpose:
 !	Performs a bicubic interpolation on the interval ((0,0),(0,1),

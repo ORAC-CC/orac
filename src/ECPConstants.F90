@@ -275,7 +275,7 @@ module ECP_constants
    integer, parameter :: SPixMeas         = 15      ! Problem from Get_Measurements
    integer, parameter :: SPixSurf         = 16      ! Problem from Get_Surface
    integer, parameter :: SPixFGAP         = 17      ! Problem from Get_X (First Guess/A Priori setting)
-   integer, parameter :: SPixIllum        = 18      ! Problem from Get_illum routine
+   integer, parameter :: SPixIllum        = 18      ! Problem from Get_Illum routine
    integer, parameter :: SPixNoProc       = 31      ! Do not process super-pixel. Earlier flags indicate why not.
 
    ! Indices of diagnostic flags in array Ctrl%Diagl

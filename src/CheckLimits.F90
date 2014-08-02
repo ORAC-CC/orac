@@ -49,7 +49,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Check_Limits (Ctrl, X, SPixel, RTM_Pc, phase_change, status)
+subroutine Check_Limits(Ctrl, X, SPixel, RTM_Pc, phase_change, status)
 
    use Ctrl_def
    use ECP_Constants

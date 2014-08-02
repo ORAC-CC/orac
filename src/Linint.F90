@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! LinInt.F90
+! Linint.F90
 !
 ! Purpose:
 !	Performs a linear interpolation on the interval ((0,0),(0,1),

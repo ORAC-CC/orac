@@ -1,4 +1,4 @@
-!locate.F90
+! Locate.F90
 !
 ! Purpose:
 !
@@ -17,6 +17,7 @@
 ! $Id$
 !
 !---------------------------------------------------------------------
+
 function locate(xx,x)
   implicit none
   real, dimension(:), intent(in) :: xx
@@ -45,5 +46,4 @@ function locate(xx,x)
   else
      locate=jl
   end if
-end function locate
-
+end function Locate

@@ -1,5 +1,5 @@
 ! Name:
-!   Read_CloudFlags
+!   Read_CloudFlags_nc
 !
 ! Purpose:
 !   Controls the reading of cloud flags values from ATSR-type files into
@@ -77,6 +77,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, &
    MSI_Data, status)
 

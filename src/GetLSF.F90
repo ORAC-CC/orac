@@ -32,7 +32,8 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-subroutine Get_lsf(Ctrl, SPixel, MSI_Data, status)
+
+subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
 
    use CTRL_def
    use Data_def
@@ -78,4 +79,4 @@ subroutine Get_lsf(Ctrl, SPixel, MSI_Data, status)
     end if
 #endif
 
-end subroutine Get_lsf
+end subroutine Get_LSF

@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Get_illum
+!    Get_Illum
 !
 ! Purpose:
 !    Determines the illumination of a scene by asseseing the visible and ir
@@ -39,17 +39,18 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-module Get_illum_m
+
+module Get_Illum_m
 
    implicit none
 
    private
 
-   public :: Get_illum
+   public :: Get_Illum
 
 contains
 
-subroutine Get_illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
+subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    use CTRL_def
    use Data_def
@@ -349,7 +350,7 @@ subroutine Get_illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       end if
    end do
 
-end subroutine Get_illum
+end subroutine Get_Illum
 
 
 subroutine setup_indexes(Ctrl, SPixel, i_missing)
@@ -422,4 +423,4 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
 
 end subroutine setup_indexes
 
-end module Get_illum_m
+end module Get_Illum_m

@@ -95,7 +95,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_CRP_Solar (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
+subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    use Ctrl_def
    use GZero_def

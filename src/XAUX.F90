@@ -24,6 +24,7 @@
 ! $Id$
 !
 !---------------------------------------------------------------------
+
 subroutine X_AUX(SPixel, index, X, err, status)
 
    use ECP_Constants

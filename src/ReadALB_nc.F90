@@ -76,6 +76,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
    use CTRL_def

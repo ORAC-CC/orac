@@ -65,7 +65,7 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
    if (Ctrl%RS%Flag == SelmAux) then
       write(*,*) 'Reading Albedo data, status: ',status
-      if (status == 0) call Read_Alb_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+      if (status == 0) call Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    endif
 
    write(*,*) 'Reading Cloud Flag data, status: ',status
@@ -87,6 +87,6 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    if (status == 0) call Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
    write(*,*) 'Reading Illumination data, status: ',status
-   if (status == 0) call Read_illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   if (status == 0) call Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
 
 end subroutine Read_SatData_nc

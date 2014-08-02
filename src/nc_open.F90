@@ -1,4 +1,4 @@
-! Name: nc_open.f90
+! Name: nc_open.F90
 !
 !
 ! Purpose:

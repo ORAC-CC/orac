@@ -1,5 +1,5 @@
 ! Name:
-!   Read_CloudFlags
+!   Read_Geometry_nc
 !
 ! Purpose:
 !   Controls the reading of cloud flags values from ATSR-type files into

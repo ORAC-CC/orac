@@ -44,6 +44,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)
 
    use Ctrl_def

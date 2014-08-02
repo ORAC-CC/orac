@@ -23,7 +23,8 @@
 ! Bugs:
 !
 !
-module config_s
+
+module config_def
   
   use ECP_Constants
   
@@ -85,4 +86,4 @@ module config_s
   end type config_struct
 
 
-end module config_s
+end module config_def

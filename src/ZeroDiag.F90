@@ -48,7 +48,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Zero_Diag (Ctrl, Diag, status)
+subroutine Zero_Diag(Ctrl, Diag, status)
 
    use Ctrl_def
    use ECP_Constants
