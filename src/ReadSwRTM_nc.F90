@@ -7,10 +7,10 @@
 !    appropriate data arrays.
 !
 ! Arguments:
-!    Name   Type         In/Out Description
-!    Ctrl   struct       Both   Control structure
-!    RTM    alloc struct Out    RTM structure
-!    status int          Out    Error status
+!    Name   Type         In/Out/Both Description
+!    Ctrl   struct       Both        Control structure
+!    RTM    alloc struct Out         RTM structure
+!    status int          Out         Error status
 !
 ! Algorithm:
 !    Open RTM data file (report errors)
@@ -196,8 +196,8 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
                status = SwRTMRTMInstErr ! Return error code
                write(*,*)  'Read_SwRTM: RTM file; header instrument disagrees with filename'
                call Write_Log(Ctrl, &
-                    & 'Read_SwRTM: RTM file; header instrument disagrees with filename',&
-                    & status)
+                  'Read_SwRTM: RTM file; header instrument disagrees with filename',&
+                  status)
                stop
             end if
          end if

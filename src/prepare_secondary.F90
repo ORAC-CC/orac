@@ -31,7 +31,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
@@ -207,8 +207,8 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
 
             if ((spixel_scan_out_sec%covariance(i,j,is,js) .lt. &
                  spixel_scan_out%real_fill_value_lat_lon) .or. &
-                 & (spixel_scan_out_sec%covariance(i,j,is,js) .gt. &
-                    abs(spixel_scan_out%real_fill_value_lat_lon))) then
+                 (spixel_scan_out_sec%covariance(i,j,is,js) .gt. &
+                  abs(spixel_scan_out%real_fill_value_lat_lon))) then
                spixel_scan_out_sec%covariance(i,j,is,js)=spixel_scan_out%real_fill_value_lat_lon
             endif
          enddo

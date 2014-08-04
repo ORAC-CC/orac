@@ -27,7 +27,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &

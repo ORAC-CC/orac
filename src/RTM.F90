@@ -1,19 +1,19 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!   RTM
+!    RTM
 !
 ! Purpose:
-!   Module defining radiative transfer model structure (RTM) for the ECP
+!    Module defining radiative transfer model structure (RTM) for the ECP
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
+!     Name Type In/Out/Both Description
+!     N/A
 !
 ! Algorithm:
-!    N/A
+!     N/A
 !
 ! Local variables:
-!   Name Type Description
+!    Name Type Description
 !
 ! History:
 !    15th Dec 2000, Kevin Smith: Original version
@@ -46,7 +46,7 @@
 !       Some cleanup.
 !
 ! Bugs:
-!   None known
+!    None known.
 !
 ! $Id$
 !

@@ -5,15 +5,15 @@
 !    Writes out log and error information to the ECP log file.
 !
 ! Description:
-!    The function is passed a string containing a log message or error
-!    message. The log file is opened, the string written to the file and
-!    the log is closed again.
+!    The function is passed a string containing a log message or error message.
+!    The log file is opened, the string written to the file and the log is
+!    closed again.
 !
 ! Arguments:
-!    Name       Type    In/Out/Both   Description
-!    Ctrl       Struct  In            Control structure, contains log file name
-!    message    string  In            Log or error message
-!    status     int     In            status value associated with error 
+!    Name    Type   In/Out/Both Description
+!    Ctrl    Struct In          Control structure, contains log file name
+!    message string In          Log or error message
+!    status  int    In          status value associated with error
 !
 ! Algorithm:
 !    Call FORTRAN library functions to get the system time and convert to ASCII
@@ -24,22 +24,20 @@
 !    If status indicates error (i.e. non-zero), write status value to log file
 !    Close log file
 !
-!
 ! Local variables:
-!    Name       Type    Description
-!    log_lun    int     Logical UnitNumber for log file
-!    ios        int     I/O status from file operations
-!        
+!    Name Type Description
+!
 ! References:
 !    UNIX man pages: man 3f ctime
 !
 ! History:
-!    3rd Oct 2000, Andy Smith : original version
+!    3rd Oct 2000, Andy Smith: Oiginal version
 !   23rd Feb 2011, Andy Smith:
 !      Using record length to prevent annoying line breaks in middle of text.
 !    8th Jun 2011, Andy Smith:
-!      Fixed a typo in comment while trying temporary updates.  
-! 2013 MJ turns off extensive writing to log file in order to accelerate code.
+!      Fixed a typo in comment while trying temporary updates.
+!   xxxx xxx 2013, Matthias Jerg:
+!      Turns off extensive writing to log file in order to accelerate code.
 !   13th Jan 2014, Greg McGarragh
 !      Added OpenMP critical region around log write to prevent multiple threads
 !      from stomping on each other.
@@ -56,35 +54,37 @@ subroutine Write_Log (Ctrl, message, status)
    use CTRL_def
 
    implicit none
-   
-!  argument declarations 
+
+   ! Argument declarations
+
    type(CTRL_t), intent(in) :: Ctrl
    character(*), intent(in) :: message
-   integer, intent(in)      :: status ! note intent IN unlike all other routines
+   integer,      intent(in) :: status ! note intent IN unlike all other routines
 
-!  Local variables
-   integer     :: log_lun      ! Logical UnitNumber for log file
-   integer     :: ios          ! I/O status from file operations
-   character(24)  :: time_str
-   character(8) :: date
+   !  Local variables
+   integer       :: log_lun ! Logical UnitNumber for log file
+   integer       :: ios     ! I/O status from file operations
+   character(24) :: time_str
+   character(8)  :: date
    character(10) :: time
 
-!  Generate a time string to precede the entry in the log file
+   ! Generate a time string to precede the entry in the log file
 
    call Date_and_Time (date=date, time=time)
-   time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)  
+   time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)
 
-!  Open the log file and write the message, with status value if it is an 
-!  error message.
+   ! Open the log file and write the message, with status value if it is an
+   ! error message.
 !$OMP CRITICAL
    call Find_Lun(log_lun)
-   open(unit=log_lun,      & 
+   open(unit=log_lun,      &
         file=Ctrl%FID%Log, &
         status='old',      &
         position='append', &
         iostat=ios,recl=ECPlogReclen)
-! AS extended recl to avoid annoying line breaks Feb 2011
-        
+
+   ! AS extended recl to avoid annoying line breaks Feb 2011
+
    write(log_lun, '(/,a24)')time_str
 
    if (status == 0) then
@@ -92,7 +92,8 @@ subroutine Write_Log (Ctrl, message, status)
    else
       write(log_lun, *) message
       write(log_lun, *) 'Status = ',status
-   end if      
-   close(unit=log_lun)   
+   end if
+
+   close(unit=log_lun)
 !$OMP END CRITICAL
 end subroutine Write_Log

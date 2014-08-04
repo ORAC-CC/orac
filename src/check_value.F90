@@ -8,17 +8,18 @@
 !
 ! Arguments:
 !    Name     Type         In/Out/Both Description
-!    value    real|byte    In   The values to be tested. Can currently be a
-!                               scalar, 1D, or 2D array.
-!    max      as above     In   The maximum valid value
-!    min      as above     In   The minimum valid value
-!    SPixel   alloc struct Both Super-pixel structure
-!    name     string       In   A description of the field to be printed in the
-!                               log file in the event of an error.
-!    flag_bit integer      In   The bit of SPixel%QC to set in the event of
-!                               an error.
-!    limit    integer      In   Optional. The maximum number of points that may
-!                               tollerably be outside the valid range.
+!    value    real|byte    In          The values to be tested. Can currently be
+!                                      a scalar, 1D, or 2D array.
+!    max      as above     In          The maximum valid value
+!    min      as above     In          The minimum valid value
+!    SPixel   alloc struct Both        Super-pixel structure
+!    name     string       In          A description of the field to be printed
+!                                      in the log file in the event of an error.
+!    flag_bit integer      In          The bit of SPixel%QC to set in the event
+!                                      of an error.
+!    limit    integer      In          Optional. The maximum number of points
+!                                      that may tollerably be outside the valid
+!                                      range.
 !
 ! Algorithm:
 !    Check value greater than min and less than max.
@@ -50,7 +51,7 @@ module check_value_m
            check_value_byte2, check_value_byte2_l
    end interface check_value
 contains
-      
+
 subroutine check_value_float0(val, max, min, SPixel, name, flag_bit)
    use SPixel_def
    implicit none
@@ -59,7 +60,7 @@ subroutine check_value_float0(val, max, min, SPixel, name, flag_bit)
    real,           intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -78,7 +79,7 @@ subroutine check_value_float1(val, max, min, SPixel, name, flag_bit)
    real,           intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -97,7 +98,7 @@ subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, limit)
    real,           intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message
@@ -117,7 +118,7 @@ subroutine check_value_float2(val, max, min, SPixel, name, flag_bit)
    real,           intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -136,7 +137,7 @@ subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, limit)
    real,           intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message
@@ -159,7 +160,7 @@ subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit)
    integer(byte),  intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -179,7 +180,7 @@ subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit)
    integer(byte),  intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -199,7 +200,7 @@ subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, limit)
    integer(byte),  intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message
@@ -220,7 +221,7 @@ subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit)
    integer(byte),  intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -240,7 +241,7 @@ subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, limit)
    integer(byte),  intent(in)    :: max, min
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit   
+   integer,        intent(in)    :: flag_bit
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message

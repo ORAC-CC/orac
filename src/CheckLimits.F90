@@ -73,12 +73,12 @@ subroutine Check_Limits(Ctrl, X, SPixel, RTM_Pc, phase_change, status)
 
    phase_change = .false.
 
-   do i=1,Spixel%Nx
-      if (X(Spixel%X(i)) > SPixel%XULim(Spixel%X(i))) &
-          X(Spixel%X(i)) = SPixel%XULim(Spixel%X(i))
+   do i=1,SPixel%Nx
+      if (X(SPixel%X(i)) > SPixel%XULim(SPixel%X(i))) &
+          X(SPixel%X(i)) = SPixel%XULim(SPixel%X(i))
 
-      if (X(Spixel%X(i)) < SPixel%XLLim(Spixel%X(i))) &
-          X(Spixel%X(i)) = SPixel%XLLim(Spixel%X(i))
+      if (X(SPixel%X(i)) < SPixel%XLLim(SPixel%X(i))) &
+          X(SPixel%X(i)) = SPixel%XLLim(SPixel%X(i))
    end do
 
-end Subroutine Check_Limits
+end subroutine Check_Limits

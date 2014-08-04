@@ -198,11 +198,11 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
      Ind%SolarLast
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-           & SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR1(j,iTFd)),  &
-           & SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR1(j,iTFd))
-        write(*,*)' Function values at bot corners', &
-             & SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR0(j,iTFd)),  &
-             & SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR0(j,iTFd))
+         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR1(j,iTFd)),  &
+         SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR1(j,iTFd))
+      write(*,*)' Function values at bot corners', &
+         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR0(j,iTFd)),  &
+         SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR0(j,iTFd))
 
       write(*,*)' Interpolated value ',CRPOut(j,ITFd)
       write(*,*)' Gradient values    ',(dCRPOut(j,ITFd,i),i=1,2)
@@ -213,11 +213,11 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*) 'channels',j,Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-	 SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR1(j,iRFd)),  &
-	 SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR1(j,iRFd))
+         SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR1(j,iRFd)),  &
+         SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR1(j,iRFd))
       write(*,*)' Function values at bot corners', &
-	 SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR0(j,iRFd)),  &
-	 SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR0(j,iRFd))
+        SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR0(j,iRFd)),  &
+        SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR0(j,iRFd))
 
       write(*,*)' Interpolated value ',CRPOut(j,IRFd)
       write(*,*)' Gradient values    ',(dCRPOut(j,IRFd,i),i=1,2)

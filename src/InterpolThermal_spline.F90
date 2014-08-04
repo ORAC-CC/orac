@@ -5,18 +5,18 @@
 !   Interpolates LW transmittances and radiances to the cloud pressure level.
 !
 ! Arguments:
-!   Name        Type             In/Out   Description
-!   Ctrl        struct       In       Control structure
-!   SPixel      struct       In       Super-pixel structure
-!   Pc          float             In       Cloud pressure (from state vector X)
-!   SAD_Chan    float array  In       Channel characteristics.
-!   RTM_Pc      struct       Out      Contains Tac, Tbc (interpolated
-!                                          transmittances above and below cloud)
-!                                          and gradients wrt cloud pressure.
-!   status      int             Out      Standard status value not set here
-!                        
+!   Name        Type         In/Out/Both Description
+!   Ctrl        struct       In          Control structure
+!   SPixel      struct       In          Super-pixel structure
+!   Pc          float        In          Cloud pressure (from state vector X)
+!   SAD_Chan    float array  In          Channel characteristics.
+!   RTM_Pc      struct       Out         Contains Tac, Tbc (interpolated
+!                                        transmittances above and below cloud)
+!                                        and gradients wrt cloud pressure.
+!   status      int          Out         Standard status value not set here
+!
 ! Algorithm:
-!   
+!
 ! Local variables:
 !   Name            Type          Description
 !   i               int           RTM pressure level index
@@ -53,16 +53,16 @@
 !
 ! History:
 !   21st November, 2000, Kevin M. Smith : original version
-!   14th February, 2001, KMS : Corrected the position of the end of the first 
+!   14th February, 2001, KMS : Corrected the position of the end of the first
 !                              main if block.
 !   16th Feb 2001, Andy Smith :
 !      Using RTM_Pc struct to pass Tac, Tbc etc.
 !   20th Feb 2001, Andy Smith :
-!      Converting calculations from B to T, since B is not available from 
+!      Converting calculations from B to T, since B is not available from
 !      the SPixel RTM input. SAD_Chan is now required as an input argument.
 !   26th Feb 2001, Andy Smith:
-!      Changed test for P levels bounding Pc. Using 
-!      (Pc >= p(j) and Pc < p(j+1)) instead of  
+!      Changed test for P levels bounding Pc. Using
+!      (Pc >= p(j) and Pc < p(j+1)) instead of
 !      (Pc > p(j) and Pc <= p(j+1)) because P levels now go in order of
 !      increasing pressure. Previously, if Pc was equal to P(1) it was not
 !      matched (and if Pc < P(1) it's P index is set to 1!)
@@ -75,14 +75,14 @@
 !   11th May 2001, Andy Smith:
 !      Added setting of RTM_Pc%Tc.
 !   20th Jul 2001, Andy Smith:
-!      Fixed setting of ThL. Last thermal channel should always be the one 
+!      Fixed setting of ThL. Last thermal channel should always be the one
 !      specified in Ctrl, not SPixel, since the RTM_Pc and RTM arrays are of
 !      fixed size for the whole run, i.e are not re-allocated to match the no.
 !      of thermal channels used in each SPixel, and it is the lower numbered
-!      thermal channels that are not used in certain conditions.  
-!      Added breakpoint outputs. 
+!      thermal channels that are not used in certain conditions.
+!      Added breakpoint outputs.
 !    7th Dec 2001, Andy Smith:
-!      Added more information to interpolation failure warning message. 
+!      Added more information to interpolation failure warning message.
 !      Changed first test to locate Pc in the RTM pressure levels, now uses
 !      >= rather than > in the test of Pc vs. SPixel...P(...Np). Previously,
 !      Pc = max RTM P level was flagged as an interpolation failure.
@@ -97,13 +97,13 @@
 !      Added d2X_dP2 variables s/t a cubic spline interpolation can be used.
 !      The second derivatives of the tabulated RTM data are calculated using
 !      the routine 'spline'. These are used to calculate the interpolates/
-!      interpolated gradients using the cubic spline method described 
+!      interpolated gradients using the cubic spline method described
 !      in 'Numerical Recipes for fortran 90' [Press, Flannery, Teukolsky, Vetterling]
 !    5th Sep 2011, Chris Arnold:
 !      Added surf_pressure and surf_index variables - RTM data is only interpolated
 !      in range surf > TOA.
 !    2nd November 2011 c. Poulsen added 'spline' into debug output
-!    6th February 2012 C. Arnold Removed surf_pressure/surf_index - bug fix to 
+!    6th February 2012 C. Arnold Removed surf_pressure/surf_index - bug fix to
 !    deal with compiler issues
 !    7th February 2012 C. Arnold added intent() to argument declarations
 ! 2013/01/17 Matthias Jerg: Adds code to extract RTM_Pc%dHc_dPc and RTM_Pc%dTc_dPc
@@ -147,8 +147,8 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
     real     :: delta_Rac_up(SPixel%Ind%Nthermal)
     real     :: delta_Rac_dwn(SPixel%Ind%Nthermal)
     real     :: delta_Rbc_up(SPixel%Ind%Nthermal)
-    real     :: delta_T       ! Step in Temp between pressure levels 
-    real     :: delta_H       ! Step in GPH between pressure levels 
+    real     :: delta_T       ! Step in Temp between pressure levels
+    real     :: delta_H       ! Step in GPH between pressure levels
     real     :: dT_dPc        ! Gradient of T wrt Pc
     real     :: dH_dPc        ! Gradient of GPH wrt Pc
     real     :: T(SPixel%Ind%Nthermal) ! Calculated Temp at Pc. T2R wants array
@@ -180,7 +180,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
     status = 0
 
 !   Use ThF and ThL to access the first and last required thermal channels
-!   from RTM_Pc and SPixel %LW arrays, since these are always allocated to size 
+!   from RTM_Pc and SPixel %LW arrays, since these are always allocated to size
 !   Ctrl%Ind%Nthermal, but not all thermal channels are used in all pixels
 !   hence SPixel%Ind%ThermalFirst may not equal Ctrl%Ind%ThermalFirst.
 
@@ -238,23 +238,23 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
         do k = ThF,ThL
 !           write(*,*) 'spline2 ',k
             call spline(SPixel%RTM%LW%p(1:SPixel%RTM%LW%Np),&
-                 & SPixel%RTM%LW%Tac(k,1:SPixel%RTM%LW%Np),d2Tac_dP2(k,1:SPixel%RTM%LW%Np))
+                SPixel%RTM%LW%Tac(k,1:SPixel%RTM%LW%Np),d2Tac_dP2(k,1:SPixel%RTM%LW%Np))
             call spline(SPixel%RTM%LW%p(1:SPixel%RTM%LW%Np),&
-                 & SPixel%RTM%LW%Tbc(k,1:SPixel%RTM%LW%Np),d2Tbc_dP2(k,1:SPixel%RTM%LW%Np))
+                SPixel%RTM%LW%Tbc(k,1:SPixel%RTM%LW%Np),d2Tbc_dP2(k,1:SPixel%RTM%LW%Np))
             call spline(SPixel%RTM%LW%p(1:SPixel%RTM%LW%Np),&
-                 & SPixel%RTM%LW%Rac_up(k,1:SPixel%RTM%LW%Np),d2Rac_up_dP2(k,1:SPixel%RTM%LW%Np))
+                SPixel%RTM%LW%Rac_up(k,1:SPixel%RTM%LW%Np),d2Rac_up_dP2(k,1:SPixel%RTM%LW%Np))
             call spline(SPixel%RTM%LW%p(1:SPixel%RTM%LW%Np),&
-                 & SPixel%RTM%LW%Rac_dwn(k,1:SPixel%RTM%LW%Np),d2Rac_dwn_dP2(k,1:SPixel%RTM%LW%Np))
+                SPixel%RTM%LW%Rac_dwn(k,1:SPixel%RTM%LW%Np),d2Rac_dwn_dP2(k,1:SPixel%RTM%LW%Np))
             call spline(SPixel%RTM%LW%p(1:SPixel%RTM%LW%Np),&
-                 & SPixel%RTM%LW%Rbc_up(k,1:SPixel%RTM%LW%Np),d2Rbc_up_dP2(k,1:SPixel%RTM%LW%Np))
-        enddo       
+               SPixel%RTM%LW%Rbc_up(k,1:SPixel%RTM%LW%Np),d2Rbc_up_dP2(k,1:SPixel%RTM%LW%Np))
+        enddo
 
 !        write(*,*) 'spline3'
         call spline(SPixel%RTM%LW%p(1:SPixel%RTM%LW%Np),&
-             & SPixel%RTM%LW%T(1:SPixel%RTM%LW%Np),d2T_dP2(1:SPixel%RTM%LW%Np))
+            SPixel%RTM%LW%T(1:SPixel%RTM%LW%Np),d2T_dP2(1:SPixel%RTM%LW%Np))
 !        write(*,*) 'spline4'
         call spline(SPixel%RTM%LW%p(1:SPixel%RTM%LW%Np),&
-             & SPixel%RTM%LW%H(1:SPixel%RTM%LW%Np),d2H_dP2(1:SPixel%RTM%LW%Np))
+            SPixel%RTM%LW%H(1:SPixel%RTM%LW%Np),d2H_dP2(1:SPixel%RTM%LW%Np))
 
 !       Change in pressure between RTM levels i and i+1
 !       (delta_p is negative for decreasing pressure with increasing i)
@@ -278,7 +278,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
 !        write(*,*) 'spline7'
         do k = ThF,ThL
-            RTM_Pc%LW%dTac_dPc(k) = (delta_Tac(k) / delta_p) - (k0 * d2Tac_dP2(k,i)) + (k1 * d2Tac_dP2(k,i+1)) 
+            RTM_Pc%LW%dTac_dPc(k) = (delta_Tac(k) / delta_p) - (k0 * d2Tac_dP2(k,i)) + (k1 * d2Tac_dP2(k,i+1))
             RTM_Pc%LW%dTbc_dPc(k) = (delta_Tbc(k) / delta_p) - (k0 * d2Tbc_dP2(k,i)) + (k1 * d2Tbc_dP2(k,i+1))
         enddo
 
@@ -296,14 +296,14 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
         do k = ThF,ThL
 !           write(*,*) 'spline10 ',k
             RTM_Pc%LW%dRac_up_dPc(k) =&
-                 & (delta_Rac_up(k) / delta_p) -&
-                 & (k0 * d2Rac_up_dP2(k,i)) + (k1 * d2Rac_up_dP2(k,i+1)) 
+                (delta_Rac_up(k) / delta_p) -&
+                (k0 * d2Rac_up_dP2(k,i)) + (k1 * d2Rac_up_dP2(k,i+1))
             RTM_Pc%LW%dRac_dwn_dPc(k) =&
-                 & (delta_Rac_dwn(k) / delta_p) -&
-                 & (k0 * d2Rac_dwn_dP2(k,i)) + (k1 * d2Rac_dwn_dP2(k,i+1))
+                (delta_Rac_dwn(k) / delta_p) -&
+                (k0 * d2Rac_dwn_dP2(k,i)) + (k1 * d2Rac_dwn_dP2(k,i+1))
             RTM_Pc%LW%dRbc_up_dPc(k) =&
-                 (delta_Rbc_up(k) / delta_p) -&
-                 (k0 * d2Rbc_up_dP2(k,i)) + (k1 * d2Rbc_up_dP2(k,i+1))
+                (delta_Rbc_up(k) / delta_p) -&
+                (k0 * d2Rbc_up_dP2(k,i)) + (k1 * d2Rbc_up_dP2(k,i+1))
         enddo
 !        write(*,*) 'spline11'
 !       Change in temperature between RTM levels i and i+1
@@ -316,7 +316,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 !       Gradient of Planck functions w.r.t. pressure (around Pc)
 
         dT_dPc = (delta_T / delta_p) - (k0 * d2T_dP2(i)) + (k1 * d2T_dP2(i+1))
-        RTM_Pc%dTc_dPc = dT_dPc 
+        RTM_Pc%dTc_dPc = dT_dPc
 
 !       Gradient of delta GPH w.r.t. pressure (around Pc)
 
@@ -426,7 +426,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_Interpol_Thermal) then
       call Find_Lun(bkp_lun)
-      open(unit=bkp_lun,      & 
+      open(unit=bkp_lun,      &
            file=Ctrl%FID%Bkp, &
            status='old',      &
            position='append', &

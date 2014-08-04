@@ -61,7 +61,7 @@ $(OBJS)/nc_dim_info.o: $(OBJS)/ECPConstants.o
 $(OBJS)/nc_read_file.o: $(OBJS)/ECPConstants.o
 $(OBJS)/nc_write_L2.o: $(OBJS)/ECPConstants.o
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
-$(OBJS)/R2T.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o
+$(OBJS)/R2T.o: $(OBJS)/SADChan.o
 $(OBJS)/read_config_file.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/config.o
 $(OBJS)/read_input_dimensions.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o

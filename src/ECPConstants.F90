@@ -265,7 +265,7 @@ module ECP_constants
    integer, parameter :: SPixRef          = 7       !   "   "   Reflectances " " "
    integer, parameter :: SPixTemp         = 8       !   "   "   Temperatures " " "
 
-   ! Fatal values: whole Spixel affected
+   ! Fatal values: whole SPixel affected
    integer, parameter :: SPixAll          = 9       ! All pixels in SPixel out of range (because of 1 or more of the above)
    integer, parameter :: SPixNoCloud      = 10      ! All cloud flags 0.
    integer, parameter :: SPixNoAvge       = 11      ! Can't get SPixel cloud average

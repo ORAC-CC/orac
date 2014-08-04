@@ -25,7 +25,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)

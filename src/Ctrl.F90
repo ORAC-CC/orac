@@ -109,7 +109,7 @@
 !    2014/01/25, Greg McGarragh: Cleaned up the code.
 !
 ! Bugs:
-!   None known
+!   None known.
 !
 ! $Id$
 !
@@ -267,7 +267,7 @@ module CTRL_def
    end type Phaset_t
 
    ! Surface Reflectance parameters
-   ! Arrays are set by ctrl%ind%nsolar - presumably max possible is total no
+   ! Arrays are set by Ctrl%ind%nsolar - presumably max possible is total no
    ! of channels since all could be solar? - Sb, Cb NOT ARRAYS?
    type SurfRef_t
       integer                :: Flag               ! Surface reflectance flag (1=Ctrl,2=SAD,...)

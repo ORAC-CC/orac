@@ -6,10 +6,10 @@
 !    Controls the reading of the long- and short-wave RTM data files.
 !
 ! Arguments:
-!    Name   Type         In/Out Description
-!    Ctrl   struct       Both   Control structure
-!    RTM    alloc struct Out    RTM structure
-!    status int          Out    Error status
+!    Name   Type         In/Out/Both Description
+!    Ctrl   struct       Both        Control structure
+!    RTM    alloc struct Out         RTM structure
+!    status int          Out         Error status
 !
 ! Algorithm:
 !    Call ReadLwRTM (reads longwave RTM data)

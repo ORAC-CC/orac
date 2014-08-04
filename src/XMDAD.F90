@@ -14,14 +14,14 @@
 !    Alternatively sets a phase value in SPixel%FGPhase.
 !
 ! Arguments:
-!    Name   Type    In/Out Description
-!    Ctrl   struct  In     Control structure
-!    SPixel struct  Both   Super pixel structure
-!    index  int     In     The required state parameter index
-!    SetErr logical In     State parameter error flag
-!    X      real    Out    The state parameter
-!    Err    real    Out    (A priori) error in state parameter
-!    status int     Out    Indicates success/failure of subroutine.
+!    Name   Type    In/Out/Both Description
+!    Ctrl   struct  In          Control structure
+!    SPixel struct  Both        Super pixel structure
+!    index  int     In          The required state parameter index
+!    SetErr logical In          State parameter error flag
+!    X      real    Out         The state parameter
+!    Err    real    Out         (A priori) error in state parameter
+!    status int     Out         Indicates success/failure of subroutine.
 !
 ! Algorithm:
 !    Use index to select which variable is set:

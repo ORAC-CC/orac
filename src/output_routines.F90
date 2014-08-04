@@ -20,7 +20,7 @@
 !    10th Nov 2000, Greg McGarragh : Original version
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id: output_routines.F90 1963 2014-02-03 11:38:08Z acpovey $
 !

@@ -6,15 +6,15 @@
 !    Interpolates LW transmittances and radiances to the cloud pressure level.
 !
 ! Arguments:
-!    Name      Type        In/Out Description
-!    Ctrl      struct      In     Control structure
-!    SPixel    struct      In     Super-pixel structure
-!    Pc        float       In     Cloud pressure (from state vector X)
-!    SAD_Chan  float array In     Channel characteristics
-!    RTM_Pc    struct      Out    Contains Tac, Tbc (interpolated transmittances
-!                                 above and below cloud) and gradients wrt cloud
-!                                 pressure.
-!    status    int         Out    Standard status value not set here
+!    Name      Type        In/Out/Both Description
+!    Ctrl      struct      In          Control structure
+!    SPixel    struct      In          Super-pixel structure
+!    Pc        float       In          Cloud pressure (from state vector X)
+!    SAD_Chan  float array In          Channel characteristics
+!    RTM_Pc    struct      Out         Contains Tac, Tbc (interpolated
+!                                      transmittances above and below cloud) and
+!                                      gradients wrt cloud pressure.
+!    status    int         Out         Standard status value not set here
 !
 ! Algorithm:
 !

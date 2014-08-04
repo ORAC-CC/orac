@@ -82,11 +82,11 @@ subroutine Set_Limits(Ctrl, SPixel, status)
    ! an active state variable. If so, set the range to 3 standard deviations
    ! away from the a priori Ts value.
 
-   do i = 1, Spixel%Nx
+   do i = 1, SPixel%Nx
       if (SPixel%X(i) == ITs) then
          delta_Ts          = 3 * sqrt(SPixel%Sx(ITs, ITs))
-	 SPixel%XLLim(ITs) = Spixel%Xb(ITs) - delta_Ts
-	 SPixel%XULim(ITs) = Spixel%Xb(ITs) + delta_Ts
+	 SPixel%XLLim(ITs) = SPixel%Xb(ITs) - delta_Ts
+	 SPixel%XULim(ITs) = SPixel%Xb(ITs) + delta_Ts
       end if
    end do
 

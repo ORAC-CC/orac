@@ -1,18 +1,25 @@
+!---------------------------------------------------------------------
 ! Locate.F90
 !
 ! Purpose:
-!
 !    Finds the location of the pair of values in the set xx that bound x
 !
+! Description:
+!    This routine is the linear equivalent of bcuint.f90
+!
+! Calls:
+!
+! Arguments:
+!    Name Type In/Out/Both Description
+!
 ! Algorithm:
-! 
 !    From Numerical Recipes in Fortran 90
 !
 ! History:
 !    22 April 2009 - Written by C. Arnold
 !
 ! Bugs
-!    None known
+!    None known.
 !
 ! $Id$
 !

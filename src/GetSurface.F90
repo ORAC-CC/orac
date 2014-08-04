@@ -9,16 +9,16 @@
 !    Also calculates the covariances for the solar channels.
 !
 ! Arguments:
-!    Name      Type         In/Out Description
-!    Ctrl      struct       In     Control structure
-!    SAD_Chan  struct       In     SAD channel structure
-!    SPixel    alloc struct Both   Super-pixel structure
-!    MSI_Data  struct       In     Data structure. Contains the multi-spectral
-!                                  image measurements, location values,
-!                                  geometry etc for the current image segment,
-!                                  from which the current SPixel values will
-!                                  be extracted.
-!    status    integer      Out    Error status
+!    Name      Type         In/Out/Both Description
+!    Ctrl      struct       In          Control structure
+!    SAD_Chan  struct       In          SAD channel structure
+!    SPixel    alloc struct Both        Super-pixel structure
+!    MSI_Data  struct       In          Data structure. Contains the multi-
+!                                       spectral image measurements, location
+!                                       values, geometry etc for the current
+!                                       image segment, from which the current
+!                                       SPixel values will be extracted.
+!    status    integer      Out         Error status
 !
 ! Algorithm:
 !    Depending on the method specified for setting surface reflectance
@@ -299,15 +299,15 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
             else if (SPixel_b(i) == 0.0) then ! missing land
                SPixel_b(i) = Ctrl%Rs%b(ii,2)
-            else if (Spixel_b(i) >  1.0) then ! odd value for land
+            else if (SPixel_b(i) >  1.0) then ! odd value for land
                SPixel_b(i) = Ctrl%Rs%b(ii,2)
             ! Comment out this section to install loose qc
 !           else if (( qc1 == 1) .and. (qc2 >= 9 )) then
                ! Use the default value MODIS not reliable
-!              Spixel_b(i) = Ctrl%Rs%b(ii,2)
+!              SPixel_b(i) = Ctrl%Rs%b(ii,2)
 !           else if (( qc1 > 1)) then
                ! Use the default value MODIS not reliable
-!              Spixel_b(i) = Ctrl%Rs%b(ii,2)
+!              SPixel_b(i) = Ctrl%Rs%b(ii,2)
             end if
          endif
       enddo
@@ -346,11 +346,11 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
                if (SPixel%Surface%Sea == 1) then
                   SPixel_Sb(i,j) = float(-(intflag-1)) * float(SPixel%Mask) * &
-                                    Spixel_b(i) * Spixel_b(j) * Sb(ii,1) * Sb(jj,1) * Ctrl%Rs%Cb
+                                    SPixel_b(i) * SPixel_b(j) * Sb(ii,1) * Sb(jj,1) * Ctrl%Rs%Cb
 
                else
                   SPixel_Sb(i,j) = SPixel_Sb(i,j) + (float(intflag) * float(SPixel%Mask) * &
-                                    Spixel_b(i) * Spixel_b(j) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
+                                    SPixel_b(i) * SPixel_b(j) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
                endif
 
                SPixel_Sb(j,i) =  SPixel_Sb(i,j)

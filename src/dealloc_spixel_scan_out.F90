@@ -27,7 +27,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine dealloc_spixel_scan_out(spixel_scan_out)
@@ -36,7 +36,7 @@ subroutine dealloc_spixel_scan_out(spixel_scan_out)
 
   implicit none
 
-  type(spixel_scanline_primary_output) :: spixel_scan_out
+  type(spixel_scanline_primary_output), intent(inout) :: spixel_scan_out
 
   deallocate(spixel_scan_out%vidsat_zen)
   deallocate(spixel_scan_out%vidsol_zen)

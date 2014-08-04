@@ -31,18 +31,22 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
-subroutine alloc_spixel_scan_out( ixstart,ixstop,iystart,iystop,NViews,spixel_scan_out)
+subroutine alloc_spixel_scan_out(ixstart,ixstop,iystart,iystop,NViews, &
+                                 spixel_scan_out)
 
    use ECP_Constants
 
    implicit none
 
-   integer :: ixstart, ixstop,iystart, iystop, NViews
-
-   type(spixel_scanline_primary_output) :: spixel_scan_out
+   integer,                              intent(in)    :: ixstart
+   integer,                              intent(in)    :: ixstop
+   integer,                              intent(in)    :: iystart
+   integer,                              intent(in)    :: iystop
+   integer,                              intent(in)    :: NViews
+   type(spixel_scanline_primary_output), intent(inout) :: spixel_scan_out
 
 
    allocate(spixel_scan_out%vidsat_zen(NViews))
@@ -155,17 +159,21 @@ subroutine alloc_spixel_scan_out( ixstart,ixstop,iystart,iystop,NViews,spixel_sc
 end subroutine alloc_spixel_scan_out
 
 
-subroutine alloc_spixel_scan_out_sec(ixstart,ixstop,iystart,iystop,Ny,Nx,lcovar,spixel_scan_out_sec)
+subroutine alloc_spixel_scan_out_sec(ixstart,ixstop,iystart,iystop,Ny,Nx,lcovar, &
+                                     spixel_scan_out_sec)
 
    use ECP_Constants
 
    implicit none
 
-   logical :: lcovar
-
-   integer :: ixstart, ixstop,iystart,iystop,Ny,Nx
-
-   type(spixel_scanline_secondary_output) :: spixel_scan_out_sec
+   integer,                                intent(in)    :: ixstart
+   integer,                                intent(in)    :: ixstop
+   integer,                                intent(in)    :: iystart
+   integer,                                intent(in)    :: iystop
+   integer,                                intent(in)    :: Ny
+   integer,                                intent(in)    :: Nx
+   logical,                                intent(inout) :: lcovar
+   type(spixel_scanline_secondary_output), intent(inout) :: spixel_scan_out_sec
 
 
    allocate(spixel_scan_out_sec%vidres(Ny))
@@ -270,15 +278,16 @@ subroutine alloc_spixel_scan_out_sec(ixstart,ixstop,iystart,iystop,Ny,Nx,lcovar,
 end subroutine alloc_spixel_scan_out_sec
 
 
-subroutine alloc_spixel_scan_in( ixstart,ixstop,Ny,spixel_scan_in)
+subroutine alloc_spixel_scan_in(ixstart,ixstop,Ny,spixel_scan_in)
 
    use ECP_Constants
 
    implicit none
 
-   integer :: ixstart, ixstop, Ny
-
-   type(spixel_scanline_input) :: spixel_scan_in
+   integer,                     intent(in)    :: ixstart
+   integer,                     intent(in)    :: ixstop
+   integer,                     intent(in)    :: Ny
+   type(spixel_scanline_input), intent(inout) :: spixel_scan_in
 
 
    allocate(spixel_scan_in%vidinput(Ny))

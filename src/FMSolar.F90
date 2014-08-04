@@ -207,32 +207,32 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    ! Derivative w.r.t. cloud optical depth, Tau
    d_REF(:,ITau) = X(IFr) * T * &
-        & (d_CRP(:,IRBd,ITau) + &
-        & Sp * SPixel%Rs * &
-        & (T_all * d_CRP(:,ITd,ITau) + &
-        & CRP(:,ITd) * (d_CRP(:,ITB,ITau) + d_CRP(:,ITFBd,ITau)) &
-        & ) + &
-        & S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,ITau) / S_dnom)
+      (d_CRP(:,IRBd,ITau) + &
+      Sp * SPixel%Rs * &
+      (T_all * d_CRP(:,ITd,ITau) + &
+      CRP(:,ITd) * (d_CRP(:,ITB,ITau) + d_CRP(:,ITFBd,ITau)) &
+      ) + &
+      S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,ITau) / S_dnom)
 
    ! Derivative w.r.t. effective radius, r_e
    d_REF(:,IRe)  = X(IFr) * T * &
-        & (d_CRP(:,IRBd,IRe ) + &
-        & Sp * SPixel%Rs * &
-        & (T_all * d_CRP(:,ITd,IRe ) + &
-        & CRP(:,ITd) * (d_CRP(:,ITB,IRe ) + d_CRP(:,ITFBd,IRe )) &
-        & ) + &
-        & S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,Ire ) / S_dnom)
+      (d_CRP(:,IRBd,IRe ) + &
+      Sp * SPixel%Rs * &
+      (T_all * d_CRP(:,ITd,IRe ) + &
+      CRP(:,ITd) * (d_CRP(:,ITB,IRe ) + d_CRP(:,ITFBd,IRe )) &
+      ) + &
+      S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,Ire ) / S_dnom)
 
    ! Derivative w.r.t. cloud-top pressure, P_c
    do i=1,SPixel%Ind%NSolar
       d_REF(i,IPc) = X(IFr) * &
-           & (1.0 * RTM_Pc%dTac_dPc(i) * &
-           & (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) + &
-              SPixel%Geom%SEC_v(SPixel%ViewIdx(i))) &
-           & * REF_over(i)/RTM_Pc%Tac(i))+ &
-           & (2.0 * RTM_Pc%dTbc_dPc(i) * T(i) * S(i) * RTM_Pc%Tbc(i) * &
-           & ((1.0/Tbc2(i)) + (CRP(i,IRFd) * SPixel%Rs(i) / &
-           & S_dnom(i))))
+         (1.0 * RTM_Pc%dTac_dPc(i) * &
+         (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) + &
+          SPixel%Geom%SEC_v(SPixel%ViewIdx(i))) &
+         * REF_over(i)/RTM_Pc%Tac(i))+ &
+         (2.0 * RTM_Pc%dTbc_dPc(i) * T(i) * S(i) * RTM_Pc%Tbc(i) * &
+         ((1.0/Tbc2(i)) + (CRP(i,IRFd) * SPixel%Rs(i) / &
+         S_dnom(i))))
    end do
 
    ! Derivative w.r.t. cloud fraction, f
@@ -244,10 +244,10 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    ! Derivative w.r.t. surface reflectance, R_s
    do i=1,SPixel%Ind%NSolar
       d_REF(i,IRs) = &
-           & (X(IFr) * T(i) * &
-           & (Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc2(i)/S_dnom(i))) + &
-           & (SPixel%RTM%dREF_clear_dRs(i) * (1.0-X(IFr))))/ &
-           & SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+         (X(IFr) * T(i) * &
+         (Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc2(i)/S_dnom(i))) + &
+         (SPixel%RTM%dREF_clear_dRs(i) * (1.0-X(IFr))))/ &
+         SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
    end do
 
    ! Open breakpoint file if required, and write out reflectances and gradients.

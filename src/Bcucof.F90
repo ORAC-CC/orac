@@ -2,15 +2,17 @@
 ! Bcucof.F90
 !
 ! Purpose:
-!	Calculates the coefficients for a bicubic interpolation
+!    Calculates the coefficients for a bicubic interpolation
 !
 ! Description:
-!	Given arrays y, y1, y2 and y12, each of length 4, containing
-!	the function, gradients and cross derivative at the four points
-!	of a rectangular grid cell (numbered counter clockwise from the
-!	lower left), and given d1 and d2, the length of the grid cell
-!	in the 1- and 2- directions, this routine returns the 4x4 table
-!	c that is used by the routine BCuInt_CA for bicubic interpolation.
+!    Given arrays y, y1, y2 and y12, each of length 4, containing the function,
+!    gradients and cross derivative at the four points of a rectangular grid
+!    cell (numbered counter clockwise from the lower left), and given d1 and d2,
+!    the length of the grid cell in the 1- and 2- directions, this routine
+!    returns the 4x4 table c that is used by the routine BCuInt_CA for bicubic
+!    interpolation.
+!
+! Calls:
 !
 ! Arguments:
 !    Name        Type    In/Out/Both    Description
@@ -40,7 +42,7 @@
 !       code cleanup.
 !
 ! Bugs
-!    None known
+!    None known.
 !
 ! $Id$
 !
@@ -50,9 +52,13 @@ subroutine bcucof(y,y1,y2,y12,d1,d2,c)
 
     implicit none
 
+    ! Define arguments
+
     real, dimension(4),  intent(in)  :: y,y1,y2,y12
     real,                intent(in)  :: d1,d2
     real, dimension(16), intent(out) :: c
+
+    ! Define local variables
 
     real                             :: a
     real, dimension(16)              :: x

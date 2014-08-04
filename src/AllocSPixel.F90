@@ -177,13 +177,13 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
    ! to write them out for all SPixels. Get_SPixel (or subordinate functions)
    ! will reallocate them.
 
-   Spixel%Ind%Ny = 0
-   Spixel%Ind%NSolar = 0
-   Spixel%Ind%NThermal = 0
+   SPixel%Ind%Ny = 0
+   SPixel%Ind%NSolar = 0
+   SPixel%Ind%NThermal = 0
 
    allocate(SPixel%Illum(Ctrl%Ind%NViews))
 
-   allocate(Spixel%Ym(1))
+   allocate(SPixel%Ym(1))
 
    allocate(SPixel%Sy(1,1))
 
@@ -191,10 +191,10 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
    SPixel%ViewIdx(1)=1
 
    SPixel%Nx = MaxStateVar
-   allocate(Spixel%X(SPixel%Nx))
-   Spixel%X  = 0
-   allocate(Spixel%XI(SPixel%Nx))
-   Spixel%XI = 0
+   allocate(SPixel%X(SPixel%Nx))
+   SPixel%X  = 0
+   allocate(SPixel%XI(SPixel%Nx))
+   SPixel%XI = 0
 
    allocate(SPixel%spixel_y_to_ctrl_y_index(Ctrl%Ind%Ny))
    allocate(SPixel%spixel_y_solar_to_ctrl_y_index(Ctrl%Ind%Ny))

@@ -8,7 +8,7 @@
 !
 ! Arguments:
 !    Name   Type   In/Out/Both Description
-!    Spixel struct In          Current super-pixel info.
+!    SPixel struct In          Current super-pixel info.
 !    Unit   real   Out         Unit matrix
 !    status int    Out         Error status
 !
@@ -28,15 +28,15 @@
 !       Removed unused status variable.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_Unit(Spixel, Unit)
+subroutine Set_Unit(SPixel, Unit)
 
-   use Spixel_def
+   use SPixel_def
 
    implicit none
 
@@ -55,7 +55,7 @@ subroutine Set_Unit(Spixel, Unit)
 
    ! Set diagonals to unity
 
-   do i = 1, Spixel%Nx
+   do i = 1, SPixel%Nx
       Unit(i,i) = 1.0
    end do
 

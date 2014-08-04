@@ -34,7 +34,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &

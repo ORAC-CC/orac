@@ -36,7 +36,7 @@
 !       Some intent changes.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id$
 !

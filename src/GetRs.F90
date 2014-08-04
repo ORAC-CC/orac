@@ -8,14 +8,14 @@
 !    Ctrl%Resoln%Ameth
 !
 ! Arguments:
-!    Name      Type         In/Out Description
-!    Ctrl      struct       In     Control structure
-!    SPixel    alloc struct Both   Super pixel structure
-!    SPixel_b  real array   In     Super pixel array of b (using super pixel
-!                                  surface flags)
-!    SPixel_Sb real array   In     Super pixel array of Sb (using super pixel
-!                                  surface flags)
-!    status    integer      Out    Error status
+!    Name      Type         In/Out/Both Description
+!    Ctrl      struct       In          Control structure
+!    SPixel    alloc struct Both        Super pixel structure
+!    SPixel_b  real array   In          Super pixel array of b (using super
+!                                       pixel surface flags)
+!    SPixel_Sb real array   In          Super pixel array of Sb (using super
+!                                       pixel surface flags)
+!    status    integer      Out         Error status
 !
 ! Algorithm:
 !    Average method:
@@ -56,7 +56,7 @@
 !       Cleaned up the code.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !

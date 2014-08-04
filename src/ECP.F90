@@ -184,7 +184,7 @@
 !       when a retrieval is not possible.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id$
 !
@@ -443,14 +443,14 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Make read in rttov data in one go, no more segment reads
    if (status == 0) then
       call read_input_dimensions_lwrtm(Ctrl,Ctrl%Fid%LWRTM,&
-           & RTM%LW%Grid%NLatLon,RTM%LW%Grid%NLon, RTM%LW%Grid%NLat,&
-           & RTM%LW%NP,RTM%LW%NPLAY,&
-           & RTM%LW%NLWF,RTM%LW%NV,0)
+         RTM%LW%Grid%NLatLon,RTM%LW%Grid%NLon, RTM%LW%Grid%NLat,&
+         RTM%LW%NP,RTM%LW%NPLAY,&
+         RTM%LW%NLWF,RTM%LW%NV,0)
 
       call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM,&
-           & RTM%SW%Grid%NLatLon,RTM%SW%Grid%NLon, RTM%SW%Grid%NLat,&
-           & RTM%SW%NP,RTM%SW%NPLAY,&
-           & RTM%SW%NSWF,RTM%SW%NV,0)
+         RTM%SW%Grid%NLatLon,RTM%SW%Grid%NLon, RTM%SW%Grid%NLat,&
+         RTM%SW%NP,RTM%SW%NPLAY,&
+         RTM%SW%NSWF,RTM%SW%NV,0)
 
       RTM%LW%NP=RTM%LW%NPLAY
       RTM%SW%NP=RTM%SW%NPLAY
@@ -556,16 +556,16 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       if (status == 0) then
          write(*,*) 'path1: ',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
          call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_primary_outputpath_and_file),&
-                 ncid_primary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,1,status)
+            ncid_primary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,1,status)
          write(*,*) 'path2: ',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
          call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_secondary_outputpath_and_file),&
-                 ncid_secondary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,2, status)
+           ncid_secondary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,2, status)
 
          ! Allocate output arrays
          call alloc_spixel_scan_out(ixstart,ixstop,iystart,iystop,Ctrl%Ind%NViews, &
-                 spixel_scan_out)
+                                    spixel_scan_out)
          call alloc_spixel_scan_out_sec(ixstart,ixstop,iystart,iystop,Ctrl%Ind%Ny, &
-                 MaxStateVar,lcovar,spixel_scan_out_sec)
+                                        MaxStateVar,lcovar,spixel_scan_out_sec)
 
          ! Create NetCDF files and variables
          call def_vars_primary(Ctrl, ncid_primary, dims_var, spixel_scan_out, &
@@ -635,7 +635,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       ! Initialise values required before main loop begins, e.g. first guess
       ! phase which may be required for SDAD first guess/a priori setting in the
       ! first SPixel when no retrieved data is available.
-      Spixel%XnSav = Ctrl%Xb
+      SPixel%XnSav = Ctrl%Xb
       SPixel%SnSav = 0
       do m=1,MaxStateVar
          SPixel%SnSav(m,m) = Ctrl%Sx(m) ** 2

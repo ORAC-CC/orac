@@ -3,6 +3,7 @@
 !
 ! Purpose:
 !
+! Description:
 !    Given input vectors a,b,c,r solves the tridiagonal equations shown for
 !    output vector u
 !
@@ -13,6 +14,8 @@
 !    |                      .. a(  N) b(  N)|   |u(  N)|   |n(  N)|
 !
 !    Called by spline.f90
+!
+! Calls:
 !
 ! Arguments:
 !    Name  Type       in/Out/Both Description
@@ -29,7 +32,7 @@
 !    31st April 2011 - Adapted for ORAC F90 by C. Arnold
 !
 ! Bugs
-!    None known
+!    None known.
 !
 ! $Id$
 !

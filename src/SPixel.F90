@@ -71,7 +71,7 @@
 !     4th July 2001, Andy Smith:
 !       Comments updated.
 !       LastX0 and LastY0 added to Loc structure. Used to record the location of
-!       the last successfully retrieved solution Spixel%XnSav, so that validity
+!       the last successfully retrieved solution SPixel%XnSav, so that validity
 !       of that solution at a given location can be checked.
 !       XnSav and SnSav introduced. These hold the last "good" state vector
 !       while Xn and Sn hold the most recent.

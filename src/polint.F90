@@ -1,40 +1,37 @@
-! Name:
-!
+!-------------------------------------------------------------------------------
+! Name: polint.F90
 !
 ! Purpose:
 !
-!
 ! Description and Algorithm details:
-!
+! From Numerical Recipes in Fortran 90 [Press, Flannery]
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-!
 ! Local variables:
 ! Name Type Description
 !
-!
 ! History:
-!
+! 2011/02/03, Matthias Jerg: Adapted for L2 software
 !
 ! $Id$
 !
 ! Bugs:
-!
-!
+! None known.
+!-------------------------------------------------------------------------------
 
-SUBROUTINE polint(xa,ya,n,x,y,dy)
+subroutine polint(xa,ya,n,x,y,dy)
 
-  use ECP_Constants
+  use ecp_constants
 
   implicit none
 
-  INTEGER(kind=nint) :: n,NMAX
-  REAL(kind=sreal) :: dy,x,y,xa(n),ya(n)
-  PARAMETER (NMAX=10)
-  INTEGER(kind=nint) :: i,m,ns
-  REAL(kind=sreal) :: den,dif,dift,ho,hp,w,c(NMAX),d(NMAX)
+  integer(kind=nint) :: n,nmax
+  real(kind=sreal) :: dy,x,y,xa(n),ya(n)
+  parameter (nmax=10)
+  integer(kind=nint) :: i,m,ns
+  real(kind=sreal) :: den,dif,dift,ho,hp,w,c(nmax),d(nmax)
   ns=1
   dif=abs(x-xa(1))
   do i=1,n
@@ -69,4 +66,4 @@ SUBROUTINE polint(xa,ya,n,x,y,dy)
      y=y+dy
   enddo
   return
-END SUBROUTINE polint
+end subroutine polint

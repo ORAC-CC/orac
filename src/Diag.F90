@@ -28,7 +28,7 @@
 !       Cleaned up the code.
 !
 ! Bugs:
-!   None known
+!   None known.
 !
 ! $Id$
 !

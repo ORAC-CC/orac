@@ -205,7 +205,7 @@
 !    2014/07/24, AP: Removed unusued status variable.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id$
 !
@@ -529,7 +529,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
          if (ios /= 0) then
             status = BkpFileOpenErr
             call Write_Log(Ctrl, &
-                 & 'Invert_Marquardt: Error opening breakpoint file', status)
+               'Invert_Marquardt: Error opening breakpoint file', status)
          else
             write(bkp_lun,'(a)')'Invert_Marquardt:'
             write(bkp_lun,'(2x,a,11(f9.3,1x))') 'Y:            ',Y
@@ -678,8 +678,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
          ! overwrite status has been called since).
 #ifdef DEBUG
          if (stat /= 0) &
-              & call Write_Log(Ctrl, 'Invert_Marquardt: Error in Solve_Cholesky', &
-              & stat)
+            call Write_Log(Ctrl, 'Invert_Marquardt: Error in Solve_Cholesky', &
+                           stat)
 #endif
          ! Set and de-scale the new delta_X
          if (stat == 0) delta_X = delta_X / Ctrl%Invpar%XScale(SPixel%X)

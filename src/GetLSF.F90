@@ -6,16 +6,16 @@
 !    Sets the land sea flag if no visible channels are present
 !
 ! Arguments:
-!    Name     Type         In/Out Description
-!    Ctrl     struct       In     Control structure
-!    SAD_Chan struct       In     SAD channel structure
-!    SPixel   alloc struct Both   Super-pixel structure
-!    MSI_Data struct       In     Data structure. Contains the multi-spectral
-!                                 image measurements, location values,
-!                                 geometry etc for the current image segment,
-!                                 from which the current SPixel values will be
-!                                 extracted.
-!    status   integer      Out    Error status
+!    Name     Type         In/Out/Both Description
+!    Ctrl     struct       In          Control structure
+!    SAD_Chan struct       In          SAD channel structure
+!    SPixel   alloc struct Both        Super-pixel structure
+!    MSI_Data struct       In          Data structure. Contains the multi-
+!                                      spectral image measurements, location
+!                                      values, geometry etc for the current
+!                                      image segment, from which the current
+!                                      SPixel values will be extracted.
+!    status   integer      Out         Error status
 !
 ! Algorithm:
 !
@@ -27,7 +27,7 @@
 !    30/07/2014, Greg McGarragh: Cleaned up the code.
 !
 ! Bugs:
-!  none known
+!   None known.
 !
 ! $Id$
 !

@@ -1,23 +1,28 @@
-! locate.90
+!-------------------------------------------------------------------------------
+! Name: locate.F90
 !
 ! Purpose:
 !
+! Description and Algorithm details:
+! From Numerical Recipes in Fortran 90 [Press, Flannery]
 !
-! Algorithm
-!    From Numerical Recipes in Fortran 90 [Press, Flannery]
-!    
-! History
-!    2011/02/03 - Adapted for L2 software by M. Jerg
+! Arguments:
+! Name Type In/Out/Both Description
 !
-! Bugs
-!    None known
+! Local variables:
+! Name Type Description
+!
+! History:
+! 2011/02/03, Matthias Jerg: Adapted for L2 software
 !
 ! $Id$
 !
-!---------------------------------------------------------------------
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
 subroutine locate_int(xx,n,x,j)
-  
+
   use ECP_Constants
 
   implicit none

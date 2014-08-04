@@ -2,17 +2,16 @@
 ! Bcuint.F90
 !
 ! Purpose:
-!	Performs a bicubic interpolation on the interval ((0,0),(0,1),
-!	(1,1),(1,0))
+!    Performs a bicubic interpolation on the interval ((0,0),(0,1), (1,1),(1,0))
 !
 ! Description:
-!	Bicubic Interpolation within a grid quare. Input quantities are
-!	y, y1, y2, y12, x1l, x1u, x2l, x2u, x1, x2 as described below.
-!	The interpolated function value is returned as ansy and the
-!	interpolated gradient values as ansy1 and ansy2.
+!    Bicubic Interpolation within a grid quare. Input quantities are y, y1, y2,
+!    y12, x1l, x1u, x2l, x2u, x1, x2 as described below.  The interpolated
+!    function value is returned as ansy and the interpolated gradient values as
+!    ansy1 and ansy2.
 !
 ! Calls:
-!	BCuCof.F90
+!    BCuCof.F90
 !
 ! Arguments:
 !    Name        Type    In/Out/Both    Description
@@ -58,7 +57,7 @@
 !       made in bcucof() plus some code cleanup.
 !
 ! Bugs
-!    None known
+!    None known.
 !
 ! $Id$
 !
@@ -68,13 +67,13 @@ subroutine bcuint(y,y1,y2,y12,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
 
     implicit none
 
-!   Define arguments
+    ! Define arguments
 
     real, dimension(4), intent(in)  :: y,y1,y2,y12
     real,               intent(in)  :: x1l,x1u,x2l,x2u,x1,x2
     real,               intent(out) :: ansy,ansy1,ansy2
 
-!   Define local variables
+    ! Define local variables
 
     integer              :: i
     real                 :: t,u

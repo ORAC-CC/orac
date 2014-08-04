@@ -46,7 +46,7 @@
 !       subroutines in the module and the interfaces are automatically generated.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id: IntRoutines.F90 1963 2014-02-03 11:38:08Z acpovey $
 !

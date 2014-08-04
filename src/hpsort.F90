@@ -1,9 +1,10 @@
 subroutine hpsort(n,ra)
-!    From Numerical Recipes in Fortran 90 [Press, Flannery]
-!    sorts an array (ra) into asceding numerical order
+! From Numerical Recipes in Fortran 90 [Press, Flannery]
+! sorts an array (ra) into asceding numerical order
+!
 ! History
 !    2011/02/03 - Adapted for L3 software by M. Jerg
-!    2012/06/13- Adapted for preprocessing software C Poulsen
+!    2012/06/13 - Adapted for preprocessing software C Poulsen
 !
 !  use vartypes
 !  use preproc_constants

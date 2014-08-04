@@ -7,12 +7,12 @@
 !    super pixel coordinates.
 !
 ! Arguments:
-!    Name     Type         In/Out Description
-!    Ctrl     struct       In     Control structure
-!    SAD_Chan struct array In     Channel description structures
-!    SPixel   struct       Both   Super-pixel structure
-!    RTM      alloc struct Both   RTM structure
-!    status   integer      Out    Error status
+!    Name     Type         In/Out/Both Description
+!    Ctrl     struct       In          Control structure
+!    SAD_Chan struct array In          Channel description structures
+!    SPixel   struct       Both        Super-pixel structure
+!    RTM      alloc struct Both        RTM structure
+!    status   integer      Out         Error status
 !
 ! Algorithm:
 !    Check that the image data lies within the bounds of the LW RTM data
@@ -44,7 +44,7 @@
 !       Cleaned up the code.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !

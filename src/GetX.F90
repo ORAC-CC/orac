@@ -8,7 +8,7 @@
 !    SPixel%AP.
 !
 ! Arguments:
-!    Name           Type    In/Out Description
+!    Name           Type    In/Out/Both Description
 !    Ctrl           struct  In     Control structure
 !    SAD_CloudClass struct  In     SAD cloud class structure
 !    SPixel         struct  Both   Super-pixel structure (contains the phase and
@@ -69,7 +69,7 @@
 !     5th Apr 2011, Andy Smith:
 !       Removed selection methods SAD and SDAD. Renamed SelmMDAD to SelmMeas.
 !       Mopping up from removal of phase change. Removed setting of
-!       Spixel%FGPhase as it is redundant.
+!       SPixel%FGPhase as it is redundant.
 !     5th Aug 2011, Caroline Polsen:
 !       Remove rf to sadcloudclass to simplify code. These values can be read
 !       from the driver file instead.
@@ -79,7 +79,7 @@
 !       Set in active statearibaes error to a very low number i.e assume they
 !       are well known and let information csignal go to active state variables
 !     3rd Oct 2012, Caroline Poulsen:
-!       Modified how ctrl%sx is set added skint to be surface temperature first
+!       Modified how Ctrl%sx is set added skint to be surface temperature first
 !       guess
 !    26th Feb 2013, Caroline Poulsen:
 !       Added in option to process pixel if only one IR channel is present
@@ -90,7 +90,7 @@
 !       Cleaned up the code.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !
@@ -176,7 +176,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
             ! If only one is present then remove surface temperature state
             ! variable from state vector by setting uncertainty to a very small
             ! number SPixel%QC = ibset(SPixel%QC, SPixTemp)
-            if (btest(Spixel%QC,SPixTemp )) then
+            if (btest(SPixel%QC,SPixTemp )) then
                ! Check at least one thermal channel is present
             end if
          endif
@@ -191,7 +191,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
       ! supported for FG and AP.
 
       ! Set first guess
-      if (SPixel%FG(i) == Spixel%AP(i)) then
+      if (SPixel%FG(i) == SPixel%AP(i)) then
 
          SPixel%X0(i) = SPixel%Xb(i)
 
@@ -200,7 +200,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
          SetErr = .false. ! Error values are not required for first guess
 
-         select case (Spixel%FG(i))
+         select case (SPixel%FG(i))
 
          case (SelmMeas)  ! MDAD method. Not supported for all variables.
             call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)

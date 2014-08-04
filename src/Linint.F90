@@ -2,14 +2,12 @@
 ! Linint.F90
 !
 ! Purpose:
-!	Performs a linear interpolation on the interval ((0,0),(0,1),
-!	(1,1),(1,0))
+!    Performs a linear interpolation on the interval ((0,0),(0,1), (1,1),(1,0))
 !
 ! Description:
-!	This routine is the linear equivalent of bcuint.f90
+!    This routine is the linear equivalent of bcuint.f90
 !
 ! Calls:
-!	BCuCof.F90
 !
 ! Arguments:
 !    Name        Type    In/Out/Both    Description
@@ -47,7 +45,7 @@
 !       Cleaned up code.
 !
 ! Bugs
-!    None known
+!    None known.
 !
 ! $Id$
 !

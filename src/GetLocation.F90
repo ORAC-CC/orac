@@ -7,14 +7,14 @@
 !    the required averaging method.
 !
 ! Arguments:
-!    Name     Type   In/Out Description
-!    Ctrl     struct In     Control structure
-!    SPixel   struct Both   Super-pixel structure
-!    MSI_Data struct In     Data structure. Contains the multi-spectral image
-!                           measurements, location values, geometry etc for the
-!                           current image segment, from which the current SPixel
-!                           values will be extracted.
-!    status   integer Out   Error status
+!    Name     Type   In/Out/Both Description
+!    Ctrl     struct In          Control structure
+!    SPixel   struct Both        Super-pixel structure
+!    MSI_Data struct In          Data structure. Contains the multi-spectral
+!                                image measurements, location values, geometry
+!                                etc for the current image segment, from which
+!                                the current SPixel values will be extracted.
+!    status   integer Out        Error status
 !
 ! Algorithm:
 !    Determine which averaging method is required
@@ -52,7 +52,7 @@
 !       Cloud flags converted to real to match current ORAC data.
 !
 ! Bugs:
-!   Legacy code for super pixeling.
+!    Legacy code for super pixeling.
 !
 ! $Id$
 !

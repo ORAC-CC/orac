@@ -13,10 +13,10 @@
 !    SegSize  int           In          Size of image segment in rows of pixels.
 !    MSI_files_open Logical In          Indicates whether the MSI data file is
 !                                       open (if not, open it).
-!    lun      int           In/Out      File unit number set by this routine
+!    lun      int           Both        File unit number set by this routine
 !                                       when file is opened, passed back and
 !                                       forth for subsequent reads.
-!    MSI_Data struct        In/Out      Data structure: the Geometry data part
+!    MSI_Data struct        Both        Data structure: the Geometry data part
 !                                       of this struct is populated by this
 !                                       routine, and is overwritten on
 !                                       successive calls.

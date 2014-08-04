@@ -31,7 +31,7 @@
 !    Flag reasons by setting bits in the quality control value SPixel%QC
 !       (non-zero QC is not fatal at this stage, either to the super-pixel or to
 !       the ECP)
-!    For each case below, if the spixel cannot be used, set QC flag bit
+!    For each case below, if the SPixel cannot be used, set QC flag bit
 !    SPixNoProc: indicates the error is fatal for the SPixel, but not the ECP.
 !    Call Get_Location
 !    Call Get_Cloudflags
@@ -110,7 +110,7 @@
 !       Original code works on DEC but not Linux.
 !    10th Jul 2001, Andy Smith:
 !       Attempt to rationalise error handling and SPixel checking. Status was
-!       used to flag conditions that were fatal for the SPixel. Spixel%QC was
+!       used to flag conditions that were fatal for the SPixel. SPixel%QC was
 !       used to flag out of range values etc but these were not considered fatal.
 !       Changing to use SPixel%QC for all flagging. As a result some
 !       QC settings now indicate conditions are fatal for the SPixel. This will
@@ -177,7 +177,7 @@
 !       Removal of super-pixelling, i.e. no averaging of flags etc needed.
 !       Any super-pixelling required will now be done in pre-processing.
 !       Resolution for the retrieval will be fixed at 1 pixel.
-!       Remove calculation of Spixel%Loc%Xc and Xn, simplify calls to
+!       Remove calculation of SPixel%Loc%Xc and Xn, simplify calls to
 !       subordinate functions - no need for range of pixel locations.
 !       Removed calculation of Fracnext (used in XMDAD to set error).
 !     7th Apr 2011, Andy Smith:
@@ -214,9 +214,9 @@
 !       this subroutine have been disabled except to set QC.
 !
 ! Bugs:
-!   Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
-!   later changes made for development of aerosol retrieval etc, since the
-!   source of changes is a copy of the code from 2006 (last recorded mod).
+!    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
+!    later changes made for development of aerosol retrieval etc, since the
+!    source of changes is a copy of the code from 2006 (last recorded mod).
 !
 ! $Id$
 !
@@ -345,7 +345,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! not process. Set QC flag and report to the log.
 
    if (SPixel%NMask == 0) then
-      Spixel%QC = ibset(Spixel%QC, SPixAll)
+      SPixel%QC = ibset(SPixel%QC, SPixAll)
       stat = SPixelInvalid ! pixel is invalid
 #ifdef DEBUG
       write(unit=message, fmt=*) &
@@ -360,13 +360,13 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
       ! simple assignment. "Flags" is now 1 single flag.
 
       SPixel%Cloud%Flags = MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
-      Spixel%Cloud%Fraction = SPixel%Cloud%Flags
+      SPixel%Cloud%Fraction = SPixel%Cloud%Flags
 
 
       if (SPixel%Cloud%Fraction == 0) then
          ! No cloud in SPixel. Don't process.
 
-         Spixel%QC = ibset(Spixel%QC, SPixNoCloud)
+         SPixel%QC = ibset(SPixel%QC, SPixNoCloud)
          stat = SPixelCloudFrac
 #ifdef DEBUG
          write(unit=message, fmt=*) &
@@ -382,7 +382,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
             if (stat /= 0) then
 !              write(*,*) 'WARNING: Get_Illum', stat
-               Spixel%QC = ibset(Spixel%QC, SPixillum)
+               SPixel%QC = ibset(SPixel%QC, SPixillum)
             endif
          end if
 
@@ -390,7 +390,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_Geometry', stat
-               Spixel%QC = ibset(Spixel%QC, SPixGeom)
+               SPixel%QC = ibset(SPixel%QC, SPixGeom)
             endif
          end if
 
@@ -398,7 +398,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_RTM', stat
-               Spixel%QC = ibset(Spixel%QC, SPixRTM)
+               SPixel%QC = ibset(SPixel%QC, SPixRTM)
             endif
          end if
 
@@ -406,7 +406,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_Measurements', stat
-               Spixel%QC = ibset(Spixel%QC, SPixMeas)
+               SPixel%QC = ibset(SPixel%QC, SPixMeas)
             endif
          end if
 
@@ -415,7 +415,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_Surface', stat
-               Spixel%QC = ibset(Spixel%QC, SPixSurf)
+               SPixel%QC = ibset(SPixel%QC, SPixSurf)
             else
                do i=1,Ctrl%Ind%NSolar
                   SPixel%Rs(i) = SPixel%Rs(i) &
@@ -435,7 +435,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_X(Ctrl, SAD_Chan, SPixel, stat)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_X', stat
-               Spixel%QC = ibset(Spixel%QC, SPixFGAP)
+               SPixel%QC = ibset(SPixel%QC, SPixFGAP)
             endif
          end if
 
@@ -456,10 +456,10 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (SPixel%Ind%Ny-SPixel%Ind%NThermal > 0) then
             do i=1,SPixel%Ind%Ny-SPixel%Ind%NThermal
                SPixel%RTM%Tsf_o(i) = SPixel%RTM%SW%Tsf(i) &
-                  ** SPixel%Geom%SEC_o(Spixel%ViewIdx(i))
+                  ** SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
 
                SPixel%RTM%Tsf_v(i) = SPixel%RTM%SW%Tsf(i) &
-                  ** SPixel%Geom%SEC_v(Spixel%ViewIdx(i))
+                  ** SPixel%Geom%SEC_v(SPixel%ViewIdx(i))
             end do
          end if
 
@@ -472,8 +472,8 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             j=1
             do i = SPixel%Ind%ThermalFirst, SPixel%Ind%SolarLast
                SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(j) &
-                    ** (SPixel%Geom%SEC_o(Spixel%ViewIdx(i)) / &
-                    SPixel%Geom%SEC_v(Spixel%ViewIdx(i)))
+                    ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) / &
+                    SPixel%Geom%SEC_v(SPixel%ViewIdx(i)))
                j = j+1
             end do
 
@@ -495,7 +495,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! If stat indicates a "super-pixel fatal" condition set the quality control
    ! flag bit to indicate no processing.
 
-   if (stat /= 0) Spixel%QC = ibset(Spixel%QC, SPixNoProc)
+   if (stat /= 0) SPixel%QC = ibset(SPixel%QC, SPixNoProc)
 
 
 
@@ -503,9 +503,9 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! state vectors for output into the diag file. Check the QC flag rather than
    ! stat in case future changes mean QC could be set to SPixNoProc earlier on.
 
-   if (btest(Spixel%QC, SPixNoProc)) then
+   if (btest(SPixel%QC, SPixNoProc)) then
       SPixel%X0 = MissingXn
-      Spixel%Xb = MissingXn
+      SPixel%Xb = MissingXn
    end if
 
    ! Open breakpoint file if required, and write out reflectances and gradients.
@@ -537,26 +537,26 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
       write(bkp_lun,*)' QC flag: ',SPixel%QC
 
       write(bkp_lun,*)'Bit tests'
-      if (btest(Spixel%QC, SPixCloudFl)) write(bkp_lun,*)'SPixCloudFl'
-      if (btest(Spixel%QC, SPixLandFl)) write(bkp_lun,*)'SPixLandFl'
-      if (btest(Spixel%QC, SPixSolZen)) write(bkp_lun,*)'SPixSolZen'
-      if (btest(Spixel%QC, SPixSatZen)) write(bkp_lun,*)'SPixSatZen'
-      if (btest(Spixel%QC, SPixRelAzi)) write(bkp_lun,*)'SPixRelAzi'
-      if (btest(Spixel%QC, SPixLat)) write(bkp_lun,*)'SPixLat'
-      if (btest(Spixel%QC, SPixLon)) write(bkp_lun,*)'SPixLon '
-      if (btest(Spixel%QC, SPixRef)) write(bkp_lun,*)'SPixRef '
-      if (btest(Spixel%QC, SPixTemp)) write(bkp_lun,*)'SPixTemp '
-      if (btest(Spixel%QC, SPixAll)) write(bkp_lun,*)'SPixAll '
-      if (btest(Spixel%QC, SPixNoCloud)) write(bkp_lun,*)'SPixNoCloud'
-      if (btest(Spixel%QC, SPixNoAvge)) write(bkp_lun,*)'SPixNoAvge'
-      if (btest(Spixel%QC, SPixGeom)) write(bkp_lun,*)'SPixGeom '
-      if (btest(Spixel%QC, SPixillum)) write(bkp_lun,*)'SPixillum '
-      if (btest(Spixel%QC, SPixLoc)) write(bkp_lun,*)'SPixLoc '
-      if (btest(Spixel%QC, SPixRTM)) write(bkp_lun,*)'SPixRTM '
-      if (btest(Spixel%QC, SPixMeas)) write(bkp_lun,*)'SPixMeas '
-      if (btest(Spixel%QC, SPixSurf)) write(bkp_lun,*)'SPixSurf '
-      if (btest(Spixel%QC, SPixFGAP)) write(bkp_lun,*)'SPixFGAP'
-      if (btest(Spixel%QC, SPixNoProc)) write(bkp_lun,*)'SPixNoProc '
+      if (btest(SPixel%QC, SPixCloudFl)) write(bkp_lun,*)'SPixCloudFl'
+      if (btest(SPixel%QC, SPixLandFl)) write(bkp_lun,*)'SPixLandFl'
+      if (btest(SPixel%QC, SPixSolZen)) write(bkp_lun,*)'SPixSolZen'
+      if (btest(SPixel%QC, SPixSatZen)) write(bkp_lun,*)'SPixSatZen'
+      if (btest(SPixel%QC, SPixRelAzi)) write(bkp_lun,*)'SPixRelAzi'
+      if (btest(SPixel%QC, SPixLat)) write(bkp_lun,*)'SPixLat'
+      if (btest(SPixel%QC, SPixLon)) write(bkp_lun,*)'SPixLon '
+      if (btest(SPixel%QC, SPixRef)) write(bkp_lun,*)'SPixRef '
+      if (btest(SPixel%QC, SPixTemp)) write(bkp_lun,*)'SPixTemp '
+      if (btest(SPixel%QC, SPixAll)) write(bkp_lun,*)'SPixAll '
+      if (btest(SPixel%QC, SPixNoCloud)) write(bkp_lun,*)'SPixNoCloud'
+      if (btest(SPixel%QC, SPixNoAvge)) write(bkp_lun,*)'SPixNoAvge'
+      if (btest(SPixel%QC, SPixGeom)) write(bkp_lun,*)'SPixGeom '
+      if (btest(SPixel%QC, SPixillum)) write(bkp_lun,*)'SPixillum '
+      if (btest(SPixel%QC, SPixLoc)) write(bkp_lun,*)'SPixLoc '
+      if (btest(SPixel%QC, SPixRTM)) write(bkp_lun,*)'SPixRTM '
+      if (btest(SPixel%QC, SPixMeas)) write(bkp_lun,*)'SPixMeas '
+      if (btest(SPixel%QC, SPixSurf)) write(bkp_lun,*)'SPixSurf '
+      if (btest(SPixel%QC, SPixFGAP)) write(bkp_lun,*)'SPixFGAP'
+      if (btest(SPixel%QC, SPixNoProc)) write(bkp_lun,*)'SPixNoProc '
 
       do view=1,SPixel%Ind%NViews
          write(bkp_lun,'(a,i2,2(a,f9.4))')' View ',view,', Sec_o: ', &
@@ -602,7 +602,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
       else
          StartChan = SPixel%Ind%SolarFirst
       end if
-      do i=1,Spixel%Ind%Ny
+      do i=1,SPixel%Ind%Ny
          !        write(bkp_lun,'(3a,f9.4,a,i)') 'Channel: ', SAD_Chan(i+StartChan-1)%Desc, &
          !           ' : ', SPixel%Ym(i), ' view ', SPixel%ViewIdx(i)
       end do

@@ -30,7 +30,7 @@
 !    2014/07/23, AP: added value for al10e2.
 !
 ! Bugs:
-!   None known
+!   None known.
 !
 ! $Id$
 !
@@ -69,41 +69,36 @@ subroutine Calc_CWP(Ctrl,SPixel, status)
       rho=rhoice
       fac=(4./3.)*rho/qextice
    else
-! most likely aerosol but could be some other crash
- 
-	 Spixel%cwp=real_fill_value
- 	Spixel%cwp_error=real_fill_value
-
+      ! most likely aerosol but could be some other crash
+      SPixel%cwp=real_fill_value
+      SPixel%cwp_error=real_fill_value
       return
    end if
 
-! do not calculate for aerosl class
- if (trim(Ctrl%CloudClass%Name) == 'WAT' .or. trim(Ctrl%CloudClass%Name) == 'ICE') then
+   ! Do not calculate for aerosol class
+   if (trim(Ctrl%CloudClass%Name) == 'WAT' .or. trim(Ctrl%CloudClass%Name) == 'ICE') then
 
-   tenpcot=10.**(Spixel%Xn(iTau))
+      tenpcot=10.**(SPixel%Xn(iTau))
 
-   Spixel%cwp=fac* tenpcot*Spixel%Xn(iRe)
+      SPixel%cwp=fac* tenpcot*SPixel%Xn(iRe)
 
-   ! covariance
-   s_cot_cre=(Spixel%Sn(iTau,iRe)*tenpcot)/al10e
+      ! covariance
+      s_cot_cre=(SPixel%Sn(iTau,iRe)*tenpcot)/al10e
 
-   ! error on optical depth
-   s_cot=(Spixel%Sn(iTau,iTau)*tenpcot*tenpcot)/al10e2
+      ! error on optical depth
+      s_cot=(SPixel%Sn(iTau,iTau)*tenpcot*tenpcot)/al10e2
 
-   ! based on
-   ! Spixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
+      ! based on
+      ! SPixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
 
-   Spixel%cwp_error=Spixel%Xn(iRe)*Spixel%Xn(iRe)*s_cot+ &
-                    tenpcot*tenpcot*Spixel%Sn(iRe,iRe)+ &
-                    2.* tenpcot*Spixel%Xn(iRe)*s_cot_cre
+      SPixel%cwp_error=SPixel%Xn(iRe)*SPixel%Xn(iRe)*s_cot+ &
+                       tenpcot*tenpcot*SPixel%Sn(iRe,iRe)+ &
+                       2.* tenpcot*SPixel%Xn(iRe)*s_cot_cre
 
-   if (ios /= 0) then
-      status = CWP_Calcerror
-      call Write_Log(Ctrl,'Error calculating CWP',status)
-   end if
-
+      if (ios /= 0) then
+         status = CWP_Calcerror
+         call Write_Log(Ctrl,'Error calculating CWP',status)
+      end if
  endif
 
-   
- End Subroutine Calc_CWP
- 
+end subroutine Calc_CWP

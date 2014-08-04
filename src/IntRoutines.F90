@@ -21,7 +21,7 @@
 !    23th May 2014, Greg McGarragh: Orginal version.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id$
 !

@@ -71,7 +71,7 @@
 !       Cleaned up the code.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id$
 !
@@ -131,8 +131,8 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
 
 	    SPixel%XnSav      = SPixel%Xn
             SPixel%SnSav      = SPixel%Sn
-	    Spixel%Loc%LastX0 = Spixel%Loc%X0
-	    Spixel%Loc%LastY0 = Spixel%Loc%Y0
+	    SPixel%Loc%LastX0 = SPixel%Loc%X0
+	    SPixel%Loc%LastY0 = SPixel%Loc%Y0
          end if
       else
          ! No convergence, set bit 6
@@ -186,7 +186,7 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
 !  end if
 
    if (Ctrl%Diagl(DiFlagXFit) > 0) then
-      Diag%APFit = Spixel%Xb - SPixel%Xn
+      Diag%APFit = SPixel%Xb - SPixel%Xn
    end if
 
    ! 11) and 12) A priori and first guess values. No need to store in Diag as

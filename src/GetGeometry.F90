@@ -7,14 +7,14 @@
 !    Also calculates mean airmass factors for use in the forward model.
 !
 ! Arguments:
-!    Name     Type    In/Out Description
-!    Ctrl     struct  In     Control structure
-!    SPixel   struct  Both   Super-pixel structure
-!    MSI_Data struct  In     Data structure. Contains the multi-spectral image
-!                            measurements, location values, geometry etc for the
-!                            current image segment, from which the current
-!                            SPixel values will be extracted.
-!    status   integer Out    Error status
+!    Name     Type    In/Out/Both Description
+!    Ctrl     struct  In          Control structure
+!    SPixel   struct  Both        Super-pixel structure
+!    MSI_Data struct  In          Data structure. Contains the multi-spectral
+!                                 image measurements, location values, geometry
+!                                 etc for the current image segment, from which
+!                                 the current SPixel values will be extracted.
+!    status   integer Out         Error status
 !
 ! Algorithm:
 !    Assign the SPixel geometry values using the corresponding pixel from the
@@ -70,7 +70,7 @@
 !       Removed Write_Log call when sat zenith angle > max Ctrl value. No log
 !       message necessary.
 !    21st Sep 2001, Andy Smith:
-!       Memory leak fix. Now deallocates Spixel%Ym and Sy before each allocation.
+!       Memory leak fix. Now deallocates SPixel%Ym and Sy before each allocation.
 !       It is assumed that an initial allocation was made (in ECP main) otherwise
 !       the first deallocate will fail.
 !    **************** ECV work starts here *************************************
@@ -91,7 +91,7 @@
 !       Cleaned up the code.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !

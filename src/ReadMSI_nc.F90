@@ -14,7 +14,7 @@
 !                                       previous calls to this routine.
 !    SegSize  int           In          Number of rows of pixels in an image
 !                                       segment.
-!    MSI_Data struct        In/Out      Data structure: the MSI data part of
+!    MSI_Data struct        Both        Data structure: the MSI data part of
 !                                       this struct is populated by this
 !                                       routine, and is overwritten on
 !                                       successive calls.
@@ -157,7 +157,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    if (ios /= NF90_NOERR) then
       status = MSIFileOpenErr
       write(unit=message, fmt=*) &
-          & 'Read_MSI: Error opening file ', trim(adjustl(Ctrl%Fid%MSI))
+        'Read_MSI: Error opening file ', trim(adjustl(Ctrl%Fid%MSI))
       write(*,*) trim(message)
       call Write_Log(Ctrl, trim(message), status)
       stop
@@ -213,9 +213,9 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
       do i=1,Ctrl%Ind%Ny
          write(*,*) 'Read data for channel in MSI file: ', &
-            & i,msi_instr_ch_numbers(Ctrl%Ind%Chi(i)),Ctrl%Ind%Chi(i),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+            i,msi_instr_ch_numbers(Ctrl%Ind%Chi(i)),Ctrl%Ind%Chi(i),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
          call nc_read_array_3d_float_orac &
-            & (ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(i),"msi_data",MSI_Data%MSI(:,:,i),0)
+            (ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(i),"msi_data",MSI_Data%MSI(:,:,i),0)
       enddo
 
       deallocate(msi_instr_ch_numbers)
@@ -231,7 +231,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    if (ios /= 0) then
       status = MSIFileCloseErr ! Return error code
       write(unit=message, fmt=*) &
-           & 'Read_MSI: Error closing file ', trim(adjustl(Ctrl%Fid%MSI))
+         'Read_MSI: Error closing file ', trim(adjustl(Ctrl%Fid%MSI))
       write(*,*) trim(message)
       call Write_Log(Ctrl, trim(message), status)
    endif

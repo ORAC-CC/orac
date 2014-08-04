@@ -36,7 +36,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)

@@ -17,7 +17,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)

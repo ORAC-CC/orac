@@ -6,14 +6,14 @@
 !    Gets the cloud flags for the current super-pixel.
 !
 ! Arguments:
-!    Name     Type    In/Out Description
-!    Ctrl     struct  In     Control structure
-!    SPixel   struct  Both   Super-pixel structure
-!    MSI_Data struct  In     Data structure. Contains the multi-spectral image
-!                            measurements, location values, geometry etc for the
-!                            current image segment, from which the current
-!                            SPixel values will be extracted.
-!    status   integer Out    Error status
+!    Name     Type    In/Out/Both Description
+!    Ctrl     struct  In          Control structure
+!    SPixel   struct  Both        Super-pixel structure
+!    MSI_Data struct  In          Data structure. Contains the multi-spectral
+!                                 image measurements, location values, geometry
+!                                 etc for the current image segment, from which
+!                                 the current SPixel values will be extracted.
+!    status   integer Out         Error status
 !
 ! Algorithm:
 !    For Central pixel averaging:
@@ -68,7 +68,7 @@
 !       Bug fix: Xc, Yc were declared as real, not integer.
 !
 ! Bugs:
-!   Legacy code for super pixeling.
+!    Legacy code for super pixeling.
 !
 ! $Id$
 !

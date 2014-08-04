@@ -82,7 +82,7 @@
 !       reflectance errors. Thermal channel values are already stored as BT
 !       error.
 !    21st Sep 2001, Andy Smith:
-!       Memory leak fix. Now deallocates Spixel%Ym and Sy before each allocation.
+!       Memory leak fix. Now deallocates SPixel%Ym and Sy before each allocation.
 !       It is assumed that an initial allocation was made (in ECP main) otherwise
 !       the first deallocate will fail.
 !    **************** ECV work starts here *************************************
@@ -92,7 +92,7 @@
 !       Removal of super-pixel averaging. Process single pixels at X0, Y0,
 !       removed other SPixel indices Xc, Yc, Xn, Yn etc.
 !    21st Apr 2011, Andy Smith:
-!       Extension to handle multiple instrument views. New Spixel array View_Idx,
+!       Extension to handle multiple instrument views. New SPixel array View_Idx,
 !       holds the view index values for active channels in this pixel.
 !    15th Jun 2012, C. Poulsen:
 !       Added illum array
@@ -105,7 +105,7 @@
 !       properly index the right channels from MSI_Data%MSI(:,:,:) and cleanup.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !

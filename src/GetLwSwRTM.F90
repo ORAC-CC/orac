@@ -8,12 +8,12 @@
 !    Also assigns the surface to TOA transmittances for the current super pixel.
 !
 ! Arguments:
-!    Name     Type         In/Out Description
-!    Ctrl     struct       In     Control structure
-!    SAD_Chan struct array In     Channel description structures
-!    RTM      alloc struct In     RTM structure
-!    SPixel   struct       Both   Super-pixel structure
-!    status   integer      Out    Error status
+!    Name     Type         In/Out/Both Description
+!    Ctrl     struct       In          Control structure
+!    SAD_Chan struct array In          Channel description structures
+!    RTM      alloc struct In          RTM structure
+!    SPixel   struct       Both        Super-pixel structure
+!    status   integer      Out         Error status
 !
 ! Algorithm:
 !    Method taken directly from Numerical Recipes p96, 1987.
@@ -63,7 +63,7 @@
 !    30/07/2014, GM: Put the duplicate interpolation code into subroutines.
 !
 ! Bugs:
-!   None known.
+!    None known.
 !
 ! $Id$
 !

@@ -35,10 +35,10 @@
 !    if (Ss 2 requested) write full error covariance matrix Ss
 !    if (Measurement fit requested) write measurement fit array
 !    if (A priori fit requested) write a priori fit array
-!    if (A priori value requested) write Spixel a priori array
+!    if (A priori value requested) write SPixel a priori array
 !    if (First guess value requested) write SPixel first guess array
-!    if (A priori error requested) write Spixel a priori error array
-!    if (Measurement error requested) write Spixel first guess error array
+!    if (A priori error requested) write SPixel a priori error array
+!    if (Measurement error requested) write SPixel first guess error array
 !
 ! Local variables:
 !    Name Type Description
@@ -54,7 +54,7 @@
 !       Changed illum definition.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 ! $Id$
 !
@@ -79,29 +79,29 @@ subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
 
    ! Local variables
 
-   integer    :: m   ! Loop counter
-   integer    :: ios ! I/O status value from file operations
+   integer :: m   ! Loop counter
+   integer :: ios ! I/O status value from file operations
 
 
    ! Write super-pixel specific values that determine arrays sizes with Diag
    ! (no. of active state variables and channels). Also write out the active
    ! state variable indices and channel IDs.
 
-   write(unit=diag_lun, iostat=ios, err=999) Spixel%NX
-   write(unit=diag_lun, iostat=ios, err=999) Spixel%Ind%Ny
-   write(unit=diag_lun, iostat=ios, err=999) Spixel%X
+   write(unit=diag_lun, iostat=ios, err=999) SPixel%NX
+   write(unit=diag_lun, iostat=ios, err=999) SPixel%Ind%Ny
+   write(unit=diag_lun, iostat=ios, err=999) SPixel%X
    select case (SPixel%Illum(1))
    case (IDay)
       write(unit=diag_lun, iostat=ios, err=999) &
-         Ctrl%Ind%Y_ID(Spixel%Ind%SolarFirst:SPixel%Ind%ThermalLast)
+         Ctrl%Ind%Y_ID(SPixel%Ind%SolarFirst:SPixel%Ind%ThermalLast)
    case (ITwi, INight)
       write(unit=diag_lun, iostat=ios, err=999) &
-         Ctrl%Ind%Y_ID(Spixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast)
+         Ctrl%Ind%Y_ID(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast)
    end select
 
    ! Write super-pixel quality control flag
 
-   write(unit=diag_lun, iostat=ios, err=999) Spixel%QC
+   write(unit=diag_lun, iostat=ios, err=999) SPixel%QC
 
    ! Check diagnostic flags and write out required values.
 
@@ -122,23 +122,23 @@ subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
 
    if (Ctrl%Diagl(DiFlagSt1) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) &
-      (sqrt(Diag%St(m,m)) / Ctrl%Invpar%XScale(SPixel%X(m)), m = 1,Spixel%NX)
+      (sqrt(Diag%St(m,m)) / Ctrl%Invpar%XScale(SPixel%X(m)), m = 1,SPixel%NX)
 
    ! State expected errors from model parameters: level 1, square roots of
    ! diagonals. Values set only for active state variables.
 
    if (Ctrl%Diagl(DiFlagSs1) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) &
-      (sqrt(Diag%Ss(m,m)) / Ctrl%Invpar%XScale(SPixel%X(m)), m = 1,Spixel%NX)
+      (sqrt(Diag%Ss(m,m)) / Ctrl%Invpar%XScale(SPixel%X(m)), m = 1,SPixel%NX)
 
    ! State expected errors from null space: level 2, full matrix.
    ! Values set only for active state variables.
 
    if (Ctrl%Diagl(DiFlagSt2) > 0) then
       write(unit=diag_lun, iostat=ios, err=999) &
-         (Diag%St(m,1:Spixel%NX) / &
+         (Diag%St(m,1:SPixel%NX) / &
 	 (Ctrl%Invpar%XScale(SPixel%X(m)) * Ctrl%Invpar%XScale(SPixel%X)), &
-	 m = 1,Spixel%NX)
+	 m = 1,SPixel%NX)
    end if
 
    ! State expected errors from model parameters: level 2, full matrix.
@@ -146,9 +146,9 @@ subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
 
    if (Ctrl%Diagl(DiFlagSs2) > 0) then
       write(unit=diag_lun, iostat=ios, err=999) &
-         (Diag%Ss(m,1:Spixel%NX) / &
+         (Diag%Ss(m,1:SPixel%NX) / &
 	 (Ctrl%Invpar%XScale(SPixel%X(m)) * Ctrl%Invpar%XScale(SPixel%X)), &
-	 m = 1,Spixel%NX)
+	 m = 1,SPixel%NX)
    end if
 
    ! Measurement and a priori fit
@@ -162,17 +162,17 @@ subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
    ! A priori and first guess values.
 
 !   if (Ctrl%Diagl(DiFlagAP) > 0) &
-!      write(unit=diag_lun, iostat=ios, err=999) Spixel%Xb
+!      write(unit=diag_lun, iostat=ios, err=999) SPixel%Xb
 
 !   if (Ctrl%Diagl(DiFlagFG) > 0) &
-!      write(unit=diag_lun, iostat=ios, err=999) Spixel%X0
+!      write(unit=diag_lun, iostat=ios, err=999) SPixel%X0
 
-  ! A priori and measurement error covariances (square roots of diagonals)
-  ! YError is already set to the square root values.
+   ! A priori and measurement error covariances (square roots of diagonals)
+   ! YError is already set to the square root values.
 
    if (Ctrl%Diagl(DiFlagSx) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) &
-         (sqrt(Spixel%Sx(m,m)), m=1,MaxStateVar)
+         (sqrt(SPixel%Sx(m,m)), m=1,MaxStateVar)
 
    if (Ctrl%Diagl(DiFlagSy) > 0) &
       write(unit=diag_lun, iostat=ios, err=999) Diag%YError(1:SPixel%Ind%Ny)

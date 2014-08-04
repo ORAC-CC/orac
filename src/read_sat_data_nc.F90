@@ -13,7 +13,7 @@
 !                                      previous calls to this routine.
 !    SegSize  int          In          Number of rows of pixels in an image
 !                                      forth for subsequent reads.
-!    MSI_Data struct       In/Out      Data structure: the ALB data part of this
+!    MSI_Data struct       Both        Data structure: the ALB data part of this
 !                                      struct is populated by this routine, and
 !                                      is overwritten on successive calls.
 !    SAD_Chan struct array Both        Instrument channel parameters. Updated by

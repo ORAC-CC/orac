@@ -8,13 +8,14 @@
 !    pressure (increasing altitude).
 !
 ! Arguments:
-!    Name    Type   In/Out Description
-!    Ctrl    struct In	   Control structure
-!    SPixel  struct In/Out Super-pixel structure
-!    Pc      float  In	   Current cloud pressure
-!    RTM_Pc  struct Out	   Contains Tac, Tbc (interpolated transmittances above
-!                          and below cloud) and gradients wrt cloud pressure.
-!    status  int    Out    Standard status value not set here
+!    Name    Type   In/Out/Both Description
+!    Ctrl    struct In	        Control structure
+!    SPixel  struct Both        Super-pixel structure
+!    Pc      float  In	        Current cloud pressure
+!    RTM_Pc  struct Out	        Contains Tac, Tbc (interpolated transmittances
+!                               above and below cloud) and gradients wrt cloud
+!                               pressure.
+!    status  int    Out         Standard status value not set here
 !
 ! Algorithm:
 !   Check to see if Pc is outwith the RTM pressure level range

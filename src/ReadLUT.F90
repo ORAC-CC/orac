@@ -67,7 +67,7 @@
 !    23/01/2014, Greg McGarragh: Cleaned up code.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 !-------------------------------------------------------------------------------
 
@@ -257,7 +257,7 @@ end subroutine Read_LUT_Rd
 !    23/01/2014, Greg McGarragh: Cleaned up code.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 !-------------------------------------------------------------------------------
 
@@ -442,7 +442,7 @@ end subroutine Read_LUT_Td
 !    23th Jan 2014, Greg McGarragh: Cleaned up code.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 !-------------------------------------------------------------------------------
 
@@ -630,7 +630,7 @@ end subroutine Read_LUT_RBD
 !    23/01/2014, Greg McGarragh: Cleaned up code.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 !-------------------------------------------------------------------------------
 
@@ -781,7 +781,7 @@ end subroutine Read_LUT_Tb
 !    23/01/2014, Greg McGarragh: Cleaned up code.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 !-------------------------------------------------------------------------------
 
@@ -1041,7 +1041,7 @@ end subroutine Read_LUT_Tbd
 !    23th Jan 2014, Greg McGarragh: Cleaned up code.
 !
 ! Bugs:
-!    None known
+!    None known.
 !
 !-------------------------------------------------------------------------------
 
@@ -1518,61 +1518,61 @@ subroutine Read_LUT(Ctrl, SAD_Chan, SAD_LUT, status)
    !Convert from percentage to fractional values
    if (status == 0) then
       SAD_LUT%Rd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen, &
-           & 1:SAD_LUT%Grid%nmaxRe) &
-           & = SAD_LUT%Rd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen, &
-           & 1:SAD_LUT%Grid%nmaxRe) / 100.
+         1:SAD_LUT%Grid%nmaxRe) &
+         = SAD_LUT%Rd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen, &
+         1:SAD_LUT%Grid%nmaxRe) / 100.
 
       SAD_LUT%Td(1:Ctrl%Ind%Ny,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,1:SAD_LUT%Grid%nmaxRe) = &
-           & SAD_LUT%Td(1:Ctrl%Ind%Ny,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,1:SAD_LUT%Grid%nmaxRe) / &
-           & 100.
+         SAD_LUT%Td(1:Ctrl%Ind%Ny,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,1:SAD_LUT%Grid%nmaxRe) / &
+         100.
 
       SAD_LUT%Tfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) &
-           & = SAD_LUT%Tfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) / 100.
+         = SAD_LUT%Tfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) / 100.
 
       SAD_LUT%Rfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) &
-           & = SAD_LUT%Rfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) / 100.
+         = SAD_LUT%Rfd(:,1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxRe) / 100.
 
       if (Ctrl%Ind%NSolar > 0) then
-         SAD_LUT%Rbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,         &
-              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
-              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
-              & 1:SAD_LUT%Grid%nmaxRe) =                             &
-              & SAD_LUT%Rbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,  &
-              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
-              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
-              & 1:SAD_LUT%Grid%nmaxRe) / 100.
+         SAD_LUT%Rbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,     &
+            1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
+            1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
+            1:SAD_LUT%Grid%nmaxRe) =                             &
+            SAD_LUT%Rbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,  &
+            1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
+            1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
+            1:SAD_LUT%Grid%nmaxRe) / 100.
 
-         SAD_LUT%Tbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,         &
-              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
-              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
-              & 1:SAD_LUT%Grid%nmaxRe) =                             &
-              & SAD_LUT%Tbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,  &
-              & 1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
-              & 1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
-              & 1:SAD_LUT%Grid%nmaxRe) / 100.
+         SAD_LUT%Tbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,     &
+            1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
+            1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
+            1:SAD_LUT%Grid%nmaxRe) =                             &
+            SAD_LUT%Tbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,  &
+            1:SAD_LUT%Grid%nmaxTau,1:SAD_LUT%Grid%nmaxSatZen,    &
+            1:SAD_LUT%Grid%nmaxSolZen,1:SAD_LUT%Grid%nmaxRelAzi, &
+            1:SAD_LUT%Grid%nmaxRe) / 100.
 
-         SAD_LUT%Tb(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,          &
-              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
-              & 1:SAD_LUT%Grid%nmaxRe) =                             &
-              & SAD_LUT%Tb(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,   &
-              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
-              & 1:SAD_LUT%Grid%nmaxRe) / 100.
+         SAD_LUT%Tb(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,      &
+            1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
+            1:SAD_LUT%Grid%nmaxRe) =                             &
+            SAD_LUT%Tb(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,   &
+            1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
+            1:SAD_LUT%Grid%nmaxRe) / 100.
 
-         SAD_LUT%Tfbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,        &
-              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
-              & 1:SAD_LUT%Grid%nmaxRe) =                             &
-              & SAD_LUT%Tfbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast, &
-              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
-              & 1:SAD_LUT%Grid%nmaxRe) / 100.
+         SAD_LUT%Tfbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast,    &
+            1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
+            1:SAD_LUT%Grid%nmaxRe) =                             &
+            SAD_LUT%Tfbd(Ctrl%Ind%SolarFirst:Ctrl%Ind%SolarLast, &
+            1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSolZen,   &
+            1:SAD_LUT%Grid%nmaxRe) / 100.
       endif
 
       if (Ctrl%Ind%NThermal > 0) then
-         SAD_LUT%Em(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast,        &
-              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSatZen,     &
-              & 1:SAD_LUT%Grid%nmaxRe) =                               &
-              & SAD_LUT%Em(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast, &
-              & 1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSatZen,     &
-              & 1:SAD_LUT%Grid%nmaxRe) / 100.
+         SAD_LUT%Em(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast,    &
+            1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSatZen,     &
+            1:SAD_LUT%Grid%nmaxRe) =                               &
+            SAD_LUT%Em(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast, &
+            1:SAD_LUT%Grid%nmaxTau, 1:SAD_LUT%Grid%nmaxSatZen,     &
+            1:SAD_LUT%Grid%nmaxRe) / 100.
       endif
    endif
 

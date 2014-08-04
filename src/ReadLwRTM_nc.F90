@@ -7,10 +7,10 @@
 !    appropriate data arrays.
 !
 ! Arguments:
-!    Name   Type         In/Out Description
-!    Ctrl   struct       Both   Control structure
-!    RTM    alloc struct Out    RTM structure
-!    status int          Out    Error status
+!    Name   Type         In/Out/Both Description
+!    Ctrl   struct       Both        Control structure
+!    RTM    alloc struct Out         RTM structure
+!    status int          Out         Error status
 !
 ! Algorithm:
 !    open RTM data file (report errors)
@@ -292,10 +292,10 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
             if (trim(adjustl(InstName)) /= trim(adjustl(Ctrl%Inst%Name))) then
                status = LwRTMRTMInstErr
                write(*,*) 'Read_LwRTM: RTM file; header instrument disagrees with filename',&
-                    & status
+                  status
                call Write_Log(Ctrl, &
-                    & 'Read_LwRTM: RTM file; header instrument disagrees with filename',&
-                    & status)
+                  'Read_LwRTM: RTM file; header instrument disagrees with filename',&
+                  status)
                stop
             end if
          end if

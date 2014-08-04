@@ -3,11 +3,14 @@
 !
 ! Purpose:
 !
-! Given a tabulated function (x_i,y_i) returns the second derivative of the
-! function d2y/dx2 at the values (x_i)
+! Description:
+!    Given a tabulated function (x_i,y_i) returns the second derivative of the
+!    function d2y/dx2 at the values (x_i)
 !
-! These derivatives are used  by the ORAC interpolation routines to perform
-! cubic spline interpolation of eg RTM data
+!    These derivatives are used  by the ORAC interpolation routines to perform
+!    cubic spline interpolation of eg RTM data
+!
+! Calls:
 !
 ! Arguments:
 !    Name Type in/Out/Both Description
@@ -22,7 +25,7 @@
 !    31st 29th August 2011 - Adapted for ORAC F90 by C. Arnold
 !
 ! Bugs
-!    None known
+!    None known.
 !
 ! $Id$
 !

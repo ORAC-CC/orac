@@ -28,7 +28,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &

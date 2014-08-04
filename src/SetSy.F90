@@ -6,7 +6,7 @@
 !    Sets up the state dependent part of the error covariance matrix Sy (errors
 !    in the measurements Y). SPixel%Sy is already populated with instrument
 !    dependent data and pixel dependent data. This routine adds the state
-!    dependent terms. Currently only Rs is supported. Spixel%Sy is not
+!    dependent terms. Currently only Rs is supported. SPixel%Sy is not
 !    overwritten as the current state vector might not be kept (if the step
 !    takes the inversion away from convergence).
 !
@@ -18,7 +18,7 @@
 !                              present).
 !    Sy     array  Out         The local (to Invert_Marquardt) error covariance
 !                              in the measurements. Set to the sum of the scene
-!                              Sy (from Spixel) and the requested model
+!                              Sy (from SPixel) and the requested model
 !                              parameter values (Rs).
 !    status int    Out         Standard ECP error code (not set at present, no
 !                              error conditions identified).

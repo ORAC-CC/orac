@@ -1,19 +1,19 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!   Read_Driver
+!    Read_Driver
 !
 ! Purpose:
-!    Stores values required by driver file. This code is intended to replace the
-!    idl write_idriver.pro
+!     Stores values required by driver file. This code is intended to replace
+!     the idl write_idriver.pro
 !
 ! Description:
-!   Reads the values from the "driver" file used to set run-time options into
-!   the CTRL structure.
+!    Reads the values from the "driver" file used to set run-time options into
+!    the CTRL structure.
 !
 ! Arguments:
-!   Name    Type    In/Out/Both Description
-!   Ctrl    Ctrl_t  out         Control struct defined in CTRL_def
-!   message string  inout       Error message returned to calling routine
+!    Name    Type    In/Out/Both Description
+!    Ctrl    Ctrl_t  out         Control struct defined in CTRL_def
+!    message string  inout       Error message returned to calling routine
 !   status  int     out         Status returned to calling function
 !
 ! Algorithm:
