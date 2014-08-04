@@ -1,85 +1,56 @@
-! Name:
-!
+!-------------------------------------------------------------------------------
+! This software was developed within the ESA Cloud CCI Project and is based on
+! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
+! All Rights Reserved.
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
+! Name: nc_close.F90
 !
 ! Purpose:
-!
+! Close a netcdf file.
 !
 ! Description and Algorithm details:
-!
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-!
 ! Local variables:
 ! Name Type Description
 !
-!
 ! History:
-!
+! 2011/12/19, Matthias Jerg: Creates initial file.
+! 2014/08/04, Greg McGarragh: Cleaned up the code.
 !
 ! $Id$
 !
 ! Bugs:
-!
-!
-!-----------------------------------------------
-!-----------------------------------------------
-SUBROUTINE nc_close( ncid,fname,wo,ierr )
-!-----------------------------------------------
-!-----------------------------------------------
+! None known.
+!-------------------------------------------------------------------------------
 
-! Description:
-!
-! Closes netcdf-file.
-!
-  !-----------------------------------------------------------------------
-  ! This software was developed within the ESA Cloud CCI Project
-  ! and is based on routines developed during the
-  ! ESA DUE GlobVapour Project. 
-  ! Copyright 2011, DWD, All Rights Reserved.
-  !-----------------------------------------------------------------------
-  !
-  !
-  ! Created on:          05/12/10
-  !                      by Matthias Jerg, DWD/KU22
-  !                      (matthias.jerg@dwd.de)
-  !                      based on code provided by Nadine Schneider (nadine.schneider@dwd.de).
+subroutine nc_close(ncid,fname,wo,ierr)
 
-!   
-! Modifications Log:        
-!
-! Applied SPRs:
-!
-!-----------------------------------------------------------------------
-!
-! Declarations:
-!
+   use netcdf
 
-! ---------------------------------
+   implicit none
 
-  use netcdf
+   ! Input
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: fname
+   integer,          intent(in)  :: wo
 
-  IMPLICIT NONE
- 
-  ! Input
-  INTEGER,INTENT(IN) ::  ncid,wo
-  CHARACTER(LEN=*) :: fname
-  ! Local
-  INTEGER ::  ierr
+   ! Output
+   integer,          intent(out) :: ierr
 
-  ierr = NF90_CLOSE(ncid)
-  IF (ierr.NE.NF90_NOERR)  stop 'error close'
+   ierr = nf90_close(ncid)
 
-  IF (wo.EQ.1) THEN
-     write(*,*) '***'
-     write(*,*) 'Closed data set: ',fname
-     write(*,*) '***'
-  ENDIF
- 
-  RETURN
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_close(), filename = ', trim(fname)
+      stop
+   endif
 
-END SUBROUTINE nc_close
+   if (wo.eq.1) then
+      write(*,*) 'closed netcdf file = ', trim(fname)
+   endif
 
-
- 
+end subroutine nc_close

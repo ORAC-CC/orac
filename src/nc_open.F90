@@ -1,64 +1,56 @@
+!-------------------------------------------------------------------------------
+! This software was developed within the ESA Cloud CCI Project and is based on
+! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
+! All Rights Reserved.
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
 ! Name: nc_open.F90
 !
-!
 ! Purpose:
-! Open a netvdf file for reading.
-! 
+! Open a netcdf file for reading.
 !
 ! Description and Algorithm details:
-!
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-!
 ! Local variables:
 ! Name Type Description
 !
-!
 ! History:
-!2011/12/22: Matthias Jerg produces draft code which opens netcdf file.
-!2012/07/06 MJ extensively overhauls and restructures the code
+! 2011/12/22, Matthias Jerg: Produces draft code which opens netcdf file.
+! 2012/07/06, Matthias Jerg: Extensively overhauls and restructures the code.
+! 2014/08/04, Greg McGarragh: Cleaned up the code.
 !
 ! $Id$
 !
 ! Bugs:
-!
-!none known
+! None known.
+!-------------------------------------------------------------------------------
 
+subroutine nc_open(ncid,fname,ierr,wo)
 
-SUBROUTINE nc_open(ncid,fname,ierr,wo)
+   use netcdf
 
-  USE netcdf
-!  use typesizes
+   implicit none
 
-  IMPLICIT NONE
+   ! Input
+   character(len=*), intent(in)  :: fname
+   integer,          intent(in)  :: wo
 
-!  INCLUDE 'netcdf.inc'
+   ! Output
+   integer,          intent(out) :: ncid
+   integer,          intent(out) :: ierr
 
- ! Input
-  INTEGER :: wo
-  CHARACTER(LEN=*) :: fname
+   ierr = nf90_open(path=trim(adjustl(fname)),mode = nf90_nowrite,ncid = ncid)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_open(), filename = ', trim(fname)
+      stop
+   endif
 
-  ! Output
-  INTEGER :: ncid, ierr
+   if (wo .eq. 1) then
+      write(*,*) 'opened netcdf file = ', trim(fname)
+   endif
 
-  !write(*,*) ncid
-  !write(*,*) fname
-  ierr = nf90_open(path=trim(adjustl(fname)),mode = nf90_nowrite,ncid = ncid)       !open file
-  !write(*,*) ncid
-   IF (ierr.NE.NF90_NOERR) THEN
-      write(*,*) 'path and file:', trim(fname)
-      stop 'error open input file'
-   ENDIF
-
-   IF (wo.EQ.1) THEN
-      write(*,*) '---------------------------------------------'
-      write(*,*) '  '
-      write(*,*) 'open file: ', trim(fname)
-      write(*,*) '  '
-      write(*,*) '---------------------------------------------'
-   ENDIF
-
-  RETURN
-END SUBROUTINE nc_open
+end subroutine nc_open

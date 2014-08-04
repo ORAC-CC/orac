@@ -1,234 +1,230 @@
+!-------------------------------------------------------------------------------
+! This software was developed within the ESA Cloud CCI Project and is based on
+! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
+! All Rights Reserved.
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
 ! Name: nc_create_global.F90
-!
 !
 ! Purpose:
 ! A netcdf output file is opened/created for writing.
-! 
 !
 ! Description and Algorithm details:
-!
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-!
 ! Local variables:
 ! Name Type Description
 !
-!
 ! History:
-!2011/12/19: Matthias Jerg creates initial file.
-!2012/11/16: CP added calibration file version
+! 2011/12/19, Matthias Jerg: Creates initial file.
+! 2012/11/16, Caroline Poulsen: Added calibration file version.
+! 2014/08/04, Greg McGarragh: Cleaned up the code.
 !
 ! $Id$
 !
 ! Bugs:
-!
-!none known
+! None known.
+!-------------------------------------------------------------------------------
 
+subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, status)
 
-SUBROUTINE nc_create_global_l2(Ctrl,path, ncid, nx, ny, dims_var, wo,type,status)
-  ! Description:
-  !
-  ! Creates new netcdf-file. (Output file)
-  !
-  !-----------------------------------------------------------------------
-  ! This software was developed within the ESA Cloud CCI Project
-  ! and is based on routines developed during the
-  ! ESA DUE GlobVapour Project. 
-  ! Copyright 2011, DWD, All Rights Reserved.
-  !-----------------------------------------------------------------------
-  !
-  ! Unit Name:           nc_create_global_l2.f90
-  !
-  ! Created on:          05/12/10
-  !                      by Matthias Jerg, DWD/KU22
-  !                      (matthias.jerg@dwd.de)
-  !                      based on code provided by Nadine Schneider (nadine.schneider@dwd.de).
-  !
-  !   
-  ! Modifications Log:    
-  !
-  ! Applied SPRs:
-  !
-  !-----------------------------------------------------------------------
-  !
-  ! Declarations:
-  !
-  !---------------------------------
-  
-  use ECP_Constants
+   use CTRL_def
+   use ECP_Constants
+   use netcdf
 
-  use CTRL_def
+   implicit none
 
-  USE netcdf
+   ! Input
+   type(Ctrl_t),    intent(in)  :: Ctrl
+   character(len=*),intent(in)  :: path
+   integer,         intent(in)  :: nx, ny
+   integer,         intent(in)  :: wo
+   integer,         intent(in)  :: type
 
-  IMPLICIT NONE
-  
-  ! Input
-  INTEGER,INTENT(IN) :: wo
-  INTEGER,INTENT(IN) :: nx, ny
-  integer :: yday
-  CHARACTER(LEN=*),INTENT(IN) :: path
-  
-  ! Output
-  INTEGER,INTENT(OUT) :: ncid, dims_var(2)
-  
-  ! Local
-  INTEGER :: ierr, xdim, ydim
-  
-  INTEGER, PARAMETER :: SINGLE = 4
-  INTEGER, PARAMETER :: DOUBLE = 8
+   ! Output
+   integer,         intent(out) :: ncid
+   integer,         intent(out) :: dims_var(2)
+   integer,         intent(out) :: status
 
-  integer :: type
+   ! Local
+   integer :: ierr, xdim, ydim
 
-  integer :: status
+   character(len= 75) :: cncver,ccon,cinst,csname, csid, cuuid, &
+        instname, fname, contact, website, prodtime, ctitle, cproc, cprocver, &
+        prod_name, year, month,day,cal_file_ver
 
-  CHARACTER(len= 75) :: cncver,ccon,cinst,csname, csid, cuuid, &
-       & instname, fname, contact, website, prodtime, ctitle, cproc, cprocver, prod_name, year, month,day,cal_file_ver
+   ! Create new file
+   ierr = nf90_create(path, NF90_CLOBBER, ncid)
 
-  type(CTRL_t)  :: Ctrl
+   if (ierr .ne. NF90_NOERR) then
+      if (type .eq. 1 ) then
+         status = PrimaryFileOpenErr
+         write(*,*) 'ERROR: nf90_create(), filename = ', trim(path)
+         call Write_Log(Ctrl,'ERROR: nf90_create(), status = ', status)
+         stop
+      else if(type .eq. 2 ) then
+         status = SecondaryFileOpenErr
+         write(*,*) 'ERROR: nf90_create(), filename = ', trim(path)
+         call Write_Log(Ctrl,'ERROR: nf90_create(), status = ', status)
+         stop
+      endif
+   endif
 
-  ! End of header ----------------------------------------------------------
-  
-  
-  ! Create new file
-  
+   ! Define the 3 dimensions: time / lat / lon
+   ierr = nf90_def_dim(ncid, 'across_track', nx, xdim)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_def_dim(), dim_name = across_track, xdim = ', xdim
+      stop
+   endif
 
+   ierr = nf90_def_dim(ncid, 'along_track', ny, ydim)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_def_dim(), dim_name = along_track,  ydim = ', ydim
+      stop
+   endif
 
-  yday=1
-  
-  ierr = NF90_CREATE(path, NF90_CLOBBER, ncid)
-!  ierr=1
+   if (type .eq. 1) ctitle='ESA CCI Cloud Retrieval Products L2 Primary Output File'
+   if (type .eq. 2) ctitle='ESA CCI Cloud Retrieval Products L2 Secondary File'
+   if (type .eq. 3) ctitle='ESA CCI Cloud Retrieval Products L2 Input/Output File'
 
-  IF (ierr.NE.NF90_NOERR)  then
-     
-     if(type .eq. 1 ) then
-        
-        status=PrimaryFileOpenErr
-        
-        write(*,*) 'nc_create_global.F90: Primary netcdf file open error:', status
-        call Write_Log(Ctrl,'nc_create_global.F90: Primary netcdf file open error:', status)
-        stop
-        
-     elseif(type .eq. 2 ) then
-        
-        status=SecondaryFileOpenErr
-        write(*,*) 'nc_create_global.F90: Secondary netcdf file open error:', status
-        call Write_Log(Ctrl,'nc_create_global.F90: Secondary netcdf file open error:', status)
-        stop
-        
-     elseif(type .eq. 3 ) then
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Title', ctitle)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = File_Title', ctitle
+      stop
+   endif
 
-!        status=InputFileOpenErr
-!        write(*,*) 'nc_create_global.F90: Input netcdf file open error:', status
-!        call Write_Log(Ctrl,'nc_create_global.F90: Input netcdf file open error:', status)
-!        stop
+   cncver='3.6.3'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'NetCDF_Version', cncver)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = NetCDF_Version', cncver
+      stop
+   endif
 
-     endif
+   ccon='CF-1.4'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'CF_Convention_Version', ccon)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = CF_Convention_Version', ccon
+      stop
+   endif
 
-  endif
+   cinst='CMSAF!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Processing_Institution', cinst)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Processing_Institution', cinst
+      stop
+   endif
 
-  !  write(*,*) ierr,NF90_NOERR
-  !  pause
-  ! Define the 3 dimensions: time / lat / lon
-  
-  
-  ierr = NF90_DEF_DIM(ncid, 'across_track', nx, xdim)
-  IF (ierr.NE.NF90_NOERR) then
+   cproc='ORAC!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Processed_with', cproc)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Processed_with', cproc
+      stop
+   endif
 
-     STOP 'create x-d'
+   cprocver='1.0!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Processor_Version', cprocver)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Processor_Version', cprocver
+      stop
+   endif
 
-  endif
-  
-!  ierr = NF90_DEF_DIM(ncid, 'along_track', NF90_UNLIMITED, ydim) !ny
-  ierr = NF90_DEF_DIM(ncid, 'along_track', ny, ydim) !ny
-  IF (ierr.NE.NF90_NOERR) then
+   if (Ctrl%Inst%Name .eq. 'AATSR' .or. Ctrl%Inst%Name .eq. 'ATSR') then
+      cal_file_ver='3.01'
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'AATSR_Calibration_Version', cal_file_ver)
+      if (ierr .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_put_att(), name = AATSR_Calibration_Version', cal_file_ver
+         stop
+      endif
+   end if
 
-     STOP 'create y-d'
+   csname='satellite name!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Satellite_Name', csname)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Satellite_Name', csname
+      stop
+   endif
 
-  endif
+   csid='satellite id!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Satellite_ID', csid)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Satellite_ID', csid
+      stop
+   endif
 
+   cuuid='uuid tag!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'uuid', cuuid)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = uuid', cuuid
+      stop
+   endif
 
-  if(type .eq. 1 ) ctitle='ESA CCI Cloud Retrieval Products L2 Primary Output File'
-  if(type .eq. 2) ctitle='ESA CCI Cloud Retrieval Products L2 Secondary File'
-  if(type .eq. 3) ctitle='ESA CCI Cloud Retrieval Products L2 Input/Output File'
-  
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Title',ctitle)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  cncver='3.6.3'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'NetCDF_Version',cncver)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  ccon='CF-1.4'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'CF_Convention_Version',ccon)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  cinst='CMSAF!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Processing_Institution',cinst)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  cproc='ORAC!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Processed_with',cproc)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  cprocver='1.0!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Processor_Version',cprocver)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+   instname='instrument name!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Instrument_Name', instname)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Instrument_Name', instname
+      stop
+   endif
 
-  if (Ctrl%Inst%Name .eq. 'AATSR' .or. Ctrl%Inst%Name .eq. 'ATSR'  ) then
-     cal_file_ver='3.01'
-     ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'AATSR_Calibration_Version',cal_file_ver)
-  end if
+   fname='file name!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Name', fname)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = File_Name', fname
+      stop
+   endif
 
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  csname='satellite name!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Satellite_Name',csname)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  csid='satellite id!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Satellite_ID',csid)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  cuuid='uuid tag!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'uuid',cuuid)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  instname='instrument name!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Instrument_Name',instname)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  fname='file name!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'File_Name',fname)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  contact='contact email!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Email',contact)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  website='contact website!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Contact_Website',website)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  prodtime='production time!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Production_Time',prodtime)
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  prod_name='prod_name!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Product_Name',trim(adjustl(prod_name)))
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
-  year='year!!!'
-  month='month!!!'
-  day='day!!!'
-  ierr = NF90_PUT_ATT(ncid, NF90_GLOBAL, 'Product_Date',&
-       & trim(adjustl(trim(adjustl(year))//trim(adjustl(month))//trim(adjustl(day)))))
-  IF (ierr.NE.NF90_NOERR) stop 'error def conventions'
+   contact='contact email!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Email', contact)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Contact_Email', contact
+      stop
+   endif
 
+   website='contact website!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Website', website)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Contact_Website', website
+      stop
+   endif
 
+   prodtime='production time!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Production_Time', prodtime)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Production_Time', prodtime
+      stop
+   endif
 
-  ierr = NF90_ENDDEF(ncid)
-  IF (ierr.NE.NF90_NOERR)  stop 'error enddef '
-  !
+   prod_name='prod_name!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Name', trim(adjustl(prod_name)))
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Product_Name', trim(adjustl(prod_name))
+      stop
+   endif
 
+   year='year!!!'
+   month='month!!!'
+   day='day!!!'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Date',&
+      trim(adjustl(trim(adjustl(year))//trim(adjustl(month))//trim(adjustl(day)))))
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), name = Product_Date', &
+         trim(adjustl(trim(adjustl(year))//trim(adjustl(month))//trim(adjustl(day))))
+      stop
+   endif
 
+   ierr = nf90_enddef(ncid)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_enddef()'
+      stop
+   endif
 
-  dims_var(1) = xdim !1
-  dims_var(2) = ydim !3
+   dims_var(1) = xdim
+   dims_var(2) = ydim
 
+   if (wo .eq. 1) then
+      write(*,*) 'new file created: ',trim(path)
+   endif
 
-  IF (wo.EQ.1) THEN
-     write(*,*) ''
-     write(*,*) 'New file created: ',TRIM(path)
-  ENDIF
-  
-  RETURN
-  
-END SUBROUTINE nc_create_global_l2
+end subroutine nc_create_global_l2

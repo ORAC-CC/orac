@@ -1,202 +1,122 @@
-SUBROUTINE nc_info(ncid,ndim,nvar,nattr,wo)
+!-------------------------------------------------------------------------------
+! This software was developed within the ESA Cloud CCI Project and is based on
+! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
+! All Rights Reserved.
+!-------------------------------------------------------------------------------
 
-!---------------------------------------------------------------------
-! Description:
+!-------------------------------------------------------------------------------
+! Name: nc_dim_info.F90
 !
-!                      Reads in netcdf-file. Float Format
+! Purpose:
 !
-!-----------------------------------------------------------------------
-! This software was developed within the ESA DUE GlobVapour Project.
+! Description and Algorithm details:
 !
-! Copyright 2010, DWD, All Rights Reserved.
-!-----------------------------------------------------------------------
+! Arguments:
+! Name Type In/Out/Both Description
 !
-! Unit Name:           nc_dim_info.f90
+! Local variables:
+! Name Type Description
 !
-! Created on:          04/08/10
-!                      by Nadine Schneider, DWD/KU22
-!                      (nadine.schneider@dwd.de)
+! History:
+! 2014/08/04, Greg McGarragh: Cleaned up the code.
 !
-! Last Modified on:    August 04, 2010
-!                      / Nadine Schneider, DWD/KU22, nadine.schneider@dwd.de
+! $Id$
 !
-! Modifications Log:
-!                     16/02/2012 C. Poulsen added vartypes_pp module
-! Applied SPRs:
-!
-!-----------------------------------------------------------------------
-!
-! Declarations:
-!
-!---------------------------------
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
-  USE netcdf
+subroutine nc_info(ncid,ndim,nvar,nattr,wo)
 
-  use  ECP_Constants
+   use ECP_Constants
+   use netcdf
 
-  IMPLICIT NONE
+   implicit none
 
-!   INCLUDE 'netcdf.inc'
+   ! Input
+   integer, intent(in) :: ncid
+   integer, intent(in) :: wo
 
-  ! Input
-  INTEGER,INTENT(IN) :: ncid,wo
-  
-  ! Output
-  INTEGER :: ndim, nvar, nattr
-  
-  ! Local
-  INTEGER :: ierr
+   ! Output
+   integer, intent(out) :: ndim
+   integer, intent(out) :: nvar
+   integer, intent(out) :: nattr
 
-  ! End of header ----------------------------------------------------------
+   ! Local
+   integer :: ierr
 
+   ierr = 0
 
+   ierr = nf90_inquire(ncid,ndim,nvar,nattr)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_inquire()'
+      stop
+   endif
 
-  ierr = 0
-  
-  ierr = nf90_inquire(ncid,ndim,nvar,nattr)  !Amount of pixels
-  IF (ierr.NE.NF90_NOERR) THEN
-     stop 'inq all'
-  ENDIF
-   
-  
-  RETURN
- 
-END SUBROUTINE nc_info
+end subroutine nc_info
 
 
-SUBROUTINE nc_dim_id(ncid,name,did,wo)
+subroutine nc_dim_id(ncid,name,did,wo)
 
-!---------------------------------------------------------------------
-! Description:
-!
-!                      Reads in netcdf-file. Float Format
-!
-!-----------------------------------------------------------------------
-! This software was developed within the ESA DUE GlobVapour Project.
-!
-! Copyright 2010, DWD, All Rights Reserved.
-!-----------------------------------------------------------------------
-!
-! Unit Name:           nc_dim_info.f90
-!
-! Created on:          04/08/10
-!                      by Nadine Schneider, DWD/KU22
-!                      (nadine.schneider@dwd.de)
-!
-! Last Modified on:    August 04, 2010
-!                      / Nadine Schneider, DWD/KU22, nadine.schneider@dwd.de
-!
-! Modifications Log:
-!
-! Applied SPRs:
-!
-!-----------------------------------------------------------------------
-!
-! Declarations:
-!
-!---------------------------------
+   use netcdf
 
-  USE netcdf
+   implicit none
 
-  IMPLICIT NONE
+   ! Input
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: name
+   integer,          intent(in)  :: wo
 
-!   INCLUDE 'netcdf.inc'
+   ! Output
+   integer,          intent(out) :: did
 
-  ! Input
-  INTEGER,INTENT(IN) :: ncid,wo
-  CHARACTER(LEN=*) :: name
+   ! Local
+   integer :: ierr
 
-  ! Output
-  INTEGER :: did
+   ierr = 0
 
-  ! Local
-  INTEGER :: ierr
+   ierr = nf90_inq_dimid(ncid,name,did)
+   if (ierr .ne. NF90_NOERR) then
+   write(*,*) ierr,NF90_NOERR
+      write(*,*) 'ERROR: nf90_inq_dimid()'
+      stop
+   endif
 
-  ! End of header ----------------------------------------------------------
+   if (wo .eq. 1) then
+      write(*,*) 'did: ', did
+   endif
 
-  ierr = 0
- 
-  ierr = NF90_INQ_DIMID(ncid,name,did)  !Amount of pixels
-  IF (ierr.NE.NF90_NOERR) THEN
-  write(*,*) ierr,NF90_NOERR
-    stop 'error nc_dim_id'
-  ENDIF
-
-  
-  IF (wo.EQ.1) THEN
-     write(*,*) did,': ', did
-  ENDIF
-    
-  RETURN
- 
-END SUBROUTINE nc_dim_id
+end subroutine nc_dim_id
 
 
-SUBROUTINE nc_dim_length(ncid,dname,did,n,wo)
+subroutine nc_dim_length(ncid,dname,did,n,wo)
 
-!---------------------------------------------------------------------
-! Description:
-!
-!                      Reads in netcdf-file. Float Format
-!
-!-----------------------------------------------------------------------
-! This software was developed within the ESA DUE GlobVapour Project.
-!
-! Copyright 2010, DWD, All Rights Reserved.
-!-----------------------------------------------------------------------
-!
-! Unit Name:           nc_dim_info.f90
-!
-! Created on:          04/08/10
-!                      by Nadine Schneider, DWD/KU22
-!                      (nadine.schneider@dwd.de)
-!
-! Last Modified on:    August 04, 2010
-!                      / Nadine Schneider, DWD/KU22, nadine.schneider@dwd.de
-!
-! Modifications Log:
-!
-! Applied SPRs:
-!
-!-----------------------------------------------------------------------
-!
-! Declarations:
-!
-!---------------------------------
+   use ECP_Constants
+   use netcdf
 
-  USE netcdf
+   implicit none
 
-!  use preproc_constants
-  use  ECP_Constants
+   ! Input
+   integer,                        intent(in)  :: ncid
+   integer,                        intent(in)  :: wo
 
-  IMPLICIT NONE
+   ! Output
+   character(len=NetcdfVarLength), intent(out) :: dname
+   integer,                        intent(out) :: did
+   integer,                        intent(out) :: n
 
-!   INCLUDE 'netcdf.inc'
+   ! Local
+   integer :: ierr
 
-  ! Input
-  INTEGER,INTENT(IN) :: ncid,wo
-  CHARACTER(LEN=NetcdfVarLength) :: dname
+   ierr = 0
 
-  ! Output
-  INTEGER :: did, n
+   ierr = nf90_inquire_dimension(ncid,did,dname,n)
+   if (ierr .ne. NF90_NOERR) then
+      stop 'inq dimlen'
+   endif
 
-  ! Local
-  INTEGER :: ierr
+   if (wo .eq. 1) then
+      write(*,*) 'n: ', n
+   endif
 
-  ! End of header ----------------------------------------------------------
-
-  ierr = 0
-
-  ierr = NF90_INQUIRE_DIMENSION(ncid,did,dname,n)    !searches the amount of pixels
-  IF (ierr.NE.NF90_NOERR) THEN
-     STOP 'inq dimlen'
-  ENDIF
-
-  
-  IF (wo.EQ.1) THEN
-     write(*,*) TRIM(dname),': ', n
-  ENDIF
-    
-  RETURN
- 
-END SUBROUTINE nc_dim_length
+end subroutine nc_dim_length
