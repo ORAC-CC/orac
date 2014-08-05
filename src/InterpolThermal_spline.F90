@@ -83,6 +83,8 @@
 !       Adds code to extract RTM_Pc%dHc_dPc and RTM_Pc%dTc_dPc.
 !     5th Aug 2014, Greg McGarragh:
 !       Cleaned up the code.
+!     5th Aug 2014, Greg McGarragh:
+!       Put Interpol_* common code into subroutine find_Pc().
 !
 ! Bugs:
 !   None known.
@@ -161,39 +163,9 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    ThF = 1 + SPixel%Ind%ThermalFirst - Ctrl%Ind%ThermalFirst
    ThL = Ctrl%Ind%Nthermal
 
-   ! Search for Pc in the LW RTM pressure levels.  If Pc lies outwith the RTM
+   ! Search for Pc in the LW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
-
-   if (Pc > SPixel%RTM%LW%P(SPixel%RTM%LW%Np)) then
-      ! When Pc above pressure at highest level in RTM
-      i = SPixel%RTM%LW%Np - 1
-      if (abs(Pc-SPixel%RTM%LW%P(SPixel%RTM%LW%Np)) > 50.0) then
-         write(unit=message, fmt=*) &
-            'WARNING: Interpol_Thermal(), Extrapolation, high, P(1), P(Np), Pc: ', &
-            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-         call Write_Log(Ctrl, trim(message), status) ! Write to log
-      end if
-   else if (Pc < SPixel%RTM%LW%P(1)) then
-      ! When Pc below lowest in RTM
-      i = 1
-      if (abs(Pc-SPixel%RTM%LW%P(1)) > 50.0) then
-         ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) &
-            'WARNING: Interpol_Thermal(), Extrapolation, low, P(1), P(Np), Pc: ', &
-            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-         call Write_Log(Ctrl, trim(message), status) ! Write to log
-      end if
-   else
-      ! Search through RTM levels sequentially to find those bounding Pc
-      do j = 1, SPixel%RTM%LW%Np-1
-          if (Pc >= SPixel%RTM%LW%P(j) .and. Pc < SPixel%RTM%LW%P(j+1)) then
-              i = j ! Set index equal to the lower bounding RTM level
-              status = 0
-              exit
-          end if
-          status = 1 ! Bounding levels not found
-      end do
-   end if
+   call find_Pc(Ctrl, SPixel%RTM%LW%Np, SPixel%RTM%LW%P, Pc, i, status)
 
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
@@ -230,8 +202,10 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! (delta_p is negative for decreasing pressure with increasing i)
 
       delta_p = SPixel%RTM%LW%P(i+1) - SPixel%RTM%LW%P(i)
-      dP      = (SPixel%RTM%LW%P(i+1)-Pc)/delta_p
-      p1      = 1.0 - dP
+
+      dP = (SPixel%RTM%LW%P(i+1)-Pc)/delta_p
+      p1 = 1.0 - dP
+
       k0 = (((3.0*dP*dP)-1.0)/6.0) * delta_p
       k1 = (((3.0*p1*p1)-1.0)/6.0) * delta_p
 
@@ -242,8 +216,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       delta_Tbc = &
       SPixel%RTM%LW%Tbc(ThF:ThL,i+1) - SPixel%RTM%LW%Tbc(ThF:ThL,i)
 
-      ! Gradients of trans. w.r.t. pressure (around Pc)
-
+      ! Gradients of transmittance w.r.t. pressure (around Pc)
       do k = ThF,ThL
          RTM_Pc%LW%dTac_dPc(k) = (delta_Tac(k) / delta_p) - (k0 * d2Tac_dP2(k,i)) + &
                                  (k1 * d2Tac_dP2(k,i+1))

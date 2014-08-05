@@ -60,6 +60,8 @@
 !       Deal with the case when Pc is equal to the pressure of the last level.
 !    16th May 2014, Greg McGarragh:
 !       Cleaned up the code.
+!     5th Aug 2014, Greg McGarragh:
+!       Put Interpol_* common code into subroutine find_Pc().
 !
 ! Bugs:
 !    None known.
@@ -110,41 +112,7 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    ! Search for Pc in the SW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
-
-   if (Pc > SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) then
-      ! When Pc above pressure at highest level in RTM
-      i = SPixel%RTM%SW%Np-1
-      if (abs(Pc - SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) > 50.0) then
-         ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) &
-            'WARNING: Interpol_Solar(), Extrapolation, high, P(1), P(Np), Pc: ', &
-            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-         call Write_Log(Ctrl, trim(message), status) ! Write to log
-      end if
-   else if (Pc < SPixel%RTM%SW%P(1)) then
-      ! When Pc below lowest in RTM
-      i = 1
-      if (abs(Pc - SPixel%RTM%SW%P(1)) > 50.0) then
-         ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) &
-            'WARNING: Interpol_Solar(), Extrapolation, low, P(1), P(Np), Pc: ', &
-            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-         call Write_Log(Ctrl, trim(message), status) ! Write to log
-      end if
-   else if (Pc == SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) then
-      i = SPixel%RTM%SW%Np-1
-   else
-      ! Search through RTM levels sequentially to find those bounding Pc
-      do j = 1, SPixel%RTM%SW%Np-1
-         if (Pc >= SPixel%RTM%SW%P(j) .and. Pc < SPixel%RTM%SW%P(j+1)) then
-            i = j ! Set index equal to the lower bounding RTM level
-            status = 0
-            exit
-         end if
-
-         status = 1 ! Bounding levels not found
-      end do
-   end if
+   call find_Pc(Ctrl, SPixel%RTM%SW%Np, SPixel%RTM%SW%P, Pc, i, status)
 
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
@@ -152,7 +120,7 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
       status = IntTransErr ! Set status to indicate failure of interpolation
       write(unit=message, fmt=*) 'ERROR: Interpol_Solar(), Interpolation failure, ', &
          'SPixel starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
-         SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
+         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
       call Write_Log(Ctrl, trim(message), status) ! Write to log
 !     stop
    else

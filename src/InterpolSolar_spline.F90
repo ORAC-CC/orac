@@ -74,6 +74,8 @@
 !       Small bug fix to BKP readout.
 !     5th Aug 2014, Greg McGarragh:
 !       Cleaned up the code.
+!     5th Aug 2014, Greg McGarragh:
+!       Put Interpol_* common code into subroutine find_Pc().
 !
 ! Bugs:
 !    None known.
@@ -126,133 +128,101 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    ! Search for Pc in the SW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
+   call find_Pc(Ctrl, SPixel%RTM%SW%Np, SPixel%RTM%SW%P, Pc, i, status)
 
-   if (Pc > SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) then
-       ! When Pc above highest pressure in RTM
-       i = SPixel%RTM%SW%Np-1
-       if (abs(Pc - SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) > 50.0) then
-          ! When there is a difference of more than 50 hPa between Pc and RTM level
-          write(unit=message, fmt=*) &
-             'WARNING: Interpol_Solar(), Extrapolation, high, P(1), P(Np), Pc: ', &
-             SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-          call Write_Log(Ctrl, trim(message), status) ! Write to log
-       end if
-    else if (Pc < SPixel%RTM%SW%P(1)) then
-       ! When Pc below lowest in level RTM
-       i = 1
-       if (abs(Pc - SPixel%RTM%SW%P(1)) > 50.0) then
-          ! When there is a difference of more than 50 hPa between Pc and RTM level
-          write(unit=message, fmt=*) &
-             'WARNING: Interpol_Solar(), Extrapolation, low, P(1), P(Np), Pc: ', &
-             SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-          call Write_Log(Ctrl, trim(message), status) ! Write to log
-       end if
-    else if (Pc == SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) then
-       i = SPixel%RTM%SW%Np-1
-    else
-       ! Search through RTM levels sequentially to find those bounding Pc
-       do j = 1, SPixel%RTM%SW%Np-1
-          if (Pc >= SPixel%RTM%SW%P(j) .and. Pc < SPixel%RTM%SW%P(j+1)) then
-             i = j ! Set index equal to the lower bounding RTM level (higher p)
-             status = 0
-             exit
-          end if
+   if (status /= 0) then
+      ! If none of the above conditions are met (e.g. Pc = NaN) then return with
+      ! a fatal error
+      status = IntTransErr ! Set status to indicate failure of interpolation
+      write(unit=message, fmt=*) 'ERROR: Interpol_Solar(), Interpolation failure, ', &
+         'SPixel starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
+         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
+      call Write_Log(Ctrl, trim(message), status) ! Write to log
+      stop
+   else
+      ! Start the interpolation or extrapolation calculations
+      ! Note: Implicit looping over instrument channels from here onwards
 
-          status = 1 ! Bounding levels not found
-       end do
-    end if
+      do k = 1, SPixel%Ind%NSolar
+         call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
+            SPixel%RTM%SW%Tac(k,1:SPixel%RTM%SW%Np),d2Tac_dP2(k,1:SPixel%RTM%SW%Np))
+         call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
+             SPixel%RTM%SW%Tbc(k,1:SPixel%RTM%SW%Np),d2Tbc_dP2(k,1:SPixel%RTM%SW%Np))
+      enddo
 
-    If (status /= 0) then
-       !       If none of the above conditions are met (e.g. Pc = NaN) then return
-       !       with a fatal error
-       status = IntTransErr ! Set status to indicate failure of interpolation
-       write(unit=message, fmt=*) 'ERROR: Interpol_Solar(), Interpolation failure, ', &
-          'SPixel starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
-          SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-       call Write_Log(Ctrl, trim(message), status) ! Write to log
-       stop
-    else
-       ! Start the interpolation or extrapolation calculations
-       ! Note: Implicit looping over instrument channels from here onwards
+      ! Change in pressure between RTM levels i and i+1
+      ! (delta_p is negative for decreasing pressure with increasing i)
+      delta_p =  SPixel%RTM%SW%P(i+1) - SPixel%RTM%SW%P(i)
 
-       do k = 1, SPixel%Ind%NSolar
-          call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
-              SPixel%RTM%SW%Tac(k,1:SPixel%RTM%SW%Np),d2Tac_dP2(k,1:SPixel%RTM%SW%Np))
-          call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
-              SPixel%RTM%SW%Tbc(k,1:SPixel%RTM%SW%Np),d2Tbc_dP2(k,1:SPixel%RTM%SW%Np))
-       enddo
+      dP = (SPixel%RTM%SW%P(i+1)-Pc)/delta_p
+      p1 = 1.0 - dP
 
-       ! Change in pressure between RTM levels i and i+1
-       ! (delta_p is negative for decreasing pressure with increasing i)
-       delta_p =  SPixel%RTM%SW%P(i+1) - SPixel%RTM%SW%P(i)
-       dP      = (SPixel%RTM%SW%P(i+1)-Pc)/delta_p
-       p1      = 1.0 - dP
-       k0 = (((3.0*dP*dP)-1.0)/6.0) * delta_p
-       k1 = (((3.0*p1*p1)-1.0)/6.0) * delta_p
+      k0 = (((3.0*dP*dP)-1.0)/6.0) * delta_p
+      k1 = (((3.0*p1*p1)-1.0)/6.0) * delta_p
 
-       ! Change in transmittances between RTM levels i and i+1
-       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
-       delta_Tac = SPixel%RTM%SW%Tac(:,i+1) - SPixel%RTM%SW%Tac(:,i)
-       delta_Tbc = SPixel%RTM%SW%Tbc(:,i+1) - SPixel%RTM%SW%Tbc(:,i)
+      ! Change in transmittances between RTM levels i and i+1
+      ! (delta_Tac/bc are positive for increasing trans. with increasing i)
+      delta_Tac = SPixel%RTM%SW%Tac(:,i+1) - SPixel%RTM%SW%Tac(:,i)
+      delta_Tbc = SPixel%RTM%SW%Tbc(:,i+1) - SPixel%RTM%SW%Tbc(:,i)
 
-       ! Gradients of trans. with pressure (around Pc)
-       do k = 1, SPixel%Ind%NSolar
-          RTM_Pc%SW%dTac_dPc(k) = (delta_Tac(k) / delta_p) - (k0 * d2Tac_dP2(k,i)) + &
-                                  (k1 * d2Tac_dP2(k,i+1))
-          RTM_Pc%SW%dTbc_dPc(k) = (delta_Tbc(k) / delta_p) - (k0 * d2Tbc_dP2(k,i)) + &
-                                  (k1 * d2Tbc_dP2(k,i+1))
-       enddo
+      ! Gradients of transmittance w.r.t. pressure (around Pc)
+      do k = 1, SPixel%Ind%NSolar
+         RTM_Pc%SW%dTac_dPc(k) = (delta_Tac(k) / delta_p) - (k0 * d2Tac_dP2(k,i)) + &
+                                 (k1 * d2Tac_dP2(k,i+1))
+         RTM_Pc%SW%dTbc_dPc(k) = (delta_Tbc(k) / delta_p) - (k0 * d2Tbc_dP2(k,i)) + &
+                                 (k1 * d2Tbc_dP2(k,i+1))
+      enddo
 
-       ! Interpolated transmittances
-       ! (Sign conventions same as for delta_p. If Pc is outwith the RTM pressure
-       ! levels then extrapolation takes place using the same equations as for
-       ! interpolation. Note: The sign of delta_Pc will change for Pc greater than
-       ! the pressure of the lowest altitude RTM pressure level)
+      ! Interpolated transmittances
+      ! (Sign conventions same as for delta_p. If Pc is outwith the RTM pressure
+      ! levels then extrapolation takes place using the same equations as for
+      ! interpolation. Note: The sign of delta_Pc will change for Pc greater than
+      ! the pressure of the lowest altitude RTM pressure level)
 
-       k0 = (((dP*dP*dP)-dP) * (delta_p*delta_p))/6.0
-       k1 = (((p1*p1*p1)-p1) * (delta_p*delta_p))/6.0
+      k0 = (((dP*dP*dP)-dP) * (delta_p*delta_p))/6.0
+      k1 = (((p1*p1*p1)-p1) * (delta_p*delta_p))/6.0
 
-       do k = 1, SPixel%Ind%NSolar
-          RTM_Pc%SW%Tac(k) = (dP * SPixel%RTM%SW%Tac(k,i)) + &
-              (p1 * SPixel%RTM%SW%Tac(k,i+1)) + &
-              (k0 * d2Tac_dP2(k,i)) + (k1 * d2Tac_dP2(k,i+1))
-       enddo
+      do k = 1, SPixel%Ind%NSolar
+         RTM_Pc%SW%Tac(k) = (dP * SPixel%RTM%SW%Tac(k,i)) + &
+             (p1 * SPixel%RTM%SW%Tac(k,i+1)) + &
+             (k0 * d2Tac_dP2(k,i)) + (k1 * d2Tac_dP2(k,i+1))
+      enddo
 
-       do k = 1, SPixel%Ind%NSolar
-          RTM_Pc%SW%Tbc(k) = (dP * SPixel%RTM%SW%Tbc(k,i)) + &
-              (p1 * SPixel%RTM%SW%Tbc(k,i+1)) + &
-              (k0 * d2Tbc_dP2(k,i)) + (k1 * d2Tbc_dP2(k,i+1))
-       enddo
-    end if
+      do k = 1, SPixel%Ind%NSolar
+         RTM_Pc%SW%Tbc(k) = (dP * SPixel%RTM%SW%Tbc(k,i)) + &
+             (p1 * SPixel%RTM%SW%Tbc(k,i+1)) + &
+             (k0 * d2Tbc_dP2(k,i)) + (k1 * d2Tbc_dP2(k,i+1))
+      enddo
+   end if
 
-    ! Open breakpoint file if required, and write our transmittances etc.
+   ! Open breakpoint file if required, and write our transmittances etc.
 
 #ifdef BKP
-    if (Ctrl%Bkpl >= BkpL_Interpol_Solar) then
-       call Find_Lun(bkp_lun)
-       open(unit=bkp_lun,      &
-            file=Ctrl%FID%Bkp, &
-            status='old',      &
-            position='append', &
-            iostat=ios)
-       if (ios /= 0) then
-          status = BkpFileOpenErr
-          call Write_Log(Ctrl, 'Interpol_Solar Spline: Error opening breakpoint file', &
-              status)
-       else
-          write(bkp_lun,*)'Interpol_Solar Spline:'
-       end if
+   if (Ctrl%Bkpl >= BkpL_Interpol_Solar) then
+      call Find_Lun(bkp_lun)
+      open(unit=bkp_lun,      &
+           file=Ctrl%FID%Bkp, &
+           status='old',      &
+           position='append', &
+           iostat=ios)
+      if (ios /= 0) then
+         status = BkpFileOpenErr
+         call Write_Log(Ctrl, 'Interpol_Solar_spline: Error opening breakpoint file', &
+            status)
+      else
+         write(bkp_lun,*)'Interpol_Solar_spline:'
+      end if
 
-       write(bkp_lun,'(a)') 'Chan ind  Tac       Tbc       dTac_dPc  dTbc_dPc'
-       do i=1, SPixel%Ind%NY - SPixel%Ind%NThermal
-          write(bkp_lun,'(5x,i2,4(1x,f9.4))') i, &
-              RTM_Pc%SW%Tac(i), RTM_Pc%SW%Tbc(i), RTM_Pc%SW%dTac_dPc(i), &
-              RTM_Pc%SW%dTbc_dPc(i)
-       end do
+      write(bkp_lun,'(a)') 'Chan ind  Tac       Tbc       dTac_dPc  dTbc_dPc'
+      do i=1, SPixel%Ind%NY - SPixel%Ind%NThermal
+         write(bkp_lun,'(5x,i2,4(1x,f9.4))') i, &
+            RTM_Pc%SW%Tac(i), RTM_Pc%SW%Tbc(i), RTM_Pc%SW%dTac_dPc(i), &
+            RTM_Pc%SW%dTbc_dPc(i)
+      end do
 
-       write(bkp_lun, '(a,/)') 'Interpol_Solar Spline: end'
-       close(unit=bkp_lun)
-    end if
+      write(bkp_lun, '(a,/)') 'Interpol_Solar_spline: end'
+      close(unit=bkp_lun)
+   end if
 #endif
 
 end subroutine Interpol_Solar_spline
