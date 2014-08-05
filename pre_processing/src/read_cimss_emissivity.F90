@@ -90,19 +90,14 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
    integer(kind=stint)                                 :: stat
 
    ! Local variables
-   integer                                       :: fid, xid, yid, zid, did
-   integer                                       :: nbands
-   integer                                       :: xdim, ydim, zdim
-   integer                                       :: nDim, nVar, nAtt
-   integer                                       :: uDimID, ForNM
-   integer(kind=2), allocatable, dimension(:)    :: tmpwavenumber
-   real, allocatable, dimension(:,:)             :: fdata
-   real                                          :: scale_factor, offset
-   character(len=6)                              :: BandList(10)
-   integer                                       :: i
-
-   integer, dimension(2)                         :: start, cnt, stride
-   integer(kind=1)                               :: gen_loc=1
+   integer          :: fid, xid, yid, zid
+   integer          :: nbands
+   integer          :: xdim, ydim, zdim
+   integer          :: nDim, nVar, nAtt
+   integer          :: uDimID, ForNM
+   character(len=6) :: BandList(10)
+   integer          :: i
+   integer(kind=1)  :: gen_loc=1
 
    ! List of the band variable names in the data files
    BandList = (/ 'emis1 ', 'emis2 ', 'emis3 ', 'emis4 ', 'emis5 ', &

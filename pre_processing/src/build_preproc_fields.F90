@@ -52,7 +52,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    type(imager_geolocation_s) :: imager_geolocation
    type(imager_angles_s)      :: imager_angles
 
-   integer(kind=lint)         :: i,j,maxi,maxj,lon_i,lat_j,iangle
+   integer(kind=lint)         :: i,j,lon_i,lat_j
    real(sreal)                :: fac
 
    !build the arrays for the regular grid

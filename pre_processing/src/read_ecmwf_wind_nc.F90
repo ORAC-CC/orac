@@ -129,7 +129,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    type(ecmwf_s),    intent(inout) :: ecmwf
 
    real, allocatable               :: val(:,:,:,:)
-   integer                         :: fid,i,j,ndim,nvar,size
+   integer                         :: fid,i,ndim,nvar,size
    character(len=varlength)        :: name
 
    ! open file
@@ -137,8 +137,8 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid,ndim,nvar) .ne. 0) STOP 'READ_ECMWF_WIND: Bad inquire.'
-   do j=1,ndim
-      if (nf90_inquire_dimension(fid,j,name,size) .ne. 0) &
+   do i=1,ndim
+      if (nf90_inquire_dimension(fid,i,name,size) .ne. 0) &
            STOP 'READ_ECMWF_WIND: Bad dimension.'
       if (name .eq. 'longitude') then
          if (ecmwf%xdim .eq. 0) then
@@ -165,8 +165,8 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    end do
 
    ! read wind fields and geolocation from files
-   do j=1,nvar
-      if (nf90_inquire_variable(fid,j,name) .ne. 0) &
+   do i=1,nvar
+      if (nf90_inquire_variable(fid,i,name) .ne. 0) &
            STOP 'READ_ECMWF_WIND: Bad variable.'
       select case (name)
       case('longitude')

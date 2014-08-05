@@ -258,8 +258,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    integer(kind=lint)                                :: pixel_counter_sw
    integer(kind=lint)                                :: pixel_counter_pw
 
-   integer(kind=lint)                                :: dummy_lint_1d(1)
-
    real(kind=sreal)                                  :: dummy_real_1d(1)
    real(kind=sreal)                                  :: dummy_real_2d(preproc_dims%kdim,1)
 

@@ -175,26 +175,17 @@ function read_nsidc_nise(path_to_file, nise, north, south) &
 
    ! Output variables
    type(nise_s),       intent(out) :: nise
-   integer(kind=4)                 :: stat      ! Function return
+   integer(kind=4)                 :: stat ! Function return
 
    ! Local variables
-   integer(kind=4)              :: i,j,k
-   integer(kind=4)              :: fid, gid
-   character(len=300)           :: gridlist
-   integer(kind=4)              :: gridlistlen
-   character(len=21)            :: dataname
+   integer(kind=4)           :: fid
+   character(len=300)        :: gridlist
+   integer(kind=4)           :: gridlistlen
 
-
-   integer(kind=2), allocatable :: tmpdata(:,:)
-
-   integer(kind=2)              :: fill
-   real(kind=8)                 :: offset, scale
-
-
-   integer(kind=4), external    :: gdinqgrid
-   integer(kind=4), external    :: gdopen
-   integer(kind=4), external    :: gdgetfill
-   integer(kind=4), external    :: gdclose
+   integer(kind=4), external :: gdinqgrid
+   integer(kind=4), external :: gdopen
+   integer(kind=4), external :: gdgetfill
+   integer(kind=4), external :: gdclose
 
    ! First off, find out what grids are in the file. There should be
    ! two; one for the Northern Hemisphere and one for the Southern.
@@ -219,6 +210,3 @@ function read_nsidc_nise(path_to_file, nise, north, south) &
    stat = gdclose(fid)
 
 end function read_nsidc_nise
-
-
-

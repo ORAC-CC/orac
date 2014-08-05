@@ -72,11 +72,7 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
    integer,                   intent(in)  :: ecmwf_flag
    logical,                   intent(in)  :: verbose
 
-   character                 :: cera_hour*2
-   character(len=pathlength) :: ecmwf_path_root
-   character(len=pathlength) :: ecmwf_path_root2
-   character(len=pathlength) :: ecmwf_path_root3
-   integer(kind=stint)       :: era_hours,era_hour,diff_hour,diff_hour_old
+   character :: cera_hour*2
 
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
