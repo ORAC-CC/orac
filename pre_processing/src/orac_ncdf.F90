@@ -504,6 +504,7 @@ end SUBROUTINE nc_open
 !
 ! History:
 ! 2014/02/10, AP: Original version
+! 2014/08/05, GM: 'out' was being truncated. Extended length to 64.
 !
 ! Bugs:
 ! none known
@@ -512,7 +513,7 @@ FUNCTION nc_error(ierr) result(out)
    implicit none
 
    integer, intent(in) :: ierr
-   character(len=40)   :: out
+   character(len=64)   :: out
 
    select case (ierr)
    case(-33)
