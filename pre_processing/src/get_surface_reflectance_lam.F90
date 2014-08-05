@@ -156,8 +156,6 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
 
    real                                            :: lat_res,lon_res
 
-   logical                                         :: include_full_brdf_sea
-
    logical, allocatable, dimension(:,:)            :: mask
 
    write(*,*) 'In get_surface_reflectance_lam()'
