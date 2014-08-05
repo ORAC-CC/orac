@@ -117,14 +117,6 @@ subroutine Read_Chan(Ctrl, SAD_Chan, status)
    integer                :: NSolar, NThermal ! Local values used to check
                                               ! whether selected channels match
 					      ! totals indicated in driver file.
-   real                   :: LW_diff          ! Difference between channel central
-                                              ! WN and 11 um
-   real                   :: min_LW_diff      ! Smallest difference between channel
-                                              ! central WN and 11 um
-   real                   :: SW_diff          ! Difference between channel central
-                                              ! WN and 0.67 um
-   real                   :: min_SW_diff      ! Smallest difference between channel
-                                              ! central WN and 0.67 um
    logical                :: file_exists
 
    status = 0

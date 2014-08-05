@@ -106,7 +106,6 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    integer :: i
    integer :: j
-   integer :: k
    real    :: dP ! Fractional distance of Pc from bottom of interval
    real    :: P1 ! Fractional distance of Pc from top of interval
    real    :: k0 ! Spline coefficient
@@ -118,7 +117,6 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
    real    :: d2Tbc_dP2(SPixel%Ind%NSolar,SPixel%RTM%SW%Np)
    character(ECPLogReclen) :: message
 #ifdef BKP
-   integer :: jj      ! For breakpoint output loops
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
@@ -143,11 +141,11 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards
 
-      do k = 1, SPixel%Ind%NSolar
+      do j = 1, SPixel%Ind%NSolar
          call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
-            SPixel%RTM%SW%Tac(k,1:SPixel%RTM%SW%Np),d2Tac_dP2(k,1:SPixel%RTM%SW%Np))
+            SPixel%RTM%SW%Tac(j,1:SPixel%RTM%SW%Np),d2Tac_dP2(j,1:SPixel%RTM%SW%Np))
          call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
-             SPixel%RTM%SW%Tbc(k,1:SPixel%RTM%SW%Np),d2Tbc_dP2(k,1:SPixel%RTM%SW%Np))
+             SPixel%RTM%SW%Tbc(j,1:SPixel%RTM%SW%Np),d2Tbc_dP2(j,1:SPixel%RTM%SW%Np))
       enddo
 
       ! Change in pressure between RTM levels i and i+1
@@ -166,11 +164,11 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       delta_Tbc = SPixel%RTM%SW%Tbc(:,i+1) - SPixel%RTM%SW%Tbc(:,i)
 
       ! Gradients of transmittance w.r.t. pressure (around Pc)
-      do k = 1, SPixel%Ind%NSolar
-         RTM_Pc%SW%dTac_dPc(k) = (delta_Tac(k) / delta_p) - (k0 * d2Tac_dP2(k,i)) + &
-                                 (k1 * d2Tac_dP2(k,i+1))
-         RTM_Pc%SW%dTbc_dPc(k) = (delta_Tbc(k) / delta_p) - (k0 * d2Tbc_dP2(k,i)) + &
-                                 (k1 * d2Tbc_dP2(k,i+1))
+      do j = 1, SPixel%Ind%NSolar
+         RTM_Pc%SW%dTac_dPc(j) = (delta_Tac(j) / delta_p) - (k0 * d2Tac_dP2(j,i)) + &
+                                 (k1 * d2Tac_dP2(j,i+1))
+         RTM_Pc%SW%dTbc_dPc(j) = (delta_Tbc(j) / delta_p) - (k0 * d2Tbc_dP2(j,i)) + &
+                                 (k1 * d2Tbc_dP2(j,i+1))
       enddo
 
       ! Interpolated transmittances
@@ -182,16 +180,16 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       k0 = (((dP*dP*dP)-dP) * (delta_p*delta_p))/6.0
       k1 = (((p1*p1*p1)-p1) * (delta_p*delta_p))/6.0
 
-      do k = 1, SPixel%Ind%NSolar
-         RTM_Pc%SW%Tac(k) = (dP * SPixel%RTM%SW%Tac(k,i)) + &
-             (p1 * SPixel%RTM%SW%Tac(k,i+1)) + &
-             (k0 * d2Tac_dP2(k,i)) + (k1 * d2Tac_dP2(k,i+1))
+      do j = 1, SPixel%Ind%NSolar
+         RTM_Pc%SW%Tac(j) = (dP * SPixel%RTM%SW%Tac(j,i)) + &
+             (p1 * SPixel%RTM%SW%Tac(j,i+1)) + &
+             (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
       enddo
 
-      do k = 1, SPixel%Ind%NSolar
-         RTM_Pc%SW%Tbc(k) = (dP * SPixel%RTM%SW%Tbc(k,i)) + &
-             (p1 * SPixel%RTM%SW%Tbc(k,i+1)) + &
-             (k0 * d2Tbc_dP2(k,i)) + (k1 * d2Tbc_dP2(k,i+1))
+      do j = 1, SPixel%Ind%NSolar
+         RTM_Pc%SW%Tbc(j) = (dP * SPixel%RTM%SW%Tbc(j,i)) + &
+             (p1 * SPixel%RTM%SW%Tbc(j,i+1)) + &
+             (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
       enddo
    end if
 

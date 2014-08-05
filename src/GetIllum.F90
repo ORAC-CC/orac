@@ -70,7 +70,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   integer :: i_view,i,ii,j
+   integer :: i_view,i,ii
    integer :: i_missing(MaxNumMeas)
 
    ! Set status to zero

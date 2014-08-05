@@ -313,8 +313,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! This is for the wrapper
+#ifdef WRAPPER
    integer :: mytask,ntasks,lower_bound,upper_bound
-
+#endif
    !include "sigtrap.F90"
 
 #ifdef USE_TIMING

@@ -6,15 +6,15 @@
 !    Interpolates LW transmittances and radiances to the cloud pressure level.
 !
 ! Arguments:
-!    Name      Type        In/Out/Both Description
-!    Ctrl      struct      In          Control structure
-!    SPixel    struct      In          Super-pixel structure
-!    Pc        float       In          Cloud pressure (from state vector X)
-!    SAD_Chan  float array In          Channel characteristics
-!    RTM_Pc    struct      Out         Contains Tac, Tbc (interpolated
-!                                      transmittances above and below cloud) and
-!                                      gradients wrt cloud pressure.
-!    status    int         Out         Standard status value not set here
+!    Name     Type        In/Out/Both Description
+!    Ctrl     struct      In          Control structure
+!    SPixel   struct      In          Super-pixel structure
+!    Pc       float       In          Cloud pressure (from state vector X)
+!    SAD_Chan float array In          Channel characteristics
+!    RTM_Pc   struct      Out         Contains Tac, Tbc (interpolated
+!                                     transmittances above and below cloud) and
+!                                     gradients wrt cloud pressure.
+!    status   int         Out         Standard status value not set here
 !
 ! Algorithm:
 !
@@ -98,7 +98,6 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    ! Define local variables
 
    integer :: i
-   integer :: j
    integer :: ThF, ThL                           ! First, last thermal channel
                                                  ! indices for RTM_Pc%LW arrays
    real    :: delta_p                            ! Difference in pressure between
@@ -132,8 +131,8 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    character(ECPLogReclen) :: message            ! Warning or error message to
                                                  ! pass to Write_Log
 #ifdef BKP
-   integer   :: bkp_lun ! Unit number for breakpoint file
-   integer   :: ios     ! I/O status for breakpoint file
+   integer :: bkp_lun ! Unit number for breakpoint file
+   integer :: ios     ! I/O status for breakpoint file
 #endif
 
    ! Set initial value of error status equal to zero (i.e. no error)

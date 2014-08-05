@@ -45,7 +45,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    integer :: i
    integer :: mon_k,mon_k_trop
    integer :: upper_index,lower_index
-   integer :: kspot,kspot_min,kspot_trop
+   integer :: kspot
    integer :: min_prof_lev
 
    real    :: dx,dy,xd

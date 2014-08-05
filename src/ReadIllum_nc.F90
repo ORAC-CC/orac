@@ -79,7 +79,6 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    integer        :: refch1,refch2
    integer        :: n_vis_bad_ref,n_vis_bad_tau,n_ir_bad
    integer        :: i_missing_vis_ref,i_missing_vis_tau,i_missing_ir
-   real           :: minrad
 
    status=0
 
