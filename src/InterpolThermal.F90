@@ -22,7 +22,7 @@
 !    Name Type Description
 !
 ! History:
-!    21st Nov 2000, Kevin M. Smith: original version
+!    21st Nov 2000, Kevin M. Smith: Original version
 !    14th Feb 2001, Kevin M. Smith: Corrected the position of the end of the
 !       first main if block.
 !    16th Feb 2001, Andy Smith:
@@ -77,58 +77,58 @@
 
 subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
-    use CTRL_def
-    use RTM_Pc_def
-    use SPixel_def
-    use SAD_Chan_def
+   use CTRL_def
+   use RTM_Pc_def
+   use SPixel_def
+   use SAD_Chan_def
 
-    implicit none
+   implicit none
 
-    ! Define arguments
+   ! Define arguments
 
-    type(CTRL_t),     intent(in)    :: Ctrl
-    type(SPixel_t),   intent(in)    :: SPixel
-    real,             intent(in)    :: Pc
-    type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
-    type(RTM_Pc_t) ,  intent(inout) :: RTM_Pc
-    integer,          intent(inout) :: status
+   type(CTRL_t),     intent(in)    :: Ctrl
+   type(SPixel_t),   intent(in)    :: SPixel
+   real,             intent(in)    :: Pc
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
+   type(RTM_Pc_t) ,  intent(inout) :: RTM_Pc
+   integer,          intent(inout) :: status
 
-    ! Define local variables
+   ! Define local variables
 
-    integer  :: i
-    integer  :: j
-    integer  :: ThF, ThL                           ! First, last thermal channel
-                                                   ! indices for RTM_Pc%LW arrays
-    real     :: delta_p                            ! Difference in pressure between
-                                                   ! consecutive RTM levels
-    real     :: delta_Tac(SPixel%Ind%Nthermal)     ! Difference in Tac between
-                                                   ! consecutive RTM levels
-    real     :: delta_Tbc(SPixel%Ind%Nthermal)     ! Difference in Tbc between
-                                                   ! consecutive RTM levels
-    real     :: delta_Rac_up(SPixel%Ind%Nthermal)  ! Difference in Rac_up between
-                                                   ! consecutive RTM levels
-    real     :: delta_Rac_dwn(SPixel%Ind%Nthermal) ! Difference in Rac_dwn between
-                                                   ! consecutive RTM levels
-    real     :: delta_Rbc_up(SPixel%Ind%Nthermal)  ! Difference in Rbc_up between
-                                                   ! consecutive RTM levels
-    real     :: delta_T                            ! Difference in temp between
-                                                   ! consecutive RTM levels
-    real     :: delta_H                            ! Difference in GPH between
-                                                   ! consecutive RTM levels
-    real     :: dT_dPc                             ! Change in Temp w.r.t. Pc
-    real     :: dH_dPc                             ! Change in GPH w.r.t. Pc
-    real     :: T(SPixel%Ind%Nthermal)             ! Temp at Pc
-    real     :: H(SPixel%Ind%Nthermal)             ! GPH at Pc
-    real     :: delta_Pc                           ! Difference in pressure between
-                                                   ! Pc and lower RTM level
-    real     :: delta_Tc(SPixel%Ind%Nthermal)      ! Difference in trans. between
-                                                   ! Pc and lower RTM level
-    real     :: delta_Rc(SPixel%Ind%Nthermal)      ! Difference in radiance between
-                                                   ! Pc and lower RTM level
-    real     :: dB_dT(SPixel%Ind%Nthermal)         ! Gradient of Planck function
-                                                   ! w.r.t surface T
-    character(180) :: message                      ! Warning or error message to
-                                                   ! pass to Write_Log
+   integer :: i
+   integer :: j
+   integer :: ThF, ThL                           ! First, last thermal channel
+                                                 ! indices for RTM_Pc%LW arrays
+   real    :: delta_p                            ! Difference in pressure between
+                                                 ! consecutive RTM levels
+   real    :: delta_Tac(SPixel%Ind%Nthermal)     ! Difference in Tac between
+                                                 ! consecutive RTM levels
+   real    :: delta_Tbc(SPixel%Ind%Nthermal)     ! Difference in Tbc between
+                                                 ! consecutive RTM levels
+   real    :: delta_Rac_up(SPixel%Ind%Nthermal)  ! Difference in Rac_up between
+                                                 ! consecutive RTM levels
+   real    :: delta_Rac_dwn(SPixel%Ind%Nthermal) ! Difference in Rac_dwn between
+                                                 ! consecutive RTM levels
+   real    :: delta_Rbc_up(SPixel%Ind%Nthermal)  ! Difference in Rbc_up between
+                                                 ! consecutive RTM levels
+   real    :: delta_T                            ! Difference in temp between
+                                                 ! consecutive RTM levels
+   real    :: delta_H                            ! Difference in GPH between
+                                                 ! consecutive RTM levels
+   real    :: dT_dPc                             ! Change in Temp w.r.t. Pc
+   real    :: dH_dPc                             ! Change in GPH w.r.t. Pc
+   real    :: T(SPixel%Ind%Nthermal)             ! Temp at Pc
+   real    :: H(SPixel%Ind%Nthermal)             ! GPH at Pc
+   real    :: delta_Pc                           ! Difference in pressure between
+                                                 ! Pc and lower RTM level
+   real    :: delta_Tc(SPixel%Ind%Nthermal)      ! Difference in trans. between
+                                                 ! Pc and lower RTM level
+   real    :: delta_Rc(SPixel%Ind%Nthermal)      ! Difference in radiance between
+                                                 ! Pc and lower RTM level
+   real    :: dB_dT(SPixel%Ind%Nthermal)         ! Gradient of Planck function
+                                                 ! w.r.t surface T
+   character(ECPLogReclen) :: message            ! Warning or error message to
+                                                 ! pass to Write_Log
 #ifdef BKP
    integer   :: bkp_lun ! Unit number for breakpoint file
    integer   :: ios     ! I/O status for breakpoint file
@@ -142,7 +142,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    ! Ctrl%Ind%NThermal, but not all thermal channels are used in all pixels
    ! hence SPixel%Ind%ThermalFirst may not equal Ctrl%Ind%ThermalFirst.
 
-   ! The above is case in twilight conditiopn for that given pixel where the
+   ! The above is case in twilight condition for that given pixel where the
    ! mixed channels is excluded.
    ThF = 1 + SPixel%Ind%ThermalFirst - Ctrl%Ind%ThermalFirst
    ThL = Ctrl%Ind%NThermal
@@ -153,19 +153,21 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    if (Pc > SPixel%RTM%LW%P(SPixel%RTM%LW%Np)) then
       ! When Pc above pressure at highest level in RTM
       i = SPixel%RTM%LW%Np-1
-      if (abs(Pc-SPixel%RTM%LW%p(SPixel%RTM%LW%Np)) > 50.0) then
+      if (abs(Pc-SPixel%RTM%LW%P(SPixel%RTM%LW%Np)) > 50.0) then
          ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) 'Interpol_Thermal: Extrapolation warning high', &
-                                    Pc,SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
+         write(unit=message, fmt=*) &
+            'WARNING: Interpol_Thermal(), Extrapolation, high, P(1), P(Np), Pc: ', &
+            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
          call Write_Log(Ctrl, trim(message), status) ! Write to log
       end if
-   else if (Pc < SPixel%RTM%LW%p(1)) then
+   else if (Pc < SPixel%RTM%LW%P(1)) then
       ! When Pc below lowest in RTM
       i = 1
-      if (abs(Pc-SPixel%RTM%LW%p(1)) > 50.0) then
+      if (abs(Pc-SPixel%RTM%LW%P(1)) > 50.0) then
          ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) 'Interpol_Thermal: Extrapolation warning low', &
-                                    Pc,SPixel%RTM%LW%p(1)
+         write(unit=message, fmt=*) &
+            'WARNING: Interpol_Thermal(), Extrapolation, low, P(1), P(Np), Pc: ', &
+            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
          call Write_Log(Ctrl, trim(message), status) ! Write to log
       end if
    else if (Pc == SPixel%RTM%LW%P(SPixel%RTM%LW%Np)) then
@@ -173,7 +175,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    else
       ! Search through RTM levels sequentially to find those bounding Pc
       do j = 1, SPixel%RTM%LW%Np-1
-         if (Pc >= SPixel%RTM%LW%p(j) .and. Pc < SPixel%RTM%LW%p(j+1)) then
+         if (Pc >= SPixel%RTM%LW%P(j) .and. Pc < SPixel%RTM%LW%P(j+1)) then
             i = j ! Set index equal to the lower bounding RTM level
             status = 0
             exit
@@ -186,15 +188,18 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
       status = IntTransErr ! Set status to indicate failure of interpolation
-      write(unit=message, fmt=*) 'Interpol_Thermal: Interpolation failure'
+      write(unit=message, fmt=*) 'ERROR: Interpol_Thermal(), Interpolation failure, ', &
+         'SPixel starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
+         SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
       call Write_Log(Ctrl, trim(message), status) ! Write to log
+!     stop
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards
 
       ! Change in pressure between RTM levels i and i+1
       ! (delta_p is negative for decreasing pressure with increasing i)
-      delta_p = SPixel%RTM%LW%p(i+1) - SPixel%RTM%LW%p(i)
+      delta_p = SPixel%RTM%LW%P(i+1) - SPixel%RTM%LW%P(i)
 
       ! Change in transmittances between RTM levels i and i+1
       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
@@ -239,7 +244,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! the pressure of the lowest altitude RTM pressure level)
 
       ! Diff. between Pc and lower RTM level
-      delta_Pc = Pc - SPixel%RTM%LW%p(i)
+      delta_Pc = Pc - SPixel%RTM%LW%P(i)
 
       ! Diff. in trans. from gradient
       delta_Tc = delta_Pc * RTM_Pc%LW%dTac_dPc(ThF:ThL)
@@ -280,9 +285,9 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! Set current GPH and save the rate of change w.r.t. Pc for use later
       RTM_Pc%Hc = SPixel%RTM%LW%H(i) + delta_H
       H = RTM_Pc%Hc
-    end if
+   end if
 
-    ! Open breakpoint file if required, and write our reflectances and gradients.
+   ! Open breakpoint file if required, and write our reflectances and gradients.
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_Interpol_Thermal) then
       call Find_Lun(bkp_lun)

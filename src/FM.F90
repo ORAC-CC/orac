@@ -140,6 +140,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    use Ctrl_def
    use ECP_Constants
    use GZero_def
+   use Interpol_Routines_def
    use RTM_Pc_def
    use SAD_Chan_def
    use SAD_LUT_def
@@ -189,14 +190,14 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
               RTM_Pc, status)
-   else if (Ctrl%RTMIntflag .eq. LUTIntMethLinear) then
+   else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
       call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
               RTM_Pc, status)
    else
       status = RTMIntflagErr
-      call Write_Log(Ctrl, 'FM.f90: RTM Interp flag error:', status)
-      write(*,*) 'FM.f90: RTM Interp flag error:', status
+      call Write_Log(Ctrl, 'FM.f90: RTM Interp thermal flag error:', status)
+      write(*,*) 'FM.f90: RTM Interp thermal flag error:', status
    endif
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
@@ -261,7 +262,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
             call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
          else
             status = RTMIntflagErr
-            call Write_Log(Ctrl, 'FM.f90: RTM Interp flag error:', status)
+            call Write_Log(Ctrl, 'FM.f90: RTM Interp solar flag error:', status)
+            write(*,*) 'FM.f90: RTM Interp solar flag error:', status
          endif
 
          RTM_Pc%Tac(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast) = &

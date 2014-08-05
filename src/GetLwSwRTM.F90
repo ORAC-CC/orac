@@ -200,9 +200,9 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
       ! sp
       call interp_field_0d(RTM%LW%sp, SPixel%RTM%LW%sp, Nx, Nx1, Ny, Ny1, coef)
-!-----
+
       ! LW Ems
-      call interp_field_1d(RTM%LW%Ems, SPixel%RTM%LW%ems, Nx, Nx1, Ny, Ny1, coef)
+      call interp_field_1d(RTM%LW%Ems, SPixel%RTM%LW%Ems, Nx, Nx1, Ny, Ny1, coef)
 
       ! LW Tbc
       call interp_field_2d(RTM%LW%Tbc, SPixel%RTM%LW%Tbc, Nx, Nx1, Ny, Ny1, coef)
@@ -218,7 +218,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
       ! Rbc_up
       call interp_field_2d(RTM%LW%Rbc_up, SPixel%RTM%LW%Rbc_up, Nx, Nx1, Ny, Ny1, coef)
-!-----
+
       ! Set surface level to TOA transmittances
       SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%LW%Np)
 
@@ -230,13 +230,13 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
       ! P
       call interp_field_1d(RTM%LW%P, SPixel%RTM%SW%P, Nx, Nx1, Ny, Ny1, coef)
-!-----
+
       ! SW Tbc
       call interp_field_2d(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, Nx, Nx1, Ny, Ny1, coef)
 
       ! SW Tac
       call interp_field_2d(RTM%SW%Tac, SPixel%RTM%SW%Tac, Nx, Nx1, Ny, Ny1, coef)
-!-----
+
       ! Set surface level to TOA transmittances
       SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)
 

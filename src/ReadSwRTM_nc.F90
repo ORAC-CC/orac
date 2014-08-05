@@ -125,7 +125,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 
    implicit none
 
-!  Argument declarations
+   ! Argument declarations
 
    type(CTRL_t), intent(in)    :: Ctrl
    type(RTM_t),  intent(out)   :: RTM

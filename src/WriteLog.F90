@@ -81,7 +81,7 @@ subroutine Write_Log (Ctrl, message, status)
         file=Ctrl%FID%Log, &
         status='old',      &
         position='append', &
-        iostat=ios,recl=ECPlogReclen)
+        iostat=ios,recl=ECPLogReclen)
 
    ! AS extended recl to avoid annoying line breaks Feb 2011
 

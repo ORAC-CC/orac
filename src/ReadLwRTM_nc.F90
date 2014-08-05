@@ -358,7 +358,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
          if (status == 0) then
             ! Allocate arrays
-            allocate(RTM%LW%ems(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal))
+            allocate(RTM%LW%Ems(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal))
             allocate(RTM%LW%Tbc(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
             allocate(RTM%LW%Tac(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
             allocate(RTM%LW%Rac_up(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
@@ -378,7 +378,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
                      ichan=ichan+1
 
                      call nc_read_array_1p1_float_orac(ncid,RTM%LW%Grid%NLatLon,j,"emiss_lw",dummy1df,0)
-                     RTM%LW%ems(:,:,ichan)=reshape(dummy1df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon/), order = (/2,1/))
+                     RTM%LW%Ems(:,:,ichan)=reshape(dummy1df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon/), order = (/2,1/))
 
                      call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"tac_lw",dummy2df,0)
                      RTM%LW%Tac(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))

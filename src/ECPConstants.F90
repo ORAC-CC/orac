@@ -55,7 +55,7 @@
 !    (17th Jan 2001 - should read 2002?, Andy Smith:)
 !       New LwRTM error code. Re-numbered higher error codes to make room.
 !    23rd Feb 2011, Andy Smith:
-!       Added ECPlogReclen, fed up of irritating line breaks.
+!       Added ECPLogReclen, fed up of irritating line breaks.
 !     9th Mar 2011, Andy Smith:
 !       New error codes for albedo files. Updated XMDAD error on a priori F.
 !     5th Apr 2011, Andy Smith:
@@ -111,7 +111,7 @@ module ECP_constants
    integer, parameter :: dreal            = 8
 
    ! Maximum string lengths
-   integer, parameter :: ECPLogReclen     = 132     ! Record length in ECP log file,
+   integer, parameter :: ECPLogReclen     = 256     ! Record length in ECP log file,
                                                     ! to avoid annoying line breaks.
    integer, parameter :: FilenameLen      = 2048    ! Max. length of filenames
    integer, parameter :: InstNameLen      = 16      ! Max. length of instrument name

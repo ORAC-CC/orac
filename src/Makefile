@@ -225,11 +225,8 @@ ORAC_OBJ =        $(OBJS)/CalcCWP.o \
                   $(OBJS)/GZero.o \
                   $(OBJS)/hpsort.o \
                   $(OBJS)/interpolate_to_ctp.o \
-                  $(OBJS)/InterpolSolar.o \
-                  $(OBJS)/InterpolSolar_spline.o \
-                  $(OBJS)/InterpolThermal.o \
-                  $(OBJS)/InterpolThermal_spline.o \
                   $(OBJS)/IntRoutines.o \
+                  $(OBJS)/InterpolRoutines.o \
                   $(OBJS)/IntLUTRoutines.o \
                   $(OBJS)/InvertCholesky.o \
                   $(OBJS)/InvertCholeskyDC.o \

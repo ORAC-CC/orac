@@ -9,9 +9,9 @@ $(OBJS)/DecomposeCholesky.o: $(OBJS)/ECPConstants.o
 $(OBJS)/Diag.o: $(OBJS)/ECPConstants.o
 $(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o
 $(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GZero.o \
-        $(OBJS)/IntLUTRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
-        $(OBJS)/SADLUT.o $(OBJS)/SPixel.o FM.F90 FMSolar.F90 FMThermal.F90 \
-        SetCRPSolar.F90 SetCRPThermal.F90
+        $(OBJS)/IntLUTRoutines.o $(OBJS)/InterpolRoutines.o $(OBJS)/RTM_Pc.o \
+        $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o FM.F90 FMSolar.F90 \
+        FMThermal.F90 SetCRPSolar.F90 SetCRPThermal.F90
 $(OBJS)/GetGeometry.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
 $(OBJS)/GetIllum.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
@@ -35,15 +35,12 @@ $(OBJS)/GetX.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
 $(OBJS)/GZero.o: $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/interpolate_to_ctp.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
-$(OBJS)/InterpolSolar.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o
-$(OBJS)/InterpolSolar_spline.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
-        $(OBJS)/IntRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o
-$(OBJS)/InterpolThermal.o: $(OBJS)/Ctrl.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
-        $(OBJS)/SPixel.o
-$(OBJS)/InterpolThermal_spline.o: $(OBJS)/Ctrl.o $(OBJS)/IntRoutines.o \
-        $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o
 $(OBJS)/IntRoutines.o: $(OBJS)/ECPConstants.o Bcucof.F90 Bcuint.F90 Linint.F90 \
         Locate.F90 Spline.F90 Tridag.F90
+$(OBJS)/InterpolRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
+        $(OBJS)/IntRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
+        $(OBJS)/SPixel.o InterpolSolar.F90 InterpolSolar_spline.F90 \
+        InterpolThermal.F90 InterpolThermal_spline.F90
 $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
         $(OBJS)/SADLUT.o IntLUTTauRe.F90 IntLUTTauSatRe.F90 \
         IntLUTTauSatSolAziRe.F90 IntLUTTauSolRe.F90 Interp3dLUT.F90

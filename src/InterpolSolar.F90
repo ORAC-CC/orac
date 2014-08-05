@@ -18,22 +18,22 @@
 !    status  int    Out         Standard status value not set here
 !
 ! Algorithm:
-!   Check to see if Pc is outwith the RTM pressure level range
-!   (Warn if extrapolation beyond 50 hPa past the first/last RTM level is
-!    necessary)
-!      If not, search sequentially through the RTM pressure levels to find the
-!         pair that are bounding Pc
-!      Return an error if none of these conditions are satisfied (e.g. Pc=NaN)
-!   Determine the change in p and trans. between bounding RTM levels
-!   Determine transmittance gradients (d_T_d_p) around Pc
-!   Calculate change in trans. between RTM level i and Pc
-!   Calculate absolute trans. at Pc
+!    Check to see if Pc is outwith the RTM pressure level range
+!    (Warn if extrapolation beyond 50 hPa past the first/last RTM level is
+!     necessary)
+!       If not, search sequentially through the RTM pressure levels to find the
+!          pair that are bounding Pc
+!       Return an error if none of these conditions are satisfied (e.g. Pc=NaN)
+!    Determine the change in p and trans. between bounding RTM levels
+!    Determine transmittance gradients (d_T_d_p) around Pc
+!    Calculate change in trans. between RTM level i and Pc
+!    Calculate absolute trans. at Pc
 !
 ! Local variables:
 !    Name Type Description
 !
 ! History:
-!    15th Nov 2000, Kevin M. Smith: original version
+!    15th Nov 2000, Kevin M. Smith: Original version
 !     1st Feb 2001, Andy Smith:
 !       Pressure level indices reversed in SPixel RTM arrays, i.e. values now
 !       increase with index.
@@ -70,36 +70,36 @@
 
 subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
-    use CTRL_def
-    use RTM_Pc_def
-    use SPixel_def
+   use CTRL_def
+   use RTM_Pc_def
+   use SPixel_def
 
-    implicit none
+   implicit none
 
-    ! Define arguments
+   ! Define arguments
 
-    type(CTRL_t),   intent(in)    :: Ctrl
-    type(SPixel_t), intent(in)    :: SPixel
-    real,           intent(in)    :: Pc
-    type(RTM_Pc_t), intent(inout) :: RTM_Pc
-    integer,        intent(inout) :: status
+   type(CTRL_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(in)    :: SPixel
+   real,           intent(in)    :: Pc
+   type(RTM_Pc_t), intent(inout) :: RTM_Pc
+   integer,        intent(inout) :: status
 
-    ! Define local variables
+   ! Define local variables
 
-    integer :: i
-    integer :: j
-    real    :: delta_p                      ! Difference in pressure between
-                                            ! consecutive RTM levels
-    real    :: delta_Tac(SPixel%Ind%NSolar) ! Difference in Tac between
-                                            ! consecutive RTM levels
-    real    :: delta_Tbc(SPixel%Ind%NSolar) ! Difference in Tbc between
-                                            ! consecutive RTM levels
-    real    :: delta_Pc                     ! Difference in pressure between Pc
-                                            ! and lower RTM level
-    real    :: delta_Tc(SPixel%Ind%NSolar)  ! Difference in trans. between Pc
-                                            ! and lower RTM level
-    character(180) :: message               ! Warning or error message to pass
-                                            ! to Write_Log
+   integer :: i
+   integer :: j
+   real    :: delta_p                      ! Difference in pressure between
+                                           ! consecutive RTM levels
+   real    :: delta_Tac(SPixel%Ind%NSolar) ! Difference in Tac between
+                                           ! consecutive RTM levels
+   real    :: delta_Tbc(SPixel%Ind%NSolar) ! Difference in Tbc between
+                                           ! consecutive RTM levels
+   real    :: delta_Pc                     ! Difference in pressure between Pc
+                                           ! and lower RTM level
+   real    :: delta_Tc(SPixel%Ind%NSolar)  ! Difference in trans. between Pc
+                                           ! and lower RTM level
+   character(ECPLogReclen) :: message      ! Warning or error message to pass
+                                           ! to Write_Log
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
@@ -111,30 +111,32 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
    ! Search for Pc in the SW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
 
-   if (Pc > SPixel%RTM%SW%p(SPixel%RTM%SW%Np)) then
+   if (Pc > SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) then
       ! When Pc above pressure at highest level in RTM
       i = SPixel%RTM%SW%Np-1
-      if (abs(Pc - SPixel%RTM%SW%p(SPixel%RTM%SW%Np)) > 50.0) then
+      if (abs(Pc - SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) > 50.0) then
          ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) 'Interpol_Solar high: Extrapolation warning', &
-                                    Pc , SPixel%RTM%SW%p(SPixel%RTM%SW%Np)
+         write(unit=message, fmt=*) &
+            'WARNING: Interpol_Solar(), Extrapolation, high, P(1), P(Np), Pc: ', &
+            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
          call Write_Log(Ctrl, trim(message), status) ! Write to log
       end if
-   else if (Pc < SPixel%RTM%SW%p(1)) then
+   else if (Pc < SPixel%RTM%SW%P(1)) then
       ! When Pc below lowest in RTM
       i = 1
-      if (abs(Pc - SPixel%RTM%SW%p(1)) > 50.0) then
+      if (abs(Pc - SPixel%RTM%SW%P(1)) > 50.0) then
          ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) 'Interpol_Solar low: Extrapolation warning', &
-                                    Pc , SPixel%RTM%SW%p(1)
+         write(unit=message, fmt=*) &
+            'WARNING: Interpol_Solar(), Extrapolation, low, P(1), P(Np), Pc: ', &
+            SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
          call Write_Log(Ctrl, trim(message), status) ! Write to log
       end if
-   else if (Pc == SPixel%RTM%SW%p(SPixel%RTM%SW%Np)) then
+   else if (Pc == SPixel%RTM%SW%P(SPixel%RTM%SW%Np)) then
       i = SPixel%RTM%SW%Np-1
    else
       ! Search through RTM levels sequentially to find those bounding Pc
       do j = 1, SPixel%RTM%SW%Np-1
-         if (Pc >= SPixel%RTM%SW%p(j) .and. Pc < SPixel%RTM%SW%p(j+1)) then
+         if (Pc >= SPixel%RTM%SW%P(j) .and. Pc < SPixel%RTM%SW%P(j+1)) then
             i = j ! Set index equal to the lower bounding RTM level
             status = 0
             exit
@@ -147,17 +149,19 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
-
       status = IntTransErr ! Set status to indicate failure of interpolation
-      write(unit=message, fmt=*) 'Interpol_Solar: Interpolation failure'
+      write(unit=message, fmt=*) 'ERROR: Interpol_Solar(), Interpolation failure, ', &
+         'SPixel starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
+         SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
       call Write_Log(Ctrl, trim(message), status) ! Write to log
+!     stop
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards
 
       ! Change in pressure between RTM levels i and i+1
       ! (delta_p is negative for decreasing pressure with increasing i)
-      delta_p = SPixel%RTM%SW%p(i+1) - SPixel%RTM%SW%p(i)
+      delta_p = SPixel%RTM%SW%P(i+1) - SPixel%RTM%SW%P(i)
 
       ! Change in transmittances between RTM levels i and i+1
       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
@@ -175,18 +179,18 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
       ! the pressure of the lowest altitude RTM pressure level)
 
       ! Diff. between Pc and lower RTM level
-      delta_Pc = Pc - SPixel%RTM%SW%p(i)
+      delta_Pc = Pc - SPixel%RTM%SW%P(i)
 
       ! Diff. in trans. from gradient
       delta_Tc = delta_Pc * RTM_Pc%SW%dTac_dPc
       ! Abs. above cloud trans.
-      RTM_Pc%SW%Tac  = SPixel%RTM%SW%Tac(:,i) + delta_Tc
+      RTM_Pc%SW%Tac = SPixel%RTM%SW%Tac(:,i) + delta_Tc
 
       ! Diff. in trans. from gradient
       delta_Tc = delta_Pc * RTM_Pc%SW%dTbc_dPc
       ! Abs. below cloud trans.
-      RTM_Pc%SW%Tbc  = SPixel%RTM%SW%Tbc(:,i) + delta_Tc
-    end if
+      RTM_Pc%SW%Tbc = SPixel%RTM%SW%Tbc(:,i) + delta_Tc
+   end if
 
    ! Open breakpoint file if required, and write our transmittances etc.
 

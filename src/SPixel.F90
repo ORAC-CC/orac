@@ -154,7 +154,7 @@ module SPixel_def
       real                :: Lat          ! Latitude
       real                :: Lon          ! Longitude
       real                :: skint        ! skin temperature
-      real                :: sp           ! Longitude
+      real                :: sp           ! Surface pressure
       real, pointer       :: P(:)         ! Array of pressure levels
       real, pointer       :: Ems(:)       ! Channel emissivities
       real, pointer       :: Tac(:,:)     ! P to space channel transmittances
