@@ -149,8 +149,7 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
          blu=NCDF_OBTAIN(fid, chs[2], fill_b)
 
          ;; determine plotting filter (all points not missing)
-         filt = red ne fill_r AND grn ne fill_g AND blu ne fill_b AND $
-                ~(qcf AND qc_filt)
+         filt = red ne fill_r AND grn ne fill_g AND blu ne fill_b
          ;; there appear to be negative reflectances for no good reason !!FIX!!
          filt = filt AND red ge 0. AND grn ge 0. AND blu ge 0.
 

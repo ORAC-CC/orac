@@ -127,6 +127,7 @@
 ;      COLOURBAR_LABELS.
 ;   28 Jul 2014 - ACP: Fixed bug in with FALSECOLOUR that allocated the wrong
 ;      background colour.
+;   06 Aug 2014 - G Thomas: Made falsecolour keyword functional
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -325,11 +326,11 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
 
       ;; process colours
       if prev_plot eq 'PS' then TVLCT,BINDGEN(256),BINDGEN(256),BINDGEN(256)
-      if ~KEYWORD_SET(colour) then colour=-1
+      fcolour=TEMPORARY(red) + 256l*(TEMPORARY(green) +256l*TEMPORARY(blue))
 
       ;; plot points
       for j=0l,nok-1 do $
-         PLOTS,lon[ok[j]],lat[ok[j]],psym=psym,symsize=symsize,color=colour[j]
+         PLOTS,lon[ok[j]],lat[ok[j]],psym=psym,symsize=symsize,color=fcolour[j]
    endif else begin ; ~falsecolour ------------------------------------------
       ;; deal with LEVELS and assign initial colour index for each valid point
       if ~KEYWORD_SET(range) then if KEYWORD_SET(log) $
