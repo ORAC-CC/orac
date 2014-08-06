@@ -345,8 +345,9 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             SPixel%spixel_y_to_ctrl_y_index)
       endif
 
-      if (i_view > 1 .and. SPixel%Illum(i_view - 1) /= SPixel%Illum(i_view)) then
-         status = SPixelIllum
+      if (i_view > 1) then
+         if (SPixel%Illum(i_view - 1) /= SPixel%Illum(i_view)) &
+              status = SPixelIllum
       end if
    end do
 

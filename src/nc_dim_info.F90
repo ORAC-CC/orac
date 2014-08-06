@@ -102,7 +102,7 @@ subroutine nc_dim_length(ncid,dname,did,n,wo)
 
    ! Output
    character(len=NetcdfVarLength), intent(out) :: dname
-   integer,                        intent(out) :: did
+   integer,                        intent(in)  :: did
    integer,                        intent(out) :: n
 
    ! Local
