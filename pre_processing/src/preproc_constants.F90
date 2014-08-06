@@ -20,6 +20,7 @@
 ! 2014/07/11, AP: Removing unneccessary fields. Shortening datelength.
 ! 2014/08/05, AP: Adding missing fill value.
 ! 2014/08/06, GM: Corrected the value for Pi.
+! 2014/08/06, GM: d2r is a derived constant. It should be computed.
 !
 ! $Id$
 !
@@ -66,7 +67,7 @@ module preproc_constants
 
 
    real(kind=sreal), parameter :: pi = 3.14159265
-   real(kind=sreal), parameter :: d2r = 0.017453292   ! Pi/180.0
+   real(kind=sreal), parameter :: d2r = pi/180.0
 
    !specific gas constants of dry air and water vapor
    real(kind=sreal), parameter :: r_dry_air=287.05,r_water_vap=461.51
