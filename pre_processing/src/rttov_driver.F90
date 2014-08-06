@@ -356,7 +356,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    opts % n2o_data         = .false.
    opts % co_data          = .false.
    opts % ch4_data         = .false.
-
+   ! turn off printing of "outside coef. limits" warnings
+   opts % verbose_checkinput_warnings = .false.
 
    ! Initialise error management with default value for the error unit number
    ! and all error message output
