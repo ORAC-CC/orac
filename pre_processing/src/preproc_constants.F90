@@ -18,6 +18,7 @@
 ! 2014/01/30, MJ: removes parameters for chunking.
 ! 2014/03/11, MJ: introduces variable for file chunking.
 ! 2014/07/11, AP: Removing unneccessary fields. Shortening datelength.
+! 2014/08/05, AP: Adding missing fill value.
 !
 ! $Id$
 !
@@ -49,18 +50,19 @@ module preproc_constants
    integer, parameter :: sreal=4
    integer, parameter :: dreal=8
 
-   real(kind=sreal), parameter :: real_fill_value=-999.0, &
+   real(kind=sreal),    parameter :: real_fill_value=-999.0, &
         dither=1.0E-3,dither_more=1.0E-7
 
-   real(kind=sreal), parameter :: hpa2pa=0.01
+   real(kind=sreal),    parameter :: hpa2pa=0.01
 
-   real(kind=sreal), parameter :: maxsza_day=80.0,maxsza_twi=110.0
+   real(kind=sreal),    parameter :: maxsza_day=80.0,maxsza_twi=110.0
 
-   real(kind=dreal), parameter :: double_fill_value=-999.0
+   real(kind=dreal),    parameter :: double_fill_value=-999.0
 
-   integer(kind=lint) :: long_int_fill_value=-999
+   integer(kind=sint),  parameter :: byte_fill_value=-1
+   integer(kind=stint), parameter :: int_fill_value=-999
+   integer(kind=lint),  parameter :: long_int_fill_value=-999
 
-   integer(kind=sint), parameter :: byte_fill_value=-1
 
    real(kind=sreal), parameter :: pi = 3.1459265
    real(kind=sreal), parameter :: d2r = 0.017453292   ! Pi/180.0

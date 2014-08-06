@@ -67,6 +67,7 @@ SUBROUTINE float_1d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    real(sreal),      intent(inout) :: val(:)
 
+   real(sreal)                     :: fill=real_fill_value
    integer                         :: ierr, vid
    real(sreal)                     :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -95,6 +96,7 @@ SUBROUTINE float_2d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    real(sreal),      intent(inout) :: val(:,:)
 
+   real(sreal)                     :: fill=real_fill_value
    integer                         :: ierr, vid
    real(sreal)                     :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -124,6 +126,7 @@ SUBROUTINE float_3d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    real(sreal),      intent(inout) :: val(:,:,:)
 
+   real(sreal)                     :: fill=real_fill_value
    integer                         :: ierr, vid
    real(sreal)                     :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -154,6 +157,7 @@ SUBROUTINE float_4d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    real(sreal),      intent(inout) :: val(:,:,:,:)
 
+   real(sreal)                     :: fill=real_fill_value
    integer                         :: ierr, vid
    real(sreal)                     :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -185,6 +189,7 @@ SUBROUTINE float_5d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    real(sreal),      intent(inout) :: val(:,:,:,:,:)
 
+   real(sreal)                     :: fill=real_fill_value
    integer                         :: ierr, vid
    real(sreal)                     :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -217,6 +222,7 @@ SUBROUTINE int_1d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(lint),    intent(inout) :: val(:)
 
+   integer(lint)                   :: fill=long_int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -245,6 +251,7 @@ SUBROUTINE int_2d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(lint),    intent(inout) :: val(:,:)
 
+   integer(lint)                   :: fill=long_int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -274,6 +281,7 @@ SUBROUTINE int_3d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(lint),    intent(inout) :: val(:,:,:)
 
+   integer(lint)                   :: fill=long_int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -304,6 +312,7 @@ SUBROUTINE int_4d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(lint),    intent(inout) :: val(:,:,:,:)
 
+   integer(lint)                   :: fill=long_int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -335,6 +344,7 @@ SUBROUTINE int_5d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(lint),    intent(inout) :: val(:,:,:,:,:)
 
+   integer(lint)                   :: fill=long_int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -367,6 +377,7 @@ SUBROUTINE sint_1d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(2),       intent(inout) :: val(:)
 
+   integer(2)                      :: fill=int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -395,6 +406,7 @@ SUBROUTINE sint_2d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(2),       intent(inout) :: val(:,:)
 
+   integer(2)                      :: fill=int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit
@@ -424,6 +436,7 @@ SUBROUTINE sint_3d(ncid, name, val, verbose)
    character(len=*), intent(in)    :: name
    integer(2),       intent(inout) :: val(:,:,:)
 
+   integer(2)                      :: fill=int_fill_value
    integer                         :: ierr, vid
    integer(lint)                   :: fv, sf, of
    character(len=unitlength)       :: unit

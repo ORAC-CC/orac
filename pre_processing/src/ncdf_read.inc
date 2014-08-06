@@ -38,9 +38,9 @@
    ! replace file's fill value with our own
    ierr = NF90_GET_ATT(ncid,vid,'_FillValue',fv)
    if (ierr.eq.NF90_NOERR) then
-      where (val.eq.fv) val=real_fill_value
+      where (val.eq.fv) val=fill
    else
-      fv=real_fill_value
+      fv=fill
    end if
 
    ! check for scale factor or offset of data
