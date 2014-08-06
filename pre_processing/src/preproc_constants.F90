@@ -19,6 +19,7 @@
 ! 2014/03/11, MJ: introduces variable for file chunking.
 ! 2014/07/11, AP: Removing unneccessary fields. Shortening datelength.
 ! 2014/08/05, AP: Adding missing fill value.
+! 2014/08/06, GM: Corrected the value for Pi.
 !
 ! $Id$
 !
@@ -64,7 +65,7 @@ module preproc_constants
    integer(kind=lint),  parameter :: long_int_fill_value=-999
 
 
-   real(kind=sreal), parameter :: pi = 3.1459265
+   real(kind=sreal), parameter :: pi = 3.14159265
    real(kind=sreal), parameter :: d2r = 0.017453292   ! Pi/180.0
 
    !specific gas constants of dry air and water vapor
