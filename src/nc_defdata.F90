@@ -23,6 +23,10 @@
 ! History:
 ! 2011/12/19, Matthias Jerg: Creates initial file.
 ! 2014/08/04, Greg McGarragh: Cleaned up the code.
+! 2014/08/07, Greg McGarragh: Removed nf90_redef() and nf90_enddef() from the
+!    subroutines.  It is extremely inefficient to do this for each variable
+!    defined.  It should be done at the start and end of defining all the
+!    variables in a file, i.e. in the code calling the subroutines in this file.
 !
 ! $Id$
 !
@@ -54,12 +58,6 @@ subroutine nc_defdata_float(ncid,dims,var_name,vid,var_lname,var_sname, &
    ! Output
    integer,          intent(out) :: vid
    integer,          intent(out) :: ierr
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_FLOAT, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -113,12 +111,6 @@ subroutine nc_defdata_float(ncid,dims,var_name,vid,var_lname,var_sname, &
       stop
    endif
 
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
-      stop
-   endif
-
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
    endif
@@ -146,12 +138,6 @@ subroutine nc_defdata_float_no_att(ncid,dims,var_name,vid,var_lname,var_sname, &
    integer,          intent(out) :: vid
    integer,          intent(out) :: ierr
 
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
-
    ierr = nf90_def_var(ncid, var_name, NF90_FLOAT, dims, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
@@ -173,12 +159,6 @@ subroutine nc_defdata_float_no_att(ncid,dims,var_name,vid,var_lname,var_sname, &
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
-      stop
-   endif
-
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
       stop
    endif
 
@@ -214,12 +194,6 @@ subroutine nc_defdata_double(ncid,dims,var_name,vid,var_lname,var_sname, &
    ! Output
    integer,          intent(out) :: vid
    integer,          intent(out) :: ierr
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_double, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -273,12 +247,6 @@ subroutine nc_defdata_double(ncid,dims,var_name,vid,var_lname,var_sname, &
       stop
    endif
 
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
-      stop
-   endif
-
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
    endif
@@ -311,12 +279,6 @@ subroutine nc_defdata_short(ncid,dims,var_name,vid,var_lname,var_sname, &
    ! Output
    integer,            intent(out) :: vid
    integer,            intent(out) :: ierr
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_SHORT, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -370,12 +332,6 @@ subroutine nc_defdata_short(ncid,dims,var_name,vid,var_lname,var_sname, &
       stop
    endif
 
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
-      stop
-   endif
-
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
    endif
@@ -407,12 +363,6 @@ subroutine nc_defdata_short_no_units(ncid,dims,var_name,vid,var_lname,var_sname,
    ! Output
    integer,            intent(out) :: vid
    integer,            intent(out) :: ierr
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_SHORT, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -460,12 +410,6 @@ subroutine nc_defdata_short_no_units(ncid,dims,var_name,vid,var_lname,var_sname,
       stop
    endif
 
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
-      stop
-   endif
-
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
    endif
@@ -504,12 +448,6 @@ subroutine nc_defdata_long(ncid,dims,var_name,vid,var_lname,var_sname, &
    var_ln=len_trim(adjustl(var_lname))
    var_sn=len_trim(adjustl(var_sname))
    var_un=len_trim(adjustl(var_unit))
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_INT, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -563,12 +501,6 @@ subroutine nc_defdata_long(ncid,dims,var_name,vid,var_lname,var_sname, &
       stop
    endif
 
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
-      stop
-   endif
-
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
    endif
@@ -607,12 +539,6 @@ subroutine nc_defdata_byte(ncid,dims,var_name,vid,var_lname,var_sname, &
    var_ln=len_trim(adjustl(var_lname))
    var_sn=len_trim(adjustl(var_sname))
    var_un=len_trim(adjustl(var_unit))
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_BYTE, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -666,12 +592,6 @@ subroutine nc_defdata_byte(ncid,dims,var_name,vid,var_lname,var_sname, &
       stop
    endif
 
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
-      stop
-   endif
-
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
    endif
@@ -711,12 +631,6 @@ subroutine nc_defdata_byte_flag_value(ncid,dims,var_name,vid,var_lname,var_sname
    var_ln=len_trim(adjustl(var_lname))
    var_sn=len_trim(adjustl(var_sname))
    var_un=len_trim(adjustl(var_unit))
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_BYTE, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -776,12 +690,6 @@ subroutine nc_defdata_byte_flag_value(ncid,dims,var_name,vid,var_lname,var_sname
       stop
    endif
 
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
-      stop
-   endif
-
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
    endif
@@ -819,12 +727,6 @@ subroutine nc_defdata_short_flag_value(ncid,dims,var_name,vid,var_lname,var_snam
 
    var_ln=len_trim(adjustl(var_lname))
    var_sn=len_trim(adjustl(var_sname))
-
-   ierr = nf90_redef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_redef()'
-      stop
-   endif
 
    ierr = nf90_def_var(ncid, var_name, NF90_SHORT, dims, vid)
    if (ierr .ne. NF90_NOERR) then
@@ -875,12 +777,6 @@ subroutine nc_defdata_short_flag_value(ncid,dims,var_name,vid,var_lname,var_snam
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
-      stop
-   endif
-
-   ierr = nf90_enddef(ncid)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_enddef()'
       stop
    endif
 

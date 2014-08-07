@@ -32,6 +32,9 @@
 ! 2013/12/09, MJ: Slightly adapts range of reflectances.
 ! 2014/06/13, GM: Put the code into a subroutine.
 ! 2014/06/13, GM: Cleaned up the code.
+! 2014/08/07, GM: Hoisted calls to nf90_redef() and nf90_enddef() from the
+!    individual variable definition subroutines to be called once in this
+!    subroutine.
 !
 ! $Id$
 !
@@ -44,6 +47,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
    use config_def
    use CTRL_def
+   use netcdf
    use SPixel_def
 
    implicit none
@@ -64,15 +68,26 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
    integer            :: iinput
    integer            :: wo = 0
 
+
    !----------------------------------------------------------------------------
-   !SCANU
+   !
+   !----------------------------------------------------------------------------
+   ierr = nf90_redef(ncid)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_redef()'
+      stop
+   endif
+
+
+   !----------------------------------------------------------------------------
+   ! scanline_u
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%scanline_u_scale=1.0
    spixel_scan_out_sec%scanline_u_offset=0.0
    spixel_scan_out_sec%scanline_u_vmin=0
    spixel_scan_out_sec%scanline_u_vmax=30000
 
-   CALL nc_defdata_long(ncid, dims_var, &
+   call nc_defdata_long(ncid, dims_var, &
            'scanline_u', &
            spixel_scan_out_sec%vidscanline_u, &
            'scanline_u', &
@@ -82,17 +97,17 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%scanline_u_scale,spixel_scan_out_sec%scanline_u_offset, &
            spixel_scan_out_sec%scanline_u_vmin,spixel_scan_out_sec%scanline_u_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   !SCANV
+   ! scanline_v
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%scanline_v_scale=1.0
    spixel_scan_out_sec%scanline_v_offset=0.0
    spixel_scan_out_sec%scanline_v_vmin=0
    spixel_scan_out_sec%scanline_v_vmax=30000
 
-   CALL nc_defdata_long(ncid, dims_var, &
+   call nc_defdata_long(ncid, dims_var, &
            'scanline_v', &
            spixel_scan_out_sec%vidscanline_v, &
            'scanline_v', &
@@ -102,17 +117,17 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%scanline_v_scale,spixel_scan_out_sec%scanline_v_offset, &
            spixel_scan_out_sec%scanline_v_vmin,spixel_scan_out_sec%scanline_v_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   !COT A PRIORY
+   ! cot_ap
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%cot_ap_scale=0.01
    spixel_scan_out_sec%cot_ap_offset=0.0
    spixel_scan_out_sec%cot_ap_vmin=0
    spixel_scan_out_sec%cot_ap_vmax=25000
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'cot_ap', &
            spixel_scan_out_sec%vidcotap, &
            'cloud optical thickness a priori', &
@@ -122,17 +137,17 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%cot_ap_scale,spixel_scan_out_sec%cot_ap_offset, &
            spixel_scan_out_sec%cot_ap_vmin,spixel_scan_out_sec%cot_ap_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   !COT FG
+   ! cot_fg
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%cot_fg_scale=0.0001
    spixel_scan_out_sec%cot_fg_offset=0.0
    spixel_scan_out_sec%cot_fg_vmin=-25000
    spixel_scan_out_sec%cot_fg_vmax=25000
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'cot_fg', &
            spixel_scan_out_sec%vidcotfg, &
            'cloud optical thickness first guess', &
@@ -142,17 +157,17 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%cot_fg_scale,spixel_scan_out_sec%cot_fg_offset, &
            spixel_scan_out_sec%cot_fg_vmin,spixel_scan_out_sec%cot_fg_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   ! REF A PRIORY
+   ! ref_ap
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%ref_ap_scale=0.01
    spixel_scan_out_sec%ref_ap_offset=0.0
    spixel_scan_out_sec%ref_ap_vmin=0
    spixel_scan_out_sec%ref_ap_vmax=20000
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'ref_ap', &
            spixel_scan_out_sec%vidrefap, &
            'effective radius a priori', &
@@ -162,17 +177,17 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%ref_ap_scale,spixel_scan_out_sec%ref_ap_offset, &
            spixel_scan_out_sec%ref_ap_vmin,spixel_scan_out_sec%ref_ap_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   ! REF FG
+   ! ref_fg
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%ref_fg_scale=0.01
    spixel_scan_out_sec%ref_fg_offset=0.0
    spixel_scan_out_sec%ref_fg_vmin=0
    spixel_scan_out_sec%ref_fg_vmax=20000
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'ref_fg', &
            spixel_scan_out_sec%vidreffg, &
            'effective radius first guess', &
@@ -182,17 +197,17 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%ref_fg_scale,spixel_scan_out_sec%ref_fg_offset, &
            spixel_scan_out_sec%ref_fg_vmin,spixel_scan_out_sec%ref_fg_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   ! CTP A PRIORY
+   ! ctp_ap
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%ctp_ap_scale=0.1
    spixel_scan_out_sec%ctp_ap_offset=0.0
    spixel_scan_out_sec%ctp_ap_vmin=500
    spixel_scan_out_sec%ctp_ap_vmax=12000
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'ctp_ap', &
            spixel_scan_out_sec%vidctpap, &
            'cloud top pressure a priori', &
@@ -202,17 +217,17 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%ctp_ap_scale,spixel_scan_out_sec%ctp_ap_offset, &
            spixel_scan_out_sec%ctp_ap_vmin,spixel_scan_out_sec%ctp_ap_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   ! CTP FG
+   ! ctp_fg
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%ctp_fg_scale=0.1
    spixel_scan_out_sec%ctp_fg_offset=0.0
    spixel_scan_out_sec%ctp_fg_vmin=500
    spixel_scan_out_sec%ctp_fg_vmax=12000
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'ctp_fg', &
            spixel_scan_out_sec%vidctpfg, &
            'cloud top pressure first guess', &
@@ -222,10 +237,10 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%ctp_fg_scale,spixel_scan_out_sec%ctp_fg_offset, &
            spixel_scan_out_sec%ctp_fg_vmin,spixel_scan_out_sec%ctp_fg_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   ! RESIDUALS
+   ! residuals
    !----------------------------------------------------------------------------
    do iinput=1,Ctrl%Ind%Ny
 
@@ -240,7 +255,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
             input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
 
-            CALL nc_defdata_short_no_units(ncid, dims_var, &
+            call nc_defdata_short_no_units(ncid, dims_var, &
                     trim(adjustl(input_dummy)), &
                     spixel_scan_out_sec%vidres(iinput), &
                     trim(adjustl(input_dummy)), &
@@ -249,7 +264,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%res_scale(iinput),spixel_scan_out_sec%res_offset(iinput), &
                     spixel_scan_out_sec%res_vmin(iinput),spixel_scan_out_sec%res_vmax(iinput),wo,ierr)
 
-            if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          endif
       enddo
 
@@ -262,7 +277,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
             input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
 
-            CALL nc_defdata_short(ncid, dims_var, &
+            call nc_defdata_short(ncid, dims_var, &
                     trim(adjustl(input_dummy)), &
                     spixel_scan_out_sec%vidres(iinput), &
                     trim(adjustl(input_dummy)), &
@@ -272,14 +287,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%res_scale(iinput),spixel_scan_out_sec%res_offset(iinput), &
                     spixel_scan_out_sec%res_vmin(iinput),spixel_scan_out_sec%res_vmax(iinput),wo,ierr)
 
-            if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          endif
       enddo
 
    enddo
 
    !----------------------------------------------------------------------------
-   ! REFLECTANCES AND BRIGHTNESS TEMPERATURE
+   ! reflectances and brightness temperature
    !----------------------------------------------------------------------------
    do iinput=1,Ctrl%Ind%Ny
 
@@ -294,7 +309,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
             input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
 
-            CALL nc_defdata_short_no_units(ncid, dims_var, &
+            call nc_defdata_short_no_units(ncid, dims_var, &
                     trim(adjustl(input_dummy)), &
                     spixel_scan_out_sec%vidchans(iinput), &
                     trim(adjustl(input_dummy)), &
@@ -303,7 +318,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%chans_scale(iinput),spixel_scan_out_sec%chans_offset(iinput), &
                     spixel_scan_out_sec%chans_vmin(iinput),spixel_scan_out_sec%chans_vmax(iinput),wo,ierr)
 
-            if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          endif
       enddo
 
@@ -317,7 +332,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
             input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
 
-            CALL nc_defdata_short(ncid, dims_var, trim(adjustl(input_dummy)), &
+            call nc_defdata_short(ncid, dims_var, trim(adjustl(input_dummy)), &
                     spixel_scan_out_sec%vidchans(iinput), &
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), &
@@ -326,14 +341,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%chans_scale(iinput),spixel_scan_out_sec%chans_offset(iinput), &
                     spixel_scan_out_sec%chans_vmin(iinput),spixel_scan_out_sec%chans_vmax(iinput),wo,ierr)
 
-            if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          endif
       enddo
 
    enddo
 
    !----------------------------------------------------------------------------
-   ! ALBEDO
+   ! albedo_in_channel_no_*
    !----------------------------------------------------------------------------
    do iinput=1,Ctrl%Ind%Nsolar
 
@@ -348,7 +363,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
             input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
 
-            CALL nc_defdata_short_no_units(ncid, dims_var, &
+            call nc_defdata_short_no_units(ncid, dims_var, &
                     trim(adjustl(input_dummy)), &
                     spixel_scan_out_sec%vidalb(iinput), &
                     trim(adjustl(input_dummy)), &
@@ -357,20 +372,20 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%alb_scale(iinput),spixel_scan_out_sec%alb_offset(iinput), &
                     spixel_scan_out_sec%alb_vmin(iinput),spixel_scan_out_sec%alb_vmax(iinput),wo,ierr)
 
-            if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          endif
       enddo
    enddo
 
    !----------------------------------------------------------------------------
-   ! STEMP  FG
+   ! stemp_fg
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%stemp_fg_scale=0.1
    spixel_scan_out_sec%stemp_fg_offset=0.0
    spixel_scan_out_sec%stemp_fg_vmin=0
    spixel_scan_out_sec%stemp_fg_vmax=30000.
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'stemp_fg', &
            spixel_scan_out_sec%vidstempfg, &
            'surface temperature fg', &
@@ -380,10 +395,10 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%stemp_fg_scale,spixel_scan_out_sec%stemp_fg_offset, &
            spixel_scan_out_sec%stemp_fg_vmin,spixel_scan_out_sec%stemp_fg_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
-   ! first FORWARD MODELLED RADIANCES
+   ! first guess reflectances and brightness temperature
    !----------------------------------------------------------------------------
    do iinput=1,Ctrl%Ind%Ny
 
@@ -399,7 +414,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
             input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
 
-            CALL nc_defdata_short_no_units(ncid, dims_var, &
+            call nc_defdata_short_no_units(ncid, dims_var, &
                     trim(adjustl(input_dummy)), &
                     spixel_scan_out_sec%vidy0(iinput), &
                     trim(adjustl(input_dummy)), &
@@ -408,7 +423,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%y0_scale(iinput),spixel_scan_out_sec%y0_offset(iinput), &
                     spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput),wo,ierr)
 
-            if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          endif
       enddo
 
@@ -421,7 +436,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
             input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
 
-            CALL nc_defdata_short(ncid, dims_var, &
+            call nc_defdata_short(ncid, dims_var, &
                     trim(adjustl(input_dummy)), &
                     spixel_scan_out_sec%vidy0(iinput), &
                     trim(adjustl(input_dummy)), &
@@ -430,14 +445,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%y0_scale(iinput),spixel_scan_out_sec%y0_offset(iinput), &
                     spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput),wo,ierr)
 
-            if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          endif
       enddo
 
    enddo
 
    !----------------------------------------------------------------------------
-   ! FULL COVARIANCE MATRIX
+   ! covariance_matrix_element_*
    !----------------------------------------------------------------------------
 
    ! SPixel is not even defined at this point!
@@ -450,28 +465,28 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 
 !           input_dummy='covariance_matrix_element_'//trim(adjustl(input_num1))//trim(adjustl(input_num2))
 
-!           CALL nc_defdata_float_no_att(ncid, dims_var, &
+!           call nc_defdata_float_no_att(ncid, dims_var, &
 !                   input_dummy, &
 !                   spixel_scan_out_sec%vidcovar(is,js), &
 !                   input_dummy, &
 !                   input_dummy, &
 !                   spixel_scan_out%real_fill_value_lat_lon,wo,ierr)
 
-!           if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+!           if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 !        enddo
 !     enddo
 
 !  endif
 
    !----------------------------------------------------------------------------
-   ! Degrees of freedom for signal
+   ! degrees_of_freedom_signal
    !----------------------------------------------------------------------------
    spixel_scan_out_sec%ds_scale=0.001
    spixel_scan_out_sec%ds_offset=0.0
    spixel_scan_out_sec%ds_vmin=0
    spixel_scan_out_sec%ds_vmax=10000
 
-   CALL nc_defdata_short(ncid, dims_var, &
+   call nc_defdata_short(ncid, dims_var, &
            'degrees_of_freedom_signal', &
            spixel_scan_out_sec%vidds, &
            'degrees of freedom for signal', &
@@ -481,7 +496,18 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            spixel_scan_out_sec%ds_scale,spixel_scan_out_sec%ds_offset, &
            spixel_scan_out_sec%ds_vmin,spixel_scan_out_sec%ds_vmax,wo,ierr)
 
-   if (ierr .ne. 0 ) status=SecondaryFileDefinitionErr
+   if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+
+
+   !----------------------------------------------------------------------------
+   !
+   !----------------------------------------------------------------------------
+   ierr = nf90_enddef(ncid)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_enddef()'
+      stop
+   endif
+
 
    !----------------------------------------------------------------------------
    !
