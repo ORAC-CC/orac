@@ -32,6 +32,7 @@
 ! 2014/06/13, GM: Cleaned up the code.
 ! 2014/07/13, CP: Added AATSR time string and changed definition of land/sea mask
 ! 2014/xx/xx: CP: Added extra illumination options!
+! 2014/08/14, GM: Fixes to attributes related to the above change.
 !
 ! $Id$
 !
@@ -69,15 +70,11 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    spixel_scan_out%time_vmax=1.0D10
    spixel_scan_out%time_fv=-32767.0
 
-
- if   (trim(Ctrl%inst%name) .eq. 'AATSR') then
-
-time_string='Julian Date, days elapsed since 12:00 January 1, 2000'
-else
-time_string='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
-endif
-
-
+   if (trim(Ctrl%inst%name) .eq. 'AATSR') then
+      time_string='Julian Date, days elapsed since 12:00 January 1, 2000'
+   else
+      time_string='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
+   endif
 
    CALL nc_defdata_double(ncid, dims_var, &
            'time', &
@@ -128,7 +125,6 @@ endif
            spixel_scan_out%lat_vmin,spixel_scan_out%lat_vmax,wo,ierr)
 
    if (ierr .ne. 0 ) status=PrimaryFileDefinitionErr
-
 
    !----------------------------------------------------------------------------
    ! Loop over view angles
@@ -259,7 +255,8 @@ endif
            'ctp', &
            spixel_scan_out%vidctp, &
            'cloud top pressure', &
-           'air_pressure_at_cloud_top','hPa', &
+           'air_pressure_at_cloud_top', &
+           'hPa', &
            spixel_scan_out%int_fill_value, &
            spixel_scan_out%ctp_scale,spixel_scan_out%ctp_offset, &
            spixel_scan_out%ctp_vmin,spixel_scan_out%ctp_vmax,wo,ierr)
@@ -278,12 +275,13 @@ endif
            'cc_total', &
            spixel_scan_out%vidcct, &
            'cloud fraction', &
-           'cloud_area_fraction', '', &
+           'cloud_area_fraction', &
+           '', &
            spixel_scan_out%int_fill_value, &
            spixel_scan_out%cct_scale,spixel_scan_out%cct_offset, &
            spixel_scan_out%cct_vmin,spixel_scan_out%cct_vmax,wo,ierr)
 
-    if (ierr .ne. 0 ) status=PrimaryFileDefinitionErr
+   if (ierr .ne. 0 ) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! stemp
@@ -505,7 +503,6 @@ endif
 
    if (ierr .ne. 0 ) status=PrimaryFileDefinitionErr
 
-
    !----------------------------------------------------------------------------
    ! cwp_uncertainty
    !----------------------------------------------------------------------------
@@ -538,8 +535,9 @@ endif
            'convergence', &
            spixel_scan_out%vidconvergence, &
            'retrieval convergence', &
-           'retrieval_convergence_flag', '0b, 1b', &
-           'yes no', &
+           'retrieval_convergence_flag', &
+           '0b, 1b', &
+           'yes, no', &
            spixel_scan_out%byte_fill_value, &
            spixel_scan_out%con_scale,spixel_scan_out%con_offset, &
            spixel_scan_out%con_vmin,spixel_scan_out%con_vmax,wo,ierr)
@@ -578,8 +576,9 @@ endif
            'phase', &
            spixel_scan_out%vidpchange, &
            'cloud phase flag', &
-           'cloud_phase_flag', '0b, 1b, 2b', &
-           'clear/unknown liquid ice', &
+           'cloud_phase_flag', &
+           '0b, 1b, 2b', &
+           'clear/unknown, liquid, ice', &
            spixel_scan_out%byte_fill_value, &
            spixel_scan_out%pchange_scale,spixel_scan_out%pchange_offset, &
            spixel_scan_out%pchange_vmin,spixel_scan_out%pchange_vmax,wo,ierr)
@@ -638,8 +637,9 @@ endif
            'lsflag', &
            spixel_scan_out%vidlsflag, &
            'land/sea flag', &
-           'land_binary_mask', '0b, 1b 2b 3b 4b 5b 6b', &
-           'sea land sunglint snow ice snow_and_ice', &
+           'land_binary_mask', &
+           '0b, 1b, 2b, 3b, 4b, 5b, 6b', &
+           'sea, land, sunglint, snow, ice, snow_and_ice', &
            spixel_scan_out%byte_fill_value, &
            spixel_scan_out%ls_scale,spixel_scan_out%ls_offset, &
            spixel_scan_out%ls_vmin,spixel_scan_out%ls_vmax,wo,ierr)
@@ -683,8 +683,9 @@ endif
            'illum', &
            spixel_scan_out%vidillum, &
            'illumination flag', &
-           'illumination_flag', '1b, 2b, 3b 4b 6b 7b 8b 9b 10b 11b 12b', &
-           'Day Twilight Night Daynore IDaysinglevisfirst IDaysinglevissecond IDaysingleirfirst   IDaysingleirsecond  IDaysingleirthird   INightsingleirfirst INightsingleirsecond INightsingleirthird', &
+           'illumination_flag', &
+           '1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
+           'Day Twilight Night Daynore DayMissingSingleVisFirst, DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, NightMissingSingleIRThird', &
            spixel_scan_out%byte_fill_value, &
            spixel_scan_out%illum_scale,spixel_scan_out%illum_offset, &
            spixel_scan_out%illum_vmin,spixel_scan_out%illum_vmax,wo,ierr)
