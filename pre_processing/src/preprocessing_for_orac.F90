@@ -192,6 +192,7 @@
 !                segment in AATSR night processing was not being processed when
 !                chunking was off.
 ! 2014/07/01: AP Update to ECMWF code.
+! 2014/08/10: GM Changes related to new BRDF support.
 !
 ! $Id$
 !
@@ -254,6 +255,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    character(len=pixellength)      :: cverbose
    character(len=pixellength)      :: cuse_chunking
    character(len=pixellength)      :: cassume_full_paths
+   character(len=pixellength)      :: cinclude_full_brdf
 
    type(script_arguments_s)        :: script_input
 
@@ -263,8 +265,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    logical                         :: verbose
    logical                         :: use_chunking
    logical                         :: assume_full_paths
+   logical                         :: include_full_brdf
 
-   integer                         :: ierr
    logical                         :: check
    integer                         :: nargs
 
@@ -291,7 +293,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    character(len=sensorlength)     :: sensor
    character(len=platformlength)   :: platform
 
-   integer(kind=stint)             :: doy,year,month,day,hour,minute,startyi
+   integer(kind=stint)             :: doy,year,month,day,hour,minute
 
    character(len=datelength)       :: cyear,cmonth,cday,chour,cminute
 
@@ -326,8 +328,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 !  integer, dimension(8)           :: values
 
    ! this is for the wrapper
+#ifdef WRAPPER
    integer :: mytask,ntasks,lower_bound,upper_bound
-
+#endif
 !  include "sigtrap.F90"
 
    ! get number of arguments
@@ -383,6 +386,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       CALL GET_COMMAND_ARGUMENT(40,cverbose)
       CALL GET_COMMAND_ARGUMENT(41,cuse_chunking)
       CALL GET_COMMAND_ARGUMENT(42,cassume_full_paths)
+      CALL GET_COMMAND_ARGUMENT(43,cinclude_full_brdf)
    else
       if(nargs .eq. 1) then
       ! if just one argument => this is driver file which contains everything
@@ -436,6 +440,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       read(11,*) cverbose
       read(11,*) cuse_chunking
       read(11,*) cassume_full_paths
+      read(11,*) cinclude_full_brdf
       close(11)
    endif ! nargs gt 1
 
@@ -462,6 +467,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    verbose=parse_logical(cverbose)
    use_chunking=parse_logical(cuse_chunking)
    assume_full_paths=parse_logical(cassume_full_paths)
+   include_full_brdf=parse_logical(cinclude_full_brdf)
 
    ! initialise some counts, offset variables...
    along_track_offset=0
@@ -480,21 +486,21 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    if (.not. check) stop 'FAILED: Geo file does not exist.'
    if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
-           month,day,hour,minute, cyear,cmonth,cday,chour,cminute,channel_info)
+           month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
       ! get dimensions of the modis granule
       call read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
    elseif (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
-           month,day,hour,minute, cyear,cmonth,cday,chour,cminute,channel_info)
+           month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
       ! get dimensions of the avhrr orbit
       call read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
    elseif (trim(adjustl(sensor)) .eq. 'AATSR') then
       call setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
-           month,day,hour,minute, cyear,cmonth,cday,chour,cminute,channel_info)
+           month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
       ! currently setup to do day only by default
       if (day_night .eq. 0) day_night=1
@@ -592,7 +598,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       ! measurements and surface
       call allocate_imager_structures(imager_geolocation,imager_angles, &
            imager_flags,imager_time,imager_measurements,channel_info)
-      call allocate_surface_structures(surface,imager_geolocation,channel_info)
+      call allocate_surface_structures(surface,imager_geolocation,channel_info, &
+           include_full_brdf)
 
       ! read imager information:
       ! multi spectral data, lat/lon, angles etc.
@@ -706,7 +713,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
            geo_file,loc_file,alb_file,scan_file,platform,sensor,script_input, &
            cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
-           imager_geolocation,netcdf_info,channel_info,use_chunking)
+           imager_geolocation,netcdf_info,channel_info,use_chunking, &
+           include_full_brdf)
 
       ! perform RTTOV calculations
       write(*,*) 'Start RT calculations'
@@ -718,7 +726,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       ! set the surface reflectance.
       call get_surface_reflectance_lam(cyear, doy, assume_full_paths, &
            albedo_path, imager_flags, imager_geolocation, imager_angles, &
-           imager_measurements, channel_info, ecmwf, surface)
+           imager_measurements, channel_info, ecmwf, include_full_brdf, surface)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
@@ -730,7 +738,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
       write(*,*) 'before write netcdf'
       call write_swath_to_netcdf(imager_flags,imager_angles,imager_geolocation, &
-           imager_measurements,imager_time,netcdf_info,channel_info,surface)
+           imager_measurements,imager_time,netcdf_info,channel_info,surface, &
+           include_full_brdf)
       write(*,*) 'after write'
 
       write(*,*)'finished correction for ice'
@@ -748,7 +757,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            preproc_surf)
       call deallocate_imager_structures(imager_geolocation,imager_angles, &
            imager_flags,imager_time,imager_measurements)
-      call deallocate_surface_structures(surface)
+      call deallocate_surface_structures(surface,include_full_brdf)
 
    enddo ! end looping over chunks
 

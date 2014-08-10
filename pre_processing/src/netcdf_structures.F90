@@ -22,6 +22,7 @@
 ! 2013        CP: removes skintid_pw,lnspid_pw declared twice
 ! 2013/10/23, AP: Tidying
 ! 2014/05/23, GM: Some more cleaning and removal of unused elements.
+! 2014/08/10, GM: Changes related to new BRDF support.
 !
 ! $Id$
 !
@@ -75,7 +76,9 @@ module netcdf_structures
       ! variable ids
 
       ! alb file
-      integer :: albid,emisid,channelnalbid,channelnemisid
+      integer :: channelnalbid,channelnemisid
+      integer :: albid,emisid
+      integer :: rho_0v_id,rho_0d_id,rho_dv_id,rho_dd_id
 
       ! clf file
       integer :: cfid

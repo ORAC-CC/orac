@@ -34,6 +34,7 @@
 ! 2013/11/05, GM: Fixed a copy-and-paste-and-forgot-to-change bug from the above
 !    fix.
 ! 2014/05/26, GM: Some code clean up.
+! 2014/08/10, GM: Changes related to new BRDF support.
 !
 ! $Id$
 !
@@ -42,7 +43,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_swath_to_netcdf(imager_flags,imager_angles,imager_geolocation, &
-   imager_measurements,imager_time,netcdf_info,channel_info,surface)
+   imager_measurements,imager_time,netcdf_info,channel_info,surface,include_full_brdf)
 
    use attribute_structures
    use channel_structures
@@ -62,6 +63,7 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles,imager_geolocation, 
    type(netcdf_info_s),         intent(in) :: netcdf_info
    type(channel_info_s),        intent(in) :: channel_info
    type(surface_s),             intent(in) :: surface
+   logical, intent(in)                     :: include_full_brdf
 
    integer            :: ierr
    integer(kind=lint) :: start1d(1),counter1d(1),stride1d(1)
@@ -216,6 +218,37 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles,imager_geolocation, 
         1:imager_geolocation%ny,1:channel_info%nchannels_lw),&
         start3d,counter3d,stride3d)
    if (ierr.NE.NF90_NOERR) stop 'error: write emiss'
+
+
+   if (include_full_brdf) then
+        counter3d(1) = imager_geolocation%nx
+        counter3d(2) = imager_geolocation%ny
+        counter3d(3) = channel_info%nchannels_sw
+
+        ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%rho_0v_id,&
+             & surface%rho_0v(imager_geolocation%startx:imager_geolocation%endx,&
+             & 1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
+             & start3d,counter3d,stride3d)
+        if (ierr.NE.NF90_NOERR) stop 'error: write rho_0v'
+
+        ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%rho_0d_id,&
+             & surface%rho_0d(imager_geolocation%startx:imager_geolocation%endx,&
+             & 1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
+             & start3d,counter3d,stride3d)
+        if (ierr.NE.NF90_NOERR) stop 'error: write rho_0d'
+
+        ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%rho_dv_id,&
+             & surface%rho_dv(imager_geolocation%startx:imager_geolocation%endx,&
+             & 1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
+             & start3d,counter3d,stride3d)
+        if (ierr.NE.NF90_NOERR) stop 'error: write rho_dv'
+
+        ierr = NF90_PUT_VAR(netcdf_info%ncid_alb, netcdf_info%rho_dd_id,&
+             & surface%rho_dd(imager_geolocation%startx:imager_geolocation%endx,&
+             & 1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
+             & start3d,counter3d,stride3d)
+        if (ierr.NE.NF90_NOERR) stop 'error: write rho_dd'
+   endif
 
 
    ! clf file (cflag)

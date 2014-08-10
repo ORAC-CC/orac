@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_mcd43c3.f90
+! Name: read_mcd43c1.f90
 !
 ! Purpose:
 ! Open and read MODIS MCD43C3 16-day gridded surface albedo files
@@ -7,40 +7,33 @@
 ! Description and algorithm details:
 !
 ! Arguments:
-! Name         Type     In/Out/Both Description
-! ------------------------------------------------------------------------------
-! path_to_file character    in      File name (and path) to read
-! mcd          type(mcd43c) out     MCD output structure
-! nbands       integer      in      Number of bands to read
-! bands        integer(nbands) in   The band numbers of the required data
-! white_sky    integer      in      If not zero, white sky albedo will be read
-! black_sky    integer      in      If not zero, black sky albedo will be read
-! QC           intent       in      If not zero, QC and auxillary data will be
-!                                   read
-! stat         integer*4    out     Status value returned by the various hdf-eos
-!                                   API routines. If an error occurs, it will be
-!                                   returned with the value -1, otherwise
-!                                   returned as 0.
+! Name         Type            In/Out/Both Description
+! path_to_file character       in          File name (and path) to read
+! mcd          type(mcd43c1)   out         MCD output structure
+! nbands       integer         in          Number of bands to read
+! bands        integer(nbands) in          The band numbers of the required data
+! brdf_params  integer         in          If not zero, the BRDF parameters will
+!                                          be read
+! QC           intent          in          If not zero, QC and auxillary data
+!                                          will be read
+! stat         integer*4       out         Status value returned by the various
+!                                          hdf-eos API routines. If an error
+!                                          occurs, it will be returned with the
+!                                          value -1, otherwise returned as 0.
+!
+! Local variables:
+! Name Type Description
 !
 ! History:
-! 11 Apr 2012, GT: Original
-! 23 Apr 2012, GT: Replaced where statements for dealing with fill values in
-!   input data (as they seem to cause seg-faults with ifort) with do if loops
-! 26 Jun 2012, CP: commented out gdprojinfo as causes unknown crash.
-! 16 Aug 2012, GT: Commented out check on projection type, as
-!   Carolines previous change means the variable is not defined.
-! 20 Aug 2012, MJ: changed read_mcd43c3 from function to subroutine in order to
-!   iron out bugs and some slight change
-! 24 Jan 2014, MJ: corrects length of "path_to_file"
-! 11 Jun 2014, AP: use standard fill value rather than unique one
+! 2014/08/10, GM: First version.
 !
-! $Id$
+! $Id: read_mcd43c3.F90 2169 2014-05-26 14:53:25Z gmcgarragh $
 !
 ! Bugs:
 ! None known
 !-------------------------------------------------------------------------------
 
-subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, &
+subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
                         QC, stat)
 
    use preproc_constants
@@ -54,20 +47,19 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    character(len=pathlength), intent(in) :: path_to_file
    integer,                   intent(in) :: nbands
    integer,                   intent(in) :: bands(:)
-   integer,                   intent(in) :: white_sky
-   integer,                   intent(in) :: black_sky
+   integer,                   intent(in) :: brdf_albedo_params
    integer,                   intent(in) :: QC
 
    ! Output variables
-   type(mcd43c3),             intent(out) :: mcd
-   integer*4,                 intent(out) :: stat
+   type(mcd43c1), intent(out)            :: mcd
+   integer*4, intent(out)                :: stat
 
    ! Local variables
    integer                :: i,j,k
    integer*4              :: fid, gid
    character(len=300)     :: gridlist
    integer*4              :: gridlistlen
-   character(len=21)      :: dataname
+   character(len=32)      :: dataname
 
 !  integer*4              :: proj, zone, sphere
 !  real, pointer          :: param(:)
@@ -128,7 +120,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    write(*,*) 'Reading: ',trim(path_to_file)
    stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
    if (stat .ne. 1) then
-      write(*,*) 'Read_MCD43C3(), problem with gdinqgrid(): ',stat
+      write(*,*) 'Read_MCD43C1(), problem with gdinqgrid(): ',stat
       stop
    end if
 
@@ -240,40 +232,27 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
       mcd%percent_inputs(1,1) = 127
    end if
 
-   allocate(tmpdata(mcd%nlon,mcd%nlat))
+   if (brdf_albedo_params .ne. 0) then
+      allocate(tmpdata(mcd%nlon,mcd%nlat))
 
-   ! Allocate the other variables, based on which bands have been requested
-   if (white_sky .ne. 0) then
-      allocate(mcd%WSA(nbands,mcd%nlon,mcd%nlat))
-   else
-      allocate(mcd%WSA(1,1,1))
-      mcd%WSA(1,1,1) = -1.0
-   end if
-   if (black_sky .ne. 0) then
-      allocate(mcd%BSA(nbands,mcd%nlon,mcd%nlat))
-   else
-      allocate(mcd%BSA(1,1,1))
-      mcd%BSA(1,1,1) = -1.0
-   end if
+      allocate(mcd%brdf_albedo_params(nbands,3,mcd%nlon,mcd%nlat))
 
-   fill = 32767
+      fill = 32767
 
-   do i = 1,nbands
-      ! Read the white sky albedo
-      if (white_sky .ne. 0) then
-         dataname = 'Albedo_WSA_' // trim(BandList(bands(i)))
+      do i = 1,nbands
+         dataname = 'BRDF_Albedo_Parameter1_' // trim(BandList(bands(i)))
 
          write(*,*) 'Reading variable: ', trim(dataname)
          stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
-            write(*,*) 'Read_MCD43C3(), gdrdfld(): ',stat
+            write(*,*) 'Read_MCD43C1(), gdrdfld(): ',stat
             stop
          end if
 
          ! Extract the fill value
 !        stat = gdgetfill(gid, trim(dataname), fill)
 !        if (stat .ne. 0) then
-!           write(*,*) 'Read_MCD43C3(), gdgetfill(): ',stat
+!           write(*,*) 'Read_MCD43C1(), gdgetfill(): ',stat
 !           stop
 !        end if
 
@@ -283,9 +262,9 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%WSA(i,k,j) = real_fill_value
+                  mcd%brdf_albedo_params(i,1,k,j) = real_fill_value
                else
-                  mcd%WSA(i,k,j) = tmpdata(k,j)*scale + offset
+                  mcd%brdf_albedo_params(i,1,k,j) = tmpdata(k,j)*scale + offset
                end if
             end do
          end do
@@ -293,29 +272,20 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          ! Note, the following works with gfortran, but causes a segmentation
          ! fault if used with ifort (v11)
 !        where (tmpdata .eq. fill)
-!           mcd%WSA(i,:,:) = real_fill_value
+!           mcd%brdf_albedo_params(i,1,:,:) = mcd%fill
 !        elsewhere
-!           mcd%WSA(i,:,:) = real(tmpdata)*scale + offset
+!           mcd%brdf_albedo_params(i,1,:,:) = real(tmpdata)*scale + offset
 !        endwhere
-      end if
 
-      ! Read the black sky albedo
-      if (black_sky .ne. 0) then
-         dataname = 'Albedo_BSA_' // trim(BandList(bands(i)))
 
-         write(*,*) 'Reading variable: ', dataname
-         stat = gdrdfld(gid, dataname, start, stride, edge, tmpdata)
+         dataname = 'BRDF_Albedo_Parameter2_' // trim(BandList(bands(i)))
+
+         write(*,*) 'Reading variable: ', trim(dataname)
+         stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
-            write(*,*) 'Read_MCD43C3(), gdrdfld(): ',stat
+            write(*,*) 'Read_MCD43C1(), gdrdfld(): ',stat
             stop
          end if
-
-         ! Extract the fill value
-!        stat = gdgetfill(gid, trim(dataname), fill)
-!        if (stat .ne. 0) then
-!           write(*,*) 'Read_MCD43C3(), gdgetfill(): ',stat
-!           stop
-!        end if
 
          ! Use the scale and offset values defined (read?) above to convert the
          ! integer data into sensible floating point numbers, and replace the
@@ -323,28 +293,48 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%BSA(i,k,j) = real_fill_value
+                  mcd%brdf_albedo_params(i,2,k,j) = real_fill_value
                else
-                  mcd%BSA(i,k,j) = tmpdata(k,j)*scale + offset
+                  mcd%brdf_albedo_params(i,2,k,j) = tmpdata(k,j)*scale + offset
                end if
             end do
          end do
 
-         ! Note, the following works with gfortran, but causes a segmentation
-         ! fault if used with ifort (v11)
-!        where (tmpdata .eq. fill)
-!           mcd%BSA(i,:,:) = real_fill_value
-!        elsewhere
-!           mcd%BSA(i,:,:) = real(tmpdata)*scale + offset
-!        endwhere
-      end if
-   end do
 
-   deallocate(tmpdata)
+         dataname = 'BRDF_Albedo_Parameter3_' // trim(BandList(bands(i)))
+
+         write(*,*) 'Reading variable: ', trim(dataname)
+         stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
+         if (stat .ne. 0) then
+            write(*,*) 'Read_MCD43C1(), gdrdfld(): ',stat
+            stop
+         end if
+
+         ! Use the scale and offset values defined (read?) above to convert the
+         ! integer data into sensible floating point numbers, and replace the
+         ! fill value
+         do j = 1,ydim
+            do k = 1,xdim
+               if (tmpdata(k,j) .eq. fill) then
+                  mcd%brdf_albedo_params(i,3,k,j) = real_fill_value
+               else
+                  mcd%brdf_albedo_params(i,3,k,j) = tmpdata(k,j)*scale + offset
+               end if
+            end do
+         end do
+
+      end do
+
+
+      deallocate(tmpdata)
+   else
+      allocate(mcd%brdf_albedo_params(1,1,1,1))
+      mcd%brdf_albedo_params(1,1,1,1) = -1.0
+   end if
 
    ! Detach from the grid, and close the hdf file
    stat = gddetach(gid)
 
    stat = gdclose(fid)
 
-end subroutine read_mcd43c3
+end subroutine read_mcd43c1

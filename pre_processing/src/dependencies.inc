@@ -11,7 +11,7 @@ $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/interpol.o $(OBJS)/nise_def.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/surface_structures.o
-$(OBJS)/cox_munk.o: $(OBJS)/preproc_constants.o
+$(OBJS)/cox_munk.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
 $(OBJS)/date_type_structure.o: $(OBJS)/preproc_constants.o
 $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
@@ -28,7 +28,7 @@ $(OBJS)/interpol.o: $(OBJS)/preproc_constants.o interpol_bilinear.F90 \
         interpol_nearest_neighbour.F90
 $(OBJS)/map_time_to_pixel.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
-$(OBJS)/mcd43c.o: $(OBJS)/preproc_constants.o read_mcd43c3.F90
+$(OBJS)/mcd43c.o: $(OBJS)/preproc_constants.o read_mcd43c1.F90 read_mcd43c3.F90
 $(OBJS)/netcdf_output.o: $(OBJS)/attribute_structures.o \
         $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/netcdf_structures.o $(OBJS)/preproc_constants.o \
@@ -72,6 +72,7 @@ $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         read_modis_angles.F90 read_modis_dimensions.F90 read_modis_geo.F90 \
         read_modis_l1b.F90 read_modis_lat_lon.F90 read_modis_lsflag.F90 \
         read_modis_time.F90
+$(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
 $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
         $(OBJS)/netcdf_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o call_rtm_ir_rttov.F90 \
@@ -88,8 +89,9 @@ $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
 $(OBJS)/surface_reflectance.o: $(OBJS)/channel_structures.o $(OBJS)/cox_munk.o \
         $(OBJS)/ecmwf.o $(OBJS)/fill_grid.o $(OBJS)/imager_structures.o \
         $(OBJS)/interpol.o $(OBJS)/mcd43c.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o $(OBJS)/surface_structures.o \
-        get_surface_reflectance_lam.F90 select_modis_albedo_file.F90
+        $(OBJS)/preproc_structures.o $(OBJS)/ross_thick_li_sparse_r.o \
+        $(OBJS)/surface_structures.o get_surface_reflectance_lam.F90 \
+        select_modis_albedo_file.F90
 $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o allocate_surface_structures.F90 \

@@ -22,6 +22,7 @@
 ! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices
 ! 2012/12/13, CP: changed ydimension to imager_geolocation%ny
 ! 2013/09/06, AP: tidying
+! 2014/08/10, GM: Changes related to new BRDF support.
 !
 ! $Id$
 !
@@ -29,7 +30,8 @@
 ! None known
 !-------------------------------------------------------------------------------
 
-subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
+subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, &
+                                       include_full_brdf)
 
    use channel_structures
    use imager_structures
@@ -41,6 +43,7 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
    type(surface_s),            intent(out) :: surface
    type(imager_geolocation_s), intent(in)  :: imager_geolocation
    type(channel_info_s),       intent(in)  :: channel_info
+   logical, intent(in)                    :: include_full_brdf
 
    allocate(surface%albedo_chan(channel_info%nchannels_sw))
    surface%albedo_chan=real_fill_value
@@ -56,5 +59,23 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info)
             imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny,channel_info%nchannels_lw))
    surface%emissivity=real_fill_value
+
+   if (include_full_brdf) then
+      allocate(surface%rho_0v(imager_geolocation%startx:imager_geolocation%endx,&
+               1:imager_geolocation%ny,channel_info%nchannels_sw))
+      surface%rho_0v=real_fill_value
+
+      allocate(surface%rho_0d(imager_geolocation%startx:imager_geolocation%endx,&
+               1:imager_geolocation%ny,channel_info%nchannels_sw))
+      surface%rho_0d=real_fill_value
+
+      allocate(surface%rho_dv(imager_geolocation%startx:imager_geolocation%endx,&
+               1:imager_geolocation%ny,channel_info%nchannels_sw))
+      surface%rho_dv=real_fill_value
+
+      allocate(surface%rho_dd(imager_geolocation%startx:imager_geolocation%endx,&
+               1:imager_geolocation%ny,channel_info%nchannels_sw))
+      surface%rho_dd=real_fill_value
+   endif
 
 end subroutine allocate_surface_structures

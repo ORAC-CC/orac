@@ -67,6 +67,7 @@
 ! 2014/05/01, GM: Reordered data/time arguments into a logical order.
 ! 2014/05/26, GM: Fixes/improvements to error reporting.
 ! 2014/08/01, AP: Remove unused counter fields.
+! 2014/08/10, GM: Changes related to new BRDF support.
 !
 ! $Id$
 !
@@ -333,7 +334,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
 
-      ! open stuff related to SW
+   ! open stuff related to SW
    else if (type .eq. 2) then
 
       ctitle='ORAC Preprocessing swrtm output file'
@@ -493,7 +494,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
 
-      ! open stuff related to meteo
+   ! open stuff related to meteo
    else if (type .eq. 3) then
 
       ctitle='ORAC Preprocessing prtm output file'
@@ -714,7 +715,7 @@ end subroutine nc_create_file_rtm
 
 subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
    platform,sensor,path,wo,type,imager_geolocation,imager_angles,netcdf_info, &
-   channel_info,use_chunking)
+   channel_info,use_chunking,include_full_brdf)
 
    use netcdf
 
@@ -743,6 +744,7 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
    type(netcdf_info_s),           intent(inout) :: netcdf_info
    type(channel_info_s),          intent(in)    :: channel_info
    logical,                       intent(in)    :: use_chunking
+   logical,                       intent(in)    :: include_full_brdf
 
    ! Local
    integer                   :: ierr
@@ -887,7 +889,7 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue msi'
 
 
-      ! open cloud flag file
+   ! open cloud flag file
    else if (type .eq. 2) then
 
       ctitle='ORAC Preprocessing cf output file'
@@ -934,7 +936,7 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue cf'
 
 
-      ! open land/sea flag file
+   ! open land/sea flag file
    else if (type .eq. 3) then
       ctitle='ORAC Preprocessing lsf output file'
 
@@ -1063,7 +1065,7 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue relazi'
 
 
-      ! open location file
+   ! open location file
    else if (type .eq. 5) then
 
       ctitle='ORAC Preprocessing loc output file'
@@ -1074,7 +1076,7 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
       if (ierr.ne.NF90_NOERR)  stop 'error: loc creating file'
 
 
-      !start defining things
+      ! start defining things
       ierr = NF90_REDEF(netcdf_info%ncid_loc)
 
 
@@ -1120,7 +1122,7 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue loc'
 
 
-      ! open stuff related to albedo
+   ! open stuff related to albedo
    else if (type .eq. 6) then
 
       ctitle='ORAC Preprocessing alb output file'
@@ -1223,6 +1225,54 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            '_FillValue', real_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue emis'
 
+
+      if (include_full_brdf) then
+         dims3d(1)=netcdf_info%xdim_msi
+         dims3d(2)=netcdf_info%ydim_msi
+         dims3d(3)=netcdf_info%cdim_alb
+
+         if (.not. use_chunking) then
+            chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
+            chunksize3d(2)=imager_geolocation%endy-imager_geolocation%starty+1
+            chunksize3d(3)=channel_info%nchannels_sw
+         else
+            chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
+            chunksize3d(2)=imager_geolocation%ny
+            chunksize3d(3)=1
+         endif
+
+         ierr = NF90_DEF_VAR(netcdf_info%ncid_alb, 'rho_0v_data', NF90_FLOAT, dims3d, &
+                netcdf_info%rho_0v_id, deflate_level=compress_level_float, &
+                shuffle=shuffle_float)!, chunksizes=chunksize3d)
+         if (ierr.ne.NF90_NOERR) stop 'error: def rho_0v_data'
+         ierr = NF90_PUT_ATT(netcdf_info%ncid_alb, netcdf_info%rho_0v_id, &
+                             '_FillValue', real_fill_value)
+         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_0v_data'
+
+         ierr = NF90_DEF_VAR(netcdf_info%ncid_alb, 'rho_0d_data', NF90_FLOAT, dims3d, &
+                netcdf_info%rho_0d_id, deflate_level=compress_level_float, &
+                shuffle=shuffle_float)!, chunksizes=chunksize3d)
+         if (ierr.ne.NF90_NOERR) stop 'error: def rho_0d_data'
+         ierr = NF90_PUT_ATT(netcdf_info%ncid_alb, netcdf_info%rho_0d_id, &
+                             '_FillValue', real_fill_value)
+         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_0d_data'
+
+         ierr = NF90_DEF_VAR(netcdf_info%ncid_alb, 'rho_dv_data', NF90_FLOAT, dims3d, &
+                netcdf_info%rho_dv_id, deflate_level=compress_level_float, &
+                shuffle=shuffle_float)!, chunksizes=chunksize3d)
+         if (ierr.ne.NF90_NOERR) stop 'error: def rho_dv_data'
+         ierr = NF90_PUT_ATT(netcdf_info%ncid_alb, netcdf_info%rho_dv_id, &
+                             '_FillValue', real_fill_value)
+         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_dv_data'
+
+         ierr = NF90_DEF_VAR(netcdf_info%ncid_alb, 'rho_dd_data', NF90_FLOAT, dims3d, &
+                netcdf_info%rho_dd_id, deflate_level=compress_level_float, &
+                shuffle=shuffle_float)!, chunksizes=chunksize3d)
+         if (ierr.ne.NF90_NOERR) stop 'error: def rho_dd_data'
+         ierr = NF90_PUT_ATT(netcdf_info%ncid_alb, netcdf_info%rho_dd_id, &
+                             '_FillValue', real_fill_value)
+         if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_dd_data'
+      endif
 
    else if (type .eq. 7) then
 

@@ -27,15 +27,16 @@
 !    check that the MODIS file exists and is readable.
 ! 2014/04/21, GM: Cleaned up the code.
 ! 2014/05/26, MJ: added "FAILED" to error output.
+! 2014/08/10, GM: Changes related to new BRDF support.
 !
 ! $Id$
 !
-! Bugs: 
+! Bugs:
 ! There must be a way of searching for wildcard in fortran to make this
 ! code cleaner code should be modified so selects files from year either side
 !-------------------------------------------------------------------------------
-subroutine select_modis_albedo_file(cyear,doy,modis_surf_path, &
-     modis_surf_path_file)
+subroutine select_modis_albedo_file(cyear,doy,modis_surf_path,include_full_brdf, &
+                                    modis_surf_path_file)
 
    use preproc_structures
 
@@ -44,6 +45,7 @@ subroutine select_modis_albedo_file(cyear,doy,modis_surf_path, &
    character(len=datelength), intent(in)  :: cyear
    integer(kind=stint),       intent(in)  :: doy
    character(len=pathlength), intent(in)  :: modis_surf_path
+   logical,                   intent(in)  :: include_full_brdf
    character(len=pathlength), intent(out) :: modis_surf_path_file
 
    integer                                              :: nv
@@ -88,6 +90,7 @@ subroutine select_modis_albedo_file(cyear,doy,modis_surf_path, &
                 &'2007363144454','2008003081529','2008009025819','2008019130651'/)
 
    else if (trim(adjustl(cyear)) .eq. '2008') then
+if (.not. include_full_brdf) then
       p_date_s=(/'2008025111631','2008033123214','2008040004943','2008047121240',&
                & '2008054151035','2008065051535','2008071162739','2008080232812',&
                & '2008086173808','2008097191941','2008102161344','2008114201334',&
@@ -100,6 +103,20 @@ subroutine select_modis_albedo_file(cyear,doy,modis_surf_path, &
                & '2008312174054','2008331165258','2008335204416','2008339113335',&
                & '2008354114332','2008359104853','2008359104537','2009012201920',&
                & '2009019041257','2009034120609'/)
+else
+      p_date_s=(/'2008025105553','2008033121048','2008040002910','2008047115105',&
+               & '2008054143432','2008065045355','2008071155102','2008080224337',&
+               & '2008086161825','2008097185201','2008102154441','2008114175808',&
+               & '2008121032851','2008127165430','2008134035219','2008143080732',&
+               & '2008152165510','2008159030800','2008165134327','2008177214849',&
+               & '2008184034107','2008192031349','2008199213140','2008205144411',&
+               & '2008214235620','2008224073152','2008238183726','2008246043229',&
+               & '2008251153922','2008256083746','2008271133106','2008277134311',&
+               & '2008285031334','2008291030744','2008304202109','2008309133835',&
+               & '2008312165336','2008331155238','2008335201111','2008339111207',&
+               & '2008354113030','2008359102804','2008359102557','2009012193211',&
+               & '2009019035318','2009034113826'/)
+endif
 
    else if (trim(adjustl(cyear)) .eq. '2009') then
       p_date_s=(/'2009035033047','2009035093419','2009037163503',&
@@ -140,9 +157,15 @@ subroutine select_modis_albedo_file(cyear,doy,modis_surf_path, &
    mcd_date_s   = dates_s(pos(1))
    mcd_p_date_s = p_date_s(pos(1))
 
-   modis_surf_path_file=trim(adjustl(modis_surf_path))//'/'//'MCD43C3.A'//&
-        trim(adjustl(cyear))//trim(adjustl(mcd_date_s))//'.005.'//&
-        trim(adjustl(mcd_p_date_s))//'.hdf'
+   if (include_full_brdf) then
+      modis_surf_path_file=trim(adjustl(modis_surf_path))//'/'//'MCD43C1.A'//&
+           trim(adjustl(cyear))//trim(adjustl(mcd_date_s))//'.005.'//&
+           trim(adjustl(mcd_p_date_s))//'.hdf'
+   else
+      modis_surf_path_file=trim(adjustl(modis_surf_path))//'/'//'MCD43C3.A'//&
+           trim(adjustl(cyear))//trim(adjustl(mcd_date_s))//'.005.'//&
+           trim(adjustl(mcd_p_date_s))//'.hdf'
+   endif
 
    ! Check that the defined file exists and is readable
    inquire(file=trim(modis_surf_path_file), exist=modis_surf_file_exist, &

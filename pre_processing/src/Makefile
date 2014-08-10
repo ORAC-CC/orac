@@ -14,6 +14,7 @@
 # 2013/12/04, Greg McGarragh: Added 'make depend' to automatically find all
 #    Fortran file dependencies.
 # 2014/07/01, Adam Povey: Updated after I changed ECMWF routines.
+# 2014/08/10, Greg McGarragh: Changes related to new BRDF support.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -49,6 +50,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/netcdf_output.o \
                 $(OBJS)/netcdf_structures.o \
                 $(OBJS)/nise_def.o \
+                $(OBJS)/nr.o \
                 $(OBJS)/orac_ncdf.o \
                 $(OBJS)/preparation.o \
                 $(OBJS)/preproc_constants.o \
@@ -59,6 +61,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/read_cimss_emissivity.o \
                 $(OBJS)/read_imager.o \
                 $(OBJS)/read_modis.o \
+                $(OBJS)/ross_thick_li_sparse_r.o \
                 $(OBJS)/rttov_driver.o \
                 $(OBJS)/set_ecmwf.o \
                 $(OBJS)/setup.o \
@@ -67,7 +70,10 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/surface_structures.o \
                 $(OBJS)/test_rttov.o
 
-PREPROC_OBJ_C=  $(OBJS)/read_aatsr_orbit.o
+PREPROC_OBJ_C=  $(OBJS)/read_aatsr_orbit.o \
+                $(HOME)/orac_brdf/brdf_kernel.o \
+                $(HOME)/orac_brdf/brdf_util.o \
+                $(HOME)/orac_brdf/modis_ambralsfor/ambralsfor.o
 
 PREPROC_OBJ  =  $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
 
@@ -78,7 +84,6 @@ $(OBJS)/%.o: %.f90
 
 $(OBJS)/%.o: %.F90
 	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
-#	$(F90)  $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.c
 	$(CC) -o $@ -c $(CFLAGS) $(CINC) $<
@@ -90,7 +95,9 @@ $(OBJS)/%.o: %.c
 
 # Main program build
 orac_preproc.x: $(PREPROC_OBJ) Makefile
-	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ) $(LIBS) -I./$(OBJS)
+	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ) $(LIBS) -I./$(OBJS) \
+                $(HOME)/grmlib/libgrmlib.a \
+                $(HOME)/rtutil/librtutil.a
 
 orac_preproc.lib: $(PREPROC_OBJ) Makefile
 	ar -vr libpre.a $(OBJS)/*.o
@@ -100,7 +107,7 @@ depend:
 	@../../tools/make_depend.pl $(PREPROC_OBJ_F90) > dependencies.inc
 
 tidy clean:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x
 
 
 # Utilities to change source code extensions when moving between DEC Unix and

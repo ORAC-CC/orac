@@ -56,7 +56,7 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
    real(kind=sreal), dimension(:,:), intent(in)  :: datin
    real(kind=sreal), dimension(:),   intent(in)  :: xout, yout
    real(kind=sreal), dimension(:),   intent(out) :: datout
-   real(kind=sreal), optional                    :: missing
+   real(kind=sreal), optional,       intent(in)  :: missing
    ! Local variables
    real(kind=sreal)                              :: intxbot, intxtop
    integer(kind=lint)                            :: nxin, nyin, nout

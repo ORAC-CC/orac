@@ -16,6 +16,7 @@
 ! History:
 ! 11 Apr 2012, GT: Orginal
 ! 11 Jun 2014, AP: Remove unique fill value
+! 10 Aug 2014, GM: Changes related to new BRDF support.
 !
 ! $Id$
 !
@@ -27,7 +28,8 @@ module mcd43c_m
 
    implicit none
 
-   type mcd43c
+
+   type mcd43c1
       ! Data dimensions
       integer*4                  :: nlon
       integer*4                  :: nlat
@@ -36,8 +38,31 @@ module mcd43c_m
       ! Quality information
       integer*1, allocatable     :: quality(:,:)
       integer*1, allocatable     :: local_solar_noon(:,:)
-      integer*1, allocatable     :: percent_snow(:,:)
       integer*1, allocatable     :: percent_inputs(:,:)
+      integer*1, allocatable     :: percent_snow(:,:)
+
+      ! Band identifiers
+      character(len=10), pointer :: bandids(:)
+      integer, allocatable       :: bands(:)
+
+      ! Data
+      real, allocatable          :: lat(:)
+      real, allocatable          :: lon(:)
+      real, allocatable          :: brdf_albedo_params(:,:,:,:)
+   end type mcd43c1
+
+
+   type mcd43c3
+      ! Data dimensions
+      integer*4                  :: nlon
+      integer*4                  :: nlat
+      integer*4                  :: nbands
+
+      ! Quality information
+      integer*1, allocatable     :: quality(:,:)
+      integer*1, allocatable     :: local_solar_noon(:,:)
+      integer*1, allocatable     :: percent_inputs(:,:)
+      integer*1, allocatable     :: percent_snow(:,:)
 
       ! Band identifiers
       character(len=10), pointer :: bandids(:)
@@ -48,29 +73,50 @@ module mcd43c_m
       real, allocatable          :: lon(:)
       real, allocatable          :: WSA(:,:,:)
       real, allocatable          :: BSA(:,:,:)
-   end type mcd43c
+   end type mcd43c3
 
 contains
 
-subroutine deallocate_mcd43c(mcd)
+   subroutine deallocate_mcd43c1(mcd)
 
-   implicit none
-   
-   type(mcd43c), intent(inout) :: mcd
-   
-   deallocate(mcd%quality)
-   deallocate(mcd%local_solar_noon)
-   deallocate(mcd%percent_snow)
-   deallocate(mcd%percent_inputs)
-   deallocate(mcd%bandids)
-   deallocate(mcd%bands)
-   deallocate(mcd%lat)
-   deallocate(mcd%lon)
-   deallocate(mcd%WSA)
-   deallocate(mcd%BSA)
-   
-end subroutine deallocate_mcd43c
+      implicit none
 
-include 'read_mcd43c3.F90'
+      type(mcd43c1), intent(inout) :: mcd
+
+      deallocate(mcd%quality)
+      deallocate(mcd%local_solar_noon)
+      deallocate(mcd%percent_inputs)
+      deallocate(mcd%percent_snow)
+      deallocate(mcd%bandids)
+      deallocate(mcd%bands)
+      deallocate(mcd%lat)
+      deallocate(mcd%lon)
+      deallocate(mcd%brdf_albedo_params)
+
+   end subroutine deallocate_mcd43c1
+
+
+   subroutine deallocate_mcd43c3(mcd)
+
+      implicit none
+
+      type(mcd43c3), intent(inout) :: mcd
+
+      deallocate(mcd%quality)
+      deallocate(mcd%local_solar_noon)
+      deallocate(mcd%percent_inputs)
+      deallocate(mcd%percent_snow)
+      deallocate(mcd%bandids)
+      deallocate(mcd%bands)
+      deallocate(mcd%lat)
+      deallocate(mcd%lon)
+      deallocate(mcd%WSA)
+      deallocate(mcd%BSA)
+
+   end subroutine deallocate_mcd43c3
+
+
+   include 'read_mcd43c1.F90'
+   include 'read_mcd43c3.F90'
 
 end module mcd43c_m
