@@ -53,7 +53,7 @@ contains
         w(n+1-i)=w(i)
 12    continue
       return
-      END
+      END SUBROUTINE gauleg
 !  (C) Copr. 1986-92 Numerical Recipes Software 5.){ks91&18&12$.
 
 end module nr

@@ -70,10 +70,7 @@ PREPROC_OBJ_F90=$(OBJS)/aatsr_corrections.o \
                 $(OBJS)/surface_structures.o \
                 $(OBJS)/test_rttov.o
 
-PREPROC_OBJ_C=  $(OBJS)/read_aatsr_orbit.o \
-                $(HOME)/orac_brdf/brdf_kernel.o \
-                $(HOME)/orac_brdf/brdf_util.o \
-                $(HOME)/orac_brdf/modis_ambralsfor/ambralsfor.o
+PREPROC_OBJ_C=  $(OBJS)/read_aatsr_orbit.o
 
 PREPROC_OBJ  =  $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
 
@@ -95,9 +92,7 @@ $(OBJS)/%.o: %.c
 
 # Main program build
 orac_preproc.x: $(PREPROC_OBJ) Makefile
-	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ) $(LIBS) -I./$(OBJS) \
-                $(HOME)/grmlib/libgrmlib.a \
-                $(HOME)/rtutil/librtutil.a
+	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ) $(LIBS) -I./$(OBJS)
 
 orac_preproc.lib: $(PREPROC_OBJ) Makefile
 	ar -vr libpre.a $(OBJS)/*.o
