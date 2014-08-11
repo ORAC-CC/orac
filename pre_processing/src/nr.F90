@@ -11,7 +11,7 @@
 ! History:
 ! 2014/08/10, GM: First version.
 !
-! $Id: nr.F90 2214 2014-07-10 16:42:56Z acpovey $
+! $Id$
 !
 ! Bugs:
 ! None known

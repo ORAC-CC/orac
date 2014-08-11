@@ -27,7 +27,7 @@
 ! History:
 ! 2014/08/10, GM: First version.
 !
-! $Id: read_mcd43c3.F90 2169 2014-05-26 14:53:25Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known
