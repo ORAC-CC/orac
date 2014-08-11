@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: open_netcdf_output.f90
+! Name: netcdf_output_open.f90
 !
 ! Purpose:
 ! Open netcdf output files
@@ -61,7 +61,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine open_netcdf_output(output_pathin,output_pathout,lwrtm_file, &
+subroutine netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
    swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file, &
    loc_file,alb_file,scan_file,platform,sensor,script_input,cyear,cmonth,cday, &
    chour,cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
@@ -107,7 +107,7 @@ subroutine open_netcdf_output(output_pathin,output_pathout,lwrtm_file, &
    output_pathout=trim(adjustl(output_pathin))
 
    ! Create config file
-   call nc_create_file_config(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(config_file)),&
         wo,preproc_dims,imager_geolocation,netcdf_info,channel_info)
@@ -115,19 +115,19 @@ subroutine open_netcdf_output(output_pathin,output_pathout,lwrtm_file, &
    ! Create RTM files
 
    ! create lwrtm file
-   call nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(lwrtm_file)),wo,1,&
         preproc_dims,imager_angles,netcdf_info,channel_info,use_chunking)
 
    ! create swrtm file
-   call nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(swrtm_file)),wo,2,&
         preproc_dims,imager_angles,netcdf_info,channel_info,use_chunking)
 
    ! create prtm file
-   call nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(prtm_file)),wo,3,&
         preproc_dims,imager_angles,netcdf_info,channel_info,use_chunking)
@@ -135,52 +135,52 @@ subroutine open_netcdf_output(output_pathin,output_pathout,lwrtm_file, &
    ! Create swath based files
 
    ! create msi file
-   call nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(msi_file)),wo,1,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create cf file
-   call nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(cf_file)),wo,2,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create lsf file
-   call nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(lsf_file)),wo,3,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create geometry file
-   call nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(geo_file)),wo,4,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create location file
-   call nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(loc_file)),wo,5,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create albedo file
-   call nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(alb_file)),wo,6,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create scan file
-   call nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute,&
+   call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_pathout))//'/'//trim(adjustl(scan_file)),wo,7,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
-end subroutine open_netcdf_output
+end subroutine netcdf_output_open

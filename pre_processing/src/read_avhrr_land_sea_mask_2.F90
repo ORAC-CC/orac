@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_avhrr_landseamask.F90
+! Name: read_avhrr_land_sea_mask_2.F90
 !
 ! Purpose:
 ! Read land/sea mask for AVHRR from physiography data
@@ -32,7 +32,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_landseamask(fid,group,dataset,startx,stopx,starty,stopy, &
+subroutine read_avhrr_land_sea_mask_2(fid,group,dataset,startx,stopx,starty,stopy, &
      btemp)
 
    use hdf5
@@ -87,4 +87,4 @@ subroutine read_avhrr_landseamask(fid,group,dataset,startx,stopx,starty,stopy, &
    !close data group
    call h5gclose_f(gr_id, err_code)
 
-end subroutine read_avhrr_landseamask
+end subroutine read_avhrr_land_sea_mask_2

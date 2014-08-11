@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_imager.F90
+! Name: read_modis_l1b_radiances.F90
 !
 ! Purpose:
 ! Open and read MODIS input files
@@ -33,8 +33,8 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
-     imager_measurements,channel_info,verbose)
+subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
+     imager_geolocation,imager_measurements,channel_info,verbose)
 
    use preproc_constants
    use imager_structures
@@ -71,7 +71,7 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
       lrefl = channel_info%channel_ids_instr(ich).lt.20 .or. &
            channel_info%channel_ids_instr(ich).eq.26
 
-      call read_L1B_modis_reflectances_radiances(l1b_id, &
+      call read_modis_l1b_radiances_2(l1b_id, &
            channel_info%channel_ids_instr(ich),lrefl, &
            imager_geolocation%startx,imager_geolocation%endx, &
            imager_geolocation%starty,imager_geolocation%endy,temp,verbose)
@@ -97,4 +97,4 @@ subroutine read_modis_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
    !end access to l1b file
    err_code=sfend(l1b_id)
 
-end subroutine read_modis_l1b
+end subroutine read_modis_l1b_radiances

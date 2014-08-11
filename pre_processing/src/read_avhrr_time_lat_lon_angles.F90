@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_avhrr_geo.F90
+! Name: read_avhrr_time_lat_lon_angles.F90
 !
 ! Purpose:
 ! Open and read AVHRR geo input files.
@@ -30,8 +30,8 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
-     imager_flags,imager_time,n_along_track)
+subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
+     imager_angles,imager_flags,imager_time,n_along_track)
 
    use calender
    use hdf5
@@ -134,4 +134,4 @@ subroutine read_avhrr_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    !close access to hdf5 interface
    call h5close_f(err_code)
 
-end subroutine read_avhrr_geo
+end subroutine read_avhrr_time_lat_lon_angles

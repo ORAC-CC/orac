@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: get_surface_reflectance_lam.F90
+! Name: get_surface_reflectance.F90
 !
 ! Purpose:
 ! Populates the surface albedo part of the surface structure, using MODIS MCD43C
@@ -94,7 +94,7 @@
 ! NB channels are hardwired in this code and not selected automatically
 !-------------------------------------------------------------------------------
 
-subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
+subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
    modis_surf_path, imager_flags, imager_geolocation, imager_angles, &
    imager_measurements, channel_info, ecmwf, include_full_brdf, surface)
 
@@ -567,4 +567,4 @@ subroutine get_surface_reflectance_lam(cyear, doy, assume_full_path, &
    if (allocated(refsea)) deallocate(refsea)
    if (allocated(rhosea)) deallocate(rhosea)
 
-end subroutine get_surface_reflectance_lam
+end subroutine get_surface_reflectance

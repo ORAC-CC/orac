@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_modis_lsflag.F90
+! Name: read_modis_land_sea_mask.F90
 !
 ! Purpose:
 ! Open and read L1b and geo input files
@@ -31,7 +31,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
+subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
 
    use preproc_constants
 
@@ -82,5 +82,5 @@ subroutine read_modis_lsflag(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
 
    err_code=sfendacc(var_id)
 
-end subroutine read_modis_lsflag
+end subroutine read_modis_land_sea_mask
 

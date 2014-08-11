@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: write_swath_to_netcdf.F90
+! Name: netcdf_output_write_swath.F90
 !
 ! Purpose:
 ! Write outputs of ORAC into already opened NCDF files.
@@ -42,7 +42,7 @@
 ! None known
 !-------------------------------------------------------------------------------
 
-subroutine write_swath_to_netcdf(imager_flags,imager_angles,imager_geolocation, &
+subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocation, &
    imager_measurements,imager_time,netcdf_info,channel_info,surface,include_full_brdf)
 
    use attribute_structures
@@ -395,4 +395,4 @@ subroutine write_swath_to_netcdf(imager_flags,imager_angles,imager_geolocation, 
         1:imager_geolocation%ny),start2d,counter2d,stride2d)
    if (ierr.NE.NF90_NOERR) stop 'error: write v scan'
 
-end subroutine write_swath_to_netcdf
+end subroutine netcdf_output_write_swath

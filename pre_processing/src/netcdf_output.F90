@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: ncdf_output.F90
+! Name: netcdf_output.F90
 !
 ! Purpose:
 ! Container for NCDF output write routines.
@@ -25,9 +25,9 @@ implicit none
 
 contains
 
-include 'nc_create_file.F90'
-include 'open_netcdf_output.F90'
-include 'close_netcdf_output.F90'
-include 'write_swath_to_netcdf.F90'
+include 'netcdf_output_create_file.F90'
+include 'netcdf_output_open.F90'
+include 'netcdf_output_close.F90'
+include 'netcdf_output_write_swath.F90'
 
 end module netcdf_output

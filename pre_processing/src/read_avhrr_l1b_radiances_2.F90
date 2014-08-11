@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_L1B_avhrr_reflectances_radiances.F90
+! Name: read_avhrr_l1b_radiances_2.F90
 !
 ! Purpose:
 ! Read solar and viewing geometry from HDF5 file.
@@ -36,7 +36,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
+subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    startx,stopx,starty,stopy,channel_number,rtemp)
 
    use hdf5
@@ -162,4 +162,4 @@ subroutine read_L1B_avhrr_reflectances_radiances(fid,group,dataset,attrgroup, &
    !close data group
    call h5gclose_f(gr_id, err_code)
 
-end subroutine read_L1B_avhrr_reflectances_radiances
+end subroutine read_avhrr_l1b_radiances_2

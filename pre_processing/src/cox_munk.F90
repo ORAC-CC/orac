@@ -10,7 +10,7 @@
 ! For details of the algorithm used here, see Andrew Sayer's DPhil thesis
 ! (University of Oxford, 2010), or:
 ! Sayer, A. M., G. E. Thomas, and R. G. Grainger. 2010. "A Sea Surface
-! Reflectance Model for (a)ATSR, and Application to Aerosol Retrievals."
+! Reflectance Model for (A)ATSR, and Application to Aerosol Retrievals."
 ! Atmospheric Measurement Techniques 3: 813–838. doi:10.5194/amt-3-813-2010.
 !
 ! Presently four different versions exist:

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: close_netcdf_output.f90
+! Name: netcdf_output_close.f90
 !
 ! Purpose:
 ! Close netcdf output files
@@ -24,7 +24,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine close_netcdf_output(netcdf_info)
+subroutine netcdf_output_close(netcdf_info)
 
    use netcdf
    use netcdf_structures
@@ -62,4 +62,4 @@ subroutine close_netcdf_output(netcdf_info)
    ierr=nf90_close(netcdf_info%ncid_scan)
    if (ierr.ne.NF90_NOERR) print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF UV.'
 
-end subroutine close_netcdf_output
+end subroutine netcdf_output_close

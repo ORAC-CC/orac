@@ -39,5 +39,4 @@ subroutine deallocate_channel_info(channel_info)
    deallocate(channel_info%channel_proc_flag)
    deallocate(channel_info%channel_wl_abs)
 
-
 end subroutine deallocate_channel_info

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_avhrr_lat_lon.F90
+! Name: read_avhrr_time.F90
 !
 ! Purpose:
 ! Read AVHRR time geolocation data

@@ -6,7 +6,7 @@
 
 
 !-------------------------------------------------------------------------------
-! Name: nc_create_file.f90
+! Name: netcdf_output_create.f90
 !
 ! Purpose:
 ! Define the fields and attributes of the NetCDF files output by the
@@ -75,7 +75,7 @@
 ! None known
 !-------------------------------------------------------------------------------
 
-subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,wo,type,preproc_dims,imager_angles,netcdf_info, &
      channel_info,use_chunking)
 
@@ -677,7 +677,7 @@ subroutine nc_create_file_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
 
    return
 
-end subroutine nc_create_file_rtm
+end subroutine netcdf_create_rtm
 
 
 !-------------------------------------------------------------------------------
@@ -713,7 +713,7 @@ end subroutine nc_create_file_rtm
 !
 !-------------------------------------------------------------------------------
 
-subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
    platform,sensor,path,wo,type,imager_geolocation,imager_angles,netcdf_info, &
    channel_info,use_chunking,include_full_brdf)
 
@@ -1356,7 +1356,7 @@ subroutine nc_create_file_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
    return
 
-end subroutine nc_create_file_swath
+end subroutine netcdf_create_swath
 
 !-------------------------------------------------------------------------------
 ! Arguments:
@@ -1386,7 +1386,7 @@ end subroutine nc_create_file_swath
 !
 !-------------------------------------------------------------------------------
 
-subroutine nc_create_file_config(script_input,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,wo,preproc_dims,imager_geolocation,netcdf_info, &
      channel_info)
 
@@ -1582,7 +1582,7 @@ subroutine nc_create_file_config(script_input,cyear,cmonth,cday,chour,cminute, &
 
    return
 
-end subroutine nc_create_file_config
+end subroutine netcdf_create_config
 
 !-------------------------------------------------------------------------------
 ! Arguments:

@@ -709,7 +709,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       ! create/open output netcdf files.
       write(*,*)'create/open output netcdf files'
       write(*,*)'netcdf output_path: ',trim(output_pathin)
-      call open_netcdf_output(output_pathin,output_pathout,lwrtm_file, &
+      call netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
            swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
            geo_file,loc_file,alb_file,scan_file,platform,sensor,script_input, &
            cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
@@ -724,7 +724,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            netcdf_info,channel_info,month,verbose)
 
       ! set the surface reflectance.
-      call get_surface_reflectance_lam(cyear, doy, assume_full_paths, &
+      call get_surface_reflectance(cyear, doy, assume_full_paths, &
            albedo_path, imager_flags, imager_geolocation, imager_angles, &
            imager_measurements, channel_info, ecmwf, include_full_brdf, surface)
 
@@ -737,7 +737,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       write(*,*)'finished correction for ice'
 
       write(*,*) 'before write netcdf'
-      call write_swath_to_netcdf(imager_flags,imager_angles,imager_geolocation, &
+      call netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocation, &
            imager_measurements,imager_time,netcdf_info,channel_info,surface, &
            include_full_brdf)
       write(*,*) 'after write'
@@ -746,7 +746,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
       ! close output netcdf files
       write(*,*)'start close netcdf'
-      call close_netcdf_output(netcdf_info)
+      call netcdf_output_close(netcdf_info)
       write(*,*)'end close netcdf'
 
       ! deallocate the array parts of the structures

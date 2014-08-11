@@ -1,9 +1,9 @@
 !-------------------------------------------------------------------------------
-! Name: read_avhrr_lsmask.F90
+! Name: read_avhrr_land_sea_mask.F90
 !
 ! Purpose:
 ! Open and read AVHRR pixel based land/sea mask information.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Determine filename for physiography file from geolocation name.
 ! 2) Allocate arrays and open HDF file.
@@ -13,7 +13,7 @@
 ! Arguments:
 ! Name                Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! path_to_geo_file    string in   Full path to geolocation data 
+! path_to_geo_file    string in   Full path to geolocation data
 ! imager_geolocation  struct both Summary of pixel positions
 ! imager_angles       struct both Summary of sun/satellite viewing angles
 ! imager_flags        struct both Summary of land/sea/ice flags
@@ -29,7 +29,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
+subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
      imager_angles,imager_flags,imager_time)
 
    use hdf5
@@ -70,12 +70,12 @@ subroutine read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
    call h5fopen_f(path_to_lsmask_file,h5f_acc_rdonly_f,geo_id,err_code)
 
    !read lsmask
-   call read_avhrr_landseamask(geo_id,"/","1kmLanduse", &
+   call read_avhrr_land_sea_mask_2(geo_id,"/","1kmLanduse", &
         imager_geolocation%startx,imager_geolocation%endx, &
         imager_geolocation%starty,imager_geolocation%endy,btemp)
 
 
-!!$ make orac ls flag by mapping the MODIS L/S definitions to the ones for ORAC 
+!!$ make orac ls flag by mapping the MODIS L/S definitions to the ones for ORAC
 !!$ (approximate). AVHRR DEFINITIONS:
 !!$                16:      water
 !!$             != 16:      various land types
@@ -94,15 +94,15 @@ subroutine read_avhrr_lsmask(path_to_geo_file,imager_geolocation, &
       enddo
    enddo
 
-   imager_flags%lsflag=int(btemp,kind=sint) 
+   imager_flags%lsflag=int(btemp,kind=sint)
 
    !free temp arrays
    deallocate(btemp)
 
    !close the file
-   call h5fclose_f(geo_id, err_code) 
+   call h5fclose_f(geo_id, err_code)
 
    !close access to hdf5 interface
    call h5close_f(err_code)
 
-end subroutine read_avhrr_lsmask
+end subroutine read_avhrr_land_sea_mask

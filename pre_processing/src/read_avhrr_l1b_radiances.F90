@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_avhrr_l1b.F90
+! Name: read_avhrr_l1b_radiances.F90
 !
 ! Purpose:
 ! Read the L1b AVHRR HDF5 file.
@@ -36,7 +36,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
+subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geolocation, &
      imager_measurements,channel_info)
 
    use hdf5
@@ -76,7 +76,7 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
       write(cich,'(i1)') ichannel
       cimage='image'//trim(adjustl(cich))
 
-      call read_L1B_avhrr_reflectances_radiances(l1b_id, &
+      call read_avhrr_l1b_radiances_2(l1b_id, &
            cimage,"data",cimage//'/what', &
            imager_geolocation%startx,imager_geolocation%endx, &
            imager_geolocation%starty,imager_geolocation%endy, &
@@ -126,4 +126,4 @@ subroutine read_avhrr_l1b(sensor,platform,path_to_l1b_file,imager_geolocation, &
    !close access to hdf5 interface
    call h5close_f(err_code)
 
-end subroutine read_avhrr_l1b
+end subroutine read_avhrr_l1b_radiances

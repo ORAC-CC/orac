@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_L1B_radiances_reflectances.F90
+! Name: read_modis_l1b_radiances_2.F90
 !
 ! Purpose:
 ! Read the radiance values from an already open MODIS M*D02!KM file
@@ -48,7 +48,7 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
+subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
      ixstart, ixstop, iystart, iystop, level1b_buffer, verbose)
 
    use preproc_constants
@@ -206,4 +206,4 @@ subroutine read_L1B_modis_reflectances_radiances(fid, band, Cal_type_is_refl, &
 
    err_code = sfendacc(var_id)
 
-end subroutine read_L1B_modis_reflectances_radiances
+end subroutine read_modis_l1b_radiances_2

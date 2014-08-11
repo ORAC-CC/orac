@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_modis_geo.F90
+! Name: read_modis_time_lat_lon_angles.F90
 !
 ! Purpose:
 ! Open and read MODIS geolocation input files.
@@ -12,7 +12,7 @@
 ! Arguments:
 ! Name               Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! path_to_geo_file   string in   Full path to geolocation data 
+! path_to_geo_file   string in   Full path to geolocation data
 ! imager_geolocation struct both Summary of pixel positions
 ! imager_angles      struct both Summary of sun/satellite viewing angles
 ! imager_flags       struct both Summary of land/sea/ice flags
@@ -22,7 +22,7 @@
 ! History:
 ! 2011/12/12, MJ: produces draft code which opens and reads MODIS geo hdf files
 ! 2012/04/24, GT: Added a line assigning the solar azimuth angle
-!   to imager structure (needed by surface reflectance routines) 
+!   to imager structure (needed by surface reflectance routines)
 ! 2013/05/21, GT: Removed 180.0 degree correction to relative
 !   azimuth to match the convention used in ORAC lookup table code and surface
 !   reflectance calculation.
@@ -37,8 +37,8 @@
 ! none known
 !-------------------------------------------------------------------------------
 
-subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
-     imager_flags,imager_time,n_along_track)
+subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
+     imager_angles,imager_flags,imager_time,n_along_track)
 
    use preproc_constants
    use imager_structures
@@ -111,7 +111,7 @@ subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    imager_angles%solazi(:,:,imager_angles%nviews)=temp2
 
    ! make rel azi
-   ! Note: Relative azimuth is defined so that if the satellite is looking 
+   ! Note: Relative azimuth is defined so that if the satellite is looking
    ! towards the sun (i.e. forward scattering), relative azimuth is zero.
    temp2=180.0-temp2
    imager_angles%relazi(:,:,imager_angles%nviews) = 180.0 - &
@@ -124,7 +124,7 @@ subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    !read modis ls flag
    allocate(btemp(imager_geolocation%startx:imager_geolocation%endx, &
         imager_geolocation%starty:imager_geolocation%endy))
-   call read_modis_lsflag(geo_id,"Land/SeaMask",imager_geolocation%startx, &
+   call read_modis_land_sea_mask(geo_id,"Land/SeaMask",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,btemp)
 
@@ -166,4 +166,4 @@ subroutine read_modis_geo(path_to_geo_file,imager_geolocation,imager_angles, &
    !end access to geofile
    err_code=sfend(geo_id)
 
-end subroutine read_modis_geo
+end subroutine read_modis_time_lat_lon_angles
