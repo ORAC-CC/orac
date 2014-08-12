@@ -42,7 +42,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 module aatsr_corrections
@@ -70,21 +70,21 @@ module aatsr_corrections
 
    real(sreal), dimension(N_NONLINEARITY_CORRECTION_LUT), parameter :: &
       nonlinearity_correction_T_scene = (/ &
-         200.000, 201.000, 202.000, 203.000, 204.000, 205.000, 206.000, 207.000,&
-         208.000, 209.000, 210.000, 211.000, 212.000, 213.000, 214.000, 215.000,&
-         216.000, 217.000, 218.000, 219.000, 220.000, 221.000, 222.000, 223.000,&
-         224.000, 225.000, 226.000, 227.000, 228.000, 229.000, 230.000, 231.000,&
-         232.000, 233.000, 234.000, 235.000, 236.000, 237.000, 238.000, 239.000,&
-         240.000, 241.000, 242.000, 243.000, 244.000, 245.000, 246.000, 247.000,&
-         248.000, 249.000, 250.000, 251.000, 252.000, 253.000, 254.000, 255.000,&
-         256.000, 257.000, 258.000, 259.000, 260.000, 261.000, 262.000, 263.000,&
-         264.000, 265.000, 266.000, 267.000, 268.000, 269.000, 270.000, 271.000,&
-         272.000, 273.000, 274.000, 275.000, 276.000, 277.000, 278.000, 279.000,&
-         280.000, 281.000, 282.000, 283.000, 284.000, 285.000, 286.000, 287.000,&
-         288.000, 289.000, 290.000, 291.000, 292.000, 293.000, 294.000, 295.000,&
-         296.000, 297.000, 298.000, 299.000, 300.000, 301.000, 302.000, 303.000,&
-         304.000, 305.000, 306.000, 307.000, 308.000, 309.000, 310.000, 311.000,&
-         312.000, 313.000, 314.000, 315.000, 316.000, 317.000, 318.000, 319.000,&
+         200.000, 201.000, 202.000, 203.000, 204.000, 205.000, 206.000, 207.000, &
+         208.000, 209.000, 210.000, 211.000, 212.000, 213.000, 214.000, 215.000, &
+         216.000, 217.000, 218.000, 219.000, 220.000, 221.000, 222.000, 223.000, &
+         224.000, 225.000, 226.000, 227.000, 228.000, 229.000, 230.000, 231.000, &
+         232.000, 233.000, 234.000, 235.000, 236.000, 237.000, 238.000, 239.000, &
+         240.000, 241.000, 242.000, 243.000, 244.000, 245.000, 246.000, 247.000, &
+         248.000, 249.000, 250.000, 251.000, 252.000, 253.000, 254.000, 255.000, &
+         256.000, 257.000, 258.000, 259.000, 260.000, 261.000, 262.000, 263.000, &
+         264.000, 265.000, 266.000, 267.000, 268.000, 269.000, 270.000, 271.000, &
+         272.000, 273.000, 274.000, 275.000, 276.000, 277.000, 278.000, 279.000, &
+         280.000, 281.000, 282.000, 283.000, 284.000, 285.000, 286.000, 287.000, &
+         288.000, 289.000, 290.000, 291.000, 292.000, 293.000, 294.000, 295.000, &
+         296.000, 297.000, 298.000, 299.000, 300.000, 301.000, 302.000, 303.000, &
+         304.000, 305.000, 306.000, 307.000, 308.000, 309.000, 310.000, 311.000, &
+         312.000, 313.000, 314.000, 315.000, 316.000, 317.000, 318.000, 319.000, &
          320.000/)
 
    real(sreal), dimension(N_NONLINEARITY_CORRECTION_LUT), parameter :: &
@@ -182,14 +182,14 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    ! correction table
    if (Tn.lt.lut%julday(1)) then
       write(*,*) 'aatsr_corrections: WARNING: Aquisition before '// &
-           & 'start time of correction LUT. No correction made.',Tn, &
-           & lut%julday(1),lut%julday(lut%n)
+                 'start time of correction LUT. No correction made.',Tn, &
+                 lut%julday(1),lut%julday(lut%n)
       stat = -1
       return
    else if (Tn.gt.lut%julday(lut%n)) then
       write(*,*) 'aatsr_corrections: WARNING: Aquisition after end '// &
-           & 'time of correction LUT. No correction made.',Tn, &
-           & lut%julday(1),lut%julday(lut%n)
+                 'time of correction LUT. No correction made.',Tn, &
+                 lut%julday(1),lut%julday(lut%n)
       stat = -1
       return
    end if
@@ -221,7 +221,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    ! Check if we are, by some fluke, right on one of the LUT times
    if (any(lut%julday(1:lut%n).eq.Tn)) then
       ilow = 1
-      do while(lut%julday(ilow).ne.Tn)
+      do while (lut%julday(ilow).ne.Tn)
          ilow = ilow + 1
       end do ! assume it'll work because of any() above
 
@@ -268,7 +268,7 @@ end subroutine aatsr_drift_correction
 ! 2013/10/07, AP: Original
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine aatsr_read_drift_table(drift_table, lut, stat)
@@ -312,7 +312,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
             stat = -2
             return
          end if
-      endif
+      end if
    end do
 
    ! Open the file...
@@ -452,7 +452,7 @@ function aatsr_12um_nonlinearity_correction(T, u_delta_BT_2) result(delta_BT)
    if (present(u_delta_BT_2)) then
       u_delta_BT_2 = (1. - a) * nonlinearity_correction_u_delta_BT_2(i) + &
                            a  * nonlinearity_correction_u_delta_BT_2(i + 1)
-   endif
+   end if
 
 end function aatsr_12um_nonlinearity_correction
 
