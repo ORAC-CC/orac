@@ -95,43 +95,43 @@
 subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
                       d_CRP, BT, d_BT, R, d_R, status)
 
-    use CTRL_def
-    use ECP_Constants
-    use GZero_def
-    use RTM_Pc_def
-    use SAD_Chan_def
-    use SAD_LUT_def
-    use SPixel_def
+   use CTRL_def
+   use ECP_Constants
+   use GZero_def
+   use RTM_Pc_def
+   use SAD_Chan_def
+   use SAD_LUT_def
+   use SPixel_def
 
-    implicit none
+   implicit none
 
-    ! Define arguments
+   ! Define arguments
 
-    type(CTRL_t),     intent(in)    :: Ctrl
-    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
-    type(SPixel_t),   intent(in)    :: SPixel
-    type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
-    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
-    real,             intent(in)    :: X(MaxStateVar)
-    type(GZero_t),    intent(in)    :: GZero
-    real,             intent(inout) :: CRP(SPixel%Ind%Nthermal, MaxCRProps)
-    real,             intent(inout) :: d_CRP(SPixel%Ind%Nthermal, MaxCRProps, 2)
-    real,             intent(out)   :: BT(SPixel%Ind%Nthermal)
-    real,             intent(out)   :: d_BT(SPixel%Ind%Nthermal, MaxStateVar)
-    real,             intent(out)   :: R(SPixel%Ind%Nthermal)
-    real,             intent(out)   :: d_R(SPixel%Ind%Nthermal, MaxStateVar)
-    integer,          intent(out)   :: status
+   type(CTRL_t),     intent(in)    :: Ctrl
+   type(SAD_LUT_t),  intent(in)    :: SAD_LUT
+   type(SPixel_t),   intent(in)    :: SPixel
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
+   type(RTM_Pc_t),   intent(inout) :: RTM_Pc
+   real,             intent(in)    :: X(MaxStateVar)
+   type(GZero_t),    intent(in)    :: GZero
+   real,             intent(inout) :: CRP(SPixel%Ind%Nthermal, MaxCRProps)
+   real,             intent(inout) :: d_CRP(SPixel%Ind%Nthermal, MaxCRProps, 2)
+   real,             intent(out)   :: BT(SPixel%Ind%Nthermal)
+   real,             intent(out)   :: d_BT(SPixel%Ind%Nthermal, MaxStateVar)
+   real,             intent(out)   :: R(SPixel%Ind%Nthermal)
+   real,             intent(out)   :: d_R(SPixel%Ind%Nthermal, MaxStateVar)
+   integer,          intent(out)   :: status
 
-    ! Define local variables
+   ! Define local variables
 
-    integer :: i
-    integer :: ThF, ThL ! First and last thermal channel indices for RTM_Pc%LW
-    real    :: delta_Ts
-    real    :: R_clear(SPixel%Ind%Nthermal)
-    real    :: R_over(SPixel%Ind%Nthermal)
-    real    :: Es_dB_dTs(SPixel%Ind%Nthermal)
-    real    :: fTac(SPixel%Ind%Nthermal)
-    real    :: dT_dR(SPixel%Ind%Nthermal)
+   integer :: i
+   integer :: ThF, ThL ! First and last thermal channel indices for RTM_Pc%LW
+   real    :: delta_Ts
+   real    :: R_clear(SPixel%Ind%Nthermal)
+   real    :: R_over(SPixel%Ind%Nthermal)
+   real    :: Es_dB_dTs(SPixel%Ind%Nthermal)
+   real    :: fTac(SPixel%Ind%Nthermal)
+   real    :: dT_dR(SPixel%Ind%Nthermal)
 #ifdef BKP
    integer :: j       ! For breakpoint output loops
    integer :: bkp_lun ! Unit number for breakpoint file

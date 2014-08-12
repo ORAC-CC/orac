@@ -41,8 +41,8 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
                            spixel_scan_out, status)
 
    use CTRL_def
-   use Diag_def
    use Data_def
+   use Diag_def
    use RTM_Pc_def
    use SPixel_def
 
@@ -85,7 +85,7 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       spixel_scan_out%sat_zen(i,j,iviews)=MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0,iviews)
       spixel_scan_out%sol_zen(i,j,iviews)=MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0,iviews)
       spixel_scan_out%rel_azi(i,j,iviews)=MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0,iviews)
-   enddo
+   end do
 
    !-------------------------------------------------------------------------------
    ! State variables and covariance diagonal
@@ -102,21 +102,21 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (dummyreal .ge. real(spixel_scan_out%cot_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%cot_vmax,kind=sreal)) then
       spixel_scan_out%cot(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .lt. real(spixel_scan_out%cot_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%cot_vmin,kind=sreal)) then
       spixel_scan_out%cot(i,j)=spixel_scan_out%int_fill_value
-   elseif (dummyreal .gt. real(spixel_scan_out%cot_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%cot_vmax,kind=sreal)) then
       spixel_scan_out%cot(i,j)=spixel_scan_out%cot_vmax
-   endif
+   end if
 
    dummyreal=(sqrt(SPixel%Sn(1,1))-spixel_scan_out%cot_error_offset)/spixel_scan_out%cot_error_scale
    if (dummyreal .ge. real(spixel_scan_out%cot_error_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%cot_error_vmax,kind=sreal)) then
       spixel_scan_out%cot_error(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .lt. real(spixel_scan_out%cot_error_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%cot_error_vmin,kind=sreal)) then
       spixel_scan_out%cot_error(i,j)=spixel_scan_out%int_fill_value
-   elseif (dummyreal .gt. real(spixel_scan_out%cot_error_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%cot_error_vmax,kind=sreal)) then
       spixel_scan_out%cot_error(i,j)=spixel_scan_out%cot_error_vmax
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! ref
@@ -125,21 +125,21 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (dummyreal .ge. real(spixel_scan_out%ref_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%ref_vmax,kind=sreal)) then
       spixel_scan_out%ref(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%ref_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%ref_vmax,kind=sreal)) then
       spixel_scan_out%ref(i,j)=spixel_scan_out%ref_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%ref_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%ref_vmin,kind=sreal)) then
       spixel_scan_out%ref(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    dummyreal=(sqrt(SPixel%Sn(2,2))-spixel_scan_out%ref_error_offset)/spixel_scan_out%ref_error_scale
    if (dummyreal .ge. real(spixel_scan_out%ref_error_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%ref_error_vmax,kind=sreal)) then
       spixel_scan_out%ref_error(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%ref_error_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%ref_error_vmax,kind=sreal)) then
       spixel_scan_out%ref_error(i,j)=spixel_scan_out%ref_error_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%ref_error_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%ref_error_vmin,kind=sreal)) then
       spixel_scan_out%ref_error(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! ctp
@@ -148,11 +148,11 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (dummyreal .ge. real(spixel_scan_out%ctp_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%ctp_vmax,kind=sreal)) then
       spixel_scan_out%ctp(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%ctp_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%ctp_vmax,kind=sreal)) then
       spixel_scan_out%ctp(i,j)=spixel_scan_out%ctp_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%ctp_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%ctp_vmin,kind=sreal)) then
       spixel_scan_out%ctp(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    dummyreal_store=(sqrt(SPixel%Sn(3,3))-spixel_scan_out%ctp_error_offset)/spixel_scan_out%ctp_error_scale
 
@@ -168,11 +168,11 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       if (dummyreal .ge. real(spixel_scan_out%cth_error_vmin,kind=sreal) .and. &
           dummyreal .le. real(spixel_scan_out%cth_error_vmax,kind=sreal)) then
          spixel_scan_out%cth_error(i,j)=int(dummyreal, kind=sint)
-      elseif (dummyreal .gt. real(spixel_scan_out%cth_error_vmax,kind=sreal)) then
+      else if (dummyreal .gt. real(spixel_scan_out%cth_error_vmax,kind=sreal)) then
          spixel_scan_out%cth_error(i,j)=spixel_scan_out%cth_error_vmax
-      elseif (dummyreal .lt. real(spixel_scan_out%cth_error_vmin,kind=sreal)) then
+      else if (dummyreal .lt. real(spixel_scan_out%cth_error_vmin,kind=sreal)) then
          spixel_scan_out%cth_error(i,j)=spixel_scan_out%int_fill_value
-      endif
+      end if
 
       dummyreal=abs(RTM_Pc%dTc_dPc)*dummyreal_store
       dummyreal=(dummyreal-spixel_scan_out%ctt_error_offset)/spixel_scan_out%ctt_error_scale
@@ -180,24 +180,24 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       if (dummyreal .ge. real(spixel_scan_out%ctt_error_vmin,kind=sreal) .and. &
           dummyreal .le. real(spixel_scan_out%ctt_error_vmax,kind=sreal)) then
          spixel_scan_out%ctt_error(i,j)=int(dummyreal, kind=sint)
-      elseif (dummyreal .gt. real(spixel_scan_out%ctt_error_vmax,kind=sreal)) then
+      else if (dummyreal .gt. real(spixel_scan_out%ctt_error_vmax,kind=sreal)) then
          spixel_scan_out%ctt_error(i,j)=spixel_scan_out%ctt_error_vmax
-      elseif (dummyreal .lt. real(spixel_scan_out%ctt_error_vmin,kind=sreal)) then
+      else if (dummyreal .lt. real(spixel_scan_out%ctt_error_vmin,kind=sreal)) then
          spixel_scan_out%ctt_error(i,j)=spixel_scan_out%int_fill_value
-      endif
+      end if
 
-   elseif (dummyreal_store .gt. real(spixel_scan_out%ctp_error_vmax,kind=sreal)) then
+   else if (dummyreal_store .gt. real(spixel_scan_out%ctp_error_vmax,kind=sreal)) then
 
       spixel_scan_out%ctp_error(i,j)=spixel_scan_out%ctp_error_vmax
       spixel_scan_out%cth_error(i,j)=spixel_scan_out%cth_error_vmax
       spixel_scan_out%ctt_error(i,j)=spixel_scan_out%ctt_error_vmax
 
-   elseif (dummyreal_store .lt. real(spixel_scan_out%ctp_error_vmin,kind=sreal)) then
+   else if (dummyreal_store .lt. real(spixel_scan_out%ctp_error_vmin,kind=sreal)) then
       spixel_scan_out%ctp_error(i,j)=spixel_scan_out%int_fill_value
       spixel_scan_out%cth_error(i,j)=spixel_scan_out%int_fill_value
       spixel_scan_out%ctt_error(i,j)=spixel_scan_out%int_fill_value
 
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! cct
@@ -208,7 +208,7 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       spixel_scan_out%cct(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out%cct(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    dummyreal=(sqrt(SPixel%Sn(4,4))-spixel_scan_out%cct_error_offset)/spixel_scan_out%cct_error_scale
    if (dummyreal .ge. real(spixel_scan_out%cct_error_vmin,kind=sreal) .and. &
@@ -216,7 +216,7 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       spixel_scan_out%cct_error(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out%cct_error(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! stemp
@@ -225,21 +225,21 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (dummyreal .ge. real(spixel_scan_out%stemp_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%stemp_vmax,kind=sreal)) then
       spixel_scan_out%stemp(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%stemp_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%stemp_vmax,kind=sreal)) then
       spixel_scan_out%stemp(i,j)=spixel_scan_out%stemp_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%stemp_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%stemp_vmin,kind=sreal)) then
       spixel_scan_out%stemp(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    dummyreal=(sqrt(SPixel%Sn(5,5))-spixel_scan_out%stemp_error_offset)/spixel_scan_out%stemp_error_scale
    if (dummyreal .ge. real(spixel_scan_out%stemp_error_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%stemp_error_vmax,kind=sreal)) then
       spixel_scan_out%stemp_error(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%stemp_error_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%stemp_error_vmax,kind=sreal)) then
       spixel_scan_out%stemp_error(i,j)=spixel_scan_out%stemp_error_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%stemp_error_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%stemp_error_vmin,kind=sreal)) then
       spixel_scan_out%stemp_error(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
 
    !-------------------------------------------------------------------------------
@@ -254,11 +254,11 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (dummyreal .ge. real(spixel_scan_out%cth_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%cth_vmax,kind=sreal)) then
       spixel_scan_out%cth(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%cth_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%cth_vmax,kind=sreal)) then
       spixel_scan_out%cth(i,j)=spixel_scan_out%cth_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%cth_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%cth_vmin,kind=sreal)) then
       spixel_scan_out%cth(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! ctt
@@ -267,11 +267,11 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (dummyreal .ge. real(spixel_scan_out%ctt_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%ctt_vmax,kind=sreal)) then
       spixel_scan_out%ctt(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%ctt_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%ctt_vmax,kind=sreal)) then
       spixel_scan_out%ctt(i,j)=spixel_scan_out%ctt_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%ctt_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%ctt_vmin,kind=sreal)) then
       spixel_scan_out%ctt(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! cwp
@@ -280,21 +280,21 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (dummyreal .ge. real(spixel_scan_out%cwp_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%cwp_vmax,kind=sreal)) then
       spixel_scan_out%cwp(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%cwp_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%cwp_vmax,kind=sreal)) then
       spixel_scan_out%cwp(i,j)=spixel_scan_out%cwp_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%cwp_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%cwp_vmin,kind=sreal)) then
       spixel_scan_out%cwp(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    dummyreal=(sqrt(SPixel%CWP_error)-spixel_scan_out%cwp_error_offset)/spixel_scan_out%cwp_error_scale
    if (dummyreal .ge. real(spixel_scan_out%cwp_error_vmin,kind=sreal) .and. &
        dummyreal .le. real(spixel_scan_out%cwp_error_vmax,kind=sreal)) then
       spixel_scan_out%cwp_error(i,j)=int(dummyreal, kind=sint)
-   elseif (dummyreal .gt. real(spixel_scan_out%cwp_error_vmax,kind=sreal)) then
+   else if (dummyreal .gt. real(spixel_scan_out%cwp_error_vmax,kind=sreal)) then
       spixel_scan_out%cwp_error(i,j)=spixel_scan_out%cwp_error_vmax
-   elseif (dummyreal .lt. real(spixel_scan_out%cwp_error_vmin,kind=sreal)) then
+   else if (dummyreal .lt. real(spixel_scan_out%cwp_error_vmin,kind=sreal)) then
       spixel_scan_out%cwp_error(i,j)=spixel_scan_out%int_fill_value
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! conv, niter, pchange
@@ -315,7 +315,7 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       spixel_scan_out%costjm(i,j)=real(dummyreal,kind=sreal)
    else
       spixel_scan_out%costjm(i,j)=spixel_scan_out%real_fill_value
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! costja
@@ -326,7 +326,7 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       spixel_scan_out%costja(i,j)=real(dummyreal,kind=sreal)
    else
       spixel_scan_out%costja(i,j)=spixel_scan_out%real_fill_value
-   endif
+   end if
 
    !-------------------------------------------------------------------------------
    ! lsflag

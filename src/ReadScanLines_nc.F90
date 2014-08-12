@@ -123,15 +123,15 @@ subroutine Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
            "uscan", MSI_Data%Scan%uscan,0)
       call nc_read_array_2d_int_to_real_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize, &
            "vscan", MSI_Data%Scan%vscan,0)
-   endif
+   end if
 
-  ! Close scan lines file
-  ios=nf90_close(ncid)
-  if (ios /= 0) then
-     status = ScanFileCloseErr ! Return error code
-     write(unit=message, fmt=*) 'Read_LSflag: Error closing file ', &
-        trim(adjustl(Ctrl%Fid%uv))
-     call Write_Log(Ctrl, trim(message), status)
-  endif
+   ! Close scan lines file
+   ios=nf90_close(ncid)
+   if (ios /= 0) then
+      status = ScanFileCloseErr ! Return error code
+      write(unit=message, fmt=*) 'Read_LSflag: Error closing file ', &
+         trim(adjustl(Ctrl%Fid%uv))
+      call Write_Log(Ctrl, trim(message), status)
+   end if
 
 end subroutine Read_Scanlines_nc

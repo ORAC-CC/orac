@@ -250,7 +250,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
          if (ios == 0) write(*,*) 'Read PRTM data OK'
 
       end if
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -286,7 +286,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
                instname=trim(adjustl(sensor))
             else
                instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
-            endif
+            end if
 
             InstName = adjustl(InstName)
             if (trim(adjustl(InstName)) /= trim(adjustl(Ctrl%Inst%Name))) then
@@ -312,7 +312,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
             ! Read ChanID and WvNumber
             call nc_read_array_1d_int_to_int_orac(ncid,RTM%LW%NLWF,"lw_channel_instr_ids",ChanID,0)
             call nc_read_array_1d_float_to_float_orac(ncid,RTM%LW%NLWF,"lw_channel_wvl",WvNumber,0)
-         endif
+         end if
 
          write(*,*) 'LW channel instrument ids for RTM in LW preprocessing file',ChanID
 
@@ -394,13 +394,13 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
                      call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"rac_down_lw",dummy2df,0)
                      RTM%LW%Rac_dwn(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-                  endif
-               enddo
-            enddo
+                  end if
+               end do
+            end do
 
             deallocate(dummy1df)
             deallocate(dummy2df)
-         endif
+         end if
 
          if (allocated(WvNumber)) deallocate(WvNumber)
          if (allocated(ChanID))   deallocate(ChanID)

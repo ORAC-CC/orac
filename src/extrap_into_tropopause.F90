@@ -26,7 +26,7 @@
 
 subroutine extrap_into_tropopause(SPixel)
 
-use SPixel_def
+   use SPixel_def
 
    implicit none
 
@@ -60,10 +60,10 @@ use SPixel_def
                ztp=SPixel%RTM%LW%P(k+1)
                ! exit out of loop to improve the speed
                exit
-            endif ! lapse raet
-         endif ! gt 80.0
-      endif
-   enddo
+            end if ! lapse raet
+         end if ! gt 80.0
+      end if
+   end do
 
    t=SPixel%RTM%LW%T
 

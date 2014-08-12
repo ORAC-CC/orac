@@ -666,7 +666,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
             ! "if" inserted to catch (academic?) case of overflow if alpha get's huge.
             if (alpha .lt. huge_value) then
                alpha = alpha * Ctrl%InvPar%MqStep
-            endif
+            end if
             J2plus_A = d2J_dX2 + (alpha * unit)
             minusdJ_dX=-dJ_dX
             call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
@@ -832,14 +832,14 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
          SPixel%Sn(SPixel%X, SPixel%X)   = &
               Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
          !write(*,*) 'went in here'
-      endif
+      end if
 
       if (SPixel%NxI > 0) then
          SPixel%Sn(SPixel%XI, SPixel%XI) = SPixel%Sx(SPixel%XI, SPixel%XI)
 
          SPixel%Sn(SPixel%X, SPixel%X)   = Diag%St(1:SPixel%Nx, 1:SPixel%Nx) + &
                                            Diag%Ss(1:SPixel%Nx, 1:SPixel%Nx)
-      endif
+      end if
 
       do m = 1, MaxStateVar
          do l = 1, MaxStateVar
@@ -875,7 +875,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       J  = MissingSn
       Jm = MissingSn
       Ja = MissingSn
-   endif
+   end if
 
    call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
         NPhaseChanges, Y, Sy, Diag, stat)

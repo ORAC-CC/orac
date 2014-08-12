@@ -76,7 +76,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_redef()'
       stop
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -265,8 +265,8 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%res_vmin(iinput),spixel_scan_out_sec%res_vmax(iinput),wo,ierr)
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         endif
-      enddo
+         end if
+      end do
 
       do i=1,Ctrl%Ind%Nthermal
          if (Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ythermal(i) ) then
@@ -288,10 +288,10 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%res_vmin(iinput),spixel_scan_out_sec%res_vmax(iinput),wo,ierr)
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         endif
-      enddo
+         end if
+      end do
 
-   enddo
+   end do
 
    !----------------------------------------------------------------------------
    ! reflectances and brightness temperature
@@ -319,8 +319,8 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%chans_vmin(iinput),spixel_scan_out_sec%chans_vmax(iinput),wo,ierr)
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         endif
-      enddo
+         end if
+      end do
 
       do i=1,Ctrl%Ind%Nthermal
 
@@ -342,10 +342,10 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%chans_vmin(iinput),spixel_scan_out_sec%chans_vmax(iinput),wo,ierr)
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         endif
-      enddo
+         end if
+      end do
 
-   enddo
+   end do
 
    !----------------------------------------------------------------------------
    ! albedo_in_channel_no_*
@@ -373,9 +373,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%alb_vmin(iinput),spixel_scan_out_sec%alb_vmax(iinput),wo,ierr)
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    !----------------------------------------------------------------------------
    ! stemp_fg
@@ -424,8 +424,8 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput),wo,ierr)
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         endif
-      enddo
+         end if
+      end do
 
       do i=1,Ctrl%Ind%Nthermal
          if (Ctrl%Ind%Chi(iinput) .eq. Ctrl%Ind%Ythermal(i)) then
@@ -446,10 +446,10 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput),wo,ierr)
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         endif
-      enddo
+         end if
+      end do
 
-   enddo
+   end do
 
    !----------------------------------------------------------------------------
    ! covariance_matrix_element_*
@@ -473,10 +473,10 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 !                   spixel_scan_out%real_fill_value_lat_lon,wo,ierr)
 
 !           if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-!        enddo
-!     enddo
+!        end do
+!     end do
 
-!  endif
+!  end if
 
    !----------------------------------------------------------------------------
    ! degrees_of_freedom_signal
@@ -506,7 +506,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'
       stop
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -516,6 +516,6 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
       write(*,*) 'def_vars_secondary.inc: netcdf variable definintion error:', status
       call Write_Log(Ctrl,'def_vars_secondary.inc: netcdf variable definintion error:', status)
       stop
-   endif
+   end if
 
 end subroutine def_vars_secondary

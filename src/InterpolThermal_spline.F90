@@ -115,34 +115,34 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    ! Define local variables
 
-   integer  :: i
-   integer  :: j
-   real     :: dP                         ! Fractional distance of Pc from bottom of interval
-   real     :: P1                         ! Fractional distance of Pc from top of interval
-   real     :: k0                         ! Spline coefficient
-   real     :: k1                         ! Spline coefficient
-   real     :: delta_p
-   real     :: delta_Tac(SPixel%Ind%Nthermal)
-   real     :: delta_Tbc(SPixel%Ind%Nthermal)
-   real     :: delta_Rac_up(SPixel%Ind%Nthermal)
-   real     :: delta_Rac_dwn(SPixel%Ind%Nthermal)
-   real     :: delta_Rbc_up(SPixel%Ind%Nthermal)
-   real     :: delta_T                    ! Step in Temp between pressure levels
-   real     :: delta_H                    ! Step in GPH between pressure levels
-   real     :: dT_dPc                     ! Gradient of T wrt Pc
-   real     :: dH_dPc                     ! Gradient of GPH wrt Pc
-   real     :: T(SPixel%Ind%Nthermal)     ! Calculated Temp at Pc. T2R wants array
-   real     :: H(SPixel%Ind%Nthermal)     ! Calculated GPH at Pc.
-   real     :: d2T_dP2(SPixel%RTM%LW%Np)
-   real     :: d2H_dP2(SPixel%RTM%LW%Np)
-   real     :: d2Tac_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real     :: d2Tbc_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real     :: d2Rac_up_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real     :: d2Rac_dwn_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real     :: d2Rbc_up_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real     :: delta_Pc
-   real     :: dB_dT(SPixel%Ind%Nthermal) ! Gradient of Planck function wrt Temp.
-   integer  :: ThF, ThL                   ! First, last thermal channel indices for RTM_Pc%LW arrays
+   integer :: i
+   integer :: j
+   real    :: dP                         ! Fractional distance of Pc from bottom of interval
+   real    :: P1                         ! Fractional distance of Pc from top of interval
+   real    :: k0                         ! Spline coefficient
+   real    :: k1                         ! Spline coefficient
+   real    :: delta_p
+   real    :: delta_Tac(SPixel%Ind%Nthermal)
+   real    :: delta_Tbc(SPixel%Ind%Nthermal)
+   real    :: delta_Rac_up(SPixel%Ind%Nthermal)
+   real    :: delta_Rac_dwn(SPixel%Ind%Nthermal)
+   real    :: delta_Rbc_up(SPixel%Ind%Nthermal)
+   real    :: delta_T                    ! Step in Temp between pressure levels
+   real    :: delta_H                    ! Step in GPH between pressure levels
+   real    :: dT_dPc                     ! Gradient of T wrt Pc
+   real    :: dH_dPc                     ! Gradient of GPH wrt Pc
+   real    :: T(SPixel%Ind%Nthermal)     ! Calculated Temp at Pc. T2R wants array
+   real    :: H(SPixel%Ind%Nthermal)     ! Calculated GPH at Pc.
+   real    :: d2T_dP2(SPixel%RTM%LW%Np)
+   real    :: d2H_dP2(SPixel%RTM%LW%Np)
+   real    :: d2Tac_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
+   real    :: d2Tbc_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
+   real    :: d2Rac_up_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
+   real    :: d2Rac_dwn_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
+   real    :: d2Rbc_up_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
+   real    :: delta_Pc
+   real    :: dB_dT(SPixel%Ind%Nthermal) ! Gradient of Planck function wrt Temp.
+   integer :: ThF, ThL                   ! First, last thermal channel indices for RTM_Pc%LW arrays
    character(ECPLogReclen) :: message
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
@@ -190,7 +190,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
             SPixel%RTM%LW%Rac_dwn(j,1:SPixel%RTM%LW%Np),d2Rac_dwn_dP2(j,1:SPixel%RTM%LW%Np))
          call spline(SPixel%RTM%LW%P(1:SPixel%RTM%LW%Np),&
             SPixel%RTM%LW%Rbc_up(j,1:SPixel%RTM%LW%Np),d2Rbc_up_dP2(j,1:SPixel%RTM%LW%Np))
-      enddo
+      end do
 
       call spline(SPixel%RTM%LW%P(1:SPixel%RTM%LW%Np),&
          SPixel%RTM%LW%T(1:SPixel%RTM%LW%Np),d2T_dP2(1:SPixel%RTM%LW%Np))
@@ -221,7 +221,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
                                  (k1 * d2Tac_dP2(j,i+1))
          RTM_Pc%LW%dTbc_dPc(j) = (delta_Tbc(j) / delta_p) - (k0 * d2Tbc_dP2(j,i)) + &
                                  (k1 * d2Tbc_dP2(j,i+1))
-      enddo
+      end do
 
       ! Change in radiances between RTM levels i and i+1
       delta_Rac_up  = &
@@ -242,7 +242,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
           RTM_Pc%LW%dRbc_up_dPc(j) =&
               (delta_Rbc_up(j) / delta_p) -&
               (k0 * d2Rbc_up_dP2(j,i)) + (k1 * d2Rbc_up_dP2(j,i+1))
-      enddo
+      end do
 
       ! Change in temperature between RTM levels i and i+1
       delta_T = SPixel%RTM%LW%T(i+1) - SPixel%RTM%LW%T(i)
@@ -274,33 +274,33 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
          RTM_Pc%LW%Tac(j) = (dP * SPixel%RTM%LW%Tac(j,i)) + &
                             (p1 * SPixel%RTM%LW%Tac(j,i+1)) + &
                             (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
-      enddo
+      end do
 
       ! Diff. in trans from gradient
       do j = ThF,ThL
          RTM_Pc%LW%Tbc(j) = (dP * SPixel%RTM%LW%Tbc(j,i)) + &
                             (p1 * SPixel%RTM%LW%Tbc(j,i+1)) + &
                             (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
-      enddo
+      end do
 
       ! Interpolated radiances
       do j = ThF,ThL
          RTM_Pc%LW%Rac_up(j) = (dP * SPixel%RTM%LW%Rac_up(j,i)) + &
                                (p1 * SPixel%RTM%LW%Rac_up(j,i+1)) + &
                                (k0 * d2Rac_up_dP2(j,i)) + (k1 * d2Rac_up_dP2(j,i+1))
-      enddo
+      end do
 
       do j = ThF,ThL
          RTM_Pc%LW%Rac_dwn(j) = (dP * SPixel%RTM%LW%Rac_dwn(j,i)) + &
                                 (p1 * SPixel%RTM%LW%Rac_dwn(j,i+1)) + &
                                 (k0 * d2Rac_dwn_dP2(j,i)) + (k1 * d2Rac_dwn_dP2(j,i+1))
-      enddo
+      end do
 
       do j = ThF,ThL
          RTM_Pc%LW%Rbc_up(j)  = (dP * SPixel%RTM%LW%Rbc_up(j,i)) + &
                                 (p1 * SPixel%RTM%LW%Rbc_up(j,i+1)) + &
                                 (k0 * d2Rbc_up_dP2(j,i)) + (k1 * d2Rbc_up_dP2(j,i+1))
-      enddo
+      end do
 
       ! Interpolated Planck functions: calculate T and convert to B using T2R
       ! delta_T here is the step from the next lowest level to the current Pc,

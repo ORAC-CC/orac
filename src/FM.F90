@@ -198,14 +198,14 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       status = RTMIntflagErr
       call Write_Log(Ctrl, 'FM.f90: RTM Interp thermal flag error:', status)
       write(*,*) 'FM.f90: RTM Interp thermal flag error:', status
-   endif
+   end if
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
    call Allocate_GZero(GZero, SPixel)
 
    if (status == 0) then
       call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT, GZero, status)
-   endif
+   end if
 
    ! Combine long and short wave transmittance values (depending on whether it
    ! is daytime, twilight or nighttime).
@@ -264,7 +264,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
             status = RTMIntflagErr
             call Write_Log(Ctrl, 'FM.f90: RTM Interp solar flag error:', status)
             write(*,*) 'FM.f90: RTM Interp solar flag error:', status
-         endif
+         end if
 
          RTM_Pc%Tac(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast) = &
             RTM_Pc%SW%Tac(:)

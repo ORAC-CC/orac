@@ -120,8 +120,8 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
                     d_REF, status)
 
    use CTRL_def
-   use GZero_def
    use ECP_Constants
+   use GZero_def
    use RTM_Pc_def
    use SAD_LUT_def
    use SPixel_def

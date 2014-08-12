@@ -1,14 +1,14 @@
 ! Name:
 !    X_SDAD
 !
-! Description: 
+! Description:
 !    Sets up parts of the state vector, X, depending on the current state.
 !
 ! Arguments:
 !    Name       Type          In/Out    Description
 !    SPixel     alloc struct  In        Super pixel structure
 !    index      int           In        The required state parameter index
-!    SetErr     logical       In        State parameter error flag 
+!    SetErr     logical       In        State parameter error flag
 !    X          real          Out       The state parameter
 !    Err        Real          Out       (A priori) error in state parameter
 !    status     int           out       Indicates success/failure of subroutine.
@@ -48,20 +48,20 @@ subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
    use SPixel_def
 
    implicit none
-  
+
 !  Declare arguments
 
-   type(Ctrl_t), intent(in)      :: Ctrl
-   type(SPixel_t), intent(inout) :: SPixel   
-   integer, intent(in)           :: index
-   logical, intent(in)           :: SetErr
-   real, intent(out)             :: X
-   real, intent(out)             :: Err
-   integer, intent(out)          :: status
+   type(Ctrl_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(inout) :: SPixel
+   integer,        intent(in)    :: index
+   logical,        intent(in)    :: SetErr
+   real,           intent(out)   :: X
+   real,           intent(out)   :: Err
+   integer,        intent(out)   :: status
 
 !  Declare local variables
 
-   integer         :: NPix
+   integer :: NPix
 
 !  Parameters supported are Tau, Re, Pc, f and Ts.
 
@@ -78,27 +78,27 @@ subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
    else
       status = 0
       select case (index)
-	 case (iTau)        !     Cloud optical depth, Tau.       
+	 case (iTau)        !     Cloud optical depth, Tau.
 	    X = SPixel%XnSav(iTau)
-	    if (SetErr) Err = SPixel%SnSav(iTau, iTau) 
+	    if (SetErr) Err = SPixel%SnSav(iTau, iTau)
 
-	 case (iRe)         !     Effective radius, Re.      
+	 case (iRe)         !     Effective radius, Re.
 	    X = SPixel%XnSav(iRe)
-	    if (SetErr) Err = SPixel%SnSav(iRe, iRe)                 
+	    if (SetErr) Err = SPixel%SnSav(iRe, iRe)
 
-	 case (iPc)         !     Cloud pressure, Pc.            
+	 case (iPc)         !     Cloud pressure, Pc.
 	    X = SPixel%XnSav(iPc)
-	    if (SetErr) Err = SPixel%SnSav(iPc, iPc)               
+	    if (SetErr) Err = SPixel%SnSav(iPc, iPc)
 
-	 case (iFr)         !     Cloud fraction, f.      
+	 case (iFr)         !     Cloud fraction, f.
 	    X = SPixel%XnSav(iFr)
-	    if (SetErr) Err = SPixel%SnSav(iFr, iFr)            
+	    if (SetErr) Err = SPixel%SnSav(iFr, iFr)
 
-	 case (iTs)         !     Surface temperature, Ts.      
+	 case (iTs)         !     Surface temperature, Ts.
 	    X = SPixel%XnSav(iTs)
-	    if (SetErr) Err = SPixel%SnSav(iTs, iTs)            
+	    if (SetErr) Err = SPixel%SnSav(iTs, iTs)
 
-      end select  
+      end select
    end if
 
 end subroutine X_SDAD

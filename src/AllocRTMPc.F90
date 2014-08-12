@@ -65,9 +65,9 @@ subroutine Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
 
    ! Declare arguments
 
-   type(Ctrl_t), intent(in)    :: Ctrl
-   type(RTM_Pc_t), intent(out) :: RTM_Pc
-   integer, intent(inout)      :: status
+   type(Ctrl_t),   intent(in)    :: Ctrl
+   type(RTM_Pc_t), intent(out)   :: RTM_Pc
+   integer,        intent(inout) :: status
 
    ! Allocate sizes of SW sub-structure arrays
 

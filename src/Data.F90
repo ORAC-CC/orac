@@ -81,6 +81,6 @@ module Data_def
 
 contains
 
-   include 'DeallocData.F90'
+include 'DeallocData.F90'
 
 end module Data_def

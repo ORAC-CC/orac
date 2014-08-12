@@ -109,7 +109,7 @@ subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
          "satzen",MSI_Data%Geometry%Sat(:,:,iview),0)
       call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,iview, &
          "relazi",MSI_Data%Geometry%Azi(:,:,iview),0)
-   endif
+   end if
 
    ! Close geometry file
    ios = nf90_close(ncid)
@@ -118,6 +118,6 @@ subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
       write(unit=message, fmt=*) 'Read_Geometry: Error closing file ', &
          trim(adjustl(Ctrl%Fid%Geo))
       call Write_Log(Ctrl, trim(message), status)
-   endif
+   end if
 
  end subroutine Read_Geometry_nc

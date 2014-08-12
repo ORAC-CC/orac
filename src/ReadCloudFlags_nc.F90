@@ -124,7 +124,7 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    if (status == 0) then
       call nc_read_array_2d_byte_to_real_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize, &
          "cflag",MSI_Data%CloudFlags,0)
-   endif
+   end if
 
    ! Close cloud flag file
    ios = nf90_close(ncid)
@@ -133,6 +133,6 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
       write(unit=message, fmt=*) 'Read_Cflag: Error closing file ', &
          trim(adjustl(Ctrl%Fid%Cf))
       call Write_Log(Ctrl, trim(message), status)
-   endif
+   end if
 
 end subroutine Read_CloudFlags_nc

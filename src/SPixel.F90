@@ -604,10 +604,10 @@ module SPixel_def
 
 contains
 
-   include 'AllocSPixel.F90'
-   include 'DeallocSPixel.F90'
+include 'AllocSPixel.F90'
+include 'DeallocSPixel.F90'
 
-   include 'alloc_spixel_scan_out.F90'
-   include 'dealloc_spixel_scan_out.F90'
+include 'alloc_spixel_scan_out.F90'
+include 'dealloc_spixel_scan_out.F90'
 
 end module SPixel_def

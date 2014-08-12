@@ -146,7 +146,7 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
             SPixel%RTM%SW%Tac(j,1:SPixel%RTM%SW%Np),d2Tac_dP2(j,1:SPixel%RTM%SW%Np))
          call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
              SPixel%RTM%SW%Tbc(j,1:SPixel%RTM%SW%Np),d2Tbc_dP2(j,1:SPixel%RTM%SW%Np))
-      enddo
+      end do
 
       ! Change in pressure between RTM levels i and i+1
       ! (delta_p is negative for decreasing pressure with increasing i)
@@ -169,7 +169,7 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
                                  (k1 * d2Tac_dP2(j,i+1))
          RTM_Pc%SW%dTbc_dPc(j) = (delta_Tbc(j) / delta_p) - (k0 * d2Tbc_dP2(j,i)) + &
                                  (k1 * d2Tbc_dP2(j,i+1))
-      enddo
+      end do
 
       ! Interpolated transmittances
       ! (Sign conventions same as for delta_p. If Pc is outwith the RTM pressure
@@ -184,13 +184,13 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
          RTM_Pc%SW%Tac(j) = (dP * SPixel%RTM%SW%Tac(j,i)) + &
              (p1 * SPixel%RTM%SW%Tac(j,i+1)) + &
              (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
-      enddo
+      end do
 
       do j = 1, SPixel%Ind%NSolar
          RTM_Pc%SW%Tbc(j) = (dP * SPixel%RTM%SW%Tbc(j,i)) + &
              (p1 * SPixel%RTM%SW%Tbc(j,i+1)) + &
              (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
-      enddo
+      end do
    end if
 
    ! Open breakpoint file if required, and write our transmittances etc.

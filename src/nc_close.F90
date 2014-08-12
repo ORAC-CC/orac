@@ -47,10 +47,10 @@ subroutine nc_close(ncid,fname,wo,ierr)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close(), filename = ', trim(fname)
       stop
-   endif
+   end if
 
    if (wo.eq.1) then
       write(*,*) 'closed netcdf file = ', trim(fname)
-   endif
+   end if
 
 end subroutine nc_close

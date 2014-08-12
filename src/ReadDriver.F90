@@ -118,7 +118,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    ! variable
    if (len_trim(adjustl(drifile)) .eq. 0 ) then
       call get_environment_variable("ORAC_TEXTIN",drifile)
-   endif
+   end if
 
    ! If drifile is not '-' the check that the drifile exists
    if (drifile .ne. '-' .or. nargs .eq. -1 ) then
@@ -127,8 +127,8 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          status = DriverFileNotFound
          message = 'Read_Driver: Driver file not found'
          write(*,*)' Driver file pointed to by ORAC_DRIVER does not exist'
-      endif
-   endif
+      end if
+   end if
 
    write(*,*)'driver file: ',trim(drifile)
 
@@ -143,9 +143,9 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
             status = DriverFileOpenErr
             message = 'Read_Driver: unable to open driver file'
             write(*,*)' Unable to open driver file: ',trim(drifile)
-         endif
-      endif
-   endif
+         end if
+      end if
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -186,7 +186,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       write(*,*) 'ERROR: Ctrl%Ind%NAvail .ne. conf%nc: Problem with file or driver!', &
                  Ctrl%Ind%NAvail,conf%nc
       stop
-   endif
+   end if
 
    ! Read processing flag from driver
    allocate(conf%channel_proc_flag(conf%nc))
@@ -195,7 +195,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
        .not. (any(conf%channel_proc_flag .eq. 0) .or. any(conf%channel_proc_flag .eq. 1))) then
       write(*,*) 'ERROR: channel flag from driver wrong: ',conf%channel_proc_flag
       stop
-   endif
+   end if
    write(*,*) 'channel flag from driver: ',conf%channel_proc_flag
 
    ! Determine the number of channels to be used. Some of the follolwing is not
@@ -213,8 +213,8 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       if (conf%channel_proc_flag(i) .eq. 1 ) then
          ii=ii+1
          Ctrl%Ind%Chi(ii)=conf%channel_ids_abs(i)
-      endif
-   enddo
+      end if
+   end do
 ! Thses are the channels to be used
    write(*,*) 'CHI: ',Ctrl%Ind%Chi
 
@@ -246,7 +246,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    do i=1,conf%nc
       if (conf%channel_sw_flag(i) .eq. 1 .and. conf%channel_lw_flag(i) .eq. 1) then
          conf%nmixed=conf%nmixed+1
-      endif
+      end if
 
       ! These treat only the channels actually used
       if (conf%channel_proc_flag(i) .eq. 1) then
@@ -254,17 +254,17 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          if (conf%channel_sw_flag(i) .eq. 1 ) then
             conf%nsolar_use=conf%nsolar_use+1
             conf%channel_sw_flag_use(ii)=1
-         endif
+         end if
          if (conf%channel_lw_flag(i) .eq. 1) then
             conf%nthermal_use=conf%nthermal_use+1
             conf%channel_lw_flag_use(ii)=1
-         endif
+         end if
          if (conf%channel_sw_flag(i) .eq. 1 .and. conf%channel_lw_flag(i) .eq. 1) then
             conf%nmixed_use=conf%nmixed_use+1
             conf%channel_mixed_flag_use(ii)=1
-         endif
-      endif
-   enddo
+         end if
+      end if
+   end do
 
    write(*,*) 'Flags solar, thermal and mixed of used channels:'
    write(*,*) 'conf%nsolar,conf%nthermal: ', &
@@ -398,13 +398,13 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          ii=ii+1
          Ctrl%Ind%Ysolar(ii)=Ctrl%Ind%Chi(i) ! these are the indices wrt the preproc file
          Ctrl%Ind%Ysolar_msi(ii)=i           ! these are the indices wrt the order in the MSI array
-      endif
+      end if
       if (conf%channel_lw_flag_use(i) .eq. 1) then
          jj=jj+1
          Ctrl%Ind%Ythermal(jj)=Ctrl%Ind%Chi(i)! these are the indices wrt the preproc file
          Ctrl%Ind%Ythermal_msi(jj)=i          ! these are the indices wrt the order in the MSI array
-      endif
-   enddo
+      end if
+   end do
 
    write(*,*) 'Ctrl%Ind%Ysolar/msi: ',Ctrl%Ind%Ysolar,Ctrl%Ind%Ysolar_msi
    write(*,*) 'Ctrl%Ind%Ythermal/msi: ',Ctrl%Ind%Ythermal,Ctrl%Ind%Ythermal_msi
@@ -432,12 +432,12 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          if (Ctrl%Ind%X_Dy(j) == i) then
             found = .true.
             exit
-         endif
+         end if
       end do
       if (.not. found) then ! Not found in active set
          k = k + 1          ! Add to inactive array
          Ctrl%Ind%XI_Dy(k) = i
-      endif
+      end if
       if (k == Ctrl%Ind%NxI_Dy) exit ! Correct number of values found
    end do
 
@@ -457,12 +457,12 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          if (Ctrl%Ind%X_Tw(j) == i) then
             found = .true.
             exit
-         endif
+         end if
       end do
       if (.not. found) then ! Not found in active set
          k = k + 1          ! Add to inactive array
          Ctrl%Ind%XI_Tw(k) = i
-      endif
+      end if
       if (k == Ctrl%Ind%NxI_Tw) exit ! Correct number of values found
    end do
 
@@ -482,12 +482,12 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          if (Ctrl%Ind%X_Ni(j) == i) then
             found = .true.
             exit
-         endif
+         end if
       end do
       if (.not. found) then ! Not found in active set
          k = k + 1          ! Add to inactive array
          Ctrl%Ind%XI_Ni(k) = i
-      endif
+      end if
       if (k == Ctrl%Ind%NxI_Ni) exit ! Correct number of values found
    end do
 
@@ -590,7 +590,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       Ctrl%XB(3) = 1000.
       Ctrl%XB(4) = 1.
       Ctrl%XB(5) = 300.
-   endif
+   end if
 
 
    ! Set default first guess default values
@@ -626,7 +626,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       Ctrl%X0(3) = 1000.
       Ctrl%X0(4) = 1.
       Ctrl%X0(5) = 300.
-   endif
+   end if
 ! maywant to put thses in getillum routine at some point
    ! Set default a priori error covariance
    if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
@@ -643,7 +643,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       Ctrl%Sx(3) = 1.0e+06 ! ctp
       Ctrl%Sx(4) = 1.0e-10 ! fraction
       Ctrl%Sx(5) = 1.0e+00 ! surface temperature
-   endif
+   end if
 
    Ctrl%Max_SDAD = 10 ! No. of pixels where state is valid for SDAD setting
 
@@ -687,7 +687,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       solar_store_land(2) = 10.0
       solar_store_land(3) = 1.0
       solar_store_land(4) = 1.0
-   endif
+   end if
 
    ! Set default surface reflectance values for channels used. This just maps
    ! the values from all channels in the file to the ones which will be actually
@@ -705,8 +705,8 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
          ref_solar_sea(ii)=solar_store_sea(i)
          ref_solar_land(ii)=solar_store_land(i)
          ii=ii+1
-      endif
-   enddo
+      end if
+   end do
    deallocate(solar_store_sea)
    deallocate(solar_store_land)
 
@@ -751,7 +751,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       Ctrl%Invpar%Xllim(2) = 0.01
    else
       Ctrl%Invpar%Xllim(2) = 0.1
-   endif
+   end if
    Ctrl%Invpar%Xllim(3)  = 10.0
    Ctrl%Invpar%Xllim(4)  = 1.0
    Ctrl%Invpar%Xllim(5)  = 250.0
@@ -766,7 +766,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
             (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
             (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
       Ctrl%Invpar%Xulim(2) = 20.0
-   endif
+   end if
 
    Ctrl%Invpar%Xulim(3) = 1200.0
    Ctrl%Invpar%Xulim(4) = 1.0
@@ -806,14 +806,14 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
                   status = FGMethErr
                   message = 'Read_Driver: MDAD method not supported ' // &
                             'for setting first guess Re, Ts'
-               endif
+               end if
 
             case (SelmAux)
                if (i /= ITs) then
                   status = FGMethErr
                   message = 'Read_Driver: AUX method ONLY supported ' // &
                             'for setting first guess Ts'
-               endif
+               end if
 
             case default
                status = FGMethErr
@@ -822,7 +822,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
             end select
          end do
       end do
-   endif ! end of status check
+   end if ! end of status check
 
    if (status == 0) then
       ! Check validity of a priori selection options. Not all legal values are
@@ -839,14 +839,14 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
                   status = APMethErr
                   message = 'Read_Driver: MDAD method not supported for ' //&
                             'setting a priori Re, Ts'
-               endif
+               end if
 
             case (SelmAux)
                if (i /= ITs) then
                   status = APMethErr
                   message = 'Read_Driver: AUX method ONLY supported ' // &
                             'for setting a priori Ts'
-               endif
+               end if
 
             case default
                status = APMethErr
@@ -855,7 +855,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
             end select
          end do
       end do
-   endif ! end of status check
+   end if ! end of status check
 
    if (status == 0) then
       ! Check validity of surface reflectance flag
@@ -872,15 +872,15 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       end select
       ! Warning - status value may be lost if a read error occurs later on in
       ! this routine.
-   endif ! end of status==0 check
+   end if ! end of status==0 check
 
 999 if (ios /= 0) then          ! Don't write error messages out here.
       status = DriverFileReadErr ! Log file not open yet.
       message = 'Read_Driver: error reading driver file'
-   endif
+   end if
 
    if (drifile .ne. '-') then
       close(unit=dri_lun)
-   endif
+   end if
 
 end subroutine Read_Driver

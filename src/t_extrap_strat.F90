@@ -47,9 +47,9 @@ subroutine t_extrap_strat(SPixel,ztp,index_ztp)
       write(*,*),'before strat told=[ $'
       do k=1,SPixel%RTM%LW%Np
          write(*,*)SPixel%RTM%LW%T(k),',$'
-      enddo
+      end do
       write(*,*)']'
-   endif
+   end if
 
    ! Calculate below trpopuse lapse rate
 
@@ -66,14 +66,14 @@ subroutine t_extrap_strat(SPixel,ztp,index_ztp)
       SPixel%RTM%LW%T(j)=SPixel%RTM%LW%T(index_ztp)+dtdp*(SPixel%RTM%LW%p(j)-SPixel%RTM%LW%p(index_ztp))
 !     write(*,*)'yy',SPixel%RTM%LW%p(j)-SPixel%RTM%LW%p(index_ztp)
 !     write(*,*)'SPixel%RTM%LW%T(index_ztp)',SPixel%RTM%LW%T(index_ztp),SPixel%RTM%LW%T(j)
-   enddo
+   end do
 
    if (test .eq. 1) then
       write(*,*),' after strat tnew=[ $'
       do k=1,SPixel%RTM%LW%Np
          write(*,*)SPixel%RTM%LW%T(k),',$'
-      enddo
+      end do
       write(*,*)']'
-   endif
+   end if
 
 end subroutine t_extrap_strat

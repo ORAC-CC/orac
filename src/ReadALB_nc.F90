@@ -136,7 +136,7 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
          call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,&
             Ctrl%Ind%ysolar(i), "alb_data",MSI_Data%ALB(:,:,i),0)
          write(*,*) 'Max/Min Alb: ',maxval(MSI_Data%ALB(:,:, i)),minval(MSI_Data%ALB(:,:, i))
-      enddo
+      end do
 
       deallocate(alb_instr_ch_numbers)
      end if

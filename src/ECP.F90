@@ -354,10 +354,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    if (nargs .eq. 1 ) then
       drifile=''
       call get_command_argument(1,drifile)
-   endif
+   end if
 
    ! Read Ctrl struct from driver file
-   call Read_Driver(Ctrl, conf,message,nargs, drifile,status)
+   call Read_Driver(Ctrl,conf,message,nargs,drifile,status)
 
    ! Read dimensions of preprocessing swath files first:
    call read_input_dimensions_msi(Ctrl%Fid%MSI,Ctrl%FID%Geo, &
@@ -381,7 +381,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,*) log_lun,ios,trim(adjustl(Ctrl%FID%Log))
 
    if (ios == 0) then
-      call Date_and_Time (date=date, time=time)
+      call Date_and_Time(date=date, time=time)
       time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)
       write(log_lun, *)' ORAC '
       write(log_lun, *)' Start time: ', time_str
@@ -459,7 +459,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       call Read_RTMData_nc(Ctrl, RTM, status)
       if (status == 0) then
          RTM_Alloc = .true.
-      endif
+      end if
    end if
 
 
@@ -540,7 +540,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          else
             xstep = 2
             ystep = 2
-         endif
+         end if
 
          write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
       else
@@ -550,7 +550,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          ystep = 1
 
          write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
-      endif
+      end if
 #endif
 
       ! Open the netcdf output files
@@ -573,7 +573,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                status)
          call def_vars_secondary(Ctrl, conf, lcovar, ncid_secondary, dims_var, &
                                  spixel_scan_in, spixel_scan_out_sec, status)
-      endif
+      end if
 
 
       ! Set i, the counter for the image x dimension, for the first row processed.
@@ -685,7 +685,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             ! Set up the super-pixel data values.
             if (status == 0) then
                call Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
-            endif
+            end if
 
             if (status == 0) then
 
@@ -802,7 +802,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                             spixel_scan_out, status)
          call write_secondary(Ctrl, lcovar, SPixel, ncid_secondary, ixstart, ixstop, &
                               iystart, iystop, spixel_scan_out_sec, status)
-      endif
+      end if
 
 
       if (status == 0) then
@@ -860,7 +860,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    if (status == 0) then
       call dealloc_spixel_scan_out(spixel_scan_out)
       call dealloc_spixel_scan_out_sec(spixel_scan_out_sec,lcovar)
-   endif
+   end if
 
    call Dealloc_Ctrl(Ctrl, status)
 
@@ -887,7 +887,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          write(*,*) 'nc_close.F90: netcdf primary file close error:', status
          call Write_Log(Ctrl,'nc_close.F90: netcdf primary file close error:', status)
          stop
-      endif
+      end if
 
       call nc_close(ncid_secondary, &
                     trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file)),wo,ierr)
@@ -898,8 +898,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          write(*,*) 'nc_close.F90: netcdf secondary file close error:', status
          call Write_Log(Ctrl,'nc_close.F90: netcdf secondary file close error:', status)
          stop
-      endif
-   endif
+      end if
+   end if
 
 999 if (ios /= 0) then
        status = OutFileOpenErr

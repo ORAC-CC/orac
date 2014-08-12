@@ -49,7 +49,7 @@
 !
 !---------------------------------------------------------------------
 
-subroutine Write_Log (Ctrl, message, status)
+subroutine Write_Log(Ctrl, message, status)
 
    use CTRL_def
 
@@ -70,7 +70,7 @@ subroutine Write_Log (Ctrl, message, status)
 
    ! Generate a time string to precede the entry in the log file
 
-   call Date_and_Time (date=date, time=time)
+   call Date_and_Time(date=date, time=time)
    time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)
 
    ! Open the log file and write the message, with status value if it is an

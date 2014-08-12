@@ -65,26 +65,26 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
          write(*,*) 'ERROR: nf90_create(), filename = ', trim(path)
          call Write_Log(Ctrl,'ERROR: nf90_create(), status = ', status)
          stop
-      else if(type .eq. 2 ) then
+      else if (type .eq. 2 ) then
          status = SecondaryFileOpenErr
          write(*,*) 'ERROR: nf90_create(), filename = ', trim(path)
          call Write_Log(Ctrl,'ERROR: nf90_create(), status = ', status)
          stop
-      endif
-   endif
+      end if
+   end if
 
    ! Define the 3 dimensions: time / lat / lon
    ierr = nf90_def_dim(ncid, 'across_track', nx, xdim)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_dim(), dim_name = across_track, xdim = ', xdim
       stop
-   endif
+   end if
 
    ierr = nf90_def_dim(ncid, 'along_track', ny, ydim)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_dim(), dim_name = along_track,  ydim = ', ydim
       stop
-   endif
+   end if
 
    if (type .eq. 1) ctitle='ESA CCI Cloud Retrieval Products L2 Primary Output File'
    if (type .eq. 2) ctitle='ESA CCI Cloud Retrieval Products L2 Secondary File'
@@ -94,42 +94,42 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = File_Title', ctitle
       stop
-   endif
+   end if
 
    cncver='3.6.3'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'NetCDF_Version', cncver)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = NetCDF_Version', cncver
       stop
-   endif
+   end if
 
    ccon='CF-1.4'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'CF_Convention_Version', ccon)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = CF_Convention_Version', ccon
       stop
-   endif
+   end if
 
    cinst='CMSAF!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Processing_Institution', cinst)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Processing_Institution', cinst
       stop
-   endif
+   end if
 
    cproc='ORAC!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Processed_with', cproc)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Processed_with', cproc
       stop
-   endif
+   end if
 
    cprocver='1.0!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Processor_Version', cprocver)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Processor_Version', cprocver
       stop
-   endif
+   end if
 
    if (Ctrl%Inst%Name .eq. 'AATSR' .or. Ctrl%Inst%Name .eq. 'ATSR') then
       cal_file_ver='3.01'
@@ -137,7 +137,7 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), name = AATSR_Calibration_Version', cal_file_ver
          stop
-      endif
+      end if
    end if
 
    csname='satellite name!!!'
@@ -145,63 +145,63 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Satellite_Name', csname
       stop
-   endif
+   end if
 
    csid='satellite id!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Satellite_ID', csid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Satellite_ID', csid
       stop
-   endif
+   end if
 
    cuuid='uuid tag!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'uuid', cuuid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = uuid', cuuid
       stop
-   endif
+   end if
 
    instname='instrument name!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Instrument_Name', instname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Instrument_Name', instname
       stop
-   endif
+   end if
 
    fname='file name!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Name', fname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = File_Name', fname
       stop
-   endif
+   end if
 
    contact='contact email!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Email', contact)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Contact_Email', contact
       stop
-   endif
+   end if
 
    website='contact website!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Website', website)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Contact_Website', website
       stop
-   endif
+   end if
 
    prodtime='production time!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Production_Time', prodtime)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Production_Time', prodtime
       stop
-   endif
+   end if
 
    prod_name='prod_name!!!'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Name', trim(adjustl(prod_name)))
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), name = Product_Name', trim(adjustl(prod_name))
       stop
-   endif
+   end if
 
    year='year!!!'
    month='month!!!'
@@ -212,19 +212,19 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
       write(*,*) 'ERROR: nf90_put_att(), name = Product_Date', &
          trim(adjustl(trim(adjustl(year))//trim(adjustl(month))//trim(adjustl(day))))
       stop
-   endif
+   end if
 
    ierr = nf90_enddef(ncid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'
       stop
-   endif
+   end if
 
    dims_var(1) = xdim
    dims_var(2) = ydim
 
    if (wo .eq. 1) then
       write(*,*) 'new file created: ',trim(path)
-   endif
+   end if
 
 end subroutine nc_create_global_l2

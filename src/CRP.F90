@@ -7,10 +7,10 @@
 ! Description:
 !    Contains a type definition for the Cloud Radiative Properties structure.
 !    The CRP structure is used in array form, 1 set of values per channel.
-!    Hence the array is declared allocatable so that it can be matched to 
+!    Hence the array is declared allocatable so that it can be matched to
 !    the instrument on each execution.
 !
-!    CRP_t is the defined type. 
+!    CRP_t is the defined type.
 !    CRP is the declared array of type CRP_t.
 !
 ! Arguments:
@@ -38,20 +38,20 @@ module CRP_def
 
    implicit none
 
-!  Note Tau is optical depth, 
-!  REff is particle size (effective radius?)
+   ! Note Tau is optical depth,
+   ! Reff is particle size (effective radius?)
 
    type CRP_t
-      real     :: Em        ! Cloud emissivity
-      real     :: ddEm(2)   ! Gradients of Em wrt Tau and REff
-      real     :: RD        ! Cloud reflectivity
-      real     :: ddRD(2)   ! Gradients of RD wrt Tau and REff
-      real     :: TD        ! Cloud transmissivity
-      real     :: ddTD(2)   ! Gradients of TD wrt Tau and REff
+      real     :: Em      ! Cloud emissivity
+      real     :: ddEm(2) ! Gradients of Em wrt Tau and REff
+      real     :: RD      ! Cloud reflectivity
+      real     :: ddRD(2) ! Gradients of RD wrt Tau and REff
+      real     :: TD      ! Cloud transmissivity
+      real     :: ddTD(2) ! Gradients of TD wrt Tau and REff
    end type CRP_t
 
-! Should the array declaration be left up to the code using the module? 
+   ! Should the array declaration be left up to the code using the module?
 
    !type(CRP_t), dimension(:), allocatable :: CRP
-   
+
 end module CRP_def

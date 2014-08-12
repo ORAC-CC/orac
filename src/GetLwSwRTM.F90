@@ -253,7 +253,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
       ! one per channel, to convert).
 
       T_Array = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-      call T2R (Ctrl%Ind%NThermal, &
+      call T2R(Ctrl%Ind%NThermal, &
          SAD_Chan(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast), &
          T_Array, R, SPixel%RTM%LW%dB_dTs, status)
    end if

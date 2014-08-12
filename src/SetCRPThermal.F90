@@ -72,7 +72,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
+subroutine Set_CRP_Thermal(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    use Ctrl_def
    use GZero_def
@@ -82,9 +82,9 @@ subroutine Set_CRP_Thermal (Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    implicit none
 
-!  Argument declarations
-!  Note if these arguments are changed, the interface definition in
-!  FMRoutines.f90 must be updated to match.
+   ! Argument declarations
+   ! Note if these arguments are changed, the interface definition in
+   ! FMRoutines.f90 must be updated to match.
 
    type(Ctrl_t),           intent(in)  :: Ctrl
    type(SPixel_Ind_t),     intent(in)  :: Ind

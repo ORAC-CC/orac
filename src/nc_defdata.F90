@@ -63,57 +63,57 @@ subroutine nc_defdata_float(ncid,dims,var_name,vid,var_lname,var_sname, &
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'units', var_unit)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = units, value = ', var_unit
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_float
 
@@ -142,29 +142,29 @@ subroutine nc_defdata_float_no_att(ncid,dims,var_name,vid,var_lname,var_sname, &
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_float_no_att
 
@@ -199,57 +199,57 @@ subroutine nc_defdata_double(ncid,dims,var_name,vid,var_lname,var_sname, &
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'units', var_unit)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = units, value = ', var_unit
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_double
 
@@ -284,57 +284,57 @@ subroutine nc_defdata_short(ncid,dims,var_name,vid,var_lname,var_sname, &
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'units', var_unit)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = units, value = ', var_unit
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_short
 
@@ -368,51 +368,51 @@ subroutine nc_defdata_short_no_units(ncid,dims,var_name,vid,var_lname,var_sname,
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_short_no_units
 
@@ -453,57 +453,57 @@ subroutine nc_defdata_long(ncid,dims,var_name,vid,var_lname,var_sname, &
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'units', var_unit)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = units, value = ', var_unit
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_long
 
@@ -544,57 +544,57 @@ subroutine nc_defdata_byte(ncid,dims,var_name,vid,var_lname,var_sname, &
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'units', var_unit)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = units, value = ', var_unit
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_byte
 
@@ -636,63 +636,63 @@ subroutine nc_defdata_byte_flag_value(ncid,dims,var_name,vid,var_lname,var_sname
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'flag_values', var_unit)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = flag_values, value = ', var_unit
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'flag_meanings', var_mean)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = flag_meanings, value = ', var_mean
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_byte_flag_value
 
@@ -732,56 +732,56 @@ subroutine nc_defdata_short_flag_value(ncid,dims,var_name,vid,var_lname,var_snam
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), var_name = ', var_name
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'long_name', var_lname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = long_name, value = ', var_lname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'standard_name', var_sname)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = standard_name, value = ', var_sname
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'flag_meanings', var_mean)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = flag_meanings, value = ', var_mean
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, '_FillValue', var_fill)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = _FillValue, value = ', var_fill
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'scale_factor', scale)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = scale_factor, value = ', scale
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'add_offset', offset)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = add_offset, value = ', offset
       stop
-   endif
+   end if
 
    ierr = nf90_put_att(ncid, vid, 'valid_min', vmin)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_min, value = ', vmin
       stop
-   endif
+   end if
    ierr = nf90_put_att(ncid, vid, 'valid_max', vmax)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), att_name = valid_max, value = ', vmax
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'defined variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_defdata_short_flag_value

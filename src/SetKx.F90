@@ -55,12 +55,12 @@ subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)
 
    ! Declare arguments
 
-   type(Ctrl_t), intent(in)   :: Ctrl
-   type(SPixel_t), intent(in) :: SPixel
-   real, intent(in)           :: dY_dX(SPixel%Ind%Ny, Maxstatevar+1)
-   real, intent(out)          :: Kx(SPixel%Ind%Ny, SPixel%Nx)
-   real, intent(out)          :: Kbj(SPixel%Ind%Ny, SPixel%Ind%NSolar)
-   integer, intent(out)       :: status
+   type(Ctrl_t),   intent(in)  :: Ctrl
+   type(SPixel_t), intent(in)  :: SPixel
+   real,           intent(in)  :: dY_dX(SPixel%Ind%Ny, Maxstatevar+1)
+   real,           intent(out) :: Kx(SPixel%Ind%Ny, SPixel%Nx)
+   real,           intent(out) :: Kbj(SPixel%Ind%Ny, SPixel%Ind%NSolar)
+   integer,        intent(out) :: status
 
    ! Declare local variables
 

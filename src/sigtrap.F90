@@ -36,8 +36,8 @@ ireturn=signal_trap(core_dump_flag,signals)
 
 if (ireturn .lt. 0) then
    write(*,*) 'ERROR'
-elseif (ireturn .eq. 0) then
+else if (ireturn .eq. 0) then
    write(*,*) 'fpe trapping is not set'
 else
    write(*,*) 'fpe trapping mode=',ireturn
-endif
+end if

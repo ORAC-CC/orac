@@ -270,7 +270,7 @@ subroutine alloc_spixel_scan_out_sec(ixstart,ixstop,iystart,iystop,Ny,Nx,lcovar,
 
       allocate(spixel_scan_out_sec%covariance(ixstart:ixstop,iystart:iystop,Nx,Nx))
       spixel_scan_out_sec%covariance=spixel_scan_out_sec%real_fill_value
-   endif
+   end if
 
    allocate(spixel_scan_out_sec%ds(ixstart:ixstop,iystart:iystop))
    spixel_scan_out_sec%ds(ixstart:ixstop,iystart:iystop)=spixel_scan_out_sec%int_fill_value

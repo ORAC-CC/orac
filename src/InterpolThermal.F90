@@ -81,8 +81,8 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    use CTRL_def
    use RTM_Pc_def
-   use SPixel_def
    use SAD_Chan_def
+   use SPixel_def
 
    implicit none
 

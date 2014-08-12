@@ -89,23 +89,23 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
 
    ! Argument declarations
 
-   type(Ctrl_t), intent(in)      :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   logical, intent(in)           :: convergence   ! Indicates whether the
+   logical,        intent(in)    :: convergence   ! Indicates whether the
                                                   ! inversion converged
-   real, intent(in)              :: J, Jm, Ja     ! Cost at final state (plus
+   real,           intent(in)    :: J, Jm, Ja     ! Cost at final state (plus
                                 	          ! contributions to cost from
 			        	          ! measurements and a priori)
-   integer, intent(in)           :: iter	  ! Inversion iteration counter
-   integer, intent(in)           :: NPhaseChanges ! Phase change counter
-   real, intent(in)              :: Y(SPixel%Ind%Ny)
+   integer,        intent(in)    :: iter	  ! Inversion iteration counter
+   integer,        intent(in)    :: NPhaseChanges ! Phase change counter
+   real,           intent(in)    :: Y(SPixel%Ind%Ny)
                                                   ! Calculated "measurements" at
                                                   ! final state.
-   real, intent(in)              :: Sy(SPixel%Ind%Ny, SPixel%Ind%Ny)
+   real,           intent(in)    :: Sy(SPixel%Ind%Ny, SPixel%Ind%Ny)
                                                   ! Error covariance in
                                                   ! measurements
-   type(Diag_t), intent(inout)   :: Diag          ! Diagnostic structure
-   integer, intent(inout)        :: status
+   type(Diag_t),   intent(inout) :: Diag          ! Diagnostic structure
+   integer,        intent(inout) :: status
 
    ! Local variables
 

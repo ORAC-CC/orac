@@ -50,9 +50,9 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
 
    ! Declare arguments
 
-   type(Ctrl_t), intent(in)       :: Ctrl
+   type(Ctrl_t),    intent(in)    :: Ctrl
    type(SAD_LUT_t), intent(inout) :: SAD_LUT
-   integer, intent(inout)         :: status
+   integer,         intent(inout) :: status
 
    deallocate(SAD_LUT%Wavelength)
 

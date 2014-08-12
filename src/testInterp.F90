@@ -22,8 +22,8 @@
 program testInterp
 
    use test_int_def
-   implicit none
 
+   implicit none
 
    integer    :: i, j
    real   :: xGrid(5), yGrid(5)

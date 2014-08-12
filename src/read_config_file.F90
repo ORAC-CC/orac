@@ -23,8 +23,8 @@
 
 subroutine read_config_file(Ctrl, conf)
 
-   use CTRL_def
    use config_def
+   use CTRL_def
    use ECP_Constants
    use netcdf
 

@@ -153,13 +153,13 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   real            :: b( SPixel%Ind%NSolar, 2)
-   real            :: Sb(SPixel%Ind%NSolar, 2)
-   real            :: SPixel_b(SPixel%Ind%NSolar)
-   real            :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
-   integer         :: i,ii,j,jj,intflag
-!  integer         :: qc1,qc2 ! N.B. qc vars are set but not used
-   real            :: solar_factor
+   real           :: b( SPixel%Ind%NSolar, 2)
+   real           :: Sb(SPixel%Ind%NSolar, 2)
+   real           :: SPixel_b(SPixel%Ind%NSolar)
+   real           :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
+   integer        :: i,ii,j,jj,intflag
+!  integer        :: qc1,qc2 ! N.B. qc vars are set but not used
+   real           :: solar_factor
 #ifdef DEBUG
    character(180) :: message
 #endif
@@ -269,7 +269,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                SPixel_b(i) = Ctrl%Rs%b(ii,1)
             else
                SPixel_b(i) = Ctrl%Rs%b(ii,2)
-            endif
+            end if
          else
             solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
 
@@ -295,7 +295,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                   SPixel%Loc%X0, SPixel%Loc%Y0
                   call Write_log(Ctrl, trim(message), status)
 #endif
-               endif
+               end if
 
             else if (SPixel_b(i) == 0.0) then ! missing land
                SPixel_b(i) = Ctrl%Rs%b(ii,2)
@@ -309,8 +309,8 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                ! Use the default value MODIS not reliable
 !              SPixel_b(i) = Ctrl%Rs%b(ii,2)
             end if
-         endif
-      enddo
+         end if
+      end do
 
       ! Calculate Sb
       if (status == 0) then
@@ -333,7 +333,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
             else
                SPixel_Sb(i,i) = SPixel_Sb(i,i) + (float(intflag) * float(SPixel%Mask) * &
                                 SPixel_b(i) * SPixel_b(i) * Sb(ii,2) * Sb(ii,2))
-            endif
+            end if
 
             ! Calculate SPixel_b
 
@@ -351,7 +351,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                else
                   SPixel_Sb(i,j) = SPixel_Sb(i,j) + (float(intflag) * float(SPixel%Mask) * &
                                     SPixel_b(i) * SPixel_b(j) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
-               endif
+               end if
 
                SPixel_Sb(j,i) =  SPixel_Sb(i,j)
             end do

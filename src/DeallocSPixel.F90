@@ -59,9 +59,9 @@ subroutine Dealloc_SPixel(Ctrl, SPixel, status)
 
    ! Declare arguments
 
-   type(Ctrl_t), intent(in)      :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   integer, intent(inout)        :: status
+   integer,        intent(inout) :: status
 
    ! Declare local variables
 

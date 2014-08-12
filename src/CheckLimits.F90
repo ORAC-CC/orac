@@ -60,12 +60,12 @@ subroutine Check_Limits(Ctrl, X, SPixel, RTM_Pc, phase_change, status)
 
    ! Argument declarations
 
-   type(Ctrl_t), intent(in)      :: Ctrl
-   real, intent(inout)           :: X(MaxStateVar)
+   type(Ctrl_t),   intent(in)    :: Ctrl
+   real,           intent(inout) :: X(MaxStateVar)
    type(SPixel_t), intent(inout) :: SPixel
    type(RTM_Pc_t), intent(in)    :: RTM_Pc
-   logical, intent(inout)        :: phase_change
-   integer, intent(inout)        :: status
+   logical,        intent(inout) :: phase_change
+   integer,        intent(inout) :: status
 
    ! Local variable declarations
 

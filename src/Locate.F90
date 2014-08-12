@@ -28,7 +28,7 @@
 function locate(xx,x)
   implicit none
   real, dimension(:), intent(in) :: xx
-  real, intent(in) :: x
+  real,               intent(in) :: x
   integer :: locate
   integer :: n,jl,jm,ju
   logical :: ascnd

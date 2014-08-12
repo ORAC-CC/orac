@@ -98,7 +98,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    else if (trim(Ctrl%inst%name)      .eq. 'AATSR') then
       refch1=4
       refch2=5
-   endif
+   end if
 
    ! Loop over all channels and set values to zero where missing. Make sure that
    ! enough channels are present.
@@ -135,7 +135,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
                      MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) = MissingXn
                   end if
                end if
-            enddo
+            end do
 
             n_ir_bad=0
             i_missing_ir=-1
@@ -173,9 +173,9 @@ if (.false.) then
                   MSI_Data%Illum(i,j,view) = ITwi
 
                ! Night
-               elseif (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
+               else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
                   MSI_Data%Illum(i,j,view) = INight
-               endif
+               end if
 
             ! Some solar channels missing
             else if (n_vis_bad_ref .gt. 0 .or. n_vis_bad_tau .gt. 0) then
@@ -185,10 +185,10 @@ if (.false.) then
                   MSI_Data%Illum(i,j,view) = ITwi
 
                ! Night
-               elseif (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
+               else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
                   MSI_Data%Illum(i,j,view) = INight
-               endif
-            endif
+               end if
+            end if
 
 else if (.false.) then
             !-------------------------------------------------------------------
@@ -208,7 +208,7 @@ else if (.false.) then
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleVisFirst
                   else if (i_missing_vis_tau .eq. 2)  then
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleVisSecond
-                  endif
+                  end if
 
                ! Daytime, a single ir channel missing good
                else if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolZen .and. &
@@ -219,7 +219,7 @@ else if (.false.) then
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleIRSecond
                   else if (i_missing_ir .eq. 3)  then
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleIRThird
-                  endif
+                  end if
 
                ! Sun is close to sunset
                else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
@@ -229,7 +229,7 @@ else if (.false.) then
                ! Sun is below horizon
                else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
                   MSI_Data%Illum(i,j,view) = INight
-               endif
+               end if
 
             ! Some solar channels gone only do night retrieval
             else if (n_vis_bad_ref .gt. 0 .or. n_vis_bad_tau .gt. 0) then
@@ -250,9 +250,9 @@ else if (.false.) then
                      MSI_Data%Illum(i,j,view) = INightMissingSingleIRSecond
                   else if (i_missing_ir .eq. 3)  then
                      MSI_Data%Illum(i,j,view) = INightMissingSingleIRThird
-                  endif
-               endif
-            endif
+                  end if
+               end if
+            end if
 
 else
             !-------------------------------------------------------------------
@@ -273,7 +273,7 @@ else
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleVisFirst
                   else if (i_missing_vis_tau .eq. 2) then
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleVisSecond
-                  endif
+                  end if
 
                ! Daytime, a single lw any channel missing
                else if ((n_vis_bad_ref .eq. 0 .and. n_vis_bad_tau .eq. 0) .and. &
@@ -284,7 +284,7 @@ else
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleIRSecond
                   else if (i_missing_ir .eq. 3) then
                      MSI_Data%Illum(i,j,view) = IDayMissingSingleIRThird
-                  endif
+                  end if
 
                ! Daytime, at least one sw ref channel and/or more than one sw tau
                ! channel missing
@@ -302,8 +302,8 @@ else
                      MSI_Data%Illum(i,j,view) = INightMissingSingleIRSecond
                   else if (i_missing_ir .eq. 3) then
                      MSI_Data%Illum(i,j,view) = INightMissingSingleIRThird
-                  endif
-               endif
+                  end if
+               end if
 
             ! Twilight
             else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
@@ -325,10 +325,10 @@ else
                      MSI_Data%Illum(i,j,view) = INightMissingSingleIRSecond
                   else if (i_missing_ir .eq. 3) then
                      MSI_Data%Illum(i,j,view) = INightMissingSingleIRThird
-                  endif
-               endif
-            endif
-endif
+                  end if
+               end if
+            end if
+end if
          end do
       end do
    end do

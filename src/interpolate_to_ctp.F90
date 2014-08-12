@@ -68,7 +68,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       invert_t(i)=SPixel%RTM%LW%T(SPixel%RTM%LW%Np-i+1)
       invert_p(i)=SPixel%RTM%LW%P(SPixel%RTM%LW%Np-i+1)
       invert_h(i)=SPixel%RTM%LW%H(SPixel%RTM%LW%Np-i+1)
-   enddo
+   end do
 
    ! default value for inversion: TOA
    mon_k=SPixel%RTM%LW%Np
@@ -81,7 +81,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       if (i .ge.  SPixel%RTM%LW%Np-1) then
          mon_k_trop=SPixel%RTM%LW%Np-1
          exit
-      endif
+      end if
 
       ! > 700HP means you do not get trapped under a boundary layer inversion or
       ! polar inversion this might need to be changed when interpolate profile
@@ -89,8 +89,8 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       if ((invert_t(i+1) .gt. invert_t(i)) .and. invert_p(i) .lt. 700.) then
          mon_k_trop=i
          exit
-      endif
-   enddo
+      end if
+   end do
 
    ! set mon_k at least to level three to avoid problems with cold surfaces
    mon_k_trop=max(mon_k_trop,min_prof_lev)
@@ -101,7 +101,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
    if (kspot .ne. 0 ) then
       mon_k=mon_k_trop
-   endif
+   end if
 
    if (kspot .eq. 0) then
       ! profile may have unusual inversions
@@ -118,10 +118,10 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
          do i=1,mon_k_trop
             if (invert_temp(kspot) .eq. invert_t(i)) then
                mon_k=i
-            endif
-         enddo
-      endif
-   endif
+            end if
+         end do
+      end if
+   end if
 
    ! If locate routine cannot find a pair of points in the temperature profile
    ! between which the BT falls. In other words the BT is outside the temperature
@@ -139,12 +139,12 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
          BP_o=invert_p(1)
       else
          BP_o=Ctrl%X0(3)
-      endif
+      end if
 
       if ( BP_o .lt. 20.0) then
          ! too warm - more likely surface
          BP_o=invert_p(1)
-      endif
+      end if
 
       DBP_o=MDADErrPc
 
@@ -161,14 +161,14 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       ! else profile is isothermal just use this last pressure
       else
          BP_o=invert_p(mon_k)
-      endif
+      end if
 
       DBP_o=MDADErrPc
 
       ! if extrapolation goes too far use just highest point
       if (BP_o .lt. Ctrl%Invpar%Xllim(3)) then
          BP_o=Ctrl%X0(3)
-      endif
+      end if
 
       BP_o=Ctrl%X0(3)
       DBP_o=MDADErrPc
@@ -188,13 +188,13 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       else
          BP_o=invert_p(upper_index)
          DBP_o=MDADErrPc
-      endif
-   endif
+      end if
+   end if
 
    ! last safety check, if pressure too low set to lower limit
    if (BP_o .lt. Ctrl%Invpar%Xllim(3)) then
       BP_o=Ctrl%Invpar%Xllim(3)
       DBP_o=MDADErrPc
-   endif
+   end if
 
 end subroutine interpolate2ctp

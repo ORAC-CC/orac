@@ -114,10 +114,10 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
    ! Local variables
 
-   logical    :: SetErr ! Tells X_MDAD/X_SDAD that an error value should be set
-   integer    :: i      ! Loop counter
-   real       :: X      ! State variable value returned by X_MDAD
-   real       :: Err    ! Error value returned by X_MDAD
+   logical :: SetErr ! Tells X_MDAD/X_SDAD that an error value should be set
+   integer :: i      ! Loop counter
+   real    :: X      ! State variable value returned by X_MDAD
+   real    :: Err    ! Error value returned by X_MDAD
 
    SetErr = .false.
 
@@ -169,7 +169,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
             ! Assume that the inactive state variables are well known do not try
             ! to retrieve
             SPixel%Sx(i,i) = (1.0e-5     * Ctrl%Invpar%XScale(i)) ** 2
-         endif
+         end if
 
          if (SPixel%Illum(1) == IDay .or. SPixel%Illum(1) == IDaynore) then
             ! Check if all IR channels are present
@@ -179,7 +179,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
             if (btest(SPixel%QC,SPixTemp )) then
                ! Check at least one thermal channel is present
             end if
-         endif
+         end if
 
          status = 0
       end if
@@ -207,7 +207,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
             if (status .ne. 0) then
                write(*,*) 'X_MDAD failed with status:',status
                exit
-            endif
+            end if
             SPixel%X0(i) = X
          case (Sacura)    ! First guess is set using sacura
 

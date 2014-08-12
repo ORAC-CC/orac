@@ -55,10 +55,9 @@
 module RTM_def
 
    type RTM_Grid_t
-      real             :: Lat0             ! Starting latitude value
-      real             :: LatN             ! End latitude value
+      real             :: Lat0             ! Starting latitude
+      real             :: LatN             ! Ending latitude
       integer          :: NLat             ! No. of latitude values
-      integer          :: NLatLon          ! No. of latitude values
       real             :: delta_Lat        ! Lat grid step size
       real             :: inv_delta_Lat    ! 1/delta_Lat
       real             :: Lon0             ! Starting longitude
@@ -66,6 +65,7 @@ module RTM_def
       integer          :: NLon             ! No. of longitude values
       real             :: delta_Lon        ! Lon grid step size
       real             :: inv_delta_Lon    ! 1/delta_Lon
+      integer          :: NLatLon          ! NLat * NLon
       real             :: MinLat           ! Minimum lat value in grid
       real             :: MinLon           ! Minimum lon value in grid
       real             :: MaxLat           ! Maximum lat value in grid
@@ -125,6 +125,6 @@ module RTM_def
 
 contains
 
-   include 'DeallocRTM.F90'
+include 'DeallocRTM.F90'
 
 end module RTM_def

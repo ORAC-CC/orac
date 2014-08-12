@@ -41,46 +41,46 @@
 
 subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
-    use SAD_Chan_def
+   use SAD_Chan_def
 
-    implicit none
+   implicit none
 
-    ! Define arguments
+   ! Define arguments
 
-    integer,          intent(in)    :: NChan
-    type(SAD_Chan_t), intent(in)    :: SAD_Chan(NChan)
-    real(4),          intent(inout) :: T(NChan)
-    real(4),          intent(out)   :: R(NChan)
-    real(4),          intent(out)   :: d_R_d_T(NChan)
-    integer,          intent(out)   :: status
+   integer,          intent(in)    :: NChan
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(NChan)
+   real(4),          intent(inout) :: T(NChan)
+   real(4),          intent(out)   :: R(NChan)
+   real(4),          intent(out)   :: d_R_d_T(NChan)
+   integer,          intent(out)   :: status
 
-    ! Define local variables
+   ! Define local variables
 
-    real(4) :: BB(NChan)
-    real(4) :: C(NChan)
-    real(4) :: T_eff(NChan)
-    real(4) :: huge_value, log_huge_value
+   real(4) :: BB(NChan)
+   real(4) :: C(NChan)
+   real(4) :: T_eff(NChan)
+   real(4) :: huge_value, log_huge_value
 
-    ! Set status to zero
+   ! Set status to zero
 
-    status = 0
+   status = 0
 
-    huge_value=huge(1.0)
-    log_huge_value=log(huge_value)
+   huge_value=huge(1.0)
+   log_huge_value=log(huge_value)
 
-    ! Begin calculating radiances
+   ! Begin calculating radiances
 
-    T_eff = ( T * SAD_Chan%Thermal%T2 ) + SAD_Chan%Thermal%T1
+   T_eff = ( T * SAD_Chan%Thermal%T2 ) + SAD_Chan%Thermal%T1
 
-    BB = min(( SAD_Chan%Thermal%B2 / T_eff ),log_huge_value)
+   BB = min(( SAD_Chan%Thermal%B2 / T_eff ),log_huge_value)
 
-    C = exp( BB )
+   C = exp( BB )
 
-    R = SAD_Chan%Thermal%B1 / (C-1.0)
+   R = SAD_Chan%Thermal%B1 / (C-1.0)
 
-    ! Calculate change in radiances with temperature
+   ! Calculate change in radiances with temperature
 
-    d_R_d_T = min(( SAD_Chan%Thermal%B1 * BB * C * SAD_Chan%Thermal%T2) / &
-                  ( T_eff * (C-1.0) * (C-1.0) ), huge_value)
+   d_R_d_T = min((SAD_Chan%Thermal%B1 * BB * C * SAD_Chan%Thermal%T2) / &
+                 ( T_eff * (C-1.0) * (C-1.0) ), huge_value)
 
 end subroutine T2R

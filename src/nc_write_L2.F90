@@ -68,11 +68,11 @@ subroutine nc_write_L2_float(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_var(), var_name = '
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'wrote variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_write_L2_float
 
@@ -112,11 +112,11 @@ subroutine nc_write_L2_double(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_var(), var_name = '
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'wrote variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_write_L2_double
 
@@ -156,11 +156,11 @@ subroutine nc_write_L2_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_var(), var_name = '
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'wrote variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_write_L2_short
 
@@ -200,11 +200,11 @@ subroutine nc_write_L2_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_var(), var_name = '
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'wrote variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_write_L2_long
 
@@ -243,10 +243,10 @@ subroutine nc_write_L2_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_var(), var_name = '
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'wrote variable: ', trim(var_name)
-   endif
+   end if
 
 end subroutine nc_write_L2_byte

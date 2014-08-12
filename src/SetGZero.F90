@@ -71,7 +71,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
+subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
 
    use Ctrl_def
    use GZero_def
@@ -117,18 +117,18 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
                GZero%iSaZ0(i,j) = &
                   max(min(locate(SAD_LUT%Grid%SatZen(ii,1:SAD_LUT%Grid%nSatzen(ii,j),j),&
                           SPixel%Geom%Satzen(SPixel%ViewIdx(i))),SAD_LUT%Grid%nSatzen(ii,j)-1),1)
-            endif
+            end if
             if (SAD_LUT%table_uses_solzen(j)) then
                GZero%iSoZ0(i,j) = &
                   max(min(locate(SAD_LUT%Grid%SolZen(ii,1:SAD_LUT%Grid%nSolzen(ii,j),j),&
                           SPixel%Geom%Solzen(SPixel%ViewIdx(i))),SAD_LUT%Grid%nSolzen(ii,j)-1),1)
-            endif
+            end if
             if (SAD_LUT%table_uses_relazi(j)) then
                GZero%iRA0(i,j)  = &
                   max(min(locate(SAD_LUT%Grid%Relazi(ii,1:SAD_LUT%Grid%nRelazi(ii,j),j),&
                           SPixel%Geom%Relazi(SPixel%ViewIdx(i))),SAD_LUT%Grid%nRelazi(ii,j)-1),1)
-            endif
-         endif
+            end if
+         end if
       end do
 
       ! This sets the upper bracketing index, the locate above set the lower
@@ -154,7 +154,7 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
          else
             GZero%iTm1(i,j) = GZero%iT0(i,j)-1
             GZero%iTp1(i,j) = GZero%iT1(i,j)+1
-         endif
+         end if
 
          if (GZero%iR0(i,j) == 1) then
             GZero%iRm1(i,j) = GZero%iR0(i,j)
@@ -165,9 +165,9 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
          else
             GZero%iRm1(i,j) = GZero%iR0(i,j)-1
             GZero%iRp1(i,j) = GZero%iR1(i,j)+1
-         endif
+         end if
 
-      enddo
+      end do
 
       ! Calcuate dT, dR: these are the distances in T, R, etc from the grid
       ! point with indices (0, 0, ...) to (Tau, Re, ...) expressed as a
@@ -184,14 +184,14 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
             else
                GZero%dT(i,j) = (Tau - SAD_LUT%Grid%Tau(ii,GZero%iT0(i,j),j)) / &
                   (SAD_LUT%Grid%Tau(ii,GZero%iT1(i,j),j) - SAD_LUT%Grid%Tau(ii,GZero%iT0(i,j),j))
-            endif
+            end if
             if (abs(SAD_LUT%Grid%Re(ii,GZero%iR1(i,j),j) - &
                    SAD_LUT%Grid%Re(ii,GZero%iR0(i,j),j)) .le. ditherm15) then
                GZero%dT(i,j) = 0.0
             else
                GZero%dR(i,j) = (Re - SAD_LUT%Grid%Re(ii,GZero%iR0(i,j),j)) / &
                   (SAD_LUT%Grid%Re(ii,GZero%iR1(i,j),j) - SAD_LUT%Grid%Re(ii,GZero%iR0(i,j),j))
-            endif
+            end if
 
             if (SAD_LUT%table_uses_satzen(j)) then
                if (abs(SAD_LUT%Grid%SatZen(ii,GZero%iSaZ1(i,j),j) - &
@@ -201,8 +201,8 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
                   GZero%dSaZ(i,j) = &
                      (SPixel%Geom%SatZen(SPixel%ViewIdx(i)) - SAD_LUT%Grid%SatZen(ii,GZero%iSaZ0(i,j),j)) / &
                      (SAD_LUT%Grid%SatZen(ii,GZero%iSaZ1(i,j),j) - SAD_LUT%Grid%SatZen(ii,GZero%iSaZ0(i,j),j))
-               endif
-            endif
+               end if
+            end if
 
             ! The other two angles only exist when we have solar channels
             ! (including mixed)
@@ -214,8 +214,8 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
                   GZero%dSoZ(i,j) = &
                      (SPixel%Geom%SolZen(SPixel%ViewIdx(i)) - SAD_LUT%Grid%SolZen(ii,GZero%iSoZ0(i,j),j)) / &
                      (SAD_LUT%Grid%SolZen(ii,GZero%iSoZ1(i,j),j) - SAD_LUT%Grid%SolZen(ii,GZero%iSoZ0(i,j),j))
-               endif
-            endif
+               end if
+            end if
             if (SAD_LUT%table_uses_relazi(j)) then
                if (abs(SAD_LUT%Grid%RelAzi(ii,GZero%iRA1(i,j),j) - &
                       SAD_LUT%Grid%RelAzi(ii,GZero%iRA0(i,j),j)) .le. ditherm15) then
@@ -224,9 +224,9 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
                   GZero%dRA(i,j) = &
                      (SPixel%Geom%RelAzi(SPixel%ViewIdx(i)) - SAD_LUT%Grid%RelAzi(ii,GZero%iRA0(i,j),j)) / &
                      (SAD_LUT%Grid%RelAzi(ii,GZero%iRA1(i,j),j) - SAD_LUT%Grid%RelAzi(ii,GZero%iRA0(i,j),j))
-               endif
-            endif
-         endif
+               end if
+            end if
+         end if
       end do
 
       ! Caclulate 1.0 minus each of the d values above - used several times by
@@ -238,7 +238,7 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
          GZero%Sa1(i,j) = 1.0 - GZero%dSaZ(i,j)
          GZero%So1(i,j) = 1.0 - GZero%dSoZ(i,j)
          GZero%Ra1(i,j) = 1.0 - GZero%dRA(i,j)
-      enddo
+      end do
 
 #ifdef DEBUG
       do i=1,SPixel%Ind%Ny
@@ -252,22 +252,22 @@ subroutine Set_GZero (Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
             if (SAD_LUT%table_uses_satzen(j)) then
                write(*,*)'SetGZero: CurSa(1), SaGrid(1), delSa:', SPixel%Geom%SatZen(SPixel%ViewIdx(1)), &
                   SAD_LUT%Grid%Satzen(ii,GZero%iSaZ0(i,j),j),SAD_LUT%Grid%Satzen(ii,GZero%iSaZ1(i,j),j)
-            endif
+            end if
             if (SAD_LUT%table_uses_solzen(j)) then
                write(*,*)'SetGZero: CurSo(1), SoGrid(1), delSo:', SPixel%Geom%SolZen(SPixel%ViewIdx(1)), &
                   SAD_LUT%Grid%Solzen(ii,GZero%iSoZ0(i,j),j),SAD_LUT%Grid%Solzen(ii,GZero%iSoZ1(i,j),j)
-            endif
+            end if
             if (SAD_LUT%table_uses_relazi(j)) then
                write(*,*)'SetGZero: CurRa(1), RaGrid(1), delRa:', SPixel%Geom%RelAzi(SPixel%ViewIdx(1)), &
                   SAD_LUT%Grid%Relazi(ii,GZero%iRA0(i,j),j),      SAD_LUT%Grid%Relazi(ii,GZero%iRA1(i,j),j)
-            endif
+            end if
             write(*,'(a, 5i3.1)')' indices of T0, R0, Saz0(1), SoZ0(1), Ra0(1)', &
                GZero%iT0(i,j), GZero%iR0(i,j), GZero%iSaZ0(i,j), GZero%iSoZ0(i,j), GZero%iRA0(i,j)
             write(*,'(a, 5i3.1)')' indices of T1, R1, Saz1(1), SoZ1(1), Ra1(1): ', &
                GZero%iT1(i,j), GZero%iR1(i,j), GZero%iSaZ1(i,j), GZero%iSoZ1(i,j), GZero%iRA1(i,j)
-         endif
-      enddo
+         end if
+      end do
 #endif
-   enddo
+   end do
 
 end subroutine Set_GZero

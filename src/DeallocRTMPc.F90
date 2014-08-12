@@ -40,9 +40,9 @@ subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
 
    ! Declare arguments
 
-   type(Ctrl_t), intent(in)      :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(RTM_Pc_t), intent(inout) :: RTM_Pc
-   integer, intent(inout)        :: status
+   integer,        intent(inout) :: status
 
    ! Deallocate sizes of SW sub-structure arrays
 

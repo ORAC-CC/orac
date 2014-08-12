@@ -77,7 +77,7 @@ subroutine Allocate_GZero(GZero, SPixel)
 
    implicit none
 
-   type(GZero_t) :: GZero
+   type(GZero_t)  :: GZero
    type(SPixel_t) :: SPixel
 
    allocate(GZero%iT0(SPixel%Ind%Ny,MaxCRProps))

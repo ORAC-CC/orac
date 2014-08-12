@@ -47,10 +47,10 @@ subroutine nc_open(ncid,fname,ierr,wo)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_open(), filename = ', trim(fname)
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'opened netcdf file = ', trim(fname)
-   endif
+   end if
 
 end subroutine nc_open

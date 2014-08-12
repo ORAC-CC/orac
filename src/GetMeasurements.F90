@@ -169,7 +169,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       ii = SPixel%spixel_y_to_ctrl_y_index(i)
       SPixel%Ym(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, ii)
       SPixel%ViewIdx(i) = Ctrl%Ind%ViewIdx(ii)
-   enddo
+   end do
    SPixel%Ind%Nviews = Ctrl%Ind%NViews
 
    ! Allocate the measurement error covariance array to the appropriate size for
@@ -183,8 +183,8 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       do j = 1, SPixel%Ind%Ny
          jj = SPixel%spixel_y_to_ctrl_y_index(j)
          SPixel%Sy(i,j) = Ctrl%Sy(ii, jj)
-      enddo
-   enddo
+      end do
+   end do
 
    ! Add in the Homog and Coreg noise IF the appropriate Ctrl flags are set
    ! (For mixed solar/thermal channels, the value in daytime is a sum of the

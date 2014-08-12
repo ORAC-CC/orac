@@ -120,7 +120,7 @@ subroutine Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    if (status == 0) then
       call nc_read_array_2d_byte_to_byte_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize, &
          "lsflag", MSI_Data%LSFlags,0)
-   endif
+   end if
 
    ! Close LSF file
    ios = nf90_close(ncid)
@@ -129,6 +129,6 @@ subroutine Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
       write(unit=message, fmt=*) 'Read_LSflag: Error closing file ', &
          trim(adjustl(Ctrl%Fid%LS))
       call Write_Log(Ctrl, trim(message), status)
-   endif
+   end if
 
 end subroutine Read_LSFlags_nc

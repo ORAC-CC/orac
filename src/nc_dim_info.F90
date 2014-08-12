@@ -51,7 +51,7 @@ subroutine nc_info(ncid,ndim,nvar,nattr,wo)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inquire()'
       stop
-   endif
+   end if
 
 end subroutine nc_info
 
@@ -80,11 +80,11 @@ subroutine nc_dim_id(ncid,name,did,wo)
    write(*,*) ierr,NF90_NOERR
       write(*,*) 'ERROR: nf90_inq_dimid()'
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'did: ', did
-   endif
+   end if
 
 end subroutine nc_dim_id
 
@@ -113,10 +113,10 @@ subroutine nc_dim_length(ncid,dname,did,n,wo)
    ierr = nf90_inquire_dimension(ncid,did,dname,n)
    if (ierr .ne. NF90_NOERR) then
       stop 'inq dimlen'
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'n: ', n
-   endif
+   end if
 
 end subroutine nc_dim_length

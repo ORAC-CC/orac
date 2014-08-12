@@ -67,7 +67,7 @@ subroutine check_value_float0(val, max, min, SPixel, name, flag_bit)
 
    if (val > max .or. val < min) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_float0
 
@@ -86,7 +86,7 @@ subroutine check_value_float1(val, max, min, SPixel, name, flag_bit)
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_float1
 
@@ -106,7 +106,7 @@ subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, limit)
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_float1_l
 
@@ -125,7 +125,7 @@ subroutine check_value_float2(val, max, min, SPixel, name, flag_bit)
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_float2
 
@@ -145,7 +145,7 @@ subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, limit)
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_float2_l
 
@@ -167,7 +167,7 @@ subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit)
 
    if (val > max .or. val < min) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_byte0
 
@@ -187,7 +187,7 @@ subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit)
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_byte1
 
@@ -208,7 +208,7 @@ subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, limit)
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_byte1_l
 
@@ -228,7 +228,7 @@ subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit)
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_byte2
 
@@ -249,7 +249,7 @@ subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, limit)
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"
-   endif
+   end if
 
 end subroutine check_value_byte2_l
 

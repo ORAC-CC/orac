@@ -99,7 +99,7 @@ subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
          "lat",MSI_Data%Location%Lat,0)
       call nc_read_array_2d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,&
          "lon",MSI_Data%Location%Lon,0)
-   endif
+   end if
 
    ! Close location file
    ios=nf90_close(ncid)
@@ -108,6 +108,6 @@ subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
       write(unit=message, fmt=*) 'Read_Location: Error closing file ', &
          trim(adjustl(Ctrl%Fid%Loc))
       call Write_Log(Ctrl, trim(message), status)
-   endif
+   end if
 
 end subroutine Read_Location_nc

@@ -100,9 +100,9 @@ subroutine Read_Chan(Ctrl, SAD_Chan, status)
 
    ! Arguments
 
-   type(Ctrl_t), intent(inout)                   :: Ctrl
+   type(Ctrl_t),                   intent(inout) :: Ctrl
    type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
-   integer, intent(inout)                        :: status
+   integer,                        intent(inout) :: status
 
    ! Local variables
 
@@ -155,7 +155,7 @@ subroutine Read_Chan(Ctrl, SAD_Chan, status)
             case (6)
                chan_num='Ch5'
             end select
-         endif
+         end if
 
       else
          write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))

@@ -54,7 +54,7 @@ subroutine Dealloc_Data(Ctrl, MSI_Data, status)
    ! Declare arguments
    type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   integer, intent(inout)      :: status
+   integer,      intent(inout) :: status
 
    if (associated(MSI_Data%ALB))          deallocate(MSI_Data%ALB)
 

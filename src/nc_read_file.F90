@@ -44,13 +44,13 @@ subroutine nc_read_array_1d_int_to_int_orac(ncid,n1,cv,v,wo)
    implicit none
 
    ! Input
-   integer,           intent(in)  :: ncid
-   integer,           intent(in)  :: n1
-   integer,           intent(in)  :: wo
-   character(len=*),  intent(in)  :: cv ! variable name
+   integer,            intent(in)  :: ncid
+   integer,            intent(in)  :: n1
+   integer,            intent(in)  :: wo
+   character(len=*),   intent(in)  :: cv ! variable name
 
    ! Output
-   integer(kind=nint),intent(out) :: v(1:n1) ! the variable read in
+   integer(kind=nint), intent(out) :: v(1:n1) ! the variable read in
 
    ! Local
    integer :: ierr,vid,start(1),counter(1),stride(1)
@@ -66,29 +66,29 @@ subroutine nc_read_array_1d_int_to_int_orac(ncid,n1,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
 end subroutine nc_read_array_1d_int_to_int_orac
 
@@ -102,10 +102,10 @@ subroutine nc_read_array_1d_float_to_float_orac(ncid,n1,cv,v,wo)
    implicit none
 
    ! Input
-   integer,           intent(in) :: ncid
-   integer,           intent(in) :: n1
-   integer,           intent(in) :: wo
-   character(len=*),  intent(in) :: cv ! variable name
+   integer,          intent(in) :: ncid
+   integer,          intent(in) :: n1
+   integer,          intent(in) :: wo
+   character(len=*), intent(in) :: cv ! variable name
 
    ! Output
    real(kind=sreal), intent(out) :: v(1:n1) ! the variable read in
@@ -124,29 +124,29 @@ subroutine nc_read_array_1d_float_to_float_orac(ncid,n1,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
 end subroutine nc_read_array_1d_float_to_float_orac
 
@@ -186,29 +186,29 @@ subroutine nc_read_array_2d_float_to_float_orac(ncid,n1,n2,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
 end subroutine nc_read_array_2d_float_to_float_orac
 
@@ -252,29 +252,29 @@ subroutine nc_read_array_2d_float_to_float_orac2(ncid,n1,n2,i3,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
 end subroutine nc_read_array_2d_float_to_float_orac2
 
@@ -316,29 +316,29 @@ subroutine nc_read_array_3d_float_to_float_orac(ncid,n1,n2,n3,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
 end subroutine nc_read_array_3d_float_to_float_orac
 
@@ -382,30 +382,30 @@ subroutine nc_read_array_3d_float_orac(ncid,n1,n2,ichan,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
+      end if
       fv=real_fill_value
-   endif
+   end if
 
 end subroutine nc_read_array_3d_float_orac
 
@@ -446,30 +446,30 @@ subroutine nc_read_array_1p1_float_orac(ncid,n1,ichan,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
+      end if
       fv=real_fill_value
-   endif
+   end if
 
 end subroutine nc_read_array_1p1_float_orac
 
@@ -513,30 +513,30 @@ subroutine nc_read_array_1p2_float_orac(ncid,n1,ichan,ilay,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
+      end if
       fv=real_fill_value
-   endif
+   end if
 
 end subroutine nc_read_array_1p2_float_orac
 
@@ -577,30 +577,30 @@ subroutine nc_read_array_2d_double_orac(ncid,n1,n2,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
+      end if
       fv=real_fill_value
-   endif
+   end if
 
 end subroutine nc_read_array_2d_double_orac
 
@@ -641,30 +641,30 @@ subroutine nc_read_array_2d_float_orac(ncid,n1,n2,cv,v,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
+      end if
       fv=real_fill_value
-   endif
+   end if
 
 end subroutine nc_read_array_2d_float_orac
 
@@ -705,33 +705,33 @@ subroutine nc_read_array_2d_byte_to_real_orac(ncid,n1,n2,cv,v_out,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'first data value: ', v(1,1)
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
    do i=1,n1
       do j=1,n2
@@ -739,9 +739,9 @@ subroutine nc_read_array_2d_byte_to_real_orac(ncid,n1,n2,cv,v_out,wo)
             v_out(i,j)=real_fill_value
          else
             v_out(i,j)=real(v(i,j),kind=sreal)
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
 end subroutine nc_read_array_2d_byte_to_real_orac
 
@@ -782,33 +782,33 @@ subroutine nc_read_array_2d_int_to_real_orac(ncid,n1,n2,cv,v_out,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    if (wo .eq. 1) then
       write(*,*) 'first data value: ', v(1,1)
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
    do i=1,n1
       do j=1,n2
@@ -816,9 +816,9 @@ subroutine nc_read_array_2d_int_to_real_orac(ncid,n1,n2,cv,v_out,wo)
             v_out(i,j)=real_fill_value
          else
             v_out(i,j)=real(v(i,j),kind=sreal)
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
 end subroutine nc_read_array_2d_int_to_real_orac
 
@@ -832,11 +832,11 @@ subroutine nc_read_array_2d_byte_to_byte_orac(ncid,n1,n2,cv,v_out,wo)
    implicit none
 
    ! Input
-   integer,            intent(in)  :: ncid
-   integer,            intent(in)  :: n1
-   integer,            intent(in)  :: n2
-   integer,            intent(in)  :: wo
-   character(len=*),   intent(in)  :: cv ! variable name
+   integer,          intent(in)  :: ncid
+   integer,          intent(in)  :: n1
+   integer,          intent(in)  :: n2
+   integer,          intent(in)  :: wo
+   character(len=*), intent(in)  :: cv ! variable name
 
    ! Output
    integer(kind=byte), intent(out) :: v_out(1:n1,1:n2) ! the variable read in
@@ -859,28 +859,28 @@ subroutine nc_read_array_2d_byte_to_byte_orac(ncid,n1,n2,cv,v_out,wo)
 
    if (wo .eq. 1) then
       write(*,*) 'read variable: ', cv
-   endif
+   end if
 
    ierr = nf90_inq_varid(ncid, cv, vid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_inq_varid()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_var(ncid,vid,v_out,start,counter,stride)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_var()'
       stop
-   endif
+   end if
 
    ierr = nf90_get_att(ncid, vid, '_FillValue', fv)
    if (wo .eq. 1) then
       write(*,*) 'read _FillVallue: ', fv
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
-      endif
-   endif
+      end if
+   end if
 
 end subroutine nc_read_array_2d_byte_to_byte_orac

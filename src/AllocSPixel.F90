@@ -99,10 +99,10 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
 
    ! Declare arguments
 
-   type(Ctrl_t), intent(in)    :: Ctrl
-   type(RTM_t), intent(in)     :: RTM
-   type(SPixel_t), intent(out) :: SPixel
-   integer, intent(inout)      :: status
+   type(Ctrl_t),   intent(in)    :: Ctrl
+   type(RTM_t),    intent(in)    :: RTM
+   type(SPixel_t), intent(out)   :: SPixel
+   integer,        intent(inout) :: status
 
    ! Declare local variables
 

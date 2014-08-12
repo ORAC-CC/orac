@@ -286,7 +286,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          do i = 1, Ctrl%Ind%NSolar
             i_missing(ii) = i
             ii = ii + 1
-         enddo
+         end do
 
          SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
          SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
@@ -328,7 +328,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          do i = 1, Ctrl%Ind%NSolar - Ctrl%Ind%NMixed
             i_missing(ii) = i
             ii = ii + 1
-         enddo
+         end do
 
          SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
          SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
@@ -343,7 +343,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             SPixel%spixel_y_to_ctrl_y_index)
          SPixel%Ind%MDAD_LW = Find_MDAD_LW(SPixel%Ind%Ny, SAD_Chan, &
             SPixel%spixel_y_to_ctrl_y_index)
-      endif
+      end if
 
       if (i_view > 1) then
          if (SPixel%Illum(i_view - 1) /= SPixel%Illum(i_view)) &
@@ -380,7 +380,7 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
          cycle
       SPixel%spixel_y_to_ctrl_y_index(ii) = i
       ii = ii + 1
-   enddo
+   end do
 
    if (SPixel%Ind%NSolar .gt. 0) then
       ii = 1
@@ -389,8 +389,8 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
             cycle
          SPixel%spixel_y_solar_to_ctrl_y_index(ii) = i
          ii = ii + 1
-      enddo
-   endif
+      end do
+   end if
 
    if (SPixel%Ind%NThermal .gt. 0) then
       ii = 1
@@ -399,8 +399,8 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
             cycle
          SPixel%spixel_y_thermal_to_ctrl_y_index(ii) = i
          ii = ii + 1
-      enddo
-   endif
+      end do
+   end if
 
    if (SPixel%Ind%NSolar .gt. 0) then
       ii = 1
@@ -409,8 +409,8 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
             cycle
          SPixel%spixel_y_solar_to_ctrl_y_solar_index(ii) = i
          ii = ii + 1
-      enddo
-   endif
+      end do
+   end if
 
    if (SPixel%Ind%NThermal .gt. 0) then
       ii = 1
@@ -419,8 +419,8 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
             cycle
          SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(ii) = i - Ctrl%Ind%ThermalFirst + 1
          ii = ii + 1
-      enddo
-   endif
+      end do
+   end if
 
 end subroutine setup_indexes
 

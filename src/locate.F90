@@ -38,15 +38,15 @@ subroutine locate_int(xx,n,x,j)
         jl=jm
      else
         ju=jm
-     endif
+     end if
      goto 10
-  endif
+  end if
   if(x.eq.xx(1))then
      j=1
   else if(x.eq.xx(n))then
      j=n-1
   else
      j=jl
-  endif
+  end if
   return
 end subroutine locate_int

@@ -190,7 +190,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
                instname=trim(adjustl(sensor))
             else
                instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
-            endif
+            end if
             InstName = adjustl(InstName)
             if (trim(adjustl(InstName)) /= trim(adjustl(Ctrl%Inst%Name))) then
                status = SwRTMRTMInstErr ! Return error code
@@ -214,7 +214,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
             ! Read ChanID and WvNumber
             call nc_read_array_1d_int_to_int_orac(ncid,RTM%SW%NSWF,"sw_channel_instr_ids",ChanID,0)
             call nc_read_array_1d_float_to_float_orac(ncid,RTM%SW%NSWF,"sw_channel_wvl",WvNumber,0)
-         endif
+         end if
 
          write(*,*) 'SW channel instrument ids for RTM in SW preprocessing file',ChanID
 
@@ -279,13 +279,13 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
                      call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"tbc_sw",dummy2df,0)
                      RTM%SW%Tbc(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
 
-                  endif
-               enddo
-            enddo
+                  end if
+               end do
+            end do
 
             deallocate(dummy2df)
 
-         endif
+         end if
 
          ! Close SwRTM input file
          ios=nf90_close(ncid)
@@ -298,7 +298,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
             write(*,*)'Read_SwRTM: error reading from Sw file'
             call Write_Log(Ctrl, 'Read_SwRTM: error reading from Sw file', status)
             stop
-         endif
+         end if
       end if
 
       if (status==0) write(*,*)'Read SW RTM data OK'
@@ -323,7 +323,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 !            RTM%SW%Grid%inv_delta_Lat = ditherm3
 !         else
 !            RTM%SW%Grid%inv_delta_Lat = 1 / RTM%SW%Grid%delta_Lat
-!         endif
+!         end if
 !
 !         RTM%SW%Grid%delta_Lon = (RTM%SW%Grid%LonN - RTM%SW%Grid%Lon0) &
 !                                  / (RTM%SW%Grid%NLon-1)
@@ -331,7 +331,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 !            RTM%SW%Grid%inv_delta_Lon = ditherm3
 !         else
 !            RTM%SW%Grid%inv_delta_Lon = 1 / RTM%SW%Grid%delta_Lon
-!         endif
+!         end if
 !
 !         ! Max and Min grid values
 !         RTM%SW%Grid%MinLat = min(RTM%SW%Grid%Lat0, RTM%SW%Grid%LatN)

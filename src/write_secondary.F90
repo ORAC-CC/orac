@@ -85,7 +85,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
 	call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidres(iinput),&
 	        spixel_scan_out_sec%residuals(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
-   enddo
+   end do
 
    ! forward modelled radiances
    do iinput=1,Ctrl%Ind%Ny
@@ -94,7 +94,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
       call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidy0(iinput),&
               spixel_scan_out_sec%y0(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
-   enddo
+   end do
 
    ! channels
    do iinput=1,Ctrl%Ind%Ny
@@ -103,7 +103,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
       call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidchans(iinput),&
               spixel_scan_out_sec%channels(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
-   enddo
+   end do
 
    ! albedo
    do iinput=1,Ctrl%Ind%Nsolar
@@ -113,7 +113,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
       call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidalb(iinput),&
          spixel_scan_out_sec%albedo(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
-   enddo
+   end do
 
    if (lcovar) then
       do is=1,SPixel%Nx
@@ -123,9 +123,9 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
             input_dummy='covariance_matrix_element_'//trim(adjustl(input_num1))//trim(adjustl(input_num2))
             call nc_write_L2_float(ncid,input_dummy,spixel_scan_out_sec%vidcovar(is,js),&
                     spixel_scan_out_sec%covariance(:,:,is,js),ixstart,ixstop,iystart,iystop,wo,ierr)
-         enddo
-      enddo
-   endif
+         end do
+      end do
+   end if
 
    ! degrees of freedom for signal
    call nc_write_L2_short(ncid,'degrees_of_freedom_signal',spixel_scan_out_sec%vidds,&
@@ -136,6 +136,6 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
       write(*,*) 'write_secondary.inc: netcdf secondary file write error: ', status
       call Write_Log(Ctrl,'write_primary.inc: netcdf secondary file write error: ', status)
       stop
-   endif
+   end if
 
 end subroutine write_secondary

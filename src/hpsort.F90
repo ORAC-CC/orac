@@ -28,23 +28,23 @@ subroutine hpsort(n,ra)
      if(ir.eq.1)then
         ra(1)=rra
         return
-     endif
-  endif
+     end if
+  end if
   i=l
   j=l+l
 20 if(j.le.ir)then
      if(j.lt.ir)then
         if(ra(j).lt.ra(j+1))j=j+1
-     endif
+     end if
      if(rra.lt.ra(j))then
         ra(i)=ra(j)
         i=j
         j=j+j
      else
         j=ir+1
-     endif
+     end if
      goto 20
-  endif
+  end if
   ra(i)=rra
   goto 10
 end subroutine hpsort

@@ -372,6 +372,6 @@ module CTRL_def
 
 contains
 
-   include 'DeallocCtrl.F90'
+include 'DeallocCtrl.F90'
 
 end module CTRL_def

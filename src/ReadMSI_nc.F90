@@ -142,8 +142,8 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    integer         :: i          ! Counter for DOY calculation
 
    ! NetCDF related
-   integer            :: ncid
-   character(len=12)  :: prod_date
+   integer           :: ncid
+   character(len=12) :: prod_date
    integer(kind=nint), allocatable, dimension(:) :: msi_instr_ch_numbers
 
    ! On first call, the file is opened. It is then left open for all subsequent
@@ -195,7 +195,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
          write(*,*) 'Read_MSI: Error reading header of file ', trim(adjustl(Ctrl%Fid%MSI))
          call Write_Log(Ctrl, trim(message), status)
          stop
-      endif
+      end if
    end if
 
    if (status == 0) then
@@ -216,7 +216,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
             i,msi_instr_ch_numbers(Ctrl%Ind%Chi(i)),Ctrl%Ind%Chi(i),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
          call nc_read_array_3d_float_orac &
             (ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(i),"msi_data",MSI_Data%MSI(:,:,i),0)
-      enddo
+      end do
 
       deallocate(msi_instr_ch_numbers)
 
@@ -224,7 +224,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
       call nc_read_array_2d_double_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,"time_data",MSI_Data%time(:,:),0)
 
       write(*,*) 'Done reading MSI input'
-   endif
+   end if
 
    ! Close MSI input file
    ios=nf90_close(ncid)
@@ -234,6 +234,6 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
          'Read_MSI: Error closing file ', trim(adjustl(Ctrl%Fid%MSI))
       write(*,*) trim(message)
       call Write_Log(Ctrl, trim(message), status)
-   endif
+   end if
 
 end subroutine Read_MSI_nc

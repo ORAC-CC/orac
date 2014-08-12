@@ -65,7 +65,7 @@ subroutine Calc_CWP(Ctrl,SPixel, status)
    if (trim(Ctrl%CloudClass%Name) == 'WAT') then
       rho=rhowat
       fac=(4./3.)*rho/qextwat
-   elseif (trim(Ctrl%CloudClass%Name) == 'ICE') then
+   else if (trim(Ctrl%CloudClass%Name) == 'ICE') then
       rho=rhoice
       fac=(4./3.)*rho/qextice
    else
@@ -99,6 +99,6 @@ subroutine Calc_CWP(Ctrl,SPixel, status)
          status = CWP_Calcerror
          call Write_Log(Ctrl,'Error calculating CWP',status)
       end if
- endif
+ end if
 
 end subroutine Calc_CWP

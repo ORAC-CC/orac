@@ -47,43 +47,43 @@
 
 subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 
-    use SAD_Chan_def
+   use SAD_Chan_def
 
-    implicit none
+   implicit none
 
-    ! Define arguments
+   ! Define arguments
 
-    integer,          intent(in)    :: NChan
-    type(SAD_Chan_t), intent(in)    :: SAD_Chan(NChan)
-    real(4),          intent(inout) :: R(NChan)
-    real(4),          intent(out)   :: T(NChan)
-    real(4),          intent(out)   :: d_T_d_R(NChan)
-    integer,          intent(out)   :: status
+   integer,          intent(in)    :: NChan
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(NChan)
+   real(4),          intent(inout) :: R(NChan)
+   real(4),          intent(out)   :: T(NChan)
+   real(4),          intent(out)   :: d_T_d_R(NChan)
+   integer,          intent(out)   :: status
 
-    ! Define local variables
+   ! Define local variables
 
-    integer :: i
-    real(4) :: C(NChan)
-    real(4) :: T_eff(NChan)
+   integer :: i
+   real(4) :: C(NChan)
+   real(4) :: T_eff(NChan)
 
-    ! Set error status to zero
+   ! Set error status to zero
 
-    status = 0
+   status = 0
 
-    ! Begin calculating temperatures
+   ! Begin calculating temperatures
 
-    do i = 1, NChan
-       if (R(i) .le. ditherm6) R(i) = max(R(i),ditherm6)
-    enddo
+   do i = 1, NChan
+      if (R(i) .le. ditherm6) R(i) = max(R(i),ditherm6)
+   end do
 
-    C = log( ( SAD_Chan(:)%Thermal%B1 / R ) + 1.0 )
-    T_eff = SAD_Chan(:)%Thermal%B2 / C
+   C = log( ( SAD_Chan(:)%Thermal%B1 / R ) + 1.0 )
+   T_eff = SAD_Chan(:)%Thermal%B2 / C
 
-    T = (T_eff-SAD_Chan(:)%Thermal%T1) / SAD_Chan(:)%Thermal%T2
+   T = (T_eff-SAD_Chan(:)%Thermal%T1) / SAD_Chan(:)%Thermal%T2
 
-    ! Calculate the change in brightness temperature w.r.t. radiance
-    ! ( SAD_Chan(:)%Thermal%T2 * C * C * R * ( R + SAD_Chan(:)%Thermal%B1 ))
-    d_T_d_R = ( SAD_Chan(:)%Thermal%B1 * SAD_Chan(:)%Thermal%B2 ) / &
-              ( SAD_Chan(:)%Thermal%T2 * C * C * R * ( R + SAD_Chan(:)%Thermal%B1 ) )
+   ! Calculate the change in brightness temperature w.r.t. radiance
+   ! ( SAD_Chan(:)%Thermal%T2 * C * C * R * ( R + SAD_Chan(:)%Thermal%B1 ))
+   d_T_d_R = ( SAD_Chan(:)%Thermal%B1 * SAD_Chan(:)%Thermal%B2 ) / &
+             ( SAD_Chan(:)%Thermal%T2 * C * C * R * ( R + SAD_Chan(:)%Thermal%B1 ) )
 
 end subroutine R2T

@@ -78,7 +78,7 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
       call nc_write_L2_float(ncid,trim(adjustl(input_dummy)),spixel_scan_out%vidrel_azi(iviews),&
               spixel_scan_out%rel_azi(:,:,iviews),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   enddo
+   end do
 
    call nc_write_L2_short(ncid,'cot',spixel_scan_out%vidcot,&
            spixel_scan_out%cot(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
@@ -149,6 +149,6 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
       write(*,*) 'write_primary.inc: netcdf primary file write error: ', status
       call Write_Log(Ctrl,'write_primary.inc: netcdf primary file write error: ', status)
       stop
-   endif
+   end if
 
 end subroutine write_primary

@@ -38,8 +38,8 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
                              spixel_scan_out, spixel_scan_out_sec, status)
 
    use CTRL_def
-   use Diag_def
    use Data_def
+   use Diag_def
    use SPixel_def
 
    implicit none
@@ -74,7 +74,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%cot_ap(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%cot_ap(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
 
    dummyreal=(SPixel%X0(1)-spixel_scan_out_sec%cot_fg_offset)/ &
@@ -85,7 +85,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%cot_fg(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%cot_fg(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
    !----------------------------------------------------------------------------
    !
@@ -98,7 +98,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%ref_ap(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%ref_ap(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
    dummyreal=(SPixel%X0(2)-spixel_scan_out_sec%ref_fg_offset)/ &
                            spixel_scan_out_sec%ref_fg_scale
@@ -108,7 +108,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%ref_fg(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%ref_fg(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
    !----------------------------------------------------------------------------
    !
@@ -121,7 +121,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%ctp_ap(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%ctp_ap(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
 
    dummyreal=(SPixel%X0(3)-spixel_scan_out_sec%ctp_fg_offset)/ &
@@ -132,7 +132,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%ctp_fg(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%ctp_fg(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
    !----------------------------------------------------------------------------
    !
@@ -145,7 +145,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%stemp_fg(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%stemp_fg(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
    !----------------------------------------------------------------------------
    ! residuals
@@ -161,8 +161,8 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
          spixel_scan_out_sec%residuals(i,j,ii)=int(dummyreal, kind=sint)
       else
          spixel_scan_out_sec%residuals(i,j,ii)=spixel_scan_out_sec%int_fill_value
-      endif
-   enddo
+      end if
+   end do
 
    !----------------------------------------------------------------------------
    ! firstguess forward modelled radiance
@@ -178,8 +178,8 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
          spixel_scan_out_sec%y0(i,j,ii)=int(dummyreal, kind=sint)
       else
          spixel_scan_out_sec%y0(i,j,ii)=spixel_scan_out_sec%int_fill_value
-      endif
-   enddo
+      end if
+   end do
 
    !----------------------------------------------------------------------------
    ! reflectance and brightness temperature information
@@ -194,8 +194,8 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
          spixel_scan_out_sec%channels(i,j,iinput)=int(dummyreal, kind=sint)
       else
          spixel_scan_out_sec%channels(i,j,iinput)=spixel_scan_out_sec%int_fill_value
-      endif
-   enddo
+      end if
+   end do
 
    !----------------------------------------------------------------------------
    !
@@ -210,10 +210,10 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
                  (spixel_scan_out_sec%covariance(i,j,is,js) .gt. &
                   abs(spixel_scan_out%real_fill_value_lat_lon))) then
                spixel_scan_out_sec%covariance(i,j,is,js)=spixel_scan_out%real_fill_value_lat_lon
-            endif
-         enddo
-      enddo
-   endif
+            end if
+         end do
+      end do
+   end if
 
    !----------------------------------------------------------------------------
    ! surface albedo
@@ -228,8 +228,8 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
          spixel_scan_out_sec%albedo(i,j,iinput)=int(dummyreal, kind=sint)
       else
          spixel_scan_out_sec%albedo(i,j,iinput)=spixel_scan_out_sec%int_fill_value
-      endif
-   enddo
+      end if
+   end do
 
    !----------------------------------------------------------------------------
    ! degrees of freedom for signal
@@ -238,7 +238,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
 
    do iinput=1,SPixel%Nx
       dummyreal = dummyreal + Diag%AK(iinput,iinput)
-   enddo
+   end do
 
    dummyreal = (dummyreal-spixel_scan_out_sec%ds_offset)/spixel_scan_out_sec%ds_scale
    if (dummyreal .ge. real(spixel_scan_out_sec%ds_vmin,kind=sreal) .and. &
@@ -246,6 +246,6 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       spixel_scan_out_sec%ds(i,j)=int(dummyreal, kind=sint)
    else
       spixel_scan_out_sec%ds(i,j)=spixel_scan_out_sec%int_fill_value
-   endif
+   end if
 
 end subroutine prepare_secondary

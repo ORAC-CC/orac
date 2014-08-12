@@ -318,7 +318,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
                              Ctrl%Ind%ysolar_msi(i)), RefMax, RefMin, SPixel, &
                              'MSI reflectance', SPixRef)
       end do
-   endif
+   end if
 
    ! MSI - Temperatures (between 150.0K and 330.0K)
    allocate(thermal(Ctrl%Ind%Nthermal))
@@ -383,7 +383,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             if (stat /= 0) then
 !              write(*,*) 'WARNING: Get_Illum', stat
                SPixel%QC = ibset(SPixel%QC, SPixillum)
-            endif
+            end if
          end if
 
          if (stat == 0) then
@@ -391,7 +391,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_Geometry', stat
                SPixel%QC = ibset(SPixel%QC, SPixGeom)
-            endif
+            end if
          end if
 
          if (stat == 0) then
@@ -399,7 +399,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_RTM', stat
                SPixel%QC = ibset(SPixel%QC, SPixRTM)
-            endif
+            end if
          end if
 
          if (stat == 0) then
@@ -407,7 +407,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_Measurements', stat
                SPixel%QC = ibset(SPixel%QC, SPixMeas)
-            endif
+            end if
          end if
 
          ! Get surface parameters and reduce reflectance by solar angle effect.
@@ -428,15 +428,15 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
             call Get_LSF(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
 !              write(*,*) 'WARNING: Get_LSF', stat
-            endif
-         endif
+            end if
+         end if
 
          if (stat == 0) then
             call Get_X(Ctrl, SAD_Chan, SPixel, stat)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_X', stat
                SPixel%QC = ibset(SPixel%QC, SPixFGAP)
-            endif
+            end if
          end if
 
 

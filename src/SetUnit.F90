@@ -42,8 +42,8 @@ subroutine Set_Unit(SPixel, Unit)
 
    ! Declare arguments
 
-   type(SPixel_t), intent(in) :: SPixel
-   real, intent(inout)        :: Unit(SPixel%Nx, SPixel%Nx)
+   type(SPixel_t), intent(in)    :: SPixel
+   real,           intent(inout) :: Unit(SPixel%Nx, SPixel%Nx)
 
    ! Declare local variables
 

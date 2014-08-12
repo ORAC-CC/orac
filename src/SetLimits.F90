@@ -61,9 +61,9 @@ subroutine Set_Limits(Ctrl, SPixel, status)
 
    ! Argument declarations
 
-   type(Ctrl_t), intent(in)      :: Ctrl
+   type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   integer, intent(inout)        :: status
+   integer,        intent(inout) :: status
 
    ! Local variable declarations
 

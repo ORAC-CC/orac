@@ -4,7 +4,7 @@
 ! Purpose:
 !    Sets up parts of the state vector, X, depending on auxiliary data.
 !
-! Description: 
+! Description:
 !
 ! Arguments:
 !    Name       Type    In/Out    Description
@@ -30,33 +30,33 @@ subroutine X_AUX(SPixel, index, X, err, status)
    use ECP_Constants
 
    implicit none
-  
+
 !  Declare arguments
-   
-   integer         :: index
-   real            :: X
-   real            :: err
-   integer         :: status
+
+   integer        :: index
+   real           :: X
+   real           :: err
+   integer        :: status
 
 !  Declare local variables
 
-   character(180)  :: message
+   character(180) :: message
 
 !  Parameters supported are Tau, Pc and f.
 
    select case (index)
-   
-!     Cloud optical depth, Tau.   
+
+!     Cloud optical depth, Tau.
 
       case (iTau)
-      
+
 !     Effective radius, Re.
 
-      case (iRe)      
-   
+      case (iRe)
+
 !     Cloud pressure, Pc.
 
-      case (iPc)   
+      case (iPc)
 
 !     Cloud fraction, f.
 
@@ -69,11 +69,11 @@ subroutine X_AUX(SPixel, index, X, err, status)
 !     Write message to log if AUX method not supported for state variable
 
       case default
-      
+
          status = XAUXMeth
 	 write(unit=message, fmt=*) 'X_AUX: Method not supported for state variable index: ', index
          call Write_log(Ctrl, trim(message), status)
-	    
-   end select  
+
+   end select
 
 end subroutine X_AUX

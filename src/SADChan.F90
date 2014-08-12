@@ -104,7 +104,7 @@ function Find_MDAD_SW(Ny, SAD_Chan, index) result(MDAD_SW)
          ii = i
       else
          ii = index(i)
-      endif
+      end if
 
       ! If the channel WN is greater then 10000 cm-1 and less than 20000 cm-1
       ! then check how close it is to 0.67 um. If it is the closest of the
@@ -148,7 +148,7 @@ function Find_MDAD_LW(Ny, SAD_Chan, index) result(MDAD_LW)
          ii = i
       else
          ii = index(i)
-      endif
+      end if
 
       ! If the channel WN is less than 2500 cm-1 then check how close it is to
       ! 11 um. If it is the closest of the channels tried so far, update the

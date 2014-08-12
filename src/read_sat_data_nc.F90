@@ -51,12 +51,12 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
    ! Define arguments
 
-   type(CTRL_t), intent(in)        :: Ctrl
-   integer, intent(in)             :: NSegs
-   integer, intent(in)             :: SegSize
-   type(Data_t), intent(inout)     :: MSI_Data
+   type(CTRL_t),     intent(in)    :: Ctrl
+   integer,          intent(in)    :: NSegs
+   integer,          intent(in)    :: SegSize
+   type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
-   integer, intent(out)            :: status
+   integer,          intent(out)   :: status
 
    ! Define local variables
 
@@ -66,7 +66,7 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    if (Ctrl%RS%Flag == SelmAux) then
       write(*,*) 'Reading Albedo data, status: ',status
       if (status == 0) call Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
-   endif
+   end if
 
    write(*,*) 'Reading Cloud Flag data, status: ',status
    if (status == 0) call Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)

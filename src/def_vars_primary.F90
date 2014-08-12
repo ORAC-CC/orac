@@ -73,7 +73,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_redef()'
       stop
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
       time_string='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
       time_string='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
-   endif
+   end if
 
    call nc_defdata_double(ncid, dims_var, &
            'time', &
@@ -217,7 +217,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
 
       if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
-   enddo
+   end do
 
    !----------------------------------------------------------------------------
    ! cot
@@ -715,7 +715,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'
       stop
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -725,6 +725,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
       write(*,*) 'def_vars_primary.inc: netcdf variable definintion error:', status
       call Write_Log(Ctrl,'def_vars_primary.inc: netcdf variable definintion error:', status)
       stop
-   endif
+   end if
 
 end subroutine def_vars_primary

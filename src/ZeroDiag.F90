@@ -51,16 +51,16 @@
 subroutine Zero_Diag(Ctrl, Diag, status)
 
    use Ctrl_def
-   use ECP_Constants
    use Diag_def
+   use ECP_Constants
 
    implicit none
 
    ! Argument declarations
 
-   type(Ctrl_t), intent(in)   :: Ctrl
-   type(Diag_t), intent(inout):: Diag
-   integer, intent(inout)     :: status
+   type(Ctrl_t), intent(in)    :: Ctrl
+   type(Diag_t), intent(inout) :: Diag
+   integer,      intent(inout) :: status
 
    ! Set all requested diagnostic values to zero.
    ! 1) Quality control flag:

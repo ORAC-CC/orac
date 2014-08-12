@@ -23,7 +23,7 @@
 
 subroutine polint(xa,ya,n,x,y,dy)
 
-  use ecp_constants
+  use ECP_Constants
 
   implicit none
 
@@ -39,10 +39,10 @@ subroutine polint(xa,ya,n,x,y,dy)
      if (dift.lt.dif) then
         ns=i
         dif=dift
-     endif
+     end if
      c(i)=ya(i)
      d(i)=ya(i)
-  enddo
+  end do
 
   y=ya(ns)
   ns=ns-1
@@ -56,14 +56,14 @@ subroutine polint(xa,ya,n,x,y,dy)
         den=w/den
         d(i)=hp*den
         c(i)=ho*den
-     enddo
+     end do
      if (2*ns.lt.n-m)then
         dy=c(ns+1)
      else
         dy=d(ns)
         ns=ns-1
-     endif
+     end if
      y=y+dy
-  enddo
+  end do
   return
 end subroutine polint

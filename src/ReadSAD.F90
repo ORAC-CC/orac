@@ -73,13 +73,13 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT, status)
    implicit none
 
    ! Argument declarations
-   type(CTRL_t), intent(inout)                   :: Ctrl
+   type(CTRL_t),                   intent(inout) :: Ctrl
    type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
-   type(SAD_LUT_t), intent(inout)                :: SAD_LUT
-   integer, intent(inout)                        :: status
+   type(SAD_LUT_t),                intent(inout) :: SAD_LUT
+   integer,                        intent(inout) :: status
 
    ! Read channel sad files
-   if (status == 0) call Read_Chan (Ctrl, SAD_Chan, status)
+   if (status == 0) call Read_Chan(Ctrl, SAD_Chan, status)
    write(*,*)'Read channel information (status)',status
 
    ! Read Look up tables
