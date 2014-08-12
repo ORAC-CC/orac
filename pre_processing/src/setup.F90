@@ -1,5 +1,7 @@
 module setup_instrument
 
+   implicit none
+
 contains
 
 !-------------------------------------------------------------------------------
@@ -46,23 +48,23 @@ contains
 ! 2012/09/12, CP: added in gregorian to doy conversion into aatsr setup GREG2DOY
 ! 2012/09/13, CP: changed coeff numbering in sw file
 ! 2012/11/14, CP: remove platform name from aatsr
-! 2013/08/14, GT: Added trim to write statement of L1b filename  
+! 2013/08/14, GT: Added trim to write statement of L1b filename
 ! 2013/09/16, AP: removed channel_flag, preproc_dims, date
 !
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
      year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
    use calender
+   use channel_structures
+   use date_type_structures
    use preproc_constants
    use preproc_structures
-   use date_type_structures
-   use channel_structures
 
    implicit none
 
@@ -80,21 +82,21 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'/',back=.true.)
    intdummy2=index(trim(adjustl(path_to_geo_file)),'/',back=.true.)
 
-   if(trim(adjustl(path_to_l1b_file(intdummy1+10:intdummy1+26))) .ne. &
-        & trim(adjustl(path_to_geo_file(intdummy2+7:intdummy2+23)))) then
+   if (trim(adjustl(path_to_l1b_file(intdummy1+10:intdummy1+26))) .ne. &
+      trim(adjustl(path_to_geo_file(intdummy2+7:intdummy2+23)))) then
       write(*,*)
       write(*,*) 'Geolocation and L1b files are for different granules!!!'
       write(*,*) trim(adjustl(path_to_geo_file))
       write(*,*) trim(adjustl(path_to_l1b_file))
 
       stop
-   endif
+   end if
 
    !which modis are we processing?
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'1KM.')
-   if(trim(adjustl(path_to_l1b_file(intdummy1-5:intdummy1-3))) .eq. 'MYD') &
+   if (trim(adjustl(path_to_l1b_file(intdummy1-5:intdummy1-3))) .eq. 'MYD') &
         platform='AQUA'
-   if(trim(adjustl(path_to_l1b_file(intdummy1-5:intdummy1-3))) .eq. 'MOD') &
+   if (trim(adjustl(path_to_l1b_file(intdummy1-5:intdummy1-3))) .eq. 'MOD') &
         platform='TERRA'
 
    !Get year and doy,hour and minute as integers
@@ -113,15 +115,15 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    !get month and day as text
    write(cmonth,'(i2)') month
-   if(month .lt. 10) cmonth='0'//trim(adjustl(cmonth))
+   if (month .lt. 10) cmonth='0'//trim(adjustl(cmonth))
    write(cday,'(i2)') day
-   if(day .lt. 10) cday='0'//trim(adjustl(cday))
+   if (day .lt. 10) cday='0'//trim(adjustl(cday))
 
    !now set up the channels
    !numbering wrt instrument definition
    channel_info%channel_ids_instr= (/ 1, 2, 6, 20, 31, 32 /)
    !numbering wrt to increasing wl, starting at 1
-   channel_info%channel_ids_abs= (/ 1, 2, 3, 4, 5, 6 /)     
+   channel_info%channel_ids_abs= (/ 1, 2, 3, 4, 5, 6 /)
 
    !which channels have sw/lw components
    channel_info%channel_sw_flag=(/ 1, 1, 1, 1, 0, 0 /)
@@ -166,15 +168,15 @@ subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    !check if l1b and angles file are or the same orbit
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'_avhrr',back=.true.)
    intdummy2=index(trim(adjustl(path_to_geo_file)),'_sunsatangles',back=.true.)
-   if(trim(adjustl(path_to_l1b_file(1:intdummy1-1))) .ne. &
-        & trim(adjustl(path_to_geo_file(1:intdummy2-1)))) then
+   if (trim(adjustl(path_to_l1b_file(1:intdummy1-1))) .ne. &
+      trim(adjustl(path_to_geo_file(1:intdummy2-1)))) then
       write(*,*)
       write(*,*) 'Geolocation and L1b files are for different granules!!!'
       write(*,*) trim(adjustl(path_to_geo_file))
       write(*,*) trim(adjustl(path_to_l1b_file))
 
       stop
-   endif
+   end if
 
    !which avhrr are we processing?
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'.h5',back=.true.)
@@ -203,7 +205,7 @@ subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    channel_info%channel_ids_instr= (/ 1, 2, 3, 4, 5, 6 /)
    !numbering wrt to increasing wl, starting at 1
    !3=3A,4=3B
-   channel_info%channel_ids_abs= (/ 1, 2, 3, 4, 5, 6 /)     
+   channel_info%channel_ids_abs= (/ 1, 2, 3, 4, 5, 6 /)
    !which channels have sw/lw components
    channel_info%channel_sw_flag=(/ 1, 1, 1, 1, 0, 0 /)
    channel_info%channel_lw_flag=(/ 0, 0, 0, 1, 1, 1 /)
@@ -244,14 +246,14 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    integer(kind=stint)                        :: intdummy1
 
    !check if l1b and angles files identical
-   if(trim(adjustl(path_to_l1b_file)) .ne. trim(adjustl(path_to_geo_file))) then
+   if (trim(adjustl(path_to_l1b_file)) .ne. trim(adjustl(path_to_geo_file))) then
       write(*,*)
       write(*,*) 'Geolocation and L1b files are for different granules!!!'
       write(*,*) trim(adjustl(path_to_geo_file))
       write(*,*) trim(adjustl(path_to_l1b_file))
 
       stop
-   endif
+   end if
 
    !which aatsr are we processing?
    intdummy1=index(trim(adjustl(path_to_l1b_file)),'.N1',back=.true.)
@@ -283,7 +285,7 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    ! AATSR has a 0.55 micron channel so instrument channel numbering starts at 2
    channel_info%channel_ids_instr= (/ 2, 3, 4, 5, 6, 7 /)
    ! numbering wrt to increasing wl, starting at 1 (0.67 micron)
-   channel_info%channel_ids_abs= (/ 1, 2, 3, 4, 5, 6 /)     
+   channel_info%channel_ids_abs= (/ 1, 2, 3, 4, 5, 6 /)
    ! which channels have sw/lw components
    channel_info%channel_sw_flag=(/ 1, 1, 1, 1, 0, 0 /)
    channel_info%channel_lw_flag=(/ 0, 0, 0, 1, 1, 1 /)
@@ -291,7 +293,7 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
    channel_info%nchannels_lw=sum(channel_info%channel_lw_flag)
    allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
-   
+
    ! View index of each channel - trivial as (for now) dealing with one only
    channel_info%channel_view_ids=(/ 1, 1, 1, 1, 1, 1 /)
    !process everything

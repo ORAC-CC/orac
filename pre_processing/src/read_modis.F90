@@ -21,7 +21,7 @@
 
 module read_modis
 
-implicit none
+   implicit none
 
 contains
 

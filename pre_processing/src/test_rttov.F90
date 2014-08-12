@@ -1,9 +1,9 @@
 !-------------------------------------------------------------------------------
-! Name: test_rttov.f90
+! Name: test_rttov.F90
 !
 ! Purpose:
 ! Create environment within all RTTOV related code is contained.
-! 
+!
 ! Arguments:
 ! Name         Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
@@ -11,10 +11,10 @@
 ! preproc_dims struct both Summary of preprocessing grid definitions
 !
 ! History:
-! 2012/03/27, MJ: provides initial implementation based on the example program 
+! 2012/03/27, MJ: provides initial implementation based on the example program
 !   example_fw of Annex X of the RTTOV V10.2 user guide V1.3.
 ! 2012/05/23, MJ: fixes bug with AVHRR setup.
-! 2012/06/20, CP: removed emissivity. implemented new calls to call_rtm_ir and 
+! 2012/06/20, CP: removed emissivity. implemented new calls to call_rtm_ir and
 !   call_rtm_solar
 ! 2012/07/29, CP: improved readability added in algorithm description, added in
 !   month variable required for emissivity
@@ -24,24 +24,25 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine test_rttov(profiles,preproc_dims)
+
    use preproc_constants
    use preproc_structures
-   Use rttov_types, Only :   &
+   use rttov_types, only : &
         rttov_options,     &
         rttov_coefs,       &
-        profile_Type,      &
-        transmission_Type, &
-        radiance_Type,     &
-        radiance_aux,     &
+        profile_type,      &
+        transmission_type, &
+        radiance_type,     &
+        radiance_aux,      &
         rttov_chanprof
 
-   Implicit None
+   implicit none
 
-   Type(profile_Type),   intent(out), Allocatable :: profiles(:)
+   type(profile_type),   intent(out), Allocatable :: profiles(:)
    type(preproc_dims_s), intent(inout)            :: preproc_dims
 
    write(*,*)'size p',size(profiles(1)%p)

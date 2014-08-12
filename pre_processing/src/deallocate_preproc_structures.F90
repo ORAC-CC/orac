@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: deallocate_preproc_structures.f90
+! Name: deallocate_preproc_structures.F90
 !
 ! Purpose:
 ! Deallocate the array parts of the types defined in preproc_structures.f90
@@ -21,7 +21,7 @@
 ! History:
 ! 2012/01/19, MJ: produces draft code
 ! 2012/05/30, GT: Added deallocation of preproc_surf%emissivity
-! 2012/06/26, CP: Added allocation swrtm information. added definitions of 
+! 2012/06/26, CP: Added allocation swrtm information. added definitions of
 !   nchan_sw and nchan_lw. included channel_info structure!
 ! 2012/07/29, CP: deallocated levels and layers variable
 ! 2012/07/30, CP: added in solazi
@@ -37,7 +37,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &

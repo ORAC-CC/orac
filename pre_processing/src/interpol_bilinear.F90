@@ -26,7 +26,7 @@
 !                                      values
 ! dataout         real        out      On return, will contain the interpolated
 !                                      values coorespoinding to xout & yout.
-! missing         real   optional in   Specify the value which denotes missing 
+! missing         real   optional in   Specify the value which denotes missing
 !                                      data in the input array. If missing values
 !                                      are encountered, the code switches to
 !                                      a nearest neighbour interpolate.
@@ -42,7 +42,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
@@ -89,7 +89,7 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
       iiold = iibot
       jjold = jjbot
 
-      do 
+      do
          ii = (iibot + iitop) / 2
          jj = (jjbot + jjtop) / 2
          if (xout(out) .gt. xin(ii)) iibot = ii
@@ -123,7 +123,7 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
             datout(out) = datin(iibot,jjtop)
          else if (missmask(2).eq.1) then
             datout(out) = datin(iitop,jjbot)
-         else 
+         else
             datout(out) = datin(iibot,jjbot)
          end if
       else
@@ -138,16 +138,15 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
             intxtop = datin(iibot,jjtop) + &
                  (xout(out)-xin(iibot)) * &
                  (datin(iitop,jjtop)-datin(iibot,jjtop))/(xin(iitop)-xin(iibot))
-         endif
+         end if
          ! Now interpolate these intermediate values in the y-direction
          if (jjtop .eq. jjbot) then
             datout(out) = intxbot
          else
             datout(out) = intxbot + (yout(out)-yin(jjbot)) * &
                  (intxtop-intxbot) / (yin(jjtop)-yin(jjbot))
-         endif
+         end if
       end if
-
    end do
 
 end subroutine interpol_bilinear

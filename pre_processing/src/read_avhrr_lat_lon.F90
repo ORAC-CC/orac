@@ -31,7 +31,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
@@ -129,13 +129,13 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
    rtemp = temp*scale + offset
 !   do ix=startx,stopx
 !      do jy=starty,stopy
-!         if(rtemp(ix,jy) .eq. missingdata .or. rtemp(ix,jy) .eq. nodata) then
+!         if (rtemp(ix,jy) .eq. missingdata .or. rtemp(ix,jy) .eq. nodata) then
 !            rtemp(ix,jy)=real_fill_value
 !         else
 !            rtemp(ix,jy)=temp(ix,jy)*scale+offset
-!         endif
-!      enddo
-!   enddo
+!         end if
+!      end do
+!   end do
 
    !close dataspace
    call h5sclose_f(mem_id,err_code)

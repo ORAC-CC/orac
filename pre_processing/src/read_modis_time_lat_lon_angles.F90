@@ -34,14 +34,14 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
      imager_angles,imager_flags,imager_time,n_along_track)
 
-   use preproc_constants
    use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -55,12 +55,9 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    type(imager_time_s),        intent(in)  :: imager_time
    integer(kind=lint),         intent(in)  :: n_along_track
 
-   integer(kind=lint)                      :: geo_id,ix,jy
-
+   integer(kind=lint)                              :: geo_id,ix,jy
    real(kind=sreal),   allocatable, dimension(:,:) :: temp,temp2
-
    integer(kind=sint), allocatable, dimension(:,:) :: btemp
-
    integer                                         :: err_code
 
    !allocate temporary data
@@ -149,14 +146,14 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 !   end where
    do ix=imager_geolocation%startx,imager_geolocation%endx
       do jy=imager_geolocation%starty,imager_geolocation%endy
-         if(btemp(ix,jy).eq.0 .or. &
+         if (btemp(ix,jy).eq.0 .or. &
               (btemp(ix,jy).ge.5 .and. btemp(ix,jy).le.7)) then
             btemp(ix,jy) = 0
          else
             btemp(ix,jy) = 1
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    imager_flags%lsflag=btemp
 

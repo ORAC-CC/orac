@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Define the preprocessing grid in terms of known dimensions.
-! 
+!
 ! Description and Algorithm details:
 ! 1) If option 1, determine dellat/lon from the ECMWF lat/lon grid.
 ! 2) If option 2, do nothing.
@@ -28,7 +28,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
@@ -48,7 +48,7 @@ subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
    logical, dimension(imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny)             :: mask
    integer                                   :: xmax, ymax
- 
+
    ! determine which preproc grid points each pixels falls in (start at 1)
    lat = (imager_geolocation%latitude + preproc_dims%lat_offset)* &
         preproc_dims%dellat + 1.
@@ -77,7 +77,7 @@ subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
 
    preproc_dims%xdim = preproc_dims%max_lon - preproc_dims%min_lon + 1
    preproc_dims%ydim = preproc_dims%max_lat - preproc_dims%min_lat + 1
-   
+
    if (verbose) then
       write(*,*) 'preproc_dims: ',preproc_dims%xdim, &
            preproc_dims%ydim,preproc_dims%kdim

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: deallocate_ecmwf_structures.f90
+! Name: deallocate_ecmwf_structures.F90
 !
 ! Purpose:
 ! Deallocate the array parts of the types defined in ecmwf_structures.f90
@@ -19,7 +19,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine deallocate_ecmwf_structures(ecmwf)

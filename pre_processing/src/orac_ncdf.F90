@@ -44,7 +44,7 @@ contains
 ! Arguments:
 ! Name    Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ncid    integer In  ID number returned by a call to NF90_OPEN
+! ncid    integer In  ID number returned by a call to nf90_open
 ! name    string  In  Name of the data field to be returned
 ! val     real    Out Array into which the data will be written. The type and
 !                     size of this array determine the call used.
@@ -57,7 +57,7 @@ contains
 ! - does not yet cover all possible data types
 !-------------------------------------------------------------------------------
 
-SUBROUTINE float_1d(ncid, name, val, verbose)
+subroutine float_1d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -84,9 +84,9 @@ SUBROUTINE float_1d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE float_1d
+end subroutine float_1d
 
-SUBROUTINE float_2d(ncid, name, val, verbose)
+subroutine float_2d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -114,9 +114,9 @@ SUBROUTINE float_2d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE float_2d
+end subroutine float_2d
 
-SUBROUTINE float_3d(ncid, name, val, verbose)
+subroutine float_3d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -145,9 +145,9 @@ SUBROUTINE float_3d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE float_3d
+end subroutine float_3d
 
-SUBROUTINE float_4d(ncid, name, val, verbose)
+subroutine float_4d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -177,9 +177,9 @@ SUBROUTINE float_4d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE float_4d
+end subroutine float_4d
 
-SUBROUTINE float_5d(ncid, name, val, verbose)
+subroutine float_5d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -210,9 +210,9 @@ SUBROUTINE float_5d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE float_5d
-   
-SUBROUTINE int_1d(ncid, name, val, verbose)
+end subroutine float_5d
+
+subroutine int_1d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -239,9 +239,9 @@ SUBROUTINE int_1d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE int_1d
-   
-SUBROUTINE int_2d(ncid, name, val, verbose)
+end subroutine int_1d
+
+subroutine int_2d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -269,9 +269,9 @@ SUBROUTINE int_2d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE int_2d
-   
-SUBROUTINE int_3d(ncid, name, val, verbose)
+end subroutine int_2d
+
+subroutine int_3d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -300,9 +300,9 @@ SUBROUTINE int_3d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE int_3d
-   
-SUBROUTINE int_4d(ncid, name, val, verbose)
+end subroutine int_3d
+
+subroutine int_4d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -332,9 +332,9 @@ SUBROUTINE int_4d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE int_4d
-   
-SUBROUTINE int_5d(ncid, name, val, verbose)
+end subroutine int_4d
+
+subroutine int_5d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -365,9 +365,9 @@ SUBROUTINE int_5d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE int_5d
-   
-SUBROUTINE sint_1d(ncid, name, val, verbose)
+end subroutine int_5d
+
+subroutine sint_1d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -394,9 +394,9 @@ SUBROUTINE sint_1d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE sint_1d
+end subroutine sint_1d
 
-SUBROUTINE sint_2d(ncid, name, val, verbose)
+subroutine sint_2d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -424,9 +424,9 @@ SUBROUTINE sint_2d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE sint_2d
+end subroutine sint_2d
 
-SUBROUTINE sint_3d(ncid, name, val, verbose)
+subroutine sint_3d(ncid, name, val, verbose)
    use netcdf
    use preproc_constants
 
@@ -455,21 +455,21 @@ SUBROUTINE sint_3d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end SUBROUTINE sint_3d
+end subroutine sint_3d
 
 !-------------------------------------------------------------------------------
 ! Name: nc_open
 !
 ! Purpose:
-! Wrapper for NF90_OPEN with error handling.
+! Wrapper for nf90_open with error handling.
 !
 ! Description and Algorithm details:
-! 1) Call NF90_OPEN. If error, print message.
+! 1) Call nf90_open. If error, print message.
 !
 ! Arguments:
 ! Name  Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! ncid  integer Out File ID number returned by NF90_OPEN
+! ncid  integer Out File ID number returned by nf90_open
 ! fname string  In  Name of the file to be opened
 !
 ! History:
@@ -478,10 +478,10 @@ end SUBROUTINE sint_3d
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
-   
-SUBROUTINE nc_open(ncid, fname)
+
+subroutine nc_open(ncid, fname)
    use netcdf
 
    implicit none
@@ -491,12 +491,12 @@ SUBROUTINE nc_open(ncid, fname)
 
    integer                       :: ierr
 
-   ierr=NF90_OPEN(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
+   ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
       print*,'NC_OPEN: Error opening file ',trim(fname),'. ',NC_ERROR(ierr)
       STOP
    end if
-end SUBROUTINE nc_open
+end subroutine nc_open
 
 !-------------------------------------------------------------------------------
 ! Name: nc_error
@@ -520,9 +520,9 @@ end SUBROUTINE nc_open
 ! 2014/08/05, GM: 'out' was being truncated. Extended length to 64.
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
-FUNCTION nc_error(ierr) result(out)
+function nc_error(ierr) result(out)
    implicit none
 
    integer, intent(in) :: ierr
@@ -597,5 +597,5 @@ FUNCTION nc_error(ierr) result(out)
       out='Unknown NetCDF error code.'
    end select
 
-end FUNCTION nc_error
+end function nc_error
 end module orac_ncdf

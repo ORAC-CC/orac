@@ -24,7 +24,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine interpol_nearest_neighbour(xin, yin, datin, xout, yout, datout)
@@ -63,16 +63,15 @@ subroutine interpol_nearest_neighbour(xin, yin, datin, xout, yout, datout)
       do
          ii=(iibot+iitop)/2
          jj=(jjbot+jjtop)/2
-         if(xout(out) .gt. xin(ii)) iibot = ii
-         if(xout(out) .lt. xin(ii)) iitop = ii
-         if(yout(out) .gt. yin(jj)) jjtop = jj
-         if(yout(out) .lt. yin(jj)) jjbot = jj
-         if(ii .eq. ii_old .and. jj .eq. jj_old) exit
+         if (xout(out) .gt. xin(ii)) iibot = ii
+         if (xout(out) .lt. xin(ii)) iitop = ii
+         if (yout(out) .gt. yin(jj)) jjtop = jj
+         if (yout(out) .lt. yin(jj)) jjbot = jj
+         if (ii .eq. ii_old .and. jj .eq. jj_old) exit
          ii_old = ii
          jj_old = jj
-      enddo
+      end do
       datout(out) = datin(ii,jj)
-
    end do
 
 end subroutine interpol_nearest_neighbour

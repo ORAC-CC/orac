@@ -4,7 +4,7 @@
 ! Purpose:
 ! Open geo input file to determine the size of the data array for the purposes
 ! of dynamic array allocation.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Open geolocation file
 ! 2) Access the Latitude field and output its dimensions
@@ -19,13 +19,13 @@
 ! n_along_track    lint   out Number of pixels in the direction of travel
 !
 ! History:
-! 2011/12/12, MJ: produces draft code which opens and reads MODIS geo hdf files 
+! 2011/12/12, MJ: produces draft code which opens and reads MODIS geo hdf files
 ! 2013/09/11, AP: tidying, removed path_to_l1b_file
 !
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)

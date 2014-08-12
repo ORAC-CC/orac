@@ -1,9 +1,9 @@
 !-------------------------------------------------------------------------------
-! Name: build_preproc_fields.f90
+! Name: build_preproc_fields.F90
 !
 ! Purpose:
 ! Grid and average the imager data to the preprocessing grid.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Create regular lat/lon grids for preprocessor array.
 ! 2) Sum all imager angles within each preprocessor grid cell.
@@ -34,9 +34,9 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
-  
+
 subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
      imager_geolocation, imager_angles)
 
@@ -46,11 +46,11 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
 
    implicit none
 
-   type(preproc_dims_s)       :: preproc_dims
-   type(preproc_geoloc_s)     :: preproc_geoloc
-   type(preproc_geo_s)        :: preproc_geo
-   type(imager_geolocation_s) :: imager_geolocation
-   type(imager_angles_s)      :: imager_angles
+   type(preproc_dims_s),       intent(inout) :: preproc_dims
+   type(preproc_geoloc_s),     intent(inout) :: preproc_geoloc
+   type(preproc_geo_s),        intent(inout) :: preproc_geo
+   type(imager_geolocation_s), intent(inout) :: imager_geolocation
+   type(imager_angles_s),      intent(inout) :: imager_angles
 
    integer(kind=lint)         :: i,j,lon_i,lat_j
    real(sreal)                :: fac
@@ -69,14 +69,14 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    preproc_geoloc%longitude(preproc_dims%min_lon) = &
         (preproc_dims%min_lon-0.5)*fac - real(preproc_dims%lon_offset,sreal)
    do i=preproc_dims%min_lon+1,preproc_dims%max_lon
-      preproc_geoloc%longitude(i) = preproc_geoloc%longitude(i-1) + fac      
+      preproc_geoloc%longitude(i) = preproc_geoloc%longitude(i-1) + fac
    end do
 
    !imager resolution is always higher than preprocessing resolution
    !=>average imager properties to this coarser resolution grid.
 
-   preproc_dims%counter_sw=0 
-   preproc_dims%counter_lw=0 
+   preproc_dims%counter_sw=0
+   preproc_dims%counter_lw=0
 
    !loop over imager data
    do j=1,imager_geolocation%ny
@@ -95,7 +95,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
          lat_j=floor((imager_geolocation%latitude(i,j) + &
               preproc_dims%lat_offset)*preproc_dims%dellat, kind=lint) + 1
          if (lon_i .gt. preproc_dims%max_lon) lon_i=preproc_dims%min_lon
-         if (lat_j .gt. preproc_dims%max_lat) lat_j=preproc_dims%max_lat 
+         if (lat_j .gt. preproc_dims%max_lat) lat_j=preproc_dims%max_lat
 
          if (all(imager_angles%satzen(i,j,:) .gt. real_fill_value)) then
             preproc_geo%satza(lon_i,lat_j,:)=preproc_geo%satza(lon_i,lat_j,:)+ &
@@ -104,7 +104,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
             ! count the number of L1 pixels which fall in this pixel
             preproc_dims%counter_lw(lon_i,lat_j)= &
                  preproc_dims%counter_lw(lon_i,lat_j)+1
-         endif
+         end if
 
          if (all(imager_angles%solzen(i,j,:) .gt. real_fill_value) .and. &
               all(imager_angles%solazi(i,j,:) .gt. real_fill_value) .and. &
@@ -120,37 +120,37 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
             ! count the number of L1 pixels which fall in this pixel
             preproc_dims%counter_sw(lon_i,lat_j)= &
                  & preproc_dims%counter_sw(lon_i,lat_j)+1
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    ! loop over preprocessor data i.e reduced resolution
    do j=preproc_dims%min_lat,preproc_dims%max_lat
       do i=preproc_dims%min_lon,preproc_dims%max_lon
-         if(preproc_dims%counter_lw(i,j) .gt. 0) then
+         if (preproc_dims%counter_lw(i,j) .gt. 0) then
             ! if this is a good preprocessing pixel, calculate the average
             preproc_geo%satza(i,j,:)=preproc_geo%satza(i,j,:)/ &
                  preproc_dims%counter_lw(i,j)
          else
             ! if not set fill value
             preproc_geo%satza(i,j,:)=real_fill_value
-         endif
+         end if
 
-         if(preproc_dims%counter_sw(i,j) .gt. 0) then
+         if (preproc_dims%counter_sw(i,j) .gt. 0) then
             ! if this is a good preprocessing pixel, calculate the average
             preproc_geo%solza(i,j,:)=preproc_geo%solza(i,j,:)/ &
                  preproc_dims%counter_sw(i,j)
             preproc_geo%relazi(i,j,:)=preproc_geo%relazi(i,j,:)/ &
                  preproc_dims%counter_sw(i,j)
             preproc_geo%solazi(i,j,:)=preproc_geo%solazi(i,j,:)/ &
-                 preproc_dims%counter_sw(i,j)	
+                 preproc_dims%counter_sw(i,j)
          else
             ! if not set fill value
             preproc_geo%solza(i,j,:)=real_fill_value
             preproc_geo%relazi(i,j,:)=real_fill_value
-            preproc_geo%solazi(i,j,:)=real_fill_value	
-         endif
-      enddo
-   enddo
+            preproc_geo%solazi(i,j,:)=real_fill_value
+         end if
+      end do
+   end do
 
 end subroutine build_preproc_fields

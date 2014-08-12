@@ -19,7 +19,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine deallocate_surface_structures(surface,include_full_brdf)
@@ -29,7 +29,7 @@ subroutine deallocate_surface_structures(surface,include_full_brdf)
    implicit none
 
    type(surface_s), intent(inout) :: surface
-   logical, intent(in)            :: include_full_brdf
+   logical,         intent(in)    :: include_full_brdf
 
    deallocate(surface%albedo_chan)
    deallocate(surface%emissivity_chan)
@@ -42,6 +42,6 @@ subroutine deallocate_surface_structures(surface,include_full_brdf)
       deallocate(surface%rho_0d)
       deallocate(surface%rho_dv)
       deallocate(surface%rho_dd)
-   endif
+   end if
 
 end subroutine deallocate_surface_structures

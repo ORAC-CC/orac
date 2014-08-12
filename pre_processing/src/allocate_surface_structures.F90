@@ -27,7 +27,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, &
@@ -43,7 +43,7 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, 
    type(surface_s),            intent(out) :: surface
    type(imager_geolocation_s), intent(in)  :: imager_geolocation
    type(channel_info_s),       intent(in)  :: channel_info
-   logical, intent(in)                    :: include_full_brdf
+   logical,                    intent(in)  :: include_full_brdf
 
    allocate(surface%albedo_chan(channel_info%nchannels_sw))
    surface%albedo_chan=real_fill_value
@@ -76,6 +76,6 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, 
       allocate(surface%rho_dd(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,channel_info%nchannels_sw))
       surface%rho_dd=real_fill_value
-   endif
+   end if
 
 end subroutine allocate_surface_structures

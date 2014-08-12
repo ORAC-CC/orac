@@ -31,7 +31,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
@@ -83,7 +83,6 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
    call h5dread_f(dset_id,H5T_NATIVE_INTEGER,temp,edge,err_code,mem_id, &
         dspace_id)
 
-
    !open data group where attributes are stored
    call h5gopen_f(fid,attrgroup,dset_id2,err_code)
    !because those are all scalar atributes
@@ -132,14 +131,14 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
 !   end where
    do ix=startx,stopx
       do jy=starty,stopy
-         if(float(temp(ix,jy)) .eq. missingdata .or. &
+         if (float(temp(ix,jy)) .eq. missingdata .or. &
               float(temp(ix,jy)) .eq. nodata) then
             rtemp(ix,jy)=real_fill_value
          else
             rtemp(ix,jy)=temp(ix,jy)*scale+offset
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    !close dataspace
    call h5sclose_f(mem_id,err_code)

@@ -16,12 +16,12 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 module netcdf_output
 
-implicit none
+   implicit none
 
 contains
 

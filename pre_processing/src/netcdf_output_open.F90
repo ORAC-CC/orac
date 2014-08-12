@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: netcdf_output_open.f90
+! Name: netcdf_output_open.F90
 !
 ! Purpose:
 ! Open netcdf output files
@@ -58,7 +58,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &

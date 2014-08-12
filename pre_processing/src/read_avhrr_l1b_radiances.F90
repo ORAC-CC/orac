@@ -33,16 +33,16 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geolocation, &
      imager_measurements,channel_info)
 
-   use hdf5
-   use preproc_constants
-   use imager_structures
    use channel_structures
+   use hdf5
+   use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -53,15 +53,11 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
    type(imager_measurements_s),   intent(inout) :: imager_measurements
    type(channel_info_s),          intent(in)    :: channel_info
 
-   integer                       :: ichannel,err_code
-
-   integer(kind=lint)            :: l1b_id
-
+   integer                                       :: ichannel,err_code
+   integer(kind=lint)                            :: l1b_id
    real(kind=sreal), allocatable, dimension(:,:) :: temp
-
-   character(len=6)              :: cimage,cich
-
-   character(len=10)             :: channel_number
+   character(len=6)                              :: cimage,cich
+   character(len=10)                             :: channel_number
 
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx, &
         imager_geolocation%starty:imager_geolocation%endy))
@@ -116,7 +112,7 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
          write(*,*) 'AVHRR channel '//channel_number//' not expected.'
          stop
       end select
-   enddo
+   end do
 
    deallocate(temp)
 

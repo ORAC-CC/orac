@@ -1,9 +1,9 @@
 module cimss_emissivity
 
    use preproc_constants, only : real_fill_value
-   
+
    implicit none
-   
+
    type emis_s
       !    Data dimensions
       integer(kind=4)                                :: nlon, nlat, nbands
@@ -68,7 +68,7 @@ contains
 ! $Id$
 !
 ! Bugs:
-! could be a problem will deallocation of some arrays in this routine
+! None known.
 !-------------------------------------------------------------------------------
 
 function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)&
@@ -101,7 +101,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
 
    ! List of the band variable names in the data files
    BandList = (/ 'emis1 ', 'emis2 ', 'emis3 ', 'emis4 ', 'emis5 ', &
-        &  'emis6 ', 'emis7 ', 'emis8 ', 'emis9 ', 'emis10' /)
+                 'emis6 ', 'emis7 ', 'emis8 ', 'emis9 ', 'emis10' /)
 
    nbands = size(bands)
    ! Open NetCDF file
@@ -112,8 +112,8 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
 
    ! Now extract dimensions - should be three!
    if (nDim .gt. 3) write(*,*) &
-        'read_cimss_emissitivty: Warning ',trim(path_to_file), &
-        &' has more than three dimensions! nDim = ',nDim
+      'read_cimss_emissitivty: Warning ',trim(path_to_file), &
+      ' has more than three dimensions! nDim = ',nDim
    ! Three dimensions should be:
    ! xdim = latitude (strange!)
    ! ydim = longitude
@@ -137,12 +137,12 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
       end if
    end if
 
-   ! Likewise the flag 
+   ! Likewise the flag
    if (present(flag)) then
       if (flag .gt. 0) then
          allocate(emis%flag(xdim,ydim))
          call nc_read_array(fid,'emis_flag',emis%flag,0)
-      endif
+      end if
    end if
 
    ! Now define the emissivity array itself, based on the bands argument
@@ -167,7 +167,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
          call nc_read_array(fid,'lon',emis%lon,0)
       end if
    end if
-   ! If the loc variable is null, or hasn't been specified, 
+   ! If the loc variable is null, or hasn't been specified,
    ! then we generate our own lat-lon grid.
    if (gen_loc .eq. 1) then
       do i=1,7200
@@ -187,10 +187,10 @@ subroutine deallocate_emis(emis)
    type(emis_s), intent(inout) :: emis
 
    if (allocated(emis%wavenumber)) deallocate(emis%wavenumber)
-   if (allocated(emis%flag)) deallocate(emis%flag)
-   if (allocated(emis%bands)) deallocate(emis%bands)
-   if (allocated(emis%lat)) deallocate(emis%lat)
-   if (allocated(emis%lon)) deallocate(emis%lon)
+   if (allocated(emis%flag))       deallocate(emis%flag)
+   if (allocated(emis%bands))      deallocate(emis%bands)
+   if (allocated(emis%lat))        deallocate(emis%lat)
+   if (allocated(emis%lon))        deallocate(emis%lon)
    if (allocated(emis%emissivity)) deallocate(emis%emissivity)
 
 end subroutine deallocate_emis

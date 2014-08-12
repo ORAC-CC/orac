@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Compute geopotential vertical coorindate from pressure cooordinate
-! 
+!
 ! Description and Algorithm details:
 ! This code is based on details given in the following ECMWF documentation:
 ! http://www.ecmwf.int/research/ifsdocs/DYNAMICS/Chap2_Discretization4.html#961180
@@ -23,7 +23,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
@@ -36,14 +36,14 @@ subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
    type(preproc_prtm_s), intent(inout) :: preproc_prtm
    type(preproc_dims_s), intent(in)    :: preproc_dims
    type(ecmwf_s),        intent(in)    :: ecmwf
-   
+
    integer                             :: ii,ij,ik
    real(kind=sreal)                    :: virt_temp,p,pp1,logpp,r_ratio,alpha,sp
    real(kind=sreal)                    :: sum_term,add_term
 
    r_ratio=r_water_vap/(r_dry_air-1.0_sreal)
 
-   ! compute the summation terms of the sum in (2.21) and necessary terms in 
+   ! compute the summation terms of the sum in (2.21) and necessary terms in
    ! (2.22) & (2.23) from TOA down (index ik represents cell centers and cell
    ! upper boundaries (wrt height))
    do ij=preproc_dims%min_lat,preproc_dims%max_lat
@@ -58,24 +58,24 @@ subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
          ! sum from surface up according to (2.21)
          do ik=ecmwf%kdim,1,-1
             !pressure at cell upper boundary
-            p=ecmwf%avec(ik)+ecmwf%bvec(ik)*sp 
+            p=ecmwf%avec(ik)+ecmwf%bvec(ik)*sp
             preproc_prtm%pressure(ii,ij,ik)=0.5*(p+pp1)
 
             !logpp is logarithmic pressure difference, defined on cell centers
-            if(p .gt. dither) then 
+            if (p .gt. dither) then
                logpp=log(pp1/p)
             else
                !TOA has zero pressure, therefore:
                logpp=log(pp1)
-            endif
+            end if
 
             !virtual temperature at cell centers
             virt_temp=preproc_prtm%temperature(ii,ij,ik)*(1.0_sreal + &
                  r_ratio*preproc_prtm%spec_hum(ii,ij,ik))
             sum_term=r_dry_air*virt_temp*logpp
-      
+
             !alpha term used later to put gph on cell centers, s.b.
-            if(ik .eq. 1) then
+            if (ik .eq. 1) then
                alpha=log(2.0_sreal)
             else
                alpha=1.0_sreal-p/(pp1-p)*logpp
@@ -90,8 +90,8 @@ subroutine compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
                  add_term
 
             pp1=p
-         enddo
+         end do
       end do
    end do
-   
+
 end subroutine compute_geopot_coordinate

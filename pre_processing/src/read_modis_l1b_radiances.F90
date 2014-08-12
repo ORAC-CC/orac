@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Open and read MODIS input files
-! 
+!
 ! Description and Algorithm details:
 ! 1) Allocate temporary array.
 ! 2) Open file.
@@ -30,15 +30,15 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
      imager_geolocation,imager_measurements,channel_info,verbose)
 
-   use preproc_constants
-   use imager_structures
    use channel_structures
+   use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -60,9 +60,9 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
    real(kind=sreal), allocatable, dimension(:,:) :: temp
 
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
-        & imager_geolocation%starty:imager_geolocation%endy))
+                 imager_geolocation%starty:imager_geolocation%endy))
 
-   !get file id
+   ! get file id
    l1b_id=sfstart(path_to_l1b_file,DFACC_READ)
    write(*,*) 'L1B FILE:',trim(path_to_l1b_file),l1b_id
 
@@ -75,22 +75,22 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
            channel_info%channel_ids_instr(ich),lrefl, &
            imager_geolocation%startx,imager_geolocation%endx, &
            imager_geolocation%starty,imager_geolocation%endy,temp,verbose)
-      if(verbose) write(*,*) 'MODIS band ', &
+      if (verbose) write(*,*) 'MODIS band ', &
            channel_info%channel_ids_instr(ich),': ',minval(temp),maxval(temp)
 
-      if(.not. lrefl) then
+      if (.not. lrefl) then
          do ix=imager_geolocation%startx,imager_geolocation%endx
             do jy=imager_geolocation%starty,imager_geolocation%endy
 
                temp(ix,jy)=MODIS_BRIGHT(platform,temp(ix,jy), &
                     channel_info%channel_ids_instr(ich),1)
 
-            enddo
-         enddo
-      endif
+            end do
+         end do
+      end if
       imager_measurements%data(:,:,ich)=temp(:,:)
 
-   enddo
+   end do
 
    deallocate(temp)
 

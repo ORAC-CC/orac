@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: rttov_driver.f90
+! Name: rttov_driver.F90
 !
 ! Purpose:
 ! Create environment within which all RTTOV related code is contained.
@@ -112,7 +112,7 @@
 
 module rttov_driver_m
 
-implicit none
+   implicit none
 
 contains
 
@@ -123,13 +123,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    use netcdf
 
-   !  use ieee_arithmetic
+!  use ieee_arithmetic
 
-   use preproc_constants
-   use preproc_structures
    use channel_structures
    use imager_structures
    use netcdf_structures
+   use preproc_constants
+   use preproc_structures
 
    use parkind1, only : jpim, &
         jprb, &
@@ -181,20 +181,20 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #endif
 
    ! Arguments
-   character(len=pathlength), intent(in)         :: coef_path
-   character(len=pathlength), intent(in)         :: emiss_path
-   character(len=sensorlength), intent(in)       :: sensor
+   character(len=pathlength),     intent(in)     :: coef_path
+   character(len=pathlength),     intent(in)     :: emiss_path
+   character(len=sensorlength),   intent(in)     :: sensor
    character(len=platformlength), intent(in)     :: platform
-   type(preproc_dims_s), intent(inout)           :: preproc_dims
-   type(preproc_geoloc_s), intent(in)            :: preproc_geoloc
-   type(preproc_geo_s), intent(in)               :: preproc_geo
-   type(preproc_prtm_s), intent(inout)           :: preproc_prtm
-   type(preproc_lwrtm_s), intent(inout)          :: preproc_lwrtm
-   type(preproc_swrtm_s), intent(inout)          :: preproc_swrtm
-   type(imager_angles_s), intent(in)             :: imager_angles
-   type(netcdf_info_s), intent(inout)            :: netcdf_info
-   type(channel_info_s), intent(in)              :: channel_info
-   integer(kind=stint), intent(in)               :: month
+   type(preproc_dims_s),          intent(inout)  :: preproc_dims
+   type(preproc_geoloc_s),        intent(in)     :: preproc_geoloc
+   type(preproc_geo_s),           intent(in)     :: preproc_geo
+   type(preproc_prtm_s),          intent(inout)  :: preproc_prtm
+   type(preproc_lwrtm_s),         intent(inout)  :: preproc_lwrtm
+   type(preproc_swrtm_s),         intent(inout)  :: preproc_swrtm
+   type(imager_angles_s),         intent(in)     :: imager_angles
+   type(netcdf_info_s),           intent(inout)  :: netcdf_info
+   type(channel_info_s),          intent(in)     :: channel_info
+   integer(kind=stint),           intent(in)     :: month
 
    ! Loop variables
    integer(kind=jpim)                :: j
@@ -310,33 +310,33 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       !set the platform id
       if (index(trim(platform),'noaa') .ge. 1) then
          instrument(1,irttovid)=1  ! NOAA
-      elseif (index(trim(platform),'metop') .ge. 1) then
+      else if (index(trim(platform),'metop') .ge. 1) then
          instrument(1,irttovid)=10 ! MetOp
-      endif
+      end if
 
       ! Extract sat ID string from platform string
       do kchar=1,len(platform)
          if (ichar(platform(kchar:kchar)) .ge. 48 .and. &
               ichar(platform(kchar:kchar)) .le. 57) then
             platform_id_string(kchar:kchar)=platform(kchar:kchar)
-         endif
-      enddo
+         end if
+      end do
       platform_id_string=adjustl(platform_id_string)
       !set the satellite id
       read(platform_id_string, '(i2)') instrument(2,irttovid)
-   elseif (trim(sensor) .eq. 'MODIS') then
+   else if (trim(sensor) .eq. 'MODIS') then
       instrument(3,irttovid)=13
       instrument(1,irttovid)=9 ! EOS Aqua or Terra
 
       if (trim(platform) .eq. 'TERRA') instrument(2,irttovid)=1
       if (trim(platform) .eq. 'AQUA')  instrument(2,irttovid)=2
 
-   elseif (trim(sensor) .eq. 'ATSR' .or. trim(sensor) .eq. 'AATSR') then
+   else if (trim(sensor) .eq. 'ATSR' .or. trim(sensor) .eq. 'AATSR') then
       instrument(3,irttovid)=14
       instrument(1,irttovid)=11
       instrument(2,irttovid)=1
 
-   endif
+   end if
 
 
    write(*,*) 'instrument(:,irttovid): ', instrument(:,irttovid)
@@ -362,13 +362,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Initialise error management with default value for the error unit number
    ! and all error message output
    err_unit = -1
-   if(verbose) then
+   if (verbose) then
       !everything
       verbosity_level = 3_jpim
       !only FATAL messages
    else
       verbosity_level = 1_jpim
-   endif
+   end if
 
    call rttov_errorhandling(err_unit, verbosity_level)
 
@@ -394,21 +394,21 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          dummy_lint_1dveca(pixel_counter_lw)=channel_info%channel_ids_abs(icoeffs)
          dummy_lint_1dvecb(pixel_counter_lw)=channel_info%channel_ids_instr(icoeffs)
          dummy_real_1dveca(pixel_counter_lw)=channel_info%channel_wl_abs(icoeffs)
-      endif
-   enddo
+      end if
+   end do
 
    netcdf_info%start_1d(1)=1
    netcdf_info%counter_1d(1)=sum(channel_info%channel_lw_flag)
    netcdf_info%stride_1d(1)=1
-   ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, netcdf_info%channels_id_lw, &
+   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, netcdf_info%channels_id_lw, &
         dummy_lint_1dveca, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write lw index abs'
-   ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
         netcdf_info%channels_id_instr_lw,dummy_lint_1dvecb, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write lw index instr'
-   ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
         netcdf_info%wvn_id_lw,dummy_real_1dveca, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write lw wl'
@@ -429,22 +429,22 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          dummy_lint_1dveca(pixel_counter_sw)=channel_info%channel_ids_abs(icoeffs)
          dummy_lint_1dvecb(pixel_counter_sw)=channel_info%channel_ids_instr(icoeffs)
          dummy_real_1dveca(pixel_counter_sw)=channel_info%channel_wl_abs(icoeffs)
-      endif
-   enddo
+      end if
+   end do
 
    netcdf_info%start_1d(1)=1
    netcdf_info%counter_1d(1)=sum(channel_info%channel_sw_flag)
    netcdf_info%stride_1d(1)=1
-   ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
         netcdf_info%channels_id_sw,dummy_lint_1dveca, &
         netcdf_info%start_1d, netcdf_info%counter_1d, &
         netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write sw index abs'
-   ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
         netcdf_info%channels_id_instr_sw,dummy_lint_1dvecb, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write sw index instr'
-   ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
         netcdf_info%wvn_id_sw,dummy_real_1dveca, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write sw wl'
@@ -482,56 +482,56 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                coeffile='rtcoef_noaa_'//trim(adjustl(platform_id_string))// &
                     '_avhrr.v10.dat'
                ! SW
-            elseif (icoeffs .eq. 2) then
+            else if (icoeffs .eq. 2) then
                coeffile='rtcoef_noaa_'//trim(adjustl(platform_id_string))// &
                     '_avhrr_visnir_v1.v10.dat'
-            endif
+            end if
 
             ! METOP
-         elseif (instrument(1,irttovid) .eq. 10) then
+         else if (instrument(1,irttovid) .eq. 10) then
             ! LW
             if (icoeffs .eq. 1) then
                coeffile='rtcoef_metop_'//trim(adjustl(platform_id_string))// &
                     '_avhrr.v10.dat'
                ! SW
-            elseif (icoeffs .eq. 2) then
+            else if (icoeffs .eq. 2) then
                coeffile='rtcoef_metop_'//trim(adjustl(platform_id_string))// &
                     '_avhrr_visnir_v1.v10.dat'
-            endif
-         endif
+            end if
+         end if
 
          ! MODIS
-      elseif (instrument(3,irttovid) .eq. 13) then
+      else if (instrument(3,irttovid) .eq. 13) then
          ! TERRA
          if (instrument(2,irttovid) .eq. 1) then
             ! LW
             if (icoeffs .eq. 1) then
                coeffile='rtcoef_eos_2_modis.v10.dat'
                ! SW
-            elseif (icoeffs .eq. 2) then
+            else if (icoeffs .eq. 2) then
                coeffile='rtcoef_eos_2_modis_visnir_v1.v10.dat'
-            endif
+            end if
             ! AQUA
-         elseif (instrument(2,irttovid) .eq. 2) then
+         else if (instrument(2,irttovid) .eq. 2) then
             ! LW
             if (icoeffs .eq. 1) then
                coeffile='rtcoef_eos_2_modis.v10.dat'
                ! SW
-            elseif (icoeffs .eq. 2) then
+            else if (icoeffs .eq. 2) then
                coeffile='rtcoef_eos_2_modis_visnir_v1.v10.dat'
-            endif
-         endif
+            end if
+         end if
 
          ! AATSR
-      elseif (instrument(3,irttovid) .eq. 14) then
+      else if (instrument(3,irttovid) .eq. 14) then
          ! LW
          if (icoeffs .eq. 1) then
             coeffile='rtcoef_envisat_1_atsr.dat'
             ! SW
-         elseif (icoeffs .eq. 2) then
+         else if (icoeffs .eq. 2) then
             coeffile='rtcoef_envisat_1_atsr_visnir-spp_v10.dat'
-         endif
-      endif
+         end if
+      end if
 
       ! Set channel info for coeff files
 
@@ -541,10 +541,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          input_chan(1:nchan(iprof))= channel_info%channel_ids_rttov_coef_lw(:)
 
          ! SW
-      elseif (icoeffs .eq. 2 ) then
+      else if (icoeffs .eq. 2 ) then
          nchan(iprof)=size(channel_info%channel_ids_rttov_coef_sw)
          input_chan(1:nchan(iprof))= channel_info%channel_ids_rttov_coef_sw(:)
-      endif
+      end if
 
       nchannels = nchan(iprof) ! Number of valid channels to compute radiances
 
@@ -598,7 +598,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          chanprof(1)%chan = 3
          chanprof(2)%chan = 2
          chanprof(3)%chan = 1
-      endif
+      end if
 
 
       write(*,*) 'Set up emissivity atlas'
@@ -609,7 +609,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          call rttov_atlas_setup(errorstatus,imonth,coefs(irttovid)%coef, &
               path=emiss_path)
          write(*,*) 'errorstatus rttov_atlas_setup: ', errorstatus
-      endif
+      end if
 
 
       ! Allocate RTTOV structures
@@ -734,7 +734,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                profiles(1)%longitude=preproc_geoloc%longitude(idim)-360.0
             else
                profiles(1)%longitude=preproc_geoloc%longitude(idim)
-            endif
+            end if
 
 
             ! Handle snow fraction with poor man's approach
@@ -779,7 +779,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                           emis_flag = emis_flag)
                      if (errorstatus .ne. 0) then
                         write(*,*) 'errorstatus rttov_get_emis: ', errorstatus
-                     endif
+                     end if
 
                      ! If returned emissivity is spurious (water surface) then
                      ! calculate emissivity. If it is not (land surface) then
@@ -792,12 +792,12 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                         calcemis=.false.
                         emissivity_in=emissivity
                         emissivity_out=emissivity
-                     endif
+                     end if
                      !                 else
                      !                    calcemis=.false.
                      !                    emissivity_in=0.0
                      !                    emissivity=0.0
-                  endif
+                  end if
 
                   ! If this is a good preprocessing pixel do the RT computation.
 
@@ -815,14 +815,14 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #endif
                      if (errorstatus .ne. 0) then
                         write(*,*) 'errorstatus rttov_direct: ', errorstatus
-                     endif
+                     end if
 
                      ! Calculate lw values
                      call call_rtm_ir_rttov(transmission,radiance, &
                           imager_angles,channel_info,preproc_lwrtm)
 
                      ! SW
-                  elseif (icoeffs.eq.2 .and. preproc_dims%counter_sw(idim,jdim) &
+                  else if (icoeffs.eq.2 .and. preproc_dims%counter_sw(idim,jdim) &
                        .gt. 0 .and. errorstatus .eq. 0) then
 #ifdef _OPENMP
                      call rttov_parallel_direct(errorstatus,chanprof,opts, &
@@ -836,7 +836,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #endif
                      if (errorstatus .ne. 0) then
                         write(*,*) 'errorstatus rttov_direct: ', errorstatus
-                     endif
+                     end if
 
                      sza=0.
                      !                    sza=profiles(1)%sunzenangle
@@ -849,8 +849,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      call call_rtm_solar_rttov(transmission, &
                           imager_angles,channel_info,preproc_swrtm,amf,za)
 
-                  endif
-               enddo ! Loop over views
+                  end if
+               end do ! Loop over views
 
 
                ! Now write out data to netcdf files
@@ -867,7 +867,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! longitude
                   dummy_real_1d(1)=profiles(1)%longitude
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%lonid_pw,dummy_real_1d, &
                        netcdf_info%start_1d, netcdf_info%counter_1d, &
                        netcdf_info%stride_1d)
@@ -875,7 +875,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! latitude
                   dummy_real_1d(1)=profiles(1)%latitude
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%latid_pw,dummy_real_1d, &
                        netcdf_info%start_1d, netcdf_info%counter_1d, &
                        netcdf_info%stride_1d)
@@ -883,7 +883,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! satzen
                   dummy_real_1d(1)=profiles(1)%zenangle
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &!
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &!
                        netcdf_info%satzenid_pw,dummy_real_1d, &
                        netcdf_info%start_1d, netcdf_info%counter_1d, &
                        netcdf_info%stride_1d)
@@ -891,7 +891,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! solzen
                   dummy_real_1d(1)=profiles(1)%sunzenangle
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%solzenid_pw,dummy_real_1d, &
                        netcdf_info%start_1d, netcdf_info%counter_1d, &
                        netcdf_info%stride_1d)
@@ -899,7 +899,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! skin temp
                   dummy_real_1d(1)=profiles(1)%skin%t
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%skintid_pw,dummy_real_1d, &
                        netcdf_info%start_1d, netcdf_info%counter_1d, &
                        netcdf_info%stride_1d)
@@ -907,7 +907,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! exp(lnsp)
                   dummy_real_1d(1)=profiles(1)%s2m%p
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%lnspid_pw,dummy_real_1d, &
                        netcdf_info%start_1d, netcdf_info%counter_1d, &
                        netcdf_info%stride_1d)
@@ -915,7 +915,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! (lsf)
                   dummy_real_1d(1)= preproc_prtm%land_sea_mask(idim,jdim)
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%lsfid_pw,dummy_real_1d, &
                        netcdf_info%start_1d, netcdf_info%counter_1d, &
                        netcdf_info%stride_1d)
@@ -935,7 +935,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! Pressure profile (at level centers of preprocessing profile,
                   ! interfaces for RTTOV)
                   dummy_real_2d(:,1)=profiles(1)%p(:)
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%pprofile_lev_id_pw,dummy_real_2d, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -945,7 +945,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! interfaces for RTTOV)
                   dummy_real_2d=real_fill_value
                   dummy_real_2d(:,1)=profiles(1)%t(:)
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%tprofile_lev_id_pw,dummy_real_2d, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -956,7 +956,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! profile, interfaces for RTTOV)
                   dummy_real_2d=real_fill_value
                   dummy_real_2d(:,1)=preproc_prtm%phi_lev(idim,jdim,:)
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_prtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%hprofile_lev_id_pw,dummy_real_2d, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -984,7 +984,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_2dems(:,1)=emissivity_out(:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dems(:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%emiss_id_lw,dummy_real_2dems, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -1010,7 +1010,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%solzaid_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -1020,7 +1020,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%satzaid_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -1030,7 +1030,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%relaziid_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -1061,7 +1061,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_3d(:,:,1)=preproc_lwrtm%tauac(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%tac_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
@@ -1071,7 +1071,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_3d(:,:,1)=preproc_lwrtm%taubc(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%tbc_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
@@ -1081,7 +1081,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radbc(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%rbc_up_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
@@ -1091,7 +1091,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_up(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%rac_up_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
@@ -1101,7 +1101,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_down(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_lwrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%rac_down_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
@@ -1111,7 +1111,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
 
                   ! Write the sw information
-               elseif (icoeffs.eq.2) then
+               else if (icoeffs.eq.2) then
 
                   pixel_counter_sw=pixel_counter_sw+1
 
@@ -1136,7 +1136,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%solzaid_sw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -1146,7 +1146,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%satzaid_sw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -1156,7 +1156,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%relaziid_sw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
@@ -1187,7 +1187,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_3d(:,:,1)=preproc_swrtm%tauac(:,:)
                   if (preproc_dims%counter_sw(idim,jdim) .eq. 0 ) &
                        dummy_real_3d(:,:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%tac_id_sw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
@@ -1197,7 +1197,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   dummy_real_3d(:,:,1)=preproc_swrtm%taubc(:,:)
                   if (preproc_dims%counter_sw(idim,jdim) .eq. 0 ) &
                        dummy_real_3d(:,:,1)=real_fill_value
-                  ierr = NF90_PUT_VAR(netcdf_info%ncid_swrtm, &
+                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%tbc_id_sw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
@@ -1205,10 +1205,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   deallocate(dummy_real_3d)
 
-               endif
-            endif  ! icoeffs le 2
-         enddo ! Loop over i
-      enddo ! Loop over j
+               end if
+            end if  ! icoeffs le 2
+         end do ! Loop over i
+      end do ! Loop over j
 
 
       write(*,*) 'Deallocate RTTOV strunctures'
@@ -1251,14 +1251,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
       deallocate(nchan)
 
-   enddo ! Loop over coefficients
+   end do ! Loop over coefficients
 
    deallocate(instrument)
 
 end subroutine rttov_driver
 
+
 include 'effective_2way_za.F90'
 include 'call_rtm_ir_rttov.F90'
 include 'call_rtm_solar_rttov.F90'
+
 
 end module rttov_driver_m

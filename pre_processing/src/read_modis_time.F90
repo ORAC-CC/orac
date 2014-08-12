@@ -24,7 +24,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_time(fid,SDS_name,startyy,stopyy,temp)

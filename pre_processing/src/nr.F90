@@ -14,12 +14,12 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 module nr
 
-implicit none
+   implicit none
 
 contains
 

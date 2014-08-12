@@ -46,7 +46,7 @@ module surface_structures
 
 contains
 
-  include 'allocate_surface_structures.F90'
-  include 'deallocate_surface_structures.F90'
+include 'allocate_surface_structures.F90'
+include 'deallocate_surface_structures.F90'
 
 end module surface_structures

@@ -45,14 +45,14 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
      ixstart, ixstop, iystart, iystop, level1b_buffer, verbose)
 
-   use preproc_constants
    use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -87,29 +87,29 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       SDS_name = "EV_250_Aggr1km_RefSB"
       SDS_unc_name = "EV_250_Aggr1km_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_250M"
-   endif
+   end if
    if (band >= 3 .and. band <= 7) then
       SDS_name = "EV_500_Aggr1km_RefSB"
       SDS_unc_name = "EV_500_Aggr1km_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_500M"
-   endif
+   end if
    if (band >= 8 .and. band<= 19 .or. band == 26) then
       SDS_name = "EV_1KM_RefSB"
       SDS_unc_name = "EV_1KM_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_1KM_RefSB"
-   endif
+   end if
    if (band >= 20 .and. band <= 36 .and. band /= 26) then
       SDS_name = "EV_1KM_Emissive"
       SDS_unc_name = "EV_1KM_Emissive_Uncert_Indexes"
       Dim_band_index = "Band_1KM_Emissive"
-   endif
+   end if
 
    file_id = fid
    var_id = sfselect(file_id,  sfn2index(file_id, SDS_name))
    err_code = sfginfo(var_id, tmpname, tmprank, tmpdimsizes, tmptype, tmpnattrs)
 
    number_of_bands = tmpdimsizes(3)
-   if(verbose) then
+   if (verbose) then
       print*, 'sfginfo on ',trim(adjustl(Dim_band_index))
       print*, 'tmpname: ', trim(adjustl(tmpname))
       print*, 'tmprank: ', tmprank
@@ -118,7 +118,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       print*, 'tmpnattrs: ',tmpnattrs
       print*, 'Band wanted: ',band
       print*, 'Number of MODIS bands: ',number_of_bands
-   endif
+   end if
 
    band_names=''
    attr_id=sffattr(var_id, "band_names")
@@ -132,33 +132,33 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       comma_i=index(band_names, achar(0))
    end do
 
-   if(verbose) print*, 'Bands found: ',trim(band_names)
+   if (verbose) print*, 'Bands found: ',trim(band_names)
 
    flag = .true.
    comma_i_old=1
    band_name_length=len_trim(band_names)
 
    do iband=1,number_of_bands
-      if(iband .eq. number_of_bands) then
+      if (iband .eq. number_of_bands) then
          read(band_names(comma_i_old:band_name_length), '(i2)') current_band
       else
          comma_i=index(trim(adjustl(band_names(comma_i_old:band_name_length))),&
               ',')+comma_i_old-1
          read(band_names(comma_i_old:comma_i-1), '(i6)') current_band
          comma_i_old=comma_i+1
-      endif
+      end if
 
-      if(current_band .eq. band) then
+      if (current_band .eq. band) then
          flag = .false.
-         if(verbose) print*, 'Selected band is: ',current_band,iband
+         if (verbose) print*, 'Selected band is: ',current_band,iband
          exit
-      endif
-   enddo
+      end if
+   end do
 
    if (flag) then
       write(*,*) 'Band ',band,' not found in MODIS M*D02 file!'
       stop
-   endif
+   end if
 
    ! data stored with 0 offset
    start(2) = iystart-1
@@ -188,21 +188,21 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       err_code = sfrattr(var_id, attr_id, scale_factors)
       attr_id = sffattr(var_id, "radiance_offsets")
       err_code = sfrattr(var_id, attr_id, offsets)
-   endif
+   end if
 
    var_id = sfselect(file_id, sfn2index(file_id, SDS_name))
    err_code = sfrdata(var_id, start, stride, edge, temp)
 
    do jy=iystart,iystop
       do ix=ixstart,ixstop
-         if(temp(ix,jy) .ge. vr(1) .and. temp(ix,jy) .le. vr(2)) then
+         if (temp(ix,jy) .ge. vr(1) .and. temp(ix,jy) .le. vr(2)) then
             level1b_buffer(ix,jy) = (real(temp(ix,jy),kind=sreal) - &
                  offsets(iband)) * scale_factors(iband)
          else
             level1b_buffer(ix,jy) = real_fill_value
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    err_code = sfendacc(var_id)
 

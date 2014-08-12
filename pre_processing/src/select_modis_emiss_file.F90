@@ -125,6 +125,4 @@ subroutine select_modis_emiss_file(cyear,doy,emiss_surf_path, &
         trim(adjustl(cyear))// &
         trim(adjustl(emis_date_s))//'.041'//'.nc'
 
-
-
 end subroutine select_modis_emiss_file

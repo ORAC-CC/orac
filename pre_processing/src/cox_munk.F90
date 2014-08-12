@@ -221,7 +221,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
    real(kind=sreal), intent(out)    :: rho(:,:)
 
    ! Local variables
-   integer               :: i
+   integer                          :: i
 
    ! Wavelength dependent constants
    real(kind=sreal)                 :: lambda(4)
@@ -235,7 +235,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
 
    ! Other constants
    real(kind=sreal)                 :: chlconc, n_air
-   integer               :: npts, nbands
+   integer                          :: npts, nbands
 
    ! Wind speed and direction
    real(kind=sreal), allocatable    :: ws(:), wd(:)
@@ -433,7 +433,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
       ! Combine the surface transmission terms with the underlight reflectance
       ! to give total underlight contribution
       rhoul(i,:) = (t_u * t_d * R_wb(:)) / (1.0 - r_u*R_wb(:))
-   enddo
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -610,7 +610,7 @@ function zeisse_ba(theta, ws) result (ba)
    real(kind=sreal), allocatable, dimension(:) :: ba
 
    ! Local variables
-   integer                          :: npoints
+   integer                                     :: npoints
    real(kind=sreal)                            :: C(3,3)
    real(kind=sreal), allocatable               :: tp(:),wp(:)
 !  real(kind=sreal), allocatable               :: tp2(:),wp2(:)
@@ -856,7 +856,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
       t_d = 1.0 - 0.5*( (a1*a1)/(b1*b1) + (c1*c1)/(d1*d1) )
    else
       t_d = 0.0
-   endif
+   end if
 
    ! Combine the surface transmission terms with the underlight reflectance
    ! to give total underlight contribution
@@ -894,7 +894,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
    else
       Zx = 0.0
       Zy = 0.0
-   endif
+   end if
 
    Zxprime = cos(wd)*Zx + sin(wd)*Zy
    Zyprime = -sin(wd)*Zx + cos(wd)*Zy
@@ -918,7 +918,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
       cosbeta = (cos(rsolza) + cos(rsatza)) / sqrt(2.0 + 2.0*cosomega)
    else
       cosbeta = 0.0
-   endif
+   end if
 
    w = 0.5*acos(cosomega)
 
@@ -940,7 +940,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
       R_sf = 0.5*((a1*a1)/(b1*b1) + (c1*c1)/(d1*d1))
    else
       R_sf = 0.0
-   endif
+   end if
 
    ! Calculate glint reflectance contribution
    dangle = 4.0 * cos(rsolza) * ergodic * (cosbeta**4)
@@ -948,7 +948,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
       rhogl = pi * p * R_sf / dangle
    else
       rhogl = 0.0
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -1019,7 +1019,7 @@ function zeisse_ba2(theta, ws) result (ba)
       ba = delta + cos(theta)
    else
       ba = cos(theta)
-   endif
+   end if
 
 end function zeisse_ba2
 
@@ -1191,7 +1191,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    else
       Zx = 0.0
       Zy = 0.0
-   endif
+   end if
    cos_wd = cos(wd)
 #ifdef COMPATIBILITY_MODE
    sin_wd = sin(wd)
@@ -1221,7 +1221,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
       shared%cosbeta = (shared%cos_solza + shared%cos_satza) / sqrt(2.0 + 2.0*cosomega)
    else
       shared%cosbeta = 0.0
-   endif
+   end if
 
    shared%w = 0.5*acos(cosomega)
 
@@ -1354,7 +1354,7 @@ subroutine cox_munk3(i_band, shared_band, shared_geo_wind, rho)
       t_d = 1.0 - 0.5*( (a1*a1)/(b1*b1) + (c1*c1)/(d1*d1) )
    else
       t_d = 0.0
-   endif
+   end if
 
    ! Combine the surface transmission terms with the underlight reflectance
    ! to give total underlight contribution
@@ -1383,14 +1383,14 @@ subroutine cox_munk3(i_band, shared_band, shared_geo_wind, rho)
       R_sf = 0.5*((a1*a1)/(b1*b1) + (c1*c1)/(d1*d1))
    else
       R_sf = 0.0
-   endif
+   end if
 
    ! Calculate glint reflectance contribution
    if (abs(shared_geo_wind%a) .gt. dither_more) then
       rhogl = pi * shared_geo_wind%p * R_sf / shared_geo_wind%a
    else
       rhogl = 0.0
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -1623,7 +1623,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
       t_d = 1.0 - 0.5*( (a1*a1)/(b1*b1) + (c1*c1)/(d1*d1) )
    else
       t_d = 0.0
-   endif
+   end if
 
    ! Combine the surface transmission terms with the underlight reflectance
    ! to give total underlight contribution
@@ -1644,7 +1644,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
    else
       shared%Zx = 0.0
       shared%Zy = 0.0
-   endif
+   end if
 
    ! Cox and Munk (1954) (Measurements of...)
    ! 2*omega = angle between incident light and intstrument, wrt the sloping sea
@@ -1656,7 +1656,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
       shared%cosbeta = (shared%cos_solza + shared%cos_satza) / sqrt(2.0 + 2.0*cosomega)
    else
       shared%cosbeta = 0.0
-   endif
+   end if
 
    w = 0.5*acos(cosomega)
 
@@ -1677,7 +1677,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
       shared%R_sf = 0.5*((a1*a1)/(b1*b1) + (c1*c1)/(d1*d1))
    else
       shared%R_sf = 0.0
-   endif
+   end if
 
 end subroutine cox_munk4_calc_shared_band_geo
 
@@ -1751,7 +1751,7 @@ subroutine cox_munk4(shared_wind, shared_band_geo, rho)
       rhogl = pi * p * shared_band_geo%R_sf / dangle
    else
       rhogl = 0.0
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -1824,7 +1824,7 @@ function zeisse_ba3(theta, cos_theta, ws) result (ba)
       ba = delta + cos_theta
    else
       ba = cos_theta
-   endif
+   end if
 
 end function zeisse_ba3
 
@@ -1935,7 +1935,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
    do i = 1, n_quad_theta
       qx_cos_sin_qw_theta(i) = cos(qx_theta(i)) * sin(qx_theta(i)) * qw_theta(i)
-   enddo
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -1956,14 +1956,14 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
          rho_0v(j, i) = fill_value
          cycle
-      endif
+      end if
 
       call cox_munk3_calc_shared_geo_wind(solza(i), satza(i), 0., relaz(i), &
                                           u10(i), v10(i), shared_geo_wind)
       do j = 1, n_bands
          call cox_munk3(j, shared_band(j), shared_geo_wind, rho_0v(j,i))
-      enddo
-   enddo
+      end do
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -1975,7 +1975,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
          rho_0d(j, i) = fill_value
          cycle
-      endif
+      end if
 
       do j = 1, n_quad_theta
          satza2 = qx_theta(j) / d2r
@@ -1987,13 +1987,13 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
             do l = 1, n_bands
                call cox_munk3(l, shared_band(l), shared_geo_wind, a2)
                aa(l) = aa(l) + a2 * qw_phi(k)
-            enddo
-         enddo
+            end do
+         end do
          rho_0d(:, i) = rho_0d(:, i) + aa * qx_cos_sin_qw_theta(j)
-      enddo
+      end do
 
       rho_0d(:, i) = rho_0d(:, i) / pi
-   enddo
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -2005,7 +2005,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
          rho_dv(j, i) = fill_value
          cycle
-      endif
+      end if
 
       do j = 1, n_quad_theta
          solza2 = qx_theta(j) / d2r
@@ -2017,13 +2017,13 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
             do l = 1, n_bands
                call cox_munk3(l, shared_band(l), shared_geo_wind, a2)
                aa(l) = aa(l) + a2 * qw_phi(k)
-            enddo
-         enddo
+            end do
+         end do
          rho_dv(:, i) = rho_dv(:, i) + aa * qx_cos_sin_qw_theta(j)
-      enddo
+      end do
 
       rho_dv(:, i) = rho_dv(:, i) / pi
-   enddo
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -2048,10 +2048,10 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
                relaz2 = qx_phi(l) / d2r
                call cox_munk4_calc_shared_band_geo(int(bands(i), kind=lint), &
                   solza2, satza2, 0., relaz2, shared_band_geo(i, j, k, l))
-            enddo
-         enddo
-      enddo
-   enddo
+            end do
+         end do
+      end do
+   end do
 
    rho_dd = 0.
 
@@ -2059,7 +2059,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
          rho_0d(j, i) = fill_value
          cycle
-      endif
+      end if
 
       do j = 1, n_points
          call cox_munk4_calc_shared_wind(int(bands(i), kind=lint), &
@@ -2071,16 +2071,16 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
                do m = 1, n_quad_phi
                   call cox_munk4(shared_wind(i, j), shared_band_geo(i, k, l, m), a3)
                   a2 = a2 + a3 * qw_phi(m)
-               enddo
+               end do
                a = a + a2 * qx_cos_sin_qw_theta(l)
-            enddo
+            end do
             rho_dd(i, j) = rho_dd(i, j) + a * qx_cos_sin_qw_theta(k)
-         enddo
+         end do
 
          rho_dd(i, j) = rho_dd(i, j) * 2.
-      enddo
+      end do
 
-   enddo
+   end do
 
    deallocate(shared_wind)
    deallocate(shared_band_geo)

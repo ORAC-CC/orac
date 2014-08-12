@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: mcd43c.f90 (module)
+! Name: mcd43c.F90
 !
 ! Purpose:
 ! Defines the MCD structure for holding MODIS L3 surface data and the
@@ -21,7 +21,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 module mcd43c_m
@@ -77,46 +77,46 @@ module mcd43c_m
 
 contains
 
-   subroutine deallocate_mcd43c1(mcd)
+subroutine deallocate_mcd43c1(mcd)
 
-      implicit none
+   implicit none
 
-      type(mcd43c1), intent(inout) :: mcd
+   type(mcd43c1), intent(inout) :: mcd
 
-      deallocate(mcd%quality)
-      deallocate(mcd%local_solar_noon)
-      deallocate(mcd%percent_inputs)
-      deallocate(mcd%percent_snow)
-      deallocate(mcd%bandids)
-      deallocate(mcd%bands)
-      deallocate(mcd%lat)
-      deallocate(mcd%lon)
-      deallocate(mcd%brdf_albedo_params)
+   deallocate(mcd%quality)
+   deallocate(mcd%local_solar_noon)
+   deallocate(mcd%percent_inputs)
+   deallocate(mcd%percent_snow)
+   deallocate(mcd%bandids)
+   deallocate(mcd%bands)
+   deallocate(mcd%lat)
+   deallocate(mcd%lon)
+   deallocate(mcd%brdf_albedo_params)
 
-   end subroutine deallocate_mcd43c1
-
-
-   subroutine deallocate_mcd43c3(mcd)
-
-      implicit none
-
-      type(mcd43c3), intent(inout) :: mcd
-
-      deallocate(mcd%quality)
-      deallocate(mcd%local_solar_noon)
-      deallocate(mcd%percent_inputs)
-      deallocate(mcd%percent_snow)
-      deallocate(mcd%bandids)
-      deallocate(mcd%bands)
-      deallocate(mcd%lat)
-      deallocate(mcd%lon)
-      deallocate(mcd%WSA)
-      deallocate(mcd%BSA)
-
-   end subroutine deallocate_mcd43c3
+end subroutine deallocate_mcd43c1
 
 
-   include 'read_mcd43c1.F90'
-   include 'read_mcd43c3.F90'
+subroutine deallocate_mcd43c3(mcd)
+
+   implicit none
+
+   type(mcd43c3), intent(inout) :: mcd
+
+   deallocate(mcd%quality)
+   deallocate(mcd%local_solar_noon)
+   deallocate(mcd%percent_inputs)
+   deallocate(mcd%percent_snow)
+   deallocate(mcd%bandids)
+   deallocate(mcd%bands)
+   deallocate(mcd%lat)
+   deallocate(mcd%lon)
+   deallocate(mcd%WSA)
+   deallocate(mcd%BSA)
+
+end subroutine deallocate_mcd43c3
+
+
+include 'read_mcd43c1.F90'
+include 'read_mcd43c3.F90'
 
 end module mcd43c_m

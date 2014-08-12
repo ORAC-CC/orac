@@ -16,7 +16,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 module attribute_structures
@@ -44,6 +44,6 @@ module attribute_structures
       character(len=attribute_length)   :: license
 
       character(len=attribute_length)   :: file_version
-  end type script_arguments_s
+   end type script_arguments_s
 
 end module attribute_structures

@@ -269,7 +269,7 @@ subroutine li_common(aux, aux2, p, p_, q)
      q = 1.
    else
      q = 1. - (acos(cos_t) - sqrt(1. - cos_t * cos_t) * cos_t) / PI
-   endif
+   end if
 
 end subroutine
 
@@ -606,7 +606,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 
    do i = 1, n_quad_theta
       qx_cos_sin_qw_theta(i) = cos(qx_theta(i)) * sin(qx_theta(i)) * qw_theta(i)
-   enddo
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -624,12 +624,12 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          if (any(f(:, j, i) .eq. fill_value)) then
             rho_0v(j, i) = fill_value
             cycle
-         endif
+         end if
 
          call ross_thick_li_sparse_r_kernel(aux_brdf, aux_kernel, p_ross, p_li_r, &
                                             f(:, j, i), rho_0v(j, i))
-      enddo
-   enddo
+      end do
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -646,14 +646,14 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
             call brdf_aux_calc(aux_brdf2(j,k), solza2, satza2, relaz2)
             call ross_thick_li_sparse_r_aux_calc(aux_brdf2(j,k), aux_kernel2(j,k), &
                                                  p_ross, p_li_r)
-         enddo
-      enddo
+         end do
+      end do
 
       do j = 1, n_bands
          if (any(f(:, j, i) .eq. fill_value)) then
             rho_0d(j, i) = fill_value
             cycle
-         endif
+         end if
 
          do k = 1, n_quad_theta
             a = 0.
@@ -661,13 +661,13 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
                call ross_thick_li_sparse_r_kernel(aux_brdf2(k,l), aux_kernel2(k,l), &
                                                   p_ross, p_li_r, f(:, j, i), a2)
                a = a + a2 * qw_phi(l)
-            enddo
+            end do
             rho_0d(j, i) = rho_0d(j, i) + a * qx_cos_sin_qw_theta(k)
-         enddo
+         end do
 
          rho_0d(j, i) = rho_0d(j, i) / pi
-      enddo
-   enddo
+      end do
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -684,14 +684,14 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
             call brdf_aux_calc(aux_brdf2(j,k), solza2, satza2, relaz2)
             call ross_thick_li_sparse_r_aux_calc(aux_brdf2(j,k), aux_kernel2(j,k), &
                                                  p_ross, p_li_r)
-         enddo
-      enddo
+         end do
+      end do
 
       do j = 1, n_bands
          if (any(f(:, j, i) .eq. fill_value)) then
             rho_dv(j, i) = fill_value
             cycle
-         endif
+         end if
 
          do k = 1, n_quad_theta
             a = 0.
@@ -699,13 +699,13 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
                call ross_thick_li_sparse_r_kernel(aux_brdf2(k,l), aux_kernel2(k,l), &
                                                   p_ross, p_li_r, f(:, j, i), a2)
                a = a + a2 * qw_phi(l)
-            enddo
+            end do
             rho_dv(j, i) = rho_dv(j, i) + a * qx_cos_sin_qw_theta(k)
-         enddo
+         end do
 
          rho_dv(j, i) = rho_dv(j, i) / pi
-      enddo
-   enddo
+      end do
+   end do
 
 
    !----------------------------------------------------------------------------
@@ -720,9 +720,9 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
             call brdf_aux_calc(aux_brdf3(j,k,l), solza2, satza2, relaz2)
             call ross_thick_li_sparse_r_aux_calc(aux_brdf3(j,k,l), aux_kernel3(j,k,l), &
                                                  p_ross, p_li_r)
-         enddo
-      enddo
-   enddo
+         end do
+      end do
+   end do
 
    rho_dd = 0.
 
@@ -731,7 +731,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          if (any(f(:, j, i) .eq. fill_value)) then
             rho_dd(j, i) = fill_value
             cycle
-         endif
+         end if
 
          do k = 1, n_quad_theta
             a = 0.
@@ -741,15 +741,15 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
                   call ross_thick_li_sparse_r_kernel(aux_brdf3(k,l,m), aux_kernel3(k,l,m), &
                                                      p_ross, p_li_r, f(:, j, i), a3)
                   a2 = a2 + a3 * qw_phi(m)
-               enddo
+               end do
                a = a + a2 * qx_cos_sin_qw_theta(l) / pi
-            enddo
+            end do
             rho_dd(j, i) = rho_dd(j, i) + a * qx_cos_sin_qw_theta(k)
-         enddo
+         end do
 
          rho_dd(j, i) = rho_dd(j, i) * 2.
-      enddo
-   enddo
+      end do
+   end do
 
 
    !----------------------------------------------------------------------------

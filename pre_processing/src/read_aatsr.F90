@@ -16,12 +16,12 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 module read_aatsr
 
-implicit none
+   implicit none
 
 contains
 

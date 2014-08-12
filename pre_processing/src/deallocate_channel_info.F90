@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: deallocate_channel_info.f90
+! Name: deallocate_channel_info.F90
 !
 ! Purpose:
 ! Deallocate the array parts of the types defined in channel_info.f90
@@ -18,12 +18,10 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine deallocate_channel_info(channel_info)
-
-   ! use channel_structures
 
    implicit none
 

@@ -4,7 +4,7 @@
 ! Purpose:
 ! Determine the dimensions of AATSR data to read in, based on a day_night flag
 ! and lat-lon limit. This is mostly a wrapper for read_aatsr_beam.c
-! 
+!
 ! Description and Algorithm details:
 ! 1) Prepare variables.
 ! 2) Call the C function get_aatsr_dimension_ctof90.
@@ -26,7 +26,7 @@
 ! n_along_track2      lint   out When considering night data, there
 !                                are two chunks of data (each end of the orbit).
 !                                This gives the second chunk's length.
-! along_track_offset2 lint   out The pixel number of the beginning of 
+! along_track_offset2 lint   out The pixel number of the beginning of
 !                                a secondchunk for night data.
 !
 ! History:
@@ -43,15 +43,15 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
      n_along_track,along_track_offset,day_night,loc_limit,n_along_track2, &
      along_track_offset2,verbose)
 
-   use preproc_constants
    use iso_c_binding
+   use preproc_constants
 
    implicit none
 
@@ -70,7 +70,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
          logical(c_bool)                 :: verb
       end subroutine get_aatsr_dimension
    end interface
-   
+
    character(len=pathlength),      intent(in)  :: path_to_l1b_file
    integer(kind=lint),             intent(out) :: n_across_track, n_along_track
    integer(kind=lint),             intent(out) :: along_track_offset

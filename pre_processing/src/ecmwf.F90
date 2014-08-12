@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Define variables types which hold the ecmwf input data.
-! 
+!
 ! Description and Algorithm details:
 ! None
 !
@@ -21,21 +21,21 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 module ecmwf_m
 
-  use preproc_constants
+   use preproc_constants
 
-  implicit none
-  
-  type ecmwf_s
-     integer(kind=lint)                        :: xdim,ydim,kdim
-     real(kind=sreal), dimension(:),   pointer :: lat,lon
-     real(kind=sreal), dimension(:),   pointer :: avec,bvec
-     real(kind=sreal), dimension(:,:), pointer :: u10,v10
-  end type ecmwf_s
+   implicit none
+
+   type ecmwf_s
+      integer(kind=lint)                        :: xdim,ydim,kdim
+      real(kind=sreal), dimension(:),   pointer :: lat,lon
+      real(kind=sreal), dimension(:),   pointer :: avec,bvec
+      real(kind=sreal), dimension(:,:), pointer :: u10,v10
+   end type ecmwf_s
 
 contains
 

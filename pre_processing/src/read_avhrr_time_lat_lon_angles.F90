@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Open and read AVHRR geo input files.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Allocate and initialise temporary arrays.
 ! 2) Read each geolocation field in turn.
@@ -12,7 +12,7 @@
 ! Arguments:
 ! Name               Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! path_to_geo_file   string in   Full path to geolocation data 
+! path_to_geo_file   string in   Full path to geolocation data
 ! imager_geolocation struct both Summary of pixel positions
 ! imager_angles      struct both Summary of sun/satellite viewing angles
 ! imager_flags       struct both Summary of land/sea/ice flags
@@ -27,7 +27,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
@@ -35,8 +35,8 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    use calender
    use hdf5
-   use preproc_constants
    use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -47,15 +47,15 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    type(imager_time_s),        intent(inout) :: imager_time
    integer(kind=lint),         intent(in)    :: n_along_track
 
-   integer(kind=lint)         :: geo_id
+   integer(kind=lint)                            :: geo_id
 
    real(kind=sreal), allocatable, dimension(:,:) :: temp,temp2
 
-   integer(kind=lint)         :: startepochs,endepochs
+   integer(kind=lint)                            :: startepochs,endepochs
 
-   real(kind=dreal)           :: refjulianday=0.00_dreal
+   real(kind=dreal)                              :: refjulianday=0.00_dreal
 
-   integer                    :: err_code
+   integer                                       :: err_code
 
    !reference point of time
    integer(kind=stint) :: refday=1_stint,refyear=1970_stint,refmonth=1_stint
@@ -118,7 +118,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
         imager_geolocation%starty,imager_geolocation%endy,temp2)
    imager_angles%solazi(:,:,imager_angles%nviews)=temp2
 
-   !make rel azi 
+   !make rel azi
    !MJ: THIS IS FROM MODIS IS THIS CORRECT FOR AVHRR??? ACP: yes
    temp2=180.0-temp2
    imager_angles%relazi(:,:,imager_angles%nviews) = 180.0 - &
@@ -129,7 +129,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    deallocate(temp)
 
    !close the file
-   call h5fclose_f(geo_id, err_code) 
+   call h5fclose_f(geo_id, err_code)
 
    !close access to hdf5 interface
    call h5close_f(err_code)

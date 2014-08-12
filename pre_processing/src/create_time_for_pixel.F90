@@ -29,14 +29,14 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop,n_along_track, &
    startepochs,endepochs,imager_time,refjulianday)
 
-   use preproc_constants
    use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -54,7 +54,7 @@ subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop,n_along_track, &
 
    do jy=iystart,iystop
       temp(:,jy)=real(startepochs,kind=dreal)+(jy-1)*deltime
-   enddo
+   end do
 
    ! Divide TAI seconds since 1/1/1970 by 86400 (every day has in the TAI system
    ! precicesly this amount of seconds) and add to Julian date of 1/1/1970.

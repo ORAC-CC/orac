@@ -25,7 +25,7 @@
 !                                   Hemisphere will be read
 ! History:
 ! 2012/04/26, GT: Original
-! 2013/02/25, GT: Added explicit type casts where copying data into data%extent. 
+! 2013/02/25, GT: Added explicit type casts where copying data into data%extent.
 !
 ! $Id$
 !
@@ -169,7 +169,7 @@ function read_nsidc_nise(path_to_file, nise, north, south) &
    include "dffunc.f90"
 
    ! Input variables
-   character(len=300), intent(in)  :: path_to_file 
+   character(len=300), intent(in)  :: path_to_file
    integer(kind=1),    intent(in)  :: north
    integer(kind=1),    intent(in)  :: south
 
@@ -196,7 +196,7 @@ function read_nsidc_nise(path_to_file, nise, north, south) &
    if (stat .ne. 2) write(*,*) 'Problem with number of grids: ',stat
    write(*,*) 'gridlist = "',trim(gridlist),'", length = ',gridlistlen
 
-   ! Open the datafile and get a file descriptor, and then attach to the 
+   ! Open the datafile and get a file descriptor, and then attach to the
    ! first grid, as defined above
    fid = gdopen(path_to_file, 1)
 

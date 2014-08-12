@@ -1,10 +1,10 @@
 !-------------------------------------------------------------------------------
-! Name: imager_structures.f90
+! Name: imager_structures.F90
 !
 ! Purpose:
 ! Define variables types which hold the imager input data. should be common to
 ! all imagers.
-! 
+!
 ! Description and Algorithm details:
 ! None
 !
@@ -26,7 +26,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 module imager_structures
@@ -84,7 +84,7 @@ module imager_structures
 
 contains
 
-   include 'allocate_imager_structures.F90'
-   include 'deallocate_imager_structures.F90'
+include 'allocate_imager_structures.F90'
+include 'deallocate_imager_structures.F90'
 
 end module imager_structures

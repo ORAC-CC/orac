@@ -16,12 +16,12 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 module interpol
 
-implicit none
+   implicit none
 
 contains
 

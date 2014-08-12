@@ -26,15 +26,15 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
      imager_angles,imager_flags,imager_time)
 
    use hdf5
-   use preproc_constants
    use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -44,14 +44,14 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
    type(imager_flags_s),       intent(inout) :: imager_flags
    type(imager_time_s),        intent(inout) :: imager_time
 
-   character(len=pathlength)  :: path_to_lsmask_file
+   character(len=pathlength)                       :: path_to_lsmask_file
 
-   integer(kind=lint)         :: geo_id,ix,jy,iunderscore
+   integer(kind=lint)                              :: geo_id,ix,jy,iunderscore
 
    integer(kind=lint), allocatable, dimension(:,:) :: btemp
 
-   integer                    :: err_code
-   logical                    :: check
+   integer                                         :: err_code
+   logical                                         :: check
 
    iunderscore=scan(trim(adjustl(path_to_geo_file)),'_',back=.true.)
    path_to_lsmask_file=trim(adjustl(path_to_geo_file))
@@ -90,9 +90,9 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
             btemp(ix,jy) = 0
          else
             btemp(ix,jy) = 1
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    imager_flags%lsflag=int(btemp,kind=sint)
 

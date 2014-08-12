@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: call_rtm_solar_rttov.f90
+! Name: call_rtm_solar_rttov.F90
 !
 ! Purpose:
 ! Copy contents of RTTOV structures into ORAC structures.
@@ -31,7 +31,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine call_rtm_solar_rttov(transmission,imager_angles, &
@@ -39,13 +39,12 @@ subroutine call_rtm_solar_rttov(transmission,imager_angles, &
 
    use netcdf
 
-   use preproc_constants
-   use preproc_structures
    use channel_structures
    use imager_structures
-   use rttov_coef_io_mod
    use parkind1, only : jpim
-
+   use preproc_constants
+   use preproc_structures
+   use rttov_coef_io_mod
    use rttov_types, only : transmission_type
 
 
@@ -108,6 +107,6 @@ subroutine call_rtm_solar_rttov(transmission,imager_angles, &
      write(*,*) 'tac_stt(1,*)=[',preproc_swrtm%tauac(2,:),']'
      write(*,*) 'tbc_stt(2,*)=[',preproc_swrtm%taubc(3,:),']'
      write(*,*) 'tac_stt(2,*)=[',preproc_swrtm%tauac(3,:),']'
-   endif
+   end if
 
 end subroutine call_rtm_solar_rttov

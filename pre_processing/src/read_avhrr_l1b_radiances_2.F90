@@ -33,7 +33,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
@@ -141,14 +141,14 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
 !   end where
    do jy=starty,stopy
       do ix=startx,stopx
-         if(float(temp(ix,jy)) .eq. missingdata .or. &
+         if (float(temp(ix,jy)) .eq. missingdata .or. &
               float(temp(ix,jy)) .eq. nodata) then
             rtemp(ix,jy)=real_fill_value
          else
             rtemp(ix,jy)=temp(ix,jy)*scale+offset
-         endif
-      enddo
-   enddo
+         end if
+      end do
+   end do
 
    !close dataspace
    call h5sclose_f(mem_id,err_code)

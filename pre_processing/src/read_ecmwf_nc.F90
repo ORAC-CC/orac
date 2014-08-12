@@ -1,10 +1,10 @@
 !-------------------------------------------------------------------------------
-! Name: read_ecmwf_nc.f90
+! Name: read_ecmwf_nc.F90
 !
 ! Purpose:
 ! Reads NetCDF format ECMWF ERA interim data. It is interpolated onto the
 ! preprocessing grid using the EMOS package
-! 
+!
 ! Description and Algorithm details:
 ! 1) Prepare interpolation.
 ! 2) Open file.
@@ -69,7 +69,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    use orac_ncdf
    use preproc_constants
    use preproc_structures
- 
+
    implicit none
 
    character(len=pathlength), intent(in)    :: ecmwf_path
@@ -102,38 +102,38 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    charv(1)='yes'
    grid(1)=real_fill_value
    if (INTIN('missingvalue',intv,grid,charv).ne.0) &
-        STOP 'READ_ECMWF_NC: INTIN missingvalue failed.'
+        stop 'READ_ECMWF_NC: INTIN missingvalue failed.'
    charv(1)='unpacked'
    if (INTIN('form',intv,grid,charv).ne.0) &
-        STOP 'READ_ECMWF_NC: INTIN form failed.'
+        stop 'READ_ECMWF_NC: INTIN form failed.'
    if (INTOUT('form',intv,grid,charv).ne.0) &
-        STOP 'READ_ECMWF_NC: INTOUT form failed.'
+        stop 'READ_ECMWF_NC: INTOUT form failed.'
    intv(1)=ecmwf%ydim/2
    if (INTIN('regular',intv,grid,charv).ne.0) &
-        STOP 'READ_ECMWF_NC: INTIN reg failed.'
+        stop 'READ_ECMWF_NC: INTIN reg failed.'
    grid(1) = 0.5 / preproc_dims%dellon
    grid(2) = 0.5 / preproc_dims%dellat
    if (INTOUT('grid',intv,grid,charv).ne.0) &
-        STOP 'READ_ECMWF_NC: INTOUT grid failed.'
+        stop 'READ_ECMWF_NC: INTOUT grid failed.'
    area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
    area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
    area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
    area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
    if (INTOUT('area',intv,area,charv).ne.0) &
-        STOP 'READ_ECMWF_NC: INTOUT area failed.'
+        stop 'READ_ECMWF_NC: INTOUT area failed.'
    ni = ceiling((area(4)+180.)/grid(1)) - floor((area(2)+180.)/grid(1)) + 1
    nj = ceiling((area(1)+90.)/grid(2)) - floor((area(3)+90.)/grid(2)) + 1
-   
+
    ! open file
    call nc_open(fid,ecmwf_path)
    if (nf90_inquire(fid,ndim,nvar,natt) .ne. 0) &
-        STOP 'READ_ECMWF_NC: NF INQ failed.'
+        stop 'READ_ECMWF_NC: NF INQ failed.'
 
    ! loop over variables
    do ivar=1,nvar
       ! determine if field should be read
       if (nf90_inquire_variable(fid,ivar,name) .ne. 0) &
-           STOP 'READ_ECMWF_NC: NF VAR INQUIRE failed.'
+           stop 'READ_ECMWF_NC: NF VAR INQUIRE failed.'
       select case (name)
       case('Z','z')
          three_d=.false.
@@ -184,17 +184,17 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
          cycle
       end select
       if (nf90_inquire_variable(fid,ivar,name) .ne. 0) &
-           STOP 'READ_ECMWF_NC: NF VAR INQUIRE failed.'
+           stop 'READ_ECMWF_NC: NF VAR INQUIRE failed.'
 
       if (three_d) then
          call nc_read_array(fid,name,dummy3d,0)
          do k=1,ecmwf%kdim
             old_len=n
             old_data(1:n)=reshape(real(dummy3d(:,:,k,1),kind=8),[n])
-            
+
             new_len=BUFFER
             if (INTF(old_grib,old_len,old_data,new_grib,new_len,new_data).ne.0)&
-                 STOP 'READ_ECMWF_NC: INTF failed.'
+                 stop 'READ_ECMWF_NC: INTF failed.'
             if (new_len .ne. ni*nj) print*,'Interpolation grid wrong.'
 
             ! copy data into preprocessing grid
@@ -215,9 +215,9 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
          new_len=BUFFER
          if (INTF(old_grib,old_len,old_data,new_grib,new_len,new_data) .ne. 0) &
-              STOP 'READ_ECMWF_NC: INTF failed.'
+              stop 'READ_ECMWF_NC: INTF failed.'
          if (new_len .ne. ni*nj) print*,'Interpolation grid wrong.'
-         
+
          ! copy data into preprocessing grid
          do j=1,nj,2
             do i=1,ni,2
@@ -231,6 +231,6 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       end if
    end do
 
-   if (nf90_close(fid) .ne. 0) STOP 'READ_ECMWF_NC: Failure to close file.'
-   
+   if (nf90_close(fid) .ne. 0) stop 'READ_ECMWF_NC: Failure to close file.'
+
 end subroutine read_ecmwf_nc

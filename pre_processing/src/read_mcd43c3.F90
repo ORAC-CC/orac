@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_mcd43c3.f90
+! Name: read_mcd43c3.F90
 !
 ! Purpose:
 ! Open and read MODIS MCD43C3 16-day gridded surface albedo files

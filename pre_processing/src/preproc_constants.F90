@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: preproc_constants.f90
+! Name: preproc_constants.F90
 !
 ! Purpose:
 ! Define here data types, string lengths, constants etc.
@@ -25,7 +25,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 module preproc_constants

@@ -16,7 +16,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 MODULE DATE_TYPE_STRUCTURES

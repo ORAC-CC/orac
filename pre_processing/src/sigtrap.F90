@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: sigtrap.f90
+! Name: sigtrap.F90
 !
 ! Purpose:
 ! ECMWF signal trapping part
@@ -23,10 +23,10 @@ integer*4 core_dump_flag,ireturn,signals(1),signal_trap
 core_dump_flag=0
 signals(1)=0
 ireturn=signal_trap(core_dump_flag,signals)
-if(ireturn .lt. 0) then
+if (ireturn .lt. 0) then
    write(*,*) 'ERROR'
-elseif(ireturn .eq. 0) then
+else if (ireturn .eq. 0) then
    write(*,*) 'fpe trapping is not set'
 else
    write(*,*) 'fpe trapping mode=',ireturn
-endif
+end if

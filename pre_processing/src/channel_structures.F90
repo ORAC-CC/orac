@@ -1,12 +1,12 @@
 !-------------------------------------------------------------------------------
-! Name: channel_structures.f90
+! Name: channel_structures.F90
 !
 ! Purpose:
 ! Define variables types which hold the channel information
-! 
+!
 ! Description and Algorithm details:
 ! PUT EVERYTHING IN HERE NECESSARY FOR CHANNEL INFORMATION!!
-! PLEASE COMMENT SUFFICIENTLY TO CLEARLY EXPLAIN THE ROLE OF THE 
+! PLEASE COMMENT SUFFICIENTLY TO CLEARLY EXPLAIN THE ROLE OF THE
 ! INDIVIDUAL INFORMATION!!
 !
 ! Arguments:
@@ -20,7 +20,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 module channel_structures
@@ -34,7 +34,7 @@ module channel_structures
       !total number of channels to be handled in any way, even if not all are
       !processed. Note that multiple views with the same channel are treated as
       !separate channels by the code. Also, you cannot assume that
-      !channels_total=nchannels_sw + nchannels_lw as some channels (3.6 microns 
+      !channels_total=nchannels_sw + nchannels_lw as some channels (3.6 microns
       !for eg) are both solar and thermal.
       !So, for example, all channels and dual view for AATSR would mean:
       ! nchannels_total = 14 (7 wavelengths in 2 views)
@@ -63,7 +63,7 @@ module channel_structures
       ! (/ 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12, 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12 /)
       real(kind=sreal), dimension(:), pointer ::  channel_wl_abs
 
-      !arrays containing 0/1 flags to identify to which part (sw/lw) of the 
+      !arrays containing 0/1 flags to identify to which part (sw/lw) of the
       !spectrum they are assigned. could be used to determine the number of
       !channels used as well.
       integer(kind=lint), dimension(:), pointer ::  channel_sw_flag
@@ -73,7 +73,7 @@ module channel_structures
       integer(kind=lint), dimension(:), pointer ::  channel_view_ids
 
       !array specifing if channel is processed
-      !(I know we agreed to process all channels anyway, but it might be handy 
+      !(I know we agreed to process all channels anyway, but it might be handy
       !to still include this even if it set to "1")
       integer(kind=lint), dimension(:), pointer ::  channel_proc_flag
 
@@ -81,7 +81,7 @@ module channel_structures
 
 contains
 
-   include "allocate_channel_info.F90"
-   include "deallocate_channel_info.F90"
+include "allocate_channel_info.F90"
+include "deallocate_channel_info.F90"
 
 end module channel_structures

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: call_rtm_ir_rttov.f90
+! Name: call_rtm_ir_rttov.F90
 !
 ! Purpose:
 ! Copy contents of RTTOV structures into ORAC structures.
@@ -31,7 +31,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine call_rtm_ir_rttov(transmission,radiance,imager_angles, &
@@ -39,13 +39,12 @@ subroutine call_rtm_ir_rttov(transmission,radiance,imager_angles, &
 
    use netcdf
 
-   use preproc_constants
-   use preproc_structures
    use channel_structures
    use imager_structures
-   use rttov_coef_io_mod
    use parkind1, only : jpim
-
+   use preproc_constants
+   use preproc_structures
+   use rttov_coef_io_mod
    use rttov_types, only : transmission_type, &
                            radiance_type
 

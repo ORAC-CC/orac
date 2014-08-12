@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Allocate the array parts of the types defined in imager_structures.f90
-! 
+!
 ! Description and Algorithm details:
 ! 1) Allocate arrays to have appropriate size
 ! 2) Initialise to the appropriate fill value
@@ -30,7 +30,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
@@ -81,12 +81,12 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    allocate(imager_angles%solazi(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
-   imager_angles%solazi=real_fill_value  
+   imager_angles%solazi=real_fill_value
 
    allocate(imager_angles%relazi(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
-   imager_angles%relazi=real_fill_value  
+   imager_angles%relazi=real_fill_value
 
    allocate(imager_flags%lsflag(&
         imager_geolocation%startx:imager_geolocation%endx, &
@@ -105,11 +105,11 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    allocate(imager_measurements%data(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,1:channel_info%nchannels_total))
-   imager_measurements%data=real_fill_value  
+   imager_measurements%data=real_fill_value
 
    allocate(imager_measurements%uncertainty(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,1:channel_info%nchannels_total))
-   imager_measurements%uncertainty=real_fill_value  
+   imager_measurements%uncertainty=real_fill_value
 
 end subroutine allocate_imager_structures

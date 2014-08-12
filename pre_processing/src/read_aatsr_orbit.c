@@ -16,21 +16,21 @@
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
-                      const short *nch, const short *ch, 
-                      const short *view, const long *nx, const long *ny, 
-                      const long *startx, const long *starty, short *stat, 
-                      float **lat,  float **lon, 
-                      float **nsza, float **niza, float **nsaz, float **nraz,  
+                      const short *nch, const short *ch,
+                      const short *view, const long *nx, const long *ny,
+                      const long *startx, const long *starty, short *stat,
+                      float **lat,  float **lon,
+                      float **nsza, float **niza, float **nsaz, float **nraz,
                       short  *nflg, short  *nqul, double *nday,
-                      float **nch1, float **nch2, float **nch3, float **nch4, 
-                      float **nch5, float **nch6, float **nch7, float **ner1, 
-                      float **ner2, float **ner3, float **ner4, float **ner5, 
-                      float **ner6, float **ner7, 
-                      float **fsza, float **fiza, float **fsaz, float **fraz, 
-                      short  *fflg, short  *fqul, double *fday, 
-                      float **fch1, float **fch2, float **fch3, float **fch4, 
-                      float **fch5, float **fch6, float **fch7, float **fer1, 
-                      float **fer2, float **fer3, float **fer4, float **fer5, 
+                      float **nch1, float **nch2, float **nch3, float **nch4,
+                      float **nch5, float **nch6, float **nch7, float **ner1,
+                      float **ner2, float **ner3, float **ner4, float **ner5,
+                      float **ner6, float **ner7,
+                      float **fsza, float **fiza, float **fsaz, float **fraz,
+                      short  *fflg, short  *fqul, double *fday,
+                      float **fch1, float **fch2, float **fch3, float **fch4,
+                      float **fch5, float **fch6, float **fch7, float **fer1,
+                      float **fer2, float **fer3, float **fer4, float **fer5,
                       float **fer6, float **fer7,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
                       bool *is_lut_drift_corrected)
@@ -52,7 +52,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
                             {*fch1,*fch2,*fch3,*fch4,*fch5,*fch6,*fch7} };
   float *er_array[2][7] = { {*ner1,*ner2,*ner3,*ner4,*ner5,*ner6,*ner7},
                             {*fer1,*fer2,*fer3,*fer4,*fer5,*fer6,*fer7} };
-  short *fg_array[2][2] = { {nflg, nqul}, 
+  short *fg_array[2][2] = { {nflg, nqul},
                             {fflg, fqul} };
   double *dy_array[2]   =   {nday, fday};
 
@@ -79,14 +79,14 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
   ch_label[0][2] = "reflec_nadir_0870";
   ch_label[0][3] = "reflec_nadir_1600";
   ch_label[0][4] = "btemp_nadir_0370";
-  ch_label[0][5] = "btemp_nadir_1100"; 
+  ch_label[0][5] = "btemp_nadir_1100";
   ch_label[0][6] = "btemp_nadir_1200";
   ch_label[1][0] = "reflec_fward_0550";
   ch_label[1][1] = "reflec_fward_0670";
   ch_label[1][2] = "reflec_fward_0870";
   ch_label[1][3] = "reflec_fward_1600";
   ch_label[1][4] = "btemp_fward_0370";
-  ch_label[1][5] = "btemp_fward_1100"; 
+  ch_label[1][5] = "btemp_fward_1100";
   ch_label[1][6] = "btemp_fward_1200";
 
   fg_label[0][0] = "cloud_flags_nadir";
@@ -116,9 +116,9 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
   }
 
   // Read geolocation (view independent)
-  fetch_aatsr_float_values(pid, "latitude", *nx, *ny, *startx, *starty, 
+  fetch_aatsr_float_values(pid, "latitude", *nx, *ny, *startx, *starty,
                            *lat, *verbose);
-  fetch_aatsr_float_values(pid, "longitude", *nx, *ny, *startx, *starty, 
+  fetch_aatsr_float_values(pid, "longitude", *nx, *ny, *startx, *starty,
                            *lon, *verbose);
 
   /* Read in the information needed for calibration corrections to be applied
@@ -159,23 +159,23 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
         rec = epr_read_record(did, i, rec);
         fid = epr_get_field(rec, "dsr_time");
         time = epr_get_field_elem_as_mjd(fid);
-        dy_array[j][i] = ((double)time->seconds + 
-                          (double)time->microseconds*1E-6)/86.4E3 
+        dy_array[j][i] = ((double)time->seconds +
+                          (double)time->microseconds*1E-6)/86.4E3
           + (double)time->days;
       }
       epr_free_record(rec);
 
       // Read angular information
       for (i=0; i<4; i++) {
-        fetch_aatsr_float_values(pid, ax_label[j][i], *nx, *ny, *startx, 
+        fetch_aatsr_float_values(pid, ax_label[j][i], *nx, *ny, *startx,
                                  *starty, ax_array[j][i], *verbose);
       }
-      calculate_rel_azi(ax_array[j][2], ax_array[j][3], ax_array[j][4], 
+      calculate_rel_azi(ax_array[j][2], ax_array[j][3], ax_array[j][4],
                         *nx, *ny);
 
       // Read flags
       for (i=0; i<2; i++) {
-        fetch_aatsr_short_values(pid, fg_label[j][i], *nx, *ny, *startx, 
+        fetch_aatsr_short_values(pid, fg_label[j][i], *nx, *ny, *startx,
                                  *starty, fg_array[j][i], *verbose);
       }
     }
@@ -191,19 +191,19 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
     // Set error information
     if (ch[j] == 1) {
       for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] = 
+          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
             ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.024 + 2.5; } } }
     else if (ch[j] == 2) {
       for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] = 
+          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
             ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.032 + 2.5; } } }
     else if (ch[j] == 3) {
       for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] = 
+          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
             ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.032 + 2.5; } } }
     else if (ch[j] == 4) {
       for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
-          er_array[view[j]-1][ch[j]-1][i + k * *nx] = 
+          er_array[view[j]-1][ch[j]-1][i + k * *nx] =
             ch_array[view[j]-1][ch[j]-1][i + k * *nx] * 0.032 + 2.5; } } }
     else if (ch[j] == 5) {
       for (k=0; k<*ny; k++) { for (i=0; i<*nx; i++) {
@@ -225,8 +225,8 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name, 
-                              const long nx, const long ny, const long x0, 
+void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
+                              const long nx, const long ny, const long x0,
                               const long y0, float *out, const bool verbose)
 {
   EPR_SBandId *bid;
@@ -241,7 +241,7 @@ void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
     return;
   }
 
-  /* Read data as raster. Must read entire 512 pixel rows as EPR defines the 
+  /* Read data as raster. Must read entire 512 pixel rows as EPR defines the
      0th elements at the opposite end of the array to us */
   raster = epr_create_compatible_raster(bid, 512, ny, stepx, stepy);
   stat = epr_read_band_raster(bid, 0, y0, raster);
@@ -266,8 +266,8 @@ void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name, 
-                              const long nx, const long ny, const long x0, 
+void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
+                              const long nx, const long ny, const long x0,
                               const long y0, short *out, const bool verbose)
 {
   EPR_SBandId *bid;
@@ -282,7 +282,7 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
     return;
   }
 
-  /* Read data as raster. Must read entire 512 pixel rows as EPR defines the 
+  /* Read data as raster. Must read entire 512 pixel rows as EPR defines the
      0th elements at the opposite end of the array to us */
   raster = epr_create_compatible_raster(bid, 512, ny, stepx, stepy);
   stat = epr_read_band_raster(bid, 0, y0, raster);
@@ -307,7 +307,7 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx, 
+void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
                        const int ny)
 {
   uint i, j, k;
@@ -319,10 +319,10 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
       phi = saz[k] - iaz[k];
       if (phi < 0.0) phi = -phi;
 
-      if (phi > 180.0) 
+      if (phi > 180.0)
         raz[k] = phi - 180.0;
       else
-        raz[k] = 180.0 - phi; 
+        raz[k] = 180.0 - phi;
     }
   }
   return;
@@ -330,8 +330,8 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
-void get_aatsr_dimension(const char* infile, const short* daynight, 
-			 const float* limit, const short* half_orbit, 
+void get_aatsr_dimension(const char* infile, const short* daynight,
+			 const float* limit, const short* half_orbit,
 			 long* nxp, long* nyp, long* minyp, short* statp,
                          const bool *verbose)
 {
@@ -376,7 +376,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
     {
       ny = ny/2;
       miny = ny;
-    } 
+    }
 
   okselev = calloc(ny, sizeof(long));
   if (okselev == NULL) {
@@ -397,7 +397,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
     stat = epr_read_band_raster(bid, 0, miny, selev);
   }
 
-  /* Set initial limits for range checking: 
+  /* Set initial limits for range checking:
      maximum value of miny, minimum value of maxy */
   maxy = 0;
   miny = ny-1;
@@ -408,7 +408,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
       /* Only want daylight data. This forms the middle section of
 	 the orbit */
       for (j=0; j<ny; j++)
-	{ 
+	{
 	  selev1 = epr_get_pixel_as_float(selev, 255, j);
 	  if (selev1 > 0) {
 	    okselev[j] = 1;
@@ -435,9 +435,9 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
 	}
       epr_free_raster(selev);
     }
-  else 
+  else
     {
-      miny = maxy; maxy = ny-1; new_ny = ny; 
+      miny = maxy; maxy = ny-1; new_ny = ny;
       for (j=0; j<ny; j++) okselev[j] = 1;
     }
   if (*half_orbit == 2) {
@@ -455,12 +455,12 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
      (i)  The code reads whole image rows. If a row has a single pixel within
           the limit, that row is read.
      (ii) This test takes no account of whether you are reading both day and
-          night sides of the orbit. If both sides are read, the orbit will be 
-	  read from the first index that lies in the region, to the last. I.e. 
-	  you may well get the entire day-side of the orbit. The lat-lon 
-	  limiting therefore only really makes sense when used in conjunction 
+          night sides of the orbit. If both sides are read, the orbit will be
+	  read from the first index that lies in the region, to the last. I.e.
+	  you may well get the entire day-side of the orbit. The lat-lon
+	  limiting therefore only really makes sense when used in conjunction
 	  with the daynight switch. */
-  if ((limit[0] > -90.0) || (limit[1] > -180.0) || 
+  if ((limit[0] > -90.0) || (limit[1] > -180.0) ||
       (limit[2] <  90.0) || (limit[3] <  180.0))
     {
       /* Read in the latitude and longitude grid */
@@ -494,7 +494,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
 		  (lon1 >= limit[1]) & (lon1 <= limit[3]) &
 		  okselev[j+miny]) row_in=row_in+1;
 	    }
-	  
+
 	  if (row_in >= nx/2)
 	    {
 	      new_ny = new_ny+1;

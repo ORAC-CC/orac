@@ -29,7 +29,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
@@ -75,9 +75,9 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
    where (temp.lt.vr(1) .or. temp.gt.vr(2)) temp = real_fill_value
 !   do ix=startx,stopx
 !      do jy=starty,stopy
-!         if(temp(ix,jy) .lt. vr(1) .or. temp(ix,jy) .gt. vr(2)) temp(ix,jy)=fv
-!      enddo
-!   enddo
+!         if (temp(ix,jy) .lt. vr(1) .or. temp(ix,jy) .gt. vr(2)) temp(ix,jy)=fv
+!      end do
+!   end do
 
    err_code=sfendacc(var_id)
 

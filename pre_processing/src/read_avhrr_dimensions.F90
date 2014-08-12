@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_avhrr_dimensions.f90
+! Name: read_avhrr_dimensions.F90
 !
 ! Purpose:
 ! Open geo input file to determine the size of the data array for the purposes
@@ -25,12 +25,12 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
-   use HDF5
+   use hdf5
    use preproc_constants
 
    implicit none
@@ -41,7 +41,7 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
    integer(kind=HID_T)       :: gr_id,dset_id,dspace_id
 
    integer(kind=lint)        :: rank
-  
+
    integer(kind=lint)        :: err_code
 
    integer(kind=HSIZE_T)     :: dims(2),maxdims(2)
@@ -79,7 +79,7 @@ subroutine read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
    call h5gclose_f(gr_id, err_code)
 
    !close the file
-   call h5fclose_f(geo_id, err_code) 
+   call h5fclose_f(geo_id, err_code)
 
    !close access to hdf5 interface
    call h5close_f(err_code)

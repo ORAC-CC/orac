@@ -29,7 +29,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 module preproc_structures
@@ -52,8 +52,8 @@ module preproc_structures
 
    ! (geo)location
    type preproc_geoloc_s
-      real(kind=sreal), dimension(:), pointer ::  latitude
-      real(kind=sreal), dimension(:), pointer ::  longitude
+      real(kind=sreal), dimension(:), pointer :: latitude
+      real(kind=sreal), dimension(:), pointer :: longitude
    end type preproc_geoloc_s
 
 
@@ -140,7 +140,7 @@ module preproc_structures
 
 contains
 
-  include 'allocate_preproc_structures.F90'
-  include 'deallocate_preproc_structures.F90'
+include 'allocate_preproc_structures.F90'
+include 'deallocate_preproc_structures.F90'
 
 end module preproc_structures

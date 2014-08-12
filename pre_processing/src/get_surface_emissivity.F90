@@ -61,20 +61,20 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
      imager_flags, imager_geolocation, channel_info, preproc_dims, &
      preproc_geoloc, surface, preproc_surf)
 
+   use channel_structures
    use cimss_emissivity
+   use imager_structures
+   use interpol
    use preproc_constants
    use preproc_structures
-   use channel_structures
-   use imager_structures
    use surface_structures
-   use interpol
 
    implicit none
 
@@ -119,7 +119,7 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
       emis_path_file = emis_path
    else
       call select_modis_emiss_file(cyear,doy,emis_path,emis_path_file)
-   endif
+   end if
    write(*,*)'emis_path_file: ',trim(emis_path_file)
 
    ! Read the data itself
@@ -149,7 +149,7 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
                !     transemis(i,:,:), temp_lat, temp_lon, temp_sur)
                call interpol_bilinear(emis%lon, emis%lat, transemis(k,:,:), &
                     temp_lon, temp_lat, temp_sur, real_fill_value)
-               
+
                surface%emissivity(i,j,k)=temp_sur(1)
             end do
          end if

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: effective_2wat_za.f90
+! Name: effective_2wat_za.F90
 !
 ! Purpose:
 ! Return the single-path zenith angle which has the same air-mass as the given
@@ -22,15 +22,15 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine effective_2way_za(sza,lza,amf,za)
 
    implicit none
 
-   real, intent(in) :: sza
-   real, intent(in) :: lza
+   real, intent(in)  :: sza
+   real, intent(in)  :: lza
    real, intent(out) :: amf
    real, intent(out) :: za
 

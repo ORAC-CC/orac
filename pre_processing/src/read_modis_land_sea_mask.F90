@@ -28,7 +28,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,btemp)
@@ -76,9 +76,9 @@ subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,b
    where(btemp .eq. fv) btemp=-1
 !   do ix=ixstart,ixstop
 !      do jy=iystart,iystop
-!         if(btemp(ix,jy) .eq. fv ) btemp(ix,jy)=-1
-!      enddo
-!   enddo
+!         if (btemp(ix,jy) .eq. fv ) btemp(ix,jy)=-1
+!      end do
+!   end do
 
    err_code=sfendacc(var_id)
 

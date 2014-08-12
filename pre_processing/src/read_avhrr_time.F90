@@ -24,7 +24,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)

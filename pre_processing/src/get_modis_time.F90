@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read MODIS time data and map to imager pixels
-! 
+!
 ! Description and Algorithm details:
 ! 1) Allocate an array for the time.
 ! 2) Read time from MODIS.
@@ -25,14 +25,14 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
    use calender
-   use preproc_constants
    use imager_structures
+   use preproc_constants
 
    implicit none
 

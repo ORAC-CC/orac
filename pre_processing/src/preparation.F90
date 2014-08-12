@@ -1,15 +1,15 @@
 module preparation_m
 
-implicit none
+   implicit none
 
 contains
 
 !-------------------------------------------------------------------------------
-! Name: preparation.f90
+! Name: preparation.F90
 !
 ! Purpose:
 ! Determines the names for the various output files.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Work out limits of ATSR chunks for file name.
 ! 2) Compile base file name.
@@ -77,7 +77,7 @@ contains
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
@@ -86,9 +86,9 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
    ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,&
    script_input,ecmwf_flag,imager_geolocation,i_chunk,verbose)
 
-   use preproc_constants
-   use imager_structures
    use attribute_structures
+   use imager_structures
+   use preproc_constants
 
    implicit none
 
@@ -125,34 +125,35 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
 
       !convert latitudes into strings
       write(startc,'( g12.3 )') startr
-      write(endc,  '( g12.3 )') endr   
+      write(endc,  '( g12.3 )') endr
       write(chunkc,'( g12.3 )') i_chunk
 
 
       range_name=trim(adjustl(chunkc))//'-'//trim(adjustl(startc))//'-'// &
            trim(adjustl(endc))//'_'
-   else 
+   else
       range_name=''
-   endif
+   end if
    if (verbose) write(*,*) 'range_name: ', trim(range_name)
 
 
    !put basic filename together
    file_base=trim(adjustl(script_input%project))//'_'// &
-        & trim(adjustl(script_input%cinst))//'_'//trim(adjustl(sensor)) &
-        & //'_'// trim(adjustl(range_name))// &
-        & trim(adjustl(script_input%l2cproc))//'V'// &
-        & trim(adjustl(script_input%l2cprocver))
+             trim(adjustl(script_input%cinst))//'_'// &
+             trim(adjustl(sensor)) &
+             //'_'// trim(adjustl(range_name))// &
+             trim(adjustl(script_input%l2cproc))//'V'// &
+             trim(adjustl(script_input%l2cprocver))
 
    !MJ this need to come from outside: script_input%exec_time=''
    file_base=trim(adjustl(file_base))//'_'//trim(adjustl(platform))// &
-        & '_'//trim(adjustl(script_input%exec_time))
+             '_'//trim(adjustl(script_input%exec_time))
    file_base=trim(adjustl(file_base))//'_'//trim(adjustl(cyear))// &
-        & trim(adjustl(cmonth))//trim(adjustl(cday))
+             trim(adjustl(cmonth))//trim(adjustl(cday))
    file_base=trim(adjustl(file_base))//trim(adjustl(chour))// &
-        & trim(adjustl(cminute))//'_'//trim(adjustl(script_input%file_version))
+             trim(adjustl(cminute))//'_'//trim(adjustl(script_input%file_version))
    if (verbose) write(*,*) 'file_base: ', trim(file_base)
-   
+
    !determine ecmwf path/filename
    call set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
                   ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,&

@@ -27,7 +27,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine rearrange_ecmwf(ecmwf)
@@ -64,6 +64,6 @@ subroutine rearrange_ecmwf(ecmwf)
       ecmwf%u10(:,ecmwf%ydim+1-i) = utemp(:,i)
       ecmwf%v10(:,ecmwf%ydim+1-i) = vtemp(:,i)
       ecmwf%lat(ecmwf%ydim+1-i)   = lattemp(i)
-   enddo
-   
+   end do
+
 end subroutine rearrange_ecmwf

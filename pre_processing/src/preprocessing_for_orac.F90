@@ -198,7 +198,6 @@
 !
 ! Bugs:
 ! See http://proj.badc.rl.ac.uk/orac/report/1
-!
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER
@@ -211,8 +210,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    use channel_structures
    use correct_for_ice_snow_m
    use ecmwf_m
-   use imager_structures
    use hdf5
+   use imager_structures
    use netcdf
    use netcdf_output
    use netcdf_structures
@@ -343,57 +342,57 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    write(*,*) 'inside preproc',nargs
 
    ! if more than one argument passed, all inputs on command line
-   if(nargs .gt. 1) then
-      CALL GET_COMMAND_ARGUMENT(1,sensor)
-      CALL GET_COMMAND_ARGUMENT(2,path_to_l1b_file)
-      CALL GET_COMMAND_ARGUMENT(3,path_to_geo_file)
-      CALL GET_COMMAND_ARGUMENT(4,ecmwf_path)
-      CALL GET_COMMAND_ARGUMENT(5,coef_path)
-      CALL GET_COMMAND_ARGUMENT(6,emiss_path)
-      CALL GET_COMMAND_ARGUMENT(7,ice_path)
-      CALL GET_COMMAND_ARGUMENT(8,albedo_path)
-      CALL GET_COMMAND_ARGUMENT(9,emiss2_path)
-      CALL GET_COMMAND_ARGUMENT(10,cdellon)
-      CALL GET_COMMAND_ARGUMENT(11,cdellat)
-      CALL GET_COMMAND_ARGUMENT(12,output_pathin)
-      CALL GET_COMMAND_ARGUMENT(13,cstartx)
-      CALL GET_COMMAND_ARGUMENT(14,cendx)
-      CALL GET_COMMAND_ARGUMENT(15,cstarty)
-      CALL GET_COMMAND_ARGUMENT(16,cendy)
-      CALL GET_COMMAND_ARGUMENT(17,script_input%cncver)
-      CALL GET_COMMAND_ARGUMENT(18,script_input%ccon)
-      CALL GET_COMMAND_ARGUMENT(19,script_input%cinst)
-      CALL GET_COMMAND_ARGUMENT(20,script_input%l2cproc)
-      CALL GET_COMMAND_ARGUMENT(21,script_input%l2cprocver)
-      CALL GET_COMMAND_ARGUMENT(22,script_input%contact)
-      CALL GET_COMMAND_ARGUMENT(23,script_input%website)
-      CALL GET_COMMAND_ARGUMENT(24,script_input%file_version)
-      CALL GET_COMMAND_ARGUMENT(25,script_input%reference)
-      CALL GET_COMMAND_ARGUMENT(26,script_input%history)
-      CALL GET_COMMAND_ARGUMENT(27,script_input%summary)
-      CALL GET_COMMAND_ARGUMENT(28,script_input%keywords)
-      CALL GET_COMMAND_ARGUMENT(29,script_input%comment)
-      CALL GET_COMMAND_ARGUMENT(30,script_input%project)
-      CALL GET_COMMAND_ARGUMENT(31,script_input%license)
-      CALL GET_COMMAND_ARGUMENT(32,script_input%uuid_tag)
-      CALL GET_COMMAND_ARGUMENT(33,script_input%exec_time)
-      CALL GET_COMMAND_ARGUMENT(34,aatsr_calib_file)
-      CALL GET_COMMAND_ARGUMENT(35,cecmwf_flag)
-      CALL GET_COMMAND_ARGUMENT(36,ecmwf_path2)
-      CALL GET_COMMAND_ARGUMENT(37,ecmwf_path3)
-      CALL GET_COMMAND_ARGUMENT(38,cchunkproc)
-      CALL GET_COMMAND_ARGUMENT(39,cday_night)
-      CALL GET_COMMAND_ARGUMENT(40,cverbose)
-      CALL GET_COMMAND_ARGUMENT(41,cuse_chunking)
-      CALL GET_COMMAND_ARGUMENT(42,cassume_full_paths)
-      CALL GET_COMMAND_ARGUMENT(43,cinclude_full_brdf)
+   if (nargs .gt. 1) then
+      call get_command_argument(1,sensor)
+      call get_command_argument(2,path_to_l1b_file)
+      call get_command_argument(3,path_to_geo_file)
+      call get_command_argument(4,ecmwf_path)
+      call get_command_argument(5,coef_path)
+      call get_command_argument(6,emiss_path)
+      call get_command_argument(7,ice_path)
+      call get_command_argument(8,albedo_path)
+      call get_command_argument(9,emiss2_path)
+      call get_command_argument(10,cdellon)
+      call get_command_argument(11,cdellat)
+      call get_command_argument(12,output_pathin)
+      call get_command_argument(13,cstartx)
+      call get_command_argument(14,cendx)
+      call get_command_argument(15,cstarty)
+      call get_command_argument(16,cendy)
+      call get_command_argument(17,script_input%cncver)
+      call get_command_argument(18,script_input%ccon)
+      call get_command_argument(19,script_input%cinst)
+      call get_command_argument(20,script_input%l2cproc)
+      call get_command_argument(21,script_input%l2cprocver)
+      call get_command_argument(22,script_input%contact)
+      call get_command_argument(23,script_input%website)
+      call get_command_argument(24,script_input%file_version)
+      call get_command_argument(25,script_input%reference)
+      call get_command_argument(26,script_input%history)
+      call get_command_argument(27,script_input%summary)
+      call get_command_argument(28,script_input%keywords)
+      call get_command_argument(29,script_input%comment)
+      call get_command_argument(30,script_input%project)
+      call get_command_argument(31,script_input%license)
+      call get_command_argument(32,script_input%uuid_tag)
+      call get_command_argument(33,script_input%exec_time)
+      call get_command_argument(34,aatsr_calib_file)
+      call get_command_argument(35,cecmwf_flag)
+      call get_command_argument(36,ecmwf_path2)
+      call get_command_argument(37,ecmwf_path3)
+      call get_command_argument(38,cchunkproc)
+      call get_command_argument(39,cday_night)
+      call get_command_argument(40,cverbose)
+      call get_command_argument(41,cuse_chunking)
+      call get_command_argument(42,cassume_full_paths)
+      call get_command_argument(43,cinclude_full_brdf)
    else
-      if(nargs .eq. 1) then
+      if (nargs .eq. 1) then
       ! if just one argument => this is driver file which contains everything
          call get_command_argument(1,driver_path_and_file)
-      elseif(nargs .eq. -1) then
+      else if (nargs .eq. -1) then
          write(*,*) 'inside preproc ',trim(adjustl(driver_path_and_file))
-      endif
+      end if
 
       open(11,file=trim(adjustl(driver_path_and_file)),status='old', &
            form='formatted')
@@ -442,7 +441,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       read(11,*) cassume_full_paths
       read(11,*) cinclude_full_brdf
       close(11)
-   endif ! nargs gt 1
+   end if ! nargs gt 1
 
    ! get the NetCDF version
    script_input%cncver=nf90_inq_libvers()
@@ -491,14 +490,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       ! get dimensions of the modis granule
       call read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
-   elseif (trim(adjustl(sensor)) .eq. 'AVHRR') then
+   else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
            month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
       ! get dimensions of the avhrr orbit
       call read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
 
-   elseif (trim(adjustl(sensor)) .eq. 'AATSR') then
+   else if (trim(adjustl(sensor)) .eq. 'AATSR') then
       call setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
            month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
 
@@ -514,7 +513,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            n_along_track, along_track_offset, day_night, loc_limit, &
            n_along_track2, along_track_offset2, verbose)
 
-   endif ! end of sensor selection
+   end if ! end of sensor selection
 
    if (verbose) then
       write(*,*) 'File dimensions determined -'
@@ -523,8 +522,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
          write(*,*) 'along_track_offset2: ', along_track_offset2
          write(*,*) 'n_along_track2:      ', n_along_track2
-      endif
-   endif
+      end if
+   end if
    write(*,*) 'WE ARE PROCESSING ',trim(platform),' FOR ORBIT',year,month,day, &
         hour,minute
 
@@ -549,7 +548,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
          chunksize = 4096
       else
          chunksize = n_along_track + n_along_track2
-      endif
+      end if
 
       n_segments = 1
       segment_starts(1) = along_track_offset + 1
@@ -559,7 +558,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
          n_segments = n_segments + 1
          segment_starts(n_segments) = along_track_offset2 + 1
          segment_ends(n_segments)   = along_track_offset2 + n_along_track2
-      endif
+      end if
 
       n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
                                chunksize)
@@ -570,14 +569,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       call chunkify(n_segments, segment_starts, segment_ends, chunksize, &
                     n_chunks, chunk_starts, chunk_ends)
 
-   endif ! end of startx and starty selection
+   end if ! end of startx and starty selection
 
    if (verbose) then
       write(*,*) 'The chunks to be processed are:'
       do i_chunk = 1, n_chunks
          write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk)
-      enddo
-   endif
+      end do
+   end if
 
    imager_geolocation%nx=imager_geolocation%endx-imager_geolocation%startx+1
 
@@ -592,7 +591,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
               imager_geolocation%endx
          write(*,*) 'starty: ',imager_geolocation%starty,', endy: ', &
               imager_geolocation%endy
-      endif
+      end if
 
       ! allocate the structures for the imager like geolocation, angles and
       ! measurements and surface
@@ -625,8 +624,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
          if (ecmwf_flag.gt.0) then
             write(*,*) 'ecmwf_path2: ',trim(ecmwf2pathout)
             write(*,*) 'ecmwf_path3: ',trim(ecmwf3pathout)
-         endif
-      endif
+         end if
+      end if
 
       ! read surface wind fields and ECMWF dimensions
       select case (ecmwf_flag)
@@ -687,11 +686,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
          if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_pathout)
          call read_ecmwf_nc(ecmwf_pathout,ecmwf,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
-      
+
          if (verbose) write(*,*) 'Reading ecmwf path2: ',trim(ecmwf2pathout)
          call read_ecmwf_grib(ecmwf2pathout,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
-         
+
          if (verbose) write(*,*) 'Reading ecmwf path3: ',trim(ecmwf3pathout)
          call read_ecmwf_grib(ecmwf3pathout,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
@@ -759,7 +758,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            imager_flags,imager_time,imager_measurements)
       call deallocate_surface_structures(surface,include_full_brdf)
 
-   enddo ! end looping over chunks
+   end do ! end looping over chunks
 
    deallocate(chunk_starts)
    deallocate(chunk_ends)
@@ -799,7 +798,7 @@ function parse_logical(string) result(value)
         value = .false.
    else
         stop 'Error parsing logical'
-   endif
+   end if
 
 end function parse_logical
 
@@ -822,7 +821,7 @@ function calc_n_chunks(n_segments, segment_starts, segment_ends, &
 
    do i = 1, n_segments
       n_chunks = n_chunks + (segment_ends(i) - segment_starts(i)) / chunk_size + 1
-   enddo
+   end do
 
 end function calc_n_chunks
 
@@ -857,7 +856,7 @@ subroutine chunkify(n_segments, segment_starts, segment_ends, &
       chunk_ends(n_chunks) = segment_ends(i)
 
       n_chunks = n_chunks + 1
-   enddo
+   end do
 
    n_chunks = n_chunks - 1
 

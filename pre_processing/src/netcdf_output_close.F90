@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: netcdf_output_close.f90
+! Name: netcdf_output_close.F90
 !
 ! Purpose:
 ! Close netcdf output files
@@ -21,7 +21,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_output_close(netcdf_info)

@@ -49,7 +49,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
@@ -136,14 +136,14 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
       case default
          STOP 'Unknown ECMWF file format flag. Please select 0, 1, or 2.'
       end select
-    endif
+    end if
 
    if (verbose) then
       write(*,*)'ecmwf_path:  ',trim(ecmwf_pathout)
       if (ecmwf_flag .gt. 0) then
          write(*,*)'ecmwf_path2: ',trim(ecmwf_path2out)
          write(*,*)'ecmwf_path3: ',trim(ecmwf_path3out)
-      endif
-   endif
+      end if
+   end if
 
 end subroutine set_ecmwf

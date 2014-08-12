@@ -31,7 +31,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
@@ -85,13 +85,13 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
 !   end where
    do ix=ixstart,ixstop
       do jy=iystart,iystop
-        if(stemp(ix,jy) .ge. vr(1) .and. stemp(ix,jy) .le. vr(2)) then
+        if (stemp(ix,jy) .ge. vr(1) .and. stemp(ix,jy) .le. vr(2)) then
            rtemp(ix,jy)=real(stemp(ix,jy)*sf,kind=sreal)
         else
            rtemp(ix,jy)=real_fill_value
-        endif
-      enddo
-   enddo
+        end if
+      end do
+   end do
 
    err_code=sfendacc(var_id)
 

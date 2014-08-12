@@ -21,7 +21,7 @@
 !C
 !C
 REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
-  
+
   !C-----------------------------------------------------------------------
   !C!F90
   !C
@@ -70,14 +70,14 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
   USE BRIGHT
 
   IMPLICIT NONE
-  
+
   ! ... Include files
 !  include 'platform_name.inc'
-  
+
   ! ... Arguments
   real rad
   integer band, units
-  
+
   ! ... Local variables
   real cwn_terra(16), tcs_terra(16), tci_terra(16)
   real cwn_aqua(16), tcs_aqua(16), tci_aqua(16)
@@ -89,7 +89,7 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
   ! ... External functions
 ! real bright_m, brite_m
 ! external bright_m, brite_m
-  
+
   ! ... Data statements
 
 !!$c-----------------------------------------------------------------------
@@ -125,8 +125,8 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
        &  2.641767E+03, 2.505274E+03, 2.518031E+03, 2.465422E+03, &
        &  2.235812E+03, 2.200345E+03, 1.478026E+03, 1.362741E+03, &
        &  1.173198E+03, 1.027703E+03, 9.081998E+02, 8.315149E+02, &
-       &  7.483224E+02, 7.309089E+02, 7.188677E+02, 7.045309E+02/ 
-  
+       &  7.483224E+02, 7.309089E+02, 7.188677E+02, 7.045309E+02/
+
   ! ... Temperature correction slopes (no units)
   data tcs_terra/  &
        &  9.993487E-01, 9.998699E-01, 9.998604E-01, 9.998701E-01, &
@@ -137,7 +137,7 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
   ! ... Temperature correction intercepts (Kelvin)
   data tci_terra/ &
        &  4.744530E-01, 9.091094E-02, 9.694298E-02, 8.856134E-02, &
-       &  7.287017E-02, 7.037161E-02, 2.177889E-01, 2.037728E-01, & 
+       &  7.287017E-02, 7.037161E-02, 2.177889E-01, 2.037728E-01, &
        &  1.559624E-01, 7.989879E-02, 1.176660E-01, 6.856633E-02, &
        &  1.903625E-02, 1.902709E-02, 1.859296E-02, 1.619453E-02/
 
@@ -181,7 +181,7 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
            &  9.993438E-01, 9.998680E-01, 9.998649E-01, 9.998729E-01, &
            &  9.998738E-01, 9.998774E-01, 9.995732E-01, 9.994894E-01, &
            &  9.995439E-01, 9.997496E-01, 9.995483E-01, 9.997404E-01, &
-           &  9.999194E-01, 9.999071E-01, 9.999176E-01, 9.999211E-01/ 
+           &  9.999194E-01, 9.999071E-01, 9.999176E-01, 9.999211E-01/
 
 ! ... Temperature correction intercepts (Kelvin)
       data tci_aqua/ &
@@ -194,7 +194,7 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
 
       ! ... Set default return value
       modis_bright = -1.0
-      
+
       ! ... Check input parameters and return if they are bad
       if (rad .le. 0.0 .or. &
            &    band .lt. 20 .or. &
@@ -206,8 +206,8 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
          index = band - 19
       else
          index = band - 20
-      endif
-      
+      end if
+
       ! ... Get the coefficients for Terra or Aqua
       if (platform_name(1:5) .eq. 'Terra' .or. &
            &    platform_name(1:5) .eq. 'terra' .or. &
@@ -221,8 +221,8 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
          cwn = cwn_aqua(index)
          tcs = tcs_aqua(index)
          tci = tci_aqua(index)
-      endif
-     
+      end if
+
       ! ... Compute brightness temperature
       if (units .eq. 1) then
 
@@ -231,11 +231,11 @@ REAL FUNCTION MODIS_BRIGHT(platform_name,RAD, BAND, UNITS)
          modis_bright = (bright_m(1.0e+4 / cwn, rad) - tci) / tcs
 
          !MJ    else
-         
+
          ! ...   Radiance units are
          ! ...   milliWatts per square meter per steradian per wavenumber
          !MJ modis_bright = (brite_m(cwn, rad) - tci) / tcs
-         
-      endif
+
+      end if
 
     END FUNCTION MODIS_BRIGHT

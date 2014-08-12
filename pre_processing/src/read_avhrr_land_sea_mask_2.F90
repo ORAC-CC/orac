@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Read land/sea mask for AVHRR from physiography data
-! 
+!
 ! Description and Algorithm details:
 ! 1) Set start, end, and stride of data read.
 ! 2) Open data group, data set, and allocate data space. Read data.
@@ -29,7 +29,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_land_sea_mask_2(fid,group,dataset,startx,stopx,starty,stopy, &

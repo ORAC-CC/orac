@@ -54,7 +54,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine allocate_preproc_structures(imager_angles,preproc_dims, &

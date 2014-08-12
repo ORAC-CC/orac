@@ -17,7 +17,7 @@ contains
 ! Name           Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! assume_full_path      in  T: inputs are filenames; F: folder names
-!                logic  
+!                logic
 ! nise_path      string in  Path to NSIDC NISE data file
 ! imager_geolocation    in   Geolocation data for satellite data
 !                struct      (defined in imager_structures)
@@ -52,7 +52,7 @@ contains
 ! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices
 ! 2012/09/14, GT: Changed convertion of fraction index numbers to integers from
 !   int(x) to nint(x) (i.e. rounding), based on EASE grid documentation, and
-!   added 1, so that indices run from 1-721, rather than 0-720. 
+!   added 1, so that indices run from 1-721, rather than 0-720.
 ! 16/11/2012, CP: modified how nise_path_file called no
 !   longer need year in path name
 ! 14/12/2012, CP: changed howy loop was set changed starty to startyi to loop
@@ -74,7 +74,7 @@ contains
 ! 2013/05/23, GT: Small bug fix to coast line-check (was causing snow to be
 !   flagged along coastlines without any snow).
 ! 2013/09/02, AP: Removed startyi, endye.
-! 2013/10/02, CP: added fmonth so correct ice snow emissivity files are read 
+! 2013/10/02, CP: added fmonth so correct ice snow emissivity files are read
 !   in 2009/2010
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/26, MJ: Added "FAILED" to error output.
@@ -86,19 +86,18 @@ contains
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
-     preproc_dims,surface,cyear,cmonth,cday, &
-     channel_info)
+     preproc_dims,surface,cyear,cmonth,cday,channel_info)
 
+   use channel_structures
+   use imager_structures
+   use nise_m
    use preproc_constants
    use preproc_structures
-   use imager_structures
    use surface_structures
-   use nise_m
-   use channel_structures
 
    implicit none
 
@@ -126,7 +125,7 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
 
    ! Define the ice and snow albedo values
    ! Snow - from the ASTER spectral library
-   ! Bare sea ice - from Brandt et al 2005 (0.67 & 0.87 microns); 
+   ! Bare sea ice - from Brandt et al 2005 (0.67 & 0.87 microns);
    ! Grenfell and Perovich 1984 (1.6 microns); assumed 0 reflectance
    ! (Emissivity = 1) at 3.7 microns.
    ! lambda         0.67   0.87   1.6     3.7
@@ -147,14 +146,14 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
       if ((trim(adjustl(cyear)) .eq. '2010') .or. &
            (trim(adjustl(cyear)) .eq. '2009' .and. fmonth .gt. 8 )) then
          nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'//&
-              & trim(adjustl(cyear))//trim(adjustl(cmonth))//&
-              & trim(adjustl(cday))//'.HDFEOS'
+                        trim(adjustl(cyear))//trim(adjustl(cmonth))//&
+                        trim(adjustl(cday))//'.HDFEOS'
       else
          nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'//&
-              & trim(adjustl(cyear))//trim(adjustl(cmonth))//&
-              & trim(adjustl(cday))//'.HDFEOS'
-      endif
-   endif
+                        trim(adjustl(cyear))//trim(adjustl(cmonth))//&
+                        trim(adjustl(cday))//'.HDFEOS'
+      end if
+   end if
    write(*,*)'nise_path_file: ', trim(nise_path_file)
 
    ! Check that the defined file exists and is readable
@@ -211,7 +210,7 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
             ! * Assume the pole is always covered in ice
             ! * Interpolate the surrounding sea ice/snow cover for each coast
             !   point
-            do l=0,1 
+            do l=0,1
                do k=0,1
                   ! Check if the current NISE pixel is flagged as coast
                   ! and that it is not at the edge of the data array.
@@ -230,7 +229,7 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
                               count = count+1
                               nise_tmp2(count) = &
                                    real(nise%north%extent(xi+k+n,yi+l+m))
-                           endif
+                           end if
                         end do
                      end do
                      ! If we've found some valid pixels surrounding our
@@ -281,7 +280,7 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
             ! * Assume the pole is always covered in snow
             ! * Interpolate the surrounding sea ice/snow cover for each coast
             !   point
-            do l=0,1 
+            do l=0,1
                do k=0,1
                   ! Check if the current NISE pixel is flagged as coast
                   ! and that it is not at the edge of the data array.
@@ -300,7 +299,7 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
                               count = count+1
                               nise_tmp2(count) = &
                                    real(nise%south%extent(xi+k+n,yi+l+m))
-                           endif
+                           end if
                         end do
                      end do
                      ! If we've found some valid pixels surrounding our
@@ -322,7 +321,7 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
             call apply_ice_correction(real(easex-real(xi)),  &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo,  &
                  preproc_dims, surface%albedo(i,j,:), channel_info)
-         endif
+         end if
       end do
    end do
    ! Tidy up the nise structure created by the read_nsidc_snow call
@@ -349,7 +348,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    type(preproc_dims_s),             intent(in)    :: preproc_dims
    real(kind=sreal), dimension(:),   intent(inout) :: pixel_ref
    type(channel_info_s),             intent(in)    :: channel_info
-   
+
    real,             dimension(2,2)                :: ice_frac
    real,             dimension(1)                  :: pixel_ice, pixel_snow
    integer,          dimension(:), allocatable     :: chanidx
@@ -382,11 +381,11 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
       end if
    end if
 
-   ! Sea and permanent ice is handled more complexly, and is  denoted by 
+   ! Sea and permanent ice is handled more complexly, and is  denoted by
    ! values of 1-101, with 1-100 denoting a percentage cover of sea ice and
    ! 101 denoting permanent ice. We set permanent ice to a fraction of 1.0,
    ! and convert the percentage cover to a fraction
-   where(nise .eq. 101) 
+   where(nise .eq. 101)
       ice_frac = 1.0
    elsewhere
       ice_frac = nise / 100.

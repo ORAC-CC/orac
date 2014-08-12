@@ -60,14 +60,14 @@
 !   of loop.
 ! 2014/01/27, MJ: datatype corrections
 ! 2014/04/25, GM: Use the "is_lut_drift_corrected" flag from read_aatsr_orbit()
-!   to determine if the LUT based drift correction has already been applied to 
+!   to determine if the LUT based drift correction has already been applied to
 !   the data as in the 3rd reprocessing (V2.1) data.
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 !
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
@@ -75,10 +75,10 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
      channel_info, verbose)
 
    use iso_c_binding ! technically Fortran 2003
-   use preproc_constants
+   use aatsr_corrections
    use channel_structures
    use imager_structures
-   use aatsr_corrections
+   use preproc_constants
 
    implicit none
 
@@ -224,7 +224,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       allocate(nflg(1,1))
       allocate(nqul(1,1))
       allocate(nday(1))
-   endif
+   end if
    if (iand(view_selection,2_sint) .gt. 0) then
       allocate(fflg(startx:imager_geolocation%endx,1:ny))
       allocate(fqul(startx:imager_geolocation%endx,1:ny))
@@ -237,7 +237,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       allocate(fflg(1,1))
       allocate(fqul(1,1))
       allocate(fday(1))
-   endif
+   end if
 
    ! assign write pointers for required channels and views. Fortran pointers
    ! required for aatsr_apply_corrections as uncertain of last index
@@ -327,7 +327,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       if (verbose) print*,'calling read dift file ', stat
       call aatsr_read_drift_table(drift_file, lut, status)
       if (verbose) print*,'finish drift table read returned with status ', stat
-   endif
+   end if
 
    ! apply corrections
    do i=1,channel_info%nchannels_total
@@ -343,7 +343,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
 
          ! determine if non-linearity correction has been applied
          if (j.eq.4 .and. gc1_file .eq. &
-         & 'ATS_GC1_AXVIEC20020123_073430_20020101_000000_20200101_000000') then
+             'ATS_GC1_AXVIEC20020123_073430_20020101_000000_20200101_000000') then
             ! this correction acts on the voltage, which is -4.25*radiance
             A = pi/1.553 * (/ 1.0, -4.25, 18.0625, -76.765625 /) * &
                  (/ -0.000027,-0.1093,0.009393,0.001013 /)
@@ -381,9 +381,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
                     imager_measurements%data(ii,jj,i) - &
                     aatsr_12um_nonlinearity_correction( &
                     imager_measurements%data(ii,jj,i))
-            enddo
-         enddo
-      endif
+            end do
+         end do
+      end if
    end do
 
    ! copy time values into rows from nadir (which we're presumably viewing)

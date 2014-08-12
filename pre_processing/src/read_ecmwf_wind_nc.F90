@@ -5,7 +5,7 @@
 ! Read surface wind components and lat/lon from ECMWF file. Intended for use
 ! with the interpolated BADC files in NCDF format (filename
 ! g[gam|gas|pam]YYYYMMDDHH00.nc). Successor to read_ecmwf_dimensions_nc.F90.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Set a|bvector values (set in interpolation).
 ! 2) Process each file.
@@ -25,7 +25,7 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
@@ -33,7 +33,7 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    use preproc_constants
 
    implicit none
-   
+
    character(len=pathlength), intent(in)    :: ecmwf_path
    character(len=pathlength), intent(in)    :: ecmwf2path, ecmwf3path
    type(ecmwf_s),             intent(inout) :: ecmwf
@@ -53,7 +53,7 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
                8.765055E+03, 1.037612E+04, 1.207745E+04, 1.377532E+04, &
                1.537980E+04, 1.681947E+04, 1.804518E+04, 1.902770E+04, &
                1.975511E+04, 2.022220E+04, 2.042986E+04, 2.038448E+04, &
-               2.009740E+04, 1.958433E+04, 1.886475E+04, 1.796136E+04, & 
+               2.009740E+04, 1.958433E+04, 1.886475E+04, 1.796136E+04, &
                1.689947E+04, 1.570645E+04, 1.441112E+04, 1.304322E+04, &
                1.163276E+04, 1.020950E+04, 8.802355E+03, 7.438805E+03, &
                6.144316E+03, 4.941777E+03, 3.850913E+03, 2.887697E+03, &
@@ -85,7 +85,7 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    call read_ecmwf_wind_file(ecmwf_path,ecmwf)
    call read_ecmwf_wind_file(ecmwf2path,ecmwf)
    call read_ecmwf_wind_file(ecmwf3path,ecmwf)
-   
+
 end subroutine read_ecmwf_wind_nc
 
 !-------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ end subroutine read_ecmwf_wind_nc
 ! Read surface wind components and lat/lon from ECMWF file. Intended for use
 ! with the interpolated BADC files in NCDF format (filename
 ! g[gam|gas|pam]YYYYMMDDHH00.nc). Successor to read_ecmwf_dimensions_nc.F90.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Open file.
 ! 2) Search for desired dimensions. If size unknown, save. Otherwise, check
@@ -114,7 +114,7 @@ end subroutine read_ecmwf_wind_nc
 ! 2014/05/07, AP: First version.
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
@@ -124,7 +124,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    use preproc_constants
 
    implicit none
-   
+
    character(len=*), intent(in)    :: ecmwf_path
    type(ecmwf_s),    intent(inout) :: ecmwf
 
@@ -136,21 +136,21 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    call nc_open(fid,ecmwf_path)
 
    ! check field dimensions for consistency
-   if (nf90_inquire(fid,ndim,nvar) .ne. 0) STOP 'READ_ECMWF_WIND: Bad inquire.'
+   if (nf90_inquire(fid,ndim,nvar) .ne. 0) stop 'READ_ECMWF_WIND: Bad inquire.'
    do i=1,ndim
       if (nf90_inquire_dimension(fid,i,name,size) .ne. 0) &
-           STOP 'READ_ECMWF_WIND: Bad dimension.'
+           stop 'READ_ECMWF_WIND: Bad dimension.'
       if (name .eq. 'longitude') then
          if (ecmwf%xdim .eq. 0) then
             ecmwf%xdim=size
          else
-            if (ecmwf%xdim .ne. size) STOP 'READ_ECMWF_WIND: Inconsistent lon.'
+            if (ecmwf%xdim .ne. size) stop 'READ_ECMWF_WIND: Inconsistent lon.'
          end if
       else if (name .eq. 'latitude') then
          if (ecmwf%ydim .eq. 0) then
             ecmwf%ydim=size
          else
-            if (ecmwf%ydim .ne. size) STOP 'READ_ECMWF_WIND: Inconsistent lat.'
+            if (ecmwf%ydim .ne. size) stop 'READ_ECMWF_WIND: Inconsistent lat.'
          end if
          ! the vertical coordinate is inconsistently between gpam and ggam
       else if ((name.eq.'hybrid' .and. ndim.eq.4) .or. &
@@ -159,7 +159,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
             ecmwf%kdim=size
          else
             if (ecmwf%kdim .ne. size) &
-                 STOP 'READ_ECMWF_WIND: Inconsistent vertical.'
+                 stop 'READ_ECMWF_WIND: Inconsistent vertical.'
          end if
       end if
    end do
@@ -167,7 +167,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    ! read wind fields and geolocation from files
    do i=1,nvar
       if (nf90_inquire_variable(fid,i,name) .ne. 0) &
-           STOP 'READ_ECMWF_WIND: Bad variable.'
+           stop 'READ_ECMWF_WIND: Bad variable.'
       select case (name)
       case('longitude')
          if (.not.associated(ecmwf%lon)) then
@@ -198,6 +198,6 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
       end select
    end do
 
-   if (nf90_close(fid) .ne. 0) STOP 'READ_ECMWF_WIND: File could not close.'
+   if (nf90_close(fid) .ne. 0) stop 'READ_ECMWF_WIND: File could not close.'
 
 end subroutine read_ecmwf_wind_file

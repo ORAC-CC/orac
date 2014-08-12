@@ -45,24 +45,24 @@
 ! $Id$
 !
 ! Bugs:
-! none known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
      iread_stop,iread_startt,iread_stopt,ttemp,ttemp10,refjulianday)
 
-   use preproc_constants
    use imager_structures
+   use preproc_constants
 
    implicit none
 
-   integer(kind=lint), intent(in) :: along_track_ratio
-   integer(kind=lint), intent(in) :: ixstart,ixstop
-   integer(kind=lint), intent(in) :: iread_start,iread_stop
-   integer(kind=lint), intent(in) :: iread_startt,iread_stopt
-   real(kind=dreal), intent(out)  :: ttemp(ixstart:ixstop,iread_start:iread_stop)
-   real(kind=dreal), intent(in)   :: ttemp10(iread_startt:iread_stopt)
-   real(kind=dreal), intent(in)   :: refjulianday
+   integer(kind=lint), intent(in)  :: along_track_ratio
+   integer(kind=lint), intent(in)  :: ixstart,ixstop
+   integer(kind=lint), intent(in)  :: iread_start,iread_stop
+   integer(kind=lint), intent(in)  :: iread_startt,iread_stopt
+   real(kind=dreal),   intent(out) :: ttemp(ixstart:ixstop,iread_start:iread_stop)
+   real(kind=dreal),   intent(in)  :: ttemp10(iread_startt:iread_stopt)
+   real(kind=dreal),   intent(in)  :: refjulianday
 
    real(kind=dreal), parameter   :: tframe=333.333D-6
 
@@ -82,8 +82,8 @@ subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
       !     are offset from that giving an error in this <5ms = 100m.
       do ix=ixstart,ixstop
          ttemp(ix,jy)=ttemp10(jyt)+tframe*real((ix-f30),kind=dreal)
-      enddo
-   enddo
+      end do
+   end do
 
    !divide TAI seconds since 1/1/1993 by 86400 (every day has in the TAI system
    !precicesly this amount of seconds) and add to Julian date of 1/1/1993

@@ -195,7 +195,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
                 imager_angles%solazi(:,:,k) .ne. real_fill_value .and. &
                 imager_angles%relazi(:,:,k) .ne. real_fill_value
       end do
-   endif
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -213,7 +213,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          allocate(relazlnd(nland))
          allocate(wgtlnd(3,channel_info%nchannels_sw,nland))
          allocate(rholnd (channel_info%nchannels_sw,nland,4))
-      endif
+      end if
 
       ! Extract only the land pixels from the imager structures
       lndcount = 1
@@ -254,12 +254,12 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
             call select_modis_albedo_file(cyear,doy,modis_surf_path, &
                                           .true.,modis_brdf_path_file)
 
-         endif
-      endif
+         end if
+      end if
       write(*,*)'modis_surf_path_file: ', trim(modis_surf_path_file)
       if (include_full_brdf) then
          write(*,*)'modis_brdf_path_file: ', trim(modis_brdf_path_file)
-      endif
+      end if
 
       ! Read the data itself
       call read_mcd43c3(modis_surf_path_file, mcdc3, nswchannels, bands, &
@@ -268,7 +268,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
       if (include_full_brdf) then
          call read_mcd43c1(modis_brdf_path_file, mcdc1, nswchannels, bands, &
                            read_brdf, read_qc, stat)
-      endif
+      end if
 
       ! Fill missing data in the MODIS surface reflectance using a nearest
       ! neighbour technique. Note we cannot allocate tmp_data until we've created
@@ -336,8 +336,8 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
                call interpol_bilinear         (mcdc3%lon, mcdc3%lat, tmp_data, &
                                                lonlnd, latlnd, wgtlnd(j,i,:), &
                                                real_fill_value)
-            enddo
-         endif
+            end do
+         end if
       end do
 
       if (include_full_brdf) then
@@ -360,7 +360,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd &
             (3, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, real_fill_value, &
              rholnd(:,:,1), rholnd(:,:,2), rholnd(:,:,3), rholnd(:,:,4))
-      endif
+      end if
 
 !     end do ! End of instrument view loop
 
@@ -378,7 +378,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          deallocate(relazlnd)
          deallocate(wgtlnd)
          call deallocate_mcd43c1(mcdc1)
-      endif
+      end if
 
    end if ! End of land surface reflectance setting
 
@@ -400,7 +400,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
       allocate(coxbands(channel_info%nchannels_sw))
       if (include_full_brdf) then
          allocate(rhosea(channel_info%nchannels_sw,nsea,4))
-      endif
+      end if
 
       ! Which channels do we need?
       i=0
@@ -408,8 +408,8 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          if (channel_info%channel_sw_flag(k) .eq. 1  ) then
             i=i+1
             coxbands(i) = channel_info%channel_ids_abs(k)
-         endif
-      enddo
+         end if
+      end do
 
       ! Extract the location data for the sea pixels
       seacount = 1
@@ -481,7 +481,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          call cox_munk_rho_0v_0d_dv_and_dd &
             (coxbands, solzasea, satzasea, solazsea, relazsea, u10sea, v10sea, &
              real_fill_value, rhosea(:,:,1), rhosea(:,:,2), rhosea(:,:,3), rhosea(:,:,4))
-      endif
+      end if
 
 !     end do ! End of instrument view loop
 
@@ -521,7 +521,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
                   surface%rho_0d(j,i,:) = rholnd(:,lndcount,2)
                   surface%rho_dv(j,i,:) = rholnd(:,lndcount,3)
                   surface%rho_dd(j,i,:) = rholnd(:,lndcount,4)
-               endif
+               end if
 
                ! The MCD43c3 product is of no use for the 3.7 micron channel. If
                ! it has been selected, we use 1-emissivity as the land surface
@@ -534,7 +534,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
                      surface%rho_0d(j,i,4) = 0.
                      surface%rho_dv(j,i,4) = 0.
                      surface%rho_dd(j,i,4) = 1.0 - surface%emissivity(j,i,1)
-                  endif
+                  end if
                end if
 
                lndcount = lndcount+1
@@ -548,11 +548,11 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
                   surface%rho_0d(j,i,:) = rhosea(:,seacount,2)
                   surface%rho_dv(j,i,:) = rhosea(:,seacount,3)
                   surface%rho_dd(j,i,:) = rhosea(:,seacount,4)
-               endif
+               end if
 
                seacount = seacount+1
             end if
-         endif
+         end if
       end do
    end do
 

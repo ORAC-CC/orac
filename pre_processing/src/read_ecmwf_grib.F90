@@ -22,7 +22,7 @@
 ! file. Though the EMOS library will output an unpacked array, that does not
 ! include the header information required to identify the field. By copying
 ! the interpolated field to a scratch file retains that.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Open file. Create scratch file.
 ! 2) Set output grid to limits and spacing of preprocessing grid.
@@ -88,7 +88,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    ! open the ECMWF file
    call PBOPEN(fu, ecmwf_file, 'r', stat)
-   if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Failed to read file.'
+   if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Failed to read file.'
 
    ! find an available file unit for scratch file
    do lun=97,1,-1
@@ -99,78 +99,78 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    ! select appropriate grid definition
    charv(1)='grib'
    if (INTIN('form',iblank,grid,charv).ne.0) &
-        STOP 'READ_ECMWF_GRIB: INTIN form failed.'
+        stop 'READ_ECMWF_GRIB: INTIN form failed.'
    if (INTOUT('form',iblank,grid,charv).ne.0) &
-        STOP 'READ_ECMWF_GRIB: INTOUT form failed.'
+        stop 'READ_ECMWF_GRIB: INTOUT form failed.'
 
    ! input details of new grid (see note in header)
    grid(1) = 0.5 / preproc_dims%dellon
    grid(2) = 0.5 / preproc_dims%dellat
-   if (INTOUT('grid',iblank,grid,charv).ne.0) STOP 'INTOUT grid failed.'
+   if (INTOUT('grid',iblank,grid,charv).ne.0) stop 'INTOUT grid failed.'
    area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
    area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
    area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
    area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
-   if (INTOUT('area',iblank,area,charv).ne.0) STOP 'INTOUT area failed.'
+   if (INTOUT('area',iblank,area,charv).ne.0) stop 'INTOUT area failed.'
 
    ! interpolate ECMWF products to preproc grid
    do
       ! read GRIB data field
       call PBGRIB(fu, in_data, BUFFER*lint, nbytes, stat)
       if (stat .eq. -1) exit
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Failure to read product.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Failure to read product.'
 
       ! interpolate GRIB field (into another GRIB field)
       in_words = nbytes / lint
       out_words = BUFFER
       if (INTF(in_data,in_words,zni,out_data,out_words,zno).ne.0) &
-           STOP 'INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.'
+           stop 'INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.'
 
       ! open a scratch file to store the interpolated product
       open(unit=lun,status='SCRATCH',iostat=stat,form='UNFORMATTED')
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Failed to open scratch file.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Failed to open scratch file.'
       inquire(unit=lun,name=name)
-      
+
       ! write interpolated field to scratch file
       write(lun) out_data(1:out_words)
 
       ! read scratch file
       call grib_open_file(fid,name,'r',stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error opening GRIB field.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error opening GRIB field.'
       call grib_new_from_file(fid,gid,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error getting GRIB_ID.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error getting GRIB_ID.'
 
       call grib_get(gid,'parameter',param,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error getting parameter #.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error getting parameter #.'
       call grib_get(gid,'level',level,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error getting level #.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error getting level #.'
       call grib_get(gid,'Nj',nj,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error getting nj.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error getting nj.'
 
       ! check if this is a reduced Gaussian grid
       call grib_get(gid,'PLPresent',plpresent,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error getting PLPresent.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error getting PLPresent.'
       if (plpresent .eq. 1) then
          ! determine total number of points from PL array
          allocate(pl(nj))
          call grib_get(gid,'pl',pl,stat)
-         if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error getting PL.'
+         if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error getting PL.'
          n=sum(pl)
          deallocate(pl)
       else
          ! regular grid
          call grib_get(gid,'Ni',ni,stat)
-         if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error getting level #.'
+         if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error getting level #.'
          n=ni*nj
       end if
       if (.not.allocated(val)) allocate(val(n))
 
       call grib_get(gid,'values',val,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error reading data.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error reading data.'
       call grib_release(gid,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error releasing GRIB_ID.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error releasing GRIB_ID.'
       call grib_close_file(fid,stat)
-      if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Error closing GRIB field.'
+      if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Error closing GRIB field.'
 
       ! close scratch file
       close(unit=lun)
@@ -240,7 +240,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       case default
          cycle
       end select
-      
+
       ! copy data into preprocessing grid
       ! a) we're inverting the y axis as ECMWF write 90->-90
       ! b) we're only taking every other point to read cell centres
@@ -257,9 +257,9 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    end do
 
    deallocate(val)
-   
+
    ! close ECMWF file
    call PBCLOSE(fu,stat)
-   if (stat .ne. 0) STOP 'READ_ECMWF_GRIB: Failed to close file.'
+   if (stat .ne. 0) stop 'READ_ECMWF_GRIB: Failed to close file.'
 
 end subroutine read_ecmwf_grib
