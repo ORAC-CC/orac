@@ -57,27 +57,27 @@
 !        Comments updated.
 !    31st May 2007, Andy Sayer:
 !        The code now checks which channels are using which geometry, and
-!        interpolates/fills up the ouput arrays accordingly. See also
+!        interpolates/fills up the output arrays accordingly. See also
 !        IntRoutines.F90.
 !     5th Sep 2011, Chris Arnold:
 !        Added Bi-cubic interpolation in the Tau and Re plane, so that both
 !        function and gradient estimates are continuous in these dimensions.
 !        (Interpolation in angles is still done linearly.)
 !    20th Jan 2012, C. Poulsen:
-!       Created Yin variable to deal with contiguos array
+!       Created Yin variable to deal with contiguous array
 !     7th Feb 2012, Chris Arnold:
 !       Ctrl struct now passed to routine
 !     7th Feb 2012, Chris Arnold:
 !       Input structures Ctrl, GZero, Grid now have intent(in)
 !     8th Jul 2012, C. Poulsen:
-!       Fixed non contiguos arrays
+!       Fixed non contiguous arrays
 !     3rd Dec 2013, MJ:
 !       Makes LUTs more flexible wrt channel and properties.
 !    21st Jan 2014, Greg McGarragh:
 !       Cleaned up code.
 !    23st Jan 2014, Greg McGarragh:
 !       Performance improvements.  Primarily through elimination of unused
-!       memory references and computations expecially when setting local
+!       memory references and computations especially when setting local
 !       variable G.
 !
 ! Bugs:

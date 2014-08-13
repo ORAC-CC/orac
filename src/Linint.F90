@@ -25,9 +25,9 @@
 !					square in the 2- direction
 !    x2u	 real	     In		The upper coordinates of the grid
 !					square in the 2- direction
-!    x1		 real	     In		Coodinate of interpolation point
+!    x1		 real	     In		Coordinate of interpolation point
 !					in the 1- direction
-!    x2		 real	     In		Coodinate of interpolation point
+!    x2		 real	     In		Coordinate of interpolation point
 !					in the 2- direction
 !    ansy        real        Out        The interpolated value of the
 !                                       function at t,u

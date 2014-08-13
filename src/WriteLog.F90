@@ -31,7 +31,7 @@
 !    UNIX man pages: man 3f ctime
 !
 ! History:
-!    3rd Oct 2000, Andy Smith: Oiginal version
+!    3rd Oct 2000, Andy Smith: Original version
 !   23rd Feb 2011, Andy Smith:
 !      Using record length to prevent annoying line breaks in middle of text.
 !    8th Jun 2011, Andy Smith:

@@ -55,7 +55,7 @@
 !    21st Feb 2011, Andy Smith:
 !       Re-introducing changes made in late 2001/2002.
 !    12th Dec 2002, Caroline Poulsen:
-!       Added in GPH follwed the example of temperature
+!       Added in GPH followed the example of temperature
 !    23rd Dec 2002, Andy Smith:
 !       Added height gradient dHc_dPC to RTM_Pc structure. Required later for
 !       ascribing an error value to the height.

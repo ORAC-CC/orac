@@ -169,7 +169,7 @@ subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
 
       end do
 
-      ! Calcuate dT, dR: these are the distances in T, R, etc from the grid
+      ! Calculate dT, dR: these are the distances in T, R, etc from the grid
       ! point with indices (0, 0, ...) to (Tau, Re, ...) expressed as a
       ! fraction of the LUT grid steps.
 
@@ -229,7 +229,7 @@ subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
          end if
       end do
 
-      ! Caclulate 1.0 minus each of the d values above - used several times by
+      ! Calculate 1.0 minus each of the d values above - used several times by
       ! the interpolation routines.
 
       do i=1,SPixel%Ind%Ny

@@ -67,11 +67,11 @@
 !       Extended FilenameLen to allow for long paths.
 !    14th Jun 2011, Caroline Poulsen: remove maximum sizes for LUT arrays
 !    28th Jul 2011, Caroline Poulsen: added in scanline file error values
-!     1st Aug 2011, Caroline Poulsen: newswrtm error values
+!     1st Aug 2011, Caroline Poulsen: new swrtm error values
 !     8th Aug 2011, Caroline Poulsen: changed format of LUTS
 !    22nd Sep 2011, Caroline Poulsen: changed getLeRTM to GetSWrtm
 !     4th Oct 2011, Chris Arnold: added LUT/RTM Intflag errors
-!     7th Oct 2011, Caroline Poulsen: added in variables to calulate CWP rho and
+!     7th Oct 2011, Caroline Poulsen: added in variables to calculate CWP rho and
 !       qext
 !     4th Nov 2011, Caroline Poulsen: changed values of AUXErrTsSea/land
 !    25th Nov 2011, Caroline Poulsen: changed values maxnummeas
@@ -82,7 +82,7 @@
 !    2012/06/22, C. Poulsen: added sacura option
 !    2012/10/01, C. Poulsen: added case where 1.6 of 3.7 channel is missing
 !       during the day
-!    2013/xx/xx, MJ: changes lengths of filenames and soem formatting, adds fill
+!    2013/xx/xx, MJ: changes lengths of filenames and some formatting, adds fill
 !       value for double precision.
 !    2013/11/19, MJ: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
 !    2014/01/26, Greg McGarragh: Cleaned up code.
@@ -121,7 +121,7 @@ module ECP_constants
    ! Maximum array lengths
    integer, parameter :: MaxDiagFlags     = 14      ! Max no. of flags in diagnostic flag
    integer, parameter :: MaxNumMeas       = 6       ! Max no. of measurement channels
-   integer, parameter :: MaxNumSolar      = 4       ! Max no. of solar channels(ATSR -specfic)
+   integer, parameter :: MaxNumSolar      = 4       ! Max no. of solar channels(ATSR -specific)
    integer, parameter :: MaxCloudClass    = 3       ! Max no. of cloud classes
    integer, parameter :: MaxCloudType     = 5       ! Max. no of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max. no. of pressure levels (in SPixel RTM arrays)
@@ -134,8 +134,8 @@ module ECP_constants
 
 
    ! Parameters for range checking of data values (used in Get_SPixel)
-   integer(byte), parameter :: FlagMin    = 0 ! Checking for flag values (land/sea or cloud flags)                                    !
-   integer(byte), parameter :: FlagMax    = 1 ! Max. and min. values used in range
+   integer(byte), parameter :: FlagMin    = 0       ! Checking for flag values (land/sea or cloud flags)                                    !
+   integer(byte), parameter :: FlagMax    = 1       ! Max. and min. values used in range
    real, parameter    :: CloudMin         = 0.0
    real, parameter    :: CloudMax         = 1.0     ! Max. and min. values used in range checking for cloud flag values
    real, parameter    :: SatZenMin        = 0.0     ! Satellite zenith angle
@@ -327,7 +327,7 @@ module ECP_constants
    integer, parameter :: BkpL_InvertMarquardt_4 = 4
 
    ! Error conditions: starting from 1000, a range of 10 error conditions is
-   ! allowed for each function. So errorvalues 1000 - 10009 relate to the read
+   ! allowed for each function. So error values 1000 - 10009 relate to the read
    ! driver file function, 1010 - 1019 to the next function, etc.
    integer, parameter :: DriverFileOpenErr          = 1000
    integer, parameter :: DriverFileReadErr          = 1001

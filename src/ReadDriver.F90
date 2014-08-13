@@ -14,7 +14,7 @@
 !    Name    Type    In/Out/Both Description
 !    Ctrl    Ctrl_t  out         Control struct defined in CTRL_def
 !    message string  inout       Error message returned to calling routine
-!   status  int     out         Status returned to calling function
+!    status  int     out         Status returned to calling function
 !
 ! Algorithm:
 !    N/A
@@ -32,33 +32,33 @@
 !    2012/07/26, MJ: makes some small changes, paths passed to ORAC via driver
 !       file must not have trailing forward slashes ("/"). Those are explicitly
 !       added in this routine where necessary.
-!    2012/07/29, Caroline Poulsen: fixed bug in twilight/night statevariable
+!    2012/07/29, Caroline Poulsen: fixed bug in twilight/night state variable
 !       numbering
 !    2012/08/10, Caroline Poulsen: modified state parameter indives for night
 !    2012/08/22, MJ: makes adaptions to read netcdf files
-!    2012/09/15, CP: removed double allocation of vieidx
+!    2012/09/15, CP: removed double allocation of viewidx
 !    2012/10/01, CP: changed active variables at night to be ctp fraction and
 !       surface temperature, changed how first guess of CTP calculated at night
-!       i.e matching temperature profile changed apriori errors of state vecto
-!    2012/10/01, CP: added in default sx category as was not being resset after
+!       i.e matching temperature profile changed a priori errors of state vecto
+!    2012/10/01, CP: added in default sx category as was not being reset after
 !       each pixel was processed
 !    2012/10/01, MJ: changed definition of AVHRR SW variables
-!    2012/11/22, CP: fixed bug in index_ir AATSR defintion
+!    2012/11/22, CP: fixed bug in index_ir AATSR definition
 !    2013/03/18, CP: modified upper limits of ice and water effective radius
 !    2013/03/18, CP: added in more comments for clarity
 !    2013/06/27, MJ: implemented reading of path to driver file either from
 !       environment variable or passed from outside
-!    2013/10/02, CP: added comments for GT added aerosl classes for Bayesian
+!    2013/10/02, CP: added comments for GT added aerosol classes for Bayesian
 !       cloud id
-!    2013/11/14, MJ: rewrote most parts refering to setting and reading channel
+!    2013/11/14, MJ: rewrote most parts referring to setting and reading channel
 !       indices. Added reading of config file different driver file necessary
 !       now.
 !    2013/11/14, MJ: changes lower and upper limits for ctp.
 !    2013/11/18, MJ: Several additional changes, introduces ysolar_msi and
 !       ythermal_msi
-!    2013/11/25, MJ: initialized previously unitialized  Ctrl%Run_ID
+!    2013/11/25, MJ: initialized previously uninitialised Ctrl%Run_ID
 !    2014/01/12, GM: Small fixes involving Ctrl%Ind%NAvail
-!    2014/01/15, GM: No need for Ctrl%defaultSx anymore.
+!    2014/01/15, GM: No need for Ctrl%defaultSx any more.
 !    2014/01/15, GM: Added the ability to read the driver file contents from
 !       standard input indicated by drifile .eq. '-'.
 !    2014/01/16, GM: Use Selm* constants to set FG and AP instead of numbers.
@@ -198,7 +198,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    end if
    write(*,*) 'channel flag from driver: ',conf%channel_proc_flag
 
-   ! Determine the number of channels to be used. Some of the follolwing is not
+   ! Determine the number of channels to be used. Some of the following is not
    ! (yet) used leave in there for potential later use for the time being
    Ctrl%Ind%NChans=sum(conf%channel_proc_flag)
    write(*,*) 'Ctrl%Ind%NChan: ',Ctrl%Ind%NChans
@@ -340,7 +340,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    write(*,*)'Ctrl%FID%BkP: ',trim(adjustl(Ctrl%FID%BkP))
 
 
-   ! The level of breakpoint output when the code is comiled with breakpoint
+   ! The level of breakpoint output when the code is compiled with breakpoint
    ! option Ctrl%Bkpl
    Ctrl%Bkpl=3
 
@@ -531,31 +531,31 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
 
    ! Set first guess options (Tau,Re,Pc,F,Ts)
    ! What do the constants mean:
-   ! SelmCtrl: Static apriori variable i.e does not change
+   ! SelmCtrl: Static a priori variable i.e does not change
    ! SelmMeas: Use a dynamically chosen first guess dependant on measurements
-   ! SelmAux: Use a value from an external auxillary file
-   ! Ctrl%FG(statevariable, time of day)
+   ! SelmAux: Use a value from an external auxiliary file
+   ! Ctrl%FG(state variable, time of day)
 
    ! Day
    Ctrl%FG(1,1) = SelmCtrl
    Ctrl%FG(2,1) = SelmCtrl
    Ctrl%FG(3,1) = SelmMeas ! from ir profile
    Ctrl%FG(4,1) = SelmCtrl
-   Ctrl%FG(5,1) = SelmAux  ! from auxillary file
+   Ctrl%FG(5,1) = SelmAux  ! from auxiliary file
 
    ! Twilight
    Ctrl%FG(1,2) = SelmCtrl
    Ctrl%FG(2,2) = SelmCtrl
    Ctrl%FG(3,2) = SelmMeas ! from ir profile
    Ctrl%FG(4,2) = SelmCtrl
-   Ctrl%FG(5,2) = SelmAux  ! from auxillary file
+   Ctrl%FG(5,2) = SelmAux  ! from auxiliary file
 
    ! Night
    Ctrl%FG(1,3) = SelmCtrl
    Ctrl%FG(2,3) = SelmCtrl
    Ctrl%FG(3,3) = SelmMeas ! from ir profile
    Ctrl%FG(4,3) = SelmCtrl
-   Ctrl%FG(5,3) = SelmAux  ! from auxillary file
+   Ctrl%FG(5,3) = SelmAux  ! from auxiliary file
 
 
    ! Set default a priori values. Quite often these values with a very high
@@ -627,7 +627,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       Ctrl%X0(4) = 1.
       Ctrl%X0(5) = 300.
    end if
-! maywant to put thses in getillum routine at some point
+   ! may want to put these in Get_Illum routine at some point
    ! Set default a priori error covariance
    if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
        (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
@@ -653,7 +653,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
 
    ! Set Ctrl%RS
 
-   ! Look at the channel numbers and detremine what combination of vis/mixed/ir
+   ! Look at the channel numbers and determine what combination of vis/mixed/ir
    ! channels. This is instrument dependant so if introducing a new instrument
    ! channel info needs to be stored here
    allocate(solar_store_sea(conf%nc))

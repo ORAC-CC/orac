@@ -41,7 +41,7 @@ contains
 ! History:
 !     6th Sep 2000, Andy Smith: Original version.
 !    23rd Nov 2000, Andy Smith:
-!       Fixed debuging output statements: only executed if status is 0.
+!       Fixed debugging output statements: only executed if status is 0.
 !    25th Jun 2001, Andy Smith:
 !       Tidied up. Header comments completed. Removed debug code.
 !    **************** ECV work starts here *************************************
@@ -50,7 +50,7 @@ contains
 !       run. SADCloudClass and SAD_LUT array dimensions changed.
 !     5th Aug 2011, Caroline Poulsen:
 !       Removed routine that read the cloudclass config file removed from
-!       functionname.
+!       function name.
 !     5th Dec 2011, Caroline Poulsen:
 !        Removed instrument config file.
 !    23rd May 2014, Greg McGarragh:

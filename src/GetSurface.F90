@@ -80,7 +80,7 @@
 !    22nd Feb 2011, Andy Smith:
 !       Re-introducing changes made in late 2001/2002.
 !    29th May 2002, Caroline Poulsen
-!       Changed the routine to be able to read auxillary albedo information)
+!       Changed the routine to be able to read auxiliary albedo information)
 !    10th Mar 2011, Andy Smith: plus later albedo changes made by Oxford.
 !       Replaced Ctrl%Ind values in array size declarations by SPixel equivalents
 !       Updated loops for b, Sb setting to use SPixel ind as well - not done in
@@ -100,13 +100,13 @@
 !       unused variable solar_factor.
 !    19th May 2011, Andy Smith:
 !       Multiple views (2). Commented out setting of qc1, qc2 as these are not
-!       used and the assigment refers specifically to channels 5 and 6 of the
+!       used and the assignment refers specifically to channels 5 and 6 of the
 !       albedo data - may change in future and may be specific to one instrument.
 !     8th Jun 2011, Andy Smith:
 !       Removed calls to Write_Log to improve performance (add ifdef DEBUG).
-!     8th Dec 2011, Caroline poulsen:
+!     8th Dec 2011, Caroline Poulsen:
 !       Changed y_id to chi.
-!    13th Dec 2011, Caroline poulsen:
+!    13th Dec 2011, Caroline Poulsen:
 !       Added byte 2 unsigned integer routine to make g95 compatible.
 !    27th Jan 2012, Chris Arnold
 !       Bugfix: added call to byte to uint routine for AUX method (ln 349)

@@ -313,7 +313,7 @@ tidy_cpp clean_cpp:
 	rm -f *.cpp
 
 tidy clean:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod orac
 
 
 # Utilities to change source code extensions when moving between DEC Unix and

@@ -48,7 +48,7 @@
 ! History:
 !    29th Nov 2000, Kevin M. Smith: Original version
 !     4th Dec 2000, Kevin M. Smith: corrections to 'average all' method
-!    19th Dec 2000, Kevin M. Smith: Replaced Data_MSI array with Data stucture
+!    19th Dec 2000, Kevin M. Smith: Replaced Data_MSI array with Data structure
 !     8th Jan 2001, Kevin M. Smith: Included quality control mask
 !    11th Jan 2001, Kevin M. Smith: Added check for allowed solar zenith angles
 !    18th Jan 2001, Kevin M. Smith: Changed Sol_zen to Solzen in SPixel structure

@@ -5,7 +5,7 @@
 !    Performs a bicubic interpolation on the interval ((0,0),(0,1), (1,1),(1,0))
 !
 ! Description:
-!    Bicubic Interpolation within a grid quare. Input quantities are y, y1, y2,
+!    Bicubic Interpolation within a grid square. Input quantities are y, y1, y2,
 !    y12, x1l, x1u, x2l, x2u, x1, x2 as described below.  The interpolated
 !    function value is returned as ansy and the interpolated gradient values as
 !    ansy1 and ansy2.

@@ -18,7 +18,7 @@
 !    N/A
 !
 ! History:
-!    23th May 2014, Greg McGarragh: Orginal version.
+!    23th May 2014, Greg McGarragh: Original version.
 !
 ! Bugs:
 !    None known.

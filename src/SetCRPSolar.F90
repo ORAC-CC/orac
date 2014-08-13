@@ -162,7 +162,7 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    !
    ! 2014/05/28, GM: This was causing problems that were hard to debug and
    ! gained little in performance.  Now the Solar and Thermal forward model
-   ! calls are independnent so that contents of CRP and d_CRP do not need to be
+   ! calls are independent so that contents of CRP and d_CRP do not need to be
    ! passed from the thermal call to the solar call.
 
    call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%SolarLast,:,:,:), &

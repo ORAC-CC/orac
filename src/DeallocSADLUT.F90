@@ -28,8 +28,8 @@
 !       Remove phase change, phase 2. SAD_CloudClass no longer allocated to N
 !       cloud classes, only 1 cloud class per run.
 !       SAD_LUT is also now reduced from dimension N cloud classes to 1.
-!    11th Jun 2011, Caroline poulsen: Deallocated new LUT variables
-!    13th Dec 2011, Caroline poulsen: Deallocated new LUT wavelenght variables
+!    11th Jun 2011, Caroline Poulsen: Deallocated new LUT variables
+!    13th Dec 2011, Caroline Poulsen: Deallocated new LUT wavelenght variables
 !    12th Jan 2014, Greg McGarragh: Added some missing deallocates.
 !    16th Jan 2014, Greg McGarragh: Added deallocation of
 !       SAD_LUT%table_used_for_channel.

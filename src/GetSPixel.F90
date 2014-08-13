@@ -49,7 +49,7 @@
 !    Call Get_RTM
 !    Call Get_Measurements
 !    Call Get_Surface
-!    Call Get_X to set Apriori and First Guess
+!    Call Get_X to set a priori and First Guess
 !    if there are solar channels in use for the SPixel:
 !       - Calculate the surface to TOA slant path transmittances for use in
 !         forward model (airmass factors  - SEC_o/v - taken from Get_Geometry).
@@ -125,7 +125,7 @@
 !       Updates for image segmentation. Selection of values from the MSI Data
 !       structure arrays now need to use a y value that refers to the image
 !       segment currently held in memory rather than the whole image area.
-!       X co-ords are unchaged since the segment is the full image width.
+!       X co-ords are unchanged since the segment is the full image width.
 !       Renamed structure Data to MSI_Data since Data is a reserved word (hasn't
 !       caused any problems so far but it might).
 !       Moved setting of SPixel Xc, Yc. Required before GetCloudFlags call if
@@ -162,7 +162,7 @@
 !       Fractional error is assigned according to the neighbouring pixels when
 !       resolution is 1.
 !    23rd Dec 2002, Andy Smith:
-!       Move the Get_Location call so that Lat-Lon infomration is available for
+!       Move the Get_Location call so that Lat-Lon information is available for
 !       all pixels in the image, rather than just the cloudy ones.
 !    23rd Feb 2011, Andy Smith:
 !       MSI_Data%CloudFlags now an array of floats, to match current ORAC data.
@@ -189,7 +189,7 @@
 !       Extend checks on MSI_Data geometry values and all references to the
 !       SPixel%Geom sub-structure.
 !    20th May 2011, Andy Smith:
-!       Multiple instrument views (2). Modified breakpoints outout to check for
+!       Multiple instrument views (2). Modified breakpoints output to check for
 !       0 solar channels present.
 !     8th Jun 2011, Andy Smith:
 !       Reduced/removed logging to improve performance. Tests show that writing
@@ -198,7 +198,7 @@
 !       Enclosed in ifdef DEBUG than removed, for easier re-introduction.
 !       Removed reference to "super-pixel" from log messages.
 !     5th Aug 2011, Caroline Poulsen: Remove ref to cloudclass
-!    29th Sep 2011, Caroline Poulsen: Updated log output to be more imformative
+!    29th Sep 2011, Caroline Poulsen: Updated log output to be more informative
 !       and give the channel number of the missing data
 !    16th Feb 2012, Caroline Poulsen: Updated file to fix bug that produced
 !       errors when night views were processed.
@@ -603,8 +603,8 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
          StartChan = SPixel%Ind%SolarFirst
       end if
       do i=1,SPixel%Ind%Ny
-         !        write(bkp_lun,'(3a,f9.4,a,i)') 'Channel: ', SAD_Chan(i+StartChan-1)%Desc, &
-         !           ' : ', SPixel%Ym(i), ' view ', SPixel%ViewIdx(i)
+!        write(bkp_lun,'(3a,f9.4,a,i)') 'Channel: ', SAD_Chan(i+StartChan-1)%Desc, &
+!           ' : ', SPixel%Ym(i), ' view ', SPixel%ViewIdx(i)
       end do
       write(bkp_lun, '(a,/)') 'Get_SPixel: end'
       close(unit=bkp_lun)

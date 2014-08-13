@@ -47,7 +47,7 @@ module SAD_CloudClass_def
       integer      :: ID                ! Numeric identifier
       character(4) :: Name              ! Name identifier
       real         :: X(MaxStateVar)    ! Mean state vector for this class, to
-                                        ! beused as first-guess when
+                                        ! be used as first-guess when
 				        ! Ctrl%FG value = SelmSAD
 
       real         :: Sx(MaxStateVar)   ! Errors in state variables,

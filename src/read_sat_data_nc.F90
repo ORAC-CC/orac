@@ -28,8 +28,8 @@
 !    Name Type Description
 !
 ! History:
-!    ????/??/??, Matthias Jerg: Orginial version.
-!    2013/02/26, CP: added in header and remove hadr wiring of MSI_Data%ALB=3
+!    ????/??/??, Matthias Jerg: Original version.
+!    2013/02/26, CP: added in header and remove hardwiring of MSI_Data%ALB=3
 !    2014/04/20, GM: Cleaned up the code.
 !
 ! Bugs:

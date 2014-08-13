@@ -87,9 +87,9 @@
 !       Array of selected channel identifiers Y_Id must be modified before
 !       passing to ReadFPArray, as it contains repeated Channel IDs if more than
 !       one view is selected. Use Y_Id and ViewIdx to populate ChanIdx array.
-!    28th Jun 2011, Caroline poulsen:
+!    28th Jun 2011, Caroline Poulsen:
 !       Remove reference to ATSR
-!       Changed  Ctrl.Ind.Nchans to  Ctrl.Ind.Ny to remove dependance! on config
+!       Changed  Ctrl.Ind.Nchans to  Ctrl.Ind.Ny to remove dependence! on config
 !       file
 !    25th Nov 2011, Caroline Poulsen:
 !       Add ChI(replace y_id) channel indice variable.
@@ -138,7 +138,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
    integer         :: ios        ! I/O status from file operations
    character(2048) :: message    ! Error message to pass to Write_Log
-   integer         :: day, month ! Day and month numberss extracted from
+   integer         :: day, month ! Day and month numbers extracted from
    integer         :: i          ! Counter for DOY calculation
 
    ! NetCDF related

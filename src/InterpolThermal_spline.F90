@@ -57,7 +57,7 @@
 !       >= rather than > in the test of Pc vs. SPixel...P(...Np). Previously,
 !       Pc = max RTM P level was flagged as an interpolation failure.
 !     12th Dec 2002, Caroline Poulsen:
-!       Added in GPH follwed the example of temperature
+!       Added in GPH followed the example of temperature
 !     23rd Dec 2002, Andy Smith:
 !       Added height gradient dHc_dPC to RTM_Pc structure. Required later for
 !       ascribing an error value to the height.

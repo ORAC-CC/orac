@@ -79,7 +79,7 @@
 !       Cleaned up code.
 !    23st Jan 2014, Greg McGarragh:
 !       Performance improvements.  Primarily through elimination of unused
-!       memory references and computations expecially when setting local
+!       memory references and computations especially when setting local
 !       variable G.
 !
 ! Bugs:

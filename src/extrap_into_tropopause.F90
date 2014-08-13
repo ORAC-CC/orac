@@ -2,7 +2,7 @@
 ! Name: extrap_into_tropopause.F90
 !
 ! Purpose:
-! Find troppuaes given temperature and height profile and remove by extrapolating
+! Find tropopause given temperature and height profile and remove by extrapolating
 ! into stratosphere
 !
 ! Description and Algorithm details:

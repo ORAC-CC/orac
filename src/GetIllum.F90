@@ -3,7 +3,7 @@
 !    Get_Illum
 !
 ! Purpose:
-!    Determines the illumination of a scene by asseseing the visible and ir
+!    Determines the illumination of a scene by assessing the visible and ir
 !    channel values
 !
 ! Arguments:
@@ -33,8 +33,8 @@
 !
 ! Bugs:
 !    Warning At the moment only one view is specified.
-!    Warning this routine has far to much dependance on heriatge channel
-!    selection should be re wriiten if many more channels are used.
+!    Warning this routine has far to much dependence on heritage channel
+!    selection should be re written if many more channels are used.
 !
 ! $Id$
 !

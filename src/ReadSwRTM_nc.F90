@@ -77,7 +77,7 @@
 !       Converted to unformatted read:
 !       - Variables x, y, buf and bufe are declared as real(4) in order to match
 !         the number of bytes used for reals in the RTM files (previously 8).
-!       - Allocation of buffer array "buf" changed from 7 paramaters to 5, since
+!       - Allocation of buffer array "buf" changed from 7 parameters to 5, since
 !         whole array writes to binary file mean that the level and channel
 !         indices are no longer present.
 !       - Array dimensions in buf swapped round to make access more efficient.
@@ -203,7 +203,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
          end if
 
          ! For this set of reads, if read fails (non-zero iostat), set status
-         ! immendiately but report error later since the message is the same for
+         ! immediately but report error later since the message is the same for
          ! all cases.
 
          ! Allocate size of ChanID and WvNumber

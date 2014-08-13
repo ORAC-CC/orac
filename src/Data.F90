@@ -19,7 +19,7 @@
 !    19th Dec 2000, Kevin M. Smith: Original version
 !    **************** ECV work starts here *************************************
 !    22nd Feb 2011, Andy Smith:
-!       Re-applying changes made in late 2001/2002 detailed in commments below.
+!       Re-applying changes made in late 2001/2002 detailed in comments below.
 !    27th May 2002, Caroline Poulsen:
 !       Added in albedo ALB.
 !    xxth Jul 2002, Caroline Poulsen:
@@ -29,10 +29,10 @@
 !    14th Apr 2011, Andy Smith:
 !       Extension to handle multiple views. Geometry struct extended to take
 !       Sat, Sol and Azi data from >1 view (forward,, nadir etc).
-!    28th Jul 2011, Caroline poulsen:
+!    28th Jul 2011, Caroline Poulsen:
 !       Added in variable for scan line file
-!    15/06/2012, Caroline poulsen: added in variable for illum
-!    10/08/2012, Caroline poulsen: remove illum data type
+!    15/06/2012, Caroline Poulsen: added in variable for illum
+!    10/08/2012, Caroline Poulsen: remove illum data type
 !    22/08/2012, MJ: includes time in MSI structure
 !    20/09/2012, CP: changed albedo to real 8
 !    XX/XX/2013, MJ: explicitly defines LSFLag byte array type

@@ -18,7 +18,7 @@
 !    flag_bit integer      In          The bit of SPixel%QC to set in the event
 !                                      of an error.
 !    limit    integer      In          Optional. The maximum number of points
-!                                      that may tollerably be outside the valid
+!                                      that may tolerably be outside the valid
 !                                      range.
 !
 ! Algorithm:

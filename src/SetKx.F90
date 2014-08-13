@@ -18,7 +18,7 @@
 !
 ! Algorithm:
 !    Set Kx = dY_dX for corresponding channel / scale factor for state variable
-!    If Ctrl flag indiactes user wants to use EqMPN for Rs:
+!    If Ctrl flag indicates user wants to use EqMPN for Rs:
 !       Set diagonal terms of Kbj = Rs part of dY_dX for corresponding channel
 !
 ! Local variables:
@@ -32,9 +32,9 @@
 !     6th Jun 2001, Andy Smith:
 !       Implicit none statement was wrongly placed.
 !    20th Jan 2012, Caroline Poulsen:
-!       Bug fix changed dy_dx array changed spixe%nx to maxstatevar dfinition
+!       Bug fix changed dy_dx array changed spixe%nx to maxstatevar definition
 !     1st Jan 2012, MJ:
-!       Changes Kx assignement
+!       Changes Kx assignment
 !    21th May 2014, Greg McGarragh:
 !       Cleaned up the code.
 !

@@ -135,7 +135,7 @@
 !       and out file. It is planned to remove Ctrl from the out file anyway.
 !     8th Jun 2011, Caroline Poulsen:
 !       removed diagnostic structure
-!       added extra output file residual, quality indicators, apriori and first
+!       added extra output file residual, quality indicators, a priori and first
 !       guess also input structure MSI_luns now dimension 7 to allow for
 !       scanline data.
 !     8th Jun 2011, Andy Smith:
@@ -145,11 +145,11 @@
 !     8th Oct 2011, Caroline Poulsen: added CWP to output
 !     8th Nov 2011, Caroline Poulsen: added y0 and sx to output
 !     8th Dec 2011, Matthias Jerg: added code to accommodate netcdfoutput
-!    13th Dec 2011, caroline poulsen: remove relenlog to be compatible with f95
+!    13th Dec 2011, Caroline Poulsen: remove relenlog to be compatible with f95
 !    19th Dec 2011, Matthias Jerg: cleaned up netcdf output, introduced error
 !       reporting and added file headers.
-!     5th Jan 2012, Caroline poulsen: removed binary output files
-!    15th Jan 2012, Caroline poulsen: added missing for ymfit
+!     5th Jan 2012, Caroline Poulsen: removed binary output files
+!    15th Jan 2012, Caroline Poulsen: added missing for ymfit
 !    2012/03/27, MJ: changes netcdf write to 2D arrays
 !    2012/07/13, MJ: implements option to read drifile path from command line
 !    2012/08/14, MJ: irons out bug that made ORAC crash with gfortran
@@ -160,7 +160,7 @@
 !       of area to be processed determined by preprocessing file contents and
 !       not hardwired any more.
 !    2012/08/27, MJ: better implements time variable in output.
-!    2012/11/01, MJ: implements openMP parallelization of along-track loop.
+!    2012/11/01, MJ: implements OpenMP parallelization of along-track loop.
 !    2013/01/17, Matthias Jerg: Adds code to accommodate uncertainties of ctt
 !       and cth
 !    2013/12/05, MJ: initializes Diag%AK=real_fill_value
@@ -608,7 +608,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,115) cpu_secs
 #endif
 
-      ! Along track loop is parallelized with openMP
+      ! Along track loop is parallelized with OpenMP
       nthreads = omp_get_max_threads()
       write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
 

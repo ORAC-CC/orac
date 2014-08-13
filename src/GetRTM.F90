@@ -39,7 +39,7 @@
 !       quotes around the whole string (including the line continuation marker).
 !       Original code works on DEC but not Linux.
 !    22nd Sep xxxx, Somebody:
-!       Remove get GetLwRTM and GetSwRTM and replace woth GetLwSwRTM
+!       Remove get GetLwRTM and GetSwRTM and replace with GetLwSwRTM
 !    30th Jul 2014, Greg McGarragh:
 !       Cleaned up the code.
 !

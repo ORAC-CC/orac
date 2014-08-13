@@ -18,7 +18,7 @@
 !    N/A
 !
 ! History:
-!     5th Aug 2014, Greg McGarragh: Orginal version.
+!     5th Aug 2014, Greg McGarragh: Original version.
 !     5th Aug 2014, Greg McGarragh: Added subroutine find_Pc().
 !
 ! Bugs:

@@ -149,10 +149,10 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       DBP_o=MDADErrPc
 
    ! If point too high up just use highest point for extrapolation
-   ! (could inspect profile coming from top as well, but keep it simpe for the
+   ! (could inspect profile coming from top as well, but keep it simple for the
    ! time being)
    else if (kspot .eq. mon_k) then
-      ! profile is mon. decresing everything is fine to determine gradient.
+      ! profile is mon. decreasing everything is fine to determine gradient.
       if (invert_t(mon_k-1)-invert_t(mon_k) .gt. ditherm3) then
          dx=invert_t(mon_k-1)-invert_t(mon_k)
          dy=invert_p(mon_k-1)-invert_p(mon_k)

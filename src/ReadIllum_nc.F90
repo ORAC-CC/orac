@@ -35,7 +35,7 @@
 !       in this case. So will make the code run faster
 !    xx/xx/2013, MJ: Implements code for MODIS and AVHRR processing
 !    24/07/2013, AP: Added MODIS-TERRA and AQUA as valid instruments
-!    18/11/2013, MJ: Fixes a number of problems with this subroutine:refch2 for
+!    18/11/2013, MJ: Fixes a number of problems with this subroutine: refch2 for
 !       modis is corrected from 19 to 20. ysolar_msi and ythermal_mis is now
 !       used in indexing the MSI array, as this gives the indices of the
 !       channels as they are stored in the MSI array.
@@ -43,7 +43,7 @@
 !    01/04/2014, MJ: Rewrites routine partly to robustly set illumination
 !    03/04/2014, CP: Initialize illumination with fill value
 !    03/07/2014, CP: Added in options for when only a single IR channel is
-!       present replace 0.o with missingvalue.
+!       present replace 0.o with missing value.
 !    01/08/2014, GM: Changed illumination selection logic to catch a couple of
 !       missing cases and cleanup.
 !
@@ -86,7 +86,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    MSI_Data%illum=byte_fill_value
 
    ! Set channel number in instrument notation which can be used for effective
-   ! radius retrieval (could be made dynmic but set static for each instrument
+   ! radius retrieval (could be made dynamic but set static for each instrument
    ! here).  Also, set minimum radiance.
    if ((trim(Ctrl%inst%name) .eq. trim('MODIS-AQUA')) .or. &
        (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA'))) then

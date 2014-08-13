@@ -25,7 +25,7 @@
 ! 2012/02/28, C. Poulsen: Added in albedo
 ! 2012/02/28, C. Poulsen: Indexedy_id array correctly
 ! 2013/01/25, C. Poulsen: Modified how channels are labelled now reads form the
-!    inputfile the channel names.
+!    input file the channel names.
 ! 2013/05/29, G. Thomas: Added degrees of freedom for signal
 ! 2013/07/24, A. Povey: Fixed bug in writing spixel_scan_out_sec%vidy0
 ! 2013/12/05, MJ: Fixes bug with writing of albedo and radiance and bt output.
@@ -513,8 +513,8 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
    !
    !----------------------------------------------------------------------------
    if (status .ne. 0 ) then
-      write(*,*) 'def_vars_secondary.inc: netcdf variable definintion error:', status
-      call Write_Log(Ctrl,'def_vars_secondary.inc: netcdf variable definintion error:', status)
+      write(*,*) 'def_vars_secondary.inc: netcdf variable definition error:', status
+      call Write_Log(Ctrl,'def_vars_secondary.inc: netcdf variable definition error:', status)
       stop
    end if
 

@@ -1025,9 +1025,9 @@ end subroutine Read_LUT_Tbd
 !
 ! History:
 !    13th Oct 2000, Andy Smith : original version
-!    11th Jun 2011, Caroline Poulsen: major rewrite, remove refrences to cloud
+!    11th Jun 2011, Caroline Poulsen: major rewrite, remove references to cloud
 !       class changed the way arrays were allocated, removed references
-!    13th Dec 2011, Caroline Poulsen: checked if array are aloocated with
+!    13th Dec 2011, Caroline Poulsen: checked if array are allocated with
 !       associated command before allocating them.
 !    20/09/2011, Caroline Poulsen: added channel index to y_id value
 !    22/03/2013, Gareth Thomas: Added trim() to LUT_file in write(message,*)

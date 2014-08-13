@@ -1,6 +1,6 @@
 subroutine hpsort(n,ra)
 ! From Numerical Recipes in Fortran 90 [Press, Flannery]
-! sorts an array (ra) into asceding numerical order
+! sorts an array (ra) into ascending numerical order
 !
 ! History
 !    2011/02/03 - Adapted for L3 software by M. Jerg

@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Extrapolate temperature profile into stratosphere.
-! Replace trpopuaes inversion with monotonicall decreasing temperature profile
+! Replace trpopause inversion with monotonically decreasing temperature profile
 ! with gradient equal to that in the upper layer below the tropopause.
 !
 ! Description and Algorithm details:
@@ -51,7 +51,7 @@ subroutine t_extrap_strat(SPixel,ztp,index_ztp)
       write(*,*)']'
    end if
 
-   ! Calculate below trpopuse lapse rate
+   ! Calculate below tropopause lapse rate
 
     dtdp=(SPixel%RTM%LW%T(index_ztp+2)-SPixel%RTM%LW%T(index_ztp))/(SPixel%RTM%LW%P(index_ztp+2)-SPixel%RTM%LW%P(index_ztp))
 

@@ -94,7 +94,7 @@
 !        - variables x, y, buf and bufe are declared as real(4) in order to
 !          match the number of bytes used for reals in the RTM files (previously
 !          8).
-!        - Allocation of buffer array "buf" changed from 7 paramaters to 5,
+!        - Allocation of buffer array "buf" changed from 7 parameters to 5,
 !          since whole array writes to binary file mean that the level and
 !          channel indices are no longer present.
 !        - Array dimensions in buf swapped round to make access more efficient.
@@ -112,8 +112,8 @@
 !    15th Feb 2011, Andy Smith:
 !       Character string "dummy" length changed from 10 to 8, otherwise read
 !       error occurs on prtm file.
-!     7th Nov 2011, C Poulsen:
-!       Tidied up comments but no aculacode change
+!     7th Nov 2011, Caroline Poulsen:
+!       Tidied up comments but no actual code change
 !    2012/01/20, CP: changed reading of buf prtm array
 !    2012/08/23, MJ: Uses initial file as template for netcdf read.
 !    2012/08/24, MJ: Implements prtm file read
@@ -301,7 +301,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
          end if
 
          ! For this set of reads, if read fails (non-zero iostat), set status
-         ! immendiately but report error later since the message is the same for
+         ! immediately but report error later since the message is the same for
          ! all cases.
 
          ! Allocate size of ChanID and WvNumber
@@ -365,7 +365,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
             allocate(RTM%LW%Rac_dwn(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
             allocate(RTM%LW%Rbc_up(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal, RTM%LW%NP))
 
-            ! Succeesive cell count in preprocessing
+            ! Successive cell count in preprocessing
 
             ! Read data into arrays
             allocate(dummy1df(RTM%LW%Grid%NLatLon))

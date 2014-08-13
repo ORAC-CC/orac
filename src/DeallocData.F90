@@ -34,7 +34,7 @@
 !     8th Jul 2011, Caroline Poulsen:
 !        Deallocate scan data
 !    16th Dec 2013, Greg McGarragh:
-!       Add deallocation of MSI_Data%illum and a bit cleanup.
+!       Add deallocation of MSI_Data%illum and a bit of cleanup.
 !    27th May 2014, Greg McGarragh:
 !       Some cleanup.
 !

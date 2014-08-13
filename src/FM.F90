@@ -124,7 +124,7 @@
 !   20140528, GM: The sharing of CRP results for mixed channels from FMThermal
 !      with FMSolar was causing problems that were hard to debug and gained
 !      little in performance.  Now the Solar and Thermal forward model calls are
-!      independnent so that contents of CRP and d_CRP do not need to be passed
+!      independent so that contents of CRP and d_CRP do not need to be passed
 !      from the thermal call to the solar call.
 !   20140715, CP: Changed illumination logic.
 !
@@ -215,7 +215,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    !
    ! 2014/05/28, GM: This was causing problems that were hard to debug and
    ! gained little in performance.  Now the Solar and Thermal forward model
-   ! calls are independnent so that contents of CRP and d_CRP do not need to be
+   ! calls are independent so that contents of CRP and d_CRP do not need to be
    ! passed from the thermal call to the solar call.
 
    ! Assign long wave transmittances to the combined Tac and Tbc vectors.

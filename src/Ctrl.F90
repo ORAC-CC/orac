@@ -54,7 +54,7 @@
 !       Also Max_SDAD, for limit on distance (in pixels) at which the last
 !       retrieved solution is valid for FG/AP setting.
 !     6th July 2001, Andy Smith:
-!       Removing pointer arays to allow output of the whole struct in a single
+!       Removing pointer arrays to allow output of the whole struct in a single
 !       statement. Arrays affected: Ctrl%Ind%X_Dy/Tw/Ni, Ctrl%Sy.
 !    11th July 2001, Andy Smith:
 !       Fixes in CloudClass and Phaset structs. CloudClass arrays were fixed at
@@ -92,7 +92,7 @@
 !    12th May 2011, Andy Smith:
 !       Extension to handle multiple views. Number of surface reflectance values
 !       becomes allocatable: number of solar channels can be increased my having
-!       mulitple views.
+!       multiple views.
 !    18th May 2011, Andy Smith:
 !       Multiple views(2). Added new Ctrl value NInstViews, to store the number
 !       of possible viewing angles for the instrument.
@@ -101,11 +101,11 @@
 !     5th Sep 2011, Chris Arnold: added LUT/RTM interpolation switches.
 !    25th Nov 2011, Caroline Poulsen add ChI channel indice variable.
 !    2011/12/13, Matthias Jerg: added netcdf filenames to type FID_t
-!    2012/05/23, C. Poulsen: removed threhold def
+!    2012/05/23, C. Poulsen: removed threshold def
 !    2012/06/18, C. Poulsen: added illum
 !    2012/08/22, Matthias Jerg: adds Nyp
 !    2012/10/12, C. Poulsen: added defaultctrl%sx category!
-!    2014/01/15, Greg McGarragh: No need for Ctrl%DefaultSx anymore.
+!    2014/01/15, Greg McGarragh: No need for Ctrl%DefaultSx any more.
 !    2014/01/25, Greg McGarragh: Cleaned up the code.
 !
 ! Bugs:
@@ -166,7 +166,7 @@ module CTRL_def
       integer                :: SegSize            ! Image segment size (no. of
                                                    ! rows of super-pixels that
                                                    ! make up a segment).
-      integer                :: Time               ! Teporal av'ging required (slots)
+      integer                :: Time               ! Temporal av'ging required (slots)
    end type Resoln_t
 
    ! Indices: includes pixels to be used, channel and state variable indices and
@@ -320,7 +320,7 @@ module CTRL_def
 
    ! Main Ctrl structure.
    ! Note that the FG and AP arrays are 2-d, to allow separate options for
-   ! day, twilight and night. A 2-d array is used (as oppoesed to the 3 separate
+   ! day, twilight and night. A 2-d array is used (as opposed to the 3 separate
    ! 1-d arrays used in the case of X_Dy, X_Ni etc) to allow checking via a
    ! simple nested loop.
    type CTRL_t

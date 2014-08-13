@@ -58,8 +58,8 @@
 !    29th May 2002, Caroline Poulsen: Original version copied from READ_MSI.
 !    29th Oct 2002, Caroline Poulsen: Fixed bug too many arguments in the header
 !       removed sad_chan.
-!    28th June 2011, Caroline Poulsen: Remove reference to ATSR
-!    13th Dec 2011 Caroline poulsen change format statement to make g95
+!    28th Jun 2011, Caroline Poulsen: Remove reference to ATSR
+!    13th Dec 2011, Caroline Poulsen: change format statement to make g95
 !       compatible
 !    15/09/2012, CP: Initialise array
 !    15/09/2012, CP: Changed to read from netcdf files

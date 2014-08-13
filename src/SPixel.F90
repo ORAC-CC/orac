@@ -138,7 +138,7 @@ module SPixel_def
    ! Define a type for the Short Wave RTM parameters
 
    type RTM_SW_t
-      integer             :: Np           ! Number of presure levels
+      integer             :: Np           ! Number of pressure levels
       real                :: Lat          ! Latitude
       real, pointer       :: P(:)         ! Array of pressure levels (1:SW%Np)
       real, pointer       :: Tbc(:,:)     ! Surface to P channel transmittances
@@ -150,7 +150,7 @@ module SPixel_def
    ! Define a type for the Long Wave RTM parameters
 
    type RTM_LW_t
-      integer             :: Np           ! Number of presure levels
+      integer             :: Np           ! Number of pressure levels
       real                :: Lat          ! Latitude
       real                :: Lon          ! Longitude
       real                :: skint        ! skin temperature
@@ -321,8 +321,8 @@ module SPixel_def
                                           ! covariances
       real, pointer       :: f0(:)        ! Solar constant
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
-                                          ! Map SPixel measurment index space to
-                                          !     CRTL   measuement index space
+                                          ! Map SPixel measurement index space to
+                                          !     CRTL   measurement index space
       integer, pointer    :: spixel_y_solar_to_ctrl_y_index(:)
       integer, pointer    :: spixel_y_thermal_to_ctrl_y_index(:)
       integer, pointer    :: spixel_y_solar_to_ctrl_y_solar_index(:)

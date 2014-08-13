@@ -201,8 +201,8 @@
 !    2014/01/29, MJ: Fixed case where alpha can get out of bounds.
 !    2014/02/27, CP: Added declaration of J.
 !    2014/04/02, CP: Fixed bug where temp was not reassigned.
-!    2014/04/02, MJ: Fixed bug where Diag%ss was not initilized.
-!    2014/07/24, AP: Removed unusued status variable.
+!    2014/04/02, MJ: Fixed bug where Diag%ss was not initialized.
+!    2014/07/24, AP: Removed unused status variable.
 !
 ! Bugs:
 !    None known.
@@ -280,7 +280,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                                   ! 2nd derivative of J wrt state variables
    real    :: Av_Hess             ! Average of Hessian (d2J_dX2) diagonal
    real    :: alpha               ! Marquardt control variable
-   real    :: huge_value !largest value of real datatype
+   real    :: huge_value          ! largest value of real data type
    real    :: J2plus_A(SPixel%Nx, SPixel%Nx)
                                   ! Temporary array to hold sum of d2J_dX2 and
                                   ! alpha * unit.
@@ -663,7 +663,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
             ! Increase steepest descent part for next iteration and set values
             ! required for setting new deltaX using old cost derivatives.
-            ! "if" inserted to catch (academic?) case of overflow if alpha get's huge.
+            ! "if" inserted to catch (academic?) case of overflow if alpha gets huge.
             if (alpha .lt. huge_value) then
                alpha = alpha * Ctrl%InvPar%MqStep
             end if

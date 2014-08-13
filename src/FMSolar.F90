@@ -200,7 +200,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    ! Calculate derivatives of reflectance w.r.t. all other variables or part
    ! cloudy conditions
 
-   ! Auxillary quantities
+   ! Axillary quantities
    Sp = Tbc2 / S_dnom
 
    TBTD = T_all * CRP(:,ITd)

@@ -26,7 +26,7 @@
 !    2013/11/14, MJ: makes branch for ICE explicit
 !    2013/11/14, GM: Some code cleanup
 !    2014/06/11, CP: removes automatic crash if ice wat class not specified so
-!      can cope with aerosl class
+!      can cope with aerosol class
 !    2014/07/23, AP: added value for al10e2.
 !
 ! Bugs:
@@ -52,7 +52,7 @@ subroutine Calc_CWP(Ctrl,SPixel, status)
 
    ! Local variable declarations
    integer :: ios = 0.        ! I/O status value from file operations
-   real    :: rho             ! liquid or water denisty
+   real    :: rho             ! liquid or water density
    real    :: fac             ! CWP factor
    real    :: s_cot_cre       ! co-variance cot, effective radius (from
                               ! log10 cot, effective radius)
