@@ -6,6 +6,7 @@
 !    NC_READ_ARRAY - Read specified data field from open file into an array.
 !    NC_OPEN       - Open a NetCDF file with error handling.
 !    NC_ERROR      - Translate a NetCDF error code into an error message.
+!    NC_DIM_LENGTH - Return the length of a dimension in a NetCDF file.
 !
 ! History:
 ! 2014/02/10, AP: Original version, combining the original files:
@@ -16,11 +17,16 @@
 
 module orac_ncdf
 
+   use netcdf
+
    implicit none
 
    interface nc_read_array
-      module procedure float_1d, float_2d, float_3d, float_4d, float_5d, &
-           int_1d, int_2d, int_3d, int_4d, int_5d, sint_1d, sint_2d, sint_3d
+      module procedure double_1d, double_2d, double_3d, double_4d, double_5d, &
+           float_1d, float_2d, float_3d, float_4d, float_5d, &
+           lint_1d, lint_2d, lint_3d, lint_4d, lint_5d, &
+           int_1d, int_2d, int_3d, int_4d, int_5d, &
+           sint_1d, sint_2d, sint_3d, sint_4d, sint_5d
    end interface nc_read_array
 
 contains
@@ -52,24 +58,174 @@ contains
 !
 ! History:
 ! 2014/02/10, AP: Original version, replacing nc_read_file.F90
+! 2014/08/12, AP: Adding routines for all expected data types.
 !
 ! Bugs:
-! - does not yet cover all possible data types
+! None known.
 !-------------------------------------------------------------------------------
 
-subroutine float_1d(ncid, name, val, verbose)
-   use netcdf
+subroutine double_1d(ncid, name, val, verbose)
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   real(sreal),      intent(inout) :: val(:)
+   real(8),          intent(inout) :: val(:)
 
-   real(sreal)                     :: fill=real_fill_value
+   real(8)                         :: fill=double_fill_value
    integer                         :: ierr, vid
-   real(sreal)                     :: fv, sf, of
+   real(8)                         :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(1)  :: start, counter, stride
+
+   start = 1
+   counter = size(val,1)
+   stride = 1
+   ierr = 0
+   sf = 1.0
+   of = 0.0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine double_1d
+
+subroutine double_2d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   real(8),          intent(inout) :: val(:,:)
+
+   real(8)                         :: fill=double_fill_value
+   integer                         :: ierr, vid
+   real(8)                         :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(2)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   stride = 1
+   ierr = 0
+   sf = 1.0
+   of = 0.0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine double_2d
+
+subroutine double_3d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   real(8),          intent(inout) :: val(:,:,:)
+
+   real(8)                         :: fill=double_fill_value
+   integer                         :: ierr, vid
+   real(8)                         :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(3)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   stride = 1
+   ierr = 0
+   sf = 1.0
+   of = 0.0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine double_3d
+
+subroutine double_4d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   real(8),          intent(inout) :: val(:,:,:,:)
+
+   real(8)                         :: fill=double_fill_value
+   integer                         :: ierr, vid
+   real(8)                         :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(4)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   counter(4) = size(val,4)
+   stride = 1
+   ierr = 0
+   sf = 1.0
+   of = 0.0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine double_4d
+
+subroutine double_5d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   real(8),          intent(inout) :: val(:,:,:,:,:)
+
+   real(8)                         :: fill=double_fill_value
+   integer                         :: ierr, vid
+   real(8)                         :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(5)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   counter(4) = size(val,4)
+   counter(5) = size(val,5)
+   stride = 1
+   ierr = 0
+   sf = 1.0
+   of = 0.0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine double_5d
+   
+subroutine float_1d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   real(4),          intent(inout) :: val(:)
+
+   real(4)                         :: fill=real_fill_value
+   integer                         :: ierr, vid
+   real(4)                         :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(1)  :: start, counter, stride
@@ -87,18 +243,17 @@ subroutine float_1d(ncid, name, val, verbose)
 end subroutine float_1d
 
 subroutine float_2d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   real(sreal),      intent(inout) :: val(:,:)
+   real(4),          intent(inout) :: val(:,:)
 
-   real(sreal)                     :: fill=real_fill_value
+   real(4)                         :: fill=real_fill_value
    integer                         :: ierr, vid
-   real(sreal)                     :: fv, sf, of
+   real(4)                         :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(2)  :: start, counter, stride
@@ -117,18 +272,17 @@ subroutine float_2d(ncid, name, val, verbose)
 end subroutine float_2d
 
 subroutine float_3d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   real(sreal),      intent(inout) :: val(:,:,:)
+   real(4),          intent(inout) :: val(:,:,:)
 
-   real(sreal)                     :: fill=real_fill_value
+   real(4)                         :: fill=real_fill_value
    integer                         :: ierr, vid
-   real(sreal)                     :: fv, sf, of
+   real(4)                         :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(3)  :: start, counter, stride
@@ -148,18 +302,17 @@ subroutine float_3d(ncid, name, val, verbose)
 end subroutine float_3d
 
 subroutine float_4d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   real(sreal),      intent(inout) :: val(:,:,:,:)
+   real(4),          intent(inout) :: val(:,:,:,:)
 
-   real(sreal)                     :: fill=real_fill_value
+   real(4)                         :: fill=real_fill_value
    integer                         :: ierr, vid
-   real(sreal)                     :: fv, sf, of
+   real(4)                         :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(4)  :: start, counter, stride
@@ -180,18 +333,17 @@ subroutine float_4d(ncid, name, val, verbose)
 end subroutine float_4d
 
 subroutine float_5d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   real(sreal),      intent(inout) :: val(:,:,:,:,:)
+   real(4),          intent(inout) :: val(:,:,:,:,:)
 
-   real(sreal)                     :: fill=real_fill_value
+   real(4)                         :: fill=real_fill_value
    integer                         :: ierr, vid
-   real(sreal)                     :: fv, sf, of
+   real(4)                         :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(5)  :: start, counter, stride
@@ -211,20 +363,169 @@ subroutine float_5d(ncid, name, val, verbose)
    include "ncdf_read.inc"
 
 end subroutine float_5d
-
-subroutine int_1d(ncid, name, val, verbose)
-   use netcdf
+   
+subroutine lint_1d(ncid, name, val, verbose)
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(lint),    intent(inout) :: val(:)
+   integer(4),       intent(inout) :: val(:)
 
-   integer(lint)                   :: fill=long_int_fill_value
+   integer(4)                      :: fill=long_int_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(4)                      :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(1)  :: start, counter, stride
+
+   start = 1
+   counter = size(val,1)
+   stride = 1
+   ierr = 0
+   sf = 1
+   of = 0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine lint_1d
+   
+subroutine lint_2d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   integer(4),       intent(inout) :: val(:,:)
+
+   integer(4)                      :: fill=long_int_fill_value
+   integer                         :: ierr, vid
+   integer(4)                      :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(2)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   stride = 1
+   ierr = 0
+   sf = 1
+   of = 0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine lint_2d
+   
+subroutine lint_3d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   integer(4),       intent(inout) :: val(:,:,:)
+
+   integer(4)                      :: fill=long_int_fill_value
+   integer                         :: ierr, vid
+   integer(4)                      :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(3)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   stride = 1
+   ierr = 0
+   sf = 1
+   of = 0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine lint_3d
+   
+subroutine lint_4d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   integer(4),       intent(inout) :: val(:,:,:,:)
+
+   integer(4)                      :: fill=long_int_fill_value
+   integer                         :: ierr, vid
+   integer(4)                      :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(4)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   counter(4) = size(val,4)
+   stride = 1
+   ierr = 0
+   sf = 1
+   of = 0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine lint_4d
+   
+subroutine lint_5d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   integer(4),       intent(inout) :: val(:,:,:,:,:)
+
+   integer(4)                      :: fill=long_int_fill_value
+   integer                         :: ierr, vid
+   integer(4)                      :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(5)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   counter(4) = size(val,4)
+   counter(5) = size(val,5)
+   stride = 1
+   ierr = 0
+   sf = 1
+   of = 0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine lint_5d
+   
+subroutine int_1d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   integer(2),       intent(inout) :: val(:)
+
+   integer(2)                      :: fill=int_fill_value
+   integer                         :: ierr, vid
+   integer(2)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(1)  :: start, counter, stride
@@ -242,18 +543,17 @@ subroutine int_1d(ncid, name, val, verbose)
 end subroutine int_1d
 
 subroutine int_2d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(lint),    intent(inout) :: val(:,:)
+   integer(2),       intent(inout) :: val(:,:)
 
-   integer(lint)                   :: fill=long_int_fill_value
+   integer(2)                      :: fill=int_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(2)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(2)  :: start, counter, stride
@@ -272,18 +572,17 @@ subroutine int_2d(ncid, name, val, verbose)
 end subroutine int_2d
 
 subroutine int_3d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(lint),    intent(inout) :: val(:,:,:)
+   integer(2),       intent(inout) :: val(:,:,:)
 
-   integer(lint)                   :: fill=long_int_fill_value
+   integer(2)                      :: fill=int_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(2)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(3)  :: start, counter, stride
@@ -303,18 +602,17 @@ subroutine int_3d(ncid, name, val, verbose)
 end subroutine int_3d
 
 subroutine int_4d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(lint),    intent(inout) :: val(:,:,:,:)
+   integer(2),       intent(inout) :: val(:,:,:,:)
 
-   integer(lint)                   :: fill=long_int_fill_value
+   integer(2)                      :: fill=int_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(2)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(4)  :: start, counter, stride
@@ -335,18 +633,17 @@ subroutine int_4d(ncid, name, val, verbose)
 end subroutine int_4d
 
 subroutine int_5d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(lint),    intent(inout) :: val(:,:,:,:,:)
+   integer(2),       intent(inout) :: val(:,:,:,:,:)
 
-   integer(lint)                   :: fill=long_int_fill_value
+   integer(2)                      :: fill=int_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(2)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(5)  :: start, counter, stride
@@ -368,18 +665,17 @@ subroutine int_5d(ncid, name, val, verbose)
 end subroutine int_5d
 
 subroutine sint_1d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:)
+   integer(1),       intent(inout) :: val(:)
 
-   integer(2)                      :: fill=int_fill_value
+   integer(1)                      :: fill=byte_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(1)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(1)  :: start, counter, stride
@@ -397,18 +693,17 @@ subroutine sint_1d(ncid, name, val, verbose)
 end subroutine sint_1d
 
 subroutine sint_2d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:,:)
+   integer(1),       intent(inout) :: val(:,:)
 
-   integer(2)                      :: fill=int_fill_value
+   integer(1)                      :: fill=byte_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(1)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(2)  :: start, counter, stride
@@ -427,18 +722,17 @@ subroutine sint_2d(ncid, name, val, verbose)
 end subroutine sint_2d
 
 subroutine sint_3d(ncid, name, val, verbose)
-   use netcdf
    use preproc_constants
 
    implicit none
 
    integer,          intent(in)    :: ncid, verbose
    character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:,:,:)
+   integer(1),       intent(inout) :: val(:,:,:)
 
-   integer(2)                      :: fill=int_fill_value
+   integer(1)                      :: fill=byte_fill_value
    integer                         :: ierr, vid
-   integer(lint)                   :: fv, sf, of
+   integer(1)                      :: fv, sf, of
    character(len=unitlength)       :: unit
    logical                         :: flag
    integer,          dimension(3)  :: start, counter, stride
@@ -456,6 +750,69 @@ subroutine sint_3d(ncid, name, val, verbose)
    include "ncdf_read.inc"
 
 end subroutine sint_3d
+
+subroutine sint_4d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   integer(1),       intent(inout) :: val(:,:,:,:)
+
+   integer(1)                      :: fill=byte_fill_value
+   integer                         :: ierr, vid
+   integer(1)                      :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(4)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   counter(4) = size(val,4)
+   stride = 1
+   ierr = 0
+   sf = 1
+   of = 0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine sint_4d
+
+subroutine sint_5d(ncid, name, val, verbose)
+   use preproc_constants
+
+   implicit none
+
+   integer,          intent(in)    :: ncid, verbose
+   character(len=*), intent(in)    :: name
+   integer(1),       intent(inout) :: val(:,:,:,:,:)
+
+   integer(1)                      :: fill=byte_fill_value
+   integer                         :: ierr, vid
+   integer(1)                      :: fv, sf, of
+   character(len=unitlength)       :: unit
+   logical                         :: flag
+   integer,          dimension(5)  :: start, counter, stride
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   counter(4) = size(val,4)
+   counter(5) = size(val,5)
+   stride = 1
+   ierr = 0
+   sf = 1
+   of = 0
+   flag = .false.
+
+   include "ncdf_read.inc"
+
+end subroutine sint_5d
 
 !-------------------------------------------------------------------------------
 ! Name: nc_open
@@ -480,10 +837,7 @@ end subroutine sint_3d
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-
 subroutine nc_open(ncid, fname)
-   use netcdf
-
    implicit none
 
    integer,          intent(out) :: ncid
@@ -493,8 +847,8 @@ subroutine nc_open(ncid, fname)
 
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'NC_OPEN: Error opening file ',trim(fname),'. ',NC_ERROR(ierr)
-      STOP
+      print*,'NC_OPEN: Error opening file ',trim(fname),'. ',nc_error(ierr)
+      stop
    end if
 end subroutine nc_open
 
@@ -598,4 +952,55 @@ function nc_error(ierr) result(out)
    end select
 
 end function nc_error
+
+!-------------------------------------------------------------------------------
+! Name: nc_dim_length
+!
+! Purpose:
+! Read length of a named dimension of NCDF file.
+!
+! Description and Algorithm details:
+! 1) Obtain ID of requested dimension.
+! 2) Retrieve its length and output.
+!
+! Arguments:
+! Name  Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! ncid  integer Out File ID number returned by nf90_open
+! name  string  In  Name of dimension to read
+! len   integer Out Length of desired dimenison
+!
+! History:
+! 2014/08/06, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+function nc_dim_length(ncid, name, verbose) result(len)
+   implicit none
+
+   integer,          intent(in) :: ncid, verbose
+   character(len=*), intent(in) :: name
+
+   integer :: did, ierr, len
+   character(len=NF90_MAX_NAME) :: dname
+
+   ierr = nf90_inq_dimid(ncid, name, did)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'NC_DIM_LENGTH: Could not locate dimension ',trim(name),'. ', &
+           nc_error(ierr)
+      stop
+   end if
+   
+   ierr = nf90_inquire_dimension(ncid, did, dname, len)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'NC_DIM_LENGTH: Could not read dimension ',trim(name),'. ', &
+           nc_error(ierr)
+      stop
+   end if
+
+   if (verbose.ne.0) print*, trim(name),' n: ',len
+   
+end function nc_dim_length
+
 end module orac_ncdf
