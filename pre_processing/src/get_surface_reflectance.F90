@@ -40,7 +40,7 @@
 !      changed along with band info
 !    - Changed count conditions may have to change back after channel info
 !      correctly implemented.
-!    - Changed code to use chahnel structure information
+!    - Changed code to use channel structure information
 ! 27/06/2012, GT: Changed from bilinear interpolation of MODIS land
 !    surface albedo to nearest neighbour, hopefully with a resulting significant
 !    speed improvement
@@ -48,13 +48,13 @@
 ! 02/07/2012, GT: Bug fix. Fill grid was attempting to use the imager
 !    grid to mask the MCD grid. The code now generates a mask for fill_grid
 !    based on the lat-lon limits of the imager_geolocation arrays.
-! 2012/07/04, CP: removed nview dependance
+! 2012/07/04, CP: removed nview dependence
 ! 2012/07/30, CP: initialised allocated arrays
-! 2012/08/07, CP: reformated albedo array to be consistent with msi file
+! 2012/08/07, CP: reformatted albedo array to be consistent with msi file
 !    routine added that automatically selects MCD file added doy
 ! 2012/08/08, CP: Changed modband to 12,6 and created coxbands  2 3 4
 ! 2012/08/15, MJ: Speeds up code.
-! 2012/08/15, GT: Added code for inserting (1.0 - emssivity) for the land
+! 2012/08/15, GT: Added code for inserting (1.0 - emissivity) for the land
 !    surface reflectance at 3.7 microns (done at the point where surface
 !    reflectance is copied into the surface structures).
 !    Bug fix. Temporary ocean surface reflectance arrays were being defined
@@ -77,7 +77,7 @@
 !    Fixed longitude bug in interpolation ECMWF wind fields (ECMWF longitude
 !    runs from 0-360 degrees)
 ! 2013/09/02, AP: Removed startyi, endye.
-! 2014/01/17, MJ: Fixed doy datatype from sint to stint to comply with other
+! 2014/01/17, MJ: Fixed doy data type from sint to stint to comply with other
 !    defs
 ! 2014/04/20, GM: Cleaned up the code.
 ! 2014/04/21, GM: Added logical option assume_full_path.
@@ -86,6 +86,9 @@
 ! 2014/06/11, AP: Use standard fill value rather than unique one. Use new
 !    ecmwf structures.
 ! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/08/13, GM: Fixed bug where the length of array arguments is larger than
+!    the amount of valid data within which affects routines that get the length
+!    to be processed from the size() intrinsic.
 !
 ! $Id$
 !
@@ -176,10 +179,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
    write(*,*) 'In get_surface_reflectance_lam()'
 
 
-   ! Count the number of land and sea pixels, using the imager land/sea mask
-   nsea  = count(imager_flags%lsflag .eq. 0)
-   nland = count(imager_flags%lsflag .eq. 1)
-
+   ! Mask out pixels set to fill_value and out of BRDF angular range
    allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
                  1:imager_geolocation%ny))
 
@@ -196,6 +196,10 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
                 imager_angles%relazi(:,:,k) .ne. real_fill_value
       end do
    end if
+
+   ! Count the number of land and sea pixels, using the imager land/sea mask
+   nsea  = count(mask .and. imager_flags%lsflag .eq. 0)
+   nland = count(mask .and. imager_flags%lsflag .eq. 1)
 
 
    !----------------------------------------------------------------------------
@@ -405,7 +409,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
       ! Which channels do we need?
       i=0
       do k=1,channel_info%nchannels_total
-         if (channel_info%channel_sw_flag(k) .eq. 1  ) then
+         if (channel_info%channel_sw_flag(k) .eq. 1) then
             i=i+1
             coxbands(i) = channel_info%channel_ids_abs(k)
          end if
