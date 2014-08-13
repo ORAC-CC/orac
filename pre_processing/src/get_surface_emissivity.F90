@@ -57,6 +57,8 @@
 ! 20/06/2014, GM: Handle case when imager_geolocation%latitude or
 !   imager_geolocation%longitude is equal to fill_value.
 ! 01/07/2014, AP: Tidying. Update to new structures.
+! 05/08/2014, AP: New bilinear interpolation routine. Changed how grid is
+!   described from emissivity file.
 !
 ! $Id$
 !
@@ -99,15 +101,14 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
    integer(kind=lint)                                 :: i,j,k,lat,lon
    integer(kind=lint)                                 :: nland
-   real,                             dimension(1)     :: temp_lat, temp_lon
-   real,                             dimension(1)     :: temp_sur
+   type(interpol_s)                                   :: interp
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nland = count(imager_flags%lsflag .eq. 1)
    write(*,*)'nland: ',nland
 
    ! If there are no land pixels in the scene, we have nothing more to do
-   if (nland .eq. 0) return
+   if (nland == 0 .or. count(channel_info%channel_ids_abs .eq. 4) == 0) return
 
    ! embands is modis numbering of IR channels where,
    ! channel_info%channel_ids_abs .gt. 3
@@ -124,14 +125,14 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
 
    ! Read the data itself
    if (read_cimss_emissivity(emis_path_file, emis, embands) .ne. 0) &
-        STOP 'GET_SURFACE_EMISSIVITY: Bad read of cimss file.'
+        stop 'GET_SURFACE_EMISSIVITY: Bad read of cimss file.'
 
    ! This emissivity data has very few missing values, but there are some. Set
    ! these to 0.999 (as close to 1 as the emissivity data itself gets). This is
    ! also a vaguely reasonable value for the water as well....
-   allocate(transemis(emis%nbands,emis%nlon,emis%nlat))
+   allocate(transemis(emis%nlon,emis%nlat,emis%nbands))
    do i=1,emis%nbands
-      transemis(i,:,:) = transpose(emis%emissivity(i,:,:))
+      transemis(:,:,i) = transpose(emis%emissivity(:,:,i))
    end do
    where(transemis .le. 0.0) transemis = 0.999
 
@@ -141,16 +142,14 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
          if (imager_flags%lsflag(i,j) .eq. 1 .and. &
               imager_geolocation%latitude(i,j) .ne. real_fill_value .and. &
               imager_geolocation%longitude(i,j) .ne. real_fill_value) then
-            temp_lat=imager_geolocation%latitude(i,j)
-            temp_lon=imager_geolocation%longitude(i,j)
-            do k=1,channel_info%nchannels_lw
-               ! Can use either bilinear or nearest neighbour...
-               !call interpol_nearest_neighbour(emis%lon, emis%lat, &
-               !     transemis(i,:,:), temp_lat, temp_lon, temp_sur)
-               call interpol_bilinear(emis%lon, emis%lat, transemis(k,:,:), &
-                    temp_lon, temp_lat, temp_sur, real_fill_value)
+            call bilinear_coef(emis%lon0, emis%lon_invdel, emis%nlon, &
+                 emis%lat0, emis%lat_invdel, emis%nlat, &
+                 imager_geolocation%longitude(i,j), &
+                 imager_geolocation%latitude(i,j), interp)
 
-               surface%emissivity(i,j,k)=temp_sur(1)
+            do k=1,channel_info%nchannels_lw
+               call interp_field(transemis(:,:,k), surface%emissivity(i,j,k), &
+                    interp)
             end do
          end if
       end do
@@ -164,14 +163,15 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    counter=0
    summat=0.
    do j=1,emis%nlat
-      lat=floor((emis%lat(j)+preproc_dims%lat_offset)*preproc_dims%dellat)+1
+      lat=floor((emis%lat0+(j-1)*emis%lat_del+preproc_dims%lat_offset)* &
+           preproc_dims%dellat)+1
       if (lat.ge.preproc_dims%min_lat .and. lat.le.preproc_dims%max_lat) then
          do i=1,emis%nlon
-            lon=floor((emis%lon(i)+preproc_dims%lon_offset)* &
+            lon=floor((emis%lon0+(i-1)*emis%lon_del+preproc_dims%lon_offset)* &
                  preproc_dims%dellon)+1
             if (lon.ge.preproc_dims%min_lon .and. &
                  lon.le.preproc_dims%max_lon) then
-               summat(lon,lat,:)=summat(lon,lat,:)+transemis(:,i,j)
+               summat(lon,lat,:)=summat(lon,lat,:)+transemis(i,j,:)
                counter(lon,lat) =counter(lon,lat)+1
             end if
          end do

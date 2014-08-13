@@ -86,6 +86,8 @@
 ! 2014/06/11, AP: Use standard fill value rather than unique one. Use new
 !    ecmwf structures.
 ! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/08/11, AP: New bilinear intepolation routines. Data now copied directly
+!    into surface%albedo for the surface.
 ! 2014/08/13, GM: Fixed bug where the length of array arguments is larger than
 !    the amount of valid data within which affects routines that get the length
 !    to be processed from the size() intrinsic.
@@ -93,13 +95,12 @@
 ! $Id$
 !
 ! Bugs:
-! NITAVHRR hangs somewhere in here.
 ! NB channels are hardwired in this code and not selected automatically
 !-------------------------------------------------------------------------------
 
 subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
    modis_surf_path, imager_flags, imager_geolocation, imager_angles, &
-   imager_measurements, channel_info, ecmwf, include_full_brdf, surface)
+   channel_info, ecmwf, include_full_brdf, surface)
 
    use channel_structures
    use cox_munk_m
@@ -123,7 +124,6 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
    type(imager_flags_s),        intent(in)         :: imager_flags
    type(imager_geolocation_s),  intent(in)         :: imager_geolocation
    type(imager_angles_s),       intent(in)         :: imager_angles
-   type(imager_measurements_s), intent(in)         :: imager_measurements
    type(channel_info_s),        intent(in)         :: channel_info
    type(ecmwf_s),               intent(in)         :: ecmwf
    logical,                     intent(in)         :: include_full_brdf
@@ -134,7 +134,6 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
    ! Land surface reflectance
    character(len=pathlength)                       :: modis_surf_path_file
    character(len=pathlength)                       :: modis_brdf_path_file
-   real(kind=sreal), allocatable, dimension(:)     :: latlnd, lonlnd
    real(kind=sreal), allocatable, dimension(:)     :: solzalnd, satzalnd
    real(kind=sreal), allocatable, dimension(:)     :: solazlnd, relazlnd
    type(mcd43c1)                                   :: mcdc1
@@ -155,26 +154,23 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
    integer                                         :: stat
 
    ! Sea surface reflectance
-   real(kind=sreal), allocatable, dimension(:)     :: latsea, lonsea
    real(kind=sreal), allocatable, dimension(:)     :: solzasea, satzasea
    real(kind=sreal), allocatable, dimension(:)     :: solazsea, relazsea
    real(kind=sreal), allocatable, dimension(:)     :: u10sea, v10sea
    real(kind=sreal), allocatable, dimension(:,:)   :: refsea
    real(kind=sreal), allocatable, dimension(:,:,:) :: rhosea
-   real(kind=dreal)                                :: time
    type(cox_munk_shared_band_type)                 :: cox_munk_shared_band(4)
    type(cox_munk_shared_geo_wind_type)             :: cox_munk_shared_geo_wind
 
    ! General
-   integer(kind=lint)                              :: i,j,k,i_mcd,j_mcd
+   integer(kind=lint)                              :: i,j,k
    integer(kind=lint)                              :: nsea=0, nland=0
    integer(kind=lint)                              :: seacount=1
    integer(kind=lint)                              :: lndcount=1
 
-   real                                            :: lat_res,lon_res
+   type(interpol_s), allocatable, dimension(:)     :: interp
 
-   logical, allocatable, dimension(:,:)            :: mask
-
+   logical,          allocatable, dimension(:,:)   :: mask
 
    write(*,*) 'In get_surface_reflectance_lam()'
 
@@ -190,12 +186,14 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
       do k=1,imager_angles%nviews
          mask = mask .and. &
                 imager_angles%solzen(:,:,k) .ne. real_fill_value .and. &
-                imager_angles%solzen(:,:,k) .lt. maxsza_twi      .and. &
                 imager_angles%satzen(:,:,k) .ne. real_fill_value .and. &
                 imager_angles%solazi(:,:,k) .ne. real_fill_value .and. &
                 imager_angles%relazi(:,:,k) .ne. real_fill_value
       end do
    end if
+   
+   ! Count the number of land pixels, using the imager land/sea mask
+   nland = count(imager_flags%lsflag .eq. 1 .and. mask)
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nsea  = count(mask .and. imager_flags%lsflag .eq. 0)
@@ -207,9 +205,8 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
    !----------------------------------------------------------------------------
    if (nland .gt. 0) then
       ! Allocate and populate the local arrays required for land pixels
-      allocate(latlnd(nland))
-      allocate(lonlnd(nland))
       allocate(wsalnd(channel_info%nchannels_sw,nland))
+      allocate(interp(nland))
       if (include_full_brdf) then
          allocate(solzalnd(nland))
          allocate(satzalnd(nland))
@@ -218,20 +215,6 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          allocate(wgtlnd(3,channel_info%nchannels_sw,nland))
          allocate(rholnd (channel_info%nchannels_sw,nland,4))
       end if
-
-      ! Extract only the land pixels from the imager structures
-      lndcount = 1
-      do i=1,imager_geolocation%ny
-         do j=imager_geolocation%startx,imager_geolocation%endx
-            if (imager_flags%lsflag(j,i) .eq. 1) then
-               if (mask(j,i)) then
-                  latlnd(lndcount) = imager_geolocation%latitude(j,i)
-                  lonlnd(lndcount) = imager_geolocation%longitude(j,i)
-                  lndcount = lndcount+1
-               end if
-            end if
-         end do
-      end do
 
       ! Read MODIS MCD43C3 surface reflectance data
       ! Need to set the band numbers in terms of MODIS band numbering. These are
@@ -283,63 +266,56 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
       ! Also create a bit mask that controls where we apply the data filling,
       ! limiting it to the region covered by the imager data
       allocate(fg_mask(mcdc3%nlon,mcdc3%nlat))
-      fg_mask(:,:) = 0
+      fg_mask = 0
 
-      ! Code for looping over instrument views is disabled for now
-!     do k=1,imager_angles%nviews
-      k=1
-
-      ! Extract only the land pixels from the imager structures
-      ! Also flag required pixels from MCD array assuming a regular grid
-      lat_res=mcdc3%lat(2)-mcdc3%lat(1)
-      lon_res=mcdc3%lon(2)-mcdc3%lon(1)
+      ! Locate pixels surrounding each land pixel from the imager structures
+      ! Also flag required pixels from MCD array, assuming a regular grid
       lndcount = 1
       do i=1,imager_geolocation%ny
          do j=imager_geolocation%startx,imager_geolocation%endx
             if (imager_flags%lsflag(j,i) .eq. 1) then
                if (mask(j,i)) then
-                  latlnd(lndcount) = imager_geolocation%latitude(j,i)
-                  lonlnd(lndcount) = imager_geolocation%longitude(j,i)
+                  call bilinear_coef(mcdc3%lon0, mcdc3%lon_invdel, mcdc3%nlon, &
+                       mcdc3%lat0, mcdc3%lat_invdel, mcdc3%nlat, &
+                       imager_geolocation%longitude(j,i), &
+                       imager_geolocation%latitude(j,i), interp(lndcount))
 
                   ! flag pixels for which there will be albedo data
-                  if (abs(latlnd(lndcount)) < 80.2) then
-                     i_mcd=floor((latlnd(lndcount) - mcdc3%lat(1)) / lat_res + 1.5)
-                     j_mcd=floor((lonlnd(lndcount) - mcdc3%lon(1)) / lon_res + 1.5)
-                     if (j_mcd > mcdc3%nlon-1) j_mcd = mcdc3%nlon-1
-                     fg_mask(j_mcd:j_mcd+1,i_mcd:i_mcd+1)=1
+                  if (abs(imager_geolocation%latitude(j,i)) < 80.2) then
+                     fg_mask(interp(lndcount)%x0, interp(lndcount)%y0) = 1
+                     fg_mask(interp(lndcount)%x1, interp(lndcount)%y0) = 1
+                     fg_mask(interp(lndcount)%x0, interp(lndcount)%y1) = 1
+                     fg_mask(interp(lndcount)%x1, interp(lndcount)%y1) = 1
                   end if
 
-                  lndcount = lndcount+1
+                  lndcount = lndcount + 1
                end if
             end if
          end do
       end do
 
       do i=1,nswchannels
-         tmp_data = mcdc3%WSA(i,:,:)
+         tmp_data = mcdc3%WSA(:,:,i)
 
          call fill_grid(tmp_data, real_fill_value, fg_mask)
 
-!        call interpol_nearest_neighbour(mcdc3%lon, mcdc3%lat, tmp_data, &
-!                                        lonlnd, latlnd, wsalnd(i,:))
-         call interpol_bilinear         (mcdc3%lon, mcdc3%lat, tmp_data, &
-                                         lonlnd, latlnd, wsalnd(i,:), &
-                                         real_fill_value)
+         do lndcount=1,nland
+            call interp_field(tmp_data, wsalnd(i,lndcount), interp(lndcount))
+         end do
 
          write(*,*) 'Land WSA: channel, min, max = ', i, minval(wsalnd(i,:)), &
                                                          maxval(wsalnd(i,:))
 
          if (include_full_brdf) then
             do j = 1, 3
-               tmp_data = mcdc1%brdf_albedo_params(i,j,:,:)
+               tmp_data = mcdc1%brdf_albedo_params(:,:,j,i)
 
                call fill_grid(tmp_data, real_fill_value, fg_mask)
 
-!              call interpol_nearest_neighbour(mcdc3%lon, mcdc3%lat, tmp_data, &
-!                                              lonlnd, latlnd, wgtlnd(j,i,:))
-               call interpol_bilinear         (mcdc3%lon, mcdc3%lat, tmp_data, &
-                                               lonlnd, latlnd, wgtlnd(j,i,:), &
-                                               real_fill_value)
+               do lndcount=1,nland
+                  call interp_field(tmp_data, wgtlnd(j,i,lndcount), &
+                       interp(lndcount))
+               end do
             end do
          end if
       end do
@@ -350,10 +326,11 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
             do j=imager_geolocation%startx,imager_geolocation%endx
                if (imager_flags%lsflag(j,i) .eq. 1) then
                   if (mask(j,i)) then
-                     solzalnd(lndcount) = imager_angles%solzen(j,i,k)
-                     satzalnd(lndcount) = imager_angles%satzen(j,i,k)
-                     solazlnd(lndcount) = imager_angles%solazi(j,i,k)
-                     relazlnd(lndcount) = imager_angles%relazi(j,i,k)
+                     ! if using multiple views, require a loop over last index
+                     solzalnd(lndcount) = imager_angles%solzen(j,i,1)
+                     satzalnd(lndcount) = imager_angles%satzen(j,i,1)
+                     solazlnd(lndcount) = imager_angles%solazi(j,i,1)
+                     relazlnd(lndcount) = imager_angles%relazi(j,i,1)
 
                      lndcount = lndcount+1
                   end if
@@ -370,10 +347,9 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
 
       ! Do some clean-up
       deallocate(bands)
-      deallocate(latlnd)
-      deallocate(lonlnd)
       deallocate(tmp_data)
       deallocate(fg_mask)
+      deallocate(interp)
       call deallocate_mcd43c3(mcdc3)
       if (include_full_brdf) then
          deallocate(solzalnd)
@@ -386,14 +362,20 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
 
    end if ! End of land surface reflectance setting
 
-
    !----------------------------------------------------------------------------
    ! Compute sea surface reflectance
    !----------------------------------------------------------------------------
+   ! don't evaluate Cox and Munk for night points
+   if (include_full_brdf) then
+      do k=1,imager_angles%nviews
+         mask = mask .and. imager_angles%solzen(:,:,k) .lt. maxsza_twi
+      end do
+   end if
+   ! Count the number of sea pixels, using the imager land/sea mask
+   nsea  = count(imager_flags%lsflag .eq. 0 .and. mask)
+
    if (nsea .gt. 0) then
       ! Allocate and populate the local arrays required for sea pixels
-      allocate(latsea(nsea))
-      allocate(lonsea(nsea))
       allocate(solzasea(nsea))
       allocate(satzasea(nsea))
       allocate(solazsea(nsea))
@@ -415,54 +397,32 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          end if
       end do
 
-      ! Extract the location data for the sea pixels
-      seacount = 1
-      do i=1,imager_geolocation%ny
-         do j=imager_geolocation%startx,imager_geolocation%endx
-            if (imager_flags%lsflag(j,i) .eq. 0) then
-               if (mask(j,i)) then
-                  latsea(seacount) = imager_geolocation%latitude(j,i)
-                  lonsea(seacount) = imager_geolocation%longitude(j,i)
-                  seacount = seacount+1
-               end if
-            end if
-         end do
-      end do
-
       ! Interpolate the ECMWF wind fields onto the instrument grid
-
-!     call interpol_nearest_neighbour(ecmwf%lon, ecmwf%lat, &
-!                                     ecmwf%u10, lonsea, latsea, u10sea)
-
-!     call interpol_nearest_neighbour(ecmwf%lon, ecmwf%lat, &
-!                                     ecmwf%v10, lonsea, latsea, v10sea)
-
-      call interpol_bilinear(ecmwf%lon, ecmwf%lat, &
-           ecmwf%u10, lonsea, latsea, u10sea, real_fill_value)
-
-      call interpol_bilinear(ecmwf%lon, ecmwf%lat, &
-           ecmwf%v10, lonsea, latsea, v10sea, real_fill_value)
-
-      ! Code for looping over instrument views is disabled for now
-!     do k=1,imager_angles%nviews
-      k=1
-      ! Extract only the sea pixels from the imager structures
       seacount = 1
+      allocate(interp(1))
       do i=1,imager_geolocation%ny
          do j=imager_geolocation%startx,imager_geolocation%endx
             if (imager_flags%lsflag(j,i) .eq. 0) then
                if (mask(j,i)) then
+                  call bilinear_coef(ecmwf%lon, ecmwf%xdim, ecmwf%lat, &
+                       ecmwf%ydim, imager_geolocation%longitude(j,i), &
+                       imager_geolocation%latitude(j,i), interp(1))
 
-                  solzasea(seacount) = imager_angles%solzen(j,i,k)
-                  satzasea(seacount) = imager_angles%satzen(j,i,k)
-                  solazsea(seacount) = imager_angles%solazi(j,i,k)
-                  relazsea(seacount) = imager_angles%relazi(j,i,k)
+                  call interp_field(ecmwf%u10, u10sea(seacount), interp(1))
+                  call interp_field(ecmwf%v10, v10sea(seacount), interp(1))
+
+                  ! Extract only the sea pixels from the imager structures
+                  solzasea(seacount) = imager_angles%solzen(j,i,1)
+                  satzasea(seacount) = imager_angles%satzen(j,i,1)
+                  solazsea(seacount) = imager_angles%solazi(j,i,1)
+                  relazsea(seacount) = imager_angles%relazi(j,i,1)
 
                   seacount = seacount+1
                end if
             end if
          end do
       end do
+      deallocate(interp)
 
       do i = 1, channel_info%nchannels_sw
          call cox_munk3_calc_shared_band(i, cox_munk_shared_band(i))
@@ -484,14 +444,11 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
       if (include_full_brdf) then
          call cox_munk_rho_0v_0d_dv_and_dd &
             (coxbands, solzasea, satzasea, solazsea, relazsea, u10sea, v10sea, &
-             real_fill_value, rhosea(:,:,1), rhosea(:,:,2), rhosea(:,:,3), rhosea(:,:,4))
+             real_fill_value, rhosea(:,:,1), rhosea(:,:,2), &
+             rhosea(:,:,3), rhosea(:,:,4))
       end if
 
-!     end do ! End of instrument view loop
-
       ! Tidy up cox_munk input arrays
-      deallocate(latsea)
-      deallocate(lonsea)
       deallocate(solzasea)
       deallocate(satzasea)
       deallocate(solazsea)

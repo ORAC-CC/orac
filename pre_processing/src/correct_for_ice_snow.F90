@@ -82,6 +82,8 @@ contains
 !   imager_geolocation%longitude is equal to fill_value.
 ! 2014/07/01, AP: New apply_ice_correction algorithm that attempts to avoid
 !   returning albedo > 1
+! 2014/08/05, AP: Explicit bilinear interpolation, rather than function call.
+!   Removing old code.
 !
 ! $Id$
 !
@@ -358,15 +360,6 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    snw_frac=.false.
 
    ! Snow is denoted by a value of 102 or 103 in the NISE product
-   !   where((nise .gt. 101) .and. (nise .lt. 105))
-   !      snw_frac = 1.0
-   !   elsewhere
-   !      snw_frac = 0.0
-   !   end where
-   ! Note that interpol_bilinear expects array values for the output
-   ! x and y coordinates, as well as the output function value
-   !   call interpol_bilinear( (/ 0.0, 1.0 /), (/ 0.0, 1.0 /),  &
-   !        snw_frac, (/x/),(/y/), pixel_snow )
    if (x.gt.0.5) then
       if (y.gt.0.5) then
          if (nise(2,2).eq.102 .or. nise(2,2).eq.103) snw_frac=.true.
@@ -391,8 +384,9 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
       ice_frac = nise / 100.
    end where
    where(nise .gt. 101) ice_frac = 0.0
-   call interpol_bilinear( (/ 0.0, 1.0 /), (/ 0.0, 1.0 /), &
-        ice_frac, (/x/), (/y/), pixel_ice )
+   ! bilinear interpolation
+   pixel_ice = (1.-x)*(1.-y)*ice_frac(1,1) +     x *(1.-y)*ice_frac(2,1) + &
+               (1.-x)*    y *ice_frac(1,2) +     x *    y *ice_frac(2,2)
 
    if (snw_frac) then
       ! snow adjacent pixel assumed completely snowy
@@ -407,21 +401,6 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
               (1. - pixel_ice(1))*pixel_ref(i) + pixel_ice(1)*ice_albedo(i)
       end do
    end if
-
-   ! Sort out the channel indexing.
-   !   allocate(chanidx(channel_info%nchannels_sw))
-   !   chanidx=-999.
-   !   do i=1,channel_info%nchannels_sw
-   !      chanidx(i) = channel_info%channel_ids_abs(i)
-   ! Now, if the current pixel has a snow and/or ice fraction greater
-   ! than zero, alter the surface albedo in accordance with the total
-   ! fraction
-   !      if ((pixel_ice(1) .gt. 0.0) .or. (pixel_snow(1) .gt. 0.0)) then
-   !         pixel_ref(i) = (1.0 - pixel_ice(1) - pixel_snow(1)) *  &
-   !              pixel_ref(i) + pixel_ice(1)*ice_albedo(chanidx(i)) + &
-   !              pixel_snow(1)*snow_albedo(chanidx(i))
-   !      end if
-   !   end do
 
 end subroutine apply_ice_correction
 

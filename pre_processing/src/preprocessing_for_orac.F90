@@ -212,7 +212,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    use ecmwf_m
    use hdf5
    use imager_structures
-   use netcdf
+   use netcdf, only: nf90_inq_libvers
    use netcdf_output
    use netcdf_structures
    use preparation_m
@@ -725,7 +725,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       ! set the surface reflectance.
       call get_surface_reflectance(cyear, doy, assume_full_paths, &
            albedo_path, imager_flags, imager_geolocation, imager_angles, &
-           imager_measurements, channel_info, ecmwf, include_full_brdf, surface)
+           channel_info, ecmwf, include_full_brdf, surface)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
