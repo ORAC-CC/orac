@@ -32,11 +32,11 @@
 !   sum(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelati(i+1))) / &
 !   real(size(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelati(i+1))))
 !   to make code compile with sun compiler.
-! 26/06/2012, CP: updated preproc_dims with channel_info struture variables
+! 26/06/2012, CP: updated preproc_dims with channel_info structure variables
 ! 08/08/2012, CP: changed format of emis array to be consistent with msi order
 ! 08/08/2012, CP: fixed bug channel_info was not in arguments
-! 08/08/2012, CP: changed bilinear to nearestneighbout interpolation, also
-!   swicthed lats and lons around in interpolatio subroutine initialised
+! 08/08/2012, CP: changed bilinear to nearest neighbour interpolation, also
+!   switched lats and lons around in interpolation subroutine initialised
 !   allocate arrays
 ! 25/02/2013, GT: preproc_geoloc arrays are now used directly in averaging the
 !   emissivity onto the preproc (rtm) grid. As a consequence, preproc_gelolc
@@ -127,7 +127,7 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
         STOP 'GET_SURFACE_EMISSIVITY: Bad read of cimss file.'
 
    ! This emissivity data has very few missing values, but there are some. Set
-   ! these to 0.999 (as close to 1 as the emissitivty data itself gets). This is
+   ! these to 0.999 (as close to 1 as the emissivity data itself gets). This is
    ! also a vaguely reasonable value for the water as well....
    allocate(transemis(emis%nbands,emis%nlon,emis%nlat))
    do i=1,emis%nbands

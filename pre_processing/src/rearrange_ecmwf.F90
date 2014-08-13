@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Rearrange ecmwf data because grid is not consistent, i.e australia is in the
-! centre of the map and 0 lat is at index 180. Implimented as a module called
+! centre of the map and 0 lat is at index 180. Implemented as a module called
 ! "rearrange" to create a generic routine.
 !
 ! Description and Algorithm details:

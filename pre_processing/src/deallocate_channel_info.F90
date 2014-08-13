@@ -2,7 +2,7 @@
 ! Name: deallocate_channel_info.F90
 !
 ! Purpose:
-! Deallocate the array parts of the types defined in channel_info.f90
+! Deallocate the array parts of the types defined in channel_info.F90
 !
 ! Description and Algorithm details:
 ! 1) Deallocate all fields of structure.

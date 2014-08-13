@@ -62,11 +62,11 @@
 ! 2012/08/28, CP: general tidy up of code formatting.
 !   fixed bug where prtm lat and longitude were switched around.
 ! 2012/08/29, CP: fix bug that gave unrealistic values of profile longitudes
-!   readded _lw _sw to filter_array, commented out printouts
+!   readded lw and sw to filter_array, commented out printouts
 !   used profile error status to skip RTTOV calculations if appropriate
-! 2012/08/31, CP: changed position of emissivity caluculation to speed up code
+! 2012/08/31, CP: changed position of emissivity calculation to speed up code
 ! 2012/09/13, CP: changed AATSR coefficient file naming
-! 2012/09/13, CP: changed criterai for processing of coefficients and tidied up
+! 2012/09/13, CP: changed criteria for processing of coefficients and tidied up
 !   file
 ! 2012/10/04, CP: fixed bug and wrote skin temp and surface pressure to output
 !   prtm file
@@ -77,7 +77,7 @@
 !   instrument cleaned up code
 ! 2013/03/08, GT: Changed the (dummy) values of surface/2m Q, O3, as well as
 !   CTP to profiles(1)%nlayers profile value as profiles(1)%nlevels is past the
-!   end programthe arrays. Added check on pressure profile against the RTTOV
+!   end program the arrays. Added check on pressure profile against the RTTOV
 !   "pmax" parameter to prevent RTTOV throwing an error. Pressures greater than
 !   pmax are set to pmax in the RTTOV profile structure.
 ! 2013/03/14, CP: added in land sea mask
@@ -210,7 +210,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    integer(kind=lint)                :: ierr
 
    ! One profile per call and one sensor
-   !  integer(kind=jpim)                :: nprof    = 1    ! Number of profiles per call
    integer(kind=jpim)                :: iprof    = 1
    integer(kind=jpim)                :: nrttovid = 1    ! Number of sensor coeff files to read
    integer(kind=jpim)                :: irttovid = 1
@@ -342,7 +341,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    write(*,*) 'instrument(:,irttovid): ', instrument(:,irttovid)
 
 
-   ! Initialise options structure, includes only relevent flags, others are set
+   ! Initialise options structure, includes only relevant flags, others are set
    ! set to defaults, check main/rttov_types.F90 for default values
    opts % addinterp        = .true.  ! Allow interpolation of input profile
    opts % addsolar         = .true.  ! Do not include reflected solar
@@ -567,7 +566,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       write(*,*) 'errorstatus rttov_init_coefs: ', errorstatus
 
 
-      write(*,*) 'Allocate channel and emmissivity arrays'
+      write(*,*) 'Allocate channel and emissivity arrays'
 
       allocate(chanprof(nchan(iprof)))
       allocate(emissivity(nchan(iprof)))
@@ -642,7 +641,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          profiles(1)%nlayers=profiles(1)%nlevels-1
 
          ! Setup test code for RTTOV to compare with idl
-         !        call test_rttov(profiles,preproc_dims)
+         ! call test_rttov(profiles,preproc_dims)
 
       end if
 
@@ -714,7 +713,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
             ! skin variables
             profiles(1)%skin%t=preproc_prtm%skin_temp(idim,jdim)
 
-            ! Add surface values to the profile. rttov documentataion states
+            ! Add surface values to the profile. rttov documentation states
             ! that 'The user profile lowest level should be equal or below
             ! the surface pressure'
             profiles(1)%p(preproc_dims%kdim) = profiles(1)%s2m%p
@@ -789,14 +788,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                         emissivity=0.0
                         emissivity_in=emissivity
                      else
+!                       calcemis=.false.
+!                       emissivity_in=0.0
+!                       emissivity=0.0
                         calcemis=.false.
                         emissivity_in=emissivity
                         emissivity_out=emissivity
                      end if
-                     !                 else
-                     !                    calcemis=.false.
-                     !                    emissivity_in=0.0
-                     !                    emissivity=0.0
                   end if
 
                   ! If this is a good preprocessing pixel do the RT computation.
@@ -839,7 +837,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                      end if
 
                      sza=0.
-                     !                    sza=profiles(1)%sunzenangle
+!                    sza=profiles(1)%sunzenangle
                      lza=profiles(1)%zenangle
 
                      ! Get airmass factor
@@ -1211,7 +1209,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       end do ! Loop over j
 
 
-      write(*,*) 'Deallocate RTTOV strunctures'
+      write(*,*) 'Deallocate RTTOV structures'
 
       asw=0 ! Tells RTTOV to deallocate memory
 

@@ -86,8 +86,8 @@ subroutine map_time_to_pixel(along_track_ratio,ixstart,ixstop,iread_start, &
    end do
 
    !divide TAI seconds since 1/1/1993 by 86400 (every day has in the TAI system
-   !precicesly this amount of seconds) and add to Julian date of 1/1/1993
-   !this gives the Julian date of the obeservation for each pixel.
+   !precisely this amount of seconds) and add to Julian date of 1/1/1993
+   !this gives the Julian date of the observation for each pixel.
    ttemp=refjulianday+ttemp/real(86400,kind=dreal)
 
 end subroutine map_time_to_pixel

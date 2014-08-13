@@ -95,7 +95,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    tmp_ny = n_along_track
    tmp_miny = along_track_offset
 
-   ! Check for the presense of the optional day_night and lat-lon limit
+   ! Check for the presence of the optional day_night and lat-lon limit
    ! input variables and set defaults if not present.
    tmp_dynght = day_night
    tmp_limit = loc_limit

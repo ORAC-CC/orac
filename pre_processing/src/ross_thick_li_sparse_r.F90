@@ -503,7 +503,7 @@ end subroutine
 ! n_bands integer In          Wavelength band index numbers
 ! solza   sreal   In          Array of solar zenith angles (in degrees)
 ! satza   sreal   In          Array of satellite zenith angles
-! solaz   sreal   In          Array of solar azimuth anlges (from north)
+! solaz   sreal   In          Array of solar azimuth angles (from north)
 ! relaz   sreal   In          Array of relative azimuth angles (between sun and
 !                             satellite)
 ! f(3)    sreal   In          Ross-Thick_Li-Sparse_R weights

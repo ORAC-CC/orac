@@ -60,7 +60,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
    call grib_get(gid,'PLPresent',PLPresent)
    if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error getting PVPresent.'
    if (PLPresent .eq. 1) &
-        stop 'READ_ECMWF_WIND: Incorrect file formating. Check ECMWF_FLAG.'
+        stop 'READ_ECMWF_WIND: Incorrect file formatting. Check ECMWF_FLAG.'
 
    ! fetch vertical coordinate
    call grib_get_size(gid,'pv',npv,stat)

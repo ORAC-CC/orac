@@ -65,7 +65,7 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
    call h5dopen_f(gr_id,dataset,dset_id,err_code)
    !get dataspace id
    call h5dget_space_f(dset_id,dspace_id,err_code)
-   !define parameters for size of subset and convert input to 8byte integer
+   !define parameters for size of subset and convert input to 8 byte integer
    start(1) = int(startx-1,kind=HSIZE_T)
    start(2) = int(starty-1,kind=HSIZE_T)
    stride = int(1,kind=HSIZE_T)
@@ -86,7 +86,7 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
 
    !open data group where attributes are stored
    call h5gopen_f(fid,attrgroup,dset_id2,err_code)
-   !because those are all scalar atributes
+   !because those are all scalar attributes
    adims(1)=1
 
    !scale factor

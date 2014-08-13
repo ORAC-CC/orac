@@ -44,20 +44,20 @@ contains
 !   expressions. They are one element arrays (for compatibility with
 !   interpol_bilinear) not scalars.
 ! 10/07/2012, GT: Moved reflectance correction in apply_ice_correction inside
-!   the channel do loop to correctindexing problem
+!   the channel do loop to correct indexing problem
 ! 12/07/2012, GT: Bux fix to previous bug fix.
 ! 30/07/2012, CP: added in year month day input
 ! 2012/08/03, MJ: removes trailing "/" from path and explicitly
 !   includes it in this subroutine.
 ! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices
-! 2012/09/14, GT: Changed convertion of fraction index numbers to integers from
+! 2012/09/14, GT: Changed conversion of fraction index numbers to integers from
 !   int(x) to nint(x) (i.e. rounding), based on EASE grid documentation, and
 !   added 1, so that indices run from 1-721, rather than 0-720.
 ! 16/11/2012, CP: modified how nise_path_file called no
 !   longer need year in path name
 ! 14/12/2012, CP: changed howy loop was set changed starty to startyi to loop
 !   over a granule
-! 25/02/2012, CP: changed name of ice file becsue it is different for 2020
+! 25/02/2012, CP: changed name of ice file because it is different for 2020
 ! 2013/03/07, GT; Reverted change made by CP on 2012/11/16, and added code to
 !   check that the MODIS file exists and is readable.
 ! 2013/04/08, GT/CP: fixed bug in which no snow and albedo information was being

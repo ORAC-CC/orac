@@ -3,7 +3,7 @@
 !
 ! Purpose:
 !   Read in data from the variety of files that contain all the information
-!   necessary to run the ORAC algorithm, remove any uneccessary details (such as
+!   necessary to run the ORAC algorithm, remove any unnecessary details (such as
 !   restricting the data to a particular area of the swath), and write out the
 !   remainder to a series of NetCDF files. This operates on individual granules
 !   and/or orbit segments of MODIS, AVHRR, and AATSR to allow for brute force/
@@ -96,7 +96,7 @@
 !                to grid imager data to preprocessing grid.
 ! 2012/03/13: MJ fixes AVHRR read bug.
 ! 2012/03/26: MJ implements 3D pressure array code.
-! 2012/03/26: MJ fixes bug in nearneighbor assigment.
+! 2012/03/26: MJ fixes bug in nearest neighbour assignment.
 ! 2012/03/27: MJ changes all file suffixes from *.f90 to *.F90 for ease of use
 !                of the C preprocessor.
 ! 2012/05/15: MJ includes code to read AVHRR land/sea mask.
@@ -106,7 +106,7 @@
 !                shell script.
 ! 2012/07/23: MJ adds capability to read from command line OR driver file.
 ! 2012/07/29: CP tidied up code and merged in MJ changes and  skips over
-!                externalemissivity read, improved readability, removed albedo
+!                external emissivity read, improved readability, removed albedo
 !                and icepaths from file these are now called in the running
 !                script added in top level description
 ! 2012/07/29: CP added in year month day for ice file
@@ -137,13 +137,13 @@
 ! 2012/12/06: CP added in option to break aatsr orbit into chunks for faster
 !                processing
 ! 2012/12/06: CP changed how ecmwf paths are defined because of looping chunks!
-! 2012/12/16: CP added an extra ecmwf path so ecmwf can be read form seprate
+! 2012/12/16: CP added an extra ecmwf path so ecmwf can be read form separate
 !                directories
 ! 2013/02/26: CP changed how day_night aatsr flag was read in
 ! 2013/02/25: GT Added preproc_geoloc to the arguments for
 !                get_surface_emissivity, un-commented the call to
 !                get_surface_emissivity (which now works).
-! 2013/03/06: GT Tidied up formating of file header.
+! 2013/03/06: GT Tidied up formatting of file header.
 ! 2013/03/06: GT Bug fix: default along_track_offset set to 0 rather than 1 and
 !                definition of imager_geolocation%endy for whole orbits/granules
 !                altered accordingly.
@@ -176,7 +176,7 @@
 ! 2014/02/02: GM Added NetCDF chunking on/off option.
 ! 2014/02/03: AP Ensured all arguments that are logical flags are treated
 !                identically
-! 2014/02/05: MJ corrected datatype of chunkproc from character to logical
+! 2014/02/05: MJ corrected data type of chunkproc from character to logical
 ! 2014/02/10: AP changes to ECMWF routines
 ! 2014/02/05: MJ adds verbose to argument list of rttov related routines to mute
 !                rttov
@@ -606,9 +606,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            aatsr_calib_file,imager_geolocation,imager_angles,imager_flags, &
            imager_time,imager_measurements,channel_info,n_along_track,verbose)
 
-      ! carry out any prepatory steps: identify required ECMWF and MODIS L3
-      ! information,set paths and filenames to those required auxilliary /
-      ! ancilliary input...
+      ! carry out any preparatory steps: identify required ECMWF and MODIS L3
+      ! information,set paths and filenames to those required auxiliary /
+      ! ancillary input...
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, sensor, &
            platform,hour,cyear,cmonth,cday,chour,cminute,assume_full_paths, &
@@ -696,7 +696,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
               preproc_geoloc,preproc_prtm,verbose)
       end select
       if (verbose) write(*,*) 'FINISHED READING ECMWF ERA INTERIM FILE'
-      ! compute geopotential vertical coorindate from pressure cooordinate
+      ! compute geopotential vertical coordinate from pressure coordinate
       call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! select correct emissivity file and calculate the emissivity over land

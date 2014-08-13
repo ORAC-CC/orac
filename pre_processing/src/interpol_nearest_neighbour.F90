@@ -11,11 +11,11 @@
 ! Name    Type     In/Out/Both Description
 ! xin     real        in       X-coordinate of the gridded data
 ! yin     real        in       Y-coordinate of the gridded data
-! datain  real        in       The gridded datafield to be interpolated
-! xout    real        in       A vector of x-coordintes for the desired values
-! yout    real        in       A vecotr of y-coordintes for the desired values
+! datain  real        in       The gridded data field to be interpolated
+! xout    real        in       A vector of x-coordinates for the desired values
+! yout    real        in       A vecotor of y-coordinates for the desired values
 ! dataout real        out      On return, will contain the interpolated
-!                              values coorespoinding to xout & yout.
+!                              values correspoinding to xout & yout.
 !
 ! History:
 ! 2012/06/27, GT: Finished first version

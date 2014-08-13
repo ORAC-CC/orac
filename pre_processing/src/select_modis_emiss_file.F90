@@ -29,7 +29,7 @@
 !   code is now 2100 ready:)
 ! 2013/11/01, GM: Cleaned up code.
 ! 2014/04/21, GM: Added logical option assume_full_path.
-! 2014/05/26, MJ: fixed error with datatype of year for mod-operation.
+! 2014/05/26, MJ: fixed error with data type of year for mod-operation.
 
 ! $Id$
 !

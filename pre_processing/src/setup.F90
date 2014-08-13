@@ -110,7 +110,7 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
-   !tranform doy to date in year
+   !transform doy to date in year
    call DOY2GREG(doy,year,month,day)
 
    !get month and day as text

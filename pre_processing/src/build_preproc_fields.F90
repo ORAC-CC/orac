@@ -20,12 +20,12 @@
 !
 ! History:
 ! 2012/02/24, MJ: produces initial code version.
-! 2012/04/19, GT: Bug fix - relazi was being refereneced by idim
+! 2012/04/19, GT: Bug fix - relazi was being referenced by idim
 !   in both dimensions (rather idim for x and jdim for y)
 ! 2012/07/30, CP: added in solazi
-! 2012/08/24, MJ: seperated filtering in lw and sw to avoid issues on night side
+! 2012/08/24, MJ: separated filtering in lw and sw to avoid issues on night side
 !   of orbits
-! 2012/12/14, CP: changed howy loop was set changed starty to startyi to loop
+! 2012/12/14, CP: changed how y loop was set changed starty to startyi to loop
 !   over a granule
 ! 2013/05/16, MJ: changed filtering of angles wrt fill value: multi-view is
 !   accounted for.
@@ -117,7 +117,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
             preproc_geo%solazi(lon_i,lat_j,:)=&
                  preproc_geo%solazi(lon_i,lat_j,:)+imager_angles%solazi(i,j,:)
 
-            ! count the number of L1 pixels which fall in this pixel
+            ! count the number of L1b pixels which fall in this pixel
             preproc_dims%counter_sw(lon_i,lat_j)= &
                  & preproc_dims%counter_sw(lon_i,lat_j)+1
          end if

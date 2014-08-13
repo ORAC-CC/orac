@@ -12,7 +12,7 @@
 !
 ! History:
 ! 2012/01/10, MJ: writes sample code for ERA Interim data.
-! 2012/08/02, CP: changed to accomodate badc netcdf files with different
+! 2012/08/02, CP: changed to accommodate badc netcdf files with different
 !   dimensions
 ! 2013/10/23, AP: Tidying
 ! 2014/02/10, AP: removed _nc_ structures as redundant. Shortened DIM names.

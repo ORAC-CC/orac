@@ -66,7 +66,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    call h5dopen_f(gr_id,dataset,dset_id,err_code)
    !get dataspace id
    call h5dget_space_f(dset_id,dspace_id,err_code)
-   !define parameters for size of subset and convert input to 8byte integer
+   !define parameters for size of subset and convert input to 8 byte integer
    start(1) = int(startx-1,kind=HSIZE_T)
    start(2) = int(starty-1,kind=HSIZE_T)
    stride = int(1,kind=HSIZE_T)

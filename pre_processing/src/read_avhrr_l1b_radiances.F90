@@ -24,7 +24,7 @@
 ! History:
 ! 2012/02/01, MJ: writes initial code for reading the L1B AVHRR file.
 ! 2012/03/13, MJ: fixes AVHRR read bug.
-! 2012/07/04, CP: removed iangle dependance of %data array
+! 2012/07/04, CP: removed iangle dependence of %data array
 ! 2012/07/05, CP: changed nmax channels to channel_info%nchannels_total
 ! 2013/09/06, AP: tidying, changed channel identification to use 'channel'
 !   attribute within the file

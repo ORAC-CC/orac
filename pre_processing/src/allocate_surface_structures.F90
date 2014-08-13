@@ -17,8 +17,8 @@
 !
 ! History:
 ! 2012/05/01, GT: First version
-! 2012/07/29, CP: inialised variables
-! 2012/08/07, CP: changed how arrays were formated to be consistent with msi
+! 2012/07/29, CP: initialised variables
+! 2012/08/07, CP: changed how arrays were formatted to be consistent with msi
 ! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices
 ! 2012/12/13, CP: changed ydimension to imager_geolocation%ny
 ! 2013/09/06, AP: tidying

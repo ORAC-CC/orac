@@ -56,7 +56,7 @@ contains
 ! 02/07/2012, GT: Bug fix: Added if statements to check if the optional
 !   arguments have been supplied before testing their values
 ! 08/08/2012, CP: initialised variables
-! 25/02/2013, GT: Added an error check after openning the file. An
+! 25/02/2013, GT: Added an error check after opening the file. An
 !   error will result in the code stopping.
 ! 16/10/2013, GM: Changed the name of the fill value for the CIMSS emissivity
 !   product to the correct name: 'FillValue' to 'fill_value'.

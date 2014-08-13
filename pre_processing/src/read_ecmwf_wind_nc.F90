@@ -20,7 +20,7 @@
 !
 ! History:
 ! 2014/05/07, AP: First version.
-! 2014/07/24, GM: Nullify pointers to saftely use the associated intrinsic.
+! 2014/07/24, GM: Nullify pointers to safely use the associated intrinsic.
 !
 ! $Id$
 !

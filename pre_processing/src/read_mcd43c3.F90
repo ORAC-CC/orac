@@ -15,7 +15,7 @@
 ! bands        integer(nbands) in   The band numbers of the required data
 ! white_sky    integer      in      If not zero, white sky albedo will be read
 ! black_sky    integer      in      If not zero, black sky albedo will be read
-! QC           intent       in      If not zero, QC and auxillary data will be
+! QC           intent       in      If not zero, QC and axillary data will be
 !                                   read
 ! stat         integer*4    out     Status value returned by the various hdf-eos
 !                                   API routines. If an error occurs, it will be
@@ -112,7 +112,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    mcd%bands   = bands
    mcd%bandids = BandList(bands)
 
-   ! Rather bizzarely, the HDF-EOS API doesn't provide a way of reading grid
+   ! Rather bizarrely, the HDF-EOS API doesn't provide a way of reading grid
    ! field attributes (ie. HDF4 SDS attributes), although it does appear to
    ! provide a way of writing them (the one exception is the _FillValue, which
    ! has its own function). Unfortunately, the MODIS surface people appear to

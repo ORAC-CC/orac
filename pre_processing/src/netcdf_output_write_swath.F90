@@ -19,7 +19,7 @@
 ! surface             struct  in  Summary of surface properties.
 !
 ! History:
-! 2012/06/01, MJ: created innitial file version.
+! 2012/06/01, MJ: created initial file version.
 ! 2012/06/12, CP: bug fix to imager_time%time
 ! 2012/07/04, CP: removed nviews from data
 ! 2012/08/07, CP: changes 4 d array to 3d msi as no views selected

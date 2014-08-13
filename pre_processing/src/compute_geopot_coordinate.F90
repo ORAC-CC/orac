@@ -2,7 +2,7 @@
 ! Name: compute_geopot_coordinate.F90
 !
 ! Purpose:
-! Compute geopotential vertical coorindate from pressure cooordinate
+! Compute geopotential vertical coordinate from pressure coordinate
 !
 ! Description and Algorithm details:
 ! This code is based on details given in the following ECMWF documentation:

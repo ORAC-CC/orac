@@ -2,7 +2,7 @@
 ! Name: deallocate_preproc_structures.F90
 !
 ! Purpose:
-! Deallocate the array parts of the types defined in preproc_structures.f90
+! Deallocate the array parts of the types defined in preproc_structures.F90
 !
 ! Description and Algorithm details:
 ! 1) Deallocate all fields of structure.
@@ -28,11 +28,11 @@
 ! 2012/08/01, MJ: adds geopotential height coordinates
 ! 2012/11/14, CP: adds surface pressure
 ! 2013/11/08, GM: Added missing deallocate statements.
-! 2014/01/24, MJ: removec channel_info structure as it is not necessary and was
+! 2014/01/24, MJ: removed channel_info structure as it is not necessary and was
 !                 used in the call.
 ! 2014/05/01, GM: Add some deallocations that were being done outside.
 ! 2014/05/01, GM: Cleaned up the code.
-! 2015/05/07, AP: Removed unneccessary fields from preproc_dims.
+! 2015/05/07, AP: Removed unnecessary fields from preproc_dims.
 !
 ! $Id$
 !

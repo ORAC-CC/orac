@@ -45,7 +45,7 @@ module channel_structures
       integer(kind=lint) :: nviews
 
       !channel ids (=numbers):
-      !wrt original instrument defintion
+      !wrt original instrument definition
       !Note that these values may well repeat for multi-view instruments, like
       !AATSR: (/ 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7 /)
       integer(kind=lint), dimension(:), pointer ::  channel_ids_instr
@@ -72,7 +72,7 @@ module channel_structures
       !arrays containing the viewing geometry index for each channel
       integer(kind=lint), dimension(:), pointer ::  channel_view_ids
 
-      !array specifing if channel is processed
+      !array specifying if channel is processed
       !(I know we agreed to process all channels anyway, but it might be handy
       !to still include this even if it set to "1")
       integer(kind=lint), dimension(:), pointer ::  channel_proc_flag

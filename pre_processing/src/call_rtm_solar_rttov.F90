@@ -73,7 +73,7 @@ subroutine call_rtm_solar_rttov(transmission,imager_angles, &
 
    ! allocate optical depth
    allocate(c_tau_level(nlevs,nchans_solar))
-   ! allocate transmisttance
+   ! allocate transmittance
    allocate(new_trans_tau_level(nlevs,nchans_solar))
 
    ! initialise

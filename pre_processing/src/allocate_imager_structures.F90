@@ -2,7 +2,7 @@
 ! Name: allocate_imager_structures.F90
 !
 ! Purpose:
-! Allocate the array parts of the types defined in imager_structures.f90
+! Allocate the array parts of the types defined in imager_structures.F90
 !
 ! Description and Algorithm details:
 ! 1) Allocate arrays to have appropriate size
@@ -41,12 +41,12 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
 
    implicit none
 
-   type(imager_geolocation_s), intent(inout) :: imager_geolocation
-   type(imager_angles_s), intent(out)        :: imager_angles
-   type(imager_flags_s), intent(out)         :: imager_flags
-   type(imager_time_s), intent(out)          :: imager_time
-   type(imager_measurements_s), intent(out)  :: imager_measurements
-   type(channel_info_s), intent(inout)       :: channel_info
+   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
+   type(imager_angles_s),       intent(out)   :: imager_angles
+   type(imager_flags_s),        intent(out)   :: imager_flags
+   type(imager_time_s),         intent(out)   :: imager_time
+   type(imager_measurements_s), intent(out)   :: imager_measurements
+   type(channel_info_s),        intent(inout) :: channel_info
 
    allocate(imager_geolocation%latitude(&
         imager_geolocation%startx:imager_geolocation%endx, &

@@ -19,13 +19,13 @@
 ! ------------------------------------------------------------------------------
 ! xin             real        in       X-coordinate of the gridded data
 ! yin             real        in       Y-coordinate of the gridded data
-! datain          real        in       The gridded datafield to be interpolated
-! xout            real        in       A vector of x-coordintes for the desired
+! datain          real        in       The gridded data field to be interpolated
+! xout            real        in       A vector of x-coordinates for the desired
 !                                      values
-! yout            real        in       A vector of y-coordintes for the desired
+! yout            real        in       A vector of y-coordinates for the desired
 !                                      values
 ! dataout         real        out      On return, will contain the interpolated
-!                                      values coorespoinding to xout & yout.
+!                                      values corresponding to xout & yout.
 ! missing         real   optional in   Specify the value which denotes missing
 !                                      data in the input array. If missing values
 !                                      are encountered, the code switches to
@@ -37,7 +37,7 @@
 ! 2013/05/23, GT: Added the missing keyword.
 ! 2013/12/15, GM: Deal with cases when the x or y coordinates for the desired
 !   values are outside the range of x or y coordinates of the gridded data. In
-!   these cases the interpolated result is nowbounded to the gridded data.
+!   these cases the interpolated result is now bounded to the gridded data.
 !
 ! $Id$
 !
@@ -104,7 +104,7 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
       ! either side of our value of interest, so we can easily do the linear
       ! interpolation...
 
-      ! If the missing argument has been provided, we check our bracketting
+      ! If the missing argument has been provided, we check our bracketing
       ! values for missing data. If we have missing data, then we revert
       ! to nearest neighbour. If all the surrounding values are missing
       ! then that's what we get back

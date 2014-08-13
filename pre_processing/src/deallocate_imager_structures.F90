@@ -2,7 +2,7 @@
 ! Name: deallocate_imager_structures.F90
 !
 ! Purpose:
-! Deallocate the array parts of the types defined in imager_structures.f90
+! Deallocate the array parts of the types defined in imager_structures.F90
 !
 ! Description and Algorithm details:
 ! 1) Deallocate all fields passed.

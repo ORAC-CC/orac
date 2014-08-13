@@ -31,7 +31,7 @@
 ! 2012/08/13, CP: totally rewrote program to cope with multiple netcdf file read
 ! 2012/11/13, CP: added in surface pressure and pressure
 ! 2012/11/29, CP: added ecmwf_2d definitions for u10 and v10
-! 2013/01/29, CP: changed how geopotetntial was read out
+! 2013/01/29, CP: changed how geopotential was read out
 ! 2013/03/05, CP: small change to work in gfortran
 ! 2013/03/06, CP: tidy up and rearrange badc files
 ! 2013/03/07, CP: tidied up allocations and changed code to read in q and 03 form
@@ -46,12 +46,12 @@
 !   the pressure profile array so that it is created on the rearranged grid.
 !   Removed quite a few debugging print statements
 ! 2013/03/20, GT: Fixed a bug introduced in yesterday's changes (10 m wind
-!   components were not being writen to ECMWF structures)
+!   components were not being written to ECMWF structures)
 ! 2013/10/29,   : Changed array allocation of phi_lay and phi_lev
 ! 2014/02/10, AP: Extreme tidying. Made all allocatable arrays definite size.
 !   Removed check of file dimensions. Made a,bvector global. Added nearest
 !   neighbour functionality. Made geopotential calculation external. Removed
-!   surfaceflag.
+!   surface flag.
 ! 2014/05/08, AP: Complete rewrite, vastly tidying the original and updating to
 !   the new ecmwf structure.
 !

@@ -2,14 +2,14 @@
 ! Name: read_aatsr_l1b.F90
 !
 ! Purpose:
-! Read AATSR level 1b file using a C function. This routine passes a set of C
+! Read AATSR level L1b file using a C function. This routine passes a set of C
 ! pointers to that function which point to the appropriate sections of
 ! imager_measurements%data or other imager structures.
 !
 ! Description and Algorithm details:
 ! 1) Allocate pointers as required by the views and channels requested.
 ! 2) Call C function.
-! 3) Correct data returned to correspond to the desired formating. These include
+! 3) Correct data returned to correspond to the desired formatting. These include
 !    converting elevation angle to zenith angles and percentage radiances into
 !    fractional radiances.
 ! 4) Apply the drift corrections dictated by the drift table.
@@ -58,7 +58,7 @@
 ! 2013/10/10, MJ: fixed small bug
 ! 2013/10/17, GM: Hoist loop invariant call to aatsr_read_drift_table() out
 !   of loop.
-! 2014/01/27, MJ: datatype corrections
+! 2014/01/27, MJ: data type corrections
 ! 2014/04/25, GM: Use the "is_lut_drift_corrected" flag from read_aatsr_orbit()
 !   to determine if the LUT based drift correction has already been applied to
 !   the data as in the 3rd reprocessing (V2.1) data.
@@ -324,7 +324,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    imager_angles%solzen = 90.0 - imager_angles%solzen
    imager_angles%satzen = 90.0 - imager_angles%satzen
    if (.not. is_lut_drift_corrected) then
-      if (verbose) print*,'calling read dift file ', stat
+      if (verbose) print*,'calling read drift file ', stat
       call aatsr_read_drift_table(drift_file, lut, status)
       if (verbose) print*,'finish drift table read returned with status ', stat
    end if
@@ -364,7 +364,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
                  'old_drift:',old_drift,'drift_var:',drift_var
             imager_measurements%data(:,:,i) = &
                  (old_drift/new_drift) * imager_measurements%data(:,:,i)
-            ! propogate errors in above, with none on old_drift
+            ! propagate errors in above, with none on old_drift
             imager_measurements%uncertainty(:,:,i) = sqrt( &
                  imager_measurements%uncertainty(:,:,i) &
                  *imager_measurements%uncertainty(:,:,i) + &

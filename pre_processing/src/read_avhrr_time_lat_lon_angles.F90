@@ -22,7 +22,7 @@
 ! History:
 ! 2012/01/24, MJ: writes code to read geolocation and geometry information for
 !   AVHRR.
-! 2013/09/06, AP: tidying, removed array initilisations as read routines cover it
+! 2013/09/06, AP: tidying, removed array initialisations as read routines cover it
 !
 ! $Id$
 !

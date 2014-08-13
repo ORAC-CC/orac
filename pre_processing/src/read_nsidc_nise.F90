@@ -118,7 +118,7 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
    ! doesn't have unsigned integers, so the data gets corrupted (all values
    ! greater than 127 come out negative). We thus copy the data out of the
    ! integer*1 tmp_data into the integer*2 output data arrays, correcting
-   ! the spirious negatives
+   ! the spurious negatives
    stat = gdrdfld(gid, 'Extent', start, stride, edge, tmp_data)
    where(tmp_data .lt. 0)
       data%extent = 256 + int(tmp_data,kind=2)

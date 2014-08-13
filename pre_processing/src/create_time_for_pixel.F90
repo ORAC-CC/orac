@@ -2,7 +2,7 @@
 ! Name: create_time_for_pixel.F90
 !
 ! Purpose:
-! Compute time for each pixel from AVHRR start and end time of oribt
+! Compute time for each pixel from AVHRR start and end time of orbit
 !
 ! Description and Algorithm details:
 ! 1) Assume each across track row is observed at once and each has the same
@@ -57,8 +57,8 @@ subroutine create_time_for_pixel(ixstart,ixstop,iystart,iystop,n_along_track, &
    end do
 
    ! Divide TAI seconds since 1/1/1970 by 86400 (every day has in the TAI system
-   ! precicesly this amount of seconds) and add to Julian date of 1/1/1970.
-   ! This gives the Julian date of the obeservation for each pixel.
+   ! precisely this amount of seconds) and add to Julian date of 1/1/1970.
+   ! This gives the Julian date of the observation for each pixel.
    temp=refjulianday+temp/real(86400,kind=dreal)
 
    imager_time%time=temp

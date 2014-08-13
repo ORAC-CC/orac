@@ -14,7 +14,7 @@
 ! mcd  type(mcd) Both        The mcd structure to be deallocated
 !
 ! History:
-! 11 Apr 2012, GT: Orginal
+! 11 Apr 2012, GT: Original
 ! 11 Jun 2014, AP: Remove unique fill value
 ! 10 Aug 2014, GM: Changes related to new BRDF support.
 !

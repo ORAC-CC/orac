@@ -17,7 +17,7 @@
 ! 2014/01/23, MJ: switches nc4 shuffling off.
 ! 2014/01/30, MJ: removes parameters for chunking.
 ! 2014/03/11, MJ: introduces variable for file chunking.
-! 2014/07/11, AP: Removing unneccessary fields. Shortening datelength.
+! 2014/07/11, AP: Removing unnecessary fields. Shortening datelength.
 ! 2014/08/05, AP: Adding missing fill value.
 ! 2014/08/06, GM: Corrected the value for Pi.
 ! 2014/08/06, GM: d2r is a derived constant. It should be computed.

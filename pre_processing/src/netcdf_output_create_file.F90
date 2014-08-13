@@ -36,16 +36,16 @@
 !
 ! History:
 ! 2011/12/11, MJ: Original version.
-! 2012/05/15, MJ: modifies file to write pixels in one loop successievely one
+! 2012/05/15, MJ: modifies file to write pixels in one loop successively one
 !    after the other
 ! 2012/05/24, MJ: adds some commenting.
 ! 2012/08/02, MJ: adds some more code for writing of RTTOV output to netcdf file.
-! 2012/08/02, CP: bug fix in outputtting of msi files removed nviews ddimension
+! 2012/08/02, CP: bug fix in outputting of msi files removed nviews dimension
 ! 2012/09/20, CP: added solzen and satzen tp prtm output
 ! 2012/11/29, CP: changed variables names from layers to levels
 ! 2013/02/26, CP: inserted missing comment for adding noaa platform
 ! 2013/03/07, CP: added in some diagnostics q and albedo
-! 2013/xx/xx, MJ: adds PLATFORMUP varaible and output to comply with nomenclature
+! 2013/xx/xx, MJ: adds PLATFORMUP variable and output to comply with nomenclature
 ! 2013/10/14, MJ: fixed bug with writing of albedo and emissivity.
 ! 2013/11/06, MJ: adds config file to preprocessing output which holds all
 !    relevant dimensional information.
@@ -449,7 +449,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            '_FillValue',real_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var satza_sw FillValue'
 
-      ! define rez azimuth
+      ! define relative azimuth
       ierr = nf90_def_var(netcdf_info%ncid_swrtm, 'relazi_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%relaziid_sw, &
            deflate_level=compress_level_float, shuffle=shuffle_float)!, &
@@ -706,7 +706,7 @@ end subroutine netcdf_create_rtm
 !
 ! History:
 ! 2012/05/31, MJ: initial routine version.
-! 2012/07/04, CP: removed nviews dimension of dat
+! 2012/07/04, CP: removed nviews dimension of data
 ! 2014/02/02, GM: adds chunking on/off option and cleans up code.
 ! 2014/02/02, GM: puts setting up of common attributes in a subroutine used by
 !    all the nc_create_file_*() routines.

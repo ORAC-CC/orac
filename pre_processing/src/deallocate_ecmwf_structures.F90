@@ -2,7 +2,7 @@
 ! Name: deallocate_ecmwf_structures.F90
 !
 ! Purpose:
-! Deallocate the array parts of the types defined in ecmwf_structures.f90
+! Deallocate the array parts of the types defined in ecmwf_structures.F90
 !
 ! Description and Algorithm details:
 ! 1) Deallocate all arrays.

@@ -46,7 +46,7 @@ subroutine read_avhrr_time(fid, attrgroup, startepochs, endepochs)
 
    !open data group where attributes are stored
    call h5gopen_f(fid,attrgroup,dset_id2,err_code)
-   !because those are all scalar atributes
+   !because those are all scalar attributes
    adims(1)=1
 
    !startepochs

@@ -14,7 +14,7 @@
 ! 2012/01/17, MJ: produces initial version of code
 ! 2012/05/30, GT: Added preproc_surf_s type (containing emissivity and possibly
 !    albedo at a later date) Commented out preproc_albedo_s
-! 2012/07/04, CP: removed dependance on nviews
+! 2012/07/04, CP: removed dependence on nviews
 ! 2012/07/17, CP: adds in players variable
 ! 2012/07/30, CP: added in solazi
 ! 2012/08/01, MJ: adds geopotential height coordinates
@@ -24,7 +24,7 @@
 ! 2013/10/23, AP: Tidying. Commented out unused types.
 ! 2014/02/10, AP: Shortened DIM names.
 ! 2014/05/01, GM: Cleaned up the code.
-! 2015/05/07, AP: Removed unneccessary fields from preproc_dims.
+! 2015/05/07, AP: Removed unnecessary fields from preproc_dims.
 !
 ! $Id$
 !

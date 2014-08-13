@@ -36,7 +36,7 @@
 ! 2013/10/11, GM: Changed the comparison lut%julday.eq.Tn to
 !   lut%julday(1:lut%n).eq.Tn so that the comparison does go past the length of
 !   the lut (lut%n) to the static size of lut%julday.
-! 2014/01/27, MJ: datatype corrections
+! 2014/01/27, MJ: data type corrections
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 !
 ! $Id$
@@ -181,13 +181,13 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    ! Check that the measurement lies within the time-span covered by the
    ! correction table
    if (Tn.lt.lut%julday(1)) then
-      write(*,*) 'aatsr_corrections: WARNING: Aquisition before '// &
+      write(*,*) 'aatsr_corrections: WARNING: Acquisition before '// &
                  'start time of correction LUT. No correction made.',Tn, &
                  lut%julday(1),lut%julday(lut%n)
       stat = -1
       return
    else if (Tn.gt.lut%julday(lut%n)) then
-      write(*,*) 'aatsr_corrections: WARNING: Aquisition after end '// &
+      write(*,*) 'aatsr_corrections: WARNING: Acquisition after end '// &
                  'time of correction LUT. No correction made.',Tn, &
                  lut%julday(1),lut%julday(lut%n)
       stat = -1
@@ -229,7 +229,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
       new_drift = lut%ch(chan,ilow)
       drift_var = lut%er(chan,ilow)*lut%er(chan,ilow)
    else
-      ! Find the index of the LUT time, just below the aquisition time
+      ! Find the index of the LUT time, just below the acquisition time
       ilow = count(lut%julday(1:lut%n).lt.Tn)
 
       ! interpolate the drift table to the current time
