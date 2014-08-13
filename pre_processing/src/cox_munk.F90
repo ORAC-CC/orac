@@ -59,13 +59,13 @@
 !    IDL functions.
 ! 24 Apr 2012, Gareth Thomas: Added estimates for coefficients (refractive
 !    index, absorption coefficient etc) at 3.7 um.
-! 30 Jul 2012, C. Poulsen:    Initialised all allocated variables.
+! 30 Jul 2012, C. Poulsen: Initialised all allocated variables.
 ! 30 Aug 2012, Gareth Thomas: Made some corrections to underlight calculations
 ! 30 Aug 2012, Gareth Thomas: Changed call to zeisse_ba function so that theta
 !    is passed in Radians as is expected by the function.
 ! 14 Mar 2013, Gareth Thomas: Altered calculation of wind direction to be
 !    asin(v10/ws). Under the assumption that v10 is north pointing and u10 is
-!    east pointing, thisshould give angle of wind from North.
+!    east pointing, this should give angle of wind from North.
 ! 20 Mar 2013, Gareth Thomas: The above (14/03) change is clearly wrong. Fixed
 !    (i.e. wd=acos(v10/ws)). Also put wd onto the -180 to 180 degree interval
 !    (rather than 0 to 360) as this is what the satellites use.
@@ -73,8 +73,8 @@
 !    this routine to be the reverse (i.e. 180-azi) to that used elsewhere. ORAC
 !    (and RT in general) assumes that forward scatter equates to azi=0, while
 !    the Cox and Munk expressions treat backscatter as azi=0.
-! 30 Oct 2013, Matthias Jerg: Corrects datatypes for variable initilizations and
-!    implements quick fix to avoid division by 0
+! 30 Oct 2013, Matthias Jerg: Corrects data types for variable initializations
+!    and implements quick fix to avoid division by 0
 ! 28 Jan 2014, Matthias Jerg: Fixes division by 0
 ! 17 Jun 2014, Greg McGarragh: Fixed a subtle indexing bug that would only show
 !    up if the 0.65um channel was *not* being used.
@@ -86,6 +86,11 @@
 ! 10 Aug 2014, Greg McGarragh: An extensive refactoring for speed and memory
 !    efficiency adding subroutines cox_munk2(), cox_munk3(), cox_munk4(), and
 !    the higher level routine cox_munk_rho_0v_0d_dv_and_dd().
+! 13 Aug 2014, Greg McGarragh: Improve performance in calculating rho_0d and
+!    rho_dv with a dynamically created look-up-table (LUT). This is initial.
+!    Performance can probably be increased further using a higher dimension
+!    LUT while performance for calculating rho_dd can be improved using a
+!    similar technique.
 !
 ! $Id$
 !
@@ -301,7 +306,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
    ! Refractive index of air
    n_air = 1.00029 ! Refractive index of air
 
-   ! Calculate the chl-a absorption coeffecient from the concentration value.
+   ! Calculate the chl-a absorption coefficient from the concentration value.
    ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
    ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
    ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
@@ -365,7 +370,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
 
 
    !----------------------------------------------------------------------------
-   ! Calculate windspeed and direction from wind components
+   ! Calculate wind speed and direction from wind components
    !----------------------------------------------------------------------------
    ws = sqrt(u10*u10 + v10*v10) ! Wind speed in m/s
    wd = acos(v10/ws)            ! Wind angle in radians from north
@@ -399,7 +404,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
           ( 0.2465 *eta_oc(bands(i)) - 0.3119 )*cos(solza*d2r)
 
       ! Now calculate the water body reflectance, which is the coefficient of
-      ! R * the backscatter, devided by the absorption (note if CDOM is
+      ! R * the backscatter, divided by the absorption (note if CDOM is
       ! included, it will appear on the bottom line of this equation)
       R_wb = f*totbsc(bands(i)) / (baseabs(bands(i)) + chlabs(bands(i)))
 
@@ -483,7 +488,7 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
    p(:) = exp(-0.5*(zeta(:)*zeta(:) + eta(:)*eta(:))) / (2.0*pi*sigx(:)*sigy(:))
 
    ! Cox and Munk (1954) (Measurements of...)
-   ! 2*omega = angle between incident light and intstrument, wrt the sloping sea
+   ! 2*omega = angle between incident light and instrument, wrt the sloping sea
    ! surface
    cosomega(:) = cos(rsatza(:))*cos(rsolza(:)) + &
                  sin(rsatza(:))*sin(rsolza(:))*cos(rrelaz(:))
@@ -633,7 +638,7 @@ function zeisse_ba(theta, ws) result (ba)
    allocate(delta(npoints))
 
    ! The delta correction is only applied at high solar zenith angles and
-   ! non-neglibible wind strength, otherwise just use cos(theta)
+   ! non-negligible wind strength, otherwise just use cos(theta)
    where((theta .ge. 70.0*d2r) .and. (ws .gt. 1.0))
       tp = (theta - 70.0*d2r) / 5.0
       wp = 4.0 * alog10(ws) / 1.30103
@@ -779,7 +784,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
    ! Refractive index of air
    n_air = 1.00029 ! Refractive index of air
 
-   ! Calculate the chl-a absorption coeffecient from the concentration value.
+   ! Calculate the chl-a absorption coefficient from the concentration value.
    ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
    ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
    ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
@@ -796,7 +801,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
 
 
    !----------------------------------------------------------------------------
-   ! Calculate windspeed and direction from wind components
+   ! Calculate wind speed and direction from wind components
    !----------------------------------------------------------------------------
    ws = sqrt(u10*u10 + v10*v10) ! Wind speed in m/s
    wd = acos(v10/ws)            ! Wind angle in radians from north
@@ -827,7 +832,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
        ( 0.2465 *eta_oc(i_band) - 0.3119 )*cos(solza*d2r)
 
    ! Now calculate the water body reflectance, which is the coefficient of
-   ! R * the backscatter, devided by the absorption (note if CDOM is
+   ! R * the backscatter, divided by the absorption (note if CDOM is
    ! included, it will appear on the bottom line of this equation)
    R_wb = f*totbsc(i_band) / (baseabs(i_band) + chlabs(i_band))
 
@@ -910,7 +915,7 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
    p = exp(-0.5*(zeta*zeta + eta*eta)) / (2.0*pi*sigx*sigy)
 
    ! Cox and Munk (1954) (Measurements of...)
-   ! 2*omega = angle between incident light and intstrument, wrt the sloping sea
+   ! 2*omega = angle between incident light and instrument, wrt the sloping sea
    ! surface
    cosomega = cos(rsatza)*cos(rsolza) + sin(rsatza)*sin(rsolza)*cos(rrelaz)
 
@@ -976,7 +981,7 @@ end subroutine cox_munk2
 ! ws    sreal In          wind-speed (in m/s)
 !
 ! Return value:
-! Name Type   Description
+! Name Type  Description
 ! ba   sreal The so-called "area of the ergodic cap"
 !
 ! Local variables:
@@ -1007,7 +1012,7 @@ function zeisse_ba2(theta, ws) result (ba)
    C(:,3) = (/  2.86324e-3,  1.86059e-3, -4.69589e-4 /)
 
    ! The delta correction is only applied at high solar zenith angles and
-   ! non-neglibible wind strength, otherwise just use cos(theta)
+   ! non-negligible wind strength, otherwise just use cos(theta)
    if ((theta .ge. 70.0*d2r) .and. (ws .gt. 1.0)) then
       tp = (theta - 70.0*d2r) / 5.0
       wp = 4.0 * alog10(ws) / 1.30103
@@ -1066,7 +1071,7 @@ subroutine cox_munk3_calc_shared_band(i_band, shared)
    ! Computations related to coefficients
    !----------------------------------------------------------------------------
 
-   ! Calculate the chl-a absorption coeffecient from the concentration value.
+   ! Calculate the chl-a absorption coefficient from the concentration value.
    ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
    ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
    ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
@@ -1103,7 +1108,7 @@ end subroutine cox_munk3_calc_shared_band
 ! u10    sreal  In          Near surface (10m) East-West wind component (m/s)
 ! v10    sreal  In          Near surface (10m) South-North wind component (m/s)
 ! shared cox_munk_shared_geo_wind_type Out Structure with shared geometry and
-!                                          wind values
+!                                      wind values
 !
 ! Local variables:
 ! Name Type Description
@@ -1158,7 +1163,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
 #endif
 
    !----------------------------------------------------------------------------
-   ! Calculate windspeed and direction from wind components
+   ! Calculate wind speed and direction from wind components
    !----------------------------------------------------------------------------
    ws = sqrt(u10*u10 + v10*v10) ! Wind speed in m/s
    wd = acos(v10/ws)            ! Wind angle in radians from north
@@ -1212,7 +1217,7 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    shared%p = exp(-0.5*(zeta*zeta + eta*eta)) / (2.0*pi*sigx*sigy)
 
    ! Cox and Munk (1954) (Measurements of...)
-   ! 2*omega = angle between incident light and intstrument, wrt the sloping sea
+   ! 2*omega = angle between incident light and instrument, wrt the sloping sea
    ! surface
    cosomega = shared%cos_satza*shared%cos_solza + &
               shared%sin_satza*shared%sin_solza*shared%cos_relaz
@@ -1321,7 +1326,7 @@ subroutine cox_munk3(i_band, shared_band, shared_geo_wind, rho)
        ( 0.2465 *shared_band%eta_oc - 0.3119 )*shared_geo_wind%cos_solza
 
    ! Now calculate the water body reflectance, which is the coefficient of
-   ! R * the backscatter, devided by the absorption (note if CDOM is
+   ! R * the backscatter, divided by the absorption (note if CDOM is
    ! included, it will appear on the bottom line of this equation)
    R_wb = f*shared_band%totbsc / (baseabs(i_band) + shared_band%chlabs)
 
@@ -1436,7 +1441,7 @@ subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
 
 
    !----------------------------------------------------------------------------
-   ! Calculate windspeed and direction from wind components
+   ! Calculate wind speed and direction from wind components
    !----------------------------------------------------------------------------
    shared%ws = sqrt(u10*u10 + v10*v10)      ! Wind speed in m/s
    shared%wd = acos(v10/shared%ws)          ! Wind angle in radians from north
@@ -1566,7 +1571,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
    ! Computations related to coefficients
    !----------------------------------------------------------------------------
 
-   ! Calculate the chl-a absorption coeffecient from the concentration value.
+   ! Calculate the chl-a absorption coefficient from the concentration value.
    ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
    ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
    ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
@@ -1590,7 +1595,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
        ( 0.2465 *eta_oc - 0.3119 )*cos(solza*d2r)
 
    ! Now calculate the water body reflectance, which is the coefficient of
-   ! R * the backscatter, devided by the absorption (note if CDOM is
+   ! R * the backscatter, divided by the absorption (note if CDOM is
    ! included, it will appear on the bottom line of this equation)
    R_wb = f*totbsc / (baseabs(i_band) + chlabs)
 
@@ -1647,7 +1652,7 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
    end if
 
    ! Cox and Munk (1954) (Measurements of...)
-   ! 2*omega = angle between incident light and intstrument, wrt the sloping sea
+   ! 2*omega = angle between incident light and instrument, wrt the sloping sea
    ! surface
    cosomega = shared%cos_satza*shared%cos_solza + &
               shared%sin_satza*shared%sin_solza*shared%cos_relaz
@@ -1680,6 +1685,50 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
    end if
 
 end subroutine cox_munk4_calc_shared_band_geo
+
+
+subroutine cox_munk4_interp_shared_band_geo(d_theta, theta, shared_lut, shared_out)
+
+   implicit none
+
+   ! Input arguments
+   real(kind=sreal),                    intent(in) :: d_theta
+   real(kind=sreal),                    intent(in) :: theta
+   type(cox_munk_shared_band_geo_type), intent(in) :: shared_lut(:)
+
+   ! Output arguments
+   type(cox_munk_shared_band_geo_type), intent(out) :: shared_out
+
+   integer :: i
+   integer :: ii
+   real    :: a
+   real    :: b
+
+   if (theta .lt. 0. .or. theta .gt. 2 * pi) then
+        print *, 'ERROR: cox_munk4_interp_shared_band_geo(), theta = ', &
+                 theta, 'is out of range'
+   endif
+
+   i  = int(theta / d_theta) + 1
+   ii = i + 1
+
+   a  = (theta - (i - 1) * d_theta) / d_theta
+   b  = 1. - a
+
+   shared_out%satza     = b * shared_lut(i)%satza     + a * shared_lut(ii)%satza
+   shared_out%cos_solza = b * shared_lut(i)%cos_solza + a * shared_lut(ii)%cos_solza
+   shared_out%sin_solza = b * shared_lut(i)%sin_solza + a * shared_lut(ii)%sin_solza
+   shared_out%cos_satza = b * shared_lut(i)%cos_satza + a * shared_lut(ii)%cos_satza
+   shared_out%sin_satza = b * shared_lut(i)%sin_satza + a * shared_lut(ii)%sin_satza
+   shared_out%cos_relaz = b * shared_lut(i)%cos_relaz + a * shared_lut(ii)%cos_relaz
+   shared_out%sin_relaz = b * shared_lut(i)%sin_relaz + a * shared_lut(ii)%sin_relaz
+   shared_out%rhoul     = b * shared_lut(i)%rhoul     + a * shared_lut(ii)%rhoul
+   shared_out%Zx        = b * shared_lut(i)%Zx        + a * shared_lut(ii)%Zx
+   shared_out%Zy        = b * shared_lut(i)%Zy        + a * shared_lut(ii)%Zy
+   shared_out%cosbeta   = b * shared_lut(i)%cosbeta   + a * shared_lut(ii)%cosbeta
+   shared_out%R_sf      = b * shared_lut(i)%R_sf      + a * shared_lut(ii)%R_sf
+
+end subroutine cox_munk4_interp_shared_band_geo
 
 
 !-------------------------------------------------------------------------------
@@ -1780,7 +1829,7 @@ end subroutine cox_munk4
 ! ws        sreal In          wind-speed (in m/s)
 !
 ! Return value:
-! Name Type   Description
+! Name Type  Description
 ! ba   sreal The so-called "area of the ergodic cap"
 !
 ! Local variables:
@@ -1812,7 +1861,7 @@ function zeisse_ba3(theta, cos_theta, ws) result (ba)
    C(:,3) = (/  2.86324e-3,  1.86059e-3, -4.69589e-4 /)
 
    ! The delta correction is only applied at high solar zenith angles and
-   ! non-neglibible wind strength, otherwise just use cos(theta)
+   ! non-negligible wind strength, otherwise just use cos(theta)
    if ((theta .ge. 70.0*d2r) .and. (ws .gt. 1.0)) then
       tp = (theta - 70.0*d2r) / 5.0
       wp = 4.0 * alog10(ws) / 1.30103
@@ -1891,6 +1940,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    integer                       :: n_points
    integer, parameter            :: n_quad_theta = 4
    integer, parameter            :: n_quad_phi   = 4
+   integer, parameter            :: lut_n_theta  = 181
 
    real(kind=sreal), allocatable :: qx_theta(:)
    real(kind=sreal), allocatable :: qw_theta(:)
@@ -1899,6 +1949,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    real(kind=sreal), allocatable :: qw_phi(:)
 
    real(kind=sreal), allocatable :: qx_cos_sin_qw_theta(:)
+
+   real(kind=sreal)              :: lut_d_theta
 
    real(kind=sreal)              :: a
    real(kind=sreal), allocatable :: aa(:)
@@ -1911,8 +1963,9 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    type(cox_munk_shared_band_type),     allocatable :: shared_band(:)
    type(cox_munk_shared_geo_wind_type)              :: shared_geo_wind
 
-   type(cox_munk_shared_wind_type),     allocatable :: shared_wind(:,:)
+   type(cox_munk_shared_wind_type)                  :: shared_wind
    type(cox_munk_shared_band_geo_type), allocatable :: shared_band_geo(:,:,:,:)
+   type(cox_munk_shared_band_geo_type)              :: shared_band_geo2
 
 
    n_bands  = size(bands)
@@ -1954,7 +2007,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    !----------------------------------------------------------------------------
    do i = 1, n_points
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-         rho_0v(j, i) = fill_value
+         rho_0v(:, i) = fill_value
          cycle
       end if
 
@@ -1969,11 +2022,13 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    !----------------------------------------------------------------------------
    print *, 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0d'
    !----------------------------------------------------------------------------
+! The full computation
+if (.false.) then
    rho_0d = 0.
 
    do i = 1, n_points
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-         rho_0d(j, i) = fill_value
+         rho_0d(:, i) = fill_value
          cycle
       end if
 
@@ -1994,16 +2049,65 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
       rho_0d(:, i) = rho_0d(:, i) / pi
    end do
+! Fast LUT version
+else
+   lut_d_theta = 2 * pi / (lut_n_theta - 1.)
 
+   allocate(shared_band_geo(n_bands, lut_n_theta, n_quad_theta, n_quad_phi))
+
+   do i = 1, n_bands
+      do j = 1, lut_n_theta
+         solza2 = (j - 1) * lut_d_theta / d2r
+         do k = 1, n_quad_theta
+            satza2 = qx_theta(k) / d2r
+            do l = 1, n_quad_phi
+               relaz2 = qx_phi(l) / d2r
+               call cox_munk4_calc_shared_band_geo(bands(i), solza2, satza2, &
+                  0., relaz2, shared_band_geo(i, j, k, l))
+            end do
+         end do
+      end do
+   end do
+
+   rho_0d = 0.
+
+   do i = 1, n_bands
+      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+         rho_0d(:, i) = fill_value
+         cycle
+      end if
+
+      do j = 1, n_points
+         solza2 = solza(j) * d2r
+         call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
+         do l = 1, n_quad_theta
+            a = 0.
+            do m = 1, n_quad_phi
+               call cox_munk4_interp_shared_band_geo(lut_d_theta, solza2, &
+                  shared_band_geo(i,:,l,m), shared_band_geo2)
+               call cox_munk4(shared_wind, shared_band_geo2, a2)
+               a = a + a2 * qw_phi(m)
+            end do
+            rho_0d(i, j) = rho_0d(i, j) + a * qx_cos_sin_qw_theta(l)
+         end do
+
+         rho_0d(i, j) = rho_0d(i, j) / pi
+      end do
+   end do
+
+   deallocate(shared_band_geo)
+endif
 
    !----------------------------------------------------------------------------
    print *, 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_dv'
    !----------------------------------------------------------------------------
+! The full computation
+if (.false.) then
    rho_dv = 0.
 
    do i = 1, n_points
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-         rho_dv(j, i) = fill_value
+         rho_dv(:, i) = fill_value
          cycle
       end if
 
@@ -2024,7 +2128,54 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
       rho_dv(:, i) = rho_dv(:, i) / pi
    end do
+! Fast LUT version
+else
+   lut_d_theta = 2 * pi / (lut_n_theta - 1.)
 
+   allocate(shared_band_geo(n_bands, n_quad_theta, lut_n_theta, n_quad_phi))
+
+   do i = 1, n_bands
+      do j = 1, n_quad_theta
+         solza2 = qx_theta(j) / d2r
+         do k = 1, lut_n_theta
+            satza2 = (k - 1) * lut_d_theta / d2r
+            do l = 1, n_quad_phi
+               relaz2 = qx_phi(l) / d2r
+               call cox_munk4_calc_shared_band_geo(bands(i), solza2, satza2, &
+                  0., relaz2, shared_band_geo(i, j, k, l))
+            end do
+         end do
+      end do
+   end do
+
+   rho_dv = 0.
+
+   do i = 1, n_bands
+      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+         rho_dv(:, i) = fill_value
+         cycle
+      end if
+
+      do j = 1, n_points
+         satza2 = satza(j) * d2r
+         call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
+         do l = 1, n_quad_theta
+            a = 0.
+            do m = 1, n_quad_phi
+               call cox_munk4_interp_shared_band_geo(lut_d_theta, satza2, &
+                  shared_band_geo(i,l,:,m), shared_band_geo2)
+               call cox_munk4(shared_wind, shared_band_geo2, a2)
+               a = a + a2 * qw_phi(m)
+            end do
+            rho_dv(i, j) = rho_dv(i, j) + a * qx_cos_sin_qw_theta(l)
+         end do
+
+         rho_dv(i, j) = rho_dv(i, j) / pi
+      end do
+   end do
+
+   deallocate(shared_band_geo)
+endif
 
    !----------------------------------------------------------------------------
    !
@@ -2036,8 +2187,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    !----------------------------------------------------------------------------
    print *, 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_dd'
    !----------------------------------------------------------------------------
-   allocate(shared_wind    (n_bands, n_points))
-   allocate(shared_band_geo(n_bands, n_quad_theta, n_quad_theta, n_quad_phi))
+   allocate(shared_band_geo(n_quad_phi, n_quad_theta, n_quad_theta, n_bands))
 
    do i = 1, n_bands
       do j = 1, n_quad_theta
@@ -2046,8 +2196,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
             satza2 = qx_theta(k) / d2r
             do l = 1, n_quad_phi
                relaz2 = qx_phi(l) / d2r
-               call cox_munk4_calc_shared_band_geo(int(bands(i), kind=lint), &
-                  solza2, satza2, 0., relaz2, shared_band_geo(i, j, k, l))
+               call cox_munk4_calc_shared_band_geo(bands(i), solza2, satza2, &
+                  0., relaz2, shared_band_geo(l, k, j, i))
             end do
          end do
       end do
@@ -2057,19 +2207,19 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
    do i = 1, n_bands
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
-         rho_0d(j, i) = fill_value
+         rho_dd(:, i) = fill_value
          cycle
       end if
 
       do j = 1, n_points
          call cox_munk4_calc_shared_wind(int(bands(i), kind=lint), &
-                                         u10(j), v10(j), shared_wind(i, j))
+                                         u10(j), v10(j), shared_wind)
          do k = 1, n_quad_theta
             a = 0.
             do l = 1, n_quad_theta
                a2 = 0.
                do m = 1, n_quad_phi
-                  call cox_munk4(shared_wind(i, j), shared_band_geo(i, k, l, m), a3)
+                  call cox_munk4(shared_wind, shared_band_geo(m, l, k, i), a3)
                   a2 = a2 + a3 * qw_phi(m)
                end do
                a = a + a2 * qx_cos_sin_qw_theta(l)
@@ -2082,7 +2232,6 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
    end do
 
-   deallocate(shared_wind)
    deallocate(shared_band_geo)
 
 
