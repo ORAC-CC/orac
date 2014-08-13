@@ -65,7 +65,6 @@
 subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
      preproc_prtm, verbose)
 
-   use netcdf
    use orac_ncdf
    use preproc_constants
    use preproc_structures
@@ -231,6 +230,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       end if
    end do
 
-   if (nf90_close(fid) .ne. 0) stop 'READ_ECMWF_NC: Failure to close file.'
-
+   if (nf90_close(fid) .ne. NF90_NOERR) &
+        stop 'READ_ECMWF_NC: Failure to close file.'
+   
 end subroutine read_ecmwf_nc

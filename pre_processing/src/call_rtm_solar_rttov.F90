@@ -37,8 +37,6 @@
 subroutine call_rtm_solar_rttov(transmission,imager_angles, &
                                 channel_info,preproc_swrtm,amf,za)
 
-   use netcdf
-
    use channel_structures
    use imager_structures
    use parkind1, only : jpim

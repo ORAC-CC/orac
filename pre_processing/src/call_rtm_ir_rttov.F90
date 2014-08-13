@@ -37,8 +37,6 @@
 subroutine call_rtm_ir_rttov(transmission,radiance,imager_angles, &
                              channel_info,preproc_lwrtm)
 
-   use netcdf
-
    use channel_structures
    use imager_structures
    use parkind1, only : jpim

@@ -119,7 +119,6 @@ end subroutine read_ecmwf_wind_nc
 
 subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
 
-   use netcdf
    use orac_ncdf
    use preproc_constants
 
