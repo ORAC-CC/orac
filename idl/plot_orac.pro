@@ -84,7 +84,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                font_size=font_s, scale=scale, label=label, relative=rel, $
                frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary, $
                diff_only=diff_only, short=short, wat=wat, suffix=suff, full=full
-   ON_ERROR, KEYWORD_SET(stp) ? 0 : 2
+   ON_ERROR, 0
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; process inputs
@@ -279,9 +279,9 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
             STRING(ROUND(plot_set.ys*170./6),format='(i0)')+ $
             '] >> setpagedevice" '+ $
             '-dBATCH '+root[i]+tag+'.N[0-9][0-9].eps > /dev/null'
+      CD,cur_cd
       if ~KEYWORD_SET(keep_ps) then $
          FILE_DELETE,FILE_SEARCH(root[i]+tag+'.N[0-9][0-9].eps')
-      CD,cur_cd
    endfor
    SET_PLOT,'x'
    TVLCT, save_ct

@@ -197,6 +197,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
       end select
    end do
 
-   if (nf90_close(fid) .ne. 0) stop 'READ_ECMWF_WIND: File could not close.'
+   if (nf90_close(fid) .ne. NF90_NOERR) &
+        stop 'READ_ECMWF_WIND: File could not close.'
 
 end subroutine read_ecmwf_wind_file

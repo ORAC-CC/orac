@@ -65,6 +65,7 @@
 #
 # PREPROCESSOR ONLY ARGUMENTS)
 # -albedo_folder  The path containing albedo files (in folders by year).
+# -brdf_off       Do not use the BRDF surface treatment.
 # -calib_folder   The path containing ATSR drift coefficients.
 # -coeffs_folder  The path containing channel information.
 # -ecmwf|-badc    Value of ecmwf_flag to use. 0: Use a single GRIB file output
@@ -181,6 +182,7 @@ ld_set=1
 drop=0
 badc_flag=1
 verbose=true
+brdf_flag=true
 
 # perl command used at end of script. specifies which lines of log file
 # are printed
@@ -196,6 +198,9 @@ while [[ $# > 0 ]]; do
         -badc)
             shift
             badc_flag="$1"
+            ;;
+        -brdf_off)
+            brdf_flag=false
             ;;
         -calib_folder)
             shift
