@@ -134,7 +134,7 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.grb'
       case default
-         STOP 'Unknown ECMWF file format flag. Please select 0, 1, or 2.'
+         stop 'Unknown ECMWF file format flag. Please select 0, 1, or 2.'
       end select
     end if
 

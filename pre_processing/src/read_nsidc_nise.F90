@@ -30,7 +30,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 function extract_nise_grid(fid, name, gridlist, data) result(stat)

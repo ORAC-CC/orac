@@ -424,7 +424,7 @@ end subroutine aatsr_read_drift_table
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 function aatsr_12um_nonlinearity_correction(T, u_delta_BT_2) result(delta_BT)

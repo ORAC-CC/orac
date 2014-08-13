@@ -20,46 +20,45 @@
 !-------------------------------------------------------------------------------
    
    ! locate variable in file
-   ierr = NF90_INQ_VARID(ncid, name, vid)
+   ierr = nf90_inq_varid(ncid, name, vid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'NC_READ_FILE: Could not locate variable ',trim(name),'. ',NC_ERROR(ierr)
-      STOP
+      print*,'NC_READ_FILE: Could not locate variable ',trim(name),'. ', &
+           nc_error(ierr)
+      stop
    endif
 
    ! read data
-   ierr = NF90_GET_VAR(ncid,vid,val,start,counter,stride)
+   ierr = nf90_get_var(ncid,vid,val,start,counter,stride)
    if (ierr.ne.NF90_NOERR) then
-      print*,'NC_READ_FILE: Could not read variable ',trim(name),'. ',NC_ERROR(ierr)
-      STOP
+      print*,'NC_READ_FILE: Could not read variable ',trim(name),'. ', &
+           nc_error(ierr)
+      stop
    else
       if (verbose.eq.1) print*,'Reading variable ',trim(name)
    endif
 
    ! replace file's fill value with our own
-   ierr = NF90_GET_ATT(ncid,vid,'_FillValue',fv)
-   if (ierr.eq.NF90_NOERR) then
+   if (nf90_get_att(ncid,vid,'_FillValue',fv).eq.NF90_NOERR) then
       where (val.eq.fv) val=fill
    else
       fv=fill
    end if
 
    ! check for scale factor or offset of data
-   ierr = NF90_GET_ATT(ncid,vid,'scale_factor',sf)
-   if (ierr.eq.NF90_NOERR) flag = .true.
-   ierr = NF90_GET_ATT(ncid,vid,'add_offset',of)
-   if (ierr.eq.NF90_NOERR) flag = .true.
+   if (nf90_get_att(ncid,vid,'scale_factor',sf).eq.NF90_NOERR) flag = .true.
+   if (nf90_get_att(ncid,vid,'add_offset',of).eq.NF90_NOERR) flag = .true.
    if (flag) then
       where (val.ne.fv) val = sf*val + of
    end if
 
    ! additional information for print out
    if (verbose.eq.1) then
-      ierr = NF90_GET_ATT(ncid,vid,'units',unit)
-      if (ierr.eq.NF90_NOERR) print*,'unit: ',trim(unit)
+      if (nf90_get_att(ncid,vid,'units',unit).eq.NF90_NOERR) &
+           print*,'unit: ',trim(unit)
 
-      ierr = NF90_GET_ATT(ncid,vid,'valid_min',fv)
-      if (ierr.eq.NF90_NOERR) print*,'valid_min: ',fv
+      if (nf90_get_att(ncid,vid,'valid_min',fv).eq.NF90_NOERR) &
+           print*,'valid_min: ',fv
 
-      ierr = NF90_GET_ATT(ncid,vid,'valid_max',fv)
-      if (ierr.eq.NF90_NOERR) print*,'valid_max: ',fv
+      if (nf90_get_att(ncid,vid,'valid_max',fv).eq.NF90_NOERR) &
+           print*,'valid_max: ',fv
    end if
