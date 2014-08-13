@@ -18,6 +18,7 @@
 ! History:
 ! 2012/05/22, CP: Initial version based on R. Siddans idl code
 ! 2013/12/11, GM: Significant code clean up.
+! 2014/08/13, GM: Get d2r from preproc_constants rather than duplicating.
 !
 ! $Id$
 !
@@ -27,14 +28,14 @@
 
 subroutine effective_2way_za(sza,lza,amf,za)
 
+   use preproc_constants
+
    implicit none
 
    real, intent(in)  :: sza
    real, intent(in)  :: lza
    real, intent(out) :: amf
    real, intent(out) :: za
-
-   real, parameter :: d2r = 0.017453292 ! pi/180.0
 
    amf=1.0/cos(sza*d2r)+1.0/cos(lza*d2r)
 
