@@ -33,11 +33,13 @@
 !   iron out bugs and some slight change
 ! 24 Jan 2014, MJ: corrects length of "path_to_file"
 ! 11 Jun 2014, AP: use standard fill value rather than unique one
+! 05 Aug 2014, AP: Moved channel dimension to end of array for efficiency.
+!   Lat/lon grid now defined with start & division rather than array.
 !
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, &
@@ -168,21 +170,10 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    ! can
    mcd%nlon = xdim
    mcd%nlat = ydim
-
-   allocate(mcd%lon(xdim))
-   allocate(mcd%lat(ydim))
-
-   ! Now populate the newly allocated lat-lon coordinates....
-   ! There might be a more efficient (or at least tidier) way to do the
-   ! following with intrinsic functions...
-   xres = (lowright(1) - upleft(1)) / real(xdim)
-   yres = (upleft(2) - lowright(2)) / real(ydim)
-   do i = 1,xdim
-      mcd%lon(i) = upleft(1) + real(i)*xres - xres/2.0
-   end do
-   do i = 1,ydim
-      mcd%lat(ydim-i+1) = lowright(2) + real(i)*yres - yres/2.0
-   end do
+   mcd%lon_invdel = real(xdim,kind=8) / (lowright(1) - upleft(1))
+   mcd%lat_invdel = real(ydim,kind=8) / (lowright(2) - upleft(2))
+   mcd%lon0 = upleft(1) + 0.5/mcd%lon_invdel
+   mcd%lat0 = upleft(2) + 0.5/mcd%lat_invdel
 
    ! Set-up the parameters which control the data reading
    ! start : starting x,y coordinates within the data arrays (starting at 0)
@@ -244,13 +235,13 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
 
    ! Allocate the other variables, based on which bands have been requested
    if (white_sky .ne. 0) then
-      allocate(mcd%WSA(nbands,mcd%nlon,mcd%nlat))
+      allocate(mcd%WSA(mcd%nlon, mcd%nlat, nbands))
    else
       allocate(mcd%WSA(1,1,1))
       mcd%WSA(1,1,1) = -1.0
    end if
    if (black_sky .ne. 0) then
-      allocate(mcd%BSA(nbands,mcd%nlon,mcd%nlat))
+      allocate(mcd%BSA(mcd%nlon, mcd%nlat, nbands))
    else
       allocate(mcd%BSA(1,1,1))
       mcd%BSA(1,1,1) = -1.0
@@ -283,20 +274,13 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%WSA(i,k,j) = real_fill_value
+                  mcd%WSA(k,j,i) = real_fill_value
                else
-                  mcd%WSA(i,k,j) = tmpdata(k,j)*scale + offset
+                  mcd%WSA(k,j,i) = tmpdata(k,j)*scale + offset
                end if
             end do
          end do
-
-         ! Note, the following works with gfortran, but causes a segmentation
-         ! fault if used with ifort (v11)
-!        where (tmpdata .eq. fill)
-!           mcd%WSA(i,:,:) = real_fill_value
-!        elsewhere
-!           mcd%WSA(i,:,:) = real(tmpdata)*scale + offset
-!        endwhere
+         
       end if
 
       ! Read the black sky albedo
@@ -323,20 +307,13 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%BSA(i,k,j) = real_fill_value
+                  mcd%BSA(k,j,i) = real_fill_value
                else
-                  mcd%BSA(i,k,j) = tmpdata(k,j)*scale + offset
+                  mcd%BSA(k,j,i) = tmpdata(k,j)*scale + offset
                end if
             end do
          end do
 
-         ! Note, the following works with gfortran, but causes a segmentation
-         ! fault if used with ifort (v11)
-!        where (tmpdata .eq. fill)
-!           mcd%BSA(i,:,:) = real_fill_value
-!        elsewhere
-!           mcd%BSA(i,:,:) = real(tmpdata)*scale + offset
-!        endwhere
       end if
    end do
 

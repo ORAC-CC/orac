@@ -6,16 +6,17 @@ module cimss_emissivity
 
    type emis_s
       !    Data dimensions
-      integer(kind=4)                                :: nlon, nlat, nbands
+      integer(4)                                :: nlon, nlat, nbands
       !    Quality information
-      integer(kind=2), allocatable, dimension(:,:)   :: flag
+      integer(2), allocatable, dimension(:,:)   :: flag
       !    Bands
-      integer,         allocatable, dimension(:)     :: wavenumber,bands
+      integer,    allocatable, dimension(:)     :: wavenumber,bands
       !    Data
-      real,            allocatable, dimension(:)     :: lat, lon
-      real,            allocatable, dimension(:,:,:) :: emissivity
+      real(8)                                   :: lon0, lon_invdel, lon_del
+      real(8)                                   :: lat0, lat_invdel, lat_del
+      real,       allocatable, dimension(:,:,:) :: emissivity
       !    Missing data value
-      real                                           :: fill=real_fill_value
+      real                                      :: fill=real_fill_value
    end type emis_s
 
 contains
@@ -64,6 +65,8 @@ contains
 !   use 'fill_value'.  So now we handle both cases.
 ! 12/05/2014, AP: Uses orac_ncdf to avoid duplication of NCDF routines. Made into
 !   a module.
+! 04/08/2014, AP: Put bands as last index of emissivity array. Replaced lat|lon
+!   fields with grid definitions to be compatible with new interpolation routine.
 !
 ! $Id$
 !
@@ -71,10 +74,9 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 
-function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)&
+function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
      result (stat)
 
-   use netcdf
    use orac_ncdf
    use preproc_constants
 
@@ -84,7 +86,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
    character(len=pathlength), intent(in)               :: path_to_file
    integer(kind=stint),       intent(in), dimension(:) :: bands
    integer(kind=stint),       intent(in), optional     :: flag, wavenumber
-   character(len=pathlength), intent(in), optional     :: loc
+
    ! Output variables
    type(emis_s),              intent(out)              :: emis
    integer(kind=stint)                                 :: stat
@@ -146,37 +148,46 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber, loc)
    end if
 
    ! Now define the emissivity array itself, based on the bands argument
-   allocate(emis%emissivity(nbands,xdim,ydim))
+   allocate(emis%emissivity(xdim,ydim,nbands))
    ! Extract the data for each of the requested bands
    do i=1,nbands
       write(*,*) 'read_cimss_emissivity: Extracting band ',BandList(bands(i))
-      call nc_read_array(fid,BandList(bands(i)),emis%emissivity(i,:,:),0)
+      call nc_read_array(fid,BandList(bands(i)),emis%emissivity(:,:,i),0)
    end do
 
    ! We are now finished with the main data file
    stat = nf90_close(fid)
 
+   ! Commented out read/generation of lat/lon arrays. As the grid is regular,
+   ! simply output its starting point and the inverse of the spacing
+   emis%lon0 = -179.975
+   emis%lon_del = 0.05
+   emis%lon_invdel = 20.
+   emis%lat0 = 89.975
+   emis%lat_del = -0.05
+   emis%lat_invdel = -20.
+   
    ! If the loc string is non-null, then we attempt to read the data
    ! lat/lon grid from this file
-   allocate(emis%lat(xdim))
-   allocate(emis%lon(ydim))
-   if (present(loc)) then
-      if (len(trim(loc)) .gt. 1) then
-         gen_loc = 0
-         call nc_read_array(fid,'lat',emis%lat,0)
-         call nc_read_array(fid,'lon',emis%lon,0)
-      end if
-   end if
+   !allocate(emis%lat(xdim))
+   !allocate(emis%lon(ydim))
+   !if (present(loc)) then
+   !   if (len(trim(loc)) .gt. 1) then
+   !      gen_loc = 0
+   !      call nc_read_array(fid,'lat',emis%lat,0)
+   !      call nc_read_array(fid,'lon',emis%lon,0)
+   !   end if
+   !end if
    ! If the loc variable is null, or hasn't been specified,
    ! then we generate our own lat-lon grid.
-   if (gen_loc .eq. 1) then
-      do i=1,7200
-         emis%lon(i) = -180.025 + real(i)*0.05
-      end do
-      do i=1,3600
-         emis%lat(i) =   90.025 - real(i)*0.05
-      end do
-   end if
+   !if (gen_loc .eq. 1) then
+   !   do i=1,7200
+   !      emis%lon(i) = -180.025 + real(i)*0.05
+   !   end do
+   !   do i=1,3600
+   !      emis%lat(i) =   90.025 - real(i)*0.05
+   !   end do
+   !end if
 
 end function read_cimss_emissivity
 
@@ -189,8 +200,6 @@ subroutine deallocate_emis(emis)
    if (allocated(emis%wavenumber)) deallocate(emis%wavenumber)
    if (allocated(emis%flag))       deallocate(emis%flag)
    if (allocated(emis%bands))      deallocate(emis%bands)
-   if (allocated(emis%lat))        deallocate(emis%lat)
-   if (allocated(emis%lon))        deallocate(emis%lon)
    if (allocated(emis%emissivity)) deallocate(emis%emissivity)
 
 end subroutine deallocate_emis

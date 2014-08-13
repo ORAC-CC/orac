@@ -21,16 +21,15 @@
 !                                          occurs, it will be returned with the
 !                                          value -1, otherwise returned as 0.
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 ! 2014/08/10, GM: First version.
+! 2014/08/12, AP: Moved channel dimension to end of array for efficiency.
+!   Lat/lon grid now defined with start & division rather than array.
 !
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
@@ -160,21 +159,10 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
    ! can
    mcd%nlon = xdim
    mcd%nlat = ydim
-
-   allocate(mcd%lon(xdim))
-   allocate(mcd%lat(ydim))
-
-   ! Now populate the newly allocated lat-lon coordinates....
-   ! There might be a more efficient (or at least tidier) way to do the
-   ! following with intrinsic functions...
-   xres = (lowright(1) - upleft(1)) / real(xdim)
-   yres = (upleft(2) - lowright(2)) / real(ydim)
-   do i = 1,xdim
-      mcd%lon(i) = upleft(1) + real(i)*xres - xres/2.0
-   end do
-   do i = 1,ydim
-      mcd%lat(ydim-i+1) = lowright(2) + real(i)*yres - yres/2.0
-   end do
+   mcd%lon_invdel = real(xdim,kind=8) / (lowright(1) - upleft(1))
+   mcd%lat_invdel = real(ydim,kind=8) / (lowright(2) - upleft(2))
+   mcd%lon0 = upleft(1) + 0.5/mcd%lon_invdel
+   mcd%lat0 = upleft(2) + 0.5/mcd%lat_invdel
 
    ! Set-up the parameters which control the data reading
    ! start : starting x,y coordinates within the data arrays (starting at 0)
@@ -196,28 +184,28 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
       stat = gdrdfld(gid, 'BRDF_Quality', start, stride, edge, &
                      mcd%quality)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading BRDF_Quality: ',stat
+         write(*,*) 'Read_MCD43C1(), Error reading BRDF_Quality: ',stat
          stop
       end if
 
       stat = gdrdfld(gid, 'Local_Solar_Noon', start, stride, edge, &
                      mcd%local_solar_noon)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading Local_Solar_Noon: ',stat
+         write(*,*) 'Read_MCD43C1(), Error reading Local_Solar_Noon: ',stat
          stop
       end if
 
       stat = gdrdfld(gid, 'Percent_Inputs', start, stride, edge, &
                      mcd%percent_inputs)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading Percent_Inputs: ',stat
+         write(*,*) 'Read_MCD43C1(), Error reading Percent_Inputs: ',stat
          stop
       end if
 
       stat = gdrdfld(gid, 'Percent_Snow', start, stride, edge, &
                      mcd%percent_snow)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading Percent_Snow: ',stat
+         write(*,*) 'Read_MCD43C1(), Error reading Percent_Snow: ',stat
          stop
       end if
    else
@@ -235,7 +223,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
    if (brdf_albedo_params .ne. 0) then
       allocate(tmpdata(mcd%nlon,mcd%nlat))
 
-      allocate(mcd%brdf_albedo_params(nbands,3,mcd%nlon,mcd%nlat))
+      allocate(mcd%brdf_albedo_params(mcd%nlon,mcd%nlat,3,nbands))
 
       fill = 32767
 
@@ -262,9 +250,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%brdf_albedo_params(i,1,k,j) = real_fill_value
+                  mcd%brdf_albedo_params(k,j,1,i) = real_fill_value
                else
-                  mcd%brdf_albedo_params(i,1,k,j) = tmpdata(k,j)*scale + offset
+                  mcd%brdf_albedo_params(k,j,1,i) = tmpdata(k,j)*scale + offset
                end if
             end do
          end do
@@ -272,9 +260,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          ! Note, the following works with gfortran, but causes a segmentation
          ! fault if used with ifort (v11)
 !        where (tmpdata .eq. fill)
-!           mcd%brdf_albedo_params(i,1,:,:) = mcd%fill
+!           mcd%brdf_albedo_params(:,:,1,i) = mcd%fill
 !        elsewhere
-!           mcd%brdf_albedo_params(i,1,:,:) = real(tmpdata)*scale + offset
+!           mcd%brdf_albedo_params(:,:,1,i) = real(tmpdata)*scale + offset
 !        endwhere
 
 
@@ -293,9 +281,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%brdf_albedo_params(i,2,k,j) = real_fill_value
+                  mcd%brdf_albedo_params(k,j,2,i) = real_fill_value
                else
-                  mcd%brdf_albedo_params(i,2,k,j) = tmpdata(k,j)*scale + offset
+                  mcd%brdf_albedo_params(k,j,2,i) = tmpdata(k,j)*scale + offset
                end if
             end do
          end do
@@ -316,9 +304,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%brdf_albedo_params(i,3,k,j) = real_fill_value
+                  mcd%brdf_albedo_params(k,j,3,i) = real_fill_value
                else
-                  mcd%brdf_albedo_params(i,3,k,j) = tmpdata(k,j)*scale + offset
+                  mcd%brdf_albedo_params(k,j,3,i) = tmpdata(k,j)*scale + offset
                end if
             end do
          end do

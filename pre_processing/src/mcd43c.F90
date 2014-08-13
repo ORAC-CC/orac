@@ -17,6 +17,8 @@
 ! 11 Apr 2012, GT: Original
 ! 11 Jun 2014, AP: Remove unique fill value
 ! 10 Aug 2014, GM: Changes related to new BRDF support.
+! 11 Aug 2014, AP: Lat/lon grid now defined with start and division rather than
+!   array.
 !
 ! $Id$
 !
@@ -46,8 +48,8 @@ module mcd43c_m
       integer, allocatable       :: bands(:)
 
       ! Data
-      real, allocatable          :: lat(:)
-      real, allocatable          :: lon(:)
+      real*8                     :: lat0, lat_invdel
+      real*8                     :: lon0, lon_invdel
       real, allocatable          :: brdf_albedo_params(:,:,:,:)
    end type mcd43c1
 
@@ -69,8 +71,8 @@ module mcd43c_m
       integer, allocatable       :: bands(:)
 
       ! Data
-      real, allocatable          :: lat(:)
-      real, allocatable          :: lon(:)
+      real*8                     :: lat0, lat_invdel
+      real*8                     :: lon0, lon_invdel
       real, allocatable          :: WSA(:,:,:)
       real, allocatable          :: BSA(:,:,:)
    end type mcd43c3
@@ -89,8 +91,6 @@ subroutine deallocate_mcd43c1(mcd)
    deallocate(mcd%percent_snow)
    deallocate(mcd%bandids)
    deallocate(mcd%bands)
-   deallocate(mcd%lat)
-   deallocate(mcd%lon)
    deallocate(mcd%brdf_albedo_params)
 
 end subroutine deallocate_mcd43c1
@@ -108,8 +108,6 @@ subroutine deallocate_mcd43c3(mcd)
    deallocate(mcd%percent_snow)
    deallocate(mcd%bandids)
    deallocate(mcd%bands)
-   deallocate(mcd%lat)
-   deallocate(mcd%lon)
    deallocate(mcd%WSA)
    deallocate(mcd%BSA)
 
