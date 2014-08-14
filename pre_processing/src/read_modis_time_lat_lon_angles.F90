@@ -18,6 +18,7 @@
 ! imager_flags       struct both Summary of land/sea/ice flags
 ! imager_time        struct both Summary of pixel observation time
 ! n_along_track      lint   in   Number of pixels in the direction of travel
+! verbose            logic  in   T: print status information; F: don't
 !
 ! History:
 ! 2011/12/12, MJ: produces draft code which opens and reads MODIS geo hdf files
@@ -38,7 +39,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
-     imager_angles,imager_flags,imager_time,n_along_track)
+     imager_angles,imager_flags,imager_time,n_along_track,verbose)
 
    use imager_structures
    use preproc_constants
@@ -54,11 +55,14 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    type(imager_flags_s),       intent(in)  :: imager_flags
    type(imager_time_s),        intent(in)  :: imager_time
    integer(kind=lint),         intent(in)  :: n_along_track
+   logical,                    intent(in)  :: verbose
 
    integer(kind=lint)                              :: geo_id,ix,jy
    real(kind=sreal),   allocatable, dimension(:,:) :: temp,temp2
    integer(kind=sint), allocatable, dimension(:,:) :: btemp
    integer                                         :: err_code
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'
 
    !allocate temporary data
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
@@ -66,6 +70,9 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    !get file id
    geo_id=sfstart(path_to_geo_file,DFACC_READ)
+
+   !read time
+   call get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
 
    !read latitude
    call read_modis_lat_lon(geo_id,"Latitude",imager_geolocation%startx, &
@@ -79,25 +86,17 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
         imager_geolocation%endy,temp)
    imager_geolocation%longitude=temp
 
-   !read time
-   call get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
-
-   !read senszen
-   call read_modis_angles(geo_id,"SensorZenith",imager_geolocation%startx, &
-        imager_geolocation%endx,imager_geolocation%starty, &
-        imager_geolocation%endy,temp)
-   imager_angles%satzen(:,:,imager_angles%nviews)=temp
-
    !read solzen
    call read_modis_angles(geo_id,"SolarZenith",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp)
    imager_angles%solzen(:,:,imager_angles%nviews)=temp
 
-   !read sensazi
-   call read_modis_angles(geo_id,"SensorAzimuth",imager_geolocation%startx, &
+   !read senszen
+   call read_modis_angles(geo_id,"SensorZenith",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp)
+   imager_angles%satzen(:,:,imager_angles%nviews)=temp
 
    !read solazi
    allocate(temp2(imager_geolocation%startx:imager_geolocation%endx, &
@@ -106,6 +105,11 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp2)
    imager_angles%solazi(:,:,imager_angles%nviews)=temp2
+
+   !read sensazi
+   call read_modis_angles(geo_id,"SensorAzimuth",imager_geolocation%startx, &
+        imager_geolocation%endx,imager_geolocation%starty, &
+        imager_geolocation%endy,temp)
 
    ! make rel azi
    ! Note: Relative azimuth is defined so that if the satellite is looking
@@ -162,5 +166,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    !end access to geofile
    err_code=sfend(geo_id)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_time_lat_lon_angles()'
 
 end subroutine read_modis_time_lat_lon_angles

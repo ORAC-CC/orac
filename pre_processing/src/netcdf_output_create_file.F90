@@ -130,7 +130,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! create file
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_lwrtm)
-      if (ierr.ne.NF90_NOERR)  stop 'error: lw creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: lw creating file'
 
 
       ! start defining things
@@ -343,7 +343,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! create file
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_swrtm)
-      if (ierr.ne.NF90_NOERR)  stop 'error: creating sw file'
+      if (ierr.ne.NF90_NOERR) stop 'error: creating sw file'
 
 
       ! start defining things
@@ -503,7 +503,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! create file
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_prtm)
-      if (ierr.ne.NF90_NOERR)  stop 'error: creating p file'
+      if (ierr.ne.NF90_NOERR) stop 'error: creating p file'
 
 
       ! start defining things
@@ -668,7 +668,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
 
    ! close definition section
    ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR)  stop 'error: enddef rtm'
+   if (ierr.ne.NF90_NOERR) stop 'error: enddef rtm'
 
    if (wo.eq.1) then
       write(*,*) ''
@@ -765,7 +765,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_msi)
-      if (ierr.ne.NF90_NOERR)  stop 'error: msi creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: msi creating file'
 
 
       ! start defining things
@@ -897,7 +897,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_cf)
-      if (ierr.ne.NF90_NOERR)  stop 'error: cf creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: cf creating file'
 
 
       !start defining things
@@ -943,7 +943,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_lsf)
-      if (ierr.ne.NF90_NOERR)  stop 'error: lsf creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: lsf creating file'
 
 
       ! start defining things
@@ -990,7 +990,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_geo)
-      if (ierr.ne.NF90_NOERR)  stop 'error: geo creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: geo creating file'
 
 
       !start defining things
@@ -1073,7 +1073,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_loc)
-      if (ierr.ne.NF90_NOERR)  stop 'error: loc creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: loc creating file'
 
 
       ! start defining things
@@ -1130,7 +1130,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_alb)
-      if (ierr.ne.NF90_NOERR)  stop 'error: alb creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: alb creating file'
 
 
       ! start defining things
@@ -1281,7 +1281,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_scan)
-      if (ierr.ne.NF90_NOERR)  stop 'error: scan creating file'
+      if (ierr.ne.NF90_NOERR) stop 'error: scan creating file'
 
 
       !start defining things
@@ -1347,7 +1347,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
    ! close definition section
    ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR)  stop 'error: enddef swath'
+   if (ierr.ne.NF90_NOERR) stop 'error: enddef swath'
 
    if (wo.eq.1) then
       write(*,*) ''
@@ -1429,7 +1429,7 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
 
    ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
         netcdf_info%ncid_config)
-   if (ierr.ne.NF90_NOERR)  stop 'error: config creating file'
+   if (ierr.ne.NF90_NOERR) stop 'error: config creating file'
 
 
    ! start defining things
@@ -1573,7 +1573,7 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
 
    ! close definition section
    ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR)  stop 'error: enddef swath'
+   if (ierr.ne.NF90_NOERR) stop 'error: enddef swath'
 
    if (wo.eq.1) then
       write(*,*) ''

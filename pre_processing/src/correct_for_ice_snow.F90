@@ -16,18 +16,19 @@ contains
 ! Arguments:
 ! Name           Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! assume_full_path      in  T: inputs are filenames; F: folder names
-!                logic
-! nise_path      string in  Path to NSIDC NISE data file
+! nise_path      string in   Path to NSIDC NISE data file
 ! imager_geolocation    in   Geolocation data for satellite data
 !                struct      (defined in imager_structures)
-! preproc_dims   struct in  Preprocessing dimensions, including sw and
+! preproc_dims   struct in   Preprocessing dimensions, including sw and
 !                            lw channel counts
 ! surface        struct both Surface properties structure
 ! cyear          string in   Year, as a 4 character string.
 ! cmonth         string in   Month of year, as a 2 character string.
 ! cday           string in   Day of month, as a 2 character string.
 ! channel_info   struct in   Structure summarising the channels to be processed
+! assume_full_path      in   T: inputs are filenames; F: folder names
+!                logic
+! verbose        logic  in   T: print status information; F: don't
 !
 ! History:
 ! 30/04/2012, GT: Finished first version
@@ -91,8 +92,8 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
-     preproc_dims,surface,cyear,cmonth,cday,channel_info)
+subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
+      surface,cyear,cmonth,cday,channel_info,assume_full_path,verbose)
 
    use channel_structures
    use imager_structures
@@ -104,13 +105,14 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
    implicit none
 
    ! Arguments
-   logical,                    intent(in)    :: assume_full_path
    character(len=300),         intent(in)    :: nise_path
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
    type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(surface_s),            intent(inout) :: surface
    character(len=datelength),  intent(in)    :: cyear,cmonth,cday
    type(channel_info_s),       intent(in)    :: channel_info
+   logical,                    intent(in)    :: assume_full_path
+   logical,                    intent(in)    :: verbose
 
    ! Local variables
    real(kind=sreal), dimension(4)   :: snow_albedo, ice_albedo
@@ -124,6 +126,14 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
    character(len=300)               :: nise_path_file
    logical                          :: nise_file_exist
    character(len=7)                 :: nise_file_read
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering correct_for_ice_snow()'
+
+   if (verbose) write(*,*) 'nise_path: ',        trim(nise_path)
+   if (verbose) write(*,*) 'cyear: ',            trim(cyear)
+   if (verbose) write(*,*) 'cmonth: ',           trim(cmonth)
+   if (verbose) write(*,*) 'cday: ',             trim(cday)
+   if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
 
    ! Define the ice and snow albedo values
    ! Snow - from the ASTER spectral library
@@ -147,30 +157,32 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
    else
       if ((trim(adjustl(cyear)) .eq. '2010') .or. &
            (trim(adjustl(cyear)) .eq. '2009' .and. fmonth .gt. 8 )) then
-         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'//&
-                        trim(adjustl(cyear))//trim(adjustl(cmonth))//&
+         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'// &
+                        trim(adjustl(cyear))//trim(adjustl(cmonth))// &
                         trim(adjustl(cday))//'.HDFEOS'
       else
-         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'//&
-                        trim(adjustl(cyear))//trim(adjustl(cmonth))//&
+         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'// &
+                        trim(adjustl(cyear))//trim(adjustl(cmonth))// &
                         trim(adjustl(cday))//'.HDFEOS'
       end if
    end if
-   write(*,*)'nise_path_file: ', trim(nise_path_file)
+   if (verbose) write(*,*)'nise_path_file: ', trim(nise_path_file)
 
    ! Check that the defined file exists and is readable
    inquire(file=trim(nise_path_file), exist=nise_file_exist, &
         read=nise_file_read)
    if (.not.nise_file_exist) then
-      write(*,*) 'FAILED: STOP: NISE ice/snow file does not exist'
-      stop
+      write(*,*) 'ERROR: correct_for_ice_snow(): NISE ice/snow file does ' // &
+               & 'not exist: ', trim(nise_path_file)
+      stop error_stop_code
    else if (trim(nise_file_read).eq.'NO') then
-      write(*,*) 'FAILED: STOP: NISE ice/snow file exists but is not readable'
-      stop
+      write(*,*) 'ERROR: correct_for_ice_snow(): NISE ice/snow file exists ' // &
+               & 'but is not readable: ', trim(nise_path_file)
+      stop error_stop_code
    end if
 
 
-   stat = read_nsidc_nise(nise_path_file, nise, north, south)
+   stat = read_nsidc_nise(nise_path_file, nise, north, south, verbose)
 
    do i=imager_geolocation%startx,imager_geolocation%endx
       do j=1,imager_geolocation%ny
@@ -202,9 +214,9 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
             ! Extract the NISE extent index for the four grid cells surrounding
             ! our location and convert to a floating point value
 
-            nise_tmp(:,1) = (/ real(nise%north%extent(xi,yi)),      &
+            nise_tmp(:,1) = (/ real(nise%north%extent(xi,yi)),   &
                  real(nise%north%extent(xi+1,yi)) /)
-            nise_tmp(:,2) = (/ real(nise%north%extent(xi,yi+1)),    &
+            nise_tmp(:,2) = (/ real(nise%north%extent(xi,yi+1)), &
                  real(nise%north%extent(xi+1,yi+1)) /)
 
             ! Check for coastline or the region of missing data at the pole
@@ -272,9 +284,9 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
             ! Extract the NISE extent index for the four grid cells surrounding
             ! our location and convert to a floating point value
 
-            nise_tmp(:,1) = (/ real(nise%south%extent(xi,yi)),      &
+            nise_tmp(:,1) = (/ real(nise%south%extent(xi,yi)),   &
                  real(nise%south%extent(xi+1,yi)) /)
-            nise_tmp(:,2) = (/ real(nise%south%extent(xi,yi+1)),    &
+            nise_tmp(:,2) = (/ real(nise%south%extent(xi,yi+1)), &
                  real(nise%south%extent(xi+1,yi+1)) /)
 
             ! Check for coastline or the region of missing data at the pole
@@ -286,10 +298,10 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
                do k=0,1
                   ! Check if the current NISE pixel is flagged as coast
                   ! and that it is not at the edge of the data array.
-                  if ((nise_tmp(k+1,l+1) .eq. 252.0) .and.           &
-                       (xi+k .gt. 1) .and.                           &
-                       (xi+k .lt. nise%south%nx-1) .and.             &
-                       (yi+l .gt. 1) .and.                           &
+                  if ((nise_tmp(k+1,l+1) .eq. 252.0) .and. &
+                       (xi+k .gt. 1) .and.                 &
+                       (xi+k .lt. nise%south%nx-1) .and.   &
+                       (yi+l .gt. 1) .and.                 &
                        (yi+l .lt. nise%south%ny-1)) then
                      count = 0
                      ! Check the value of each neighbouring nise extent pixel
@@ -320,14 +332,16 @@ subroutine correct_for_ice_snow(assume_full_path,nise_path,imager_geolocation, &
                end do
             end do
 
-            call apply_ice_correction(real(easex-real(xi)),  &
-                 real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo,  &
+            call apply_ice_correction(real(easex-real(xi)), &
+                 real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
                  preproc_dims, surface%albedo(i,j,:), channel_info)
          end if
       end do
    end do
    ! Tidy up the nise structure created by the read_nsidc_snow call
    call deallocate_nise(nise)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving correct_for_ice_snow()'
 
 end subroutine correct_for_ice_snow
 

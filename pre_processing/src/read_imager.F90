@@ -49,9 +49,8 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
-     path_to_aatsr_drift_table, &
-     imager_geolocation,imager_angles,imager_flags,imager_time, &
-     imager_measurements,channel_info,n_along_track,verbose)
+     path_to_aatsr_drift_table, imager_geolocation,imager_angles,imager_flags, &
+     imager_time,imager_measurements,channel_info,n_along_track,verbose)
 
    use channel_structures
    use imager_structures
@@ -76,10 +75,17 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    integer(kind=lint),            intent(in)    :: n_along_track
    logical,                       intent(in)    :: verbose
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_imager()'
+
+   if (verbose) write(*,*) 'sensor: ',           trim(sensor)
+   if (verbose) write(*,*) 'platform: ',         trim(platform)
+   if (verbose) write(*,*) 'path_to_l1b_file: ', trim(path_to_l1b_file)
+   if (verbose) write(*,*) 'path_to_geo_file: ', trim(path_to_geo_file)
+
    !branches for the sensors
    if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
-           imager_angles,imager_flags,imager_time,n_along_track)
+           imager_angles,imager_flags,imager_time,n_along_track,verbose)
 
       !read MODIS L1b data. SW:reflectances, LW:brightness temperatures
       call read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
@@ -91,7 +97,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       !read the angles and lat/lon info of the orbit
       call read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
-           imager_angles, imager_flags,imager_time,n_along_track)
+           imager_angles, imager_flags,imager_time,n_along_track,verbose)
 
       !read land/sea flag from physiography file
       call read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
@@ -99,12 +105,15 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
 
       !read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
       call read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
-           imager_geolocation,imager_measurements,channel_info)
+           imager_geolocation,imager_measurements,channel_info,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
    else if (trim(adjustl(sensor)) .eq. 'AATSR') then
+      if (verbose) write(*,*) 'path_to_aatsr_drift_table: ', &
+                              trim(path_to_aatsr_drift_table)
+
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
@@ -113,6 +122,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
    end if
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_imager()'
 
 end subroutine read_imager
 

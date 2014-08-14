@@ -152,6 +152,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(c_ptr) :: fch1, fch2, fch3, fch4, fch5, fch6, fch7
    type(c_ptr) :: fer1, fer2, fer3, fer4, fer5, fer6, fer7
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_aatsr_l1b()'
+
    ! initialise all the pointers
    lat  = c_null_ptr
    lon  = c_null_ptr
@@ -267,8 +269,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
             nch7 = c_loc(imager_measurements%data(startx,1,j))
             ner7 = c_loc(imager_measurements%uncertainty(startx,1,j))
          case default
-            print*,'Channel ',ch(i),', view ',view(i),' not defined for AATSR.'
-            stop
+            write(*,*) 'ERROR: read_aatsr_l1b(): Channel ',ch(i),', view ', &
+                       view(i),' not defined for AATSR.'
+            stop error_stop_code
          end select
       else if (view(i) .eq. 2) then
          select case (ch(i))
@@ -294,12 +297,14 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
             fch7 = c_loc(imager_measurements%data(startx,1,j))
             fer7 = c_loc(imager_measurements%uncertainty(startx,1,j))
          case default
-            print*,'Channel ',ch(i),', view ',view(i),' not defined for AATSR.'
-            stop
+            write(*,*) 'ERROR: read_aatsr_l1b(): Channel ',ch(i),', view ', &
+                       view(i),' not defined for AATSR.'
+            stop error_stop_code
          end select
       else
-         print*,'View ',view(i),' not defined for AATSR.'
-         stop
+         write(*,*) 'ERROR: read_aatsr_l1b(): View ',view(i),' not defined ' // &
+                  & 'for AATSR.'
+         stop error_stop_code
       end if
    end do
 
@@ -307,7 +312,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    startx=startx-1
    starty=starty-1
    l1b_file_c = trim(l1b_file)//C_NULL_CHAR
-   if (verbose) print*,'Calling C function READ_AATSR_ORBIT with file ', &
+   if (verbose) write(*,*) 'Calling C function READ_AATSR_ORBIT with file ', &
         trim(l1b_file)
    call read_aatsr_orbit(l1b_file_c, verb, nch, ch, view, &
         nx, ny, startx, starty, stat, lat, lon, &
@@ -318,15 +323,15 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
         fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
         fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
         start_date, gc1_file, vc1_file, is_lut_drift_corrected)
-   if (verbose) print*,'C function returned with status ', stat
+   if (verbose) write(*,*) 'C function returned with status ', stat
 
    ! convert elevation angles read into zenith angles
    imager_angles%solzen = 90.0 - imager_angles%solzen
    imager_angles%satzen = 90.0 - imager_angles%satzen
    if (.not. is_lut_drift_corrected) then
-      if (verbose) print*,'calling read drift file ', stat
+      if (verbose) write(*,*) 'calling read drift file ', stat
       call aatsr_read_drift_table(drift_file, lut, status)
-      if (verbose) print*,'finish drift table read returned with status ', stat
+      if (verbose) write(*,*) 'finish drift table read returned with status ', stat
    end if
 
    ! apply corrections
@@ -360,7 +365,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
             ! drift = old correction / new correction
             call aatsr_drift_correction(start_date, vc1_file, lut, j, &
                  new_drift, old_drift, drift_var)
-            if (verbose) print*,'Corrections - new_drift:',new_drift, &
+            if (verbose) write(*,*) 'Corrections - new_drift:',new_drift, &
                  'old_drift:',old_drift,'drift_var:',drift_var
             imager_measurements%data(:,:,i) = &
                  (old_drift/new_drift) * imager_measurements%data(:,:,i)
@@ -409,7 +414,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       end do
    end if
 
-   if (verbose) print*,'finished read_aatsr_l1b deallocate'
+   if (verbose) write(*,*) 'finished read_aatsr_l1b deallocate'
 
    deallocate(ch)
    deallocate(view)
@@ -419,5 +424,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    deallocate(fflg)
    deallocate(fqul)
    deallocate(fday)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_aatsr_l1b()'
 
 end subroutine read_aatsr_l1b

@@ -30,9 +30,9 @@
 ! 2011/12/??, MJ: First version
 ! 2013/03/22, GT: Added code to assign the band index number dynamically using
 !   information contained in the M*D02 file itself.
-! 2013/09/12, AP: tidying, added where statement
-! 2013/10/15, MJ: changes reading of band names for MODIS.
-! 2013/10/22, AP: when a field in the spectrally subsetted files contained only
+! 2013/09/12, AP: Tidying, added where statement
+! 2013/10/15, MJ: Changes reading of band names for MODIS.
+! 2013/10/22, AP: When a field in the spectrally subsetted files contained only
 !   one channel, the band_names field ended in NULL characters which Fortran
 !   could not manage. Those have been removed.
 ! 2013/11/05, GM: Moved the verbose statement that prints band_names from just
@@ -40,7 +40,7 @@
 !   operations can be affected by them.
 ! 2014/01/12, GM: Fixed it so that the right scales and offsets are used.
 ! 2014/01/12, GM: Cleaned up the code.
-! 2014/07/23, AP: more efficient array writing
+! 2014/07/23, AP: More efficient array writing
 !
 ! $Id$
 !
@@ -71,8 +71,8 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    character(len=100)    :: SDS_name, SDS_unc_name, Dim_band_index
    integer(kind=lint)    :: file_id, attr_id, var_id, err_code
    character(len=100)    :: tmpname
-   integer               :: tmprank, tmptype, tmpnattrs
-   integer, dimension(3) :: tmpdimsizes
+   integer               :: rank, type, num_attrs
+   integer, dimension(3) :: dimsizes
    integer               :: number_of_bands
    character(len=100)    :: band_names
    logical               :: flag
@@ -82,6 +82,15 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    real(kind=sreal)      :: scale_factors(20), offsets(20)
    integer(kind=lint)    :: start(3), stride(3), edge(3)
    integer(kind=stint)   :: temp(ixstart:ixstop,iystart:iystop)
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances_2()'
+
+   if (verbose) write(*,*) 'band: ',             band
+   if (verbose) write(*,*) 'Cal_type_is_refl: ', Cal_type_is_refl
+   if (verbose) write(*,*) 'ixstart: ',          ixstart
+   if (verbose) write(*,*) 'ixstop: ',           ixstop
+   if (verbose) write(*,*) 'iystart: ',          iystart
+   if (verbose) write(*,*) 'iystop: ',           iystop
 
    if (band >= 1 .and. band <= 2) then
       SDS_name = "EV_250_Aggr1km_RefSB"
@@ -104,20 +113,26 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       Dim_band_index = "Band_1KM_Emissive"
    end if
 
-   file_id = fid
-   var_id = sfselect(file_id,  sfn2index(file_id, SDS_name))
-   err_code = sfginfo(var_id, tmpname, tmprank, tmpdimsizes, tmptype, tmpnattrs)
-
-   number_of_bands = tmpdimsizes(3)
    if (verbose) then
-      print*, 'sfginfo on ',trim(adjustl(Dim_band_index))
-      print*, 'tmpname: ', trim(adjustl(tmpname))
-      print*, 'tmprank: ', tmprank
-      print*, 'tmpdimsizes: ', tmpdimsizes
-      print*, 'tmptype: ', tmptype
-      print*, 'tmpnattrs: ',tmpnattrs
-      print*, 'Band wanted: ',band
-      print*, 'Number of MODIS bands: ',number_of_bands
+      write(*,*), 'SDS_name: ', trim(SDS_name)
+      write(*,*), 'SDS_unc_name: ', trim(SDS_unc_name)
+      write(*,*), 'Dim_band_index: ', trim(Dim_band_index)
+   end if
+
+   file_id = fid
+   var_id = sfselect(file_id, sfn2index(file_id, SDS_name))
+   err_code = sfginfo(var_id, tmpname, rank, dimsizes, type, num_attrs)
+
+   number_of_bands = dimsizes(3)
+
+   if (verbose) then
+      write(*,*), 'sfginfo() output',trim(adjustl(Dim_band_index))
+      write(*,*), '   name: ', trim(adjustl(tmpname))
+      write(*,*), '   rank: ', rank
+      write(*,*), '   dimsizes: ', dimsizes
+      write(*,*), '   type: ', type
+      write(*,*), '   nattrs: ', num_attrs
+      write(*,*), 'Number of MODIS bands: ', number_of_bands
    end if
 
    band_names=''
@@ -132,7 +147,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       comma_i=index(band_names, achar(0))
    end do
 
-   if (verbose) print*, 'Bands found: ',trim(band_names)
+   if (verbose) write(*,*), 'Bands found: ', trim(band_names)
 
    flag = .true.
    comma_i_old=1
@@ -150,14 +165,15 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
 
       if (current_band .eq. band) then
          flag = .false.
-         if (verbose) print*, 'Selected band is: ',current_band,iband
+         if (verbose) write(*,*), 'Selected band is: ',current_band,iband
          exit
       end if
    end do
 
    if (flag) then
-      write(*,*) 'Band ',band,' not found in MODIS M*D02 file!'
-      stop
+      write(*,*) 'ERROR: read_modis_l1b_radiances_2(): Band: ', band, &
+                 ' not found in MODIS M*D02 file!'
+      stop error_stop_code
    end if
 
    ! data stored with 0 offset
@@ -205,5 +221,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    end do
 
    err_code = sfendacc(var_id)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_l1b_radiances_2()'
 
 end subroutine read_modis_l1b_radiances_2

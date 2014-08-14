@@ -12,9 +12,7 @@
 ! Name            Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! cyear           string  in          Year, as a 4 character string.
-! doy             integer in          Day of year.
-! assume_full_path
-!                 logic   in          T: inputs are filenames; F: folder names
+! cdoy            string  in          DOY,  as a 3 character string.
 ! modis_surf_path char    in          Path to MODIS MCD43C data
 ! imager_flags    struct  in          Imager structure containing land/sea flag
 ! imager_geolocation      in          Imager structure containing lat/lon points
@@ -23,6 +21,9 @@
 ! channel_info    struct  in          Preprocessing dimensions, including sw and
 !                                     lw channel counts
 ! ecmwf           struct  in          ECMWF fields
+! assume_full_path
+!                 logic   in          T: inputs are filenames; F: folder names
+! verbose         logic   in          T: print status information; F: don't
 ! surface         struct  both        Surface properties structure
 !
 ! History:
@@ -98,9 +99,9 @@
 ! NB channels are hardwired in this code and not selected automatically
 !-------------------------------------------------------------------------------
 
-subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
-   modis_surf_path, imager_flags, imager_geolocation, imager_angles, &
-   channel_info, ecmwf, include_full_brdf, surface)
+subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
+     imager_geolocation, imager_angles, channel_info, ecmwf, assume_full_path, &
+     include_full_brdf, verbose, surface)
 
    use channel_structures
    use cox_munk_m
@@ -118,15 +119,16 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
 
    ! Input variables
    character(len=datelength),   intent(in)         :: cyear
-   integer(kind=stint),         intent(in)         :: doy
-   logical,                     intent(in)         :: assume_full_path
+   character(len=datelength),   intent(in)         :: cdoy
    character(len=pathlength),   intent(in)         :: modis_surf_path
    type(imager_flags_s),        intent(in)         :: imager_flags
    type(imager_geolocation_s),  intent(in)         :: imager_geolocation
    type(imager_angles_s),       intent(in)         :: imager_angles
    type(channel_info_s),        intent(in)         :: channel_info
    type(ecmwf_s),               intent(in)         :: ecmwf
+   logical,                     intent(in)         :: assume_full_path
    logical,                     intent(in)         :: include_full_brdf
+   logical,                     intent(in)         :: verbose
    type(surface_s),             intent(inout)      :: surface
 
    ! Local variables
@@ -172,7 +174,13 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
 
    logical,          allocatable, dimension(:,:)   :: mask
 
-   write(*,*) 'In get_surface_reflectance_lam()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_reflectance()'
+
+   if (verbose) write(*,*) 'cyear: ',             trim(cyear)
+   if (verbose) write(*,*) 'cdoy: ',              trim(cdoy)
+   if (verbose) write(*,*) 'modis_surf_path: ',   trim(modis_surf_path)
+   if (verbose) write(*,*) 'assume_full_path: ',  assume_full_path
+   if (verbose) write(*,*) 'include_full_brdf: ', include_full_brdf
 
 
    ! Mask out pixels set to fill_value and out of BRDF angular range
@@ -191,13 +199,14 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
                 imager_angles%relazi(:,:,k) .ne. real_fill_value
       end do
    end if
-   
+
    ! Count the number of land pixels, using the imager land/sea mask
    nland = count(imager_flags%lsflag .eq. 1 .and. mask)
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nsea  = count(mask .and. imager_flags%lsflag .eq. 0)
    nland = count(mask .and. imager_flags%lsflag .eq. 1)
+   if (verbose) write(*,*) 'nsea, nland: ', nsea, nland
 
 
    !----------------------------------------------------------------------------
@@ -224,7 +233,8 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
       ! Which of these bands have been selected
       nswchannels = count(channel_info%channel_ids_abs .gt. 0 .and. &
                           channel_info%channel_ids_abs .lt. 4)
-      write(*,*)'nswchannels: ', nswchannels
+      if (verbose) write(*,*) 'n channels for land reflectance: ', nswchannels
+
       allocate(bands(nswchannels))
       bands = 0
 
@@ -232,29 +242,30 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
             channel_info%channel_ids_abs .gt. 0) bands(:) = modbands
 
       ! Select correct modis file
+      if (verbose) write(*,*) 'find appropriate files'
       if (assume_full_path) then
          modis_surf_path_file = modis_surf_path
       else
-         call select_modis_albedo_file(cyear,doy,modis_surf_path, &
+         call select_modis_albedo_file(cyear,cdoy,modis_surf_path, &
                                        .false.,modis_surf_path_file)
          if (include_full_brdf) then
-            call select_modis_albedo_file(cyear,doy,modis_surf_path, &
+            call select_modis_albedo_file(cyear,cdoy,modis_surf_path, &
                                           .true.,modis_brdf_path_file)
 
          end if
       end if
-      write(*,*)'modis_surf_path_file: ', trim(modis_surf_path_file)
+      if (verbose) write(*,*) 'modis_surf_path_file: ', trim(modis_surf_path_file)
       if (include_full_brdf) then
-         write(*,*)'modis_brdf_path_file: ', trim(modis_brdf_path_file)
+         if (verbose) write(*,*) 'modis_brdf_path_file: ', trim(modis_brdf_path_file)
       end if
 
       ! Read the data itself
       call read_mcd43c3(modis_surf_path_file, mcdc3, nswchannels, bands, &
-                        read_ws, read_bs, read_qc, stat)
+                        read_ws, read_bs, read_qc, verbose, stat)
 
       if (include_full_brdf) then
          call read_mcd43c1(modis_brdf_path_file, mcdc1, nswchannels, bands, &
-                           read_brdf, read_qc, stat)
+                           read_brdf, read_qc, verbose, stat)
       end if
 
       ! Fill missing data in the MODIS surface reflectance using a nearest
@@ -303,8 +314,8 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
             call interp_field(tmp_data, wsalnd(i,lndcount), interp(lndcount))
          end do
 
-         write(*,*) 'Land WSA: channel, min, max = ', i, minval(wsalnd(i,:)), &
-                                                         maxval(wsalnd(i,:))
+         if (verbose) write(*,*) 'Land WSA: channel, min, max = ', &
+                                 i, minval(wsalnd(i,:)), maxval(wsalnd(i,:))
 
          if (include_full_brdf) then
             do j = 1, 3
@@ -340,7 +351,7 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
 
          call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd &
             (3, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, real_fill_value, &
-             rholnd(:,:,1), rholnd(:,:,2), rholnd(:,:,3), rholnd(:,:,4))
+             rholnd(:,:,1), rholnd(:,:,2), rholnd(:,:,3), rholnd(:,:,4), verbose)
       end if
 
 !     end do ! End of instrument view loop
@@ -397,6 +408,9 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          end if
       end do
 
+      if (verbose) write(*,*) 'n channels for sea reflectance: ', &
+                              channel_info%nchannels_total
+
       ! Interpolate the ECMWF wind fields onto the instrument grid
       seacount = 1
       allocate(interp(1))
@@ -439,13 +453,17 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
          end do
       end do
 
-      write(*,*) 'Sea reflectance: min, max = ', minval(refsea), maxval(refsea)
+      if (verbose) then
+         do i = 1, channel_info%nchannels_sw
+            write(*,*) 'Sea reflectance: channel, min, max = ', &
+                       i, minval(refsea(i,:)), maxval(refsea(i,:))
+         end do
+      end if
 
       if (include_full_brdf) then
-         call cox_munk_rho_0v_0d_dv_and_dd &
-            (coxbands, solzasea, satzasea, solazsea, relazsea, u10sea, v10sea, &
-             real_fill_value, rhosea(:,:,1), rhosea(:,:,2), &
-             rhosea(:,:,3), rhosea(:,:,4))
+         call cox_munk_rho_0v_0d_dv_and_dd(coxbands, solzasea, satzasea, &
+            solazsea, relazsea, u10sea, v10sea, real_fill_value, &
+            rhosea(:,:,1), rhosea(:,:,2), rhosea(:,:,3), rhosea(:,:,4), verbose)
       end if
 
       ! Tidy up cox_munk input arrays
@@ -527,5 +545,8 @@ subroutine get_surface_reflectance(cyear, doy, assume_full_path, &
 
    if (allocated(refsea)) deallocate(refsea)
    if (allocated(rhosea)) deallocate(rhosea)
+
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_surface_reflectance()'
 
 end subroutine get_surface_reflectance

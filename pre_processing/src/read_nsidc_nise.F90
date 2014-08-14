@@ -33,7 +33,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-function extract_nise_grid(fid, name, gridlist, data) result(stat)
+function extract_nise_grid(fid, name, gridlist, data, verbose) result(stat)
 
    implicit none
 
@@ -42,6 +42,7 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
    character,       intent(in)    :: name*(*)
    character,       intent(in)    :: gridlist*(*)
    type(nise_grid), intent(inout) :: data
+   logical,         intent(in)    :: verbose
 
    ! Return value
    integer(kind=4)              :: stat
@@ -60,6 +61,12 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
    integer*4, external          :: gdprojinfo
    integer*4, external          :: gdrdfld
    integer*4, external          :: gddetach
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering extract_nise_grid()'
+
+   if (verbose) write(*,*) 'name: ', trim(name)
+   if (verbose) write(*,*) 'gridlist: ', trim(gridlist)
+
    ! As the gdprojinfo returns an assumed shape array, it must have a
    ! interface...
    !interface
@@ -75,15 +82,15 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
 
    ! Attach to and read the requested grid
    if (index(gridlist, trim(name)) .lt. comma) then
-      write(*,*) 'Attaching to grid ',trim(gridlist(1:comma-1))
+      if (verbose) write(*,*) 'Attaching to grid ',trim(gridlist(1:comma-1))
       gid = gdattach(fid, trim(gridlist(1:comma-1)))
    else
-      write(*,*) 'Attaching to grid ',trim(gridlist(1:comma-1))
+      if (verbose) write(*,*) 'Attaching to grid ',trim(gridlist(1:comma-1))
       gid = gdattach(fid, trim(gridlist(comma+1:)))
    end if
 
    ! Extract grid information and put relevant values in output structure
-   write(*,*) 'Reading projection and grid info'
+   if (verbose) write(*,*) 'Reading projection and grid info'
    stat = gdprojinfo(gid, proj, zone, sphere, param)
    stat = gdgridinfo(gid, xdim, ydim, upleft, lowright)
 
@@ -99,10 +106,10 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
    ! directions
    data%res = (lowright(1) - upleft(1)) / (1000.0 * real(xdim))
 
-   write(*,*) 'Grid size is       ',xdim,' x ',ydim
-   write(*,*) 'Grid centre is     ',data%grid_centre
-   write(*,*) 'Grid resolution is ',data%res
-   write(*,*) 'Earth radius is    ',data%REarth
+   if (verbose) write(*,*) 'Grid size is       ',xdim,' x ',ydim
+   if (verbose) write(*,*) 'Grid centre is     ',data%grid_centre
+   if (verbose) write(*,*) 'Grid resolution is ',data%res
+   if (verbose) write(*,*) 'Earth radius is    ',data%REarth
 
    ! Now read the data itself
    start(:)  = 0
@@ -113,7 +120,7 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
    allocate(tmp_data(xdim,ydim))
    allocate(data%extent(xdim,ydim))
    allocate(data%age(xdim,ydim))
-   write(*,*) 'Reading data fields'
+   if (verbose) write(*,*) 'Reading data fields'
    ! Note: The data in the HDF file is stored as unsigned bytes. Fortran 90
    ! doesn't have unsigned integers, so the data gets corrupted (all values
    ! greater than 127 come out negative). We thus copy the data out of the
@@ -134,6 +141,8 @@ function extract_nise_grid(fid, name, gridlist, data) result(stat)
    deallocate(tmp_data)
    ! Detact from the grid
    stat = gddetach(gid)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving extract_nise_grid()'
 
 end function extract_nise_grid
 
@@ -160,8 +169,10 @@ end subroutine deallocate_nise
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 
-function read_nsidc_nise(path_to_file, nise, north, south) &
+function read_nsidc_nise(path_to_file, nise, north, south, verbose) &
      result (stat)
+
+   use preproc_constants
 
    implicit none
 
@@ -172,6 +183,7 @@ function read_nsidc_nise(path_to_file, nise, north, south) &
    character(len=300), intent(in)  :: path_to_file
    integer(kind=1),    intent(in)  :: north
    integer(kind=1),    intent(in)  :: south
+   logical,            intent(in)  :: verbose
 
    ! Output variables
    type(nise_s),       intent(out) :: nise
@@ -187,26 +199,40 @@ function read_nsidc_nise(path_to_file, nise, north, south) &
    integer(kind=4), external :: gdgetfill
    integer(kind=4), external :: gdclose
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_nsidc_nise()'
+
+   if (verbose) write(*,*) 'path_to_file: ', trim(path_to_file)
+   if (verbose) write(*,*) 'north: ', north
+   if (verbose) write(*,*) 'south: ', south
+
    ! First off, find out what grids are in the file. There should be
    ! two; one for the Northern Hemisphere and one for the Southern.
    ! We'll need it's name to "attach" to it and extract the data
-   write(*,*) 'read_nsidc_nise: Reading ice file ',trim(path_to_file)
+   if (verbose) write(*,*) 'Reading ice file ', trim(path_to_file)
    stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
 
-   if (stat .ne. 2) write(*,*) 'Problem with number of grids: ',stat
-   write(*,*) 'gridlist = "',trim(gridlist),'", length = ',gridlistlen
+   if (stat .ne. 2) then
+      write(*,*) 'ERROR: read_nsidc_nise(): Invalid with number of grids: ',stat
+      stop error_stop_code
+   end if
+   if (verbose) then
+      write(*,*) 'gridlist = ', trim(gridlist)
+      write(*,*) 'gridlistlen = ', gridlistlen
+   end if
 
    ! Open the datafile and get a file descriptor, and then attach to the
    ! first grid, as defined above
    fid = gdopen(path_to_file, 1)
 
    ! Call the extract_nise_grid function to read each grid
-   stat = extract_nise_grid(fid, 'North', gridlist, nise%north)
-   stat = extract_nise_grid(fid, 'South', gridlist, nise%south)
+   stat = extract_nise_grid(fid, 'North', gridlist, nise%north, verbose)
+   stat = extract_nise_grid(fid, 'South', gridlist, nise%south, verbose)
 
-   write(*,*) 'Closing file'
+   if (verbose) write(*,*) 'Closing file'
 
    ! Close the hdf file
    stat = gdclose(fid)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_nsidc_nise()'
 
 end function read_nsidc_nise

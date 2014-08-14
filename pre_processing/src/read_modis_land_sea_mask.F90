@@ -45,7 +45,6 @@ subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,b
    integer,            intent(in)  :: ixstart, ixstop, iystart, iystop
    integer(kind=sint), intent(out) :: btemp(ixstart:ixstop,iystart:iystop)
 
-!  integer            :: ix, jy
    integer            :: err_code
    integer            :: file_id, var_id, attr_id
    integer            :: start(2), stride(2), edge(2)
@@ -68,19 +67,9 @@ subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,b
    attr_id=sffattr(var_id, "_FillValue")
    err_code=sfrattr(var_id, attr_id, fv)
 
-   !write(*,*) 'fv ls flag',fv
-   !write(*,*) 'btemp',btemp
-   !stop
    ! overwrite fill value with ORAC value
-   ! which of these is most efficient is compiler-dependant
    where(btemp .eq. fv) btemp=-1
-!   do ix=ixstart,ixstop
-!      do jy=iystart,iystop
-!         if (btemp(ix,jy) .eq. fv ) btemp(ix,jy)=-1
-!      end do
-!   end do
 
    err_code=sfendacc(var_id)
 
 end subroutine read_modis_land_sea_mask
-

@@ -291,9 +291,8 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    inquire(file=drift_table, exist=file_exists)
    if (.not. file_exists) then
       stat = -1
-      write(*,*) 'aatsr_read_drift_table: WARNING: Could not find AATSR '// &
-           & 'drift correction LUT. No correction applied!'
-      write(*,*) '   Filename: ',trim(drift_table)
+      write(*,*) 'ERROR: aatsr_read_drift_table(): Could not find AATSR ' // &
+               & 'drift correction LUT, filename: ', trim(drift_table)
       return
    end if
 
@@ -307,8 +306,8 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
          no_lun = .false.
       else
          if (lun .ge. 100) then
-            write(*,*) 'aatsr_read_drift_table: No LUN available. No '// &
-                 & 'correction applied!'
+            write(*,*) 'ERROR: aatsr_read_drift_table(): No LUN available. ' // &
+                     & 'No correction applied!'
             stat = -2
             return
          end if
@@ -318,9 +317,8 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    ! Open the file...
    open(unit=lun, file=drift_table, iostat=stat)
    if (stat.ne.0) then
-      write(*,*) 'aatsr_read_drift_table: WARNING: Unable to open AATSR '// &
-           & 'drift correction LUT. No correction applied!'
-      write(*,*) '   Filename: ',trim(drift_table)
+      write(*,*) 'ERROR: aatsr_read_drift_table(): Unable to open AATSR ' // &
+               & 'drift correction LUT, filename: ', trim(drift_table)
       return
    end if
 
@@ -387,9 +385,10 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    end do
    close(unit=lun)
    if (stat.ge.0) then
-      write(*,'(A, i4)') 'aatsr_read_drift_table: WARNING: Error reading '// &
-           & 'AATSR drift correction LUT at line ',i
-      write(*,*) '   Filename: ',trim(drift_table)
+      write(*,*) 'ERROR: aatsr_read_drift_table(): Problem reading AATSR ' // &
+               & 'drift correction LUT, filename: ', trim(drift_table), &
+               & ', line: ', i
+      stop error_stop_code
    else
       stat = 0 ! let's have a normal output if it works
    end if

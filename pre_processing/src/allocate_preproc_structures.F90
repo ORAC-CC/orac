@@ -87,7 +87,6 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    ey=preproc_dims%max_lat
 
    ! preproc_dims
-   write(*,*) 'preproc_dims',preproc_dims%xdim,preproc_dims%ydim
    allocate(preproc_dims%counter_sw(sx:ex,sy:ey))
    preproc_dims%counter_sw=0
    allocate(preproc_dims%counter_lw(sx:ex,sy:ey))

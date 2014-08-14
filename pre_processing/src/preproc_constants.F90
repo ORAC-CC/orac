@@ -52,6 +52,10 @@ module preproc_constants
    integer, parameter :: uuid_length=36
 
 
+   ! Error code to give back to the system on an error
+   integer, parameter :: error_stop_code = 1
+
+
    real(kind=sreal),    parameter :: dither=1.0E-3
    real(kind=sreal),    parameter :: dither_more=1.0E-7
 

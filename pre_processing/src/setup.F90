@@ -18,24 +18,26 @@ contains
 ! 3) Set details in channel_info such as channel numbers
 !
 ! Arguments:
-! Name            Type    In/Out/Both Description
+! Name            Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! path_to_l1b_file string in   Full path to level 1B data
-! path_to_geo_file string in   Full path to geolocation data
-! platform         string both Name of satellite
-! doy              stint  out  Day of year (1-366)
-! year             stint  out  Year
-! month            stint  out  Month of year (1-12)
-! day              stint  out  Day of month (1-31)
-! hour             stint  out  Hour of day (0-59)
-! minute           stint  out  Minute of hour (0-59)
-! cyear            string out  Year, as a 4 character string
-! cmonth           string out  Month of year, as a 2 character string
-! cday             string out  Day of month, as a 2 character string
-! chour            string out  Hour of day, as a 2 character string
-! cminute          string out  Minute of hour, as a 2 character string
-! channel_info     struct both Structure summarising the channels to be
-!                              processed
+! l1b_path_file string in          Full path to level 1B data
+! geo_path_file string in          Full path to geolocation data
+! platform      string both        Name of satellite
+! year          stint  out         Year
+! month         stint  out         Month of year (1-12)
+! doy           stint  out         Day of year (1-366)
+! day           stint  out         Day of month (1-31)
+! hour          stint  out         Hour of day (0-59)
+! minute        stint  out         Minute of hour (0-59)
+! cyear         string out         Year, as a 4 character string
+! cmonth        string out         Month of year, as a 2 character string
+! cdoy          string out         Day of year, as a 3 character string
+! cday          string out         Day of month, as a 2 character string
+! chour         string out         Hour of day, as a 2 character string
+! cminute       string out         Minute of hour, as a 2 character string
+! channel_info  struct both        Structure summarising the channels to be
+!                                  processed
+! verbose       logic  in          T: print status information; F: don't
 !
 ! History:
 ! 2011/12/09, MJ: produces draft code for MODIS.
@@ -57,8 +59,8 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
-     year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
+subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
+     hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
    use channel_structures
@@ -68,42 +70,48 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    implicit none
 
-   character(len=pathlength),     intent(in)  :: path_to_l1b_file
-   character(len=pathlength),     intent(in)  :: path_to_geo_file
-   character(len=platformlength), intent(out) :: platform
-   integer(kind=stint),           intent(out) :: doy,year,month,day,hour,minute
-   character(len=datelength),     intent(out) :: cyear,chour,cminute,cmonth,cday
+   character(len=pathlength),     intent(in)    :: l1b_path_file
+   character(len=pathlength),     intent(in)    :: geo_path_file
+   character(len=platformlength), intent(out)   :: platform
+   integer(kind=stint),           intent(out)   :: year,month,day,doy,hour,minute
+   character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
    type(channel_info_s),          intent(inout) :: channel_info
+   logical,                       intent(in)    :: verbose
 
-   character(len=datelength)                  :: cdoy
-   integer(kind=stint)                        :: intdummy1,intdummy2
+   integer(kind=stint)                          :: intdummy1,intdummy2
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_modis()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    !check if l1b and geo file are of the same granule
-   intdummy1=index(trim(adjustl(path_to_l1b_file)),'/',back=.true.)
-   intdummy2=index(trim(adjustl(path_to_geo_file)),'/',back=.true.)
+   intdummy1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
+   intdummy2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
 
-   if (trim(adjustl(path_to_l1b_file(intdummy1+10:intdummy1+26))) .ne. &
-      trim(adjustl(path_to_geo_file(intdummy2+7:intdummy2+23)))) then
+   if (trim(adjustl(l1b_path_file(intdummy1+10:intdummy1+26))) .ne. &
+       trim(adjustl(geo_path_file(intdummy2+7:intdummy2+23)))) then
       write(*,*)
-      write(*,*) 'Geolocation and L1b files are for different granules!!!'
-      write(*,*) trim(adjustl(path_to_geo_file))
-      write(*,*) trim(adjustl(path_to_l1b_file))
+      write(*,*) 'ERROR: setup_modis(): Geolocation and L1b files are for ' // &
+               & 'different granules'
+      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
-      stop
+      stop error_stop_code
    end if
 
    !which modis are we processing?
-   intdummy1=index(trim(adjustl(path_to_l1b_file)),'1KM.')
-   if (trim(adjustl(path_to_l1b_file(intdummy1-5:intdummy1-3))) .eq. 'MYD') &
+   intdummy1=index(trim(adjustl(l1b_path_file)),'1KM.')
+   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MYD') &
         platform='AQUA'
-   if (trim(adjustl(path_to_l1b_file(intdummy1-5:intdummy1-3))) .eq. 'MOD') &
+   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MOD') &
         platform='TERRA'
 
-   !Get year and doy,hour and minute as integers
-   cyear=trim(adjustl(path_to_l1b_file(intdummy1+5:intdummy1+8)))
-   cdoy=trim(adjustl(path_to_l1b_file(intdummy1+9:intdummy1+11)))
-   chour=trim(adjustl(path_to_l1b_file(intdummy1+13:intdummy1+14)))
-   cminute=trim(adjustl(path_to_l1b_file(intdummy1+15:intdummy1+16)))
+   !Get year, doy, hour and minute as integers
+   cyear=trim(adjustl(l1b_path_file(intdummy1+5:intdummy1+8)))
+   cdoy=trim(adjustl(l1b_path_file(intdummy1+9:intdummy1+11)))
+   chour=trim(adjustl(l1b_path_file(intdummy1+13:intdummy1+14)))
+   cminute=trim(adjustl(l1b_path_file(intdummy1+15:intdummy1+16)))
 
    read(cdoy(1:len_trim(cdoy)), '(I3)') doy
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -114,10 +122,8 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
    call DOY2GREG(doy,year,month,day)
 
    !get month and day as text
-   write(cmonth,'(i2)') month
-   if (month .lt. 10) cmonth='0'//trim(adjustl(cmonth))
-   write(cday,'(i2)') day
-   if (day .lt. 10) cday='0'//trim(adjustl(cday))
+   write(cmonth, '(i2.2)') month
+   write(cday, '(i2.2)') day
 
    !now set up the channels
    !numbering wrt instrument definition
@@ -141,13 +147,13 @@ subroutine setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy, &
    channel_info%channel_ids_rttov_coef_sw=(/ 1, 2, 6, 20 /)
    channel_info%channel_ids_rttov_coef_lw=(/ 1, 11, 12 /)
 
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
+
 end subroutine setup_modis
 
-!---------------------------------------------------------
-!---------------------------------------------------------
 
-subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
-     year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
+subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
+     hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
    use preproc_constants
@@ -156,48 +162,56 @@ subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    implicit none
 
-   character(len=pathlength),     intent(in)  :: path_to_l1b_file
-   character(len=pathlength),     intent(in)  :: path_to_geo_file
-   character(len=platformlength), intent(out) :: platform
-   integer(kind=stint),           intent(out) :: doy,year,month,day,hour,minute
-   character(len=datelength),     intent(out) :: cyear,chour,cminute,cmonth,cday
+   character(len=pathlength),     intent(in)    :: l1b_path_file
+   character(len=pathlength),     intent(in)    :: geo_path_file
+   character(len=platformlength), intent(out)   :: platform
+   integer(kind=stint),           intent(out)   :: year,month,day,doy,hour,minute
+   character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
    type(channel_info_s),          intent(inout) :: channel_info
+   logical,                       intent(in)    :: verbose
 
-   integer(kind=stint)                        :: intdummy1,intdummy2
+   integer(kind=stint)                          :: intdummy1,intdummy2
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_avhrr()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    !check if l1b and angles file are or the same orbit
-   intdummy1=index(trim(adjustl(path_to_l1b_file)),'_avhrr',back=.true.)
-   intdummy2=index(trim(adjustl(path_to_geo_file)),'_sunsatangles',back=.true.)
-   if (trim(adjustl(path_to_l1b_file(1:intdummy1-1))) .ne. &
-      trim(adjustl(path_to_geo_file(1:intdummy2-1)))) then
+   intdummy1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
+   intdummy2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
+   if (trim(adjustl(l1b_path_file(1:intdummy1-1))) .ne. &
+       trim(adjustl(geo_path_file(1:intdummy2-1)))) then
       write(*,*)
-      write(*,*) 'Geolocation and L1b files are for different granules!!!'
-      write(*,*) trim(adjustl(path_to_geo_file))
-      write(*,*) trim(adjustl(path_to_l1b_file))
+      write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
+               & 'different granules'
+      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
-      stop
+      stop error_stop_code
    end if
 
    !which avhrr are we processing?
-   intdummy1=index(trim(adjustl(path_to_l1b_file)),'.h5',back=.true.)
-   platform=trim(adjustl(path_to_l1b_file(intdummy1-52:intdummy1-47)))
+   intdummy1=index(trim(adjustl(l1b_path_file)),'.h5',back=.true.)
+   platform=trim(adjustl(l1b_path_file(intdummy1-52:intdummy1-47)))
 
    !Get year, month,day,hour and minute as character
-   cyear=trim(adjustl(path_to_l1b_file(intdummy1-45:intdummy1-42)))
-   cmonth=trim(adjustl(path_to_l1b_file(intdummy1-41:intdummy1-40)))
-   cday=trim(adjustl(path_to_l1b_file(intdummy1-39:intdummy1-38)))
-   chour=trim(adjustl(path_to_l1b_file(intdummy1-36:intdummy1-35)))
-   cminute=trim(adjustl(path_to_l1b_file(intdummy1-34:intdummy1-33)))
+   cyear=trim(adjustl(l1b_path_file(intdummy1-45:intdummy1-42)))
+   cmonth=trim(adjustl(l1b_path_file(intdummy1-41:intdummy1-40)))
+   cday=trim(adjustl(l1b_path_file(intdummy1-39:intdummy1-38)))
+   chour=trim(adjustl(l1b_path_file(intdummy1-36:intdummy1-35)))
+   cminute=trim(adjustl(l1b_path_file(intdummy1-34:intdummy1-33)))
 
-   !Get year, month,day,hour and minute as integers
-   read(cday,'(i2)') day
-   read(cmonth,'(i2)') month
+   !Get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth,'(i2)') month
+   read(cday,'(i2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
    !added doy calculation for avhrr
    call GREG2DOY(year,month,day,doy)
+   write(cdoy, '(i3.3)') doy
 
    !now set up the channels (AP: Strictly, this definition does nothing.)
    !numbering wrt instrument definition
@@ -221,13 +235,15 @@ subroutine setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    channel_info%channel_ids_rttov_coef_sw=(/ 1, 2, 3, 4 /)
    channel_info%channel_ids_rttov_coef_lw=(/ 1, 2, 3 /)
 
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
+
 end subroutine setup_avhrr
 
 !---------------------------------------------------------
 !---------------------------------------------------------
 
-subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
-     year,month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
+subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
+     hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
    use preproc_constants
@@ -236,46 +252,53 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
 
    implicit none
 
-   character(len=pathlength),     intent(in)  :: path_to_l1b_file
-   character(len=pathlength),     intent(in)  :: path_to_geo_file
-   character(len=platformlength), intent(out) :: platform
-   integer(kind=stint),           intent(out) :: doy,year,month,day,hour,minute
-   character(len=datelength),     intent(out) :: cyear,chour,cminute,cmonth,cday
+   character(len=pathlength),     intent(in)    :: l1b_path_file
+   character(len=pathlength),     intent(in)    :: geo_path_file
+   character(len=platformlength), intent(out)   :: platform
+   integer(kind=stint),           intent(out)   :: year,month,day,doy,hour,minute
+   character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
    type(channel_info_s),          intent(inout) :: channel_info
+   logical,                       intent(in)    :: verbose
 
-   integer(kind=stint)                        :: intdummy1
+   integer(kind=stint)                          :: intdummy1
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_aatsr()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
    !check if l1b and angles files identical
-   if (trim(adjustl(path_to_l1b_file)) .ne. trim(adjustl(path_to_geo_file))) then
+   if (trim(adjustl(l1b_path_file)) .ne. &
+       trim(adjustl(geo_path_file))) then
       write(*,*)
-      write(*,*) 'Geolocation and L1b files are for different granules!!!'
-      write(*,*) trim(adjustl(path_to_geo_file))
-      write(*,*) trim(adjustl(path_to_l1b_file))
+      write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
+               & 'different granules'
+      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
-      stop
+      stop error_stop_code
    end if
 
    !which aatsr are we processing?
-   intdummy1=index(trim(adjustl(path_to_l1b_file)),'.N1',back=.true.)
+   intdummy1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
    platform='ENV'
-   write(*,*)'L1B file: ',trim(adjustl(path_to_l1b_file))
-   write(*,*)'Geo file: ',trim(adjustl(path_to_geo_file))
 
    !Get year, month,day,hour and minute as character
-   cyear=trim(adjustl(path_to_l1b_file(intdummy1-45:intdummy1-42)))
-   cmonth=trim(adjustl(path_to_l1b_file(intdummy1-41:intdummy1-40)))
-   cday=trim(adjustl(path_to_l1b_file(intdummy1-39:intdummy1-38)))
-   chour=trim(adjustl(path_to_l1b_file(intdummy1-36:intdummy1-35)))
-   cminute=trim(adjustl(path_to_l1b_file(intdummy1-34:intdummy1-33)))
+   cyear=trim(adjustl(l1b_path_file(intdummy1-45:intdummy1-42)))
+   cmonth=trim(adjustl(l1b_path_file(intdummy1-41:intdummy1-40)))
+   cday=trim(adjustl(l1b_path_file(intdummy1-39:intdummy1-38)))
+   chour=trim(adjustl(l1b_path_file(intdummy1-36:intdummy1-35)))
+   cminute=trim(adjustl(l1b_path_file(intdummy1-34:intdummy1-33)))
 
-   !Get year, month,day,hour and minute as integers
-   read(cday,'(i2)') day
-   read(cmonth,'(i2)') month
+   !Get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth,'(i2)') month
+   read(cday,'(i2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
-   call GREG2DOY(year, month, day, DOY)
+   call GREG2DOY(year, month, day, doy)
+   write(cdoy, '(i3.3)') doy
 
    ! now set up the channels
    ! Number of viewing geometries: AATSR of course has two, but initially
@@ -303,6 +326,8 @@ subroutine setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy, &
    !channel number wrt RTTOV coefficient file
    channel_info%channel_ids_rttov_coef_sw=(/ 2, 3, 4, 5 /)
    channel_info%channel_ids_rttov_coef_lw=(/ 1, 2, 3 /)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
 end subroutine setup_aatsr
 

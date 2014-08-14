@@ -43,7 +43,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, &
-                        QC, stat)
+                        QC, verbose, stat)
 
    use preproc_constants
 
@@ -59,6 +59,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    integer,                   intent(in) :: white_sky
    integer,                   intent(in) :: black_sky
    integer,                   intent(in) :: QC
+   logical,                   intent(in) :: verbose
 
    ! Output variables
    type(mcd43c3),             intent(out) :: mcd
@@ -107,6 +108,12 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
                  'Band5    ', 'Band6    ', 'Band7    ', 'vis      ', &
                  'nir      ', 'shortwave' /)
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_mcd43c3()'
+
+   if (verbose) write(*,*) 'path_to_file: ', trim(path_to_file)
+   if (verbose) write(*,*) 'nbands: ',       nbands
+   if (verbose) write(*,*) 'bands: ',        bands
+
    ! Allocate and populate the band and bandid arrays in the output structure
    allocate(mcd%bands(nbands))
    allocate(mcd%bandids(nbands))
@@ -127,14 +134,14 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
 
    ! First off, find out what grids are in the file - there should only be one.
    ! We'll need it's name to "attach" to it and extract the data
-   write(*,*) 'Reading: ',trim(path_to_file)
+   if (verbose) write(*,*) 'Reading: ',trim(path_to_file)
    stat = gdinqgrid(path_to_file, gridlist, gridlistlen)
    if (stat .ne. 1) then
-      write(*,*) 'Read_MCD43C3(), problem with gdinqgrid(): ',stat
-      stop
+      write(*,*) 'ERROR: read_mcd43c3(), problem with gdinqgrid(): ',stat
+      stop error_stop_code
    end if
 
-   write(*,*) 'gridlist = ',trim(gridlist),' length = ',gridlistlen
+   if (verbose) write(*,*) 'gridlist = ',trim(gridlist),' length = ',gridlistlen
 
    ! Open the datafile and get a file descriptor, and then attach to the grid
    ! (using the name returned above)
@@ -142,28 +149,28 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
 
    gid = gdattach(fid, trim(gridlist))
 
-   write(*,*) 'File and grid IDs are: ',fid, gid
+   if (verbose) write(*,*) 'File and grid IDs are: ',fid, gid
 
    ! Extract the projection and grid information from the supplied grid. For some
    ! reason C. Poulsen cannot run with this file called it does not seem critical
    ! so I have commented it out.
 !  stat = gdprojinfo(gid, proj, zone, sphere, param)
 !  if (stat .ne. 0) then
-!     write(*,*) 'Read_MCD43C3(), problem with gdprojinfo(): ',stat
-!     stop
+!     write(*,*) 'ERROR: read_mcd43c3(), problem with gdprojinfo(): ',stat
+!     stop error_stop_code
 !  end if
 
    ! Check the grid-type and then use the grid-info to reproduce the lat-lon
    ! coordinates
 !  if (proj.ne.0) then
-!     write(*,*) 'Read_MCD43C3: only "Geographic" grid type supported'
-!     stop
+!     write(*,*) 'ERROR: read_mcd43c3: only "Geographic" grid type supported'
+!     stop error_stop_code
 !  end if
 
    stat = gdgridinfo(gid, xdim, ydim, upleft, lowright)
    if (stat .ne. 0) then
-      write(*,*) 'Read_MCD43C3(), problem with gdgridinfo(): ',stat
-      stop
+      write(*,*) 'ERROR: read_mcd43c3(), problem with gdgridinfo(): ',stat
+      stop error_stop_code
    end if
 
    ! Start populating the mcd data structure and allocating the arrays that we
@@ -195,29 +202,29 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
       stat = gdrdfld(gid, 'BRDF_Quality', start, stride, edge, &
                      mcd%quality)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading BRDF_Quality: ',stat
-         stop
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading BRDF_Quality: ',stat
+         stop error_stop_code
       end if
 
       stat = gdrdfld(gid, 'Local_Solar_Noon', start, stride, edge, &
                      mcd%local_solar_noon)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading Local_Solar_Noon: ',stat
-         stop
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading Local_Solar_Noon: ',stat
+         stop error_stop_code
       end if
 
       stat = gdrdfld(gid, 'Percent_Inputs', start, stride, edge, &
                      mcd%percent_inputs)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading Percent_Inputs: ',stat
-         stop
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading Percent_Inputs: ',stat
+         stop error_stop_code
       end if
 
       stat = gdrdfld(gid, 'Percent_Snow', start, stride, edge, &
                      mcd%percent_snow)
       if (stat .ne. 0) then
-         write(*,*) 'Read_MCD43C3(), Error reading Percent_Snow: ',stat
-         stop
+         write(*,*) 'ERROR: read_mcd43c3(), Error reading Percent_Snow: ',stat
+         stop error_stop_code
       end if
    else
       allocate(mcd%quality(1,1))
@@ -254,18 +261,18 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
       if (white_sky .ne. 0) then
          dataname = 'Albedo_WSA_' // trim(BandList(bands(i)))
 
-         write(*,*) 'Reading variable: ', trim(dataname)
+         if (verbose) write(*,*) 'Reading variable: ', trim(dataname)
          stat = gdrdfld(gid, trim(dataname), start, stride, edge, tmpdata)
          if (stat .ne. 0) then
-            write(*,*) 'Read_MCD43C3(), gdrdfld(): ',stat
-            stop
+            write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ',stat
+            stop error_stop_code
          end if
 
          ! Extract the fill value
 !        stat = gdgetfill(gid, trim(dataname), fill)
 !        if (stat .ne. 0) then
-!           write(*,*) 'Read_MCD43C3(), gdgetfill(): ',stat
-!           stop
+!           write(*,*) 'ERROR: read_mcd43c3(), gdgetfill(): ',stat
+!           stop error_stop_code
 !        end if
 
          ! Use the scale and offset values defined (read?) above to convert the
@@ -287,18 +294,18 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
       if (black_sky .ne. 0) then
          dataname = 'Albedo_BSA_' // trim(BandList(bands(i)))
 
-         write(*,*) 'Reading variable: ', dataname
+         write(*,*) 'Reading parameter: ', dataname
          stat = gdrdfld(gid, dataname, start, stride, edge, tmpdata)
          if (stat .ne. 0) then
-            write(*,*) 'Read_MCD43C3(), gdrdfld(): ',stat
-            stop
+            write(*,*) 'ERROR: read_mcd43c3(), gdrdfld(): ',stat
+            stop error_stop_code
          end if
 
          ! Extract the fill value
 !        stat = gdgetfill(gid, trim(dataname), fill)
 !        if (stat .ne. 0) then
-!           write(*,*) 'Read_MCD43C3(), gdgetfill(): ',stat
-!           stop
+!           write(*,*) 'ERROR: read_mcd43c3(), gdgetfill(): ',stat
+!           stop error_stop_code
 !        end if
 
          ! Use the scale and offset values defined (read?) above to convert the
@@ -323,5 +330,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    stat = gddetach(gid)
 
    stat = gdclose(fid)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_mcd43c3()'
 
 end subroutine read_mcd43c3

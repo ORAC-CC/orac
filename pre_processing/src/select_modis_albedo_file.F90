@@ -11,8 +11,8 @@
 ! Arguments:
 ! Name                 Type       In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! year                 character  in          Year
-! doy                  integer    in          Day of year
+! cyear                character  in          Year, as a 4 character string
+! cdoy                 character  in          DOY,  as a 3 character string
 ! modis_surf_path      character  in          Path to directory with the
 !                                             MCD43C3.A* files
 ! modis_surf_path_file character  out         Path the the required MCD43C3.A*
@@ -35,7 +35,7 @@
 ! There must be a way of searching for wildcard in fortran to make this
 ! code cleaner code should be modified so selects files from year either side
 !-------------------------------------------------------------------------------
-subroutine select_modis_albedo_file(cyear,doy,modis_surf_path,include_full_brdf, &
+subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf, &
                                     modis_surf_path_file)
 
    use preproc_structures
@@ -43,12 +43,13 @@ subroutine select_modis_albedo_file(cyear,doy,modis_surf_path,include_full_brdf,
    implicit none
 
    character(len=datelength), intent(in)  :: cyear
-   integer(kind=stint),       intent(in)  :: doy
+   character(len=datelength), intent(in)  :: cdoy
    character(len=pathlength), intent(in)  :: modis_surf_path
    logical,                   intent(in)  :: include_full_brdf
    character(len=pathlength), intent(out) :: modis_surf_path_file
 
    integer                                              :: nv
+   integer                                              :: doy
    integer(kind=stint), allocatable, dimension(:)       :: dates
    integer(kind=stint), allocatable, dimension(:)       :: newdates
    character(len=datelength), allocatable, dimension(:) :: dates_s
@@ -150,6 +151,7 @@ end if
    ! Find the closest data
 
    allocate(newdates(nv))
+   read(cdoy, *) doy
    newdates = abs(dates-doy)
 
    pos = minloc(newdates)
@@ -171,11 +173,13 @@ end if
    inquire(file=trim(modis_surf_path_file), exist=modis_surf_file_exist, &
       read=modis_surf_file_read)
    if (.not.modis_surf_file_exist) then
-      write(*,*) 'FAILED: STOP: MODIS surface albedo file does not exist: ', trim(modis_surf_path_file)
-      stop
+      write(*,*) 'ERROR: select_modis_albedo_file(): MODIS surface albedo ' // &
+               & 'file does not exist, filename: ', trim(modis_surf_path_file)
+      stop error_stop_code
    else if (trim(modis_surf_file_read).eq.'NO') then
-      write(*,*) 'FAILED: STOP: MODIS surface albedo file exists but is not readable: ', trim(modis_surf_path_file)
-      stop
+      write(*,*) 'ERROR: select_modis_albedo_file(): MODIS surface albedo ' // &
+               & 'file exists but is not readable, filename: ', trim(modis_surf_path_file)
+      stop error_stop_code
    end if
 
    deallocate(dates)

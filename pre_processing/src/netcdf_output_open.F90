@@ -11,7 +11,6 @@
 ! Name Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! output_pathin  string  in   Folder into which outputs should be saved
-! output_pathout string  in   Formatted folder where outputs should be saved
 ! lwrtm_file     string  in   Full path to output file LW RTM.
 ! swrtm_file     string  in   Full path to output file SW RTM.
 ! prtm_file      string  in   Full path to output file pressure RTM.
@@ -61,11 +60,11 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
-   swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file,geo_file, &
-   loc_file,alb_file,scan_file,platform,sensor,script_input,cyear,cmonth,cday, &
-   chour,cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
-   channel_info,use_chunking,include_full_brdf)
+subroutine netcdf_output_open(output_path,lwrtm_file,swrtm_file,prtm_file, &
+   config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, &
+   platform,sensor,script_input,cyear,cmonth,cday,chour,cminute,preproc_dims, &
+   imager_angles,imager_geolocation,netcdf_info,channel_info,use_chunking, &
+   include_full_brdf)
 
    use attribute_structures
    use channel_structures
@@ -76,8 +75,7 @@ subroutine netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
 
    implicit none
 
-   character(len=pathlength),     intent(in)    :: output_pathin
-   character(len=pathlength),     intent(out)   :: output_pathout
+   character(len=pathlength),     intent(in)    :: output_path
    character(len=filelength),     intent(in)    :: lwrtm_file,swrtm_file, &
                                                    prtm_file,config_file, &
                                                    msi_file,cf_file,lsf_file, &
@@ -104,12 +102,10 @@ subroutine netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
    integer(kind=lint) :: wo = 0
 
 
-   output_pathout=trim(adjustl(output_pathin))
-
    ! Create config file
    call netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(config_file)),&
+        trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
         wo,preproc_dims,imager_geolocation,netcdf_info,channel_info)
 
    ! Create RTM files
@@ -117,19 +113,19 @@ subroutine netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
    ! create lwrtm file
    call netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(lwrtm_file)),wo,1,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)),wo,1,&
         preproc_dims,imager_angles,netcdf_info,channel_info,use_chunking)
 
    ! create swrtm file
    call netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(swrtm_file)),wo,2,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)),wo,2,&
         preproc_dims,imager_angles,netcdf_info,channel_info,use_chunking)
 
    ! create prtm file
    call netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(prtm_file)),wo,3,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)),wo,3,&
         preproc_dims,imager_angles,netcdf_info,channel_info,use_chunking)
 
    ! Create swath based files
@@ -137,49 +133,49 @@ subroutine netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
    ! create msi file
    call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(msi_file)),wo,1,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)),wo,1,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create cf file
    call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(cf_file)),wo,2,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(cf_file)),wo,2,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create lsf file
    call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(lsf_file)),wo,3,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)),wo,3,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create geometry file
    call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(geo_file)),wo,4,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)),wo,4,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create location file
    call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(loc_file)),wo,5,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(loc_file)),wo,5,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create albedo file
    call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(alb_file)),wo,6,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(alb_file)),wo,6,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 
    ! create scan file
    call netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
-        trim(adjustl(output_pathout))//'/'//trim(adjustl(scan_file)),wo,7,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(scan_file)),wo,7,&
         imager_geolocation,imager_angles,netcdf_info,channel_info,use_chunking,&
         include_full_brdf)
 

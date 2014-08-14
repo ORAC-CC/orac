@@ -1705,9 +1705,9 @@ subroutine cox_munk4_interp_shared_band_geo(d_theta, theta, shared_lut, shared_o
    real    :: b
 
    if (theta .lt. 0. .or. theta .gt. 2 * pi) then
-        print *, 'ERROR: cox_munk4_interp_shared_band_geo(), theta = ', &
+        write(*,*) 'ERROR: cox_munk4_interp_shared_band_geo(), theta = ', &
                  theta, 'is out of range'
-   endif
+   end if
 
    i  = int(theta / d_theta) + 1
    ii = i + 1
@@ -1910,7 +1910,7 @@ end function zeisse_ba3
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
-   u10, v10, fill_value, rho_0v, rho_0d, rho_dv, rho_dd)
+   u10, v10, fill_value, rho_0v, rho_0d, rho_dv, rho_dd, verbose)
 
    use nr
    use preproc_constants
@@ -1923,6 +1923,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    real(kind=sreal), intent(in)    :: solaz(:), relaz(:)
    real(kind=sreal), intent(in)    :: u10(:), v10(:)
    real(kind=sreal), intent(in)    :: fill_value
+   logical,          intent(in)    :: verbose
 
    ! Output arguments
    real(kind=sreal), intent(inout) :: rho_0v(:,:)
@@ -2003,7 +2004,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
 
    !----------------------------------------------------------------------------
-   print *, 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0v'
+   if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
    do i = 1, n_points
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
@@ -2020,7 +2021,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 
 
    !----------------------------------------------------------------------------
-   print *, 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0d'
+   if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0d'
    !----------------------------------------------------------------------------
 ! The full computation
 if (.false.) then
@@ -2096,10 +2097,10 @@ else
    end do
 
    deallocate(shared_band_geo)
-endif
+end if
 
    !----------------------------------------------------------------------------
-   print *, 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_dv'
+   if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_dv'
    !----------------------------------------------------------------------------
 ! The full computation
 if (.false.) then
@@ -2175,7 +2176,7 @@ else
    end do
 
    deallocate(shared_band_geo)
-endif
+end if
 
    !----------------------------------------------------------------------------
    !
@@ -2185,7 +2186,7 @@ endif
 
 
    !----------------------------------------------------------------------------
-   print *, 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_dd'
+   if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_dd'
    !----------------------------------------------------------------------------
    allocate(shared_band_geo(n_quad_phi, n_quad_theta, n_quad_theta, n_bands))
 

@@ -57,7 +57,11 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
    path_to_lsmask_file=trim(adjustl(path_to_geo_file))
    path_to_lsmask_file=path_to_lsmask_file(1:iunderscore)//'physiography.h5'
    inquire(file=path_to_lsmask_file,exist=check)
-   if (.not. check) stop 'AVHRR physiography file does not exist.'
+   if (.not. check) then
+      write(*,*) 'ERROR: read_avhrr_land_sea_mask(): AVHRR physiography ' // &
+                & 'file does not exist, filename: ', trim(path_to_lsmask_file)
+      stop error_stop_code
+   endif
 
    !allocate temporary data
    allocate(btemp(imager_geolocation%startx:imager_geolocation%endx, &

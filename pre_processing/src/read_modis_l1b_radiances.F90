@@ -59,14 +59,22 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
 
    real(kind=sreal), allocatable, dimension(:,:) :: temp
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances()'
+
+   if (verbose) write(*,*) 'sensor: ',           trim(sensor)
+   if (verbose) write(*,*) 'platform: ',         trim(platform)
+   if (verbose) write(*,*) 'path_to_l1b_file: ', trim(path_to_l1b_file)
+
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx,&
                  imager_geolocation%starty:imager_geolocation%endy))
 
    ! get file id
    l1b_id=sfstart(path_to_l1b_file,DFACC_READ)
-   write(*,*) 'L1B FILE:',trim(path_to_l1b_file),l1b_id
 
    do ich=1,channel_info%nchannels_total
+      if (verbose) write(*,*) 'Read MODIS band: ', &
+           channel_info%channel_ids_instr(ich)
+
       ! use channel_info from SETUP.F90
       lrefl = channel_info%channel_ids_instr(ich).lt.20 .or. &
            channel_info%channel_ids_instr(ich).eq.26
@@ -75,8 +83,9 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
            channel_info%channel_ids_instr(ich),lrefl, &
            imager_geolocation%startx,imager_geolocation%endx, &
            imager_geolocation%starty,imager_geolocation%endy,temp,verbose)
-      if (verbose) write(*,*) 'MODIS band ', &
-           channel_info%channel_ids_instr(ich),': ',minval(temp),maxval(temp)
+
+      if (verbose) write(*,*) 'Band minimum and maximum values: ', &
+           minval(temp),maxval(temp)
 
       if (.not. lrefl) then
          do ix=imager_geolocation%startx,imager_geolocation%endx
@@ -88,13 +97,15 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
             end do
          end do
       end if
-      imager_measurements%data(:,:,ich)=temp(:,:)
 
+      imager_measurements%data(:,:,ich)=temp(:,:)
    end do
 
    deallocate(temp)
 
    !end access to l1b file
    err_code=sfend(l1b_id)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_modis_l1b_radiances()'
 
 end subroutine read_modis_l1b_radiances

@@ -520,7 +520,7 @@ end subroutine
 ! Name Type Description
 !-------------------------------------------------------------------------------
 subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
-   solaz, relaz, f, fill_value, rho_0v, rho_0d, rho_dv, rho_dd)
+   solaz, relaz, f, fill_value, rho_0v, rho_0d, rho_dv, rho_dd, verbose)
 
    use nr
    use preproc_constants
@@ -535,6 +535,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    real(kind=sreal), intent(in)    :: relaz(:)
    real(kind=sreal), intent(in)    :: f(:, :, :)
    real(kind=sreal), intent(in)    :: fill_value
+   logical,          intent(in)    :: verbose
 
    ! Output arguments
    real(kind=sreal), intent(inout) :: rho_0v(:,:)
@@ -610,7 +611,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 
 
    !----------------------------------------------------------------------------
-   print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0v'
+   if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
    do i = 1, n_points
       solza2 = solza(i) * d2r
@@ -633,7 +634,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 
 
    !----------------------------------------------------------------------------
-   print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0d'
+   if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0d'
    !----------------------------------------------------------------------------
    rho_0d = 0.
 
@@ -671,7 +672,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 
 
    !----------------------------------------------------------------------------
-   print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dv'
+   if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dv'
    !----------------------------------------------------------------------------
    rho_dv = 0.
 
@@ -709,7 +710,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 
 
    !----------------------------------------------------------------------------
-   print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dd'
+   if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dd'
    !----------------------------------------------------------------------------
    do j = 1, n_quad_theta
       solza2 = qx_theta(j)

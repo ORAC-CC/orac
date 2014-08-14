@@ -36,7 +36,7 @@ $(OBJS)/netcdf_output.o: $(OBJS)/attribute_structures.o \
         netcdf_output_close.F90 netcdf_output_create_file.F90 \
         netcdf_output_open.F90 netcdf_output_write_swath.F90
 $(OBJS)/netcdf_structures.o: $(OBJS)/preproc_constants.o
-$(OBJS)/nise_def.o: read_nsidc_nise.F90
+$(OBJS)/nise_def.o: $(OBJS)/preproc_constants.o read_nsidc_nise.F90
 $(OBJS)/orac_ncdf.o: $(OBJS)/preproc_constants.o ncdf_read.inc
 $(OBJS)/preparation.o: $(OBJS)/attribute_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o

@@ -23,6 +23,7 @@
 ! stopy          lint   in   Last pixel to read along track
 ! channel_number string out  Descriptive label of this channel
 ! rtemp          sreal  both Array into which data will be stored
+! verbose        logic  in   T: print status information; F: don't
 !
 ! History:
 ! 2012/02/01, MJ: adds code to read AVHRR HDF5 sensor information.
@@ -37,7 +38,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
-   startx,stopx,starty,stopy,channel_number,rtemp)
+   startx,stopx,starty,stopy,channel_number,rtemp,verbose)
 
    use hdf5
    use preproc_constants
@@ -51,6 +52,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    integer(kind=lint),  intent(in)  :: startx,stopx,starty,stopy
    character(len=dim),  intent(out) :: channel_number
    real(kind=sreal),    intent(out) :: rtemp(startx:stopx,starty:stopy)
+   logical,             intent(in)  :: verbose
 
    integer(kind=lint)    :: ix,jy
    integer               :: err_code
@@ -59,6 +61,8 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
    integer(kind=HSIZE_T) :: start(2), stride(2), edge(2), adims(1)
    integer(kind=lint)    :: temp(startx:stopx,starty:stopy)
    real(kind=sreal)      :: nodata,missingdata,scale,offset
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_l1b_radiances_2()'
 
    !open the data group
    call h5gopen_f(fid,group,gr_id,err_code)
@@ -161,5 +165,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
 
    !close data group
    call h5gclose_f(gr_id, err_code)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_avhrr_l1b_radiances_2()'
 
 end subroutine read_avhrr_l1b_radiances_2

@@ -20,6 +20,7 @@
 ! imager_geolocation  struct both Summary of pixel positions
 ! imager_measurements struct both Satellite observations
 ! channel_info        struct in   Summary of channel information
+! verbose             logic  in   T: print status information; F: don't
 !
 ! History:
 ! 2012/02/01, MJ: writes initial code for reading the L1B AVHRR file.
@@ -37,7 +38,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geolocation, &
-     imager_measurements,channel_info)
+     imager_measurements,channel_info,verbose)
 
    use channel_structures
    use hdf5
@@ -52,12 +53,19 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
    type(imager_geolocation_s),    intent(inout) :: imager_geolocation
    type(imager_measurements_s),   intent(inout) :: imager_measurements
    type(channel_info_s),          intent(in)    :: channel_info
+   logical,                       intent(in)    :: verbose
 
    integer                                       :: ichannel,err_code
    integer(kind=lint)                            :: l1b_id
    real(kind=sreal), allocatable, dimension(:,:) :: temp
    character(len=6)                              :: cimage,cich
    character(len=10)                             :: channel_number
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_l1b_radiances()'
+
+   if (verbose) write(*,*) 'sensor: ',           trim(sensor)
+   if (verbose) write(*,*) 'platform: ',         trim(platform)
+   if (verbose) write(*,*) 'path_to_l1b_file: ', trim(path_to_l1b_file)
 
    allocate(temp(imager_geolocation%startx:imager_geolocation%endx, &
         imager_geolocation%starty:imager_geolocation%endy))
@@ -69,6 +77,8 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
    call h5fopen_f(path_to_l1b_file,h5f_acc_rdonly_f,l1b_id,err_code)
 
    do ichannel=1,channel_info%nchannels_total
+      if (verbose) write(*,*) 'Read AVHRR channel: ', ichannel
+
       write(cich,'(i1)') ichannel
       cimage='image'//trim(adjustl(cich))
 
@@ -76,7 +86,7 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
            cimage,"data",cimage//'/what', &
            imager_geolocation%startx,imager_geolocation%endx, &
            imager_geolocation%starty,imager_geolocation%endy, &
-           channel_number,temp)
+           channel_number,temp,verbose)
 
       ! copy arrays over and bring in 1,2,3a,3b,4,5 order,
       ! storage in the imager_measurements%data array is strictLy with
@@ -109,8 +119,9 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
             imager_measurements%data(:,:,3)=temp/100.0
          end where
       case default
-         write(*,*) 'AVHRR channel '//channel_number//' not expected.'
-         stop
+         write(*,*) 'ERROR: read_avhrr_l1b_radiances(): invalid AVHRR channel: ', &
+                    channel_number
+         stop error_stop_code
       end select
    end do
 
@@ -121,5 +132,7 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
 
    !close access to hdf5 interface
    call h5close_f(err_code)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_avhrr_l1b_radiances()'
 
 end subroutine read_avhrr_l1b_radiances

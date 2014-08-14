@@ -31,15 +31,17 @@
 ! ------------------------------------------------------------------------------
 ! sensor           string in Name of instrument (only AATSR, MODIS or AVHRR are
 !                            valid)
-! path_to_l1b_file string in Full path to level 1B data
-! path_to_geo_file string in Full path to geolocation data (identical to above
+! l1b_path_file    string in Full path to level 1B data
+! geo_path_file    string in Full path to geolocation data (identical to above
 !                            for AATSR)
 ! ecmwf_path       string in Folder containing ECMWF files
-! coef_path        string in Folder containing RTTOV coefficient files
-! emiss_path       string in Folder containing RTTOV emissivity files
-! ice_path         string in Folder containing NISE ice cover files
-! albedo_path      string in Folder containing MODIS MCD43C3 albedo files
-! emiss2_path      string in Folder containing MODIS monthly average emissivity
+! rttov_coef_path  string in Folder containing RTTOV coefficient files
+! rttov_emiss_path string in Folder containing RTTOV emissivity files
+! nise_ice_snow_path
+!                  string in Folder containing NISE ice cover files
+! modis_albedo_path
+!                  string in Folder containing MODIS MCD43C3 albedo files
+! cimss_emiss_path string in Folder containing MODIS monthly average emissivity
 ! dellon           real   in 1 / longitude increment in degrees
 ! dellat           real   in 1 / latitude increment in degrees
 ! output_pathin    string in Folder into which outputs should be saved
@@ -69,7 +71,8 @@
 ! license          string in Any necessary licensing information for this data
 ! uuid_tag         string in A Universally Unique ID for these files
 ! exec_time        string in Date/time string for when this file was generated
-! aatsr_calib_file string in Full path to the AATSR calibration file
+! aatsr_calib_path_file
+!                  string in Full path to the AATSR calibration file
 ! ecmwf_flag       int    in 0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
 !                            2: BADC GRIB files.
 ! ecmwf_path2      string in Folder containing ECMWF files (?)
@@ -203,7 +206,7 @@
 #ifndef WRAPPER
 program preprocessing
 #else
-subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_file)
+subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 #endif
 
    use attribute_structures
@@ -233,19 +236,19 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    include "hdf.f90"
    include "dffunc.f90"
 
-   character(len=pathlength)       :: driver_path_and_file
-   character(len=pathlength)       :: path_to_l1b_file
-   character(len=pathlength)       :: path_to_geo_file
-   character(len=pathlength)       :: ecmwf_path,ecmwf_pathout
-   character(len=pathlength)       :: coef_path
-   character(len=pathlength)       :: emiss_path
-   character(len=pathlength)       :: ice_path
-   character(len=pathlength)       :: albedo_path
-   character(len=pathlength)       :: emiss2_path
-   character(len=pathlength)       :: output_pathin,output_pathout
-   character(len=pathlength)       :: aatsr_calib_file
-   character(len=pathlength)       :: ecmwf_path2,ecmwf2pathout
-   character(len=pathlength)       :: ecmwf_path3,ecmwf3pathout
+   character(len=pathlength)       :: driver_path_file
+   character(len=pathlength)       :: l1b_path_file
+   character(len=pathlength)       :: geo_path_file
+   character(len=pathlength)       :: ecmwf_path,ecmwf_path_file
+   character(len=pathlength)       :: rttov_coef_path
+   character(len=pathlength)       :: rttov_emiss_path
+   character(len=pathlength)       :: nise_ice_snow_path
+   character(len=pathlength)       :: modis_albedo_path
+   character(len=pathlength)       :: cimss_emiss_path
+   character(len=pathlength)       :: output_path
+   character(len=pathlength)       :: aatsr_calib_path_file
+   character(len=pathlength)       :: ecmwf_path2,ecmwf_path_file2
+   character(len=pathlength)       :: ecmwf_path3,ecmwf_path_file3
    character(len=attribute_length) :: cdellon,cdellat
    character(len=pixellength)      :: cstartx,cendx,cstarty,cendy
    character(len=pixellength)      :: cecmwf_flag
@@ -294,7 +297,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
    integer(kind=stint)             :: doy,year,month,day,hour,minute
 
-   character(len=datelength)       :: cyear,cmonth,cday,chour,cminute
+   character(len=datelength)       :: cyear,cmonth,cday,cdoy,chour,cminute
 
    character(len=filelength)       :: lwrtm_file,swrtm_file,prtm_file
    character(len=filelength)       :: msi_file,cf_file,lsf_file,config_file
@@ -338,23 +341,20 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 #else
    nargs=-1
 #endif
-
-   write(*,*) 'inside preproc',nargs
-
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
       call get_command_argument(1,sensor)
-      call get_command_argument(2,path_to_l1b_file)
-      call get_command_argument(3,path_to_geo_file)
+      call get_command_argument(2,l1b_path_file)
+      call get_command_argument(3,geo_path_file)
       call get_command_argument(4,ecmwf_path)
-      call get_command_argument(5,coef_path)
-      call get_command_argument(6,emiss_path)
-      call get_command_argument(7,ice_path)
-      call get_command_argument(8,albedo_path)
-      call get_command_argument(9,emiss2_path)
+      call get_command_argument(5,rttov_coef_path)
+      call get_command_argument(6,rttov_emiss_path)
+      call get_command_argument(7,nise_ice_snow_path)
+      call get_command_argument(8,modis_albedo_path)
+      call get_command_argument(9,cimss_emiss_path)
       call get_command_argument(10,cdellon)
       call get_command_argument(11,cdellat)
-      call get_command_argument(12,output_pathin)
+      call get_command_argument(12,output_path)
       call get_command_argument(13,cstartx)
       call get_command_argument(14,cendx)
       call get_command_argument(15,cstarty)
@@ -376,7 +376,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       call get_command_argument(31,script_input%license)
       call get_command_argument(32,script_input%uuid_tag)
       call get_command_argument(33,script_input%exec_time)
-      call get_command_argument(34,aatsr_calib_file)
+      call get_command_argument(34,aatsr_calib_path_file)
       call get_command_argument(35,cecmwf_flag)
       call get_command_argument(36,ecmwf_path2)
       call get_command_argument(37,ecmwf_path3)
@@ -389,26 +389,26 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    else
       if (nargs .eq. 1) then
       ! if just one argument => this is driver file which contains everything
-         call get_command_argument(1,driver_path_and_file)
+         call get_command_argument(1,driver_path_file)
       else if (nargs .eq. -1) then
-         write(*,*) 'inside preproc ',trim(adjustl(driver_path_and_file))
+         write(*,*) 'inside preproc ',trim(adjustl(driver_path_file))
       end if
 
-      open(11,file=trim(adjustl(driver_path_and_file)),status='old', &
+      open(11,file=trim(adjustl(driver_path_file)),status='old', &
            form='formatted')
 
       read(11,*) sensor
-      read(11,*) path_to_l1b_file
-      read(11,*) path_to_geo_file
+      read(11,*) l1b_path_file
+      read(11,*) geo_path_file
       read(11,*) ecmwf_path
-      read(11,*) coef_path
-      read(11,*) emiss_path
-      read(11,*) ice_path
-      read(11,*) albedo_path
-      read(11,*) emiss2_path
+      read(11,*) rttov_coef_path
+      read(11,*) rttov_emiss_path
+      read(11,*) nise_ice_snow_path
+      read(11,*) modis_albedo_path
+      read(11,*) cimss_emiss_path
       read(11,*) cdellon
       read(11,*) cdellat
-      read(11,*) output_pathin
+      read(11,*) output_path
       read(11,*) cstartx
       read(11,*) cendx
       read(11,*) cstarty
@@ -430,7 +430,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
       read(11,*) script_input%license
       read(11,*) script_input%uuid_tag
       read(11,*) script_input%exec_time
-      read(11,*) aatsr_calib_file
+      read(11,*) aatsr_calib_path_file
       read(11,*) cecmwf_flag
       read(11,*) ecmwf_path2
       read(11,*) ecmwf_path3
@@ -448,9 +448,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
    ! get the execution time in UTC
 !  call date_and_time(VALUES=values)
-!  write (script_input%exec_time, '(i4,i2.2,i2.2,i2.2,i2.2,i2.2)'), &
-!         values(1), values(2), values(3), values(5), values(6), values(7)
-!  print *, script_input%exec_time
+!  write(script_input%exec_time, '(i4,i2.2,i2.2,i2.2,i2.2,i2.2)'), &
+!        values(1), values(2), values(3), values(5), values(6), values(7)
+!  write(*,*) script_input%exec_time
 !  stop
 
    ! cast input strings into appropriate variables
@@ -479,27 +479,38 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    call allocate_channel_info(channel_info)
 
    ! determine platform, day, time, check if l1b and geo match
-   inquire(file=path_to_l1b_file,exist=check)
-   if (.not. check) stop 'FAILED: L1B file does not exist.'
-   inquire(file=path_to_geo_file,exist=check)
-   if (.not. check) stop 'FAILED: Geo file does not exist.'
+   if (verbose) &
+      write(*,*) 'Determine platform, day, time, check if l1b and geo match'
+   inquire(file=l1b_path_file,exist=check)
+   if (.not. check) then
+        write(*,*) 'ERROR: L1B file does not exist: ', trim(l1b_path_file)
+        stop error_stop_code
+   end if
+   inquire(file=geo_path_file,exist=check)
+   if (.not. check) then
+        write(*,*) 'ERROR: GEO file does not exist: ', trim(geo_path_file)
+        stop error_stop_code
+   end if
    if (trim(adjustl(sensor)) .eq. 'MODIS') then
-      call setup_modis(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
-           month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
+      call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
+           verbose)
 
       ! get dimensions of the modis granule
-      call read_modis_dimensions(path_to_geo_file,n_across_track,n_along_track)
+      call read_modis_dimensions(geo_path_file,n_across_track,n_along_track)
 
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
-      call setup_avhrr(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
-           month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
+      call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
+           verbose)
 
       ! get dimensions of the avhrr orbit
-      call read_avhrr_dimensions(path_to_geo_file,n_across_track,n_along_track)
+      call read_avhrr_dimensions(geo_path_file,n_across_track,n_along_track)
 
    else if (trim(adjustl(sensor)) .eq. 'AATSR') then
-      call setup_aatsr(path_to_l1b_file,path_to_geo_file,platform,doy,year, &
-           month,day,hour,minute,cyear,cmonth,cday,chour,cminute,channel_info)
+      call setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
+           verbose)
 
       ! currently setup to do day only by default
       if (day_night .eq. 0) day_night=1
@@ -509,14 +520,16 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
       ! Get array dimensions and along-track offset for the daylight side. If
       ! we're processing daylight data, we may want to chunk process after this.
-      call read_aatsr_dimensions(path_to_l1b_file, n_across_track, &
+      call read_aatsr_dimensions(l1b_path_file, n_across_track, &
            n_along_track, along_track_offset, day_night, loc_limit, &
            n_along_track2, along_track_offset2, verbose)
 
    end if ! end of sensor selection
 
    if (verbose) then
-      write(*,*) 'File dimensions determined -'
+      write(*,*) 'WE ARE PROCESSING ',trim(platform),' FOR ORBIT',year,month, &
+                                                                  day,hour,minute
+      write(*,*) 'File dimensions determined:'
       write(*,*) 'along_track_offset:  ', along_track_offset
       write(*,*) 'n_along_track:       ', n_along_track
       if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
@@ -524,10 +537,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
          write(*,*) 'n_along_track2:      ', n_along_track2
       end if
    end if
-   write(*,*) 'WE ARE PROCESSING ',trim(platform),' FOR ORBIT',year,month,day, &
-        hour,minute
 
-   ! set processing dimensions
+   ! determine processing chunks and their dimensions
+   if (verbose) write(*,*) 'Determine processing chunks and their dimensions'
    if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
       ! use specified values
       imager_geolocation%startx=startx
@@ -572,7 +584,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
    end if ! end of startx and starty selection
 
    if (verbose) then
-      write(*,*) 'The chunks to be processed are:'
+      write(*,*) 'The number of chunks to be processed: ', n_chunks
+      write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, chunk_end):'
       do i_chunk = 1, n_chunks
          write(*,*) i_chunk, chunk_starts(i_chunk), chunk_ends(i_chunk)
       end do
@@ -580,8 +593,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
 
    imager_geolocation%nx=imager_geolocation%endx-imager_geolocation%startx+1
 
-   ! begin looping over chunks
+   if (verbose) write(*,*) 'Begin looping over chunks'
    do i_chunk=1,n_chunks
+      if (verbose) write(*,*) 'i_chunk: ', i_chunk
+
       imager_geolocation%starty = chunk_starts(i_chunk)
       imager_geolocation%endy   = chunk_ends(i_chunk)
       imager_geolocation%ny     = chunk_ends(i_chunk) - chunk_starts(i_chunk) + 1
@@ -593,122 +608,116 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
               imager_geolocation%endy
       end if
 
-      ! allocate the structures for the imager like geolocation, angles and
-      ! measurements and surface
+      ! allocate the structures for the imager: geolocation, angles and
+      ! measurements, and surface data
+      if (verbose) write(*,*) 'Allocate imager and surface structures'
       call allocate_imager_structures(imager_geolocation,imager_angles, &
            imager_flags,imager_time,imager_measurements,channel_info)
       call allocate_surface_structures(surface,imager_geolocation,channel_info, &
            include_full_brdf)
 
-      ! read imager information:
-      ! multi spectral data, lat/lon, angles etc.
-      call read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
-           aatsr_calib_file,imager_geolocation,imager_angles,imager_flags, &
+      ! read imager data:
+      if (verbose) write(*,*) 'Read imager data'
+      call read_imager(sensor,platform,l1b_path_file,geo_path_file, &
+           aatsr_calib_path_file,imager_geolocation,imager_angles,imager_flags, &
            imager_time,imager_measurements,channel_info,n_along_track,verbose)
 
       ! carry out any preparatory steps: identify required ECMWF and MODIS L3
       ! information,set paths and filenames to those required auxiliary /
       ! ancillary input...
+      if (verbose) write(*,*) 'Carry out any preparatory steps'
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-           cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, sensor, &
-           platform,hour,cyear,cmonth,cday,chour,cminute,assume_full_paths, &
-           ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf2pathout, &
-           ecmwf3pathout,script_input,ecmwf_flag,imager_geolocation,i_chunk, &
+           cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor, &
+           platform,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2, &
+           ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
+           script_input,ecmwf_flag,imager_geolocation,i_chunk,assume_full_paths, &
            verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
-         write(*,*) 'START READING ECMWF ERA INTERIM GRIB FILE:'
+         write(*,*) 'Start reading ecmwf era interim grib file'
          write(*,*) 'ecmwf_flag: ', ecmwf_flag
-         write(*,*) 'ecmwf_path:  ',trim(ecmwf_pathout)
+         write(*,*) 'ecmwf_path_file: ',trim(ecmwf_path_file)
          if (ecmwf_flag.gt.0) then
-            write(*,*) 'ecmwf_path2: ',trim(ecmwf2pathout)
-            write(*,*) 'ecmwf_path3: ',trim(ecmwf3pathout)
+            write(*,*) 'ecmwf_path_file2: ',trim(ecmwf_path_file2)
+            write(*,*) 'ecmwf_path_file3: ',trim(ecmwf_path_file3)
          end if
       end if
 
       ! read surface wind fields and ECMWF dimensions
       select case (ecmwf_flag)
       case(0)
-         call read_ecmwf_wind_grib(ecmwf_pathout,ecmwf)
+         call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf)
          if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
       case(1)
-         call read_ecmwf_wind_nc(ecmwf_pathout,ecmwf2pathout, &
-              ecmwf3pathout,ecmwf)
+         call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
+              ecmwf_path_file3,ecmwf)
          if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       case(2)
-         call read_ecmwf_wind_badc(ecmwf_pathout,ecmwf2pathout, &
-              ecmwf3pathout,ecmwf)
+         call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
+              ecmwf_path_file3,ecmwf)
          if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
       end select
       if (verbose) then
-         print*,'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
-         print*,'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
+         write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
+         write(*,*),'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
       end if
       call rearrange_ecmwf(ecmwf)
 
       ! define preprocessing grid from user grid spacing and satellite limits
-      if (verbose) write(*,*) 'define preprocessing grid'
+      if (verbose) write(*,*) 'Define preprocessing grid'
       preproc_dims%kdim = ecmwf%kdim + 1
       call define_preprop_grid(imager_geolocation,preproc_dims,verbose)
 
       ! allocate preprocessing structures
-      if (verbose) write(*,*) 'allocate preprocessing structures'
+      if (verbose) write(*,*) 'Allocate preprocessing structures'
       call allocate_preproc_structures(imager_angles,preproc_dims, &
-           preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm,preproc_swrtm, &
-           preproc_surf,channel_info)
+           preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
+           preproc_swrtm,preproc_surf,channel_info)
 
       ! now read the actual data and interpolate it to the preprocessing grid
       if (verbose) write(*,*) 'Build preprocessing grid'
       call build_preproc_fields(preproc_dims,preproc_geoloc,preproc_geo, &
            imager_geolocation,imager_angles)
-      if (verbose) write(*,*) 'finished preprocessing grid'
 
-      ! read grib files
-      if (verbose) write(*,*) 'START READING ECMWF ERA INTERIM FILE'
+      ! read ecmwf era interim fil
+      if (verbose) write(*,*) 'Read ecmwf era interim file'
       select case (ecmwf_flag)
       case(0)
-         call read_ecmwf_grib(ecmwf_pathout,preproc_dims, &
+         call read_ecmwf_grib(ecmwf_path_file,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
       case(1)
-         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_pathout)
-         call read_ecmwf_nc(ecmwf_pathout,ecmwf,preproc_dims, &
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
+         call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
 
-         if (verbose) write(*,*) 'Reading ecmwf path2: ',trim(ecmwf2pathout)
-         call read_ecmwf_nc(ecmwf2pathout,ecmwf,preproc_dims,&
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
+         call read_ecmwf_nc(ecmwf_path_file2,ecmwf,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
 
-         if (verbose) write(*,*) 'Reading ecmwf path3:  ',trim(ecmwf3pathout)
-         call read_ecmwf_nc(ecmwf3pathout,ecmwf,preproc_dims, &
+         if (verbose) write(*,*) 'Reading ecmwf path:  ',trim(ecmwf_path_file3)
+         call read_ecmwf_nc(ecmwf_path_file3,ecmwf,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
       case(2)
-         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_pathout)
-         call read_ecmwf_nc(ecmwf_pathout,ecmwf,preproc_dims, &
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
+         call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
 
-         if (verbose) write(*,*) 'Reading ecmwf path2: ',trim(ecmwf2pathout)
-         call read_ecmwf_grib(ecmwf2pathout,preproc_dims, &
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
+         call read_ecmwf_grib(ecmwf_path_file2,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
 
-         if (verbose) write(*,*) 'Reading ecmwf path3: ',trim(ecmwf3pathout)
-         call read_ecmwf_grib(ecmwf3pathout,preproc_dims, &
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file3)
+         call read_ecmwf_grib(ecmwf_path_file3,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
       end select
-      if (verbose) write(*,*) 'FINISHED READING ECMWF ERA INTERIM FILE'
       ! compute geopotential vertical coordinate from pressure coordinate
       call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
-      ! select correct emissivity file and calculate the emissivity over land
-      ! calculates emissivity for rttov
-      call get_surface_emissivity(cyear, doy, assume_full_paths, emiss2_path, &
-           imager_flags, imager_geolocation, channel_info,preproc_dims, &
-           preproc_geoloc, surface, preproc_surf)
-
-      ! create/open output netcdf files.
-      write(*,*)'create/open output netcdf files'
-      write(*,*)'netcdf output_path: ',trim(output_pathin)
-      call netcdf_output_open(output_pathin,output_pathout,lwrtm_file, &
+      ! create output netcdf files.
+      if (verbose) write(*,*) 'Create output netcdf files'
+      if (verbose) write(*,*) 'output_path: ',trim(output_path)
+      call netcdf_output_open(output_path,lwrtm_file, &
            swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
            geo_file,loc_file,alb_file,scan_file,platform,sensor,script_input, &
            cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
@@ -716,50 +725,54 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_and_f
            include_full_brdf)
 
       ! perform RTTOV calculations
-      write(*,*) 'Start RT calculations'
-      call rttov_driver(coef_path,emiss_path,sensor,platform, &
-           preproc_dims,preproc_geoloc,preproc_geo,&
-           preproc_prtm,preproc_lwrtm,preproc_swrtm,imager_angles,&
-           netcdf_info,channel_info,month,verbose)
+      if (verbose) write(*,*) 'Perform RTTOV calculations'
+      call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
+           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
+           preproc_swrtm,imager_angles,netcdf_info,channel_info,month,verbose)
 
-      ! set the surface reflectance.
-      call get_surface_reflectance(cyear, doy, assume_full_paths, &
-           albedo_path, imager_flags, imager_geolocation, imager_angles, &
-           channel_info, ecmwf, include_full_brdf, surface)
+      ! select correct emissivity file and calculate the emissivity over land
+      if (verbose) write(*,*) 'Get surface emissivity'
+      call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
+           imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
+           assume_full_paths, verbose, surface, preproc_surf)
+
+      ! select correct reflectance files and calculate surface reflectance
+      ! over land and ocean
+      if (verbose) write(*,*) 'Get surface reflectance'
+      call get_surface_reflectance(cyear, cdoy, modis_albedo_path, imager_flags, &
+           imager_geolocation, imager_angles, channel_info, ecmwf, assume_full_paths, &
+           include_full_brdf, verbose, surface)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
       ! surface albedo.
-      write(*,*)'ice_path: ',trim(ice_path)
-      call correct_for_ice_snow(assume_full_paths, ice_path, imager_geolocation, &
-           preproc_dims, surface,cyear,cmonth,cday,channel_info)
-      write(*,*)'finished correction for ice'
+      if (verbose) write(*,*) 'Correct for ice and snow'
+      call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
+           preproc_dims, surface, cyear, cmonth, cday, channel_info, &
+           assume_full_paths, verbose)
 
-      write(*,*) 'before write netcdf'
-      call netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocation, &
-           imager_measurements,imager_time,netcdf_info,channel_info,surface, &
-           include_full_brdf)
-      write(*,*) 'after write'
-
-      write(*,*)'finished correction for ice'
+      if (verbose) write(*,*) 'Write netcdf output files'
+      call netcdf_output_write_swath(imager_flags,imager_angles, &
+           imager_geolocation,imager_measurements,imager_time,netcdf_info, &
+           channel_info,surface,include_full_brdf)
 
       ! close output netcdf files
-      write(*,*)'start close netcdf'
+      if (verbose) write(*,*)'Close netcdf output files'
       call netcdf_output_close(netcdf_info)
-      write(*,*)'end close netcdf'
 
       ! deallocate the array parts of the structures
-      write(*,*)'start deallocate'
+      if (verbose) write(*,*) 'Deallocate chunk specific structures'
       call deallocate_ecmwf_structures(ecmwf)
-      call deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
+      call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo,preproc_prtm, preproc_lwrtm, preproc_swrtm, &
            preproc_surf)
-      call deallocate_imager_structures(imager_geolocation,imager_angles, &
-           imager_flags,imager_time,imager_measurements)
+      call deallocate_imager_structures(imager_geolocation, imager_angles, &
+           imager_flags, imager_time, imager_measurements)
       call deallocate_surface_structures(surface,include_full_brdf)
 
    end do ! end looping over chunks
 
+   if (verbose) write(*,*)'Deallocate remaining memory'
    deallocate(chunk_starts)
    deallocate(chunk_ends)
 
@@ -797,7 +810,8 @@ function parse_logical(string) result(value)
        trim(adjustl(string)) .eq. 'False') then
         value = .false.
    else
-        stop 'Error parsing logical'
+        write(*,*) 'ERROR: invalid logical argument'
+        stop error_stop_code
    end if
 
 end function parse_logical

@@ -74,8 +74,8 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 
-function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
-     result (stat)
+function read_cimss_emissivity(path_to_file, emis, bands, verbose, flag, &
+     wavenumber) result (stat)
 
    use orac_ncdf
    use preproc_constants
@@ -85,7 +85,9 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
    ! Input variables
    character(len=pathlength), intent(in)               :: path_to_file
    integer(kind=stint),       intent(in), dimension(:) :: bands
+   logical,                   intent(in)               :: verbose
    integer(kind=stint),       intent(in), optional     :: flag, wavenumber
+
 
    ! Output variables
    type(emis_s),              intent(out)              :: emis
@@ -101,6 +103,11 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
    integer          :: i
    integer(kind=1)  :: gen_loc=1
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_cimss_emissivity()'
+
+   if (verbose) write(*,*) 'path_to_file: ', trim(path_to_file)
+   if (verbose) write(*,*) 'bands: ',        bands
+
    ! List of the band variable names in the data files
    BandList = (/ 'emis1 ', 'emis2 ', 'emis3 ', 'emis4 ', 'emis5 ', &
                  'emis6 ', 'emis7 ', 'emis8 ', 'emis9 ', 'emis10' /)
@@ -113,9 +120,11 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
    ! Now extract dimensions - should be three!
-   if (nDim .gt. 3) write(*,*) &
-      'read_cimss_emissitivty: Warning ',trim(path_to_file), &
-      ' has more than three dimensions! nDim = ',nDim
+   if (nDim .gt. 3) then
+      write(*,*) 'ERROR: read_cimss_emissitivty(): File has more than three '//&
+               & 'dimensions, filename: ', trim(path_to_file), ' nDim: ', nDim
+      stop error_stop_code
+   endif
    ! Three dimensions should be:
    ! xdim = latitude (strange!)
    ! ydim = longitude
@@ -151,7 +160,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
    allocate(emis%emissivity(xdim,ydim,nbands))
    ! Extract the data for each of the requested bands
    do i=1,nbands
-      write(*,*) 'read_cimss_emissivity: Extracting band ',BandList(bands(i))
+      if (verbose) write(*,*) 'Reading band:  ', BandList(bands(i))
       call nc_read_array(fid,BandList(bands(i)),emis%emissivity(:,:,i),0)
    end do
 
@@ -166,7 +175,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
    emis%lat0 = 89.975
    emis%lat_del = -0.05
    emis%lat_invdel = -20.
-   
+
    ! If the loc string is non-null, then we attempt to read the data
    ! lat/lon grid from this file
    !allocate(emis%lat(xdim))
@@ -188,6 +197,8 @@ function read_cimss_emissivity(path_to_file, emis, bands, flag, wavenumber)&
    !      emis%lat(i) =   90.025 - real(i)*0.05
    !   end do
    !end if
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_cimss_emissivity()'
 
 end function read_cimss_emissivity
 

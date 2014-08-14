@@ -17,43 +17,43 @@ contains
 ! 4) Produce filenames for all outputs.
 !
 ! Arguments:
-! Name           Type   In/Out/Both Description
+! Name             Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! lwrtm_file     string out Full path to output file LW RTM.
-! swrtm_file     string out Full path to output file SW RTM.
-! prtm_file      string out Full path to output file pressure RTM.
-! config_file    string out Full path to output file configuration data.
-! msi_file       string out Full path to output file multispectral imagery.
-! cf_file        string out Full path to output file cloud flag.
-! lsf_file       string out Full path to output file land/sea flag.
-! geo_file       string out Full path to output file geolocation.
-! loc_file       string out Full path to output file location.
-! alb_file       string out Full path to output file albedo.
-! scan_file      string out Full path to output file scan position/
-! sensor         string in  Name of sensor.
-! platform       string in  Name of satellite platform.
-! hour           stint  in  Hour of day (0-59)
-! cyear          string in  Year, as a 4 character string
-! cmonth         string in  Month of year, as a 2 character string
-! cday           string in  Day of month, as a 2 character string
-! chour          string in  Hour of day, as a 2 character string
-! cminute        string in  Minute of day, as a 2 character string
-! assume_full_path
-!                logic  in  T: inputs are filenames; F: folder names
-! ecmwf_path     string in  If badc, folder in which to find GGAM files.
-!                           Otherwise, folder in which to find GRB files.
-! ecmwf_path2    string in  If badc, folder in which to find GGAS files.
-! ecmwf_path3    string in  If badc, folder in which to find GPAM files.
-! ecmwf_pathout  string out If badc, full path to appropriate GGAM file.
-!                           Otherwise, full path to appropriate GRB file.
-! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
-! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
-! script_input   struct in  Summary of file header information.
-! ecmwf_flag     int    in  0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
-!                           2: BADC GRIB files.
-! imager_geolocation        struct both Summary of pixel positions
-! i_chunk        stint  in  The number of the current chunk (for AATSR).
-! verbose        logic  in  T: print status information; F: don't
+! lwrtm_file       string out Full path to output file LW RTM.
+! swrtm_file       string out Full path to output file SW RTM.
+! prtm_file        string out Full path to output file pressure RTM.
+! config_file      string out Full path to output file configuration data.
+! msi_file         string out Full path to output file multispectral imagery.
+! cf_file          string out Full path to output file cloud flag.
+! lsf_file         string out Full path to output file land/sea flag.
+! geo_file         string out Full path to output file geolocation.
+! loc_file         string out Full path to output file location.
+! alb_file         string out Full path to output file albedo.
+! scan_file        string out Full path to output file scan position/
+! sensor           string in  Name of sensor.
+! platform         string in  Name of satellite platform.
+! hour             stint  in  Hour of day (0-59)
+! cyear            string in  Year, as a 4 character string
+! cmonth           string in  Month of year, as a 2 character string
+! cday             string in  Day of month, as a 2 character string
+! chour            string in  Hour of day, as a 2 character string
+! cminute          string in  Minute of day, as a 2 character string
+! ecmwf_path       string in  If badc, folder in which to find GGAM files.
+!                             Otherwise, folder in which to find GRB files.
+! ecmwf_path2      string in  If badc, folder in which to find GGAS files.
+! ecmwf_path3      string in  If badc, folder in which to find GPAM files.
+! ecmwf_path_file  string out If badc, full path to appropriate GGAM file.
+!                             Otherwise, full path to appropriate GRB file.
+! ecmwf_path_file2 string out If badc, full path to appropriate GGAS file.
+! ecmwf_path_file3 string out If badc, full path to appropriate GPAM file.
+! script_input     struct in  Summary of file header information.
+! ecmwf_flag       int    in  0: GRIB ECMWF files; 1: BADC NetCDF ECMWF files;
+!                             2: BADC GRIB files.
+! imager_geolocat  ion        struct both Summary of pixel positions
+! i_chunk          stint  in  The number of the current chunk (for AATSR).
+! assume_full_pat  h
+!                  logic  in  T: inputs are filenames; F: folder names
+! verbose          logic  in  T: print status information; F: don't
 !
 ! History:
 ! 2011/12/12, MJ: produces draft code which sets up output file names
@@ -80,11 +80,11 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
-   cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor,platform,&
-   hour,cyear,cmonth,cday,chour,cminute,assume_full_path,ecmwf_path,&
-   ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,&
-   script_input,ecmwf_flag,imager_geolocation,i_chunk,verbose)
+subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
+     cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor,platform, &
+     cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2, ecmwf_path3, &
+     ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,script_input, ecmwf_flag, &
+     imager_geolocation,i_chunk,assume_full_path,verbose)
 
    use attribute_structures
    use imager_structures
@@ -99,23 +99,54 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
                                                  scan_file
    character(len=sensorlength),   intent(in)  :: sensor
    character(len=platformlength), intent(in)  :: platform
-   integer(kind=stint),           intent(in)  :: hour
    character(len=datelength),     intent(in)  :: cyear,cmonth,cday,chour,cminute
-   logical,                       intent(in)  :: assume_full_path
-   character(len=pathlength),     intent(in)  :: ecmwf_path,ecmwf_path2, &
+   character(len=pathlength),     intent(in)  :: ecmwf_path, &
+                                                 ecmwf_path2, &
                                                  ecmwf_path3
-   character(len=pathlength),     intent(out) :: ecmwf_pathout,ecmwf_path2out, &
-                                                 ecmwf_path3out
+   character(len=pathlength),     intent(out) :: ecmwf_path_file, &
+                                                 ecmwf_path_file2, &
+                                                 ecmwf_path_file3
    type(script_arguments_s),      intent(in)  :: script_input
    integer,                       intent(in)  :: ecmwf_flag
    type(imager_geolocation_s),    intent(in)  :: imager_geolocation
    integer(kind=stint),           intent(in)  :: i_chunk
+   logical,                       intent(in)  :: assume_full_path
    logical,                       intent(in)  :: verbose
 
    character(len=filelength) :: range_name
    character(len=filelength) :: file_base
    real                      :: startr,endr
    character(len=30)         :: startc,endc,chunkc
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering preparation()'
+
+   if (verbose) write(*,*) 'sensor: ',           trim(sensor)
+   if (verbose) write(*,*) 'platform: ',         trim(platform)
+   if (verbose) write(*,*) 'cyear: ',            trim(cyear)
+   if (verbose) write(*,*) 'cmonth: ',           trim(cmonth)
+   if (verbose) write(*,*) 'cday: ',             trim(cday)
+   if (verbose) write(*,*) 'chour: ',            trim(chour)
+   if (verbose) write(*,*) 'cminute: ',          trim(cminute)
+   if (verbose) write(*,*) 'ecmwf_path: ',       trim(ecmwf_path)
+   if (verbose) write(*,*) 'ecmwf_path2: ',      trim(ecmwf_path2)
+   if (verbose) write(*,*) 'ecmwf_path3: ',      trim(ecmwf_path3)
+   if (verbose) write(*,*) 'ecmwf_flag: ',       ecmwf_flag
+   if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
+   if (verbose) write(*,*) 'i_chunk: ',          i_chunk
+
+   !determine ecmwf path/filename
+   call set_ecmwf(cyear,cmonth,cday,chour, &
+                  ecmwf_path,     ecmwf_path2,     ecmwf_path3, &
+                  ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
+                  ecmwf_flag,assume_full_path)
+
+   if (verbose) then
+      write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file)
+      if (ecmwf_flag .gt. 0) then
+         write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2)
+         write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3)
+      end if
+   end if
 
    ! deal with ATSR chunking in filename
    if (sensor .eq. 'AATSR') then
@@ -124,18 +155,16 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
            imager_geolocation%ny)
 
       !convert latitudes into strings
+      write(chunkc,'( g12.3 )') i_chunk
       write(startc,'( g12.3 )') startr
       write(endc,  '( g12.3 )') endr
-      write(chunkc,'( g12.3 )') i_chunk
 
-
-      range_name=trim(adjustl(chunkc))//'-'//trim(adjustl(startc))//'-'// &
-           trim(adjustl(endc))//'_'
+      range_name=trim(adjustl(chunkc))//'-'// &
+                 trim(adjustl(startc))//'-'//trim(adjustl(endc))//'_'
    else
       range_name=''
    end if
-   if (verbose) write(*,*) 'range_name: ', trim(range_name)
-
+   if (verbose) write(*,*) 'chunk range_name: ', trim(range_name)
 
    !put basic filename together
    file_base=trim(adjustl(script_input%project))//'_'// &
@@ -144,20 +173,13 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
              //'_'// trim(adjustl(range_name))// &
              trim(adjustl(script_input%l2cproc))//'V'// &
              trim(adjustl(script_input%l2cprocver))
-
-   !MJ this need to come from outside: script_input%exec_time=''
    file_base=trim(adjustl(file_base))//'_'//trim(adjustl(platform))// &
              '_'//trim(adjustl(script_input%exec_time))
    file_base=trim(adjustl(file_base))//'_'//trim(adjustl(cyear))// &
              trim(adjustl(cmonth))//trim(adjustl(cday))
    file_base=trim(adjustl(file_base))//trim(adjustl(chour))// &
              trim(adjustl(cminute))//'_'//trim(adjustl(script_input%file_version))
-   if (verbose) write(*,*) 'file_base: ', trim(file_base)
-
-   !determine ecmwf path/filename
-   call set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
-                  ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,&
-                  ecmwf_path3out,ecmwf_flag,verbose)
+   if (verbose) write(*,*) 'output file_base: ', trim(file_base)
 
    !get preproc filenames
    lwrtm_file=trim(adjustl(file_base))//'.lwrtm.nc'
@@ -171,6 +193,8 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file,&
    loc_file=trim(adjustl(file_base))//'.loc.nc'
    alb_file=trim(adjustl(file_base))//'.alb.nc'
    scan_file=trim(adjustl(file_base))//'.uv.nc'
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving preparation()'
 
 end subroutine preparation
 

@@ -17,8 +17,6 @@
 ! cmonth         string in  Month of year, as a 2 character string
 ! cday           string in  Day of month, as a 2 character string
 ! chour          string in  Hour of day, as a 2 character string
-! assume_full_path
-!                logic  in  T: inputs are filenames; F: folder names
 ! ecmwf_path     string in  If badc, folder in which to find GGAM files.
 !                           Otherwise, folder in which to find GRB files.
 ! ecmwf_path2    string in  If badc, folder in which to find GGAS files.
@@ -28,7 +26,8 @@
 ! ecmwf_path2out string out If badc, full path to appropriate GGAS file.
 ! ecmwf_path3out string out If badc, full path to appropriate GPAM file.
 ! ecmwf_flag     int    in  0: A single GRB file; 1: 3 NCDF files; 2: BADC files
-! verbose        logic  in  T: print status information; F: don't
+! assume_full_path
+!                logic  in  T: inputs are filenames; F: folder names
 !
 ! History:
 ! 2012/01/16, MJ; writes initial code version.
@@ -52,49 +51,48 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
-   ecmwf_path2,ecmwf_path3,ecmwf_pathout,ecmwf_path2out,ecmwf_path3out,&
-   ecmwf_flag,verbose)
+subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2,ecmwf_path3, &
+   ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag,assume_full_path)
 
    use preproc_constants
 
    implicit none
 
-   integer(kind=stint),       intent(in)  :: hour
-   character(len=datelength), intent(in)  :: cyear,chour,cmonth,cday
-   logical,                   intent(in)  :: assume_full_path
+   character(len=datelength), intent(in)  :: cyear,cmonth,cday,chour
    character(len=pathlength), intent(in)  :: ecmwf_path
    character(len=pathlength), intent(in)  :: ecmwf_path2
    character(len=pathlength), intent(in)  :: ecmwf_path3
-   character(len=pathlength), intent(out) :: ecmwf_pathout
-   character(len=pathlength), intent(out) :: ecmwf_path2out
-   character(len=pathlength), intent(out) :: ecmwf_path3out
+   character(len=pathlength), intent(out) :: ecmwf_path_file
+   character(len=pathlength), intent(out) :: ecmwf_path_file2
+   character(len=pathlength), intent(out) :: ecmwf_path_file3
    integer,                   intent(in)  :: ecmwf_flag
-   logical,                   intent(in)  :: verbose
+   logical,                   intent(in)  :: assume_full_path
 
+   integer   :: hour
    character :: cera_hour*2
 
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
       if (index(ecmwf_path,'.nc') .gt. 0) then
-         ecmwf_pathout  = ecmwf_path
-         ecmwf_path2out = ecmwf_path2
-         ecmwf_path3out = ecmwf_path3
+         ecmwf_path_file  = ecmwf_path
+         ecmwf_path_file2 = ecmwf_path2
+         ecmwf_path_file3 = ecmwf_path3
       else if (index(ecmwf_path2,'.nc') .gt. 0) then
-         ecmwf_pathout  = ecmwf_path2
-         ecmwf_path2out = ecmwf_path
-         ecmwf_path3out = ecmwf_path3
+         ecmwf_path_file  = ecmwf_path2
+         ecmwf_path_file2 = ecmwf_path
+         ecmwf_path_file3 = ecmwf_path3
       else if (index(ecmwf_path3,'.nc') .gt. 0) then
-         ecmwf_pathout  = ecmwf_path3
-         ecmwf_path2out = ecmwf_path
-         ecmwf_path3out = ecmwf_path2
+         ecmwf_path_file  = ecmwf_path3
+         ecmwf_path_file2 = ecmwf_path
+         ecmwf_path_file3 = ecmwf_path2
       else
-         ecmwf_pathout  = ecmwf_path
-         ecmwf_path2out = ecmwf_path2
-         ecmwf_path3out = ecmwf_path3
+         ecmwf_path_file  = ecmwf_path
+         ecmwf_path_file2 = ecmwf_path2
+         ecmwf_path_file3 = ecmwf_path3
       end if
    else
       ! pick last ERA interim time wrt sensor time (as on the same day)
+      read(chour, *) hour
       select case (hour)
       case(0:5)
          cera_hour='00'
@@ -110,40 +108,34 @@ subroutine set_ecmwf(hour,cyear,cmonth,cday,chour,assume_full_path,ecmwf_path,&
 
       select case (ecmwf_flag)
       case(0)
-         ecmwf_pathout=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
+         ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//'_'//trim(adjustl(cera_hour))//'+00.grb'
       case(1)
-         ecmwf_pathout=trim(adjustl(ecmwf_path))//'/ggas'// &
+         ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ggas'// &
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-         ecmwf_path2out=trim(adjustl(ecmwf_path2))//'/ggam'// &
+         ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/ggam'// &
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-         ecmwf_path3out=trim(adjustl(ecmwf_path3))//'/gpam'// &
+         ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/gpam'// &
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
       case(2)
-         ecmwf_pathout=trim(adjustl(ecmwf_path2))//'/ggas'// &
+         ecmwf_path_file=trim(adjustl(ecmwf_path2))//'/ggas'// &
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-         ecmwf_path2out=trim(adjustl(ecmwf_path))//'/ggam'// &
+         ecmwf_path_file2=trim(adjustl(ecmwf_path))//'/ggam'// &
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.grb'
-         ecmwf_path3out=trim(adjustl(ecmwf_path3))//'/spam'// &
+         ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/spam'// &
               trim(adjustl(cyear))//trim(adjustl(cmonth))// &
               trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.grb'
       case default
-         stop 'Unknown ECMWF file format flag. Please select 0, 1, or 2.'
+         write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
+                  & 'Please select 0, 1, or 2.'
+         stop error_stop_code
       end select
     end if
-
-   if (verbose) then
-      write(*,*)'ecmwf_path:  ',trim(ecmwf_pathout)
-      if (ecmwf_flag .gt. 0) then
-         write(*,*)'ecmwf_path2: ',trim(ecmwf_path2out)
-         write(*,*)'ecmwf_path3: ',trim(ecmwf_path3out)
-      end if
-   end if
 
 end subroutine set_ecmwf

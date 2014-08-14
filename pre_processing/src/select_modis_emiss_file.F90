@@ -9,10 +9,10 @@
 ! Arguments:
 ! Name Type In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! cyear           string  in   Year, as a 4 character string
-! doy             integer in   Day of year
-! emiss_surf_path string  in   Folder containing MODIS monthly average emissivity
-! emiss_surf_path string  in   Desired MODIS monthly average emissivity file
+! cyear           string in Year, as a 4 character string
+! cdoy            string in DOY,  as a 2 character string
+! emiss_surf_path string in Folder containing MODIS monthly average emissivity
+! emiss_surf_path string in Desired MODIS monthly average emissivity file
 !
 ! History:
 ! 2012/08/06, CP: Original version
@@ -34,24 +34,27 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-subroutine select_modis_emiss_file(cyear,doy,emiss_surf_path, &
-     emiss_surf_path_file)
+subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
+     cimss_emis_path_file)
 
    use preproc_structures
 
    implicit none
 
    character(len=datelength), intent(in)  :: cyear
-   integer(kind=stint),       intent(in)  :: doy
-   character(len=pathlength), intent(in)  :: emiss_surf_path
-   character(len=pathlength), intent(out) :: emiss_surf_path_file
+   character(len=datelength), intent(in)  :: cdoy
+   character(len=pathlength), intent(in)  :: cimss_emis_path
+   character(len=pathlength), intent(out) :: cimss_emis_path_file
 
    integer(kind=stint)                :: year
+   integer(kind=stint)                :: doy
    integer                            :: pos
    logical                            :: isleapyear
    integer(kind=stint), dimension(12) :: dates,newdates
    character(len=3),    dimension(12) :: dates_s
    character(len=3)                   :: emis_date_s
+   logical                            :: cimss_emis_file_exist
+   character(len=7)                   :: cimss_emis_file_read
 
    read(cyear, *) year
 
@@ -114,15 +117,29 @@ subroutine select_modis_emiss_file(cyear,doy,emiss_surf_path, &
       dates_s(12)='335'
    end if
 
+   read(cdoy, *) doy
    newdates=dates-doy
 
    pos=count(newdates .le. 0)
 
    emis_date_s=dates_s(pos)
 
-   emiss_surf_path_file=trim(adjustl(emiss_surf_path))// &
+   cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
         '/global_emis_inf10_monthFilled_MYD11C3.A'// &
         trim(adjustl(cyear))// &
         trim(adjustl(emis_date_s))//'.041'//'.nc'
+
+   ! Check that the defined file exists and is readable
+   inquire(file=trim(cimss_emis_path_file), exist=cimss_emis_file_exist, &
+      read=cimss_emis_file_read)
+   if (.not.cimss_emis_file_exist) then
+      write(*,*) 'ERROR: select_modis_emiss_file(): CIMSS surface emissivity ' // &
+               & 'file does not exist, filename: ', trim(cimss_emis_path_file)
+      stop error_stop_code
+   else if (trim(cimss_emis_file_read).eq.'NO') then
+      write(*,*) 'ERROR: select_modis_emiss_file(): CIMSS surface emissivity ' // &
+               & 'file exists but is not readable, filename: ', trim(cimss_emis_path_file)
+      stop error_stop_code
+   end if
 
 end subroutine select_modis_emiss_file

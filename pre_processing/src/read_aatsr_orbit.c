@@ -41,8 +41,8 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
   uint i, j, k;
   iaz = calloc(*nx * *ny, sizeof(float));
   if (iaz == NULL) {
-    printf("read_aatsr_orbit: Insufficient memory available.");
-    return;
+    printf("ERROR: read_aatsr_orbit(): Insufficient memory available.");
+    exit(1);
   }
 
   // Gather output array pointers into arrays for ease of use
@@ -109,10 +109,12 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 
   // Check requested limits are sensible
   if (*startx+*nx > epr_get_scene_width(pid)) {
-    printf("read_aatsr_orbit: Reading beyond range of scene along x.");
+    printf("ERROR: read_aatsr_orbit: Reading beyond range of scene along x.");
+    exit(1);
   }
   if (*starty+*ny > epr_get_scene_height(pid)) {
-    printf("read_aatsr_orbit: Reading beyond range of scene along y.");
+    printf("ERROR: read_aatsr_orbit: Reading beyond range of scene along y.");
+    exit(1);
   }
 
   // Read geolocation (view independent)
@@ -130,16 +132,14 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
   // 2) VC1 file (Visible Calibration file)
   vc1 = epr_get_dsd_at(pid, 29);
   // Check that we have what we're expecting
-  if (strcasecmp(vc1->ds_name, "VISIBLE_CALIBRATION_FILE") != 0)
-    fprintf(stderr,
-            "read_aatsr_orbit: Didn't find VC file in %s. %s found instead.\n",
+  if (*verbose && strcasecmp(vc1->ds_name, "VISIBLE_CALIBRATION_FILE") != 0)
+    printf("read_aatsr_orbit: Didn't find VC file in %s. %s found instead.\n",
 	    l1b_file, vc1->ds_name);
   strcpy(vc1_file, vc1->filename);
   // 3) GC1 file (General Calibration file)
   gc1 = epr_get_dsd_at(pid, 30);
-  if (strcasecmp(gc1->ds_name, "GENERAL_CALIBRATION_FILE") != 0)
-    fprintf(stderr,
-            "read_aatsr_orbit: Didn't find GC file in %s. %s found instead.\n",
+  if (*verbose && strcasecmp(gc1->ds_name, "GENERAL_CALIBRATION_FILE") != 0)
+    printf("read_aatsr_orbit: Didn't find GC file in %s. %s found instead.\n",
 	    l1b_file, gc1->ds_name);
   strcpy(gc1_file, gc1->filename);
   // 4) vdt (VISCAL_DRIFT_TABLE)
@@ -238,7 +238,7 @@ void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
   bid = epr_get_band_id(pid, name);
   if (bid == NULL) {
     printf("fetch_aatsr_raster_beam: Band '%s' not found.\n", name);
-    return;
+    exit(1);
   }
 
   /* Read data as raster. Must read entire 512 pixel rows as EPR defines the
@@ -247,7 +247,7 @@ void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
   stat = epr_read_band_raster(bid, 0, y0, raster);
   if (stat != 0) {
     printf("fetch_aatsr_raster_beam: Failure to read band '%s'.\n", name);
-    return;
+    exit(1);
   }
 
   /* Copy data into write array. NOTE: this function will quite happily
@@ -350,7 +350,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
   EPR_SRaster* lat   = NULL;
   EPR_SRaster* lon   = NULL;
 
-  if (verbose) { printf("Starting get_aatsr_dimension (C)\n"); }
+  if (*verbose) { printf("Starting get_aatsr_dimension (C)\n"); }
   /* Initialize the API. */
   /* Note that you can set different levels of feedback from the EPR library */
   /* The different levels are: e_log_debug
@@ -518,6 +518,6 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
   stat = epr_close_product(pid);
   epr_close_api();
   *statp = stat;
-  if (verbose) { printf("Have completed get_aatsr_dimension\n"); }
+  if (*verbose) { printf("Have completed get_aatsr_dimension\n"); }
   return;
 }

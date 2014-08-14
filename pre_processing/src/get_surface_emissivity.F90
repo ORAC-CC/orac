@@ -12,14 +12,18 @@
 ! Name               Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! cyear              string  in   Year, as a 4 character string
-! doy                integer in   Day of year
+! cdoy               string  in   DOY,  as a 3 character string
 ! assume_full_path
 !                    logic   in   T: inputs are filenames; F: folder names
-! emis_path          char    in   Path to CIMSS emis_inf10_month data
+! cimss_emis_path    char    in   Path to CIMSS emis_inf10_month data
 ! imager_flags       struct  in   Imager structure containing land/sea flag
 ! imager_geolocation struct  in   Imager structure containing lat/lon points
+! channel_info    struct  in      Preprocessing dimensions, including sw and lw
+!                                 channel counts
 ! preproc_dims       struct  in   Preprocessing dimensions, including sw and lw
 !                                 channel counts
+! assume_full_path   logic   in   T: inputs are filenames; F: folder names
+! verbose            logic   in   T: print status information; F: don't
 ! surface            struct  both Surface properties structure
 ! preproc_surf       struct  both Preproc surface properties structure
 !
@@ -66,9 +70,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
-     imager_flags, imager_geolocation, channel_info, preproc_dims, &
-     preproc_geoloc, surface, preproc_surf)
+subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
+           imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
+           assume_full_path, verbose, surface, preproc_surf)
 
    use channel_structures
    use cimss_emissivity
@@ -82,19 +86,20 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
 
    ! Input/output variables
    character(len=datelength),  intent(in)    :: cyear
-   integer(kind=stint),        intent(in)    :: doy
-   logical,                    intent(in)    :: assume_full_path
-   character(len=pathlength),  intent(in)    :: emis_path
+   character(len=datelength),  intent(in)    :: cdoy
+   character(len=pathlength),  intent(in)    :: cimss_emis_path
    type(imager_flags_s),       intent(in)    :: imager_flags
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
    type(channel_info_s),       intent(in)    :: channel_info
    type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
+   logical,                    intent(in)    :: assume_full_path
+   logical,                    intent(in)    :: verbose
    type(surface_s),            intent(inout) :: surface
    type(preproc_surf_s),       intent(inout) :: preproc_surf
 
    ! Local variables
-   character(len=pathlength)                          :: emis_path_file
+   character(len=pathlength)                          :: cimss_emis_path_file
    type(emis_s)                                       :: emis
    integer(kind=stint),              dimension(3)     :: embands=[1,8,9]
    real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis, summat
@@ -103,29 +108,41 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    integer(kind=lint)                                 :: nland
    type(interpol_s)                                   :: interp
 
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_emissivity()'
+
+   if (verbose) write(*,*) 'cyear: ',            trim(cyear)
+   if (verbose) write(*,*) 'cdoy: ',             trim(cdoy)
+   if (verbose) write(*,*) 'cimss emis_path: ',  trim(cimss_emis_path)
+   if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
+
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nland = count(imager_flags%lsflag .eq. 1)
-   write(*,*)'nland: ',nland
+   if (verbose) write(*,*) 'nland: ', nland
 
    ! If there are no land pixels in the scene, we have nothing more to do
    if (nland == 0 .or. count(channel_info%channel_ids_abs .eq. 4) == 0) return
 
    ! embands is modis numbering of IR channels where,
    ! channel_info%channel_ids_abs .gt. 3
-   write(*,*)'channel_info%channel_ids_abs: ',channel_info%channel_ids_abs
-   write(*,*)'embands: ',embands
+   if (verbose) write(*,*) 'n channels for land reflectance: ', &
+                           channel_info%channel_ids_abs
+   if (verbose) write(*,*) 'modis numbering for these IR channels: ', &
+                           embands
 
    ! Select correct modis file
    if (assume_full_path) then
-      emis_path_file = emis_path
+      cimss_emis_path_file = cimss_emis_path
    else
-      call select_modis_emiss_file(cyear,doy,emis_path,emis_path_file)
+      call select_modis_emiss_file(cyear,cdoy,cimss_emis_path,cimss_emis_path_file)
    end if
-   write(*,*)'emis_path_file: ',trim(emis_path_file)
+   if (verbose) write(*,*) 'cimss_emis_path_file: ', trim(cimss_emis_path_file)
 
    ! Read the data itself
-   if (read_cimss_emissivity(emis_path_file, emis, embands) .ne. 0) &
-        stop 'GET_SURFACE_EMISSIVITY: Bad read of cimss file.'
+   if (read_cimss_emissivity(cimss_emis_path_file, emis, embands, verbose) .ne. 0) then
+        write(*,*) 'ERROR: read_cimss_emissivity(), problem reading CIMSS emissivity file: ', &
+        cimss_emis_path_file
+        stop error_stop_code
+   end if
 
    ! This emissivity data has very few missing values, but there are some. Set
    ! these to 0.999 (as close to 1 as the emissivity data itself gets). This is
@@ -189,5 +206,7 @@ subroutine get_surface_emissivity(cyear, doy, assume_full_path, emis_path, &
    deallocate(counter)
    deallocate(summat)
    call deallocate_emis(emis)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_surface_emissivity()'
 
 end subroutine get_surface_emissivity
