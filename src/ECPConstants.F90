@@ -78,19 +78,22 @@
 !     8th Dec 2011, Matthias Jerg: added data type definitions for netcdf output
 !       and filenamelengths
 !    2012/01/30, Matthias Jerg: added ditherm3 as parameter.
-!    2012/06/15, C. Poulsen: added iluum error flags
-!    2012/06/22, C. Poulsen: added sacura option
-!    2012/10/01, C. Poulsen: added case where 1.6 of 3.7 channel is missing
+!    2012/06/15, Caroline Poulsen: added iluum error flags
+!    2012/06/22, Caroline Poulsen: added sacura option
+!    2012/10/01, Caroline Poulsen: added case where 1.6 of 3.7 channel is missing
 !       during the day
-!    2013/xx/xx, MJ: changes lengths of filenames and some formatting, adds fill
+!    2013/xx/xx, Matthias Jerg: changes lengths of filenames and some formatting, adds fill
 !       value for double precision.
-!    2013/11/19, MJ: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
+!    2013/11/19, Matthias Jerg: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
 !    2014/01/26, Greg McGarragh: Cleaned up code.
-!    2014/04/03, MJ adds some fill value definitions
+!    2014/04/03, Matthias Jerg: adds some fill value definitions
 !    2014/05/22, Greg McGarragh: Added RTMIntMeth and LUTIntMeth constants.
 !    2014/07/24, Adam Povey: made FlagMin|Max type byte
 !    2014/08/01, Greg McGarragh: Rename illumination conditions for missing
 !       conditions.
+!    2014/08/15, Greg McGarragh: d2r is a derived constant. It should be
+!       computed which will be done at compile time since both operands are
+!       constants.
 !
 ! Bugs:
 !    None known.
@@ -155,7 +158,9 @@ module ECP_constants
    real, parameter    :: MissingSn        = 1.0e+08 ! Value for "missing data" used as error output when a SPixel is not processed.
 
    ! Mathematical constants
-   real, parameter    :: Pi               = 3.1415927 ! Pi required for solar constant
+   real, parameter    :: Pi               = 3.14159265
+
+   real, parameter    :: d2r              = Pi / 180.0
 
    ! Physical constants/parameters
    real, parameter    :: rhowat           = 1.0     ! Density of water
@@ -451,8 +456,6 @@ module ECP_constants
    integer, parameter :: SecondaryFileWriteErr      = 1405
    integer, parameter :: PrimaryFileCloseErr        = 1406
    integer, parameter :: SecondaryFileCloseErr      = 1407
-
-   real, parameter    :: d2r                        = 0.017453292 ! Pi / 180.0
 
    integer(kind=byte), parameter :: byte_fill_value  = -127
    integer(kind=sint), parameter :: sint_fill_value  = -32767

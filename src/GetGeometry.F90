@@ -146,8 +146,8 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    ! path through the atmosphere deviates from SEC at larger paths. These
    ! approximations are valid for small super pixels and small angles.
 
-   SPixel%Geom%SEC_o = 1.0 / COS(d2r*SPixel%Geom%Solzen)
+   SPixel%Geom%SEC_o = 1.0 / cos(d2r*SPixel%Geom%Solzen)
 
-   SPixel%Geom%SEC_v = 1.0 / COS(d2r*SPixel%Geom%Satzen)
+   SPixel%Geom%SEC_v = 1.0 / cos(d2r*SPixel%Geom%Satzen)
 
 end subroutine Get_Geometry
