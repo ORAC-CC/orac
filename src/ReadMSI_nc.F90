@@ -144,7 +144,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    ! NetCDF related
    integer           :: ncid
    character(len=12) :: prod_date
-   integer(kind=nint), allocatable, dimension(:) :: msi_instr_ch_numbers
+   integer(kind=lint), allocatable, dimension(:) :: msi_instr_ch_numbers
 
    ! On first call, the file is opened. It is then left open for all subsequent
    ! calls.
@@ -208,7 +208,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
 
       ! Read instrument channel indices from file
       allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
-      msi_instr_ch_numbers=0_nint
+      msi_instr_ch_numbers=0_lint
       call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%Nyp,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
 
       do i=1,Ctrl%Ind%Ny

@@ -116,7 +116,8 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            spixel_scan_out%vidlon, &
            'longitude', &
            'longitude', &
-           'degrees_east', spixel_scan_out%real_fill_value_lat_lon, &
+           'degrees_east', &
+           spixel_scan_out%real_fill_value_lat_lon, &
            spixel_scan_out%lon_scale,spixel_scan_out%lon_offset, &
            spixel_scan_out%lon_vmin,spixel_scan_out%lon_vmax,wo,ierr)
 
@@ -165,7 +166,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
               trim(adjustl(input_dummy)), &
               trim(adjustl(s_input_dummy)), &
               'degrees', &
-              real_fill_value, &
+              sreal_fill_value, &
               spixel_scan_out%sat_scale,spixel_scan_out%sat_offset, &
               spixel_scan_out%sat_vmin,spixel_scan_out%sat_vmax,wo,ierr)
 
@@ -188,7 +189,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
               trim(adjustl(input_dummy)), &
               trim(adjustl(s_input_dummy)), &
               'degrees', &
-              real_fill_value, &
+              sreal_fill_value, &
               spixel_scan_out%sol_scale,spixel_scan_out%sol_offset, &
               spixel_scan_out%sol_vmin,spixel_scan_out%sol_vmax,wo,ierr)
 
@@ -211,7 +212,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
               trim(adjustl(input_dummy)), &
               trim(adjustl(s_input_dummy)), &
               'degrees', &
-              real_fill_value, &
+              sreal_fill_value, &
               spixel_scan_out%azi_scale,spixel_scan_out%azi_offset, &
               spixel_scan_out%azi_vmin,spixel_scan_out%azi_vmax,wo,ierr)
 
@@ -614,7 +615,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'costja', &
            'a_priori_cost at_solution', &
            '', &
-           real_fill_value, &
+           sreal_fill_value, &
            spixel_scan_out%costja_scale,spixel_scan_out%costja_offset, &
            spixel_scan_out%costja_vmin,spixel_scan_out%costja_vmax,wo,ierr)
 
@@ -634,7 +635,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'costjm', &
            'measurement_cost at_solution', &
            '', &
-           real_fill_value, &
+           sreal_fill_value, &
            spixel_scan_out%costjm_scale,spixel_scan_out%costjm_offset, &
            spixel_scan_out%costjm_vmin,spixel_scan_out%costjm_vmax,wo,ierr)
 

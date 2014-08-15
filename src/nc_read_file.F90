@@ -50,12 +50,12 @@ subroutine nc_read_array_1d_int_to_int_orac(ncid,n1,cv,v,wo)
    character(len=*),   intent(in)  :: cv ! variable name
 
    ! Output
-   integer(kind=nint), intent(out) :: v(1:n1) ! the variable read in
+   integer(kind=lint), intent(out) :: v(1:n1) ! the variable read in
 
    ! Local
    integer :: ierr,vid,start(1),counter(1),stride(1)
    real,parameter :: miss=-9999.
-   integer(kind=nint) :: fv
+   integer(kind=lint) :: fv
 
    ! Fortran is column-major order but NetCDF stores in row-major order
    start(1) = 1
@@ -404,7 +404,7 @@ subroutine nc_read_array_3d_float_orac(ncid,n1,n2,ichan,cv,v,wo)
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
       end if
-      fv=real_fill_value
+      fv=sreal_fill_value
    end if
 
 end subroutine nc_read_array_3d_float_orac
@@ -468,7 +468,7 @@ subroutine nc_read_array_1p1_float_orac(ncid,n1,ichan,cv,v,wo)
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
       end if
-      fv=real_fill_value
+      fv=sreal_fill_value
    end if
 
 end subroutine nc_read_array_1p1_float_orac
@@ -535,7 +535,7 @@ subroutine nc_read_array_1p2_float_orac(ncid,n1,ichan,ilay,cv,v,wo)
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
       end if
-      fv=real_fill_value
+      fv=sreal_fill_value
    end if
 
 end subroutine nc_read_array_1p2_float_orac
@@ -599,7 +599,7 @@ subroutine nc_read_array_2d_double_orac(ncid,n1,n2,cv,v,wo)
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
       end if
-      fv=real_fill_value
+      fv=sreal_fill_value
    end if
 
 end subroutine nc_read_array_2d_double_orac
@@ -663,7 +663,7 @@ subroutine nc_read_array_2d_float_orac(ncid,n1,n2,cv,v,wo)
       if (wo .eq. 1) then
          write(*,*) 'ERROR: nf90_get_att(), att_name = _FillVallue, value = ', fv
       end if
-      fv=real_fill_value
+      fv=sreal_fill_value
    end if
 
 end subroutine nc_read_array_2d_float_orac
@@ -736,7 +736,7 @@ subroutine nc_read_array_2d_byte_to_real_orac(ncid,n1,n2,cv,v_out,wo)
    do i=1,n1
       do j=1,n2
          if ( v(i,j) .eq. fv ) then
-            v_out(i,j)=real_fill_value
+            v_out(i,j)=sreal_fill_value
          else
             v_out(i,j)=real(v(i,j),kind=sreal)
          end if
@@ -767,7 +767,7 @@ subroutine nc_read_array_2d_int_to_real_orac(ncid,n1,n2,cv,v_out,wo)
    ! Local
    integer :: ierr,vid,i,j,start(2),counter(2),stride(2)
    real,parameter :: miss=-9999.
-   integer(kind=nint) :: v(1:n1,1:n2),fv
+   integer(kind=lint) :: v(1:n1,1:n2),fv
 
    ! Fortran is column-major order but NetCDF stores in row-major order
    start(1) = 1
@@ -813,7 +813,7 @@ subroutine nc_read_array_2d_int_to_real_orac(ncid,n1,n2,cv,v_out,wo)
    do i=1,n1
       do j=1,n2
          if ( v(i,j) .eq. fv ) then
-            v_out(i,j)=real_fill_value
+            v_out(i,j)=sreal_fill_value
          else
             v_out(i,j)=real(v(i,j),kind=sreal)
          end if

@@ -28,7 +28,7 @@ module config_def
 
    type config_struct
 
-      integer(kind=nint) :: nx,ny,nc,nalb,nemis,nsolar,nthermal,nmixed, &
+      integer(kind=lint) :: nx,ny,nc,nalb,nemis,nsolar,nthermal,nmixed, &
                             nsolar_use,nthermal_use,nmixed_use
 
       ! Total number of channels to be handled in any way, even if not all are
@@ -41,24 +41,24 @@ module config_def
       ! nchannels_total = 14 (7 wavelengths in 2 views)
       ! nchannels_sw    = 10 (first 5 wavelengths have a solar component)
       ! nchannels_lw    = 6  (last 3 wavelengths have a thermal component)
-      integer(kind=nint) :: nchannels_total,nchannels_sw,nchannels_lw
+      integer(kind=lint) :: nchannels_total,nchannels_sw,nchannels_lw
 
       ! number of different viewing geometries:
-      integer(kind=nint) :: nviews
+      integer(kind=lint) :: nviews
 
       ! channel ids (=numbers):
 
       ! wrt original instrument definition:
       ! Note that these values may well repeat for multi-view instruments, like
       ! AATSR: (/ 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7 /)
-      integer(kind=nint), dimension(:), pointer :: channel_ids_instr
+      integer(kind=lint), dimension(:), pointer :: channel_ids_instr
 
       ! wrt plain numbering 1,2,..... with regard to increasing wavelength and
       ! then view:
-      integer(kind=nint), dimension(:), pointer :: channel_ids_abs
+      integer(kind=lint), dimension(:), pointer :: channel_ids_abs
 
       ! wrt its position in the RTTOV coefficient file
-      integer(kind=nint), dimension(:), pointer :: channel_ids_rttov_coef_sw, &
+      integer(kind=lint), dimension(:), pointer :: channel_ids_rttov_coef_sw, &
                                                    channel_ids_rttov_coef_lw
 
       ! wavelength (in micrometers) array wrt to absolute channel numbering
@@ -69,19 +69,19 @@ module config_def
       ! arrays containing 0/1 flags to identify to which part (sw/lw) of the
       ! spectrum they are assigned. could be used to determine the number of
       ! channels used as well.
-      integer(kind=nint), dimension(:), pointer :: channel_sw_flag
-      integer(kind=nint), dimension(:), pointer :: channel_lw_flag
-      integer(kind=nint), dimension(:), pointer :: channel_sw_flag_use
-      integer(kind=nint), dimension(:), pointer :: channel_lw_flag_use
-      integer(kind=nint), dimension(:), pointer :: channel_mixed_flag_use
+      integer(kind=lint), dimension(:), pointer :: channel_sw_flag
+      integer(kind=lint), dimension(:), pointer :: channel_lw_flag
+      integer(kind=lint), dimension(:), pointer :: channel_sw_flag_use
+      integer(kind=lint), dimension(:), pointer :: channel_lw_flag_use
+      integer(kind=lint), dimension(:), pointer :: channel_mixed_flag_use
 
       ! arrays containing the viewing geometry index for each channel
-      integer(kind=nint), dimension(:), pointer :: channel_view_ids
+      integer(kind=lint), dimension(:), pointer :: channel_view_ids
 
       ! array specifying if channel is processed
       ! (I know we agreed to process all channels anyway, but it might be handy
       ! to still include this even if it set to "1")
-      integer(kind=nint), dimension(:), pointer :: channel_proc_flag
+      integer(kind=lint), dimension(:), pointer :: channel_proc_flag
 
    end type config_struct
 

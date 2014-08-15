@@ -29,12 +29,12 @@ subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)
 
    character(len=FilenameLen), intent(in)  :: fname_msi
    character(len=FilenameLen), intent(in)  :: fname_geo
-   integer(kind=nint),         intent(out) :: xdim,ydim,cdim,vdim
+   integer(kind=lint),         intent(out) :: xdim,ydim,cdim,vdim
    integer,                    intent(in)  :: wo
 
    integer                                     :: ncid,ierr
    integer                                     :: ndim,nvar,nattr,dummyint
-   integer(kind=nint),             allocatable :: dimids(:), varids(:), &
+   integer(kind=lint),             allocatable :: dimids(:), varids(:), &
                                                   attrids(:), dimlength(:)
    character(len=FilenameLen)                  :: name
    character(len=NetcdfVarLength), allocatable :: dname(:)
@@ -63,19 +63,19 @@ subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(1),wo)
    call nc_dim_length(ncid,name,dimids(1),dummyint,wo)
    dimlength(1)=dummyint
-   xdim=int(dimlength(1),kind=nint)
+   xdim=int(dimlength(1),kind=lint)
 
    name='ny_msi'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(2),wo)
    call nc_dim_length(ncid,name,dimids(2),dummyint,wo)
    dimlength(2)=dummyint
-   ydim=int(dimlength(2),kind=nint)
+   ydim=int(dimlength(2),kind=lint)
 
    name='nc_msi'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(3),wo)
    call nc_dim_length(ncid,name,dimids(3),dummyint,wo)
    dimlength(3)=dummyint
-   cdim=int(dimlength(3),kind=nint)
+   cdim=int(dimlength(3),kind=lint)
 
    deallocate(dimids)
    deallocate(dname)
@@ -120,7 +120,7 @@ subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim,wo)
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(3),wo)
    call nc_dim_length(ncid,name,dimids(3),dummyint,wo)
    dimlength(3)=dummyint
-   vdim=int(dimlength(3),kind=nint)
+   vdim=int(dimlength(3),kind=lint)
 
    deallocate(dimids)
    deallocate(dname)
@@ -146,13 +146,13 @@ subroutine read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim,laydim,
 
    type(CTRL_t),              intent(in)  :: Ctrl
    character(len=FilenameLen),intent(in)  :: fname
-   integer(kind=nint),        intent(out) :: xydim,xdim,ydim,levdim,laydim, &
+   integer(kind=lint),        intent(out) :: xydim,xdim,ydim,levdim,laydim, &
                                              channeldim,viewdim
    integer,                   intent(in)  :: wo
 
    integer                                    :: ncid,ierr
    integer                                    :: ndim,nvar,nattr,dummyint
-   integer (kind=nint), allocatable           :: dimids(:), varids(:), &
+   integer (kind=lint), allocatable           :: dimids(:), varids(:), &
                                                  attrids(:), dimlength(:)
    character(len=FilenameLen)                 :: name
    character(len=NetcdfVarLength), allocatable :: dname(:)
@@ -180,43 +180,43 @@ subroutine read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim,laydim,
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(1),wo)
    call nc_dim_length(ncid,name,dimids(1),dummyint,wo)
    dimlength(1)=dummyint
-   xydim=int(dimlength(1),kind=nint)
+   xydim=int(dimlength(1),kind=lint)
 
    name='nlon_lwrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(2),wo)
    call nc_dim_length(ncid,name,dimids(2),dummyint,wo)
    dimlength(2)=dummyint
-   xdim=int(dimlength(2),kind=nint)
+   xdim=int(dimlength(2),kind=lint)
 
    name='nlat_lwrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(3),wo)
    call nc_dim_length(ncid,name,dimids(3),dummyint,wo)
    dimlength(3)=dummyint
-   ydim=int(dimlength(3),kind=nint)
+   ydim=int(dimlength(3),kind=lint)
 
    name='nlayers_lwrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(4),wo)
    call nc_dim_length(ncid,name,dimids(4),dummyint,wo)
    dimlength(4)=dummyint
-   laydim=int(dimlength(4),kind=nint)
+   laydim=int(dimlength(4),kind=lint)
 
    name='nlevels_lwrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(5),wo)
    call nc_dim_length(ncid,name,dimids(5),dummyint,wo)
    dimlength(5)=dummyint
-   levdim=int(dimlength(5),kind=nint)
+   levdim=int(dimlength(5),kind=lint)
 
    name='nlw_channels'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(6),wo)
    call nc_dim_length(ncid,name,dimids(6),dummyint,wo)
    dimlength(6)=dummyint
-   channeldim=int(dimlength(6),kind=nint)
+   channeldim=int(dimlength(6),kind=lint)
 
    name='nviews'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(7),wo)
    call nc_dim_length(ncid,name,dimids(7),dummyint,wo)
    dimlength(7)=dummyint
-   viewdim=int(dimlength(7),kind=nint)
+   viewdim=int(dimlength(7),kind=lint)
 
    deallocate(dimids)
    deallocate(dname)
@@ -240,13 +240,13 @@ subroutine read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim, &
    implicit none
 
    character(len=FilenameLen), intent(in)  :: fname
-   integer(kind=nint),         intent(out) :: xydim,xdim,ydim,levdim,laydim, &
+   integer(kind=lint),         intent(out) :: xydim,xdim,ydim,levdim,laydim, &
                                               channeldim,viewdim
    integer,intent(in) :: wo
 
    integer                                      :: ncid,ierr
    integer                                      :: ndim,nvar,nattr,dummyint
-   integer (kind=nint),            allocatable  :: dimids(:), varids(:), &
+   integer (kind=lint),            allocatable  :: dimids(:), varids(:), &
                                                    attrids(:), dimlength(:)
    character(len=FilenameLen)                   :: name
    character(len=NetcdfVarLength), allocatable  :: dname(:)
@@ -274,43 +274,43 @@ subroutine read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim, &
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(1),wo)
    call nc_dim_length(ncid,name,dimids(1),dummyint,wo)
    dimlength(1)=dummyint
-   xydim=int(dimlength(1),kind=nint)
+   xydim=int(dimlength(1),kind=lint)
 
    name='nlon_swrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(2),wo)
    call nc_dim_length(ncid,name,dimids(2),dummyint,wo)
    dimlength(2)=dummyint
-   xdim=int(dimlength(2),kind=nint)
+   xdim=int(dimlength(2),kind=lint)
 
    name='nlat_swrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(3),wo)
    call nc_dim_length(ncid,name,dimids(3),dummyint,wo)
    dimlength(3)=dummyint
-   ydim=int(dimlength(3),kind=nint)
+   ydim=int(dimlength(3),kind=lint)
 
    name='nlayers_swrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(4),wo)
    call nc_dim_length(ncid,name,dimids(4),dummyint,wo)
    dimlength(4)=dummyint
-   laydim=int(dimlength(4),kind=nint)
+   laydim=int(dimlength(4),kind=lint)
 
    name='nlevels_swrtm'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(5),wo)
    call nc_dim_length(ncid,name,dimids(5),dummyint,wo)
    dimlength(5)=dummyint
-   levdim=int(dimlength(5),kind=nint)
+   levdim=int(dimlength(5),kind=lint)
 
    name='nsw_channels'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(6),wo)
    call nc_dim_length(ncid,name,dimids(6),dummyint,wo)
    dimlength(6)=dummyint
-   channeldim=int(dimlength(6),kind=nint)
+   channeldim=int(dimlength(6),kind=lint)
 
    name='nviews'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(7),wo)
    call nc_dim_length(ncid,name,dimids(7),dummyint,wo)
    dimlength(7)=dummyint
-   viewdim=int(dimlength(7),kind=nint)
+   viewdim=int(dimlength(7),kind=lint)
 
    deallocate(dimids)
    deallocate(dname)

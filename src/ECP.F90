@@ -163,7 +163,7 @@
 !    2012/11/01, MJ: implements OpenMP parallelization of along-track loop.
 !    2013/01/17, Matthias Jerg: Adds code to accommodate uncertainties of ctt
 !       and cth
-!    2013/12/05, MJ: initializes Diag%AK=real_fill_value
+!    2013/12/05, MJ: initializes Diag%AK=sreal_fill_value
 !    2013/12/10, MJ: initializes ymfit and y0 with missingxn
 !    2014/01/12, Greg McGarragh: Added some missing deallocates.
 !    2014/01/28, Greg McGarragh: Cleaned up code.
@@ -677,7 +677,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
             Diag%YmFit = MissingXn
             Diag%Y0    = MissingXn
-            Diag%AK    = real_fill_value
+            Diag%AK    = sreal_fill_value
 
 !           TotPix = TotPix+1
             TotPix_line(j) = TotPix_line(j)+1

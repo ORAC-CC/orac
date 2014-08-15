@@ -27,10 +27,10 @@ subroutine polint(xa,ya,n,x,y,dy)
 
   implicit none
 
-  integer(kind=nint) :: n,nmax
+  integer(kind=lint) :: n,nmax
   real(kind=sreal) :: dy,x,y,xa(n),ya(n)
   parameter (nmax=10)
-  integer(kind=nint) :: i,m,ns
+  integer(kind=lint) :: i,m,ns
   real(kind=sreal) :: den,dif,dift,ho,hp,w,c(nmax),d(nmax)
   ns=1
   dif=abs(x-xa(1))

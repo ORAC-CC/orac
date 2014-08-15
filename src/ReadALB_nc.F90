@@ -105,7 +105,7 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    ! NetCDF related
    integer        :: i
    integer        :: ncid
-   integer(kind=nint), allocatable, dimension(:) :: alb_instr_ch_numbers
+   integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
 
    ! On first call, the file is opened. It is then left open for all subsequent
    ! calls.

@@ -102,10 +102,10 @@ subroutine Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
    allocate(RTM_Pc%dTac_dPc(Ctrl%Ind%Ny))
    allocate(RTM_Pc%dTbc_dPc(Ctrl%Ind%Ny))
 
-   RTM_Pc%Hc=real_fill_value
-   RTM_Pc%Tc=real_fill_value
+   RTM_Pc%Hc=sreal_fill_value
+   RTM_Pc%Tc=sreal_fill_value
 
-   RTM_Pc%dHc_dPc=real_fill_value
-   RTM_Pc%dTc_dPc=real_fill_value
+   RTM_Pc%dHc_dPc=sreal_fill_value
+   RTM_Pc%dTc_dPc=sreal_fill_value
 
 end subroutine Alloc_RTM_Pc

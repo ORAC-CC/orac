@@ -35,9 +35,9 @@ subroutine read_config_file(Ctrl, conf)
 
    integer                                     :: ncid,ierr,wo
    integer                                     :: ndim,nvar,nattr,dummyint
-   integer(kind=nint), allocatable             :: dimids(:), varids(:), &
+   integer(kind=lint), allocatable             :: dimids(:), varids(:), &
                                                   attrids(:), dimlength(:)
-   integer(kind=nint)                          :: xdim,ydim,cdim,albdim,emisdim
+   integer(kind=lint)                          :: xdim,ydim,cdim,albdim,emisdim
    character(len=NetcdfVarLength), allocatable :: dname(:)
    character(len=FilenameLen)                  :: name
 
@@ -63,35 +63,35 @@ subroutine read_config_file(Ctrl, conf)
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(1),wo)
    call nc_dim_length(ncid,name,dimids(1),dummyint,wo)
    dimlength(1)=dummyint
-   xdim=int(dimlength(1),kind=nint)
+   xdim=int(dimlength(1),kind=lint)
    conf%nx=xdim
 
    name='ny_conf'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(2),wo)
    call nc_dim_length(ncid,name,dimids(2),dummyint,wo)
    dimlength(2)=dummyint
-   ydim=int(dimlength(2),kind=nint)
+   ydim=int(dimlength(2),kind=lint)
    conf%ny=ydim
 
    name='nc_conf'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(3),wo)
    call nc_dim_length(ncid,name,dimids(3),dummyint,wo)
    dimlength(3)=dummyint
-   cdim=int(dimlength(3),kind=nint)
+   cdim=int(dimlength(3),kind=lint)
    conf%nc=cdim
 
    name='nc_alb'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(4),wo)
    call nc_dim_length(ncid,name,dimids(4),dummyint,wo)
    dimlength(4)=dummyint
-   albdim=int(dimlength(4),kind=nint)
+   albdim=int(dimlength(4),kind=lint)
    conf%nalb=albdim
 
    name='nc_emis'
    call nc_dim_id(ncid,trim(adjustl(name)),dimids(5),wo)
    call nc_dim_length(ncid,name,dimids(5),dummyint,wo)
    dimlength(5)=dummyint
-   emisdim=int(dimlength(5),kind=nint)
+   emisdim=int(dimlength(5),kind=lint)
    conf%nemis=emisdim
 
    deallocate(dimids)
@@ -101,22 +101,22 @@ subroutine read_config_file(Ctrl, conf)
    deallocate(attrids)
 
    allocate(conf%channel_ids_instr(conf%nc))
-   conf%channel_ids_instr=-1_nint
+   conf%channel_ids_instr=-1_lint
    call nc_read_array_1d_int_to_int_orac(ncid,conf%nc,"msi_instr_ch_numbers",conf%channel_ids_instr,0)
    write(*,*) 'msi channel numbers instr: ',conf%channel_ids_instr
 
    allocate(conf%channel_ids_abs(conf%nc))
-   conf%channel_ids_abs=-1_nint
+   conf%channel_ids_abs=-1_lint
    call nc_read_array_1d_int_to_int_orac(ncid,conf%nc,"msi_abs_ch_numbers",conf%channel_ids_abs,0)
    write(*,*) 'msi channel numbers file: ',conf%channel_ids_abs
 
    allocate(conf%channel_sw_flag(conf%nc))
-   conf%channel_sw_flag=-1_nint
+   conf%channel_sw_flag=-1_lint
    call nc_read_array_1d_int_to_int_orac(ncid,conf%nc,"msi_ch_swflag",conf%channel_sw_flag,0)
    write(*,*) 'sw flag: ',conf%channel_sw_flag
 
    allocate(conf%channel_lw_flag(conf%nc))
-   conf%channel_lw_flag=-1_nint
+   conf%channel_lw_flag=-1_lint
    call nc_read_array_1d_int_to_int_orac(ncid,conf%nc,"msi_ch_lwflag",conf%channel_lw_flag,0)
    write(*,*) 'lw flag: ',conf%channel_lw_flag
 

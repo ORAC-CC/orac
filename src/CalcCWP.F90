@@ -70,8 +70,8 @@ subroutine Calc_CWP(Ctrl,SPixel, status)
       fac=(4./3.)*rho/qextice
    else
       ! most likely aerosol but could be some other crash
-      SPixel%cwp=real_fill_value
-      SPixel%cwp_error=real_fill_value
+      SPixel%cwp=sreal_fill_value
+      SPixel%cwp_error=sreal_fill_value
       return
    end if
 

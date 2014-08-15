@@ -27,9 +27,9 @@ subroutine locate_int(xx,n,x,j)
 
   implicit none
 
-  integer(kind=nint) :: j,n
+  integer(kind=lint) :: j,n
   real(kind=sreal) :: x,xx(n)
-  integer(kind=nint) :: jl,jm,ju
+  integer(kind=lint) :: jl,jm,ju
   jl=0
   ju=n+1
 10 if(ju-jl.gt.1)then
