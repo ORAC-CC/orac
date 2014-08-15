@@ -18,7 +18,7 @@
 ! ixstop   lint   in   Last pixel to read across track
 ! iystart  lint   in   First pixel to read along track
 ! iystop   lint   in   Last pixel to read along track
-! btemp    sint   both Initialised array into which data is stored
+! btemp    byte   both Initialised array into which data is stored
 !
 ! History:
 ! 2011/12/15, MJ: produces draft code which opens and reads MODIS ls flag
@@ -43,13 +43,13 @@ subroutine read_modis_land_sea_mask(fid,SDS_name,ixstart,ixstop,iystart,iystop,b
    integer,            intent(in)  :: fid
    character(len=*),   intent(in)  :: SDS_name
    integer,            intent(in)  :: ixstart, ixstop, iystart, iystop
-   integer(kind=sint), intent(out) :: btemp(ixstart:ixstop,iystart:iystop)
+   integer(kind=byte), intent(out) :: btemp(ixstart:ixstop,iystart:iystop)
 
    integer            :: err_code
    integer            :: file_id, var_id, attr_id
    integer            :: start(2), stride(2), edge(2)
 
-   integer(kind=sint) :: fv
+   integer(kind=byte) :: fv
 
    start(1) = ixstart-1
    start(2) = iystart-1

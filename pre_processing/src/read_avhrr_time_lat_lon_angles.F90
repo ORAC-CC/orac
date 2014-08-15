@@ -60,7 +60,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    integer                                       :: err_code
 
    !reference point of time
-   integer(kind=stint) :: refday=1_stint,refyear=1970_stint,refmonth=1_stint
+   integer(kind=sint) :: refday=1_sint,refyear=1970_sint,refmonth=1_sint
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_time_lat_lon_angles()'
 

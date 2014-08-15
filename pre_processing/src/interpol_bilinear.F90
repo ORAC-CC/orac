@@ -63,7 +63,7 @@ subroutine interpol_bilinear(xin, yin, datin, xout, yout, datout, missing)
    integer(kind=lint)                            :: out
    integer(kind=lint)                            :: ii, iibot, iitop, iiold
    integer(kind=lint)                            :: jj, jjbot, jjtop, jjold
-   integer(kind=sint),dimension(4)               :: missmask
+   integer(kind=byte),dimension(4)               :: missmask
 
    nxin = size(xin)
    nyin = size(yin)

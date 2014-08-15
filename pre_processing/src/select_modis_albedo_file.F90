@@ -50,8 +50,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
 
    integer                                              :: nv
    integer                                              :: doy
-   integer(kind=stint), allocatable, dimension(:)       :: dates
-   integer(kind=stint), allocatable, dimension(:)       :: newdates
+   integer(kind=sint), allocatable, dimension(:)        :: dates
+   integer(kind=sint), allocatable, dimension(:)        :: newdates
    character(len=datelength), allocatable, dimension(:) :: dates_s
    character(len=pathlength), allocatable, dimension(:) :: p_date_s
    integer                                              :: pos(1)

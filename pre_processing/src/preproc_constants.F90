@@ -32,8 +32,8 @@ module preproc_constants
 
    implicit none
 
-   integer, parameter :: sint=1
-   integer, parameter :: stint=2
+   integer, parameter :: byte=1
+   integer, parameter :: sint=2
    integer, parameter :: lint=4
    integer, parameter :: sreal=4
    integer, parameter :: dreal=8
@@ -81,8 +81,8 @@ module preproc_constants
    real(kind=sreal),    parameter :: maxsza_day=80.0
    real(kind=sreal),    parameter :: maxsza_twi=110.0
 
-   integer(kind=sint),  parameter :: byte_fill_value=-1
-   integer(kind=stint), parameter :: int_fill_value=-999
+   integer(kind=byte),  parameter :: byte_fill_value=-1
+   integer(kind=sint),  parameter :: int_fill_value=-999
    integer(kind=lint),  parameter :: long_int_fill_value=-999
    real(kind=sreal),    parameter :: real_fill_value=-999.0
    real(kind=dreal),    parameter :: double_fill_value=-999.0

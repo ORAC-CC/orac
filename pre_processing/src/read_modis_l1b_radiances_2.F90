@@ -78,10 +78,10 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    logical               :: flag
    integer               :: iband,comma_i,comma_i_old
    integer               :: band_name_length,current_band
-   integer(kind=stint)   :: fv, vr(2)
+   integer(kind=sint)    :: fv, vr(2)
    real(kind=sreal)      :: scale_factors(20), offsets(20)
    integer(kind=lint)    :: start(3), stride(3), edge(3)
-   integer(kind=stint)   :: temp(ixstart:ixstop,iystart:iystop)
+   integer(kind=sint)    :: temp(ixstart:ixstop,iystart:iystop)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances_2()'
 

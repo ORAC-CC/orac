@@ -31,9 +31,9 @@
 module interpol
 
    use preproc_constants, only: sreal, real_fill_value
-   
+
    implicit none
-   
+
    type interpol_s
       integer     :: x0, x1, y0, y1
       real(sreal) :: t, u
@@ -45,7 +45,7 @@ module interpol
                        bilinear_coef_reg_reg2, bilinear_coef_reg_irr2, &
                        bilinear_coef_irr_reg2, bilinear_coef_irr_irr2
    end interface bilinear_coef
-   
+
    interface interp_field
       module procedure interp_field_0d, interp_field_1d, interp_field_2d
    end interface interp_field
@@ -53,7 +53,7 @@ module interpol
 contains
 
 include 'bound_grid.F90'
-   
+
 include 'interpol_bilinear.F90'
 !include 'interpol_nearest_neighbour.F90'
 
@@ -228,9 +228,9 @@ subroutine interp_field_1d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)       :: datin(:,:,:)
-   real(sreal),         intent(inout)    :: datout(:)
-   type(interpol_s),    intent(in)       :: interp
+   real(sreal), target, intent(in)    :: datin(:,:,:)
+   real(sreal),         intent(inout) :: datout(:)
+   type(interpol_s),    intent(in)    :: interp
 
    logical                            :: miss(4)
    real(sreal)                        :: coef(3)
@@ -241,7 +241,7 @@ subroutine interp_field_1d(datin, datout, interp)
            datin(interp%x1, interp%y0, 1) == real_fill_value, &
            datin(interp%x0, interp%y1, 1) == real_fill_value, &
            datin(interp%x1, interp%y1, 1) == real_fill_value]
-   
+
    bot_left => datin(interp%x0, interp%y0, :)
    bot_rght => datin(interp%x1, interp%y0, :)
    top_left => datin(interp%x0, interp%y1, :)
@@ -255,9 +255,9 @@ subroutine interp_field_2d(datin, datout, interp)
 
    implicit none
 
-   real(8),     target, intent(in)         :: datin(:,:,:,:)
-   real(8),             intent(inout)      :: datout(:,:)
-   type(interpol_s),    intent(in)         :: interp
+   real(8),     target, intent(in)      :: datin(:,:,:,:)
+   real(8),             intent(inout)   :: datout(:,:)
+   type(interpol_s),    intent(in)      :: interp
 
    logical                              :: miss(4)
    real(8)                              :: coef(3)
@@ -268,7 +268,7 @@ subroutine interp_field_2d(datin, datout, interp)
            datin(interp%x1, interp%y0, 1, 1) == real_fill_value, &
            datin(interp%x0, interp%y1, 1, 1) == real_fill_value, &
            datin(interp%x1, interp%y1, 1, 1) == real_fill_value]
-   
+
    bot_left => datin(interp%x0, interp%y0, :, :)
    bot_rght => datin(interp%x1, interp%y0, :, :)
    top_left => datin(interp%x0, interp%y1, :, :)

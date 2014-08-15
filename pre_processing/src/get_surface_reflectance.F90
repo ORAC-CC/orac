@@ -78,7 +78,7 @@
 !    Fixed longitude bug in interpolation ECMWF wind fields (ECMWF longitude
 !    runs from 0-360 degrees)
 ! 2013/09/02, AP: Removed startyi, endye.
-! 2014/01/17, MJ: Fixed doy data type from sint to stint to comply with other
+! 2014/01/17, MJ: Fixed doy data type from byte to stint to comply with other
 !    defs
 ! 2014/04/20, GM: Cleaned up the code.
 ! 2014/04/21, GM: Added logical option assume_full_path.
@@ -145,7 +145,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
    integer, allocatable, dimension(:)              :: bands
    integer                                         :: nswchannels
    real(kind=sreal), allocatable, dimension(:,:)   :: tmp_data
-   integer(kind=sint), allocatable, dimension(:,:) :: fg_mask
+   integer(kind=byte), allocatable, dimension(:,:) :: fg_mask
    real(kind=sreal), allocatable, dimension(:,:)   :: wsalnd
    real(kind=sreal), allocatable, dimension(:,:,:) :: wgtlnd
    real(kind=sreal), allocatable, dimension(:,:,:) :: rholnd

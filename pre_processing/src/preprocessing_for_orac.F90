@@ -263,7 +263,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 
    integer                         :: ecmwf_flag
    logical                         :: chunkproc
-   integer(kind=stint)             :: day_night
+   integer(kind=sint)              :: day_night
    logical                         :: verbose
    logical                         :: use_chunking
    logical                         :: assume_full_paths
@@ -280,7 +280,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    integer                         :: segment_ends(2)
    integer                         :: n_segments
    integer                         :: chunksize
-   integer(kind=stint)             :: i_chunk
+   integer(kind=sint)              :: i_chunk
    integer                         :: n_chunks
    integer, allocatable            :: chunk_starts(:)
    integer, allocatable            :: chunk_ends(:)
@@ -295,7 +295,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    character(len=sensorlength)     :: sensor
    character(len=platformlength)   :: platform
 
-   integer(kind=stint)             :: doy,year,month,day,hour,minute
+   integer(kind=sint)              :: doy,year,month,day,hour,minute
 
    character(len=datelength)       :: cyear,cmonth,cday,cdoy,chour,cminute
 

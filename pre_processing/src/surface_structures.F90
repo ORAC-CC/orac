@@ -29,10 +29,10 @@ module surface_structures
 
    type surface_s
       ! Index numbers of measurement channels for each albedo value
-      integer(kind=stint), dimension(:), pointer  :: albedo_chan
+      integer(kind=sint), dimension(:), pointer  :: albedo_chan
 
       ! Index numbers of measurement channels for each emissivity value
-      integer(kind=stint), dimension(:), pointer  :: emissivity_chan
+      integer(kind=sint), dimension(:), pointer  :: emissivity_chan
 
       real(kind=sreal), dimension(:,:,:), pointer :: albedo
 

@@ -84,14 +84,14 @@ function read_cimss_emissivity(path_to_file, emis, bands, verbose, flag, &
 
    ! Input variables
    character(len=pathlength), intent(in)               :: path_to_file
-   integer(kind=stint),       intent(in), dimension(:) :: bands
+   integer(kind=sint),        intent(in), dimension(:) :: bands
    logical,                   intent(in)               :: verbose
-   integer(kind=stint),       intent(in), optional     :: flag, wavenumber
+   integer(kind=sint),        intent(in), optional     :: flag, wavenumber
 
 
    ! Output variables
    type(emis_s),              intent(out)              :: emis
-   integer(kind=stint)                                 :: stat
+   integer(kind=sint)                                  :: stat
 
    ! Local variables
    integer          :: fid, xid, yid, zid

@@ -128,7 +128,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    logical,                     intent(in)    :: verbose
 
    integer                   :: i,ii,j,jj,status
-   integer(sint)             :: view_selection
+   integer(byte)             :: view_selection
    real(sreal), dimension(4) :: A
    type(aatsr_drift_lut)     :: lut
    real(dreal)               :: new_drift, old_drift, drift_var
@@ -214,7 +214,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    ! assign geolocation and angle pointers
    lat = c_loc(imager_geolocation%latitude(startx,1))
    lon = c_loc(imager_geolocation%longitude(startx,1))
-   if (iand(view_selection,1_sint) .gt. 0) then
+   if (iand(view_selection,1_byte) .gt. 0) then
       allocate(nflg(startx:imager_geolocation%endx,1:ny))
       allocate(nqul(startx:imager_geolocation%endx,1:ny))
       allocate(nday(1:ny))
@@ -227,7 +227,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       allocate(nqul(1,1))
       allocate(nday(1))
    end if
-   if (iand(view_selection,2_sint) .gt. 0) then
+   if (iand(view_selection,2_byte) .gt. 0) then
       allocate(fflg(startx:imager_geolocation%endx,1:ny))
       allocate(fqul(startx:imager_geolocation%endx,1:ny))
       allocate(fday(1:ny))
@@ -397,7 +397,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    end do
 
    ! translate flags (THIS USED TO BE RATHER MORE COMPLICATED)
-   if (iand(view_selection,1_sint) .gt. 0_sint) then
+   if (iand(view_selection,1_byte) .gt. 0_byte) then
       do i=imager_geolocation%startx,imager_geolocation%endx
          do j=1,imager_geolocation%ny
             imager_flags%lsflag(i,j) = iand(nflg(i,j),1_c_short)
@@ -405,7 +405,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
             if (temp .gt. 0) imager_flags%cflag(i,j) = temp
          end do
       end do
-   else if (iand(view_selection,2_sint) .gt. 0) then
+   else if (iand(view_selection,2_byte) .gt. 0) then
       do i=imager_geolocation%startx,imager_geolocation%endx
          do j=1,imager_geolocation%ny
             temp = iand(fflg(i,j),2_c_short)

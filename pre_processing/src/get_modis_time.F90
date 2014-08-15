@@ -56,7 +56,7 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    integer(kind=lint)         :: startyy,stopyy
 
    !reference point of time
-   integer(kind=stint) :: refday=1_stint,refyear=1993_stint,refmonth=1_stint
+   integer(kind=sint) :: refday=1_sint,refyear=1993_sint,refmonth=1_sint
 
    ! determine size of grid on which time is stored
    var_id=sfselect(geo_id,sfn2index(geo_id,"EV start time"))

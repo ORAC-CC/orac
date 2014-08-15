@@ -74,7 +74,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    character(len=pathlength),      intent(in)  :: path_to_l1b_file
    integer(kind=lint),             intent(out) :: n_across_track, n_along_track
    integer(kind=lint),             intent(out) :: along_track_offset
-   integer(kind=stint),            intent(in)  :: day_night
+   integer(kind=sint),             intent(in)  :: day_night
    real(kind=sreal), dimension(4), intent(in)  :: loc_limit
    integer(kind=lint),             intent(out) :: n_along_track2
    integer(kind=lint),             intent(out) :: along_track_offset2

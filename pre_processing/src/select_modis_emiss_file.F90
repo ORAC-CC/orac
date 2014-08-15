@@ -46,11 +46,11 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
    character(len=pathlength), intent(in)  :: cimss_emis_path
    character(len=pathlength), intent(out) :: cimss_emis_path_file
 
-   integer(kind=stint)                :: year
-   integer(kind=stint)                :: doy
+   integer(kind=sint)                 :: year
+   integer(kind=sint)                 :: doy
    integer                            :: pos
    logical                            :: isleapyear
-   integer(kind=stint), dimension(12) :: dates,newdates
+   integer(kind=sint), dimension(12)  :: dates,newdates
    character(len=3),    dimension(12) :: dates_s
    character(len=3)                   :: emis_date_s
    logical                            :: cimss_emis_file_exist
@@ -60,8 +60,8 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
 
    isleapyear=.false.
 
-   if ((mod(year,  4_stint) .eq. 0 .and. mod(year,100_stint) .ne. 0) .or. &
-        mod(year,400_stint) .eq. 0) isleapyear=.true.
+   if ((mod(year,  4_sint) .eq. 0 .and. mod(year,100_sint) .ne. 0) .or. &
+        mod(year,400_sint) .eq. 0) isleapyear=.true.
 
    if (isleapyear) then
       dates(1)=1

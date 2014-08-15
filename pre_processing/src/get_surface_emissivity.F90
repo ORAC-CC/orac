@@ -101,7 +101,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    ! Local variables
    character(len=pathlength)                          :: cimss_emis_path_file
    type(emis_s)                                       :: emis
-   integer(kind=stint),              dimension(3)     :: embands=[1,8,9]
+   integer(kind=sint),              dimension(3)      :: embands=[1,8,9]
    real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis, summat
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
    integer(kind=lint)                                 :: i,j,k,lat,lon

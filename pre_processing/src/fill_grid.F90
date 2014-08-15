@@ -48,12 +48,12 @@ subroutine fill_grid(grid, fillval, mask)
    ! Input/output variables
    real(kind=sreal), dimension(:,:),   intent(inout) :: grid
    real(kind=sreal),                   intent(in)    :: fillval
-   integer(kind=sint), dimension(:,:), intent(in)    :: mask
+   integer(kind=byte), dimension(:,:), intent(in)    :: mask
 
    ! Local variables
    integer(kind=lint)                                :: nx, ny, i, j, k, m
    integer(kind=lint)                                :: a1, b1, count
-   integer(kind=sint)                                :: flag
+   integer(kind=byte)                                :: flag
    real(kind=sreal), dimension(16)                   :: isearch, jsearch
    real(kind=sreal), allocatable, dimension(:,:)     :: Z
 

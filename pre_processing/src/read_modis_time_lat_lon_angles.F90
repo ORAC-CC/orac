@@ -59,7 +59,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    integer(kind=lint)                              :: geo_id,ix,jy
    real(kind=sreal),   allocatable, dimension(:,:) :: temp,temp2
-   integer(kind=sint), allocatable, dimension(:,:) :: btemp
+   integer(kind=byte), allocatable, dimension(:,:) :: btemp
    integer                                         :: err_code
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_time_lat_lon_angles()'

@@ -71,8 +71,8 @@ module imager_structures
 
    type imager_flags_s
 
-      integer(kind=sint), dimension(:,:), pointer :: lsflag
-      integer(kind=sint), dimension(:,:), pointer :: cflag
+      integer(kind=byte), dimension(:,:), pointer :: lsflag
+      integer(kind=byte), dimension(:,:), pointer :: cflag
 
    end type imager_flags_s
 

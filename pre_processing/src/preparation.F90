@@ -109,7 +109,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    type(script_arguments_s),      intent(in)  :: script_input
    integer,                       intent(in)  :: ecmwf_flag
    type(imager_geolocation_s),    intent(in)  :: imager_geolocation
-   integer(kind=stint),           intent(in)  :: i_chunk
+   integer(kind=sint),            intent(in)  :: i_chunk
    logical,                       intent(in)  :: assume_full_path
    logical,                       intent(in)  :: verbose
 

@@ -65,11 +65,11 @@ subroutine DOY2GREG(doy,y,m,d)
 
     IMPLICIT NONE
 
-    INTEGER(kind=stint) :: D                                                                  ! day of month (+ fraction)
-    INTEGER(kind=stint) :: DOY
-    INTEGER(kind=stint) :: K
-    INTEGER(kind=stint) :: M                                                                  ! month (1-12)
-    INTEGER(kind=stint) :: Y                                                                  ! year
+    INTEGER(kind=sint) :: D                                                                  ! day of month (+ fraction)
+    INTEGER(kind=sint) :: DOY
+    INTEGER(kind=sint) :: K
+    INTEGER(kind=sint) :: M                                                                  ! month (1-12)
+    INTEGER(kind=sint) :: Y                                                                  ! year
     LOGICAL :: GREGORIAN_FLAG                                                     ! .TRUE. for Gregorian date, .FALSE. for Julian
     LOGICAL :: LEAP
 
@@ -100,11 +100,11 @@ subroutine DOY2GREG(doy,y,m,d)
      GREGORIAN_FLAG = GREGORIAN_DOY2GREG(Y, DOY, GREGORIAN_START(GREGORIAN_CHOICE))
 
        LEAP = .FALSE.                                                                ! test for leap year
-       IF (MOD(Y,4_stint) .EQ. 0) LEAP = .TRUE.
+       IF (MOD(Y,4_sint) .EQ. 0) LEAP = .TRUE.
 
        IF (GREGORIAN_FLAG) THEN                                                      ! additional Gregorian leap year tests
-          IF (MOD(Y,100_stint) .EQ. 0) LEAP = .FALSE.
-          IF (MOD(Y,400_stint) .EQ. 0) LEAP = .TRUE.
+          IF (MOD(Y,100_sint) .EQ. 0) LEAP = .FALSE.
+          IF (MOD(Y,400_sint) .EQ. 0) LEAP = .TRUE.
        END IF
 
        IF (LEAP) THEN                                                                ! set K based on calendar type
@@ -118,7 +118,7 @@ subroutine DOY2GREG(doy,y,m,d)
           DOY = DOY + GREGORIAN_START(GREGORIAN_CHOICE)%NDAYS                        ! ..then adjust for dropped days
        END IF
 
-       M = INT(9.0D0*(K+DOY)/275.0D0 + 0.98D0,kind=stint)                                       ! compute month
+       M = INT(9.0D0*(K+DOY)/275.0D0 + 0.98D0,kind=sint)                                       ! compute month
        IF (DOY .LT. 32) M = 1
 
        D = DOY - ((275*M)/9) + K*((M+9)/12) + 30                                     ! compute day of month
@@ -174,14 +174,14 @@ subroutine DOY2GREG(doy,y,m,d)
        IMPLICIT NONE
 
        !MJ: some modifications where necessary here to make it work
-       integer(kind=stint) :: D                                                                  ! day of month
-       INTEGER(kind=stint) :: dayint
-       INTEGER(kind=stint) :: M                                                                  ! month
-       INTEGER(kind=stint) :: Y                                                          ! year
+       integer(kind=sint) :: D                                                                  ! day of month
+       INTEGER(kind=sint) :: dayint
+       INTEGER(kind=sint) :: M                                                                  ! month
+       INTEGER(kind=sint) :: Y                                                          ! year
 
        real(kind=dreal) :: JD                                                                  ! Julian day
 
-       INTEGER(kind=stint) :: A, B                                                               ! intermediate variables
+       INTEGER(kind=sint) :: A, B                                                               ! intermediate variables
        !DOUBLE PRECISION :: D                                                         ! day of month (+ fraction)
  !      DOUBLE PRECISION :: JD                                                        ! Julian day
        !INTEGER :: M                                                                  ! month (1-12)
@@ -208,14 +208,14 @@ subroutine DOY2GREG(doy,y,m,d)
  !!$      WRITE (UNIT=*, FMT='(A)', ADVANCE='NO') ' Enter year:  '                      ! prompt for year
  !!$      READ (UNIT=*, FMT=*) Y
 
-       dayint=int(d,kind=stint)
+       dayint=int(d,kind=sint)
        ! test for Gregorian calendar
- !MJ ORG      GREGORIAN_FLAG = GREGORIAN_GREG2JD(Y, M, INT(D,kind=stint), GREGORIAN_START(GREGORIAN_CHOICE))
+ !MJ ORG      GREGORIAN_FLAG = GREGORIAN_GREG2JD(Y, M, INT(D,kind=sint), GREGORIAN_START(GREGORIAN_CHOICE))
        GREGORIAN_FLAG = GREGORIAN_GREG2JD(Y, M, dayint, GREGORIAN_START(GREGORIAN_CHOICE))
 
-       IF (M .LE. 2_stint) THEN
-          Y=Y-1_stint
-          M=M+12_stint
+       IF (M .LE. 2_sint) THEN
+          Y=Y-1_sint
+          M=M+12_sint
        END IF
 
        IF (GREGORIAN_FLAG) THEN                                                      ! Gregorian calendar
@@ -225,7 +225,7 @@ subroutine DOY2GREG(doy,y,m,d)
           B = 0
        END IF
 
-       JD = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1),kind=stint) + D + B - 1524.5D0
+       JD = INT(365.25D0*(Y+4716)) + INT(30.6001D0*(M+1),kind=sint) + D + B - 1524.5D0
 
        IF (.NOT. GREGORIAN_FLAG) THEN                                                ! print msg if Julian calendar in effect
           WRITE (UNIT=*, FMT='(/,A)') ' Julian calendar.'
@@ -253,18 +253,18 @@ subroutine DOY2GREG(doy,y,m,d)
        IMPLICIT NONE
 
 
-       INTEGER(kind=stint), INTENT(IN) :: YEAR                                                   ! input year
-       INTEGER(kind=stint), INTENT(IN) :: DOY                                                    ! input day of month
+       INTEGER(kind=sint), INTENT(IN) :: YEAR                                                   ! input year
+       INTEGER(kind=sint), INTENT(IN) :: DOY                                                    ! input day of month
        TYPE (DATE_TYPE_DOY2GREG), INTENT(IN) :: GREG_START                                    ! contains Julian stop/Gregorian start dates
 
        LOGICAL :: GREG_FLAG                                                          ! result flag (.TRUE. for Gregorian)
 
-       INTEGER(kind=stint) :: CALTYPE = 0                                                        ! 0=unknown, 1=Julian, 2=Gregorian
-       INTEGER(kind=stint) :: TOTAL_DAYS
+       INTEGER(kind=sint) :: CALTYPE = 0                                                        ! 0=unknown, 1=Julian, 2=Gregorian
+       INTEGER(kind=sint) :: TOTAL_DAYS
        LOGICAL :: LEAP_FLAG
 
        LEAP_FLAG = .FALSE.
-       IF (MOD(YEAR,4_stint) .EQ. 0) LEAP_FLAG = .TRUE.
+       IF (MOD(YEAR,4_sint) .EQ. 0) LEAP_FLAG = .TRUE.
 
        IF (YEAR .LT. GREG_START%YEAR_J) THEN                                         ! if year before end of Julian calendar..
           CALTYPE = 1                                                                ! ..then this is a Julian date
@@ -282,8 +282,8 @@ subroutine DOY2GREG(doy,y,m,d)
 
        IF (YEAR .GT. GREG_START%YEAR_J) THEN                                         ! if year after start of Gregorian calendar..
           CALTYPE = 2                                                                ! ..then this is a Gregorian date
-          IF (MOD(YEAR,100_stint) .EQ. 0) LEAP_FLAG = .FALSE.
-          IF (MOD(YEAR,400_stint) .EQ. 0) LEAP_FLAG = .TRUE.
+          IF (MOD(YEAR,100_sint) .EQ. 0) LEAP_FLAG = .FALSE.
+          IF (MOD(YEAR,400_sint) .EQ. 0) LEAP_FLAG = .TRUE.
           IF (LEAP_FLAG) THEN
              TOTAL_DAYS = 366
           ELSE
@@ -299,12 +299,12 @@ subroutine DOY2GREG(doy,y,m,d)
        IF (DOY .GT. TOTAL_DAYS) CALTYPE = 0
 
        SELECT CASE (CALTYPE)                                                         ! check calendar type
-          CASE (0_stint)                                                             ! if unknown, we have an invalid date
+          CASE (0_sint)                                                             ! if unknown, we have an invalid date
              WRITE (UNIT=*, FMT='(A)') ' No such day of year.'                       ! print error message
              STOP                                                                    ! stop program
-          CASE (1_stint)                                                             ! if Julian date..
+          CASE (1_sint)                                                             ! if Julian date..
              GREG_FLAG = .FALSE.                                                     ! ..set return value to .false.
-          CASE (2_stint)                                                             ! if Gregorian date..
+          CASE (2_sint)                                                             ! if Gregorian date..
              GREG_FLAG = .TRUE.                                                      ! ..set return value to .true.
        END SELECT
 
@@ -327,12 +327,12 @@ subroutine DOY2GREG(doy,y,m,d)
 
        LOGICAL :: GREG_FLAG                                                          ! result flag (.TRUE. for Gregorian)
 
-       INTEGER(kind=stint), INTENT(IN) :: YEAR                                                   ! input year
-       INTEGER(kind=stint), INTENT(IN) :: MONTH                                                  ! input month
-       INTEGER(kind=stint), INTENT(IN) :: DAY                                                    ! input day of month
+       INTEGER(kind=sint), INTENT(IN) :: YEAR                                                   ! input year
+       INTEGER(kind=sint), INTENT(IN) :: MONTH                                                  ! input month
+       INTEGER(kind=sint), INTENT(IN) :: DAY                                                    ! input day of month
        TYPE (DATE_TYPE_GREG2JD), INTENT(IN) :: GREG_START          ! contains Julian stop/Gregorian start dates
 
-       INTEGER(kind=stint) :: CALTYPE = 0                                                        ! 0=unknown, 1=Julian, 2=Gregorian
+       INTEGER(kind=sint) :: CALTYPE = 0                                                        ! 0=unknown, 1=Julian, 2=Gregorian
 
  !
  !     Start of code.
@@ -362,12 +362,12 @@ subroutine DOY2GREG(doy,y,m,d)
        END IF
 
        SELECT CASE (CALTYPE)                                                         ! check calendar type
-          CASE (0_stint)                                                             ! if unknown, we have an invalid date
+          CASE (0_sint)                                                             ! if unknown, we have an invalid date
              WRITE (UNIT=*, FMT='(A)') ' No such date.'                              ! print error message
              STOP                                                                    ! stop program
-          CASE (1_stint)                                                             ! if Julian date..
+          CASE (1_sint)                                                             ! if Julian date..
              GREG_FLAG = .FALSE.                                                     ! ..set return value to .false.
-          CASE (2_stint)                                                             ! if Gregorian date..
+          CASE (2_sint)                                                             ! if Gregorian date..
              GREG_FLAG = .TRUE.                                                      ! ..set return value to .true.
        END SELECT
 
@@ -430,18 +430,18 @@ subroutine DOY2GREG(doy,y,m,d)
 !       INTEGER(kind=2), INTENT(out) :: DOY
 
 
-       INTEGER(kind=stint), INTENT(IN) :: Y                                                   ! input year
-       INTEGER(kind=stint), INTENT(IN) :: M                                                  ! input month
-       INTEGER(kind=stint), INTENT(IN) :: D
-       INTEGER(kind=stint), INTENT(out) :: DOY
+       INTEGER(kind=sint), INTENT(IN) :: Y                                                   ! input year
+       INTEGER(kind=sint), INTENT(IN) :: M                                                  ! input month
+       INTEGER(kind=sint), INTENT(IN) :: D
+       INTEGER(kind=sint), INTENT(out) :: DOY
 
 
 
        !MJ: some modifications where necessary here to make it work
-!        INTEGER(kind=stint) :: D                                                                  ! day of month
-        INTEGER(kind=stint) :: dayint
-!        INTEGER(kind=stint) :: M                                                                  ! month
-!        INTEGER(kind=stint) :: Y,dummy                                                            ! year
+!        INTEGER(kind=sint) :: D                                                                  ! day of month
+        INTEGER(kind=sint) :: dayint
+!        INTEGER(kind=sint) :: M                                                                  ! month
+!        INTEGER(kind=sint) :: Y,dummy                                                            ! year
 
 
        INTEGER :: K
@@ -461,16 +461,16 @@ subroutine DOY2GREG(doy,y,m,d)
  !  Main program code
  !-----------------------------------------------------------------------------------------------------------------------------------
 
-       dayint=int(d,kind=stint)
+       dayint=int(d,kind=sint)
 !       GREGORIAN_FLAG = GREGORIAN(Y, M, INT(D), GREGORIAN_START(GREGORIAN_CHOICE))   ! test for Gregorian calendar
        GREGORIAN_FLAG = GREGORIAN_GREG2DOY(int(Y), int(M), int(dayint), GREGORIAN_START(GREGORIAN_CHOICE))
 
        LEAP = .FALSE.
-       IF (MOD(Y,4_stint) .EQ. 0) LEAP = .TRUE.
+       IF (MOD(Y,4_sint) .EQ. 0) LEAP = .TRUE.
 
        IF (GREGORIAN_FLAG) THEN
-          IF (MOD(Y,100_stint) .EQ. 0) LEAP = .FALSE.
-          IF (MOD(Y,400_stint) .EQ. 0) LEAP = .TRUE.
+          IF (MOD(Y,100_sint) .EQ. 0) LEAP = .FALSE.
+          IF (MOD(Y,400_sint) .EQ. 0) LEAP = .TRUE.
        END IF
 
        IF (LEAP) THEN

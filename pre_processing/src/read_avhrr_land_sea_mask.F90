@@ -98,7 +98,7 @@ subroutine read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
       end do
    end do
 
-   imager_flags%lsflag=int(btemp,kind=sint)
+   imager_flags%lsflag=int(btemp,kind=byte)
 
    !free temp arrays
    deallocate(btemp)

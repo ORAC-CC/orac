@@ -23,12 +23,12 @@ contains
 ! l1b_path_file string in          Full path to level 1B data
 ! geo_path_file string in          Full path to geolocation data
 ! platform      string both        Name of satellite
-! year          stint  out         Year
-! month         stint  out         Month of year (1-12)
-! doy           stint  out         Day of year (1-366)
-! day           stint  out         Day of month (1-31)
-! hour          stint  out         Hour of day (0-59)
-! minute        stint  out         Minute of hour (0-59)
+! year          sint   out         Year
+! month         sint   out         Month of year (1-12)
+! doy           sint   out         Day of year (1-366)
+! day           sint   out         Day of month (1-31)
+! hour          sint   out         Hour of day (0-59)
+! minute        sint   out         Minute of hour (0-59)
 ! cyear         string out         Year, as a 4 character string
 ! cmonth        string out         Month of year, as a 2 character string
 ! cdoy          string out         Day of year, as a 3 character string
@@ -73,12 +73,12 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    character(len=pathlength),     intent(in)    :: l1b_path_file
    character(len=pathlength),     intent(in)    :: geo_path_file
    character(len=platformlength), intent(out)   :: platform
-   integer(kind=stint),           intent(out)   :: year,month,day,doy,hour,minute
+   integer(kind=sint),            intent(out)   :: year,month,day,doy,hour,minute
    character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
    type(channel_info_s),          intent(inout) :: channel_info
    logical,                       intent(in)    :: verbose
 
-   integer(kind=stint)                          :: intdummy1,intdummy2
+   integer(kind=sint)                           :: intdummy1,intdummy2
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_modis()'
 
@@ -165,12 +165,12 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    character(len=pathlength),     intent(in)    :: l1b_path_file
    character(len=pathlength),     intent(in)    :: geo_path_file
    character(len=platformlength), intent(out)   :: platform
-   integer(kind=stint),           intent(out)   :: year,month,day,doy,hour,minute
+   integer(kind=sint),            intent(out)   :: year,month,day,doy,hour,minute
    character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
    type(channel_info_s),          intent(inout) :: channel_info
    logical,                       intent(in)    :: verbose
 
-   integer(kind=stint)                          :: intdummy1,intdummy2
+   integer(kind=sint)                           :: intdummy1,intdummy2
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_avhrr()'
 
@@ -255,12 +255,12 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    character(len=pathlength),     intent(in)    :: l1b_path_file
    character(len=pathlength),     intent(in)    :: geo_path_file
    character(len=platformlength), intent(out)   :: platform
-   integer(kind=stint),           intent(out)   :: year,month,day,doy,hour,minute
+   integer(kind=sint),           intent(out)    :: year,month,day,doy,hour,minute
    character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
    type(channel_info_s),          intent(inout) :: channel_info
    logical,                       intent(in)    :: verbose
 
-   integer(kind=stint)                          :: intdummy1
+   integer(kind=sint)                           :: intdummy1
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_aatsr()'
 

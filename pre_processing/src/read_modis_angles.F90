@@ -48,14 +48,14 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
    integer(kind=lint), intent(in)  :: ixstart,ixstop,iystart,iystop
    real(kind=sreal),   intent(out) :: rtemp(ixstart:ixstop,iystart:iystop)
 
-   integer(kind=lint)  :: ix,jy
-   integer             :: err_code
-   integer             :: file_id, var_id, attr_id
-   integer             :: start(2), stride(2), edge(2)
+   integer(kind=lint) :: ix,jy
+   integer            :: err_code
+   integer            :: file_id, var_id, attr_id
+   integer            :: start(2), stride(2), edge(2)
 
-   real(kind=dreal)    :: sf
+   real(kind=dreal)   :: sf
 
-   integer(kind=stint) :: stemp(ixstart:ixstop,iystart:iystop),vr(2),fv
+   integer(kind=sint) :: stemp(ixstart:ixstop,iystart:iystop),vr(2),fv
 
    start(1) = ixstart-1
    start(2) = iystart-1

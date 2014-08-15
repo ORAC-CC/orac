@@ -41,7 +41,7 @@
 ! imager_angles  struct in   Summary of satellite geometry
 ! netcdf_info    struct both Summary of NCDF file properties.
 ! channel_info   struct in   Structure summarising the channels to be processed
-! month          stint  in   Month of year (1-12)
+! month          sint   in   Month of year (1-12)
 ! verbose        logic  in   T: print status information; F: don't
 !
 ! History:
@@ -193,7 +193,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    type(imager_angles_s),         intent(in)     :: imager_angles
    type(netcdf_info_s),           intent(inout)  :: netcdf_info
    type(channel_info_s),          intent(in)     :: channel_info
-   integer(kind=stint),           intent(in)     :: month
+   integer(kind=sint),            intent(in)     :: month
    logical,                       intent(out)    :: verbose
 
    ! Loop variables

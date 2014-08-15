@@ -26,7 +26,7 @@ module orac_ncdf
            float_1d, float_2d, float_3d, float_4d, float_5d, &
            lint_1d, lint_2d, lint_3d, lint_4d, lint_5d, &
            int_1d, int_2d, int_3d, int_4d, int_5d, &
-           sint_1d, sint_2d, sint_3d, sint_4d, sint_5d
+           byte_1d, byte_2d, byte_3d, byte_4d, byte_5d
    end interface nc_read_array
 
 contains
@@ -664,7 +664,7 @@ subroutine int_5d(ncid, name, val, verbose)
 
 end subroutine int_5d
 
-subroutine sint_1d(ncid, name, val, verbose)
+subroutine byte_1d(ncid, name, val, verbose)
    use preproc_constants
 
    implicit none
@@ -690,9 +690,9 @@ subroutine sint_1d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end subroutine sint_1d
+end subroutine byte_1d
 
-subroutine sint_2d(ncid, name, val, verbose)
+subroutine byte_2d(ncid, name, val, verbose)
    use preproc_constants
 
    implicit none
@@ -719,9 +719,9 @@ subroutine sint_2d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end subroutine sint_2d
+end subroutine byte_2d
 
-subroutine sint_3d(ncid, name, val, verbose)
+subroutine byte_3d(ncid, name, val, verbose)
    use preproc_constants
 
    implicit none
@@ -749,9 +749,9 @@ subroutine sint_3d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end subroutine sint_3d
+end subroutine byte_3d
 
-subroutine sint_4d(ncid, name, val, verbose)
+subroutine byte_4d(ncid, name, val, verbose)
    use preproc_constants
 
    implicit none
@@ -780,9 +780,9 @@ subroutine sint_4d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end subroutine sint_4d
+end subroutine byte_4d
 
-subroutine sint_5d(ncid, name, val, verbose)
+subroutine byte_5d(ncid, name, val, verbose)
    use preproc_constants
 
    implicit none
@@ -812,7 +812,7 @@ subroutine sint_5d(ncid, name, val, verbose)
 
    include "ncdf_read.inc"
 
-end subroutine sint_5d
+end subroutine byte_5d
 
 !-------------------------------------------------------------------------------
 ! Name: nc_open

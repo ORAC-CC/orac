@@ -52,12 +52,12 @@ module aatsr_corrections
    implicit none
 
    type aatsr_drift_lut
-      integer(kind=lint)                   :: n
-      integer(kind=stint), dimension(4000) :: year, month, day
-      integer(kind=stint), dimension(4000) :: hour, minute, second
-      real(kind=dreal), dimension(4000)    :: julday
-      real(kind=sreal), dimension(4,4000)  :: ch
-      real(kind=sreal), dimension(4,4000)  :: er
+      integer(kind=lint)                  :: n
+      integer(kind=sint), dimension(4000) :: year, month, day
+      integer(kind=sint), dimension(4000) :: hour, minute, second
+      real(kind=dreal), dimension(4000)   :: julday
+      real(kind=sreal), dimension(4,4000) :: ch
+      real(kind=sreal), dimension(4,4000) :: er
    end type aatsr_drift_lut
 
    ! Month strings used in the LUT files
@@ -142,10 +142,10 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
 
    character(len=30)                  :: sdate
    real(kind=dreal)                   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
-   integer(kind=stint)                :: year, month, day, hour, minute
-   integer(stint)                     :: vc_year, vc_month, vc_day, vc_hour
-   integer(stint)                     :: vc_minute, vc_second
-   integer(stint)                     :: stat, ilow
+   integer(kind=sint)                :: year, month, day, hour, minute
+   integer(sint)                     :: vc_year, vc_month, vc_day, vc_hour
+   integer(sint)                     :: vc_minute, vc_second
+   integer(sint)                     :: stat, ilow
 
    ! Yearly rates for exponential correction
    real(kind=sreal), parameter, dimension(4) :: K = &
@@ -157,17 +157,17 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    A(3,:)=(/ 0.041, 9.6111E-4 /)
 
    ! define various dates on which drift correction changed
-   call GREG2JD(2002_stint, 3_stint, 1_stint, T0) ! Envisat launch date
-   call GREG2JD(2005_stint, 11_stint, 29_stint, T1)
+   call GREG2JD(2002_sint, 3_sint, 1_sint, T0) ! Envisat launch date
+   call GREG2JD(2005_sint, 11_sint, 29_sint, T1)
    T1 = T1 + (13_dreal + (20_dreal + 26_dreal/60_dreal)/60_dreal)/24_dreal
-   call GREG2JD(2006_stint, 12_stint, 18_stint, T2)
-   call GREG2JD(2010_stint,  4_stint,  4_stint, T3)
-   call GREG2JD(2010_stint,  7_stint, 13_stint, T4)
+   call GREG2JD(2006_sint, 12_sint, 18_sint, T2)
+   call GREG2JD(2010_sint,  4_sint,  4_sint, T3)
+   call GREG2JD(2010_sint,  7_sint, 13_sint, T4)
 
    ! determine this record's date
    sdate = adjustl(start_date)
    read(sdate(8:11), '(I4)') year
-   month=1_stint
+   month=1_sint
    do while (monthname(month).ne.sdate(4:6))
       month=month+1
    end do
@@ -262,7 +262,7 @@ end subroutine aatsr_drift_correction
 ! ------------------------------------------------------------------------------
 ! drift_table string In  Path to the correction look-up table
 ! lut         struct Out Correction look-up table read by aatsr_read_drift_table
-! stat        stint  Out 0: Returned normally; Otherwise: Error
+! stat        sint  Out 0: Returned normally; Otherwise: Error
 !
 ! History:
 ! 2013/10/07, AP: Original
