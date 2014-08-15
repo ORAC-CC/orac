@@ -470,7 +470,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
 !                   spixel_scan_out_sec%vidcovar(is,js), &
 !                   input_dummy, &
 !                   input_dummy, &
-!                   spixel_scan_out%real_fill_value_lat_lon,wo,ierr)
+!                   spixel_scan_out%real_fill_value,wo,ierr)
 
 !           if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 !        end do

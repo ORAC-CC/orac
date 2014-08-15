@@ -117,7 +117,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'longitude', &
            'longitude', &
            'degrees_east', &
-           spixel_scan_out%real_fill_value_lat_lon, &
+           spixel_scan_out%real_fill_value, &
            spixel_scan_out%lon_scale,spixel_scan_out%lon_offset, &
            spixel_scan_out%lon_vmin,spixel_scan_out%lon_vmax,wo,ierr)
 
@@ -136,7 +136,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            spixel_scan_out%vidlat, &
            'latitude', &
            'latitude', &
-           'degrees_north', spixel_scan_out%real_fill_value_lat_lon, &
+           'degrees_north', spixel_scan_out%real_fill_value, &
            spixel_scan_out%lat_scale,spixel_scan_out%lat_offset, &
            spixel_scan_out%lat_vmin,spixel_scan_out%lat_vmax,wo,ierr)
 

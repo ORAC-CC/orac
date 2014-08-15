@@ -331,10 +331,9 @@ module SPixel_def
 
 
    type spixel_scanline_primary_output
-      real                          :: real_fill_value         = -999.0
-      real                          :: real_fill_value_lat_lon = -999.0
-      integer(kind=sint)            :: int_fill_value          = -32767
-      integer(kind=byte)            :: byte_fill_value         = -127
+      real                          :: real_fill_value = -999.0
+      integer(kind=sint)            :: int_fill_value  = -32767
+      integer(kind=byte)            :: byte_fill_value = -127
 
 
       integer                       :: vidtime,vidlat,vidlon

@@ -454,10 +454,9 @@ module ECP_constants
 
    real, parameter    :: d2r                        = 0.017453292 ! Pi / 180.0
 
-   integer(kind=byte), parameter :: byte_fill_value          = -127
-   integer(kind=sint), parameter :: sint_fill_value          = -32767
-   real(kind=sreal),   parameter :: sreal_fill_value         = -999.0
-   real(kind=dreal),   parameter :: dreal_fill_value         = -999.0
-   real(kind=sreal),   parameter :: sreal_fill_value_lat_lon = -999.0
+   integer(kind=byte), parameter :: byte_fill_value  = -127
+   integer(kind=sint), parameter :: sint_fill_value  = -32767
+   real(kind=sreal),   parameter :: sreal_fill_value = -999.0
+   real(kind=dreal),   parameter :: dreal_fill_value = -999.0
 
 end module ECP_constants
