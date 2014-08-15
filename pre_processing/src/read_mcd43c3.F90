@@ -281,7 +281,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%WSA(k,j,i) = real_fill_value
+                  mcd%WSA(k,j,i) = sreal_fill_value
                else
                   mcd%WSA(k,j,i) = tmpdata(k,j)*scale + offset
                end if
@@ -314,7 +314,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%BSA(k,j,i) = real_fill_value
+                  mcd%BSA(k,j,i) = sreal_fill_value
                else
                   mcd%BSA(k,j,i) = tmpdata(k,j)*scale + offset
                end if

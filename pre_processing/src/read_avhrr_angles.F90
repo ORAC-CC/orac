@@ -8,7 +8,7 @@
 ! 1) Open the data group, data set, and fetch a data space.
 ! 2) Read the data. Read the attributes.
 ! 3) Apply the scale factor and offset, setting missing or invalid values to
-!    real_fill_value.
+!    sreal_fill_value.
 ! 4) Close the file.
 !
 ! Arguments:
@@ -79,7 +79,7 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
    !create memory dataspace
    call h5screate_simple_f(2,edge,mem_id,err_code)
    !now finally read the  data
-   temp=long_int_fill_value
+   temp=lint_fill_value
    call h5dread_f(dset_id,H5T_NATIVE_INTEGER,temp,edge,err_code,mem_id, &
         dspace_id)
 
@@ -125,7 +125,7 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
 
    !make real numbers now
 !   where(temp.eq.missingdata .or. float(temp).eq.nodata)
-!      rtemp=real_fill_value
+!      rtemp=sreal_fill_value
 !   elsewhere
 !      rtemp=temp*scale+offset
 !   end where
@@ -133,7 +133,7 @@ subroutine read_avhrr_angles(fid,group,dataset,attrgroup,startx,stopx,starty, &
       do jy=starty,stopy
          if (float(temp(ix,jy)) .eq. missingdata .or. &
               float(temp(ix,jy)) .eq. nodata) then
-            rtemp(ix,jy)=real_fill_value
+            rtemp(ix,jy)=sreal_fill_value
          else
             rtemp(ix,jy)=temp(ix,jy)*scale+offset
          end if

@@ -25,7 +25,7 @@
 ! History:
 ! 2011/12/14, MJ: produces draft code which reads modis angles
 ! 2013/09/06, AP: tidying, switched to using MODIS file's fill value to be
-!   consistent with read_modis_lat_lon.F90, use real_fill_value rather than
+!   consistent with read_modis_lat_lon.F90, use sreal_fill_value rather than
 !   file's own value
 !
 ! $Id$
@@ -81,14 +81,14 @@ subroutine read_modis_angles(fid,SDS_name,ixstart,ixstop,iystart,iystop,rtemp)
 !   where(stemp.ge.vr(1) .and. stemp.le.vr(2))
 !      rtemp = real(stemp*sf,kind=sreal)
 !   elsewhere
-!      rtemp = real_fill_value
+!      rtemp = sreal_fill_value
 !   end where
    do ix=ixstart,ixstop
       do jy=iystart,iystop
         if (stemp(ix,jy) .ge. vr(1) .and. stemp(ix,jy) .le. vr(2)) then
            rtemp(ix,jy)=real(stemp(ix,jy)*sf,kind=sreal)
         else
-           rtemp(ix,jy)=real_fill_value
+           rtemp(ix,jy)=sreal_fill_value
         end if
       end do
    end do

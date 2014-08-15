@@ -185,5 +185,5 @@
    !----------------------------------------------------------------------------
    case(4)
       ! output fill value
-      datout = real_fill_value
+      datout = sreal_fill_value
    end select

@@ -95,9 +95,9 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
 
    ! preproc_geoloc
    allocate(preproc_geoloc%longitude(sx:ex))
-   preproc_geoloc%longitude=real_fill_value
+   preproc_geoloc%longitude=sreal_fill_value
    allocate(preproc_geoloc%latitude(sy:ey))
-   preproc_geoloc%latitude=real_fill_value
+   preproc_geoloc%latitude=sreal_fill_value
 
 
    ! preproc_geo (init to 0 as used for summation in build_preproc_fields)
@@ -113,108 +113,108 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
 
    ! preproc_prtm
    allocate(preproc_prtm%pressure(sx:ex,sy:ey,preproc_dims%kdim))
-   preproc_prtm%pressure=real_fill_value
+   preproc_prtm%pressure=sreal_fill_value
    allocate(preproc_prtm%temperature(sx:ex,sy:ey,preproc_dims%kdim))
-   preproc_prtm%temperature=real_fill_value
+   preproc_prtm%temperature=sreal_fill_value
    allocate(preproc_prtm%spec_hum(sx:ex,sy:ey,preproc_dims%kdim))
-   preproc_prtm%spec_hum=real_fill_value
+   preproc_prtm%spec_hum=sreal_fill_value
    allocate(preproc_prtm%ozone(sx:ex,sy:ey,preproc_dims%kdim))
-   preproc_prtm%ozone=real_fill_value
+   preproc_prtm%ozone=sreal_fill_value
 
    allocate(preproc_prtm%phi_lay(sx:ex,sy:ey,preproc_dims%kdim-1))
-   preproc_prtm%phi_lay=real_fill_value
+   preproc_prtm%phi_lay=sreal_fill_value
    allocate(preproc_prtm%phi_lev(sx:ex,sy:ey,preproc_dims%kdim))
-   preproc_prtm%phi_lev=real_fill_value
+   preproc_prtm%phi_lev=sreal_fill_value
 
    allocate(preproc_prtm%geopot(sx:ex,sy:ey))
-   preproc_prtm%geopot=real_fill_value
+   preproc_prtm%geopot=sreal_fill_value
    allocate(preproc_prtm%lnsp(sx:ex,sy:ey))
-   preproc_prtm%lnsp=real_fill_value
+   preproc_prtm%lnsp=sreal_fill_value
 
    allocate(preproc_prtm%u10(sx:ex,sy:ey))
-   preproc_prtm%u10=real_fill_value
+   preproc_prtm%u10=sreal_fill_value
    allocate(preproc_prtm%v10(sx:ex,sy:ey))
-   preproc_prtm%v10=real_fill_value
+   preproc_prtm%v10=sreal_fill_value
 
    allocate(preproc_prtm%land_sea_mask(sx:ex,sy:ey))
-   preproc_prtm%land_sea_mask=real_fill_value
+   preproc_prtm%land_sea_mask=sreal_fill_value
 
    allocate(preproc_prtm%temp2(sx:ex,sy:ey))
-   preproc_prtm%temp2=real_fill_value
+   preproc_prtm%temp2=sreal_fill_value
    allocate(preproc_prtm%skin_temp(sx:ex,sy:ey))
-   preproc_prtm%skin_temp=real_fill_value
+   preproc_prtm%skin_temp=sreal_fill_value
 
    allocate(preproc_prtm%snow_albedo(sx:ex,sy:ey))
-   preproc_prtm%snow_albedo=real_fill_value
+   preproc_prtm%snow_albedo=sreal_fill_value
    allocate(preproc_prtm%snow_depth(sx:ex,sy:ey))
-   preproc_prtm%snow_depth=real_fill_value
+   preproc_prtm%snow_depth=sreal_fill_value
 
    allocate(preproc_prtm%sst(sx:ex,sy:ey))
-   preproc_prtm%sst=real_fill_value
+   preproc_prtm%sst=sreal_fill_value
    allocate(preproc_prtm%sea_ice_cover(sx:ex,sy:ey))
-   preproc_prtm%sea_ice_cover=real_fill_value
+   preproc_prtm%sea_ice_cover=sreal_fill_value
 
    allocate(preproc_prtm%totcolwv(sx:ex,sy:ey))
-   preproc_prtm%totcolwv=real_fill_value
+   preproc_prtm%totcolwv=sreal_fill_value
 
 
    ! preproc_lwrtm
    allocate(preproc_lwrtm%radiance_cloudy(nchan_lw))
-   preproc_lwrtm%radiance_cloudy=real_fill_value
+   preproc_lwrtm%radiance_cloudy=sreal_fill_value
 
    allocate(preproc_lwrtm%transmission_tau_levels(nchan_lw, &
         preproc_dims%kdim))
-   preproc_lwrtm%transmission_tau_levels=real_fill_value
+   preproc_lwrtm%transmission_tau_levels=sreal_fill_value
 
    allocate(preproc_lwrtm%trans_layer(nchan_lw))
-   preproc_lwrtm%trans_layer=real_fill_value
+   preproc_lwrtm%trans_layer=sreal_fill_value
 
    allocate(preproc_lwrtm%emissivity_used(nchan_lw))
-   preproc_lwrtm%emissivity_used=real_fill_value
+   preproc_lwrtm%emissivity_used=sreal_fill_value
 
    allocate(preproc_lwrtm%transmission_tau_total(nchan_lw))
-   preproc_lwrtm%transmission_tau_total=real_fill_value
+   preproc_lwrtm%transmission_tau_total=sreal_fill_value
 
    allocate(preproc_lwrtm%taubc(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%taubc=real_fill_value
+   preproc_lwrtm%taubc=sreal_fill_value
 
    allocate(preproc_lwrtm%tauac(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%tauac=real_fill_value
+   preproc_lwrtm%tauac=sreal_fill_value
 
    allocate(preproc_lwrtm%radbc(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%radbc=real_fill_value
+   preproc_lwrtm%radbc=sreal_fill_value
 
    allocate(preproc_lwrtm%radiance_bt(nchan_lw))
-   preproc_lwrtm%radiance_bt=real_fill_value
+   preproc_lwrtm%radiance_bt=sreal_fill_value
 
    allocate(preproc_lwrtm%radiance_up(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%radiance_up=real_fill_value
+   preproc_lwrtm%radiance_up=sreal_fill_value
 
    allocate(preproc_lwrtm%radiance_down(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%radiance_down=real_fill_value
+   preproc_lwrtm%radiance_down=sreal_fill_value
 
    allocate(preproc_lwrtm%players(preproc_dims%kdim-1))
-   preproc_lwrtm%players=real_fill_value
+   preproc_lwrtm%players=sreal_fill_value
    allocate(preproc_lwrtm%plevels(preproc_dims%kdim))
-   preproc_lwrtm%plevels=real_fill_value
+   preproc_lwrtm%plevels=sreal_fill_value
 
 
    ! preproc_swrtm
    allocate(preproc_swrtm%transmission_tau_total(nchan_sw))
-   preproc_swrtm%transmission_tau_total=real_fill_value
+   preproc_swrtm%transmission_tau_total=sreal_fill_value
 
    allocate(preproc_swrtm%trans_layer(nchan_sw))
-   preproc_swrtm%trans_layer=real_fill_value
+   preproc_swrtm%trans_layer=sreal_fill_value
 
    allocate(preproc_swrtm%taubc(nchan_sw,preproc_dims%kdim))
-   preproc_swrtm%taubc=real_fill_value
+   preproc_swrtm%taubc=sreal_fill_value
 
    allocate(preproc_swrtm%tauac(nchan_sw,preproc_dims%kdim))
-   preproc_swrtm%tauac=real_fill_value
+   preproc_swrtm%tauac=sreal_fill_value
 
 
    ! preproc_surf
    allocate(preproc_surf%emissivity(sx:ex,sy:ey,nchan_lw))
-   preproc_surf%emissivity=real_fill_value
+   preproc_surf%emissivity=sreal_fill_value
 
 end subroutine allocate_preproc_structures

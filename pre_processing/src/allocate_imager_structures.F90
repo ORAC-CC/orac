@@ -51,42 +51,42 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    allocate(imager_geolocation%latitude(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
-   imager_geolocation%latitude=real_fill_value
+   imager_geolocation%latitude=sreal_fill_value
 
    allocate(imager_geolocation%longitude(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
-   imager_geolocation%longitude=real_fill_value
+   imager_geolocation%longitude=sreal_fill_value
 
    allocate(imager_geolocation%uscan(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
-   imager_geolocation%uscan=long_int_fill_value
+   imager_geolocation%uscan=lint_fill_value
 
    allocate(imager_geolocation%vscan(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
-   imager_geolocation%vscan=long_int_fill_value
+   imager_geolocation%vscan=lint_fill_value
 
    allocate(imager_angles%solzen(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
-   imager_angles%solzen=real_fill_value
+   imager_angles%solzen=sreal_fill_value
 
    allocate(imager_angles%satzen(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
-   imager_angles%satzen=real_fill_value
+   imager_angles%satzen=sreal_fill_value
 
    allocate(imager_angles%solazi(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
-   imager_angles%solazi=real_fill_value
+   imager_angles%solazi=sreal_fill_value
 
    allocate(imager_angles%relazi(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,imager_angles%nviews))
-   imager_angles%relazi=real_fill_value
+   imager_angles%relazi=sreal_fill_value
 
    allocate(imager_flags%lsflag(&
         imager_geolocation%startx:imager_geolocation%endx, &
@@ -100,16 +100,16 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
 
    allocate(imager_time%time(imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
-   imager_time%time=double_fill_value
+   imager_time%time=dreal_fill_value
 
    allocate(imager_measurements%data(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,1:channel_info%nchannels_total))
-   imager_measurements%data=real_fill_value
+   imager_measurements%data=sreal_fill_value
 
    allocate(imager_measurements%uncertainty(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,1:channel_info%nchannels_total))
-   imager_measurements%uncertainty=real_fill_value
+   imager_measurements%uncertainty=sreal_fill_value
 
 end subroutine allocate_imager_structures

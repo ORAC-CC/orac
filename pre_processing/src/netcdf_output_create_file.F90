@@ -172,7 +172,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            NF90_INT, netcdf_info%lwchanneldim, netcdf_info%channels_id_lw)
       if (ierr.ne.NF90_NOERR) stop 'error: def channels lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%channels_id_lw, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue lw channel ids'
 
@@ -181,7 +181,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            NF90_INT, netcdf_info%lwchanneldim, netcdf_info%channels_id_instr_lw)
       if (ierr.ne.NF90_NOERR) stop 'error: def channels lw instr'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, &
-           netcdf_info%channels_id_instr_lw, '_FillValue', long_int_fill_value)
+           netcdf_info%channels_id_instr_lw, '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue lw channel ids instr'
 
@@ -190,7 +190,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%lwchanneldim, netcdf_info%wvn_id_lw)
       if (ierr.ne.NF90_NOERR) stop 'error: def channels lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%wvn_id_lw, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var chennel wvn FillValue'
 
 
@@ -223,7 +223,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solza_lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm,netcdf_info%solzaid_lw, &
-           '_FillValue',real_fill_value)
+           '_FillValue',sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var solza_lw FillValue'
 
       ! define satellite zenith
@@ -233,7 +233,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satza_lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm,netcdf_info%satzaid_lw, &
-           '_FillValue',real_fill_value)
+           '_FillValue',sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var satza_lw FillValue'
 
       ! define rez azimuth
@@ -243,7 +243,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def relazi_lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm,netcdf_info%relaziid_lw, &
-           '_FillValue',real_fill_value)
+           '_FillValue',sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var relazi_lw FillValue'
 
       ! set up the combined dimensions for 3D fields (spatial+channel)
@@ -265,7 +265,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw emiss'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%emiss_id_lw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
 
@@ -291,7 +291,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw tac'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%tac_id_lw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define tbc
@@ -301,7 +301,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw tbc'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%tbc_id_lw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define radiances
@@ -311,7 +311,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw rbc_up'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%rbc_up_id_lw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ierr = nf90_def_var( netcdf_info%ncid_lwrtm, 'rac_up_lw', &
@@ -320,7 +320,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw rac_up'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%rac_up_id_lw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
 
@@ -330,7 +330,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw rac_down'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%rac_down_id_lw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
 
@@ -385,7 +385,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            NF90_INT, netcdf_info%swchanneldim, netcdf_info%channels_id_sw)
       if (ierr.ne.NF90_NOERR) stop 'error: def channels sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm, netcdf_info%channels_id_sw, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue sw channel ids'
 
@@ -394,7 +394,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            NF90_INT, netcdf_info%swchanneldim, netcdf_info%channels_id_instr_sw)
       if (ierr.ne.NF90_NOERR) stop 'error: def channels sw instr'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm, &
-           netcdf_info%channels_id_instr_sw, '_FillValue', long_int_fill_value)
+           netcdf_info%channels_id_instr_sw, '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue sw channel ids instr'
 
@@ -403,7 +403,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%swchanneldim, netcdf_info%wvn_id_sw)
       if (ierr.ne.NF90_NOERR) stop 'error: def channels sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm, netcdf_info%wvn_id_sw, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var chennel wvn FillValue'
 
 
@@ -436,7 +436,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solza_sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm,netcdf_info%solzaid_sw, &
-           '_FillValue',real_fill_value)
+           '_FillValue',sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var solza_sw FillValue'
 
       ! define satellite zenith
@@ -446,7 +446,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satza_sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm,netcdf_info%satzaid_sw, &
-           '_FillValue',real_fill_value)
+           '_FillValue',sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var satza_sw FillValue'
 
       ! define relative azimuth
@@ -456,7 +456,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def relazi_sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm,netcdf_info%relaziid_sw, &
-           '_FillValue',real_fill_value)
+           '_FillValue',sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var relazi_sw FillValue'
 
       ! set up the combined dimensions for 4D fields
@@ -481,7 +481,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def sw tac'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm, netcdf_info%tac_id_sw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ierr = nf90_def_var( netcdf_info%ncid_swrtm, 'tbc_sw', &
@@ -490,7 +490,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def sw tbc'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm, netcdf_info%tbc_id_sw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
 
@@ -548,7 +548,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def lon'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%lonid_pw, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define latitude variable
@@ -558,7 +558,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%latid_pw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define skint variable
@@ -568,7 +568,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def skint'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%skintid_pw, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define exp(lnsp) variable
@@ -578,7 +578,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def explnsp'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%lnspid_pw, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define exp(lsf) variable
@@ -588,7 +588,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def lsf'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%lsfid_pw, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define satzen variable
@@ -598,7 +598,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satzen'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%satzenid_pw, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define solzen variable
@@ -608,7 +608,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solzen'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%solzenid_pw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
 
@@ -631,7 +631,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%pprofile_lev_id_pw, &
-           '_FillValue',  real_fill_value)
+           '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define temperature profile at lever centers as variable
@@ -641,7 +641,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, &
-           netcdf_info%tprofile_lev_id_pw, '_FillValue',  real_fill_value)
+           netcdf_info%tprofile_lev_id_pw, '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
       ! define geopotential height profile at lever centers as variable
@@ -651,7 +651,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, &
-           netcdf_info%hprofile_lev_id_pw, '_FillValue',  real_fill_value)
+           netcdf_info%hprofile_lev_id_pw, '_FillValue',  sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue'
 
    end if
@@ -800,14 +800,14 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            NF90_INT, netcdf_info%cdim_msi, netcdf_info%channelninid)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi channel n'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%channelninid, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue msi channel n'
 
       ierr = nf90_def_var(netcdf_info%ncid_msi, 'msi_abs_ch_numbers', NF90_INT, &
            netcdf_info%cdim_msi, netcdf_info%channelnabsid)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi channel n abs'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%channelnabsid, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue msi channel n abs'
 
@@ -815,7 +815,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%cdim_msi, netcdf_info%channelwlabsid)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi channel wl abs'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%channelwlabsid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue msi channel wl abs'
 
@@ -823,7 +823,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%cdim_msi, netcdf_info%channelswflag)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi channel swf'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%channelswflag, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue msi channel swf'
 
@@ -831,7 +831,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%cdim_msi, netcdf_info%channellwflag)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi channel lwf'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%channellwflag, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue msi channel lwf'
 
@@ -839,7 +839,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%cdim_msi, netcdf_info%channelprocflag)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi channel proc'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%channelprocflag, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue msi channel proc'
 
@@ -861,7 +861,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
       !            shuffle=shuffle_double, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def time'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%timeid, &
-           '_FillValue', double_fill_value)
+           '_FillValue', dreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue time'
 
 
@@ -885,7 +885,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
       !            shuffle=shuffle_float, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%msid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue msi'
 
 
@@ -1034,7 +1034,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solzen'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%solzenid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue solzen'
 
       ! define satzen variable
@@ -1043,7 +1043,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satzen'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%satzenid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue satzen'
 
       ! define solaz variable
@@ -1052,7 +1052,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solaz'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%solazid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue solaz'
 
       ! define relazi variable
@@ -1061,7 +1061,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def relazi'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%relazid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue relazi'
 
 
@@ -1109,7 +1109,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def loc'
       ierr = nf90_put_att(netcdf_info%ncid_loc, netcdf_info%lonid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue loc'
 
       ! define lat variable
@@ -1118,7 +1118,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def loc'
       ierr = nf90_put_att(netcdf_info%ncid_loc, netcdf_info%latid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue loc'
 
 
@@ -1165,7 +1165,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%cdim_alb, netcdf_info%channelnalbid)
       if (ierr.ne.NF90_NOERR) stop 'error: def alb channel n abs'
       ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%channelnalbid, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue alb channel n abs'
 
@@ -1173,7 +1173,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            NF90_INT, netcdf_info%cdim_emis, netcdf_info%channelnemisid)
       if (ierr.ne.NF90_NOERR) stop 'error: def emis channel n abs'
       ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%channelnemisid, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) &
            write(*,*) 'error: def var FillValue emis channel n abs'
 
@@ -1198,7 +1198,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def alb'
       ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%albid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue alb'
 
 
@@ -1222,7 +1222,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def emis'
       ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%emisid, &
-           '_FillValue', real_fill_value)
+           '_FillValue', sreal_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue emis'
 
 
@@ -1246,7 +1246,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_0v_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_0v_id, &
-                             '_FillValue', real_fill_value)
+                             '_FillValue', sreal_fill_value)
          if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_0v_data'
 
          ierr = nf90_def_var(netcdf_info%ncid_alb, 'rho_0d_data', NF90_FLOAT, dims3d, &
@@ -1254,7 +1254,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_0d_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_0d_id, &
-                             '_FillValue', real_fill_value)
+                             '_FillValue', sreal_fill_value)
          if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_0d_data'
 
          ierr = nf90_def_var(netcdf_info%ncid_alb, 'rho_dv_data', NF90_FLOAT, dims3d, &
@@ -1262,7 +1262,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_dv_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_dv_id, &
-                             '_FillValue', real_fill_value)
+                             '_FillValue', sreal_fill_value)
          if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_dv_data'
 
          ierr = nf90_def_var(netcdf_info%ncid_alb, 'rho_dd_data', NF90_FLOAT, dims3d, &
@@ -1270,7 +1270,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_dd_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_dd_id, &
-                             '_FillValue', real_fill_value)
+                             '_FillValue', sreal_fill_value)
          if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_dd_data'
       end if
 
@@ -1317,7 +1317,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_lint)!,chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def scan u'
       ierr = nf90_put_att(netcdf_info%ncid_scan, netcdf_info%uscanid, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue u scan'
 
       ! define v variable
@@ -1326,7 +1326,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
            shuffle=shuffle_lint)!, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def scan v'
       ierr = nf90_put_att(netcdf_info%ncid_scan, netcdf_info%vscanid, &
-           '_FillValue', long_int_fill_value)
+           '_FillValue', lint_fill_value)
       if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue v scan'
 
    end if
@@ -1464,14 +1464,14 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
         NF90_INT, netcdf_info%cdim_config, netcdf_info%channelninid_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def conf channel n'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channelninid_config, '_FillValue', long_int_fill_value)
+        netcdf_info%channelninid_config, '_FillValue', lint_fill_value)
    if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue conf channel n'
 
    ierr = nf90_def_var(netcdf_info%ncid_config, 'msi_abs_ch_numbers', NF90_INT, &
         netcdf_info%cdim_config, netcdf_info%channelnabsid_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def conf channel n abs'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channelnabsid_config, '_FillValue', long_int_fill_value)
+        netcdf_info%channelnabsid_config, '_FillValue', lint_fill_value)
    if (ierr.ne.NF90_NOERR) &
         write(*,*) 'error: def var FillValue conf channel n abs'
 
@@ -1479,7 +1479,7 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
         netcdf_info%cdim_config, netcdf_info%channelwlabsid_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def conf channel wl abs'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channelwlabsid_config, '_FillValue', real_fill_value)
+        netcdf_info%channelwlabsid_config, '_FillValue', sreal_fill_value)
    if (ierr.ne.NF90_NOERR) &
         write(*,*) 'error: def var FillValue conf channel wl abs'
 
@@ -1487,21 +1487,21 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
         netcdf_info%cdim_config, netcdf_info%channelswflag_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def conf channel swf'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channelswflag_config, '_FillValue', long_int_fill_value)
+        netcdf_info%channelswflag_config, '_FillValue', lint_fill_value)
    if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue conf channel swf'
 
    ierr = nf90_def_var(netcdf_info%ncid_config, 'msi_ch_lwflag', NF90_INT, &
         netcdf_info%cdim_config, netcdf_info%channellwflag_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def msi channel lwf'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channellwflag_config, '_FillValue', long_int_fill_value)
+        netcdf_info%channellwflag_config, '_FillValue', lint_fill_value)
    if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue conf channel lwf'
 
    ierr = nf90_def_var(netcdf_info%ncid_config, 'msi_ch_procflag', NF90_INT, &
         netcdf_info%cdim_config, netcdf_info%channelprocflag_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def conf channel proc'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channelprocflag_config, '_FillValue', long_int_fill_value)
+        netcdf_info%channelprocflag_config, '_FillValue', lint_fill_value)
    if (ierr.ne.NF90_NOERR) &
         write(*,*) 'error: def var FillValue conf channel proc'
 
@@ -1521,7 +1521,7 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
         netcdf_info%cdim_config_alb, netcdf_info%channelnalbid_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def alb conf channel n abs'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channelnalbid_config, '_FillValue', long_int_fill_value)
+        netcdf_info%channelnalbid_config, '_FillValue', lint_fill_value)
    if (ierr.ne.NF90_NOERR) &
         write(*,*) 'error: def var FillValue alb conf channel n abs'
 
@@ -1529,7 +1529,7 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
         NF90_INT, netcdf_info%cdim_config_emis,netcdf_info%channelnemisid_config)
    if (ierr.ne.NF90_NOERR) stop 'error: def emis conf channel n abs'
    ierr = nf90_put_att(netcdf_info%ncid_config, &
-        netcdf_info%channelnemisid_config, '_FillValue', long_int_fill_value)
+        netcdf_info%channelnemisid_config, '_FillValue', lint_fill_value)
    if (ierr.ne.NF90_NOERR) &
         write(*,*) 'error: def var FillValue emis conf channel n abs'
 

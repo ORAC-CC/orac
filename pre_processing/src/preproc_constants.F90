@@ -82,10 +82,10 @@ module preproc_constants
    real(kind=sreal),    parameter :: maxsza_twi=110.0
 
    integer(kind=byte),  parameter :: byte_fill_value=-1
-   integer(kind=sint),  parameter :: int_fill_value=-999
-   integer(kind=lint),  parameter :: long_int_fill_value=-999
-   real(kind=sreal),    parameter :: real_fill_value=-999.0
-   real(kind=dreal),    parameter :: double_fill_value=-999.0
+   integer(kind=sint),  parameter :: sint_fill_value=-999
+   integer(kind=lint),  parameter :: lint_fill_value=-999
+   real(kind=sreal),    parameter :: sreal_fill_value=-999.0
+   real(kind=dreal),    parameter :: dreal_fill_value=-999.0
 
 
    ! Some netcdf4 related parameters

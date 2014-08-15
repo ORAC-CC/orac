@@ -46,36 +46,36 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, 
    logical,                    intent(in)  :: include_full_brdf
 
    allocate(surface%albedo_chan(channel_info%nchannels_sw))
-   surface%albedo_chan=real_fill_value
+   surface%albedo_chan=sreal_fill_value
 
    allocate(surface%emissivity_chan(channel_info%nchannels_lw))
-   surface%emissivity_chan=real_fill_value
+   surface%emissivity_chan=sreal_fill_value
 
    allocate(surface%albedo(imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny,channel_info%nchannels_sw))
-   surface%albedo=real_fill_value
+   surface%albedo=sreal_fill_value
 
    allocate(surface%emissivity( &
             imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny,channel_info%nchannels_lw))
-   surface%emissivity=real_fill_value
+   surface%emissivity=sreal_fill_value
 
    if (include_full_brdf) then
       allocate(surface%rho_0v(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,channel_info%nchannels_sw))
-      surface%rho_0v=real_fill_value
+      surface%rho_0v=sreal_fill_value
 
       allocate(surface%rho_0d(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,channel_info%nchannels_sw))
-      surface%rho_0d=real_fill_value
+      surface%rho_0d=sreal_fill_value
 
       allocate(surface%rho_dv(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,channel_info%nchannels_sw))
-      surface%rho_dv=real_fill_value
+      surface%rho_dv=sreal_fill_value
 
       allocate(surface%rho_dd(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,channel_info%nchannels_sw))
-      surface%rho_dd=real_fill_value
+      surface%rho_dd=sreal_fill_value
    end if
 
 end subroutine allocate_surface_structures

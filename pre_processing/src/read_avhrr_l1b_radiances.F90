@@ -95,11 +95,11 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
       ! BTs assigned to them already.
       select case(channel_number)
       case('1') !image 1 in the file is channel 1 of AVHRR
-         where (temp .ne. real_fill_value)
+         where (temp .ne. sreal_fill_value)
             imager_measurements%data(:,:,1)=temp/100.0
          end where
       case('2') !image 2 in the file is channel 2 of AVHRR
-         where (temp .ne. real_fill_value)
+         where (temp .ne. sreal_fill_value)
             imager_measurements%data(:,:,2)=temp/100.0
          end where
       case('3b') !image 3 in the file is channel 3B of AVHRR
@@ -109,13 +109,13 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
       case('5') !image 5 in the file is channel 5 of AVHRR
          imager_measurements%data(:,:,6)=temp
       case('3a') !image 6 in the file is channel 3A of AVHRR
-         where (temp .ne. real_fill_value)
+         where (temp .ne. sreal_fill_value)
             imager_measurements%data(:,:,3)=temp/100.0
          end where
       case('3B') ! just in case
          imager_measurements%data(:,:,4)=temp
       case('3A') ! just in case
-         where (temp .ne. real_fill_value)
+         where (temp .ne. sreal_fill_value)
             imager_measurements%data(:,:,3)=temp/100.0
          end where
       case default

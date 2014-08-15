@@ -157,8 +157,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    do j=1,imager_geolocation%ny
       do i=imager_geolocation%startx,imager_geolocation%endx
          if (imager_flags%lsflag(i,j) .eq. 1 .and. &
-              imager_geolocation%latitude(i,j) .ne. real_fill_value .and. &
-              imager_geolocation%longitude(i,j) .ne. real_fill_value) then
+              imager_geolocation%latitude(i,j) .ne. sreal_fill_value .and. &
+              imager_geolocation%longitude(i,j) .ne. sreal_fill_value) then
             call bilinear_coef(emis%lon0, emis%lon_invdel, emis%nlon, &
                  emis%lat0, emis%lat_invdel, emis%nlat, &
                  imager_geolocation%longitude(i,j), &

@@ -79,7 +79,7 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
    !create memory dataspace
    call h5screate_simple_f(2,edge,mem_id,err_code)
    !now finally read the data
-   temp=long_int_fill_value
+   temp=lint_fill_value
    call h5dread_f(dset_id,H5T_NATIVE_INTEGER,temp,edge,err_code,mem_id, &
         dspace_id)
 
@@ -130,7 +130,7 @@ subroutine read_avhrr_lat_lon(fid,group,dataset,attrgroup,startx,stopx, &
 !   do ix=startx,stopx
 !      do jy=starty,stopy
 !         if (rtemp(ix,jy) .eq. missingdata .or. rtemp(ix,jy) .eq. nodata) then
-!            rtemp(ix,jy)=real_fill_value
+!            rtemp(ix,jy)=sreal_fill_value
 !         else
 !            rtemp(ix,jy)=temp(ix,jy)*scale+offset
 !         end if

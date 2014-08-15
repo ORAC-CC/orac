@@ -187,8 +187,8 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    do i=imager_geolocation%startx,imager_geolocation%endx
       do j=1,imager_geolocation%ny
 
-         if (imager_geolocation%latitude (i,j) .eq. real_fill_value .or. &
-              imager_geolocation%longitude(i,j) .eq. real_fill_value) &
+         if (imager_geolocation%latitude (i,j) .eq. sreal_fill_value .or. &
+              imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &
               cycle
 
          ! Northern and Southern hemispheres are handled separately:
@@ -411,7 +411,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    else if (pixel_ice(1).gt.0.) then
       ! somewhat icy
       do i=1,channel_info%nchannels_sw
-         if (pixel_ref(i) .ne. real_fill_value) pixel_ref(i) = &
+         if (pixel_ref(i) .ne. sreal_fill_value) pixel_ref(i) = &
               (1. - pixel_ice(1))*pixel_ref(i) + pixel_ice(1)*ice_albedo(i)
       end do
    end if

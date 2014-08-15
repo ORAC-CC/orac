@@ -187,16 +187,16 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
    allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
                  1:imager_geolocation%ny))
 
-   mask = imager_geolocation%latitude  .ne. real_fill_value .and. &
-          imager_geolocation%longitude .ne. real_fill_value
+   mask = imager_geolocation%latitude  .ne. sreal_fill_value .and. &
+          imager_geolocation%longitude .ne. sreal_fill_value
 
    if (include_full_brdf) then
       do k=1,imager_angles%nviews
          mask = mask .and. &
-                imager_angles%solzen(:,:,k) .ne. real_fill_value .and. &
-                imager_angles%satzen(:,:,k) .ne. real_fill_value .and. &
-                imager_angles%solazi(:,:,k) .ne. real_fill_value .and. &
-                imager_angles%relazi(:,:,k) .ne. real_fill_value
+                imager_angles%solzen(:,:,k) .ne. sreal_fill_value .and. &
+                imager_angles%satzen(:,:,k) .ne. sreal_fill_value .and. &
+                imager_angles%solazi(:,:,k) .ne. sreal_fill_value .and. &
+                imager_angles%relazi(:,:,k) .ne. sreal_fill_value
       end do
    end if
 
@@ -308,7 +308,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
       do i=1,nswchannels
          tmp_data = mcdc3%WSA(:,:,i)
 
-         call fill_grid(tmp_data, real_fill_value, fg_mask)
+         call fill_grid(tmp_data, sreal_fill_value, fg_mask)
 
          do lndcount=1,nland
             call interp_field(tmp_data, wsalnd(i,lndcount), interp(lndcount))
@@ -321,7 +321,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
             do j = 1, 3
                tmp_data = mcdc1%brdf_albedo_params(:,:,j,i)
 
-               call fill_grid(tmp_data, real_fill_value, fg_mask)
+               call fill_grid(tmp_data, sreal_fill_value, fg_mask)
 
                do lndcount=1,nland
                   call interp_field(tmp_data, wgtlnd(j,i,lndcount), &
@@ -350,7 +350,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
          end do
 
          call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd &
-            (3, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, real_fill_value, &
+            (3, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, sreal_fill_value, &
              rholnd(:,:,1), rholnd(:,:,2), rholnd(:,:,3), rholnd(:,:,4), verbose)
       end if
 
@@ -462,7 +462,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
 
       if (include_full_brdf) then
          call cox_munk_rho_0v_0d_dv_and_dd(coxbands, solzasea, satzasea, &
-            solazsea, relazsea, u10sea, v10sea, real_fill_value, &
+            solazsea, relazsea, u10sea, v10sea, sreal_fill_value, &
             rhosea(:,:,1), rhosea(:,:,2), rhosea(:,:,3), rhosea(:,:,4), verbose)
       end if
 

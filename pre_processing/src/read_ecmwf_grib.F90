@@ -251,7 +251,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
             array(1+i/2,1+(nj-j)/2) = val(i+(j-1)*ni)
          end do
       end do
-      where (array .eq. 9999) array = real_fill_value
+      where (array .eq. 9999) array = sreal_fill_value
       if (verbose) print*,param,') Min: ',minval(array), &
               ', Max: ',maxval(array)
    end do

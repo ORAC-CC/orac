@@ -86,8 +86,8 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
          imager_geolocation%vscan(i,j)=j
 
          ! if geolocation isn't there, do nothing
-         if (imager_geolocation%latitude(i,j) .eq. real_fill_value .or. &
-              imager_geolocation%longitude(i,j) .eq. real_fill_value) cycle
+         if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
+              imager_geolocation%longitude(i,j) .eq. sreal_fill_value) cycle
 
          ! find grid cell coordinates into which L1b pixel falls
          lon_i=floor((imager_geolocation%longitude(i,j) + &
@@ -97,7 +97,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
          if (lon_i .gt. preproc_dims%max_lon) lon_i=preproc_dims%min_lon
          if (lat_j .gt. preproc_dims%max_lat) lat_j=preproc_dims%max_lat
 
-         if (all(imager_angles%satzen(i,j,:) .gt. real_fill_value)) then
+         if (all(imager_angles%satzen(i,j,:) .gt. sreal_fill_value)) then
             preproc_geo%satza(lon_i,lat_j,:)=preproc_geo%satza(lon_i,lat_j,:)+ &
                  imager_angles%satzen(i,j,:)
 
@@ -106,9 +106,9 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
                  preproc_dims%counter_lw(lon_i,lat_j)+1
          end if
 
-         if (all(imager_angles%solzen(i,j,:) .gt. real_fill_value) .and. &
-              all(imager_angles%solazi(i,j,:) .gt. real_fill_value) .and. &
-              all(imager_angles%relazi(i,j,:) .gt. real_fill_value)) then
+         if (all(imager_angles%solzen(i,j,:) .gt. sreal_fill_value) .and. &
+              all(imager_angles%solazi(i,j,:) .gt. sreal_fill_value) .and. &
+              all(imager_angles%relazi(i,j,:) .gt. sreal_fill_value)) then
 
             preproc_geo%solza(lon_i,lat_j,:)= &
                  preproc_geo%solza(lon_i,lat_j,:)+imager_angles%solzen(i,j,:)
@@ -133,7 +133,7 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
                  preproc_dims%counter_lw(i,j)
          else
             ! if not set fill value
-            preproc_geo%satza(i,j,:)=real_fill_value
+            preproc_geo%satza(i,j,:)=sreal_fill_value
          end if
 
          if (preproc_dims%counter_sw(i,j) .gt. 0) then
@@ -146,9 +146,9 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
                  preproc_dims%counter_sw(i,j)
          else
             ! if not set fill value
-            preproc_geo%solza(i,j,:)=real_fill_value
-            preproc_geo%relazi(i,j,:)=real_fill_value
-            preproc_geo%solazi(i,j,:)=real_fill_value
+            preproc_geo%solza(i,j,:)=sreal_fill_value
+            preproc_geo%relazi(i,j,:)=sreal_fill_value
+            preproc_geo%solazi(i,j,:)=sreal_fill_value
          end if
       end do
    end do

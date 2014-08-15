@@ -30,7 +30,7 @@
 
 module interpol
 
-   use preproc_constants, only: sreal, real_fill_value
+   use preproc_constants, only: sreal, sreal_fill_value
 
    implicit none
 
@@ -210,10 +210,10 @@ subroutine interp_field_0d(datin, datout, interp)
    real(sreal) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide that interpolation to do dependent on the missing values
-   miss = [datin(interp%x0, interp%y0) == real_fill_value, &
-           datin(interp%x1, interp%y0) == real_fill_value, &
-           datin(interp%x0, interp%y1) == real_fill_value, &
-           datin(interp%x1, interp%y1) == real_fill_value]
+   miss = [datin(interp%x0, interp%y0) == sreal_fill_value, &
+           datin(interp%x1, interp%y0) == sreal_fill_value, &
+           datin(interp%x0, interp%y1) == sreal_fill_value, &
+           datin(interp%x1, interp%y1) == sreal_fill_value]
 
    bot_left = datin(interp%x0, interp%y0)
    bot_rght = datin(interp%x1, interp%y0)
@@ -237,10 +237,10 @@ subroutine interp_field_1d(datin, datout, interp)
    real(sreal), pointer, dimension(:) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide interpolation to do dependent on the missing values
-   miss = [datin(interp%x0, interp%y0, 1) == real_fill_value, &
-           datin(interp%x1, interp%y0, 1) == real_fill_value, &
-           datin(interp%x0, interp%y1, 1) == real_fill_value, &
-           datin(interp%x1, interp%y1, 1) == real_fill_value]
+   miss = [datin(interp%x0, interp%y0, 1) == sreal_fill_value, &
+           datin(interp%x1, interp%y0, 1) == sreal_fill_value, &
+           datin(interp%x0, interp%y1, 1) == sreal_fill_value, &
+           datin(interp%x1, interp%y1, 1) == sreal_fill_value]
 
    bot_left => datin(interp%x0, interp%y0, :)
    bot_rght => datin(interp%x1, interp%y0, :)
@@ -264,10 +264,10 @@ subroutine interp_field_2d(datin, datout, interp)
    real(8),     pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide interpolation to do dependent on the missing values
-   miss = [datin(interp%x0, interp%y0, 1, 1) == real_fill_value, &
-           datin(interp%x1, interp%y0, 1, 1) == real_fill_value, &
-           datin(interp%x0, interp%y1, 1, 1) == real_fill_value, &
-           datin(interp%x1, interp%y1, 1, 1) == real_fill_value]
+   miss = [datin(interp%x0, interp%y0, 1, 1) == sreal_fill_value, &
+           datin(interp%x1, interp%y0, 1, 1) == sreal_fill_value, &
+           datin(interp%x0, interp%y1, 1, 1) == sreal_fill_value, &
+           datin(interp%x1, interp%y1, 1, 1) == sreal_fill_value]
 
    bot_left => datin(interp%x0, interp%y0, :, :)
    bot_rght => datin(interp%x1, interp%y0, :, :)

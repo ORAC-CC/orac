@@ -99,7 +99,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    ! input details of new grid (see note in read_ecmwf_grib)
    charv(1)='yes'
-   grid(1)=real_fill_value
+   grid(1)=sreal_fill_value
    if (INTIN('missingvalue',intv,grid,charv).ne.0) &
         stop 'READ_ECMWF_NC: INTIN missingvalue failed.'
    charv(1)='unpacked'

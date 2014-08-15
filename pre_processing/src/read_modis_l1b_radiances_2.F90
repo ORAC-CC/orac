@@ -215,7 +215,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
             level1b_buffer(ix,jy) = (real(temp(ix,jy),kind=sreal) - &
                  offsets(iband)) * scale_factors(iband)
          else
-            level1b_buffer(ix,jy) = real_fill_value
+            level1b_buffer(ix,jy) = sreal_fill_value
          end if
       end do
    end do

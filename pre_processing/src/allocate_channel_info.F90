@@ -32,24 +32,24 @@ subroutine allocate_channel_info(channel_info)
    type(channel_info_s), intent(out) :: channel_info
 
    allocate(channel_info%channel_ids_instr(channel_info%nchannels_total))
-   channel_info%channel_ids_instr=long_int_fill_value
+   channel_info%channel_ids_instr=lint_fill_value
 
    allocate(channel_info%channel_ids_abs(channel_info%nchannels_total))
-   channel_info%channel_ids_abs=long_int_fill_value
+   channel_info%channel_ids_abs=lint_fill_value
 
    allocate(channel_info%channel_sw_flag(channel_info%nchannels_total))
-   channel_info%channel_sw_flag=long_int_fill_value
+   channel_info%channel_sw_flag=lint_fill_value
 
    allocate(channel_info%channel_lw_flag(channel_info%nchannels_total))
-   channel_info%channel_lw_flag=long_int_fill_value
+   channel_info%channel_lw_flag=lint_fill_value
 
    allocate(channel_info%channel_view_ids(channel_info%nchannels_total))
-   channel_info%channel_view_ids=long_int_fill_value
+   channel_info%channel_view_ids=lint_fill_value
 
    allocate(channel_info%channel_proc_flag(channel_info%nchannels_total))
-   channel_info%channel_proc_flag=long_int_fill_value
+   channel_info%channel_proc_flag=lint_fill_value
 
    allocate(channel_info%channel_wl_abs(channel_info%nchannels_total))
-   channel_info%channel_wl_abs=real_fill_value
+   channel_info%channel_wl_abs=sreal_fill_value
 
 end subroutine allocate_channel_info

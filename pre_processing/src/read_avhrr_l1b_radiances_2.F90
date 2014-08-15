@@ -7,7 +7,7 @@
 ! Description and Algorithm details:
 ! 1) Open data group, data set, data space, and crease memory space.
 ! 2) Read data and attributes.
-! 3) Apply scale and offset whilst setting missing data to real_fill_value.
+! 3) Apply scale and offset whilst setting missing data to sreal_fill_value.
 ! 4) Close files and HDF items.
 !
 ! Arguments:
@@ -139,7 +139,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
 
    !make real numbers now
 !   where(temp.eq.missingdata .or. float(temp).eq.nodata)
-!      rtemp=real_fill_value
+!      rtemp=sreal_fill_value
 !   elsewhere
 !      rtemp=temp*scale+offset
 !   end where
@@ -147,7 +147,7 @@ subroutine read_avhrr_l1b_radiances_2(fid,group,dataset,attrgroup, &
       do ix=startx,stopx
          if (float(temp(ix,jy)) .eq. missingdata .or. &
               float(temp(ix,jy)) .eq. nodata) then
-            rtemp(ix,jy)=real_fill_value
+            rtemp(ix,jy)=sreal_fill_value
          else
             rtemp(ix,jy)=temp(ix,jy)*scale+offset
          end if

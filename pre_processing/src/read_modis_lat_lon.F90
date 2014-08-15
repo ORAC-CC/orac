@@ -24,7 +24,7 @@
 ! 2011/12/13, MJ: produces draft code which reads latitude and longitude modis
 !   geolocation data
 ! 2013/09/06, AP: tidying, added code for WHERE statement (if desired), use
-!   real_fill_value rather than file's value
+!   sreal_fill_value rather than file's value
 !
 ! $Id$
 !
@@ -61,7 +61,7 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
    var_id = sfselect(fid, sfn2index(fid, SDS_name))
 
    ! read data into array
-   temp=real_fill_value
+   temp=sreal_fill_value
    err_code = sfrdata(var_id, start, stride, edge, temp)
 
    attr_id=sffattr(var_id, "_FillValue")
@@ -72,7 +72,7 @@ subroutine read_modis_lat_lon(fid,SDS_name,startx,stopx,starty,stopy,temp)
 
    ! overwrite fill values with the ORAC value
    ! which of these is most efficient is compiler-dependant
-   where (temp.lt.vr(1) .or. temp.gt.vr(2)) temp = real_fill_value
+   where (temp.lt.vr(1) .or. temp.gt.vr(2)) temp = sreal_fill_value
 !   do ix=startx,stopx
 !      do jy=starty,stopy
 !         if (temp(ix,jy) .lt. vr(1) .or. temp(ix,jy) .gt. vr(2)) temp(ix,jy)=fv

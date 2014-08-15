@@ -380,11 +380,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    ! LW, channel id abs and instr lw:
    allocate(dummy_lint_1dveca(sum(channel_info%channel_lw_flag)))
-   dummy_lint_1dveca=long_int_fill_value
+   dummy_lint_1dveca=lint_fill_value
    allocate(dummy_lint_1dvecb(sum(channel_info%channel_lw_flag)))
-   dummy_lint_1dvecb=long_int_fill_value
+   dummy_lint_1dvecb=lint_fill_value
    allocate(dummy_real_1dveca(sum(channel_info%channel_lw_flag)))
-   dummy_real_1dveca=real_fill_value
+   dummy_real_1dveca=sreal_fill_value
    do i_coeff=1,channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i_coeff) .eq. 1 ) then
          pixel_counter_lw=pixel_counter_lw+1
@@ -415,11 +415,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    ! SW, channel id abs and instr sw:
    allocate(dummy_lint_1dveca(sum(channel_info%channel_sw_flag)))
-   dummy_lint_1dveca=long_int_fill_value
+   dummy_lint_1dveca=lint_fill_value
    allocate(dummy_lint_1dvecb(sum(channel_info%channel_sw_flag)))
-   dummy_lint_1dvecb=long_int_fill_value
+   dummy_lint_1dvecb=lint_fill_value
    allocate(dummy_real_1dveca(sum(channel_info%channel_sw_flag)))
-   dummy_real_1dveca=real_fill_value
+   dummy_real_1dveca=sreal_fill_value
    do i_coeff=1,channel_info%nchannels_total
       if (channel_info%channel_sw_flag(i_coeff) .eq. 1 ) then
          pixel_counter_sw=pixel_counter_sw+1
@@ -581,7 +581,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       allocate(calcemis(nchannels))
       allocate(emissivity_in(nchannels))
       allocate(emissivity_out(nchannels))
-      emissivity_out=real_fill_value
+      emissivity_out=sreal_fill_value
 
 
       if (verbose) write(*,*) 'Set up chanprof array'
@@ -972,7 +972,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! Temperature profile (at layer centers of preprocessing profile,
                   ! interfaces for RTTOV)
-                  dummy_real_2d=real_fill_value
+                  dummy_real_2d=sreal_fill_value
                   dummy_real_2d(:,1)=profiles(1)%t(:)
                   ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%tprofile_lev_id_pw,dummy_real_2d, &
@@ -983,7 +983,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   ! Geopotential height profile (at lever centers of preprocessing
                   ! profile, interfaces for RTTOV)
-                  dummy_real_2d=real_fill_value
+                  dummy_real_2d=sreal_fill_value
                   dummy_real_2d(:,1)=preproc_prtm%phi_lev(idim,jdim,:)
                   ierr = nf90_put_var(netcdf_info%ncid_prtm, &
                        netcdf_info%hprofile_lev_id_pw,dummy_real_2d, &
@@ -1000,7 +1000,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   allocate(dummy_real_2dems(size(channel_info%channel_ids_rttov_coef_lw),1))
 
-                  dummy_real_2dems=real_fill_value
+                  dummy_real_2dems=sreal_fill_value
 
                   netcdf_info%start_2d(1)=1
                   netcdf_info%counter_2d(1)=channel_info%nchannels_lw
@@ -1012,7 +1012,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! emissivity
                   dummy_real_2dems(:,1)=emissivity_out(:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dems(:,1)=real_fill_value
+                       dummy_real_2dems(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%emiss_id_lw,dummy_real_2dems, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
@@ -1026,7 +1026,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
                   allocate(dummy_real_2dveca(imager_angles%nviews,1))
 
-                  dummy_real_2dveca=real_fill_value
+                  dummy_real_2dveca=sreal_fill_value
 
                   netcdf_info%start_2d(1)=1
                   netcdf_info%counter_2d(1)=imager_angles%nviews
@@ -1038,7 +1038,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! solazi
                   dummy_real_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=real_fill_value
+                       dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%solzaid_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
@@ -1048,7 +1048,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! satazi
                   dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=real_fill_value
+                       dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%satzaid_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
@@ -1058,7 +1058,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! relazi
                   dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=real_fill_value
+                       dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%relaziid_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
@@ -1072,7 +1072,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   allocate(dummy_real_3d(size(channel_info%channel_ids_rttov_coef_lw), &
                        preproc_dims%kdim,1))
 
-                  dummy_real_3d=real_fill_value
+                  dummy_real_3d=sreal_fill_value
 
                   netcdf_info%start_3d(1)=1
                   netcdf_info%counter_3d(1)=channel_info%nchannels_lw
@@ -1089,7 +1089,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! tac
                   dummy_real_3d(:,:,1)=preproc_lwrtm%tauac(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=real_fill_value
+                       dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%tac_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
@@ -1099,7 +1099,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! tbc
                   dummy_real_3d(:,:,1)=preproc_lwrtm%taubc(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=real_fill_value
+                       dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%tbc_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
@@ -1109,7 +1109,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! radbc_up
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radbc(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=real_fill_value
+                       dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%rbc_up_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
@@ -1119,7 +1119,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! rac_up
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_up(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=real_fill_value
+                       dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%rac_up_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
@@ -1129,7 +1129,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! rac_down
                   dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_down(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=real_fill_value
+                       dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
                        netcdf_info%rac_down_id_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
@@ -1152,7 +1152,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! Write out swrtm angles
                   allocate(dummy_real_2dveca(imager_angles%nviews,1))
 
-                  dummy_real_2dveca=real_fill_value
+                  dummy_real_2dveca=sreal_fill_value
 
                   netcdf_info%start_2d(1)=1
                   netcdf_info%counter_2d(1)=imager_angles%nviews
@@ -1164,7 +1164,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! solazi
                   dummy_real_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=real_fill_value
+                       dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%solzaid_sw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
@@ -1174,7 +1174,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! satazi
                   dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=real_fill_value
+                       dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%satzaid_sw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
@@ -1184,7 +1184,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! relazi
                   dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=real_fill_value
+                       dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%relaziid_sw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
@@ -1198,7 +1198,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   allocate(dummy_real_3d(size(channel_info%channel_ids_rttov_coef_sw), &
                        preproc_dims%kdim,1))
 
-                  dummy_real_3d=real_fill_value
+                  dummy_real_3d=sreal_fill_value
 
                   netcdf_info%start_3d(1)=1
                   netcdf_info%counter_3d(1)=channel_info%nchannels_sw
@@ -1215,7 +1215,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! tac
                   dummy_real_3d(:,:,1)=preproc_swrtm%tauac(:,:)
                   if (preproc_dims%counter_sw(idim,jdim) .eq. 0 ) &
-                       dummy_real_3d(:,:,1)=real_fill_value
+                       dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%tac_id_sw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
@@ -1225,7 +1225,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   ! tbc
                   dummy_real_3d(:,:,1)=preproc_swrtm%taubc(:,:)
                   if (preproc_dims%counter_sw(idim,jdim) .eq. 0 ) &
-                       dummy_real_3d(:,:,1)=real_fill_value
+                       dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
                        netcdf_info%tbc_id_sw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &

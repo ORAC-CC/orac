@@ -257,7 +257,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%brdf_albedo_params(k,j,1,i) = real_fill_value
+                  mcd%brdf_albedo_params(k,j,1,i) = sreal_fill_value
                else
                   mcd%brdf_albedo_params(k,j,1,i) = tmpdata(k,j)*scale + offset
                end if
@@ -288,7 +288,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%brdf_albedo_params(k,j,2,i) = real_fill_value
+                  mcd%brdf_albedo_params(k,j,2,i) = sreal_fill_value
                else
                   mcd%brdf_albedo_params(k,j,2,i) = tmpdata(k,j)*scale + offset
                end if
@@ -311,7 +311,7 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
          do j = 1,ydim
             do k = 1,xdim
                if (tmpdata(k,j) .eq. fill) then
-                  mcd%brdf_albedo_params(k,j,3,i) = real_fill_value
+                  mcd%brdf_albedo_params(k,j,3,i) = sreal_fill_value
                else
                   mcd%brdf_albedo_params(k,j,3,i) = tmpdata(k,j)*scale + offset
                end if

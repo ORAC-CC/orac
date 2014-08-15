@@ -1,6 +1,6 @@
 module cimss_emissivity
 
-   use preproc_constants, only : real_fill_value
+   use preproc_constants, only : sreal_fill_value
 
    implicit none
 
@@ -16,7 +16,7 @@ module cimss_emissivity
       real(8)                                   :: lat0, lat_invdel, lat_del
       real,       allocatable, dimension(:,:,:) :: emissivity
       !    Missing data value
-      real                                      :: fill=real_fill_value
+      real                                      :: fill=sreal_fill_value
    end type emis_s
 
 contains
