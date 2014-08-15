@@ -278,7 +278,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    logical :: lcovar = .FALSE.
 
    ! Additional types for the scanline output for netcdf are defined
-   type(spixel_scanline_input)            :: spixel_scan_in
    type(spixel_scanline_primary_output)   :: spixel_scan_out
    type(spixel_scanline_secondary_output) :: spixel_scan_out_sec
 
@@ -572,7 +571,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          call def_vars_primary(Ctrl, ncid_primary, dims_var, spixel_scan_out, &
                                status)
          call def_vars_secondary(Ctrl, conf, lcovar, ncid_secondary, dims_var, &
-                                 spixel_scan_in, spixel_scan_out_sec, status)
+                                 spixel_scan_out_sec, status)
       end if
 
 

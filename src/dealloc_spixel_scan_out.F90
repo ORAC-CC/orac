@@ -142,31 +142,3 @@ subroutine dealloc_spixel_scan_out_sec(spixel_scan_out_sec,lcovar)
    deallocate(spixel_scan_out_sec%ds)
 
 end subroutine dealloc_spixel_scan_out_sec
-
-
-subroutine dealloc_spixel_scan_in(spixel_scan_in)
-
-   use ECP_Constants
-
-   implicit none
-
-   type(spixel_scanline_input) :: spixel_scan_in
-
-   deallocate(spixel_scan_in%vidinput)
-   deallocate(spixel_scan_in%viderror)
-
-   deallocate(spixel_scan_in%input_scale)
-   deallocate(spixel_scan_in%input_offset)
-   deallocate(spixel_scan_in%input_vmin)
-   deallocate(spixel_scan_in%input_vmax)
-
-   deallocate(spixel_scan_in%error_scale)
-   deallocate(spixel_scan_in%error_offset)
-   deallocate(spixel_scan_in%error_vmin)
-   deallocate(spixel_scan_in%error_vmax)
-
-   deallocate(spixel_scan_in%input)
-
-   deallocate(spixel_scan_in%error)
-
-end subroutine dealloc_spixel_scan_in

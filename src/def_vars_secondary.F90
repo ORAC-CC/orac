@@ -42,7 +42,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in, &
+subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, &
                               spixel_scan_out_sec, status)
 
    use config_def
@@ -57,7 +57,6 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
    logical,                                intent(in)    :: lcovar
    integer,                                intent(in)    :: ncid
    integer,                                intent(in)    :: dims_var(2)
-   type(spixel_scanline_input),            intent(inout) :: spixel_scan_in
    type(spixel_scanline_secondary_output), intent(inout) :: spixel_scan_out_sec
    integer,                                intent(inout) :: status
 

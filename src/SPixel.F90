@@ -572,20 +572,6 @@ module SPixel_def
 
    end type spixel_scanline_secondary_output
 
-
-   type spixel_scanline_input
-      integer, dimension(:), pointer            :: vidinput,viderror
-
-      real, dimension(:), pointer               :: input_scale,input_offset
-      integer(kind=sint), dimension(:), pointer :: input_vmin,input_vmax
-
-      real, dimension(:), pointer               :: error_scale,error_offset
-      integer(kind=sint), dimension(:), pointer :: error_vmin,error_vmax
-
-      integer(kind=sint), dimension(:,:), pointer :: input,error
-
-   end type spixel_scanline_input
-
 contains
 
 include 'AllocSPixel.F90'
