@@ -73,7 +73,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%cot_ap_vmax,kind=sreal)) then
       spixel_scan_out_sec%cot_ap(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%cot_ap(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%cot_ap(i,j)=sint_fill_value
    end if
 
 
@@ -84,7 +84,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%cot_fg_vmax,kind=sreal)) then
       spixel_scan_out_sec%cot_fg(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%cot_fg(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%cot_fg(i,j)=sint_fill_value
    end if
 
    !----------------------------------------------------------------------------
@@ -97,7 +97,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%ref_ap_vmax,kind=sreal)) then
       spixel_scan_out_sec%ref_ap(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%ref_ap(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%ref_ap(i,j)=sint_fill_value
    end if
 
    dummyreal=(SPixel%X0(2)-spixel_scan_out_sec%ref_fg_offset)/ &
@@ -107,7 +107,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%ref_fg_vmax,kind=sreal)) then
       spixel_scan_out_sec%ref_fg(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%ref_fg(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%ref_fg(i,j)=sint_fill_value
    end if
 
    !----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%ctp_ap_vmax,kind=sreal)) then
       spixel_scan_out_sec%ctp_ap(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%ctp_ap(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%ctp_ap(i,j)=sint_fill_value
    end if
 
 
@@ -131,7 +131,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%ctp_fg_vmax,kind=sreal)) then
       spixel_scan_out_sec%ctp_fg(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%ctp_fg(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%ctp_fg(i,j)=sint_fill_value
    end if
 
    !----------------------------------------------------------------------------
@@ -144,7 +144,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%stemp_fg_vmax,kind=sreal)) then
       spixel_scan_out_sec%stemp_fg(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%stemp_fg(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%stemp_fg(i,j)=sint_fill_value
    end if
 
    !----------------------------------------------------------------------------
@@ -160,7 +160,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
           dummyreal .le. real(spixel_scan_out_sec%res_vmax(ii),kind=sreal)) then
          spixel_scan_out_sec%residuals(i,j,ii)=int(dummyreal, kind=sint)
       else
-         spixel_scan_out_sec%residuals(i,j,ii)=spixel_scan_out_sec%int_fill_value
+         spixel_scan_out_sec%residuals(i,j,ii)=sint_fill_value
       end if
    end do
 
@@ -177,7 +177,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
           dummyreal .le. real(spixel_scan_out_sec%y0_vmax(ii),kind=sreal)) then
          spixel_scan_out_sec%y0(i,j,ii)=int(dummyreal, kind=sint)
       else
-         spixel_scan_out_sec%y0(i,j,ii)=spixel_scan_out_sec%int_fill_value
+         spixel_scan_out_sec%y0(i,j,ii)=sint_fill_value
       end if
    end do
 
@@ -193,7 +193,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
           dummyreal .le. real(spixel_scan_out_sec%chans_vmax(iinput),kind=sreal)) then
          spixel_scan_out_sec%channels(i,j,iinput)=int(dummyreal, kind=sint)
       else
-         spixel_scan_out_sec%channels(i,j,iinput)=spixel_scan_out_sec%int_fill_value
+         spixel_scan_out_sec%channels(i,j,iinput)=sint_fill_value
       end if
    end do
 
@@ -206,10 +206,10 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
             spixel_scan_out_sec%covariance(i,j,is,js)=real(SPixel%Sn(is,js),kind=sreal)
 
             if ((spixel_scan_out_sec%covariance(i,j,is,js) .lt. &
-                 spixel_scan_out%real_fill_value) .or. &
+                 sreal_fill_value) .or. &
                  (spixel_scan_out_sec%covariance(i,j,is,js) .gt. &
-                  abs(spixel_scan_out%real_fill_value))) then
-               spixel_scan_out_sec%covariance(i,j,is,js)=spixel_scan_out%real_fill_value
+                  abs(sreal_fill_value))) then
+               spixel_scan_out_sec%covariance(i,j,is,js)=sreal_fill_value
             end if
          end do
       end do
@@ -227,7 +227,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
           dummyreal .le. real(spixel_scan_out_sec%alb_vmax(iinput),kind=sreal)) then
          spixel_scan_out_sec%albedo(i,j,iinput)=int(dummyreal, kind=sint)
       else
-         spixel_scan_out_sec%albedo(i,j,iinput)=spixel_scan_out_sec%int_fill_value
+         spixel_scan_out_sec%albedo(i,j,iinput)=sint_fill_value
       end if
    end do
 
@@ -245,7 +245,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
        dummyreal .le. real(spixel_scan_out_sec%ds_vmax,kind=sreal)) then
       spixel_scan_out_sec%ds(i,j)=int(dummyreal, kind=sint)
    else
-      spixel_scan_out_sec%ds(i,j)=spixel_scan_out_sec%int_fill_value
+      spixel_scan_out_sec%ds(i,j)=sint_fill_value
    end if
 
 end subroutine prepare_secondary

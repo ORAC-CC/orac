@@ -331,11 +331,6 @@ module SPixel_def
 
 
    type spixel_scanline_primary_output
-      real                          :: real_fill_value = -999.0
-      integer(kind=sint)            :: int_fill_value  = -32767
-      integer(kind=byte)            :: byte_fill_value = -127
-
-
       integer                       :: vidtime,vidlat,vidlon
 
       integer,dimension(:), pointer :: vidsat_zen,vidsol_zen,vidrel_azi
@@ -493,12 +488,6 @@ module SPixel_def
 
 
    type spixel_scanline_secondary_output
-
-      real               :: real_fill_value = -32767.0
-      integer            :: lint_fill_value = -32767
-      integer(kind=sint) :: int_fill_value  = -32767
-      integer(kind=byte) :: byte_fill_value = -127
-
       integer                          :: vidscanline_u,vidscanline_v
 
       integer                          :: vidcotap,vidcotfg
@@ -585,10 +574,6 @@ module SPixel_def
 
 
    type spixel_scanline_input
-      real               :: real_fill_value = -32767.0
-      integer(kind=sint) :: int_fill_value  = -32767
-      integer(kind=byte) :: byte_fill_value = -127
-
       integer, dimension(:), pointer            :: vidinput,viderror
 
       real, dimension(:), pointer               :: input_scale,input_offset

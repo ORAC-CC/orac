@@ -93,7 +93,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'scanline_u', &
            'scanline_u', &
            '', &
-           spixel_scan_out_sec%lint_fill_value, &
+           lint_fill_value, &
            spixel_scan_out_sec%scanline_u_scale,spixel_scan_out_sec%scanline_u_offset, &
            spixel_scan_out_sec%scanline_u_vmin,spixel_scan_out_sec%scanline_u_vmax,wo,ierr)
 
@@ -113,7 +113,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'scanline_v', &
            'scanline_v', &
            '', &
-           spixel_scan_out_sec%lint_fill_value, &
+           lint_fill_value, &
            spixel_scan_out_sec%scanline_v_scale,spixel_scan_out_sec%scanline_v_offset, &
            spixel_scan_out_sec%scanline_v_vmin,spixel_scan_out_sec%scanline_v_vmax,wo,ierr)
 
@@ -133,7 +133,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'cloud optical thickness a priori', &
            'atmosphere_optical_thickness_due_to_cloud a_priori', &
            '', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%cot_ap_scale,spixel_scan_out_sec%cot_ap_offset, &
            spixel_scan_out_sec%cot_ap_vmin,spixel_scan_out_sec%cot_ap_vmax,wo,ierr)
 
@@ -153,7 +153,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'cloud optical thickness first guess', &
            'atmosphere_optical_thickness_due_to_cloud first_guess', &
            '', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%cot_fg_scale,spixel_scan_out_sec%cot_fg_offset, &
            spixel_scan_out_sec%cot_fg_vmin,spixel_scan_out_sec%cot_fg_vmax,wo,ierr)
 
@@ -173,7 +173,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'effective radius a priori', &
            'effective_radius_of_cloud_condensed_water_particle_at_cloud_top a_priori', &
            'micrometer', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%ref_ap_scale,spixel_scan_out_sec%ref_ap_offset, &
            spixel_scan_out_sec%ref_ap_vmin,spixel_scan_out_sec%ref_ap_vmax,wo,ierr)
 
@@ -193,7 +193,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'effective radius first guess', &
            'effective_radius_of_cloud_condensed_water_particle_at_cloud_top first_guess', &
            'micrometer', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%ref_fg_scale,spixel_scan_out_sec%ref_fg_offset, &
            spixel_scan_out_sec%ref_fg_vmin,spixel_scan_out_sec%ref_fg_vmax,wo,ierr)
 
@@ -213,7 +213,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'cloud top pressure a priori', &
            'air_pressure_at_cloud_top a_priori', &
            'hPs', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%ctp_ap_scale,spixel_scan_out_sec%ctp_ap_offset, &
            spixel_scan_out_sec%ctp_ap_vmin,spixel_scan_out_sec%ctp_ap_vmax,wo,ierr)
 
@@ -233,7 +233,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'cloud top pressure first guess', &
            'air_pressure_at_cloud_top first_guess', &
            'hPa', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%ctp_fg_scale,spixel_scan_out_sec%ctp_fg_offset, &
            spixel_scan_out_sec%ctp_fg_vmin,spixel_scan_out_sec%ctp_fg_vmax,wo,ierr)
 
@@ -260,7 +260,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%vidres(iinput), &
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), &
-                    spixel_scan_out_sec%int_fill_value, &
+                    sint_fill_value, &
                     spixel_scan_out_sec%res_scale(iinput),spixel_scan_out_sec%res_offset(iinput), &
                     spixel_scan_out_sec%res_vmin(iinput),spixel_scan_out_sec%res_vmax(iinput),wo,ierr)
 
@@ -283,7 +283,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), &
                     'kelvin', &
-                    spixel_scan_in%int_fill_value, &
+                    sint_fill_value, &
                     spixel_scan_out_sec%res_scale(iinput),spixel_scan_out_sec%res_offset(iinput), &
                     spixel_scan_out_sec%res_vmin(iinput),spixel_scan_out_sec%res_vmax(iinput),wo,ierr)
 
@@ -314,7 +314,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%vidchans(iinput), &
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), &
-                    spixel_scan_out_sec%int_fill_value, &
+                    sint_fill_value, &
                     spixel_scan_out_sec%chans_scale(iinput),spixel_scan_out_sec%chans_offset(iinput), &
                     spixel_scan_out_sec%chans_vmin(iinput),spixel_scan_out_sec%chans_vmax(iinput),wo,ierr)
 
@@ -337,7 +337,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), &
                     'kelvin', &
-                    spixel_scan_out_sec%int_fill_value, &
+                    sint_fill_value, &
                     spixel_scan_out_sec%chans_scale(iinput),spixel_scan_out_sec%chans_offset(iinput), &
                     spixel_scan_out_sec%chans_vmin(iinput),spixel_scan_out_sec%chans_vmax(iinput),wo,ierr)
 
@@ -368,7 +368,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%vidalb(iinput), &
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), &
-                    spixel_scan_out_sec%int_fill_value, &
+                    sint_fill_value, &
                     spixel_scan_out_sec%alb_scale(iinput),spixel_scan_out_sec%alb_offset(iinput), &
                     spixel_scan_out_sec%alb_vmin(iinput),spixel_scan_out_sec%alb_vmax(iinput),wo,ierr)
 
@@ -391,7 +391,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'surface temperature fg', &
            'temperature_at_surface fg', &
            'hPs', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%stemp_fg_scale,spixel_scan_out_sec%stemp_fg_offset, &
            spixel_scan_out_sec%stemp_fg_vmin,spixel_scan_out_sec%stemp_fg_vmax,wo,ierr)
 
@@ -419,7 +419,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%vidy0(iinput), &
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), &
-                    spixel_scan_out_sec%int_fill_value, &
+                    sint_fill_value, &
                     spixel_scan_out_sec%y0_scale(iinput),spixel_scan_out_sec%y0_offset(iinput), &
                     spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput),wo,ierr)
 
@@ -441,7 +441,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
                     spixel_scan_out_sec%vidy0(iinput), &
                     trim(adjustl(input_dummy)), &
                     trim(adjustl(input_dummy)), 'kelvin', &
-                    spixel_scan_out_sec%int_fill_value, &
+                    sint_fill_value, &
                     spixel_scan_out_sec%y0_scale(iinput),spixel_scan_out_sec%y0_offset(iinput), &
                     spixel_scan_out_sec%y0_vmin(iinput),spixel_scan_out_sec%y0_vmax(iinput),wo,ierr)
 
@@ -492,7 +492,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, spixel_scan_in
            'degrees of freedom for signal', &
            '', &
            '', &
-           spixel_scan_out_sec%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out_sec%ds_scale,spixel_scan_out_sec%ds_offset, &
            spixel_scan_out_sec%ds_vmin,spixel_scan_out_sec%ds_vmax,wo,ierr)
 

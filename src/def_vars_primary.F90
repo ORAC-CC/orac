@@ -117,7 +117,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'longitude', &
            'longitude', &
            'degrees_east', &
-           spixel_scan_out%real_fill_value, &
+           sreal_fill_value, &
            spixel_scan_out%lon_scale,spixel_scan_out%lon_offset, &
            spixel_scan_out%lon_vmin,spixel_scan_out%lon_vmax,wo,ierr)
 
@@ -136,7 +136,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            spixel_scan_out%vidlat, &
            'latitude', &
            'latitude', &
-           'degrees_north', spixel_scan_out%real_fill_value, &
+           'degrees_north', sreal_fill_value, &
            spixel_scan_out%lat_scale,spixel_scan_out%lat_offset, &
            spixel_scan_out%lat_vmin,spixel_scan_out%lat_vmax,wo,ierr)
 
@@ -233,7 +233,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            spixel_scan_out%vidcot, &
            'cloud optical thickness', &
            'atmosphere_optical_thickness_due_to_cloud', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cot_scale,spixel_scan_out%cot_offset, &
            spixel_scan_out%cot_vmin,spixel_scan_out%cot_vmax,wo,ierr)
 
@@ -253,7 +253,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'effective radius', &
            'effective_radius_of_cloud_condensed_water_particles_at_cloud_top', &
            'micrometer', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%ref_scale,spixel_scan_out%ref_offset, &
            spixel_scan_out%ref_vmin,spixel_scan_out%ref_vmax,wo,ierr)
 
@@ -273,7 +273,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud top pressure', &
            'air_pressure_at_cloud_top', &
            'hPa', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%ctp_scale,spixel_scan_out%ctp_offset, &
            spixel_scan_out%ctp_vmin,spixel_scan_out%ctp_vmax,wo,ierr)
 
@@ -293,7 +293,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud fraction', &
            'cloud_area_fraction', &
            '', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cct_scale,spixel_scan_out%cct_offset, &
            spixel_scan_out%cct_vmin,spixel_scan_out%cct_vmax,wo,ierr)
 
@@ -313,7 +313,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'surface temperature', &
            'surface_temperature', &
            'kelvin', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%stemp_scale,spixel_scan_out%stemp_offset, &
            spixel_scan_out%stemp_vmin,spixel_scan_out%stemp_vmax,wo,ierr)
 
@@ -333,7 +333,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud top height', &
            'altitude_at_cloud_top', &
            'kilometer', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cth_scale,spixel_scan_out%cth_offset, &
            spixel_scan_out%cth_vmin,spixel_scan_out%cth_vmax,wo,ierr)
 
@@ -353,7 +353,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud top height uncertainty', &
            'altitude_at_cloud_top uncertainty', &
            'kilometer', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cth_error_scale,spixel_scan_out%cth_error_offset, &
            spixel_scan_out%cth_error_vmin,spixel_scan_out%cth_error_vmax,wo,ierr)
 
@@ -373,7 +373,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud top temperature', &
            'air_temperature_at_cloud_top', &
            'kelvin', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%ctt_scale,spixel_scan_out%ctt_offset, &
            spixel_scan_out%ctt_vmin,spixel_scan_out%ctt_vmax,wo,ierr)
 
@@ -393,7 +393,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud top temperature uncertainty', &
            'air_temperature_at_cloud_top uncertainty', &
            'kelvin', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%ctt_error_scale,spixel_scan_out%ctt_error_offset, &
            spixel_scan_out%ctt_error_vmin,spixel_scan_out%ctt_error_vmax,wo,ierr)
 
@@ -413,7 +413,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud liquid water path', &
            'atmosphere_mass_content_of_cloud_liquid_water', &
            'g/m2', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cwp_scale,spixel_scan_out%cwp_offset, &
            spixel_scan_out%cwp_vmin,spixel_scan_out%cwp_vmax,wo,ierr)
 
@@ -433,7 +433,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud optical thickness uncertainty', &
            'atmosphere_optical_thickness_due_to_cloud uncertainty', &
            '', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cot_error_scale,spixel_scan_out%cot_error_offset, &
            spixel_scan_out%cot_error_vmin,spixel_scan_out%cot_error_vmax,wo,ierr)
 
@@ -453,7 +453,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'effective radius uncertainty', &
            'effective_radius_of_cloud_condensed_water_particles_at_cloud_top uncertainty', &
            'micrometer', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%ref_error_scale,spixel_scan_out%ref_error_offset, &
            spixel_scan_out%ref_error_vmin,spixel_scan_out%ref_error_vmax,wo,ierr)
 
@@ -473,7 +473,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud top pressure uncertainty', &
            'air_pressure_at_cloud_top uncertainty', &
            'hPa', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%ctp_error_scale,spixel_scan_out%ctp_error_offset, &
            spixel_scan_out%ctp_error_vmin,spixel_scan_out%ctp_error_vmax,wo,ierr)
 
@@ -493,7 +493,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud fraction uncertainty', &
            'cloud_area_fraction uncertainty', &
            '', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cct_error_scale,spixel_scan_out%cct_error_offset, &
            spixel_scan_out%cct_error_vmin,spixel_scan_out%cct_error_vmax,wo,ierr)
 
@@ -513,7 +513,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'surface temperature uncertainty', &
            'surface_temperature uncertainty', &
            'Kelvin', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%stemp_error_scale,spixel_scan_out%stemp_error_offset, &
            spixel_scan_out%stemp_vmin,spixel_scan_out%stemp_error_vmax,wo,ierr)
 
@@ -533,7 +533,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'CWP uncertainty', &
            'atmosphere_mass_content_of_cloud_liquid_water uncertainty', &
            'g/m2', &
-           spixel_scan_out%int_fill_value, &
+           sint_fill_value, &
            spixel_scan_out%cwp_error_scale,spixel_scan_out%cwp_error_offset, &
            spixel_scan_out%cwp_error_vmin,spixel_scan_out%cwp_error_vmax,wo,ierr)
 
@@ -554,7 +554,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'retrieval_convergence_flag', &
            '0b, 1b', &
            'yes, no', &
-           spixel_scan_out%byte_fill_value, &
+           byte_fill_value, &
            spixel_scan_out%con_scale,spixel_scan_out%con_offset, &
            spixel_scan_out%con_vmin,spixel_scan_out%con_vmax,wo,ierr)
 
@@ -574,7 +574,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'retrieval iterations', &
            'retrieval_iterations', &
            '', &
-           spixel_scan_out%byte_fill_value, &
+           byte_fill_value, &
            spixel_scan_out%niter_scale,spixel_scan_out%niter_offset, &
            spixel_scan_out%niter_vmin,spixel_scan_out%niter_vmax,wo,ierr)
 
@@ -595,7 +595,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'cloud_phase_flag', &
            '0b, 1b, 2b', &
            'clear/unknown, liquid, ice', &
-           spixel_scan_out%byte_fill_value, &
+           byte_fill_value, &
            spixel_scan_out%pchange_scale,spixel_scan_out%pchange_offset, &
            spixel_scan_out%pchange_vmin,spixel_scan_out%pchange_vmax,wo,ierr)
 
@@ -656,7 +656,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'land_binary_mask', &
            '0b, 1b, 2b, 3b, 4b, 5b, 6b', &
            'sea, land, sunglint, snow, ice, snow_and_ice', &
-           spixel_scan_out%byte_fill_value, &
+           byte_fill_value, &
            spixel_scan_out%ls_scale,spixel_scan_out%ls_offset, &
            spixel_scan_out%ls_vmin,spixel_scan_out%ls_vmax,wo,ierr)
 
@@ -702,7 +702,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
            'illumination_flag', &
            '1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
            'Day Twilight Night Daynore DayMissingSingleVisFirst, DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, NightMissingSingleIRThird', &
-           spixel_scan_out%byte_fill_value, &
+           byte_fill_value, &
            spixel_scan_out%illum_scale,spixel_scan_out%illum_offset, &
            spixel_scan_out%illum_vmin,spixel_scan_out%illum_vmax,wo,ierr)
 

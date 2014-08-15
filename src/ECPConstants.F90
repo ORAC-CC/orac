@@ -459,6 +459,7 @@ module ECP_constants
 
    integer(kind=byte), parameter :: byte_fill_value  = -127
    integer(kind=sint), parameter :: sint_fill_value  = -32767
+   integer(kind=lint), parameter :: lint_fill_value  = -32767
    real(kind=sreal),   parameter :: sreal_fill_value = -999.0
    real(kind=dreal),   parameter :: dreal_fill_value = -999.0
 
