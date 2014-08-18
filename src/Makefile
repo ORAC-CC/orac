@@ -191,8 +191,8 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-include $(ORAC_ARCH)
 include $(ORAC_LIB)
+include $(ORAC_ARCH)
 
 
 # Define object files to be linked. N.B. files containing module definitions
@@ -233,11 +233,8 @@ ORAC_OBJ =        $(OBJS)/CalcCWP.o \
                   $(OBJS)/InvertMarquardt.o \
                   $(OBJS)/locate.o \
                   $(OBJS)/output_routines.o \
-                  $(OBJS)/nc_close.o \
                   $(OBJS)/nc_create_global.o \
                   $(OBJS)/nc_defdata.o \
-                  $(OBJS)/nc_dim_info.o \
-                  $(OBJS)/nc_open.o \
                   $(OBJS)/nc_read_file.o \
                   $(OBJS)/nc_write_L2.o \
                   $(OBJS)/polint.o \
@@ -254,7 +251,6 @@ ORAC_OBJ =        $(OBJS)/CalcCWP.o \
                   $(OBJS)/ReadLSFlags_nc.o \
                   $(OBJS)/ReadLwRTM_nc.o \
                   $(OBJS)/ReadMSI_nc.o \
-                  $(OBJS)/ReadRTMData_nc.o \
                   $(OBJS)/ReadSAD.o \
                   $(OBJS)/ReadScanLines_nc.o \
                   $(OBJS)/ReadSwRTM_nc.o \
