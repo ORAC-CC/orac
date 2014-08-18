@@ -54,29 +54,31 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    ! loop over GRIB files for vertical coordinate
    do i=1,2
       call grib_open_file(fid,paths(i),'r',stat)
-      if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error opening GRIB field.'
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error opening GRIB field.'
       call grib_new_from_file(fid,gid,stat)
-      if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error getting GRIB_ID.'
-      if (gid .eq. GRIB_END_OF_FILE) stop 'READ_ECMWF_WIND: Empty GRIB file.'
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting GRIB_ID.'
+      if (gid .eq. GRIB_END_OF_FILE) &
+           stop 'ERROR: read_ecmwf_wind(): Empty GRIB file.'
 
       ! ensure it contains the expected fields
       call grib_get(gid,'PVPresent',PVPresent)
-      if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error getting PVPresent.'
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
       call grib_get(gid,'PLPresent',PLPresent)
-      if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error getting PVPresent.'
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
       if (PVPresent .eq. 1 .and. PLPresent .eq. 1) then
          ! fetch vertical coordinate
          call grib_get_size(gid,'pv',npv,stat)
-         if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error checking PV.'
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error checking PV.'
          allocate(pv(npv))
          call grib_get(gid,'pv',pv,stat)
-         if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error getting PV.'
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PV.'
          nk=npv/2-1
 
          nlevels=0
          do while (stat .ne. GRIB_END_OF_FILE)
             call grib_get(gid,'level',level,stat)
-            if (stat .ne. 0) stop 'READ_ECMWF_WIND: Error getting level.'
+            if (stat .ne. 0) &
+                 stop 'ERROR: read_ecmwf_wind(): Error getting level.'
             if (level .gt. nlevels) nlevels=level
 
             ! advance file position
@@ -91,10 +93,11 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    end do
 
    if (.not. allocated(pv)) &
-        stop 'READ_ECMWF_WIND: Could not find vertical field.'
+        stop 'ERROR: read_ecmwf_wind(): Could not find vertical field.'
 
    ! set ECMWF dimensions
-   if (nk .ne. nlevels) stop 'READ_ECMWF_WIND: Inconsistent vertical levels.'
+   if (nk .ne. nlevels) &
+        stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical levels.'
    ecmwf%kdim=nk
    allocate(ecmwf%avec(nk+1))
    allocate(ecmwf%bvec(nk+1))
