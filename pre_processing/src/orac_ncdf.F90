@@ -18,15 +18,18 @@
 module orac_ncdf
 
    use netcdf
+   use preproc_constants, only: dreal_fill_value, sreal_fill_value, &
+        lint_fill_value, sint_fill_value, byte_fill_value, &
+        error_stop_code, unitlength
 
    implicit none
 
    interface nc_read_array
-      module procedure double_1d, double_2d, double_3d, double_4d, double_5d, &
-           float_1d, float_2d, float_3d, float_4d, float_5d, &
-           lint_1d, lint_2d, lint_3d, lint_4d, lint_5d, &
-           int_1d, int_2d, int_3d, int_4d, int_5d, &
-           byte_1d, byte_2d, byte_3d, byte_4d, byte_5d
+      module procedure dreal_1d, dreal_2d, dreal_3d,  dreal_4d, &
+           sreal_1d, sreal_2d, sreal_3d, sreal_4d, &
+           lint_1d, lint_2d, lint_3d, lint_4d, &
+           sint_1d, sint_2d, sint_3d, sint_4d, &
+           byte_1d, byte_2d, byte_3d, byte_4d
    end interface nc_read_array
 
 contains
@@ -36,13 +39,19 @@ contains
 !
 ! Purpose:
 ! A module procedure for reading arrays of various sizes and types from a
-! NetCDF file. It currently supports reading arrays of 1 to 5 dimensions of
-! type real or integer.
+! NetCDF file. It currently supports reading arrays of 1 to 4 dimensions of
+! type 1, 2, or 4 byte integer and 4 or 8 byte real.
+!
+! An array can be partially read using the dim and ind arguments to specifiy
+! that dimension and the elements that should be read.
 !
 ! Description and Algorithm details:
 ! 1) Write array dimensions into "counter" array.
-! 2) Execute code in "ncdf_read.inc". This:
-!   - Locate named variable in file.
+! 2) Execute code in "ncdf_open_field.inc". It locates the named variable and
+!    reads its fill value, scale factor and/or offset.
+! 3) If partially reading the array, loop over the elements to be read.
+!    Otherwise, consider the entire array.
+! 4) Execute code in "ncdf_read_field.inc" to:
 !   - Read data from file and replace fill value as required.
 !   - If necessary, apply scale factor and/or offset to data.
 !   - If requested, print out units, valid_min, and valid_max fields.
@@ -55,764 +64,954 @@ contains
 ! val     real    Out Array into which the data will be written. The type and
 !                     size of this array determine the call used.
 ! verbose logical In  T: print additional information; F: don't
+! dim     integer In  Optional. If set, specifies the index of a dimension of
+!                     the field to be read that will only be partially read.
+! ind     integer In  Optional. If set, specifies the indices of the dimension
+!                     specified above to be read.
 !
 ! History:
 ! 2014/02/10, AP: Original version, replacing nc_read_file.F90
 ! 2014/08/12, AP: Adding routines for all expected data types.
+! 2014/08/15, AP: Adding partial read procedure. Homogenizing use of verbose.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine double_1d(ncid, name, val, verbose)
-   use preproc_constants
-
+subroutine dreal_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(8),          intent(inout) :: val(:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(8), target,   intent(inout) :: val(:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(8)                         :: fill=dreal_fill_value
-   integer                         :: ierr, vid
-   real(8)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(1)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(1)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(8)                   :: fv, sf, of
+   real(8), pointer          :: arr(:)
+   real(8)                   :: fill=dreal_fill_value
+ 
    start = 1
    counter = size(val,1)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine double_1d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         arr => val(i:i)
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine double_2d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine dreal_1d
 
+subroutine dreal_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(8),          intent(inout) :: val(:,:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(8), target,   intent(inout) :: val(:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(8)                         :: fill=dreal_fill_value
-   integer                         :: ierr, vid
-   real(8)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(2)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(2)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(8)                   :: fv, sf, of
+   real(8), pointer          :: arr(:,:)
+   real(8)                   :: fill=dreal_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine double_2d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:)
+         case(2)
+            arr => val(:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine double_3d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine dreal_2d
 
+subroutine dreal_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(8),          intent(inout) :: val(:,:,:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(8), target,   intent(inout) :: val(:,:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(8)                         :: fill=dreal_fill_value
-   integer                         :: ierr, vid
-   real(8)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(3)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(3)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(8)                   :: fv, sf, of
+   real(8), pointer          :: arr(:,:,:)
+   real(8)                   :: fill=dreal_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine double_3d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:)
+         case(2)
+            arr => val(:,i:i,:)
+         case(3)
+            arr => val(:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine double_4d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine dreal_3d
 
+subroutine dreal_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(8),          intent(inout) :: val(:,:,:,:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(8), target,   intent(inout) :: val(:,:,:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(8)                         :: fill=dreal_fill_value
-   integer                         :: ierr, vid
-   real(8)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(4)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(4)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(8)                   :: fv, sf, of
+   real(8), pointer          :: arr(:,:,:,:)
+   real(8)                   :: fill=dreal_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    counter(4) = size(val,4)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine double_4d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:,:)
+         case(2)
+            arr => val(:,i:i,:,:)
+         case(3)
+            arr => val(:,:,i:i,:)
+         case(4)
+            arr => val(:,:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine double_5d(ncid, name, val, verbose)
-   use preproc_constants
-
+end subroutine dreal_4d
+!-------------------------------------------------------------------------------
+subroutine sreal_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(8),          intent(inout) :: val(:,:,:,:,:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(4), target,   intent(inout) :: val(:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(8)                         :: fill=dreal_fill_value
-   integer                         :: ierr, vid
-   real(8)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(5)  :: start, counter, stride
-
-   start = 1
-   counter(1) = size(val,1)
-   counter(2) = size(val,2)
-   counter(3) = size(val,3)
-   counter(4) = size(val,4)
-   counter(5) = size(val,5)
-   stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
-
-   include "ncdf_read.inc"
-
-end subroutine double_5d
-   
-subroutine float_1d(ncid, name, val, verbose)
-   use preproc_constants
-
-   implicit none
-
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(4),          intent(inout) :: val(:)
-
-   real(4)                         :: fill=sreal_fill_value
-   integer                         :: ierr, vid
-   real(4)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(1)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(1)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(4)                   :: fv, sf, of
+   real(4), pointer          :: arr(:)
+   real(4)                   :: fill=sreal_fill_value
+ 
    start = 1
    counter = size(val,1)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine float_1d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         arr => val(i:i)
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine float_2d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine sreal_1d
 
+subroutine sreal_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(4),          intent(inout) :: val(:,:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(4), target,   intent(inout) :: val(:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(4)                         :: fill=sreal_fill_value
-   integer                         :: ierr, vid
-   real(4)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(2)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(2)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(4)                   :: fv, sf, of
+   real(4), pointer          :: arr(:,:)
+   real(4)                   :: fill=sreal_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine float_2d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:)
+         case(2)
+            arr => val(:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine float_3d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine sreal_2d
 
+subroutine sreal_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(4),          intent(inout) :: val(:,:,:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(4), target,   intent(inout) :: val(:,:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(4)                         :: fill=sreal_fill_value
-   integer                         :: ierr, vid
-   real(4)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(3)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(3)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(4)                   :: fv, sf, of
+   real(4), pointer          :: arr(:,:,:)
+   real(4)                   :: fill=sreal_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine float_3d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:)
+         case(2)
+            arr => val(:,i:i,:)
+         case(3)
+            arr => val(:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine float_4d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine sreal_3d
 
+subroutine sreal_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(4),          intent(inout) :: val(:,:,:,:)
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   real(4), target,   intent(inout) :: val(:,:,:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
 
-   real(4)                         :: fill=sreal_fill_value
-   integer                         :: ierr, vid
-   real(4)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(4)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(4)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   real(4)                   :: fv, sf, of
+   real(4), pointer          :: arr(:,:,:,:)
+   real(4)                   :: fill=sreal_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    counter(4) = size(val,4)
    stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine float_4d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:,:)
+         case(2)
+            arr => val(:,i:i,:,:)
+         case(3)
+            arr => val(:,:,i:i,:)
+         case(4)
+            arr => val(:,:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine float_5d(ncid, name, val, verbose)
-   use preproc_constants
-
+end subroutine sreal_4d
+!-------------------------------------------------------------------------------
+subroutine lint_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   real(4),          intent(inout) :: val(:,:,:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(4), target, intent(inout) :: val(:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   real(4)                         :: fill=sreal_fill_value
-   integer                         :: ierr, vid
-   real(4)                         :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(5)  :: start, counter, stride
-
-   start = 1
-   counter(1) = size(val,1)
-   counter(2) = size(val,2)
-   counter(3) = size(val,3)
-   counter(4) = size(val,4)
-   counter(5) = size(val,5)
-   stride = 1
-   ierr = 0
-   sf = 1.0
-   of = 0.0
-   flag = .false.
-
-   include "ncdf_read.inc"
-
-end subroutine float_5d
-   
-subroutine lint_1d(ncid, name, val, verbose)
-   use preproc_constants
-
-   implicit none
-
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(4),       intent(inout) :: val(:)
-
-   integer(4)                      :: fill=lint_fill_value
-   integer                         :: ierr, vid
-   integer(4)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(1)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(1)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(4)                :: fv, sf, of
+   integer(4), pointer       :: arr(:)
+   integer(4)                :: fill=lint_fill_value
+ 
    start = 1
    counter = size(val,1)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         arr => val(i:i)
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine lint_1d
-   
-subroutine lint_2d(ncid, name, val, verbose)
-   use preproc_constants
 
+subroutine lint_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(4),       intent(inout) :: val(:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(4), target, intent(inout) :: val(:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(4)                      :: fill=lint_fill_value
-   integer                         :: ierr, vid
-   integer(4)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(2)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(2)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(4)                :: fv, sf, of
+   integer(4), pointer       :: arr(:,:)
+   integer(4)                :: fill=lint_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:)
+         case(2)
+            arr => val(:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine lint_2d
-   
-subroutine lint_3d(ncid, name, val, verbose)
-   use preproc_constants
 
+subroutine lint_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(4),       intent(inout) :: val(:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(4), target, intent(inout) :: val(:,:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(4)                      :: fill=lint_fill_value
-   integer                         :: ierr, vid
-   integer(4)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(3)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(3)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(4)                :: fv, sf, of
+   integer(4), pointer       :: arr(:,:,:)
+   integer(4)                :: fill=lint_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:)
+         case(2)
+            arr => val(:,i:i,:)
+         case(3)
+            arr => val(:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine lint_3d
-   
-subroutine lint_4d(ncid, name, val, verbose)
-   use preproc_constants
 
+subroutine lint_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(4),       intent(inout) :: val(:,:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(4), target, intent(inout) :: val(:,:,:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(4)                      :: fill=lint_fill_value
-   integer                         :: ierr, vid
-   integer(4)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(4)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(4)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(4)                :: fv, sf, of
+   integer(4), pointer       :: arr(:,:,:,:)
+   integer(4)                :: fill=lint_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    counter(4) = size(val,4)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:,:)
+         case(2)
+            arr => val(:,i:i,:,:)
+         case(3)
+            arr => val(:,:,i:i,:)
+         case(4)
+            arr => val(:,:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine lint_4d
-   
-subroutine lint_5d(ncid, name, val, verbose)
-   use preproc_constants
-
+!-------------------------------------------------------------------------------
+subroutine sint_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(4),       intent(inout) :: val(:,:,:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(2), target, intent(inout) :: val(:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(4)                      :: fill=lint_fill_value
-   integer                         :: ierr, vid
-   integer(4)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(5)  :: start, counter, stride
-
-   start = 1
-   counter(1) = size(val,1)
-   counter(2) = size(val,2)
-   counter(3) = size(val,3)
-   counter(4) = size(val,4)
-   counter(5) = size(val,5)
-   stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
-
-   include "ncdf_read.inc"
-
-end subroutine lint_5d
-   
-subroutine int_1d(ncid, name, val, verbose)
-   use preproc_constants
-
-   implicit none
-
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:)
-
-   integer(2)                      :: fill=sint_fill_value
-   integer                         :: ierr, vid
-   integer(2)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(1)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(1)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(2)                :: fv, sf, of
+   integer(2), pointer       :: arr(:)
+   integer(2)                :: fill=sint_fill_value
+ 
    start = 1
    counter = size(val,1)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine int_1d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         arr => val(i:i)
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine int_2d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine sint_1d
 
+subroutine sint_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(2), target, intent(inout) :: val(:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(2)                      :: fill=sint_fill_value
-   integer                         :: ierr, vid
-   integer(2)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(2)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(2)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(2)                :: fv, sf, of
+   integer(2), pointer       :: arr(:,:)
+   integer(2)                :: fill=sint_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine int_2d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:)
+         case(2)
+            arr => val(:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine int_3d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine sint_2d
 
+subroutine sint_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(2), target, intent(inout) :: val(:,:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(2)                      :: fill=sint_fill_value
-   integer                         :: ierr, vid
-   integer(2)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(3)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(3)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(2)                :: fv, sf, of
+   integer(2), pointer       :: arr(:,:,:)
+   integer(2)                :: fill=sint_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine int_3d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:)
+         case(2)
+            arr => val(:,i:i,:)
+         case(3)
+            arr => val(:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine int_4d(ncid, name, val, verbose)
-   use preproc_constants
+end subroutine sint_3d
 
+subroutine sint_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:,:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(2), target, intent(inout) :: val(:,:,:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(2)                      :: fill=sint_fill_value
-   integer                         :: ierr, vid
-   integer(2)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(4)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(4)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(2)                :: fv, sf, of
+   integer(2), pointer       :: arr(:,:,:,:)
+   integer(2)                :: fill=sint_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    counter(4) = size(val,4)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
 
-end subroutine int_4d
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:,:)
+         case(2)
+            arr => val(:,i:i,:,:)
+         case(3)
+            arr => val(:,:,i:i,:)
+         case(4)
+            arr => val(:,:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
-subroutine int_5d(ncid, name, val, verbose)
-   use preproc_constants
-
+end subroutine sint_4d
+!-------------------------------------------------------------------------------
+subroutine byte_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(2),       intent(inout) :: val(:,:,:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(1), target, intent(inout) :: val(:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(2)                      :: fill=sint_fill_value
-   integer                         :: ierr, vid
-   integer(2)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(5)  :: start, counter, stride
-
-   start = 1
-   counter(1) = size(val,1)
-   counter(2) = size(val,2)
-   counter(3) = size(val,3)
-   counter(4) = size(val,4)
-   counter(5) = size(val,5)
-   stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
-
-   include "ncdf_read.inc"
-
-end subroutine int_5d
-
-subroutine byte_1d(ncid, name, val, verbose)
-   use preproc_constants
-
-   implicit none
-
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(1),       intent(inout) :: val(:)
-
-   integer(1)                      :: fill=byte_fill_value
-   integer                         :: ierr, vid
-   integer(1)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(1)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(1)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(1)                :: fv, sf, of
+   integer(1), pointer       :: arr(:)
+   integer(1)                :: fill=byte_fill_value
+ 
    start = 1
    counter = size(val,1)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         arr => val(i:i)
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine byte_1d
 
-subroutine byte_2d(ncid, name, val, verbose)
-   use preproc_constants
-
+subroutine byte_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(1),       intent(inout) :: val(:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(1), target, intent(inout) :: val(:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(1)                      :: fill=byte_fill_value
-   integer                         :: ierr, vid
-   integer(1)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(2)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(2)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(1)                :: fv, sf, of
+   integer(1), pointer       :: arr(:,:)
+   integer(1)                :: fill=byte_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:)
+         case(2)
+            arr => val(:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine byte_2d
 
-subroutine byte_3d(ncid, name, val, verbose)
-   use preproc_constants
-
+subroutine byte_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(1),       intent(inout) :: val(:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(1), target, intent(inout) :: val(:,:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(1)                      :: fill=byte_fill_value
-   integer                         :: ierr, vid
-   integer(1)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(3)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(3)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(1)                :: fv, sf, of
+   integer(1), pointer       :: arr(:,:,:)
+   integer(1)                :: fill=byte_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:)
+         case(2)
+            arr => val(:,i:i,:)
+         case(3)
+            arr => val(:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine byte_3d
 
-subroutine byte_4d(ncid, name, val, verbose)
-   use preproc_constants
-
+subroutine byte_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(1),       intent(inout) :: val(:,:,:,:)
+   integer,            intent(in)    :: ncid
+   character(len=*),   intent(in)    :: name
+   integer(1), target, intent(inout) :: val(:,:,:,:)
+   logical,            intent(in)    :: verbose
+   integer, optional,  intent(in)    :: dim, ind(:)
 
-   integer(1)                      :: fill=byte_fill_value
-   integer                         :: ierr, vid
-   integer(1)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(4)  :: start, counter, stride
-
+   integer                   :: ierr, vid, i
+   integer, dimension(4)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   integer(1)                :: fv, sf, of
+   integer(1), pointer       :: arr(:,:,:,:)
+   integer(1)                :: fill=byte_fill_value
+ 
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
    counter(3) = size(val,3)
    counter(4) = size(val,4)
    stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
 
-   include "ncdf_read.inc"
+   if (verbose) print*,'Reading variable ',trim(name)
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:,:)
+         case(2)
+            arr => val(:,i:i,:,:)
+         case(3)
+            arr => val(:,:,i:i,:)
+         case(4)
+            arr => val(:,:,:,i:i)
+         end select
+         
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
 
 end subroutine byte_4d
-
-subroutine byte_5d(ncid, name, val, verbose)
-   use preproc_constants
-
-   implicit none
-
-   integer,          intent(in)    :: ncid, verbose
-   character(len=*), intent(in)    :: name
-   integer(1),       intent(inout) :: val(:,:,:,:,:)
-
-   integer(1)                      :: fill=byte_fill_value
-   integer                         :: ierr, vid
-   integer(1)                      :: fv, sf, of
-   character(len=unitlength)       :: unit
-   logical                         :: flag
-   integer,          dimension(5)  :: start, counter, stride
-
-   start = 1
-   counter(1) = size(val,1)
-   counter(2) = size(val,2)
-   counter(3) = size(val,3)
-   counter(4) = size(val,4)
-   counter(5) = size(val,5)
-   stride = 1
-   ierr = 0
-   sf = 1
-   of = 0
-   flag = .false.
-
-   include "ncdf_read.inc"
-
-end subroutine byte_5d
 
 !-------------------------------------------------------------------------------
 ! Name: nc_open
@@ -847,8 +1046,9 @@ subroutine nc_open(ncid, fname)
 
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
-      print*,'NC_OPEN: Error opening file ',trim(fname),'. ',nc_error(ierr)
-      stop
+      print*,'ERROR: nc_open(): Error opening file ',trim(fname)
+      print*,nc_error(ierr)
+      stop error_stop_code
    end if
 end subroutine nc_open
 
@@ -979,27 +1179,28 @@ end function nc_error
 function nc_dim_length(ncid, name, verbose) result(len)
    implicit none
 
-   integer,          intent(in) :: ncid, verbose
+   integer,          intent(in) :: ncid
    character(len=*), intent(in) :: name
+   logical,          intent(in) :: verbose
 
    integer :: did, ierr, len
    character(len=NF90_MAX_NAME) :: dname
 
    ierr = nf90_inq_dimid(ncid, name, did)
    if (ierr.ne.NF90_NOERR) then
-      print*,'NC_DIM_LENGTH: Could not locate dimension ',trim(name),'. ', &
-           nc_error(ierr)
-      stop
+      print*,'ERROR: nc_dim_length(): Could not locate dimension ',trim(name)
+      print*,nc_error(ierr)
+      stop error_stop_code
    end if
    
    ierr = nf90_inquire_dimension(ncid, did, dname, len)
    if (ierr.ne.NF90_NOERR) then
-      print*,'NC_DIM_LENGTH: Could not read dimension ',trim(name),'. ', &
-           nc_error(ierr)
-      stop
+      print*,'ERROR: nc_dim_length():: Could not read dimension ',trim(name)
+      print*,nc_error(ierr)
+      stop error_stop_code
    end if
 
-   if (verbose.ne.0) print*, trim(name),' n: ',len
+   if (verbose) print*, trim(name),' dim length: ',len
    
 end function nc_dim_length
 

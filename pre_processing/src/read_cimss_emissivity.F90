@@ -144,7 +144,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, verbose, flag, &
    if (present(wavenumber)) then
       if (wavenumber .gt. 0) then
          allocate(emis%wavenumber(nbands))
-         call nc_read_array(fid,'wavenumber',emis%wavenumber,0)
+         call nc_read_array(fid,'wavenumber',emis%wavenumber,verbose)
       end if
    end if
 
@@ -152,7 +152,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, verbose, flag, &
    if (present(flag)) then
       if (flag .gt. 0) then
          allocate(emis%flag(xdim,ydim))
-         call nc_read_array(fid,'emis_flag',emis%flag,0)
+         call nc_read_array(fid,'emis_flag',emis%flag,verbose)
       end if
    end if
 
@@ -161,7 +161,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, verbose, flag, &
    ! Extract the data for each of the requested bands
    do i=1,nbands
       if (verbose) write(*,*) 'Reading band:  ', BandList(bands(i))
-      call nc_read_array(fid,BandList(bands(i)),emis%emissivity(:,:,i),0)
+      call nc_read_array(fid,BandList(bands(i)),emis%emissivity(:,:,i),verbose)
    end do
 
    ! We are now finished with the main data file
@@ -183,8 +183,8 @@ function read_cimss_emissivity(path_to_file, emis, bands, verbose, flag, &
    !if (present(loc)) then
    !   if (len(trim(loc)) .gt. 1) then
    !      gen_loc = 0
-   !      call nc_read_array(fid,'lat',emis%lat,0)
-   !      call nc_read_array(fid,'lon',emis%lon,0)
+   !      call nc_read_array(fid,'lat',emis%lat,verbose)
+   !      call nc_read_array(fid,'lon',emis%lon,verbose)
    !   end if
    !end if
    ! If the loc variable is null, or hasn't been specified,

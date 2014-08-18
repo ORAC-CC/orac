@@ -130,26 +130,30 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    real, allocatable               :: val(:,:,:,:)
    integer                         :: fid,i,ndim,nvar,size
    character(len=varlength)        :: name
+   logical                         :: verbose = .false.
 
    ! open file
    call nc_open(fid,ecmwf_path)
 
    ! check field dimensions for consistency
-   if (nf90_inquire(fid,ndim,nvar) .ne. 0) stop 'READ_ECMWF_WIND: Bad inquire.'
+   if (nf90_inquire(fid,ndim,nvar) .ne. 0) &
+        stop 'ERROR: read_ecmwf_wind(): Bad inquire.'
    do i=1,ndim
       if (nf90_inquire_dimension(fid,i,name,size) .ne. 0) &
-           stop 'READ_ECMWF_WIND: Bad dimension.'
+           stop 'ERROR: read_ecmwf_wind(): Bad dimension.'
       if (name .eq. 'longitude') then
          if (ecmwf%xdim .eq. 0) then
             ecmwf%xdim=size
          else
-            if (ecmwf%xdim .ne. size) stop 'READ_ECMWF_WIND: Inconsistent lon.'
+            if (ecmwf%xdim .ne. size) &
+                 stop 'ERROR: read_ecmwf_wind(): Inconsistent lon.'
          end if
       else if (name .eq. 'latitude') then
          if (ecmwf%ydim .eq. 0) then
             ecmwf%ydim=size
          else
-            if (ecmwf%ydim .ne. size) stop 'READ_ECMWF_WIND: Inconsistent lat.'
+            if (ecmwf%ydim .ne. size) &
+                 stop 'ERROR: read_ecmwf_wind(): Inconsistent lat.'
          end if
          ! the vertical coordinate is inconsistently between gpam and ggam
       else if ((name.eq.'hybrid' .and. ndim.eq.4) .or. &
@@ -158,7 +162,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
             ecmwf%kdim=size
          else
             if (ecmwf%kdim .ne. size) &
-                 stop 'READ_ECMWF_WIND: Inconsistent vertical.'
+                 stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical.'
          end if
       end if
    end do
@@ -166,23 +170,23 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    ! read wind fields and geolocation from files
    do i=1,nvar
       if (nf90_inquire_variable(fid,i,name) .ne. 0) &
-           stop 'READ_ECMWF_WIND: Bad variable.'
+           stop 'ERROR: read_ecmwf_wind(): Bad variable.'
       select case (name)
       case('longitude')
          if (.not.associated(ecmwf%lon)) then
             allocate(ecmwf%lon(ecmwf%xdim))
-            call nc_read_array(fid,name,ecmwf%lon,0)
+            call nc_read_array(fid,name,ecmwf%lon,verbose)
          end if
       case('latitude')
          if (.not.associated(ecmwf%lat)) then
             allocate(ecmwf%lat(ecmwf%ydim))
-            call nc_read_array(fid,name,ecmwf%lat,0)
+            call nc_read_array(fid,name,ecmwf%lat,verbose)
          end if
       case('U10')
          if (.not.associated(ecmwf%u10)) then
             allocate(ecmwf%u10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid,name,val,0)
+            call nc_read_array(fid,name,val,verbose)
             ecmwf%u10=val(:,:,1,1)
             deallocate(val)
          end if
@@ -190,7 +194,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
          if (.not.associated(ecmwf%v10)) then
             allocate(ecmwf%v10(ecmwf%xdim,ecmwf%ydim))
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
-            call nc_read_array(fid,name,val,0)
+            call nc_read_array(fid,name,val,verbose)
             ecmwf%v10=val(:,:,1,1)
             deallocate(val)
          end if
@@ -198,6 +202,6 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    end do
 
    if (nf90_close(fid) .ne. NF90_NOERR) &
-        stop 'READ_ECMWF_WIND: File could not close.'
+        stop 'ERROR: read_ecmwf_wind(): File could not close.'
 
 end subroutine read_ecmwf_wind_file
