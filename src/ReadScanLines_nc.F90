@@ -68,6 +68,8 @@
 !       Uses original routine and implements reading of netcdf data.
 !     2nd Aug 2014, Greg McGarragh:
 !       Cleaned up the code.
+!    15th Aug 2014, Adam Povey:
+!       Switching to preprocessor NCDF routines.
 !
 ! Bugs:
 !    None known.
@@ -76,13 +78,12 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+subroutine Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
    use Data_def
    use ECP_Constants
-
-   use netcdf
+   use orac_ncdf
 
    implicit none
 
@@ -93,45 +94,22 @@ subroutine Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
                                            ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
-   integer,      intent(out)   :: status
+   logical,      intent(in)    :: verbose
 
-   ! Local variables
-
-   integer        :: ios     ! I/O status from file operations
-   character(180) :: message ! Error message to pass to Write_Log
-
-   ! netcdf related
    integer :: ncid
 
-   status = 0
-
    ! Open scan lines file
-   ios = nf90_open(path=trim(adjustl(Ctrl%Fid%uv)),mode = nf90_nowrite,ncid = ncid)
+   if (verbose) write(*,*) 'Scanlines file: ', trim(Ctrl%Fid%uv)
+   call nc_open(ncid, Ctrl%Fid%uv)
 
-   if (ios /= 0) then
-      status = scanFileOpenErr ! Return error code
-      write(unit=message, fmt=*) 'Read_Scanlines: Error opening file ', &
-         Ctrl%Fid%uv
-      call Write_Log(Ctrl, trim(message), status)
-   else
-      allocate(MSI_Data%Scan%uscan(Ctrl%Ind%Xmax, SegSize))
-      allocate(MSI_Data%Scan%vscan(Ctrl%Ind%Xmax, SegSize))
-   end if
+   allocate(MSI_Data%Scan%uscan(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%Scan%vscan(Ctrl%Ind%Xmax, SegSize))
 
-   if (status == 0) then
-      call nc_read_array_2d_int_to_real_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize, &
-           "uscan", MSI_Data%Scan%uscan,0)
-      call nc_read_array_2d_int_to_real_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize, &
-           "vscan", MSI_Data%Scan%vscan,0)
-   end if
+   call nc_read_array(ncid, "uscan", MSI_Data%Scan%uscan, verbose)
+   call nc_read_array(ncid, "vscan", MSI_Data%Scan%vscan, verbose)
 
-   ! Close scan lines file
-   ios=nf90_close(ncid)
-   if (ios /= 0) then
-      status = ScanFileCloseErr ! Return error code
-      write(unit=message, fmt=*) 'Read_LSflag: Error closing file ', &
-         trim(adjustl(Ctrl%Fid%uv))
-      call Write_Log(Ctrl, trim(message), status)
-   end if
+  ! Close scan lines file
+  if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_scanlines_nc(): Error closing file.'
 
 end subroutine Read_Scanlines_nc

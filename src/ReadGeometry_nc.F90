@@ -47,6 +47,7 @@
 !    2013/05/21, GT: Undid previous change made by CP. The error was in th L1B
 !       reading code in the preprocessing.
 !    2014/08/02, GM: Cleaned up the code.
+!    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !
 ! Bugs:
 !    None known.
@@ -55,13 +56,12 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
    use Data_def
    use ECP_Constants
-
-   use netcdf
+   use orac_ncdf
 
    implicit none
 
@@ -70,54 +70,27 @@ subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    type(CTRL_t), intent(in)    :: Ctrl
    integer,      intent(in)    :: NSegs    ! Number of segments read so far
    integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
-                                           ! pixels.
+   ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
-   integer,      intent(out)   :: status
+   logical,      intent(in)    :: verbose
 
-   ! Local variables
-
-   integer        :: ios     ! I/O status from file operations
-   character(256) :: message ! Error message to pass to Write_Log
-
-   ! netcdf related
-   integer :: ncid,iview
-
-   status = 0
+   integer :: ncid
 
    ! Open geometry file
-   ios = nf90_open(path=trim(adjustl(Ctrl%Fid%Geo)),mode = nf90_nowrite,ncid = ncid)
+   if (verbose) write(*,*) 'Geometry file: ', trim(Ctrl%Fid%Geo)
+   call nc_open(ncid, Ctrl%Fid%Geo)
 
-   if (ios /= 0) then
-      status = GeomFileOpenErr ! Return error code
-      write(unit=message, fmt=*) 'Read_Geometry: Error opening file ', &
-         Ctrl%Fid%Geo
-      call Write_Log(Ctrl, trim(message), status)
-   else
-      allocate(MSI_Data%Geometry%Sol(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
-      allocate(MSI_Data%Geometry%Sat(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
-      allocate(MSI_Data%Geometry%Azi(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
+   allocate(MSI_Data%Geometry%Sol(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
+   allocate(MSI_Data%Geometry%Sat(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
+   allocate(MSI_Data%Geometry%Azi(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
 
-   end if
-
-   if (status == 0) then
-      ! If multi views introduced this needs to be placed inside a loop over the
-      ! views
-      iview=1
-      call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,iview, &
-         "solzen",MSI_Data%Geometry%Sol(:,:,iview),0)
-      call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,iview, &
-         "satzen",MSI_Data%Geometry%Sat(:,:,iview),0)
-      call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,iview, &
-         "relazi",MSI_Data%Geometry%Azi(:,:,iview),0)
-   end if
+   call nc_read_array(ncid,"solzen",MSI_Data%Geometry%Sol,verbose)
+   call nc_read_array(ncid,"satzen",MSI_Data%Geometry%Sat,verbose)
+   call nc_read_array(ncid,"relazi",MSI_Data%Geometry%Azi,verbose)
 
    ! Close geometry file
-   ios = nf90_close(ncid)
-   if (ios /= 0) then
-      status = GeomFileCloseErr ! Return error code
-      write(unit=message, fmt=*) 'Read_Geometry: Error closing file ', &
-         trim(adjustl(Ctrl%Fid%Geo))
-      call Write_Log(Ctrl, trim(message), status)
-   end if
+   if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_geometry_mc(): Error closing file.'
 
- end subroutine Read_Geometry_nc
+
+end subroutine Read_Geometry_nc

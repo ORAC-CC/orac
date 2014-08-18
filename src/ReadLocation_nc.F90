@@ -44,6 +44,7 @@
 !    2012/08/22, MJ: Uses original routine and implements reading of netcdf
 !       data.
 !    2014/08/02, GM: Cleaned up the code.
+!    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !
 ! Bugs:
 !    None known.
@@ -52,13 +53,11 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
-   use ECP_Constants
    use Data_def
-
-   use netcdf
+   use orac_ncdf
 
    implicit none
 
@@ -69,45 +68,23 @@ subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
                                            ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
-   integer,      intent(out)   :: status
+   logical,      intent(in)    :: verbose
 
-   ! Local variables
-
-   integer        :: ios     ! I/O status from file operations
-   character(180) :: message ! Error message to pass to Write_Log
-
-   ! netcdf related
    integer :: ncid
 
-   status = 0
-
    ! Open location file
-   ios = nf90_open(path=trim(adjustl(Ctrl%Fid%Loc)),mode = nf90_nowrite,ncid = ncid)
+   if (verbose) write(*,*) 'Location file: ', trim(Ctrl%Fid%Loc)
+   call nc_open(ncid, Ctrl%Fid%Loc)
 
-   if (ios /= 0) then
-      status = LocFileOpenErr ! Return error code
-      write(unit=message, fmt=*) 'Read_Location: Error opening file ', &
-         Ctrl%Fid%Loc
-      call Write_Log(Ctrl, trim(message), status)
-   else
-      allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, SegSize))
-      allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, SegSize))
-   end if
+   allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, SegSize))
 
-   if (status == 0) then
-      call nc_read_array_2d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,&
-         "lat",MSI_Data%Location%Lat,0)
-      call nc_read_array_2d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,&
-         "lon",MSI_Data%Location%Lon,0)
-   end if
+   call nc_read_array(ncid, "lat", MSI_Data%Location%Lat, verbose)
+   call nc_read_array(ncid, "lon", MSI_Data%Location%Lon, verbose)
 
    ! Close location file
-   ios=nf90_close(ncid)
-   if (ios /= 0) then
-      status = LocFileCloseErr ! Return error code
-      write(unit=message, fmt=*) 'Read_Location: Error closing file ', &
-         trim(adjustl(Ctrl%Fid%Loc))
-      call Write_Log(Ctrl, trim(message), status)
-   end if
+   if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_location_nc(): Error closing file.'
+   
 
 end subroutine Read_Location_nc

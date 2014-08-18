@@ -182,6 +182,7 @@
 !       subroutines.
 !    2014/06/15, Greg McGarragh: Set CTH and CTT values to missing in the case
 !       when a retrieval is not possible.
+!    2014/08/18, Adam Povey: Updating to preprocessor's NCDF routines.
 !
 ! Bugs:
 !    None known.
@@ -204,6 +205,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use Diag_def
    use ECP_Constants
    use omp_lib
+   use orac_ncdf, only: nf90_close, NF90_NOERR
    use output_routines
    use Read_SAD_def
    use RTM_def
@@ -211,8 +213,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use SAD_Chan_def
    use SAD_LUT_def
    use SPixel_def
-
-   use netcdf
 
    ! Local variable declarations
 
@@ -235,6 +235,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    character(len=FilenameLen) &
                        :: drifile
    character(180)      :: message    ! Error message string returned by Read_Driver
+   logical             :: verbose    ! Verbose print-out flag
    integer             :: log_lun    ! Logical Unit Number for log file
    integer             :: diag_lun   ! Logical unit number for diagnostics file
 
@@ -299,7 +300,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
 #ifdef USE_TIMING
    ! This is for timing the different parts of the code on AIX IBM PWR7 at ECMWF
-   integer(kind=nint) :: m0,m1,m2,m3,mclock
+   integer(kind=sint) :: m0,m1,m2,m3,mclock
    real(kind=dreal)   :: r0,r1,r2,r3,rtc
    real(kind=dreal)   :: cpu_secs,real_secs
 #endif
@@ -355,12 +356,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       call get_command_argument(1,drifile)
    end if
 
+   ! Temporary until this is made an argument (somehow)
+   verbose=.true.
+   
    ! Read Ctrl struct from driver file
    call Read_Driver(Ctrl,conf,message,nargs,drifile,status)
 
    ! Read dimensions of preprocessing swath files first:
    call read_input_dimensions_msi(Ctrl%Fid%MSI,Ctrl%FID%Geo, &
-      Ctrl%Ind%Xmax,Ctrl%Ind%YMax,Ctrl%Ind%Nyp,Ctrl%Ind%NInstViews,0)
+      Ctrl%Ind%Xmax,Ctrl%Ind%YMax,Ctrl%Ind%Nyp,Ctrl%Ind%NInstViews,verbose)
 
 
    ! Now set the corners of the domain based on what's in the input files
@@ -445,17 +449,18 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       call read_input_dimensions_lwrtm(Ctrl,Ctrl%Fid%LWRTM,&
          RTM%LW%Grid%NLatLon,RTM%LW%Grid%NLon, RTM%LW%Grid%NLat,&
          RTM%LW%NP,RTM%LW%NPLAY,&
-         RTM%LW%NLWF,RTM%LW%NV,0)
+         RTM%LW%NLWF,RTM%LW%NV,verbose)
 
       call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM,&
          RTM%SW%Grid%NLatLon,RTM%SW%Grid%NLon, RTM%SW%Grid%NLat,&
          RTM%SW%NP,RTM%SW%NPLAY,&
-         RTM%SW%NSWF,RTM%SW%NV,0)
+         RTM%SW%NSWF,RTM%SW%NV,verbose)
 
       RTM%LW%NP=RTM%LW%NPLAY
       RTM%SW%NP=RTM%SW%NPLAY
 
-      call Read_RTMData_nc(Ctrl, RTM, status)
+      call Read_LwRTM_nc(Ctrl, RTM, status)
+      call Read_SwRTM_nc(Ctrl, RTM, status)
       if (status == 0) then
          RTM_Alloc = .true.
       end if
@@ -508,8 +513,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
 
       ! Read all the swath data
-      call Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan,status)
-
+      call Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
       xstep = 1
       ystep = 1
@@ -877,10 +881,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Close netcdf output files
    if (status == 0) then
-      call nc_close(ncid_primary, &
-                    trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file)),wo,ierr)
-
-      if (ierr .ne. 0) then
+      if (nf90_close(ncid_primary) .ne. NF90_NOERR) then
          status=PrimaryFileCloseErr
 
          write(*,*) 'nc_close.F90: netcdf primary file close error:', status
@@ -888,10 +889,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          stop
       end if
 
-      call nc_close(ncid_secondary, &
-                    trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file)),wo,ierr)
-
-      if (ierr .ne. 0) then
+      if (nf90_close(ncid_secondary) .ne. NF90_NOERR) then
          status=SecondaryFileCloseErr
 
          write(*,*) 'nc_close.F90: netcdf secondary file close error:', status

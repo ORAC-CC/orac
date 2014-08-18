@@ -54,7 +54,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
    use Data_def
@@ -69,18 +69,14 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
                                            ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
-   integer,      intent(out)   :: status
+   logical,      intent(out)   :: verbose
 
    ! Local variables
 
-   integer        :: ios
-   character(180) :: message
    integer        :: view,i,j,ic
    integer        :: refch1,refch2
    integer        :: n_vis_bad_ref,n_vis_bad_tau,n_ir_bad
    integer        :: i_missing_vis_ref,i_missing_vis_tau,i_missing_ir
-
-   status=0
 
    allocate(MSI_Data%illum(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
    MSI_Data%illum=byte_fill_value
@@ -333,15 +329,5 @@ end if
       end do
    end do
 
-   ! These next lines are actually not applicable at the moment
-   ios=0
-   if (ios > 0) then
-      status = IllumFileReadDataErr
-      write(unit=message, fmt=*) &
-           'Read_illum: Error reading data in file ', Ctrl%Fid%illum
-      call Write_Log(Ctrl, trim(message), status)
-   else if (ios < 0) then
 
-   end if
-
- end subroutine Read_Illum_nc
+end subroutine Read_Illum_nc

@@ -39,7 +39,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
+subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    use netcdf
 
@@ -56,7 +56,7 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    integer,          intent(in)    :: SegSize
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
-   integer,          intent(out)   :: status
+   logical,          intent(in)    :: verbose
 
    ! Define local variables
 
@@ -64,29 +64,29 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    ! (Sections to be added as reading routines become available
 
    if (Ctrl%RS%Flag == SelmAux) then
-      write(*,*) 'Reading Albedo data, status: ',status
-      if (status == 0) call Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+      if (verbose) write(*,*) 'Reading Albedo data'
+      call Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    end if
 
-   write(*,*) 'Reading Cloud Flag data, status: ',status
-   if (status == 0) call Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   if (verbose) write(*,*) 'Reading Cloud Flag data'
+   call Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
-   write(*,*) 'Reading Geometry data, status: ',status
-   if (status == 0) call Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   if (verbose) write(*,*) 'Reading Geometry data'
+   call Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
-   write(*,*) 'Reading Location data, status: ',status
-   if (status == 0) call Read_Location_nc(Ctrl, NSegs, SegSize,MSI_Data, status)
+   if (verbose) write(*,*) 'Reading Location data'
+   call Read_Location_nc(Ctrl, NSegs, SegSize,MSI_Data, verbose)
 
-   write(*,*) 'Reading LS Flag data, status: ',status
-   if (status == 0) call Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   if (verbose)  write(*,*) 'Reading LS Flag data'
+   call Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
-   write(*,*) 'Reading MSI data, status: ',status
-   call Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
+   if (verbose)  write(*,*) 'Reading MSI data'
+   call Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
-   write(*,*) 'Reading Scanline data, status: ',status
-   if (status == 0) call Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+!   if (verbose)  write(*,*) 'Reading Scanline data'
+!   call Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
-   write(*,*) 'Reading Illumination data, status: ',status
-   if (status == 0) call Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+   if (verbose)  write(*,*) 'Reading Illumination data'
+   call Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
 end subroutine Read_SatData_nc

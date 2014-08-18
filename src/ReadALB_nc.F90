@@ -69,6 +69,7 @@
 !       preprocessing file.
 !    2014/04/20, GM: Cleaned up the code.
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
+!    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !
 ! Bugs:
 !    None known.
@@ -77,14 +78,13 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
+subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
    use Data_def
    use ECP_Constants
+   use orac_ncdf
    use SAD_Chan_def
-
-   use netcdf
 
    implicit none
 
@@ -95,54 +95,35 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, status)
    integer,      intent(in)    :: SegSize   ! Size of image segment in rows of
                                             ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
-   integer,      intent(out)   :: status
+   logical,      intent(in)    :: verbose
 
-   ! Local variables
-
-   integer        :: ios     ! I/O status from file operations
-   character(180) :: message ! Error message to pass to Write_Log
-
-   ! NetCDF related
-   integer        :: i
-   integer        :: ncid
-   integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
-
-   ! On first call, the file is opened. It is then left open for all subsequent
-   ! calls.
-
-   status = 0
+   integer :: ncid
+!   integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
 
    ! Open ALB file
-   write(*,*)'alb file: ', Ctrl%Fid%Aux
-   ios = nf90_open(path=trim(adjustl(Ctrl%Fid%Aux)),mode = nf90_nowrite,ncid = ncid)
-   if (ios /= 0) then
-      status = ALBFileOpenErr ! Return error code
-      write(unit=message, fmt=*) &
-           'Read_ALB: Error opening file ', trim(adjustl(Ctrl%Fid%AUX))
-      call Write_Log(Ctrl, trim(message), status)
-   else
-      ! Allocate Data%ALB structure
-      allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+   if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Aux)
+   call nc_open(ncid, Ctrl%Fid%Aux)
+
+   ! Allocate Data%ALB structure
+   allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
 
       ! Read instrument channel indices from file
-      allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
-      alb_instr_ch_numbers = 0
-      call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%NSolar, &
-         "alb_abs_ch_numbers",alb_instr_ch_numbers,0)
+!   allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
+!   call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, &
+!        verbose)
 
-      ! Loop over channels and read if desired channel number is hit
-      do i=1,Ctrl%Ind%NSolar
-         write(*,*) 'Ctrl%Ind%ysolar(i): ',Ctrl%Ind%ysolar(i)
-         call nc_read_array_3d_float_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,&
-            Ctrl%Ind%ysolar(i), "alb_data",MSI_Data%ALB(:,:,i),0)
-         write(*,*) 'Max/Min Alb: ',maxval(MSI_Data%ALB(:,:, i)),minval(MSI_Data%ALB(:,:, i))
-      end do
+   ! read solar channels from albedo field
+   call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, &
+        3, Ctrl%Ind%ysolar)
+   
+   if (verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
+        minval(MSI_Data%ALB)
 
-      deallocate(alb_instr_ch_numbers)
-     end if
+!   deallocate(alb_instr_ch_numbers)
 
-     ! Close alb input file
-     ios=nf90_close(ncid)
-     write(*,*)'Reading Albedo done, status, ios: ',status,ios
+   ! Close alb input file
+   if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_alb_nc(): Error closing file.'
 
+     
 end subroutine Read_ALB_nc

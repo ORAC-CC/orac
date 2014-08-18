@@ -105,22 +105,22 @@
 !    2014/01/31, MJ: Removed hardcoded parts for avhrr (obsolete)
 !    2014/04/18, GM: Cleaned up the code.
 !    2014/04/30, GM: Fixed a bug introduced by a previous change.
+!    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !
 ! Bugs:
 !    None known.
 !
 ! $Id$
 !
-!------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
-subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
+subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    use CTRL_def
    use Data_def
    use ECP_Constants
+   use orac_ncdf
    use SAD_Chan_def
-
-   use netcdf
 
    implicit none
 
@@ -132,11 +132,10 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
                                                ! pixels.
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
-   integer, intent(out)            :: status
+   logical,      intent(in)    :: verbose
 
    ! Local variables
 
-   integer         :: ios        ! I/O status from file operations
    character(2048) :: message    ! Error message to pass to Write_Log
    integer         :: day, month ! Day and month numbers extracted from
    integer         :: i          ! Counter for DOY calculation
@@ -144,96 +143,55 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, status)
    ! NetCDF related
    integer           :: ncid
    character(len=12) :: prod_date
-   integer(kind=lint), allocatable, dimension(:) :: msi_instr_ch_numbers
-
-   ! On first call, the file is opened. It is then left open for all subsequent
-   ! calls.
-
-   status = 0
+!   integer(kind=lint), allocatable, dimension(:) :: msi_instr_ch_numbers
 
    ! Open MSI file
-   ios = nf90_open(path=trim(adjustl(Ctrl%Fid%MSI)),mode = nf90_nowrite,ncid = ncid)
+   if (verbose) write(*,*) 'Imagery file: ', trim(Ctrl%Fid%MSI)
+   call nc_open(ncid, Ctrl%Fid%MSI)
 
-   if (ios /= NF90_NOERR) then
-      status = MSIFileOpenErr
-      write(unit=message, fmt=*) &
-        'Read_MSI: Error opening file ', trim(adjustl(Ctrl%Fid%MSI))
-      write(*,*) trim(message)
-      call Write_Log(Ctrl, trim(message), status)
-      stop
-   else
-      ! Read product date and time from netcdf global attributes
-      ios=nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date)
+   ! Read product date and time from netcdf global attributes
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date) == &
+        NF90_NOERR) then
+      Ctrl%Date=trim(adjustl(prod_date(1:8)))
+      Ctrl%Time=trim(adjustl(prod_date(9:12)))
 
-      if (ios == 0) then
-         Ctrl%Date=trim(adjustl(prod_date(1:8)))
-         Ctrl%Time=trim(adjustl(prod_date(9:12)))
+      ! Get day and month as integers
+      read(prod_date(7:8), '(I2)') day
+      read(prod_date(5:6), '(I2)') month
 
-         ! Get day and month as integers
-         read(prod_date(7:8), '(I2)') day
-         read(prod_date(5:6), '(I2)') month
-
-         ! Compute DOY for present day
-         Ctrl%DOY = 0
-         do i=1,month-1
-            Ctrl%DOY = Ctrl%DOY + days_in_month(i)
-         end do
-         Ctrl%DOY = Ctrl%DOY + day
-
-         ! Calculate solar constant based on day of year using the mean and
-         ! amplitude of variation.
-         do i = 1, Ctrl%Ind%Ny
-            if (SAD_Chan(i)%Solar%Flag > 0) &
-                SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
-               (SAD_Chan(i)%Solar%F1 * cos(2 * Pi * Ctrl%DOY / 365.))
-         end do
-
-      else
-         status = MSIFileReadHeadErr
-         write(unit=message, fmt=*) &
-              'Read_MSI: Error reading header of file ', trim(adjustl(Ctrl%Fid%MSI))
-         write(*,*) 'Read_MSI: Error reading header of file ', trim(adjustl(Ctrl%Fid%MSI))
-         call Write_Log(Ctrl, trim(message), status)
-         stop
-      end if
-   end if
-
-   if (status == 0) then
-      ! Read MSI file
-      write(*,*) 'Start reading MSI input'
-
-      ! Allocate Data%MSI structure size to match image segments to be used.
-      allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%Ny))
-      allocate(MSI_Data%time(Ctrl%Ind%Xmax, SegSize))
-
-      ! Read instrument channel indices from file
-      allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
-      msi_instr_ch_numbers=0_lint
-      call nc_read_array_1d_int_to_int_orac(ncid,Ctrl%Ind%Nyp,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
-
-      do i=1,Ctrl%Ind%Ny
-         write(*,*) 'Read data for channel in MSI file: ', &
-            i,msi_instr_ch_numbers(Ctrl%Ind%Chi(i)),Ctrl%Ind%Chi(i),Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
-         call nc_read_array_3d_float_orac &
-            (ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,Ctrl%Ind%Chi(i),"msi_data",MSI_Data%MSI(:,:,i),0)
+      ! Compute DOY for present day
+      Ctrl%DOY = 0
+      do i=1,month-1
+         Ctrl%DOY = Ctrl%DOY + days_in_month(i)
       end do
+      Ctrl%DOY = Ctrl%DOY + day
 
-      deallocate(msi_instr_ch_numbers)
+      ! Calculate solar constant based on day of year using the mean and
+      ! amplitude of variation.
+      do i = 1, Ctrl%Ind%Ny
+         if (SAD_Chan(i)%Solar%Flag > 0) &
+              SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
+              (SAD_Chan(i)%Solar%F1 * cos(2 * Pi * Ctrl%DOY / 365.))
+      end do
+   endif
 
-      ! Read time data
-      call nc_read_array_2d_double_orac(ncid,Ctrl%Ind%Xmax,Ctrl%Resoln%SegSize,"time_data",MSI_Data%time(:,:),0)
+   ! Read MSI file
 
-      write(*,*) 'Done reading MSI input'
-   end if
+   ! Allocate Data%MSI structure size to match image segments to be used.
+   allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%Ny))
+   allocate(MSI_Data%time(Ctrl%Ind%Xmax, SegSize))
+
+   call nc_read_array(ncid, "msi_data", MSI_Data%MSI, verbose, 3, Ctrl%Ind%Chi)
+   call nc_read_array(ncid, "time_data", MSI_Data%time, verbose)
+
+   ! Read instrument channel indices from file
+!   allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
+!   call nc_read_array(ncid,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
+!   deallocate(msi_instr_ch_numbers)
 
    ! Close MSI input file
-   ios=nf90_close(ncid)
-   if (ios /= 0) then
-      status = MSIFileCloseErr ! Return error code
-      write(unit=message, fmt=*) &
-         'Read_MSI: Error closing file ', trim(adjustl(Ctrl%Fid%MSI))
-      write(*,*) trim(message)
-      call Write_Log(Ctrl, trim(message), status)
-   end if
+   if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_msi_nc(): Error closing file.'
+
 
 end subroutine Read_MSI_nc
