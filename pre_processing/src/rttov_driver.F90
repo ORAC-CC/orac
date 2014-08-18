@@ -194,7 +194,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    type(netcdf_info_s),           intent(inout)  :: netcdf_info
    type(channel_info_s),          intent(in)     :: channel_info
    integer(kind=sint),            intent(in)     :: month
-   logical,                       intent(out)    :: verbose
+   logical,                       intent(in)     :: verbose
 
    ! Loop variables
    integer(kind=jpim)                :: j

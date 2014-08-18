@@ -255,13 +255,13 @@ subroutine interp_field_2d(datin, datout, interp)
 
    implicit none
 
-   real(8),     target, intent(in)      :: datin(:,:,:,:)
-   real(8),             intent(inout)   :: datout(:,:)
-   type(interpol_s),    intent(in)      :: interp
+   real(sreal), target, intent(in)         :: datin(:,:,:,:)
+   real(sreal),         intent(inout)      :: datout(:,:)
+   type(interpol_s),    intent(in)         :: interp
 
    logical                              :: miss(4)
-   real(8)                              :: coef(3)
-   real(8),     pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
+   real(sreal)                          :: coef(3)
+   real(sreal), pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide interpolation to do dependent on the missing values
    miss = [datin(interp%x0, interp%y0, 1, 1) == sreal_fill_value, &
