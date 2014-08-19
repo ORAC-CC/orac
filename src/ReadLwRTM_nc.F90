@@ -7,62 +7,21 @@
 !    appropriate data arrays.
 !
 ! Arguments:
-!    Name   Type         In/Out/Both Description
-!    Ctrl   struct       Both        Control structure
-!    RTM    alloc struct Out         RTM structure
-!    status int          Out         Error status
+!    Name    Type         In/Out/Both Description
+!    Ctrl    struct       Both        Control structure
+!    RTM     alloc struct Out         RTM structure
+!    verbose logical      In          Print out progress information
 !
 ! Algorithm:
-!    open RTM data file (report errors)
-!    read instrument name and check vs. name in Ctrl struct (report errors)
-!    read date
-!    read number of latitude and longitude points
-!    read number of pressure levels and number of thermal channels
-!    allocate size of Channel ID and Wave Number arrays
-!    read array of channel IDs
-!    read array of channel wavenumbers
-!    check channel IDs vs. requested Ids in Ctrl
-!       set up index array to handle selection of required channel data from
-!       input data (since order of storage of different channel values in the
-!       file may not match the order in the ECP)
-!    (report error if not all thermal chans requested are stored in the RTM file)
-!
-!    Use no. of latitude, longitude, pressure levels from file plus no. of
-!    requested thermal channels to allocate RTM arrays
-!
-!    for each latitude band (1 to NLat)
-!       for each longitude (1 to NLon)
-!          read the latitude and longitude values
-!          read the emissivity value for each channel
-!          read the pressure dependent LW RTM data for all channels and pressure
-!             values at this lat & lon
-!          use the channel index array set earlier to assign the RTM data to
-!          the arrays in the RTM%LW struct
-!
-!    close the RTM file
-!    open the profile file (report errors)
-!       read date (check vs. date from RTM file: report errors)
-!       read no. of lat and lon points (check vs. RTM file values: report errors)
-!       allocate RTM%LW pressure and temp. arrays
-!
-!       for each latitude
-!          for each longitude
-!             read lat, lon and no. of pressure levels
-!             change sign of longitude value
-!             check lat and lon agree with RTM data: report errors
-!             check no. of pressure values agrees with RTM data: report errors
-!             read in block of pressure and temp. values and assign to arrays
-!             in RTM%LW
-!
-!    close the profile file
-!
-!    set up grid parameters for use in Get_LwRTM:
-!       lat and lon valus at corners of grid
-!       min and max latitude and longitude values
-!       step size on lat and lon grids (and reciprocals)
-!
-! Local variables:
-!    Name Type Description
+! 1) Open the PRTM file.
+! 2) Read wavelength-independent fields from the PRTM file.
+! 3) Close the PRTM file.
+! 4) Open the LWRTM file.
+! 5) Read the instrument name and ensure it matches that expected.
+! 6) Read the available channel numbers.
+! 7) Read the necessary thermal channel information.
+! 8) Close the LWRTM file.
+! 9) Determine the RTM grid from the lat/lon fields.
 !
 ! History:
 !     5th Dec 2000, Kevin M. Smith:
@@ -129,6 +88,7 @@
 !    2014/07/23, AP: Grid no longer assumed to defined points rather than the
 !       cells centres (as is actually the case).
 !    2014/08/01, AP: Remove unused counter fields.
+!    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !
 ! Bugs:
 !    None known.
@@ -137,13 +97,12 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_LwRTM_nc(Ctrl, RTM, status)
+subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 
    use CTRL_def
    use ECP_Constants
+   use orac_ncdf
    use RTM_def
-
-   use netcdf
 
    implicit none
 
@@ -151,7 +110,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
 
    type(CTRL_t), intent(in)    :: Ctrl
    type(RTM_t),  intent(out)   :: RTM
-   integer,      intent(inout) :: status
+   logical,      intent(in)    :: verbose
 
    ! Local variables
 
@@ -160,27 +119,11 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
    ! become real(8). The parameter arrays read in via buf, and the lat/lons
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
-   integer                :: i, j, k
-   integer                :: ios
-   character(256)         :: message
-   character(Instnamelen) :: InstName
-   integer, allocatable   :: ChanID(:)
-   real(4), allocatable   :: WvNumber(:)
-   integer                :: chan_found
-   integer, allocatable   :: index(:)
-
-   ! NetCDF related
-   character(Instnamelen) :: platform
-   character(Instnamelen) :: sensor
-
-   integer :: ik,ichan
-   integer :: ncid
-!  integer(kind=nint), allocatable, dimension(:,:)   :: dummy2dint
-   real(kind=sreal),   allocatable, dimension(:,:)   :: dummy1p1
-   real(kind=sreal),   allocatable, dimension(:,:,:) :: dummy1p2
-   real(kind=sreal),   allocatable, dimension(:)     :: dummy1df
-   real(kind=sreal),   allocatable, dimension(:,:)   :: dummy2df
-   real(kind=sreal),   allocatable, dimension(:,:,:) :: dummy3df
+   integer                  :: ncid, chan_found, i, j
+   real(sreal), allocatable :: dummy1d(:), dummy2d(:,:), dummy3d(:,:,:)
+   character(Instnamelen)   :: platform, sensor, instname
+   integer, allocatable     :: index(:), ChanID(:)
+!   real(4), allocatable     :: WvNumber(:)
 
 
    !----------------------------------------------------------------------------
@@ -188,69 +131,55 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
    !----------------------------------------------------------------------------
 
    ! Open PRTM file
-   if (status == 0) then
-      write(*,*) 'PRTM File',trim(adjustl(Ctrl%FID%PRTM))
-      ios = nf90_open(path=trim(adjustl(Ctrl%FID%PRTM)),mode = nf90_nowrite, &
-                      ncid = ncid)
-      if (ios /= 0) then
-         status = LwRTMPFileOpenErr
-         write(unit=message, fmt=*) 'Read_LwRTM: Error opening PRTM profile file ', &
-               trim(adjustl(Ctrl%Fid%PRTM))
-         write(*,*) trim(message)
-         call Write_Log(Ctrl, trim(message), status)
-         stop
-      else
-         if (status == 0) then
-            ! Allocate arrays
-            allocate(RTM%LW%lat(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon))
-            allocate(RTM%LW%lon(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon))
+   call nc_open(ncid, Ctrl%FID%PRTM)
 
-            allocate(RTM%LW%skint(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon))
-            allocate(RTM%LW%sp   (RTM%LW%Grid%NLat, RTM%LW%Grid%NLon))
+   ! Allocate arrays
+   allocate(RTM%LW%lat(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
+   allocate(RTM%LW%lon(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
 
-            allocate(RTM%LW%P(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon, RTM%LW%NP))
-            allocate(RTM%LW%T(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon, RTM%LW%NP))
-            allocate(RTM%LW%H(RTM%LW%Grid%NLat, RTM%LW%Grid%NLon, RTM%LW%NP))
+   allocate(RTM%LW%skint(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
+   allocate(RTM%LW%sp   (RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
 
-            ! Read data into arrays
+   allocate(RTM%LW%P(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat, RTM%LW%NP))
+   allocate(RTM%LW%T(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat, RTM%LW%NP))
+   allocate(RTM%LW%H(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat, RTM%LW%NP))
 
-            allocate(dummy1df(RTM%LW%Grid%NLatLon))
+   ! Read data into arrays
+   allocate(dummy1d(RTM%LW%Grid%NLatLon))
 
-            call nc_read_array_1d_float_to_float_orac(ncid,RTM%LW%Grid%NLatLon,"lon_pw",dummy1df,0)
-            RTM%LW%lon=transpose(reshape(dummy1df,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/)))
+   call nc_read_array(ncid, "lon_pw", dummy1d, verbose)
+   RTM%LW%lon=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
 
-            call nc_read_array_1d_float_to_float_orac(ncid,RTM%LW%Grid%NLatLon,"lat_pw",dummy1df,0)
-            RTM%LW%lat=transpose(reshape(dummy1df,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/)))
+   call nc_read_array(ncid, "lat_pw", dummy1d, verbose)
+   RTM%LW%lat=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
 
-            call nc_read_array_1d_float_to_float_orac(ncid,RTM%LW%Grid%NLatLon,"skint_pw",dummy1df,0)
-            RTM%LW%skint=transpose(reshape(dummy1df,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/)))
+   call nc_read_array(ncid, "skint_pw" ,dummy1d, verbose)
+   RTM%LW%skint=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
 
-            call nc_read_array_1d_float_to_float_orac(ncid,RTM%LW%Grid%NLatLon,"explnsp_pw",dummy1df,0)
-            RTM%LW%sp=transpose(reshape(dummy1df,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/)))
+   call nc_read_array(ncid, "explnsp_pw", dummy1d, verbose)
+   RTM%LW%sp=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
 
-            deallocate(dummy1df)
+   deallocate(dummy1d)
+   allocate(dummy2d(RTM%LW%NP, RTM%LW%Grid%NLatLon))
 
-            allocate(dummy2df(RTM%LW%Grid%NLatLon,RTM%LW%NP))
+   ! ACP: Your guess is as good as mine as to why this is the correct order.
+   call nc_read_array(ncid, "tprofile_lev", dummy2d, verbose)
+   RTM%LW%T=reshape(dummy2d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,RTM%LW%NP/), &
+        order = (/3,1,2/))
+   
+   call nc_read_array(ncid, "pprofile_lev", dummy2d, verbose)
+   RTM%LW%P=reshape(dummy2d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,RTM%LW%NP/), &
+        order = (/3,1,2/))
 
-            call nc_read_array_2d_float_to_float_orac(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,"tprofile_lev",dummy2df,0)
-            RTM%LW%T=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
+   call nc_read_array(ncid, "gphprofile_lev", dummy2d, verbose)
+   RTM%LW%H=reshape(dummy2d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,RTM%LW%NP/), &
+        order = (/3,1,2/))
 
-            call nc_read_array_2d_float_to_float_orac(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,"pprofile_lev",dummy2df,0)
-            RTM%LW%P=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
+   deallocate(dummy2d)
 
-            call nc_read_array_2d_float_to_float_orac(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,"gphprofile_lev",dummy2df,0)
-            RTM%LW%H=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-
-            deallocate(dummy2df)
-
-         end if
-
-         ! Close PRTM input file
-         ios=nf90_close(ncid)
-         if (ios == 0) write(*,*) 'Read PRTM data OK'
-
-      end if
-   end if
+   ! Close PRTM input file
+   if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_lwrtm_nc(): Error closing PRTM file.'
 
 
    !----------------------------------------------------------------------------
@@ -258,191 +187,142 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, status)
    !----------------------------------------------------------------------------
 
    ! Open LwRTM data file
-   if (status == 0) then
-      write(*,*) 'file',trim(adjustl(Ctrl%FID%LWRTM))
-      ios = nf90_open(path=trim(adjustl(Ctrl%Fid%LWRTM)),mode = nf90_nowrite,ncid = ncid)
-      write(*,*) 'ios', ios
-      if (ios /= NF90_NOERR) then
-         status = LwRTMRTMFileOpenErr
-         write(unit=message, fmt=*) 'Read_LwRTM: Error opening LwPRTM profile file ', &
-               trim(adjustl(Ctrl%Fid%PRTM))
-         write(*,*) message
-         call Write_Log(Ctrl, trim(message), status)
-         stop
-         stop
-      else
+   call nc_open(ncid, Ctrl%FID%LWRTM)
 
-         ! Read instrument info
-         ios=nf90_get_att(ncid, NF90_GLOBAL, "Sensor_Name", sensor)
-         ios=nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform)
-         if (ios /= 0) then
-            status = LwRTMRTMInstErr
-            write(*,*) 'Read_LwRTM: error reading instrument name', status
-            call Write_Log(Ctrl, 'Read_LwRTM: error reading instrument name', &
-                 status)
-            stop
-         else
-            if (sensor =='AATSR') then
-               instname=trim(adjustl(sensor))
-            else
-               instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
-            end if
-
-            InstName = adjustl(InstName)
-            if (trim(adjustl(InstName)) /= trim(adjustl(Ctrl%Inst%Name))) then
-               status = LwRTMRTMInstErr
-               write(*,*) 'Read_LwRTM: RTM file; header instrument disagrees with filename',&
-                  status
-               call Write_Log(Ctrl, &
-                  'Read_LwRTM: RTM file; header instrument disagrees with filename',&
-                  status)
-               stop
-            end if
-         end if
-
-         ! For this set of reads, if read fails (non-zero iostat), set status
-         ! immediately but report error later since the message is the same for
-         ! all cases.
-
-         ! Allocate size of ChanID and WvNumber
-         if (status == 0) then
-            allocate(ChanID(RTM%LW%NLWF))
-            allocate(WvNumber(RTM%LW%NLWF))
-
-            ! Read ChanID and WvNumber
-            call nc_read_array_1d_int_to_int_orac(ncid,RTM%LW%NLWF,"lw_channel_instr_ids",ChanID,0)
-            call nc_read_array_1d_float_to_float_orac(ncid,RTM%LW%NLWF,"lw_channel_wvl",WvNumber,0)
-         end if
-
-         write(*,*) 'LW channel instrument ids for RTM in LW preprocessing file',ChanID
-
-         ! Check that required thermal channels are present
-         if (status == 0) then
-
-            ! Loop over longwave instrument channels, checking that requested
-            ! channels are available in the RTM data and setting up the index
-            ! array to allow us to find the channels we want from the RTM file
-            ! data (in case order of storage is different from the order we
-            ! specified our selection).
-
-            chan_found = 0
-            allocate(index(Ctrl%Ind%NThermal))
-            index = 0
-            k     = 1
-
-            ! This is the loop over the requested channels
-            do i = 1,Ctrl%Ind%Ny
-               ! Loop over channels in RTM
-               do j = 1,RTM%LW%NLWF
-                  ! Signal that the required channel has been found by incrementing
-                  ! chan_found and break out of the inner loop to start search for
-                  ! next instrument channel
-                  if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
-                     chan_found = chan_found + 1
-                     index(k) = j
-                     k = k+1
-                     exit
-                  end if
-               end do
-            end do
-
-            if (chan_found /= Ctrl%Ind%NThermal) then
-               status = LwRTMChanErr ! Return error code
-               write(unit=message, fmt=*) &
-                  'Read_LwRTM: RTM file; required instrument channels not found'
-               write(*,*) trim(message)
-               call Write_Log(Ctrl, trim(message), status)
-               stop
-            end if
-         end if
-
-         if (status == 0) then
-            ! Allocate arrays
-            allocate(RTM%LW%Ems(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal))
-            allocate(RTM%LW%Tbc(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
-            allocate(RTM%LW%Tac(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
-            allocate(RTM%LW%Rac_up(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
-            allocate(RTM%LW%Rac_dwn(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal,RTM%LW%NP))
-            allocate(RTM%LW%Rbc_up(RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,Ctrl%Ind%NThermal, RTM%LW%NP))
-
-            ! Successive cell count in preprocessing
-
-            ! Read data into arrays
-            allocate(dummy1df(RTM%LW%Grid%NLatLon))
-            allocate(dummy2df(RTM%LW%Grid%NLatLon,RTM%LW%NP))
-
-            ichan=0
-            do i = 1,Ctrl%Ind%Ny
-               do j = 1,RTM%LW%NLWF
-                  if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
-                     ichan=ichan+1
-
-                     call nc_read_array_1p1_float_orac(ncid,RTM%LW%Grid%NLatLon,j,"emiss_lw",dummy1df,0)
-                     RTM%LW%Ems(:,:,ichan)=reshape(dummy1df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon/), order = (/2,1/))
-
-                     call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"tac_lw",dummy2df,0)
-                     RTM%LW%Tac(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-
-                     call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"tbc_lw",dummy2df,0)
-                     RTM%LW%Tbc(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-
-                     call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"rbc_up_lw",dummy2df,0)
-                     RTM%LW%Rbc_up(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-
-                     call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"rac_up_lw",dummy2df,0)
-                     RTM%LW%Rac_up(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-
-                     call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"rac_down_lw",dummy2df,0)
-                     RTM%LW%Rac_dwn(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-                  end if
-               end do
-            end do
-
-            deallocate(dummy1df)
-            deallocate(dummy2df)
-         end if
-
-         if (allocated(WvNumber)) deallocate(WvNumber)
-         if (allocated(ChanID))   deallocate(ChanID)
-         if (allocated(index))    deallocate(index)
-
-         ! Close LwRTM input file
-         ios=nf90_close(ncid)
-
-         if (status == LwRTMReadErr) &
-            call Write_Log(Ctrl, 'Read_LWRTM: error reading from LW file', status)
-      end if
-
-      if (status == 0) write(*,*)'Read LW RTM data OK'
-
-      if (status == 0) then
-         ! Calculate grid parameters for use in Get_LwRTM
-
-         ! Corners of the grid
-         RTM%LW%Grid%Lat0 = RTM%LW%Lat(1,1)
-         RTM%LW%Grid%LatN = RTM%LW%Lat(RTM%LW%Grid%NLat,1)
-         RTM%LW%Grid%Lon0 = RTM%LW%Lon(1,1)
-         RTM%LW%Grid%LonN = RTM%LW%Lon(1,RTM%LW%Grid%NLon)
-
-         ! Grid spacing and inverse
-         RTM%LW%Grid%delta_Lat = (RTM%LW%Grid%LatN - RTM%LW%Grid%Lat0) &
-                                 / (RTM%LW%Grid%NLat-1)
-         RTM%LW%Grid%inv_delta_Lat = 1. / RTM%LW%Grid%delta_Lat
-
-         RTM%LW%Grid%delta_Lon = (RTM%LW%Grid%LonN - RTM%LW%Grid%Lon0) &
-                                 / (RTM%LW%Grid%NLon-1)
-         RTM%LW%Grid%inv_delta_Lon = 1. / RTM%LW%Grid%delta_Lon
-
-         ! Max and Min grid values
-         RTM%LW%Grid%MinLat = min(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
-              RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
-         RTM%LW%Grid%MaxLat = max(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
-              RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
-         RTM%LW%Grid%MinLon = min(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
-              RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
-         RTM%LW%Grid%MaxLon = max(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
-              RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
-      end if
+   ! Ensure instrument info matches the sensor being processed
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor_Name", sensor) /= NF90_NOERR .or.&
+        nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
+        stop 'ERROR: read_lwrtm_nc(): Could not read global attributes.'
+   if (sensor =='AATSR') then
+      instname=trim(adjustl(sensor))
+   else
+      instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
+   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) &
+        stop 'ERROR: read_lwrtm_nc(): Instrument in RTM header inconsistent'
+
+   allocate(ChanID(RTM%LW%NLWF))
+!   allocate(WvNumber(RTM%LW%NLWF))
+
+   ! Read ChanID and WvNumber
+   call nc_read_array(ncid, "lw_channel_instr_ids", ChanID, verbose)
+!   call nc_read_array(ncid, "lw_channel_wvl", WvNumber, verbose)
+
+   if (verbose) write(*,*) &
+        'LW channel instrument ids for RTM in LW preprocessing file',ChanID
+
+   ! Check that required thermal channels are present
+
+   ! Loop over longwave instrument channels, checking that requested
+   ! channels are available in the RTM data and setting up the index
+   ! array to allow us to find the channels we want from the RTM file
+   ! data (in case order of storage is different from the order we
+   ! specified our selection).
+   chan_found = 0
+   allocate(index(Ctrl%Ind%NThermal))
+   index = 0
+
+   ! This is the loop over the requested channels
+   do i = 1,Ctrl%Ind%Ny
+      ! Loop over channels in RTM
+      do j = 1,RTM%LW%NLWF
+         ! Signal that the required channel has been found by incrementing
+         ! chan_found and break out of the inner loop to start search for
+         ! next instrument channel
+         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
+            chan_found = chan_found + 1
+            index(chan_found) = j
+            exit
+         end if
+      end do
+   end do
+
+   if (chan_found /= Ctrl%Ind%NThermal) &
+        stop 'ERROR: read_lwrtm_nc(): required instrument channels not found'
+
+   ! Allocate arrays
+   allocate(RTM%LW%Ems(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal))
+   allocate(RTM%LW%Tbc(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
+        RTM%LW%NP))
+   allocate(RTM%LW%Tac(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
+        RTM%LW%NP))
+   allocate(RTM%LW%Rac_up(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
+        RTM%LW%NP))
+   allocate(RTM%LW%Rac_dwn(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
+        RTM%LW%NP))
+   allocate(RTM%LW%Rbc_up(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
+        RTM%LW%NP))
+
+   ! Successive cell count in preprocessing
+
+   ! Read data into arrays
+   allocate(dummy2d(Ctrl%Ind%NThermal,RTM%LW%Grid%NLatLon))
+   allocate(dummy3d(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLatLon))
+
+   call nc_read_array(ncid, "emiss_lw", dummy2d, verbose, 1, index)
+   RTM%LW%Ems=reshape(dummy2d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NThermal/), order = (/3,1,2/))
+
+   call nc_read_array(ncid, "tac_lw", dummy3d, verbose, 1, index)
+   RTM%LW%Tac=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
+
+   call nc_read_array(ncid, "tbc_lw", dummy3d, verbose, 1, index)
+   RTM%LW%Tbc=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
+
+   call nc_read_array(ncid, "rbc_up_lw", dummy3d, verbose, 1, index)
+   RTM%LW%Rbc_up=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
+
+   call nc_read_array(ncid, "rac_up_lw", dummy3d, verbose, 1, index)
+   RTM%LW%Rac_up=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
+
+   call nc_read_array(ncid, "rac_down_lw", dummy3d, verbose, 1, index)
+   RTM%LW%Rac_dwn=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
+
+   deallocate(dummy2d)
+   deallocate(dummy3d)
+
+!   if (allocated(WvNumber)) deallocate(WvNumber)
+   if (allocated(ChanID))   deallocate(ChanID)
+   if (allocated(index))    deallocate(index)
+
+   ! Close LwRTM input file
+   if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_lwrtm_nc(): Error closing file.'
+
+   ! Calculate grid parameters for use in Get_LwRTM
+   ! Corners of the grid
+   RTM%LW%Grid%Lat0 = real(RTM%LW%Lat(1,1), kind=8)
+   RTM%LW%Grid%LatN = real(RTM%LW%Lat(1,RTM%LW%Grid%NLat), kind=8)
+   RTM%LW%Grid%Lon0 = real(RTM%LW%Lon(1,1), kind=8)
+   RTM%LW%Grid%LonN = real(RTM%LW%Lon(RTM%LW%Grid%NLon,1), kind=8)
+
+   ! Grid spacing and inverse
+   RTM%LW%Grid%delta_Lat = (RTM%LW%Grid%LatN - RTM%LW%Grid%Lat0) &
+        / (RTM%LW%Grid%NLat-1)
+   RTM%LW%Grid%inv_delta_Lat = 1. / RTM%LW%Grid%delta_Lat
+
+   RTM%LW%Grid%delta_Lon = (RTM%LW%Grid%LonN - RTM%LW%Grid%Lon0) &
+        / (RTM%LW%Grid%NLon-1)
+   RTM%LW%Grid%inv_delta_Lon = 1. / RTM%LW%Grid%delta_Lon
+
+   ! Max and Min grid values
+   RTM%LW%Grid%MinLat = min(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
+        RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
+   RTM%LW%Grid%MaxLat = max(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
+        RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
+   RTM%LW%Grid%MinLon = min(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
+        RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
+   RTM%LW%Grid%MaxLon = max(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
+        RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
+
+   ! Does the grid wrap around the international date-line?
+   RTM%LW%Grid%Wrap = RTM%LW%Grid%MinLon <= -180. .and. &
+        RTM%LW%Grid%MaxLon >= 180.
+
 
 end subroutine Read_LwRTM_nc

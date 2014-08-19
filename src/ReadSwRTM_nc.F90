@@ -10,43 +10,14 @@
 !    Name   Type         In/Out/Both Description
 !    Ctrl   struct       Both        Control structure
 !    RTM    alloc struct Out         RTM structure
-!    status int          Out         Error status
+!    verbose logical      In          Print out progress information
 !
 ! Algorithm:
-!    Open RTM data file (report errors)
-!    Read instrument name and check vs. name in Ctrl struct (report errors)
-!    Read date
-!    Read number of latitude and longitude points
-!    Read number of pressure levels and number of solar channels
-!    Allocate size of Channel ID and Wave Number arrays
-!    Read array of channel IDs
-!    Read array of channel wavenumbers
-!    Check channel IDs vs. requested Ids in Ctrl
-!       set up index array to handle selection of required channel data from
-!       input data (since order of storage of different channel values in the
-!       file may not match the order in the ECP)
-!    (report error if not all solar chans requested are stored in the RTM file)
-!
-!    Use no. of latitude, longitude, pressure levels from file plus no. of
-!    requested solar channels to allocate RTM arrays
-!
-!    for each latitude band (1 to NLat)
-!       for each longitude (1 to NLon)
-!          read the latitude and longitude values
-!          read the pressure dependent SW RTM data for all channels and
-!             pressure values at this lat & lon
-!          use the channel index array set earlier to assign the RTM data to the
-!             arrays in the RTM%SW struct
-!
-!    close the RTM file
-!
-!    set up grid parameters for use in Get_LwRTM:
-!       lat and lon valus at corners of grid
-!       min and max latitude and longitude values
-!       step size on lat and lon grids (and reciprocals)
-!
-! Local variables:
-!    Name Type Description
+! 1) Open the SWRTM file.
+! 2) Read the instrument name and ensure it matches that expected.
+! 3) Read the available channel numbers.
+! 4) Read the necessary solar channel information.
+! 5) Close the SWRTM file.
 !
 ! History:
 !     5th Dec 2000, Kevin M. Smith:
@@ -107,6 +78,7 @@
 !       inefficient access patterns and redundancy and cleaned up the code.
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !    2014/07/23, AP: Commented out unused code for future deletion.
+!    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !
 ! Bugs:
 !    None known.
@@ -115,13 +87,12 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_SWRTM_nc(Ctrl, RTM, status)
+subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
 
    use CTRL_def
    use ECP_Constants
+   use orac_ncdf
    use RTM_def
-
-   use netcdf
 
    implicit none
 
@@ -129,7 +100,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
 
    type(CTRL_t), intent(in)    :: Ctrl
    type(RTM_t),  intent(out)   :: RTM
-   integer,      intent(inout) :: status
+   logical,      intent(in)    :: verbose
 
    ! Local variables
 
@@ -138,207 +109,96 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, status)
    ! become real(8). The parameter arrays read in via buf, and the lat/lons
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
-   integer                :: i, j, k
-   integer                :: ios
-   character(180)         :: message
-   character(Instnamelen) :: InstName
-   integer, allocatable   :: ChanID(:)
-   real(4), allocatable   :: WvNumber(:)
-   integer                :: chan_found
-   integer, allocatable   :: index(:)
-
-   ! NetCDF related
-   character(Instnamelen) :: platform
-   character(Instnamelen) :: sensor
-
-   integer :: ik,ichan
-   integer :: ncid
-
-   real(kind=sreal), allocatable, dimension(:,:)   :: dummy1p1
-   real(kind=sreal), allocatable, dimension(:,:,:) :: dummy1p2
-   real(kind=sreal), allocatable, dimension(:)     :: dummy1df
-   real(kind=sreal), allocatable, dimension(:,:)   :: dummy2df
-   real(kind=sreal), allocatable, dimension(:,:,:) :: dummy3df
+   integer                  :: ncid, chan_found, i, j
+   real(sreal), allocatable :: dummy3d(:,:,:)
+   character(Instnamelen)   :: platform, sensor, instname
+   integer, allocatable     :: index(:), ChanID(:)
+!   real(4), allocatable     :: WvNumber(:)
 
 
    !----------------------------------------------------------------------------
    ! Read SwRTM file
    !----------------------------------------------------------------------------
-   if (status == 0) then
-!     Open RTM data file
-      ios = nf90_open(path=trim(adjustl(Ctrl%Fid%SWRTM)),mode = nf90_nowrite,ncid = ncid)
 
-      if (ios /= 0) then
-         write(unit=message, fmt=*) 'Read_SwRTM: Error opening SwRTM profile file ', &
-               trim(adjustl(Ctrl%Fid%PRTM))
-         write(*,*) message
-         call Write_Log(Ctrl, trim(message), status)
-         stop
-      else
+   !Open RTM data file
+   call nc_open(ncid, Ctrl%Fid%SWRTM)
 
-         ! Read instrument info
-         ios=nf90_get_att(ncid, NF90_GLOBAL, "Sensor_Name", sensor)
-         ios=nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform)
-         if (ios /= 0) then
-            status = SwRTMRTMInstErr ! Return error code
-            write(*,*) 'Read_SwRTM: error reading instrument name'
-            call Write_Log(Ctrl, 'Read_SwRTM: error reading instrument name', &
-                 status)
-            stop
-         else
-            if (sensor =='AATSR') then
-               instname=trim(adjustl(sensor))
-            else
-               instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
-            end if
-            InstName = adjustl(InstName)
-            if (trim(adjustl(InstName)) /= trim(adjustl(Ctrl%Inst%Name))) then
-               status = SwRTMRTMInstErr ! Return error code
-               write(*,*)  'Read_SwRTM: RTM file; header instrument disagrees with filename'
-               call Write_Log(Ctrl, &
-                  'Read_SwRTM: RTM file; header instrument disagrees with filename',&
-                  status)
-               stop
-            end if
-         end if
-
-         ! For this set of reads, if read fails (non-zero iostat), set status
-         ! immediately but report error later since the message is the same for
-         ! all cases.
-
-         ! Allocate size of ChanID and WvNumber
-         if (status == 0) then
-            allocate(ChanID(RTM%SW%NSWF))
-            allocate(WvNumber(RTM%SW%NSWF))
-
-            ! Read ChanID and WvNumber
-            call nc_read_array_1d_int_to_int_orac(ncid,RTM%SW%NSWF,"sw_channel_instr_ids",ChanID,0)
-            call nc_read_array_1d_float_to_float_orac(ncid,RTM%SW%NSWF,"sw_channel_wvl",WvNumber,0)
-         end if
-
-         write(*,*) 'SW channel instrument ids for RTM in SW preprocessing file',ChanID
-
-         ! Check that required solar channels are present
-         if (status == 0) then
-
-            ! Loop over longwave instrument channels, checking that requested
-            ! channels are available in the RTM data and setting up the index
-            ! array to allow us to find the channels we want from the RTM file
-            ! data (in case order of storage is different from the order we
-            ! specified our selection).
-
-            chan_found = 0
-            allocate(index(Ctrl%Ind%NSolar))
-            index(:) = 0
-            k = 1
-
-            ! This is the loop over the requested channels
-            do i = 1,Ctrl%Ind%Ny
-               ! Loop over channels in RTM
-               do j = 1,RTM%SW%NSWF
-                  ! Signal that the required channel has been found by incrementing
-                  ! chan_found and break out of the inner loop to start search for
-                  ! next instrument channel
-                  if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
-                     chan_found = chan_found + 1
-                     index(k) = j
-                     k = k+1
-                     exit
-                  end if
-               end do
-            end do
-
-            if (chan_found /= Ctrl%Ind%NSolar) then
-               status = LwRTMChanErr ! Return error code
-               write(unit=message, fmt=*) &
-                  'Read_LwRTM: RTM file; required instrument channels not found'
-               write(*,*) trim(message)
-               call Write_Log(Ctrl, trim(message), status)
-               stop
-            end if
-         end if
-
-
-         if (status == 0) then
-            ! Allocate arrays
-
-            allocate(RTM%SW%Tbc(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon, Ctrl%Ind%NSolar, RTM%SW%NP))
-            allocate(RTM%SW%Tac(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon, Ctrl%Ind%NSolar, RTM%SW%NP))
-
-            allocate(dummy2df(RTM%LW%Grid%NLatLon,RTM%LW%NP))
-
-            ichan=0
-            do i = 1,Ctrl%Ind%Ny
-               do j = 1,RTM%SW%NSWF
-                  if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
-                     ichan=ichan+1
-
-                     call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"tac_sw",dummy2df,0)
-                     RTM%SW%Tac(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-
-                     call nc_read_array_2d_float_to_float_orac2(ncid,RTM%LW%Grid%NLatLon,RTM%LW%NP,j,"tbc_sw",dummy2df,0)
-                     RTM%SW%Tbc(:,:,ichan,:)=reshape(dummy2df,(/RTM%LW%Grid%NLat,RTM%LW%Grid%NLon,RTM%LW%NP/), order = (/3,2,1/))
-
-                  end if
-               end do
-            end do
-
-            deallocate(dummy2df)
-
-         end if
-
-         ! Close SwRTM input file
-         ios=nf90_close(ncid)
-
-         if (allocated(index)) deallocate(index)
-         if (allocated(WvNumber)) deallocate(WvNumber)
-         if (allocated(ChanID)) deallocate(ChanID)
-
-         if (status == SwRTMReadErr .or. ios .ne. 0) then
-            write(*,*)'Read_SwRTM: error reading from Sw file'
-            call Write_Log(Ctrl, 'Read_SwRTM: error reading from Sw file', status)
-            stop
-         end if
-      end if
-
-      if (status==0) write(*,*)'Read SW RTM data OK'
-
-!      if (status == 0) then
-!         allocate(RTM%SW%lat(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon))
-!         allocate(RTM%SW%lon(RTM%SW%Grid%NLat, RTM%SW%Grid%NLon))
-!         RTM%SW%Lat=RTM%LW%Lat
-!         RTM%SW%Lon=RTM%LW%Lon
-!
-!         ! Calculate grid parameters for use in Get_SwRTM
-!
-!         ! Corners of the grid
-!         RTM%SW%Grid%Lat0 = RTM%SW%Lat(1,1)
-!         RTM%SW%Grid%LatN = RTM%SW%Lat(RTM%SW%Grid%NLat,1)
-!         RTM%SW%Grid%Lon0 = RTM%SW%Lon(1,1)
-!         RTM%SW%Grid%LonN = RTM%SW%Lon(1,RTM%SW%Grid%NLon)
-!
-!         RTM%SW%Grid%delta_Lat = (RTM%SW%Grid%LatN - RTM%SW%Grid%Lat0) &
-!                                 / (RTM%SW%Grid%NLat-1)
-!         if (RTM%SW%Grid%delta_Lat .lt. ditherm3) then
-!            RTM%SW%Grid%inv_delta_Lat = ditherm3
-!         else
-!            RTM%SW%Grid%inv_delta_Lat = 1 / RTM%SW%Grid%delta_Lat
-!         end if
-!
-!         RTM%SW%Grid%delta_Lon = (RTM%SW%Grid%LonN - RTM%SW%Grid%Lon0) &
-!                                  / (RTM%SW%Grid%NLon-1)
-!         if (RTM%SW%Grid%delta_Lon .lt. ditherm3) then
-!            RTM%SW%Grid%inv_delta_Lon = ditherm3
-!         else
-!            RTM%SW%Grid%inv_delta_Lon = 1 / RTM%SW%Grid%delta_Lon
-!         end if
-!
-!         ! Max and Min grid values
-!         RTM%SW%Grid%MinLat = min(RTM%SW%Grid%Lat0, RTM%SW%Grid%LatN)
-!         RTM%SW%Grid%MaxLat = max(RTM%SW%Grid%Lat0, RTM%SW%Grid%LatN)
-!         RTM%SW%Grid%MinLon = min(RTM%SW%Grid%Lon0, RTM%SW%Grid%LonN)
-!         RTM%SW%Grid%MaxLon = max(RTM%SW%Grid%Lon0, RTM%SW%Grid%LonN)
-!      end if
+   ! Ensure instrument info matches the sensor being processed
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor_Name", sensor) /= NF90_NOERR .or.&
+        nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
+        stop 'ERROR: read_swrtm_nc(): Could not read global attributes.'
+   if (sensor =='AATSR') then
+      instname=trim(adjustl(sensor))
+   else
+      instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
+   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) &
+        stop 'ERROR: read_swrtm_nc(): Instrument in RTM header inconsistent'
+
+   allocate(ChanID(RTM%SW%NSWF))
+!   allocate(WvNumber(RTM%SW%NSWF))
+
+   ! Read ChanID and WvNumber
+   call nc_read_array(ncid, "sw_channel_instr_ids", ChanID, verbose)
+!   call nc_read_array(ncid, "sw_channel_wvl", WvNumber, verbose)
+
+   if (verbose) write(*,*) &
+        'SW channel instrument ids for RTM in SW preprocessing file',ChanID
+
+   ! Check that required solar channels are present
+
+   ! Loop over longwave instrument channels, checking that requested
+   ! channels are available in the RTM data and setting up the index
+   ! array to allow us to find the channels we want from the RTM file
+   ! data (in case order of storage is different from the order we
+   ! specified our selection).
+
+   chan_found = 0
+   allocate(index(Ctrl%Ind%NSolar))
+   index = 0
+
+   ! This is the loop over the requested channels
+   do i = 1,Ctrl%Ind%Ny
+      ! Loop over channels in RTM
+      do j = 1,RTM%SW%NSWF
+         ! Signal that the required channel has been found by incrementing
+         ! chan_found and break out of the inner loop to start search for
+         ! next instrument channel
+         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
+            chan_found = chan_found + 1
+            index(chan_found) = j
+            exit
+         end if
+      end do
+   end do
+
+   if (chan_found /= Ctrl%Ind%NSolar) &
+        stop 'ERROR: read_swrtm_nc(): required instrument channels not found'
+
+   ! Allocate arrays
+   allocate(RTM%SW%Tbc(RTM%SW%Grid%NLon, RTM%SW%Grid%NLat, Ctrl%Ind%NSolar, &
+        RTM%SW%NP))
+   allocate(RTM%SW%Tac(RTM%SW%Grid%NLon, RTM%SW%Grid%NLat, Ctrl%Ind%NSolar, &
+        RTM%SW%NP))
+
+   allocate(dummy3d(Ctrl%Ind%NSolar,RTM%LW%NP,RTM%LW%Grid%NLatLon))
+
+   call nc_read_array(ncid, "tac_sw", dummy3d, verbose, 1, index)
+   RTM%SW%Tac=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NSolar,RTM%LW%NP/), order = (/3,4,1,2/))
+   call nc_read_array(ncid, "tbc_sw", dummy3d, verbose, 1, index)
+   RTM%SW%Tbc=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
+        Ctrl%Ind%NSolar,RTM%LW%NP/), order = (/3,4,1,2/))
+
+   deallocate(dummy3d)
+
+   ! Close SwRTM input file
+   if (nf90_close(ncid) /= NF90_NOERR) &
+        stop 'ERROR: read_swrtm_nc(): Error closing file.'
+
+   if (allocated(index)) deallocate(index)
+!   if (allocated(WvNumber)) deallocate(WvNumber)
+   if (allocated(ChanID)) deallocate(ChanID)
+
 
 end subroutine Read_SWRTM_nc

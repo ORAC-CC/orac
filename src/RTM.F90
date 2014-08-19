@@ -44,6 +44,8 @@
 !       Added skipt and sp variable.
 !    27th May 2014, Greg McGarragh:
 !       Some cleanup.
+!    13th Aug 2014, Adam Povey:
+!       Adding Wrap flag to save repeated calculation in GetLwSwRTM.
 !
 ! Bugs:
 !    None known.
@@ -55,21 +57,22 @@
 module RTM_def
 
    type RTM_Grid_t
-      real             :: Lat0             ! Starting latitude
-      real             :: LatN             ! Ending latitude
+      real(8)          :: Lat0             ! Starting latitude
+      real(8)          :: LatN             ! Ending latitude
       integer          :: NLat             ! No. of latitude values
-      real             :: delta_Lat        ! Lat grid step size
-      real             :: inv_delta_Lat    ! 1/delta_Lat
-      real             :: Lon0             ! Starting longitude
-      real             :: LonN             ! Ending longitude
+      real(8)          :: delta_Lat        ! Lat grid step size
+      real(8)          :: inv_delta_Lat    ! 1/delta_Lat
+      real(8)          :: Lon0             ! Starting longitude
+      real(8)          :: LonN             ! Ending longitude
       integer          :: NLon             ! No. of longitude values
-      real             :: delta_Lon        ! Lon grid step size
-      real             :: inv_delta_Lon    ! 1/delta_Lon
+      real(8)          :: delta_Lon        ! Lon grid step size
+      real(8)          :: inv_delta_Lon    ! 1/delta_Lon
       integer          :: NLatLon          ! NLat * NLon
       real             :: MinLat           ! Minimum lat value in grid
       real             :: MinLon           ! Minimum lon value in grid
       real             :: MaxLat           ! Maximum lat value in grid
       real             :: MaxLon           ! Maximum lon value in grid
+      logical          :: Wrap             ! Does this grid wrap in lon?
    end type RTM_Grid_t
 
    ! Define short-wave sub-structure
