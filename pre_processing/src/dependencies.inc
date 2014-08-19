@@ -24,8 +24,7 @@ $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o allocate_imager_structures.F90 \
         deallocate_imager_structures.F90
-$(OBJS)/interpol.o: $(OBJS)/preproc_constants.o bound_grid.F90 interp_field.inc \
-        interpol_bilinear.F90
+$(OBJS)/interpol.o: $(OBJS)/preproc_constants.o bound_grid.F90 interp_field.inc
 $(OBJS)/map_time_to_pixel.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/mcd43c.o: $(OBJS)/preproc_constants.o read_mcd43c1.F90 read_mcd43c3.F90

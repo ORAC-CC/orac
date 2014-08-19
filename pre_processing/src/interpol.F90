@@ -54,9 +54,6 @@ contains
 
 include 'bound_grid.F90'
 
-include 'interpol_bilinear.F90'
-!include 'interpol_nearest_neighbour.F90'
-
 subroutine bilinear_coef_reg_reg(xstart, x_invdel, nx, ystart, y_invdel, ny, &
      xout, yout, interp, wrap)
    implicit none
