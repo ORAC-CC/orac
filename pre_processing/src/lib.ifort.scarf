@@ -79,6 +79,7 @@ GRIBINCLUDE=$(RSG_LIB_BASE)/gribinclude/
 JASPERLIB=/usr/lib64/
 JASPERINCLUDE=/usr/include/jasper/
 
+EMOSLIB=$(RSG_LIB_BASE)/emos_000382/
 
 #Setup RTTOV library
 
@@ -103,10 +104,12 @@ LIBS=  -L$(EPRLIBDIR) -lepr_api \
 -L$(INTELLIB) -limf -lintlc -lsvml -lifport -lifcore \
 -L$(NCDFLIB) -lnetcdf \
 -L$(NCDFLIBB) -lnetcdff \
--L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other -L$(PREPROCLIB)
+-L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other  -L$(EMOSLIB) -lemosR64 -lemos 
+#-L$(PREPROCLIB)
 
 #-L$(NCDFLIBB) -lnetcdff \
 
 
 #-lopenjpeg
-INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE)  -I$(HDF5MOD) -I$(INTELINC)  -I$(NCDFINCLUDE)  -I$(NCDFINCLUDEB)    -I$(INTELINC)  -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE)  -I$(OBJS) -I$(PREPROCINCLUDE)                                                                   #              -I$(NCDFINCLUDEB)  
+INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE)  -I$(HDF5MOD) -I$(INTELINC)  -I$(NCDFINCLUDE)  -I$(NCDFINCLUDEB)    -I$(INTELINC)  -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE)  -I$(OBJS) 
+#-I$(PREPROCINCLUDE)                                                                   #              -I$(NCDFINCLUDEB)  
