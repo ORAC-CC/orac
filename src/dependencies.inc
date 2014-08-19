@@ -54,7 +54,6 @@ $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         write_primary.F90 write_secondary.F90
 $(OBJS)/nc_create_global.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
 $(OBJS)/nc_defdata.o: $(OBJS)/ECPConstants.o
-$(OBJS)/nc_read_file.o: $(OBJS)/ECPConstants.o
 $(OBJS)/nc_write_L2.o: $(OBJS)/ECPConstants.o
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
 $(OBJS)/R2T.o: $(OBJS)/SADChan.o

@@ -16,10 +16,10 @@
 !    status   integer      Out         Error status
 !
 ! Algorithm:
-!    Method taken directly from Numerical Recipes p96, 1987.
-!
-! Local variables:
-!    Name Type Description
+! 1) Determine the interpolation coefficients for this pixel.
+! 2) Interpolate all of the required RTM fields using those coefficients.
+! 3) Set the surface properties using the lowest RTM level.
+! 4) Set dB_dTs using the surface temperature.
 !
 ! History:
 !    12th Jan 2001, Kevin M. Smith: Original version.
@@ -61,6 +61,7 @@
 !    23/07/2014, CP: Added in extrapolation into stratosphere.
 !    30/07/2014, GM: Cleaned up the code.
 !    30/07/2014, GM: Put the duplicate interpolation code into subroutines.
+!    19/08/2014, AP: Using the preprocessor's interpolation routines.
 !
 ! Bugs:
 !    None known.
@@ -71,18 +72,13 @@
 
 module Get_LwSwRTM_m
 
-   implicit none
-
-   private
-
-   public :: Get_LwSwRTM
-
 contains
 
 subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    use Ctrl_def
    use ECP_Constants
+   use interpol
    use RTM_def
    use SAD_Chan_def
    use SPixel_def
@@ -97,227 +93,64 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(out)   :: status
 
-   ! Declare local variables
-
-   real           :: X
-   integer        :: Nx
-   integer        :: Nx1
-   real           :: XN
-   real           :: d_X
-   real           :: t
-   real           :: Y
-   integer        :: Ny
-   integer        :: Ny1
-   real           :: YN
-   real           :: d_Y
-   real           :: u
-   real           :: coef(4)
-   real           :: R(Ctrl%Ind%NThermal)
-   real           :: T_Array(Ctrl%Ind%NThermal)
-   character(180) :: message
+   type(interpol_s) :: interp
+   real             :: R(Ctrl%Ind%NThermal)
+   real             :: T_Array(Ctrl%Ind%NThermal)
 
    ! Set status to zero
    status = 0
 
    ! Bilinear interpolation (method taken from Numerical Recipes p96, 1987)
+   call bilinear_coef(RTM%LW%Grid%Lon0, RTM%LW%Grid%inv_delta_Lon, &
+        RTM%LW%Grid%NLon, RTM%LW%Grid%Lat0, RTM%LW%Grid%inv_delta_Lat, &
+        RTM%LW%Grid%NLat, SPixel%Loc%Lon, SPixel%Loc%Lat, interp, &
+        RTM%LW%Grid%Wrap)
 
-   ! Latitude
-   X   = SPixel%Loc%Lat - RTM%LW%Grid%Lat0              ! Latitude relative to grid origin
-   Nx  = 1 + int( X * RTM%LW%Grid%inv_delta_Lat + 0.5 ) ! Integer number of grid points from origin to X
-   XN  = RTM%LW%Lat(Nx,1)                               ! Latitude at Nx grid points
-   d_X = SPixel%Loc%Lat - XN                            ! Latitude relative to XN
-   t   = d_X * RTM%LW%Grid%inv_delta_Lat                ! Ratio of d_X and latitude grid spacing
+   call interp_field(RTM%LW%P,       SPixel%RTM%LW%P,       interp)
+   call interp_field(RTM%LW%T,       SPixel%RTM%LW%T,       interp)
+   call interp_field(RTM%LW%H,       SPixel%RTM%LW%H,       interp)
+   call interp_field(RTM%LW%skint,   SPixel%RTM%LW%skint,   interp)
+   call interp_field(RTM%LW%sp,      SPixel%RTM%LW%sp,      interp)
+   call interp_field(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
+   call interp_field(RTM%LW%Tbc,     SPixel%RTM%LW%Tbc,     interp)
+   call interp_field(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
+   call interp_field(RTM%LW%Rac_up,  SPixel%RTM%LW%Rac_up,  interp)
+   call interp_field(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, interp)
+   call interp_field(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
 
-   ! Longitude
-   Y   = SPixel%Loc%Lon - RTM%LW%Grid%Lon0              ! Longitude relative to grid origin
-   Ny  = 1 + int( Y * RTM%LW%Grid%inv_delta_Lon + 0.5 ) ! Integer number of grid points from origin to Y
-   YN  = RTM%LW%Lon(Nx,Ny)                              ! Longitude at Ny grid points
-   d_Y = SPixel%Loc%Lon - YN                            ! Longitude relative to YN
-   u   = d_Y * RTM%LW%Grid%inv_delta_Lon                ! Ratio of d_Y and longitude grid spacing
+   ! Set surface level to TOA transmittances
+   ! ACP: ECP.F90 set RTM%LW%Np to RTM%LW%Nplayer, which means this isn't the
+   !      surface. Is this line correct in that case?
+   SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%LW%Np)
 
-   ! Calculate coordinates used in all interpolation
-   Nx1 = Nx + 1
-   Ny1 = Ny + 1
-
-
-   ! Check that required coordinates are within range (skip super pixel if not)
-   if (Nx1 > RTM%LW%Grid%NLat) then
-      if (Nx == RTM%LW%Grid%NLat) then
-         ! if in last grid cell, extrapolate
-         Nx1 = Nx
-         Nx = Nx-1
-      else
-         status = GetLwSwRTMLat
-         write(unit=message, fmt=*) 'Get_LwSwRTM: Latitude outside RTM coverage in super pixel starting at:', &
-              SPixel%Loc%X0, SPixel%Loc%Y0
-         call Write_log(Ctrl, trim(message), status)
-      end if
-   end if
-
-   if (Ny1 > RTM%LW%Grid%NLon) then
-      if (Ny == RTM%LW%Grid%NLon) then
-         ! if in last grid cell, extrapolate
-         Ny1 = Ny
-         Ny = Ny-1
-      else
-         status = GetLwSwRTMLon
-         write(unit=message, fmt=*) 'Get_LwSwRTM: Longitude outside RTM coverage in super pixel starting at:', &
-              SPixel%Loc%X0, SPixel%Loc%Y0
-         call Write_log(Ctrl, trim(message), status)
-      end if
-   end if
-
-   if (status == 0) then
-      ! Calculate coeficients used in all interpolations
-      coef(1) = (1-t) * (1-u)
-      coef(2) =    t  * (1-u)
-      coef(3) =    t  *    u
-      coef(4) = (1-t) *    u
-
-      ! Parameters that are dependent on channel only
-      if (RTM%LW%Rac_up(Nx,  Ny,  1, 1) .lt. 0.) coef(1)=0.
-      if (RTM%LW%Rac_up(Nx1, Ny,  1, 1) .lt. 0.) coef(2)=0.
-      if (RTM%LW%Rac_up(Nx1, Ny1, 1, 1) .lt. 0.) coef(3)=0.
-      if (RTM%LW%Rac_up(Nx,  Ny1, 1, 1) .lt. 0.) coef(4)=0.
-
-      ! Rescale the coefs to 1.
-      coef(1:4)=coef(1:4)*1./sum(coef(1:4))
+   ! Set R_Clear using Rbc_up at the TOA
+   SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
 
 
-      ! LW
+   call interp_field(RTM%LW%P,   SPixel%RTM%SW%P,   interp)
+   call interp_field(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, interp)
+   call interp_field(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
 
-      ! P
-      call interp_field_1d(RTM%LW%P, SPixel%RTM%LW%P, Nx, Nx1, Ny, Ny1, coef)
-
-      ! T
-      call interp_field_1d(RTM%LW%T, SPixel%RTM%LW%T, Nx, Nx1, Ny, Ny1, coef)
-
-      ! H
-      call interp_field_1d(RTM%LW%H, SPixel%RTM%LW%H, Nx, Nx1, Ny, Ny1, coef)
-
-      ! skint
-      call interp_field_0d(RTM%LW%skint, SPixel%RTM%LW%skint, Nx, Nx1, Ny, Ny1, coef)
-
-      ! sp
-      call interp_field_0d(RTM%LW%sp, SPixel%RTM%LW%sp, Nx, Nx1, Ny, Ny1, coef)
-
-      ! LW Ems
-      call interp_field_1d(RTM%LW%Ems, SPixel%RTM%LW%Ems, Nx, Nx1, Ny, Ny1, coef)
-
-      ! LW Tbc
-      call interp_field_2d(RTM%LW%Tbc, SPixel%RTM%LW%Tbc, Nx, Nx1, Ny, Ny1, coef)
-
-      ! LW Tac
-      call interp_field_2d(RTM%LW%Tac, SPixel%RTM%LW%Tac, Nx, Nx1, Ny, Ny1, coef)
-
-      ! Rac_up
-      call interp_field_2d(RTM%LW%Rac_up, SPixel%RTM%LW%Rac_up, Nx, Nx1, Ny, Ny1, coef)
-
-      ! Rac_dwn
-      call interp_field_2d(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, Nx, Nx1, Ny, Ny1, coef)
-
-      ! Rbc_up
-      call interp_field_2d(RTM%LW%Rbc_up, SPixel%RTM%LW%Rbc_up, Nx, Nx1, Ny, Ny1, coef)
-
-      ! Set surface level to TOA transmittances
-      SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%LW%Np)
-
-      ! Set R_Clear using Rbc_up at the TOA
-      SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
+   ! Set surface level to TOA transmittances
+   SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)
 
 
-      ! SW
+   ! Modify profile in boundary layer inversion not implemented yet
+   !     call Blmodification(SPixel)
 
-      ! P
-      call interp_field_1d(RTM%LW%P, SPixel%RTM%SW%P, Nx, Nx1, Ny, Ny1, coef)
-
-      ! SW Tbc
-      call interp_field_2d(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, Nx, Nx1, Ny, Ny1, coef)
-
-      ! SW Tac
-      call interp_field_2d(RTM%SW%Tac, SPixel%RTM%SW%Tac, Nx, Nx1, Ny, Ny1, coef)
-
-      ! Set surface level to TOA transmittances
-      SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)
+   ! Extrapolate temperature profile into stratosphere to deal with deep
+   ! convective clouds primarily in tropics that push through the trop.
+   call extrap_into_tropopause(SPixel)
 
 
-      ! Modify profile in boundary layer inversion not implemented yet
-!     call Blmodification(SPixel)
+   ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
+   ! one per channel, to convert).
 
-      ! Extrapolate temperature profile into stratosphere to deal with deep
-      ! convective clouds primarily in tropics that push through the trop.
-      call extrap_into_tropopause(SPixel)
-
-
-      ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
-      ! one per channel, to convert).
-
-      T_Array = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-      call T2R(Ctrl%Ind%NThermal, &
-         SAD_Chan(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast), &
-         T_Array, R, SPixel%RTM%LW%dB_dTs, status)
-   end if
+   T_Array = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+   call T2R(Ctrl%Ind%NThermal, &
+        SAD_Chan(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast), &
+        T_Array, R, SPixel%RTM%LW%dB_dTs, status)
 
 end subroutine Get_LwSwRTM
-
-
-subroutine interp_field_0d(in, out, Nx, Nx1, Ny, Ny1, coef)
-
-   implicit none
-
-   real,    intent(in)    :: in(:,:)
-   real,    intent(inout) :: out
-   integer, intent(in)    :: Nx
-   integer, intent(in)    :: Nx1
-   integer, intent(in)    :: Ny
-   integer, intent(in)    :: Ny1
-   real,    intent(in)    :: coef(:)
-
-   out = (coef(1) * in(Nx,  Ny)) + &
-         (coef(2) * in(Nx1, Ny)) + &
-         (coef(3) * in(Nx1, Ny1)) + &
-         (coef(4) * in(Nx,  Ny1))
-
-end subroutine interp_field_0d
-
-
-subroutine interp_field_1d(in, out, Nx, Nx1, Ny, Ny1, coef)
-
-   implicit none
-
-   real,    intent(in)    :: in(:,:,:)
-   real,    intent(inout) :: out(:)
-   integer, intent(in)    :: Nx
-   integer, intent(in)    :: Nx1
-   integer, intent(in)    :: Ny
-   integer, intent(in)    :: Ny1
-   real,    intent(in)    :: coef(:)
-
-   out = (coef(1) * in(Nx,  Ny,  :)) + &
-         (coef(2) * in(Nx1, Ny,  :)) + &
-         (coef(3) * in(Nx1, Ny1, :)) + &
-         (coef(4) * in(Nx,  Ny1, :))
-
-end subroutine interp_field_1d
-
-
-subroutine interp_field_2d(in, out, Nx, Nx1, Ny, Ny1, coef)
-
-   implicit none
-
-   real,    intent(in)    :: in(:,:,:,:)
-   real,    intent(inout) :: out(:,:)
-   integer, intent(in)    :: Nx
-   integer, intent(in)    :: Nx1
-   integer, intent(in)    :: Ny
-   integer, intent(in)    :: Ny1
-   real,    intent(in)    :: coef(:)
-
-   out = (coef(1) * in(Nx,  Ny,  :, :)) + &
-         (coef(2) * in(Nx1, Ny,  :, :)) + &
-         (coef(3) * in(Nx1, Ny1, :, :)) + &
-         (coef(4) * in(Nx,  Ny1, :, :))
-
-end subroutine interp_field_2d
 
 end module Get_LwSwRTM_m

@@ -235,7 +235,6 @@ ORAC_OBJ =        $(OBJS)/CalcCWP.o \
                   $(OBJS)/output_routines.o \
                   $(OBJS)/nc_create_global.o \
                   $(OBJS)/nc_defdata.o \
-                  $(OBJS)/nc_read_file.o \
                   $(OBJS)/nc_write_L2.o \
                   $(OBJS)/polint.o \
                   $(OBJS)/R2T.o \
