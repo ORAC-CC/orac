@@ -69,7 +69,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
                                            ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
-   logical,      intent(out)   :: verbose
+   logical,      intent(in)    :: verbose
 
    ! Local variables
 

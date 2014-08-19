@@ -78,6 +78,7 @@
 ;   22 Jul 2014 - ACP: Replaced LINES with FRAMES.
 ;   28 Jul 2014 - ACP: Fixed processing of chunked outputs. Moved shared code
 ;      into subroutines. Expanded definition of FILTER.
+;   19 Aug 2014 - ACP: Bug in DIFF_ONLY keyword.
 ;-
 PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
@@ -206,9 +207,9 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
             plot_set.col=0
             if kc then begin
                pq=WHERE(filt)
-               if ARRAY_EQUAL(data[pq],data2[pq]) $
-               then if KEYWORD_SET(diff_only) then BREAK else plot_set.col=100 $
-               else begin
+               if ARRAY_EQUAL(data[pq],data2[pq]) then begin
+                  if KEYWORD_SET(diff_only) then CONTINUE else plot_set.col=100
+               endif else begin
                   ;; make a difference plot, overriding plot settings
                   set[k].abs=1
                   set[k].log=0
