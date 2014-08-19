@@ -1,4 +1,6 @@
 #export LD_LIBRARY_PATH=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/:/work/ralspace/rsg_group/cloud_ecv/libraries/eprlibdir/:/work/ralspace/rsg_group/cloud_ecv/libraries/szlib/:/apps/netCDF/4.3.0/intel/lib/:/apps/netCDF/4.2/fortran/intel/lib/
+PREPROCLIB=../pre_processing/src
+PREPROCINCLUDE=../pre_processing/src/obj
 
 RSG_LIB_BASE=/work/ralspace/rsg_group/cloud_ecv/libraries
 
@@ -101,10 +103,10 @@ LIBS=  -L$(EPRLIBDIR) -lepr_api \
 -L$(INTELLIB) -limf -lintlc -lsvml -lifport -lifcore \
 -L$(NCDFLIB) -lnetcdf \
 -L$(NCDFLIBB) -lnetcdff \
--L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other
+-L$(RTTOVLIB) -lrttov10.2.0_emis_atlas -lrttov10.2.0_main -lrttov10.2.0_coef_io -lrttov10.2.0_other -L$(PREPROCLIB)
 
 #-L$(NCDFLIBB) -lnetcdff \
 
 
 #-lopenjpeg
-INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE)  -I$(HDF5MOD) -I$(INTELINC)  -I$(NCDFINCLUDE)  -I$(NCDFINCLUDEB)    -I$(INTELINC)  -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE)  -I$(OBJS)                                                                       #              -I$(NCDFINCLUDEB)  
+INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE)  -I$(HDF5MOD) -I$(INTELINC)  -I$(NCDFINCLUDE)  -I$(NCDFINCLUDEB)    -I$(INTELINC)  -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE)  -I$(OBJS) -I$(PREPROCINCLUDE)                                                                   #              -I$(NCDFINCLUDEB)  
