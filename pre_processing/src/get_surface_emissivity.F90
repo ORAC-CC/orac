@@ -63,6 +63,8 @@
 ! 01/07/2014, AP: Tidying. Update to new structures.
 ! 05/08/2014, AP: New bilinear interpolation routine. Changed how grid is
 !   described from emissivity file.
+! 19/08/2014, AP: Comment out reading of unused emissivity fields. They will be
+!   used eventually; hence why the code remains.
 !
 ! $Id$
 !
@@ -101,7 +103,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    ! Local variables
    character(len=pathlength)                          :: cimss_emis_path_file
    type(emis_s)                                       :: emis
-   integer(kind=sint),              dimension(3)      :: embands=[1,8,9]
+   integer(kind=sint),              dimension(1)      :: embands=[1]
+!   integer(kind=sint),              dimension(3)      :: embands=[1,8,9]
    real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis, summat
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
    integer(kind=lint)                                 :: i,j,k,lat,lon
@@ -164,10 +167,11 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
                  imager_geolocation%longitude(i,j), &
                  imager_geolocation%latitude(i,j), interp)
 
-            do k=1,channel_info%nchannels_lw
+            k=1
+!            do k=1,channel_info%nchannels_lw
                call interp_field(transemis(:,:,k), surface%emissivity(i,j,k), &
                     interp)
-            end do
+!            end do
          end if
       end do
    end do
@@ -176,7 +180,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    allocate(counter(preproc_dims%min_lon:preproc_dims%max_lon, &
         preproc_dims%min_lat:preproc_dims%max_lat))
    allocate(summat(preproc_dims%min_lon:preproc_dims%max_lon, &
-        preproc_dims%min_lat:preproc_dims%max_lat, channel_info%nchannels_lw))
+        preproc_dims%min_lat:preproc_dims%max_lat, 1))
+!        preproc_dims%min_lat:preproc_dims%max_lat, channel_info%nchannels_lw))
    counter=0
    summat=0.
    do j=1,emis%nlat
@@ -198,7 +203,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    do j=preproc_dims%min_lat,preproc_dims%max_lat
       do i=preproc_dims%min_lon,preproc_dims%max_lon
          if (counter(i,j) .gt. 0) &
-            preproc_surf%emissivity(i,j,:) = summat(i,j,:) / real(counter(i,j))
+            preproc_surf%emissivity(i,j,1:1) = summat(i,j,:) / real(counter(i,j))
+!            preproc_surf%emissivity(i,j,:) = summat(i,j,:) / real(counter(i,j))
       end do
    end do
 
