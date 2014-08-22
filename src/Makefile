@@ -150,6 +150,9 @@
 #   18th Apr 2014, Greg McGarragh:
 #      include $(ORAC_ARCH) and include $(ORAC_LIB) instead of site specific
 #      hardwires.
+#   22nd Aug 2014, Greg McGarragh: Use the library file instead of the object
+#    list for the executable and make the executable dependent on the library
+#    file. Now 'make' will build both the executable and library in one command.
 #
 # Notes:
 # 1) The C preprocessor is used to allow conditional compilation (files with
@@ -194,120 +197,122 @@
 include $(ORAC_LIB)
 include $(ORAC_ARCH)
 
+ORAC_COMMON   = ../common
+
 
 # Define object files to be linked. N.B. files containing module definitions
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
-ORAC_OBJ =        $(OBJS)/CalcCWP.o \
-                  $(OBJS)/CheckLimits.o \
-                  $(OBJS)/check_value.o \
-                  $(OBJS)/config.o \
-                  $(OBJS)/CPL.o \
-                  $(OBJS)/CRP.o \
-                  $(OBJS)/Ctrl.o \
-                  $(OBJS)/Data.o \
-                  $(OBJS)/DecomposeCholesky.o \
-                  $(OBJS)/Diag.o \
-                  $(OBJS)/ECPConstants.o \
-                  $(OBJS)/extrap_into_tropopause.o \
-                  $(OBJS)/FindLUN.o \
-                  $(OBJS)/FMRoutines.o \
-                  $(OBJS)/GetGeometry.o \
-                  $(OBJS)/GetIllum.o \
-                  $(OBJS)/GetLSF.o \
-                  $(OBJS)/GetLwSwRTM.o \
-                  $(OBJS)/GetMeasurements.o \
-                  $(OBJS)/GetRs.o \
-                  $(OBJS)/GetRTM.o \
-                  $(OBJS)/GetSPixel.o \
-                  $(OBJS)/GetSurface.o \
-                  $(OBJS)/GetX.o \
-                  $(OBJS)/GZero.o \
-                  $(OBJS)/hpsort.o \
-                  $(OBJS)/interpolate_to_ctp.o \
-                  $(OBJS)/IntRoutines.o \
-                  $(OBJS)/InterpolRoutines.o \
-                  $(OBJS)/IntLUTRoutines.o \
-                  $(OBJS)/InvertCholesky.o \
-                  $(OBJS)/InvertCholeskyDC.o \
-                  $(OBJS)/InvertMarquardt.o \
-                  $(OBJS)/locate.o \
-                  $(OBJS)/output_routines.o \
-                  $(OBJS)/nc_create_global.o \
-                  $(OBJS)/nc_defdata.o \
-                  $(OBJS)/nc_write_L2.o \
-                  $(OBJS)/polint.o \
-                  $(OBJS)/R2T.o \
-                  $(OBJS)/read_config_file.o \
-                  $(OBJS)/read_input_dimensions.o \
-                  $(OBJS)/read_sat_data_nc.o \
-                  $(OBJS)/ReadALB_nc.o \
-                  $(OBJS)/ReadCloudFlags_nc.o \
-                  $(OBJS)/ReadDriver.o \
-                  $(OBJS)/ReadGeometry_nc.o \
-                  $(OBJS)/ReadIllum_nc.o \
-                  $(OBJS)/ReadLocation_nc.o \
-                  $(OBJS)/ReadLSFlags_nc.o \
-                  $(OBJS)/ReadLwRTM_nc.o \
-                  $(OBJS)/ReadMSI_nc.o \
-                  $(OBJS)/ReadSAD.o \
-                  $(OBJS)/ReadScanLines_nc.o \
-                  $(OBJS)/ReadSwRTM_nc.o \
-                  $(OBJS)/RTM.o \
-                  $(OBJS)/RTM_Pc.o \
-                  $(OBJS)/SADChan.o \
-                  $(OBJS)/SADCloudClass.o \
-                  $(OBJS)/SADLUT.o \
-                  $(OBJS)/SetDiag.o \
-                  $(OBJS)/SetGZero.o \
-                  $(OBJS)/SetKx.o \
-                  $(OBJS)/SetLimits.o \
-                  $(OBJS)/SetSy.o \
-                  $(OBJS)/SetUnit.o \
-                  $(OBJS)/SolveCholesky.o \
-                  $(OBJS)/SolveCholeskyDC.o \
-                  $(OBJS)/SPixel.o \
-                  $(OBJS)/SquareCholeskyDC.o \
-                  $(OBJS)/t_extrap_strat.o \
-                  $(OBJS)/T2R.o \
-                  $(OBJS)/WriteDiag.o \
-                  $(OBJS)/WriteLog.o \
-                  $(OBJS)/XMDAD.o \
-                  $(OBJS)/XSDAD.o \
-                  $(OBJS)/ZeroDiag.o
+ORAC_OBJ = $(OBJS)/CalcCWP.o \
+           $(OBJS)/CheckLimits.o \
+           $(OBJS)/check_value.o \
+           $(OBJS)/config.o \
+           $(OBJS)/CPL.o \
+           $(OBJS)/CRP.o \
+           $(OBJS)/Ctrl.o \
+           $(OBJS)/Data.o \
+           $(OBJS)/DecomposeCholesky.o \
+           $(OBJS)/Diag.o \
+           $(OBJS)/ECPConstants.o \
+           $(OBJS)/extrap_into_tropopause.o \
+           $(OBJS)/FindLUN.o \
+           $(OBJS)/FMRoutines.o \
+           $(OBJS)/GetGeometry.o \
+           $(OBJS)/GetIllum.o \
+           $(OBJS)/GetLSF.o \
+           $(OBJS)/GetLwSwRTM.o \
+           $(OBJS)/GetMeasurements.o \
+           $(OBJS)/GetRs.o \
+           $(OBJS)/GetRTM.o \
+           $(OBJS)/GetSPixel.o \
+           $(OBJS)/GetSurface.o \
+           $(OBJS)/GetX.o \
+           $(OBJS)/GZero.o \
+           $(OBJS)/hpsort.o \
+           $(OBJS)/interpolate_to_ctp.o \
+           $(OBJS)/IntRoutines.o \
+           $(OBJS)/InterpolRoutines.o \
+           $(OBJS)/IntLUTRoutines.o \
+           $(OBJS)/InvertCholesky.o \
+           $(OBJS)/InvertCholeskyDC.o \
+           $(OBJS)/InvertMarquardt.o \
+           $(OBJS)/locate.o \
+           $(OBJS)/output_routines.o \
+           $(OBJS)/nc_create_global.o \
+           $(OBJS)/nc_defdata.o \
+           $(OBJS)/nc_write_L2.o \
+           $(OBJS)/polint.o \
+           $(OBJS)/R2T.o \
+           $(OBJS)/read_config_file.o \
+           $(OBJS)/read_input_dimensions.o \
+           $(OBJS)/read_sat_data_nc.o \
+           $(OBJS)/ReadALB_nc.o \
+           $(OBJS)/ReadCloudFlags_nc.o \
+           $(OBJS)/ReadDriver.o \
+           $(OBJS)/ReadGeometry_nc.o \
+           $(OBJS)/ReadIllum_nc.o \
+           $(OBJS)/ReadLocation_nc.o \
+           $(OBJS)/ReadLSFlags_nc.o \
+           $(OBJS)/ReadLwRTM_nc.o \
+           $(OBJS)/ReadMSI_nc.o \
+           $(OBJS)/ReadSAD.o \
+           $(OBJS)/ReadScanLines_nc.o \
+           $(OBJS)/ReadSwRTM_nc.o \
+           $(OBJS)/RTM.o \
+           $(OBJS)/RTM_Pc.o \
+           $(OBJS)/SADChan.o \
+           $(OBJS)/SADCloudClass.o \
+           $(OBJS)/SADLUT.o \
+           $(OBJS)/SetDiag.o \
+           $(OBJS)/SetGZero.o \
+           $(OBJS)/SetKx.o \
+           $(OBJS)/SetLimits.o \
+           $(OBJS)/SetSy.o \
+           $(OBJS)/SetUnit.o \
+           $(OBJS)/SolveCholesky.o \
+           $(OBJS)/SolveCholeskyDC.o \
+           $(OBJS)/SPixel.o \
+           $(OBJS)/SquareCholeskyDC.o \
+           $(OBJS)/t_extrap_strat.o \
+           $(OBJS)/T2R.o \
+           $(OBJS)/WriteDiag.o \
+           $(OBJS)/WriteLog.o \
+           $(OBJS)/XMDAD.o \
+           $(OBJS)/XSDAD.o \
+           $(OBJS)/ZeroDiag.o
 
-ORAC_OBJ_MAIN =   $(OBJS)/ECP.o \
+ORAC_OBJ_MAIN = $(OBJS)/ECP.o
 
 
 # .F90 was originally the extension on DecUnix, but seems to be allowed by the
 # ifc/ifort compiler.
 $(OBJS)/%.o: %.f90
-	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.F90
-	$(F90) -o $@ -c $(FFLAGS) $(INC) $(AUXFLAGS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 
 # Main target list
 all: orac
 
 # Main program build
-orac: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
-	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ) $(OBJS)/ECP.o $(LIBS) -I./$(OBJS)
+orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile
+	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
-orac.lib: $(ORAC_OBJ) $(ORAC_OBJ_MAIN) Makefile
-	ar -vr liborac.a $(OBJS)/*.o
+liborac.a: $(ORAC_OBJ) Makefile
+	ar -rs liborac.a $(ORAC_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) $(ORAC_OBJ_MAIN_OLD) > dependencies.inc
+	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
 
 # Tidy up .cpp files produced by C pre-compiler when compilation errors occur
 # (screws up later attempts to compile - forces C++ compiler to be run)
-tidy_cpp clean_cpp:
+clean_cpp tidy_cpp:
 	rm -f *.cpp
 
-tidy clean:
+clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod orac
 
 

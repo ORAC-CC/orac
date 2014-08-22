@@ -30,7 +30,7 @@
 
 module interpol
 
-   use preproc_constants, only: sreal, sreal_fill_value
+   use common_constants, only: sreal, sreal_fill_value
 
    implicit none
 

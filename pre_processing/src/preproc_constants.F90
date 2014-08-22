@@ -30,13 +30,9 @@
 
 module preproc_constants
 
-   implicit none
+   use common_constants
 
-   integer, parameter :: byte=1
-   integer, parameter :: sint=2
-   integer, parameter :: lint=4
-   integer, parameter :: sreal=4
-   integer, parameter :: dreal=8
+   implicit none
 
    integer, parameter :: pathlength=1024
    integer, parameter :: filelength=512
@@ -45,15 +41,10 @@ module preproc_constants
    integer, parameter :: platformlength=8
    integer, parameter :: pixellength=10
    integer, parameter :: datelength=4
-   integer, parameter :: unitlength=75
    integer, parameter :: errlength=100
    integer, parameter :: attribute_length=75
    integer, parameter :: description_length=2048
    integer, parameter :: uuid_length=36
-
-
-   ! Error code to give back to the system on an error
-   integer, parameter :: error_stop_code = 1
 
 
    real(kind=sreal),    parameter :: dither=1.0E-3
@@ -77,15 +68,8 @@ module preproc_constants
    real(kind=sreal),    parameter :: g_wmo=9.80665
 
 
-   ! Data related ranges and fill values
    real(kind=sreal),    parameter :: maxsza_day=80.0
    real(kind=sreal),    parameter :: maxsza_twi=110.0
-
-   integer(kind=byte),  parameter :: byte_fill_value=-1
-   integer(kind=sint),  parameter :: sint_fill_value=-999
-   integer(kind=lint),  parameter :: lint_fill_value=-999
-   real(kind=sreal),    parameter :: sreal_fill_value=-999.0
-   real(kind=dreal),    parameter :: dreal_fill_value=-999.0
 
 
    ! Some netcdf4 related parameters

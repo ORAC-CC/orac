@@ -18,7 +18,7 @@
 module orac_ncdf
 
    use netcdf
-   use preproc_constants, only: dreal_fill_value, sreal_fill_value, &
+   use common_constants, only: dreal_fill_value, sreal_fill_value, &
         lint_fill_value, sint_fill_value, byte_fill_value, &
         error_stop_code, unitlength
 
