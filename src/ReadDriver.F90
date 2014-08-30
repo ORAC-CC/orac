@@ -80,7 +80,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
+subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
@@ -94,6 +94,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    type(CTRL_t),           intent(out)   :: Ctrl
    type(config_struct),    intent(out)   :: conf
    character(*),           intent(out)   :: message
+   integer,                intent(out)   :: nargs
    character(FilenameLen), intent(inout) :: drifile
    integer,                intent(out)   :: status
 
@@ -106,7 +107,6 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    logical                         :: file_exists, found
    real, allocatable, dimension(:) :: solar_store_sea,solar_store_land
    real, allocatable, dimension(:) :: ref_solar_sea,ref_solar_land
-   integer :: nargs
 
    status = 0
 
@@ -177,7 +177,7 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
    suffix='.config.nc'
    Ctrl%FID%CONFIG=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
    Ctrl%FID%CONFIG=trim(adjustl(Ctrl%FID%CONFIG))
-   write(*,*) 'Ctrl%FID%CONFIG: ',Ctrl%FID%CONFIG
+   write(*,*) 'Ctrl%FID%CONFIG: ',trim(Ctrl%FID%CONFIG)
 
    ! Read config file in order to set all channel related info
    call read_config_file(Ctrl,conf)
@@ -327,10 +327,10 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
       trim(adjustl(Ctrl%CloudClass%Name))
    Ctrl%FID%L2_primary_outputpath_and_file=trim(adjustl(outname))//'.primary.nc'
    write(*,*) 'Ctrl%FID%L2_primary_outputpath_and_file: ', &
-              Ctrl%FID%L2_primary_outputpath_and_file
+              trim(Ctrl%FID%L2_primary_outputpath_and_file)
    Ctrl%FID%L2_secondary_outputpath_and_file=trim(adjustl(outname))//'.secondary.nc'
    write(*,*) 'Ctrl%FID%L2_secondary_outputpath_and_file: ', &
-              Ctrl%FID%L2_secondary_outputpath_and_file
+              trim(Ctrl%FID%L2_secondary_outputpath_and_file)
 
    Ctrl%FID%Log=trim(adjustl(outname))//'.log'
    write(*,*)'Ctrl%FID%Log: ',trim(adjustl(Ctrl%FID%Log))
@@ -731,46 +731,46 @@ subroutine Read_Driver(Ctrl, conf, message,nargs, drifile, status)
 
    ! Set Ctrl%Invpar
 
-   Ctrl%Invpar%Mqstart   = 0.001      ! Marquardt: starting parameter
-   Ctrl%Invpar%Mqstep    = 10.0       ! step parameter
-   Ctrl%Invpar%Maxiter   = 40         ! Maximum # of iterations
-   Ctrl%Invpar%Maxphase  = 3          ! Maximum # of phase changes
+   Ctrl%Invpar%MqStart   = 0.001      ! Marquardt: starting parameter
+   Ctrl%Invpar%MqStep    = 10.0       ! step parameter
+   Ctrl%Invpar%MaxIter   = 40         ! Maximum # of iterations
+   Ctrl%Invpar%MaxPhase  = 3          ! Maximum # of phase changes
    Ctrl%Invpar%Ccj       = 0.05       ! Cost convergence criteria
 
-   Ctrl%Invpar%Xscale(1) = 10.0       ! Scaling parameters (Tau,Re,Pc,F,Ts)
-   Ctrl%Invpar%Xscale(2) = 1.0
-   Ctrl%Invpar%Xscale(3) = 1.0
-   Ctrl%Invpar%Xscale(4) = 1000.0
-   Ctrl%Invpar%Xscale(5) = 1.0
+   Ctrl%Invpar%XScale(1) = 10.0       ! Scaling parameters (Tau,Re,Pc,F,Ts)
+   Ctrl%Invpar%XScale(2) = 1.0
+   Ctrl%Invpar%XScale(3) = 1.0
+   Ctrl%Invpar%XScale(4) = 1000.0
+   Ctrl%Invpar%XScale(5) = 1.0
 
-   Ctrl%Invpar%Xllim(1)  = -3.0
+   Ctrl%Invpar%XLLim(1)  = -3.0
 
    if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
        (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
        (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
-      Ctrl%Invpar%Xllim(2) = 0.01
+      Ctrl%Invpar%XLLim(2) = 0.01
    else
-      Ctrl%Invpar%Xllim(2) = 0.1
+      Ctrl%Invpar%XLLim(2) = 0.1
    end if
-   Ctrl%Invpar%Xllim(3)  = 10.0
-   Ctrl%Invpar%Xllim(4)  = 1.0
-   Ctrl%Invpar%Xllim(5)  = 250.0
+   Ctrl%Invpar%XLLim(3)  = 10.0
+   Ctrl%Invpar%XLLim(4)  = 1.0
+   Ctrl%Invpar%XLLim(5)  = 250.0
 
-   ! Upper limit on state Ctrl.Invpar.Xulim
-   Ctrl%Invpar%Xulim(1) = 2.408
+   ! Upper limit on state Ctrl.Invpar.XULim
+   Ctrl%Invpar%XULim(1) = 2.408
    if (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
-      Ctrl%Invpar%Xulim(2) = 35.0
+      Ctrl%Invpar%XULim(2) = 35.0
    else if (trim(Ctrl%CloudClass%Name) .eq. 'ICE') then
-      Ctrl%Invpar%Xulim(2) = 100.0
+      Ctrl%Invpar%XULim(2) = 100.0
    else if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
             (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
             (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
-      Ctrl%Invpar%Xulim(2) = 20.0
+      Ctrl%Invpar%XULim(2) = 20.0
    end if
 
-   Ctrl%Invpar%Xulim(3) = 1200.0
-   Ctrl%Invpar%Xulim(4) = 1.0
-   Ctrl%Invpar%Xulim(5) = 320.0
+   Ctrl%Invpar%XULim(3) = 1200.0
+   Ctrl%Invpar%XULim(4) = 1.0
+   Ctrl%Invpar%XULim(5) = 320.0
 
 
    ! Set Ctrl%QC

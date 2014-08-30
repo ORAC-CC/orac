@@ -110,6 +110,6 @@ subroutine Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
   ! Close scan lines file
   if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_scanlines_nc(): Error closing file.'
+     stop 'ERROR: read_scanlines_nc(): Error closing file.'
 
 end subroutine Read_Scanlines_nc

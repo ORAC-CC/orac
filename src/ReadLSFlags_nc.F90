@@ -108,6 +108,6 @@ subroutine Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    ! Close LSF file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_lsflags_nc(): Error closing file.'
+      stop 'ERROR: read_lsflags_nc(): Error closing file.'
 
 end subroutine Read_LSFlags_nc

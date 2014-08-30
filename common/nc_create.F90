@@ -5,7 +5,7 @@
 !-------------------------------------------------------------------------------
 
 !-------------------------------------------------------------------------------
-! Name: nc_create_global.F90
+! Name: nc_create.F90
 !
 ! Purpose:
 ! A netcdf output file is opened/created for writing.
@@ -23,24 +23,23 @@
 ! 2012/11/16, Caroline Poulsen: Added calibration file version.
 ! 2014/08/04, Greg McGarragh: Cleaned up the code.
 !
-! $Id$
+! $Id: nc_create_global.F90 2290 2014-08-12 08:24:01Z gmcgarragh $
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, status)
+subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
 
-   use CTRL_def
-   use ECP_Constants
+   use common_constants
    use netcdf
 
    implicit none
 
    ! Input
-   type(Ctrl_t),    intent(in)  :: Ctrl
    character(len=*),intent(in)  :: path
    integer,         intent(in)  :: nx, ny
+   character(len=*),intent(in)  :: inst_name
    integer,         intent(in)  :: wo
    integer,         intent(in)  :: type
 
@@ -52,23 +51,21 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
    ! Local
    integer :: ierr, xdim, ydim
 
-   character(len= 75) :: cncver,ccon,cinst,csname, csid, cuuid, &
-        instname, fname, contact, website, prodtime, ctitle, cproc, cprocver, &
-        prod_name, year, month,day,cal_file_ver
+   character(len = 128) :: cncver, ccon, cinst,csname, csid, cuuid, instname, &
+        fname, contact, website, prodtime, ctitle, cproc, cprocver, prod_name, &
+        year, month,day,cal_file_ver
 
    ! Create new file
    ierr = nf90_create(path, NF90_CLOBBER, ncid)
 
    if (ierr .ne. NF90_NOERR) then
       if (type .eq. 1 ) then
-         status = PrimaryFileOpenErr
-         write(*,*) 'ERROR: nf90_create(), filename = ', trim(path)
-         call Write_Log(Ctrl,'ERROR: nf90_create(), status = ', status)
+         status = -1
+         write(*,*) 'ERROR: nf90_create1(), filename = ', trim(path)
          stop
       else if (type .eq. 2 ) then
-         status = SecondaryFileOpenErr
-         write(*,*) 'ERROR: nf90_create(), filename = ', trim(path)
-         call Write_Log(Ctrl,'ERROR: nf90_create(), status = ', status)
+         status = -1
+         write(*,*) 'ERROR: nf90_create2(), filename = ', trim(path)
          stop
       end if
    end if
@@ -131,7 +128,7 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
       stop
    end if
 
-   if (Ctrl%Inst%Name .eq. 'AATSR' .or. Ctrl%Inst%Name .eq. 'ATSR') then
+   if (inst_name .eq. 'AATSR' .or. inst_name .eq. 'ATSR') then
       cal_file_ver='3.01'
       ierr = nf90_put_att(ncid, NF90_GLOBAL, 'AATSR_Calibration_Version', cal_file_ver)
       if (ierr .ne. NF90_NOERR) then
@@ -227,4 +224,4 @@ subroutine nc_create_global_l2(Ctrl, path, ncid, nx, ny, dims_var, wo, type, sta
       write(*,*) 'new file created: ',trim(path)
    end if
 
-end subroutine nc_create_global_l2
+end subroutine nc_create

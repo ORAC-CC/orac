@@ -185,13 +185,12 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    call nc_read_array(ncid, "time_data", MSI_Data%time, verbose)
 
    ! Read instrument channel indices from file
-!   allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
-!   call nc_read_array(ncid,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
-!   deallocate(msi_instr_ch_numbers)
+!  allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
+!  call nc_read_array(ncid,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
+!  deallocate(msi_instr_ch_numbers)
 
    ! Close MSI input file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_msi_nc(): Error closing file.'
-
+      stop 'ERROR: read_msi_nc(): Error closing file.'
 
 end subroutine Read_MSI_nc

@@ -84,6 +84,7 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    use Data_def
    use ECP_Constants
    use orac_ncdf
+
    use SAD_Chan_def
 
    implicit none
@@ -98,7 +99,7 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    logical,      intent(in)    :: verbose
 
    integer :: ncid
-!   integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
+!  integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
 
    ! Open ALB file
    if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Aux)
@@ -107,23 +108,20 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    ! Allocate Data%ALB structure
    allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
 
-      ! Read instrument channel indices from file
-!   allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
-!   call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, &
-!        verbose)
+   ! Read instrument channel indices from file
+!  allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
+!  call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, verbose)
 
    ! read solar channels from albedo field
-   call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, &
-        3, Ctrl%Ind%ysolar)
-   
-   if (verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
-        minval(MSI_Data%ALB)
+   call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, 3, Ctrl%Ind%ysolar)
 
-!   deallocate(alb_instr_ch_numbers)
+   if (verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
+      minval(MSI_Data%ALB)
+
+!  deallocate(alb_instr_ch_numbers)
 
    ! Close alb input file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_alb_nc(): Error closing file.'
+      stop 'ERROR: read_alb_nc(): Error closing file.'
 
-     
 end subroutine Read_ALB_nc

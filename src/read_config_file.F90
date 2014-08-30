@@ -36,11 +36,11 @@ subroutine read_config_file(Ctrl, conf)
    ! Open config file for reading
    call nc_open(ncid, Ctrl%FID%CONFIG)
 
-   !conf%nx = nc_dim_length(ncid, 'nx_conf', verbose)
-   !conf%ny = nc_dim_length(ncid, 'ny_conf', verbose)
+!  conf%nx = nc_dim_length(ncid, 'nx_conf', verbose)
+!  conf%ny = nc_dim_length(ncid, 'ny_conf', verbose)
    conf%nc = nc_dim_length(ncid, 'nc_conf', verbose)
-   !conf%nalb = nc_dim_length(ncid, 'nc_alb', verbose)
-   !conf%nemis = nc_dim_length(ncid, 'nc_emis', verbose)
+!  conf%nalb = nc_dim_length(ncid, 'nc_alb', verbose)
+!  conf%nemis = nc_dim_length(ncid, 'nc_emis', verbose)
 
    allocate(conf%channel_ids_instr(conf%nc))
    call nc_read_array(ncid, "msi_instr_ch_numbers", conf%channel_ids_instr, &
@@ -61,6 +61,6 @@ subroutine read_config_file(Ctrl, conf)
 
    ! Close config file
    if (nf90_close(ncid) .ne. NF90_NOERR) &
-        stop 'ERROR: read_config_file(): Failure to close file.'
+      stop 'ERROR: read_config_file(): Failure to close file.'
 
 end subroutine read_config_file

@@ -37,8 +37,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
-                           spixel_scan_out, status)
+subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
+                           Diag, output_data, status)
 
    use CTRL_def
    use Data_def
@@ -48,294 +48,259 @@ subroutine prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
 
    implicit none
 
-   type(CTRL_t),                         intent(in)    :: Ctrl
-   integer,                              intent(in)    :: conv
-   integer,                              intent(in)    :: i, j
-   type(Data_t),                         intent(in)    :: MSI_Data
-   type(RTM_Pc_t),                       intent(in)    :: RTM_Pc
-   type(SPixel_t),                       intent(in)    :: SPixel
-   type(Diag_t),                         intent(in)    :: Diag
-   type(spixel_scanline_primary_output), intent(inout) :: spixel_scan_out
-   integer,                              intent(inout) :: status
+   type(CTRL_t),              intent(in)    :: Ctrl
+   integer,                   intent(in)    :: convergence
+   integer,                   intent(in)    :: i, j
+   type(Data_t),              intent(in)    :: MSI_Data
+   type(RTM_Pc_t),            intent(in)    :: RTM_Pc
+   type(SPixel_t),            intent(in)    :: SPixel
+   type(Diag_t),              intent(in)    :: Diag
+   type(output_data_primary), intent(inout) :: output_data
+   integer,                   intent(inout) :: status
 
-   integer          :: iviews
-   real(kind=sreal) :: dummyreal, dummyreal_store, &
-                       minvalue=100000.0,maxvalue=-100000.0
+   integer          :: k
+   real(kind=sreal) :: temp_real, temp_real_ctp_error
 
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   spixel_scan_out%time(i,j)=MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+   output_data%time(i,j)=MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%YSeg0)
 
    !----------------------------------------------------------------------------
-   ! illum
+   ! lat, lon
    !----------------------------------------------------------------------------
-   spixel_scan_out%illum(i,j)=MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0,1)
+   output_data%lat(i,j)=SPixel%Loc%Lat/output_data%lat_scale
+   output_data%lon(i,j)=SPixel%Loc%Lon/output_data%lon_scale
 
    !----------------------------------------------------------------------------
-   ! lon/lat
+   ! sol_zen, sat_zen, rel_azi
    !----------------------------------------------------------------------------
-   spixel_scan_out%lon(i,j)=SPixel%Loc%Lon/spixel_scan_out%lon_scale
-   spixel_scan_out%lat(i,j)=SPixel%Loc%Lat/spixel_scan_out%lat_scale
-
-   !----------------------------------------------------------------------------
-   ! sat_zen, sol_zen, rel_azi
-   !----------------------------------------------------------------------------
-   do iviews=1,Ctrl%Ind%NViews
-      spixel_scan_out%sat_zen(i,j,iviews)=MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0,iviews)
-      spixel_scan_out%sol_zen(i,j,iviews)=MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0,iviews)
-      spixel_scan_out%rel_azi(i,j,iviews)=MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0,iviews)
+   do k=1,Ctrl%Ind%NViews
+      output_data%sol_zen(i,j,k)=MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0,k)
+      output_data%sat_zen(i,j,k)=MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0,k)
+      output_data%rel_azi(i,j,k)=MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0,k)
    end do
 
    !-------------------------------------------------------------------------------
-   ! State variables and covariance diagonal
+   ! cot, cot_error
    !-------------------------------------------------------------------------------
+   temp_real=10.0**SPixel%Xn(1)
+   call prepare_short_packed_float &
+           (temp_real, output_data%cot(i,j), &
+            output_data%cot_scale, output_data%cot_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cot_vmin, output_data%cot_vmax, &
+            output_data%cot_vmax)
 
-   !-------------------------------------------------------------------------------
-   ! cot
-   !-------------------------------------------------------------------------------
-   dummyreal=(10.0**SPixel%Xn(1)-spixel_scan_out%cot_offset)/spixel_scan_out%cot_scale
-
-   minvalue=min(SPixel%Xn(1),minvalue)
-   maxvalue=max(SPixel%Xn(1),maxvalue)
-
-   if (dummyreal .ge. real(spixel_scan_out%cot_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%cot_vmax,kind=sreal)) then
-      spixel_scan_out%cot(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .lt. real(spixel_scan_out%cot_vmin,kind=sreal)) then
-      spixel_scan_out%cot(i,j)=sint_fill_value
-   else if (dummyreal .gt. real(spixel_scan_out%cot_vmax,kind=sreal)) then
-      spixel_scan_out%cot(i,j)=spixel_scan_out%cot_vmax
-   end if
-
-   dummyreal=(sqrt(SPixel%Sn(1,1))-spixel_scan_out%cot_error_offset)/spixel_scan_out%cot_error_scale
-   if (dummyreal .ge. real(spixel_scan_out%cot_error_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%cot_error_vmax,kind=sreal)) then
-      spixel_scan_out%cot_error(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .lt. real(spixel_scan_out%cot_error_vmin,kind=sreal)) then
-      spixel_scan_out%cot_error(i,j)=sint_fill_value
-   else if (dummyreal .gt. real(spixel_scan_out%cot_error_vmax,kind=sreal)) then
-      spixel_scan_out%cot_error(i,j)=spixel_scan_out%cot_error_vmax
-   end if
+   temp_real=sqrt(SPixel%Sn(1,1))
+   call prepare_short_packed_float &
+           (temp_real, output_data%cot_error(i,j), &
+            output_data%cot_error_scale, output_data%cot_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cot_error_vmin, output_data%cot_error_vmax, &
+            output_data%cot_error_vmax)
 
    !-------------------------------------------------------------------------------
-   ! ref
+   ! ref, ref_error
    !-------------------------------------------------------------------------------
-   dummyreal=(SPixel%Xn(2)-spixel_scan_out%ref_offset)/spixel_scan_out%ref_scale
-   if (dummyreal .ge. real(spixel_scan_out%ref_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%ref_vmax,kind=sreal)) then
-      spixel_scan_out%ref(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%ref_vmax,kind=sreal)) then
-      spixel_scan_out%ref(i,j)=spixel_scan_out%ref_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%ref_vmin,kind=sreal)) then
-      spixel_scan_out%ref(i,j)=sint_fill_value
-   end if
+   temp_real=SPixel%Xn(2)
+   call prepare_short_packed_float &
+           (temp_real, output_data%ref(i,j), &
+            output_data%ref_error_scale, output_data%ref_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ref_vmin, output_data%ref_vmax, &
+            output_data%ref_vmax)
 
-   dummyreal=(sqrt(SPixel%Sn(2,2))-spixel_scan_out%ref_error_offset)/spixel_scan_out%ref_error_scale
-   if (dummyreal .ge. real(spixel_scan_out%ref_error_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%ref_error_vmax,kind=sreal)) then
-      spixel_scan_out%ref_error(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%ref_error_vmax,kind=sreal)) then
-      spixel_scan_out%ref_error(i,j)=spixel_scan_out%ref_error_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%ref_error_vmin,kind=sreal)) then
-      spixel_scan_out%ref_error(i,j)=sint_fill_value
-   end if
+   temp_real=sqrt(SPixel%Sn(2,2))
+   call prepare_short_packed_float &
+           (temp_real, output_data%ref_error(i,j), &
+            output_data%ref_error_scale, output_data%ref_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ref_error_vmin, output_data%ref_error_vmax, &
+            output_data%ref_error_vmax)
 
    !-------------------------------------------------------------------------------
-   ! ctp
+   ! ctp, ctp_error
    !-------------------------------------------------------------------------------
-   dummyreal=(SPixel%Xn(3)-spixel_scan_out%ctp_offset)/spixel_scan_out%ctp_scale
-   if (dummyreal .ge. real(spixel_scan_out%ctp_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%ctp_vmax,kind=sreal)) then
-      spixel_scan_out%ctp(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%ctp_vmax,kind=sreal)) then
-      spixel_scan_out%ctp(i,j)=spixel_scan_out%ctp_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%ctp_vmin,kind=sreal)) then
-      spixel_scan_out%ctp(i,j)=sint_fill_value
-   end if
+   temp_real=SPixel%Xn(3)
+   call prepare_short_packed_float &
+           (temp_real, output_data%ctp(i,j), &
+            output_data%ctp_scale, output_data%ctp_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ctp_vmin, output_data%ctp_vmax, &
+            output_data%ctp_vmax)
 
-   dummyreal_store=(sqrt(SPixel%Sn(3,3))-spixel_scan_out%ctp_error_offset)/spixel_scan_out%ctp_error_scale
-
-   ! If ctp_error is good compute cth_error and ctt_error
-   if (dummyreal_store .ge. real(spixel_scan_out%ctp_error_vmin,kind=sreal) .and. &
-       dummyreal_store .le. real(spixel_scan_out%ctp_error_vmax,kind=sreal)) then
-
-      spixel_scan_out%ctp_error(i,j)=int(dummyreal_store, kind=sint)
-
-      dummyreal=abs(RTM_Pc%dHc_dPc/10./1000.)*dummyreal_store
-      dummyreal=(dummyreal-spixel_scan_out%cth_error_offset)/spixel_scan_out%cth_error_scale
-
-      if (dummyreal .ge. real(spixel_scan_out%cth_error_vmin,kind=sreal) .and. &
-          dummyreal .le. real(spixel_scan_out%cth_error_vmax,kind=sreal)) then
-         spixel_scan_out%cth_error(i,j)=int(dummyreal, kind=sint)
-      else if (dummyreal .gt. real(spixel_scan_out%cth_error_vmax,kind=sreal)) then
-         spixel_scan_out%cth_error(i,j)=spixel_scan_out%cth_error_vmax
-      else if (dummyreal .lt. real(spixel_scan_out%cth_error_vmin,kind=sreal)) then
-         spixel_scan_out%cth_error(i,j)=sint_fill_value
-      end if
-
-      dummyreal=abs(RTM_Pc%dTc_dPc)*dummyreal_store
-      dummyreal=(dummyreal-spixel_scan_out%ctt_error_offset)/spixel_scan_out%ctt_error_scale
-
-      if (dummyreal .ge. real(spixel_scan_out%ctt_error_vmin,kind=sreal) .and. &
-          dummyreal .le. real(spixel_scan_out%ctt_error_vmax,kind=sreal)) then
-         spixel_scan_out%ctt_error(i,j)=int(dummyreal, kind=sint)
-      else if (dummyreal .gt. real(spixel_scan_out%ctt_error_vmax,kind=sreal)) then
-         spixel_scan_out%ctt_error(i,j)=spixel_scan_out%ctt_error_vmax
-      else if (dummyreal .lt. real(spixel_scan_out%ctt_error_vmin,kind=sreal)) then
-         spixel_scan_out%ctt_error(i,j)=sint_fill_value
-      end if
-
-   else if (dummyreal_store .gt. real(spixel_scan_out%ctp_error_vmax,kind=sreal)) then
-
-      spixel_scan_out%ctp_error(i,j)=spixel_scan_out%ctp_error_vmax
-      spixel_scan_out%cth_error(i,j)=spixel_scan_out%cth_error_vmax
-      spixel_scan_out%ctt_error(i,j)=spixel_scan_out%ctt_error_vmax
-
-   else if (dummyreal_store .lt. real(spixel_scan_out%ctp_error_vmin,kind=sreal)) then
-      spixel_scan_out%ctp_error(i,j)=sint_fill_value
-      spixel_scan_out%cth_error(i,j)=sint_fill_value
-      spixel_scan_out%ctt_error(i,j)=sint_fill_value
-
-   end if
+   temp_real=sqrt(SPixel%Sn(3,3))
+   temp_real_ctp_error=(sqrt(SPixel%Sn(3,3))-output_data%ctp_error_offset)/ &
+                                             output_data%ctp_error_scale
+   call prepare_short_packed_float &
+           (temp_real, output_data%ctp_error(i,j), &
+            output_data%ctp_error_scale, output_data%ctp_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ctp_error_vmin, output_data%ctp_error_vmax, &
+            output_data%ctp_error_vmax)
 
    !-------------------------------------------------------------------------------
-   ! cct
+   ! cct, cct_error
    !-------------------------------------------------------------------------------
-   dummyreal=(SPixel%Xn(4)-spixel_scan_out%cct_offset)/spixel_scan_out%cct_scale
-   if (dummyreal .ge. real(spixel_scan_out%cct_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%cct_vmax,kind=sreal)) then
-      spixel_scan_out%cct(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out%cct(i,j)=sint_fill_value
-   end if
+   temp_real=SPixel%Xn(4)
+   call prepare_short_packed_float &
+           (temp_real, output_data%cct(i,j), &
+            output_data%cct_scale, output_data%cct_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cct_vmin, output_data%cct_vmax, &
+            sint_fill_value)
 
-   dummyreal=(sqrt(SPixel%Sn(4,4))-spixel_scan_out%cct_error_offset)/spixel_scan_out%cct_error_scale
-   if (dummyreal .ge. real(spixel_scan_out%cct_error_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%cct_error_vmax,kind=sreal)) then
-      spixel_scan_out%cct_error(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out%cct_error(i,j)=sint_fill_value
+   temp_real=sqrt(SPixel%Sn(4,4))
+   call prepare_short_packed_float &
+           (temp_real, output_data%cct_error(i,j), &
+            output_data%cct_error_scale, output_data%cct_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cct_error_vmin, output_data%cct_error_vmax, &
+            sint_fill_value)
+
+   !-------------------------------------------------------------------------------
+   ! stemp, stemp_error
+   !-------------------------------------------------------------------------------
+   temp_real=SPixel%Xn(5)
+   call prepare_short_packed_float &
+           (temp_real, output_data%stemp(i,j), &
+            output_data%stemp_error_scale, output_data%stemp_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%stemp_vmin, output_data%stemp_vmax, &
+            output_data%stemp_vmax)
+
+   temp_real=sqrt(SPixel%Sn(5,5))
+   call prepare_short_packed_float &
+           (temp_real, output_data%stemp_error(i,j), &
+            output_data%stemp_error_scale, output_data%stemp_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%stemp_error_vmin, output_data%stemp_error_vmax, &
+            output_data%stemp_error_vmax)
+
+   !-------------------------------------------------------------------------------
+   ! cth, cth_error
+   !-------------------------------------------------------------------------------
+   temp_real=RTM_Pc%Hc/10./1000. ! now it's in km
+   call prepare_short_packed_float &
+           (temp_real, output_data%cth(i,j), &
+            output_data%cth_scale, output_data%cth_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cth_vmin, output_data%cth_vmax, &
+            output_data%cth_vmax)
+
+   ! If ctp_error is good compute cth_error
+   if (temp_real_ctp_error .ge. real(output_data%ctp_error_vmin,kind=sreal) .and. &
+       temp_real_ctp_error .le. real(output_data%ctp_error_vmax,kind=sreal)) then
+
+      temp_real=abs(RTM_Pc%dHc_dPc/10./1000.)*temp_real_ctp_error
+      call prepare_short_packed_float &
+           (temp_real, output_data%cth_error(i,j), &
+            output_data%cth_error_scale, output_data%cth_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cth_error_vmin, output_data%cth_error_vmax, &
+            output_data%cth_error_vmax)
+   else if (temp_real_ctp_error .lt. real(output_data%ctp_error_vmin,kind=sreal)) then
+      output_data%cth_error(i,j)=sint_fill_value
+   else if (temp_real_ctp_error .gt. real(output_data%ctp_error_vmax,kind=sreal)) then
+      output_data%cth_error(i,j)=output_data%cth_error_vmax
    end if
 
    !-------------------------------------------------------------------------------
-   ! stemp
+   ! ctt, ctt_error
    !-------------------------------------------------------------------------------
-   dummyreal=(SPixel%Xn(5)-spixel_scan_out%stemp_offset)/spixel_scan_out%stemp_scale
-   if (dummyreal .ge. real(spixel_scan_out%stemp_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%stemp_vmax,kind=sreal)) then
-      spixel_scan_out%stemp(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%stemp_vmax,kind=sreal)) then
-      spixel_scan_out%stemp(i,j)=spixel_scan_out%stemp_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%stemp_vmin,kind=sreal)) then
-      spixel_scan_out%stemp(i,j)=sint_fill_value
-   end if
+   temp_real=RTM_Pc%Tc
+   call prepare_short_packed_float &
+           (temp_real, output_data%ctt(i,j), &
+            output_data%ctt_scale, output_data%ctt_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ctt_vmin, output_data%ctt_vmax, &
+            output_data%ctt_vmax)
 
-   dummyreal=(sqrt(SPixel%Sn(5,5))-spixel_scan_out%stemp_error_offset)/spixel_scan_out%stemp_error_scale
-   if (dummyreal .ge. real(spixel_scan_out%stemp_error_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%stemp_error_vmax,kind=sreal)) then
-      spixel_scan_out%stemp_error(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%stemp_error_vmax,kind=sreal)) then
-      spixel_scan_out%stemp_error(i,j)=spixel_scan_out%stemp_error_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%stemp_error_vmin,kind=sreal)) then
-      spixel_scan_out%stemp_error(i,j)=sint_fill_value
-   end if
+   ! If ctp_error is good compute ctt_error
+   if (temp_real_ctp_error .ge. real(output_data%ctp_error_vmin,kind=sreal) .and. &
+       temp_real_ctp_error .le. real(output_data%ctp_error_vmax,kind=sreal)) then
 
-
-   !-------------------------------------------------------------------------------
-   ! No real state variables from here
-   !-------------------------------------------------------------------------------
-
-   !-------------------------------------------------------------------------------
-   ! cth
-   !-------------------------------------------------------------------------------
-   dummyreal=RTM_Pc%Hc/10./1000. ! now it's in km
-   dummyreal=(dummyreal-spixel_scan_out%cth_offset)/spixel_scan_out%cth_scale
-   if (dummyreal .ge. real(spixel_scan_out%cth_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%cth_vmax,kind=sreal)) then
-      spixel_scan_out%cth(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%cth_vmax,kind=sreal)) then
-      spixel_scan_out%cth(i,j)=spixel_scan_out%cth_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%cth_vmin,kind=sreal)) then
-      spixel_scan_out%cth(i,j)=sint_fill_value
+      temp_real=abs(RTM_Pc%dTc_dPc)*temp_real_ctp_error
+      call prepare_short_packed_float &
+           (temp_real, output_data%ctt_error(i,j), &
+            output_data%ctt_error_scale, output_data%ctt_error_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ctt_error_vmin, output_data%ctt_error_vmax, &
+            output_data%ctt_error_vmax)
+   else if (temp_real_ctp_error .lt. real(output_data%ctp_error_vmin,kind=sreal)) then
+      output_data%ctt_error(i,j)=sint_fill_value
+   else if (temp_real_ctp_error .gt. real(output_data%ctp_error_vmax,kind=sreal)) then
+      output_data%ctt_error(i,j)=output_data%ctt_error_vmax
    end if
 
    !-------------------------------------------------------------------------------
-   ! ctt
+   ! cwp, cwp_error
    !-------------------------------------------------------------------------------
-   dummyreal=(RTM_Pc%Tc-spixel_scan_out%ctt_offset)/spixel_scan_out%ctt_scale
-   if (dummyreal .ge. real(spixel_scan_out%ctt_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%ctt_vmax,kind=sreal)) then
-      spixel_scan_out%ctt(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%ctt_vmax,kind=sreal)) then
-      spixel_scan_out%ctt(i,j)=spixel_scan_out%ctt_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%ctt_vmin,kind=sreal)) then
-      spixel_scan_out%ctt(i,j)=sint_fill_value
-   end if
+   temp_real=SPixel%CWP
+   call prepare_short_packed_float &
+           (temp_real, output_data%cwp(i,j), &
+            output_data%cwp_scale, output_data%cwp_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cwp_vmin, output_data%cwp_vmax, &
+            output_data%cwp_vmax)
+
+   temp_real=sqrt(SPixel%CWP_error)
+   call prepare_short_packed_float &
+           (temp_real, output_data%cwp_error(i,j), &
+            output_data%cwp_scale, output_data%cwp_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cwp_error_vmin, output_data%cwp_error_vmax, &
+            output_data%cwp_error_vmax)
 
    !-------------------------------------------------------------------------------
-   ! cwp
+   ! convergence, niter
    !-------------------------------------------------------------------------------
-   dummyreal=(SPixel%CWP-spixel_scan_out%cwp_offset)/spixel_scan_out%cwp_scale
-   if (dummyreal .ge. real(spixel_scan_out%cwp_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%cwp_vmax,kind=sreal)) then
-      spixel_scan_out%cwp(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%cwp_vmax,kind=sreal)) then
-      spixel_scan_out%cwp(i,j)=spixel_scan_out%cwp_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%cwp_vmin,kind=sreal)) then
-      spixel_scan_out%cwp(i,j)=sint_fill_value
-   end if
+   output_data%convergence(i,j)=int(convergence,kind=byte)
 
-   dummyreal=(sqrt(SPixel%CWP_error)-spixel_scan_out%cwp_error_offset)/spixel_scan_out%cwp_error_scale
-   if (dummyreal .ge. real(spixel_scan_out%cwp_error_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%cwp_error_vmax,kind=sreal)) then
-      spixel_scan_out%cwp_error(i,j)=int(dummyreal, kind=sint)
-   else if (dummyreal .gt. real(spixel_scan_out%cwp_error_vmax,kind=sreal)) then
-      spixel_scan_out%cwp_error(i,j)=spixel_scan_out%cwp_error_vmax
-   else if (dummyreal .lt. real(spixel_scan_out%cwp_error_vmin,kind=sreal)) then
-      spixel_scan_out%cwp_error(i,j)=sint_fill_value
-   end if
+   if (convergence .eq. 0 ) output_data%niter(i,j)=int(Diag%Iterations,kind=byte)
+   if (convergence .eq. 1 ) output_data%niter(i,j)=int(byte_fill_value,kind=byte)
 
    !-------------------------------------------------------------------------------
-   ! conv, niter, pchange
+   ! phase
    !-------------------------------------------------------------------------------
-   spixel_scan_out%convergence(i,j)=int(conv,kind=byte)
-
-   if (conv .eq. 0 ) spixel_scan_out%niter(i,j)=int(Diag%Iterations,kind=byte)
-   if (conv .eq. 1 ) spixel_scan_out%niter(i,j)=int(byte_fill_value,kind=byte)
-
-   spixel_scan_out%pchange(i,j)=int(1,kind=byte)
-
-   !-------------------------------------------------------------------------------
-   ! costjm
-   !-------------------------------------------------------------------------------
-   dummyreal=real((Diag%Jm-spixel_scan_out%costjm_offset)/spixel_scan_out%costjm_scale,kind=sreal)
-   if (dummyreal .ge. real(spixel_scan_out%costjm_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%costjm_vmax,kind=sreal)) then
-      spixel_scan_out%costjm(i,j)=real(dummyreal,kind=sreal)
-   else
-      spixel_scan_out%costjm(i,j)=sreal_fill_value
-   end if
+   output_data%phase(i,j)=int(1,kind=byte)
 
    !-------------------------------------------------------------------------------
    ! costja
    !-------------------------------------------------------------------------------
-   dummyreal=real((Diag%Ja-spixel_scan_out%costja_offset)/spixel_scan_out%costja_scale,kind=sreal)
-   if (dummyreal .ge. real(spixel_scan_out%costja_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out%costja_vmax,kind=sreal)) then
-      spixel_scan_out%costja(i,j)=real(dummyreal,kind=sreal)
-   else
-      spixel_scan_out%costja(i,j)=sreal_fill_value
-   end if
+   temp_real=Diag%Ja
+   call prepare_float_packed_float &
+           (temp_real, output_data%costja(i,j), &
+            output_data%costja_scale, output_data%costja_offset, &
+            sreal_fill_value, sreal_fill_value, &
+            output_data%costja_vmin, output_data%costja_vmax, &
+            sreal_fill_value)
+
+   !-------------------------------------------------------------------------------
+   ! costjm
+   !-------------------------------------------------------------------------------
+   temp_real=Diag%Jm
+   call prepare_float_packed_float &
+           (temp_real, output_data%costjm(i,j), &
+            output_data%costjm_scale, output_data%costjm_offset, &
+            sreal_fill_value, sreal_fill_value, &
+            output_data%costjm_vmin, output_data%costjm_vmax, &
+            sreal_fill_value)
 
    !-------------------------------------------------------------------------------
    ! lsflag
    !-------------------------------------------------------------------------------
-   spixel_scan_out%lsflag(i,j)=int(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), kind=byte)
+   output_data%lsflag(i,j)=int(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), kind=byte)
 
    !-------------------------------------------------------------------------------
    ! qcflag
    !-------------------------------------------------------------------------------
-   spixel_scan_out%qcflag(i,j)=int(Diag%QCFlag,kind=sint)
+   output_data%qcflag(i,j)=int(Diag%QCFlag,kind=sint)
+
+   !----------------------------------------------------------------------------
+   ! illum
+   !----------------------------------------------------------------------------
+   output_data%illum(i,j)=MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0,1)
 
 end subroutine prepare_primary

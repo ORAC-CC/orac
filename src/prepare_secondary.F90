@@ -35,7 +35,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
-                             spixel_scan_out, spixel_scan_out_sec, status)
+                             output_data, status)
 
    use CTRL_def
    use Data_def
@@ -44,208 +44,188 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
 
    implicit none
 
-   type(CTRL_t),                           intent(in)    :: Ctrl
-   logical,                                intent(in)    :: lcovar
-   integer,                                intent(in)    :: i, j
-   type(Data_t),                           intent(in)    :: MSI_Data
-   type(SPixel_t),                         intent(in)    :: SPixel
-   type(Diag_t),                           intent(in)    :: Diag
-   type(spixel_scanline_primary_output),   intent(inout) :: spixel_scan_out
-   type(spixel_scanline_secondary_output), intent(inout) :: spixel_scan_out_sec
-   integer,                                intent(inout) :: status
+   type(CTRL_t),                intent(in)    :: Ctrl
+   logical,                     intent(in)    :: lcovar
+   integer,                     intent(in)    :: i, j
+   type(Data_t),                intent(in)    :: MSI_Data
+   type(SPixel_t),              intent(in)    :: SPixel
+   type(Diag_t),                intent(in)    :: Diag
+   type(output_data_secondary), intent(inout) :: output_data
+   integer,                     intent(inout) :: status
 
-   integer           :: ii
-   integer           :: js,is
-   integer           :: iinput
-   real(kind=sreal)  :: dummyreal
-
-   spixel_scan_out_sec%scanline_u(i,j)=i
-   spixel_scan_out_sec%scanline_v(i,j)=j
+   integer          :: ii,k,kk,l
+   real(kind=sreal) :: dummyreal
 
 
    !----------------------------------------------------------------------------
-   !
+   ! scanline_u, scanline_v
    !----------------------------------------------------------------------------
-   dummyreal=(SPixel%Xb(1)-spixel_scan_out_sec%cot_ap_offset)/ &
-                           spixel_scan_out_sec%cot_ap_scale
-
-   if (dummyreal .ge. real(spixel_scan_out_sec%cot_ap_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%cot_ap_vmax,kind=sreal)) then
-      spixel_scan_out_sec%cot_ap(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%cot_ap(i,j)=sint_fill_value
-   end if
-
-
-   dummyreal=(SPixel%X0(1)-spixel_scan_out_sec%cot_fg_offset)/ &
-                           spixel_scan_out_sec%cot_fg_scale
-
-   if (dummyreal .ge. real(spixel_scan_out_sec%cot_fg_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%cot_fg_vmax,kind=sreal)) then
-      spixel_scan_out_sec%cot_fg(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%cot_fg(i,j)=sint_fill_value
-   end if
+   output_data%scanline_u(i,j)=i
+   output_data%scanline_v(i,j)=j
 
    !----------------------------------------------------------------------------
-   !
+   ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
-   dummyreal=(SPixel%Xb(2)-spixel_scan_out_sec%ref_ap_offset)/ &
-                           spixel_scan_out_sec%ref_ap_scale
+   dummyreal=SPixel%Xb(1)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%cot_ap(i,j), &
+           output_data%cot_ap_scale, output_data%cot_ap_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
+           output_data%cot_ap_vmax)
 
-   if (dummyreal .ge. real(spixel_scan_out_sec%ref_ap_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%ref_ap_vmax,kind=sreal)) then
-      spixel_scan_out_sec%ref_ap(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%ref_ap(i,j)=sint_fill_value
-   end if
-
-   dummyreal=(SPixel%X0(2)-spixel_scan_out_sec%ref_fg_offset)/ &
-                           spixel_scan_out_sec%ref_fg_scale
-
-   if (dummyreal .ge. real(spixel_scan_out_sec%ref_fg_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%ref_fg_vmax,kind=sreal)) then
-      spixel_scan_out_sec%ref_fg(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%ref_fg(i,j)=sint_fill_value
-   end if
+   dummyreal=SPixel%X0(1)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%cot_fg(i,j), &
+            output_data%cot_fg_scale, output_data%cot_fg_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%cot_fg_vmin, output_data%cot_fg_vmax, &
+            output_data%cot_fg_vmax)
 
    !----------------------------------------------------------------------------
-   !
+   ! ref_ap, ref_fg
    !----------------------------------------------------------------------------
-   dummyreal=(SPixel%Xb(3)-spixel_scan_out_sec%ctp_ap_offset)/ &
-                           spixel_scan_out_sec%ctp_ap_scale
+   dummyreal=SPixel%Xb(2)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%ref_ap(i,j), &
+            output_data%ref_ap_scale, output_data%ref_ap_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ref_ap_vmin, output_data%ref_ap_vmax, &
+            output_data%ref_ap_vmax)
 
-   if (dummyreal .ge. real(spixel_scan_out_sec%ctp_ap_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%ctp_ap_vmax,kind=sreal)) then
-      spixel_scan_out_sec%ctp_ap(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%ctp_ap(i,j)=sint_fill_value
-   end if
-
-
-   dummyreal=(SPixel%X0(3)-spixel_scan_out_sec%ctp_fg_offset)/ &
-                           spixel_scan_out_sec%ctp_fg_scale
-
-   if (dummyreal .ge. real(spixel_scan_out_sec%ctp_fg_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%ctp_fg_vmax,kind=sreal)) then
-      spixel_scan_out_sec%ctp_fg(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%ctp_fg(i,j)=sint_fill_value
-   end if
+   dummyreal=SPixel%X0(2)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%ref_fg(i,j), &
+            output_data%ref_fg_scale, output_data%ref_fg_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ref_fg_vmin, output_data%ref_fg_vmax, &
+            output_data%ref_fg_vmax)
 
    !----------------------------------------------------------------------------
-   !
+   ! ctp_ap, ctp_fg
    !----------------------------------------------------------------------------
-   dummyreal=(SPixel%X0(5)-spixel_scan_out_sec%stemp_fg_offset)/ &
-                           spixel_scan_out_sec%stemp_fg_scale
+   dummyreal=SPixel%Xb(3)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%ctp_ap(i,j), &
+            output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
+            output_data%ctp_ap_vmax)
 
-   if (dummyreal .ge. real(spixel_scan_out_sec%stemp_fg_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%stemp_fg_vmax,kind=sreal)) then
-      spixel_scan_out_sec%stemp_fg(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%stemp_fg(i,j)=sint_fill_value
-   end if
+   dummyreal=SPixel%X0(3)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%ctp_fg(i,j), &
+            output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ctp_fg_vmin, output_data%ctp_fg_vmax, &
+            output_data%ctp_fg_vmax)
+
+   !----------------------------------------------------------------------------
+   ! stemp_ap, stemp_fg
+   !----------------------------------------------------------------------------
+   dummyreal=SPixel%X0(5)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%stemp_ap(i,j), &
+            output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
+            output_data%stemp_ap_vmax)
+
+   dummyreal=SPixel%X0(5)
+   call prepare_short_packed_float &
+           (dummyreal, output_data%stemp_fg(i,j), &
+            output_data%stemp_fg_scale, output_data%stemp_fg_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%stemp_fg_vmin, output_data%stemp_fg_vmax, &
+            output_data%stemp_fg_vmax)
+
+   !----------------------------------------------------------------------------
+   ! albedo
+   !----------------------------------------------------------------------------
+   do k=1,Ctrl%Ind%Nsolar
+      dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%YSeg0,k)
+      call prepare_short_packed_float &
+           (dummyreal, output_data%albedo(i,j,k), &
+            output_data%albedo_scale(k), output_data%albedo_offset(k), &
+            sreal_fill_value, sint_fill_value, &
+            output_data%albedo_vmin(k), output_data%albedo_vmax(k), &
+            sint_fill_value)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! channels
+   !----------------------------------------------------------------------------
+   do k=1,Ctrl%Ind%Ny
+      dummyreal=MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, k)
+      call prepare_short_packed_float &
+           (dummyreal, output_data%channels(i,j,k), &
+            output_data%channels_scale(k), output_data%channels_offset(k), &
+            sreal_fill_value, sint_fill_value, &
+            output_data%channels_vmin(k), output_data%channels_vmax(k), &
+            sint_fill_value)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! y0
+   !----------------------------------------------------------------------------
+   do k=1,SPixel%Ind%NY
+      ii = SPixel%spixel_y_to_ctrl_y_index(k)
+
+      dummyreal=Diag%Y0(k)
+      call prepare_short_packed_float &
+           (dummyreal, output_data%y0(i,j,ii), &
+            output_data%y0_scale(ii), output_data%y0_offset(ii), &
+            sreal_fill_value, sint_fill_value, &
+            output_data%y0_vmin(ii), output_data%y0_vmax(ii), &
+            sint_fill_value)
+   end do
 
    !----------------------------------------------------------------------------
    ! residuals
    !----------------------------------------------------------------------------
-   do iinput=1,SPixel%Ind%NY
-      ii = SPixel%spixel_y_to_ctrl_y_index(iinput)
+   do k=1,SPixel%Ind%NY
+      ii = SPixel%spixel_y_to_ctrl_y_index(k)
 
-      dummyreal=(Diag%YmFit(iinput)-spixel_scan_out_sec%res_offset(ii))/ &
-                                    spixel_scan_out_sec%res_scale(ii)
-
-      if (dummyreal .ge. real(spixel_scan_out_sec%res_vmin(ii),kind=sreal) .and. &
-          dummyreal .le. real(spixel_scan_out_sec%res_vmax(ii),kind=sreal)) then
-         spixel_scan_out_sec%residuals(i,j,ii)=int(dummyreal, kind=sint)
-      else
-         spixel_scan_out_sec%residuals(i,j,ii)=sint_fill_value
-      end if
+      dummyreal=Diag%YmFit(k)
+      call prepare_short_packed_float &
+           (dummyreal, output_data%residuals(i,j,ii), &
+            output_data%residuals_scale(ii), output_data%residuals_offset(ii), &
+            sreal_fill_value, sint_fill_value, &
+            output_data%residuals_vmin(ii), output_data%residuals_vmax(ii), &
+            sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
-   ! firstguess forward modelled radiance
-   !----------------------------------------------------------------------------
-   do iinput=1,SPixel%Ind%NY
-      ii = SPixel%spixel_y_to_ctrl_y_index(iinput)
-
-      dummyreal=(Diag%Y0(iinput)-spixel_scan_out_sec%y0_offset(ii))/ &
-                                 spixel_scan_out_sec%y0_scale(ii)
-
-      if (dummyreal .ge. real(spixel_scan_out_sec%y0_vmin(ii),kind=sreal) .and. &
-          dummyreal .le. real(spixel_scan_out_sec%y0_vmax(ii),kind=sreal)) then
-         spixel_scan_out_sec%y0(i,j,ii)=int(dummyreal, kind=sint)
-      else
-         spixel_scan_out_sec%y0(i,j,ii)=sint_fill_value
-      end if
-   end do
-
-   !----------------------------------------------------------------------------
-   ! reflectance and brightness temperature information
-   !----------------------------------------------------------------------------
-   do iinput=1,Ctrl%Ind%Ny
-      dummyreal=(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, iinput)- &
-                 spixel_scan_out_sec%chans_offset(iinput))/ &
-                 spixel_scan_out_sec%chans_scale(iinput)
-
-      if (dummyreal .ge. real(spixel_scan_out_sec%chans_vmin(iinput),kind=sreal) .and. &
-          dummyreal .le. real(spixel_scan_out_sec%chans_vmax(iinput),kind=sreal)) then
-         spixel_scan_out_sec%channels(i,j,iinput)=int(dummyreal, kind=sint)
-      else
-         spixel_scan_out_sec%channels(i,j,iinput)=sint_fill_value
-      end if
-   end do
-
-   !----------------------------------------------------------------------------
-   !
-   !----------------------------------------------------------------------------
-   if (lcovar) then
-      do is=1,SPixel%Nx
-         do js=1,SPixel%Nx
-            spixel_scan_out_sec%covariance(i,j,is,js)=real(SPixel%Sn(is,js),kind=sreal)
-
-            if ((spixel_scan_out_sec%covariance(i,j,is,js) .lt. &
-                 sreal_fill_value) .or. &
-                 (spixel_scan_out_sec%covariance(i,j,is,js) .gt. &
-                  abs(sreal_fill_value))) then
-               spixel_scan_out_sec%covariance(i,j,is,js)=sreal_fill_value
-            end if
-         end do
-      end do
-   end if
-
-   !----------------------------------------------------------------------------
-   ! surface albedo
-   !----------------------------------------------------------------------------
-   do iinput=1,Ctrl%Ind%Nsolar
-      dummyreal=((MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%YSeg0,iinput)- &
-                  spixel_scan_out_sec%alb_offset(iinput)))/ &
-                  spixel_scan_out_sec%alb_scale(iinput)
-
-      if (dummyreal .ge. real(spixel_scan_out_sec%alb_vmin(iinput),kind=sreal) .and. &
-          dummyreal .le. real(spixel_scan_out_sec%alb_vmax(iinput),kind=sreal)) then
-         spixel_scan_out_sec%albedo(i,j,iinput)=int(dummyreal, kind=sint)
-      else
-         spixel_scan_out_sec%albedo(i,j,iinput)=sint_fill_value
-      end if
-   end do
-
-   !----------------------------------------------------------------------------
-   ! degrees of freedom for signal
+   ! ds
    !----------------------------------------------------------------------------
    dummyreal = 0.0
 
-   do iinput=1,SPixel%Nx
-      dummyreal = dummyreal + Diag%AK(iinput,iinput)
+   do k=1,SPixel%Nx
+      dummyreal = dummyreal + Diag%AK(k,k)
    end do
 
-   dummyreal = (dummyreal-spixel_scan_out_sec%ds_offset)/spixel_scan_out_sec%ds_scale
-   if (dummyreal .ge. real(spixel_scan_out_sec%ds_vmin,kind=sreal) .and. &
-       dummyreal .le. real(spixel_scan_out_sec%ds_vmax,kind=sreal)) then
-      spixel_scan_out_sec%ds(i,j)=int(dummyreal, kind=sint)
-   else
-      spixel_scan_out_sec%ds(i,j)=sint_fill_value
+   dummyreal = (dummyreal-output_data%ds_offset)/output_data%ds_scale
+   call prepare_short_packed_float &
+           (dummyreal, output_data%ds(i,j), &
+            output_data%ds_scale, output_data%ds_offset, &
+            sreal_fill_value, sint_fill_value, &
+            output_data%ds_vmin, output_data%ds_vmax, &
+            sint_fill_value)
+
+   !----------------------------------------------------------------------------
+   ! covariance
+   !----------------------------------------------------------------------------
+   if (lcovar) then
+      do k=1,SPixel%Nx
+         do l=1,SPixel%Nx
+           call prepare_float_packed_float &
+                   (SPixel%Sn(k,l), output_data%covariance(i,j,k,l), &
+                    1., 0., &
+                    sreal_fill_value, sreal_fill_value, &
+                    0., huge(dummyreal), &
+                    sreal_fill_value)
+         end do
+      end do
    end if
 
 end subroutine prepare_secondary

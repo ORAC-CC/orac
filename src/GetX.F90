@@ -47,7 +47,7 @@
 !       when XMDAD setting is requested but unsuccessful.
 !       Added scaling of Sx.
 !    11th Jun 2001, Andy Smith:
-!       Xscale must be squared where used with Sx since Sx contains the square
+!       XScale must be squared where used with Sx since Sx contains the square
 !       of the errors in X.
 !     6th Jul 2001, Andy Smith:
 !       Update to comments.

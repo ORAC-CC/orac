@@ -93,6 +93,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
    use ECP_Constants
    use orac_ncdf
    use RTM_def
+   use nc_utils
 
    implicit none
 
@@ -113,7 +114,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
    real(sreal), allocatable :: dummy3d(:,:,:)
    character(Instnamelen)   :: platform, sensor, instname
    integer, allocatable     :: index(:), ChanID(:)
-!   real(4), allocatable     :: WvNumber(:)
+!  real(4), allocatable     :: WvNumber(:)
 
 
    !----------------------------------------------------------------------------
@@ -125,25 +126,25 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor_Name", sensor) /= NF90_NOERR .or.&
-        nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
-        stop 'ERROR: read_swrtm_nc(): Could not read global attributes.'
+       nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
+      stop 'ERROR: read_swrtm_nc(): Could not read global attributes.'
    if (sensor =='AATSR') then
       instname=trim(adjustl(sensor))
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) &
-        stop 'ERROR: read_swrtm_nc(): Instrument in RTM header inconsistent'
+      stop 'ERROR: read_swrtm_nc(): Instrument in RTM header inconsistent'
 
    allocate(ChanID(RTM%SW%NSWF))
-!   allocate(WvNumber(RTM%SW%NSWF))
+!  allocate(WvNumber(RTM%SW%NSWF))
 
    ! Read ChanID and WvNumber
    call nc_read_array(ncid, "sw_channel_instr_ids", ChanID, verbose)
-!   call nc_read_array(ncid, "sw_channel_wvl", WvNumber, verbose)
+!  call nc_read_array(ncid, "sw_channel_wvl", WvNumber, verbose)
 
    if (verbose) write(*,*) &
-        'SW channel instrument ids for RTM in SW preprocessing file',ChanID
+      'SW channel instrument ids for RTM in SW preprocessing file',ChanID
 
    ! Check that required solar channels are present
 
@@ -173,7 +174,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
    end do
 
    if (chan_found /= Ctrl%Ind%NSolar) &
-        stop 'ERROR: read_swrtm_nc(): required instrument channels not found'
+      stop 'ERROR: read_swrtm_nc(): required instrument channels not found'
 
    ! Allocate arrays
    allocate(RTM%SW%Tbc(RTM%SW%Grid%NLon, RTM%SW%Grid%NLat, Ctrl%Ind%NSolar, &
@@ -194,11 +195,10 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
 
    ! Close SwRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_swrtm_nc(): Error closing file.'
+      stop 'ERROR: read_swrtm_nc(): Error closing file.'
 
    if (allocated(index)) deallocate(index)
-!   if (allocated(WvNumber)) deallocate(WvNumber)
+!  if (allocated(WvNumber)) deallocate(WvNumber)
    if (allocated(ChanID)) deallocate(ChanID)
-
 
 end subroutine Read_SWRTM_nc

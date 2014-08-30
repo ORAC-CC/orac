@@ -32,21 +32,22 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
-                         spixel_scan_out, status)
+                         output_data, status)
 
    use CTRL_def
+   use nc_utils
    use SPixel_def
 
    implicit none
 
-   type(CTRL_t),                         intent(in)    :: Ctrl
-   integer,                              intent(in)    :: ncid
-   integer,                              intent(in)    :: ixstart
-   integer,                              intent(in)    :: ixstop
-   integer,                              intent(in)    :: iystart
-   integer,                              intent(in)    :: iystop
-   type(spixel_scanline_primary_output), intent(inout) :: spixel_scan_out
-   integer,                              intent(inout) :: status
+   type(CTRL_t),              intent(in)    :: Ctrl
+   integer,                   intent(in)    :: ncid
+   integer,                   intent(in)    :: ixstart
+   integer,                   intent(in)    :: ixstop
+   integer,                   intent(in)    :: iystart
+   integer,                   intent(in)    :: iystop
+   type(output_data_primary), intent(inout) :: output_data
+   integer,                   intent(inout) :: status
 
    character(len=20)  :: input_num
    character(len=500) :: input_dummy
@@ -54,95 +55,95 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
    integer            :: iviews
    integer            :: wo = 0
 
-   call nc_write_L2_double(ncid,'time',spixel_scan_out%vidtime,&
-           spixel_scan_out%time(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_double(ncid,'time',output_data%vid_time,&
+           output_data%time(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_float(ncid,'lon',spixel_scan_out%vidlon,&
-           spixel_scan_out%lon(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_float(ncid,'lat',spixel_scan_out%vidlat,&
-           spixel_scan_out%lat(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_float(ncid,'lat',output_data%vid_lat,&
+           output_data%lat(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_float(ncid,'lon',output_data%vid_lon,&
+           output_data%lon(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
    do iviews=1,Ctrl%Ind%NViews
 
       write(input_num,"(i4)") iviews
 
-      input_dummy='satellite_zenith_view'//trim(adjustl(input_num))
-      call nc_write_L2_float(ncid,trim(adjustl(input_dummy)),spixel_scan_out%vidsat_zen(iviews),&
-              spixel_scan_out%sat_zen(:,:,iviews),ixstart,ixstop,iystart,iystop,wo,ierr)
+      input_dummy='solar_zenith_view_no'//trim(adjustl(input_num))
+      call nc_write_float(ncid,trim(adjustl(input_dummy)),output_data%vid_sol_zen(iviews),&
+              output_data%sol_zen(:,:,iviews),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-      input_dummy='solar_zenith_view'//trim(adjustl(input_num))
-      call nc_write_L2_float(ncid,trim(adjustl(input_dummy)),spixel_scan_out%vidsol_zen(iviews),&
-              spixel_scan_out%sol_zen(:,:,iviews),ixstart,ixstop,iystart,iystop,wo,ierr)
+      input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
+      call nc_write_float(ncid,trim(adjustl(input_dummy)),output_data%vid_sat_zen(iviews),&
+              output_data%sat_zen(:,:,iviews),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-      input_dummy='rel_azimuth_view'//trim(adjustl(input_num))
-      call nc_write_L2_float(ncid,trim(adjustl(input_dummy)),spixel_scan_out%vidrel_azi(iviews),&
-              spixel_scan_out%rel_azi(:,:,iviews),ixstart,ixstop,iystart,iystop,wo,ierr)
+      input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
+      call nc_write_float(ncid,trim(adjustl(input_dummy)),output_data%vid_rel_azi(iviews),&
+              output_data%rel_azi(:,:,iviews),ixstart,ixstop,iystart,iystop,wo,ierr)
 
    end do
 
-   call nc_write_L2_short(ncid,'cot',spixel_scan_out%vidcot,&
-           spixel_scan_out%cot(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'cot_uncertainty',spixel_scan_out%vidcoterror,&
-           spixel_scan_out%cot_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cot',output_data%vid_cot,&
+           output_data%cot(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cot_uncertainty',output_data%vid_coterror,&
+           output_data%cot_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'ref',spixel_scan_out%vidref,&
-           spixel_scan_out%ref(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'ref_uncertainty',spixel_scan_out%vidreferror,&
-           spixel_scan_out%ref_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ref',output_data%vid_ref,&
+           output_data%ref(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ref_uncertainty',output_data%vid_referror,&
+           output_data%ref_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'ctp',spixel_scan_out%vidctp,&
-           spixel_scan_out%ctp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'ctp_uncertainty',spixel_scan_out%vidctperror,&
-           spixel_scan_out%ctp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ctp',output_data%vid_ctp,&
+           output_data%ctp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ctp_uncertainty',output_data%vid_ctperror,&
+           output_data%ctp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'cc_total',spixel_scan_out%vidcct,&
-           spixel_scan_out%cct(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'cc_total_uncertainty',spixel_scan_out%vidccterror,&
-           spixel_scan_out%cct_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cc_total',output_data%vid_cct,&
+           output_data%cct(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cc_total_uncertainty',output_data%vid_ccterror,&
+           output_data%cct_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'stemp',spixel_scan_out%vidstemp,&
-           spixel_scan_out%stemp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'stemp_uncertainty',spixel_scan_out%vidstemperror,&
-           spixel_scan_out%stemp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'stemp',output_data%vid_stemp,&
+           output_data%stemp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'stemp_uncertainty',output_data%vid_stemperror,&
+           output_data%stemp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'cth',spixel_scan_out%vidcth,&
-           spixel_scan_out%cth(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'cth_uncertainty',spixel_scan_out%vidctherror,&
-           spixel_scan_out%cth_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cth',output_data%vid_cth,&
+           output_data%cth(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cth_uncertainty',output_data%vid_ctherror,&
+           output_data%cth_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'ctt',spixel_scan_out%vidctt,&
-           spixel_scan_out%ctt(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'ctt_uncertainty',spixel_scan_out%vidctterror,&
-           spixel_scan_out%ctt_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ctt',output_data%vid_ctt,&
+           output_data%ctt(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ctt_uncertainty',output_data%vid_ctterror,&
+           output_data%ctt_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'cwp',spixel_scan_out%vidcwp,&
-           spixel_scan_out%cwp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'cwp_uncertainty',spixel_scan_out%vidcwperror,&
-           spixel_scan_out%cwp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cwp',output_data%vid_cwp,&
+           output_data%cwp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cwp_uncertainty',output_data%vid_cwperror,&
+           output_data%cwp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_byte(ncid,'convergence',spixel_scan_out%vidconvergence,&
-           spixel_scan_out%convergence(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_byte(ncid,'convergence',output_data%vid_convergence,&
+           output_data%convergence(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_byte(ncid,'niter',spixel_scan_out%vidniter,&
-           spixel_scan_out%niter(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_byte(ncid,'niter',output_data%vid_niter,&
+           output_data%niter(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_byte(ncid,'phase',spixel_scan_out%vidpchange,&
-           spixel_scan_out%pchange(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_byte(ncid,'phase',output_data%vid_phase,&
+           output_data%phase(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_float(ncid,'costja',spixel_scan_out%vidcostja,&
-           spixel_scan_out%costja(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_float(ncid,'costja',output_data%vid_costja,&
+           output_data%costja(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_float(ncid,'costjm',spixel_scan_out%vidcostjm,&
-           spixel_scan_out%costjm(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_float(ncid,'costjm',output_data%vid_costjm,&
+           output_data%costjm(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_byte(ncid,'lsflag',spixel_scan_out%vidlsflag,&
-           spixel_scan_out%lsflag(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_byte(ncid,'lsflag',output_data%vid_lsflag,&
+           output_data%lsflag(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'qcflag',spixel_scan_out%vidqcflag,&
-           spixel_scan_out%qcflag(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'qcflag',output_data%vid_qcflag,&
+           output_data%qcflag(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_byte(ncid,'illum',spixel_scan_out%vidillum,&
-           spixel_scan_out%illum(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_byte(ncid,'illum',output_data%vid_illum,&
+           output_data%illum(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
    if (ierr .ne. 0 ) then
       status=PrimaryFileWriteErr

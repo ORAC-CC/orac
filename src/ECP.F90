@@ -207,6 +207,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use omp_lib
    use orac_ncdf, only: nf90_close, NF90_NOERR
    use output_routines
+   use nc_utils
    use Read_SAD_def
    use RTM_def
    use RTM_Pc_def
@@ -279,8 +280,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    logical :: lcovar = .FALSE.
 
    ! Additional types for the scanline output for netcdf are defined
-   type(spixel_scanline_primary_output)   :: spixel_scan_out
-   type(spixel_scanline_secondary_output) :: spixel_scan_out_sec
+   type(output_data_primary)   :: output_data_1
+   type(output_data_secondary) :: output_data_2
 
    ! Some netcdf related indices and labels
    integer :: ierr
@@ -300,7 +301,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
 #ifdef USE_TIMING
    ! This is for timing the different parts of the code on AIX IBM PWR7 at ECMWF
-   integer(kind=sint) :: m0,m1,m2,m3,mclock
+   integer(kind=lint) :: m0,m1,m2,m3,mclock
    real(kind=dreal)   :: r0,r1,r2,r3,rtc
    real(kind=dreal)   :: cpu_secs,real_secs
 #endif
@@ -358,7 +359,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Temporary until this is made an argument (somehow)
    verbose=.true.
-   
+
    ! Read Ctrl struct from driver file
    call Read_Driver(Ctrl,conf,message,nargs,drifile,status)
 
@@ -544,38 +545,38 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             xstep = 2
             ystep = 2
          end if
-
-         write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
       else
          lhres = .true.
 
          xstep = 1
          ystep = 1
-
-         write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
       end if
+
+      write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
 #endif
 
       ! Open the netcdf output files
       if (status == 0) then
          write(*,*) 'path1: ',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
-         call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_primary_outputpath_and_file),&
-            ncid_primary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,1,status)
+         call nc_create(Ctrl%FID%L2_primary_outputpath_and_file, ncid_primary, &
+            ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, wo, 1,status)
+
          write(*,*) 'path2: ',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
-         call nc_create_global_l2(Ctrl,adjustl(Ctrl%FID%L2_secondary_outputpath_and_file),&
-           ncid_secondary, ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,2, status)
+         call nc_create(Ctrl%FID%L2_secondary_outputpath_and_file, ncid_secondary, &
+           ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, wo, 2, status)
 
          ! Allocate output arrays
-         call alloc_spixel_scan_out(ixstart,ixstop,iystart,iystop,Ctrl%Ind%NViews, &
-                                    spixel_scan_out)
-         call alloc_spixel_scan_out_sec(ixstart,ixstop,iystart,iystop,Ctrl%Ind%Ny, &
-                                        MaxStateVar,lcovar,spixel_scan_out_sec)
+         call alloc_output_data_primary(ixstart,ixstop,iystart,iystop, &
+                                        Ctrl%Ind%NViews, output_data_1)
+         call alloc_output_data_secondary(ixstart,ixstop,iystart,iystop, &
+                                          Ctrl%Ind%Ny,MaxStateVar,lcovar, &
+                                          output_data_2)
 
          ! Create NetCDF files and variables
-         call def_vars_primary(Ctrl, ncid_primary, dims_var, spixel_scan_out, &
+         call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1, &
                                status)
          call def_vars_secondary(Ctrl, conf, lcovar, ncid_secondary, dims_var, &
-                                 spixel_scan_out_sec, status)
+                                 output_data_2, status)
       end if
 
 
@@ -647,10 +648,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       SPixel%Loc%LastX0 = 1
       SPixel%Loc%LastX0 = 1
 
-
-      ! Set the counter for the image y dimension to the first row to process
-      i = ixstart
-
       ! Start OMP parallel loop for along track direction.
       !$OMP DO SCHEDULE(GUIDED)
       do j = iystart,iystop,ystep
@@ -673,9 +670,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          ! on warm start: for the first row of SPixels processed the X range is
          ! Ctrl%Ind%Xstart to ixstop; for the remainder it is X0 to ixstop (in
          ! both cases the limits used are modified to whole numbers of SPixels).
-         do
-            !write(*,*) '(i,j)',i,j
-
+         do i = ixstart,ixstop,xstep
             SPixel%Loc%X0 = i
 
             Diag%YmFit = MissingXn
@@ -762,20 +757,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
                ! Copy output to spixel_scan_out structures
                call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
-                                    Diag, spixel_scan_out, status)
+                                    Diag, output_data_1, status)
                call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
-                                      spixel_scan_out, spixel_scan_out_sec, status)
+                                      output_data_2, status)
 
             end if ! End of status check after Get_SPixel
 
-            i = i + xstep
-
-            if (i > ixstop) exit
-
          end do ! End of super-pixel X loop
 
-         i = Ctrl%Ind%X0
-      end do    ! End of super-pixel Y loop
+      end do ! End of super-pixel Y loop
 
       !$OMP END DO
 
@@ -802,9 +792,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       if (status == 0) then
          ! Write output from spixel_scan_out structures NetCDF files
          call write_primary(Ctrl, ncid_primary, ixstart, ixstop, iystart, iystop, &
-                            spixel_scan_out, status)
+                            output_data_1, status)
          call write_secondary(Ctrl, lcovar, SPixel, ncid_secondary, ixstart, ixstop, &
-                              iystart, iystop, spixel_scan_out_sec, status)
+                              iystart, iystop, output_data_2, status)
       end if
 
 
@@ -861,8 +851,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call Dealloc_Data(Ctrl, MSI_Data, status)
 
    if (status == 0) then
-      call dealloc_spixel_scan_out(spixel_scan_out)
-      call dealloc_spixel_scan_out_sec(spixel_scan_out_sec,lcovar)
+      call dealloc_output_data_primary(output_data_1)
+      call dealloc_output_data_secondary(output_data_2,lcovar)
    end if
 
    call Dealloc_Ctrl(Ctrl, status)

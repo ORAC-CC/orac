@@ -117,8 +117,6 @@ module ECP_constants
                                                     ! to avoid annoying line breaks.
    integer, parameter :: FilenameLen      = 2048    ! Max. length of filenames
    integer, parameter :: InstNameLen      = 16      ! Max. length of instrument name
-   integer, parameter :: NetcdfVarLength  = 150
-   integer, parameter :: NetcdfUnitLength = 150
 
    ! Maximum array lengths
    integer, parameter :: MaxDiagFlags     = 14      ! Max no. of flags in diagnostic flag

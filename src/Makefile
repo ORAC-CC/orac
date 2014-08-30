@@ -238,9 +238,6 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/InvertMarquardt.o \
            $(OBJS)/locate.o \
            $(OBJS)/output_routines.o \
-           $(OBJS)/nc_create_global.o \
-           $(OBJS)/nc_defdata.o \
-           $(OBJS)/nc_write_L2.o \
            $(OBJS)/polint.o \
            $(OBJS)/R2T.o \
            $(OBJS)/read_config_file.o \
@@ -286,10 +283,10 @@ ORAC_OBJ_MAIN = $(OBJS)/ECP.o
 
 # .F90 was originally the extension on DecUnix, but seems to be allowed by the
 # ifc/ifort compiler.
-$(OBJS)/%.o: %.f90
+$(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
-$(OBJS)/%.o: %.F90
+$(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 
@@ -313,7 +310,7 @@ clean_cpp tidy_cpp:
 	rm -f *.cpp
 
 clean tidy:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod orac
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac
 
 
 # Utilities to change source code extensions when moving between DEC Unix and

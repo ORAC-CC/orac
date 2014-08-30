@@ -49,12 +49,10 @@ $(OBJS)/InvertMarquardt.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o 
         $(OBJS)/SPixel.o
 $(OBJS)/locate.o: $(OBJS)/ECPConstants.o
 $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
-        $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o $(OBJS)/config.o def_vars_primary.F90 \
-        def_vars_secondary.F90 prepare_primary.F90 prepare_secondary.F90 \
-        write_primary.F90 write_secondary.F90
-$(OBJS)/nc_create_global.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
-$(OBJS)/nc_defdata.o: $(OBJS)/ECPConstants.o
-$(OBJS)/nc_write_L2.o: $(OBJS)/ECPConstants.o
+        $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o \
+        $(OBJS)/config.o alloc_output_data.F90 dealloc_output_data.F90 \
+        def_vars_primary.F90 def_vars_secondary.F90 prepare_primary.F90 \
+        prepare_secondary.F90 write_primary.F90 write_secondary.F90
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
 $(OBJS)/R2T.o: $(OBJS)/SADChan.o
 $(OBJS)/read_config_file.o: $(OBJS)/Ctrl.o $(OBJS)/config.o
@@ -91,8 +89,7 @@ $(OBJS)/SetLimits.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/SetSy.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/SetUnit.o: $(OBJS)/SPixel.o
 $(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o \
-        AllocSPixel.F90 DeallocSPixel.F90 alloc_spixel_scan_out.F90 \
-        dealloc_spixel_scan_out.F90
+        AllocSPixel.F90 DeallocSPixel.F90
 $(OBJS)/t_extrap_strat.o: $(OBJS)/SPixel.o
 $(OBJS)/T2R.o: $(OBJS)/SADChan.o
 $(OBJS)/WriteDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \

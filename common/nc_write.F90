@@ -5,7 +5,7 @@
 !-------------------------------------------------------------------------------
 
 !-------------------------------------------------------------------------------
-! Name: nc_write_L2.F90
+! Name: nc_write.F90
 !
 ! Purpose:
 ! This file contains a collection of subroutines which write L2 data in
@@ -22,21 +22,21 @@
 ! History:
 ! 2011/12/19, Matthias Jerg: Creates initial file.
 ! 2012/09/15, Matthias Jerg: Specified error more clearly.
-! 2012/11/03, MST: Changed the way nf90_put_var is called in nc_write_L2_short.
+! 2012/11/03, MST: Changed the way nf90_put_var is called in nc_write_short.
 ! 2013/01/23, Caroline Poulsen: Changed selected varname also had to change.
 !    write_secondary_inc
 ! 2013/xx/xx, Matthias Jerg: Implemented MST change.
 ! 2014/08/04, Greg McGarragh: Cleaned up the code.
 !
-! $Id$
+! $Id: nc_write_L2.F90 2290 2014-08-12 08:24:01Z gmcgarragh $
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_write_L2_float(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+subroutine nc_write_float(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
-   use ECP_Constants
+   use common_constants
    use netcdf
 
    implicit none
@@ -66,7 +66,7 @@ subroutine nc_write_L2_float(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
    ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = '
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
       stop
    end if
 
@@ -74,12 +74,12 @@ subroutine nc_write_L2_float(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
       write(*,*) 'wrote variable: ', trim(var_name)
    end if
 
-end subroutine nc_write_L2_float
+end subroutine nc_write_float
 
 
-subroutine nc_write_L2_double(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+subroutine nc_write_double(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
-   use ECP_Constants
+   use common_Constants
    use netcdf
 
    implicit none
@@ -110,7 +110,7 @@ subroutine nc_write_L2_double(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
    ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = '
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
       stop
    end if
 
@@ -118,13 +118,13 @@ subroutine nc_write_L2_double(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
       write(*,*) 'wrote variable: ', trim(var_name)
    end if
 
-end subroutine nc_write_L2_double
+end subroutine nc_write_double
 
 
 
-subroutine nc_write_L2_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+subroutine nc_write_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
-   use ECP_Constants
+   use common_constants
    use netcdf
 
    implicit none
@@ -154,7 +154,7 @@ subroutine nc_write_L2_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
    ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = '
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
       stop
    end if
 
@@ -162,13 +162,13 @@ subroutine nc_write_L2_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
       write(*,*) 'wrote variable: ', trim(var_name)
    end if
 
-end subroutine nc_write_L2_short
+end subroutine nc_write_short
 
 
 
-subroutine nc_write_L2_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+subroutine nc_write_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
-   use ECP_Constants
+   use common_Constants
    use netcdf
 
    implicit none
@@ -198,7 +198,7 @@ subroutine nc_write_L2_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
    ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = '
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
       stop
    end if
 
@@ -206,12 +206,12 @@ subroutine nc_write_L2_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
       write(*,*) 'wrote variable: ', trim(var_name)
    end if
 
-end subroutine nc_write_L2_long
+end subroutine nc_write_long
 
 
-subroutine nc_write_L2_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+subroutine nc_write_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
-   use ECP_Constants
+   use common_constants
    use netcdf
 
    implicit none
@@ -241,7 +241,7 @@ subroutine nc_write_L2_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
    ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = '
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
       stop
    end if
 
@@ -249,4 +249,4 @@ subroutine nc_write_L2_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
       write(*,*) 'wrote variable: ', trim(var_name)
    end if
 
-end subroutine nc_write_L2_byte
+end subroutine nc_write_byte

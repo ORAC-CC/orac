@@ -113,8 +113,8 @@
 !   20131125, MJ: Dynamically sets upper limit for CTP to highest pressure in
 !      profile to avoid extrapolation problems.
 !   20131206, MJ: Add deallocation statements to fix memory leaks.
-!   20140115, GM: Ctrl%Invpar%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np), from
-!      20131125 should be SPixel%Xulim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np) but
+!   20140115, GM: Ctrl%Invpar%XULim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np), from
+!      20131125 should be SPixel%XULim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np) but
 !      it would also be clearer to move it just out of FM() to just after
 !      Set_Limits() is called which is what was done here.
 !   20140117, MJ: Comments out usage of  some temp_* variables as they appear to

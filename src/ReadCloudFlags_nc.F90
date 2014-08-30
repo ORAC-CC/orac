@@ -100,7 +100,6 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    integer :: ncid
 
-
    ! Open cloud flag file
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
    call nc_open(ncid, Ctrl%Fid%CF)
@@ -112,7 +111,6 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    ! Close cloud flag file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_cloudflags_nc(): Error closing file.'
-
+      stop 'ERROR: read_cloudflags_nc(): Error closing file.'
 
 end subroutine Read_CloudFlags_nc

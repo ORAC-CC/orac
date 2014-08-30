@@ -26,7 +26,7 @@
 ! 2012/11/03, MJ: Changed range specifications of ctp and stemp
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
 ! 2013/xx/xx, MJ: Various changes to avoid cut-offs other fixes.
-! 2013/10/06, CP: Bug fix  created relative azimuth angle in primary file
+! 2013/10/06, CP: Bug fix created relative azimuth angle in primary file
 ! 2014/04/01, MJ: Cleanup and fix for illum
 ! 2014/06/13, GM: Put the code into a subroutine.
 ! 2014/06/13, GM: Cleaned up the code.
@@ -43,27 +43,29 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
+subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
 
    use CTRL_def
-   use netcdf
+   use nc_utils
    use SPixel_def
+
+   use netcdf
 
    implicit none
 
-   type(CTRL_t),                         intent(in)    :: Ctrl
-   integer,                              intent(in)    :: ncid
-   integer,                              intent(in)    :: dims_var(2)
-   type(spixel_scanline_primary_output), intent(inout) :: spixel_scan_out
-   integer,                              intent(inout) :: status
+   type(CTRL_t),              intent(in)    :: Ctrl
+   integer,                   intent(in)    :: ncid
+   integer,                   intent(in)    :: dims_var(2)
+   type(output_data_primary), intent(inout) :: output_data
+   integer,                   intent(inout) :: status
 
-   character(len=20)  :: input_num
-   character(len=500) :: input_dummy
-   character(len=100) :: time_string
-   character(len=500) :: s_input_dummy
+   character(len=32)  :: input_num
+   character(len=512) :: input_dummy
+   character(len=512) :: input_dummy2
+   character(len=512) :: input_dummy3
    integer            :: ierr
    integer            :: iviews
-   integer            :: wo = 0
+   logical            :: verbose = .false.
 
 
    !----------------------------------------------------------------------------
@@ -79,66 +81,69 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   spixel_scan_out%time_scale=1.0_dreal
-   spixel_scan_out%time_offset=0.00_dreal
-   spixel_scan_out%time_vmin=0.0_dreal
-   spixel_scan_out%time_vmax=1.0D10
-   spixel_scan_out%time_fv=-32767.0
+   output_data%time_scale=1.0
+   output_data%time_offset=0.0
+   output_data%time_vmin=0.0
+   output_data%time_vmax=1.0e10
 
    if (trim(Ctrl%inst%name) .eq. 'AATSR') then
-      time_string='Julian Date, days elapsed since 12:00 January 1, 2000'
+      input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
-      time_string='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
+      input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
    end if
 
-   call nc_defdata_double(ncid, dims_var, &
+   call nc_def_var_double_packed_double(ncid, dims_var, &
            'time', &
-           spixel_scan_out%vidtime, &
+           output_data%vid_time, &
            'time', &
            'time', &
-           time_string, &
-           spixel_scan_out%time_fv, &
-           spixel_scan_out%time_scale,spixel_scan_out%time_offset, &
-           spixel_scan_out%time_vmin,spixel_scan_out%time_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! lon
-   !----------------------------------------------------------------------------
-   spixel_scan_out%lon_scale=1.0
-   spixel_scan_out%lon_offset=0.00
-   spixel_scan_out%lon_vmin=-180.0
-   spixel_scan_out%lon_vmax=180.0
-
-   call nc_defdata_float(ncid, dims_var, &
-           'lon', &
-           spixel_scan_out%vidlon, &
-           'longitude', &
-           'longitude', &
-           'degrees_east', &
-           sreal_fill_value, &
-           spixel_scan_out%lon_scale,spixel_scan_out%lon_offset, &
-           spixel_scan_out%lon_vmin,spixel_scan_out%lon_vmax,wo,ierr)
+           dreal_fill_value, &
+           output_data%time_scale,output_data%time_offset, &
+           output_data%time_vmin,output_data%time_vmax, &
+           verbose,ierr, &
+           units=input_dummy)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! lat
    !----------------------------------------------------------------------------
-   spixel_scan_out%lat_scale=1.0
-   spixel_scan_out%lat_offset=0.00
-   spixel_scan_out%lat_vmin=-90.0
-   spixel_scan_out%lat_vmax=90.0
+   output_data%lat_scale=1.0
+   output_data%lat_offset=0.0
+   output_data%lat_vmin=-90.0
+   output_data%lat_vmax=90.0
 
-   call nc_defdata_float(ncid, dims_var, &
+   call nc_def_var_float_packed_float(ncid, dims_var, &
            'lat', &
-           spixel_scan_out%vidlat, &
+           output_data%vid_lat, &
            'latitude', &
            'latitude', &
-           'degrees_north', sreal_fill_value, &
-           spixel_scan_out%lat_scale,spixel_scan_out%lat_offset, &
-           spixel_scan_out%lat_vmin,spixel_scan_out%lat_vmax,wo,ierr)
+           sreal_fill_value, &
+           output_data%lat_scale,output_data%lat_offset, &
+           output_data%lat_vmin,output_data%lat_vmax, &
+           verbose,ierr, &
+           units='degrees_north')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! lon
+   !----------------------------------------------------------------------------
+   output_data%lon_scale=1.0
+   output_data%lon_offset=0.0
+   output_data%lon_vmin=-180.0
+   output_data%lon_vmax=180.0
+
+   call nc_def_var_float_packed_float(ncid, dims_var, &
+           'lon', &
+           output_data%vid_lon, &
+           'longitude', &
+           'longitude', &
+           sreal_fill_value, &
+           output_data%lon_scale,output_data%lon_offset, &
+           output_data%lon_vmin,output_data%lon_vmax, &
+           verbose,ierr, &
+           units='degrees_east')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -150,71 +155,77 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
       write(input_num,"(i4)") iviews
 
       !-------------------------------------------------------------------------
-      ! satellite_zenith_view_no
+      ! solar_zenith_view_no*
       !-------------------------------------------------------------------------
-      input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
-      s_input_dummy='platform_zenith_angle_for view_no_'//trim(adjustl(input_num))
+      input_dummy='solar_zenith_view_no_'//trim(adjustl(input_num))
+      input_dummy2='solar zenith angle for view no_'//trim(adjustl(input_num))
+      input_dummy3='solar_zenith_angle_for_view_no_'//trim(adjustl(input_num))
 
-      spixel_scan_out%sat_scale=1.0
-      spixel_scan_out%sat_offset=0.00
-      spixel_scan_out%sat_vmin=-180.0
-      spixel_scan_out%sat_vmax=180.0
+      output_data%sol_scale=1.0
+      output_data%sol_offset=0.0
+      output_data%sol_vmin=-180.0
+      output_data%sol_vmax=180.0
 
-      call nc_defdata_float(ncid, dims_var, &
+      call nc_def_var_float_packed_float(ncid, dims_var, &
               trim(adjustl(input_dummy)), &
-              spixel_scan_out%vidsat_zen(iviews), &
-              trim(adjustl(input_dummy)), &
-              trim(adjustl(s_input_dummy)), &
-              'degrees', &
+              output_data%vid_sol_zen(iviews), &
+              trim(adjustl(input_dummy2)), &
+              trim(adjustl(input_dummy3)), &
               sreal_fill_value, &
-              spixel_scan_out%sat_scale,spixel_scan_out%sat_offset, &
-              spixel_scan_out%sat_vmin,spixel_scan_out%sat_vmax,wo,ierr)
+              output_data%sol_scale,output_data%sol_offset, &
+              output_data%sol_vmin,output_data%sol_vmax, &
+              verbose,ierr, &
+              units='degrees')
 
       if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
       !-------------------------------------------------------------------------
-      ! solar_zenith_view_no
+      ! satellite_zenith_view_no*
       !-------------------------------------------------------------------------
-      input_dummy='solar_zenith_view_no'//trim(adjustl(input_num))
-      s_input_dummy='solar_zenith_angle_for view_no_'//trim(adjustl(input_num))
+      input_dummy='sensor_view_view_no_'//trim(adjustl(input_num))
+      input_dummy2='sensor view angle for view no '//trim(adjustl(input_num))
+      input_dummy3='sensor_view_angle_for_view_no_'//trim(adjustl(input_num))
 
-      spixel_scan_out%sol_scale=1.0
-      spixel_scan_out%sol_offset=0.00
-      spixel_scan_out%sol_vmin=-180.0
-      spixel_scan_out%sol_vmax=180.0
+      output_data%sat_scale=1.0
+      output_data%sat_offset=0.0
+      output_data%sat_vmin=-180.0
+      output_data%sat_vmax=180.0
 
-      call nc_defdata_float(ncid, dims_var, &
+      call nc_def_var_float_packed_float(ncid, dims_var, &
               trim(adjustl(input_dummy)), &
-              spixel_scan_out%vidsol_zen(iviews), &
-              trim(adjustl(input_dummy)), &
-              trim(adjustl(s_input_dummy)), &
-              'degrees', &
+              output_data%vid_sat_zen(iviews), &
+              trim(adjustl(input_dummy2)), &
+              trim(adjustl(input_dummy3)), &
               sreal_fill_value, &
-              spixel_scan_out%sol_scale,spixel_scan_out%sol_offset, &
-              spixel_scan_out%sol_vmin,spixel_scan_out%sol_vmax,wo,ierr)
+              output_data%sat_scale,output_data%sat_offset, &
+              output_data%sat_vmin,output_data%sat_vmax, &
+              verbose,ierr, &
+              units='degrees')
 
       if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
       !-------------------------------------------------------------------------
-      ! rel_azimuth_view_no
+      ! rel_azimuth_view_no*
       !-------------------------------------------------------------------------
-      input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
-      s_input_dummy='angle_of_rotation_from_solar_azimuth_to_platform_azimuth_for view_no_'//trim(adjustl(input_num))
+      input_dummy='relative_azimuth_view_no_'//trim(adjustl(input_num))
+      input_dummy2='relative azimuth angle for view for no'//trim(adjustl(input_num))
+      input_dummy3='angle_of_rotation_from_solar_azimuth_to_platform_azimuth'//trim(adjustl(input_num))
 
-      spixel_scan_out%azi_scale=1.0
-      spixel_scan_out%azi_offset=0.00
-      spixel_scan_out%azi_vmin=-180.0
-      spixel_scan_out%azi_vmax=180.0
+      output_data%azi_scale=1.0
+      output_data%azi_offset=0.0
+      output_data%azi_vmin=-180.0
+      output_data%azi_vmax=180.0
 
-      call nc_defdata_float(ncid, dims_var, &
+      call nc_def_var_float_packed_float(ncid, dims_var, &
               trim(adjustl(input_dummy)), &
-              spixel_scan_out%vidrel_azi(iviews), &
-              trim(adjustl(input_dummy)), &
-              trim(adjustl(s_input_dummy)), &
-              'degrees', &
+              output_data%vid_rel_azi(iviews), &
+              trim(adjustl(input_dummy2)), &
+              trim(adjustl(input_dummy3)), &
               sreal_fill_value, &
-              spixel_scan_out%azi_scale,spixel_scan_out%azi_offset, &
-              spixel_scan_out%azi_vmin,spixel_scan_out%azi_vmax,wo,ierr)
+              output_data%azi_scale,output_data%azi_offset, &
+              output_data%azi_vmin,output_data%azi_vmax, &
+              verbose,ierr, &
+              units='degrees')
 
       if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -223,488 +234,506 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, spixel_scan_out, status)
    !----------------------------------------------------------------------------
    ! cot
    !----------------------------------------------------------------------------
-   spixel_scan_out%cot_scale=0.01
-   spixel_scan_out%cot_offset=0.0
-   spixel_scan_out%cot_vmin=0
-   spixel_scan_out%cot_vmax=32000
+   output_data%cot_scale=0.01
+   output_data%cot_offset=0.0
+   output_data%cot_vmin=0
+   output_data%cot_vmax=32000
 
-   call nc_defdata_short_no_units(ncid, dims_var, &
+   call nc_def_var_short_packed_float(ncid, dims_var, &
            'cot', &
-           spixel_scan_out%vidcot, &
+           output_data%vid_cot, &
            'cloud optical thickness', &
            'atmosphere_optical_thickness_due_to_cloud', &
            sint_fill_value, &
-           spixel_scan_out%cot_scale,spixel_scan_out%cot_offset, &
-           spixel_scan_out%cot_vmin,spixel_scan_out%cot_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! ref
-   !----------------------------------------------------------------------------
-   spixel_scan_out%ref_scale=0.01
-   spixel_scan_out%ref_offset=0.00
-   spixel_scan_out%ref_vmin=0
-   spixel_scan_out%ref_vmax=20000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'ref', &
-           spixel_scan_out%vidref, &
-           'effective radius', &
-           'effective_radius_of_cloud_condensed_water_particles_at_cloud_top', &
-           'micrometer', &
-           sint_fill_value, &
-           spixel_scan_out%ref_scale,spixel_scan_out%ref_offset, &
-           spixel_scan_out%ref_vmin,spixel_scan_out%ref_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! ctp
-   !----------------------------------------------------------------------------
-   spixel_scan_out%ctp_scale=0.1
-   spixel_scan_out%ctp_offset=0.00
-   spixel_scan_out%ctp_vmin=0
-   spixel_scan_out%ctp_vmax=12000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'ctp', &
-           spixel_scan_out%vidctp, &
-           'cloud top pressure', &
-           'air_pressure_at_cloud_top', &
-           'hPa', &
-           sint_fill_value, &
-           spixel_scan_out%ctp_scale,spixel_scan_out%ctp_offset, &
-           spixel_scan_out%ctp_vmin,spixel_scan_out%ctp_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! cc_total
-   !----------------------------------------------------------------------------
-   spixel_scan_out%cct_scale=0.01
-   spixel_scan_out%cct_offset=0.00
-   spixel_scan_out%cct_vmin=0
-   spixel_scan_out%cct_vmax=100
-
-   call nc_defdata_short(ncid, dims_var, &
-           'cc_total', &
-           spixel_scan_out%vidcct, &
-           'cloud fraction', &
-           'cloud_area_fraction', &
-           '', &
-           sint_fill_value, &
-           spixel_scan_out%cct_scale,spixel_scan_out%cct_offset, &
-           spixel_scan_out%cct_vmin,spixel_scan_out%cct_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! stemp
-   !----------------------------------------------------------------------------
-   spixel_scan_out%stemp_scale=0.01
-   spixel_scan_out%stemp_offset=0.00
-   spixel_scan_out%stemp_vmin=0
-   spixel_scan_out%stemp_vmax=32000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'stemp', &
-           spixel_scan_out%vidstemp, &
-           'surface temperature', &
-           'surface_temperature', &
-           'kelvin', &
-           sint_fill_value, &
-           spixel_scan_out%stemp_scale,spixel_scan_out%stemp_offset, &
-           spixel_scan_out%stemp_vmin,spixel_scan_out%stemp_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! cth
-   !----------------------------------------------------------------------------
-   spixel_scan_out%cth_scale=0.01
-   spixel_scan_out%cth_offset=0.00
-   spixel_scan_out%cth_vmin=0
-   spixel_scan_out%cth_vmax=2000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'cth', &
-           spixel_scan_out%vidcth, &
-           'cloud top height', &
-           'altitude_at_cloud_top', &
-           'kilometer', &
-           sint_fill_value, &
-           spixel_scan_out%cth_scale,spixel_scan_out%cth_offset, &
-           spixel_scan_out%cth_vmin,spixel_scan_out%cth_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! cth_uncertainty
-   !----------------------------------------------------------------------------
-   spixel_scan_out%cth_error_scale=0.01
-   spixel_scan_out%cth_error_offset=0.00
-   spixel_scan_out%cth_error_vmin=0
-   spixel_scan_out%cth_error_vmax=2000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'cth_uncertainty', &
-           spixel_scan_out%vidctherror, &
-           'cloud top height uncertainty', &
-           'altitude_at_cloud_top uncertainty', &
-           'kilometer', &
-           sint_fill_value, &
-           spixel_scan_out%cth_error_scale,spixel_scan_out%cth_error_offset, &
-           spixel_scan_out%cth_error_vmin,spixel_scan_out%cth_error_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! ctt
-   !----------------------------------------------------------------------------
-   spixel_scan_out%ctt_scale=0.01
-   spixel_scan_out%ctt_offset=0.00
-   spixel_scan_out%ctt_vmin=0
-   spixel_scan_out%ctt_vmax=32000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'ctt', &
-           spixel_scan_out%vidctt, &
-           'cloud top temperature', &
-           'air_temperature_at_cloud_top', &
-           'kelvin', &
-           sint_fill_value, &
-           spixel_scan_out%ctt_scale,spixel_scan_out%ctt_offset, &
-           spixel_scan_out%ctt_vmin,spixel_scan_out%ctt_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! ctt_uncertainty
-   !----------------------------------------------------------------------------
-   spixel_scan_out%ctt_error_scale=0.01
-   spixel_scan_out%ctt_error_offset=0.00
-   spixel_scan_out%ctt_error_vmin=0
-   spixel_scan_out%ctt_error_vmax=32000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'ctt_uncertainty', &
-           spixel_scan_out%vidctterror, &
-           'cloud top temperature uncertainty', &
-           'air_temperature_at_cloud_top uncertainty', &
-           'kelvin', &
-           sint_fill_value, &
-           spixel_scan_out%ctt_error_scale,spixel_scan_out%ctt_error_offset, &
-           spixel_scan_out%ctt_error_vmin,spixel_scan_out%ctt_error_vmax,wo,ierr)
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
-
-   !----------------------------------------------------------------------------
-   ! cwp
-   !----------------------------------------------------------------------------
-   spixel_scan_out%cwp_scale=1.0
-   spixel_scan_out%cwp_offset=0.00
-   spixel_scan_out%cwp_vmin=0
-   spixel_scan_out%cwp_vmax=32000
-
-   call nc_defdata_short(ncid, dims_var, &
-           'cwp', &
-           spixel_scan_out%vidcwp, &
-           'cloud liquid water path', &
-           'atmosphere_mass_content_of_cloud_liquid_water', &
-           'g/m2', &
-           sint_fill_value, &
-           spixel_scan_out%cwp_scale,spixel_scan_out%cwp_offset, &
-           spixel_scan_out%cwp_vmin,spixel_scan_out%cwp_vmax,wo,ierr)
+           output_data%cot_scale,output_data%cot_offset, &
+           output_data%cot_vmin,output_data%cot_vmax, &
+           verbose,ierr)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! cot_uncertainty
    !----------------------------------------------------------------------------
-   spixel_scan_out%cot_error_scale=0.01
-   spixel_scan_out%cot_error_offset=0.00
-   spixel_scan_out%cot_error_vmin=0
-   spixel_scan_out%cot_error_vmax=25000
+   output_data%cot_error_scale=0.01
+   output_data%cot_error_offset=0.0
+   output_data%cot_error_vmin=output_data%cot_vmin
+   output_data%cot_error_vmax=output_data%cot_vmax
 
-   call nc_defdata_short(ncid, dims_var, &
+   call nc_def_var_short_packed_float(ncid, dims_var, &
            'cot_uncertainty', &
-           spixel_scan_out%vidcoterror, &
+           output_data%vid_coterror, &
            'cloud optical thickness uncertainty', &
            'atmosphere_optical_thickness_due_to_cloud uncertainty', &
-           '', &
            sint_fill_value, &
-           spixel_scan_out%cot_error_scale,spixel_scan_out%cot_error_offset, &
-           spixel_scan_out%cot_error_vmin,spixel_scan_out%cot_error_vmax,wo,ierr)
+           output_data%cot_error_scale,output_data%cot_error_offset, &
+           output_data%cot_error_vmin,output_data%cot_error_vmax, &
+           verbose,ierr)
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! ref
+   !----------------------------------------------------------------------------
+   output_data%ref_scale=0.01
+   output_data%ref_offset=0.0
+   output_data%ref_vmin=0
+   output_data%ref_vmax=20000
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'ref', &
+           output_data%vid_ref, &
+           'effective radius', &
+           'effective_radius_of_cloud_condensed_water_particles_at_cloud_top', &
+           sint_fill_value, &
+           output_data%ref_scale,output_data%ref_offset, &
+           output_data%ref_vmin,output_data%ref_vmax, &
+           verbose,ierr, &
+           units='micrometer')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! ref_uncertainty
    !----------------------------------------------------------------------------
-   spixel_scan_out%ref_error_scale=0.01
-   spixel_scan_out%ref_error_offset=0.00
-   spixel_scan_out%ref_error_vmin=0
-   spixel_scan_out%ref_error_vmax=20000
+   output_data%ref_error_scale=0.01
+   output_data%ref_error_offset=0.0
+   output_data%ref_error_vmin=output_data%ref_vmin
+   output_data%ref_error_vmax=output_data%ref_vmax
 
-   call nc_defdata_short(ncid, dims_var, &
+   call nc_def_var_short_packed_float(ncid, dims_var, &
            'ref_uncertainty', &
-           spixel_scan_out%vidreferror, &
+           output_data%vid_referror, &
            'effective radius uncertainty', &
            'effective_radius_of_cloud_condensed_water_particles_at_cloud_top uncertainty', &
-           'micrometer', &
            sint_fill_value, &
-           spixel_scan_out%ref_error_scale,spixel_scan_out%ref_error_offset, &
-           spixel_scan_out%ref_error_vmin,spixel_scan_out%ref_error_vmax,wo,ierr)
+           output_data%ref_error_scale,output_data%ref_error_offset, &
+           output_data%ref_error_vmin,output_data%ref_error_vmax, &
+           verbose,ierr, &
+           units='micrometer')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! ctp
+   !----------------------------------------------------------------------------
+   output_data%ctp_scale=0.1
+   output_data%ctp_offset=0.0
+   output_data%ctp_vmin=0
+   output_data%ctp_vmax=12000
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'ctp', &
+           output_data%vid_ctp, &
+           'cloud top pressure', &
+           'air_pressure_at_cloud_top', &
+           sint_fill_value, &
+           output_data%ctp_scale,output_data%ctp_offset, &
+           output_data%ctp_vmin,output_data%ctp_vmax, &
+           verbose,ierr, &
+           units='hPa')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! ctp_uncertainty
    !----------------------------------------------------------------------------
-   spixel_scan_out%ctp_error_scale=0.1
-   spixel_scan_out%ctp_error_offset=0.00
-   spixel_scan_out%ctp_error_vmin=0
-   spixel_scan_out%ctp_error_vmax=12000
+   output_data%ctp_error_scale=0.1
+   output_data%ctp_error_offset=0.0
+   output_data%ctp_error_vmin=output_data%ctp_vmin
+   output_data%ctp_error_vmax=output_data%ctp_vmax
 
-   call nc_defdata_short(ncid, dims_var, &
+   call nc_def_var_short_packed_float(ncid, dims_var, &
            'ctp_uncertainty', &
-           spixel_scan_out%vidctperror, &
+           output_data%vid_ctperror, &
            'cloud top pressure uncertainty', &
            'air_pressure_at_cloud_top uncertainty', &
-           'hPa', &
            sint_fill_value, &
-           spixel_scan_out%ctp_error_scale,spixel_scan_out%ctp_error_offset, &
-           spixel_scan_out%ctp_error_vmin,spixel_scan_out%ctp_error_vmax,wo,ierr)
+           output_data%ctp_error_scale,output_data%ctp_error_offset, &
+           output_data%ctp_error_vmin,output_data%ctp_error_vmax, &
+           verbose,ierr, &
+           units='hPa')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! cc_total
+   !----------------------------------------------------------------------------
+   output_data%cct_scale=0.01
+   output_data%cct_offset=0.0
+   output_data%cct_vmin=0
+   output_data%cct_vmax=100
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'cc_total', &
+           output_data%vid_cct, &
+           'cloud fraction', &
+           'cloud_area_fraction', &
+           sint_fill_value, &
+           output_data%cct_scale,output_data%cct_offset, &
+           output_data%cct_vmin,output_data%cct_vmax, &
+           verbose,ierr)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! cc_total_uncertainty
    !----------------------------------------------------------------------------
-   spixel_scan_out%cct_error_scale=0.01
-   spixel_scan_out%cct_error_offset=0.00
-   spixel_scan_out%cct_error_vmin=0
-   spixel_scan_out%cct_error_vmax=100
+   output_data%cct_error_scale=0.01
+   output_data%cct_error_offset=0.0
+   output_data%cct_error_vmin=output_data%cct_vmin
+   output_data%cct_error_vmax=output_data%cct_vmax
 
-   call nc_defdata_short(ncid, dims_var, &
+   call nc_def_var_short_packed_float(ncid, dims_var, &
            'cc_total_uncertainty', &
-           spixel_scan_out%vidccterror, &
+           output_data%vid_ccterror, &
            'cloud fraction uncertainty', &
            'cloud_area_fraction uncertainty', &
-           '', &
            sint_fill_value, &
-           spixel_scan_out%cct_error_scale,spixel_scan_out%cct_error_offset, &
-           spixel_scan_out%cct_error_vmin,spixel_scan_out%cct_error_vmax,wo,ierr)
+           output_data%cct_error_scale,output_data%cct_error_offset, &
+           output_data%cct_error_vmin,output_data%cct_error_vmax, &
+           verbose,ierr)
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! stemp
+   !----------------------------------------------------------------------------
+   output_data%stemp_scale=0.01
+   output_data%stemp_offset=0.0
+   output_data%stemp_vmin=0
+   output_data%stemp_vmax=32000
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'stemp', &
+           output_data%vid_stemp, &
+           'surface temperature', &
+           'surface_temperature', &
+           sint_fill_value, &
+           output_data%stemp_scale,output_data%stemp_offset, &
+           output_data%stemp_vmin,output_data%stemp_vmax, &
+           verbose,ierr, &
+           units='kelvin')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! stemp_uncertainty
    !----------------------------------------------------------------------------
-   spixel_scan_out%stemp_error_scale=0.01
-   spixel_scan_out%stemp_error_offset=0.00
-   spixel_scan_out%stemp_error_vmin=0
-   spixel_scan_out%stemp_error_vmax=30000
+   output_data%stemp_error_scale=0.01
+   output_data%stemp_error_offset=0.0
+   output_data%stemp_error_vmin=output_data%stemp_vmin
+   output_data%stemp_error_vmax=output_data%stemp_vmax
 
-   call nc_defdata_short(ncid, dims_var, &
+   call nc_def_var_short_packed_float(ncid, dims_var, &
            'stemp_uncertainty', &
-           spixel_scan_out%vidstemperror, &
+           output_data%vid_stemperror, &
            'surface temperature uncertainty', &
            'surface_temperature uncertainty', &
-           'Kelvin', &
            sint_fill_value, &
-           spixel_scan_out%stemp_error_scale,spixel_scan_out%stemp_error_offset, &
-           spixel_scan_out%stemp_vmin,spixel_scan_out%stemp_error_vmax,wo,ierr)
+           output_data%stemp_error_scale,output_data%stemp_error_offset, &
+           output_data%stemp_vmin,output_data%stemp_error_vmax, &
+           verbose,ierr, &
+           units='kelvin')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! cth
+   !----------------------------------------------------------------------------
+   output_data%cth_scale=0.01
+   output_data%cth_offset=0.0
+   output_data%cth_vmin=0
+   output_data%cth_vmax=2000
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'cth', &
+           output_data%vid_cth, &
+           'cloud top height', &
+           'cloud_top_altitide', &
+           sint_fill_value, &
+           output_data%cth_scale,output_data%cth_offset, &
+           output_data%cth_vmin,output_data%cth_vmax, &
+           verbose,ierr, &
+           units='kilometer')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! cth_uncertainty
+   !----------------------------------------------------------------------------
+   output_data%cth_error_scale=0.01
+   output_data%cth_error_offset=0.0
+   output_data%cth_error_vmin=output_data%cth_vmin
+   output_data%cth_error_vmax=output_data%cth_vmax
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'cth_uncertainty', &
+           output_data%vid_ctherror, &
+           'cloud top height uncertainty', &
+           'cloud_top_altitide uncertainty', &
+           sint_fill_value, &
+           output_data%cth_error_scale,output_data%cth_error_offset, &
+           output_data%cth_error_vmin,output_data%cth_error_vmax, &
+           verbose,ierr, &
+           units='kilometer')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! ctt
+   !----------------------------------------------------------------------------
+   output_data%ctt_scale=0.01
+   output_data%ctt_offset=0.0
+   output_data%ctt_vmin=0
+   output_data%ctt_vmax=32000
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'ctt', &
+           output_data%vid_ctt, &
+           'cloud top temperature', &
+           'air_temperature_at_cloud_top', &
+           sint_fill_value, &
+           output_data%ctt_scale,output_data%ctt_offset, &
+           output_data%ctt_vmin,output_data%ctt_vmax, &
+           verbose,ierr, &
+           units='kelvin')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! ctt_uncertainty
+   !----------------------------------------------------------------------------
+   output_data%ctt_error_scale=0.01
+   output_data%ctt_error_offset=0.0
+   output_data%ctt_error_vmin=output_data%ctt_vmin
+   output_data%ctt_error_vmax=output_data%ctt_vmax
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'ctt_uncertainty', &
+           output_data%vid_ctterror, &
+           'cloud top temperature uncertainty', &
+           'air_temperature_at_cloud_top uncertainty', &
+           sint_fill_value, &
+           output_data%ctt_error_scale,output_data%ctt_error_offset, &
+           output_data%ctt_error_vmin,output_data%ctt_error_vmax, &
+           verbose,ierr, &
+           units='kelvin')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! cwp
+   !----------------------------------------------------------------------------
+   output_data%cwp_scale=1.0
+   output_data%cwp_offset=0.0
+   output_data%cwp_vmin=0
+   output_data%cwp_vmax=32000
+
+   call nc_def_var_short_packed_float(ncid, dims_var, &
+           'cwp', &
+           output_data%vid_cwp, &
+           'cloud liquid water path', &
+           'atmosphere_mass_content_of_cloud_liquid_water', &
+           sint_fill_value, &
+           output_data%cwp_scale,output_data%cwp_offset, &
+           output_data%cwp_vmin,output_data%cwp_vmax, &
+           verbose,ierr, &
+           units='g/m2')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! cwp_uncertainty
    !----------------------------------------------------------------------------
-   spixel_scan_out%cwp_error_scale=1.0
-   spixel_scan_out%cwp_error_offset=0.00
-   spixel_scan_out%cwp_error_vmin=0
-   spixel_scan_out%cwp_error_vmax=32000
+   output_data%cwp_error_scale=1.0
+   output_data%cwp_error_offset=0.0
+   output_data%cwp_error_vmin=output_data%cwp_vmin
+   output_data%cwp_error_vmax=output_data%cwp_vmax
 
-   call nc_defdata_short(ncid, dims_var, &
+   call nc_def_var_short_packed_float(ncid, dims_var, &
            'cwp_uncertainty', &
-           spixel_scan_out%vidcwperror, &
+           output_data%vid_cwperror, &
            'CWP uncertainty', &
            'atmosphere_mass_content_of_cloud_liquid_water uncertainty', &
-           'g/m2', &
            sint_fill_value, &
-           spixel_scan_out%cwp_error_scale,spixel_scan_out%cwp_error_offset, &
-           spixel_scan_out%cwp_error_vmin,spixel_scan_out%cwp_error_vmax,wo,ierr)
+           output_data%cwp_error_scale,output_data%cwp_error_offset, &
+           output_data%cwp_error_vmin,output_data%cwp_error_vmax, &
+           verbose,ierr, &
+           units='g/m2')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! convergence
    !----------------------------------------------------------------------------
-   spixel_scan_out%con_scale=1
-   spixel_scan_out%con_offset=0
-   spixel_scan_out%con_vmin=0
-   spixel_scan_out%con_vmax=1
+   output_data%convergence_scale=1
+   output_data%convergence_offset=0
+   output_data%convergence_vmin=0
+   output_data%convergence_vmax=1
 
-   call nc_defdata_byte_flag_value(ncid, dims_var, &
+   call nc_def_var_byte_packed_byte(ncid, dims_var, &
            'convergence', &
-           spixel_scan_out%vidconvergence, &
-           'retrieval convergence', &
+           output_data%vid_convergence, &
+           'retrieval convergence flag', &
            'retrieval_convergence_flag', &
-           '0b, 1b', &
-           'yes, no', &
            byte_fill_value, &
-           spixel_scan_out%con_scale,spixel_scan_out%con_offset, &
-           spixel_scan_out%con_vmin,spixel_scan_out%con_vmax,wo,ierr)
+           output_data%convergence_scale,output_data%convergence_offset, &
+           output_data%convergence_vmin,output_data%convergence_vmax, &
+           verbose,ierr, &
+           flag_values='0b, 1b', &
+           flag_meanings='yes, no')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! niter
    !----------------------------------------------------------------------------
-   spixel_scan_out%niter_scale=1
-   spixel_scan_out%niter_offset=0
-   spixel_scan_out%niter_vmin=0
-   spixel_scan_out%niter_vmax=100
+   output_data%niter_scale=1
+   output_data%niter_offset=0
+   output_data%niter_vmin=0
+   output_data%niter_vmax=Ctrl%Invpar%MaxIter
 
-   call nc_defdata_byte(ncid, dims_var, &
+   call nc_def_var_byte_packed_byte(ncid, dims_var, &
            'niter', &
-           spixel_scan_out%vidniter, &
-           'retrieval iterations', &
-           'retrieval_iterations', &
-           '', &
+           output_data%vid_niter, &
+           'number of retrieval iterations', &
+           'number_of_retrieval_iterations', &
            byte_fill_value, &
-           spixel_scan_out%niter_scale,spixel_scan_out%niter_offset, &
-           spixel_scan_out%niter_vmin,spixel_scan_out%niter_vmax,wo,ierr)
+           output_data%niter_scale,output_data%niter_offset, &
+           output_data%niter_vmin,output_data%niter_vmax, &
+           verbose,ierr)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! phase
    !----------------------------------------------------------------------------
-   spixel_scan_out%pchange_scale=1
-   spixel_scan_out%pchange_offset=0
-   spixel_scan_out%pchange_vmin=0
-   spixel_scan_out%pchange_vmax=1
+   output_data%phase_scale=1
+   output_data%phase_offset=0
+   output_data%phase_vmin=0
+   output_data%phase_vmax=2
 
-   call nc_defdata_byte_flag_value(ncid, dims_var, &
+   call nc_def_var_byte_packed_byte(ncid, dims_var, &
            'phase', &
-           spixel_scan_out%vidpchange, &
+           output_data%vid_phase, &
            'cloud phase flag', &
            'cloud_phase_flag', &
-           '0b, 1b, 2b', &
-           'clear/unknown, liquid, ice', &
            byte_fill_value, &
-           spixel_scan_out%pchange_scale,spixel_scan_out%pchange_offset, &
-           spixel_scan_out%pchange_vmin,spixel_scan_out%pchange_vmax,wo,ierr)
+           output_data%phase_scale,output_data%phase_offset, &
+           output_data%phase_vmin,output_data%phase_vmax, &
+           verbose,ierr, &
+           flag_values='0b, 1b, 2b', &
+           flag_meanings='clear/unknown, liquid, ice')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! costja
    !----------------------------------------------------------------------------
-   spixel_scan_out%costja_scale=1.0
-   spixel_scan_out%costja_offset=0.00
-   spixel_scan_out%costja_vmin=0.0
-   spixel_scan_out%costja_vmax=100000.
+   output_data%costja_scale=1.0
+   output_data%costja_offset=0.0
+   output_data%costja_vmin=0.0
+   output_data%costja_vmax=100000.
 
-   call nc_defdata_float(ncid, dims_var, &
+   call nc_def_var_float_packed_float(ncid, dims_var, &
            'costja', &
-           spixel_scan_out%vidcostja, &
-           'costja', &
-           'a_priori_cost at_solution', &
-           '', &
+           output_data%vid_costja, &
+           'a priori cost at solution', &
+           'a_priori_cost_at_solution', &
            sreal_fill_value, &
-           spixel_scan_out%costja_scale,spixel_scan_out%costja_offset, &
-           spixel_scan_out%costja_vmin,spixel_scan_out%costja_vmax,wo,ierr)
+           output_data%costja_scale,output_data%costja_offset, &
+           output_data%costja_vmin,output_data%costja_vmax, &
+           verbose,ierr)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! costjm
    !----------------------------------------------------------------------------
-   spixel_scan_out%costjm_scale=1.0
-   spixel_scan_out%costjm_offset=0.00
-   spixel_scan_out%costjm_vmin=0.0
-   spixel_scan_out%costjm_vmax=100000.
+   output_data%costjm_scale=1.0
+   output_data%costjm_offset=0.0
+   output_data%costjm_vmin=0.0
+   output_data%costjm_vmax=100000.
 
-   call nc_defdata_float(ncid, dims_var, &
+   call nc_def_var_float_packed_float(ncid, dims_var, &
            'costjm', &
-           spixel_scan_out%vidcostjm, &
-           'costjm', &
-           'measurement_cost at_solution', &
-           '', &
+           output_data%vid_costjm, &
+           'measurement cost at solution', &
+           'measurement_cost_at_solution', &
            sreal_fill_value, &
-           spixel_scan_out%costjm_scale,spixel_scan_out%costjm_offset, &
-           spixel_scan_out%costjm_vmin,spixel_scan_out%costjm_vmax,wo,ierr)
+           output_data%costjm_scale,output_data%costjm_offset, &
+           output_data%costjm_vmin,output_data%costjm_vmax, &
+           verbose,ierr)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! lsflag
    !----------------------------------------------------------------------------
-   spixel_scan_out%ls_scale=1
-   spixel_scan_out%ls_offset=0
-   spixel_scan_out%ls_vmin=0
-   spixel_scan_out%ls_vmax=6
+   output_data%lsflag_scale=1
+   output_data%lsflag_offset=0
+   output_data%lsflag_vmin=0
+   output_data%lsflag_vmax=6
 
-   call nc_defdata_byte_flag_value(ncid, dims_var, &
+   call nc_def_var_byte_packed_byte(ncid, dims_var, &
            'lsflag', &
-           spixel_scan_out%vidlsflag, &
+           output_data%vid_lsflag, &
            'land/sea flag', &
            'land_binary_mask', &
-           '0b, 1b, 2b, 3b, 4b, 5b, 6b', &
-           'sea, land, sunglint, snow, ice, snow_and_ice', &
            byte_fill_value, &
-           spixel_scan_out%ls_scale,spixel_scan_out%ls_offset, &
-           spixel_scan_out%ls_vmin,spixel_scan_out%ls_vmax,wo,ierr)
+           output_data%lsflag_scale,output_data%lsflag_offset, &
+           output_data%lsflag_vmin,output_data%lsflag_vmax, &
+           verbose,ierr, &
+           flag_values='0b, 1b, 2b, 3b, 4b, 5b, 6b', &
+           flag_meanings='sea, land, sunglint, snow, ice, snow_and_ice')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   spixel_scan_out%qc_scale=1
-   spixel_scan_out%qc_offset=0
-   spixel_scan_out%qc_vmin=0
-   spixel_scan_out%qc_vmax=254
+   output_data%qcflag_scale=1
+   output_data%qcflag_offset=0
+   output_data%qcflag_vmin=0
+   output_data%qcflag_vmax=254
 
-   s_input_dummy='Bit 0 unused, always set to 0, Bits 1-5 set to 1 if state variable error out of bounds'
-   s_input_dummy=trim(adjustl(s_input_dummy))//', Bit 6 set to 1 if no convergence achieved'
-   s_input_dummy=trim(adjustl(s_input_dummy))//', Bit 7 set to 1 if cost too large.'
-   s_input_dummy=trim(adjustl(s_input_dummy))//' Bit 1=COT Bit 2=REF Bit 3=CTP Bit 4=CCT Bit 5=STEMP'
+   input_dummy2='Bit 0 unused, always set to 0, Bits 1-5 set to 1 if state variable error out of bounds'
+   input_dummy2=trim(adjustl(input_dummy2))//', Bit 6 set to 1 if no convergence achieved'
+   input_dummy2=trim(adjustl(input_dummy2))//', Bit 7 set to 1 if cost too large.'
+   input_dummy2=trim(adjustl(input_dummy2))//' Bit 1=COT Bit 2=REF Bit 3=CTP Bit 4=CCT Bit 5=STEMP'
 
-   call nc_defdata_short_flag_value(ncid, dims_var, &
+   call nc_def_var_short_packed_short(ncid, dims_var, &
            'qcflag', &
-           spixel_scan_out%vidqcflag, &
+           output_data%vid_qcflag, &
            'quality control flag', &
            'quality_control_flag', &
-           trim(adjustl(s_input_dummy)), &
            int(-1,kind=sint), &
-           spixel_scan_out%qc_scale,spixel_scan_out%qc_offset, &
-           spixel_scan_out%qc_vmin,spixel_scan_out%qc_vmax,wo,ierr)
+           output_data%qcflag_scale,output_data%qcflag_offset, &
+           output_data%qcflag_vmin,output_data%qcflag_vmax, &
+           verbose,ierr, &
+           flag_meanings=trim(adjustl(input_dummy2)))
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    ! illum
    !----------------------------------------------------------------------------
-   spixel_scan_out%illum_scale=1
-   spixel_scan_out%illum_offset=0
-   spixel_scan_out%illum_vmin=1
-   spixel_scan_out%illum_vmax=12
+   output_data%illum_scale=1
+   output_data%illum_offset=0
+   output_data%illum_vmin=1
+   output_data%illum_vmax=12
 
-   call nc_defdata_byte_flag_value(ncid, dims_var, &
+   call nc_def_var_byte_packed_byte(ncid, dims_var, &
            'illum', &
-           spixel_scan_out%vidillum, &
+           output_data%vid_illum, &
            'illumination flag', &
            'illumination_flag', &
-           '1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
-           'Day Twilight Night Daynore DayMissingSingleVisFirst, DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, NightMissingSingleIRThird', &
            byte_fill_value, &
-           spixel_scan_out%illum_scale,spixel_scan_out%illum_offset, &
-           spixel_scan_out%illum_vmin,spixel_scan_out%illum_vmax,wo,ierr)
+           output_data%illum_scale,output_data%illum_offset, &
+           output_data%illum_vmin,output_data%illum_vmax, &
+           verbose,ierr, &
+           flag_values='1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
+           flag_meanings='Day Twilight Night Daynore DayMissingSingleVisFirst, DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, NightMissingSingleIRThird')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 

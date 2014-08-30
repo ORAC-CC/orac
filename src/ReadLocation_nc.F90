@@ -84,7 +84,6 @@ subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    ! Close location file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_location_nc(): Error closing file.'
-   
+      stop 'ERROR: read_location_nc(): Error closing file.'
 
 end subroutine Read_Location_nc

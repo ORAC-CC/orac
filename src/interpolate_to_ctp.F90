@@ -166,7 +166,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       DBP_o=MDADErrPc
 
       ! if extrapolation goes too far use just highest point
-      if (BP_o .lt. Ctrl%Invpar%Xllim(3)) then
+      if (BP_o .lt. Ctrl%Invpar%XLLim(3)) then
          BP_o=Ctrl%X0(3)
       end if
 
@@ -192,8 +192,8 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    end if
 
    ! last safety check, if pressure too low set to lower limit
-   if (BP_o .lt. Ctrl%Invpar%Xllim(3)) then
-      BP_o=Ctrl%Invpar%Xllim(3)
+   if (BP_o .lt. Ctrl%Invpar%XLLim(3)) then
+      BP_o=Ctrl%Invpar%XLLim(3)
       DBP_o=MDADErrPc
    end if
 

@@ -18,7 +18,9 @@ include $(ORAC_LIB)
 # modules so that the modules are known to the compiler.
 PREPROC_OBJ_F90=$(OBJS)/common_constants.o \
                 $(OBJS)/interpol.o \
-                $(OBJS)/orac_ncdf.o
+                $(OBJS)/orac_ncdf.o \
+                $(OBJS)/nc_utils.o \
+
 
 PREPROC_OBJ_C=
 

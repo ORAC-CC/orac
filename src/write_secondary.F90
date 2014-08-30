@@ -31,23 +31,24 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
-                           iystart, iystop, spixel_scan_out_sec, status)
+                           iystart, iystop, output_data, status)
 
    use CTRL_def
+   use nc_utils
    use SPixel_def
 
    implicit none
 
-   type(CTRL_t),                           intent(in)    :: Ctrl
-   logical,                                intent(in)    :: lcovar
-   type(SPixel_t),                         intent(in)    :: SPixel
-   integer,                                intent(in)    :: ncid
-   integer,                                intent(in)    :: ixstart
-   integer,                                intent(in)    :: ixstop
-   integer,                                intent(in)    :: iystart
-   integer,                                intent(in)    :: iystop
-   type(spixel_scanline_secondary_output), intent(inout) :: spixel_scan_out_sec
-   integer,                                intent(inout) :: status
+   type(CTRL_t),                intent(in)    :: Ctrl
+   logical,                     intent(in)    :: lcovar
+   type(SPixel_t),              intent(in)    :: SPixel
+   integer,                     intent(in)    :: ncid
+   integer,                     intent(in)    :: ixstart
+   integer,                     intent(in)    :: ixstop
+   integer,                     intent(in)    :: iystart
+   integer,                     intent(in)    :: iystop
+   type(output_data_secondary), intent(inout) :: output_data
+   integer,                     intent(inout) :: status
 
    character(len=20)  :: input_num,input_num1,input_num2
    character(len=500) :: input_dummy
@@ -56,64 +57,65 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    integer            :: iinput
    integer            :: wo = 0
 
-   call nc_write_L2_long(ncid,'scanline_u',spixel_scan_out_sec%vidscanline_u,&
-           spixel_scan_out_sec%scanline_u(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_long(ncid,'scanline_v',spixel_scan_out_sec%vidscanline_v,&
-           spixel_scan_out_sec%scanline_v(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_long(ncid,'scanline_u',output_data%vid_scanline_u,&
+           output_data%scanline_u(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_long(ncid,'scanline_v',output_data%vid_scanline_v,&
+           output_data%scanline_v(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'cot_ap',spixel_scan_out_sec%vidcotap,&
-           spixel_scan_out_sec%cot_ap(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'cot_fg',spixel_scan_out_sec%vidcotfg,&
-           spixel_scan_out_sec%cot_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cot_ap',output_data%vid_cot_ap,&
+           output_data%cot_ap(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'cot_fg',output_data%vid_cot_fg,&
+           output_data%cot_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'ref_ap',spixel_scan_out_sec%vidrefap,&
-           spixel_scan_out_sec%ref_ap(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-    call nc_write_L2_short(ncid,'ref_fg',spixel_scan_out_sec%vidreffg,&
-           spixel_scan_out_sec%ref_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ref_ap',output_data%vid_ref_ap,&
+           output_data%ref_ap(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ref_fg',output_data%vid_ref_fg,&
+           output_data%ref_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'ctp_ap',spixel_scan_out_sec%vidctpap,&
-           spixel_scan_out_sec%ctp_ap(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-   call nc_write_L2_short(ncid,'ctp_fg',spixel_scan_out_sec%vidctpfg,&
-           spixel_scan_out_sec%ctp_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ctp_ap',output_data%vid_ctp_ap,&
+           output_data%ctp_ap(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'ctp_fg',output_data%vid_ctp_fg,&
+           output_data%ctp_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-   call nc_write_L2_short(ncid,'stemp_fg',spixel_scan_out_sec%vidstempfg,&
-           spixel_scan_out_sec%stemp_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'stemp_fg',output_data%vid_stemp_fg,&
+           output_data%stemp_fg(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+   call nc_write_short(ncid,'stemp_ap',output_data%vid_stemp_fg,&
+           output_data%stemp_ap(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+
+   do iinput=1,Ctrl%Ind%Nsolar
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
+      input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_write_short(ncid,trim(adjustl(input_dummy)),output_data%vid_albedo(iinput),&
+         output_data%albedo(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
+   end do
+
+   do iinput=1,Ctrl%Ind%Ny
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
+      input_dummy='radiance_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_write_short(ncid,trim(adjustl(input_dummy)),output_data%vid_channels(iinput),&
+              output_data%channels(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
+   end do
+
+   do iinput=1,Ctrl%Ind%Ny
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
+      input_dummy='firstguess_radiance_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_write_short(ncid,trim(adjustl(input_dummy)),output_data%vid_y0(iinput),&
+              output_data%y0(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
+   end do
 
    do iinput=1,Ctrl%Ind%Ny
 	write(input_num,"(i4)")Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
-                input_dummy='residuals_'//trim(adjustl(input_num))
+        input_dummy='radiance_residual_in_channel_no_'//trim(adjustl(input_num))
 
-	call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidres(iinput),&
-	        spixel_scan_out_sec%residuals(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
+	call nc_write_short(ncid,trim(adjustl(input_dummy)),output_data%vid_residuals(iinput),&
+	        output_data%residuals(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
    end do
 
-   ! forward modelled radiances
-   do iinput=1,Ctrl%Ind%Ny
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
-      input_dummy='y0_'//trim(adjustl(input_num))
-
-      call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidy0(iinput),&
-              spixel_scan_out_sec%y0(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
-   end do
-
-   ! channels
-   do iinput=1,Ctrl%Ind%Ny
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
-      input_dummy='channels_'//trim(adjustl(input_num))
-
-      call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidchans(iinput),&
-              spixel_scan_out_sec%channels(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
-   end do
-
-   ! albedo
-   do iinput=1,Ctrl%Ind%Nsolar
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(iinput))
-
-      input_dummy='albedo_'//trim(adjustl(input_num))
-
-      call nc_write_L2_short(ncid,trim(adjustl(input_dummy)),spixel_scan_out_sec%vidalb(iinput),&
-         spixel_scan_out_sec%albedo(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
-   end do
+   call nc_write_short(ncid,'degrees_of_freedom_signal',output_data%vid_ds,&
+	   output_data%ds(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
    if (lcovar) then
       do is=1,SPixel%Nx
@@ -121,15 +123,11 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
             write(input_num1,"(i4)") is
             write(input_num2,"(i4)") js
             input_dummy='covariance_matrix_element_'//trim(adjustl(input_num1))//trim(adjustl(input_num2))
-            call nc_write_L2_float(ncid,input_dummy,spixel_scan_out_sec%vidcovar(is,js),&
-                    spixel_scan_out_sec%covariance(:,:,is,js),ixstart,ixstop,iystart,iystop,wo,ierr)
+            call nc_write_float(ncid,input_dummy,output_data%vid_covariance(is,js),&
+                    output_data%covariance(:,:,is,js),ixstart,ixstop,iystart,iystop,wo,ierr)
          end do
       end do
    end if
-
-   ! degrees of freedom for signal
-   call nc_write_L2_short(ncid,'degrees_of_freedom_signal',spixel_scan_out_sec%vidds,&
-	   spixel_scan_out_sec%ds(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
    if (ierr .ne. 0 ) then
       status=SecondaryFileWriteErr

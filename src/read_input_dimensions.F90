@@ -58,7 +58,7 @@ subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim, &
 
    ! Close geo file
    if (nf90_close(ncid) .ne. NF90_NOERR) &
-        stop 'READ_INPUT_DIM: Failure to close GEO file.'
+      stop 'READ_INPUT_DIM: Failure to close GEO file.'
 
 end subroutine read_input_dimensions_msi
 
@@ -93,7 +93,7 @@ subroutine read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim, &
 
    ! Close file
    if (nf90_close(ncid) .ne. NF90_NOERR) &
-        stop 'READ_INPUT_DIM: Failure to close LWRTM file.'
+      stop 'READ_INPUT_DIM: Failure to close LWRTM file.'
 
 end subroutine read_input_dimensions_lwrtm
 
@@ -115,7 +115,7 @@ subroutine read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim, &
 
    ! Open file
    call nc_open(ncid,fname)
-   
+
    xydim = nc_dim_length(ncid, 'nlon_x_nlat_swrtm', verbose)
    xdim = nc_dim_length(ncid, 'nlon_swrtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_swrtm', verbose)
@@ -126,6 +126,6 @@ subroutine read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim, &
 
    ! Close file
    if (nf90_close(ncid) .ne. NF90_NOERR) &
-        stop 'READ_INPUT_DIM: Failure to close SWRTM file.'
+      stop 'READ_INPUT_DIM: Failure to close SWRTM file.'
 
 end subroutine read_input_dimensions_swrtm

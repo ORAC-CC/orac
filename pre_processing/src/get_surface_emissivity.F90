@@ -181,7 +181,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
         preproc_dims%min_lat:preproc_dims%max_lat))
    allocate(summat(preproc_dims%min_lon:preproc_dims%max_lon, &
         preproc_dims%min_lat:preproc_dims%max_lat, 1))
-!        preproc_dims%min_lat:preproc_dims%max_lat, channel_info%nchannels_lw))
+!       preproc_dims%min_lat:preproc_dims%max_lat, channel_info%nchannels_lw))
    counter=0
    summat=0.
    do j=1,emis%nlat
@@ -204,7 +204,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
       do i=preproc_dims%min_lon,preproc_dims%max_lon
          if (counter(i,j) .gt. 0) &
             preproc_surf%emissivity(i,j,1:1) = summat(i,j,:) / real(counter(i,j))
-!            preproc_surf%emissivity(i,j,:) = summat(i,j,:) / real(counter(i,j))
+!           preproc_surf%emissivity(i,j, : ) = summat(i,j,:) / real(counter(i,j))
       end do
    end do
 

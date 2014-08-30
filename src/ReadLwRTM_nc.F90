@@ -103,6 +103,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    use ECP_Constants
    use orac_ncdf
    use RTM_def
+   use nc_utils
 
    implicit none
 
@@ -123,7 +124,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    real(sreal), allocatable :: dummy1d(:), dummy2d(:,:), dummy3d(:,:,:)
    character(Instnamelen)   :: platform, sensor, instname
    integer, allocatable     :: index(:), ChanID(:)
-!   real(4), allocatable     :: WvNumber(:)
+!  real(4), allocatable     :: WvNumber(:)
 
 
    !----------------------------------------------------------------------------
@@ -179,7 +180,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 
    ! Close PRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_lwrtm_nc(): Error closing PRTM file.'
+      stop 'ERROR: read_lwrtm_nc(): Error closing PRTM file.'
 
 
    !----------------------------------------------------------------------------
@@ -191,25 +192,25 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor_Name", sensor) /= NF90_NOERR .or.&
-        nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
-        stop 'ERROR: read_lwrtm_nc(): Could not read global attributes.'
+       nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
+      stop 'ERROR: read_lwrtm_nc(): Could not read global attributes.'
    if (sensor =='AATSR') then
       instname=trim(adjustl(sensor))
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
    if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) &
-        stop 'ERROR: read_lwrtm_nc(): Instrument in RTM header inconsistent'
+      stop 'ERROR: read_lwrtm_nc(): Instrument in RTM header inconsistent'
 
    allocate(ChanID(RTM%LW%NLWF))
-!   allocate(WvNumber(RTM%LW%NLWF))
+!  allocate(WvNumber(RTM%LW%NLWF))
 
    ! Read ChanID and WvNumber
    call nc_read_array(ncid, "lw_channel_instr_ids", ChanID, verbose)
-!   call nc_read_array(ncid, "lw_channel_wvl", WvNumber, verbose)
+!  call nc_read_array(ncid, "lw_channel_wvl", WvNumber, verbose)
 
    if (verbose) write(*,*) &
-        'LW channel instrument ids for RTM in LW preprocessing file',ChanID
+      'LW channel instrument ids for RTM in LW preprocessing file',ChanID
 
    ! Check that required thermal channels are present
 
@@ -238,7 +239,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    end do
 
    if (chan_found /= Ctrl%Ind%NThermal) &
-        stop 'ERROR: read_lwrtm_nc(): required instrument channels not found'
+      stop 'ERROR: read_lwrtm_nc(): required instrument channels not found'
 
    ! Allocate arrays
    allocate(RTM%LW%Ems(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal))
@@ -286,13 +287,13 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    deallocate(dummy2d)
    deallocate(dummy3d)
 
-!   if (allocated(WvNumber)) deallocate(WvNumber)
+!  if (allocated(WvNumber)) deallocate(WvNumber)
    if (allocated(ChanID))   deallocate(ChanID)
    if (allocated(index))    deallocate(index)
 
    ! Close LwRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_lwrtm_nc(): Error closing file.'
+      stop 'ERROR: read_lwrtm_nc(): Error closing file.'
 
    ! Calculate grid parameters for use in Get_LwRTM
    ! Corners of the grid
@@ -323,6 +324,5 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    ! Does the grid wrap around the international date-line?
    RTM%LW%Grid%Wrap = RTM%LW%Grid%MinLon <= -180. .and. &
         RTM%LW%Grid%MaxLon >= 180.
-
 
 end subroutine Read_LwRTM_nc

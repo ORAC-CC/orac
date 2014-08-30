@@ -90,7 +90,6 @@ subroutine Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    ! Close geometry file
    if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_geometry_mc(): Error closing file.'
-
+      stop 'ERROR: read_geometry_mc(): Error closing file.'
 
 end subroutine Read_Geometry_nc
