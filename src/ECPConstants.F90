@@ -71,8 +71,8 @@
 !     8th Aug 2011, Caroline Poulsen: changed format of LUTS
 !    22nd Sep 2011, Caroline Poulsen: changed getLeRTM to GetSWrtm
 !     4th Oct 2011, Chris Arnold: added LUT/RTM Intflag errors
-!     7th Oct 2011, Caroline Poulsen: added in variables to calculate CWP rho and
-!       qext
+!     7th Oct 2011, Caroline Poulsen: added in variables to calculate CWP rho
+!       and qext
 !     4th Nov 2011, Caroline Poulsen: changed values of AUXErrTsSea/land
 !    25th Nov 2011, Caroline Poulsen: changed values maxnummeas
 !     8th Dec 2011, Matthias Jerg: added data type definitions for netcdf output
@@ -80,11 +80,12 @@
 !    2012/01/30, Matthias Jerg: added ditherm3 as parameter.
 !    2012/06/15, Caroline Poulsen: added iluum error flags
 !    2012/06/22, Caroline Poulsen: added sacura option
-!    2012/10/01, Caroline Poulsen: added case where 1.6 of 3.7 channel is missing
-!       during the day
-!    2013/xx/xx, Matthias Jerg: changes lengths of filenames and some formatting, adds fill
-!       value for double precision.
-!    2013/11/19, Matthias Jerg: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
+!    2012/10/01, Caroline Poulsen: added case where 1.6 of 3.7 channel is
+!       missing during the day
+!    2013/xx/xx, Matthias Jerg: changes lengths of filenames and some formatting,
+!       adds fill value for double precision.
+!    2013/11/19, Matthias Jerg: changes refmax to 1.5 from 1.2 and btmin to
+!       140.0 from 150.0
 !    2014/01/26, Greg McGarragh: Cleaned up code.
 !    2014/04/03, Matthias Jerg: adds some fill value definitions
 !    2014/05/22, Greg McGarragh: Added RTMIntMeth and LUTIntMeth constants.
@@ -94,6 +95,8 @@
 !    2014/08/15, Greg McGarragh: d2r is a derived constant. It should be
 !       computed which will be done at compile time since both operands are
 !       constants.
+!    2014/08/30, Greg McGarragh: Use common_constants and remove pi and d2r as
+!       they are in common_constants.
 !
 ! Bugs:
 !    None known.
@@ -104,13 +107,9 @@
 
 module ECP_constants
 
-   implicit none
+   use common_constants
 
-   integer, parameter :: byte             = 1
-   integer, parameter :: sint             = 2
-   integer, parameter :: lint             = 4
-   integer, parameter :: sreal            = 4
-   integer, parameter :: dreal            = 8
+   implicit none
 
    ! Maximum string lengths
    integer, parameter :: ECPLogReclen     = 256     ! Record length in ECP log file,
@@ -154,11 +153,6 @@ module ECP_constants
    ! Missing data (fill) values
    real, parameter    :: MissingXn        = -999.   ! Value for "missing data" used as output when a SPixel is not processed.
    real, parameter    :: MissingSn        = 1.0e+08 ! Value for "missing data" used as error output when a SPixel is not processed.
-
-   ! Mathematical constants
-   real, parameter    :: Pi               = 3.14159265
-
-   real, parameter    :: d2r              = Pi / 180.0
 
    ! Physical constants/parameters
    real, parameter    :: rhowat           = 1.0     ! Density of water
@@ -454,11 +448,5 @@ module ECP_constants
    integer, parameter :: SecondaryFileWriteErr      = 1405
    integer, parameter :: PrimaryFileCloseErr        = 1406
    integer, parameter :: SecondaryFileCloseErr      = 1407
-
-   integer(kind=byte), parameter :: byte_fill_value  = -127
-   integer(kind=sint), parameter :: sint_fill_value  = -32767
-   integer(kind=lint), parameter :: lint_fill_value  = -32767
-   real(kind=sreal),   parameter :: sreal_fill_value = -999.0
-   real(kind=dreal),   parameter :: dreal_fill_value = -999.0
 
 end module ECP_constants

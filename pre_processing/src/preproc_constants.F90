@@ -21,6 +21,7 @@
 ! 2014/08/05, AP: Adding missing fill value.
 ! 2014/08/06, GM: Corrected the value for Pi.
 ! 2014/08/06, GM: d2r is a derived constant. It should be computed.
+! 2014/08/30, GM: Removed pi and d2r as they are in common_constants.
 !
 ! $Id$
 !
@@ -49,11 +50,6 @@ module preproc_constants
 
    real(kind=sreal),    parameter :: dither=1.0E-3
    real(kind=sreal),    parameter :: dither_more=1.0E-7
-
-
-   ! Mathematical constants
-   real(kind=sreal),    parameter :: pi=3.14159265
-   real(kind=sreal),    parameter :: d2r=pi/180.0
 
 
    ! Physical constants
