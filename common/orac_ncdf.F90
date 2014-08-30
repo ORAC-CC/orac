@@ -35,6 +35,97 @@ module orac_ncdf
 contains
 
 !-------------------------------------------------------------------------------
+! Name: nc_open
+!
+! Purpose:
+! Wrapper for nf90_open with error handling.
+!
+! Description and Algorithm details:
+! 1) Call nf90_open. If error, print message.
+!
+! Arguments:
+! Name  Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! ncid  integer Out File ID number returned by nf90_open
+! fname string  In  Name of the file to be opened
+!
+! History:
+! 2014/02/10, AP: Original version, replacing nc_open.F90.
+!
+! $Id$
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine nc_open(ncid, fname)
+   implicit none
+
+   integer,          intent(out) :: ncid
+   character(len=*), intent(in)  :: fname
+
+   integer                       :: ierr
+
+   ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: nc_open(): Error opening file ',trim(fname)
+      print*,nc_error(ierr)
+      stop error_stop_code
+   end if
+
+end subroutine nc_open
+
+!-------------------------------------------------------------------------------
+! Name: nc_dim_length
+!
+! Purpose:
+! Read length of a named dimension of NCDF file.
+!
+! Description and Algorithm details:
+! 1) Obtain ID of requested dimension.
+! 2) Retrieve its length and output.
+!
+! Arguments:
+! Name  Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! ncid  integer Out File ID number returned by nf90_open
+! name  string  In  Name of dimension to read
+! len   integer Out Length of desired dimenison
+!
+! History:
+! 2014/08/06, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+function nc_dim_length(ncid, name, verbose) result(len)
+   implicit none
+
+   integer,          intent(in) :: ncid
+   character(len=*), intent(in) :: name
+   logical,          intent(in) :: verbose
+
+   integer :: did, ierr, len
+   character(len=NF90_MAX_NAME) :: dname
+
+   ierr = nf90_inq_dimid(ncid, name, did)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: nc_dim_length(): Could not locate dimension ',trim(name)
+      print*,nc_error(ierr)
+      stop error_stop_code
+   end if
+   
+   ierr = nf90_inquire_dimension(ncid, did, dname, len)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: nc_dim_length():: Could not read dimension ',trim(name)
+      print*,nc_error(ierr)
+      stop error_stop_code
+   end if
+
+   if (verbose) print*, trim(name),' dim length: ',len
+   
+end function nc_dim_length
+
+!-------------------------------------------------------------------------------
 ! Name: nc_read_array
 !
 ! Purpose:
@@ -1014,45 +1105,6 @@ subroutine byte_4d(ncid, name, val, verbose, dim, ind)
 end subroutine byte_4d
 
 !-------------------------------------------------------------------------------
-! Name: nc_open
-!
-! Purpose:
-! Wrapper for nf90_open with error handling.
-!
-! Description and Algorithm details:
-! 1) Call nf90_open. If error, print message.
-!
-! Arguments:
-! Name  Type    In/Out/Both Description
-! ------------------------------------------------------------------------------
-! ncid  integer Out File ID number returned by nf90_open
-! fname string  In  Name of the file to be opened
-!
-! History:
-! 2014/02/10, AP: Original version, replacing nc_open.F90.
-!
-! $Id$
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-subroutine nc_open(ncid, fname)
-   implicit none
-
-   integer,          intent(out) :: ncid
-   character(len=*), intent(in)  :: fname
-
-   integer                       :: ierr
-
-   ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_open(): Error opening file ',trim(fname)
-      print*,nc_error(ierr)
-      stop error_stop_code
-   end if
-end subroutine nc_open
-
-!-------------------------------------------------------------------------------
 ! Name: nc_error
 !
 ! Purpose:
@@ -1152,56 +1204,5 @@ function nc_error(ierr) result(out)
    end select
 
 end function nc_error
-
-!-------------------------------------------------------------------------------
-! Name: nc_dim_length
-!
-! Purpose:
-! Read length of a named dimension of NCDF file.
-!
-! Description and Algorithm details:
-! 1) Obtain ID of requested dimension.
-! 2) Retrieve its length and output.
-!
-! Arguments:
-! Name  Type    In/Out/Both Description
-! ------------------------------------------------------------------------------
-! ncid  integer Out File ID number returned by nf90_open
-! name  string  In  Name of dimension to read
-! len   integer Out Length of desired dimenison
-!
-! History:
-! 2014/08/06, AP: Original version
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-function nc_dim_length(ncid, name, verbose) result(len)
-   implicit none
-
-   integer,          intent(in) :: ncid
-   character(len=*), intent(in) :: name
-   logical,          intent(in) :: verbose
-
-   integer :: did, ierr, len
-   character(len=NF90_MAX_NAME) :: dname
-
-   ierr = nf90_inq_dimid(ncid, name, did)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_dim_length(): Could not locate dimension ',trim(name)
-      print*,nc_error(ierr)
-      stop error_stop_code
-   end if
-   
-   ierr = nf90_inquire_dimension(ncid, did, dname, len)
-   if (ierr.ne.NF90_NOERR) then
-      print*,'ERROR: nc_dim_length():: Could not read dimension ',trim(name)
-      print*,nc_error(ierr)
-      stop error_stop_code
-   end if
-
-   if (verbose) print*, trim(name),' dim length: ',len
-   
-end function nc_dim_length
 
 end module orac_ncdf

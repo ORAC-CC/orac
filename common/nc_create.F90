@@ -83,6 +83,7 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
       stop
    end if
 
+   ! Define global attributes
    if (type .eq. 1) ctitle='ESA CCI Cloud Retrieval Products L2 Primary Output File'
    if (type .eq. 2) ctitle='ESA CCI Cloud Retrieval Products L2 Secondary File'
    if (type .eq. 3) ctitle='ESA CCI Cloud Retrieval Products L2 Input/Output File'

@@ -31,7 +31,6 @@ contains
 
 include 'nc_create.F90'
 include 'nc_def_var.F90'
-include 'nc_info.F90'
 include 'nc_write.F90'
 
 end module nc_utils
