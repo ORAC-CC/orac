@@ -67,21 +67,22 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
         iystart:iystop)
    logical,            intent(in)    :: verbose
 
-   integer(kind=lint)    :: ix, jy
-   character(len=100)    :: SDS_name, SDS_unc_name, Dim_band_index
-   integer(kind=lint)    :: file_id, attr_id, var_id, err_code
-   character(len=100)    :: tmpname
-   integer               :: rank, type, num_attrs
-   integer, dimension(3) :: dimsizes
-   integer               :: number_of_bands
-   character(len=100)    :: band_names
-   logical               :: flag
-   integer               :: iband,comma_i,comma_i_old
-   integer               :: band_name_length,current_band
-   integer(kind=sint)    :: fv, vr(2)
-   real(kind=sreal)      :: scale_factors(20), offsets(20)
-   integer(kind=lint)    :: start(3), stride(3), edge(3)
-   integer(kind=sint)    :: temp(ixstart:ixstop,iystart:iystop)
+   integer(kind=lint)         :: ix, jy
+   character(len=MAX_NC_NAME) :: SDS_name, SDS_name_2
+   character(len=128)         :: Dim_band_index
+   integer(kind=lint)         :: file_id, attr_id, var_id, err_code
+   character(len=MAX_NC_NAME) :: tmpname
+   integer                    :: rank, type, num_attrs
+   integer, dimension(3)      :: dimsizes
+   integer                    :: number_of_bands
+   character(len=MAX_NC_NAME) :: band_names
+   logical                    :: flag
+   integer                    :: iband,comma_i,comma_i_old
+   integer                    :: band_name_length,current_band
+   integer(kind=sint)         :: fv, vr(2)
+   real(kind=sreal)           :: scale_factors(20), offsets(20)
+   integer(kind=lint)         :: start(3), stride(3), edge(3)
+   integer(kind=sint)         :: temp(ixstart:ixstop,iystart:iystop)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_modis_l1b_radiances_2()'
 
@@ -94,28 +95,28 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
 
    if (band >= 1 .and. band <= 2) then
       SDS_name = "EV_250_Aggr1km_RefSB"
-      SDS_unc_name = "EV_250_Aggr1km_RefSB_Uncert_Indexes"
+      SDS_name_2 = "EV_250_Aggr1km_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_250M"
    end if
    if (band >= 3 .and. band <= 7) then
       SDS_name = "EV_500_Aggr1km_RefSB"
-      SDS_unc_name = "EV_500_Aggr1km_RefSB_Uncert_Indexes"
+      SDS_name_2 = "EV_500_Aggr1km_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_500M"
    end if
    if (band >= 8 .and. band<= 19 .or. band == 26) then
       SDS_name = "EV_1KM_RefSB"
-      SDS_unc_name = "EV_1KM_RefSB_Uncert_Indexes"
+      SDS_name_2 = "EV_1KM_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_1KM_RefSB"
    end if
    if (band >= 20 .and. band <= 36 .and. band /= 26) then
       SDS_name = "EV_1KM_Emissive"
-      SDS_unc_name = "EV_1KM_Emissive_Uncert_Indexes"
+      SDS_name_2 = "EV_1KM_Emissive_Uncert_Indexes"
       Dim_band_index = "Band_1KM_Emissive"
    end if
 
    if (verbose) then
       write(*,*), 'SDS_name: ', trim(SDS_name)
-      write(*,*), 'SDS_unc_name: ', trim(SDS_unc_name)
+      write(*,*), 'SDS_name_2: ', trim(SDS_name_2)
       write(*,*), 'Dim_band_index: ', trim(Dim_band_index)
    end if
 
@@ -126,7 +127,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    number_of_bands = dimsizes(3)
 
    if (verbose) then
-      write(*,*), 'sfginfo() output',trim(adjustl(Dim_band_index))
+      write(*,*), 'sfginfo() output',trim(adjustl(SDS_name_2))
       write(*,*), '   name: ', trim(adjustl(tmpname))
       write(*,*), '   rank: ', rank
       write(*,*), '   dimsizes: ', dimsizes

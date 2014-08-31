@@ -66,39 +66,39 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    integer*4,                 intent(out) :: stat
 
    ! Local variables
-   integer                :: i,j,k
-   integer*4              :: fid, gid
-   character(len=300)     :: gridlist
-   integer*4              :: gridlistlen
-   character(len=21)      :: dataname
+   integer                    :: i,j,k
+   integer*4                  :: fid, gid
+   character(len=300)         :: gridlist
+   integer*4                  :: gridlistlen
+   character(len=MAX_NC_NAME) :: dataname
 
-!  integer*4              :: proj, zone, sphere
-!  real, pointer          :: param(:)
-   integer*4              :: xdim, ydim
-   real                   :: xres, yres
-   real*8                 :: upleft(2), lowright(2)
-   integer*4              :: start(2), stride(2), edge(2)
+!  integer*4                  :: proj, zone, sphere
+!  real, pointer              :: param(:)
+   integer*4                  :: xdim, ydim
+   real                       :: xres, yres
+   real*8                     :: upleft(2), lowright(2)
+   integer*4                  :: start(2), stride(2), edge(2)
 
-   integer*2, allocatable :: tmpdata(:,:)
+   integer*2, allocatable     :: tmpdata(:,:)
 
-   integer*2              :: fill
-   real*8                 :: offset, scale
+   integer*2                  :: fill
+   real*8                     :: offset, scale
 
    ! External functions (the hdf-eos library)
-   integer*4, external    :: gdprojinfo
-   integer*4, external    :: gdgridinfo
-   integer*4, external    :: gdinqgrid
-   integer*4, external    :: gdopen
-   integer*4, external    :: gdattach
-   integer*4, external    :: gdrdfld
-   integer*4, external    :: gdgetfill
-   integer*4, external    :: gddetach
-   integer*4, external    :: gdclose
+   integer*4, external        :: gdprojinfo
+   integer*4, external        :: gdgridinfo
+   integer*4, external        :: gdinqgrid
+   integer*4, external        :: gdopen
+   integer*4, external        :: gdattach
+   integer*4, external        :: gdrdfld
+   integer*4, external        :: gdgetfill
+   integer*4, external        :: gddetach
+   integer*4, external        :: gdclose
 
-   integer*4, external    :: gdinqflds
-   integer*4, external    :: gdinqdims
-   integer*4, external    :: gdnentries
-   integer*4, external    :: gdfldinfo
+   integer*4, external        :: gdinqflds
+   integer*4, external        :: gdinqdims
+   integer*4, external        :: gdnentries
+   integer*4, external        :: gdfldinfo
 
    ! The list of "bands" contained in the MCD43c3 files. Note that these
    ! actually appear as "Albedo_XXX_Band1" etc in the data file, where XXX

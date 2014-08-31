@@ -48,7 +48,7 @@ subroutine get_modis_time(geo_id,imager_geolocation,imager_time,n_along_track)
    integer(kind=lint)         :: err_code
    integer(kind=lint)         :: dummy_type,dummy_numattrs,dummy_rank,dims_10
    integer(kind=lint)         :: n_along_track_10, along_track_ratio
-   character(len=50)          :: dummy_name
+   character(len=MAX_NC_NAME) :: dummy_name
 
    real(kind=dreal), allocatable, dimension(:)   :: ttemp10
    real(kind=dreal), allocatable, dimension(:,:) :: ttemp

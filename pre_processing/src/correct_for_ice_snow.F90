@@ -105,7 +105,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    implicit none
 
    ! Arguments
-   character(len=300),         intent(in)    :: nise_path
+   character(len=path_length), intent(in)    :: nise_path
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
    type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(surface_s),            intent(inout) :: surface
@@ -123,7 +123,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    real(kind=sreal), dimension(2,2) :: nise_tmp
    real(kind=sreal), dimension(8)   :: nise_tmp2
    real                             :: fmonth
-   character(len=300)               :: nise_path_file
+   character(len=path_length)       :: nise_path_file
    logical                          :: nise_file_exist
    character(len=7)                 :: nise_file_read
 

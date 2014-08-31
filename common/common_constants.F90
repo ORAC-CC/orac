@@ -35,6 +35,9 @@ module common_constants
 
    integer, parameter :: unitlength=75
 
+   integer, parameter :: MAX_NC_NAME=256
+   integer, parameter :: MAX_VAR_DIMS=32
+
    ! Error code to give back to the system on an error
    integer, parameter :: error_stop_code = 1
 

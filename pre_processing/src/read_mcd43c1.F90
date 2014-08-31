@@ -55,23 +55,23 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
    integer*4, intent(out)                :: stat
 
    ! Local variables
-   integer                :: i,j,k
-   integer*4              :: fid, gid
-   character(len=300)     :: gridlist
-   integer*4              :: gridlistlen
-   character(len=32)      :: dataname
+   integer                    :: i,j,k
+   integer*4                  :: fid, gid
+   character(len=300)         :: gridlist
+   integer*4                  :: gridlistlen
+   character(len=MAX_NC_NAME) :: dataname
 
-!  integer*4              :: proj, zone, sphere
-!  real, pointer          :: param(:)
-   integer*4              :: xdim, ydim
-   real                   :: xres, yres
-   real*8                 :: upleft(2), lowright(2)
-   integer*4              :: start(2), stride(2), edge(2)
+!  integer*4                  :: proj, zone, sphere
+!  real, pointer              :: param(:)
+   integer*4                  :: xdim, ydim
+   real                       :: xres, yres
+   real*8                     :: upleft(2), lowright(2)
+   integer*4                  :: start(2), stride(2), edge(2)
 
-   integer*2, allocatable :: tmpdata(:,:)
+   integer*2, allocatable     :: tmpdata(:,:)
 
-   integer*2              :: fill
-   real*8                 :: offset, scale
+   integer*2                  :: fill
+   real*8                     :: offset, scale
 
    ! External functions (the hdf-eos library)
    integer*4, external    :: gdprojinfo
@@ -99,9 +99,9 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_mcd43c1()'
 
-   if (verbose) write(*,*) 'path_to_file:', trim(path_to_file)
-   if (verbose) write(*,*) 'nbands:',       nbands
-   if (verbose) write(*,*) 'bands:',        bands
+   if (verbose) write(*,*) 'path_to_file: ', trim(path_to_file)
+   if (verbose) write(*,*) 'nbands: ',       nbands
+   if (verbose) write(*,*) 'bands: ',        bands
 
    ! Allocate and populate the band and bandid arrays in the output structure
    allocate(mcd%bands(nbands))

@@ -284,7 +284,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
    type(aatsr_drift_lut),      intent(inout) :: lut
 
    integer            :: i, lun
-   character(len=200) :: line
+   character(len=256) :: line
    logical            :: file_exists, no_lun, lun_exists, lun_used
 
    ! Does the drift correction LUT exist?
