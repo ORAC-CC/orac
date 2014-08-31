@@ -68,6 +68,7 @@
 ! 2014/05/26, GM: Fixes/improvements to error reporting.
 ! 2014/08/01, AP: Remove unused counter fields.
 ! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/08/31, GM: Make the global attribute list consistent with CF-1.4.
 !
 ! $Id$
 !
@@ -1602,6 +1603,7 @@ end subroutine netcdf_create_config
 !
 ! History:
 ! 2014/02/03, GM: Original version
+! 2014/08/31, GM: Make the global attribute list consistent with CF-1.4.
 !
 !-------------------------------------------------------------------------------
 
@@ -1631,75 +1633,189 @@ subroutine nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor, &
    integer                       :: cposition,clength
    character(len=filelength)     :: fname
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Title',trim(adjustl(ctitle)))
+
+   !----------------------------------------------------------------------------
+   ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
+   !----------------------------------------------------------------------------
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', &
+        trim(script_input%ccon))
    if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+
+
+   !----------------------------------------------------------------------------
+   ! Global attributes for the 'Description of file contents' as defined by
+   ! CF-1.4, section 2.6.2.
+   !----------------------------------------------------------------------------
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'title', &
+        trim(ctitle))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: title'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'institution', &
+        trim(script_input%cinst))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: institution'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'source', &
+        'source!!!')
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: source'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'history', &
+        trim(script_input%history))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: history'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'references', &
+        trim(script_input%history))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: references'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'comment', &
+        trim(script_input%history))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: comment'
+      stop error_stop_code
+   endif
+
+
+   !----------------------------------------------------------------------------
+   ! Extra global attributes defined by Orac
+   !----------------------------------------------------------------------------
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Project', &
-        trim(adjustl(script_input%project)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%project))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Project'
+      stop error_stop_code
+   endif
+
+   cposition=index(trim(path),'/',back=.true.)
+   clength=len_trim(path)
+   fname=trim(path)
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Name', &
+        trim(fname(cposition+1:clength)))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: File_Name'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'UUID', &
+        trim(script_input%uuid_tag))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: UUID'
+      stop error_stop_code
+   endif
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'NetCDF_Version', &
-        trim(adjustl(script_input%cncver)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'CF_Convention_Version', &
-        trim(adjustl(script_input%ccon)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Processing_Institution', &
-        trim(adjustl(script_input%cinst)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%cncver))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: NetCDF_Version'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Name', &
+        'product name')
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Product_Name'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Date', &
+        trim(cyear)//trim(cmonth)//trim(cday)// &
+        trim(chour)//trim(cminute))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Product_Date'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Production_Time', &
+        trim(script_input%exec_time))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Production_Time'
+      stop error_stop_code
+   endif
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'L2_Processor', &
-        trim(adjustl(script_input%l2cproc)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%l2cproc))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: L2_Processor'
+      stop error_stop_code
+   endif
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'L2_Processor_Version', &
-        trim(adjustl(script_input%l2cprocver)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%l2cprocver))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: L2_Processor_Version'
+      stop error_stop_code
+   endif
 
    PLATFORMUP=platform
    if (platform(1:4) .eq. 'noaa') PLATFORMUP(1:4)='NOAA'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Platform', &
+        trim(platformup))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Platform'
+      stop error_stop_code
+   endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Platform',trim(adjustl(platformup)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Sensor_Name',trim(adjustl(sensor)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'uuid', &
-        trim(adjustl(script_input%uuid_tag)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Sensor', &
+        trim(sensor))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Sensor'
+      stop error_stop_code
+   endif
 
-   cposition=index(trim(adjustl(path)),'/',back=.true.)
-   clength=len_trim(adjustl(path))
-   fname=trim(adjustl(path))
+!  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'AATSR_Processing_Version', &
+!       trim(sensor))
+!  if (ierr.ne.NF90_NOERR) then
+!     write(*,*), 'ERROR: nf90_put_att(), name: AATSR_Processing_Version'
+!     stop error_stop_code
+!  endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Name', &
-        trim(adjustl(fname(cposition+1:clength))))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Email', &
-        trim(adjustl(script_input%contact)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%contact))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Contact_Email'
+      stop error_stop_code
+   endif
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Website', &
-        trim(adjustl(script_input%website)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Production_Time', &
-        trim(adjustl(script_input%exec_time)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Date', &
-        trim(adjustl(trim(adjustl(cyear))//trim(adjustl(cmonth))//&
-        trim(adjustl(cday))//trim(adjustl(chour))//trim(adjustl(cminute)))))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Reference', &
-        trim(adjustl(script_input%reference)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'History', &
-        trim(adjustl(script_input%history)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Summary', &
-        trim(adjustl(script_input%summary)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%website))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Contact_Website'
+      stop error_stop_code
+   endif
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Keywords', &
-        trim(adjustl(script_input%keywords)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Comment', &
-        trim(adjustl(script_input%comment)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%keywords))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Keywords'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Summary', &
+        trim(script_input%summary))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: Summary'
+      stop error_stop_code
+   endif
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'License', &
-        trim(adjustl(script_input%license)))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+        trim(script_input%license))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*), 'ERROR: nf90_put_att(), name: License'
+      stop error_stop_code
+   endif
 
 end subroutine nc_put_common_attributes

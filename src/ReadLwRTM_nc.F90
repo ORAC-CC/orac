@@ -191,7 +191,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    call nc_open(ncid, Ctrl%FID%LWRTM)
 
    ! Ensure instrument info matches the sensor being processed
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor_Name", sensor) /= NF90_NOERR .or.&
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
        nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
       stop 'ERROR: read_lwrtm_nc(): Could not read global attributes.'
    if (sensor =='AATSR') then
