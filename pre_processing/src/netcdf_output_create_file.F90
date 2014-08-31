@@ -92,31 +92,31 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
    implicit none
 
    ! Input
-   type(script_arguments_s),      intent(in)    :: script_input
-   character(len=datelength),     intent(in)    :: cyear
-   character(len=datelength),     intent(in)    :: cmonth
-   character(len=datelength),     intent(in)    :: cday
-   character(len=datelength),     intent(in)    :: chour
-   character(len=datelength),     intent(in)    :: cminute
-   character(len=platformlength), intent(in)    :: platform
-   character(len=sensorlength),   intent(in)    :: sensor
-   character(len=*),              intent(in)    :: path
-   integer,                       intent(in)    :: wo
-   integer,                       intent(in)    :: type
-   type(preproc_dims_s),          intent(in)    :: preproc_dims
-   type(imager_angles_s),         intent(in)    :: imager_angles
-   type(netcdf_info_s),           intent(inout) :: netcdf_info
-   type(channel_info_s),          intent(in)    :: channel_info
-   logical,                       intent(in)    :: use_chunking
+   type(script_arguments_s),       intent(in)    :: script_input
+   character(len=date_length),     intent(in)    :: cyear
+   character(len=date_length),     intent(in)    :: cmonth
+   character(len=date_length),     intent(in)    :: cday
+   character(len=date_length),     intent(in)    :: chour
+   character(len=date_length),     intent(in)    :: cminute
+   character(len=platform_length), intent(in)    :: platform
+   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),               intent(in)    :: path
+   integer,                        intent(in)    :: wo
+   integer,                        intent(in)    :: type
+   type(preproc_dims_s),           intent(in)    :: preproc_dims
+   type(imager_angles_s),          intent(in)    :: imager_angles
+   type(netcdf_info_s),            intent(inout) :: netcdf_info
+   type(channel_info_s),           intent(in)    :: channel_info
+   logical,                        intent(in)    :: use_chunking
 
    ! Local
-   integer                   :: ierr
-   integer                   :: nlon_x_nlat
-   character(len=filelength) :: ctitle
-   integer                   :: ncid
-   integer(kind=lint)        :: chunksize1d(1)
-   integer(kind=lint)        :: chunksize2d(2)
-   integer(kind=lint)        :: chunksize3d(3)
+   integer                    :: ierr
+   integer                    :: nlon_x_nlat
+   character(len=file_length) :: ctitle
+   integer                    :: ncid
+   integer(kind=lint)         :: chunksize1d(1)
+   integer(kind=lint)         :: chunksize2d(2)
+   integer(kind=lint)         :: chunksize3d(3)
 
 
    nlon_x_nlat=(preproc_dims%max_lon-preproc_dims%min_lon+1) * &
@@ -220,7 +220,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define solar zenith
       ierr = nf90_def_var(netcdf_info%ncid_lwrtm, 'solza_lw', NF90_FLOAT, &
            netcdf_info%xyvdim_lw, netcdf_info%solzaid_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solza_lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm,netcdf_info%solzaid_lw, &
@@ -230,7 +230,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define satellite zenith
       ierr = nf90_def_var(netcdf_info%ncid_lwrtm, 'satza_lw', NF90_FLOAT, &
            netcdf_info%xyvdim_lw, netcdf_info%satzaid_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satza_lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm,netcdf_info%satzaid_lw, &
@@ -240,7 +240,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define rez azimuth
       ierr = nf90_def_var(netcdf_info%ncid_lwrtm, 'relazi_lw', NF90_FLOAT, &
            netcdf_info%xyvdim_lw, netcdf_info%relaziid_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def relazi_lw'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm,netcdf_info%relaziid_lw, &
@@ -262,7 +262,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define emissivity 3D
       ierr = nf90_def_var( netcdf_info%ncid_lwrtm, 'emiss_lw', &
            NF90_FLOAT, netcdf_info%xycdim_lw, netcdf_info%emiss_id_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw emiss'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%emiss_id_lw, &
@@ -288,7 +288,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define tac profile at level centers as variable
       ierr = nf90_def_var( netcdf_info%ncid_lwrtm, 'tac_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tac_id_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw tac'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%tac_id_lw, &
@@ -298,7 +298,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define tbc
       ierr = nf90_def_var( netcdf_info%ncid_lwrtm, 'tbc_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%tbc_id_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw tbc'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%tbc_id_lw, &
@@ -308,7 +308,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define radiances
       ierr = nf90_def_var( netcdf_info%ncid_lwrtm, 'rbc_up_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rbc_up_id_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw rbc_up'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%rbc_up_id_lw, &
@@ -317,7 +317,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_def_var( netcdf_info%ncid_lwrtm, 'rac_up_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_up_id_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw rac_up'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%rac_up_id_lw, &
@@ -327,7 +327,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_def_var( netcdf_info%ncid_lwrtm, 'rac_down_lw', &
            NF90_FLOAT, netcdf_info%xyzcdim_lw, netcdf_info%rac_down_id_lw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lw rac_down'
       ierr = nf90_put_att(netcdf_info%ncid_lwrtm, netcdf_info%rac_down_id_lw, &
@@ -433,7 +433,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define solar zenith
       ierr = nf90_def_var(netcdf_info%ncid_swrtm, 'solza_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%solzaid_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solza_sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm,netcdf_info%solzaid_sw, &
@@ -443,7 +443,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define satellite zenith
       ierr = nf90_def_var(netcdf_info%ncid_swrtm, 'satza_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%satzaid_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satza_sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm,netcdf_info%satzaid_sw, &
@@ -453,7 +453,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define relative azimuth
       ierr = nf90_def_var(netcdf_info%ncid_swrtm, 'relazi_sw', NF90_FLOAT, &
            netcdf_info%xyvdim_sw, netcdf_info%relaziid_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def relazi_sw'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm,netcdf_info%relaziid_sw, &
@@ -478,7 +478,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define tac profile at level centers as variable
       ierr = nf90_def_var( netcdf_info%ncid_swrtm, 'tac_sw', &
            NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tac_id_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def sw tac'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm, netcdf_info%tac_id_sw, &
@@ -487,7 +487,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_def_var( netcdf_info%ncid_swrtm, 'tbc_sw', &
            NF90_FLOAT, netcdf_info%xyzcdim_sw, netcdf_info%tbc_id_sw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def sw tbc'
       ierr = nf90_put_att(netcdf_info%ncid_swrtm, netcdf_info%tbc_id_sw, &
@@ -545,7 +545,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define longitude variable
       ierr = nf90_def_var(netcdf_info%ncid_prtm, 'lon_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%lonid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def lon'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%lonid_pw, &
@@ -555,7 +555,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define latitude variable
       ierr = nf90_def_var(netcdf_info%ncid_prtm, 'lat_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%latid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%latid_pw, &
@@ -565,7 +565,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define skint variable
       ierr = nf90_def_var(netcdf_info%ncid_prtm, 'skint_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%skintid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def skint'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%skintid_pw, &
@@ -575,7 +575,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define exp(lnsp) variable
       ierr = nf90_def_var(netcdf_info%ncid_prtm, 'explnsp_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%lnspid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def explnsp'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%lnspid_pw, &
@@ -585,7 +585,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define exp(lsf) variable
       ierr = nf90_def_var(netcdf_info%ncid_prtm, 'lsf_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%lsfid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize1d(1))
       if (ierr.ne.NF90_NOERR) stop 'error: def lsf'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%lsfid_pw, &
@@ -595,7 +595,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define satzen variable
       ierr = nf90_def_var(netcdf_info%ncid_prtm, 'satzen_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%satzenid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satzen'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%satzenid_pw, &
@@ -605,7 +605,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define solzen variable
       ierr = nf90_def_var(netcdf_info%ncid_prtm, 'solzen_pw', NF90_FLOAT, &
            netcdf_info%xydim_pw, netcdf_info%solzenid_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solzen'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%solzenid_pw, &
@@ -628,7 +628,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define pressure profile at level centers as variable
       ierr = nf90_def_var( netcdf_info%ncid_prtm, 'pprofile_lev', &
            NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%pprofile_lev_id_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, netcdf_info%pprofile_lev_id_pw, &
@@ -638,7 +638,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define temperature profile at lever centers as variable
       ierr = nf90_def_var( netcdf_info%ncid_prtm, 'tprofile_lev', &
            NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%tprofile_lev_id_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, &
@@ -648,7 +648,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
       ! define geopotential height profile at lever centers as variable
       ierr = nf90_def_var( netcdf_info%ncid_prtm, 'gphprofile_lev', &
            NF90_FLOAT, netcdf_info%xyzdim_pw, netcdf_info%hprofile_lev_id_pw, &
-           deflate_level=compress_level_float, shuffle=shuffle_float)!, &
+           deflate_level=compress_level_sreal, shuffle=shuffle_float)!, &
       !          chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def lat'
       ierr = nf90_put_att(netcdf_info%ncid_prtm, &
@@ -729,33 +729,33 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
    implicit none
 
    ! Input
-   type(script_arguments_s),      intent(in)    :: script_input
-   character(len=datelength),     intent(in)    :: cyear
-   character(len=datelength),     intent(in)    :: cmonth
-   character(len=datelength),     intent(in)    :: cday
-   character(len=datelength),     intent(in)    :: chour
-   character(len=datelength),     intent(in)    :: cminute
-   character(len=platformlength), intent(in)    :: platform
-   character(len=sensorlength),   intent(in)    :: sensor
-   character(len=*),              intent(in)    :: path
-   integer,                       intent(in)    :: wo
-   integer,                       intent(in)    :: type
-   type(imager_geolocation_s),    intent(in)    :: imager_geolocation
-   type(imager_angles_s),         intent(in)    :: imager_angles
-   type(netcdf_info_s),           intent(inout) :: netcdf_info
-   type(channel_info_s),          intent(in)    :: channel_info
-   logical,                       intent(in)    :: use_chunking
-   logical,                       intent(in)    :: include_full_brdf
+   type(script_arguments_s),       intent(in)    :: script_input
+   character(len=date_length),     intent(in)    :: cyear
+   character(len=date_length),     intent(in)    :: cmonth
+   character(len=date_length),     intent(in)    :: cday
+   character(len=date_length),     intent(in)    :: chour
+   character(len=date_length),     intent(in)    :: cminute
+   character(len=platform_length), intent(in)    :: platform
+   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),               intent(in)    :: path
+   integer,                        intent(in)    :: wo
+   integer,                        intent(in)    :: type
+   type(imager_geolocation_s),     intent(in)    :: imager_geolocation
+   type(imager_angles_s),          intent(in)    :: imager_angles
+   type(netcdf_info_s),            intent(inout) :: netcdf_info
+   type(channel_info_s),           intent(in)    :: channel_info
+   logical,                        intent(in)    :: use_chunking
+   logical,                        intent(in)    :: include_full_brdf
 
    ! Local
-   integer                   :: ierr
-   character(len=filelength) :: ctitle
-   integer                   :: ncid
-   integer, dimension(2)     :: dims2d
-   integer, dimension(3)     :: dims3d
-   integer, dimension(3)     :: dims3dd
-   integer(kind=lint)        :: chunksize2d(2)
-   integer(kind=lint)        :: chunksize3d(3)
+   integer                    :: ierr
+   character(len=file_length) :: ctitle
+   integer                    :: ncid
+   integer, dimension(2)      :: dims2d
+   integer, dimension(3)      :: dims3d
+   integer, dimension(3)      :: dims3dd
+   integer(kind=lint)         :: chunksize2d(2)
+   integer(kind=lint)         :: chunksize3d(3)
 
 
    ! open stuff related to msi
@@ -858,7 +858,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define time variable
       ierr = nf90_def_var(netcdf_info%ncid_msi, 'time_data', NF90_DOUBLE, &
-           dims2d, netcdf_info%timeid, deflate_level=compress_level_double)!, &
+           dims2d, netcdf_info%timeid, deflate_level=compress_level_dreal)!, &
       !            shuffle=shuffle_double, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def time'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%timeid, &
@@ -882,7 +882,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define msi variable
       ierr = nf90_def_var(netcdf_info%ncid_msi, 'msi_data', NF90_FLOAT, &
-           dims3dd, netcdf_info%msid, deflate_level=compress_level_float)!, &
+           dims3dd, netcdf_info%msid, deflate_level=compress_level_sreal)!, &
       !            shuffle=shuffle_float, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def msi'
       ierr = nf90_put_att(netcdf_info%ncid_msi, netcdf_info%msid, &
@@ -1031,7 +1031,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define solzen variable
       ierr = nf90_def_var(netcdf_info%ncid_geo, 'solzen', NF90_FLOAT, dims3d, &
-           netcdf_info%solzenid, deflate_level=compress_level_float, &
+           netcdf_info%solzenid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solzen'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%solzenid, &
@@ -1040,7 +1040,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define satzen variable
       ierr = nf90_def_var(netcdf_info%ncid_geo, 'satzen', NF90_FLOAT, dims3d, &
-           netcdf_info%satzenid, deflate_level=compress_level_float, &
+           netcdf_info%satzenid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def satzen'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%satzenid, &
@@ -1049,7 +1049,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define solaz variable
       ierr = nf90_def_var(netcdf_info%ncid_geo, 'solaz', NF90_FLOAT, dims3d, &
-           netcdf_info%solazid, deflate_level=compress_level_float, &
+           netcdf_info%solazid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def solaz'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%solazid, &
@@ -1058,7 +1058,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define relazi variable
       ierr = nf90_def_var(netcdf_info%ncid_geo, 'relazi', NF90_FLOAT, dims3d, &
-           netcdf_info%relazid, deflate_level=compress_level_float, &
+           netcdf_info%relazid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def relazi'
       ierr = nf90_put_att(netcdf_info%ncid_geo, netcdf_info%relazid, &
@@ -1106,7 +1106,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define lon variable
       ierr = nf90_def_var(netcdf_info%ncid_loc, 'lon', NF90_FLOAT, dims2d, &
-           netcdf_info%lonid, deflate_level=compress_level_float, &
+           netcdf_info%lonid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def loc'
       ierr = nf90_put_att(netcdf_info%ncid_loc, netcdf_info%lonid, &
@@ -1115,7 +1115,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define lat variable
       ierr = nf90_def_var(netcdf_info%ncid_loc, 'lat', NF90_FLOAT, dims2d, &
-           netcdf_info%latid, deflate_level=compress_level_float, &
+           netcdf_info%latid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize2d)
       if (ierr.ne.NF90_NOERR) stop 'error: def loc'
       ierr = nf90_put_att(netcdf_info%ncid_loc, netcdf_info%latid, &
@@ -1195,7 +1195,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define alb variable
       ierr = nf90_def_var(netcdf_info%ncid_alb, 'alb_data', NF90_FLOAT, dims3d, &
-           netcdf_info%albid, deflate_level=compress_level_float, &
+           netcdf_info%albid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def alb'
       ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%albid, &
@@ -1219,7 +1219,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
 
       ! define emis variable
       ierr = nf90_def_var(netcdf_info%ncid_alb, 'emis_data', NF90_FLOAT, &
-           dims3d, netcdf_info%emisid, deflate_level=compress_level_float, &
+           dims3d, netcdf_info%emisid, deflate_level=compress_level_sreal, &
            shuffle=shuffle_float)!, chunksizes=chunksize3d)
       if (ierr.ne.NF90_NOERR) stop 'error: def emis'
       ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%emisid, &
@@ -1243,7 +1243,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
          end if
 
          ierr = nf90_def_var(netcdf_info%ncid_alb, 'rho_0v_data', NF90_FLOAT, dims3d, &
-                netcdf_info%rho_0v_id, deflate_level=compress_level_float, &
+                netcdf_info%rho_0v_id, deflate_level=compress_level_sreal, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_0v_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_0v_id, &
@@ -1251,7 +1251,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
          if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_0v_data'
 
          ierr = nf90_def_var(netcdf_info%ncid_alb, 'rho_0d_data', NF90_FLOAT, dims3d, &
-                netcdf_info%rho_0d_id, deflate_level=compress_level_float, &
+                netcdf_info%rho_0d_id, deflate_level=compress_level_sreal, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_0d_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_0d_id, &
@@ -1259,7 +1259,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
          if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_0d_data'
 
          ierr = nf90_def_var(netcdf_info%ncid_alb, 'rho_dv_data', NF90_FLOAT, dims3d, &
-                netcdf_info%rho_dv_id, deflate_level=compress_level_float, &
+                netcdf_info%rho_dv_id, deflate_level=compress_level_sreal, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_dv_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_dv_id, &
@@ -1267,7 +1267,7 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
          if (ierr.ne.NF90_NOERR) write(*,*) 'error: def var FillValue rho_dv_data'
 
          ierr = nf90_def_var(netcdf_info%ncid_alb, 'rho_dd_data', NF90_FLOAT, dims3d, &
-                netcdf_info%rho_dd_id, deflate_level=compress_level_float, &
+                netcdf_info%rho_dd_id, deflate_level=compress_level_sreal, &
                 shuffle=shuffle_float)!, chunksizes=chunksize3d)
          if (ierr.ne.NF90_NOERR) stop 'error: def rho_dd_data'
          ierr = nf90_put_att(netcdf_info%ncid_alb, netcdf_info%rho_dd_id, &
@@ -1403,26 +1403,26 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
    implicit none
 
    ! Input
-   type(script_arguments_s),      intent(in)    :: script_input
-   character(len=datelength),     intent(in)    :: cyear
-   character(len=datelength),     intent(in)    :: cmonth
-   character(len=datelength),     intent(in)    :: cday
-   character(len=datelength),     intent(in)    :: chour
-   character(len=datelength),     intent(in)    :: cminute
-   character(len=platformlength), intent(in)    :: platform
-   character(len=sensorlength),   intent(in)    :: sensor
-   character(len=*),              intent(in)    :: path
-   integer,                       intent(in)    :: wo
-   type(preproc_dims_s),          intent(in)    :: preproc_dims
-   type(imager_geolocation_s),    intent(in)    :: imager_geolocation
-   type(netcdf_info_s),           intent(inout) :: netcdf_info
-   type(channel_info_s),          intent(in)    :: channel_info
+   type(script_arguments_s),       intent(in)    :: script_input
+   character(len=date_length),     intent(in)    :: cyear
+   character(len=date_length),     intent(in)    :: cmonth
+   character(len=date_length),     intent(in)    :: cday
+   character(len=date_length),     intent(in)    :: chour
+   character(len=date_length),     intent(in)    :: cminute
+   character(len=platform_length), intent(in)    :: platform
+   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=*),               intent(in)    :: path
+   integer,                        intent(in)    :: wo
+   type(preproc_dims_s),           intent(in)    :: preproc_dims
+   type(imager_geolocation_s),     intent(in)    :: imager_geolocation
+   type(netcdf_info_s),            intent(inout) :: netcdf_info
+   type(channel_info_s),           intent(in)    :: channel_info
 
    ! Local
-   integer                   :: ierr
-   integer                   :: nlon_x_nlat
-   character(len=filelength) :: ctitle
-   integer                   :: ncid
+   integer                    :: ierr
+   integer                    :: nlon_x_nlat
+   character(len=file_length) :: ctitle
+   integer                    :: ncid
 
 
    ctitle='ORAC Preprocessing config  file'
@@ -1616,22 +1616,22 @@ subroutine nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor, &
 
    implicit none
 
-   integer,                       intent(in) :: ncid
-   type(script_arguments_s),      intent(in) :: script_input
-   character(len=filelength),     intent(in) :: ctitle
-   character(len=platformlength), intent(in) :: platform
-   character(len=sensorlength),   intent(in) :: sensor
-   character(len=*),              intent(in) :: path
-   character(len=datelength),     intent(in) :: cyear
-   character(len=datelength),     intent(in) :: cmonth
-   character(len=datelength),     intent(in) :: cday
-   character(len=datelength),     intent(in) :: chour
-   character(len=datelength),     intent(in) :: cminute
+   integer,                        intent(in) :: ncid
+   type(script_arguments_s),       intent(in) :: script_input
+   character(len=file_length),     intent(in) :: ctitle
+   character(len=platform_length), intent(in) :: platform
+   character(len=sensor_length),   intent(in) :: sensor
+   character(len=*),               intent(in) :: path
+   character(len=date_length),     intent(in) :: cyear
+   character(len=date_length),     intent(in) :: cmonth
+   character(len=date_length),     intent(in) :: cday
+   character(len=date_length),     intent(in) :: chour
+   character(len=date_length),     intent(in) :: cminute
 
-   integer                       :: ierr
-   character(len=platformlength) :: PLATFORMUP
-   integer                       :: cposition,clength
-   character(len=filelength)     :: fname
+   integer                        :: ierr
+   character(len=platform_length) :: PLATFORMUP
+   integer                        :: cposition,clength
+   character(len=file_length)     :: fname
 
 
    !----------------------------------------------------------------------------

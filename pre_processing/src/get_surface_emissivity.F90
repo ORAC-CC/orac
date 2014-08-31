@@ -87,21 +87,21 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    implicit none
 
    ! Input/output variables
-   character(len=datelength),  intent(in)    :: cyear
-   character(len=datelength),  intent(in)    :: cdoy
-   character(len=pathlength),  intent(in)    :: cimss_emis_path
-   type(imager_flags_s),       intent(in)    :: imager_flags
-   type(imager_geolocation_s), intent(in)    :: imager_geolocation
-   type(channel_info_s),       intent(in)    :: channel_info
-   type(preproc_dims_s),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
-   logical,                    intent(in)    :: assume_full_path
-   logical,                    intent(in)    :: verbose
-   type(surface_s),            intent(inout) :: surface
-   type(preproc_surf_s),       intent(inout) :: preproc_surf
+   character(len=date_length),  intent(in)    :: cyear
+   character(len=date_length),  intent(in)    :: cdoy
+   character(len=path_length),  intent(in)    :: cimss_emis_path
+   type(imager_flags_s),        intent(in)    :: imager_flags
+   type(imager_geolocation_s),  intent(in)    :: imager_geolocation
+   type(channel_info_s),        intent(in)    :: channel_info
+   type(preproc_dims_s),        intent(in)    :: preproc_dims
+   type(preproc_geoloc_s),      intent(in)    :: preproc_geoloc
+   logical,                     intent(in)    :: assume_full_path
+   logical,                     intent(in)    :: verbose
+   type(surface_s),             intent(inout) :: surface
+   type(preproc_surf_s),        intent(inout) :: preproc_surf
 
    ! Local variables
-   character(len=pathlength)                          :: cimss_emis_path_file
+   character(len=path_length)                         :: cimss_emis_path_file
    type(emis_s)                                       :: emis
    integer(kind=sint),              dimension(1)      :: embands=[1]
 !   integer(kind=sint),              dimension(3)      :: embands=[1,8,9]

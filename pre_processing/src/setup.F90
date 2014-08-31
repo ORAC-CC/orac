@@ -70,13 +70,13 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
 
    implicit none
 
-   character(len=pathlength),     intent(in)    :: l1b_path_file
-   character(len=pathlength),     intent(in)    :: geo_path_file
-   character(len=platformlength), intent(out)   :: platform
-   integer(kind=sint),            intent(out)   :: year,month,day,doy,hour,minute
-   character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
-   type(channel_info_s),          intent(inout) :: channel_info
-   logical,                       intent(in)    :: verbose
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)   :: year,month,day,doy,hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
+   type(channel_info_s),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
 
    integer(kind=sint)                           :: intdummy1,intdummy2
 
@@ -162,13 +162,13 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
 
    implicit none
 
-   character(len=pathlength),     intent(in)    :: l1b_path_file
-   character(len=pathlength),     intent(in)    :: geo_path_file
-   character(len=platformlength), intent(out)   :: platform
-   integer(kind=sint),            intent(out)   :: year,month,day,doy,hour,minute
-   character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
-   type(channel_info_s),          intent(inout) :: channel_info
-   logical,                       intent(in)    :: verbose
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)   :: year,month,day,doy,hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
+   type(channel_info_s),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
 
    integer(kind=sint)                           :: intdummy1,intdummy2
 
@@ -252,13 +252,13 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
 
    implicit none
 
-   character(len=pathlength),     intent(in)    :: l1b_path_file
-   character(len=pathlength),     intent(in)    :: geo_path_file
-   character(len=platformlength), intent(out)   :: platform
-   integer(kind=sint),           intent(out)    :: year,month,day,doy,hour,minute
-   character(len=datelength),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
-   type(channel_info_s),          intent(inout) :: channel_info
-   logical,                       intent(in)    :: verbose
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)    :: year,month,day,doy,hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday,cdoy,chour,cminute
+   type(channel_info_s),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
 
    integer(kind=sint)                           :: intdummy1
 

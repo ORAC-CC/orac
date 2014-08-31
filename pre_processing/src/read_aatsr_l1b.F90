@@ -98,7 +98,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
 
          implicit none
 
-         character(c_char), dimension(pathlength) :: l1b_file
+         character(c_char), dimension(path_length) :: l1b_file
          character(c_char), dimension(30)   :: start_date
          character(c_char), dimension(62)   :: gc1_file, vc1_file
          integer(c_short)                   :: nch, stat
@@ -118,7 +118,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    end interface
 
    ! Fortran variables
-   character(len=pathlength),   intent(in)    :: l1b_file, drift_file
+   character(len=path_length),  intent(in)    :: l1b_file, drift_file
    type(imager_geolocation_s),  intent(inout) :: imager_geolocation
    type(imager_measurements_s), intent(inout) :: imager_measurements
    type(imager_angles_s),       intent(inout) :: imager_angles
@@ -134,12 +134,12 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    real(dreal)               :: new_drift, old_drift, drift_var
 
    ! C variables
-   logical(c_bool)                       :: verb, is_lut_drift_corrected
-   integer(c_short)                      :: nch, stat, temp
-   integer(c_long)                       :: nx, ny, startx, starty
-   character(kind=c_char,len=pathlength) :: l1b_file_c
-   character(kind=c_char,len=30)         :: start_date
-   character(kind=c_char,len=62)         :: gc1_file, vc1_file
+   logical(c_bool)                        :: verb, is_lut_drift_corrected
+   integer(c_short)                       :: nch, stat, temp
+   integer(c_long)                        :: nx, ny, startx, starty
+   character(kind=c_char,len=path_length) :: l1b_file_c
+   character(kind=c_char,len=30)          :: start_date
+   character(kind=c_char,len=62)          :: gc1_file, vc1_file
    real(c_double), allocatable, dimension(:)     :: nday, fday
    integer(c_short), allocatable, dimension(:)   :: ch, view
    integer(c_short), allocatable, dimension(:,:) :: nflg, fflg

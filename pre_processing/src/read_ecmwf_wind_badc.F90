@@ -44,8 +44,8 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    integer                         :: i,fid,gid,stat
    integer                         :: PVPresent,PLPresent,level
    integer                         :: npv,nk,nlevels
-   real,              allocatable  :: pv(:)
-   character(len=pathlength)       :: paths(2)
+   real, allocatable               :: pv(:)
+   character(len=path_length)      :: paths(2)
    paths=(/ ecmwf2path, ecmwf3path /)
 
    ! ggas NCDF file, giving U10,V10,lat,lon

@@ -92,31 +92,31 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
 
    implicit none
 
-   character(len=filelength),     intent(out) :: lwrtm_file,swrtm_file, &
-                                                 prtm_file,config_file, &
-                                                 msi_file,cf_file,lsf_file, &
-                                                 geo_file,loc_file,alb_file, &
-                                                 scan_file
-   character(len=sensorlength),   intent(in)  :: sensor
-   character(len=platformlength), intent(in)  :: platform
-   character(len=datelength),     intent(in)  :: cyear,cmonth,cday,chour,cminute
-   character(len=pathlength),     intent(in)  :: ecmwf_path, &
-                                                 ecmwf_path2, &
-                                                 ecmwf_path3
-   character(len=pathlength),     intent(out) :: ecmwf_path_file, &
-                                                 ecmwf_path_file2, &
-                                                 ecmwf_path_file3
-   type(script_arguments_s),      intent(in)  :: script_input
-   integer,                       intent(in)  :: ecmwf_flag
-   type(imager_geolocation_s),    intent(in)  :: imager_geolocation
-   integer(kind=sint),            intent(in)  :: i_chunk
-   logical,                       intent(in)  :: assume_full_path
-   logical,                       intent(in)  :: verbose
+   character(len=file_length),     intent(out) :: lwrtm_file,swrtm_file, &
+                                                  prtm_file,config_file, &
+                                                  msi_file,cf_file,lsf_file, &
+                                                  geo_file,loc_file,alb_file, &
+                                                  scan_file
+   character(len=sensor_length),   intent(in)  :: sensor
+   character(len=platform_length), intent(in)  :: platform
+   character(len=date_length),     intent(in)  :: cyear,cmonth,cday,chour,cminute
+   character(len=path_length),     intent(in)  :: ecmwf_path, &
+                                                  ecmwf_path2, &
+                                                  ecmwf_path3
+   character(len=path_length),     intent(out) :: ecmwf_path_file, &
+                                                  ecmwf_path_file2, &
+                                                  ecmwf_path_file3
+   type(script_arguments_s),       intent(in)  :: script_input
+   integer,                        intent(in)  :: ecmwf_flag
+   type(imager_geolocation_s),     intent(in)  :: imager_geolocation
+   integer(kind=sint),             intent(in)  :: i_chunk
+   logical,                        intent(in)  :: assume_full_path
+   logical,                        intent(in)  :: verbose
 
-   character(len=filelength) :: range_name
-   character(len=filelength) :: file_base
-   real                      :: startr,endr
-   character(len=30)         :: startc,endc,chunkc
+   character(len=file_length) :: range_name
+   character(len=file_length) :: file_base
+   real                       :: startr,endr
+   character(len=30)          :: startc,endc,chunkc
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering preparation()'
 

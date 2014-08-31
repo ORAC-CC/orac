@@ -17,11 +17,13 @@
 ! 2014/01/23, MJ: switches nc4 shuffling off.
 ! 2014/01/30, MJ: removes parameters for chunking.
 ! 2014/03/11, MJ: introduces variable for file chunking.
-! 2014/07/11, AP: Removing unnecessary fields. Shortening datelength.
+! 2014/07/11, AP: Removing unnecessary fields. Shortening date_length.
 ! 2014/08/05, AP: Adding missing fill value.
 ! 2014/08/06, GM: Corrected the value for Pi.
 ! 2014/08/06, GM: d2r is a derived constant. It should be computed.
 ! 2014/08/30, GM: Removed pi and d2r as they are in common_constants.
+! 2014/08/31, GM: Removed unused lengths and made compress_level_*
+!    and shuffle_* names consistent with their ORAC type names.
 !
 ! $Id$
 !
@@ -35,17 +37,15 @@ module preproc_constants
 
    implicit none
 
-   integer, parameter :: pathlength=1024
-   integer, parameter :: filelength=512
-   integer, parameter :: varlength=64
-   integer, parameter :: sensorlength=5
-   integer, parameter :: platformlength=8
-   integer, parameter :: pixellength=10
-   integer, parameter :: datelength=4
-   integer, parameter :: errlength=100
-   integer, parameter :: attribute_length=75
-   integer, parameter :: description_length=2048
-   integer, parameter :: uuid_length=36
+   integer, parameter :: attribute_length=128
+   integer, parameter :: attribute_length_long=2048
+   integer, parameter :: cmd_arg_length=16
+   integer, parameter :: date_length=4
+   integer, parameter :: file_length=512
+   integer, parameter :: path_length=1024
+   integer, parameter :: var_length=64
+   integer, parameter :: platform_length=8
+   integer, parameter :: sensor_length=8
 
 
    real(kind=sreal),    parameter :: dither=1.0E-3
@@ -71,23 +71,19 @@ module preproc_constants
    ! Some netcdf4 related parameters
 
    ! Compression levels for variables of different type (0:none,9:maximum)
-   integer(kind=lint),  parameter :: compress_level_float=0
-   integer(kind=lint),  parameter :: compress_level_double=0
-   integer(kind=lint),  parameter :: compress_level_lint=0
-   integer(kind=lint),  parameter :: compress_level_nint=0
-   integer(kind=lint),  parameter :: compress_level_stint=0
    integer(kind=lint),  parameter :: compress_level_byte=0
-   integer(kind=lint),  parameter :: compress_level_stint_flag=0
+   integer(kind=lint),  parameter :: compress_level_sint=0
+   integer(kind=lint),  parameter :: compress_level_lint=0
+   integer(kind=lint),  parameter :: compress_level_sreal=0
+   integer(kind=lint),  parameter :: compress_level_dreal=0
 
    integer(kind=lint),  parameter :: max_chunk_latlon=10000
 
    ! Turn on shuffling to improve compression
+   logical,             parameter :: shuffle_byte=.FALSE.
+   logical,             parameter :: shuffle_sint=.FALSE.
+   logical,             parameter :: shuffle_lint=.FALSE.
    logical,             parameter :: shuffle_float=.FALSE.
    logical,             parameter :: shuffle_double=.FALSE.
-   logical,             parameter :: shuffle_lint=.FALSE.
-   logical,             parameter :: shuffle_nint=.FALSE.
-   logical,             parameter :: shuffle_stint=.FALSE.
-   logical,             parameter :: shuffle_byte=.FALSE.
-   logical,             parameter :: shuffle_stint_flag=.FALSE.
 
 end module preproc_constants

@@ -109,7 +109,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
    type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(surface_s),            intent(inout) :: surface
-   character(len=datelength),  intent(in)    :: cyear,cmonth,cday
+   character(len=date_length), intent(in)    :: cyear,cmonth,cday
    type(channel_info_s),       intent(in)    :: channel_info
    logical,                    intent(in)    :: assume_full_path
    logical,                    intent(in)    :: verbose

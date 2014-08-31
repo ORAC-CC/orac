@@ -41,13 +41,13 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
 
    implicit none
 
-   character(len=pathlength),  intent(in)    :: path_to_geo_file
-   type(imager_geolocation_s), intent(inout) :: imager_geolocation
-   type(imager_angles_s),      intent(inout) :: imager_angles
-   type(imager_flags_s),       intent(inout) :: imager_flags
-   type(imager_time_s),        intent(inout) :: imager_time
-   integer(kind=lint),         intent(in)    :: n_along_track
-   logical,                    intent(in)    :: verbose
+   character(len=path_length),  intent(in)    :: path_to_geo_file
+   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
+   type(imager_angles_s),       intent(inout) :: imager_angles
+   type(imager_flags_s),        intent(inout) :: imager_flags
+   type(imager_time_s),         intent(inout) :: imager_time
+   integer(kind=lint),          intent(in)    :: n_along_track
+   logical,                     intent(in)    :: verbose
 
    integer(kind=lint)                            :: geo_id
 

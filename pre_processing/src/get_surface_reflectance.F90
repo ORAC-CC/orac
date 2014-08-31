@@ -118,24 +118,24 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, imager_flags, &
    implicit none
 
    ! Input variables
-   character(len=datelength),   intent(in)         :: cyear
-   character(len=datelength),   intent(in)         :: cdoy
-   character(len=pathlength),   intent(in)         :: modis_surf_path
-   type(imager_flags_s),        intent(in)         :: imager_flags
-   type(imager_geolocation_s),  intent(in)         :: imager_geolocation
-   type(imager_angles_s),       intent(in)         :: imager_angles
-   type(channel_info_s),        intent(in)         :: channel_info
-   type(ecmwf_s),               intent(in)         :: ecmwf
-   logical,                     intent(in)         :: assume_full_path
-   logical,                     intent(in)         :: include_full_brdf
-   logical,                     intent(in)         :: verbose
-   type(surface_s),             intent(inout)      :: surface
+   character(len=date_length),   intent(in)         :: cyear
+   character(len=date_length),   intent(in)         :: cdoy
+   character(len=path_length),   intent(in)         :: modis_surf_path
+   type(imager_flags_s),         intent(in)         :: imager_flags
+   type(imager_geolocation_s),   intent(in)         :: imager_geolocation
+   type(imager_angles_s),        intent(in)         :: imager_angles
+   type(channel_info_s),         intent(in)         :: channel_info
+   type(ecmwf_s),                intent(in)         :: ecmwf
+   logical,                      intent(in)         :: assume_full_path
+   logical,                      intent(in)         :: include_full_brdf
+   logical,                      intent(in)         :: verbose
+   type(surface_s),              intent(inout)      :: surface
 
    ! Local variables
 
    ! Land surface reflectance
-   character(len=pathlength)                       :: modis_surf_path_file
-   character(len=pathlength)                       :: modis_brdf_path_file
+   character(len=path_length)                      :: modis_surf_path_file
+   character(len=path_length)                      :: modis_brdf_path_file
    real(kind=sreal), allocatable, dimension(:)     :: solzalnd, satzalnd
    real(kind=sreal), allocatable, dimension(:)     :: solazlnd, relazlnd
    type(mcd43c1)                                   :: mcdc1

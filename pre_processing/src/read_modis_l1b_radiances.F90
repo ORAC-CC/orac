@@ -47,13 +47,13 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
 
    integer(kind=lint) :: l1b_id, ix, jy,ich, err_code
 
-   character(len=sensorlength),   intent(in)     :: sensor
-   character(len=platformlength), intent(in)     :: platform
-   character(len=pathlength),     intent(in)     :: path_to_l1b_file
-   type(imager_geolocation_s),    intent(inout)  :: imager_geolocation
-   type(imager_measurements_s),   intent(inout)  :: imager_measurements
-   type(channel_info_s),          intent(in)     :: channel_info
-   logical,                       intent(in)     :: verbose
+   character(len=sensor_length),   intent(in)     :: sensor
+   character(len=platform_length), intent(in)     :: platform
+   character(len=path_length),     intent(in)     :: path_to_l1b_file
+   type(imager_geolocation_s),     intent(inout)  :: imager_geolocation
+   type(imager_measurements_s),    intent(inout)  :: imager_measurements
+   type(channel_info_s),           intent(in)     :: channel_info
+   logical,                        intent(in)     :: verbose
 
    logical                                       :: lrefl
 

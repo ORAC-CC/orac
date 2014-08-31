@@ -43,12 +43,12 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
    include "dffunc.f90"
 
    ! Input variables
-   character(len=pathlength), intent(in) :: path_to_file
-   integer,                   intent(in) :: nbands
-   integer,                   intent(in) :: bands(:)
-   integer,                   intent(in) :: brdf_albedo_params
-   integer,                   intent(in) :: QC
-   logical,                   intent(in) :: verbose
+   character(len=path_length), intent(in) :: path_to_file
+   integer,                    intent(in) :: nbands
+   integer,                    intent(in) :: bands(:)
+   integer,                    intent(in) :: brdf_albedo_params
+   integer,                    intent(in) :: QC
+   logical,                    intent(in) :: verbose
 
    ! Output variables
    type(mcd43c1), intent(out)            :: mcd

@@ -180,21 +180,21 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #endif
 
    ! Arguments
-   character(len=pathlength),     intent(in)     :: coef_path
-   character(len=pathlength),     intent(in)     :: emiss_path
-   character(len=sensorlength),   intent(in)     :: sensor
-   character(len=platformlength), intent(in)     :: platform
-   type(preproc_dims_s),          intent(inout)  :: preproc_dims
-   type(preproc_geoloc_s),        intent(in)     :: preproc_geoloc
-   type(preproc_geo_s),           intent(in)     :: preproc_geo
-   type(preproc_prtm_s),          intent(inout)  :: preproc_prtm
-   type(preproc_lwrtm_s),         intent(inout)  :: preproc_lwrtm
-   type(preproc_swrtm_s),         intent(inout)  :: preproc_swrtm
-   type(imager_angles_s),         intent(in)     :: imager_angles
-   type(netcdf_info_s),           intent(inout)  :: netcdf_info
-   type(channel_info_s),          intent(in)     :: channel_info
-   integer(kind=sint),            intent(in)     :: month
-   logical,                       intent(in)     :: verbose
+   character(len=path_length),     intent(in)     :: coef_path
+   character(len=path_length),     intent(in)     :: emiss_path
+   character(len=sensor_length),   intent(in)     :: sensor
+   character(len=platform_length), intent(in)     :: platform
+   type(preproc_dims_s),           intent(inout)  :: preproc_dims
+   type(preproc_geoloc_s),         intent(in)     :: preproc_geoloc
+   type(preproc_geo_s),            intent(in)     :: preproc_geo
+   type(preproc_prtm_s),           intent(inout)  :: preproc_prtm
+   type(preproc_lwrtm_s),          intent(inout)  :: preproc_lwrtm
+   type(preproc_swrtm_s),          intent(inout)  :: preproc_swrtm
+   type(imager_angles_s),          intent(in)     :: imager_angles
+   type(netcdf_info_s),            intent(inout)  :: netcdf_info
+   type(channel_info_s),           intent(in)     :: channel_info
+   integer(kind=sint),             intent(in)     :: month
+   logical,                        intent(in)     :: verbose
 
    ! Loop variables
    integer(kind=jpim)                :: j
@@ -214,14 +214,14 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    integer(kind=jpim)                :: nrttovid = 1    ! Number of sensor coeff files to read
    integer(kind=jpim)                :: irttovid = 1
 
-   character(len=platformlength)     :: platform_id_string
+   character(len=platform_length)    :: platform_id_string
 
    real                              :: sza,lza,amf,za
 
 
    ! RTTOV interface
-   character(len=filelength)         :: coef_file
-   character(len=pathlength)         :: coef_file_path
+   character(len=file_length)        :: coef_file
+   character(len=path_length)        :: coef_file_path
 
    integer(kind=jpim)                :: asw             ! allocate or deallocate switch
 

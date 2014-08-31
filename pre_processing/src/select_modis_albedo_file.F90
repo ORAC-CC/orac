@@ -42,23 +42,23 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
 
    implicit none
 
-   character(len=datelength), intent(in)  :: cyear
-   character(len=datelength), intent(in)  :: cdoy
-   character(len=pathlength), intent(in)  :: modis_surf_path
-   logical,                   intent(in)  :: include_full_brdf
-   character(len=pathlength), intent(out) :: modis_surf_path_file
+   character(len=date_length), intent(in)  :: cyear
+   character(len=date_length), intent(in)  :: cdoy
+   character(len=path_length), intent(in)  :: modis_surf_path
+   logical,                    intent(in)  :: include_full_brdf
+   character(len=path_length), intent(out) :: modis_surf_path_file
 
-   integer                                              :: nv
-   integer                                              :: doy
-   integer(kind=sint), allocatable, dimension(:)        :: dates
-   integer(kind=sint), allocatable, dimension(:)        :: newdates
-   character(len=datelength), allocatable, dimension(:) :: dates_s
-   character(len=pathlength), allocatable, dimension(:) :: p_date_s
-   integer                                              :: pos(1)
-   character(len=3)                                     :: mcd_date_s
-   character(len=pathlength)                            :: mcd_p_date_s
-   logical                                              :: modis_surf_file_exist
-   character(len=7)                                     :: modis_surf_file_read
+   integer                                               :: nv
+   integer                                               :: doy
+   integer(kind=sint), allocatable, dimension(:)         :: dates
+   integer(kind=sint), allocatable, dimension(:)         :: newdates
+   character(len=date_length), allocatable, dimension(:) :: dates_s
+   character(len=path_length), allocatable, dimension(:) :: p_date_s
+   integer                                               :: pos(1)
+   character(len=3)                                      :: mcd_date_s
+   character(len=path_length)                            :: mcd_p_date_s
+   logical                                               :: modis_surf_file_exist
+   character(len=7)                                      :: modis_surf_file_read
 
    nv = 46
 

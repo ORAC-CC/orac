@@ -279,9 +279,9 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
    implicit none
 
-   character(len=pathlength), intent(in)    :: drift_table
-   integer,                   intent(out)   :: stat
-   type(aatsr_drift_lut),     intent(inout) :: lut
+   character(len=path_length), intent(in)    :: drift_table
+   integer,                    intent(out)   :: stat
+   type(aatsr_drift_lut),      intent(inout) :: lut
 
    integer            :: i, lun
    character(len=200) :: line

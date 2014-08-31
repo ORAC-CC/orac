@@ -34,9 +34,10 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
 
    implicit none
 
-   character(len=pathlength), intent(in)    :: ecmwf_path
-   character(len=pathlength), intent(in)    :: ecmwf2path, ecmwf3path
-   type(ecmwf_s),             intent(inout) :: ecmwf
+   character(len=path_length), intent(in)    :: ecmwf_path
+   character(len=path_length), intent(in)    :: ecmwf2path
+   character(len=path_length), intent(in)    :: ecmwf3path
+   type(ecmwf_s),              intent(inout) :: ecmwf
 
    ! initialise
    ecmwf%xdim=0
@@ -129,7 +130,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
 
    real, allocatable               :: val(:,:,:,:)
    integer                         :: fid,i,ndim,nvar,size
-   character(len=varlength)        :: name
+   character(len=var_length)       :: name
    logical                         :: verbose = .false.
 
    ! open file

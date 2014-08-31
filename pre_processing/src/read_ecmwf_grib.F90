@@ -63,28 +63,28 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    implicit none
 
-   character(len=pathlength), intent(in)    :: ecmwf_file
-   type(preproc_dims_s),      intent(inout) :: preproc_dims
-   type(preproc_geoloc_s),    intent(inout) :: preproc_geoloc
-   type(preproc_prtm_s),      intent(inout) :: preproc_prtm
-   logical,                   intent(in)    :: verbose
+   character(len=path_length), intent(in)    :: ecmwf_file
+   type(preproc_dims_s),       intent(inout) :: preproc_dims
+   type(preproc_geoloc_s),     intent(inout) :: preproc_geoloc
+   type(preproc_prtm_s),       intent(inout) :: preproc_prtm
+   logical,                    intent(in)    :: verbose
 
-   integer(lint),             parameter     :: BUFFER = 2000000
-   integer(lint),             external      :: INTIN,INTOUT,INTF
+   integer(lint), parameter                  :: BUFFER = 2000000
+   integer(lint), external                   :: INTIN,INTOUT,INTF
 
-   integer(lint)                            :: fu,stat,lun,nbytes
-   integer(lint)                            :: in_words,out_words
-   logical                                  :: lun_exists, lun_used
-   integer(lint),         dimension(BUFFER) :: in_data,out_data
-   integer(lint)                            :: iblank(4)
-   real(dreal)                              :: zni(1),zno(1),grid(2),area(4)
-   character(len=20)                        :: charv(1)
-   character(len=filelength)                :: name
+   integer(lint)                             :: fu,stat,lun,nbytes
+   integer(lint)                             :: in_words,out_words
+   logical                                   :: lun_exists, lun_used
+   integer(lint), dimension(BUFFER)          :: in_data,out_data
+   integer(lint)                             :: iblank(4)
+   real(dreal)                               :: zni(1),zno(1),grid(2),area(4)
+   character(len=20)                         :: charv(1)
+   character(len=file_length)                :: name
 
-   integer(lint)                            :: fid,gid,level,param
-   integer(lint)                            :: n,ni,nj,i,j,plpresent
-   real(sreal), dimension(:),   allocatable :: pl,val
-   real(sreal), dimension(:,:), pointer     :: array
+   integer(lint)                             :: fid,gid,level,param
+   integer(lint)                             :: n,ni,nj,i,j,plpresent
+   real(sreal), dimension(:),   allocatable  :: pl,val
+   real(sreal), dimension(:,:), pointer      :: array
 
    ! open the ECMWF file
    call PBOPEN(fu, ecmwf_file, 'r', stat)

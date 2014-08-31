@@ -61,19 +61,19 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
 
    implicit none
 
-   character(len=sensorlength),   intent(in)    :: sensor
-   character(len=platformlength), intent(in)    :: platform
-   character(len=pathlength),     intent(in)    :: path_to_l1b_file
-   character(len=pathlength),     intent(in)    :: path_to_geo_file
-   character(len=pathlength),     intent(in)    :: path_to_aatsr_drift_table
-   type(imager_geolocation_s),    intent(inout) :: imager_geolocation
-   type(imager_angles_s),         intent(inout) :: imager_angles
-   type(imager_flags_s),          intent(inout) :: imager_flags
-   type(imager_time_s),           intent(inout) :: imager_time
-   type(imager_measurements_s),   intent(inout) :: imager_measurements
-   type(channel_info_s),          intent(in)    :: channel_info
-   integer(kind=lint),            intent(in)    :: n_along_track
-   logical,                       intent(in)    :: verbose
+   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=platform_length), intent(in)    :: platform
+   character(len=path_length),     intent(in)    :: path_to_l1b_file
+   character(len=path_length),     intent(in)    :: path_to_geo_file
+   character(len=path_length),     intent(in)    :: path_to_aatsr_drift_table
+   type(imager_geolocation_s),     intent(inout) :: imager_geolocation
+   type(imager_angles_s),          intent(inout) :: imager_angles
+   type(imager_flags_s),           intent(inout) :: imager_flags
+   type(imager_time_s),            intent(inout) :: imager_time
+   type(imager_measurements_s),    intent(inout) :: imager_measurements
+   type(channel_info_s),           intent(in)    :: channel_info
+   integer(kind=lint),             intent(in)    :: n_along_track
+   logical,                        intent(in)    :: verbose
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_imager()'
 

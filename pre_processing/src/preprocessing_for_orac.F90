@@ -236,98 +236,98 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    include "hdf.f90"
    include "dffunc.f90"
 
-   character(len=pathlength)       :: driver_path_file
-   character(len=pathlength)       :: l1b_path_file
-   character(len=pathlength)       :: geo_path_file
-   character(len=pathlength)       :: ecmwf_path,ecmwf_path_file
-   character(len=pathlength)       :: rttov_coef_path
-   character(len=pathlength)       :: rttov_emiss_path
-   character(len=pathlength)       :: nise_ice_snow_path
-   character(len=pathlength)       :: modis_albedo_path
-   character(len=pathlength)       :: cimss_emiss_path
-   character(len=pathlength)       :: output_path
-   character(len=pathlength)       :: aatsr_calib_path_file
-   character(len=pathlength)       :: ecmwf_path2,ecmwf_path_file2
-   character(len=pathlength)       :: ecmwf_path3,ecmwf_path_file3
-   character(len=attribute_length) :: cdellon,cdellat
-   character(len=pixellength)      :: cstartx,cendx,cstarty,cendy
-   character(len=pixellength)      :: cecmwf_flag
-   character(len=pixellength)      :: cchunkproc
-   character(len=pixellength)      :: cday_night
-   character(len=pixellength)      :: cverbose
-   character(len=pixellength)      :: cuse_chunking
-   character(len=pixellength)      :: cassume_full_paths
-   character(len=pixellength)      :: cinclude_full_brdf
+   character(len=path_length)       :: driver_path_file
+   character(len=path_length)       :: l1b_path_file
+   character(len=path_length)       :: geo_path_file
+   character(len=path_length)       :: ecmwf_path,ecmwf_path_file
+   character(len=path_length)       :: rttov_coef_path
+   character(len=path_length)       :: rttov_emiss_path
+   character(len=path_length)       :: nise_ice_snow_path
+   character(len=path_length)       :: modis_albedo_path
+   character(len=path_length)       :: cimss_emiss_path
+   character(len=path_length)       :: output_path
+   character(len=path_length)       :: aatsr_calib_path_file
+   character(len=path_length)       :: ecmwf_path2,ecmwf_path_file2
+   character(len=path_length)       :: ecmwf_path3,ecmwf_path_file3
+   character(len=attribute_length)  :: cdellon,cdellat
+   character(len=cmd_arg_length)    :: cstartx,cendx,cstarty,cendy
+   character(len=cmd_arg_length)    :: cecmwf_flag
+   character(len=cmd_arg_length)    :: cchunkproc
+   character(len=cmd_arg_length)    :: cday_night
+   character(len=cmd_arg_length)    :: cverbose
+   character(len=cmd_arg_length)    :: cuse_chunking
+   character(len=cmd_arg_length)    :: cassume_full_paths
+   character(len=cmd_arg_length)    :: cinclude_full_brdf
 
-   type(script_arguments_s)        :: script_input
+   type(script_arguments_s)         :: script_input
 
-   integer                         :: ecmwf_flag
-   logical                         :: chunkproc
-   integer(kind=sint)              :: day_night
-   logical                         :: verbose
-   logical                         :: use_chunking
-   logical                         :: assume_full_paths
-   logical                         :: include_full_brdf
+   integer                          :: ecmwf_flag
+   logical                          :: chunkproc
+   integer(kind=sint)               :: day_night
+   logical                          :: verbose
+   logical                          :: use_chunking
+   logical                          :: assume_full_paths
+   logical                          :: include_full_brdf
 
-   logical                         :: check
-   integer                         :: nargs
+   logical                          :: check
+   integer                          :: nargs
 
-   integer(kind=lint)              :: startx,endx,starty,endy
-   integer(kind=lint)              :: n_across_track,n_along_track
-   integer(kind=lint)              :: along_track_offset
+   integer(kind=lint)               :: startx,endx,starty,endy
+   integer(kind=lint)               :: n_across_track,n_along_track
+   integer(kind=lint)               :: along_track_offset
 
-   integer                         :: segment_starts(2)
-   integer                         :: segment_ends(2)
-   integer                         :: n_segments
-   integer                         :: chunksize
-   integer(kind=sint)              :: i_chunk
-   integer                         :: n_chunks
-   integer, allocatable            :: chunk_starts(:)
-   integer, allocatable            :: chunk_ends(:)
-   integer                         :: calc_n_chunks
+   integer                          :: segment_starts(2)
+   integer                          :: segment_ends(2)
+   integer                          :: n_segments
+   integer                          :: chunksize
+   integer(kind=sint)               :: i_chunk
+   integer                          :: n_chunks
+   integer, allocatable             :: chunk_starts(:)
+   integer, allocatable             :: chunk_ends(:)
+   integer                          :: calc_n_chunks
 
-   real(kind=sreal), dimension(4)  :: loc_limit
+   real(kind=sreal), dimension(4)   :: loc_limit
 
    ! The following are for lengths and offsets for the second section of
    ! nighttime data in an (A)ATSR orbit file:
-   integer(kind=lint)              :: n_along_track2, along_track_offset2
+   integer(kind=lint)               :: n_along_track2, along_track_offset2
 
-   character(len=sensorlength)     :: sensor
-   character(len=platformlength)   :: platform
+   character(len=sensor_length)     :: sensor
+   character(len=platform_length)   :: platform
 
-   integer(kind=sint)              :: doy,year,month,day,hour,minute
+   integer(kind=sint)               :: doy,year,month,day,hour,minute
 
-   character(len=datelength)       :: cyear,cmonth,cday,cdoy,chour,cminute
+   character(len=date_length)       :: cyear,cmonth,cday,cdoy,chour,cminute
 
-   character(len=filelength)       :: lwrtm_file,swrtm_file,prtm_file
-   character(len=filelength)       :: msi_file,cf_file,lsf_file,config_file
-   character(len=filelength)       :: geo_file,loc_file,alb_file,scan_file
+   character(len=file_length)       :: lwrtm_file,swrtm_file,prtm_file
+   character(len=file_length)       :: msi_file,cf_file,lsf_file,config_file
+   character(len=file_length)       :: geo_file,loc_file,alb_file,scan_file
 
-   type(channel_info_s)            :: channel_info
+   type(channel_info_s)             :: channel_info
 
-   type(imager_angles_s)           :: imager_angles
-   type(imager_flags_s)            :: imager_flags
-   type(imager_geolocation_s)      :: imager_geolocation
-   type(imager_measurements_s)     :: imager_measurements
-   type(imager_time_s)             :: imager_time
+   type(imager_angles_s)            :: imager_angles
+   type(imager_flags_s)             :: imager_flags
+   type(imager_geolocation_s)       :: imager_geolocation
+   type(imager_measurements_s)      :: imager_measurements
+   type(imager_time_s)              :: imager_time
 
-   type(ecmwf_s)                   :: ecmwf
+   type(ecmwf_s)                    :: ecmwf
 
-   type(surface_s)                 :: surface
+   type(surface_s)                  :: surface
 
-   type(preproc_dims_s)            :: preproc_dims
-   type(preproc_geo_s)             :: preproc_geo
-   type(preproc_geoloc_s)          :: preproc_geoloc
-   type(preproc_prtm_s)            :: preproc_prtm
-   type(preproc_lwrtm_s)           :: preproc_lwrtm
-   type(preproc_swrtm_s)           :: preproc_swrtm
-   type(preproc_surf_s)            :: preproc_surf
+   type(preproc_dims_s)             :: preproc_dims
+   type(preproc_geo_s)              :: preproc_geo
+   type(preproc_geoloc_s)           :: preproc_geoloc
+   type(preproc_prtm_s)             :: preproc_prtm
+   type(preproc_lwrtm_s)            :: preproc_lwrtm
+   type(preproc_swrtm_s)            :: preproc_swrtm
+   type(preproc_surf_s)             :: preproc_surf
 
-   type(netcdf_info_s)             :: netcdf_info
+   type(netcdf_info_s)              :: netcdf_info
 
-   logical                         :: parse_logical
+   logical                          :: parse_logical
 
-!  integer, dimension(8)           :: values
+!  integer, dimension(8)            :: values
 
    ! this is for the wrapper
 #ifdef WRAPPER
@@ -794,7 +794,7 @@ function parse_logical(string) result(value)
 
    logical :: value
 
-   character(len = pixellength), intent(in) :: string
+   character(len = cmd_arg_length), intent(in) :: string
 
    if (trim(adjustl(string)) .eq. '1' .or.&
        trim(adjustl(string)) .eq. 't' .or. &

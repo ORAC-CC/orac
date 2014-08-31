@@ -58,15 +58,15 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2,ecmwf_path3,
 
    implicit none
 
-   character(len=datelength), intent(in)  :: cyear,cmonth,cday,chour
-   character(len=pathlength), intent(in)  :: ecmwf_path
-   character(len=pathlength), intent(in)  :: ecmwf_path2
-   character(len=pathlength), intent(in)  :: ecmwf_path3
-   character(len=pathlength), intent(out) :: ecmwf_path_file
-   character(len=pathlength), intent(out) :: ecmwf_path_file2
-   character(len=pathlength), intent(out) :: ecmwf_path_file3
-   integer,                   intent(in)  :: ecmwf_flag
-   logical,                   intent(in)  :: assume_full_path
+   character(len=date_length), intent(in)  :: cyear,cmonth,cday,chour
+   character(len=path_length), intent(in)  :: ecmwf_path
+   character(len=path_length), intent(in)  :: ecmwf_path2
+   character(len=path_length), intent(in)  :: ecmwf_path3
+   character(len=path_length), intent(out) :: ecmwf_path_file
+   character(len=path_length), intent(out) :: ecmwf_path_file2
+   character(len=path_length), intent(out) :: ecmwf_path_file3
+   integer,                    intent(in)  :: ecmwf_flag
+   logical,                    intent(in)  :: assume_full_path
 
    integer   :: hour
    character :: cera_hour*2

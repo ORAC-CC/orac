@@ -26,24 +26,23 @@ module attribute_structures
    implicit none
 
    type script_arguments_s
-      character(len=attribute_length)   :: project
-      character(len=attribute_length)   :: cncver
-      character(len=attribute_length)   :: ccon
-      character(len=attribute_length)   :: cinst
-      character(len=attribute_length)   :: l2cproc
-      character(len=attribute_length)   :: l2cprocver
-      character(len=uuid_length)        :: uuid_tag
-      character(len=attribute_length)   :: contact
-      character(len=attribute_length)   :: website
-      character(len=attribute_length)   :: exec_time
-      character(len=description_length) :: reference
-      character(len=attribute_length)   :: history
-      character(len=attribute_length)   :: summary
-      character(len=attribute_length)   :: keywords
-      character(len=attribute_length)   :: comment
-      character(len=attribute_length)   :: license
-
-      character(len=attribute_length)   :: file_version
+      character(len=attribute_length)      :: project
+      character(len=attribute_length)      :: cncver
+      character(len=attribute_length)      :: ccon
+      character(len=attribute_length)      :: cinst
+      character(len=attribute_length)      :: l2cproc
+      character(len=attribute_length)      :: l2cprocver
+      character(len=attribute_length)      :: uuid_tag
+      character(len=attribute_length)      :: contact
+      character(len=attribute_length)      :: website
+      character(len=attribute_length)      :: exec_time
+      character(len=attribute_length_long) :: reference
+      character(len=attribute_length)      :: history
+      character(len=attribute_length)      :: summary
+      character(len=attribute_length)      :: keywords
+      character(len=attribute_length)      :: comment
+      character(len=attribute_length)      :: license
+      character(len=attribute_length)      :: file_version
    end type script_arguments_s
 
 end module attribute_structures

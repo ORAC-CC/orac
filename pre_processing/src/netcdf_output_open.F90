@@ -75,28 +75,28 @@ subroutine netcdf_output_open(output_path,lwrtm_file,swrtm_file,prtm_file, &
 
    implicit none
 
-   character(len=pathlength),     intent(in)    :: output_path
-   character(len=filelength),     intent(in)    :: lwrtm_file,swrtm_file, &
-                                                   prtm_file,config_file, &
-                                                   msi_file,cf_file,lsf_file, &
-                                                   geo_file,loc_file,alb_file, &
-                                                   scan_file
-   character(len=platformlength), intent(in)    :: platform
-   character(len=sensorlength),   intent(in)    :: sensor
-   type(script_arguments_s),      intent(in)    :: script_input
-   character(len=datelength),     intent(in)    :: cyear,chour,cminute,cmonth, &
-                                                   cday
-   type(preproc_dims_s),          intent(in)    :: preproc_dims
+   character(len=path_length),     intent(in)    :: output_path
+   character(len=file_length),     intent(in)    :: lwrtm_file,swrtm_file, &
+                                                    prtm_file,config_file, &
+                                                    msi_file,cf_file,lsf_file, &
+                                                    geo_file,loc_file,alb_file, &
+                                                    scan_file
+   character(len=platform_length), intent(in)    :: platform
+   character(len=sensor_length),   intent(in)    :: sensor
+   type(script_arguments_s),       intent(in)    :: script_input
+   character(len=date_length),     intent(in)    :: cyear,chour,cminute,cmonth, &
+                                                    cday
+   type(preproc_dims_s),           intent(in)    :: preproc_dims
 
-   type(imager_angles_s),         intent(in)    :: imager_angles
+   type(imager_angles_s),          intent(in)    :: imager_angles
 
-   type(imager_geolocation_s),    intent(in)    :: imager_geolocation
+   type(imager_geolocation_s),     intent(in)    :: imager_geolocation
 
-   type(netcdf_info_s),           intent(inout) :: netcdf_info
+   type(netcdf_info_s),            intent(inout) :: netcdf_info
 
-   type(channel_info_s),          intent(in)    :: channel_info
-   logical,                       intent(in)    :: use_chunking
-   logical,                       intent(in)    :: include_full_brdf
+   type(channel_info_s),           intent(in)    :: channel_info
+   logical,                        intent(in)    :: use_chunking
+   logical,                        intent(in)    :: include_full_brdf
 
 
    integer(kind=lint) :: wo = 0

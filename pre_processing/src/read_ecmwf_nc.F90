@@ -71,12 +71,12 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    implicit none
 
-   character(len=pathlength), intent(in)    :: ecmwf_path
-   type(ecmwf_s),             intent(in)    :: ecmwf
-   type(preproc_dims_s),      intent(in)    :: preproc_dims
-   type(preproc_geoloc_s),    intent(inout) :: preproc_geoloc
-   type(preproc_prtm_s),      intent(inout) :: preproc_prtm
-   logical,                   intent(in)    :: verbose
+   character(len=path_length), intent(in)    :: ecmwf_path
+   type(ecmwf_s),              intent(in)    :: ecmwf
+   type(preproc_dims_s),       intent(in)    :: preproc_dims
+   type(preproc_geoloc_s),     intent(inout) :: preproc_geoloc
+   type(preproc_prtm_s),       intent(inout) :: preproc_prtm
+   logical,                    intent(in)    :: verbose
 
    integer(lint),     external              :: INTIN,INTOUT,INTF
    integer(lint),     parameter             :: BUFFER = 2000000
@@ -232,5 +232,5 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    if (nf90_close(fid) .ne. NF90_NOERR) &
         stop 'ERROR: read_ecmwf_nc(): Failure to close file.'
-   
+
 end subroutine read_ecmwf_nc

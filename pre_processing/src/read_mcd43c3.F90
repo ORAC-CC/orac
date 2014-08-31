@@ -53,13 +53,13 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
    include "dffunc.f90"
 
    ! Input variables
-   character(len=pathlength), intent(in) :: path_to_file
-   integer,                   intent(in) :: nbands
-   integer,                   intent(in) :: bands(:)
-   integer,                   intent(in) :: white_sky
-   integer,                   intent(in) :: black_sky
-   integer,                   intent(in) :: QC
-   logical,                   intent(in) :: verbose
+   character(len=path_length), intent(in) :: path_to_file
+   integer,                    intent(in) :: nbands
+   integer,                    intent(in) :: bands(:)
+   integer,                    intent(in) :: white_sky
+   integer,                    intent(in) :: black_sky
+   integer,                    intent(in) :: QC
+   logical,                    intent(in) :: verbose
 
    ! Output variables
    type(mcd43c3),             intent(out) :: mcd
