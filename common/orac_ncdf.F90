@@ -11,6 +11,8 @@
 ! History:
 ! 2014/02/10, AP: Original version, combining the original files:
 !    nc_read_file.F90, nc_open.F90
+! 2014/09/01, AP: Add nc_write_array and associated routines.  For now for 2d
+!    only.
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -18,19 +20,27 @@
 module orac_ncdf
 
    use netcdf
-   use common_constants, only: dreal_fill_value, sreal_fill_value, &
-        lint_fill_value, sint_fill_value, byte_fill_value, &
-        error_stop_code, unitlength
+   use common_constants
 
    implicit none
 
    interface nc_read_array
-      module procedure dreal_1d, dreal_2d, dreal_3d,  dreal_4d, &
-           sreal_1d, sreal_2d, sreal_3d, sreal_4d, &
-           lint_1d, lint_2d, lint_3d, lint_4d, &
-           sint_1d, sint_2d, sint_3d, sint_4d, &
-           byte_1d, byte_2d, byte_3d, byte_4d
+      module procedure &
+         read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d, &
+         read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
+         read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
+         read_sint_1d,  read_sint_2d,  read_sint_3d,  read_sint_4d, &
+         read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d
    end interface nc_read_array
+
+   interface nc_write_array
+      module procedure &
+         write_byte_2d, &
+         write_sint_2d, &
+         write_lint_2d, &
+         write_sreal_2d, &
+         write_dreal_2d
+   end interface nc_write_array
 
 contains
 
@@ -113,7 +123,7 @@ function nc_dim_length(ncid, name, verbose) result(len)
       print*,nc_error(ierr)
       stop error_stop_code
    end if
-   
+
    ierr = nf90_inquire_dimension(ncid, did, dname, len)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_dim_length():: Could not read dimension ',trim(name)
@@ -122,7 +132,7 @@ function nc_dim_length(ncid, name, verbose) result(len)
    end if
 
    if (verbose) print*, trim(name),' dim length: ',len
-   
+
 end function nc_dim_length
 
 !-------------------------------------------------------------------------------
@@ -169,7 +179,7 @@ end function nc_dim_length
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine dreal_1d(ncid, name, val, verbose, dim, ind)
+subroutine read_dreal_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -184,7 +194,7 @@ subroutine dreal_1d(ncid, name, val, verbose, dim, ind)
    real(8)                   :: fv, sf, of
    real(8), pointer          :: arr(:)
    real(8)                   :: fill=dreal_fill_value
- 
+
    start = 1
    counter = size(val,1)
    stride = 1
@@ -197,7 +207,7 @@ subroutine dreal_1d(ncid, name, val, verbose, dim, ind)
       counter(dim) = 1
       do i=1,size(ind)
          arr => val(i:i)
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -207,9 +217,9 @@ subroutine dreal_1d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine dreal_1d
+end subroutine read_dreal_1d
 
-subroutine dreal_2d(ncid, name, val, verbose, dim, ind)
+subroutine read_dreal_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -224,7 +234,7 @@ subroutine dreal_2d(ncid, name, val, verbose, dim, ind)
    real(8)                   :: fv, sf, of
    real(8), pointer          :: arr(:,:)
    real(8)                   :: fill=dreal_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -243,7 +253,7 @@ subroutine dreal_2d(ncid, name, val, verbose, dim, ind)
          case(2)
             arr => val(:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -253,9 +263,9 @@ subroutine dreal_2d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine dreal_2d
+end subroutine read_dreal_2d
 
-subroutine dreal_3d(ncid, name, val, verbose, dim, ind)
+subroutine read_dreal_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -270,7 +280,7 @@ subroutine dreal_3d(ncid, name, val, verbose, dim, ind)
    real(8)                   :: fv, sf, of
    real(8), pointer          :: arr(:,:,:)
    real(8)                   :: fill=dreal_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -292,7 +302,7 @@ subroutine dreal_3d(ncid, name, val, verbose, dim, ind)
          case(3)
             arr => val(:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -302,9 +312,9 @@ subroutine dreal_3d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine dreal_3d
+end subroutine read_dreal_3d
 
-subroutine dreal_4d(ncid, name, val, verbose, dim, ind)
+subroutine read_dreal_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -319,7 +329,7 @@ subroutine dreal_4d(ncid, name, val, verbose, dim, ind)
    real(8)                   :: fv, sf, of
    real(8), pointer          :: arr(:,:,:,:)
    real(8)                   :: fill=dreal_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -344,7 +354,7 @@ subroutine dreal_4d(ncid, name, val, verbose, dim, ind)
          case(4)
             arr => val(:,:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -354,9 +364,9 @@ subroutine dreal_4d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine dreal_4d
+end subroutine read_dreal_4d
 !-------------------------------------------------------------------------------
-subroutine sreal_1d(ncid, name, val, verbose, dim, ind)
+subroutine read_sreal_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -371,7 +381,7 @@ subroutine sreal_1d(ncid, name, val, verbose, dim, ind)
    real(4)                   :: fv, sf, of
    real(4), pointer          :: arr(:)
    real(4)                   :: fill=sreal_fill_value
- 
+
    start = 1
    counter = size(val,1)
    stride = 1
@@ -384,7 +394,7 @@ subroutine sreal_1d(ncid, name, val, verbose, dim, ind)
       counter(dim) = 1
       do i=1,size(ind)
          arr => val(i:i)
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -394,9 +404,9 @@ subroutine sreal_1d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sreal_1d
+end subroutine read_sreal_1d
 
-subroutine sreal_2d(ncid, name, val, verbose, dim, ind)
+subroutine read_sreal_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -411,7 +421,7 @@ subroutine sreal_2d(ncid, name, val, verbose, dim, ind)
    real(4)                   :: fv, sf, of
    real(4), pointer          :: arr(:,:)
    real(4)                   :: fill=sreal_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -430,7 +440,7 @@ subroutine sreal_2d(ncid, name, val, verbose, dim, ind)
          case(2)
             arr => val(:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -440,9 +450,9 @@ subroutine sreal_2d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sreal_2d
+end subroutine read_sreal_2d
 
-subroutine sreal_3d(ncid, name, val, verbose, dim, ind)
+subroutine read_sreal_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -457,7 +467,7 @@ subroutine sreal_3d(ncid, name, val, verbose, dim, ind)
    real(4)                   :: fv, sf, of
    real(4), pointer          :: arr(:,:,:)
    real(4)                   :: fill=sreal_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -479,7 +489,7 @@ subroutine sreal_3d(ncid, name, val, verbose, dim, ind)
          case(3)
             arr => val(:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -489,9 +499,9 @@ subroutine sreal_3d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sreal_3d
+end subroutine read_sreal_3d
 
-subroutine sreal_4d(ncid, name, val, verbose, dim, ind)
+subroutine read_sreal_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,           intent(in)    :: ncid
@@ -506,7 +516,7 @@ subroutine sreal_4d(ncid, name, val, verbose, dim, ind)
    real(4)                   :: fv, sf, of
    real(4), pointer          :: arr(:,:,:,:)
    real(4)                   :: fill=sreal_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -531,7 +541,7 @@ subroutine sreal_4d(ncid, name, val, verbose, dim, ind)
          case(4)
             arr => val(:,:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -541,9 +551,9 @@ subroutine sreal_4d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sreal_4d
+end subroutine read_sreal_4d
 !-------------------------------------------------------------------------------
-subroutine lint_1d(ncid, name, val, verbose, dim, ind)
+subroutine read_lint_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -558,7 +568,7 @@ subroutine lint_1d(ncid, name, val, verbose, dim, ind)
    integer(4)                :: fv, sf, of
    integer(4), pointer       :: arr(:)
    integer(4)                :: fill=lint_fill_value
- 
+
    start = 1
    counter = size(val,1)
    stride = 1
@@ -571,7 +581,7 @@ subroutine lint_1d(ncid, name, val, verbose, dim, ind)
       counter(dim) = 1
       do i=1,size(ind)
          arr => val(i:i)
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -581,9 +591,9 @@ subroutine lint_1d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine lint_1d
+end subroutine read_lint_1d
 
-subroutine lint_2d(ncid, name, val, verbose, dim, ind)
+subroutine read_lint_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -598,7 +608,7 @@ subroutine lint_2d(ncid, name, val, verbose, dim, ind)
    integer(4)                :: fv, sf, of
    integer(4), pointer       :: arr(:,:)
    integer(4)                :: fill=lint_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -617,7 +627,7 @@ subroutine lint_2d(ncid, name, val, verbose, dim, ind)
          case(2)
             arr => val(:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -627,9 +637,9 @@ subroutine lint_2d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine lint_2d
+end subroutine read_lint_2d
 
-subroutine lint_3d(ncid, name, val, verbose, dim, ind)
+subroutine read_lint_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -644,7 +654,7 @@ subroutine lint_3d(ncid, name, val, verbose, dim, ind)
    integer(4)                :: fv, sf, of
    integer(4), pointer       :: arr(:,:,:)
    integer(4)                :: fill=lint_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -666,7 +676,7 @@ subroutine lint_3d(ncid, name, val, verbose, dim, ind)
          case(3)
             arr => val(:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -676,9 +686,9 @@ subroutine lint_3d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine lint_3d
+end subroutine read_lint_3d
 
-subroutine lint_4d(ncid, name, val, verbose, dim, ind)
+subroutine read_lint_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -693,7 +703,7 @@ subroutine lint_4d(ncid, name, val, verbose, dim, ind)
    integer(4)                :: fv, sf, of
    integer(4), pointer       :: arr(:,:,:,:)
    integer(4)                :: fill=lint_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -718,7 +728,7 @@ subroutine lint_4d(ncid, name, val, verbose, dim, ind)
          case(4)
             arr => val(:,:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -728,9 +738,9 @@ subroutine lint_4d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine lint_4d
+end subroutine read_lint_4d
 !-------------------------------------------------------------------------------
-subroutine sint_1d(ncid, name, val, verbose, dim, ind)
+subroutine read_sint_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -745,7 +755,7 @@ subroutine sint_1d(ncid, name, val, verbose, dim, ind)
    integer(2)                :: fv, sf, of
    integer(2), pointer       :: arr(:)
    integer(2)                :: fill=sint_fill_value
- 
+
    start = 1
    counter = size(val,1)
    stride = 1
@@ -758,7 +768,7 @@ subroutine sint_1d(ncid, name, val, verbose, dim, ind)
       counter(dim) = 1
       do i=1,size(ind)
          arr => val(i:i)
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -768,9 +778,9 @@ subroutine sint_1d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sint_1d
+end subroutine read_sint_1d
 
-subroutine sint_2d(ncid, name, val, verbose, dim, ind)
+subroutine read_sint_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -785,7 +795,7 @@ subroutine sint_2d(ncid, name, val, verbose, dim, ind)
    integer(2)                :: fv, sf, of
    integer(2), pointer       :: arr(:,:)
    integer(2)                :: fill=sint_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -804,7 +814,7 @@ subroutine sint_2d(ncid, name, val, verbose, dim, ind)
          case(2)
             arr => val(:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -814,9 +824,9 @@ subroutine sint_2d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sint_2d
+end subroutine read_sint_2d
 
-subroutine sint_3d(ncid, name, val, verbose, dim, ind)
+subroutine read_sint_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -831,7 +841,7 @@ subroutine sint_3d(ncid, name, val, verbose, dim, ind)
    integer(2)                :: fv, sf, of
    integer(2), pointer       :: arr(:,:,:)
    integer(2)                :: fill=sint_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -853,7 +863,7 @@ subroutine sint_3d(ncid, name, val, verbose, dim, ind)
          case(3)
             arr => val(:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -863,9 +873,9 @@ subroutine sint_3d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sint_3d
+end subroutine read_sint_3d
 
-subroutine sint_4d(ncid, name, val, verbose, dim, ind)
+subroutine read_sint_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -880,7 +890,7 @@ subroutine sint_4d(ncid, name, val, verbose, dim, ind)
    integer(2)                :: fv, sf, of
    integer(2), pointer       :: arr(:,:,:,:)
    integer(2)                :: fill=sint_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -905,7 +915,7 @@ subroutine sint_4d(ncid, name, val, verbose, dim, ind)
          case(4)
             arr => val(:,:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -915,9 +925,9 @@ subroutine sint_4d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine sint_4d
+end subroutine read_sint_4d
 !-------------------------------------------------------------------------------
-subroutine byte_1d(ncid, name, val, verbose, dim, ind)
+subroutine read_byte_1d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -932,7 +942,7 @@ subroutine byte_1d(ncid, name, val, verbose, dim, ind)
    integer(1)                :: fv, sf, of
    integer(1), pointer       :: arr(:)
    integer(1)                :: fill=byte_fill_value
- 
+
    start = 1
    counter = size(val,1)
    stride = 1
@@ -945,7 +955,7 @@ subroutine byte_1d(ncid, name, val, verbose, dim, ind)
       counter(dim) = 1
       do i=1,size(ind)
          arr => val(i:i)
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -955,9 +965,9 @@ subroutine byte_1d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine byte_1d
+end subroutine read_byte_1d
 
-subroutine byte_2d(ncid, name, val, verbose, dim, ind)
+subroutine read_byte_2d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -972,7 +982,7 @@ subroutine byte_2d(ncid, name, val, verbose, dim, ind)
    integer(1)                :: fv, sf, of
    integer(1), pointer       :: arr(:,:)
    integer(1)                :: fill=byte_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -991,7 +1001,7 @@ subroutine byte_2d(ncid, name, val, verbose, dim, ind)
          case(2)
             arr => val(:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -1001,9 +1011,9 @@ subroutine byte_2d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine byte_2d
+end subroutine read_byte_2d
 
-subroutine byte_3d(ncid, name, val, verbose, dim, ind)
+subroutine read_byte_3d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -1018,7 +1028,7 @@ subroutine byte_3d(ncid, name, val, verbose, dim, ind)
    integer(1)                :: fv, sf, of
    integer(1), pointer       :: arr(:,:,:)
    integer(1)                :: fill=byte_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -1040,7 +1050,7 @@ subroutine byte_3d(ncid, name, val, verbose, dim, ind)
          case(3)
             arr => val(:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -1050,9 +1060,9 @@ subroutine byte_3d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine byte_3d
+end subroutine read_byte_3d
 
-subroutine byte_4d(ncid, name, val, verbose, dim, ind)
+subroutine read_byte_4d(ncid, name, val, verbose, dim, ind)
    implicit none
 
    integer,            intent(in)    :: ncid
@@ -1067,7 +1077,7 @@ subroutine byte_4d(ncid, name, val, verbose, dim, ind)
    integer(1)                :: fv, sf, of
    integer(1), pointer       :: arr(:,:,:,:)
    integer(1)                :: fill=byte_fill_value
- 
+
    start = 1
    counter(1) = size(val,1)
    counter(2) = size(val,2)
@@ -1092,7 +1102,7 @@ subroutine byte_4d(ncid, name, val, verbose, dim, ind)
          case(4)
             arr => val(:,:,:,i:i)
          end select
-         
+
          start(dim) = ind(i)
          include 'nc_read_field.inc'
       end do
@@ -1102,7 +1112,162 @@ subroutine byte_4d(ncid, name, val, verbose, dim, ind)
       include 'nc_read_field.inc'
    end if
 
-end subroutine byte_4d
+end subroutine read_byte_4d
+
+subroutine write_byte_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
+
+   implicit none
+
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: name
+   integer,          intent(in)  :: varid
+   integer,          intent(in)  :: i_x
+   integer,          intent(in)  :: n_x
+   integer,          intent(in)  :: j_y
+   integer,          intent(in)  :: n_y
+   integer(kind=byte), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
+
+   integer               :: ierr
+   integer, dimension(2) :: start, counter, stride
+
+   start(1) = 1
+   start(2) = 1
+   counter(1) = n_x - i_x + 1
+   counter(2) = n_y - j_y + 1
+   stride = 1
+
+   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
+                       start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      stop error_stop_code
+   end if
+
+end subroutine write_byte_2d
+
+subroutine write_sint_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
+
+   implicit none
+
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: name
+   integer,          intent(in)  :: varid
+   integer,          intent(in)  :: i_x
+   integer,          intent(in)  :: n_x
+   integer,          intent(in)  :: j_y
+   integer,          intent(in)  :: n_y
+   integer(kind=sint), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
+
+   integer               :: ierr
+   integer, dimension(2) :: start, counter, stride
+
+   start(1) = 1
+   start(2) = 1
+   counter(1) = n_x - i_x + 1
+   counter(2) = n_y - j_y + 1
+   stride = 1
+
+   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
+                       start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      stop error_stop_code
+   end if
+
+end subroutine write_sint_2d
+
+subroutine write_lint_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
+
+   implicit none
+
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: name
+   integer,          intent(in)  :: varid
+   integer,          intent(in)  :: i_x
+   integer,          intent(in)  :: n_x
+   integer,          intent(in)  :: j_y
+   integer,          intent(in)  :: n_y
+   integer(kind=lint), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
+
+   integer               :: ierr
+   integer, dimension(2) :: start, counter, stride
+
+   start(1) = 1
+   start(2) = 1
+   counter(1) = n_x - i_x + 1
+   counter(2) = n_y - j_y + 1
+   stride = 1
+
+   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
+                       start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      stop error_stop_code
+   end if
+
+end subroutine write_lint_2d
+
+subroutine write_sreal_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
+
+   implicit none
+
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: name
+   integer,          intent(in)  :: varid
+   integer,          intent(in)  :: i_x
+   integer,          intent(in)  :: n_x
+   integer,          intent(in)  :: j_y
+   integer,          intent(in)  :: n_y
+   real(kind=sreal), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
+
+   integer               :: ierr
+   integer, dimension(2) :: start, counter, stride
+
+   start(1) = 1
+   start(2) = 1
+   counter(1) = n_x - i_x + 1
+   counter(2) = n_y - j_y + 1
+   stride = 1
+
+   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
+                       start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      stop error_stop_code
+   end if
+
+end subroutine write_sreal_2d
+
+subroutine write_dreal_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
+
+   implicit none
+
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: name
+   integer,          intent(in)  :: varid
+   integer,          intent(in)  :: i_x
+   integer,          intent(in)  :: n_x
+   integer,          intent(in)  :: j_y
+   integer,          intent(in)  :: n_y
+   real(kind=dreal), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
+
+   integer               :: ierr
+   integer, dimension(2) :: start, counter, stride
+
+   start(1) = 1
+   start(2) = 1
+   counter(1) = n_x - i_x + 1
+   counter(2) = n_y - j_y + 1
+   stride = 1
+
+   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
+                       start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      stop error_stop_code
+   end if
+
+end subroutine write_dreal_2d
 
 !-------------------------------------------------------------------------------
 ! Name: nc_error
