@@ -12,7 +12,7 @@ SZINC=$(RSG_LIB_BASE)/szinc/
 
 
 ZLIB=$(RSG_LIB_BASE)/zlib/
-ZINC=$(RSG_LIB_BASE)/szinc/
+ZINC=$(RSG_LIB_BASE)/zinc/
 
 JPEGLIB=$(RSG_LIB_BASE)/jpeglib/
 JPEGINC=$(RSG_LIB_BASE)/jpeginc/
@@ -37,9 +37,9 @@ INTELINC=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/include/
 EPRINCDIR = $(RSG_LIB_BASE)/eprincdir/
 EPRLIBDIR = $(RSG_LIB_BASE)/eprlibdir/
 
-HDF5LIB=$(RSG_LIB_BASE)/hdf5lib/
-HDF5INCLUDE=$(RSG_LIB_BASE)/hdf5include/
-HDF5MOD=$(RSG_LIB_BASE)/hdf5mod/
+HDF5LIB=$(RSG_LIB_BASE)/hdf5/lib/
+HDF5INCLUDE=$(RSG_LIB_BASE)/hdf5/include/
+#HDF5MOD=$(RSG_LIB_BASE)/hdf5mod/
 
 
 #Set path to HDF-EOS library. Should be compiled with the same version of the HDF4
@@ -79,7 +79,7 @@ GRIBINCLUDE=$(RSG_LIB_BASE)/gribinclude/
 JASPERLIB=/usr/lib64/
 JASPERINCLUDE=/usr/include/jasper/
 
-EMOSLIB=$(RSG_LIB_BASE)/emos_000382/
+EMOSLIB=$(RSG_LIB_BASE)/emos_000392/
 
 #Setup RTTOV library
 
@@ -111,5 +111,5 @@ LIBS=  -L$(EPRLIBDIR) -lepr_api \
 
 
 #-lopenjpeg
-INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE)  -I$(HDF5MOD) -I$(INTELINC)  -I$(NCDFINCLUDE)  -I$(NCDFINCLUDEB)    -I$(INTELINC)  -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE)  -I$(OBJS) 
+INC=-I./  -I$(EPRINCDIR) -I$(GRIBINCLUDE) -I$(HDFINCLUDE)   -I$(SZINC) -I$(ZINC) -I$(JPEGINC) -I$(EOSINCLUDE) -I$(HDF5INCLUDE)  -I$(INTELINC)  -I$(NCDFINCLUDE)  -I$(NCDFINCLUDEB)    -I$(INTELINC)  -I$(JASPERINCLUDE) -I$(RTTOVINCLUDE) -I$(RTTOVMODULE)  -I$(OBJS) 
 #-I$(PREPROCINCLUDE)                                                                   #              -I$(NCDFINCLUDEB)  
