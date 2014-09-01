@@ -83,11 +83,11 @@ contains
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor,platform, &
      cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3, &
-     ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,script_input,ecmwf_flag, &
+     ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts,ecmwf_flag, &
      imager_geolocation,i_chunk,assume_full_path,verbose)
 
-   use attribute_structures
    use imager_structures
+   use global_attributes
    use preproc_constants
 
    implicit none
@@ -106,7 +106,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=path_length),     intent(out) :: ecmwf_path_file, &
                                                   ecmwf_path_file2, &
                                                   ecmwf_path_file3
-   type(script_arguments_s),       intent(in)  :: script_input
+   type(global_attributes_s),      intent(in)  :: global_atts
    integer,                        intent(in)  :: ecmwf_flag
    type(imager_geolocation_s),     intent(in)  :: imager_geolocation
    integer(kind=sint),             intent(in)  :: i_chunk
@@ -167,18 +167,18 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'chunk range_name: ', trim(range_name)
 
    !put basic filename together
-   file_base=trim(adjustl(script_input%project))//'_'// &
-             trim(adjustl(script_input%cinst))//'_'// &
+   file_base=trim(adjustl(global_atts%project))//'_'// &
+             trim(adjustl(global_atts%institution))//'_'// &
              trim(adjustl(sensor)) &
              //'_'// trim(adjustl(range_name))// &
-             trim(adjustl(script_input%l2cproc))//'V'// &
-             trim(adjustl(script_input%l2cprocver))
+             trim(adjustl(global_atts%l2_processor))//'V'// &
+             trim(adjustl(global_atts%l2_processor_version))
    file_base=trim(adjustl(file_base))//'_'//trim(adjustl(platform))// &
-             '_'//trim(adjustl(script_input%exec_time))
+             '_'//trim(adjustl(global_atts%production_time))
    file_base=trim(adjustl(file_base))//'_'//trim(adjustl(cyear))// &
              trim(adjustl(cmonth))//trim(adjustl(cday))
    file_base=trim(adjustl(file_base))//trim(adjustl(chour))// &
-             trim(adjustl(cminute))//'_'//trim(adjustl(script_input%file_version))
+             trim(adjustl(cminute))//'_'//trim(adjustl(global_atts%file_version))
    if (verbose) write(*,*) 'output file_base: ', trim(file_base)
 
    !get preproc filenames

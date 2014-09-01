@@ -17,6 +17,7 @@ include $(ORAC_LIB)
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
 PREPROC_OBJ_F90=$(OBJS)/common_constants.o \
+                $(OBJS)/global_attributes.o \
                 $(OBJS)/interpol.o \
                 $(OBJS)/orac_ncdf.o \
                 $(OBJS)/nc_utils.o \

@@ -209,10 +209,10 @@ program preprocessing
 subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 #endif
 
-   use attribute_structures
    use channel_structures
    use correct_for_ice_snow_m
    use ecmwf_m
+   use global_attributes
    use hdf5
    use imager_structures
    use netcdf, only: nf90_inq_libvers
@@ -259,7 +259,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    character(len=cmd_arg_length)    :: cassume_full_paths
    character(len=cmd_arg_length)    :: cinclude_full_brdf
 
-   type(script_arguments_s)         :: script_input
+   type(global_attributes_s)        :: global_atts
 
    integer                          :: ecmwf_flag
    logical                          :: chunkproc
@@ -362,23 +362,23 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       call get_command_argument(14,cendx)
       call get_command_argument(15,cstarty)
       call get_command_argument(16,cendy)
-      call get_command_argument(17,script_input%cncver)
-      call get_command_argument(18,script_input%ccon)
-      call get_command_argument(19,script_input%cinst)
-      call get_command_argument(20,script_input%l2cproc)
-      call get_command_argument(21,script_input%l2cprocver)
-      call get_command_argument(22,script_input%contact)
-      call get_command_argument(23,script_input%website)
-      call get_command_argument(24,script_input%file_version)
-      call get_command_argument(25,script_input%reference)
-      call get_command_argument(26,script_input%history)
-      call get_command_argument(27,script_input%summary)
-      call get_command_argument(28,script_input%keywords)
-      call get_command_argument(29,script_input%comment)
-      call get_command_argument(30,script_input%project)
-      call get_command_argument(31,script_input%license)
-      call get_command_argument(32,script_input%uuid_tag)
-      call get_command_argument(33,script_input%exec_time)
+      call get_command_argument(17,global_atts%NetCDF_Version)
+      call get_command_argument(18,global_atts%Conventions)
+      call get_command_argument(19,global_atts%Institution)
+      call get_command_argument(20,global_atts%L2_Processor)
+      call get_command_argument(21,global_atts%L2_Processor_Version)
+      call get_command_argument(22,global_atts%Contact_Email)
+      call get_command_argument(23,global_atts%Contact_Website)
+      call get_command_argument(24,global_atts%file_version)
+      call get_command_argument(25,global_atts%References)
+      call get_command_argument(26,global_atts%History)
+      call get_command_argument(27,global_atts%Summary)
+      call get_command_argument(28,global_atts%Keywords)
+      call get_command_argument(29,global_atts%Comment)
+      call get_command_argument(30,global_atts%Project)
+      call get_command_argument(31,global_atts%License)
+      call get_command_argument(32,global_atts%UUID)
+      call get_command_argument(33,global_atts%Production_Time)
       call get_command_argument(34,aatsr_calib_path_file)
       call get_command_argument(35,cecmwf_flag)
       call get_command_argument(36,ecmwf_path2)
@@ -416,23 +416,23 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       read(11,*) cendx
       read(11,*) cstarty
       read(11,*) cendy
-      read(11,*) script_input%cncver
-      read(11,*) script_input%ccon
-      read(11,*) script_input%cinst
-      read(11,*) script_input%l2cproc
-      read(11,*) script_input%l2cprocver
-      read(11,*) script_input%contact
-      read(11,*) script_input%website
-      read(11,*) script_input%file_version
-      read(11,*) script_input%reference
-      read(11,*) script_input%history
-      read(11,*) script_input%summary
-      read(11,*) script_input%keywords
-      read(11,*) script_input%comment
-      read(11,*) script_input%project
-      read(11,*) script_input%license
-      read(11,*) script_input%uuid_tag
-      read(11,*) script_input%exec_time
+      read(11,*) global_atts%NetCDF_Version
+      read(11,*) global_atts%Conventions
+      read(11,*) global_atts%Institution
+      read(11,*) global_atts%L2_Processor
+      read(11,*) global_atts%L2_Processor_Version
+      read(11,*) global_atts%Contact_Email
+      read(11,*) global_atts%Contact_Website
+      read(11,*) global_atts%file_version
+      read(11,*) global_atts%References
+      read(11,*) global_atts%History
+      read(11,*) global_atts%Summary
+      read(11,*) global_atts%Keywords
+      read(11,*) global_atts%Comment
+      read(11,*) global_atts%Project
+      read(11,*) global_atts%License
+      read(11,*) global_atts%UUID
+      read(11,*) global_atts%Production_Time
       read(11,*) aatsr_calib_path_file
       read(11,*) cecmwf_flag
       read(11,*) ecmwf_path2
@@ -447,13 +447,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    end if ! nargs gt 1
 
    ! get the NetCDF version
-   script_input%cncver=nf90_inq_libvers()
+   global_atts%netcdf_version=nf90_inq_libvers()
 
    ! get the execution time in UTC
 !  call date_and_time(VALUES=values)
-!  write(script_input%exec_time, '(i4,i2.2,i2.2,i2.2,i2.2,i2.2)'), &
+!  write(global_atts%exec_time, '(i4,i2.2,i2.2,i2.2,i2.2,i2.2)'), &
 !        values(1), values(2), values(3), values(5), values(6), values(7)
-!  write(*,*) script_input%exec_time
+!  write(*,*) global_atts%exec_time
 !  stop
 
    ! cast input strings into appropriate variables
@@ -651,7 +651,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
            cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor, &
            platform,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2, &
            ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
-           script_input,ecmwf_flag,imager_geolocation,i_chunk,assume_full_paths, &
+           global_atts,ecmwf_flag,imager_geolocation,i_chunk,assume_full_paths, &
            verbose)
 
       ! read ECMWF fields and grid information
@@ -740,7 +740,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       if (verbose) write(*,*) 'output_path: ',trim(output_path)
       call netcdf_output_open(output_path,lwrtm_file, &
            swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
-           geo_file,loc_file,alb_file,scan_file,platform,sensor,script_input, &
+           geo_file,loc_file,alb_file,scan_file,platform,sensor,global_atts, &
            cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
            imager_geolocation,netcdf_info,channel_info,use_chunking, &
            include_full_brdf)

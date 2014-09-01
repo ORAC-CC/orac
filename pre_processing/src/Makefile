@@ -37,7 +37,6 @@ ORAC_COMMON   = ../../common
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
 PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
-                  $(OBJS)/attribute_structures.o \
                   $(OBJS)/bright_m.o \
                   $(OBJS)/build_preproc_fields.o \
                   $(OBJS)/calender.o \

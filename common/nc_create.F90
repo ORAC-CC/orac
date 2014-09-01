@@ -33,8 +33,10 @@
 
 subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
 
-   use common_constants
    use netcdf
+
+   use common_constants
+   use global_attributes
 
    implicit none
 
@@ -51,9 +53,10 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
    integer,         intent(out) :: status
 
    ! Local
-   integer :: ierr, xdim, ydim
-
-   character(len = 128) :: temp_string
+   integer                   :: ierr, xdim, ydim
+   character(len=128)        :: temp_string
+   character(len=128)        :: title_string
+   type(global_attributes_s) :: global_atts
 
 
    !----------------------------------------------------------------------------
@@ -81,196 +84,66 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
 
 
    !----------------------------------------------------------------------------
+   ! Set global_attributes structure
+   !----------------------------------------------------------------------------
+
    ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
-   !----------------------------------------------------------------------------
-   temp_string='Conventions!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Conventions', trim(temp_string)
-      stop
-   end if
+   global_atts%Conventions               = 'Conventions!!!'
 
-
-   !----------------------------------------------------------------------------
    ! Global attributes for the 'Description of file contents' as defined by
    ! CF-1.4, section 2.6.2.
-   !----------------------------------------------------------------------------
    if (type .eq. 1) then
-      temp_string = 'ESA CCI Cloud Retrieval Products L2 Primary File'
+      global_atts%title = 'ESA CCI Cloud Retrieval Products L2 Primary File'
    else if (type .eq. 2) then
-      temp_string = 'ESA CCI Cloud Retrieval Products L2 Secondary File'
+      global_atts%title = 'ESA CCI Cloud Retrieval Products L2 Secondary File'
    else
       write(*,*) 'ERROR: nf90_create(), invalid file type: ', type
       stop
    endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'title', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = title', trim(temp_string)
-      stop
-   end if
+   global_atts%institution               = 'institution!!!'
+   global_atts%source                    = 'source!!!'
+   global_atts%history                   = 'history!!!'
+   global_atts%references                = 'references!!!'
+   global_atts%comment                   = 'comment!!!'
 
-   temp_string='institution!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'institution', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = institution', trim(temp_string)
-      stop
-   end if
-
-   temp_string='source!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'source', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = source', trim(temp_string)
-      stop
-   end if
-
-   temp_string='history!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'history', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = history', trim(temp_string)
-      stop
-   end if
-
-   temp_string='references!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'references', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = references', trim(temp_string)
-      stop
-   end if
-
-   temp_string='comment!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'comment', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = comment', trim(temp_string)
-      stop
-   end if
-
-
-   !----------------------------------------------------------------------------
-   ! Extra global attributes defined by Orac
-   !----------------------------------------------------------------------------
-   temp_string='Project!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Project', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Project', trim(temp_string)
-      stop
-   end if
-
-   temp_string='File_Name!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Name', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = File_Name', trim(temp_string)
-      stop
-   end if
-
-   temp_string='UUID!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'UUID', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = UUID', trim(temp_string)
-      stop
-   end if
-
-   temp_string='NetCDF_Version!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'NetCDF_Version', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = NetCDF_Version', trim(temp_string)
-      stop
-   end if
-
-   temp_string='Product_Name!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Name', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Product_Name', trim(temp_string)
-      stop
-   end if
+   ! Extra global attributes defined by ORAC
+   global_atts%Project                   = 'Project!!!'
+   global_atts%File_Name                 = 'File_Name!!!'
+   global_atts%UUID                      = 'UUID!!!'
+   global_atts%NetCDF_Version            = 'NetCDF_Version!!!'
+   global_atts%Product_Name              = 'Product_Name!!!'
 
    temp_string=trim('year!!!')//trim('month!!!')//trim('day!!!')
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Date', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Product_Date', trim(temp_string)
-      stop
-   end if
+   global_atts%Product_Date              = trim(temp_string)
 
-   temp_string='Production_Time!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Production_Time', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Production_Time', trim(temp_string)
-      stop
-   end if
+   global_atts%Production_Time           = 'Production_Time!!!'
+   global_atts%L2_Processor              = 'ORAC'
+   global_atts%L2_Processor_Version      = 'L2_Processor_Version!!!'
+   global_atts%Platform                  = 'Platform!!!'
+   global_atts%Sensor                    = 'Sensor!!!'
 
-   temp_string='ORAC'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'L2_Processor', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = L2_Processor', trim(temp_string)
-      stop
-   end if
+   global_atts%AATSR_Processing_Version = ' '
+   if (inst_name .eq. 'ATSR' .or. inst_name .eq. 'AATSR') then
+      global_atts%AATSR_Processing_Version = '3.01'
+   endif
 
-   temp_string='L2_Processor_Version!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'L2_Processor_Version', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = L2_Processor_Version', trim(temp_string)
-      stop
-   end if
-
-   temp_string='Platform!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Platform', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Platform', trim(temp_string)
-      stop
-   end if
-
-   temp_string='Sensor!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Sensor', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Sensor', trim(temp_string)
-      stop
-   end if
-
-   if (inst_name .eq. 'AATSR' .or. inst_name .eq. 'ATSR') then
-      temp_string='3.01'
-      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'AATSR_Calibration_Version', trim(temp_string))
-      if (ierr .ne. NF90_NOERR) then
-         write(*,*) 'ERROR: nf90_put_att(), name = AATSR_Calibration_Version', trim(temp_string)
-         stop
-      end if
-   end if
-
-   temp_string='Contact_Email!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Email', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Contact_Email', trim(temp_string)
-      stop
-   end if
-
-   temp_string='Contact_Website!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Website', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Contact_Website', trim(temp_string)
-      stop
-   end if
-
-   temp_string='Keywords!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Keywords', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Keywords', trim(temp_string)
-      stop
-   end if
-
-   temp_string='Summary!!!'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Summary', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = Summary', trim(temp_string)
-      stop
-   end if
-
-   temp_string='GNU General Public License (GPL), Version 3'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'License', trim(temp_string))
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_att(), name = License', trim(temp_string)
-      stop
-   end if
+   global_atts%Contact_Email             = 'Contact_Email!!!'
+   global_atts%Contact_Website           = 'Contact_Website!!!'
+   global_atts%Keywords                  = 'Keywords!!!'
+   global_atts%Summary                   = 'Summary!!!'
+   global_atts%License                   = 'GNU General Public License (GPL), Version 3'
 
 
+   !----------------------------------------------------------------------------
+   ! Write global attributes to the netcdf output
+   !----------------------------------------------------------------------------
+   call nc_put_common_attributes(ncid, global_atts)
+
+
+   !----------------------------------------------------------------------------
+   !
+   !----------------------------------------------------------------------------
    ierr = nf90_enddef(ncid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'

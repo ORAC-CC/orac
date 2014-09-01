@@ -34,6 +34,135 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
+subroutine nc_write_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+
+   use common_constants
+   use netcdf
+
+   implicit none
+
+   ! Input
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: var_name
+   integer,          intent(in)  :: vid
+   integer,          intent(in)  :: ix
+   integer,          intent(in)  :: nx
+   integer,          intent(in)  :: jy
+   integer,          intent(in)  :: ny
+   integer,          intent(in)  :: wo
+   integer,          intent(out) :: ierr
+   integer(kind=byte), dimension(ix:nx,jy:ny), intent(in) :: v
+
+   ! Local
+   integer :: start(2), counter(2), stride(2)
+
+   start(1) = 1
+   start(2) = 1
+
+   stride = 1
+
+   counter(1) = nx-ix+1
+   counter(2) = ny-jy+1
+
+   ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
+      stop
+   end if
+
+   if (wo .eq. 1) then
+      write(*,*) 'wrote variable: ', trim(var_name)
+   end if
+
+end subroutine nc_write_byte
+
+
+subroutine nc_write_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+
+   use common_constants
+   use netcdf
+
+   implicit none
+
+   ! Input
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: var_name
+   integer,          intent(in)  :: vid
+   integer,          intent(in)  :: ix
+   integer,          intent(in)  :: nx
+   integer,          intent(in)  :: jy
+   integer,          intent(in)  :: ny
+   integer,          intent(in)  :: wo
+   integer ,         intent(out) :: ierr
+   integer(kind=sint), dimension(ix:nx,jy:ny), intent(in) :: v
+
+   ! Local
+   integer :: start(2), counter(2), stride(2)
+
+   start(1) = 1
+   start(2) = 1
+
+   stride = 1
+
+   counter(1) = nx-ix+1
+   counter(2) = ny-jy+1
+
+   ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
+      stop
+   end if
+
+   if (wo .eq. 1) then
+      write(*,*) 'wrote variable: ', trim(var_name)
+   end if
+
+end subroutine nc_write_short
+
+
+subroutine nc_write_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
+
+   use common_Constants
+   use netcdf
+
+   implicit none
+
+   ! Input
+   integer,          intent(in)  :: ncid
+   character(len=*), intent(in)  :: var_name
+   integer,          intent(in)  :: vid
+   integer,          intent(in)  :: ix
+   integer,          intent(in)  :: nx
+   integer,          intent(in)  :: jy
+   integer,          intent(in)  :: ny
+   integer,          intent(in)  :: wo
+   integer,          intent(out) :: ierr
+   integer, dimension(ix:nx,jy:ny), intent(in) :: v
+
+   ! Local
+   integer :: start(2), counter(2), stride(2)
+
+   start(1) = 1
+   start(2) = 1
+
+   stride = 1
+
+   counter(1) = nx-ix+1
+   counter(2) = ny-jy+1
+
+   ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
+   if (ierr .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
+      stop
+   end if
+
+   if (wo .eq. 1) then
+      write(*,*) 'wrote variable: ', trim(var_name)
+   end if
+
+end subroutine nc_write_long
+
+
 subroutine nc_write_float(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
 
    use common_constants
@@ -119,134 +248,3 @@ subroutine nc_write_double(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
    end if
 
 end subroutine nc_write_double
-
-
-
-subroutine nc_write_short(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
-
-   use common_constants
-   use netcdf
-
-   implicit none
-
-   ! Input
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: var_name
-   integer,          intent(in)  :: vid
-   integer,          intent(in)  :: ix
-   integer,          intent(in)  :: nx
-   integer,          intent(in)  :: jy
-   integer,          intent(in)  :: ny
-   integer,          intent(in)  :: wo
-   integer ,         intent(out) :: ierr
-   integer(kind=sint), dimension(ix:nx,jy:ny), intent(in) :: v
-
-   ! Local
-   integer :: start(2), counter(2), stride(2)
-
-   start(1) = 1
-   start(2) = 1
-
-   stride = 1
-
-   counter(1) = nx-ix+1
-   counter(2) = ny-jy+1
-
-   ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
-      stop
-   end if
-
-   if (wo .eq. 1) then
-      write(*,*) 'wrote variable: ', trim(var_name)
-   end if
-
-end subroutine nc_write_short
-
-
-
-subroutine nc_write_long(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
-
-   use common_Constants
-   use netcdf
-
-   implicit none
-
-   ! Input
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: var_name
-   integer,          intent(in)  :: vid
-   integer,          intent(in)  :: ix
-   integer,          intent(in)  :: nx
-   integer,          intent(in)  :: jy
-   integer,          intent(in)  :: ny
-   integer,          intent(in)  :: wo
-   integer,          intent(out) :: ierr
-   integer, dimension(ix:nx,jy:ny), intent(in) :: v
-
-   ! Local
-   integer :: start(2), counter(2), stride(2)
-
-   start(1) = 1
-   start(2) = 1
-
-   stride = 1
-
-   counter(1) = nx-ix+1
-   counter(2) = ny-jy+1
-
-   ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
-      stop
-   end if
-
-   if (wo .eq. 1) then
-      write(*,*) 'wrote variable: ', trim(var_name)
-   end if
-
-end subroutine nc_write_long
-
-
-subroutine nc_write_byte(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
-
-   use common_constants
-   use netcdf
-
-   implicit none
-
-   ! Input
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: var_name
-   integer,          intent(in)  :: vid
-   integer,          intent(in)  :: ix
-   integer,          intent(in)  :: nx
-   integer,          intent(in)  :: jy
-   integer,          intent(in)  :: ny
-   integer,          intent(in)  :: wo
-   integer,          intent(out) :: ierr
-   integer(kind=byte), dimension(ix:nx,jy:ny), intent(in) :: v
-
-   ! Local
-   integer :: start(2), counter(2), stride(2)
-
-   start(1) = 1
-   start(2) = 1
-
-   stride = 1
-
-   counter(1) = nx-ix+1
-   counter(2) = ny-jy+1
-
-   ierr = nf90_put_var(ncid, vid, v(ix:nx,jy:ny), start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_put_var(), var_name = ', var_name
-      stop
-   end if
-
-   if (wo .eq. 1) then
-      write(*,*) 'wrote variable: ', trim(var_name)
-   end if
-
-end subroutine nc_write_byte

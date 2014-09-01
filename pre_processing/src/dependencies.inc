@@ -1,6 +1,5 @@
 $(OBJS)/aatsr_corrections.o: $(OBJS)/calender.o $(OBJS)/date_type_structure.o \
         $(OBJS)/preproc_constants.o
-$(OBJS)/attribute_structures.o: $(OBJS)/preproc_constants.o
 $(OBJS)/bright_m.o: $(OBJS)/preproc_constants.o fundamental_constants.inc
 $(OBJS)/build_preproc_fields.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
@@ -26,16 +25,15 @@ $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
 $(OBJS)/map_time_to_pixel.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/mcd43c.o: $(OBJS)/preproc_constants.o read_mcd43c1.F90 read_mcd43c3.F90
-$(OBJS)/netcdf_output.o: $(OBJS)/attribute_structures.o \
-        $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
-        $(OBJS)/netcdf_structures.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o $(OBJS)/surface_structures.o \
-        netcdf_output_close.F90 netcdf_output_create_file.F90 \
-        netcdf_output_open.F90 netcdf_output_write_swath.F90
+$(OBJS)/netcdf_output.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/imager_structures.o $(OBJS)/netcdf_structures.o \
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        $(OBJS)/surface_structures.o netcdf_output_close.F90 \
+        netcdf_output_create_file.F90 netcdf_output_open.F90 \
+        netcdf_output_write_swath.F90
 $(OBJS)/netcdf_structures.o: $(OBJS)/preproc_constants.o
 $(OBJS)/nise_def.o: $(OBJS)/preproc_constants.o read_nsidc_nise.F90
-$(OBJS)/preparation.o: $(OBJS)/attribute_structures.o \
-        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
+$(OBJS)/preparation.o: $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         allocate_preproc_structures.F90 deallocate_preproc_structures.F90
@@ -85,9 +83,9 @@ $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_structures.o allocate_surface_structures.F90 \
         deallocate_surface_structures.F90
 $(OBJS)/test_rttov.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
-$(OBJS)/preprocessing_for_orac.o: $(OBJS)/attribute_structures.o \
-        $(OBJS)/channel_structures.o $(OBJS)/correct_for_ice_snow.o \
-        $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
+$(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/correct_for_ice_snow.o $(OBJS)/ecmwf.o \
+        $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/netcdf_structures.o $(OBJS)/preparation.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \

@@ -17,7 +17,7 @@
 ! Arguments:
 ! Name           Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! script_input   struct  in   Structure detailing NCDF header contents.
+! global_atts    struct  in   Structure detailing NCDF header contents.
 ! cyear          string  in   Year, as a 4 character string.
 ! cmonth         string  in   Month of year, as a 2 character string.
 ! cday           string  in   Day of month, as a 2 character string.
@@ -76,14 +76,14 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,wo,type,preproc_dims,imager_angles,netcdf_info, &
      channel_info,use_chunking)
 
    use netcdf
 
-   use attribute_structures
    use channel_structures
+   use global_attributes
    use imager_structures
    use netcdf_structures
    use preproc_constants
@@ -92,7 +92,7 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
    implicit none
 
    ! Input
-   type(script_arguments_s),       intent(in)    :: script_input
+   type(global_attributes_s),      intent(in)    :: global_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -663,8 +663,8 @@ subroutine netcdf_create_rtm(script_input,cyear,cmonth,cday,chour,cminute, &
    if (type .eq. 2) ncid=netcdf_info%ncid_swrtm
    if (type .eq. 3) ncid=netcdf_info%ncid_prtm
 
-   call nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor,path, &
-        cyear,cmonth,cday,chour,cminute)
+   call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
+        path,cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
@@ -685,7 +685,7 @@ end subroutine netcdf_create_rtm
 ! Arguments:
 ! Name           Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! script_input   struct  in   Structure detailing NCDF header contents.
+! global_atts    struct  in   Structure detailing NCDF header contents.
 ! cyear          string  in   Year, as a 4 character string.
 ! cmonth         string  in   Month of year, as a 2 character string.
 ! cday           string  in   Day of month, as a 2 character string.
@@ -714,22 +714,22 @@ end subroutine netcdf_create_rtm
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
    platform,sensor,path,wo,type,imager_geolocation,imager_angles,netcdf_info, &
    channel_info,use_chunking,include_full_brdf)
 
    use netcdf
 
-   use attribute_structures
-   use preproc_constants
    use channel_structures
+   use global_attributes
    use imager_structures
    use netcdf_structures
+   use preproc_constants
 
    implicit none
 
    ! Input
-   type(script_arguments_s),       intent(in)    :: script_input
+   type(global_attributes_s),      intent(in)    :: global_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -1342,8 +1342,8 @@ subroutine netcdf_create_swath(script_input,cyear,cmonth,cday,chour,cminute, &
    if (type .eq. 6) ncid=netcdf_info%ncid_alb
    if (type .eq. 7) ncid=netcdf_info%ncid_scan
 
-   call nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor,path, &
-        cyear,cmonth,cday,chour,cminute)
+   call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
+        path,cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
@@ -1363,7 +1363,7 @@ end subroutine netcdf_create_swath
 ! Arguments:
 ! Name           Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! script_input   struct  in   Structure detailing NCDF header contents.
+! global_atts    struct  in   Structure detailing NCDF header contents.
 ! cyear          string  in   Year, as a 4 character string.
 ! cmonth         string  in   Month of year, as a 2 character string.
 ! cday           string  in   Day of month, as a 2 character string.
@@ -1387,14 +1387,14 @@ end subroutine netcdf_create_swath
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,wo,preproc_dims,imager_geolocation,netcdf_info, &
      channel_info)
 
    use netcdf
 
-   use attribute_structures
    use channel_structures
+   use global_attributes
    use imager_structures
    use netcdf_structures
    use preproc_constants
@@ -1403,7 +1403,7 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
    implicit none
 
    ! Input
-   type(script_arguments_s),       intent(in)    :: script_input
+   type(global_attributes_s),      intent(in)    :: global_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -1568,8 +1568,8 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
 
 
    ! set up attributes common to all output files
-   call nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor,path, &
-        cyear,cmonth,cday,chour,cminute)
+   call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
+        path, cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
@@ -1585,40 +1585,20 @@ subroutine netcdf_create_config(script_input,cyear,cmonth,cday,chour,cminute, &
 
 end subroutine netcdf_create_config
 
-!-------------------------------------------------------------------------------
-! Arguments:
-! Name           Type    In/Out/Both Description
-! ------------------------------------------------------------------------------
-! ncid           integer in   ID number for open NCDF file.
-! script_input   struct  in   Structure detailing NCDF header contents.
-! ctitle         string  in   Title for file.
-! platform       string  in   Name of satellite platform.
-! sensor         string  in   Name of sensor.
-! path           string  in   Name of file to create.
-! cyear          string  in   Year, as a 4 character string.
-! cmonth         string  in   Month of year, as a 2 character string.
-! cday           string  in   Day of month, as a 2 character string.
-! chour          string  in   Hour of day, as a 2 character string.
-! cminute        string  in   Minute of day, as a 2 character string.
-!
-! History:
-! 2014/02/03, GM: Original version
-! 2014/08/31, GM: Make the global attribute list consistent with CF-1.4.
-!
-!-------------------------------------------------------------------------------
 
-subroutine nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor, &
-                                    path,cyear,cmonth,cday,chour,cminute)
+subroutine netcdf_put_common_attributes(ncid,global_atts,title,platform,sensor, &
+                                        path,cyear,cmonth,cday,chour,cminute)
 
    use netcdf
 
-   use attribute_structures
+   use global_attributes
+   use nc_utils
 
    implicit none
 
    integer,                        intent(in) :: ncid
-   type(script_arguments_s),       intent(in) :: script_input
-   character(len=file_length),     intent(in) :: ctitle
+   type(global_attributes_s),      intent(in) :: global_atts
+   character(len=file_length),     intent(in) :: title
    character(len=platform_length), intent(in) :: platform
    character(len=sensor_length),   intent(in) :: sensor
    character(len=*),               intent(in) :: path
@@ -1629,193 +1609,34 @@ subroutine nc_put_common_attributes(ncid,script_input,ctitle,platform,sensor, &
    character(len=date_length),     intent(in) :: cminute
 
    integer                        :: ierr
-   character(len=platform_length) :: PLATFORMUP
-   integer                        :: cposition,clength
-   character(len=file_length)     :: fname
+   character(len=platform_length) :: PLATFORM_UPPER_CASE
+   integer                        :: position,length
+   type(global_attributes_s)      :: global_atts2
 
+   global_atts2 = global_atts
 
-   !----------------------------------------------------------------------------
-   ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
-   !----------------------------------------------------------------------------
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', &
-        trim(script_input%ccon))
-   if (ierr.ne.NF90_NOERR) stop 'error: def conventions'
+   global_atts2%title  = trim(title)
+   global_atts2%source = 'source!!!'
 
+   position=index(trim(path),'/',back=.true.)
+   length=len_trim(path)
+   global_atts2%File_Name    = trim(path(position+1:length))
 
-   !----------------------------------------------------------------------------
-   ! Global attributes for the 'Description of file contents' as defined by
-   ! CF-1.4, section 2.6.2.
-   !----------------------------------------------------------------------------
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'title', &
-        trim(ctitle))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: title'
-      stop error_stop_code
+   global_atts2%Product_Name = 'Product_Name!!!'
+
+   global_atts2%Product_Date = trim(cyear)//trim(cmonth)//trim(cday)// &
+                               trim(chour)//trim(cminute)
+
+   PLATFORM_UPPER_CASE=platform
+   if (platform(1:4) .eq. 'noaa') PLATFORM_UPPER_CASE(1:4)='NOAA'
+   global_atts2%platform = trim(PLATFORM_UPPER_CASE)
+   global_atts2%sensor   = trim(sensor)
+
+   global_atts2%AATSR_Processing_Version = ' '
+   if (sensor .eq. 'ATSR' .or. sensor .eq. 'AATSR') then
+      global_atts2%AATSR_Processing_Version = '3.01'
    endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'institution', &
-        trim(script_input%cinst))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: institution'
-      stop error_stop_code
-   endif
+   call nc_put_common_attributes(ncid, global_atts2)
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'source', &
-        'source!!!')
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: source'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'history', &
-        trim(script_input%history))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: history'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'references', &
-        trim(script_input%history))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: references'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'comment', &
-        trim(script_input%history))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: comment'
-      stop error_stop_code
-   endif
-
-
-   !----------------------------------------------------------------------------
-   ! Extra global attributes defined by Orac
-   !----------------------------------------------------------------------------
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Project', &
-        trim(script_input%project))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Project'
-      stop error_stop_code
-   endif
-
-   cposition=index(trim(path),'/',back=.true.)
-   clength=len_trim(path)
-   fname=trim(path)
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'File_Name', &
-        trim(fname(cposition+1:clength)))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: File_Name'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'UUID', &
-        trim(script_input%uuid_tag))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: UUID'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'NetCDF_Version', &
-        trim(script_input%cncver))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: NetCDF_Version'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Name', &
-        'product name')
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Product_Name'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Date', &
-        trim(cyear)//trim(cmonth)//trim(cday)// &
-        trim(chour)//trim(cminute))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Product_Date'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Production_Time', &
-        trim(script_input%exec_time))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Production_Time'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'L2_Processor', &
-        trim(script_input%l2cproc))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: L2_Processor'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'L2_Processor_Version', &
-        trim(script_input%l2cprocver))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: L2_Processor_Version'
-      stop error_stop_code
-   endif
-
-   PLATFORMUP=platform
-   if (platform(1:4) .eq. 'noaa') PLATFORMUP(1:4)='NOAA'
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Platform', &
-        trim(platformup))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Platform'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Sensor', &
-        trim(sensor))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Sensor'
-      stop error_stop_code
-   endif
-
-!  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'AATSR_Processing_Version', &
-!       trim(sensor))
-!  if (ierr.ne.NF90_NOERR) then
-!     write(*,*), 'ERROR: nf90_put_att(), name: AATSR_Processing_Version'
-!     stop error_stop_code
-!  endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Email', &
-        trim(script_input%contact))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Contact_Email'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Website', &
-        trim(script_input%website))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Contact_Website'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Keywords', &
-        trim(script_input%keywords))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Keywords'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Summary', &
-        trim(script_input%summary))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: Summary'
-      stop error_stop_code
-   endif
-
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'License', &
-        trim(script_input%license))
-   if (ierr.ne.NF90_NOERR) then
-      write(*,*), 'ERROR: nf90_put_att(), name: License'
-      stop error_stop_code
-   endif
-
-end subroutine nc_put_common_attributes
+end subroutine netcdf_put_common_attributes

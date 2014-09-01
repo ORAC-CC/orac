@@ -45,7 +45,6 @@
 subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocation, &
    imager_measurements,imager_time,netcdf_info,channel_info,surface,include_full_brdf)
 
-   use attribute_structures
    use channel_structures
    use imager_structures
    use netcdf
