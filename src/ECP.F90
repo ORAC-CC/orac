@@ -284,7 +284,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(output_data_secondary) :: output_data_2
 
    ! Some netcdf related indices and labels
-   integer :: ierr
    integer :: iviews,iinput
 
    ! Variables to avoid out of bounds contents

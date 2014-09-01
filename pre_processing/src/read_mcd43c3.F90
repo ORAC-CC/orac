@@ -75,7 +75,6 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
 !  integer*4                  :: proj, zone, sphere
 !  real, pointer              :: param(:)
    integer*4                  :: xdim, ydim
-   real                       :: xres, yres
    real*8                     :: upleft(2), lowright(2)
    integer*4                  :: start(2), stride(2), edge(2)
 

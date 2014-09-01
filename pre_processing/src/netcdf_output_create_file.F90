@@ -1608,7 +1608,6 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,title,platform,sensor, 
    character(len=date_length),     intent(in) :: chour
    character(len=date_length),     intent(in) :: cminute
 
-   integer                        :: ierr
    character(len=platform_length) :: PLATFORM_UPPER_CASE
    integer                        :: position,length
    type(global_attributes_s)      :: global_atts2

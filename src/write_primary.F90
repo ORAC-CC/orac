@@ -37,7 +37,6 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
                          output_data, status)
 
    use CTRL_def
-   use nc_utils
    use orac_ncdf
    use SPixel_def
 

@@ -366,8 +366,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    type(channel_info_s),             intent(in)    :: channel_info
 
    real,             dimension(2,2)                :: ice_frac
-   real,             dimension(1)                  :: pixel_ice, pixel_snow
-   integer,          dimension(:), allocatable     :: chanidx
+   real,             dimension(1)                  :: pixel_ice
    integer(kind=lint)                              :: i
    logical                                         :: snw_frac
 

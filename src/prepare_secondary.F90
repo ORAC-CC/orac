@@ -53,7 +53,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    type(output_data_secondary), intent(inout) :: output_data
    integer,                     intent(inout) :: status
 
-   integer          :: ii,k,kk,l
+   integer          :: ii,k,l
    real(kind=sreal) :: dummyreal
 
 

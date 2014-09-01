@@ -64,7 +64,6 @@ subroutine read_mcd43c1(path_to_file, mcd, nbands, bands, brdf_albedo_params, &
 !  integer*4                  :: proj, zone, sphere
 !  real, pointer              :: param(:)
    integer*4                  :: xdim, ydim
-   real                       :: xres, yres
    real*8                     :: upleft(2), lowright(2)
    integer*4                  :: start(2), stride(2), edge(2)
 

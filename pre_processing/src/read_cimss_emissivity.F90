@@ -101,7 +101,7 @@ function read_cimss_emissivity(path_to_file, emis, bands, verbose, flag, &
    integer          :: uDimID, ForNM
    character(len=6) :: BandList(10)
    integer          :: i
-   integer(kind=1)  :: gen_loc=1
+!  integer(kind=1)  :: gen_loc=1
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_cimss_emissivity()'
 

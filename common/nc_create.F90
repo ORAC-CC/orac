@@ -55,7 +55,6 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
    ! Local
    integer                   :: ierr, xdim, ydim
    character(len=128)        :: temp_string
-   character(len=128)        :: title_string
    type(global_attributes_s) :: global_atts
 
 

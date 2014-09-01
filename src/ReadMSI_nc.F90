@@ -132,13 +132,12 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
                                                ! pixels.
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
-   logical,      intent(in)    :: verbose
+   logical,          intent(in)    :: verbose
 
    ! Local variables
 
-   character(2048) :: message    ! Error message to pass to Write_Log
-   integer         :: day, month ! Day and month numbers extracted from
-   integer         :: i          ! Counter for DOY calculation
+   integer :: i          ! Counter for DOY calculation
+   integer :: day, month ! Day and month numbers extracted from
 
    ! NetCDF related
    integer           :: ncid
