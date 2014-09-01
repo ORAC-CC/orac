@@ -177,7 +177,7 @@ subroutine Read_Chan(Ctrl, SAD_Chan, status)
       end if
       if (ios /= 0) then
          status = ChanFileOpenErr
-         write(message, *) 'Read_Chan: Error opening file ', chan_file
+         write(message, *) 'Read_Chan: Error opening file ', trim(chan_file)
          call Write_Log(Ctrl, trim(message), status)
       else
          ! Read the file contents into the SAD_Chan(i) structure

@@ -429,7 +429,8 @@ i=0
 
 #---- AQUA MODIS from LAADS (day) ----
 if (( $do_all || $do_DAYMYD )); then
-    sensor[$i]=MODIS-AQUA
+    sensor[$i]=MODIS
+    platform[$i]=-AQUA
     label[$i]=DAYMYD
     path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.0405.005.2009317014309.hdf
     # if you don't want to check against LAADSweb full files, use this instead
@@ -447,7 +448,8 @@ fi
 
 #---- AQUA MODIS from DWD (night) ----
 if (( $do_all || $do_NITMYD )); then
-    sensor[$i]=MODIS-AQUA
+    sensor[$i]=MODIS
+    platform[$i]=-AQUA
     label[$i]=NITMYD
     path_to_l1b[$i]=$in_folder/MYD021KM.A2008172.1630.005.2009317021545.bscs_000500531943.hdf
     path_to_geo[$i]=$in_folder/MYD03.A2008172.1630.005.2009316104244.hdf
@@ -464,6 +466,7 @@ fi
 #---- AATSR (day) ----
 if (( $do_all || $do_DAYAATSR )); then
     sensor[$i]=AATSR
+    platform[$i]=
     if (( $ver21 )); then
         label[$i]=DAYAATSRV21
         path_to_l1b[$i]=$in_folder/ATS_TOA_1PUUPA20080620_002337_000065272069_00345_32964_6203.N1
@@ -485,6 +488,7 @@ fi
 #---- AATSR (night) ----
 if (( $do_all || $do_NITAATSR )); then
     sensor[$i]=AATSR
+    platform[$i]=
     if (( $ver21 )); then
         label[$i]=NITAATSRV21
         path_to_l1b[$i]=$in_folder/ATS_TOA_1PUUPA20080620_002337_000065272069_00345_32964_6203.N1
@@ -505,7 +509,8 @@ fi
 
 #---- AVHRR ----
 if (( $do_all || $do_DAYAVHRR || ( (! $short) && $do_NITAVHRR) )); then
-    sensor[$i]=AVHRR-NOAA18
+    sensor[$i]=AVHRR
+    platform[$i]=-NOAA18
     path_to_l1b[$i]=$in_folder/noaa18_20080620_0050_99999_satproj_00000_13111_avhrr.h5
     path_to_geo[$i]=$in_folder/noaa18_20080620_0050_99999_satproj_00000_13111_sunsatangles.h5
     if (( $short )); then 
@@ -526,7 +531,8 @@ fi
 
 #---- AVHRR (short night segment) ----
 if (( $short && ($do_all || $do_NITAVHRR) )); then
-    sensor[$i]=AVHRR-NOAA18
+    sensor[$i]=AVHRR
+    platform[$i]=-NOAA18
     label[$i]=NITAVHRR
     path_to_l1b[$i]=$in_folder/noaa18_20080620_0050_99999_satproj_00000_13111_avhrr.h5
     path_to_geo[$i]=$in_folder/noaa18_20080620_0050_99999_satproj_00000_13111_sunsatangles.h5

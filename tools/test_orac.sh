@@ -77,7 +77,7 @@ for j in ${!sensor[*]}; do
 '$fileroot'
 '$output_folder'
 '$sad_repos'
-${sensor[$j]}
+${sensor[$j]}${platform[$j]}
 6
 $channels
 $phase"
