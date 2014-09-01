@@ -94,7 +94,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
    type(CTRL_t),           intent(out)   :: Ctrl
    type(config_struct),    intent(out)   :: conf
    character(*),           intent(out)   :: message
-   integer,                intent(out)   :: nargs
+   integer,                intent(in)    :: nargs
    character(FilenameLen), intent(inout) :: drifile
    integer,                intent(out)   :: status
 

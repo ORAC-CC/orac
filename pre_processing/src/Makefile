@@ -27,8 +27,8 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
-include $(ORAC_ARCH)
 include $(ORAC_LIB)
+include $(ORAC_ARCH)
 
 ORAC_COMMON   = ../../common
 

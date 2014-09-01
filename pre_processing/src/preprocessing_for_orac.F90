@@ -327,7 +327,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 
    logical                          :: parse_logical
 
-!  integer, dimension(8)            :: values
+   logical                         :: along_check
+   integer(kind=lint)              :: along_pos
+
+!  integer, dimension(8)           :: values
 
    ! this is for the wrapper
 #ifdef WRAPPER
@@ -541,6 +544,24 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    ! determine processing chunks and their dimensions
    if (verbose) write(*,*) 'Determine processing chunks and their dimensions'
    if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
+      if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
+         write(*,*) 'ERROR: invalid across track dimensions'
+         write(*,*) '       Should be < ',n_across_track
+         STOP error_stop_code
+      end if
+      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
+         along_pos = along_track_offset2 + n_along_track2
+         along_check = starty.gt.along_pos .or. endy.gt.along_pos
+      else
+         along_pos = along_track_offset + n_along_track
+         along_check = starty.gt.along_pos .or. endy.gt.along_pos
+      end if
+      if (along_check) then
+         write(*,*) 'ERROR: invalid along track dimensions'
+         write(*,*) '       Should be < ',along_pos
+         STOP error_stop_code
+      end if
+             
       ! use specified values
       imager_geolocation%startx=startx
       imager_geolocation%endx=endx

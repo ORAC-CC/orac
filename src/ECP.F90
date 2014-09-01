@@ -457,6 +457,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          RTM%SW%NP,RTM%SW%NPLAY,&
          RTM%SW%NSWF,RTM%SW%NV,verbose)
 
+      ! Don't read the lowest (surface) level
       RTM%LW%NP=RTM%LW%NPLAY
       RTM%SW%NP=RTM%SW%NPLAY
 
@@ -466,7 +467,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          RTM_Alloc = .true.
       end if
    end if
-
 
    !----------------------------------------------------------------------------
    ! Product generation section
@@ -621,8 +621,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_id,RTM_Pc,SPixel,SPixel_Alloc,RTM_Pc_Alloc,Diag,conv,dummyreal) &
       !$OMP FIRSTPRIVATE(status)
       thread_id = omp_get_thread_num()
-      print *, 'Thread ', thread_id+1, 'is active'
-
+      write(*,*) 'Thread ', thread_id+1, 'is active'
 
       !  Allocate sizes of SPixel sub-structure arrays
       call Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
