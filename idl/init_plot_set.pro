@@ -43,8 +43,8 @@
 ;      NY:     Number of plots vertically.
 ;      X0:     FLTARR(NX) - the coordinate of the left edge.
 ;      X1:     FLTARR(NX) - the coordinate of the right edge.
-;      Y0:     FLTARR(NX) - the coordinate of the bottom edge.
-;      Y1:     FLTARR(NX) - the coordinate of the top edge.
+;      Y0:     FLTARR(NY) - the coordinate of the bottom edge.
+;      Y1:     FLTARR(NY) - the coordinate of the top edge.
 ;      GRIDI:  Current horizontal plot number.
 ;      GRIDJ:  Current vertical plot number.
 ;      COL:    Plot colour (decomposed).

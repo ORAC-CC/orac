@@ -18,6 +18,7 @@
 #
 # History:
 # 2014/07/28, AP: Original version
+# 2014/08/20, AP: Remove output as we don't care.
 #
 set -e
 
@@ -29,9 +30,9 @@ source header.sh
 orig=$PWD
 cd $orac_repos/idl
 for i in ${!label[*]}; do
-#    for flag in '' ',/preproc' ',/comp' ',/preproc,/comp'; do
-    for flag in '' ',/preproc'; do
+    for flag in '' ',/preproc' ',/comp,/diff' ',/preproc,/comp,/diff'; do
         echo "PLOT_ORAC,\'${label[$i]}\',frame=${frame[$i]},$revision$flag"
     done
-done | xargs -P 6 -n 1 -I COMMAND idl -quiet -e COMMAND
+done | xargs -P 6 -n 1 -I{} idl -quiet -e {} &>/dev/null
 cd $orig
+echo 'Plotting complete'

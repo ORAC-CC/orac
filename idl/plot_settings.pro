@@ -571,9 +571,9 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].full=1
          out[i].title=FMT('Phase selection')
          out[i].btf=''
-         out[i].blabels[0:1]=['Ice','Water']
-         out[i].range=[0,1]
-         out[i].nlevels=2
+         out[i].blabels[0:2]=['Clear','Water','Ice']
+         out[i].range=[0,2]
+         out[i].nlevels=3
          ++i
 
          out[i].name='costja'

@@ -83,6 +83,8 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; process inputs
+   if ~KEYWORD_SET(false) && ~KEYWORD_SET(diff) then $
+      MESSAGE,'Please set FALSE or DIFF to indicate the desired plots.'
    if ~KEYWORD_SET(fdr) then fdr=GETENV('TESTOUT')
    revision=STRING(rev,format='(i0)')
    if SIZE(inst,/type) ne 7 then MESSAGE,'INSTRUMENT must be a string.'
@@ -189,9 +191,9 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
             STRING(ROUND(plot_set.ys*170./6),format='(i0)')+ $
             '] >> setpagedevice" '+ $
             '-dBATCH '+root[i]+tag+'.N[0-9][0-9].eps > /dev/null'
+      CD,cur_cd
       if ~KEYWORD_SET(keep_ps) then $
          FILE_DELETE,FILE_SEARCH(root[i]+tag+'.N[0-9][0-9].eps')
-      CD,cur_cd
    endfor
    SET_PLOT,'x'
    TVLCT, save_ct

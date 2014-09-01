@@ -16,6 +16,7 @@
 ;           [, ysize=value] [, nx=value] [, ny=value] [, font_size=value]
 ;           [, scale=value] [, label=string] [, /relative] [, frames=value]
 ;           [, /keep_ps] [, \wat|/ice] [, /secondary] [, /diff_only]
+;           [, /full] [, /clear] [, add=string]
 ;
 ; INPUTS:
 ;   instrument = A string specifying the swath to be plotted. This is expected
@@ -38,7 +39,8 @@
 ;   SCALE      = A number to multiply both NX|Y. A useful way to zoom in.
 ;   LABEL      = A very short description that should be printed at the top-left
 ;      of each page.
-;   FRAMES      = The number of figures across which to plot the swath.
+;   FRAMES     = The number of figures across which to plot the swath.
+;   ADD        = A string to add to the end of the filename. 
 ;
 ; KEYWORD PARAMETERS:
 ;   COMPARE    = Plot the differences between this revision and the previous.
@@ -54,6 +56,8 @@
 ;   SECONDARY  = Plot the contents of the secondary output file after the primary
 ;   DIFF_ONLY  = When COMPARE plotting, only plot fields that have changed
 ;      (leaving out the grey-bordered plots).
+;   FULL       = Use the full range of the data for all colourbar plots.
+;   CLEAR      = Filter out points labelled as PHASE=0 (clear/unknown).
 ;
 ; OUTPUTS:
 ;   - All outputs are made into the same folder as the input data.
@@ -84,7 +88,8 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
                font_size=font_s, scale=scale, label=label, relative=rel, $
                frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary, $
-               diff_only=diff_only, short=short, wat=wat, suffix=suff, full=full
+               diff_only=diff_only, short=short, wat=wat, suffix=suff, $
+               full=full, clear=clear, add=add
    ON_ERROR, 0
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -131,6 +136,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
       endif
    endelse
    if kc then tag+='.comp'
+   if KEYWORD_SET(add) then tag+='.'+add
 
    ;; save current colourbar and set greyscale for plot titles
    TVLCT, save_ct, /get
@@ -162,6 +168,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
          lat=NCDF_OBTAIN(fid,'lat')
          lon=NCDF_OBTAIN(fid,'lon')
          qcf=NCDF_OBTAIN(fid,'qcflag')
+         if KEYWORD_SET(clear) then phs=NCDF_OBTAIN(fid,'phase')
          NCDF_CLOSE,fid
 
          ;; determine field size (for chunked plotting)
@@ -202,7 +209,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
             endelse
             ;; apply requested filter
             if KEYWORD_SET(qcf) then filt = filt AND ~(qcf AND set[k].filter)
-
+            if KEYWORD_SET(clear) then filt=filt AND phs gt 0
             ;; set output if plotting a comparison
             plot_set.col=0
             if kc then begin
