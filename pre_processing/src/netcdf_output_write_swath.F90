@@ -89,37 +89,37 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
 
    counter1d=channel_info%nchannels_total
 
-   ierr = nf90_put_var(netcdf_info%ncid_config, netcdf_info%channelninid_config,&
+   ierr = nf90_put_var(netcdf_info%ncid_config, netcdf_info%vid_msi_instr_ch_numbers_config,&
         channel_info%channel_ids_instr(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi channels'
 
    ierr = nf90_put_var(netcdf_info%ncid_config, &
-        netcdf_info%channelnabsid_config,&
+        netcdf_info%vid_msi_abs_ch_numbers_config,&
         channel_info%channel_ids_abs(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi channels abs'
 
    ierr = nf90_put_var(netcdf_info%ncid_config, &
-        netcdf_info%channelwlabsid_config,&
+        netcdf_info%vid_msi_abs_channel_wl_config,&
         channel_info%channel_wl_abs(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi wls'
 
    ierr = nf90_put_var(netcdf_info%ncid_config, &
-         netcdf_info%channellwflag_config,&
-        channel_info%channel_lw_flag(1:channel_info%nchannels_total),&
-        start1d,counter1d,stride1d)
-   if (ierr.NE.NF90_NOERR) stop 'error: write msi lw flag'
-
-   ierr = nf90_put_var(netcdf_info%ncid_config, &
-         netcdf_info%channelswflag_config,&
+         netcdf_info%vid_msi_ch_swflag_config,&
         channel_info%channel_sw_flag(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi sw flag'
 
    ierr = nf90_put_var(netcdf_info%ncid_config, &
-         netcdf_info%channelprocflag_config,&
+         netcdf_info%vid_msi_ch_lwflag_config,&
+        channel_info%channel_lw_flag(1:channel_info%nchannels_total),&
+        start1d,counter1d,stride1d)
+   if (ierr.NE.NF90_NOERR) stop 'error: write msi lw flag'
+
+   ierr = nf90_put_var(netcdf_info%ncid_config, &
+         netcdf_info%vid_msi_ch_procflag_config,&
         channel_info%channel_proc_flag(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi proc flag'
@@ -135,7 +135,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
          ic=ic+1
       end if
    end do
-   ierr = nf90_put_var(netcdf_info%ncid_config,netcdf_info%channelnalbid_config,&
+   ierr = nf90_put_var(netcdf_info%ncid_config,netcdf_info%vid_alb_abs_ch_numbers_config,&
         dummy_chan_vec1d(1:channel_info%nchannels_sw),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write alb channels alb'
@@ -152,7 +152,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
       end if
    end do
    ierr = nf90_put_var(netcdf_info%ncid_config, &
-        netcdf_info%channelnemisid_config,&
+        netcdf_info%vid_emis_abs_ch_numbers_config,&
         dummy_chan_vec1d(1:channel_info%nchannels_lw),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write alb channels emis'
@@ -173,7 +173,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
          ic=ic+1
       end if
    end do
-   ierr = nf90_put_var(netcdf_info%ncid_alb,netcdf_info%channelnalbid,&
+   ierr = nf90_put_var(netcdf_info%ncid_alb,netcdf_info%vid_alb_abs_ch_numbers,&
         dummy_chan_vec1d(1:channel_info%nchannels_sw),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write alb channels alb'
@@ -190,7 +190,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
          ic=ic+1
       end if
    end do
-   ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%channelnemisid,&
+   ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%vid_emis_abs_ch_numbers,&
         dummy_chan_vec1d(1:channel_info%nchannels_lw),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write alb channels emis'
@@ -201,7 +201,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter3d(2) = imager_geolocation%ny
    counter3d(3) = channel_info%nchannels_sw
 
-   ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%albid,&
+   ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%vid_alb_data,&
         surface%albedo(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
         start3d, counter3d,stride3d)
@@ -212,7 +212,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter3d(2) = imager_geolocation%ny
    counter3d(3) = channel_info%nchannels_lw
 
-   ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%emisid,&
+   ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%vid_emis_data,&
         surface%emissivity(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny,1:channel_info%nchannels_lw),&
         start3d,counter3d,stride3d)
@@ -224,25 +224,25 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
         counter3d(2) = imager_geolocation%ny
         counter3d(3) = channel_info%nchannels_sw
 
-        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%rho_0v_id,&
+        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%vid_rho_0v,&
                surface%rho_0v(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
                start3d,counter3d,stride3d)
         if (ierr.NE.NF90_NOERR) stop 'error: write rho_0v'
 
-        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%rho_0d_id,&
+        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%vid_rho_0d,&
                surface%rho_0d(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
                start3d,counter3d,stride3d)
         if (ierr.NE.NF90_NOERR) stop 'error: write rho_0d'
 
-        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%rho_dv_id,&
+        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%vid_rho_dv,&
                surface%rho_dv(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
                start3d,counter3d,stride3d)
         if (ierr.NE.NF90_NOERR) stop 'error: write rho_dv'
 
-        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%rho_dd_id,&
+        ierr = nf90_put_var(netcdf_info%ncid_alb, netcdf_info%vid_rho_dd,&
                surface%rho_dd(imager_geolocation%startx:imager_geolocation%endx,&
                1:imager_geolocation%ny,1:channel_info%nchannels_sw),&
                start3d,counter3d,stride3d)
@@ -254,7 +254,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter2d(1) = imager_geolocation%nx
    counter2d(2) = imager_geolocation%ny
 
-   ierr = nf90_put_var(netcdf_info%ncid_cf, netcdf_info%cfid,&
+   ierr = nf90_put_var(netcdf_info%ncid_clf, netcdf_info%vid_cflag,&
         imager_flags%cflag(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny),start2d,counter2d,stride2d)
    if (ierr.NE.NF90_NOERR) stop 'error: write cflag'
@@ -267,28 +267,28 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter3d(3) = imager_angles%nviews
 
    ! solzen
-   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%solzenid,&
+   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%vid_solzen,&
         imager_angles%solzen(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny,1:imager_angles%nviews), &
         start3d,counter3d,stride3d)
    if (ierr.NE.NF90_NOERR) stop 'error: write solzen'
 
    ! satzen
-   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%satzenid,&
+   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%vid_satzen,&
         imager_angles%satzen(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny,1:imager_angles%nviews), &
         start3d,counter3d,stride3d)
    if (ierr.NE.NF90_NOERR) stop 'error: write satzen'
 
    ! solaz
-   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%solazid,&
+   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%vid_solaz,&
         imager_angles%solazi(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny,1:imager_angles%nviews), &
         start3d,counter3d,stride3d)
    if (ierr.NE.NF90_NOERR) stop 'error: write solaz'
 
    ! relazi
-   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%relazid,&
+   ierr = nf90_put_var(netcdf_info%ncid_geo, netcdf_info%vid_relazi,&
         imager_angles%relazi(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny,1:imager_angles%nviews), &
         start3d,counter3d,stride3d)
@@ -300,13 +300,13 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter2d(1) = imager_geolocation%nx
    counter2d(2) = imager_geolocation%ny
 
-   ierr = nf90_put_var(netcdf_info%ncid_loc, netcdf_info%lonid,&
+   ierr = nf90_put_var(netcdf_info%ncid_loc, netcdf_info%vid_lon,&
         imager_geolocation%longitude( &
         imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny),start2d,counter2d,stride2d)
    if (ierr.NE.NF90_NOERR) stop 'err write lon'
 
-   ierr = nf90_put_var(netcdf_info%ncid_loc, netcdf_info%latid,&
+   ierr = nf90_put_var(netcdf_info%ncid_loc, netcdf_info%vid_lat,&
         imager_geolocation%latitude( &
         imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny),start2d,counter2d,stride2d)
@@ -317,7 +317,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter2d(1) = imager_geolocation%nx
    counter2d(2) = imager_geolocation%ny
 
-   ierr = nf90_put_var(netcdf_info%ncid_lsf, netcdf_info%lsfid,&
+   ierr = nf90_put_var(netcdf_info%ncid_lsf, netcdf_info%vid_lsflag,&
         imager_flags%lsflag(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny),start2d,counter2d,stride2d)
    if (ierr.NE.NF90_NOERR) stop 'error: write lsflag'
@@ -326,32 +326,32 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    ! msi file (indexes, time, measurements)
    counter1d=channel_info%nchannels_total
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%channelninid,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_msi_instr_ch_numbers,&
         channel_info%channel_ids_instr(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi channels'
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%channelnabsid,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_msi_abs_ch_numbers,&
         channel_info%channel_ids_abs(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi channels abs'
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%channelwlabsid,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_msi_abs_ch_wl,&
         channel_info%channel_wl_abs(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi wls'
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%channellwflag,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_msi_ch_lwflag,&
         channel_info%channel_lw_flag(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi lw flag'
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%channelswflag,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_msi_ch_swflag,&
         channel_info%channel_sw_flag(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi sw flag'
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%channelprocflag,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_msi_ch_procflag,&
         channel_info%channel_proc_flag(1:channel_info%nchannels_total),&
         start1d,counter1d,stride1d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi proc flag'
@@ -360,7 +360,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter2d(1) = imager_geolocation%nx
    counter2d(2) = imager_geolocation%ny
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%timeid,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_time,&
         imager_time%time(imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny),start2d,counter2d,stride2d)
    if (ierr.NE.NF90_NOERR) stop 'error: write msi'
@@ -370,7 +370,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter3d(2) = imager_geolocation%ny
    counter3d(3) = channel_info%nchannels_total
 
-   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%msid,&
+   ierr = nf90_put_var(netcdf_info%ncid_msi, netcdf_info%vid_msi_data,&
         imager_measurements%data( &
         imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny,1:channel_info%nchannels_total),&
@@ -382,13 +382,13 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    counter2d(1) = imager_geolocation%nx
    counter2d(2) = imager_geolocation%ny
 
-   ierr = nf90_put_var(netcdf_info%ncid_scan, netcdf_info%uscanid,&
+   ierr = nf90_put_var(netcdf_info%ncid_scan, netcdf_info%vid_uscan,&
         imager_geolocation%uscan( &
         imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny),start2d,counter2d,stride2d)
    if (ierr.NE.NF90_NOERR) stop 'error: write u scan'
 
-   ierr = nf90_put_var(netcdf_info%ncid_scan, netcdf_info%vscanid,&
+   ierr = nf90_put_var(netcdf_info%ncid_scan, netcdf_info%vid_vscan,&
         imager_geolocation%vscan( &
         imager_geolocation%startx:imager_geolocation%endx,&
         1:imager_geolocation%ny),start2d,counter2d,stride2d)

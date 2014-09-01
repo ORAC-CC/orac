@@ -397,16 +397,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    netcdf_info%start_1d(1)=1
    netcdf_info%counter_1d(1)=sum(channel_info%channel_lw_flag)
    netcdf_info%stride_1d(1)=1
-   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, netcdf_info%channels_id_lw, &
-        dummy_lint_1dveca, &
+   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
+        netcdf_info%vid_lw_channel_abs_ids, dummy_lint_1dveca, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_ids_abs'
    ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-        netcdf_info%channels_id_instr_lw,dummy_lint_1dvecb, &
+        netcdf_info%vid_lw_channel_instr_ids,dummy_lint_1dvecb, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_ids_instr'
    ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-        netcdf_info%wvn_id_lw,dummy_real_1dveca, &
+        netcdf_info%vid_lw_channel_wvl,dummy_real_1dveca, &
         netcdf_info%start_1d, netcdf_info%counter_1d, netcdf_info%stride_1d)
    if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_wl_abs'
    deallocate(dummy_lint_1dveca)
@@ -1014,7 +1014,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dems(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%emiss_id_lw,dummy_real_2dems, &
+                       netcdf_info%vid_emiss_lw,dummy_real_2dems, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): emissivity_out'
@@ -1040,7 +1040,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%solzaid_lw,dummy_real_2dveca, &
+                       netcdf_info%vid_solza_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%solza'
@@ -1050,7 +1050,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%satzaid_lw,dummy_real_2dveca, &
+                       netcdf_info%vid_satza_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%satza'
@@ -1060,7 +1060,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_2dveca(:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%relaziid_lw,dummy_real_2dveca, &
+                       netcdf_info%vid_relazi_lw,dummy_real_2dveca, &
                        netcdf_info%start_2d, netcdf_info%counter_2d, &
                        netcdf_info%stride_2d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%relazi'
@@ -1091,7 +1091,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%tac_id_lw,dummy_real_3d, &
+                       netcdf_info%vid_tac_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%tauac'
@@ -1101,7 +1101,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%tbc_id_lw,dummy_real_3d, &
+                       netcdf_info%vid_tbc_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%taubc'
@@ -1111,7 +1111,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%rbc_up_id_lw,dummy_real_3d, &
+                       netcdf_info%vid_rbc_up_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%radbc'
@@ -1121,7 +1121,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%rac_up_id_lw,dummy_real_3d, &
+                       netcdf_info%vid_rac_up_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%radiance_up'
@@ -1131,7 +1131,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
                        dummy_real_3d(:,:,1)=sreal_fill_value
                   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%rac_down_id_lw,dummy_real_3d, &
+                       netcdf_info%vid_rac_down_lw,dummy_real_3d, &
                        netcdf_info%start_3d, netcdf_info%counter_3d, &
                        netcdf_info%stride_3d)
                   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%radiance_down'
