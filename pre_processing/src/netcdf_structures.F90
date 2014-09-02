@@ -23,6 +23,7 @@
 ! 2013/10/23, AP: Tidying
 ! 2014/05/23, GM: Some more cleaning and removal of unused elements.
 ! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/09/02, GM: Got rid of many unused elements.
 !
 ! $Id$
 !
@@ -40,36 +41,33 @@ module netcdf_structures
 
       ! file ids
       integer :: ncid_alb, ncid_clf, ncid_config, ncid_geo, ncid_loc, ncid_lsf,  &
-           ncid_lwrtm, ncid_msi, ncid_prtm, ncid_scan, ncid_swrtm
+                 ncid_lwrtm, ncid_msi, ncid_prtm, ncid_scan, ncid_swrtm
 
       ! fundamental dimensions ids for the different dimensions in the different
       ! files
-      integer :: datedim_lw, datedim_pw, datedim_sw
-      integer :: lwchanneldim, swchanneldim
-      integer :: viewdim_lw, viewdim_sw
+      integer :: dimid_lw_channels, dimid_sw_channels
 
-      integer :: xdim_alb, ydim_alb
-      integer :: xdim_cf, ydim_cf
-      integer :: xdim_geo, ydim_geo
-      integer :: xdim_loc, ydim_loc
-      integer :: xdim_lsf, ydim_lsf
-      integer :: xdim_lw, ydim_lw
-      integer :: xdim_msi, ydim_msi
-      integer :: xdim_pw, ydim_pw
-      integer :: xdim_sw, ydim_sw
+      integer :: dimid_x_alb,  dimid_y_alb
+      integer :: dimid_x_cf,   dimid_y_cf
+      integer :: dimid_x_geo,  dimid_y_geo, dimid_v_geo
+      integer :: dimid_x_loc,  dimid_y_loc
+      integer :: dimid_x_lsf,  dimid_y_lsf
+      integer :: dimid_x_lw,   dimid_y_lw,  dimid_v_lw
+      integer :: dimid_x_msi,  dimid_y_msi, dimid_v_msi
+      integer :: dimid_x_pw,   dimid_y_pw
+      integer :: dimid_x_sw,   dimid_y_sw,  dimid_v_sw
+      integer :: dimid_x_scan, dimid_y_scan
 
-      integer :: xydim_lw, xydim_pw, xydim_sw
+      integer :: dimid_xy_lw, dimid_xy_pw, dimid_xy_sw
 
-      integer :: layerdim_sw, leveldim_sw
-      integer :: layerdim_pw, leveldim_pw
-      integer :: layerdim_lw, leveldim_lw
+      integer :: dimid_layers_sw, dimid_levels_sw
+      integer :: dimid_layers_pw, dimid_levels_pw
+      integer :: dimid_layers_lw, dimid_levels_lw
 
-      integer :: xdim_scan, ydim_scan
-
-      integer :: vdim_geo, vdim_msi
-      integer :: cdim_alb, cdim_emis
-      integer :: cdim_config, cdim_config_alb, cdim_config_emis, cdim_msi
-      integer :: xdim_config, ydim_config
+      integer :: dimid_c_alb, dimid_c_emis
+      integer :: dimid_c_config, dimid_c_config_alb, dimid_c_config_emis
+      integer :: dimid_x_config, dimid_y_config
+      integer :: dimid_c_msi
 
 
       ! variable ids
@@ -111,35 +109,18 @@ module netcdf_structures
       integer :: vid_msi_data
 
       ! prtm file:
-      integer :: lonid_pw, latid_pw
-      integer :: skintid_pw, lnspid_pw, lsfid_pw
-      integer :: satzenid_pw, solzenid_pw
-      integer :: pprofile_lev_id_pw, tprofile_lev_id_pw, hprofile_lev_id_pw
+      integer :: vid_lon_pw, vid_lat_pw
+      integer :: vid_skint_pw, vid_lnsp_pw, vid_lsf_pw
+      integer :: vid_satzen_pw, vid_solzen_pw
+      integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw
 
       ! scan file
       integer :: vid_uscan, vid_vscan
 
       ! swrtm file:
-      integer :: channels_id_sw, channels_id_instr_sw, wvn_id_sw
-      integer :: tac_id_sw, tbc_id_sw
-      integer :: solzaid_sw, satzaid_sw, relaziid_sw
-
-
-      ! derived dimensions ids
-      integer :: xycdim_lw(2)
-      integer :: xyzdim_lw(2), xyzdim_pw(2), xyzdim_sw(2)
-      integer :: xyzcdim_lw(3), xyzcdim_sw(3)
-      integer :: xyzcvdim_lw(4), xyzcvdim_sw(4)
-      integer :: xyvdim_lw(2), xyvdim_sw(2)
-
-      ! for 2D variables (horitontal dimension)
-      integer(kind=lint) :: start_1d(1), counter_1d(1), stride_1d(1)
-      ! for 3D variables (horizontal+vertical)
-      integer(kind=lint) :: start_2d(2), counter_2d(2), stride_2d(2)
-      ! for 4D variables (space+wavelength)
-      integer(kind=lint) :: start_3d(3), counter_3d(3), stride_3d(3)
-      ! for 5D variables (space+wavelength+viewing direction)
-      integer(kind=lint) :: start_4d(4), counter_4d(4), stride_4d(4)
+      integer :: vid_sw_channel_abs_ids, vid_sw_channel_instr_ids, vid_sw_channel_wvl
+      integer :: vid_tac_sw, vid_tbc_sw
+      integer :: vid_solza_sw, vid_satza_sw, vid_relazi_sw
 
    end type netcdf_info_s
 
