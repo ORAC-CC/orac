@@ -1,10 +1,4 @@
 !-------------------------------------------------------------------------------
-! This software was developed within the ESA Cloud CCI Project and is based on
-! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
-! All Rights Reserved.
-!-------------------------------------------------------------------------------
-
-!-------------------------------------------------------------------------------
 ! Name: nc_create.F90
 !
 ! Purpose:
@@ -24,6 +18,8 @@
 ! 2014/08/04, Greg McGarragh: Cleaned up the code.
 ! 2014/08/31, Greg McGarragh: Make the global attribute list consistent with
 !    CF-1.4.
+! 2014/09/01, Greg McGarragh: Make use of the general shared routine
+!    nc_put_common_attributes().
 !
 ! $Id: nc_create_global.F90 2290 2014-08-12 08:24:01Z gmcgarragh $
 !

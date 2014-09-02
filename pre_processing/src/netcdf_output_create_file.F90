@@ -1,11 +1,4 @@
 !-------------------------------------------------------------------------------
-! This software was developed within the ESA Cloud CCI Project and is based on
-! routines developed during the ESA DUE GlobVapour Project.  Copyright 2011, DWD,
-! All Rights Reserved.
-!-------------------------------------------------------------------------------
-
-
-!-------------------------------------------------------------------------------
 ! Name: netcdf_output_create.F90
 !
 ! Purpose:

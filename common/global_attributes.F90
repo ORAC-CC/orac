@@ -2,7 +2,7 @@
 ! Name: attribute_structures.F90
 !
 ! Purpose:
-! Define variables types which hold the attribute input data.
+! Define variables types which hold the global attribute data.
 !
 ! Description and Algorithm details:
 ! None
@@ -13,6 +13,7 @@
 ! History:
 ! 2012/02/13, MJ: creates initial structure.
 ! 2014/08/31, GM: Moved to the orac common tree.
+! 2014/08/31, GM: Make global attribute list CF-1.4 compliant.
 ! 2014/08/31, GM: Modify global_attributes_s field names to relate to their
 !    global attribute field.
 !

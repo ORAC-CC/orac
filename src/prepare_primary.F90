@@ -30,6 +30,7 @@
 !    thoroughly.
 ! 2014/06/13, GM: Put the code into a subroutine.
 ! 2014/06/13, GM: Cleaned up the code.
+! 2014/08/31, GM: Update to use general routines in the current module.
 !
 ! $Id$
 !

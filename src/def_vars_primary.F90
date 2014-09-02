@@ -36,6 +36,7 @@
 ! 2014/08/07, GM: Hoisted calls to nf90_redef() and nf90_enddef() from the
 !    individual variable definition subroutines to be called once in this
 !    subroutine.
+! 2014/08/31, GM: Update to use general routines now in the common library.
 !
 ! $Id$
 !

@@ -17,7 +17,8 @@
 !    N/A
 !
 ! History:
-!    10th Nov 2000, Greg McGarragh : Original version
+!    10th Nov 2000, Greg McGarragh : Original version, output_data_*
+!       structures taken from SPixel module.
 !
 ! Bugs:
 !    None known.

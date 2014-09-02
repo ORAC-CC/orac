@@ -4,20 +4,12 @@
 ! ------------------------------------------------------------------------------
 ! ncid           integer in   ID number for open NCDF file.
 ! global_atts    struct  in   Structure detailing NCDF header contents.
-! ctitle         string  in   Title for file.
-! platform       string  in   Name of satellite platform.
-! sensor         string  in   Name of sensor.
-! path           string  in   Name of file to create.
-! cyear          string  in   Year, as a 4 character string.
-! cmonth         string  in   Month of year, as a 2 character string.
-! cday           string  in   Day of month, as a 2 character string.
-! chour          string  in   Hour of day, as a 2 character string.
-! cminute        string  in   Minute of day, as a 2 character string.
 !
 ! History:
 ! 2014/02/03, GM: Original version
 ! 2014/08/31, GM: Make the global attribute list consistent with CF-1.4.
 ! 2014/08/31, GM: Moved to the orac common tree.
+! 2014/09/01, GM: Generalize for use in both the main and preprocessors.
 !
 !-------------------------------------------------------------------------------
 

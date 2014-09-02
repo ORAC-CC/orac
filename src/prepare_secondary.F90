@@ -27,6 +27,8 @@
 !    the case of nighttime pixels.
 ! 2014/06/13, Greg McGarragh: Put the code into a subroutine.
 ! 2014/06/13, Greg McGarragh: Cleaned up the code.
+! 2014/08/31, Greg McGarragh: Update to use general routines in the current
+!    module.
 !
 ! $Id$
 !

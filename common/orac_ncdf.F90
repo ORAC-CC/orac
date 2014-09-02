@@ -11,7 +11,7 @@
 ! History:
 ! 2014/02/10, AP: Original version, combining the original files:
 !    nc_read_file.F90, nc_open.F90
-! 2014/09/01, AP: Add nc_write_array and associated routines.  For now for 2d
+! 2014/09/01, GM: Add nc_write_array and associated routines.  For now for 2d
 !    only.
 !
 ! $Id$
@@ -1114,6 +1114,26 @@ subroutine read_byte_4d(ncid, name, val, verbose, dim, ind)
 
 end subroutine read_byte_4d
 
+!-------------------------------------------------------------------------------
+! Name: nc_write_array
+!
+! Purpose:
+! A module procedure for writing arrays of various sizes and types to a
+! NetCDF file. It currently supports writing arrays of 1 to 4 dimensions of
+! type 1, 2, or 4 byte integer and 4 or 8 byte real.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name    Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2014/02/10, GM: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine write_byte_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
 
    implicit none

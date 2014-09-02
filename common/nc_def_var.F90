@@ -1,10 +1,4 @@
 !-------------------------------------------------------------------------------
-! This software was developed within the ESA Cloud CCI Project and is based on
-! routines developed during the ESA DUE GlobVapour Project. Copyright 2011, DWD,
-! All Rights Reserved.
-!-------------------------------------------------------------------------------
-
-!-------------------------------------------------------------------------------
 ! Name: nc_def_var.F90
 !
 ! Purpose:
@@ -27,6 +21,11 @@
 !    subroutines.  It is extremely inefficient to do this for each variable
 !    defined.  It should be done at the start and end of defining all the
 !    variables in a file, i.e. in the code calling the subroutines in this file.
+! 2014/08/31, Greg McGarragh: Significant refactoring and moved into the
+!    common library.
+! 2014/09/01, Greg McGarragh: Make use of the general routine
+!     nc_put_common_attributes().
+!
 !
 ! $Id: nc_def_var.F90 2290 2014-08-12 08:24:01Z gmcgarragh $
 !
