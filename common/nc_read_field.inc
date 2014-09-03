@@ -13,6 +13,8 @@
 ! 2014/02/10, AP: Original version.
 ! 2014/08/15, AP: Fixed bug in management of scale factor/offset. Homogenizing
 !   verbose and error printing formats. Split into open field/read field.
+! 2014/09/03, GM: Fixed bug: fv should not be used as a loop local auxillary
+!   variable.
 !
 ! $Id$
 !
@@ -40,9 +42,9 @@
       if (nf90_get_att(ncid,vid,'units',unit).eq.NF90_NOERR) &
            print*,'Field units: ',trim(unit)
 
-      if (nf90_get_att(ncid,vid,'valid_min',fv).eq.NF90_NOERR) &
-           print*,'Field valid min: ',fv
+      if (nf90_get_att(ncid,vid,'valid_min',vl).eq.NF90_NOERR) &
+           print*,'Field valid min: ',vl
 
-      if (nf90_get_att(ncid,vid,'valid_max',fv).eq.NF90_NOERR) &
-           print*,'Field valid max: ',fv
+      if (nf90_get_att(ncid,vid,'valid_max',vl).eq.NF90_NOERR) &
+           print*,'Field valid max: ',vl
    end if

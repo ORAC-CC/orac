@@ -174,6 +174,7 @@ end function nc_dim_length
 ! 2014/02/10, AP: Original version, replacing nc_read_file.F90
 ! 2014/08/12, AP: Adding routines for all expected data types.
 ! 2014/08/15, AP: Adding partial read procedure. Homogenizing use of verbose.
+! 2014/09/03, GM: Added vl to handle valid_<limit> temporary auxiliary values.
 !
 ! Bugs:
 ! None known.
@@ -191,7 +192,7 @@ subroutine read_dreal_1d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(1)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(8)                   :: fv, sf, of
+   real(8)                   :: fv, sf, of, vl
    real(8), pointer          :: arr(:)
    real(8)                   :: fill=dreal_fill_value
 
@@ -199,7 +200,7 @@ subroutine read_dreal_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -231,7 +232,7 @@ subroutine read_dreal_2d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(2)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(8)                   :: fv, sf, of
+   real(8)                   :: fv, sf, of, vl
    real(8), pointer          :: arr(:,:)
    real(8)                   :: fill=dreal_fill_value
 
@@ -240,7 +241,7 @@ subroutine read_dreal_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -277,7 +278,7 @@ subroutine read_dreal_3d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(3)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(8)                   :: fv, sf, of
+   real(8)                   :: fv, sf, of, vl
    real(8), pointer          :: arr(:,:,:)
    real(8)                   :: fill=dreal_fill_value
 
@@ -287,7 +288,7 @@ subroutine read_dreal_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -326,7 +327,7 @@ subroutine read_dreal_4d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(4)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(8)                   :: fv, sf, of
+   real(8)                   :: fv, sf, of, vl
    real(8), pointer          :: arr(:,:,:,:)
    real(8)                   :: fill=dreal_fill_value
 
@@ -337,7 +338,7 @@ subroutine read_dreal_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -378,7 +379,7 @@ subroutine read_sreal_1d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(1)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(4)                   :: fv, sf, of
+   real(4)                   :: fv, sf, of, vl
    real(4), pointer          :: arr(:)
    real(4)                   :: fill=sreal_fill_value
 
@@ -386,7 +387,7 @@ subroutine read_sreal_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -418,7 +419,7 @@ subroutine read_sreal_2d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(2)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(4)                   :: fv, sf, of
+   real(4)                   :: fv, sf, of, vl
    real(4), pointer          :: arr(:,:)
    real(4)                   :: fill=sreal_fill_value
 
@@ -427,7 +428,7 @@ subroutine read_sreal_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -464,7 +465,7 @@ subroutine read_sreal_3d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(3)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(4)                   :: fv, sf, of
+   real(4)                   :: fv, sf, of, vl
    real(4), pointer          :: arr(:,:,:)
    real(4)                   :: fill=sreal_fill_value
 
@@ -474,7 +475,7 @@ subroutine read_sreal_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -513,7 +514,7 @@ subroutine read_sreal_4d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(4)     :: start, counter, stride
    character(len=unitlength) :: unit
-   real(4)                   :: fv, sf, of
+   real(4)                   :: fv, sf, of, vl
    real(4), pointer          :: arr(:,:,:,:)
    real(4)                   :: fill=sreal_fill_value
 
@@ -524,7 +525,7 @@ subroutine read_sreal_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -565,7 +566,7 @@ subroutine read_lint_1d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(1)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(4)                :: fv, sf, of
+   integer(4)                :: fv, sf, of, vl
    integer(4), pointer       :: arr(:)
    integer(4)                :: fill=lint_fill_value
 
@@ -573,7 +574,7 @@ subroutine read_lint_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -605,7 +606,7 @@ subroutine read_lint_2d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(2)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(4)                :: fv, sf, of
+   integer(4)                :: fv, sf, of, vl
    integer(4), pointer       :: arr(:,:)
    integer(4)                :: fill=lint_fill_value
 
@@ -614,7 +615,7 @@ subroutine read_lint_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -651,7 +652,7 @@ subroutine read_lint_3d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(3)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(4)                :: fv, sf, of
+   integer(4)                :: fv, sf, of, vl
    integer(4), pointer       :: arr(:,:,:)
    integer(4)                :: fill=lint_fill_value
 
@@ -661,7 +662,7 @@ subroutine read_lint_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -700,7 +701,7 @@ subroutine read_lint_4d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(4)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(4)                :: fv, sf, of
+   integer(4)                :: fv, sf, of, vl
    integer(4), pointer       :: arr(:,:,:,:)
    integer(4)                :: fill=lint_fill_value
 
@@ -711,7 +712,7 @@ subroutine read_lint_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -752,7 +753,7 @@ subroutine read_sint_1d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(1)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(2)                :: fv, sf, of
+   integer(2)                :: fv, sf, of, vl
    integer(2), pointer       :: arr(:)
    integer(2)                :: fill=sint_fill_value
 
@@ -760,7 +761,7 @@ subroutine read_sint_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -792,7 +793,7 @@ subroutine read_sint_2d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(2)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(2)                :: fv, sf, of
+   integer(2)                :: fv, sf, of, vl
    integer(2), pointer       :: arr(:,:)
    integer(2)                :: fill=sint_fill_value
 
@@ -801,7 +802,7 @@ subroutine read_sint_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -838,7 +839,7 @@ subroutine read_sint_3d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(3)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(2)                :: fv, sf, of
+   integer(2)                :: fv, sf, of, vl
    integer(2), pointer       :: arr(:,:,:)
    integer(2)                :: fill=sint_fill_value
 
@@ -848,7 +849,7 @@ subroutine read_sint_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -887,7 +888,7 @@ subroutine read_sint_4d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(4)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(2)                :: fv, sf, of
+   integer(2)                :: fv, sf, of, vl
    integer(2), pointer       :: arr(:,:,:,:)
    integer(2)                :: fill=sint_fill_value
 
@@ -898,7 +899,7 @@ subroutine read_sint_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -939,7 +940,7 @@ subroutine read_byte_1d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(1)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(1)                :: fv, sf, of
+   integer(1)                :: fv, sf, of, vl
    integer(1), pointer       :: arr(:)
    integer(1)                :: fill=byte_fill_value
 
@@ -947,7 +948,7 @@ subroutine read_byte_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -979,7 +980,7 @@ subroutine read_byte_2d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(2)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(1)                :: fv, sf, of
+   integer(1)                :: fv, sf, of, vl
    integer(1), pointer       :: arr(:,:)
    integer(1)                :: fill=byte_fill_value
 
@@ -988,7 +989,7 @@ subroutine read_byte_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -1025,7 +1026,7 @@ subroutine read_byte_3d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(3)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(1)                :: fv, sf, of
+   integer(1)                :: fv, sf, of, vl
    integer(1), pointer       :: arr(:,:,:)
    integer(1)                :: fill=byte_fill_value
 
@@ -1035,7 +1036,7 @@ subroutine read_byte_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -1074,7 +1075,7 @@ subroutine read_byte_4d(ncid, name, val, verbose, dim, ind)
    integer                   :: ierr, vid, i
    integer, dimension(4)     :: start, counter, stride
    character(len=unitlength) :: unit
-   integer(1)                :: fv, sf, of
+   integer(1)                :: fv, sf, of, vl
    integer(1), pointer       :: arr(:,:,:,:)
    integer(1)                :: fill=byte_fill_value
 
@@ -1085,7 +1086,7 @@ subroutine read_byte_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable ',trim(name)
+   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
