@@ -299,7 +299,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             output_data%albedo_scale(i)=0.0001
             output_data%albedo_offset(i)=0.0
             output_data%albedo_vmin(i)=0
-            output_data%albedo_vmax(i)=1000
+            output_data%albedo_vmax(i)=10000
 
             input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='albedo in channel no '//trim(adjustl(input_num))
@@ -332,7 +332,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             output_data%channels_scale(i)=0.0001
             output_data%channels_offset(i)=0.0
             output_data%channels_vmin(i)=0
-            output_data%channels_vmax(i)=1000
+            output_data%channels_vmax(i)=10000
 
             input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
@@ -353,7 +353,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
 
       do j=1,Ctrl%Ind%Nthermal
          if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ythermal(j) ) then
-            output_data%channels_scale(i)=.01
+            output_data%channels_scale(i)=0.01
             output_data%channels_offset(i)=0.0
             output_data%channels_vmin(i)=0
             output_data%channels_vmax(i)=32000
@@ -392,7 +392,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             output_data%y0_scale(i)=0.0001
             output_data%y0_offset(i)=0.0
             output_data%y0_vmin(i)=0
-            output_data%y0_vmax(i)=1000
+            output_data%y0_vmax(i)=10000
 
             input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
@@ -450,8 +450,8 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
              conf%channel_mixed_flag_use(i) .eq. 0) then
             output_data%residuals_scale(i)=0.0001
             output_data%residuals_offset(i)=0.0
-            output_data%residuals_vmin(i)=-1000
-            output_data%residuals_vmax(i)=1000
+            output_data%residuals_vmin(i)=-10000
+            output_data%residuals_vmax(i)=10000
 
             input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
