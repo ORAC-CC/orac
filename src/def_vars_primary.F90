@@ -184,8 +184,8 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
       ! satellite_zenith_view_no*
       !-------------------------------------------------------------------------
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
-      input_dummy2='satellite zenith angle for view no '//trim(adjustl(input_num))
-      input_dummy3='satellite_zenith_angle_for_view_no_'//trim(adjustl(input_num))
+      input_dummy2='sensor zenith angle for view no '//trim(adjustl(input_num))
+      input_dummy3='sensor_zenith_angle_for_view_no_'//trim(adjustl(input_num))
 
       output_data%sat_scale=1.0
       output_data%sat_offset=0.0
@@ -210,7 +210,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
       !-------------------------------------------------------------------------
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
       input_dummy2='relative azimuth angle for view no '//trim(adjustl(input_num))
-      input_dummy3='angle_of_rotation_from_solar_azimuth_to_platform_azimuth_for_view_no_'//trim(adjustl(input_num))
+      input_dummy3='relative_azimuth_angle_for_view_no_'//trim(adjustl(input_num))
 
       output_data%azi_scale=1.0
       output_data%azi_offset=0.0
