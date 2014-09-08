@@ -89,7 +89,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%scanline_u_vmin=1
    output_data%scanline_u_vmax=Ctrl%Ind%Xmax
 
-   call nc_def_var_long_packed_long(ncid, dims_var, &
+   call nc_def_var_long_packed_long( &
+           ncid, &
+           dims_var, &
            'scanline_u', &
            output_data%vid_scanline_u, &
            'across track pixel index', &
@@ -109,7 +111,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%scanline_v_vmin=1
    output_data%scanline_v_vmax=Ctrl%Ind%Ymax
 
-   call nc_def_var_long_packed_long(ncid, dims_var, &
+   call nc_def_var_long_packed_long( &
+           ncid, &
+           dims_var, &
            'scanline_v', &
            output_data%vid_scanline_v, &
            'along track pixel index', &
@@ -129,7 +133,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%cot_ap_vmin=0
    output_data%cot_ap_vmax=32000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'cot_ap', &
            output_data%vid_cot_ap, &
            'cloud optical thickness a priori', &
@@ -149,7 +155,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%cot_fg_vmin=0
    output_data%cot_fg_vmax=32000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'cot_fg', &
            output_data%vid_cot_fg, &
            'cloud optical thickness first guess', &
@@ -169,7 +177,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%ref_ap_vmin=0
    output_data%ref_ap_vmax=20000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'ref_ap', &
            output_data%vid_ref_ap, &
            'effective radius a priori', &
@@ -190,7 +200,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%ref_fg_vmin=0
    output_data%ref_fg_vmax=20000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'ref_fg', &
            output_data%vid_ref_fg, &
            'effective radius first guess', &
@@ -211,7 +223,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%ctp_ap_vmin=500
    output_data%ctp_ap_vmax=12000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'ctp_ap', &
            output_data%vid_ctp_ap, &
            'cloud top pressure a priori', &
@@ -232,7 +246,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%ctp_fg_vmin=500
    output_data%ctp_fg_vmax=12000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'ctp_fg', &
            output_data%vid_ctp_fg, &
            'cloud top pressure first guess', &
@@ -253,7 +269,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%stemp_ap_vmin=0
    output_data%stemp_ap_vmax=32000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'stemp_ap', &
            output_data%vid_stemp_ap, &
            'surface temperature a priori', &
@@ -274,7 +292,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%stemp_fg_vmin=0
    output_data%stemp_fg_vmax=32000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'stemp_fg', &
            output_data%vid_stemp_fg, &
            'surface temperature first guess', &
@@ -304,7 +324,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='albedo in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float(ncid, dims_var, &
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_albedo(i), &
                     trim(adjustl(input_dummy2)), &
@@ -337,7 +359,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float(ncid, dims_var, &
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_channels(i), &
                     trim(adjustl(input_dummy2)), &
@@ -361,7 +385,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float(ncid, dims_var, &
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_channels(i), &
                     trim(adjustl(input_dummy2)), &
@@ -397,7 +423,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float(ncid, dims_var, &
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_y0(i), &
                     trim(adjustl(input_dummy2)), &
@@ -421,7 +449,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float(ncid, dims_var, &
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_y0(i), &
                     trim(adjustl(input_dummy2)), &
@@ -456,7 +486,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float(ncid, dims_var, &
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_residuals(i), &
                     trim(adjustl(input_dummy2)), &
@@ -480,7 +512,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
             input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
             input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float(ncid, dims_var, &
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_residuals(i), &
                     trim(adjustl(input_dummy2)), &
@@ -505,7 +539,9 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    output_data%ds_vmin=0
    output_data%ds_vmax=10000
 
-   call nc_def_var_short_packed_float(ncid, dims_var, &
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
            'degrees_of_freedom_signal', &
            output_data%vid_ds, &
            'degrees of freedom for signal', &

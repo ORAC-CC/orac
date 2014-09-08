@@ -75,14 +75,14 @@ module netcdf_structures
       ! alb file
       integer :: vid_alb_abs_ch_numbers, vid_emis_abs_ch_numbers
       integer :: vid_alb_data, vid_emis_data
-      integer :: vid_rho_0v, vid_rho_0d, vid_rho_dv, vid_rho_dd
+      integer :: vid_rho_0v_data, vid_rho_0d_data, vid_rho_dv_data, vid_rho_dd_data
 
       ! clf file
       integer :: vid_cflag
 
       ! config file:
       integer :: vid_msi_instr_ch_numbers_config, vid_msi_abs_ch_numbers_config, &
-                 vid_msi_abs_channel_wl_config, vid_msi_ch_lwflag_config, &
+                 vid_msi_abs_ch_wl_config, vid_msi_ch_lwflag_config, &
                  vid_msi_ch_swflag_config, vid_msi_ch_procflag_config, &
                  vid_alb_abs_ch_numbers_config, vid_emis_abs_ch_numbers_config
 

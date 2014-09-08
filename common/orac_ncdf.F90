@@ -11,8 +11,11 @@
 ! History:
 ! 2014/02/10, AP: Original version, combining the original files:
 !    nc_read_file.F90, nc_open.F90
-! 2014/09/01, GM: Add nc_write_array and associated routines.  For now for 2d
+! 2014/09/01, GM: Add nc_write_array and associated routines. For now for 2d
 !    only.
+! 2014/09/02, GM: Added 1d, 3d, and 4d nc_write_array capability.
+! 2014/09/08, GM: Used poor man's C-preprocessor based templates for write
+! nc_write_array routines.
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -35,11 +38,11 @@ module orac_ncdf
 
    interface nc_write_array
       module procedure &
-         write_byte_2d, &
-         write_sint_2d, &
-         write_lint_2d, &
-         write_sreal_2d, &
-         write_dreal_2d
+         write_byte_1d, write_byte_2d, write_byte_3d, write_byte_4d, &
+         write_sint_1d, write_sint_2d, write_sint_3d, write_sint_4d, &
+         write_lint_1d, write_lint_2d, write_lint_3d, write_lint_4d, &
+         write_sreal_1d, write_sreal_2d, write_sreal_3d, write_sreal_4d, &
+         write_dreal_1d, write_dreal_2d, write_dreal_3d, write_dreal_4d
    end interface nc_write_array
 
 contains
@@ -1130,165 +1133,84 @@ end subroutine read_byte_4d
 ! ------------------------------------------------------------------------------
 !
 ! History:
-! 2014/02/10, GM: Original version.
+! 2014/09/01, GM: Original version.
+! 2014/09/02, GM: Added 1d, 3d, and 4d nc_write_array capability.
+! 2014/09/08, GM: Used poor man's C-preprocessor based templates.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine write_byte_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
 
-   implicit none
+#define TYPE integer
+#define KIND byte
+#define NAME_1D write_byte_1d
+#define NAME_2D write_byte_2d
+#define NAME_3D write_byte_3d
+#define NAME_4D write_byte_4d
+#include "nc_write_template.inc"
+#undef TYPE
+#undef KIND
+#undef NAME_1D
+#undef NAME_2D
+#undef NAME_3D
+#undef NAME_4D
 
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: name
-   integer,          intent(in)  :: varid
-   integer,          intent(in)  :: i_x
-   integer,          intent(in)  :: n_x
-   integer,          intent(in)  :: j_y
-   integer,          intent(in)  :: n_y
-   integer(kind=byte), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
+#define TYPE integer
+#define KIND sint
+#define NAME_1D write_sint_1d
+#define NAME_2D write_sint_2d
+#define NAME_3D write_sint_3d
+#define NAME_4D write_sint_4d
+#include "nc_write_template.inc"
+#undef TYPE
+#undef KIND
+#undef NAME_1D
+#undef NAME_2D
+#undef NAME_3D
+#undef NAME_4D
 
-   integer               :: ierr
-   integer, dimension(2) :: start, counter, stride
+#define TYPE integer
+#define KIND lint
+#define NAME_1D write_lint_1d
+#define NAME_2D write_lint_2d
+#define NAME_3D write_lint_3d
+#define NAME_4D write_lint_4d
+#include "nc_write_template.inc"
+#undef TYPE
+#undef KIND
+#undef NAME_1D
+#undef NAME_2D
+#undef NAME_3D
+#undef NAME_4D
 
-   start(1) = 1
-   start(2) = 1
-   counter(1) = n_x - i_x + 1
-   counter(2) = n_y - j_y + 1
-   stride = 1
+#define TYPE real
+#define KIND sreal
+#define NAME_1D write_sreal_1d
+#define NAME_2D write_sreal_2d
+#define NAME_3D write_sreal_3d
+#define NAME_4D write_sreal_4d
+#include "nc_write_template.inc"
+#undef TYPE
+#undef KIND
+#undef NAME_1D
+#undef NAME_2D
+#undef NAME_3D
+#undef NAME_4D
 
-   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
-                       start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
-      stop error_stop_code
-   end if
+#define TYPE real
+#define KIND dreal
+#define NAME_1D write_dreal_1d
+#define NAME_2D write_dreal_2d
+#define NAME_3D write_dreal_3d
+#define NAME_4D write_dreal_4d
+#include "nc_write_template.inc"
+#undef TYPE
+#undef KIND
+#undef NAME_1D
+#undef NAME_2D
+#undef NAME_3D
+#undef NAME_4D
 
-end subroutine write_byte_2d
-
-subroutine write_sint_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
-
-   implicit none
-
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: name
-   integer,          intent(in)  :: varid
-   integer,          intent(in)  :: i_x
-   integer,          intent(in)  :: n_x
-   integer,          intent(in)  :: j_y
-   integer,          intent(in)  :: n_y
-   integer(kind=sint), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
-
-   integer               :: ierr
-   integer, dimension(2) :: start, counter, stride
-
-   start(1) = 1
-   start(2) = 1
-   counter(1) = n_x - i_x + 1
-   counter(2) = n_y - j_y + 1
-   stride = 1
-
-   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
-                       start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
-      stop error_stop_code
-   end if
-
-end subroutine write_sint_2d
-
-subroutine write_lint_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
-
-   implicit none
-
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: name
-   integer,          intent(in)  :: varid
-   integer,          intent(in)  :: i_x
-   integer,          intent(in)  :: n_x
-   integer,          intent(in)  :: j_y
-   integer,          intent(in)  :: n_y
-   integer(kind=lint), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
-
-   integer               :: ierr
-   integer, dimension(2) :: start, counter, stride
-
-   start(1) = 1
-   start(2) = 1
-   counter(1) = n_x - i_x + 1
-   counter(2) = n_y - j_y + 1
-   stride = 1
-
-   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
-                       start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
-      stop error_stop_code
-   end if
-
-end subroutine write_lint_2d
-
-subroutine write_sreal_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
-
-   implicit none
-
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: name
-   integer,          intent(in)  :: varid
-   integer,          intent(in)  :: i_x
-   integer,          intent(in)  :: n_x
-   integer,          intent(in)  :: j_y
-   integer,          intent(in)  :: n_y
-   real(kind=sreal), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
-
-   integer               :: ierr
-   integer, dimension(2) :: start, counter, stride
-
-   start(1) = 1
-   start(2) = 1
-   counter(1) = n_x - i_x + 1
-   counter(2) = n_y - j_y + 1
-   stride = 1
-
-   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
-                       start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
-      stop error_stop_code
-   end if
-
-end subroutine write_sreal_2d
-
-subroutine write_dreal_2d(ncid, name, varid, values, i_x, n_x, j_y, n_y)
-
-   implicit none
-
-   integer,          intent(in)  :: ncid
-   character(len=*), intent(in)  :: name
-   integer,          intent(in)  :: varid
-   integer,          intent(in)  :: i_x
-   integer,          intent(in)  :: n_x
-   integer,          intent(in)  :: j_y
-   integer,          intent(in)  :: n_y
-   real(kind=dreal), dimension(i_x:n_x,j_y:n_y), intent(in) :: values
-
-   integer               :: ierr
-   integer, dimension(2) :: start, counter, stride
-
-   start(1) = 1
-   start(2) = 1
-   counter(1) = n_x - i_x + 1
-   counter(2) = n_y - j_y + 1
-   stride = 1
-
-   ierr = nf90_put_var(ncid, varid, values(i_x:n_x,j_y:n_y), &
-                       start, counter, stride)
-   if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
-      stop error_stop_code
-   end if
-
-end subroutine write_dreal_2d
 
 !-------------------------------------------------------------------------------
 ! Name: nc_error

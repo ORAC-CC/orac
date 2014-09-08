@@ -101,6 +101,8 @@
 ! 2014/09/02, GM: start_Xd, counter_Xd, and stride_Xd from the netcdf_info
 !   structure to be local variables here. There was no reason for them to be in
 !   that structure.
+! 2014/09/02, GM: Use the nc_write_array interface from the orac_ncdf module
+!    in the common library.
 !
 ! $Id$
 !
@@ -125,11 +127,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    use netcdf
 
-!  use ieee_arithmetic
-
    use channel_structures
    use imager_structures
    use netcdf_structures
+   use orac_ncdf
    use preproc_constants
    use preproc_structures
 
@@ -257,26 +258,26 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
 
    ! Output related variables
-   integer(kind=lint)                                :: pixel_counter_lw
-   integer(kind=lint)                                :: pixel_counter_sw
-   integer(kind=lint)                                :: pixel_counter_pw
+   integer                                           :: pixel_counter_lw
+   integer                                           :: pixel_counter_sw
+   integer                                           :: pixel_counter_pw
 
    integer, dimension(3)                             :: start_1d, counter_1d, stride_1d
    integer, dimension(3)                             :: start_2d, counter_2d, stride_2d
    integer, dimension(3)                             :: start_3d, counter_3d, stride_3d
 
-   real(kind=sreal), dimension(1)                    :: dummy_real_1d
-   real(kind=sreal), dimension(preproc_dims%kdim,1)  :: dummy_real_2d
+   real(kind=sreal), dimension(1)                    :: dummy_sreal_1d
+   real(kind=sreal),   allocatable, dimension(:,:)   :: dummy_sreal_2d
 
-   real(kind=sreal),   allocatable, dimension(:,:,:) :: dummy_real_3d
+   real(kind=sreal),   allocatable, dimension(:,:,:) :: dummy_sreal_3d
 
-   real(kind=sreal),   allocatable, dimension(:,:)   :: dummy_real_2dems
+   real(kind=sreal),   allocatable, dimension(:,:)   :: dummy_sreal_2dems
 
    integer(kind=lint), allocatable, dimension(:)     :: dummy_lint_1dveca
    integer(kind=lint), allocatable, dimension(:)     :: dummy_lint_1dvecb
-   real(kind=sreal),   allocatable, dimension(:)     :: dummy_real_1dveca
+   real(kind=sreal),   allocatable, dimension(:)     :: dummy_sreal_1dveca
 
-   real(kind=sreal),   allocatable, dimension(:,:)   :: dummy_real_2dveca
+   real(kind=sreal),   allocatable, dimension(:,:)   :: dummy_sreal_2dveca
 
    ! Openmp variables
 #ifdef _OPENMP
@@ -385,75 +386,85 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    if (verbose) write(*,*) 'Write some static information to the output files'
 
    ! LW, channel id abs and instr lw:
-   allocate(dummy_lint_1dveca(sum(channel_info%channel_lw_flag)))
+   allocate(dummy_lint_1dveca(channel_info%nchannels_lw))
    dummy_lint_1dveca=lint_fill_value
-   allocate(dummy_lint_1dvecb(sum(channel_info%channel_lw_flag)))
+   allocate(dummy_lint_1dvecb(channel_info%nchannels_lw))
    dummy_lint_1dvecb=lint_fill_value
-   allocate(dummy_real_1dveca(sum(channel_info%channel_lw_flag)))
-   dummy_real_1dveca=sreal_fill_value
+   allocate(dummy_sreal_1dveca(channel_info%nchannels_lw))
+   dummy_sreal_1dveca=sreal_fill_value
+
    do i_coeff=1,channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i_coeff) .eq. 1 ) then
          pixel_counter_lw=pixel_counter_lw+1
          dummy_lint_1dveca(pixel_counter_lw)=channel_info%channel_ids_abs(i_coeff)
          dummy_lint_1dvecb(pixel_counter_lw)=channel_info%channel_ids_instr(i_coeff)
-         dummy_real_1dveca(pixel_counter_lw)=channel_info%channel_wl_abs(i_coeff)
+         dummy_sreal_1dveca(pixel_counter_lw)=channel_info%channel_wl_abs(i_coeff)
       end if
    end do
 
-   start_1d(1)=1
-   counter_1d(1)=sum(channel_info%channel_lw_flag)
-   stride_1d(1)=1
-   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-        netcdf_info%vid_lw_channel_abs_ids, dummy_lint_1dveca, &
-        start_1d, counter_1d, stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_ids_abs'
-   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-        netcdf_info%vid_lw_channel_instr_ids,dummy_lint_1dvecb, &
-        start_1d, counter_1d, stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_ids_instr'
-   ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-        netcdf_info%vid_lw_channel_wvl,dummy_real_1dveca, &
-        start_1d, counter_1d, stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_wl_abs'
+   call nc_write_array( &
+           netcdf_info%ncid_lwrtm, &
+           'lw_channel_abs_ids', &
+           netcdf_info%vid_lw_channel_abs_ids, &
+           dummy_lint_1dveca, &
+           1, 1, channel_info%nchannels_lw)
+   call nc_write_array( &
+           netcdf_info%ncid_lwrtm, &
+           'lw_channel_instr_ids', &
+           netcdf_info%vid_lw_channel_instr_ids, &
+           dummy_lint_1dvecb, &
+           1, 1, channel_info%nchannels_lw)
+   call nc_write_array( &
+           netcdf_info%ncid_lwrtm, &
+           'lw_channel_wvl', &
+           netcdf_info%vid_lw_channel_wvl, &
+           dummy_sreal_1dveca, &
+           1, 1, channel_info%nchannels_lw)
+
    deallocate(dummy_lint_1dveca)
    deallocate(dummy_lint_1dvecb)
-   deallocate(dummy_real_1dveca)
+   deallocate(dummy_sreal_1dveca)
+
 
    ! SW, channel id abs and instr sw:
-   allocate(dummy_lint_1dveca(sum(channel_info%channel_sw_flag)))
+   allocate(dummy_lint_1dveca(channel_info%nchannels_sw))
    dummy_lint_1dveca=lint_fill_value
-   allocate(dummy_lint_1dvecb(sum(channel_info%channel_sw_flag)))
+   allocate(dummy_lint_1dvecb(channel_info%nchannels_sw))
    dummy_lint_1dvecb=lint_fill_value
-   allocate(dummy_real_1dveca(sum(channel_info%channel_sw_flag)))
-   dummy_real_1dveca=sreal_fill_value
+   allocate(dummy_sreal_1dveca(channel_info%nchannels_sw))
+   dummy_sreal_1dveca=sreal_fill_value
+
    do i_coeff=1,channel_info%nchannels_total
       if (channel_info%channel_sw_flag(i_coeff) .eq. 1 ) then
          pixel_counter_sw=pixel_counter_sw+1
          dummy_lint_1dveca(pixel_counter_sw)=channel_info%channel_ids_abs(i_coeff)
          dummy_lint_1dvecb(pixel_counter_sw)=channel_info%channel_ids_instr(i_coeff)
-         dummy_real_1dveca(pixel_counter_sw)=channel_info%channel_wl_abs(i_coeff)
+         dummy_sreal_1dveca(pixel_counter_sw)=channel_info%channel_wl_abs(i_coeff)
       end if
    end do
 
-   start_1d(1)=1
-   counter_1d(1)=sum(channel_info%channel_sw_flag)
-   stride_1d(1)=1
-   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-        netcdf_info%vid_sw_channel_abs_ids,dummy_lint_1dveca, &
-        start_1d, counter_1d, &
-        stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_ids_abs'
-   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-        netcdf_info%vid_sw_channel_instr_ids,dummy_lint_1dvecb, &
-        start_1d, counter_1d, stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_ids_instr'
-   ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-        netcdf_info%vid_sw_channel_wvl,dummy_real_1dveca, &
-        start_1d, counter_1d, stride_1d)
-   if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): channel_wl_abs'
+   call nc_write_array( &
+           netcdf_info%ncid_swrtm, &
+           'sw_channel_abs_ids', &
+           netcdf_info%vid_sw_channel_abs_ids, &
+           dummy_lint_1dveca, &
+           1, 1, channel_info%nchannels_sw)
+   call nc_write_array( &
+           netcdf_info%ncid_swrtm, &
+           'sw_channel_instr_ids', &
+           netcdf_info%vid_sw_channel_instr_ids, &
+           dummy_lint_1dvecb, &
+           1, 1, channel_info%nchannels_sw)
+   call nc_write_array( &
+           netcdf_info%ncid_swrtm, &
+           'sw_channel_wvl', &
+           netcdf_info%vid_sw_channel_wvl, &
+           dummy_sreal_1dveca, &
+           1, 1, channel_info%nchannels_sw)
+
    deallocate(dummy_lint_1dveca)
    deallocate(dummy_lint_1dvecb)
-   deallocate(dummy_real_1dveca)
+   deallocate(dummy_sreal_1dveca)
 
 
    if (verbose) write(*,*) 'Loop over lw and sw calculations'
@@ -889,332 +900,332 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
 
                ! Now write out data to netcdf files
+
+               ! Write pw and lw data
                if (i_coeff.eq.1) then
 
-                  ! Write the meteo data
+                  ! Write the pw data
+
                   pixel_counter_pw=pixel_counter_pw+1
 
 
                   ! 1D variables
-                  start_1d(1)=pixel_counter_pw
-                  counter_1d(1)=1
-                  stride_1d(1)=1
 
-                  ! longitude
-                  dummy_real_1d(1)=profiles(1)%longitude
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_lon_pw,dummy_real_1d, &
-                       start_1d, counter_1d, stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%longitude'
+                  ! lon_pw
+                  dummy_sreal_1d(1)=profiles(1)%longitude
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'lon_pw', &
+                          netcdf_info%vid_lon_pw, &
+                          dummy_sreal_1d, &
+                          1, pixel_counter_pw, 1)
 
-                  ! latitude
-                  dummy_real_1d(1)=profiles(1)%latitude
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_lat_pw,dummy_real_1d, &
-                       start_1d, counter_1d, stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%latitude'
+                  ! lat_pw
+                  dummy_sreal_1d(1)=profiles(1)%latitude
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'lat_pw', &
+                          netcdf_info%vid_lat_pw, &
+                          dummy_sreal_1d, &
+                          1, pixel_counter_pw, 1)
 
-                  ! satzen
-                  dummy_real_1d(1)=profiles(1)%zenangle
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &!
-                       netcdf_info%vid_satzen_pw,dummy_real_1d, &
-                       start_1d, counter_1d, stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%zenangle'
+                  ! satzen_pw
+                  dummy_sreal_1d(1)=profiles(1)%zenangle
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'satzen_pw', &
+                          netcdf_info%vid_satzen_pw, &
+                          dummy_sreal_1d, &
+                          1, pixel_counter_pw, 1)
 
-                  ! solzen
-                  dummy_real_1d(1)=profiles(1)%sunzenangle
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_solzen_pw,dummy_real_1d, &
-                       start_1d, counter_1d, stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%sunzenangle'
+                  ! solzen_pw
+                  dummy_sreal_1d(1)=profiles(1)%sunzenangle
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'solzen_pw', &
+                          netcdf_info%vid_solzen_pw, &
+                          dummy_sreal_1d, &
+                          1, pixel_counter_pw, 1)
 
-                  ! skin temp
-                  dummy_real_1d(1)=profiles(1)%skin%t
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_skint_pw,dummy_real_1d, &
-                       start_1d, counter_1d, stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%sskin%t'
+                  ! skint_pw
+                  dummy_sreal_1d(1)=profiles(1)%skin%t
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'skint_pw', &
+                          netcdf_info%vid_skint_pw, &
+                          dummy_sreal_1d, &
+                          1, pixel_counter_pw, 1)
 
-                  ! exp(lnsp)
-                  dummy_real_1d(1)=profiles(1)%s2m%p
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_lnsp_pw,dummy_real_1d, &
-                       start_1d, counter_1d, stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%s2m%p'
+                  ! lnsp_pw
+                  dummy_sreal_1d(1)=profiles(1)%s2m%p
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'lnsp_pw', &
+                          netcdf_info%vid_lnsp_pw, &
+                          dummy_sreal_1d, &
+                          1, pixel_counter_pw, 1)
 
-                  ! (lsf)
-                  dummy_real_1d(1)= preproc_prtm%land_sea_mask(idim,jdim)
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_lsf_pw,dummy_real_1d, &
-                       start_1d, counter_1d, stride_1d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_prtm%land_sea_mask'
+                  ! lsf_pw
+                  dummy_sreal_1d(1)= preproc_prtm%land_sea_mask(idim,jdim)
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'lsf_pw', &
+                          netcdf_info%vid_lsf_pw, &
+                          dummy_sreal_1d, &
+                          1, pixel_counter_pw, 1)
 
 
                   ! 2d variables
 
-                  start_2d(1)=1
-                  counter_2d(1)=profiles(1)%nlevels
-                  stride_2d(1)=1
+                  allocate(dummy_sreal_2d(profiles(1)%nlevels,1))
 
-                  start_2d(2)=pixel_counter_pw
-                  counter_2d(2)=1
-                  stride_2d(2)=1
+                  ! pprofile_lev_pw
+                  dummy_sreal_2d(:,1)=profiles(1)%p(:)
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'pprofile_lev_pw', &
+                          netcdf_info%vid_pprofile_lev_pw, &
+                          dummy_sreal_2d, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_pw, 1)
 
-                  ! Pressure profile (at level centers of preprocessing profile,
-                  ! interfaces for RTTOV)
-                  dummy_real_2d(:,1)=profiles(1)%p(:)
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_pprofile_lev_pw,dummy_real_2d, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%p'
+                  ! tprofile_lev_pw
+                  dummy_sreal_2d(:,1)=profiles(1)%t(:)
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'tprofile_lev_pw', &
+                          netcdf_info%vid_tprofile_lev_pw, &
+                          dummy_sreal_2d, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_pw, 1)
 
-                  ! Temperature profile (at layer centers of preprocessing profile,
-                  ! interfaces for RTTOV)
-                  dummy_real_2d=sreal_fill_value
-                  dummy_real_2d(:,1)=profiles(1)%t(:)
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_tprofile_lev_pw,dummy_real_2d, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): profiles(1)%t'
+                  ! hprofile_lev_pw
+                  dummy_sreal_2d(:,1)=preproc_prtm%phi_lev(idim,jdim,:)
+                  call nc_write_array( &
+                          netcdf_info%ncid_prtm, &
+                          'hprofile_lev_pw', &
+                          netcdf_info%vid_hprofile_lev_pw, &
+                          dummy_sreal_2d, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_pw, 1)
 
+                  deallocate(dummy_sreal_2d)
 
-                  ! Geopotential height profile (at lever centers of preprocessing
-                  ! profile, interfaces for RTTOV)
-                  dummy_real_2d=sreal_fill_value
-                  dummy_real_2d(:,1)=preproc_prtm%phi_lev(idim,jdim,:)
-                  ierr = nf90_put_var(netcdf_info%ncid_prtm, &
-                       netcdf_info%vid_hprofile_lev_pw,dummy_real_2d, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_prtm%phi_lev'
+                  ! Write the lw data
 
-
-                  ! Write the lw information
                   pixel_counter_lw=pixel_counter_lw+1
 
 
                   ! 2D variables
 
-                  allocate(dummy_real_2dems(size(channel_info%channel_ids_rttov_coef_lw),1))
+                  allocate(dummy_sreal_2dems(size(channel_info%channel_ids_rttov_coef_lw),1))
 
-                  dummy_real_2dems=sreal_fill_value
-
-                  start_2d(1)=1
-                  counter_2d(1)=channel_info%nchannels_lw
-                  stride_2d(1)=1
-                  start_2d(2)=pixel_counter_lw
-                  counter_2d(2)=1
-                  stride_2d(2)=1
-
-                  ! emissivity
-                  dummy_real_2dems(:,1)=emissivity_out(:)
+                  ! emiss_lw
+                  dummy_sreal_2dems(:,1)=emissivity_out(:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dems(:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_emiss_lw,dummy_real_2dems, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): emissivity_out'
+                       dummy_sreal_2dems(:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'emiss_lw', &
+                          netcdf_info%vid_emiss_lw, &
+                          dummy_sreal_2dems, &
+                          1, 1, channel_info%nchannels_lw, &
+                          1, pixel_counter_lw, 1)
 
-                  deallocate(dummy_real_2dems)
+                  deallocate(dummy_sreal_2dems)
 
+                  ! angles
 
-                  ! Write out lwrtm angles
+                  allocate(dummy_sreal_2dveca(imager_angles%nviews,1))
 
-                  allocate(dummy_real_2dveca(imager_angles%nviews,1))
+                  ! solza_lw
+                  dummy_sreal_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'solza_lw', &
+                          netcdf_info%vid_solza_lw, &
+                          dummy_sreal_2dveca, &
+                          1, 1, imager_angles%nviews, &
+                          1, pixel_counter_lw, 1)
 
-                  dummy_real_2dveca=sreal_fill_value
+                  ! satza_lw
+                  dummy_sreal_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'satza_lw', &
+                          netcdf_info%vid_satza_lw, &
+                          dummy_sreal_2dveca, &
+                          1, 1, imager_angles%nviews, &
+                          1, pixel_counter_lw, 1)
 
-                  start_2d(1)=1
-                  counter_2d(1)=imager_angles%nviews
-                  stride_2d(1)=1
-                  start_2d(2)=pixel_counter_lw
-                  counter_2d(2)=1
-                  stride_2d(2)=1
+                  ! relazi_lw
+                  dummy_sreal_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'relazi_lw', &
+                          netcdf_info%vid_relazi_lw, &
+                          dummy_sreal_2dveca, &
+                          1, 1, imager_angles%nviews, &
+                          1, pixel_counter_lw, 1)
 
-                  ! solazi
-                  dummy_real_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
-                  if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_solza_lw,dummy_real_2dveca, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%solza'
-
-                  ! satazi
-                  dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
-                  if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_satza_lw,dummy_real_2dveca, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%satza'
-
-                  ! relazi
-                  dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
-                  if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_relazi_lw,dummy_real_2dveca, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%relazi'
-
-                  deallocate(dummy_real_2dveca)
+                  deallocate(dummy_sreal_2dveca)
 
 
-                  ! Write out lwrtm 3d variables
-                  allocate(dummy_real_3d(size(channel_info%channel_ids_rttov_coef_lw), &
+                  ! 3d variables
+
+                  allocate(dummy_sreal_3d(size(channel_info%channel_ids_rttov_coef_lw), &
                        preproc_dims%kdim,1))
 
-                  dummy_real_3d=sreal_fill_value
-
-                  start_3d(1)=1
-                  counter_3d(1)=channel_info%nchannels_lw
-                  stride_3d(1)=1
-
-                  start_3d(2)=1
-                  counter_3d(2)=profiles(1)%nlevels
-                  stride_3d(2)=1
-
-                  start_3d(3)=pixel_counter_lw
-                  counter_3d(3)=1
-                  stride_3d(3)=1
-
-                  ! tac
-                  dummy_real_3d(:,:,1)=preproc_lwrtm%tauac(:,:)
+                  ! tbc_lw
+                  dummy_sreal_3d(:,:,1)=preproc_lwrtm%tauac(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_tac_lw,dummy_real_3d, &
-                       start_3d, counter_3d, stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%tauac'
+                       dummy_sreal_3d(:,:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'tac_lw', &
+                          netcdf_info%vid_tac_lw, &
+                          dummy_sreal_3d, &
+                          1, 1, channel_info%nchannels_lw, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_lw, 1)
 
-                  ! tbc
-                  dummy_real_3d(:,:,1)=preproc_lwrtm%taubc(:,:)
+                  ! tbc_lw
+                  dummy_sreal_3d(:,:,1)=preproc_lwrtm%taubc(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_tbc_lw,dummy_real_3d, &
-                       start_3d, counter_3d, stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%taubc'
+                       dummy_sreal_3d(:,:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'tbc_lw', &
+                          netcdf_info%vid_tbc_lw, &
+                          dummy_sreal_3d, &
+                          1, 1, channel_info%nchannels_lw, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_lw, 1)
 
-                  ! radbc_up
-                  dummy_real_3d(:,:,1)=preproc_lwrtm%radbc(:,:)
+                  ! rbc_up_lw
+                  dummy_sreal_3d(:,:,1)=preproc_lwrtm%radbc(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_rbc_up_lw,dummy_real_3d, &
-                       start_3d, counter_3d, stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%radbc'
+                       dummy_sreal_3d(:,:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'rbc_up_lw', &
+                          netcdf_info%vid_rbc_up_lw, &
+                          dummy_sreal_3d, &
+                          1, 1, channel_info%nchannels_lw, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_lw, 1)
 
-                  ! rac_up
-                  dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_up(:,:)
+                  ! rac_up_lw
+                  dummy_sreal_3d(:,:,1)=preproc_lwrtm%radiance_up(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_rac_up_lw,dummy_real_3d, &
-                       start_3d, counter_3d, stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%radiance_up'
+                       dummy_sreal_3d(:,:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'rac_up_lw', &
+                          netcdf_info%vid_rac_up_lw, &
+                          dummy_sreal_3d, &
+                          1, 1, channel_info%nchannels_lw, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_lw, 1)
 
-                  ! rac_down
-                  dummy_real_3d(:,:,1)=preproc_lwrtm%radiance_down(:,:)
+                  ! rac_down_lw
+                  dummy_sreal_3d(:,:,1)=preproc_lwrtm%radiance_down(:,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_3d(:,:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_lwrtm, &
-                       netcdf_info%vid_rac_down_lw,dummy_real_3d, &
-                       start_3d, counter_3d, stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_lwrtm%radiance_down'
+                       dummy_sreal_3d(:,:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_lwrtm, &
+                          'rac_down_lw', &
+                          netcdf_info%vid_rac_down_lw, &
+                          dummy_sreal_3d, &
+                          1, 1, channel_info%nchannels_lw, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_lw, 1)
 
-                  deallocate(dummy_real_3d)
+                  deallocate(dummy_sreal_3d)
 
 
-                  ! Write the sw information
+               ! Write the sw data
                else if (i_coeff.eq.2) then
 
                   pixel_counter_sw=pixel_counter_sw+1
 
-                  ! 1D variables
-                  start_1d(1)=pixel_counter_sw
-                  counter_1d(1)=1
-                  stride_1d(1)=1
+                  ! 2D variables
 
-                  ! Write out swrtm angles
-                  allocate(dummy_real_2dveca(imager_angles%nviews,1))
+                  ! angles
 
-                  dummy_real_2dveca=sreal_fill_value
+                  allocate(dummy_sreal_2dveca(imager_angles%nviews,1))
 
-                  start_2d(1)=1
-                  counter_2d(1)=imager_angles%nviews
-                  stride_2d(1)=1
-                  start_2d(2)=pixel_counter_sw
-                  counter_2d(2)=1
-                  stride_2d(2)=1
-
-                  ! solazi
-                  dummy_real_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
+                  ! solza
+                  dummy_sreal_2dveca(:,1)=preproc_geo%solza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-                       netcdf_info%vid_solza_sw,dummy_real_2dveca, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%solza'
+                       dummy_sreal_2dveca(:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_swrtm, &
+                          'solza_sw', &
+                          netcdf_info%vid_solza_sw, &
+                          dummy_sreal_2dveca, &
+                          1, 1, imager_angles%nviews, &
+                          1, pixel_counter_sw, 1)
 
-                  ! satazi
-                  dummy_real_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
+                  ! satza
+                  dummy_sreal_2dveca(:,1)=preproc_geo%satza(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-                       netcdf_info%vid_satza_sw,dummy_real_2dveca, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%satza'
+                       dummy_sreal_2dveca(:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_swrtm, &
+                          'satza_sw', &
+                          netcdf_info%vid_satza_sw, &
+                          dummy_sreal_2dveca, &
+                          1, 1, imager_angles%nviews, &
+                          1, pixel_counter_sw, 1)
 
                   ! relazi
-                  dummy_real_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
+                  dummy_sreal_2dveca(:,1)=preproc_geo%relazi(idim,jdim,:)
                   if (preproc_dims%counter_lw(idim,jdim) .eq. 0) &
-                       dummy_real_2dveca(:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-                       netcdf_info%vid_relazi_sw,dummy_real_2dveca, &
-                       start_2d, counter_2d, stride_2d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): preproc_geo%relazi'
+                       dummy_sreal_2dveca(:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_swrtm, &
+                          'relazi_sw', &
+                          netcdf_info%vid_relazi_sw, &
+                          dummy_sreal_2dveca, &
+                          1, 1, imager_angles%nviews, &
+                          1, pixel_counter_sw, 1)
 
-                  deallocate(dummy_real_2dveca)
+                  deallocate(dummy_sreal_2dveca)
 
 
+                  ! 3d variables
 
-                  allocate(dummy_real_3d(size(channel_info%channel_ids_rttov_coef_sw), &
+                  allocate(dummy_sreal_3d(size(channel_info%channel_ids_rttov_coef_sw), &
                        preproc_dims%kdim,1))
 
-                  dummy_real_3d=sreal_fill_value
-
-                  start_3d(1)=1
-                  counter_3d(1)=channel_info%nchannels_sw
-                  stride_3d(1)=1
-
-                  start_3d(2)=1
-                  counter_3d(2)=profiles(1)%nlevels
-                  stride_3d(2)=1
-
-                  start_3d(3)=pixel_counter_sw
-                  counter_3d(3)=1
-                  stride_3d(3)=1
-
-                  ! tac
-                  dummy_real_3d(:,:,1)=preproc_swrtm%tauac(:,:)
+                  ! tac_sw
+                  dummy_sreal_3d(:,:,1)=preproc_swrtm%tauac(:,:)
                   if (preproc_dims%counter_sw(idim,jdim) .eq. 0 ) &
-                       dummy_real_3d(:,:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-                       netcdf_info%vid_tac_sw,dummy_real_3d, &
-                       start_3d, counter_3d, stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): write tac sw'
+                       dummy_sreal_3d(:,:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_swrtm, &
+                          'tac_sw', &
+                          netcdf_info%vid_tac_sw, &
+                          dummy_sreal_3d, &
+                          1, 1, channel_info%nchannels_sw, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_sw, 1)
 
-                  ! tbc
-                  dummy_real_3d(:,:,1)=preproc_swrtm%taubc(:,:)
+                  ! tbc_sw
+                  dummy_sreal_3d(:,:,1)=preproc_swrtm%taubc(:,:)
                   if (preproc_dims%counter_sw(idim,jdim) .eq. 0 ) &
-                       dummy_real_3d(:,:,1)=sreal_fill_value
-                  ierr = nf90_put_var(netcdf_info%ncid_swrtm, &
-                       netcdf_info%vid_tbc_sw,dummy_real_3d, &
-                       start_3d, counter_3d, stride_3d)
-                  if (ierr.NE.NF90_NOERR) stop 'ERROR: nf90_put_var(): write tbc sw'
+                       dummy_sreal_3d(:,:,1)=sreal_fill_value
+                  call nc_write_array( &
+                          netcdf_info%ncid_swrtm, &
+                          'tbc_sw', &
+                          netcdf_info%vid_tbc_sw, &
+                          dummy_sreal_3d, &
+                          1, 1, channel_info%nchannels_sw, &
+                          1, 1, profiles(1)%nlevels, &
+                          1, pixel_counter_sw, 1)
 
-                  deallocate(dummy_real_3d)
+                  deallocate(dummy_sreal_3d)
 
                end if
             end if  ! i_coeff le 2

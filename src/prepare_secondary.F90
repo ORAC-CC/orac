@@ -69,89 +69,89 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
    dummyreal=SPixel%Xb(1)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%cot_ap(i,j), &
+   call prepare_short_packed_float( &
+           dummyreal, output_data%cot_ap(i,j), &
            output_data%cot_ap_scale, output_data%cot_ap_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
            output_data%cot_ap_vmax)
 
    dummyreal=SPixel%X0(1)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%cot_fg(i,j), &
-            output_data%cot_fg_scale, output_data%cot_fg_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%cot_fg_vmin, output_data%cot_fg_vmax, &
-            output_data%cot_fg_vmax)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%cot_fg(i,j), &
+           output_data%cot_fg_scale, output_data%cot_fg_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cot_fg_vmin, output_data%cot_fg_vmax, &
+           output_data%cot_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! ref_ap, ref_fg
    !----------------------------------------------------------------------------
    dummyreal=SPixel%Xb(2)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%ref_ap(i,j), &
-            output_data%ref_ap_scale, output_data%ref_ap_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%ref_ap_vmin, output_data%ref_ap_vmax, &
-            output_data%ref_ap_vmax)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%ref_ap(i,j), &
+           output_data%ref_ap_scale, output_data%ref_ap_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ref_ap_vmin, output_data%ref_ap_vmax, &
+           output_data%ref_ap_vmax)
 
    dummyreal=SPixel%X0(2)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%ref_fg(i,j), &
-            output_data%ref_fg_scale, output_data%ref_fg_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%ref_fg_vmin, output_data%ref_fg_vmax, &
-            output_data%ref_fg_vmax)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%ref_fg(i,j), &
+           output_data%ref_fg_scale, output_data%ref_fg_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ref_fg_vmin, output_data%ref_fg_vmax, &
+           output_data%ref_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! ctp_ap, ctp_fg
    !----------------------------------------------------------------------------
    dummyreal=SPixel%Xb(3)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%ctp_ap(i,j), &
-            output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
-            output_data%ctp_ap_vmax)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%ctp_ap(i,j), &
+           output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
+           output_data%ctp_ap_vmax)
 
    dummyreal=SPixel%X0(3)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%ctp_fg(i,j), &
-            output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%ctp_fg_vmin, output_data%ctp_fg_vmax, &
-            output_data%ctp_fg_vmax)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%ctp_fg(i,j), &
+           output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ctp_fg_vmin, output_data%ctp_fg_vmax, &
+           output_data%ctp_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! stemp_ap, stemp_fg
    !----------------------------------------------------------------------------
    dummyreal=SPixel%X0(5)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%stemp_ap(i,j), &
-            output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
-            output_data%stemp_ap_vmax)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%stemp_ap(i,j), &
+           output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
+           output_data%stemp_ap_vmax)
 
    dummyreal=SPixel%X0(5)
-   call prepare_short_packed_float &
-           (dummyreal, output_data%stemp_fg(i,j), &
-            output_data%stemp_fg_scale, output_data%stemp_fg_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%stemp_fg_vmin, output_data%stemp_fg_vmax, &
-            output_data%stemp_fg_vmax)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%stemp_fg(i,j), &
+           output_data%stemp_fg_scale, output_data%stemp_fg_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%stemp_fg_vmin, output_data%stemp_fg_vmax, &
+           output_data%stemp_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! albedo
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%Nsolar
       dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%YSeg0,k)
-      call prepare_short_packed_float &
-           (dummyreal, output_data%albedo(i,j,k), &
-            output_data%albedo_scale(k), output_data%albedo_offset(k), &
-            sreal_fill_value, sint_fill_value, &
-            output_data%albedo_vmin(k), output_data%albedo_vmax(k), &
-            sint_fill_value)
+      call prepare_short_packed_float( &
+           dummyreal, output_data%albedo(i,j,k), &
+           output_data%albedo_scale(k), output_data%albedo_offset(k), &
+           sreal_fill_value, sint_fill_value, &
+           output_data%albedo_vmin(k), output_data%albedo_vmax(k), &
+           sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -159,12 +159,12 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%Ny
       dummyreal=MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, k)
-      call prepare_short_packed_float &
-           (dummyreal, output_data%channels(i,j,k), &
-            output_data%channels_scale(k), output_data%channels_offset(k), &
-            sreal_fill_value, sint_fill_value, &
-            output_data%channels_vmin(k), output_data%channels_vmax(k), &
-            sint_fill_value)
+      call prepare_short_packed_float( &
+           dummyreal, output_data%channels(i,j,k), &
+           output_data%channels_scale(k), output_data%channels_offset(k), &
+           sreal_fill_value, sint_fill_value, &
+           output_data%channels_vmin(k), output_data%channels_vmax(k), &
+           sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -174,12 +174,12 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       ii = SPixel%spixel_y_to_ctrl_y_index(k)
 
       dummyreal=Diag%Y0(k)
-      call prepare_short_packed_float &
-           (dummyreal, output_data%y0(i,j,ii), &
-            output_data%y0_scale(ii), output_data%y0_offset(ii), &
-            sreal_fill_value, sint_fill_value, &
-            output_data%y0_vmin(ii), output_data%y0_vmax(ii), &
-            sint_fill_value)
+      call prepare_short_packed_float( &
+           dummyreal, output_data%y0(i,j,ii), &
+           output_data%y0_scale(ii), output_data%y0_offset(ii), &
+           sreal_fill_value, sint_fill_value, &
+           output_data%y0_vmin(ii), output_data%y0_vmax(ii), &
+           sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -189,12 +189,12 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
       ii = SPixel%spixel_y_to_ctrl_y_index(k)
 
       dummyreal=Diag%YmFit(k)
-      call prepare_short_packed_float &
-           (dummyreal, output_data%residuals(i,j,ii), &
-            output_data%residuals_scale(ii), output_data%residuals_offset(ii), &
-            sreal_fill_value, sint_fill_value, &
-            output_data%residuals_vmin(ii), output_data%residuals_vmax(ii), &
-            sint_fill_value)
+      call prepare_short_packed_float( &
+           dummyreal, output_data%residuals(i,j,ii), &
+           output_data%residuals_scale(ii), output_data%residuals_offset(ii), &
+           sreal_fill_value, sint_fill_value, &
+           output_data%residuals_vmin(ii), output_data%residuals_vmax(ii), &
+           sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -207,12 +207,12 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    end do
 
    dummyreal = (dummyreal-output_data%ds_offset)/output_data%ds_scale
-   call prepare_short_packed_float &
-           (dummyreal, output_data%ds(i,j), &
-            output_data%ds_scale, output_data%ds_offset, &
-            sreal_fill_value, sint_fill_value, &
-            output_data%ds_vmin, output_data%ds_vmax, &
-            sint_fill_value)
+   call prepare_short_packed_float( &
+           dummyreal, output_data%ds(i,j), &
+           output_data%ds_scale, output_data%ds_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ds_vmin, output_data%ds_vmax, &
+           sint_fill_value)
 
    !----------------------------------------------------------------------------
    ! covariance
@@ -220,12 +220,12 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    if (lcovar) then
       do k=1,SPixel%Nx
          do l=1,SPixel%Nx
-           call prepare_float_packed_float &
-                   (SPixel%Sn(k,l), output_data%covariance(i,j,k,l), &
-                    1., 0., &
-                    sreal_fill_value, sreal_fill_value, &
-                    0., huge(dummyreal), &
-                    sreal_fill_value)
+           call prepare_float_packed_float( &
+                   SPixel%Sn(k,l), output_data%covariance(i,j,k,l), &
+                   1., 0., &
+                   sreal_fill_value, sreal_fill_value, &
+                   0., huge(dummyreal), &
+                   sreal_fill_value)
          end do
       end do
    end if
