@@ -173,21 +173,29 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, &
          jj = T_index(j)
          do k = iXm1, iXp1
             kk = R_index(k)
-            G(j,k) = &
+            G(j,k) = 0.
+            G(j,k) = G(j,k) + &
                ((GZero%RA1(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA0(i,icrpr),kk)) + &
+               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA0(i,icrpr),kk))
+            G(j,k) = G(j,k) + &
                ((GZero%RA1(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%dSoZ(i,icrpr)) * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA0(i,icrpr),kk)) + &
+               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA0(i,icrpr),kk))
+            G(j,k) = G(j,k) + &
                ((GZero%RA1(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA0(i,icrpr),kk)) + &
+               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA0(i,icrpr),kk))
+            G(j,k) = G(j,k) + &
                ((GZero%RA1(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%dSoZ(i,icrpr)) * &
-               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA0(i,icrpr),kk)) + &
+               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA0(i,icrpr),kk))
+            G(j,k) = G(j,k) + &
                ((GZero%dRA(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA1(i,icrpr),kk)) + &
+               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA1(i,icrpr),kk))
+            G(j,k) = G(j,k) + &
                ((GZero%dRA(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%dSoZ(i,icrpr)) * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA1(i,icrpr),kk)) + &
+               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA1(i,icrpr),kk))
+            G(j,k) = G(j,k) + &
                ((GZero%dRA(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA1(i,icrpr),kk)) + &
+               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA1(i,icrpr),kk))
+            G(j,k) = G(j,k) + &
                ((GZero%dRA(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%dSoZ(i,icrpr)) * &
                F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA1(i,icrpr),kk))
          end do
