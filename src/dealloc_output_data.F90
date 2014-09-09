@@ -24,7 +24,7 @@
 !    output_data%cth_error, and output_data_sec%ds and a bit cleanup.
 ! 2014/05/27, Greg McGarragh: Some cleanup.
 !
-! $Id: dealloc_output_data.F90 2311 2014-08-15 17:06:07Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

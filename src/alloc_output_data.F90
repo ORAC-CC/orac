@@ -28,7 +28,7 @@
 !    no need for explicit indexing in these cases anyway.
 ! 2014/05/27, Greg McGarragh: Some cleanup.
 !
-! $Id: alloc_output_data.F90 2311 2014-08-15 17:06:07Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

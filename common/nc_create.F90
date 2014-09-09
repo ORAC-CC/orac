@@ -21,7 +21,7 @@
 ! 2014/09/01, Greg McGarragh: Make use of the general shared routine
 !    nc_put_common_attributes().
 !
-! $Id: nc_create_global.F90 2290 2014-08-12 08:24:01Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

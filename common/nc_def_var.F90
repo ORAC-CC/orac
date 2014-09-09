@@ -27,7 +27,7 @@
 !     nc_put_common_attributes().
 !
 !
-! $Id: nc_def_var.F90 2290 2014-08-12 08:24:01Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

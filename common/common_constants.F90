@@ -16,7 +16,7 @@
 !    processor.
 ! 2014/08/30, GM: Added pi and d2r.
 !
-! $Id: common_constants.F90 2306 2014-08-15 13:56:24Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

@@ -17,7 +17,7 @@
 ! 2014/08/31, GM: Modify global_attributes_s field names to relate to their
 !    global attribute field.
 !
-! $Id: attribute_structures.F90 2331 2014-08-31 14:33:25Z gmcgarragh $
+! $Id$
 !
 ! Bugs:
 ! None known.

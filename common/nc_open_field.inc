@@ -14,7 +14,7 @@
 ! 2014/08/15, AP: Fixed bug in management of scale factor/offset. Homogenizing
 !   verbose and error printing formats. Split into open field/read field.
 !
-! $Id: nc_read_field.nc -1   $
+! $Id$
 !
 ! Bugs:
 ! None known.
