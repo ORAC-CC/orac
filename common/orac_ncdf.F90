@@ -1141,75 +1141,75 @@ end subroutine read_byte_4d
 ! None known.
 !-------------------------------------------------------------------------------
 
-#define TYPE integer
-#define KIND byte
-#define NAME_1D write_byte_1d
-#define NAME_2D write_byte_2d
-#define NAME_3D write_byte_3d
-#define NAME_4D write_byte_4d
+#define NC_WRITE_TYPE integer
+#define NC_WRITE_KIND byte
+#define NC_WRITE_NAME_1D write_byte_1d
+#define NC_WRITE_NAME_2D write_byte_2d
+#define NC_WRITE_NAME_3D write_byte_3d
+#define NC_WRITE_NAME_4D write_byte_4d
 #include "nc_write_template.inc"
-#undef TYPE
-#undef KIND
-#undef NAME_1D
-#undef NAME_2D
-#undef NAME_3D
-#undef NAME_4D
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
 
-#define TYPE integer
-#define KIND sint
-#define NAME_1D write_sint_1d
-#define NAME_2D write_sint_2d
-#define NAME_3D write_sint_3d
-#define NAME_4D write_sint_4d
+#define NC_WRITE_TYPE integer
+#define NC_WRITE_KIND sint
+#define NC_WRITE_NAME_1D write_sint_1d
+#define NC_WRITE_NAME_2D write_sint_2d
+#define NC_WRITE_NAME_3D write_sint_3d
+#define NC_WRITE_NAME_4D write_sint_4d
 #include "nc_write_template.inc"
-#undef TYPE
-#undef KIND
-#undef NAME_1D
-#undef NAME_2D
-#undef NAME_3D
-#undef NAME_4D
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
 
-#define TYPE integer
-#define KIND lint
-#define NAME_1D write_lint_1d
-#define NAME_2D write_lint_2d
-#define NAME_3D write_lint_3d
-#define NAME_4D write_lint_4d
+#define NC_WRITE_TYPE integer
+#define NC_WRITE_KIND lint
+#define NC_WRITE_NAME_1D write_lint_1d
+#define NC_WRITE_NAME_2D write_lint_2d
+#define NC_WRITE_NAME_3D write_lint_3d
+#define NC_WRITE_NAME_4D write_lint_4d
 #include "nc_write_template.inc"
-#undef TYPE
-#undef KIND
-#undef NAME_1D
-#undef NAME_2D
-#undef NAME_3D
-#undef NAME_4D
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
 
-#define TYPE real
-#define KIND sreal
-#define NAME_1D write_sreal_1d
-#define NAME_2D write_sreal_2d
-#define NAME_3D write_sreal_3d
-#define NAME_4D write_sreal_4d
+#define NC_WRITE_TYPE real
+#define NC_WRITE_KIND sreal
+#define NC_WRITE_NAME_1D write_sreal_1d
+#define NC_WRITE_NAME_2D write_sreal_2d
+#define NC_WRITE_NAME_3D write_sreal_3d
+#define NC_WRITE_NAME_4D write_sreal_4d
 #include "nc_write_template.inc"
-#undef TYPE
-#undef KIND
-#undef NAME_1D
-#undef NAME_2D
-#undef NAME_3D
-#undef NAME_4D
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
 
-#define TYPE real
-#define KIND dreal
-#define NAME_1D write_dreal_1d
-#define NAME_2D write_dreal_2d
-#define NAME_3D write_dreal_3d
-#define NAME_4D write_dreal_4d
+#define NC_WRITE_TYPE real
+#define NC_WRITE_KIND dreal
+#define NC_WRITE_NAME_1D write_dreal_1d
+#define NC_WRITE_NAME_2D write_dreal_2d
+#define NC_WRITE_NAME_3D write_dreal_3d
+#define NC_WRITE_NAME_4D write_dreal_4d
 #include "nc_write_template.inc"
-#undef TYPE
-#undef KIND
-#undef NAME_1D
-#undef NAME_2D
-#undef NAME_3D
-#undef NAME_4D
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
 
 
 !-------------------------------------------------------------------------------
