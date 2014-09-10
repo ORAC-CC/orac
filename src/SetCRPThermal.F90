@@ -60,9 +60,9 @@
 !    16th Jan 2014, Greg McGarragh:
 !       Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset arguments
 !       to Int_LUT_TauSatRe().
-!    20th Dec 2014, Greg McGarragh:
+!    20th Jan 2014, Greg McGarragh:
 !       Cleaned up code.
-!    24th Dec 2014, Greg McGarragh:
+!    24th Jan 2014, Greg McGarragh:
 !       Some intent changes.
 !
 ! Bugs:

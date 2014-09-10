@@ -35,6 +35,8 @@
 !       Cleaned up code.
 !    22nd May 2014, Greg McGarragh:
 !       Add allocate and deallocate subroutines.
+!     9th Sep 2014, Greg McGarragh:
+!       Changes related to new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -53,6 +55,8 @@ module GZero_def
       integer, pointer :: iSaZ0(:,:), iSaZ1(:,:) ! Nearest neighbour indices for Sat zen value
       integer, pointer :: iSoZ0(:,:), iSoZ1(:,:) ! Nearest neighbour indices for Sun zen value
       integer, pointer :: iRA0(:,:), iRA1(:,:)	 ! Nearest neighbour indices for Rel Azi value
+      integer, pointer :: iSaZSoZ0(:,:), &
+                          iSaZSoZ1(:,:)          ! Nearest neighbour indices for Sat zen value
 
       real,    pointer :: dT(:,:)                ! Fraction of grid step in Tau from zero'th
 						 ! point to current Tau value
@@ -60,12 +64,14 @@ module GZero_def
       real,    pointer :: dSaZ(:,:)              ! Fraction of grid step to current Sat zen
       real,    pointer :: dSoZ(:,:)              ! Fraction of grid step to current Sun zen
       real,    pointer :: dRA(:,:)               ! Fraction of grid step to current Rel Azi
+      real,    pointer :: dSaZSoZ(:,:)           ! Fraction of grid step to current Sat zen
 
       real,    pointer :: T1(:,:)                ! 1.0 - dT (stored for frequent use)
       real,    pointer :: R1(:,:)                ! 1.0 - dR (stored for frequent use)
       real,    pointer :: Sa1(:,:)               ! 1.0 - dSaZ (stored for frequent use)
       real,    pointer :: So1(:,:)               ! 1.0 - dSuZ (stored for frequent use)
       real,    pointer :: Ra1(:,:)               ! 1.0 - dRA (stored for frequent use)
+      real,    pointer :: SaSo1(:,:)             ! 1.0 - dSaSoZ (stored for frequent use)
    end type GZero_t
 
 contains
@@ -108,6 +114,10 @@ subroutine Allocate_GZero(GZero, SPixel)
    GZero%iRA0=0
    allocate(GZero%iRA1(SPixel%Ind%Ny,MaxCRProps))
    GZero%iRA1=0
+   allocate(GZero%iSaZSoZ0(SPixel%Ind%Ny,MaxCRProps))
+   GZero%iSaZSoZ0=0
+   allocate(GZero%iSaZSoZ1(SPixel%Ind%Ny,MaxCRProps))
+   GZero%iSaZSoZ1=0
 
    allocate(GZero%dT(SPixel%Ind%Ny,MaxCRProps))
    GZero%dT=0.0
@@ -119,6 +129,8 @@ subroutine Allocate_GZero(GZero, SPixel)
    GZero%dSoZ=0.
    allocate(GZero%dRA(SPixel%Ind%Ny,MaxCRProps))
    GZero%dRA=0.
+   allocate(GZero%dSaZSoZ(SPixel%Ind%Ny,MaxCRProps))
+   GZero%dSaZSoZ=0.
 
    allocate(GZero%T1(SPixel%Ind%Ny,MaxCRProps))
    GZero%T1=0.0
@@ -130,6 +142,8 @@ subroutine Allocate_GZero(GZero, SPixel)
    GZero%So1=0.
    allocate(GZero%Ra1(SPixel%Ind%Ny,MaxCRProps))
    GZero%Ra1=0.
+   allocate(GZero%SaSo1(SPixel%Ind%Ny,MaxCRProps))
+   GZero%SaSo1=0.
 
 end subroutine Allocate_GZero
 
@@ -155,18 +169,22 @@ subroutine Deallocate_GZero(GZero)
    deallocate(GZero%iSoZ1)
    deallocate(GZero%iRA0)
    deallocate(GZero%iRA1)
+   deallocate(GZero%iSaZSoZ0)
+   deallocate(GZero%iSaZSoZ1)
 
    deallocate(GZero%dT)
    deallocate(GZero%dR)
    deallocate(GZero%dSaZ)
    deallocate(GZero%dSoZ)
    deallocate(GZero%dRA)
+   deallocate(GZero%dSaZSoZ)
 
    deallocate(GZero%T1)
    deallocate(GZero%R1)
    deallocate(GZero%Sa1)
    deallocate(GZero%So1)
    deallocate(GZero%Ra1)
+   deallocate(GZero%SaSo1)
 
 end subroutine Deallocate_GZero
 

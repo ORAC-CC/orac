@@ -125,6 +125,7 @@
 !    2014/04/20, GM: Cleaned up the code.
 !    2014/08/01, GM: Use of SPixel%spixel_*_y_to_ctrl_y_index(:) to properly
 !       index the right channels from the surface fields.
+!    2014/09/09, GM: Changes related to new BRDF support.
 !
 ! Bugs:
 !    AS, Mar 2011. The Aux method albedo code includes specific handling for
@@ -157,6 +158,8 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    real           :: Sb(SPixel%Ind%NSolar, 2)
    real           :: SPixel_b(SPixel%Ind%NSolar)
    real           :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
+   real           :: SPixel_b2(SPixel%Ind%NSolar, MaxRho_XX)
+   real           :: SPixel_Sb2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX)
    integer        :: i,ii,j,jj,intflag
 !  integer        :: qc1,qc2 ! N.B. qc vars are set but not used
    real           :: solar_factor
@@ -170,8 +173,10 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    SPixel%Surface%Sea   = 0
    SPixel%Surface%NLand = 0
    SPixel%Surface%NSea  = 0
-   SPixel_Sb            = 0.0
    SPixel_b             = 0.0
+   SPixel_Sb            = 0.0
+   SPixel_b2            = 0.0
+   SPixel_Sb2           = 0.0
 
    ! Get the surface reflectances etc for the super pixel array according to
    ! the specified method
@@ -250,7 +255,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
 
       ! Call Get_Rs to calculate super pixel averages
-      call Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)
+      call Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, status)
 
    ! Meas method (not supported in ECP delivery)
    else if (Ctrl%Rs%Flag == SelmMeas) then
@@ -261,20 +266,36 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
 
       Sb = Ctrl%Rs%Sb
+
       do i = 1,SPixel%Ind%NSolar
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
          if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(ii)) .eq. 5 .and. Ctrl%Inst%Name .eq. 'AATSR') then
             if (SPixel%Surface%Flags == 0) then ! sea
                SPixel_b(i) = Ctrl%Rs%b(ii,1)
-            else
+               if (Ctrl%RS%use_full_brdf) &
+                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(i,1)
+           else
                SPixel_b(i) = Ctrl%Rs%b(ii,2)
+               if (Ctrl%RS%use_full_brdf) &
+                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(i,2)
             end if
          else
             solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
 
             SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                           Ctrl%Ind%ysolar_msi(ii)) / solar_factor
+
+            if (Ctrl%RS%use_full_brdf) then
+               SPixel_b2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+               SPixel_b2(i,IRho_0D) = MSI_Data%rho_0d(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+               SPixel_b2(i,IRho_DV) = MSI_Data%rho_dv(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+               SPixel_b2(i,IRho_DD) = MSI_Data%rho_dd(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+            endif
 
             ! If sea and then sun glint replace by Ctrl value, otherwise if land,
             ! check for missing values and replace by Ctrl value
@@ -299,8 +320,12 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
             else if (SPixel_b(i) == 0.0) then ! missing land
                SPixel_b(i) = Ctrl%Rs%b(ii,2)
-            else if (SPixel_b(i) >  1.0) then ! odd value for land
+               if (Ctrl%RS%use_full_brdf) &
+                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(i,2)
+            else if (Spixel_b(i) >  1.0) then ! odd value for land
                SPixel_b(i) = Ctrl%Rs%b(ii,2)
+               if (Ctrl%RS%use_full_brdf) &
+                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(i,2)
             ! Comment out this section to install loose qc
 !           else if (( qc1 == 1) .and. (qc2 >= 9 )) then
                ! Use the default value MODIS not reliable
@@ -335,9 +360,15 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                                 SPixel_b(i) * SPixel_b(i) * Sb(ii,2) * Sb(ii,2))
             end if
 
+            if (Ctrl%RS%use_full_brdf) &
+               SPixel_Sb2(i,i,:) = SPixel_Sb(i,i)
+
             ! Calculate SPixel_b
 
             SPixel_b(i) = SPixel_b(i) * float(SPixel%Mask)
+
+            if (Ctrl%RS%use_full_brdf) &
+               SPixel_b2(i,:) = SPixel_b2(i,:) * float(SPixel%Mask)
 
             ! Off diagonals (loop over half of the matrix, and swap indices for
             ! other half)
@@ -353,18 +384,24 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                                     SPixel_b(i) * SPixel_b(j) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
                end if
 
-               SPixel_Sb(j,i) =  SPixel_Sb(i,j)
+               if (Ctrl%RS%use_full_brdf) &
+                  SPixel_Sb2(i,j,:) = SPixel_Sb(i,j)
+
+               SPixel_Sb(j,i) = SPixel_Sb(i,j)
+
+               if (Ctrl%RS%use_full_brdf) &
+                  SPixel_Sb2(j,i,:) = SPixel_Sb2(i,j,:)
             end do
          end do
 
-         SPixel%Surface%NLand = SPixel%Surface%Flags
-         SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
+!        SPixel%Surface%NLand = SPixel%Surface%Flags
+!        SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
 
-         if (SPixel%Surface%NLand > 0) SPixel%Surface%Land = 1
-         if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
+!        if (SPixel%Surface%NLand > 0) SPixel%Surface%Land = 1
+!        if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
 
          ! Call Get_Rs to calculate super pixel averages
-         call Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)
+         call Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, status)
       end if
    end if
 

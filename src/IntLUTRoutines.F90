@@ -44,6 +44,8 @@
 !    23th May 2014, Greg McGarragh:
 !       No need for handmade explicit interfaces. Just need to include the
 !       subroutines in the module and the interfaces are automatically generated.
+!     9th Sep 2014, Greg McGarragh:
+!       Added IntLUTTauSatReOnSol.F90 for new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -62,6 +64,7 @@ include 'Interp3dLUT.F90'
 
 include 'IntLUTTauRe.F90'
 include 'IntLUTTauSatRe.F90'
+include 'IntLUTTauSatReOnSol.F90'
 include 'IntLUTTauSatSolAziRe.F90'
 include 'IntLUTTauSolRe.F90'
 

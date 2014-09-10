@@ -37,6 +37,7 @@
 !    20/09/2012, CP: changed albedo to real 8
 !    XX/XX/2013, MJ: explicitly defines LSFLag byte array type
 !    27/05/2014, GM: Some cleanup.
+!    2014/09/09, GM: Changes related to new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -69,6 +70,10 @@ module Data_def
 
    type Data_t
       real(4), pointer            :: ALB(:,:,:)
+      real(4), pointer            :: rho_0v(:,:,:)
+      real(4), pointer            :: rho_0d(:,:,:)
+      real(4), pointer            :: rho_dv(:,:,:)
+      real(4), pointer            :: rho_dd(:,:,:)
       real(4),            pointer :: CloudFlags(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location

@@ -121,7 +121,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
    ! Read SwRTM file
    !----------------------------------------------------------------------------
 
-   !Open RTM data file
+   ! Open RTM data file
    call nc_open(ncid, Ctrl%Fid%SWRTM)
 
    ! Ensure instrument info matches the sensor being processed

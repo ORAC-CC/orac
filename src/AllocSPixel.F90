@@ -82,6 +82,8 @@
 !       Some cleanup.
 !     1st Aug 2014, Greg McGarragh:
 !       Added more SPixel to Ctrl map indexes.
+!     9th Sep 2014, Greg McGarragh:
+!       Changes related to new BRDF support.
 !
 ! Bugs:
 !   None known.
@@ -93,6 +95,7 @@
 subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
 
    use Ctrl_def
+   use ECP_Constants
    use RTM_def
 
    implicit none
@@ -166,6 +169,10 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
 
    allocate(SPixel%Rs                (Ctrl%Ind%NSolar))
    allocate(SPixel%SRs               (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
+   if (Ctrl%RS%use_full_brdf) then
+      allocate(SPixel%Rs2            (Ctrl%Ind%NSolar, MaxRho_XX))
+      allocate(SPixel%SRs2           (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
+   endif
 
    !  Solar constant
 

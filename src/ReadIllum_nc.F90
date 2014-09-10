@@ -160,11 +160,11 @@ if (.false.) then
             ! All channels available
             if (n_vis_bad_ref .eq. 0 .and. n_vis_bad_tau .eq. 0) then
                ! Daytime
-               if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolzen) then
+               if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolZen) then
                   MSI_Data%Illum(i,j,view) = IDay
 
                ! Twilight
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolzen .and. &
+               else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
                         MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
                   MSI_Data%Illum(i,j,view) = ITwi
 
@@ -176,7 +176,7 @@ if (.false.) then
             ! Some solar channels missing
             else if (n_vis_bad_ref .gt. 0 .or. n_vis_bad_tau .gt. 0) then
                ! Twilight
-               if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolzen .and. &
+               if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
                    MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
                   MSI_Data%Illum(i,j,view) = ITwi
 

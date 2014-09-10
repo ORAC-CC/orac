@@ -212,6 +212,7 @@
 !       performed when the illumination condition is chosen and the result of
 !       the check is defined by the illumination condition so the checks in
 !       this subroutine have been disabled except to set QC.
+!     9th Sep 2014, Greg McGarragh: Changes related to new BRDF support.
 !
 ! Bugs:
 !    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -420,6 +421,11 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
                do i=1,Ctrl%Ind%NSolar
                   SPixel%Rs(i) = SPixel%Rs(i) &
                        / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+
+                   if (Ctrl%RS%use_full_brdf) then
+                      SPixel%Rs2(i,:) = SPixel%Rs2(i,:) &
+                         / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+                   endif
                end do
             end if
          end if

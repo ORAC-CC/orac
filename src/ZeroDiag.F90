@@ -88,7 +88,6 @@ subroutine Zero_Diag(Ctrl, Diag, status)
 
    ! 9) and 10) Measurement and a priori fit
 
-
    if (Ctrl%Diagl(DiFlagYFit) > 0) Diag%YmFit = MissingXn
    if (Ctrl%Diagl(DiFlagXFit) > 0) Diag%APFit = MissingXn
 

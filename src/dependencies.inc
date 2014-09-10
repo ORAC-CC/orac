@@ -43,7 +43,8 @@ $(OBJS)/InterpolRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         InterpolThermal.F90 InterpolThermal_spline.F90
 $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
         $(OBJS)/SADLUT.o IntLUTTauRe.F90 IntLUTTauSatRe.F90 \
-        IntLUTTauSatSolAziRe.F90 IntLUTTauSolRe.F90 Interp3dLUT.F90
+        IntLUTTauSatReOnSol.F90 IntLUTTauSatSolAziRe.F90 IntLUTTauSolRe.F90 \
+        Interp3dLUT.F90
 $(OBJS)/InvertMarquardt.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
         $(OBJS)/FMRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o $(OBJS)/SADLUT.o \
         $(OBJS)/SPixel.o

@@ -19,9 +19,9 @@
 !
 ! Algorithm:
 !    Average method:
-!       'All' - average super pixel surface reflectance array values (and covariances)
-!               over all good pixels,
-!       'Cloudy' - average over good cloudy pixels,
+!       'All'     - average super pixel surface reflectance array values (and
+!                   covariances) over all good pixels,
+!       'Cloudy'  - average over good cloudy pixels,
 !       'Central' - take values from the central pixel, if it is good.
 !
 ! Local variables:
@@ -46,14 +46,17 @@
 !    23rd Feb 2011, Andy Smith:
 !       Cloud flags converted to real to match current ORAC data.
 !    30th Mar 2011, Andy Smith:
-!       Removal of super-pixel averaging. Process single pixels at X0, Y0,
+!       Removal of super-pixel averaging.
+!       Process single pixels at X0, Y0,
 !       Removed other SPixel indices Xc, Yc, Xn, Yn etc.
 !       Removed selection of averaging method.
 !       SPixel_B and SPixel_Sb re-dimensioned to remove SPixel size.
-!    20th Jan 2012, Somebody:
-!       General tidyup and removed data variable.
-!    30th Jul 2014, Greg McGarragh:
-!       Cleaned up the code.
+!    20th Jan 2012, Someone:
+!       General tidyup remove data varaible
+!    28th May 2014, McGarragh:
+!       Some cleanup.
+!     9th Sep 2014, Greg McGarragh:
+!       Changes related to new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -61,8 +64,7 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-
-subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)
+subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, status)
 
    use CTRL_def
    use Data_def
@@ -74,8 +76,10 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)
 
    type(CTRL_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   real,           intent(in)    :: SPixel_b( Ctrl%Ind%NSolar)
+   real,           intent(in)    :: SPixel_b (Ctrl%Ind%NSolar)
    real,           intent(in)    :: SPixel_Sb(Ctrl%Ind%NSolar, Ctrl%Ind%NSolar)
+   real,           intent(in)    :: SPixel_b2 (Ctrl%Ind%NSolar, MaxRho_XX)
+   real,           intent(in)    :: SPixel_Sb2(Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX)
    integer,        intent(out)   :: status
 
    ! Define local variables
@@ -87,8 +91,13 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, status)
 
    ! Check mask to see if pixel is 'good'
    if (SPixel%Mask == 1) then
-      SPixel%Rs(:)    = SPixel_b( :)
+      SPixel%Rs(:)    = SPixel_b(:)
       SPixel%SRs(:,:) = SPixel_Sb(:, :)
+
+      if (Ctrl%RS%use_full_brdf) then
+         SPixel%Rs2(:,:)    = SPixel_b2(:,:)
+         SPixel%SRs2(:,:,:) = SPixel_Sb2(:, :,:)
+      endif
 
       if (SPixel%Surface%Flags == 1) then
          SPixel%Surface%Land = 1

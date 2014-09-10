@@ -108,6 +108,8 @@
 !       Cleaned up code.
 !    24th Dec 2014, Greg McGarragh:
 !       Some intent changes.
+!     9th Sep 2014, Greg McGarragh:
+!       Changes related to new BRDF support.
 !
 ! Bugs:
 !   None known.
@@ -115,6 +117,51 @@
 ! $Id$
 !
 !------------------------------------------------------------------------------------
+subroutine derivative_wrt_crp_parameter(SPixel, i_param, i_equation_form, CRP, d_CRP, T, Tbc2, rho_0v, rho_0d, rho_dv, rho_dd, d_REF)
+
+   use SPixel_def
+
+   implicit none
+
+   type(SPixel_t), intent(in)  :: SPixel
+   integer,        intent(in)  :: i_param
+   integer,        intent(in)  :: i_equation_form
+   real,           intent(in)  :: CRP(SPixel%Ind%NSolar,MaxCRProps)
+   real,           intent(in)  :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
+   real,           intent(in)  :: T(SPixel%Ind%NSolar)
+   real,           intent(in)  :: Tbc2(SPixel%Ind%NSolar)
+   real,           intent(in)  :: rho_0v(SPixel%Ind%NSolar)
+   real,           intent(in)  :: rho_0d(SPixel%Ind%NSolar)
+   real,           intent(in)  :: rho_dv(SPixel%Ind%NSolar)
+   real,           intent(in)  :: rho_dd(SPixel%Ind%NSolar)
+   real,           intent(out) :: d_REF(SPixel%Ind%NSolar)
+
+if (i_equation_form .eq. 1) then
+   d_REF = T * ( &
+                d_CRP(:,IRBd,i_param) + &
+
+                d_CRP(:,ITB,i_param) * (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2   +   CRP(:,ITB) * (rho_0v - rho_0d) * d_CRP(:,ITB_u,i_param) * Tbc2 + &
+
+                ((d_CRP(:,ITB,i_param) * rho_0d + d_CRP(:,ITFBd,i_param) * rho_dd) * CRP(:,ITd)                    +   (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) *                        d_CRP(:,ITd,i_param))  * Tbc2  / (1. - rho_dd * CRP(:,IRFd) * Tbc2) - &
+
+                (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * CRP(:,ITd) * Tbc2 * (-rho_dd) * d_CRP(:,IRFd,i_param) * Tbc2 / ((1. - rho_dd * CRP(:,IRFd) * Tbc2) * (1. - rho_dd * CRP(:,IRFd) * Tbc2)) &
+               )
+else if (i_equation_form .eq. 2) then
+   d_REF = T * ( &
+                 d_CRP(:,IRBd,i_param) + &
+
+                 d_CRP(:,ITB,i_param) * (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2   +    CRP(:,ITB) * (rho_0v - rho_0d) * d_CRP(:,ITB_u,i_param) * Tbc2 + &
+
+                 ((d_CRP(:,ITB,i_param) * rho_0d + d_CRP(:,ITFBd,i_param) * rho_dd) * (CRP(:,ITB_u) + CRP(:,ITd))   +   (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * (d_CRP(:,ITB_u,i_param) + d_CRP(:,ITd,i_param)))  * Tbc2  / (1. - rho_dd * CRP(:,IRFd) * Tbc2) - &
+
+                 (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * CRP(:,ITd) * Tbc2 * (-rho_dd) * d_CRP(:,IRFd,i_param) * Tbc2 / ((1. - rho_dd * CRP(:,IRFd) * Tbc2) * (1. - rho_dd * CRP(:,IRFd) * Tbc2)) &
+               )
+else
+endif
+
+end subroutine derivative_wrt_crp_parameter
+
+
 
 subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
                     d_REF, status)
@@ -143,6 +190,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    integer,         intent(out)   :: status
 
    ! Define local variables
+   integer, parameter :: i_equation_form = 1
 
    integer :: i
    real    :: Tac_o(SPixel%Ind%NSolar)
@@ -155,6 +203,11 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    real    :: Sp(SPixel%Ind%NSolar)
    real    :: S_dnom(SPixel%Ind%NSolar)
    real    :: TBTD(SPixel%Ind%NSolar)
+
+   real :: rho_0v(SPixel%Ind%NSolar)
+   real :: rho_0d(SPixel%Ind%NSolar)
+   real :: rho_dv(SPixel%Ind%NSolar)
+   real :: rho_dd(SPixel%Ind%NSolar)
 #ifdef BKP
    integer :: j       ! For breakpoint output loops
    integer :: bkp_lun ! Unit number for breakpoint file
@@ -189,10 +242,40 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    S_dnom = 1.0 - (SPixel%Rs * CRP(:,IRFd) * Tbc2)
 
-   S = ( T_all * SPixel%Rs * CRP(:,ITd) * Tbc2 ) / S_dnom
+   S = (T_all * SPixel%Rs * CRP(:,ITd) * Tbc2 ) / S_dnom
 
    ! Overcast reflectance
+if (.not. Ctrl%RS%use_full_brdf) then
    REF_over = T * (CRP(:,IRBd) + S)
+else
+   rho_0v = SPixel%Rs2(:,IRho_0V)
+   rho_0d = SPixel%Rs2(:,IRho_0D)
+   rho_dv = SPixel%Rs2(:,IRho_DV)
+   rho_dd = SPixel%Rs2(:,IRho_DD)
+
+   do i=1,SPixel%Ind%NSolar
+      if (rho_0v(i) .eq. 0. .or. rho_0d(i) .eq. 0. .or. rho_dv(i) .eq. 0.) then
+         CRP(i,ITFBd) = CRP(i,ITB) + CRP(i,ITFBd)
+
+         d_CRP(i,ITFBd,:) = d_CRP(i,ITB,:) + d_CRP(i,ITFBd,:)
+      endif
+   enddo
+
+   if (i_equation_form .eq. 1) then
+      REF_over = T * (CRP(:,IRBd) + &
+                      CRP(:,ITB) * (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2 + &
+                      (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) *                 CRP(:,ITd)  * Tbc2 / (1. - rho_dd * CRP(:,IRFd) * Tbc2))
+   else if (i_equation_form .eq. 2) then
+      REF_over = T * (CRP(:,IRBd) + &
+                      CRP(:,ITB) * (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2 + &
+                      (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * (CRP(:,ITB_u) + CRP(:,ITd)) * Tbc2 / (1. - rho_dd * CRP(:,IRFd) * Tbc2))
+   else
+      REF_over = T * (CRP(:,IRBd) + &
+                      CRP(:,ITB) * rho_0v * CRP(:,ITB_u) * Tbc2 + &
+                      CRP(:,ITFBd) * rho_dv * CRP(:,ITB_u) * Tbc2 + &
+                      (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * (CRP(:,ITd) + CRP(:,IRFd) * rho_dv * CRP(:,ITB_u) * Tbc2) * Tbc2 / (1. - rho_dd * CRP(:,IRFd) * Tbc2))
+   endif
+endif
 
    ! Calculate top of atmosphere reflectance for fractional cloud cover
    REF = (X(IFr)*REF_over) + ((1.0-X(IFr)) * SPixel%RTM%REF_clear)
@@ -205,6 +288,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    TBTD = T_all * CRP(:,ITd)
 
+if (.not. Ctrl%RS%use_full_brdf) then
    ! Derivative w.r.t. cloud optical depth, Tau
    d_REF(:,ITau) = X(IFr) * T * &
       (d_CRP(:,IRBd,ITau) + &
@@ -224,6 +308,10 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
       S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,Ire ) / S_dnom)
 
    ! Derivative w.r.t. cloud-top pressure, P_c
+else
+   call derivative_wrt_crp_parameter(SPixel, ITau, i_equation_form, CRP, d_CRP, T, Tbc2, rho_0v, rho_0d, rho_dv, rho_dd, d_REF(:,ITau))
+   call derivative_wrt_crp_parameter(SPixel, IRe,  i_equation_form, CRP, d_CRP, T, Tbc2, rho_0v, rho_0d, rho_dv, rho_dd, d_REF(:,IRe))
+endif
    do i=1,SPixel%Ind%NSolar
       d_REF(i,IPc) = X(IFr) * &
          (1.0 * RTM_Pc%dTac_dPc(i) * &

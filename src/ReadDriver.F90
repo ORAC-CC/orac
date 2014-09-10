@@ -692,7 +692,9 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
    ! Set default surface reflectance values for channels used. This just maps
    ! the values from all channels in the file to the ones which will be actually
    ! used
-   Ctrl%RS%Flag  = 3  ! Surface Ref: Flag (1-Ctrl 3-Aux) (1-Ctrl 3-Aux)
+   Ctrl%RS%Flag = SelmAux ! Selection method
+
+   Ctrl%RS%use_full_brdf = .false.
 
    allocate(ref_solar_sea(Ctrl%Ind%NChans))
    ref_solar_sea=0.0

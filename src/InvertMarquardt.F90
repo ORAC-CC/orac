@@ -857,8 +857,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       end do
    else     ! stat is non-zero, inversion failed
       convergence = .false.
-      Diag%Ss     = MissingSn
       Diag%St     = MissingSn
+      Diag%Ss     = MissingSn
       SPixel%Sn   = MissingSn
    end if   ! End of stat check before Ss setting.
 

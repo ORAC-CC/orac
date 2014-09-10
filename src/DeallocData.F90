@@ -37,6 +37,8 @@
 !       Add deallocation of MSI_Data%illum and a bit of cleanup.
 !    27th May 2014, Greg McGarragh:
 !       Some cleanup.
+!     9th Sep 2014, Greg McGarragh:
+!       Changes related to new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -57,6 +59,13 @@ subroutine Dealloc_Data(Ctrl, MSI_Data, status)
    integer,      intent(inout) :: status
 
    if (associated(MSI_Data%ALB))          deallocate(MSI_Data%ALB)
+
+   if (Ctrl%RS%use_full_brdf) then
+      if (associated(MSI_Data%rho_0v))    deallocate(MSI_Data%rho_0v)
+      if (associated(MSI_Data%rho_0d))    deallocate(MSI_Data%rho_0d)
+      if (associated(MSI_Data%rho_dv))    deallocate(MSI_Data%rho_dv)
+      if (associated(MSI_Data%rho_dd))    deallocate(MSI_Data%rho_dd)
+   endif
 
    if (associated(MSI_Data%CloudFlags))   deallocate(MSI_Data%CloudFlags)
 

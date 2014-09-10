@@ -338,8 +338,8 @@ module CTRL_def
       integer		     :: RTMIntflag         ! RTM Interpolation flag
                                                    ! 0 = linear interp
                                                    ! 1 = bicubic
-      character(11)          :: Date               ! Date of MSI data
-      character(12)          :: Time               ! Time of MSI data (not used?)
+      character(16)          :: Date               ! Date of MSI data
+      character(16)          :: Time               ! Time of MSI data (not used?)
       integer                :: DOY                ! Day number in year of MSI data.
       real                   :: MaxSatZen
       real                   :: MaxSolZen          ! Daynight/twilight boundary

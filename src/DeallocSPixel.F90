@@ -43,6 +43,8 @@
 !       Some cleanup.
 !     1st Aug 2014, Greg McGarragh:
 !       Added more SPixel to Ctrl map indexes.
+!     9th Sep 2014, Greg McGarragh:
+!       Changes related to new BRDF support.
 !
 ! Bugs:
 !   None known.
@@ -117,6 +119,10 @@ subroutine Dealloc_SPixel(Ctrl, SPixel, status)
 
    deallocate(SPixel%Rs)
    deallocate(SPixel%SRs)
+   if (Ctrl%RS%use_full_brdf) then
+      deallocate(SPixel%Rs2)
+      deallocate(SPixel%SRs2)
+   endif
 
    !  Solar constant
 

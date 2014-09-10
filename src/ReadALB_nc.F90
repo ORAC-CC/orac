@@ -14,11 +14,6 @@
 !                                      previous calls to this routine.
 !   SegSize  int           In          Number of rows of pixels in an image
 !                                      segment.
-!   ALB_files_open Logical In          Indicates whether the ALB data file is
-!                                      open (if not, open it).
-!   lun      int           Both        File unit number set by this routine
-!                                      when file is opened, passed back and
-!                                      forth for subsequent reads.
 !   MSI_Data struct        Both        Data structure: the ALB data part
 !                                      of this struct is populated by this
 !                                      routine, and is overwritten on
@@ -70,6 +65,7 @@
 !    2014/04/20, GM: Cleaned up the code.
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
+!    2014/09/09, GM: Changes related to new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -84,7 +80,6 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    use Data_def
    use ECP_Constants
    use orac_ncdf
-
    use SAD_Chan_def
 
    implicit none
@@ -98,6 +93,7 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
+   integer :: i
    integer :: ncid
 !  integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
 
@@ -105,18 +101,33 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Aux)
    call nc_open(ncid, Ctrl%Fid%Aux)
 
+   ! Allocate instrument channel indice array
+!  allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
+
+   ! Read instrument channel indices from file
+!  call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, verbose)
+
    ! Allocate Data%ALB structure
    allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
 
-   ! Read instrument channel indices from file
-!  allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
-!  call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, verbose)
-
-   ! read solar channels from albedo field
+   ! Read solar channels from albedo field
    call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, 3, Ctrl%Ind%ysolar)
 
    if (verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
       minval(MSI_Data%ALB)
+
+   if (Ctrl%RS%use_full_brdf) then
+      ! Allocate Data%rho_xx structures
+      allocate(MSI_Data%rho_0v(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+      allocate(MSI_Data%rho_0d(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+      allocate(MSI_Data%rho_dv(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+      allocate(MSI_Data%rho_dd(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+
+      call nc_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, verbose, 3, Ctrl%Ind%ysolar)
+      call nc_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, verbose, 3, Ctrl%Ind%ysolar)
+      call nc_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, verbose, 3, Ctrl%Ind%ysolar)
+      call nc_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, verbose, 3, Ctrl%Ind%ysolar)
+   endif
 
 !  deallocate(alb_instr_ch_numbers)
 

@@ -121,6 +121,7 @@
 !    2014/05/27, Greg McGarragh: Removed unused structure members and code
 !       cleanup.
 !    2014/08/01, Greg McGarragh: Added more SPixel to Ctrl map indexes.
+!    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -318,6 +319,9 @@ module SPixel_def
                                           ! super-pixel averages
       real, pointer       :: Rs(:)        ! Super pixel surface reflectance
       real, pointer       :: SRs(:,:)     ! Super pixel surface reflectance
+                                          ! covariances
+      real, pointer       :: Rs2(:,:)     ! Super pixel surface reflectance
+      real, pointer       :: SRs2(:,:,:)  ! Super pixel surface reflectance
                                           ! covariances
       real, pointer       :: f0(:)        ! Solar constant
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)

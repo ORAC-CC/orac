@@ -97,6 +97,7 @@
 !       constants.
 !    2014/08/30, Greg McGarragh: Use common_constants and remove pi and d2r as
 !       they are in common_constants.
+!    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
 !
 ! Bugs:
 !    None known.
@@ -189,7 +190,7 @@ module ECP_constants
    integer, parameter :: LUTIntMethBicubic = 1
 
    ! The following max sizes apply to the SAD_LUT arrays
-   integer, parameter :: MaxCRProps       = 9
+   integer, parameter :: MaxCRProps       = 10
 
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
@@ -198,11 +199,23 @@ module ECP_constants
    integer, parameter :: IRd              = 2       !  "    "  Rd   "   "   "
    integer, parameter :: IRFd             = 3       !  "    "  RFd  "   "   "
    integer, parameter :: ITB              = 4       !  "    "  TB   "   "   "
-   integer, parameter :: ITBd             = 5       !  "    "  TBd  "   "   "
-   integer, parameter :: ITd              = 6       !  "    "  Td   "   "   "
-   integer, parameter :: ITFBd            = 7       !  "    "  TFBd "   "   "
-   integer, parameter :: ITFd             = 8       !  "    "  TFd  "   "   "
-   integer, parameter :: IEm              = 9       !  "    "  Em   "   "   "
+   integer, parameter :: ITB_u            = 5       !  "    "  TB   "   "   "
+   integer, parameter :: ITBd             = 6       !  "    "  TBd  "   "   "
+   integer, parameter :: ITd              = 7       !  "    "  Td   "   "   "
+   integer, parameter :: ITFBd            = 8       !  "    "  TFBd "   "   "
+   integer, parameter :: ITFd             = 9       !  "    "  TFd  "   "   "
+   integer, parameter :: IEm              = 10      !  "    "  Em   "   "   "
+
+   ! The following max sizes apply to the brdf arrays
+   integer, parameter :: MaxRho_XX        = 4
+
+   ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
+   ! functions Set_CRP_Solar and Set_CRP_Thermal).
+
+   integer, parameter :: IRho_0V          = 1       ! Index of rho_0v data in array
+   integer, parameter :: IRho_0D          = 2       !  "    "  rho_0d  "   "   "
+   integer, parameter :: IRho_DV          = 3       !  "    "  rho_dv  "   "   "
+   integer, parameter :: IRho_DD          = 4       !  "    "  rho_dd  "   "   "
 
    ! 3rd index of d_CRP array in functions FM_Thermal, FM_Solar and CRP LUT
    ! interpolation functions. Also used as index of state vector array X in FM
