@@ -20,7 +20,7 @@ subroutine NC_WRITE_NAME_1D(ncid, name, varid, values, i1, start1, n1)
    ierr = nf90_put_var(ncid, varid, values(i1:i1 + n1 - 1), &
                        start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      print *, 'ERROR: nf90_put_var(), ', trim(nc_error(ierr)), ' name = ', name
       stop error_stop_code
    end if
 
@@ -54,7 +54,7 @@ subroutine NC_WRITE_NAME_2D(ncid, name, varid, values, i1, start1, n1, &
                        start, counter, stride)
 
    if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      print *, 'ERROR: nf90_put_var(), ', trim(nc_error(ierr)), ' name = ', name
       stop error_stop_code
    end if
 
@@ -90,7 +90,7 @@ subroutine NC_WRITE_NAME_3D(ncid, name, varid, values, i1, start1, n1, &
    ierr = nf90_put_var(ncid, varid, values(i1:i1 + n1 - 1, i2:i2 + n2 - 1, &
                        i3:i3 + n3 - 1), start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      print *, 'ERROR: nf90_put_var(), ', trim(nc_error(ierr)), ' name = ', name
       stop error_stop_code
    end if
 
@@ -129,7 +129,7 @@ subroutine NC_WRITE_NAME_4D(ncid, name, varid, values, i1, start1, n1, &
    ierr = nf90_put_var(ncid, varid, values(i1:i1 + n1 - 1, i2:i2 + n2 - 1, &
                        i3:i3 + n3 - 1, i4:i4 + n4 - 1), start, counter, stride)
    if (ierr .ne. NF90_NOERR) then
-      print *, 'ERROR: nf90_put_var(), ', nc_error(ierr), ' name = ', name
+      print *, 'ERROR: nf90_put_var(), ', trim(nc_error(ierr)), ' name = ', name
       stop error_stop_code
    end if
 

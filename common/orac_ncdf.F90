@@ -81,7 +81,7 @@ subroutine nc_open(ncid, fname)
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_open(): Error opening file ',trim(fname)
-      print*,nc_error(ierr)
+      print*,trim(nc_error(ierr))
       stop error_stop_code
    end if
 
@@ -123,14 +123,14 @@ function nc_dim_length(ncid, name, verbose) result(len)
    ierr = nf90_inq_dimid(ncid, name, did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_dim_length(): Could not locate dimension ',trim(name)
-      print*,nc_error(ierr)
+      print*,trim(nc_error(ierr))
       stop error_stop_code
    end if
 
    ierr = nf90_inquire_dimension(ncid, did, dname, len)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_dim_length():: Could not read dimension ',trim(name)
-      print*,nc_error(ierr)
+      print*,trim(nc_error(ierr))
       stop error_stop_code
    end if
 
