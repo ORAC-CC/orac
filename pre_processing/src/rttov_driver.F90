@@ -129,7 +129,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    use channel_structures
    use imager_structures
-   use netcdf_structures
+   use netcdf_output
    use orac_ncdf
    use preproc_constants
    use preproc_structures
@@ -195,7 +195,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    type(preproc_lwrtm_s),          intent(inout)  :: preproc_lwrtm
    type(preproc_swrtm_s),          intent(inout)  :: preproc_swrtm
    type(imager_angles_s),          intent(in)     :: imager_angles
-   type(netcdf_info_s),            intent(inout)  :: netcdf_info
+   type(netcdf_output_info_s),     intent(inout)  :: netcdf_info
    type(channel_info_s),           intent(in)     :: channel_info
    integer(kind=sint),             intent(in)     :: month
    logical,                        intent(in)     :: verbose
@@ -1004,7 +1004,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   call nc_write_array( &
                           netcdf_info%ncid_prtm, &
                           'hprofile_lev_pw', &
-                          netcdf_info%vid_hprofile_lev_pw, &
+                          netcdf_info%vid_gphprofile_lev_pw, &
                           dummy_sreal_2d, &
                           1, 1, profiles(1)%nlevels, &
                           1, pixel_counter_pw, 1)

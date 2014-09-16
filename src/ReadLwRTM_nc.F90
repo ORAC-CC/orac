@@ -103,7 +103,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    use ECP_Constants
    use orac_ncdf
    use RTM_def
-   use nc_utils
 
    implicit none
 

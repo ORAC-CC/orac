@@ -207,7 +207,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use omp_lib
    use orac_ncdf, only: nf90_close, NF90_NOERR
    use output_routines
-   use nc_utils
    use Read_SAD_def
    use RTM_def
    use RTM_Pc_def
@@ -274,7 +273,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                                   ! has been called and ran successfully.
 
    ! netcdf related variables:
-   integer :: ncid_primary,ncid_secondary,dims_var(2), wo = 0
+   integer :: ncid_primary,ncid_secondary,dims_var(2)
 
    ! Write full covariance matrix to secondary output file, so far hardwired
    logical :: lcovar = .FALSE.
@@ -558,11 +557,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       if (status == 0) then
          write(*,*) 'path1: ',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
          call nc_create(Ctrl%FID%L2_primary_outputpath_and_file, ncid_primary, &
-            ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, wo, 1,status)
+            ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 1,status)
 
          write(*,*) 'path2: ',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
          call nc_create(Ctrl%FID%L2_secondary_outputpath_and_file, ncid_secondary, &
-           ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, wo, 2, status)
+           ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 2, status)
 
          ! Allocate output arrays
          call alloc_output_data_primary(ixstart,ixstop,iystart,iystop, &

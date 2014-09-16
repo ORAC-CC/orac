@@ -50,7 +50,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    use channel_structures
    use imager_structures
    use netcdf
-   use netcdf_structures
    use orac_ncdf
    use preproc_constants
    use surface_structures
@@ -62,7 +61,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    type(imager_geolocation_s),  intent(in) :: imager_geolocation
    type(imager_measurements_s), intent(in) :: imager_measurements
    type(imager_time_s),         intent(in) :: imager_time
-   type(netcdf_info_s),         intent(in) :: netcdf_info
+   type(netcdf_output_info_s),  intent(in) :: netcdf_info
    type(channel_info_s),        intent(in) :: channel_info
    type(surface_s),             intent(in) :: surface
    logical,                     intent(in) :: include_full_brdf

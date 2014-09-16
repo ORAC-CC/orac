@@ -52,8 +52,9 @@ $(OBJS)/locate.o: $(OBJS)/ECPConstants.o
 $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o \
         $(OBJS)/config.o alloc_output_data.F90 dealloc_output_data.F90 \
-        def_vars_primary.F90 def_vars_secondary.F90 prepare_primary.F90 \
-        prepare_secondary.F90 write_primary.F90 write_secondary.F90
+        def_vars_primary.F90 def_vars_secondary.F90 output_utils.F90 \
+        prepare_primary.F90 prepare_secondary.F90 write_primary.F90 \
+        write_secondary.F90
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
 $(OBJS)/R2T.o: $(OBJS)/SADChan.o
 $(OBJS)/read_config_file.o: $(OBJS)/Ctrl.o $(OBJS)/config.o

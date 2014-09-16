@@ -21,18 +21,19 @@
 ! 2014/09/01, Greg McGarragh: Make use of the general shared routine
 !    nc_put_common_attributes().
 !
-! $Id$
+! $Id: nc_create.F90 2355 2014-09-09 23:16:38Z gmcgarragh $
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
+subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, status)
 
    use netcdf
 
    use common_constants
    use global_attributes
+   use orac_ncdf
 
    implicit none
 
@@ -40,7 +41,6 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
    character(len=*),intent(in)  :: path
    integer,         intent(in)  :: nx, ny
    character(len=*),intent(in)  :: inst_name
-   integer,         intent(in)  :: wo
    integer,         intent(in)  :: type
 
    ! Output
@@ -149,9 +149,77 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, wo, type, status)
    dims_var(1) = xdim
    dims_var(2) = ydim
 
+end subroutine nc_create
 
-   if (wo .eq. 1) then
-      write(*,*) 'new file created: ',trim(path)
+
+subroutine prepare_short_packed_float(value_in, value_out, &
+                                      scale_factor, add_offset, &
+                                      fill_value_in, fill_value_out, &
+                                      valid_min, valid_max, bound_max_value)
+
+   use ECP_Constants
+
+   implicit none
+
+   real(kind=sreal),   intent(in)  :: value_in
+   integer(kind=sint), intent(out) :: value_out
+   real(kind=sreal),   intent(in)  :: scale_factor
+   real(kind=sreal),   intent(in)  :: add_offset
+   real(kind=sreal),   intent(in)  :: fill_value_in
+   integer(kind=sint), intent(in)  :: fill_value_out
+   integer(kind=sint), intent(in)  :: valid_min
+   integer(kind=sint), intent(in)  :: valid_max
+   integer(kind=sint), intent(in)  :: bound_max_value
+
+   real(kind=sreal)                 :: temp
+
+   temp = (value_in - add_offset) / scale_factor
+
+   if (value_in .ne. sreal_fill_value) then
+      if (temp .lt. real(valid_min,kind=sreal)) then
+         value_out=sint_fill_value
+      else if (temp .gt. real(valid_max,kind=sreal)) then
+         value_out=bound_max_value
+      else
+         value_out=int(temp, kind=sint)
+      end if
+   else
+      value_out=sint_fill_value
    end if
 
-end subroutine nc_create
+end subroutine prepare_short_packed_float
+
+
+subroutine prepare_float_packed_float(value_in, value_out, &
+                                      scale_factor, add_offset, &
+                                      fill_value_in, fill_value_out, &
+                                      valid_min, valid_max, bound_max_value)
+
+   use ECP_Constants
+
+   implicit none
+
+   real(kind=sreal), intent(in)  :: value_in
+   real(kind=sreal), intent(out) :: value_out
+   real(kind=sreal), intent(in)  :: scale_factor
+   real(kind=sreal), intent(in)  :: add_offset
+   real(kind=sreal), intent(in)  :: fill_value_in
+   real(kind=sreal), intent(in)  :: fill_value_out
+   real(kind=sreal), intent(in)  :: valid_min
+   real(kind=sreal), intent(in)  :: valid_max
+   real(kind=sreal), intent(in)  :: bound_max_value
+
+   real(kind=sreal)              :: temp
+
+   temp = (value_in - add_offset) / scale_factor
+
+   if (temp .ge. real(valid_min,kind=sreal) .and. &
+       temp .le. real(valid_max,kind=sreal)) then
+      value_out=temp
+   else if (temp .lt. real(valid_min,kind=sreal)) then
+      value_out=sreal_fill_value
+   else if (temp .gt. real(valid_max,kind=sreal)) then
+      value_out=bound_max_value
+   end if
+
+end subroutine prepare_float_packed_float

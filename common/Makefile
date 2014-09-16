@@ -19,8 +19,7 @@ include $(ORAC_LIB)
 PREPROC_OBJ_F90=$(OBJS)/common_constants.o \
                 $(OBJS)/global_attributes.o \
                 $(OBJS)/interpol.o \
-                $(OBJS)/orac_ncdf.o \
-                $(OBJS)/nc_utils.o \
+                $(OBJS)/orac_ncdf.o
 
 
 PREPROC_OBJ_C=

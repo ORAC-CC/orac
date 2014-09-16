@@ -36,6 +36,8 @@
 !    individual variable definition subroutines to be called once in this
 !    subroutine.
 ! 2014/08/31, GM: Update to use general routines now in the common library.
+! 2014/09/16, GM: Update for changes in the general routines in the common
+!    library.
 !
 ! $Id$
 !
@@ -48,7 +50,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
 
    use config_def
    use CTRL_def
-   use nc_utils
+   use orac_ncdf
    use SPixel_def
 
    use netcdf
@@ -94,12 +96,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'scanline_u', &
            output_data%vid_scanline_u, &
-           'across track pixel index', &
-           'across_track_pixel_index', &
-           lint_fill_value, &
-           output_data%scanline_u_scale,output_data%scanline_u_offset, &
-           output_data%scanline_u_vmin,output_data%scanline_u_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'across track pixel index', &
+           standard_name = 'across_track_pixel_index', &
+           fill_value    = lint_fill_value, &
+           scale_factor  = output_data%scanline_u_scale, &
+           add_offset    = output_data%scanline_u_offset, &
+           valid_min     = output_data%scanline_u_vmin, &
+           valid_max     = output_data%scanline_u_vmax)
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -116,12 +120,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'scanline_v', &
            output_data%vid_scanline_v, &
-           'along track pixel index', &
-           'along_track_pixel_index', &
-           lint_fill_value, &
-           output_data%scanline_v_scale,output_data%scanline_v_offset, &
-           output_data%scanline_v_vmin,output_data%scanline_v_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'along track pixel index', &
+           standard_name = 'along_track_pixel_index', &
+           fill_value    = lint_fill_value, &
+           scale_factor  = output_data%scanline_v_scale, &
+           add_offset    = output_data%scanline_v_offset, &
+           valid_min     = output_data%scanline_v_vmin, &
+           valid_max     = output_data%scanline_v_vmax)
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -138,12 +144,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'cot_ap', &
            output_data%vid_cot_ap, &
-           'cloud optical thickness a priori', &
-           'atmosphere_optical_thickness_due_to_cloud a_priori', &
-           sint_fill_value, &
-           output_data%cot_ap_scale,output_data%cot_ap_offset, &
-           output_data%cot_ap_vmin,output_data%cot_ap_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'cloud optical thickness a priori', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_ap_scale, &
+           add_offset    = output_data%cot_ap_offset, &
+           valid_min     = output_data%cot_ap_vmin, &
+           valid_max     = output_data%cot_ap_vmax)
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -160,12 +168,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'cot_fg', &
            output_data%vid_cot_fg, &
-           'cloud optical thickness first guess', &
-           'atmosphere_optical_thickness_due_to_cloud first_guess', &
-           sint_fill_value, &
-           output_data%cot_fg_scale,output_data%cot_fg_offset, &
-           output_data%cot_fg_vmin,output_data%cot_fg_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'cloud optical thickness first guess', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_fg_scale, &
+           add_offset    = output_data%cot_fg_offset, &
+           valid_min     = output_data%cot_fg_vmin, &
+           valid_max     = output_data%cot_fg_vmax)
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -182,13 +192,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'ref_ap', &
            output_data%vid_ref_ap, &
-           'effective radius a priori', &
-           'effective_radius_of_cloud_condensed_water_particle_at_cloud_top a_priori', &
-           sint_fill_value, &
-           output_data%ref_ap_scale,output_data%ref_ap_offset, &
-           output_data%ref_ap_vmin,output_data%ref_ap_vmax, &
            verbose,ierr, &
-           units='micrometer')
+           long_name     = 'effective radius a priori', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ref_ap_scale, &
+           add_offset    = output_data%ref_ap_offset, &
+           valid_min     = output_data%ref_ap_vmin, &
+           valid_max     = output_data%ref_ap_vmax, &
+           units         = 'micrometer')
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -205,13 +217,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'ref_fg', &
            output_data%vid_ref_fg, &
-           'effective radius first guess', &
-           'effective_radius_of_cloud_condensed_water_particle_at_cloud_top first_guess', &
-           sint_fill_value, &
-           output_data%ref_fg_scale,output_data%ref_fg_offset, &
-           output_data%ref_fg_vmin,output_data%ref_fg_vmax, &
            verbose,ierr, &
-           units='micrometer')
+           long_name     = 'effective radius first guess', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ref_fg_scale, &
+           add_offset    = output_data%ref_fg_offset, &
+           valid_min     = output_data%ref_fg_vmin, &
+           valid_max     = output_data%ref_fg_vmax, &
+           units         = 'micrometer')
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -228,13 +242,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'ctp_ap', &
            output_data%vid_ctp_ap, &
-           'cloud top pressure a priori', &
-           'air_pressure_at_cloud_top a_priori', &
-           sint_fill_value, &
-           output_data%ctp_ap_scale,output_data%ctp_ap_offset, &
-           output_data%ctp_ap_vmin,output_data%ctp_ap_vmax, &
            verbose,ierr, &
-           units='hPa')
+           long_name     = 'cloud top pressure a priori', &
+           standard_name = 'air_pressure_at_cloud_top a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_ap_scale, &
+           add_offset    = output_data%ctp_ap_offset, &
+           valid_min     = output_data%ctp_ap_vmin, &
+           valid_max     = output_data%ctp_ap_vmax, &
+           units         = 'hPa')
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -251,13 +267,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'ctp_fg', &
            output_data%vid_ctp_fg, &
-           'cloud top pressure first guess', &
-           'air_pressure_at_cloud_top first_guess', &
-           sint_fill_value, &
-           output_data%ctp_fg_scale,output_data%ctp_fg_offset, &
-           output_data%ctp_fg_vmin,output_data%ctp_fg_vmax, &
            verbose,ierr, &
-           units='hPa')
+           long_name     = 'cloud top pressure first guess', &
+           standard_name = 'air_pressure_at_cloud_top first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_fg_scale, &
+           add_offset    = output_data%ctp_fg_offset, &
+           valid_min     = output_data%ctp_fg_vmin, &
+           valid_max     = output_data%ctp_fg_vmax, &
+           units         = 'hPa')
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -274,13 +292,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'stemp_ap', &
            output_data%vid_stemp_ap, &
-           'surface temperature a priori', &
-           'surface_temperature a_priori', &
-           sint_fill_value, &
-           output_data%stemp_ap_scale,output_data%stemp_ap_offset, &
-           output_data%stemp_ap_vmin,output_data%stemp_ap_vmax, &
            verbose,ierr, &
-           units='kelvin')
+           long_name     = 'surface temperature a priori', &
+           standard_name = 'surface_temperature a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%stemp_ap_scale, &
+           add_offset    = output_data%stemp_ap_offset, &
+           valid_min     = output_data%stemp_ap_vmin, &
+           valid_max     = output_data%stemp_ap_vmax, &
+           units         = 'kelvin')
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -297,13 +317,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'stemp_fg', &
            output_data%vid_stemp_fg, &
-           'surface temperature first guess', &
-           'surface_temperature first_guess', &
-           sint_fill_value, &
-           output_data%stemp_fg_scale,output_data%stemp_fg_offset, &
-           output_data%stemp_fg_vmin,output_data%stemp_fg_vmax, &
            verbose,ierr, &
-           units='kelvin')
+           long_name     = 'surface temperature first guess', &
+           standard_name = 'surface_temperature first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%stemp_fg_scale, &
+           add_offset    = output_data%stemp_fg_offset, &
+           valid_min     = output_data%stemp_fg_vmin, &
+           valid_max     = output_data%stemp_fg_vmax, &
+           units         = 'kelvin')
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -329,12 +351,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
                     dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_albedo(i), &
-                    trim(adjustl(input_dummy2)), &
-                    trim(adjustl(input_dummy)), &
-                    sint_fill_value, &
-                    output_data%albedo_scale(i),output_data%albedo_offset(i), &
-                    output_data%albedo_vmin(i),output_data%albedo_vmax(i), &
-                    verbose,ierr)
+                    verbose,ierr, &
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%albedo_scale(i), &
+                    add_offset    = output_data%albedo_offset(i), &
+                    valid_min     = output_data%albedo_vmin(i), &
+                    valid_max     = output_data%albedo_vmax(i))
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          end if
@@ -364,12 +388,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
                     dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_channels(i), &
-                    trim(adjustl(input_dummy2)), &
-                    trim(adjustl(input_dummy)), &
-                    sint_fill_value, &
-                    output_data%channels_scale(i),output_data%channels_offset(i), &
-                    output_data%channels_vmin(i),output_data%channels_vmax(i), &
-                    verbose,ierr)
+                    verbose,ierr, &
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%channels_scale(i), &
+                    add_offset    = output_data%channels_offset(i), &
+                    valid_min     = output_data%channels_vmin(i), &
+                    valid_max     = output_data%channels_vmax(i))
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          end if
@@ -390,13 +416,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
                     dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_channels(i), &
-                    trim(adjustl(input_dummy2)), &
-                    trim(adjustl(input_dummy)), &
-                    sint_fill_value, &
-                    output_data%channels_scale(i),output_data%channels_offset(i), &
-                    output_data%channels_vmin(i),output_data%channels_vmax(i), &
                     verbose,ierr, &
-                    units='kelvin')
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%channels_scale(i), &
+                    add_offset    = output_data%channels_offset(i), &
+                    valid_min     = output_data%channels_vmin(i), &
+                    valid_max     = output_data%channels_vmax(i), &
+                    units         = 'kelvin')
 
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
@@ -428,12 +456,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
                     dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_y0(i), &
-                    trim(adjustl(input_dummy2)), &
-                    trim(adjustl(input_dummy)), &
-                    sint_fill_value, &
-                    output_data%y0_scale(i),output_data%y0_offset(i), &
-                    output_data%y0_vmin(i),output_data%y0_vmax(i), &
-                    verbose,ierr)
+                    verbose,ierr, &
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%y0_scale(i), &
+                    add_offset    = output_data%y0_offset(i), &
+                    valid_min     = output_data%y0_vmin(i), &
+                    valid_max     = output_data%y0_vmax(i))
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          end if
@@ -454,13 +484,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
                     dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_y0(i), &
-                    trim(adjustl(input_dummy2)), &
-                    trim(adjustl(input_dummy)), &
-                    sint_fill_value, &
-                    output_data%y0_scale(i),output_data%y0_offset(i), &
-                    output_data%y0_vmin(i),output_data%y0_vmax(i), &
                     verbose,ierr, &
-                    units='kelvin')
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%y0_scale(i), &
+                    add_offset    = output_data%y0_offset(i), &
+                    valid_min     = output_data%y0_vmin(i), &
+                    valid_max     = output_data%y0_vmax(i), &
+                    units         = 'kelvin')
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          end if
@@ -491,12 +523,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
                     dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_residuals(i), &
-                    trim(adjustl(input_dummy2)), &
-                    trim(adjustl(input_dummy)), &
-                    sint_fill_value, &
-                    output_data%residuals_scale(i),output_data%residuals_offset(i), &
-                    output_data%residuals_vmin(i),output_data%residuals_vmax(i), &
-                    verbose,ierr)
+                    verbose,ierr, &
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%residuals_scale(i), &
+                    add_offset    = output_data%residuals_offset(i), &
+                    valid_min     = output_data%residuals_vmin(i), &
+                    valid_max     = output_data%residuals_vmax(i))
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          end if
@@ -517,13 +551,15 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
                     dims_var, &
                     trim(adjustl(input_dummy)), &
                     output_data%vid_residuals(i), &
-                    trim(adjustl(input_dummy2)), &
-                    trim(adjustl(input_dummy)), &
-                    sint_fill_value, &
-                    output_data%residuals_scale(i),output_data%residuals_offset(i), &
-                    output_data%residuals_vmin(i),output_data%residuals_vmax(i), &
                     verbose,ierr, &
-                    units='kelvin')
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%residuals_scale(i), &
+                    add_offset    = output_data%residuals_offset(i), &
+                    valid_min     = output_data%residuals_vmin(i), &
+                    valid_max     = output_data%residuals_vmax(i), &
+                    units         = 'kelvin')
 
             if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
          end if
@@ -544,11 +580,14 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
            dims_var, &
            'degrees_of_freedom_signal', &
            output_data%vid_ds, &
-           'degrees of freedom for signal', &
-           'degrees_of_freedom_for_signal', &
-           sint_fill_value, &
-           output_data%ds_scale,output_data%ds_offset, &
-           output_data%ds_vmin,output_data%ds_vmax,verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'degrees of freedom for signal', &
+           standard_name = 'degrees_of_freedom_for_signal', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ds_scale, &
+           add_offset    = output_data%ds_offset, &
+           valid_min     = output_data%ds_vmin, &
+           valid_max     = output_data%ds_vmax)
 
    if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
 
@@ -574,8 +613,8 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    !
    !----------------------------------------------------------------------------
    if (status .ne. 0 ) then
-      write(*,*) 'def_vars_secondary.inc: netcdf variable definition error:', status
-      call Write_Log(Ctrl,'def_vars_secondary.inc: netcdf variable definition error:', status)
+      write(*,*) 'def_vars_secondary(): netcdf variable definition error:', status
+      call Write_Log(Ctrl,'def_vars_secondary(): netcdf variable definition error:', status)
       stop
    end if
 

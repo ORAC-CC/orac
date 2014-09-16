@@ -51,7 +51,6 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/map_time_to_pixel.o \
                   $(OBJS)/mcd43c.o \
                   $(OBJS)/netcdf_output.o \
-                  $(OBJS)/netcdf_structures.o \
                   $(OBJS)/nise_def.o \
                   $(OBJS)/nr.o \
                   $(OBJS)/preparation.o \

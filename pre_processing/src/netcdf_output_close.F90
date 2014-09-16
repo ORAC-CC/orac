@@ -27,11 +27,10 @@
 subroutine netcdf_output_close(netcdf_info)
 
    use netcdf
-   use netcdf_structures
 
    implicit none
 
-   type(netcdf_info_s), intent(in) :: netcdf_info
+   type(netcdf_output_info_s), intent(in) :: netcdf_info
 
    if (nf90_close(netcdf_info%ncid_alb).ne.NF90_NOERR) &
         print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF ALB.'

@@ -26,12 +26,10 @@ $(OBJS)/map_time_to_pixel.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o
 $(OBJS)/mcd43c.o: $(OBJS)/preproc_constants.o read_mcd43c1.F90 read_mcd43c3.F90
 $(OBJS)/netcdf_output.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/imager_structures.o $(OBJS)/netcdf_structures.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
-        $(OBJS)/surface_structures.o netcdf_output_close.F90 \
-        netcdf_output_create_file.F90 netcdf_output_open.F90 \
-        netcdf_output_write_swath.F90
-$(OBJS)/netcdf_structures.o: $(OBJS)/preproc_constants.o
+        $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/preproc_structures.o $(OBJS)/surface_structures.o \
+        netcdf_output_close.F90 netcdf_output_create.F90 \
+        netcdf_output_create_file.F90 netcdf_output_write_swath.F90
 $(OBJS)/nise_def.o: $(OBJS)/preproc_constants.o read_nsidc_nise.F90
 $(OBJS)/preparation.o: $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \
@@ -60,7 +58,7 @@ $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         read_modis_time_lat_lon_angles.F90
 $(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
 $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
-        $(OBJS)/netcdf_structures.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/netcdf_output.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o call_rtm_ir_rttov.F90 \
         call_rtm_solar_rttov.F90 effective_2way_za.F90
 $(OBJS)/set_ecmwf.o: $(OBJS)/preproc_constants.o
@@ -86,9 +84,8 @@ $(OBJS)/test_rttov.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
         $(OBJS)/correct_for_ice_snow.o $(OBJS)/ecmwf.o \
         $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
-        $(OBJS)/netcdf_structures.o $(OBJS)/preparation.o \
-        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
-        $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \
-        $(OBJS)/read_modis.o $(OBJS)/rttov_driver.o $(OBJS)/setup.o \
-        $(OBJS)/surface_emissivity.o $(OBJS)/surface_reflectance.o \
-        $(OBJS)/surface_structures.o
+        $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/preproc_structures.o $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o \
+        $(OBJS)/read_imager.o $(OBJS)/read_modis.o $(OBJS)/rttov_driver.o \
+        $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
+        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o

@@ -37,6 +37,8 @@
 !    individual variable definition subroutines to be called once in this
 !    subroutine.
 ! 2014/08/31, GM: Update to use general routines now in the common library.
+! 2014/09/16, GM: Update for changes in the general routines in the common
+!    library.
 !
 ! $Id$
 !
@@ -47,7 +49,7 @@
 subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
 
    use CTRL_def
-   use nc_utils
+   use orac_ncdf
    use SPixel_def
 
    use netcdf
@@ -98,13 +100,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'time', &
            output_data%vid_time, &
-           'time', &
-           'time', &
-           dreal_fill_value, &
-           output_data%time_scale,output_data%time_offset, &
-           output_data%time_vmin,output_data%time_vmax, &
            verbose,ierr, &
-           units=input_dummy)
+           long_name     = 'time', &
+           standard_name = 'time', &
+           fill_value    = dreal_fill_value, &
+           scale_factor  = output_data%time_scale, &
+           add_offset    = output_data%time_offset, &
+           valid_min     = output_data%time_vmin, &
+           valid_max     = output_data%time_vmax, &
+           units         = input_dummy)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -121,13 +125,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'lat', &
            output_data%vid_lat, &
-           'latitude', &
-           'latitude', &
-           sreal_fill_value, &
-           output_data%lat_scale,output_data%lat_offset, &
-           output_data%lat_vmin,output_data%lat_vmax, &
            verbose,ierr, &
-           units='degrees_north')
+           long_name     = 'latitude', &
+           standard_name = 'latitude', &
+           fill_value    = sreal_fill_value, &
+           scale_factor  = output_data%lat_scale, &
+           add_offset    = output_data%lat_offset, &
+           valid_min     = output_data%lat_vmin, &
+           valid_max     = output_data%lat_vmax, &
+           units         = 'degrees_north')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -144,13 +150,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'lon', &
            output_data%vid_lon, &
-           'longitude', &
-           'longitude', &
-           sreal_fill_value, &
-           output_data%lon_scale,output_data%lon_offset, &
-           output_data%lon_vmin,output_data%lon_vmax, &
            verbose,ierr, &
-           units='degrees_east')
+           long_name     = 'longitude', &
+           standard_name = 'longitude', &
+           fill_value    = sreal_fill_value, &
+           scale_factor  = output_data%lon_scale, &
+           add_offset    = output_data%lon_offset, &
+           valid_min     = output_data%lon_vmin, &
+           valid_max     = output_data%lon_vmax, &
+           units         = 'degrees_east')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -178,13 +186,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
               dims_var, &
               trim(adjustl(input_dummy)), &
               output_data%vid_sol_zen(iviews), &
-              trim(adjustl(input_dummy2)), &
-              trim(adjustl(input_dummy3)), &
-              sreal_fill_value, &
-              output_data%sol_scale,output_data%sol_offset, &
-              output_data%sol_vmin,output_data%sol_vmax, &
               verbose,ierr, &
-              units='degrees')
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy3)), &
+              fill_value    = sreal_fill_value, &
+              scale_factor  = output_data%sol_scale, &
+              add_offset    = output_data%sol_offset, &
+              valid_min     = output_data%sol_vmin, &
+              valid_max     = output_data%sol_vmax, &
+              units         = 'degrees')
 
       if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -205,13 +215,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
               dims_var, &
               trim(adjustl(input_dummy)), &
               output_data%vid_sat_zen(iviews), &
-              trim(adjustl(input_dummy2)), &
-              trim(adjustl(input_dummy3)), &
-              sreal_fill_value, &
-              output_data%sat_scale,output_data%sat_offset, &
-              output_data%sat_vmin,output_data%sat_vmax, &
               verbose,ierr, &
-              units='degrees')
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy3)), &
+              fill_value    = sreal_fill_value, &
+              scale_factor  = output_data%sat_scale, &
+              add_offset    = output_data%sat_offset, &
+              valid_min     = output_data%sat_vmin, &
+              valid_max     = output_data%sat_vmax, &
+              units         = 'degrees')
 
       if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -232,13 +244,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
               dims_var, &
               trim(adjustl(input_dummy)), &
               output_data%vid_rel_azi(iviews), &
-              trim(adjustl(input_dummy2)), &
-              trim(adjustl(input_dummy3)), &
-              sreal_fill_value, &
-              output_data%azi_scale,output_data%azi_offset, &
-              output_data%azi_vmin,output_data%azi_vmax, &
               verbose,ierr, &
-              units='degrees')
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy3)), &
+              fill_value    = sreal_fill_value, &
+              scale_factor  = output_data%azi_scale, &
+              add_offset    = output_data%azi_offset, &
+              valid_min     = output_data%azi_vmin, &
+              valid_max     = output_data%azi_vmax, &
+              units         = 'degrees')
 
       if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -257,12 +271,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cot', &
            output_data%vid_cot, &
-           'cloud optical thickness', &
-           'atmosphere_optical_thickness_due_to_cloud', &
-           sint_fill_value, &
-           output_data%cot_scale,output_data%cot_offset, &
-           output_data%cot_vmin,output_data%cot_vmax, &
-           verbose,ierr)
+           verbose, ierr, &
+           long_name     = 'cloud optical thickness', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_scale, &
+           add_offset    = output_data%cot_offset, &
+           valid_min     = output_data%cot_vmin, &
+           valid_max     = output_data%cot_vmax)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -279,12 +295,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cot_uncertainty', &
            output_data%vid_coterror, &
-           'cloud optical thickness uncertainty', &
-           'atmosphere_optical_thickness_due_to_cloud uncertainty', &
-           sint_fill_value, &
-           output_data%cot_error_scale,output_data%cot_error_offset, &
-           output_data%cot_error_vmin,output_data%cot_error_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'cloud optical thickness uncertainty', &
+           standard_name = 'atmosphere_optical_thickness_due_to_cloud uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cot_error_scale, &
+           add_offset    = output_data%cot_error_offset, &
+           valid_min     = output_data%cot_error_vmin, &
+           valid_max     = output_data%cot_error_vmax)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -301,13 +319,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'ref', &
            output_data%vid_ref, &
-           'effective radius', &
-           'effective_radius_of_cloud_condensed_water_particles_at_cloud_top', &
-           sint_fill_value, &
-           output_data%ref_scale,output_data%ref_offset, &
-           output_data%ref_vmin,output_data%ref_vmax, &
            verbose,ierr, &
-           units='micrometer')
+           long_name     = 'effective radius', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ref_scale, &
+           add_offset    = output_data%ref_offset, &
+           valid_min     = output_data%ref_vmin, &
+           valid_max     = output_data%ref_vmax, &
+           units         = 'micrometer')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -324,13 +344,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'ref_uncertainty', &
            output_data%vid_referror, &
-           'effective radius uncertainty', &
-           'effective_radius_of_cloud_condensed_water_particles_at_cloud_top uncertainty', &
-           sint_fill_value, &
-           output_data%ref_error_scale,output_data%ref_error_offset, &
-           output_data%ref_error_vmin,output_data%ref_error_vmax, &
            verbose,ierr, &
-           units='micrometer')
+           long_name     = 'effective radius uncertainty', &
+           standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ref_error_scale, &
+           add_offset    = output_data%ref_error_offset, &
+           valid_min     = output_data%ref_error_vmin, &
+           valid_max     = output_data%ref_error_vmax, &
+           units         = 'micrometer')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -347,13 +369,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'ctp', &
            output_data%vid_ctp, &
-           'cloud top pressure', &
-           'air_pressure_at_cloud_top', &
-           sint_fill_value, &
-           output_data%ctp_scale,output_data%ctp_offset, &
-           output_data%ctp_vmin,output_data%ctp_vmax, &
            verbose,ierr, &
-           units='hPa')
+           long_name     = 'cloud top pressure', &
+           standard_name = 'air_pressure_at_cloud_top', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_scale, &
+           add_offset    = output_data%ctp_offset, &
+           valid_min     = output_data%ctp_vmin, &
+           valid_max     = output_data%ctp_vmax, &
+           units         = 'hPa')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -370,13 +394,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'ctp_uncertainty', &
            output_data%vid_ctperror, &
-           'cloud top pressure uncertainty', &
-           'air_pressure_at_cloud_top uncertainty', &
-           sint_fill_value, &
-           output_data%ctp_error_scale,output_data%ctp_error_offset, &
-           output_data%ctp_error_vmin,output_data%ctp_error_vmax, &
            verbose,ierr, &
-           units='hPa')
+           long_name     = 'cloud top pressure uncertainty', &
+           standard_name = 'air_pressure_at_cloud_top uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_error_scale, &
+           add_offset    = output_data%ctp_error_offset, &
+           valid_min     = output_data%ctp_error_vmin, &
+           valid_max     = output_data%ctp_error_vmax, &
+           units         = 'hPa')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -393,12 +419,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cc_total', &
            output_data%vid_cct, &
-           'cloud fraction', &
-           'cloud_area_fraction', &
-           sint_fill_value, &
-           output_data%cct_scale,output_data%cct_offset, &
-           output_data%cct_vmin,output_data%cct_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'cloud fraction', &
+           standard_name = 'cloud_area_fraction', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cct_scale, &
+           add_offset    = output_data%cct_offset, &
+           valid_min     = output_data%cct_vmin, &
+           valid_max     = output_data%cct_vmax)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -415,12 +443,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cc_total_uncertainty', &
            output_data%vid_ccterror, &
-           'cloud fraction uncertainty', &
-           'cloud_area_fraction uncertainty', &
-           sint_fill_value, &
-           output_data%cct_error_scale,output_data%cct_error_offset, &
-           output_data%cct_error_vmin,output_data%cct_error_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'cloud fraction uncertainty', &
+           standard_name = 'cloud_area_fraction uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cct_error_scale, &
+           add_offset    = output_data%cct_error_offset, &
+           valid_min     = output_data%cct_error_vmin, &
+           valid_max     = output_data%cct_error_vmax)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -437,13 +467,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'stemp', &
            output_data%vid_stemp, &
-           'surface temperature', &
-           'surface_temperature', &
-           sint_fill_value, &
-           output_data%stemp_scale,output_data%stemp_offset, &
-           output_data%stemp_vmin,output_data%stemp_vmax, &
            verbose,ierr, &
-           units='kelvin')
+           long_name     = 'surface temperature', &
+           standard_name = 'surface_temperature', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%stemp_scale, &
+           add_offset    = output_data%stemp_offset, &
+           valid_min     = output_data%stemp_vmin, &
+           valid_max     = output_data%stemp_vmax, &
+           units         = 'kelvin')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -460,13 +492,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'stemp_uncertainty', &
            output_data%vid_stemperror, &
-           'surface temperature uncertainty', &
-           'surface_temperature uncertainty', &
-           sint_fill_value, &
-           output_data%stemp_error_scale,output_data%stemp_error_offset, &
-           output_data%stemp_vmin,output_data%stemp_error_vmax, &
            verbose,ierr, &
-           units='kelvin')
+           long_name     = 'surface temperature uncertainty', &
+           standard_name = 'surface_temperature uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%stemp_error_scale, &
+           add_offset    = output_data%stemp_error_offset, &
+           valid_min     = output_data%stemp_vmin, &
+           valid_max     = output_data%stemp_error_vmax, &
+           units         = 'kelvin')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -483,13 +517,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cth', &
            output_data%vid_cth, &
-           'cloud top height', &
-           'cloud_top_altitide', &
-           sint_fill_value, &
-           output_data%cth_scale,output_data%cth_offset, &
-           output_data%cth_vmin,output_data%cth_vmax, &
            verbose,ierr, &
-           units='kilometer')
+           long_name     = 'cloud top height', &
+           standard_name = 'cloud_top_altitide', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cth_scale, &
+           add_offset    = output_data%cth_offset, &
+           valid_min     = output_data%cth_vmin, &
+           valid_max     = output_data%cth_vmax, &
+           units         = 'kilometer')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -506,13 +542,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cth_uncertainty', &
            output_data%vid_ctherror, &
-           'cloud top height uncertainty', &
-           'cloud_top_altitide uncertainty', &
-           sint_fill_value, &
-           output_data%cth_error_scale,output_data%cth_error_offset, &
-           output_data%cth_error_vmin,output_data%cth_error_vmax, &
            verbose,ierr, &
-           units='kilometer')
+           long_name     = 'cloud top height uncertainty', &
+           standard_name = 'cloud_top_altitide uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cth_error_scale, &
+           add_offset    = output_data%cth_error_offset, &
+           valid_min     = output_data%cth_error_vmin, &
+           valid_max     = output_data%cth_error_vmax, &
+           units         = 'kilometer')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -529,13 +567,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'ctt', &
            output_data%vid_ctt, &
-           'cloud top temperature', &
-           'air_temperature_at_cloud_top', &
-           sint_fill_value, &
-           output_data%ctt_scale,output_data%ctt_offset, &
-           output_data%ctt_vmin,output_data%ctt_vmax, &
            verbose,ierr, &
-           units='kelvin')
+           long_name     = 'cloud top temperature', &
+           standard_name = 'air_temperature_at_cloud_top', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctt_scale, &
+           add_offset    = output_data%ctt_offset, &
+           valid_min     = output_data%ctt_vmin, &
+           valid_max     = output_data%ctt_vmax, &
+           units         = 'kelvin')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -552,13 +592,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'ctt_uncertainty', &
            output_data%vid_ctterror, &
-           'cloud top temperature uncertainty', &
-           'air_temperature_at_cloud_top uncertainty', &
-           sint_fill_value, &
-           output_data%ctt_error_scale,output_data%ctt_error_offset, &
-           output_data%ctt_error_vmin,output_data%ctt_error_vmax, &
            verbose,ierr, &
-           units='kelvin')
+           long_name     = 'cloud top temperature uncertainty', &
+           standard_name = 'air_temperature_at_cloud_top uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctt_error_scale, &
+           add_offset    = output_data%ctt_error_offset, &
+           valid_min     = output_data%ctt_error_vmin, &
+           valid_max     = output_data%ctt_error_vmax, &
+           units         = 'kelvin')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -575,13 +617,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cwp', &
            output_data%vid_cwp, &
-           'cloud liquid water path', &
-           'atmosphere_mass_content_of_cloud_liquid_water', &
-           sint_fill_value, &
-           output_data%cwp_scale,output_data%cwp_offset, &
-           output_data%cwp_vmin,output_data%cwp_vmax, &
            verbose,ierr, &
-           units='g/m2')
+           long_name     = 'cloud liquid water path', &
+           standard_name = 'atmosphere_mass_content_of_cloud_liquid_water', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cwp_scale, &
+           add_offset    = output_data%cwp_offset, &
+           valid_min     = output_data%cwp_vmin, &
+           valid_max     = output_data%cwp_vmax, &
+           units         = 'g/m2')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -598,13 +642,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'cwp_uncertainty', &
            output_data%vid_cwperror, &
-           'CWP uncertainty', &
-           'atmosphere_mass_content_of_cloud_liquid_water uncertainty', &
-           sint_fill_value, &
-           output_data%cwp_error_scale,output_data%cwp_error_offset, &
-           output_data%cwp_error_vmin,output_data%cwp_error_vmax, &
            verbose,ierr, &
-           units='g/m2')
+           long_name     = 'cloud liquid water path uncertainty', &
+           standard_name = 'atmosphere_mass_content_of_cloud_liquid_water uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cwp_error_scale, &
+           add_offset    = output_data%cwp_error_offset, &
+           valid_min     = output_data%cwp_error_vmin, &
+           valid_max     = output_data%cwp_error_vmax, &
+           units         = 'g/m2')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -621,14 +667,16 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'convergence', &
            output_data%vid_convergence, &
-           'retrieval convergence flag', &
-           'retrieval_convergence_flag', &
-           byte_fill_value, &
-           output_data%convergence_scale,output_data%convergence_offset, &
-           output_data%convergence_vmin,output_data%convergence_vmax, &
            verbose,ierr, &
-           flag_values='0b, 1b', &
-           flag_meanings='yes, no')
+           long_name     = 'retrieval convergence flag', &
+           standard_name = 'retrieval_convergence_flag', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%convergence_scale, &
+           add_offset    = output_data%convergence_offset, &
+           valid_min     = output_data%convergence_vmin, &
+           valid_max     = output_data%convergence_vmax, &
+           flag_values   = '0b, 1b', &
+           flag_meanings = 'yes, no')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -645,12 +693,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'niter', &
            output_data%vid_niter, &
-           'number of retrieval iterations', &
-           'number_of_retrieval_iterations', &
-           byte_fill_value, &
-           output_data%niter_scale,output_data%niter_offset, &
-           output_data%niter_vmin,output_data%niter_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'number of retrieval iterations', &
+           standard_name = 'number_of_retrieval_iterations', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%niter_scale, &
+           add_offset    = output_data%niter_offset, &
+           valid_min     = output_data%niter_vmin, &
+           valid_max     = output_data%niter_vmax)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -667,14 +717,16 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'phase', &
            output_data%vid_phase, &
-           'cloud phase flag', &
-           'cloud_phase_flag', &
-           byte_fill_value, &
-           output_data%phase_scale,output_data%phase_offset, &
-           output_data%phase_vmin,output_data%phase_vmax, &
            verbose,ierr, &
-           flag_values='0b, 1b, 2b', &
-           flag_meanings='clear/unknown, liquid, ice')
+           long_name     = 'cloud phase flag', &
+           standard_name = 'cloud_phase_flag', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%phase_scale, &
+           add_offset    = output_data%phase_offset, &
+           valid_min     = output_data%phase_vmin, &
+           valid_max     = output_data%phase_vmax, &
+           flag_values   = '0b, 1b, 2b', &
+           flag_meanings = 'clear/unknown, liquid, ice')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -691,12 +743,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'costja', &
            output_data%vid_costja, &
-           'a priori cost at solution', &
-           'a_priori_cost_at_solution', &
-           sreal_fill_value, &
-           output_data%costja_scale,output_data%costja_offset, &
-           output_data%costja_vmin,output_data%costja_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'a priori cost at solution', &
+           standard_name = 'a_priori_cost_at_solution', &
+           fill_value    = sreal_fill_value, &
+           scale_factor  = output_data%costja_scale, &
+           add_offset    = output_data%costja_offset, &
+           valid_min     = output_data%costja_vmin, &
+           valid_max     = output_data%costja_vmax)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -713,12 +767,14 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'costjm', &
            output_data%vid_costjm, &
-           'measurement cost at solution', &
-           'measurement_cost_at_solution', &
-           sreal_fill_value, &
-           output_data%costjm_scale,output_data%costjm_offset, &
-           output_data%costjm_vmin,output_data%costjm_vmax, &
-           verbose,ierr)
+           verbose,ierr, &
+           long_name     = 'measurement cost at solution', &
+           standard_name = 'measurement_cost_at_solution', &
+           fill_value    = sreal_fill_value, &
+           scale_factor  = output_data%costjm_scale, &
+           add_offset    = output_data%costjm_offset, &
+           valid_min     = output_data%costjm_vmin, &
+           valid_max     = output_data%costjm_vmax)
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -735,14 +791,16 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'lsflag', &
            output_data%vid_lsflag, &
-           'land/sea flag', &
-           'land_binary_mask', &
-           byte_fill_value, &
-           output_data%lsflag_scale,output_data%lsflag_offset, &
-           output_data%lsflag_vmin,output_data%lsflag_vmax, &
            verbose,ierr, &
-           flag_values='0b, 1b, 2b, 3b, 4b, 5b, 6b', &
-           flag_meanings='sea, land, sunglint, snow, ice, snow_and_ice')
+           long_name     = 'land/sea flag', &
+           standard_name = 'land_binary_mask', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%lsflag_scale, &
+           add_offset    = output_data%lsflag_offset, &
+           valid_min     = output_data%lsflag_vmin, &
+           valid_max     = output_data%lsflag_vmax, &
+           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b', &
+           flag_meanings = 'sea, land, sunglint, snow, ice, snow_and_ice')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -764,13 +822,15 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'qcflag', &
            output_data%vid_qcflag, &
-           'quality control flag', &
-           'quality_control_flag', &
-           int(-1,kind=sint), &
-           output_data%qcflag_scale,output_data%qcflag_offset, &
-           output_data%qcflag_vmin,output_data%qcflag_vmax, &
            verbose,ierr, &
-           flag_meanings=trim(adjustl(input_dummy2)))
+           long_name     = 'quality control flag', &
+           standard_name = 'quality_control_flag', &
+           fill_value    = int(-1,kind=sint), &
+           scale_factor  = output_data%qcflag_scale, &
+           add_offset    = output_data%qcflag_offset, &
+           valid_min     = output_data%qcflag_vmin, &
+           valid_max     = output_data%qcflag_vmax, &
+           flag_meanings = trim(adjustl(input_dummy2)))
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -787,14 +847,16 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            dims_var, &
            'illum', &
            output_data%vid_illum, &
-           'illumination flag', &
-           'illumination_flag', &
-           byte_fill_value, &
-           output_data%illum_scale,output_data%illum_offset, &
-           output_data%illum_vmin,output_data%illum_vmax, &
            verbose,ierr, &
-           flag_values='1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
-           flag_meanings='Day Twilight Night Daynore DayMissingSingleVisFirst, DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, NightMissingSingleIRThird')
+           long_name     = 'illumination flag', &
+           standard_name = 'illumination_flag', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%illum_scale, &
+           add_offset    = output_data%illum_offset, &
+           valid_min     = output_data%illum_vmin, &
+           valid_max     = output_data%illum_vmax, &
+           flag_values   = '1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
+           flag_meanings = 'Day Twilight Night Daynore DayMissingSingleVisFirst, DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, NightMissingSingleIRThird')
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
@@ -813,8 +875,8 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !
    !----------------------------------------------------------------------------
    if (status .ne. 0 ) then
-      write(*,*) 'def_vars_primary.inc: netcdf variable definintion error:', status
-      call Write_Log(Ctrl,'def_vars_primary.inc: netcdf variable definintion error:', status)
+      write(*,*) 'def_vars_primary(): netcdf variable definintion error:', status
+      call Write_Log(Ctrl,'def_vars_primary(): netcdf variable definintion error:', status)
       stop
    end if
 

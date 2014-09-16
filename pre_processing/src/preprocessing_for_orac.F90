@@ -217,7 +217,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    use imager_structures
    use netcdf, only: nf90_inq_libvers
    use netcdf_output
-   use netcdf_structures
    use preparation_m
    use preproc_constants
    use preproc_structures
@@ -323,14 +322,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    type(preproc_swrtm_s)            :: preproc_swrtm
    type(preproc_surf_s)             :: preproc_surf
 
-   type(netcdf_info_s)              :: netcdf_info
+   type(netcdf_output_info_s)       :: netcdf_info
 
    logical                          :: parse_logical
 
-   logical                         :: along_check
-   integer(kind=lint)              :: along_pos
+   logical                          :: along_check
+   integer(kind=lint)               :: along_pos
 
-!  integer, dimension(8)           :: values
+!  integer, dimension(8)            :: values
 
    ! this is for the wrapper
 #ifdef WRAPPER
@@ -561,7 +560,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
          write(*,*) '       Should be < ',along_pos
          STOP error_stop_code
       end if
-             
+
       ! use specified values
       imager_geolocation%startx=startx
       imager_geolocation%endx=endx
@@ -738,12 +737,12 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'
       if (verbose) write(*,*) 'output_path: ',trim(output_path)
-      call netcdf_output_open(output_path,lwrtm_file, &
+      call netcdf_output_create(output_path,lwrtm_file, &
            swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
            geo_file,loc_file,alb_file,scan_file,platform,sensor,global_atts, &
            cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
            imager_geolocation,netcdf_info,channel_info,use_chunking, &
-           include_full_brdf)
+           include_full_brdf,verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'

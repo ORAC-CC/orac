@@ -17,8 +17,9 @@
 !    N/A
 !
 ! History:
-!    10th Nov 2000, Greg McGarragh : Original version, output_data_*
+!    13th Jun 2014, Greg McGarragh : Original version, output_data_*
 !       structures taken from SPixel module.
+!    16th Sep 2014, Greg McGarragh : Added output_utils.F90.
 !
 ! Bugs:
 !    None known.
@@ -311,6 +312,8 @@ contains
 include 'alloc_output_data.F90'
 include 'dealloc_output_data.F90'
 
+include 'output_utils.F90'
+
 include 'def_vars_primary.F90'
 include 'def_vars_secondary.F90'
 
@@ -319,78 +322,5 @@ include 'prepare_secondary.F90'
 
 include 'write_primary.F90'
 include 'write_secondary.F90'
-
-
-subroutine prepare_short_packed_float(value_in, value_out, &
-                                      scale_factor, add_offset, &
-                                      fill_value_in, fill_value_out, &
-                                      valid_min, valid_max, bound_max_value)
-
-   use ECP_Constants
-
-   implicit none
-
-   real(kind=sreal),   intent(in)  :: value_in
-   integer(kind=sint), intent(out) :: value_out
-   real(kind=sreal),   intent(in)  :: scale_factor
-   real(kind=sreal),   intent(in)  :: add_offset
-   real(kind=sreal),   intent(in)  :: fill_value_in
-   integer(kind=sint), intent(in)  :: fill_value_out
-   integer(kind=sint), intent(in)  :: valid_min
-   integer(kind=sint), intent(in)  :: valid_max
-   integer(kind=sint), intent(in)  :: bound_max_value
-
-   real(kind=sreal)                 :: temp
-
-   temp = (value_in - add_offset) / scale_factor
-
-   if (value_in .ne. sreal_fill_value) then
-      if (temp .lt. real(valid_min,kind=sreal)) then
-         value_out=sint_fill_value
-      else if (temp .gt. real(valid_max,kind=sreal)) then
-         value_out=bound_max_value
-      else
-         value_out=int(temp, kind=sint)
-      end if
-   else
-      value_out=sint_fill_value
-   end if
-
-end subroutine prepare_short_packed_float
-
-
-subroutine prepare_float_packed_float(value_in, value_out, &
-                                      scale_factor, add_offset, &
-                                      fill_value_in, fill_value_out, &
-                                      valid_min, valid_max, bound_max_value)
-
-   use ECP_Constants
-
-   implicit none
-
-   real(kind=sreal), intent(in)  :: value_in
-   real(kind=sreal), intent(out) :: value_out
-   real(kind=sreal), intent(in)  :: scale_factor
-   real(kind=sreal), intent(in)  :: add_offset
-   real(kind=sreal), intent(in)  :: fill_value_in
-   real(kind=sreal), intent(in)  :: fill_value_out
-   real(kind=sreal), intent(in)  :: valid_min
-   real(kind=sreal), intent(in)  :: valid_max
-   real(kind=sreal), intent(in)  :: bound_max_value
-
-   real(kind=sreal)              :: temp
-
-   temp = (value_in - add_offset) / scale_factor
-
-   if (temp .ge. real(valid_min,kind=sreal) .and. &
-       temp .le. real(valid_max,kind=sreal)) then
-      value_out=temp
-   else if (temp .lt. real(valid_min,kind=sreal)) then
-      value_out=sreal_fill_value
-   else if (temp .gt. real(valid_max,kind=sreal)) then
-      value_out=bound_max_value
-   end if
-
-end subroutine prepare_float_packed_float
 
 end module output_routines

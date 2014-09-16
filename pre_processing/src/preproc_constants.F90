@@ -24,6 +24,8 @@
 ! 2014/08/30, GM: Removed pi and d2r as they are in common_constants.
 ! 2014/08/31, GM: Removed unused lengths and made compress_level_*
 !    and shuffle_* names consistent with their ORAC type names.
+! 2014/09/16, GM: Rename the deflate_level_* and shuffle_* parameters to be
+!    consistent with ORAC kinds.
 !
 ! $Id$
 !
@@ -71,11 +73,11 @@ module preproc_constants
    ! Some netcdf4 related parameters
 
    ! Compression levels for variables of different type (0:none,9:maximum)
-   integer(kind=lint),  parameter :: compress_level_byte=0
-   integer(kind=lint),  parameter :: compress_level_sint=0
-   integer(kind=lint),  parameter :: compress_level_lint=0
-   integer(kind=lint),  parameter :: compress_level_sreal=0
-   integer(kind=lint),  parameter :: compress_level_dreal=0
+   integer(kind=lint),  parameter :: deflate_level_byte=0
+   integer(kind=lint),  parameter :: deflate_level_sint=0
+   integer(kind=lint),  parameter :: deflate_level_lint=0
+   integer(kind=lint),  parameter :: deflate_level_sreal=0
+   integer(kind=lint),  parameter :: deflate_level_dreal=0
 
    integer(kind=lint),  parameter :: max_chunk_latlon=10000
 
@@ -83,7 +85,7 @@ module preproc_constants
    logical,             parameter :: shuffle_byte=.FALSE.
    logical,             parameter :: shuffle_sint=.FALSE.
    logical,             parameter :: shuffle_lint=.FALSE.
-   logical,             parameter :: shuffle_float=.FALSE.
-   logical,             parameter :: shuffle_double=.FALSE.
+   logical,             parameter :: shuffle_sreal=.FALSE.
+   logical,             parameter :: shuffle_dreal=.FALSE.
 
 end module preproc_constants
