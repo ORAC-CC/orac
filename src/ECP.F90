@@ -369,7 +369,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Now set the corners of the domain based on what's in the input files
    Ctrl%Ind%X0 = 1
    Ctrl%Ind%Y0 = 1
-   Ctrl%Ind%X1 = Ctrl%Ind%Xmax
+   Ctrl%Ind%X1 = Ctrl%Ind%XMax
    Ctrl%Ind%Y1 = Ctrl%Ind%YMax
 
    Ctrl%Ind%Xstart = 1
@@ -670,8 +670,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          do i = ixstart,ixstop,xstep
             SPixel%Loc%X0 = i
 
-            Diag%YmFit = MissingXn
             Diag%Y0    = MissingXn
+            Diag%YmFit = MissingXn
             Diag%AK    = sreal_fill_value
 
 !           TotPix = TotPix+1
@@ -691,16 +691,18 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 !                 TotMissed = TotMissed+1
                   Totmissed_line(j) = Totmissed_line(j)+1
 
-                  SPixel%Xn = MissingXn
-                  SPixel%Sn = MissingSn
+                  SPixel%Xn        = MissingXn
+                  SPixel%Sn        = MissingSn
+                  SPixel%CWP       = MissingXn
+                  SPixel%CWP_error = MissingSn
 
                   ! These are not filled as they are FM related products but
                   ! they are actually output so we fill them here for lack of
                   ! better place.
-                  RTM_Pc%Hc      = MissingXn
-                  RTM_Pc%dHc_dPc = MissingXn
-                  RTM_Pc%Tc      = MissingXn
-                  RTM_Pc%dTc_dPc = MissingXn
+                  RTM_Pc%Hc        = MissingXn
+                  RTM_Pc%dHc_dPc   = MissingXn
+                  RTM_Pc%Tc        = MissingXn
+                  RTM_Pc%dTc_dPc   = MissingXn
 
                   call Zero_Diag(Ctrl, Diag, status)
                else
@@ -710,6 +712,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                   ! inversion.
                   Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
                                         RTM_Pc, Diag, status)
+
+                  ! Calculate the Cloud water path CWP
+                  if (status == 0) then
+                     call Calc_CWP(Ctrl, SPixel, status)
+                  endif
 
                   ! Set values required for overall statistics 1st bit test on QC
                   ! flag determines whether convergence occurred.
@@ -735,15 +742,22 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                         TotMaxJ_line(j) = TotMaxJ_line(j)+1
                      end if
                   else
-                     Diag%YmFit= MissingXn
-                     SPixel%Xn = MissingXn
-                     SPixel%Sn = MissingSn
+                     SPixel%Xn        = MissingXn
+                     SPixel%Sn        = MissingSn
+                     SPixel%CWP       = MissingXn
+                     SPixel%CWP_error = MissingSn
+
+                     ! These are not filled as they are FM related products but
+                     ! they are actually output so we fill them here for lack of
+                     ! better place.
+                     RTM_Pc%Hc        = MissingXn
+                     RTM_Pc%dHc_dPc   = MissingSn
+                     RTM_Pc%Tc        = MissingXn
+                     RTM_Pc%dTc_dPc   = MissingSn
+
                      call Zero_Diag(Ctrl, Diag, status)
                   end if
                end if ! btest if closes
-
-               ! Calculate the Cloud water path CWP
-               call Calc_CWP(Ctrl, SPixel, status)
 
                ! Write the outputs
 
