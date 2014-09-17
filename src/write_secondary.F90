@@ -25,6 +25,7 @@
 ! 2014/06/13, Greg McGarragh: Cleaned up the code.
 ! 2014/09/01, Greg McGarragh: Start using the common/orac_ncdf.F90 write_array
 !    interface.
+! 2014/09/17, Greg McGarragh: Bug fix, forgot to offset y dimension of output.
 !
 ! $Id$
 !
@@ -64,29 +65,29 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    n_y = iystop - iystart + 1
 
    call nc_write_array(ncid,'scanline_u',output_data%vid_scanline_u,&
-           output_data%scanline_u(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%scanline_u(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'scanline_v',output_data%vid_scanline_v,&
-           output_data%scanline_v(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%scanline_v(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'cot_ap',output_data%vid_cot_ap,&
-           output_data%cot_ap(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cot_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cot_fg',output_data%vid_cot_fg,&
-           output_data%cot_fg(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cot_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ref_ap',output_data%vid_ref_ap,&
-           output_data%ref_ap(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ref_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'ref_fg',output_data%vid_ref_fg,&
-           output_data%ref_fg(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ref_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ctp_ap',output_data%vid_ctp_ap,&
-           output_data%ctp_ap(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ctp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'ctp_fg',output_data%vid_ctp_fg,&
-           output_data%ctp_fg(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ctp_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'stemp_fg',output_data%vid_stemp_fg,&
-           output_data%stemp_fg(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%stemp_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'stemp_ap',output_data%vid_stemp_fg,&
-           output_data%stemp_ap(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%stemp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    do i=1,Ctrl%Ind%Nsolar
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
@@ -94,7 +95,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
               output_data%vid_albedo(i),output_data%albedo(ixstart:,:,i), &
-              1,1,n_x,iystart,1,n_y)
+              1,1,n_x,1,1,n_y)
    end do
 
    do i=1,Ctrl%Ind%Ny
@@ -103,7 +104,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
               output_data%vid_channels(i),output_data%channels(ixstart:,:,i), &
-              1,1,n_x,iystart,1,n_y)
+              1,1,n_x,1,1,n_y)
    end do
 
    do i=1,Ctrl%Ind%Ny
@@ -112,7 +113,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
               output_data%vid_y0(i),output_data%y0(ixstart:,:,i), &
-              1,1,n_x,iystart,1,n_y)
+              1,1,n_x,1,1,n_y)
    end do
 
    do i=1,Ctrl%Ind%Ny
@@ -121,11 +122,11 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
 	call nc_write_array(ncid,trim(adjustl(input_dummy)), &
                 output_data%vid_residuals(i),output_data%residuals(ixstart:,:,i), &
-                1,1,n_x,iystart,1,n_y)
+                1,1,n_x,1,1,n_y)
    end do
 
    call nc_write_array(ncid,'degrees_of_freedom_signal',output_data%vid_ds,&
-	   output_data%ds(ixstart:,:),1,1,n_x,iystart,1,n_y)
+	   output_data%ds(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    if (lcovar) then
       do i=1,SPixel%Nx
@@ -135,7 +136,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
             input_dummy='covariance_matrix_element_' &
                & //trim(adjustl(input_num1))//trim(adjustl(input_num2))
             call nc_write_array(ncid,input_dummy,output_data%vid_covariance(i,j),&
-                    output_data%covariance(ixstart:,:,i,j),1,1,n_x,iystart,1,n_y)
+                    output_data%covariance(ixstart:,:,i,j),1,1,n_x,1,1,n_y)
          end do
       end do
    end if

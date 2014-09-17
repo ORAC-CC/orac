@@ -26,6 +26,7 @@
 ! 2014/06/13, Greg McGarragh: Cleaned up the code.
 ! 2014/09/01, Greg McGarragh: Start using the common/orac_ncdf.F90 write_array
 !    interface.
+! 2014/09/17, Greg McGarragh: Bug fix, forgot to offset y dimension of output.
 !
 ! $Id$
 !
@@ -63,12 +64,12 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
    n_y = iystop - iystart + 1
 
    call nc_write_array(ncid,'time',output_data%vid_time,&
-           output_data%time(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%time(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'lat',output_data%vid_lat,&
-           output_data%lat(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%lat(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'lon',output_data%vid_lon,&
-           output_data%lon(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%lon(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    do i=1,Ctrl%Ind%NViews
 
@@ -77,82 +78,82 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
       input_dummy='solar_zenith_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
               output_data%vid_sol_zen(i),output_data%sol_zen(ixstart:,:,i), &
-              1,1,n_x,iystart,1,n_y)
+              1,1,n_x,1,1,n_y)
 
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
               output_data%vid_sat_zen(i),output_data%sat_zen(ixstart:,:,i), &
-              1,1,n_x,iystart,1,n_y)
+              1,1,n_x,1,1,n_y)
 
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
               output_data%vid_rel_azi(i),output_data%rel_azi(ixstart:,:,i), &
-              1,1,n_x,iystart,1,n_y)
+              1,1,n_x,1,1,n_y)
 
    end do
 
    call nc_write_array(ncid,'cot',output_data%vid_cot,&
-           output_data%cot(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cot_uncertainty',output_data%vid_coterror,&
-           output_data%cot_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cot_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ref',output_data%vid_ref,&
-           output_data%ref(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ref(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'ref_uncertainty',output_data%vid_referror,&
-           output_data%ref_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ref_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ctp',output_data%vid_ctp,&
-           output_data%ctp(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ctp(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'ctp_uncertainty',output_data%vid_ctperror,&
-           output_data%ctp_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ctp_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'cc_total',output_data%vid_cct,&
-           output_data%cct(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cct(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cc_total_uncertainty',output_data%vid_ccterror,&
-           output_data%cct_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cct_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'stemp',output_data%vid_stemp,&
-           output_data%stemp(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%stemp(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'stemp_uncertainty',output_data%vid_stemperror,&
-           output_data%stemp_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%stemp_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'cth',output_data%vid_cth,&
-           output_data%cth(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cth(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cth_uncertainty',output_data%vid_ctherror,&
-           output_data%cth_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cth_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ctt',output_data%vid_ctt,&
-           output_data%ctt(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ctt(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'ctt_uncertainty',output_data%vid_ctterror,&
-           output_data%ctt_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%ctt_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'cwp',output_data%vid_cwp,&
-           output_data%cwp(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cwp(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cwp_uncertainty',output_data%vid_cwperror,&
-           output_data%cwp_error(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%cwp_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'convergence',output_data%vid_convergence,&
-           output_data%convergence(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%convergence(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'niter',output_data%vid_niter,&
-           output_data%niter(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%niter(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'phase',output_data%vid_phase,&
-           output_data%phase(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%phase(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'costja',output_data%vid_costja,&
-           output_data%costja(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%costja(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'costjm',output_data%vid_costjm,&
-           output_data%costjm(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%costjm(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'lsflag',output_data%vid_lsflag,&
-           output_data%lsflag(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%lsflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'qcflag',output_data%vid_qcflag,&
-           output_data%qcflag(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%qcflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'illum',output_data%vid_illum,&
-           output_data%illum(ixstart:,:),1,1,n_x,iystart,1,n_y)
+           output_data%illum(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
 end subroutine write_primary
