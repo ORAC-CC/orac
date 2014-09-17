@@ -31,6 +31,10 @@
 !    ????/??/??, Matthias Jerg: Original version.
 !    2013/02/26, CP: added in header and remove hardwiring of MSI_Data%ALB=3
 !    2014/04/20, GM: Cleaned up the code.
+!    2014/08/18, AP: Commented out reading of scanline data as it is not
+!       actually used.
+!    2014/04/20, GM: Added call to Nullify_Data() as some pointers may not be
+!       associated.
 !
 ! Bugs:
 !   None known.
@@ -57,6 +61,9 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
    logical,          intent(in)    :: verbose
+
+   ! Nullify pointers in case some are not associated
+   call Nullify_Data(Ctrl, MSI_Data)
 
    ! Define local variables
 

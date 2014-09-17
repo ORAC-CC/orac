@@ -38,6 +38,7 @@
 !    XX/XX/2013, MJ: explicitly defines LSFLag byte array type
 !    27/05/2014, GM: Some cleanup.
 !    2014/09/09, GM: Changes related to new BRDF support.
+!    2014/09/17, GM: Added Nullify_Data()
 !
 ! Bugs:
 !    None known.
@@ -87,5 +88,6 @@ module Data_def
 contains
 
 include 'DeallocData.F90'
+include 'NullifyData.F90'
 
 end module Data_def

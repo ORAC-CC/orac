@@ -4,7 +4,8 @@ $(OBJS)/CheckLimits.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o \
 $(OBJS)/check_value.o: $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o check_value.inc
 $(OBJS)/config.o: $(OBJS)/ECPConstants.o
 $(OBJS)/Ctrl.o: $(OBJS)/ECPConstants.o DeallocCtrl.F90
-$(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o DeallocData.F90
+$(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o DeallocData.F90 \
+        NullifyData.F90
 $(OBJS)/DecomposeCholesky.o: $(OBJS)/ECPConstants.o
 $(OBJS)/Diag.o: $(OBJS)/ECPConstants.o
 $(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o
