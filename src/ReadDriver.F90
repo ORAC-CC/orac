@@ -67,6 +67,7 @@
 !       (=modis for the time being)
 !    2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
 !       variables
+!    2014/09/17, GM: Use the DiFlag* constants instead of integer values.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -345,20 +346,20 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
    Ctrl%Bkpl=3
 
    ! Set diagnostic flags
-   Ctrl%Diagl(1)  = 1
-   Ctrl%Diagl(2)  = 1
-   Ctrl%Diagl(3)  = 1
-   Ctrl%Diagl(4)  = 1
-   Ctrl%Diagl(5)  = 1
-   Ctrl%Diagl(6)  = 1
-   Ctrl%Diagl(7)  = 0
-   Ctrl%Diagl(8)  = 0
-   Ctrl%Diagl(9)  = 1
-   Ctrl%Diagl(10) = 1
-   Ctrl%Diagl(11) = 1
-   Ctrl%Diagl(12) = 1
-   Ctrl%Diagl(13) = 0
-   Ctrl%Diagl(14) = 0
+   Ctrl%Diagl(DiFlagQC)   = 1
+   Ctrl%Diagl(DiFlagIter) = 1
+   Ctrl%Diagl(DiFlagPhCh) = 1
+   Ctrl%Diagl(DiFlagCost) = 1
+   Ctrl%Diagl(DiFlagSt1)  = 1
+   Ctrl%Diagl(DiFlagSs1)  = 1
+   Ctrl%Diagl(DiFlagSt2)  = 0
+   Ctrl%Diagl(DiFlagSs2 ) = 0
+   Ctrl%Diagl(DiFlagYFit) = 1
+   Ctrl%Diagl(DiFlagXFit) = 1
+   Ctrl%Diagl(DiFlagAP)   = 1
+   Ctrl%Diagl(DiFlagFG)   = 1
+   Ctrl%Diagl(DiFlagSx)   = 0
+   Ctrl%Diagl(DiFlagSy)   = 0
 
    Ctrl%RTMIntflag = RTMIntMethLinear
    Ctrl%LUTIntflag = LUTIntMethLinear
