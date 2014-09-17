@@ -46,6 +46,8 @@
 !       present replace 0.o with missing value.
 !    01/08/2014, GM: Changed illumination selection logic to catch a couple of
 !       missing cases and cleanup.
+!    17/09/2014, GM: Fix bugs related to checking for out-of-range measurement
+!       values.
 !
 ! Bugs:
 !    None known.
@@ -73,10 +75,11 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    ! Local variables
 
-   integer        :: view,i,j,ic
-   integer        :: refch1,refch2
-   integer        :: n_vis_bad_ref,n_vis_bad_tau,n_ir_bad
-   integer        :: i_missing_vis_ref,i_missing_vis_tau,i_missing_ir
+   logical :: flag
+   integer :: view,i,j,ic
+   integer :: refch1,refch2
+   integer :: n_vis_bad_ref,n_vis_bad_tau,n_ir_bad
+   integer :: i_missing_vis_ref,i_missing_vis_tau,i_missing_ir
 
    allocate(MSI_Data%illum(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
    MSI_Data%illum=byte_fill_value
@@ -108,13 +111,25 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
             i_missing_vis_ref=-1
             i_missing_vis_tau=-1
 
-            ! Check pure solar channels
+            ! Check solar channels
             do ic=1,Ctrl%Ind%Nsolar
                ! Check the ref channels
                if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .eq. refch1) .or. &
                    (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .eq. refch2)) then
-                  if (MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .lt. RefMin .and. &
-                      MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .gt. RefMax) then
+                  flag = .false.
+                  if (ic .lt. Ctrl%Ind%ThermalFirst) then
+                     if (MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .lt. RefMin .or. &
+                         MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .gt. RefMax) then
+                        flag = .true.
+                     end if
+                  else
+                     if (MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .lt. BTMin .or. &
+                         MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .gt. BTMax) then
+                        flag = .true.
+                     end if
+                  end if
+
+                  if (flag) then
                      n_vis_bad_ref=n_vis_bad_ref+1
                      i_missing_vis_ref=ic
                      MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) = MissingXn
@@ -124,29 +139,41 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
                ! Check the tau channels
                if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch1) .and. &
                    (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch2)) then
-                  if (MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .lt. RefMin .and. &
-                      MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .gt. RefMax) then
+                  flag = .false.
+                  if (ic .lt. Ctrl%Ind%ThermalFirst) then
+                     if (MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .lt. RefMin .or. &
+                         MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .gt. RefMax) then
+                        flag = .true.
+                     end if
+                  else
+                     if (MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .lt. BTMin .or. &
+                         MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .gt. BTMax) then
+                        flag = .true.
+                     end if
+                  end if
+
+                  if (flag) then
                      n_vis_bad_tau=n_vis_bad_tau+1
                      i_missing_vis_tau=ic
                      MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) = MissingXn
-                  end if
+                  endif
                end if
             end do
 
             n_ir_bad=0
             i_missing_ir=-1
 
-            ! Check pure ir channels
+            ! Check ir channels
             do ic=1,Ctrl%Ind%Nthermal
-               if (MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic)) .lt. BTMin .and. &
+               if (MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic)) .lt. BTMin .or. &
                    MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic)) .gt. BTMax) then
                   n_ir_bad=n_ir_bad+1
                   i_missing_ir=ic
-                  MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic))=MissingXn
+                  MSI_Data%MSI(i,j,Ctrl%Ind%ythermal_msi(ic)) = MissingXn
                end if
             end do
 
-!           print *, n_vis_bad_ref, n_vis_bad_tau, n_ir_bad, &
+!           print *, i, j, n_vis_bad_ref, n_vis_bad_tau, n_ir_bad, &
 !                    i_missing_vis_ref, i_missing_vis_tau, i_missing_ir, &
 !                    MSI_Data%Geometry%Sol(i, j, 1)
 
@@ -328,6 +355,5 @@ end if
          end do
       end do
    end do
-
 
 end subroutine Read_Illum_nc
