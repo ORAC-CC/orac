@@ -445,15 +445,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Make read in rttov data in one go, no more segment reads
    if (status == 0) then
-      call read_input_dimensions_lwrtm(Ctrl,Ctrl%Fid%LWRTM,&
-         RTM%LW%Grid%NLatLon,RTM%LW%Grid%NLon, RTM%LW%Grid%NLat,&
-         RTM%LW%NP,RTM%LW%NPLAY,&
-         RTM%LW%NLWF,RTM%LW%NV,verbose)
+      call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
+           RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NPLAY, RTM%LW%NLWF, verbose)
 
-      call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM,&
-         RTM%SW%Grid%NLatLon,RTM%SW%Grid%NLon, RTM%SW%Grid%NLat,&
-         RTM%SW%NP,RTM%SW%NPLAY,&
-         RTM%SW%NSWF,RTM%SW%NV,verbose)
+      call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
+           RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NPLAY, RTM%SW%NSWF, verbose)
 
       ! Don't read the lowest (surface) level
       RTM%LW%NP=RTM%LW%NPLAY
@@ -610,6 +606,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,115) cpu_secs
 #endif
 
+#ifdef _OPENMP
       ! Along track loop is parallelized with OpenMP
       nthreads = omp_get_max_threads()
       write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
@@ -620,7 +617,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       !$OMP FIRSTPRIVATE(status)
       thread_id = omp_get_thread_num()
       write(*,*) 'Thread ', thread_id+1, 'is active'
-
+#endif
+      
       !  Allocate sizes of SPixel sub-structure arrays
       call Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
       if (status == 0) RTM_Pc_Alloc = .true.

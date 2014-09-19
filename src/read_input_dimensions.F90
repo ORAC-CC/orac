@@ -63,19 +63,17 @@ subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim, &
 end subroutine read_input_dimensions_msi
 
 
-subroutine read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim, &
-     laydim,channeldim,viewdim,verbose)
+subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
+     laydim,channeldim,verbose)
 
-   use CTRL_def
    use ECP_Constants
    use orac_ncdf
 
    implicit none
 
-   type(CTRL_t),              intent(in)  :: Ctrl
    character(len=FilenameLen),intent(in)  :: fname
-   integer(kind=lint),        intent(out) :: xydim,xdim,ydim,levdim,laydim, &
-                                             channeldim,viewdim
+   integer(kind=lint),        intent(out) :: xdim,ydim,levdim,laydim, &
+                                             channeldim
    logical,                   intent(in)  :: verbose
 
    integer                                :: ncid
@@ -83,13 +81,11 @@ subroutine read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim, &
    ! Open file
    call nc_open(ncid,fname)
 
-   xydim = nc_dim_length(ncid, 'nlon_x_nlat_lwrtm', verbose)
-   xdim = nc_dim_length(ncid, 'nlon_lwrtm', verbose)
-   ydim = nc_dim_length(ncid, 'nlat_lwrtm', verbose)
-   laydim = nc_dim_length(ncid, 'nlayers_lwrtm', verbose)
-   levdim = nc_dim_length(ncid, 'nlevels_lwrtm', verbose)
+   xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
+   ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
+   levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
+   laydim = nc_dim_length(ncid, 'nlayers_rtm', verbose)
    channeldim = nc_dim_length(ncid, 'nlw_channels', verbose)
-   viewdim = nc_dim_length(ncid, 'nviews', verbose)
 
    ! Close file
    if (nf90_close(ncid) .ne. NF90_NOERR) &
@@ -98,8 +94,8 @@ subroutine read_input_dimensions_lwrtm(Ctrl,fname,xydim,xdim,ydim,levdim, &
 end subroutine read_input_dimensions_lwrtm
 
 
-subroutine read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim, &
-     channeldim,viewdim,verbose)
+subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim,laydim, &
+     channeldim,verbose)
 
    use ECP_Constants
    use orac_ncdf
@@ -107,8 +103,8 @@ subroutine read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim, &
    implicit none
 
    character(len=FilenameLen), intent(in)  :: fname
-   integer(kind=lint),         intent(out) :: xydim,xdim,ydim,levdim,laydim, &
-                                              channeldim,viewdim
+   integer(kind=lint),         intent(out) :: xdim,ydim,levdim,laydim, &
+                                              channeldim
    logical,                    intent(in)  :: verbose
 
    integer                                 :: ncid
@@ -116,13 +112,11 @@ subroutine read_input_dimensions_swrtm(fname,xydim,xdim,ydim,levdim,laydim, &
    ! Open file
    call nc_open(ncid,fname)
 
-   xydim = nc_dim_length(ncid, 'nlon_x_nlat_swrtm', verbose)
-   xdim = nc_dim_length(ncid, 'nlon_swrtm', verbose)
-   ydim = nc_dim_length(ncid, 'nlat_swrtm', verbose)
-   laydim = nc_dim_length(ncid, 'nlayers_swrtm', verbose)
-   levdim = nc_dim_length(ncid, 'nlevels_swrtm', verbose)
+   xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
+   ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
+   laydim = nc_dim_length(ncid, 'nlayers_rtm', verbose)
+   levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
    channeldim = nc_dim_length(ncid, 'nsw_channels', verbose)
-   viewdim = nc_dim_length(ncid, 'nviews', verbose)
 
    ! Close file
    if (nf90_close(ncid) .ne. NF90_NOERR) &

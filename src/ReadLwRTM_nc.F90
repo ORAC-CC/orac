@@ -89,6 +89,7 @@
 !       cells centres (as is actually the case).
 !    2014/08/01, AP: Remove unused counter fields.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
+!    2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
 !
 ! Bugs:
 !    None known.
@@ -120,7 +121,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
    integer                  :: ncid, chan_found, i, j
-   real(sreal), allocatable :: dummy1d(:), dummy2d(:,:), dummy3d(:,:,:)
+   real(sreal), allocatable :: dummy1d(:)
    character(Instnamelen)   :: platform, sensor, instname
    integer, allocatable     :: index(:), ChanID(:)
 !  real(4), allocatable     :: WvNumber(:)
@@ -145,37 +146,25 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    allocate(RTM%LW%H(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat, RTM%LW%NP))
 
    ! Read data into arrays
-   allocate(dummy1d(RTM%LW%Grid%NLatLon))
-
-   call nc_read_array(ncid, "lon_pw", dummy1d, verbose)
-   RTM%LW%lon=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
-
-   call nc_read_array(ncid, "lat_pw", dummy1d, verbose)
-   RTM%LW%lat=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
-
-   call nc_read_array(ncid, "skint_pw" ,dummy1d, verbose)
-   RTM%LW%skint=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
-
-   call nc_read_array(ncid, "explnsp_pw", dummy1d, verbose)
-   RTM%LW%sp=reshape(dummy1d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat/))
-
+   allocate(dummy1d(RTM%LW%Grid%NLon))
+   call nc_read_array(ncid, "lon_rtm", dummy1d, verbose)
+   do i=1,RTM%LW%Grid%NLon
+      RTM%LW%lon(i,:) = dummy1d(i)
+   end do
    deallocate(dummy1d)
-   allocate(dummy2d(RTM%LW%NP, RTM%LW%Grid%NLatLon))
 
-   ! ACP: Your guess is as good as mine as to why this is the correct order.
-   call nc_read_array(ncid, "tprofile_lev", dummy2d, verbose)
-   RTM%LW%T=reshape(dummy2d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,RTM%LW%NP/), &
-        order = (/3,1,2/))
-   
-   call nc_read_array(ncid, "pprofile_lev", dummy2d, verbose)
-   RTM%LW%P=reshape(dummy2d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,RTM%LW%NP/), &
-        order = (/3,1,2/))
+   allocate(dummy1d(RTM%LW%Grid%NLat))
+   call nc_read_array(ncid, "lat_rtm", dummy1d, verbose)
+   do i=1,RTM%LW%Grid%NLat
+      RTM%LW%lat(:,i) = dummy1d(i)
+   end do
+   deallocate(dummy1d)
 
-   call nc_read_array(ncid, "gphprofile_lev", dummy2d, verbose)
-   RTM%LW%H=reshape(dummy2d, (/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,RTM%LW%NP/), &
-        order = (/3,1,2/))
-
-   deallocate(dummy2d)
+   call nc_read_array(ncid, "skint_rtm", RTM%LW%skint, verbose)
+   call nc_read_array(ncid, "explnsp_rtm", RTM%LW%sp, verbose)
+   call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, verbose)
+   call nc_read_array(ncid, "pprofile_rtm", RTM%LW%P, verbose)
+   call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, verbose)
 
    ! Close PRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) &
@@ -253,38 +242,13 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    allocate(RTM%LW%Rbc_up(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
         RTM%LW%NP))
 
-   ! Successive cell count in preprocessing
-
    ! Read data into arrays
-   allocate(dummy2d(Ctrl%Ind%NThermal,RTM%LW%Grid%NLatLon))
-   allocate(dummy3d(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLatLon))
-
-   call nc_read_array(ncid, "emiss_lw", dummy2d, verbose, 1, index)
-   RTM%LW%Ems=reshape(dummy2d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NThermal/), order = (/3,1,2/))
-
-   call nc_read_array(ncid, "tac_lw", dummy3d, verbose, 1, index)
-   RTM%LW%Tac=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
-
-   call nc_read_array(ncid, "tbc_lw", dummy3d, verbose, 1, index)
-   RTM%LW%Tbc=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
-
-   call nc_read_array(ncid, "rbc_up_lw", dummy3d, verbose, 1, index)
-   RTM%LW%Rbc_up=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
-
-   call nc_read_array(ncid, "rac_up_lw", dummy3d, verbose, 1, index)
-   RTM%LW%Rac_up=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
-
-   call nc_read_array(ncid, "rac_down_lw", dummy3d, verbose, 1, index)
-   RTM%LW%Rac_dwn=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NThermal,RTM%LW%NP/), order = (/3,4,1,2/))
-
-   deallocate(dummy2d)
-   deallocate(dummy3d)
+   call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, verbose, 3, index)
+   call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, verbose, 3, index)
+   call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, verbose, 3, index)
+   call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, verbose, 3, index)
+   call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, verbose, 3, index)
+   call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, verbose, 3, index)
 
 !  if (allocated(WvNumber)) deallocate(WvNumber)
    if (allocated(ChanID))   deallocate(ChanID)

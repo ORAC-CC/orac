@@ -79,6 +79,7 @@
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !    2014/07/23, AP: Commented out unused code for future deletion.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
+!    2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
 !
 ! Bugs:
 !    None known.
@@ -110,7 +111,6 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
    integer                  :: ncid, chan_found, i, j
-   real(sreal), allocatable :: dummy3d(:,:,:)
    character(Instnamelen)   :: platform, sensor, instname
    integer, allocatable     :: index(:), ChanID(:)
 !  real(4), allocatable     :: WvNumber(:)
@@ -181,16 +181,8 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
    allocate(RTM%SW%Tac(RTM%SW%Grid%NLon, RTM%SW%Grid%NLat, Ctrl%Ind%NSolar, &
         RTM%SW%NP))
 
-   allocate(dummy3d(Ctrl%Ind%NSolar,RTM%LW%NP,RTM%LW%Grid%NLatLon))
-
-   call nc_read_array(ncid, "tac_sw", dummy3d, verbose, 1, index)
-   RTM%SW%Tac=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NSolar,RTM%LW%NP/), order = (/3,4,1,2/))
-   call nc_read_array(ncid, "tbc_sw", dummy3d, verbose, 1, index)
-   RTM%SW%Tbc=reshape(dummy3d,(/RTM%LW%Grid%NLon,RTM%LW%Grid%NLat, &
-        Ctrl%Ind%NSolar,RTM%LW%NP/), order = (/3,4,1,2/))
-
-   deallocate(dummy3d)
+   call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, verbose, 3, index)
+   call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, verbose, 3, index)
 
    ! Close SwRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) &

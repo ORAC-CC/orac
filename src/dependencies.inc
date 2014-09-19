@@ -59,7 +59,7 @@ $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
 $(OBJS)/R2T.o: $(OBJS)/SADChan.o
 $(OBJS)/read_config_file.o: $(OBJS)/Ctrl.o $(OBJS)/config.o
-$(OBJS)/read_input_dimensions.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o
+$(OBJS)/read_input_dimensions.o: $(OBJS)/ECPConstants.o
 $(OBJS)/read_sat_data_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SADChan.o
 $(OBJS)/ReadALB_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SADChan.o
