@@ -15,8 +15,6 @@
 ! preproc_geoloc struct out         lat/lon values
 ! preproc_geo    struct out         geometry
 ! preproc_prtm   struct out         profiles and surface fields
-! preproc_lwrtm  struct out         longwave RTM data
-! preproc_swrtm  struct out         shortwave RTM data
 ! preproc_surf   struct out         surface albedo and emissivity
 ! channel_info   struct in          channel information
 !
@@ -50,6 +48,7 @@
 ! 2014/05/01, GM: Cleaned up the code.
 ! 2014/05/28, MJ: Fixed bug with intent statement for preproc_dims
 ! 2014/07/01, AP: Redefined limits to minimise array sizes
+! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 !
 ! $Id$
 !
@@ -58,8 +57,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
-   preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm,preproc_swrtm, &
-   preproc_surf,channel_info)
+   preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,channel_info)
 
    use channel_structures
    use imager_structures
@@ -72,8 +70,6 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    type(preproc_geoloc_s), intent(out)   :: preproc_geoloc
    type(preproc_geo_s),    intent(out)   :: preproc_geo
    type(preproc_prtm_s),   intent(out)   :: preproc_prtm
-   type(preproc_lwrtm_s),  intent(out)   :: preproc_lwrtm
-   type(preproc_swrtm_s),  intent(out)   :: preproc_swrtm
    type(preproc_surf_s),   intent(out)   :: preproc_surf
    type(channel_info_s),   intent(inout) :: channel_info
 
@@ -121,9 +117,9 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    allocate(preproc_prtm%ozone(sx:ex,sy:ey,preproc_dims%kdim))
    preproc_prtm%ozone=sreal_fill_value
 
-   allocate(preproc_prtm%phi_lay(sx:ex,sy:ey,preproc_dims%kdim-1))
+   allocate(preproc_prtm%phi_lay(sx:ex,sy:ey,preproc_dims%kdim))
    preproc_prtm%phi_lay=sreal_fill_value
-   allocate(preproc_prtm%phi_lev(sx:ex,sy:ey,preproc_dims%kdim))
+   allocate(preproc_prtm%phi_lev(sx:ex,sy:ey,preproc_dims%kdim+1))
    preproc_prtm%phi_lev=sreal_fill_value
 
    allocate(preproc_prtm%geopot(sx:ex,sy:ey))
@@ -156,61 +152,6 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
 
    allocate(preproc_prtm%totcolwv(sx:ex,sy:ey))
    preproc_prtm%totcolwv=sreal_fill_value
-
-
-   ! preproc_lwrtm
-   allocate(preproc_lwrtm%radiance_cloudy(nchan_lw))
-   preproc_lwrtm%radiance_cloudy=sreal_fill_value
-
-   allocate(preproc_lwrtm%transmission_tau_levels(nchan_lw, &
-        preproc_dims%kdim))
-   preproc_lwrtm%transmission_tau_levels=sreal_fill_value
-
-   allocate(preproc_lwrtm%trans_layer(nchan_lw))
-   preproc_lwrtm%trans_layer=sreal_fill_value
-
-   allocate(preproc_lwrtm%emissivity_used(nchan_lw))
-   preproc_lwrtm%emissivity_used=sreal_fill_value
-
-   allocate(preproc_lwrtm%transmission_tau_total(nchan_lw))
-   preproc_lwrtm%transmission_tau_total=sreal_fill_value
-
-   allocate(preproc_lwrtm%taubc(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%taubc=sreal_fill_value
-
-   allocate(preproc_lwrtm%tauac(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%tauac=sreal_fill_value
-
-   allocate(preproc_lwrtm%radbc(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%radbc=sreal_fill_value
-
-   allocate(preproc_lwrtm%radiance_bt(nchan_lw))
-   preproc_lwrtm%radiance_bt=sreal_fill_value
-
-   allocate(preproc_lwrtm%radiance_up(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%radiance_up=sreal_fill_value
-
-   allocate(preproc_lwrtm%radiance_down(nchan_lw,preproc_dims%kdim))
-   preproc_lwrtm%radiance_down=sreal_fill_value
-
-   allocate(preproc_lwrtm%players(preproc_dims%kdim-1))
-   preproc_lwrtm%players=sreal_fill_value
-   allocate(preproc_lwrtm%plevels(preproc_dims%kdim))
-   preproc_lwrtm%plevels=sreal_fill_value
-
-
-   ! preproc_swrtm
-   allocate(preproc_swrtm%transmission_tau_total(nchan_sw))
-   preproc_swrtm%transmission_tau_total=sreal_fill_value
-
-   allocate(preproc_swrtm%trans_layer(nchan_sw))
-   preproc_swrtm%trans_layer=sreal_fill_value
-
-   allocate(preproc_swrtm%taubc(nchan_sw,preproc_dims%kdim))
-   preproc_swrtm%taubc=sreal_fill_value
-
-   allocate(preproc_swrtm%tauac(nchan_sw,preproc_dims%kdim))
-   preproc_swrtm%tauac=sreal_fill_value
 
 
    ! preproc_surf

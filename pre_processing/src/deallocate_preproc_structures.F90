@@ -14,8 +14,6 @@
 ! preproc_geoloc struct out         lat/lon values
 ! preproc_geo    struct out         geometry
 ! preproc_prtm   struct out         profiles and surface fields
-! preproc_lwrtm  struct out         longwave RTM data
-! preproc_swrtm  struct out         shortwave RTM data
 ! preproc_surf   struct out         surface albedo and emissivity
 !
 ! History:
@@ -32,7 +30,8 @@
 !                 used in the call.
 ! 2014/05/01, GM: Add some deallocations that were being done outside.
 ! 2014/05/01, GM: Cleaned up the code.
-! 2015/05/07, AP: Removed unnecessary fields from preproc_dims.
+! 2014/05/07, AP: Removed unnecessary fields from preproc_dims.
+! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 !
 ! $Id$
 !
@@ -41,7 +40,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
-   preproc_geo,preproc_prtm,preproc_lwrtm,preproc_swrtm,preproc_surf)
+   preproc_geo,preproc_prtm,preproc_surf)
 
    use preproc_constants
 
@@ -51,8 +50,6 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    type(preproc_geoloc_s), intent(inout) :: preproc_geoloc
    type(preproc_geo_s),    intent(inout) :: preproc_geo
    type(preproc_prtm_s),   intent(inout) :: preproc_prtm
-   type(preproc_lwrtm_s),  intent(inout) :: preproc_lwrtm
-   type(preproc_swrtm_s),  intent(inout) :: preproc_swrtm
    type(preproc_surf_s),   intent(inout) :: preproc_surf
 
    ! preproc_dims
@@ -88,27 +85,6 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    deallocate(preproc_prtm%sst)
    deallocate(preproc_prtm%sea_ice_cover)
    deallocate(preproc_prtm%totcolwv)
-
-   ! preproc_lwrtm
-   deallocate(preproc_lwrtm%radiance_cloudy)
-   deallocate(preproc_lwrtm%transmission_tau_total)
-   deallocate(preproc_lwrtm%trans_layer)
-   deallocate(preproc_lwrtm%emissivity_used)
-   deallocate(preproc_lwrtm%transmission_tau_levels)
-   deallocate(preproc_lwrtm%taubc)
-   deallocate(preproc_lwrtm%tauac)
-   deallocate(preproc_lwrtm%radbc)
-   deallocate(preproc_lwrtm%radiance_bt)
-   deallocate(preproc_lwrtm%radiance_up)
-   deallocate(preproc_lwrtm%radiance_down)
-   deallocate(preproc_lwrtm%players)
-   deallocate(preproc_lwrtm%plevels)
-
-   ! preproc_swrtm
-   deallocate(preproc_swrtm%transmission_tau_total)
-   deallocate(preproc_swrtm%trans_layer)
-   deallocate(preproc_swrtm%taubc)
-   deallocate(preproc_swrtm%tauac)
 
    ! preproc_surf
    deallocate(preproc_surf%emissivity)

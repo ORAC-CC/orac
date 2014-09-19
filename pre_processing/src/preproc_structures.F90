@@ -24,7 +24,8 @@
 ! 2013/10/23, AP: Tidying. Commented out unused types.
 ! 2014/02/10, AP: Shortened DIM names.
 ! 2014/05/01, GM: Cleaned up the code.
-! 2015/05/07, AP: Removed unnecessary fields from preproc_dims.
+! 2014/05/07, AP: Removed unnecessary fields from preproc_dims.
+! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
 !
 ! $Id$
 !
@@ -78,58 +79,6 @@ module preproc_structures
       real(kind=sreal), dimension(:,:), pointer   :: sst,sea_ice_cover
       real(kind=sreal), dimension(:,:), pointer   :: totcolwv
    end type preproc_prtm_s
-
-
-   ! lwrtm data
-   type preproc_lwrtm_s
-      ! cloudy toa radiance for 100% fraction in each channel at ctp
-      real(kind=sreal), dimension(:), pointer   :: radiance_cloudy
-      ! optical depth from surface for each channel
-      real(kind=sreal), dimension(:), pointer   :: transmission_tau_total
-      ! transmittance from surface for each channel
-      real(kind=sreal), dimension(:), pointer   :: trans_layer
-      ! emissivity used by rttov in the rt calculations in each channel
-      real(kind=sreal), dimension(:), pointer   :: emissivity_used
-      ! transmittance from each pressure level to TOA (aka known as taubc in
-      ! opposite vertical order)
-      real(kind=sreal), dimension(:,:), pointer :: transmission_tau_levels
-      ! taubc itself
-      real(kind=sreal), dimension(:,:), pointer :: taubc
-      ! radiance difference between toa radiance and radiance at each pressure
-      ! level normalized with transmission from each level
-      real(kind=sreal), dimension(:,:), pointer :: tauac
-      ! radiance difference between toa radiance and radiance at each pressure
-      ! level normalized with transmission from each level
-      real(kind=sreal), dimension(:,:), pointer :: radbc
-      ! total (cloudy and clear) brightness temp. in each channel at TOA
-      real(kind=sreal), dimension(:), pointer   :: radiance_bt
-      ! above cloud upwelling radiance from each pressure level to TOA in each
-      ! channel
-      real(kind=sreal), dimension(:,:), pointer :: radiance_up
-      ! above cloud downwelling radiance from each pressure level down to
-      ! surface in each channel
-      real(kind=sreal), dimension(:,:), pointer :: radiance_down
-      ! pressure levels of layers
-      real(kind=sreal), dimension(:), pointer   :: players
-      real(kind=sreal), dimension(:), pointer   :: plevels
-   end type preproc_lwrtm_s
-
-
-   ! swrtm data
-   type preproc_swrtm_s
-      ! tau from surface for each channel
-      real(kind=sreal), dimension(:), pointer   :: transmission_tau_total
-      ! transmittance from surface for each channel
-      real(kind=sreal), dimension(:), pointer   :: trans_layer
-      ! transmittance from each pressure level to TOA (aka known as taubc in
-      ! opposite vertical order)
-      real(kind=sreal), dimension(:,:), pointer :: transmission_tau_levels
-      ! taubc itself
-      real(kind=sreal), dimension(:,:), pointer :: taubc
-      ! radiance difference between toa radiance and radiance at each pressure
-      ! level normalized with transmission from each level
-      real(kind=sreal), dimension(:,:), pointer :: tauac
-   end type preproc_swrtm_s
 
 
    ! surface albedo and emissivity
