@@ -196,6 +196,8 @@
 !                chunking was off.
 ! 2014/07/01: AP Update to ECMWF code.
 ! 2014/08/10: GM Changes related to new BRDF support.
+! 2014/09/11: AP Remove one level from preproc_prtm grid as it wasn't written
+!                to or necessary.
 !
 ! $Id$
 !
@@ -318,8 +320,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    type(preproc_geo_s)              :: preproc_geo
    type(preproc_geoloc_s)           :: preproc_geoloc
    type(preproc_prtm_s)             :: preproc_prtm
-   type(preproc_lwrtm_s)            :: preproc_lwrtm
-   type(preproc_swrtm_s)            :: preproc_swrtm
    type(preproc_surf_s)             :: preproc_surf
 
    type(netcdf_output_info_s)       :: netcdf_info
@@ -474,11 +474,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    along_track_offset=0
    along_track_offset2=0
    n_along_track2=0
-
-   ! allocate array for channel information
-   imager_angles%nviews=1
-   channel_info%nchannels_total=6
-   call allocate_channel_info(channel_info)
+   imager_angles%nviews = 1
 
    ! determine platform, day, time, check if l1b and geo match
    if (verbose) &
@@ -686,14 +682,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 
       ! define preprocessing grid from user grid spacing and satellite limits
       if (verbose) write(*,*) 'Define preprocessing grid'
-      preproc_dims%kdim = ecmwf%kdim + 1
+      preproc_dims%kdim = ecmwf%kdim
       call define_preprop_grid(imager_geolocation,preproc_dims,verbose)
 
       ! allocate preprocessing structures
       if (verbose) write(*,*) 'Allocate preprocessing structures'
       call allocate_preproc_structures(imager_angles,preproc_dims, &
-           preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
-           preproc_swrtm,preproc_surf,channel_info)
+           preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,channel_info)
 
       ! now read the actual data and interpolate it to the preprocessing grid
       if (verbose) write(*,*) 'Build preprocessing grid'
@@ -747,8 +742,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
       call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
-           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_lwrtm, &
-           preproc_swrtm,imager_angles,netcdf_info,channel_info,month,verbose)
+           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,netcdf_info,&
+           channel_info,year,month,day,verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
@@ -784,11 +779,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
       call deallocate_ecmwf_structures(ecmwf)
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
-           preproc_geo,preproc_prtm, preproc_lwrtm, preproc_swrtm, &
-           preproc_surf)
+           preproc_geo, preproc_prtm, preproc_surf)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
            imager_flags, imager_time, imager_measurements)
-      call deallocate_surface_structures(surface,include_full_brdf)
+      call deallocate_surface_structures(surface, include_full_brdf)
 
    end do ! end looping over chunks
 

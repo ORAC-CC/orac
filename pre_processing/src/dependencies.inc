@@ -57,10 +57,9 @@ $(OBJS)/read_modis.o: $(OBJS)/bright_m.o $(OBJS)/calender.o \
         read_modis_land_sea_mask.F90 read_modis_lat_lon.F90 read_modis_time.F90 \
         read_modis_time_lat_lon_angles.F90
 $(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
-$(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/imager_structures.o \
-        $(OBJS)/netcdf_output.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o call_rtm_ir_rttov.F90 \
-        call_rtm_solar_rttov.F90 effective_2way_za.F90
+$(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
+        write_ir_rttov.F90 write_solar_rttov.F90
 $(OBJS)/set_ecmwf.o: $(OBJS)/preproc_constants.o
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/date_type_structure.o $(OBJS)/preproc_constants.o \

@@ -55,7 +55,7 @@ module preproc_constants
 
 
    ! Physical constants
-   real(kind=sreal),    parameter :: hpa2pa=0.01
+   real(kind=sreal),    parameter :: pa2hpa=0.01
 
    ! Specific gas constants of dry air and water vapor
    real(kind=sreal),    parameter :: r_dry_air=287.05
@@ -80,6 +80,7 @@ module preproc_constants
    integer(kind=lint),  parameter :: deflate_level_dreal=0
 
    integer(kind=lint),  parameter :: max_chunk_latlon=10000
+   integer(kind=lint),  parameter :: max_chunk_lat=20
 
    ! Turn on shuffling to improve compression
    logical,             parameter :: shuffle_byte=.FALSE.

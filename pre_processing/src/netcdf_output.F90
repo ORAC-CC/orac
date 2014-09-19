@@ -112,7 +112,7 @@ module netcdf_output
       integer :: vid_lon_pw, vid_lat_pw
       integer :: vid_skint_pw, vid_lnsp_pw, vid_lsf_pw
       integer :: vid_satzen_pw, vid_solzen_pw
-      integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_gphprofile_lev_pw
+      integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw
 
       ! scan file
       integer :: vid_uscan, vid_vscan

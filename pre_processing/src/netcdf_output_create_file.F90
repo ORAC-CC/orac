@@ -65,6 +65,9 @@
 ! 2014/09/02, GM: Replaced use of the derived dimensions id arrays in
 !    netcdf_info with local arrays here. There was no reason for them to be in
 !    that structure.
+! 2014/09/10, AP: Tidying. Removed angles from RTM outputs. Now outputs RTTOV
+!    over two spatial dimensions rather than one, which come first (as used in
+!    the main processor).
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
 !    common library.
 !
@@ -75,8 +78,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
-     platform,sensor,path,type,preproc_dims,imager_angles,netcdf_info, &
-     channel_info,use_chunking,verbose)
+     platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
+     use_chunking,verbose)
 
    use netcdf
 
@@ -101,80 +104,63 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
    character(len=*),               intent(in)    :: path
    integer,                        intent(in)    :: type
    type(preproc_dims_s),           intent(in)    :: preproc_dims
-   type(imager_angles_s),          intent(in)    :: imager_angles
    type(netcdf_output_info_s),     intent(inout) :: netcdf_info
    type(channel_info_s),           intent(in)    :: channel_info
    logical,                        intent(in)    :: use_chunking
    logical,                        intent(in)    :: verbose
 
    ! Local
-   integer                    :: ierr
-   integer                    :: nlon_x_nlat
    character(len=file_length) :: ctitle
    integer                    :: ncid
    integer                    :: dimids_1d(1)
    integer                    :: dimids_2d(2)
    integer                    :: dimids_3d(3)
+   integer                    :: dimids_4d(4)
    integer                    :: chunksize1d(1)
    integer                    :: chunksize2d(2)
    integer                    :: chunksize3d(3)
+   integer                    :: chunksize4d(4)
+   integer                    :: ierr
+   integer(lint)              :: nlon, nlat
 
-
-   nlon_x_nlat=(preproc_dims%max_lon-preproc_dims%min_lon+1) * &
-        (preproc_dims%max_lat-preproc_dims%min_lat+1)
-
-
-   ! open lwrtm file
-   if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) then
-
+   nlon = preproc_dims%max_lon-preproc_dims%min_lon+1
+   nlat = preproc_dims%max_lat-preproc_dims%min_lat+1
+   
+   select case (type)
+   !-------------------------------------------------------------------------   
+   case(NETCDF_OUTPUT_FILE_LWRTM)
+   !-------------------------------------------------------------------------   
       ctitle='ORAC Preprocessing lwrtm output file'
 
       ! create file
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_lwrtm)
-      if (ierr.ne.NF90_NOERR) stop 'error: lw creating file'
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+                      netcdf_info%ncid_lwrtm) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): lw creating file'
 
 
-      ! start defining things
-      ierr = nf90_redef(netcdf_info%ncid_lwrtm)
+      ! Define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_rtm', &
+                       nlon, netcdf_info%dimid_x_lw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create x-d'
 
+      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlat_rtm', &
+                       nlat, netcdf_info%dimid_y_lw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create y-d'
 
-      ! define view dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_lwrtm, 'nviews', &
-           imager_angles%nviews, netcdf_info%dimid_v_lw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nv lw'
+      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlayers_rtm', &
+                       preproc_dims%kdim, netcdf_info%dimid_layers_lw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create nlay lw'
 
-      ! define channel dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlw_channels', &
-           channel_info%nchannels_lw, netcdf_info%dimid_lw_channels)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nchan lw'
+      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_rtm', &
+                       preproc_dims%kdim+1, netcdf_info%dimid_levels_lw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create nlev lw'
 
-      ! define lon dimension for reference
-      ierr = nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_lwrtm', &
-           preproc_dims%max_lon-preproc_dims%min_lon+1, netcdf_info%dimid_x_lw)
-      if (ierr.ne.NF90_NOERR) stop 'error:create x-d'
+      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlw_channels', &
+                       channel_info%nchannels_lw, netcdf_info%dimid_lw_channels)&
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create nchan lw'
 
-      ! define lat dimension for reference
-      ierr = nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlat_lwrtm', &
-           preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_lw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d'
-
-      ! define horizontal dimension as lon x lat
-      ierr = nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_x_nlat_lwrtm', &
-           nlon_x_nlat, netcdf_info%dimid_xy_lw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create xy-d 2'
-
-      ! define layer dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlayers_lwrtm', &
-           preproc_dims%kdim-1, netcdf_info%dimid_layers_lw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nlay lw'
-
-      ! define level dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_lwrtm', &
-           preproc_dims%kdim, netcdf_info%dimid_levels_lw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nlev lw'
-
-
+      
+      ! Define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_lw_channels
 
       call nc_def_var_long_packed_long( &
@@ -201,108 +187,59 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               verbose, ierr, &
               fill_value = sreal_fill_value)
 
-
-      ! combines viewing xy dims
-      dimids_2d(1)=netcdf_info%dimid_v_lw
-      dimids_2d(2)=netcdf_info%dimid_xy_lw
-
-      if (.not. use_chunking) then
-         chunksize1d(1)=nlon_x_nlat
-
-         chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=nlon_x_nlat
-      else
-         chunksize1d(1)=min(nlon_x_nlat,max_chunk_latlon)
-
-         chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
-      end if
-
-      ! define solar zenith
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_lwrtm, &
-              dimids_2d, &
-              'solza_lw', &
-              netcdf_info%vid_solza_lw, &
-              verbose, ierr, &
-              chunksizes = chunksize2d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-      ! define satellite zenith
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_lwrtm, &
-              dimids_2d, &
-              'satza_lw', &
-              netcdf_info%vid_satza_lw, &
-              verbose, ierr, &
-              chunksizes = chunksize2d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-      ! define relative azimuth
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_lwrtm, &
-              dimids_2d, &
-              'relazi_lw', &
-              netcdf_info%vid_relazi_lw, &
-              verbose, ierr, &
-              chunksizes = chunksize2d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-
-      ! set up the combined dimensions for 3D fields (spatial+channel)
-      dimids_2d(1)=netcdf_info%dimid_lw_channels
-      dimids_2d(2)=netcdf_info%dimid_xy_lw
+      ! Define 3-D variables
+      dimids_3d(1)=netcdf_info%dimid_x_lw
+      dimids_3d(2)=netcdf_info%dimid_y_lw
+      dimids_3d(3)=netcdf_info%dimid_lw_channels
 
       if (.not. use_chunking) then
-         chunksize2d(1)=channel_info%nchannels_lw
-         chunksize2d(2)=nlon_x_nlat
+         chunksize3d(1)=nlon
+         chunksize3d(2)=nlat
+         chunksize3d(3)=channel_info%nchannels_lw
       else
-         chunksize2d(1)=1
-         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
+         chunksize3d(1)=nlon
+         chunksize3d(2)=min(nlat,max_chunk_lat)
+         chunksize3d(3)=1
       end if
 
       ! define emissivity 3D
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
-              dimids_2d, &
+              dimids_3d, &
               'emiss_lw', &
               netcdf_info%vid_emiss_lw, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
+              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-
-      ! set up the combined dimensions for 4D fields (c-z-xy)
-      dimids_3d(1)=netcdf_info%dimid_lw_channels
-      dimids_3d(2)=netcdf_info%dimid_levels_lw
-      dimids_3d(3)=netcdf_info%dimid_xy_lw
+      ! Define 4-D variables
+      dimids_4d(1)=netcdf_info%dimid_x_lw
+      dimids_4d(2)=netcdf_info%dimid_y_lw
+      dimids_4d(3)=netcdf_info%dimid_lw_channels
+      dimids_4d(4)=netcdf_info%dimid_levels_lw
 
       if (.not. use_chunking) then
-         chunksize3d(1)=channel_info%nchannels_lw
-         chunksize3d(2)=preproc_dims%kdim
-         chunksize3d(3)=nlon_x_nlat
+         chunksize4d(1)=nlon
+         chunksize4d(2)=nlat
+         chunksize4d(3)=channel_info%nchannels_lw
+         chunksize4d(4)=preproc_dims%kdim
       else
-         chunksize3d(1)=1
-         chunksize3d(2)=1
-         chunksize3d(3)=min(nlon_x_nlat,max_chunk_latlon)
+         chunksize4d(1)=nlon
+         chunksize4d(2)=min(nlat,max_chunk_lat)
+         chunksize4d(3)=1
+         chunksize4d(4)=1
       end if
 
       ! define tac
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
-              dimids_3d, &
+              dimids_4d, &
               'tac_lw', &
               netcdf_info%vid_tac_lw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
+              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -310,11 +247,11 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define tbc
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
-              dimids_3d, &
+              dimids_4d, &
               'tbc_lw', &
               netcdf_info%vid_tbc_lw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
+              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -322,11 +259,11 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define rbc_up
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
-              dimids_3d, &
+              dimids_4d, &
               'rbc_up_lw', &
               netcdf_info%vid_rbc_up_lw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
+              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -334,11 +271,11 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define rac_up
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
-              dimids_3d, &
+              dimids_4d, &
               'rac_up_lw', &
               netcdf_info%vid_rac_up_lw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
+              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -346,67 +283,52 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define rac_down
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
-              dimids_3d, &
+              dimids_4d, &
               'rac_down_lw', &
               netcdf_info%vid_rac_down_lw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
+              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-
-   ! open swrtm file
-   else if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) then
-
+   !-------------------------------------------------------------------------   
+   case(NETCDF_OUTPUT_FILE_SWRTM)
+   !-------------------------------------------------------------------------   
       ctitle='ORAC Preprocessing swrtm output file'
 
 
       ! create file
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_swrtm)
-      if (ierr.ne.NF90_NOERR) stop 'error: creating sw file'
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+                      netcdf_info%ncid_swrtm) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): creating sw file'
 
 
-      ! start defining things
-      ierr = nf90_redef(netcdf_info%ncid_swrtm)
+      ! Define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_rtm', &
+                      preproc_dims%max_lon-preproc_dims%min_lon+1, &
+                      netcdf_info%dimid_x_sw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create x-d'
 
+      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlat_rtm', &
+                      preproc_dims%max_lat-preproc_dims%min_lat+1, &
+                      netcdf_info%dimid_y_sw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create y-d'
 
-      ! define view dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_swrtm, 'nviews', &
-           imager_angles%nviews, netcdf_info%dimid_v_sw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nv sw'
+      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlayers_rtm', &
+                       preproc_dims%kdim, netcdf_info%dimid_layers_sw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw layer'
 
-      ! define channel dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_swrtm, 'nsw_channels', &
-           channel_info%nchannels_sw, netcdf_info%dimid_sw_channels)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nchan sw'
+      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_rtm', &
+                       preproc_dims%kdim+1, netcdf_info%dimid_levels_sw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw level'
 
-      ! define lon dimension for reference
-      ierr = nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_swrtm', &
-           preproc_dims%max_lon-preproc_dims%min_lon+1, netcdf_info%dimid_x_sw)
-      if (ierr.ne.NF90_NOERR) stop 'error:create x-d'
+      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nsw_channels', &
+                       channel_info%nchannels_sw, netcdf_info%dimid_sw_channels)&
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw channel'
 
-      ! define lat dimension for reference
-      ierr = nf90_def_dim(netcdf_info%ncid_swrtm, 'nlat_swrtm', &
-           preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_sw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d'
-
-      ! define horizontal dimension as lon x lat
-      ierr = nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_x_nlat_swrtm', &
-           nlon_x_nlat, netcdf_info%dimid_xy_sw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create xy-d 2'
-
-      ! define layer dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_swrtm, 'nlayers_swrtm', &
-           preproc_dims%kdim-1, netcdf_info%dimid_layers_sw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nlay sw'
-
-      ! define level dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_swrtm', &
-           preproc_dims%kdim, netcdf_info%dimid_levels_sw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nlev sw'
-
+      
+      ! Define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_sw_channels
 
       call nc_def_var_long_packed_long( &
@@ -433,83 +355,32 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               verbose, ierr, &
               fill_value = sreal_fill_value)
 
-
-      ! combines viewing xy dims
-      dimids_2d(1)=netcdf_info%dimid_v_sw
-      dimids_2d(2)=netcdf_info%dimid_xy_sw
-
-      if (.not. use_chunking) then
-         chunksize1d(1)=nlon_x_nlat
-
-         chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=nlon_x_nlat
-      else
-         chunksize1d(1)=min(nlon_x_nlat,max_chunk_latlon)
-
-         chunksize2d(1)=imager_angles%nviews
-         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
-      end if
-
-      ! define solar zenith
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_swrtm, &
-              dimids_2d, &
-              'solza_sw', &
-              netcdf_info%vid_solza_sw, &
-              verbose, ierr, &
-              chunksizes = chunksize2d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-      ! define satellite zenith
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_swrtm, &
-              dimids_2d, &
-              'satza_sw', &
-              netcdf_info%vid_satza_sw, &
-              verbose, ierr, &
-              chunksizes = chunksize2d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-      ! define relative azimuth
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_swrtm, &
-              dimids_2d, &
-              'relazi_sw', &
-              netcdf_info%vid_relazi_sw, &
-              verbose, ierr, &
-              chunksizes = chunksize2d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-
-      ! set up the combined dimensions for 4D fields
-      dimids_3d(1)=netcdf_info%dimid_sw_channels
-      dimids_3d(2)=netcdf_info%dimid_levels_sw
-      dimids_3d(3)=netcdf_info%dimid_xy_sw
+      ! Define 4-D variables
+      dimids_4d(1)=netcdf_info%dimid_x_sw
+      dimids_4d(2)=netcdf_info%dimid_y_sw
+      dimids_4d(3)=netcdf_info%dimid_sw_channels
+      dimids_4d(4)=netcdf_info%dimid_levels_sw
 
       if (.not. use_chunking) then
-         chunksize3d(1)=channel_info%nchannels_sw
-         chunksize3d(2)=preproc_dims%kdim
-         chunksize3d(3)=nlon_x_nlat
+         chunksize4d(1)=nlon
+         chunksize4d(2)=nlat
+         chunksize4d(3)=channel_info%nchannels_sw
+         chunksize4d(4)=preproc_dims%kdim
       else
-         chunksize3d(1)=1
-         chunksize3d(2)=1
-         chunksize3d(3)=min(nlon_x_nlat,max_chunk_latlon)
+         chunksize4d(1)=nlon
+         chunksize4d(2)=min(nlat,max_chunk_lat)
+         chunksize4d(3)=1
+         chunksize4d(4)=1
       end if
 
       ! define tac
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
-              dimids_3d, &
+              dimids_4d, &
               'tac_sw', &
               netcdf_info%vid_tac_sw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
+              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -517,98 +388,92 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define tbc
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
-              dimids_3d, &
+              dimids_4d, &
               'tbc_sw', &
               netcdf_info%vid_tbc_sw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
+              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
 
-   ! open prtm file
-   else if (type .eq. NETCDF_OUTPUT_FILE_PRTM) then
-
+   !-------------------------------------------------------------------------   
+   case(NETCDF_OUTPUT_FILE_PRTM)
+   !-------------------------------------------------------------------------   
       ctitle='ORAC Preprocessing prtm output file'
 
 
       ! create file
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_prtm)
-      if (ierr.ne.NF90_NOERR) stop 'error: creating p file'
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+                      netcdf_info%ncid_prtm) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): creating p file'
 
 
-      ! start defining things
-      ierr = nf90_redef(netcdf_info%ncid_prtm)
+      ! Define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_rtm', &
+                       preproc_dims%max_lon-preproc_dims%min_lon+1, &
+                       netcdf_info%dimid_x_pw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create x-d'
 
+      if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlat_rtm', &
+                       preproc_dims%max_lat-preproc_dims%min_lat+1, &
+                       netcdf_info%dimid_y_pw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create y-d'
 
-      ! define lon dimension for reference
-      ierr = nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_prtm', &
-           preproc_dims%max_lon-preproc_dims%min_lon+1, netcdf_info%dimid_x_pw)
-      if (ierr.ne.NF90_NOERR) stop 'error:create x-d'
+      if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlayers_rtm', &
+                       preproc_dims%kdim, netcdf_info%dimid_layers_pw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create nlay prtm'
 
-      ! define lat dimension for reference
-      ierr = nf90_def_dim(netcdf_info%ncid_prtm, 'nlat_prtm', &
-           preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_pw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d'
+      if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_rtm', &
+                       preproc_dims%kdim+1, netcdf_info%dimid_levels_pw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create nlev prtm'
 
-      ! define horizontal dimension as lon x lat
-      ierr = nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_x_nlat_prtm', &
-           nlon_x_nlat, netcdf_info%dimid_xy_pw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create xy-d 2'
-
-      ! define layer dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_prtm, 'nlayers_prtm', &
-           preproc_dims%kdim-1, netcdf_info%dimid_layers_pw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nlay pw'
-
-      ! define level dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_prtm', &
-           preproc_dims%kdim, netcdf_info%dimid_levels_pw)
-      if (ierr.ne.NF90_NOERR) stop 'error: create nlev pw'
-
-
-      if (.not. use_chunking) then
-         chunksize1d(1)=nlon_x_nlat
-      else
-         chunksize1d(1)=min(nlon_x_nlat,max_chunk_latlon)
-      end if
-
-      dimids_1d(1) = netcdf_info%dimid_xy_pw
+      ! Define 1-D variables
+      dimids_1d(1) = netcdf_info%dimid_x_pw
 
       ! define longitude variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_1d, &
-              'lon_pw', &
+              'lon_rtm', &
               netcdf_info%vid_lon_pw, &
               verbose, ierr, &
-              chunksizes = chunksize1d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
-
-      ! define latitude variable
+      
+      dimids_1d(1) = netcdf_info%dimid_y_pw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_1d, &
-              'lat_pw', &
+              'lat_rtm', &
               netcdf_info%vid_lat_pw, &
               verbose, ierr, &
-              chunksizes = chunksize1d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
+      
+      ! Define 2-D variables
+      dimids_2d(1)=netcdf_info%dimid_x_pw
+      dimids_2d(2)=netcdf_info%dimid_y_pw
+
+      if (.not. use_chunking) then
+         chunksize2d(1)=nlon
+         chunksize2d(2)=nlat
+      else
+         chunksize2d(1)=nlon
+         chunksize2d(2)=min(nlat,max_chunk_lat)
+      end if
 
       ! define skint variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
-              dimids_1d, &
-              'skint_pw', &
+              dimids_2d, &
+              'skint_rtm', &
               netcdf_info%vid_skint_pw, &
               verbose, ierr, &
-              chunksizes = chunksize1d, &
+              chunksizes = chunksize2d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -616,72 +481,50 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define exp(lnsp) variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
-              dimids_1d, &
-              'explnsp_pw', &
+              dimids_2d, &
+              'explnsp_rtm', &
               netcdf_info%vid_lnsp_pw, &
               verbose, ierr, &
-              chunksizes = chunksize1d, &
+              chunksizes = chunksize2d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
       ! define exp(lsf) variable
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_1d, &
-              'lsf_pw', &
-              netcdf_info%vid_lsf_pw, &
-              verbose, ierr, &
-              chunksizes = chunksize1d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
+!      call nc_def_var_float_packed_float( &
+!              netcdf_info%ncid_prtm, &
+!              dimids_2d, &
+!              'lsf_rtm', &
+!              netcdf_info%vid_lsf_pw, &
+!              verbose, ierr, &
+!              chunksizes = chunksize2d, &
+!              deflate_level = deflate_level_sreal, &
+!              shuffle = shuffle_sreal, &
+!              fill_value = sreal_fill_value)
 
-      ! define satzen variable
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_1d, &
-              'satzen_pw', &
-              netcdf_info%vid_satzen_pw, &
-              verbose, ierr, &
-              chunksizes = chunksize1d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-      ! define solzen variable
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_1d, &
-              'solzen_pw', &
-              netcdf_info%vid_solzen_pw, &
-              verbose, ierr, &
-              chunksizes = chunksize1d, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-
-      ! set up the combined dimensions for 3D fields
-      dimids_2d(1)=netcdf_info%dimid_levels_pw
-      dimids_2d(2)=netcdf_info%dimid_xy_pw
-
+      ! Define 3-D variables
+      dimids_3d(1)=netcdf_info%dimid_x_pw
+      dimids_3d(2)=netcdf_info%dimid_y_pw
+      dimids_3d(3)=netcdf_info%dimid_levels_pw
+      
       if (.not. use_chunking) then
-         chunksize2d(1)=preproc_dims%kdim
-         chunksize2d(2)=nlon_x_nlat
+         chunksize3d(1)=nlon
+         chunksize3d(2)=nlat
+         chunksize3d(3)=channel_info%nchannels_sw
       else
-         chunksize2d(1)=1
-         chunksize2d(2)=min(nlon_x_nlat,max_chunk_latlon)
+         chunksize3d(1)=nlon
+         chunksize3d(2)=min(nlat,max_chunk_lat)
+         chunksize3d(3)=1
       end if
 
       ! define pressure profile at level centers as variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
-              dimids_2d, &
-              'pprofile_lev', &
+              dimids_3d, &
+              'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
+              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -689,11 +532,11 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define temperature profile at lever centers as variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
-              dimids_2d, &
-              'tprofile_lev', &
+              dimids_3d, &
+              'tprofile_rtm', &
               netcdf_info%vid_tprofile_lev_pw, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
+              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -701,15 +544,15 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       ! define geopotential height profile at lever centers as variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
-              dimids_2d, &
-              'gphprofile_lev', &
-              netcdf_info%vid_gphprofile_lev_pw, &
+              dimids_3d, &
+              'hprofile_rtm', &
+              netcdf_info%vid_hprofile_lev_pw, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
+              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
-   end if
+   end select
 
 
    ! set up attributes common to all output files
@@ -722,9 +565,8 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
 
    ! close definition section
-   ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR) stop 'error: enddef rtm'
-
+   if (nf90_enddef(ncid).ne.NF90_NOERR) &
+        stop 'ERROR: netcdf_create_rtm(3): enddef rtm'
 
    return
 
@@ -761,6 +603,7 @@ end subroutine netcdf_create_rtm
 ! 2014/02/02, GM: adds chunking on/off option and cleans up code.
 ! 2014/02/02, GM: puts setting up of common attributes in a subroutine used by
 !    all the nc_create_file_*() routines.
+! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
 !    common library.
 !
@@ -819,10 +662,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_alb)
       if (ierr.ne.NF90_NOERR) stop 'error: alb creating file'
-
-
-      ! start defining things
-      ierr = nf90_redef(netcdf_info%ncid_alb)
 
 
       ! define channel dimension for albedo
@@ -992,24 +831,20 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_clf)
-      if (ierr.ne.NF90_NOERR) stop 'error: cf creating file'
-
-
-      !start defining things
-      ierr = nf90_redef(netcdf_info%ncid_clf)
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: cf creating file'
 
 
       ! define x dimension
       ierr = nf90_def_dim(netcdf_info%ncid_clf, 'nx_cf', &
            imager_geolocation%endx-imager_geolocation%startx+1, &
            netcdf_info%dimid_x_cf)
-      if (ierr.ne.NF90_NOERR) stop 'error: create x-d cf'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d cf'
 
       ! define y dimension
       ierr = nf90_def_dim(netcdf_info%ncid_clf, 'ny_cf', &
            imager_geolocation%endy-imager_geolocation%starty+1, &
            netcdf_info%dimid_y_cf)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d cf'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d cf'
 
 
       dimids_2d(1)=netcdf_info%dimid_x_cf
@@ -1044,11 +879,7 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_geo)
-      if (ierr.ne.NF90_NOERR) stop 'error: geo creating file'
-
-
-      !start defining things
-      ierr = nf90_redef(netcdf_info%ncid_geo)
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: geo creating file'
 
 
       ! define view dimension
@@ -1060,13 +891,13 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ierr = nf90_def_dim(netcdf_info%ncid_geo, 'nx_geo', &
            imager_geolocation%endx-imager_geolocation%startx+1, &
            netcdf_info%dimid_x_geo)
-      if (ierr.ne.NF90_NOERR) stop 'error: create x-d geo'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d geo'
 
       ! define y dimension
       ierr = nf90_def_dim(netcdf_info%ncid_geo, 'ny_geo', &
            imager_geolocation%endy-imager_geolocation%starty+1, &
            netcdf_info%dimid_y_geo)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d geo'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d geo'
 
 
       dimids_3d(1)=netcdf_info%dimid_x_geo
@@ -1140,24 +971,20 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_loc)
-      if (ierr.ne.NF90_NOERR) stop 'error: loc creating file'
-
-
-      ! start defining things
-      ierr = nf90_redef(netcdf_info%ncid_loc)
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: loc creating file'
 
 
       ! define x dimension
       ierr = nf90_def_dim(netcdf_info%ncid_loc, 'nx_loc', &
            imager_geolocation%endx-imager_geolocation%startx+1, &
            netcdf_info%dimid_x_loc)
-      if (ierr.ne.NF90_NOERR) stop 'error: create x-d loc'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d loc'
 
       ! define y dimension
       ierr = nf90_def_dim(netcdf_info%ncid_loc, 'ny_loc', &
            imager_geolocation%endy-imager_geolocation%starty+1, &
            netcdf_info%dimid_y_loc)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d loc'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d loc'
 
 
       dimids_2d(1)=netcdf_info%dimid_x_loc
@@ -1204,10 +1031,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_lsf)
       if (ierr.ne.NF90_NOERR) stop 'error: lsf creating file'
-
-
-      ! start defining things
-      ierr = nf90_redef(netcdf_info%ncid_lsf)
 
 
       ! define x dimension
@@ -1257,9 +1080,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
            netcdf_info%ncid_msi)
       if (ierr.ne.NF90_NOERR) stop 'error: msi creating file'
 
-
-      ! start defining things
-      ierr = nf90_redef(netcdf_info%ncid_msi)
 
 if (.false.) then
       ! define view dimension
@@ -1328,14 +1148,6 @@ endif
               verbose, ierr, &
               fill_value = lint_fill_value)
 
-      call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_msi, &
-              dimids_1d, &
-              'msi_ch_procflag', &
-              netcdf_info%vid_msi_ch_procflag, &
-              verbose, ierr, &
-              fill_value = lint_fill_value)
-
 
       dimids_2d(1)=netcdf_info%dimid_x_msi
       dimids_2d(2)=netcdf_info%dimid_y_msi
@@ -1396,24 +1208,20 @@ endif
 
       ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
            netcdf_info%ncid_scan)
-      if (ierr.ne.NF90_NOERR) stop 'error: scan creating file'
-
-
-      !start defining things
-      ierr = nf90_redef(netcdf_info%ncid_scan)
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: scan creating file'
 
 
       ! define x dimension
       ierr = nf90_def_dim(netcdf_info%ncid_scan, 'nx_scan', &
            imager_geolocation%endx-imager_geolocation%startx+1, &
            netcdf_info%dimid_x_scan)
-      if (ierr.ne.NF90_NOERR) stop 'error: create x-d scan'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d scan'
 
       ! define y dimension
       ierr = nf90_def_dim(netcdf_info%ncid_scan, 'ny_scan', &
            imager_geolocation%endy-imager_geolocation%starty+1, &
            netcdf_info%dimid_y_scan)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d scan'
+      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d scan'
 
 
       dimids_2d(1)=netcdf_info%dimid_x_scan
@@ -1467,7 +1275,7 @@ endif
 
    ! close definition section
    ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR) stop 'error: enddef swath'
+   if (ierr.ne.NF90_NOERR) stop 'ERROR: enddef swath'
 
 
    return
@@ -1498,6 +1306,7 @@ end subroutine netcdf_create_swath
 ! 2014/02/02, GM: adds chunking on/off option and cleans up code.
 ! 2014/02/02, GM: puts setting up of common attributes in a subroutine used by
 !    all the nc_create_file_*() routines.
+! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
 !    common library.
 !
@@ -1547,18 +1356,9 @@ subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
 
    ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
         netcdf_info%ncid_config)
-   if (ierr.ne.NF90_NOERR) stop 'error: config creating file'
+   if (ierr.ne.NF90_NOERR) stop 'ERROR: config creating file'
 
 
-   ! start defining things
-   ierr = nf90_redef(netcdf_info%ncid_config)
-
-if (.false.) then
-   ! define view dimension
-!  ierr = nf90_def_dim(netcdf_info%ncid_config, 'nv_conf', &
-!       imager_angles%nviews, netcdf_info%dimid_v_config)
-!  if (ierr.ne.NF90_NOERR) stop 'error: create v-d conf'
-endif
    ! define channel dimension
    ierr = nf90_def_dim(netcdf_info%ncid_config, 'nc_conf', &
         channel_info%nchannels_total, netcdf_info%dimid_c_config)
@@ -1605,13 +1405,13 @@ endif
    ierr = nf90_def_dim(netcdf_info%ncid_config, 'nx_conf', &
         imager_geolocation%endx-imager_geolocation%startx+1, &
         netcdf_info%dimid_x_config)
-   if (ierr.ne.NF90_NOERR) stop 'error: create x-d conf'
+   if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d conf'
 
    ! define y dimension
    ierr = nf90_def_dim(netcdf_info%ncid_config, 'ny_conf', &
         imager_geolocation%endy-imager_geolocation%starty+1, &
         netcdf_info%dimid_y_config)
-   if (ierr.ne.NF90_NOERR) stop 'error: create y-d conf'
+   if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d conf'
 
 
    ! define some channel variables
@@ -1658,14 +1458,6 @@ endif
            verbose, ierr, &
            fill_value = lint_fill_value)
 
-   call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'msi_ch_procflag', &
-           netcdf_info%vid_msi_ch_procflag_config, &
-           verbose, ierr, &
-           fill_value = lint_fill_value)
-
    dimids_1d(1) = netcdf_info%dimid_c_config_alb
 
    call nc_def_var_long_packed_long( &
@@ -1696,7 +1488,7 @@ endif
 
    ! close definition section
    ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR) stop 'error: enddef swath'
+   if (ierr.ne.NF90_NOERR) stop 'ERROR: enddef swath'
 
 
    return
