@@ -62,6 +62,7 @@
 ;      Ch number fields from plotting.
 ;   25 Jul 2014 - ACP: Added additional illumination flags.
 ;   28 Jul 2014 - ACP: Added falsecolour and difference plots.
+;   19 Sep 2014 - ACP: New RTM output field names.
 ;-
 FUNCTION PLOT_SETTINGS, suffix, inst
    ON_ERROR, 2
@@ -147,10 +148,10 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].full=1
          ++i
 
-         out[i].name='msi_ch_procflag'
-         out[i].mode=0
-         out[i].full=1
-         ++i
+;         out[i].name='msi_ch_procflag'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
 
 ;         out[i].name='alb_abs_ch_numbers'
 ;         out[i].mode=0
@@ -232,23 +233,23 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].mode=3
 ;         ++i
 
-         out[i].name='solza_lw'
-         out[i].full=1
-         out[i].mode=4
-         out[i].title=FMT('RTM LW solar azimuth angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='solza_lw'
+;         out[i].full=1
+;         out[i].mode=4
+;         out[i].title=FMT('RTM LW solar azimuth angle','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='satza_lw'
-         out[i].full=1
-         out[i].mode=4
-         out[i].title=FMT('RTM LW satellite azimuth angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='satza_lw'
+;         out[i].full=1
+;         out[i].mode=4
+;         out[i].title=FMT('RTM LW satellite azimuth angle','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='relazi_lw'
-         out[i].full=1
-         out[i].mode=4
-         out[i].title=FMT('RTM LW relative azimuth angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='relazi_lw'
+;         out[i].full=1
+;         out[i].mode=4
+;         out[i].title=FMT('RTM LW relative azimuth angle','!9'+STRING(176b)+'!X')
+;         ++i
 
          out[i].name='emiss_lw'
          out[i].log=1
@@ -339,61 +340,61 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].full=1
 ;         ++i
 
-         out[i].name='lon_pw'
+         out[i].name='lon_rtm'
          out[i].mode=3
          out[i].full=1
          out[i].title=FMT('RTM longitude','!9'+STRING(176b)+'!X')
          ++i
 
-         out[i].name='lat_pw'
+         out[i].name='lat_rtm'
          out[i].mode=3
          out[i].full=1
          out[i].title=FMT('RTM latitude','!9'+STRING(176b)+'!X')
          ++i
 
-         out[i].name='skint_pw'
+         out[i].name='skint_rtm'
          out[i].mode=3
          out[i].bottom=1
          out[i].title=FMT('RTM skin temperature','K')
          ++i
 
-         out[i].name='explnsp_pw'
+         out[i].name='explnsp_rtm'
          out[i].mode=3
          out[i].bottom=1
          out[i].title=FMT('RTM surface pressure','hPa')
          ++i
 
-         out[i].name='lsf_pw'
-         out[i].mode=3
-         out[i].full=1
-         out[i].title=FMT('RTM surface albedo','%')
-         ++i
+;         out[i].name='lsf_rtm'
+;         out[i].mode=3
+;         out[i].full=1
+;         out[i].title=FMT('RTM surface albedo','%')
+;         ++i
 
-         out[i].name='satzen_pw'
-         out[i].mode=3
-         out[i].full=1
-         out[i].title=FMT('RTM satellite zenith angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='satzen_pw'
+;         out[i].mode=3
+;         out[i].full=1
+;         out[i].title=FMT('RTM satellite zenith angle','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='solzen_pw'
-         out[i].mode=3
-         out[i].full=1
-         out[i].title=FMT('RTM solar zenith angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='solzen_pw'
+;         out[i].mode=3
+;         out[i].full=1
+;         out[i].title=FMT('RTM solar zenith angle','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='pprofile_lev'
+         out[i].name='pprofile_rtm'
          out[i].mode=5
          out[i].bottom=1
          out[i].title=FMT('RTM pressure','hPa')
          ++i
 
-         out[i].name='tprofile_lev'
+         out[i].name='tprofile_rtm'
          out[i].mode=5
          out[i].bottom=1
          out[i].title=FMT('RTM temperature','K')
          ++i
 
-         out[i].name='gphprofile_lev'
+         out[i].name='hprofile_rtm'
          out[i].mode=5
          out[i].bottom=1
          out[i].title=FMT('RTM geopotential','m')
@@ -420,23 +421,23 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].mode=3
 ;         ++i
 
-         out[i].name='solza_sw'
-         out[i].full=1
-         out[i].mode=4
-         out[i].title=FMT('RTM SW solar azimuth angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='solza_sw'
+;         out[i].full=1
+;         out[i].mode=4
+;         out[i].title=FMT('RTM SW solar azimuth angle','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='satza_sw'
-         out[i].full=1
-         out[i].mode=4
-         out[i].title=FMT('RTM SW satellite azimuth angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='satza_sw'
+;         out[i].full=1
+;         out[i].mode=4
+;         out[i].title=FMT('RTM SW satellite azimuth angle','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='relazi_sw'
-         out[i].full=1
-         out[i].mode=4
-         out[i].title=FMT('RTM SW relative azimuth angle','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='relazi_sw'
+;         out[i].full=1
+;         out[i].mode=4
+;         out[i].title=FMT('RTM SW relative azimuth angle','!9'+STRING(176b)+'!X')
+;         ++i
 
          out[i].name='tac_sw'
          out[i].mode=6

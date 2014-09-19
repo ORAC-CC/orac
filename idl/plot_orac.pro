@@ -83,6 +83,7 @@
 ;   28 Jul 2014 - ACP: Fixed processing of chunked outputs. Moved shared code
 ;      into subroutines. Expanded definition of FILTER.
 ;   19 Aug 2014 - ACP: Bug in DIFF_ONLY keyword.
+;   19 Sep 2014 - ACP: New RTM output field names.
 ;-
 PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
@@ -152,10 +153,10 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
          NCDF_CLOSE,fid
 
          fid=NCDF_OPEN(root[i]+'.prtm.nc')
-         lat_rtm=NCDF_OBTAIN(fid,'lat_pw')
-         lon_rtm=NCDF_OBTAIN(fid,'lon_pw')
-         NCDF_DIMINQ,fid,NCDF_DIMID(fid,'nlon_prtm'),nm,nl2
-         NCDF_DIMINQ,fid,NCDF_DIMID(fid,'nlat_prtm'),nm,line2
+         NCDF_DIMINQ,fid,NCDF_DIMID(fid,'nlon_rtm'),nm,nl2
+         NCDF_DIMINQ,fid,NCDF_DIMID(fid,'nlat_rtm'),nm,line2
+         lat_rtm=REPLICATE(1.,nl2)#NCDF_OBTAIN(fid,'lat_rtm')
+         lon_rtm=NCDF_OBTAIN(fid,'lon_rtm')#REPLICATE(1.,line2)
          NCDF_CLOSE,fid
 
          ;; determine field sizes (for chunked plotting)
@@ -261,19 +262,19 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                3: WRAP_MAPPOINTS, data, lat_rtm, lon_rtm, $
                                   debug=stop, short=short, $
                                   set[k],plot_set,filt,line2,nl2,0.5
-               4: for l=0,N_ELEMENTS(data[*,0])-1 do $
-                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, $
+               4: for l=0,N_ELEMENTS(data[0,0,*])-1 do $
+                  WRAP_MAPPOINTS, data[*,*,l], lat_rtm, lon_rtm, $
                                   debug=stop, short=short, $
-                                  set[k],plot_set,filt[l,*],line2,nl2,0.5,l
-               5: for l=0,N_ELEMENTS(data[*,0])-1,20 do $
-                  WRAP_MAPPOINTS, data[l,*], lat_rtm, lon_rtm, $
+                                  set[k],plot_set,filt[*,*,l],line2,nl2,0.5,l
+               5: for l=0,N_ELEMENTS(data[0,0,*])-1,20 do $
+                  WRAP_MAPPOINTS, data[*,*,l], lat_rtm, lon_rtm, $
                                   debug=stop, short=short, $
-                                  set[k],plot_set,filt[l,*],line2,nl2,0.5,l
-               6: for m=0,N_ELEMENTS(data[*,0,0])-1 do $
-                  for l=0,N_ELEMENTS(data[0,*,0])-1,20 do $
-                     WRAP_MAPPOINTS, data[m,l,*], lat_rtm, lon_rtm, $
+                                  set[k],plot_set,filt[*,*,l],line2,nl2,0.5,l
+               6: for m=0,N_ELEMENTS(data[0,0,*,0])-1 do $
+                  for l=0,N_ELEMENTS(data[0,0,0,*])-1,20 do $
+                     WRAP_MAPPOINTS, data[*,*,m,l], lat_rtm, lon_rtm, $
                                      debug=stop, short=short, $
-                                     set[k],plot_set,filt[m,l,*],line2,nl2,0.5,l,m
+                                     set[k],plot_set,filt[*,*,m,l],line2,nl2,0.5,l,m
             endcase
          endfor
       endfor
