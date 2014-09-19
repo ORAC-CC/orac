@@ -37,6 +37,7 @@
 ! 2014/08/10, GM: Changes related to new BRDF support.
 ! 2014/09/02, GM: Use the nc_write_array interface from the orac_ncdf module
 !    in the common library.
+! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 !
 ! $Id$
 !
@@ -109,13 +110,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            'msi_ch_lwflag', &
            netcdf_info%vid_msi_ch_lwflag_config, &
            channel_info%channel_lw_flag, &
-           1, 1, channel_info%nchannels_total)
-
-   call nc_write_array( &
-           netcdf_info%ncid_config, &
-           'msi_ch_procflag', &
-           netcdf_info%vid_msi_ch_procflag_config, &
-           channel_info%channel_proc_flag, &
            1, 1, channel_info%nchannels_total)
 
    allocate(dummy_chan_vec1d(channel_info%nchannels_sw))
@@ -364,13 +358,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            'msi_ch_lwflag', &
            netcdf_info%vid_msi_ch_lwflag, &
            channel_info%channel_lw_flag, &
-           1, 1, channel_info%nchannels_total)
-
-   call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_ch_procflag', &
-           netcdf_info%vid_msi_ch_procflag, &
-           channel_info%channel_proc_flag, &
            1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &

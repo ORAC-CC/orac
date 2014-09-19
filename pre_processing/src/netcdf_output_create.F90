@@ -112,21 +112,21 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    call netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)), &
-        NETCDF_OUTPUT_FILE_PRTM, preproc_dims,imager_angles,netcdf_info, &
+        NETCDF_OUTPUT_FILE_PRTM, preproc_dims,netcdf_info, &
         channel_info,use_chunking,verbose)
 
    ! create lwrtm file
    call netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), &
-        NETCDF_OUTPUT_FILE_LWRTM,preproc_dims,imager_angles, &
+        NETCDF_OUTPUT_FILE_LWRTM,preproc_dims, &
         netcdf_info,channel_info,use_chunking,verbose)
 
    ! create swrtm file
    call netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute,&
         platform,sensor,&
         trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)), &
-        NETCDF_OUTPUT_FILE_SWRTM, preproc_dims,imager_angles, &
+        NETCDF_OUTPUT_FILE_SWRTM, preproc_dims, &
         netcdf_info,channel_info,use_chunking,verbose)
 
 
