@@ -736,8 +736,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
            swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
            geo_file,loc_file,alb_file,scan_file,platform,sensor,global_atts, &
            cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
-           imager_geolocation,netcdf_info,channel_info,use_chunking, &
-           include_full_brdf,verbose)
+           imager_geolocation,netcdf_info,channel_info,include_full_brdf, &
+           verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'

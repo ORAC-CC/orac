@@ -75,6 +75,9 @@
 ! 2014/09/28, GM: Fixed a significant performance regression from the new RTTOV
 !    driver by rearranging the rtm variable dimensions and fixing the chunking
 !    sizes for the use_chunking = .false. case.
+! 2014/09/28, GM: Removed the option for chunking. Chunking will not help
+!    any more as the variables are written by the preprocessor and read by the
+!    main processor in the order in which they are stored.
 !
 ! $Id$
 !
@@ -83,8 +86,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
-     platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
-     use_chunking,verbose)
+     platform,sensor,path,type,preproc_dims,netcdf_info,channel_info,verbose)
 
    use netcdf
 
@@ -111,7 +113,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
    type(preproc_dims_s),           intent(in)    :: preproc_dims
    type(netcdf_output_info_s),     intent(inout) :: netcdf_info
    type(channel_info_s),           intent(in)    :: channel_info
-   logical,                        intent(in)    :: use_chunking
    logical,                        intent(in)    :: verbose
 
    ! Local
@@ -121,10 +122,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
    integer                    :: dimids_2d(2)
    integer                    :: dimids_3d(3)
    integer                    :: dimids_4d(4)
-   integer                    :: chunksize1d(1)
-   integer                    :: chunksize2d(2)
-   integer                    :: chunksize3d(3)
-   integer                    :: chunksize4d(4)
    integer                    :: ierr
    integer(lint)              :: nlon, nlat
 
@@ -200,16 +197,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_3d(2)=netcdf_info%dimid_x_lw
       dimids_3d(3)=netcdf_info%dimid_y_lw
 
-      if (.not. use_chunking) then
-         chunksize3d(1)=channel_info%nchannels_lw
-         chunksize3d(2)=nlon
-         chunksize3d(3)=nlat
-      else
-         chunksize3d(1)=1
-         chunksize3d(2)=nlon
-         chunksize3d(3)=min(nlat,max_chunk_lat)
-      end if
-
       ! define emissivity 3D
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
@@ -217,7 +204,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'emiss_lw', &
               netcdf_info%vid_emiss_lw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -229,18 +215,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_4d(3)=netcdf_info%dimid_x_lw
       dimids_4d(4)=netcdf_info%dimid_y_lw
 
-      if (.not. use_chunking) then
-         chunksize4d(1)=channel_info%nchannels_lw
-         chunksize4d(2)=preproc_dims%kdim + 1
-         chunksize4d(3)=nlon
-         chunksize4d(4)=nlat
-      else
-         chunksize4d(1)=1
-         chunksize4d(2)=1
-         chunksize4d(3)=nlon
-         chunksize4d(4)=min(nlat,max_chunk_lat)
-      end if
-
       ! define tac
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
@@ -248,7 +222,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'tac_lw', &
               netcdf_info%vid_tac_lw, &
               verbose, ierr, &
-              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -260,7 +233,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'tbc_lw', &
               netcdf_info%vid_tbc_lw, &
               verbose, ierr, &
-              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -272,7 +244,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'rbc_up_lw', &
               netcdf_info%vid_rbc_up_lw, &
               verbose, ierr, &
-              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -284,7 +255,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'rac_up_lw', &
               netcdf_info%vid_rac_up_lw, &
               verbose, ierr, &
-              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -296,7 +266,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'rac_down_lw', &
               netcdf_info%vid_rac_down_lw, &
               verbose, ierr, &
-              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -374,18 +343,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_4d(3)=netcdf_info%dimid_x_lw
       dimids_4d(4)=netcdf_info%dimid_y_lw
 
-      if (.not. use_chunking) then
-         chunksize4d(1)=channel_info%nchannels_sw
-         chunksize4d(2)=preproc_dims%kdim + 1
-         chunksize4d(3)=nlon
-         chunksize4d(4)=nlat
-      else
-         chunksize4d(1)=1
-         chunksize4d(2)=1
-         chunksize4d(3)=nlon
-         chunksize4d(4)=min(nlat,max_chunk_lat)
-      end if
-
       ! define tac
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
@@ -393,7 +350,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'tac_sw', &
               netcdf_info%vid_tac_sw, &
               verbose, ierr, &
-              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -405,7 +361,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'tbc_sw', &
               netcdf_info%vid_tbc_sw, &
               verbose, ierr, &
-              chunksizes = chunksize4d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -476,14 +431,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_2d(1)=netcdf_info%dimid_x_pw
       dimids_2d(2)=netcdf_info%dimid_y_pw
 
-      if (.not. use_chunking) then
-         chunksize2d(1)=nlon
-         chunksize2d(2)=nlat
-      else
-         chunksize2d(1)=nlon
-         chunksize2d(2)=min(nlat,max_chunk_lat)
-      end if
-
       ! define skint variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
@@ -491,7 +438,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'skint_rtm', &
               netcdf_info%vid_skint_pw, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -503,7 +449,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'explnsp_rtm', &
               netcdf_info%vid_lnsp_pw, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -515,7 +460,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 !              'lsf_rtm', &
 !              netcdf_info%vid_lsf_pw, &
 !              verbose, ierr, &
-!              chunksizes = chunksize2d, &
 !              deflate_level = deflate_level_sreal, &
 !              shuffle = shuffle_sreal, &
 !              fill_value = sreal_fill_value)
@@ -526,16 +470,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_3d(2)=netcdf_info%dimid_x_pw
       dimids_3d(3)=netcdf_info%dimid_y_pw
 
-      if (.not. use_chunking) then
-         chunksize3d(1)=preproc_dims%kdim + 1
-         chunksize3d(2)=nlon
-         chunksize3d(3)=nlat
-      else
-         chunksize3d(1)=1
-         chunksize3d(2)=nlon
-         chunksize3d(3)=min(nlat,max_chunk_lat)
-      end if
-
       ! define pressure profile at level centers as variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
@@ -543,7 +477,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -555,7 +488,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'tprofile_rtm', &
               netcdf_info%vid_tprofile_lev_pw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -567,7 +499,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               'hprofile_rtm', &
               netcdf_info%vid_hprofile_lev_pw, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -627,12 +558,15 @@ end subroutine netcdf_create_rtm
 ! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
 !    common library.
+! 2014/09/28, GM: Removed the option for chunking. Chunking will not help
+!    any more as the variables are written by the preprocessor and read by the
+!    main processor in the order in which they are stored.
 !
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
    platform,sensor,path,type,imager_geolocation,imager_angles,netcdf_info, &
-   channel_info,use_chunking,include_full_brdf,verbose)
+   channel_info,include_full_brdf,verbose)
 
    use netcdf
 
@@ -659,7 +593,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
    type(imager_angles_s),          intent(in)    :: imager_angles
    type(netcdf_output_info_s),     intent(inout) :: netcdf_info
    type(channel_info_s),           intent(in)    :: channel_info
-   logical,                        intent(in)    :: use_chunking
    logical,                        intent(in)    :: include_full_brdf
    logical,                        intent(in)    :: verbose
 
@@ -670,8 +603,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
    integer                    :: dimids_1d(1)
    integer                    :: dimids_2d(2)
    integer                    :: dimids_3d(3)
-   integer                    :: chunksize2d(2)
-   integer                    :: chunksize3d(3)
 
 
    ! open alb file
@@ -733,16 +664,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_3d(2)=netcdf_info%dimid_y_alb
       dimids_3d(3)=netcdf_info%dimid_c_alb
 
-      if (.not. use_chunking) then
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-         chunksize3d(3)=channel_info%nchannels_sw
-      else
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%ny
-         chunksize3d(3)=1
-      end if
-
       ! define alb variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_alb, &
@@ -750,7 +671,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'alb_data', &
               netcdf_info%vid_alb_data, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -760,16 +680,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_3d(2)=netcdf_info%dimid_y_alb
       dimids_3d(3)=netcdf_info%dimid_c_emis
 
-      if (.not. use_chunking) then
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-         chunksize3d(3)=channel_info%nchannels_lw
-      else
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%ny
-         chunksize3d(3)=1
-      end if
-
       ! define emis variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_alb, &
@@ -777,7 +687,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'emis_data', &
               netcdf_info%vid_emis_data, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -788,23 +697,12 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
          dimids_3d(2)=netcdf_info%dimid_y_alb
          dimids_3d(3)=netcdf_info%dimid_c_alb
 
-         if (.not. use_chunking) then
-            chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-            chunksize3d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-            chunksize3d(3)=channel_info%nchannels_sw
-         else
-            chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-            chunksize3d(2)=imager_geolocation%ny
-            chunksize3d(3)=1
-         end if
-
          call nc_def_var_float_packed_float( &
                  netcdf_info%ncid_alb, &
                  dimids_3d, &
                  'rho_0v_data', &
                  netcdf_info%vid_rho_0v_data, &
                  verbose, ierr, &
-                 chunksizes = chunksize3d, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -815,7 +713,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
                  'rho_0d_data', &
                  netcdf_info%vid_rho_0d_data, &
                  verbose, ierr, &
-                 chunksizes = chunksize3d, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -826,7 +723,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
                  'rho_dv_data', &
                  netcdf_info%vid_rho_dv_data, &
                  verbose, ierr, &
-                 chunksizes = chunksize3d, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -837,7 +733,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
                  'rho_dd_data', &
                  netcdf_info%vid_rho_dd_data, &
                  verbose, ierr, &
-                 chunksizes = chunksize3d, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -871,14 +766,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_2d(1)=netcdf_info%dimid_x_cf
       dimids_2d(2)=netcdf_info%dimid_y_cf
 
-      if (.not. use_chunking) then
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-      else
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%ny
-      end if
-
       ! define cf variable
       call nc_def_var_byte_packed_byte( &
               netcdf_info%ncid_clf, &
@@ -886,7 +773,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'cflag', &
               netcdf_info%vid_cflag, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -925,16 +811,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_3d(2)=netcdf_info%dimid_y_geo
       dimids_3d(3)=netcdf_info%dimid_v_geo
 
-      if (.not. use_chunking) then
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-         chunksize3d(3)=imager_angles%nviews
-      else
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%ny
-         chunksize3d(3)=1
-      end if
-
       ! define solzen variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_geo, &
@@ -942,7 +818,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'solzen', &
               netcdf_info%vid_solzen, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -954,7 +829,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'satzen', &
               netcdf_info%vid_satzen, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -966,7 +840,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'solaz', &
               netcdf_info%vid_solaz, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -978,7 +851,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'relazi', &
               netcdf_info%vid_relazi, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1011,14 +883,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_2d(1)=netcdf_info%dimid_x_loc
       dimids_2d(2)=netcdf_info%dimid_y_loc
 
-      if (.not. use_chunking) then
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-      else
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%ny
-      end if
-
       ! define lat variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_loc, &
@@ -1026,7 +890,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'lat', &
               netcdf_info%vid_lat, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1038,7 +901,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'lon', &
               netcdf_info%vid_lon, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1070,14 +932,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_2d(1)=netcdf_info%dimid_x_lsf
       dimids_2d(2)=netcdf_info%dimid_y_lsf
 
-      if (.not. use_chunking) then
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-      else
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%ny
-      end if
-
       ! define cf variable
       call nc_def_var_byte_packed_byte( &
               netcdf_info%ncid_lsf, &
@@ -1085,7 +939,6 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               'lsflag', &
               netcdf_info%vid_lsflag, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -1173,14 +1026,6 @@ endif
       dimids_2d(1)=netcdf_info%dimid_x_msi
       dimids_2d(2)=netcdf_info%dimid_y_msi
 
-      if (.not. use_chunking) then
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-      else
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%ny
-      end if
-
       ! define time variable
       call nc_def_var_double_packed_double( &
               netcdf_info%ncid_msi, &
@@ -1188,7 +1033,6 @@ endif
               'time_data', &
               netcdf_info%vid_time, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_dreal, &
               shuffle = shuffle_dreal, &
               fill_value = dreal_fill_value)
@@ -1198,16 +1042,6 @@ endif
       dimids_3d(2)=netcdf_info%dimid_y_msi
       dimids_3d(3)=netcdf_info%dimid_c_msi
 
-      if (.not. use_chunking) then
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-         chunksize3d(3)=channel_info%nchannels_total
-      else
-         chunksize3d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize3d(2)=imager_geolocation%ny
-         chunksize3d(3)=1
-      end if
-
       ! define msi variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_msi, &
@@ -1215,7 +1049,6 @@ endif
               'msi_data', &
               netcdf_info%vid_msi_data, &
               verbose, ierr, &
-              chunksizes = chunksize3d, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1248,14 +1081,6 @@ endif
       dimids_2d(1)=netcdf_info%dimid_x_scan
       dimids_2d(2)=netcdf_info%dimid_y_scan
 
-      if (.not. use_chunking) then
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%endy-imager_geolocation%starty+1
-      else
-         chunksize2d(1)=imager_geolocation%endx-imager_geolocation%startx+1
-         chunksize2d(2)=imager_geolocation%ny
-      end if
-
       ! define u variable
       call nc_def_var_long_packed_long( &
               netcdf_info%ncid_scan, &
@@ -1263,7 +1088,6 @@ endif
               'uscan', &
               netcdf_info%vid_uscan, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_lint, &
               shuffle = shuffle_lint, &
               fill_value = lint_fill_value)
@@ -1275,7 +1099,6 @@ endif
               'vscan', &
               netcdf_info%vid_vscan, &
               verbose, ierr, &
-              chunksizes = chunksize2d, &
               deflate_level = deflate_level_lint, &
               shuffle = shuffle_lint, &
               fill_value = lint_fill_value)
