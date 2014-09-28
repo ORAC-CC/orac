@@ -14,6 +14,7 @@
 ! 2014/05/23, GM: First version.
 ! 2014/09/16, GM: Added NETCDF_OUTPUT_FILE_* parameters and moved the structure
 !    netcdf_output_info_s into here.
+! 2014/09/28, GM: Remove layer dimids as they were not used any more.
 !
 ! $Id$
 !
@@ -60,9 +61,9 @@ module netcdf_output
 
       integer :: dimid_xy_lw, dimid_xy_pw, dimid_xy_sw
 
-      integer :: dimid_layers_sw, dimid_levels_sw
-      integer :: dimid_layers_pw, dimid_levels_pw
-      integer :: dimid_layers_lw, dimid_levels_lw
+      integer :: dimid_levels_sw
+      integer :: dimid_levels_pw
+      integer :: dimid_levels_lw
 
       integer :: dimid_c_alb, dimid_c_emis
       integer :: dimid_c_config, dimid_c_config_alb, dimid_c_config_emis

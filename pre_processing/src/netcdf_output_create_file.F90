@@ -78,6 +78,7 @@
 ! 2014/09/28, GM: Removed the option for chunking. Chunking will not help
 !    any more as the variables are written by the preprocessor and read by the
 !    main processor in the order in which they are stored.
+! 2014/09/28, GM: Remove layer dimensions as they were not used any more.
 !
 ! $Id$
 !
@@ -151,10 +152,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_rtm', &
                        nlon, netcdf_info%dimid_x_lw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create x-d'
-
-      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlayers_rtm', &
-                       preproc_dims%kdim, netcdf_info%dimid_layers_lw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create nlay lw'
 
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_rtm', &
                        preproc_dims%kdim+1, netcdf_info%dimid_levels_lw) &
@@ -296,10 +293,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
                       netcdf_info%dimid_x_sw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create x-d'
 
-      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlayers_rtm', &
-                       preproc_dims%kdim, netcdf_info%dimid_layers_sw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw layer'
-
       if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_rtm', &
                        preproc_dims%kdim+1, netcdf_info%dimid_levels_sw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw level'
@@ -390,10 +383,6 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
                        preproc_dims%max_lon-preproc_dims%min_lon+1, &
                        netcdf_info%dimid_x_pw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create x-d'
-
-      if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlayers_rtm', &
-                       preproc_dims%kdim, netcdf_info%dimid_layers_pw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create nlay prtm'
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_rtm', &
                        preproc_dims%kdim+1, netcdf_info%dimid_levels_pw) &
@@ -1230,11 +1219,6 @@ if (.false.) then
    ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlat_conf', &
         preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_lw)
    if (ierr.ne.NF90_NOERR) stop 'error: create y-d'
-
-   ! define layer dimension
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlayers_conf', &
-        preproc_dims%kdim-1, netcdf_info%dimid_layers_lw)
-   if (ierr.ne.NF90_NOERR) stop 'error: create nlay lw'
 
    ! define level dimension
    ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlevels_conf', &
