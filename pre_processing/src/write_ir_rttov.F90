@@ -24,16 +24,9 @@
 ! write_flag     logic  in   T: Write values; F: Write fill-values
 !
 ! History:
-! 2012/05/22, CP: Initial version first version extracted form
-!             code by M. Jerg
-! 2012/07/04, CP: Removed nviews
-! 2012/17/07, CP: Complete rewrite
-! 2012/29/07, CP: Fixed many bugs
-! 2012/08/01, MJ: Adds rac_up,rac_down
-! 2012/08/14, CP: Fixed tbc
-! 2013/12/11, GM: Significant code clean up.
-! 2014/07/10, AP: Slight tidying. Removed errorstatus as not used.
-! 2014/09/11, AP: Moved NCDF write routines here. Removed print statements.
+!
+! 2014/09/11, AP: First version.
+! 2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
 !
 ! $Id$
 !
@@ -50,7 +43,7 @@ subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nchan, nlev, &
    use preproc_constants, only: lint, sreal, sreal_fill_value
    use preproc_structures, only: preproc_dims_s
    use rttov_types, only: rttov_emissivity, transmission_type, &
-        radiance_type, radiance2_type
+      radiance_type, radiance2_type
 
    implicit none
 
@@ -65,38 +58,39 @@ subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nchan, nlev, &
    logical,                    intent(in) :: write_flag
 
    integer                                 :: jch
-   real(sreal), dimension(1,1,nchan)       :: dummy_emis
-   real(sreal), dimension(1,1,nchan,nlev)  :: dummy_tac, dummy_tbc
-   real(sreal), dimension(1,1,nchan,nlev)  :: dummy_rbc_up
-   real(sreal), dimension(1,1,nchan,nlev)  :: dummy_rac_up, dummy_rac_down
+   real(sreal), dimension(nchan,1,1)       :: dummy_emis
+   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_tac, dummy_tbc
+   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_rbc_up
+   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_rac_up, dummy_rac_down
 
    if (write_flag) then
       ! Calculate required above/below cloud radiances and transmittances
       ! TOA emissivity
-      dummy_emis(1,1,:) = emissivity%emis_out
+      dummy_emis(:,1,1) = emissivity%emis_out
       do jch=1,nchan
          ! Transmission from level to TOA
-         dummy_tac(1,1,jch,:) = transmission%tau_levels(:,jch)
+         dummy_tac(jch,:,1,1) = transmission%tau_levels(:,jch)
          ! Transmission from surface to level
-         dummy_tbc(1,1,jch,:) = transmission%tau_total(jch) / &
-              transmission%tau_levels(:,jch)
+         dummy_tbc(jch,:,1,1) = transmission%tau_total(jch) / &
+            transmission%tau_levels(:,jch)
 
          ! Translate layers onto levels
+
          ! Upwelling radiance from surface to level
-         dummy_rbc_up(1,1,jch,2:) = &
-              (radiance%clear(jch) - radiance2%up(:,jch)) / &
-              transmission%tau_levels(2:,jch)
-         ! Upwelling radiance from level at TOA
-         dummy_rac_up(1,1,jch,2:) = radiance2%up(:,jch)
+         dummy_rbc_up(jch,2:,1,1) = &
+            (radiance%clear(jch) - radiance2%up(:,jch)) / &
+            transmission%tau_levels(2:,jch)
+         ! Upwelling radiance from level
+         dummy_rac_up(jch,2:,1,1) = radiance2%up(:,jch)
          ! Downwelling radiance from level
-         dummy_rac_down(1,1,jch,2:) = radiance2%down(:,jch)
+         dummy_rac_down(jch,2:,1,1) = radiance2%down(:,jch)
       end do
 
       ! Set top level to be top layer
-      dummy_rbc_up(1,1,:,1) = dummy_rbc_up(1,1,:,2)
-      dummy_rac_up(1,1,:,1) = dummy_rac_up(1,1,:,2)
-      dummy_rac_down(1,1,:,1) = dummy_rac_down(1,1,:,2) * &
-           transmission%tau_levels(2,:) / transmission%tau_levels(1,:)
+      dummy_rbc_up(:,1,1,1) = dummy_rbc_up(:,2,1,1)
+      dummy_rac_up(:,1,1,1) = dummy_rac_up(:,2,1,1)
+      dummy_rac_down(:,1,1,1) = dummy_rac_down(:,2,1,1) * &
+         transmission%tau_levels(2,:) / transmission%tau_levels(1,:)
    else
       ! Write fill values
       dummy_emis = sreal_fill_value
@@ -109,28 +103,28 @@ subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nchan, nlev, &
 
    ! Write outputs
    call nc_write_array(netcdf_info%ncid_lwrtm, 'emiss_lw', &
-        netcdf_info%vid_emiss_lw, dummy_emis, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan)
+                       netcdf_info%vid_emiss_lw, dummy_emis, &
+                       1, 1, nchan, &
+                       1, idim, 1, 1, jdim, 1)
    call nc_write_array(netcdf_info%ncid_lwrtm, 'tac_lw', &
-        netcdf_info%vid_tac_lw, dummy_tac, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan, 1, 1, nlev)
+                       netcdf_info%vid_tac_lw, dummy_tac, &
+                       1, 1, nchan, 1, 1, nlev, &
+                       1, idim, 1, 1, jdim, 1)
    call nc_write_array(netcdf_info%ncid_lwrtm, 'tbc_lw', &
-        netcdf_info%vid_tbc_lw, dummy_tbc, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan, 1, 1, nlev)
+                       netcdf_info%vid_tbc_lw, dummy_tbc, &
+                       1, 1, nchan, 1, 1, nlev, &
+                       1, idim, 1, 1, jdim, 1)
    call nc_write_array(netcdf_info%ncid_lwrtm, 'rbc_up_lw', &
-        netcdf_info%vid_rbc_up_lw, dummy_rbc_up, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan, 1, 1, nlev)
+                       netcdf_info%vid_rbc_up_lw, dummy_rbc_up, &
+                       1, 1, nchan, 1, 1, nlev, &
+                       1, idim, 1, 1, jdim, 1)
    call nc_write_array(netcdf_info%ncid_lwrtm, 'rac_up_lw', &
-        netcdf_info%vid_rac_up_lw, dummy_rac_up, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan, 1, 1, nlev)
+                       netcdf_info%vid_rac_up_lw, dummy_rac_up, &
+                       1, 1, nchan, 1, 1, nlev, &
+                       1, idim, 1, 1, jdim, 1)
    call nc_write_array(netcdf_info%ncid_lwrtm, 'rac_down_lw', &
-        netcdf_info%vid_rac_down_lw, dummy_rac_down, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan, 1, 1, nlev)
+                       netcdf_info%vid_rac_down_lw, dummy_rac_down, &
+                       1, 1, nchan, 1, 1, nlev, &
+                       1, idim, 1, 1, jdim, 1)
 
 end subroutine write_ir_rttov

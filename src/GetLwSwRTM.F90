@@ -62,6 +62,7 @@
 !    30/07/2014, GM: Cleaned up the code.
 !    30/07/2014, GM: Put the duplicate interpolation code into subroutines.
 !    19/08/2014, AP: Using the preprocessor's interpolation routines.
+!    28/09/2014, GM: Updated to conform with a new arrangement of dimensions.
 !
 ! Bugs:
 !    None known.
@@ -106,17 +107,17 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
         RTM%LW%Grid%NLat, SPixel%Loc%Lon, SPixel%Loc%Lat, interp, &
         RTM%LW%Grid%Wrap)
 
-   call interp_field(RTM%LW%P,       SPixel%RTM%LW%P,       interp)
-   call interp_field(RTM%LW%T,       SPixel%RTM%LW%T,       interp)
-   call interp_field(RTM%LW%H,       SPixel%RTM%LW%H,       interp)
-   call interp_field(RTM%LW%skint,   SPixel%RTM%LW%skint,   interp)
-   call interp_field(RTM%LW%sp,      SPixel%RTM%LW%sp,      interp)
-   call interp_field(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
-   call interp_field(RTM%LW%Tbc,     SPixel%RTM%LW%Tbc,     interp)
-   call interp_field(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
-   call interp_field(RTM%LW%Rac_up,  SPixel%RTM%LW%Rac_up,  interp)
-   call interp_field(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, interp)
-   call interp_field(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
+   call interp_field2(RTM%LW%P,       SPixel%RTM%LW%P,       interp)
+   call interp_field2(RTM%LW%T,       SPixel%RTM%LW%T,       interp)
+   call interp_field2(RTM%LW%H,       SPixel%RTM%LW%H,       interp)
+   call interp_field (RTM%LW%skint,   SPixel%RTM%LW%skint,   interp)
+   call interp_field (RTM%LW%sp,      SPixel%RTM%LW%sp,      interp)
+   call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
+   call interp_field2(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
+   call interp_field2(RTM%LW%Tbc,     SPixel%RTM%LW%Tbc,     interp)
+   call interp_field2(RTM%LW%Rac_up,  SPixel%RTM%LW%Rac_up,  interp)
+   call interp_field2(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, interp)
+   call interp_field2(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
 
    ! Set surface level to TOA transmittances
    ! ACP: ECP.F90 set RTM%LW%Np to RTM%LW%Nplayer, which means this isn't the
@@ -127,9 +128,9 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
 
 
-   call interp_field(RTM%LW%P,   SPixel%RTM%SW%P,   interp)
-   call interp_field(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, interp)
-   call interp_field(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
+   call interp_field2(RTM%LW%P,   SPixel%RTM%SW%P,   interp)
+   call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
+   call interp_field2(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, interp)
 
    ! Set surface level to TOA transmittances
    SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)

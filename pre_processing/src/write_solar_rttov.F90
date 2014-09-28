@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: call_rtm_solar_rttov.F90
+! Name: write_solar_rttov.F90
 !
 ! Purpose:
 ! Copy contents of RTTOV structures into ORAC structures.
@@ -29,16 +29,8 @@
 ! write_flag     logic  in   T: Write values; F: Write fill-values
 !
 ! History:
-! 2012/05/22, CP: Initial version first version extracted form
-!             code by M. Jerg
-! 2012/07/04, CP: remove nview dependance
-! 2012/17/07, CP: complete rewrite
-! 2012/29/07, CP: algorithm rewrite
-! 2012/08/10, CP: algorithm debug
-! 2012/08/14, CP: fixed bug in taubc
-! 2013/12/11, GM: Significant code clean up.
-! 2014/07/10, AP: Slight tidying. Removed errorstatus as not used.
-! 2014/09/11, AP: Moved NCDF write routines here. Removed print statements.
+! 2014/09/11, AP: First version.
+! 2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
 !
 ! $Id$
 !
@@ -75,7 +67,7 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    integer                                 :: jch
    real(sreal)                             :: amf
    real(sreal), dimension(nchan)           :: tau_total
-   real(sreal), dimension(1,1,nchan,nlev)  :: dummy_tac, dummy_tbc
+   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_tac, dummy_tbc
 
    if (write_flag) then
       ! Equivalent to effective_2way_za
@@ -88,16 +80,16 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
          ! (see p.113 of RTTOV v 11 Users Guide)
          if (coefs%coef%ss_val_chn(jch) == 2) then
             ! Transmission from level to TOA
-            dummy_tac(1,1,jch,:) = transmission%tausun_levels_path1(:,jch)**amf
+            dummy_tac(jch,:,1,1) = transmission%tausun_levels_path1(:,jch)**amf
             ! Transmission from surface to level
-            dummy_tbc(1,1,jch,:) = transmission%tausun_total_path1(jch)**amf &
-                 / dummy_tac(1,1,jch,:)
+            dummy_tbc(jch,:,1,1) = transmission%tausun_total_path1(jch)**amf &
+                 / dummy_tac(jch,:,1,1)
          else
             ! Transmission from level to TOA
-            dummy_tac(1,1,jch,:) = transmission%tau_levels(:,jch)**amf
+            dummy_tac(jch,:,1,1) = transmission%tau_levels(:,jch)**amf
             ! Transmission from surface to level
-            dummy_tbc(1,1,jch,:) = transmission%tau_total(jch)**amf &
-                 / dummy_tac(1,1,jch,:)
+            dummy_tbc(jch,:,1,1) = transmission%tau_total(jch)**amf &
+                 / dummy_tac(jch,:,1,1)
          end if
       end do
    else
@@ -108,12 +100,12 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
 
    ! Write outputs
    call nc_write_array(netcdf_info%ncid_swrtm, 'tac_sw', &
-        netcdf_info%vid_tac_sw, dummy_tac, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan, 1, 1, nlev)
+                       netcdf_info%vid_tac_sw, dummy_tac, &
+                       1, 1, nchan, 1, 1, nlev, &
+                       1, idim, 1, 1, jdim, 1)
    call nc_write_array(netcdf_info%ncid_swrtm, 'tbc_sw', &
-        netcdf_info%vid_tbc_sw, dummy_tbc, &
-        1, idim, 1, 1, jdim, 1, &
-        1, 1, nchan, 1, 1, nlev)
+                       netcdf_info%vid_tbc_sw, dummy_tbc, &
+                       1, 1, nchan, 1, 1, nlev, &
+                       1, idim, 1, 1, jdim, 1)
 
 end subroutine write_solar_rttov

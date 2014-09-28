@@ -70,6 +70,11 @@
 !    the main processor).
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
 !    common library.
+! 2014/09/19, AP: Rearranged the rtm variable dimensions to work with the new
+!    RTTOV driver.
+! 2014/09/28, GM: Fixed a significant performance regression from the new RTTOV
+!    driver by rearranging the rtm variable dimensions and fixing the chunking
+!    sizes for the use_chunking = .false. case.
 !
 ! $Id$
 !
@@ -123,13 +128,16 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
    integer                    :: ierr
    integer(lint)              :: nlon, nlat
 
+
    nlon = preproc_dims%max_lon-preproc_dims%min_lon+1
    nlat = preproc_dims%max_lat-preproc_dims%min_lat+1
-   
-   select case (type)
-   !-------------------------------------------------------------------------   
-   case(NETCDF_OUTPUT_FILE_LWRTM)
-   !-------------------------------------------------------------------------   
+
+
+   !-------------------------------------------------------------------------
+   !
+   !-------------------------------------------------------------------------
+   if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) then
+
       ctitle='ORAC Preprocessing lwrtm output file'
 
       ! create file
@@ -139,13 +147,13 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
 
       ! Define dimensions
-      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_rtm', &
-                       nlon, netcdf_info%dimid_x_lw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create x-d'
-
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlat_rtm', &
                        nlat, netcdf_info%dimid_y_lw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create y-d'
+
+      if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_rtm', &
+                       nlon, netcdf_info%dimid_x_lw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create x-d'
 
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlayers_rtm', &
                        preproc_dims%kdim, netcdf_info%dimid_layers_lw) &
@@ -159,7 +167,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
                        channel_info%nchannels_lw, netcdf_info%dimid_lw_channels)&
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create nchan lw'
 
-      
+
       ! Define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_lw_channels
 
@@ -188,18 +196,18 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               fill_value = sreal_fill_value)
 
       ! Define 3-D variables
-      dimids_3d(1)=netcdf_info%dimid_x_lw
-      dimids_3d(2)=netcdf_info%dimid_y_lw
-      dimids_3d(3)=netcdf_info%dimid_lw_channels
+      dimids_3d(1)=netcdf_info%dimid_lw_channels
+      dimids_3d(2)=netcdf_info%dimid_x_lw
+      dimids_3d(3)=netcdf_info%dimid_y_lw
 
       if (.not. use_chunking) then
-         chunksize3d(1)=nlon
-         chunksize3d(2)=nlat
-         chunksize3d(3)=channel_info%nchannels_lw
+         chunksize3d(1)=channel_info%nchannels_lw
+         chunksize3d(2)=nlon
+         chunksize3d(3)=nlat
       else
-         chunksize3d(1)=nlon
-         chunksize3d(2)=min(nlat,max_chunk_lat)
-         chunksize3d(3)=1
+         chunksize3d(1)=1
+         chunksize3d(2)=nlon
+         chunksize3d(3)=min(nlat,max_chunk_lat)
       end if
 
       ! define emissivity 3D
@@ -214,22 +222,23 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
+
       ! Define 4-D variables
-      dimids_4d(1)=netcdf_info%dimid_x_lw
-      dimids_4d(2)=netcdf_info%dimid_y_lw
-      dimids_4d(3)=netcdf_info%dimid_lw_channels
-      dimids_4d(4)=netcdf_info%dimid_levels_lw
+      dimids_4d(1)=netcdf_info%dimid_lw_channels
+      dimids_4d(2)=netcdf_info%dimid_levels_lw
+      dimids_4d(3)=netcdf_info%dimid_x_lw
+      dimids_4d(4)=netcdf_info%dimid_y_lw
 
       if (.not. use_chunking) then
-         chunksize4d(1)=nlon
-         chunksize4d(2)=nlat
-         chunksize4d(3)=channel_info%nchannels_lw
-         chunksize4d(4)=preproc_dims%kdim
+         chunksize4d(1)=channel_info%nchannels_lw
+         chunksize4d(2)=preproc_dims%kdim + 1
+         chunksize4d(3)=nlon
+         chunksize4d(4)=nlat
       else
-         chunksize4d(1)=nlon
-         chunksize4d(2)=min(nlat,max_chunk_lat)
-         chunksize4d(3)=1
-         chunksize4d(4)=1
+         chunksize4d(1)=1
+         chunksize4d(2)=1
+         chunksize4d(3)=nlon
+         chunksize4d(4)=min(nlat,max_chunk_lat)
       end if
 
       ! define tac
@@ -292,9 +301,12 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-   !-------------------------------------------------------------------------   
-   case(NETCDF_OUTPUT_FILE_SWRTM)
-   !-------------------------------------------------------------------------   
+
+   !-------------------------------------------------------------------------
+   !
+   !-------------------------------------------------------------------------
+   else if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) then
+
       ctitle='ORAC Preprocessing swrtm output file'
 
 
@@ -305,15 +317,15 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
 
       ! Define dimensions
-      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_rtm', &
-                      preproc_dims%max_lon-preproc_dims%min_lon+1, &
-                      netcdf_info%dimid_x_sw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create x-d'
-
       if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlat_rtm', &
                       preproc_dims%max_lat-preproc_dims%min_lat+1, &
                       netcdf_info%dimid_y_sw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create y-d'
+
+      if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_rtm', &
+                      preproc_dims%max_lon-preproc_dims%min_lon+1, &
+                      netcdf_info%dimid_x_sw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create x-d'
 
       if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlayers_rtm', &
                        preproc_dims%kdim, netcdf_info%dimid_layers_sw) &
@@ -327,7 +339,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
                        channel_info%nchannels_sw, netcdf_info%dimid_sw_channels)&
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw channel'
 
-      
+
       ! Define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_sw_channels
 
@@ -355,22 +367,23 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               verbose, ierr, &
               fill_value = sreal_fill_value)
 
+
       ! Define 4-D variables
-      dimids_4d(1)=netcdf_info%dimid_x_sw
-      dimids_4d(2)=netcdf_info%dimid_y_sw
-      dimids_4d(3)=netcdf_info%dimid_sw_channels
-      dimids_4d(4)=netcdf_info%dimid_levels_sw
+      dimids_4d(1)=netcdf_info%dimid_lw_channels
+      dimids_4d(2)=netcdf_info%dimid_levels_sw
+      dimids_4d(3)=netcdf_info%dimid_x_lw
+      dimids_4d(4)=netcdf_info%dimid_y_lw
 
       if (.not. use_chunking) then
-         chunksize4d(1)=nlon
-         chunksize4d(2)=nlat
-         chunksize4d(3)=channel_info%nchannels_sw
-         chunksize4d(4)=preproc_dims%kdim
+         chunksize4d(1)=channel_info%nchannels_sw
+         chunksize4d(2)=preproc_dims%kdim + 1
+         chunksize4d(3)=nlon
+         chunksize4d(4)=nlat
       else
-         chunksize4d(1)=nlon
-         chunksize4d(2)=min(nlat,max_chunk_lat)
-         chunksize4d(3)=1
-         chunksize4d(4)=1
+         chunksize4d(1)=1
+         chunksize4d(2)=1
+         chunksize4d(3)=nlon
+         chunksize4d(4)=min(nlat,max_chunk_lat)
       end if
 
       ! define tac
@@ -397,10 +410,12 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
+   !-------------------------------------------------------------------------
+   !
+   !-------------------------------------------------------------------------
 
-   !-------------------------------------------------------------------------   
-   case(NETCDF_OUTPUT_FILE_PRTM)
-   !-------------------------------------------------------------------------   
+   else if (type .eq. NETCDF_OUTPUT_FILE_PRTM) then
+
       ctitle='ORAC Preprocessing prtm output file'
 
 
@@ -411,15 +426,15 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
 
       ! Define dimensions
-      if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_rtm', &
-                       preproc_dims%max_lon-preproc_dims%min_lon+1, &
-                       netcdf_info%dimid_x_pw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create x-d'
-
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlat_rtm', &
                        preproc_dims%max_lat-preproc_dims%min_lat+1, &
                        netcdf_info%dimid_y_pw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create y-d'
+
+      if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_rtm', &
+                       preproc_dims%max_lon-preproc_dims%min_lon+1, &
+                       netcdf_info%dimid_x_pw) &
+           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create x-d'
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlayers_rtm', &
                        preproc_dims%kdim, netcdf_info%dimid_layers_pw) &
@@ -428,6 +443,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_rtm', &
                        preproc_dims%kdim+1, netcdf_info%dimid_levels_pw) &
            .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create nlev prtm'
+
 
       ! Define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_x_pw
@@ -442,7 +458,8 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
-      
+
+      ! define latitude variable
       dimids_1d(1) = netcdf_info%dimid_y_pw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
@@ -453,7 +470,8 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
-      
+
+
       ! Define 2-D variables
       dimids_2d(1)=netcdf_info%dimid_x_pw
       dimids_2d(2)=netcdf_info%dimid_y_pw
@@ -502,19 +520,20 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 !              shuffle = shuffle_sreal, &
 !              fill_value = sreal_fill_value)
 
+
       ! Define 3-D variables
-      dimids_3d(1)=netcdf_info%dimid_x_pw
-      dimids_3d(2)=netcdf_info%dimid_y_pw
-      dimids_3d(3)=netcdf_info%dimid_levels_pw
-      
+      dimids_3d(1)=netcdf_info%dimid_levels_pw
+      dimids_3d(2)=netcdf_info%dimid_x_pw
+      dimids_3d(3)=netcdf_info%dimid_y_pw
+
       if (.not. use_chunking) then
-         chunksize3d(1)=nlon
-         chunksize3d(2)=nlat
-         chunksize3d(3)=channel_info%nchannels_sw
+         chunksize3d(1)=preproc_dims%kdim + 1
+         chunksize3d(2)=nlon
+         chunksize3d(3)=nlat
       else
-         chunksize3d(1)=nlon
-         chunksize3d(2)=min(nlat,max_chunk_lat)
-         chunksize3d(3)=1
+         chunksize3d(1)=1
+         chunksize3d(2)=nlon
+         chunksize3d(3)=min(nlat,max_chunk_lat)
       end if
 
       ! define pressure profile at level centers as variable
@@ -552,7 +571,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
-   end select
+   end if
 
 
    ! set up attributes common to all output files
@@ -561,12 +580,14 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
    if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) ncid=netcdf_info%ncid_swrtm
 
    call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
-        path,cyear,cmonth,cday,chour,cminute)
+                                     path,cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
-   if (nf90_enddef(ncid).ne.NF90_NOERR) &
-        stop 'ERROR: netcdf_create_rtm(3): enddef rtm'
+   if (nf90_enddef(ncid) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_rtm(): nf90_enddef()'
+      stop error_stop_code
+   endif
 
    return
 
@@ -1270,12 +1291,14 @@ endif
    if (type .eq. NETCDF_OUTPUT_FILE_UV)  ncid=netcdf_info%ncid_scan
 
    call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
-        path,cyear,cmonth,cday,chour,cminute)
+                                     path,cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
-   ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR) stop 'ERROR: enddef swath'
+   if (nf90_enddef(ncid) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_swath(): nf90_enddef()'
+      stop error_stop_code
+   endif
 
 
    return
@@ -1385,11 +1408,6 @@ if (.false.) then
         preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_lw)
    if (ierr.ne.NF90_NOERR) stop 'error: create y-d'
 
-   ! define horizontal dimension as lon x lat
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlon_x_nlat_conf', &
-        nlon_x_nlat, netcdf_info%dimid_xy_lw)
-   if (ierr.ne.NF90_NOERR) stop 'error: create xy-d 2'
-
    ! define layer dimension
    ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlayers_conf', &
         preproc_dims%kdim-1, netcdf_info%dimid_layers_lw)
@@ -1483,12 +1501,14 @@ endif
 
    ! set up attributes common to all output files
    call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
-        path, cyear,cmonth,cday,chour,cminute)
+                                     path, cyear,cmonth,cday,chour,cminute)
 
 
    ! close definition section
-   ierr = nf90_enddef(ncid)
-   if (ierr.ne.NF90_NOERR) stop 'ERROR: enddef swath'
+   if (nf90_enddef(ncid) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_enddef()'
+      stop error_stop_code
+   endif
 
 
    return

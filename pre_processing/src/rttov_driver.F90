@@ -111,6 +111,8 @@
 !    Angles removed from output files and output fields now use two dimensions
 !    for the spatial dimension (previously one). Turned off solar component.
 !    Solar transmission now relative to TOA rather than top level.
+! 2014/09/28, GM: Fixed a significant performance regression by rearranging the
+!    rtm variable dimensions.
 !
 ! $Id$
 !
@@ -359,7 +361,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! weight(28.9644)/molcule weight of gas (e.g. o3  47.9982)*1.0E6
           profiles(count)%q(:nlayers) = &
               preproc_prtm%spec_hum(idim,jdim,:) * q_mixratio_to_ppmv
-         profiles(count)%o3(:nlayers) = &
+          profiles(count)%o3(:nlayers) = &
               preproc_prtm%ozone(idim,jdim,:) * o3_mixratio_to_ppmv
 
          ! Surface information
@@ -426,12 +428,16 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
               1, i_, 1, 1, j_, 1)
           call nc_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
-              reshape(profiles(count)%p, (/1,1,nlevels/)), &
-              1, i_, 1, 1, j_, 1, 1, 1, nlevels)
+              reshape(profiles(count)%p, (/nlevels,1,1/)), &
+              1, 1, nlevels, 1, i_, 1, 1, j_, 1)
          call nc_write_array(netcdf_info%ncid_prtm, 'tprofile_rtm', &
               netcdf_info%vid_tprofile_lev_pw, &
-              reshape(profiles(count)%t, (/1,1,nlevels/)), &
-              1, i_, 1, 1, j_, 1, 1, 1, nlevels)
+              reshape(profiles(count)%t, (/nlevels,1,1/)), &
+              1, 1, nlevels, 1, i_, 1, 1, j_, 1)
+         call nc_write_array(netcdf_info%ncid_prtm, 'hprofile_rtm', &
+              netcdf_info%vid_hprofile_lev_pw, &
+              reshape(preproc_prtm%phi_lev(idim, jdim,:), &
+              (/nlevels,1,1/)), 1, 1, nlevels, 1, i_, 1, 1, j_, 1)
       end do
    end do
 
@@ -440,12 +446,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 !        netcdf_info%vid_lsf_pw, &
 !        preproc_prtm%land_sea_mask, &
 !        1, 1, preproc_dims%xdim, 1, 1, preproc_dims%ydim)
-   call nc_write_array(netcdf_info%ncid_prtm, 'hprofile_rtm', &
-        netcdf_info%vid_hprofile_lev_pw, &
-        preproc_prtm%phi_lev, &
-        1, 1, preproc_dims%xdim, 1, 1, preproc_dims%ydim, 1, 1, nlevels)
    
    ! Do RTTOV calculations for long and shortwave in turn
+   if (verbose) write(*,*) 'Do RTTOV calculations'
+
    do i_coef=1,2
       ! Set factors that differ between long and shortwave
       if (i_coef == 1) then

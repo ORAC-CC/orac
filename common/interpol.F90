@@ -19,8 +19,9 @@
 ! None
 !
 ! History:
-! 2014/05/23, GM: First version.
+! 2014/05/23, AP: First version.
 ! 2014/08/05, AP: New bilinear interpolation routines.
+! 2014/09/28, GM: Added interp_field2.
 !
 ! $Id$
 !
@@ -49,6 +50,10 @@ module interpol
    interface interp_field
       module procedure interp_field_0d, interp_field_1d, interp_field_2d
    end interface interp_field
+
+   interface interp_field2
+      module procedure interp_field2_1d, interp_field2_2d
+   end interface interp_field2
 
 contains
 
@@ -274,5 +279,59 @@ subroutine interp_field_2d(datin, datout, interp)
    include "interp_field.inc"
 
 end subroutine interp_field_2d
+
+subroutine interp_field2_1d(datin, datout, interp)
+
+   implicit none
+
+   real(sreal), target, intent(in)    :: datin(:,:,:)
+   real(sreal),         intent(inout) :: datout(:)
+   type(interpol_s),    intent(in)    :: interp
+
+   logical                            :: miss(4)
+   real(sreal)                        :: coef(3)
+   real(sreal), pointer, dimension(:) :: bot_left, bot_rght, top_left, top_rght
+
+   ! decide interpolation to do dependent on the missing values
+   miss = [datin(1, interp%x0, interp%y0) == sreal_fill_value, &
+           datin(1, interp%x1, interp%y0) == sreal_fill_value, &
+           datin(1, interp%x0, interp%y1) == sreal_fill_value, &
+           datin(1, interp%x1, interp%y1) == sreal_fill_value]
+
+   bot_left => datin(:, interp%x0, interp%y0)
+   bot_rght => datin(:, interp%x1, interp%y0)
+   top_left => datin(:, interp%x0, interp%y1)
+   top_rght => datin(:, interp%x1, interp%y1)
+
+   include "interp_field.inc"
+
+end subroutine interp_field2_1d
+
+subroutine interp_field2_2d(datin, datout, interp)
+
+   implicit none
+
+   real(sreal), target, intent(in)         :: datin(:,:,:,:)
+   real(sreal),         intent(inout)      :: datout(:,:)
+   type(interpol_s),    intent(in)         :: interp
+
+   logical                              :: miss(4)
+   real(sreal)                          :: coef(3)
+   real(sreal), pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
+
+   ! decide interpolation to do dependent on the missing values
+   miss = [datin(1, 1, interp%x0, interp%y0) == sreal_fill_value, &
+           datin(1, 1, interp%x1, interp%y0) == sreal_fill_value, &
+           datin(1, 1, interp%x0, interp%y1) == sreal_fill_value, &
+           datin(1, 1, interp%x1, interp%y1) == sreal_fill_value]
+
+   bot_left => datin(:, :, interp%x0, interp%y0)
+   bot_rght => datin(:, :, interp%x1, interp%y0)
+   top_left => datin(:, :, interp%x0, interp%y1)
+   top_rght => datin(:, :, interp%x1, interp%y1)
+
+   include "interp_field.inc"
+
+end subroutine interp_field2_2d
 
 end module interpol

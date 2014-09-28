@@ -80,6 +80,7 @@
 !    2014/07/23, AP: Commented out unused code for future deletion.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !    2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
+!    28/09/2014, GM: Updated to conform with a new arrangement of dimensions.
 !
 ! Bugs:
 !    None known.
@@ -176,13 +177,13 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
       stop 'ERROR: read_swrtm_nc(): required instrument channels not found'
 
    ! Allocate arrays
-   allocate(RTM%SW%Tbc(RTM%SW%Grid%NLon, RTM%SW%Grid%NLat, Ctrl%Ind%NSolar, &
-        RTM%SW%NP))
-   allocate(RTM%SW%Tac(RTM%SW%Grid%NLon, RTM%SW%Grid%NLat, Ctrl%Ind%NSolar, &
-        RTM%SW%NP))
+   allocate(RTM%SW%Tbc(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
+      RTM%SW%Grid%NLat))
+   allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
+      RTM%SW%Grid%NLat))
 
-   call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, verbose, 3, index)
-   call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, verbose, 3, index)
+   call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, verbose, 1, index)
+   call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, verbose, 1, index)
 
    ! Close SwRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) &

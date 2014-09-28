@@ -90,6 +90,7 @@
 !    2014/08/01, AP: Remove unused counter fields.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !    2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
+!    28/09/2014, GM: Updated to conform with a new arrangement of dimensions.
 !
 ! Bugs:
 !    None known.
@@ -141,9 +142,9 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    allocate(RTM%LW%skint(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
    allocate(RTM%LW%sp   (RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
 
-   allocate(RTM%LW%P(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat, RTM%LW%NP))
-   allocate(RTM%LW%T(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat, RTM%LW%NP))
-   allocate(RTM%LW%H(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat, RTM%LW%NP))
+   allocate(RTM%LW%P(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
+   allocate(RTM%LW%T(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
+   allocate(RTM%LW%H(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
 
    ! Read data into arrays
    allocate(dummy1d(RTM%LW%Grid%NLon))
@@ -162,8 +163,8 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 
    call nc_read_array(ncid, "skint_rtm", RTM%LW%skint, verbose)
    call nc_read_array(ncid, "explnsp_rtm", RTM%LW%sp, verbose)
-   call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, verbose)
    call nc_read_array(ncid, "pprofile_rtm", RTM%LW%P, verbose)
+   call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, verbose)
    call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, verbose)
 
    ! Close PRTM input file
@@ -230,25 +231,25 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
       stop 'ERROR: read_lwrtm_nc(): required instrument channels not found'
 
    ! Allocate arrays
-   allocate(RTM%LW%Ems(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal))
-   allocate(RTM%LW%Tbc(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
-        RTM%LW%NP))
-   allocate(RTM%LW%Tac(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
-        RTM%LW%NP))
-   allocate(RTM%LW%Rac_up(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
-        RTM%LW%NP))
-   allocate(RTM%LW%Rac_dwn(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
-        RTM%LW%NP))
-   allocate(RTM%LW%Rbc_up(RTM%LW%Grid%NLon,RTM%LW%Grid%NLat,Ctrl%Ind%NThermal, &
-        RTM%LW%NP))
+   allocate(RTM%LW%Ems(Ctrl%Ind%NThermal,RTM%LW%Grid%NLon,RTM%LW%Grid%NLat))
+   allocate(RTM%LW%Tac(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+      RTM%LW%Grid%NLat))
+   allocate(RTM%LW%Tbc(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+      RTM%LW%Grid%NLat))
+   allocate(RTM%LW%Rac_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+      RTM%LW%Grid%NLat))
+   allocate(RTM%LW%Rac_dwn(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+      RTM%LW%Grid%NLat))
+   allocate(RTM%LW%Rbc_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+      RTM%LW%Grid%NLat))
 
    ! Read data into arrays
-   call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, verbose, 3, index)
-   call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, verbose, 3, index)
-   call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, verbose, 3, index)
-   call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, verbose, 3, index)
-   call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, verbose, 3, index)
-   call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, verbose, 3, index)
+   call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, verbose, 1, index)
+   call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, verbose, 1, index)
+   call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, verbose, 1, index)
+   call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, verbose, 1, index)
+   call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, verbose, 1, index)
+   call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, verbose, 1, index)
 
 !  if (allocated(WvNumber)) deallocate(WvNumber)
    if (allocated(ChanID))   deallocate(ChanID)
@@ -267,25 +268,25 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 
    ! Grid spacing and inverse
    RTM%LW%Grid%delta_Lat = (RTM%LW%Grid%LatN - RTM%LW%Grid%Lat0) &
-        / (RTM%LW%Grid%NLat-1)
+                           / (RTM%LW%Grid%NLat-1)
    RTM%LW%Grid%inv_delta_Lat = 1. / RTM%LW%Grid%delta_Lat
 
    RTM%LW%Grid%delta_Lon = (RTM%LW%Grid%LonN - RTM%LW%Grid%Lon0) &
-        / (RTM%LW%Grid%NLon-1)
+                           / (RTM%LW%Grid%NLon-1)
    RTM%LW%Grid%inv_delta_Lon = 1. / RTM%LW%Grid%delta_Lon
 
    ! Max and Min grid values
    RTM%LW%Grid%MinLat = min(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
-        RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
+                            RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
    RTM%LW%Grid%MaxLat = max(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
-        RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
+                            RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
    RTM%LW%Grid%MinLon = min(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
-        RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
+                            RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
    RTM%LW%Grid%MaxLon = max(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
-        RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
+                            RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
 
    ! Does the grid wrap around the international date-line?
    RTM%LW%Grid%Wrap = RTM%LW%Grid%MinLon <= -180. .and. &
-        RTM%LW%Grid%MaxLon >= 180.
+                      RTM%LW%Grid%MaxLon >=  180.
 
 end subroutine Read_LwRTM_nc
