@@ -30,6 +30,7 @@
 !       that maybe the result of occasional missing channels.
 !     1st Aug 2014, Greg McGarragh: Fixes and refactoring related to the above
 !       change and cleanup.
+!     7th Aug 2014, Adam Povey: Fix bug in subscripting of FG, AP arrays.
 !
 ! Bugs:
 !    Warning At the moment only one view is specified.
@@ -111,8 +112,8 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
          i_missing = -1
 
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+         SPixel%FG = Ctrl%FG(:,IDay)
+         SPixel%AP = Ctrl%AP(:,IDay)
 
       else if (SPixel%illum(i_view) .eq. IDayMissingSingleVisFirst) then
          status = 1 ! Disable this configuration
@@ -140,8 +141,8 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          i_missing = -1
          i_missing(1) =  1
 
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+         SPixel%FG = Ctrl%FG(:,IDay)
+         SPixel%AP = Ctrl%AP(:,IDay)
 
       else if (SPixel%illum(i_view) .eq. IDayMissingSingleVisSecond) then
          status = 1 ! Disable this configuration
@@ -169,8 +170,8 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          i_missing = -1
          i_missing(1) =  2
 
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+         SPixel%FG = Ctrl%FG(:,IDay)
+         SPixel%AP = Ctrl%AP(:,IDay)
 
       else if (SPixel%illum(i_view) .eq. IDayMissingSingleIRFirst) then
          status = 1 ! Disable this configuration
@@ -288,8 +289,8 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             ii = ii + 1
          end do
 
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+         SPixel%FG = Ctrl%FG(:,ITwi)
+         SPixel%AP = Ctrl%AP(:,ITwi)
 
       else if (SPixel%illum(i_view) .eq. INightMissingSingleIRFirst) then
           status = 1 ! Disable this configuration
@@ -330,8 +331,8 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             ii = ii + 1
          end do
 
-         SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
-         SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
+         SPixel%FG = Ctrl%FG(:,INight)
+         SPixel%AP = Ctrl%AP(:,INight)
       else
           status = 1
       end if
