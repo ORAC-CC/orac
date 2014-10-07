@@ -14,6 +14,7 @@
 ! History:
 ! 2014/08/02, GM: Cleaned up the code.
 ! 2014/08/15, AP: Use preprocessor NCDF functions.
+! 2014/10/07, AP: Removed read of layer dimensions.
 !
 ! $Id$
 !
@@ -84,7 +85,7 @@ subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
    levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
-   laydim = nc_dim_length(ncid, 'nlayers_rtm', verbose)
+   laydim = levdim-1
    channeldim = nc_dim_length(ncid, 'nlw_channels', verbose)
 
    ! Close file
@@ -94,8 +95,8 @@ subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
 end subroutine read_input_dimensions_lwrtm
 
 
-subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim,laydim, &
-     channeldim,verbose)
+subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim, &
+     laydim,channeldim,verbose)
 
    use ECP_Constants
    use orac_ncdf
@@ -114,8 +115,8 @@ subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim,laydim, &
 
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
-   laydim = nc_dim_length(ncid, 'nlayers_rtm', verbose)
    levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
+   laydim = levdim-1
    channeldim = nc_dim_length(ncid, 'nsw_channels', verbose)
 
    ! Close file
