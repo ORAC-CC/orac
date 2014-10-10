@@ -7,7 +7,7 @@
 !
 ! Description:
 !    Defines a set of structures used to hold Static Application Data for
-!    measurement channels in the ECP.
+!    measurement channels in the ECP and supporting routines.
 !
 ! Arguments:
 !    Name Type In/Out/Both Description
@@ -47,6 +47,15 @@ module SAD_Chan_def
    use ECP_constants
 
    implicit none
+
+   private
+
+   public :: Solar_t, &
+             Thermal_t, &
+             SAD_Chan_t, &
+             Find_MDAD_SW, &
+             Find_MDAD_LW, &
+             Read_SAD_Chan
 
    type Solar_t
       integer(1)  :: Flag        ! Value 1 indicates solar source is present
@@ -166,6 +175,6 @@ function Find_MDAD_LW(Ny, SAD_Chan, index) result(MDAD_LW)
 end function Find_MDAD_LW
 
 
-include 'ReadChan.F90'
+include 'ReadSADChan.F90'
 
 end module SAD_Chan_def

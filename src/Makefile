@@ -258,7 +258,6 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/RTM.o \
            $(OBJS)/RTM_Pc.o \
            $(OBJS)/SADChan.o \
-           $(OBJS)/SADCloudClass.o \
            $(OBJS)/SADLUT.o \
            $(OBJS)/SetDiag.o \
            $(OBJS)/SetGZero.o \

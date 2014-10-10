@@ -1,9 +1,10 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    SAD_LUT
+!    SAD_LUT_def
 !
 ! Purpose:
-!    Module defining the Static Application Data Look-Up Table structure
+!    Module defining the Static Application Data Look-Up Table structure and
+!    supporting routines.
 !
 ! Arguments:
 !    Name Type In/Out/Both Description
@@ -39,6 +40,14 @@ module SAD_LUT_def
 
    use ECP_Constants
 
+   private
+
+   public :: LUT_Grid_t, &
+             SAD_LUT_t, &
+             Alloc_SAD_LUT, &
+             Dealloc_SAD_LUT, &
+             Read_SAD_LUT
+
    type LUT_Grid_t
       real,    pointer  :: MaxTau(:,:)    ! Optical depth grid max.
       real,    pointer  :: MinTau(:,:)    !  - grid min
@@ -63,8 +72,8 @@ module SAD_LUT_def
 
       real,    pointer  :: Tau(:,:,:)
       real,    pointer  :: Re(:,:,:)
-      real,    pointer  :: Satzen(:,:,:)
       real,    pointer  :: Solzen(:,:,:)
+      real,    pointer  :: Satzen(:,:,:)
       real,    pointer  :: Relazi(:,:,:)
 
       integer          :: nmaxtau    = 20
@@ -72,20 +81,21 @@ module SAD_LUT_def
       integer          :: nmaxsolzen = 20
       integer          :: nmaxsatzen = 20
       integer          :: nmaxrelazi = 20
-
    end type LUT_Grid_t
 
 
    type SAD_LUT_t
       integer          :: Index         ! Reference index
-      character(80)    :: Name          ! Optional class name
+      character(128)   :: Name          ! Optional class name
       real,    pointer :: Wavelength(:) ! Channel wavelengths
 
       logical, pointer :: table_used_for_channel(:, :)
 
-      logical          :: table_uses_satzen(maxcrprops)
       logical          :: table_uses_solzen(maxcrprops)
       logical          :: table_uses_relazi(maxcrprops)
+      logical          :: table_uses_satzen(maxcrprops)
+
+      type(LUT_Grid_t) :: Grid
 
       real, pointer :: Rbd(:,:,:,:,:,:)
                        ! Bi-directional reflectance
@@ -122,9 +132,6 @@ module SAD_LUT_def
       real, pointer :: Em(:,:,:,:)
                        ! Diffuse emissivity
 		       ! Dimensions: channel, Tau, SatZen, Re
-
-      type(LUT_Grid_t) :: Grid   ! Grid parameters
-
    end type SAD_LUT_t
 
 contains
@@ -132,7 +139,8 @@ contains
 ! Here we use a C preprocessor include instead of a Fortran include since
 ! ReadLUT.F90 contains C preprocessor statements but the C preprocessor won't go
 ! into Fortran included files.
-#include "ReadLUT.F90"
+#include "ReadSADLUT.F90"
+#include "AllocSADLUT.F90"
 #include "DeallocSADLUT.F90"
 
 end module SAD_LUT_def

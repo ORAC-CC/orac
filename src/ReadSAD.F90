@@ -79,12 +79,12 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT, status)
    integer,                        intent(inout) :: status
 
    ! Read channel sad files
-   if (status == 0) call Read_Chan(Ctrl, SAD_Chan, status)
-   write(*,*)'Read channel information (status)',status
+   if (status == 0) call Read_SAD_Chan(Ctrl, SAD_Chan, status)
+   write(*,*)'Read SAD channel information, status: ', status
 
    ! Read Look up tables
-   if (status == 0) call Read_LUT (Ctrl, SAD_Chan, SAD_LUT,status)
-   write(*,*)'Read LUTs (status)',status
+   if (status == 0) call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT)
+   write(*,*)'Read SAD LUTs, status: ', 0
 
 end subroutine Read_SAD
 

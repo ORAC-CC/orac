@@ -66,8 +66,6 @@ contains
 ! History:
 ! 2014/02/10, AP: Original version, replacing nc_open.F90.
 !
-! $Id$
-!
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------

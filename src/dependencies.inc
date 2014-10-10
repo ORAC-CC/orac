@@ -57,7 +57,7 @@ $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         prepare_primary.F90 prepare_secondary.F90 write_primary.F90 \
         write_secondary.F90
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
-$(OBJS)/R2T.o: $(OBJS)/SADChan.o
+$(OBJS)/R2T.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o
 $(OBJS)/read_config_file.o: $(OBJS)/Ctrl.o $(OBJS)/config.o
 $(OBJS)/read_input_dimensions.o: $(OBJS)/ECPConstants.o
 $(OBJS)/read_sat_data_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SADChan.o
@@ -79,10 +79,9 @@ $(OBJS)/ReadScanLines_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
 $(OBJS)/ReadSwRTM_nc.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o
 $(OBJS)/RTM.o: $(OBJS)/Ctrl.o DeallocRTM.F90
 $(OBJS)/RTM_Pc.o: $(OBJS)/Ctrl.o AllocRTMPc.F90 DeallocRTMPc.F90
-$(OBJS)/SADChan.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o ReadChan.F90
-$(OBJS)/SADCloudClass.o: $(OBJS)/ECPConstants.o
+$(OBJS)/SADChan.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o ReadSADChan.F90
 $(OBJS)/SADLUT.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-        DeallocSADLUT.F90 ReadLUT.F90
+        AllocSADLUT.F90 DeallocSADLUT.F90 ReadSADLUT.F90
 $(OBJS)/SetDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
 $(OBJS)/SetGZero.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \

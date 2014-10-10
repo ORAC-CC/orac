@@ -47,6 +47,7 @@
 
 subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 
+   use ECP_constants
    use SAD_Chan_def
 
    implicit none

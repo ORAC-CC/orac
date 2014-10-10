@@ -1,3 +1,41 @@
+subroutine Dealloc_LUT_Grid(LUT_Grid, status)
+
+   implicit none
+
+   ! Declare arguments
+
+   type(LUT_Grid_t), intent(inout) :: LUT_Grid
+   integer,          intent(inout) :: status
+
+   deallocate(LUT_Grid%MaxTau)
+   deallocate(LUT_Grid%MinTau)
+   deallocate(LUT_Grid%dTau)
+   deallocate(LUT_Grid%nTau)
+   deallocate(LUT_Grid%MaxRe)
+   deallocate(LUT_Grid%MinRe)
+   deallocate(LUT_Grid%dRe)
+   deallocate(LUT_Grid%nRe)
+   deallocate(LUT_Grid%MaxSatzen)
+   deallocate(LUT_Grid%MinSatzen)
+   deallocate(LUT_Grid%dSatzen)
+   deallocate(LUT_Grid%nSatzen)
+   deallocate(LUT_Grid%MaxSolzen)
+   deallocate(LUT_Grid%MinSolzen)
+   deallocate(LUT_Grid%dSolzen)
+   deallocate(LUT_Grid%nSolzen)
+   deallocate(LUT_Grid%MaxRelazi)
+   deallocate(LUT_Grid%MinRelazi)
+   deallocate(LUT_Grid%dRelazi)
+   deallocate(LUT_Grid%nRelazi)
+   deallocate(LUT_Grid%Tau)
+   deallocate(LUT_Grid%Re)
+   deallocate(LUT_Grid%Solzen)
+   deallocate(LUT_Grid%Satzen)
+   deallocate(LUT_Grid%Relazi)
+
+end subroutine Dealloc_LUT_Grid
+
+
 !-------------------------------------------------------------------------------
 ! Name:
 !    Dealloc_SAD_LUT
@@ -34,6 +72,8 @@
 !    16th Jan 2014, Greg McGarragh: Added deallocation of
 !       SAD_LUT%table_used_for_channel.
 !    27th May 2014, Greg McGarragh: Some cleanup.
+!    10th Oct 2014, Greg McGarragh: Separate out Grid deallocations to be
+!       consistent with allocation routine.
 !
 ! Bugs:
 !    None known.
@@ -41,7 +81,6 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-
 subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
 
    use Ctrl_def
@@ -58,6 +97,8 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
 
    deallocate(SAD_LUT%table_used_for_channel)
 
+   call Dealloc_LUT_Grid(SAD_LUT%Grid, status)
+
    deallocate(SAD_LUT%Rd)
    deallocate(SAD_LUT%Rfd)
    deallocate(SAD_LUT%Td)
@@ -73,32 +114,5 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
    if (Ctrl%Ind%NThermal > 0) then
       deallocate(SAD_LUT%Em)
    end if
-
-   deallocate(SAD_LUT%Grid%Tau)
-   deallocate(SAD_LUT%Grid%Re)
-   deallocate(SAD_LUT%Grid%Satzen)
-   deallocate(SAD_LUT%Grid%Solzen)
-   deallocate(SAD_LUT%Grid%relazi)
-
-   deallocate(SAD_LUT%Grid%MaxTau)
-   deallocate(SAD_LUT%Grid%MinTau)
-   deallocate(SAD_LUT%Grid%dTau)
-   deallocate(SAD_LUT%Grid%nTau)
-   deallocate(SAD_LUT%Grid%MaxRe)
-   deallocate(SAD_LUT%Grid%MinRe)
-   deallocate(SAD_LUT%Grid%dRe)
-   deallocate(SAD_LUT%Grid%nRe)
-   deallocate(SAD_LUT%Grid%MaxSatzen)
-   deallocate(SAD_LUT%Grid%MinSatzen)
-   deallocate(SAD_LUT%Grid%dSatzen)
-   deallocate(SAD_LUT%Grid%nSatzen)
-   deallocate(SAD_LUT%Grid%MaxSolzen)
-   deallocate(SAD_LUT%Grid%MinSolzen)
-   deallocate(SAD_LUT%Grid%dSolzen)
-   deallocate(SAD_LUT%Grid%nSolzen)
-   deallocate(SAD_LUT%Grid%MaxRelazi)
-   deallocate(SAD_LUT%Grid%MinRelazi)
-   deallocate(SAD_LUT%Grid%dRelazi)
-   deallocate(SAD_LUT%Grid%nRelazi)
 
 end subroutine Dealloc_SAD_LUT

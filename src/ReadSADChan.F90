@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_Chan
+!    Read_SAD_Chan
 !
 ! Purpose:
 !    Reads Static Application Data files containing channel description for use
@@ -91,7 +91,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Chan(Ctrl, SAD_Chan, status)
+subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -326,4 +326,4 @@ subroutine Read_Chan(Ctrl, SAD_Chan, status)
    Ctrl%Ind%MDAD_LW = Find_MDAD_LW(Ctrl%Ind%Ny, SAD_Chan)
    Ctrl%Ind%MDAD_SW = Find_MDAD_SW(Ctrl%Ind%Ny, SAD_Chan)
 
-end subroutine Read_Chan
+end subroutine Read_SAD_Chan

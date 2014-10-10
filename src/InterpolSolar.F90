@@ -160,7 +160,6 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
    end if
 
    ! Open breakpoint file if required, and write our transmittances etc.
-
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_Interpol_Solar) then
       call Find_Lun(bkp_lun)
