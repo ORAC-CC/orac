@@ -261,13 +261,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    
    ! Initialise options structure (leaving default settings be)
    opts % interpolation % addinterp        = .true.  ! Interpolate input profile
-   opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
+   ! Removed as occassionally returns negative ozone at 0.005 hPa
+!  opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
    opts % rt_all % use_q2m   = .false. ! Do not use surface humidity
    opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar
    opts % rt_ir % ozone_data = .true.  ! Include ozone profile
    opts % config % verbose   = .false. ! Display only fatal error messages
-
 
    if (verbose) write(*,*) 'Write static information to the output files'
    
