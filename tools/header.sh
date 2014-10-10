@@ -104,6 +104,9 @@ data_repos=/local/home/povey/povey/data
 # path to SAD repository
 sad_repos=/local/home/povey/povey/sad_dir
 
+# path to RTTOV installation
+rttov_dir=/local/home/povey/povey/libs/code/rttov112
+
 # path to IDL executable
 idl_folder=/usr/local/PACK/idl83/idl83/bin
 
@@ -140,10 +143,12 @@ out_folder=$data_repos/testoutput
 albedo_folder=$data_repos/albedo
 
 # path to channel information
-coeffs_folder=$data_repos/coeffs
+coeffs_folder=$rttov_dir/rtcoef_rttov11
+#coeffs_folder=$data_repos/coeffs/org
 
 # path to emissivity atlas
-emiss_atlas_folder=$data_repos/emissivity
+emiss_atlas_folder=$rttov_dir/emis_data
+#emiss_atlas_folder=$data_repos/emissivity
 
 # path to ATSR drift coefficients
 calib_folder=$data_repos/AATSR_VIS_DRIFT_V03-00.DAT
