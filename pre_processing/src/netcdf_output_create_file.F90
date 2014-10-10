@@ -79,6 +79,8 @@
 !    any more as the variables are written by the preprocessor and read by the
 !    main processor in the order in which they are stored.
 ! 2014/09/28, GM: Remove layer dimensions as they were not used any more.
+! 2014/09/28, GM: Make the rest of the error messaging consistent with the new
+!    format.
 !
 ! $Id$
 !
@@ -138,31 +140,47 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
       ctitle='ORAC Preprocessing lwrtm output file'
 
+
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-                      netcdf_info%ncid_lwrtm) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): lw creating file'
+          netcdf_info%ncid_lwrtm) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! Define dimensions
+      ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlat_rtm', &
-                       nlat, netcdf_info%dimid_y_lw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create y-d'
+          nlat, netcdf_info%dimid_y_lw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nlat_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlon_rtm', &
-                       nlon, netcdf_info%dimid_x_lw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create x-d'
+          nlon, netcdf_info%dimid_x_lw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nlon_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlevels_rtm', &
-                       preproc_dims%kdim+1, netcdf_info%dimid_levels_lw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create nlev lw'
+          preproc_dims%kdim+1, netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nlevels_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_lwrtm, 'nlw_channels', &
-                       channel_info%nchannels_lw, netcdf_info%dimid_lw_channels)&
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(1): create nchan lw'
+          channel_info%nchannels_lw, netcdf_info%dimid_lw_channels) &
+         .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nlw_channels'
+         stop error_stop_code
+      end if
 
 
-      ! Define 1-D variables
+      ! define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_lw_channels
 
       call nc_def_var_long_packed_long( &
@@ -189,12 +207,12 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               verbose, ierr, &
               fill_value = sreal_fill_value)
 
-      ! Define 3-D variables
+      ! define 3-D variables
       dimids_3d(1)=netcdf_info%dimid_lw_channels
       dimids_3d(2)=netcdf_info%dimid_x_lw
       dimids_3d(3)=netcdf_info%dimid_y_lw
 
-      ! define emissivity 3D
+      ! define emiss_lw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_3d, &
@@ -206,13 +224,13 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               fill_value = sreal_fill_value)
 
 
-      ! Define 4-D variables
+      ! define 4-D variables
       dimids_4d(1)=netcdf_info%dimid_lw_channels
       dimids_4d(2)=netcdf_info%dimid_levels_lw
       dimids_4d(3)=netcdf_info%dimid_x_lw
       dimids_4d(4)=netcdf_info%dimid_y_lw
 
-      ! define tac
+      ! define tac_lw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
@@ -223,7 +241,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define tbc
+      ! define tbc_lw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
@@ -234,7 +252,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define rbc_up
+      ! define rbc_up_lw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
@@ -245,7 +263,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define rac_up
+      ! define rac_up_lw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
@@ -256,7 +274,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define rac_down
+      ! define rac_down_lw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_lwrtm, &
               dimids_4d, &
@@ -278,31 +296,44 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-                      netcdf_info%ncid_swrtm) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): creating sw file'
+          netcdf_info%ncid_swrtm) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! Define dimensions
+      ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlat_rtm', &
-                      preproc_dims%max_lat-preproc_dims%min_lat+1, &
-                      netcdf_info%dimid_y_sw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create y-d'
+          nlat, netcdf_info%dimid_y_sw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
+            & 'name: nlat_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlon_rtm', &
-                      preproc_dims%max_lon-preproc_dims%min_lon+1, &
-                      netcdf_info%dimid_x_sw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create x-d'
+          nlon, netcdf_info%dimid_x_sw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
+            & 'name: nlon_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nlevels_rtm', &
-                       preproc_dims%kdim+1, netcdf_info%dimid_levels_sw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw level'
+          preproc_dims%kdim+1, netcdf_info%dimid_levels_sw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
+            & 'name: nlevels_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_swrtm, 'nsw_channels', &
-                       channel_info%nchannels_sw, netcdf_info%dimid_sw_channels)&
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(2): create sw channel'
+          channel_info%nchannels_sw, netcdf_info%dimid_sw_channels) &
+         .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
+            & 'name: nsw_channels'
+         stop error_stop_code
+      end if
 
 
-      ! Define 1-D variables
+      ! define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_sw_channels
 
       call nc_def_var_long_packed_long( &
@@ -330,13 +361,13 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               fill_value = sreal_fill_value)
 
 
-      ! Define 4-D variables
+      ! define 4-D variables
       dimids_4d(1)=netcdf_info%dimid_lw_channels
       dimids_4d(2)=netcdf_info%dimid_levels_sw
       dimids_4d(3)=netcdf_info%dimid_x_lw
       dimids_4d(4)=netcdf_info%dimid_y_lw
 
-      ! define tac
+      ! define tac_sw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
               dimids_4d, &
@@ -347,7 +378,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define tbc
+      ! define tbc_sw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_swrtm, &
               dimids_4d, &
@@ -369,30 +400,39 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
       ! create file
       if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-                      netcdf_info%ncid_prtm) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): creating p file'
+          netcdf_info%ncid_prtm) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! Define dimensions
+      ! define dimensions
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlat_rtm', &
-                       preproc_dims%max_lat-preproc_dims%min_lat+1, &
-                       netcdf_info%dimid_y_pw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create y-d'
+          nlat, netcdf_info%dimid_y_pw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension '// &
+            & 'name: nlat_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlon_rtm', &
-                       preproc_dims%max_lon-preproc_dims%min_lon+1, &
-                       netcdf_info%dimid_x_pw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create x-d'
+          nlon, netcdf_info%dimid_x_pw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(2), nf90_create(), dimension '// &
+            & 'name: nlon_rtm'
+         stop error_stop_code
+      end if
 
       if (nf90_def_dim(netcdf_info%ncid_prtm, 'nlevels_rtm', &
-                       preproc_dims%kdim+1, netcdf_info%dimid_levels_pw) &
-           .ne. NF90_NOERR) stop 'ERROR: netcdf_create_rtm(3): create nlev prtm'
+          preproc_dims%kdim+1, netcdf_info%dimid_levels_pw) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(3), nf90_create(), dimension '// &
+            & 'name: nlevels_rtm'
+         stop error_stop_code
+      end if
 
 
-      ! Define 1-D variables
+      ! define 1-D variables
       dimids_1d(1) = netcdf_info%dimid_x_pw
 
-      ! define longitude variable
+      ! define lon_rtm
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_1d, &
@@ -403,7 +443,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define latitude variable
+      ! define lat_rtm
       dimids_1d(1) = netcdf_info%dimid_y_pw
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
@@ -416,11 +456,11 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               fill_value = sreal_fill_value)
 
 
-      ! Define 2-D variables
+      ! define 2-D variables
       dimids_2d(1)=netcdf_info%dimid_x_pw
       dimids_2d(2)=netcdf_info%dimid_y_pw
 
-      ! define skint variable
+      ! define skint_rtm
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_2d, &
@@ -431,7 +471,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define exp(lnsp) variable
+      ! define explnsp_rtm
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_2d, &
@@ -442,7 +482,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define exp(lsf) variable
+      ! define lsf_rtm
 !      call nc_def_var_float_packed_float( &
 !              netcdf_info%ncid_prtm, &
 !              dimids_2d, &
@@ -454,12 +494,12 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 !              fill_value = sreal_fill_value)
 
 
-      ! Define 3-D variables
+      ! define 3-D variables
       dimids_3d(1)=netcdf_info%dimid_levels_pw
       dimids_3d(2)=netcdf_info%dimid_x_pw
       dimids_3d(3)=netcdf_info%dimid_y_pw
 
-      ! define pressure profile at level centers as variable
+      ! define pprofile_rtm
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_3d, &
@@ -470,7 +510,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define temperature profile at lever centers as variable
+      ! define tprofile_rtm
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_3d, &
@@ -481,7 +521,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define geopotential height profile at lever centers as variable
+      ! define hprofile_rtm
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_prtm, &
               dimids_3d, &
@@ -600,32 +640,46 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ctitle='ORAC Preprocessing alb output file'
 
 
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_alb)
-      if (ierr.ne.NF90_NOERR) stop 'error: alb creating file'
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+          netcdf_info%ncid_alb) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! define channel dimension for albedo
-      ierr = nf90_def_dim(netcdf_info%ncid_alb, 'nc_alb', &
-           channel_info%nchannels_sw, netcdf_info%dimid_c_alb)
-      if (ierr.ne.NF90_NOERR) stop 'error: create c-d alb'
+      ! define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_alb, 'nc_alb', &
+          channel_info%nchannels_sw, netcdf_info%dimid_c_alb) &
+         .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nc_alb'
+         stop error_stop_code
+      end if
 
-      ! define channel dimension for emissivity
-      ierr = nf90_def_dim(netcdf_info%ncid_alb, 'nc_emis', &
-           channel_info%nchannels_lw, netcdf_info%dimid_c_emis)
-      if (ierr.ne.NF90_NOERR) stop 'error: create c-d emis'
+      if (nf90_def_dim(netcdf_info%ncid_alb, 'nc_emis', &
+          channel_info%nchannels_lw, netcdf_info%dimid_c_emis) &
+          .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nc_emis'
+         stop error_stop_code
+      end if
 
-      ! define x dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_alb, 'nx_alb', &
-           imager_geolocation%endx-imager_geolocation%startx+1, &
-           netcdf_info%dimid_x_alb)
-      if (ierr.ne.NF90_NOERR) stop 'error: create x-d alb'
+      if (nf90_def_dim(netcdf_info%ncid_alb, 'nx_alb', &
+          imager_geolocation%endx-imager_geolocation%startx+1, &
+          netcdf_info%dimid_x_alb) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nx_alb'
+         stop error_stop_code
+      end if
 
-      ! define y dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_alb, 'ny_alb', &
-           imager_geolocation%endy-imager_geolocation%starty+1, &
-           netcdf_info%dimid_y_alb)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d alb'
+      if (nf90_def_dim(netcdf_info%ncid_alb, 'ny_alb', &
+          imager_geolocation%endy-imager_geolocation%starty+1, &
+          netcdf_info%dimid_y_alb) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: ny_alb'
+         stop error_stop_code
+      end if
 
 
       dimids_1d(1) = netcdf_info%dimid_c_alb
@@ -653,7 +707,7 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_3d(2)=netcdf_info%dimid_y_alb
       dimids_3d(3)=netcdf_info%dimid_c_alb
 
-      ! define alb variable
+      ! define alb
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_alb, &
               dimids_3d, &
@@ -669,7 +723,7 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       dimids_3d(2)=netcdf_info%dimid_y_alb
       dimids_3d(3)=netcdf_info%dimid_c_emis
 
-      ! define emis variable
+      ! define emis
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_alb, &
               dimids_3d, &
@@ -734,28 +788,36 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ctitle='ORAC Preprocessing cf output file'
 
 
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_clf)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: cf creating file'
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+          netcdf_info%ncid_clf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! define x dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_clf, 'nx_cf', &
-           imager_geolocation%endx-imager_geolocation%startx+1, &
-           netcdf_info%dimid_x_cf)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d cf'
+      ! define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_clf, 'nx_cf', &
+          imager_geolocation%endx-imager_geolocation%startx+1, &
+          netcdf_info%dimid_x_cf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nx_cf'
+         stop error_stop_code
+      end if
 
-      ! define y dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_clf, 'ny_cf', &
-           imager_geolocation%endy-imager_geolocation%starty+1, &
-           netcdf_info%dimid_y_cf)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d cf'
+      if (nf90_def_dim(netcdf_info%ncid_clf, 'ny_cf', &
+          imager_geolocation%endy-imager_geolocation%starty+1, &
+          netcdf_info%dimid_y_cf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: ny_cf'
+         stop error_stop_code
+      end if
 
 
       dimids_2d(1)=netcdf_info%dimid_x_cf
       dimids_2d(2)=netcdf_info%dimid_y_cf
 
-      ! define cf variable
+      ! define cflag
       call nc_def_var_byte_packed_byte( &
               netcdf_info%ncid_clf, &
               dimids_2d, &
@@ -773,34 +835,44 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ctitle='ORAC Preprocessing geo output file'
 
 
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_geo)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: geo creating file'
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+          netcdf_info%ncid_geo) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! define view dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_geo, 'nv_geo', &
-           imager_angles%nviews, netcdf_info%dimid_v_geo)
-      if (ierr.ne.NF90_NOERR) stop 'error: create v-d geo'
+      ! define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_geo, 'nv_geo', &
+          imager_angles%nviews, netcdf_info%dimid_v_geo) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nv_geo'
+         stop error_stop_code
+      end if
 
-      ! define x dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_geo, 'nx_geo', &
-           imager_geolocation%endx-imager_geolocation%startx+1, &
-           netcdf_info%dimid_x_geo)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d geo'
+      if (nf90_def_dim(netcdf_info%ncid_geo, 'nx_geo', &
+          imager_geolocation%endx-imager_geolocation%startx+1, &
+          netcdf_info%dimid_x_geo) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nx_geo'
+         stop error_stop_code
+      end if
 
-      ! define y dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_geo, 'ny_geo', &
-           imager_geolocation%endy-imager_geolocation%starty+1, &
-           netcdf_info%dimid_y_geo)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d geo'
+      if (nf90_def_dim(netcdf_info%ncid_geo, 'ny_geo', &
+          imager_geolocation%endy-imager_geolocation%starty+1, &
+          netcdf_info%dimid_y_geo) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: ny_geo'
+         stop error_stop_code
+      end if
 
 
       dimids_3d(1)=netcdf_info%dimid_x_geo
       dimids_3d(2)=netcdf_info%dimid_y_geo
       dimids_3d(3)=netcdf_info%dimid_v_geo
 
-      ! define solzen variable
+      ! define solzen
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_geo, &
               dimids_3d, &
@@ -811,7 +883,7 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define satzen variable
+      ! define satzen
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_geo, &
               dimids_3d, &
@@ -822,7 +894,7 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define solaz variable
+      ! define solaz
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_geo, &
               dimids_3d, &
@@ -833,7 +905,7 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define relazi variable
+      ! define relazi
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_geo, &
               dimids_3d, &
@@ -851,28 +923,36 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ctitle='ORAC Preprocessing loc output file'
 
 
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_loc)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: loc creating file'
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+          netcdf_info%ncid_loc) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! define x dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_loc, 'nx_loc', &
-           imager_geolocation%endx-imager_geolocation%startx+1, &
-           netcdf_info%dimid_x_loc)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d loc'
+      ! define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_loc, 'nx_loc', &
+          imager_geolocation%endx-imager_geolocation%startx+1, &
+          netcdf_info%dimid_x_loc) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nx_loc'
+         stop error_stop_code
+      end if
 
-      ! define y dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_loc, 'ny_loc', &
-           imager_geolocation%endy-imager_geolocation%starty+1, &
-           netcdf_info%dimid_y_loc)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d loc'
+      if (nf90_def_dim(netcdf_info%ncid_loc, 'ny_loc', &
+          imager_geolocation%endy-imager_geolocation%starty+1, &
+          netcdf_info%dimid_y_loc) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: ny_loc'
+         stop error_stop_code
+      end if
 
 
       dimids_2d(1)=netcdf_info%dimid_x_loc
       dimids_2d(2)=netcdf_info%dimid_y_loc
 
-      ! define lat variable
+      ! define lat
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_loc, &
               dimids_2d, &
@@ -883,7 +963,7 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
 
-      ! define lon variable
+      ! define lon
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_loc, &
               dimids_2d, &
@@ -900,28 +980,36 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ctitle='ORAC Preprocessing lsf output file'
 
 
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_lsf)
-      if (ierr.ne.NF90_NOERR) stop 'error: lsf creating file'
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+          netcdf_info%ncid_lsf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! define x dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_lsf, 'nx_lsf', &
-           imager_geolocation%endx-imager_geolocation%startx+1, &
-           netcdf_info%dimid_x_lsf)
-      if (ierr.ne.NF90_NOERR) stop 'error: create x-d lsf'
+      ! define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_lsf, 'nx_lsf', &
+          imager_geolocation%endx-imager_geolocation%startx+1, &
+          netcdf_info%dimid_x_lsf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nx_lsf'
+         stop error_stop_code
+      end if
 
-      ! define y dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_lsf, 'ny_lsf', &
-           imager_geolocation%endy-imager_geolocation%starty+1, &
-           netcdf_info%dimid_y_lsf)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d lsf'
+      if (nf90_def_dim(netcdf_info%ncid_lsf, 'ny_lsf', &
+          imager_geolocation%endy-imager_geolocation%starty+1, &
+          netcdf_info%dimid_y_lsf) .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: ny_lsf'
+         stop error_stop_code
+      end if
 
 
       dimids_2d(1)=netcdf_info%dimid_x_lsf
       dimids_2d(2)=netcdf_info%dimid_y_lsf
 
-      ! define cf variable
+      ! define lsflag
       call nc_def_var_byte_packed_byte( &
               netcdf_info%ncid_lsf, &
               dimids_2d, &
@@ -939,33 +1027,46 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
       ctitle='ORAC Preprocessing msi output file'
 
 
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_msi)
-      if (ierr.ne.NF90_NOERR) stop 'error: msi creating file'
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+          netcdf_info%ncid_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
+      ! define dimensions
 if (.false.) then
-      ! define view dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_msi, 'nv_msi', &
-           imager_angles%nviews, netcdf_info%dimid_v_msi)
-      if (ierr.ne.NF90_NOERR) stop 'error: create v-d msi'
+      if (nf90_def_dim(netcdf_info%ncid_msi, 'nv_msi', &
+          imager_angles%nviews, netcdf_info%dimid_v_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nv_msi'
+         stop error_stop_code
+      end if
 endif
-      ! define channel dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_msi, 'nc_msi', &
-           channel_info%nchannels_total, netcdf_info%dimid_c_msi)
-      if (ierr.ne.NF90_NOERR) stop 'error: create c-d msi'
+      if (nf90_def_dim(netcdf_info%ncid_msi, 'nc_msi', &
+          channel_info%nchannels_total, &
+          netcdf_info%dimid_c_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nc_msi'
+         stop error_stop_code
+      end if
 
-      ! define x dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_msi, 'nx_msi', &
-           imager_geolocation%endx-imager_geolocation%startx+1, &
-           netcdf_info%dimid_x_msi)
-      if (ierr.ne.NF90_NOERR) stop 'error: create x-d msi'
+      if (nf90_def_dim(netcdf_info%ncid_msi, 'nx_msi', &
+          imager_geolocation%endx-imager_geolocation%startx+1, &
+          netcdf_info%dimid_x_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nx_msi'
+         stop error_stop_code
+      end if
 
-      ! define y dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_msi, 'ny_msi', &
-           imager_geolocation%endy-imager_geolocation%starty+1, &
-           netcdf_info%dimid_y_msi)
-      if (ierr.ne.NF90_NOERR) stop 'error: create y-d msi'
+      if (nf90_def_dim(netcdf_info%ncid_msi, 'ny_msi', &
+          imager_geolocation%endy-imager_geolocation%starty+1, &
+          netcdf_info%dimid_y_msi) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: ny_msi'
+         stop error_stop_code
+      end if
 
 
       ! define some channel variables
@@ -1015,7 +1116,7 @@ endif
       dimids_2d(1)=netcdf_info%dimid_x_msi
       dimids_2d(2)=netcdf_info%dimid_y_msi
 
-      ! define time variable
+      ! define time_data
       call nc_def_var_double_packed_double( &
               netcdf_info%ncid_msi, &
               dimids_2d, &
@@ -1031,7 +1132,7 @@ endif
       dimids_3d(2)=netcdf_info%dimid_y_msi
       dimids_3d(3)=netcdf_info%dimid_c_msi
 
-      ! define msi variable
+      ! define msi_data
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_msi, &
               dimids_3d, &
@@ -1049,28 +1150,36 @@ endif
       ctitle='ORAC Preprocessing scan output file'
 
 
-      ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-           netcdf_info%ncid_scan)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: scan creating file'
+      ! create file
+      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+          netcdf_info%ncid_scan) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+         stop error_stop_code
+      end if
 
 
-      ! define x dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_scan, 'nx_scan', &
-           imager_geolocation%endx-imager_geolocation%startx+1, &
-           netcdf_info%dimid_x_scan)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d scan'
+      ! define dimensions
+      if (nf90_def_dim(netcdf_info%ncid_scan, 'nx_scan', &
+          imager_geolocation%endx-imager_geolocation%startx+1, &
+          netcdf_info%dimid_x_scan) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: nx_scan'
+         stop error_stop_code
+      end if
 
-      ! define y dimension
-      ierr = nf90_def_dim(netcdf_info%ncid_scan, 'ny_scan', &
-           imager_geolocation%endy-imager_geolocation%starty+1, &
-           netcdf_info%dimid_y_scan)
-      if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d scan'
+      if (nf90_def_dim(netcdf_info%ncid_scan, 'ny_scan', &
+          imager_geolocation%endy-imager_geolocation%starty+1, &
+          netcdf_info%dimid_y_scan) .ne. NF90_NOERR) then
+         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+            & 'name: ny_scan'
+         stop error_stop_code
+      end if
 
 
       dimids_2d(1)=netcdf_info%dimid_x_scan
       dimids_2d(2)=netcdf_info%dimid_y_scan
 
-      ! define u variable
+      ! define uscan
       call nc_def_var_long_packed_long( &
               netcdf_info%ncid_scan, &
               dimids_2d, &
@@ -1081,7 +1190,7 @@ endif
               shuffle = shuffle_lint, &
               fill_value = lint_fill_value)
 
-      ! define v variable
+      ! define vscan
       call nc_def_var_long_packed_long( &
               netcdf_info%ncid_scan, &
               dimids_2d, &
@@ -1189,54 +1298,77 @@ subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
    ctitle='ORAC Preprocessing config file'
 
 
-   ierr = nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-        netcdf_info%ncid_config)
-   if (ierr.ne.NF90_NOERR) stop 'ERROR: config creating file'
+   ! create file
+   if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
+       netcdf_info%ncid_config) .ne. NF90_NOERR) then
+      write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
+      stop error_stop_code
+   end if
 
 
-   ! define channel dimension
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nc_conf', &
-        channel_info%nchannels_total, netcdf_info%dimid_c_config)
-   if (ierr.ne.NF90_NOERR) stop 'error: create c-d conf'
+   ! define dimensions
+   if (nf90_def_dim(netcdf_info%ncid_config, 'nc_conf', &
+       channel_info%nchannels_total, netcdf_info%dimid_c_config) &
+      .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: nc_conf'
+      stop error_stop_code
+   end if
 
-   ! define channel dimension for albedo
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nc_alb', &
-        channel_info%nchannels_sw, netcdf_info%dimid_c_config_alb)
-   if (ierr.ne.NF90_NOERR) stop 'error: create c-d alb'
+   if (nf90_def_dim(netcdf_info%ncid_config, 'nc_alb', &
+       channel_info%nchannels_sw, netcdf_info%dimid_c_config_alb) &
+      .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: nc_alb'
+      stop error_stop_code
+   end if
 
-   ! define channel dimension for emissivity
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nc_emis', &
-        channel_info%nchannels_lw, netcdf_info%dimid_c_config_emis)
-   if (ierr.ne.NF90_NOERR) stop 'error: create c-d emis'
+   if (nf90_def_dim(netcdf_info%ncid_config, 'nc_emis', &
+       channel_info%nchannels_lw, netcdf_info%dimid_c_config_emis) &
+       .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: nc_emis'
+      stop error_stop_code
+   end if
 
-if (.false.) then
-   ! define lon dimension for reference
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlon_conf', &
-        preproc_dims%max_lon-preproc_dims%min_lon+1, netcdf_info%dimid_x_lw)
-   if (ierr.ne.NF90_NOERR) stop 'error:create x-d'
+   if (nf90_def_dim(netcdf_info%ncid_config, 'nlat_conf', &
+       preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_lw) &
+       .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: nlat_conf'
+      stop error_stop_code
+   end if
 
-   ! define lat dimension for reference
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlat_conf', &
-        preproc_dims%max_lat-preproc_dims%min_lat+1, netcdf_info%dimid_y_lw)
-   if (ierr.ne.NF90_NOERR) stop 'error: create y-d'
+   if (nf90_def_dim(netcdf_info%ncid_config, 'nlon_conf', &
+       preproc_dims%max_lon-preproc_dims%min_lon+1, netcdf_info%dimid_x_lw) &
+       .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: nlon_conf'
+      stop error_stop_code
+   end if
 
-   ! define level dimension
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nlevels_conf', &
-        preproc_dims%kdim, netcdf_info%dimid_levels_lw)
-   if (ierr.ne.NF90_NOERR) stop 'error: create nlev lw'
-endif
+   if (nf90_def_dim(netcdf_info%ncid_config, 'nlevels_conf', &
+       preproc_dims%kdim+1, netcdf_info%dimid_levels_lw) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: nlevels_conf'
+      stop error_stop_code
+   end if
 
-   ! define x dimension
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'nx_conf', &
-        imager_geolocation%endx-imager_geolocation%startx+1, &
-        netcdf_info%dimid_x_config)
-   if (ierr.ne.NF90_NOERR) stop 'ERROR: create x-d conf'
+   if (nf90_def_dim(netcdf_info%ncid_config, 'nx_conf', &
+       imager_geolocation%endx-imager_geolocation%startx+1, &
+       netcdf_info%dimid_x_config) .ne. NF90_NOERR) then
+      write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: ny_conf'
+      stop error_stop_code
+   end if
 
-   ! define y dimension
-   ierr = nf90_def_dim(netcdf_info%ncid_config, 'ny_conf', &
-        imager_geolocation%endy-imager_geolocation%starty+1, &
-        netcdf_info%dimid_y_config)
-   if (ierr.ne.NF90_NOERR) stop 'ERROR: create y-d conf'
+   if (nf90_def_dim(netcdf_info%ncid_config, 'ny_conf', &
+       imager_geolocation%endy-imager_geolocation%starty+1, &
+       netcdf_info%dimid_y_config) .ne. NF90_NOERR) then
+      write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
+         & 'name: ny_conf'
+      stop error_stop_code
+   end if
 
 
    ! define some channel variables
