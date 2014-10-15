@@ -41,6 +41,7 @@
 ! 2014/01/12, GM: Fixed it so that the right scales and offsets are used.
 ! 2014/01/12, GM: Cleaned up the code.
 ! 2014/07/23, AP: More efficient array writing
+! 2014/10/15, GM: Fixes related to supporting an arbitrary set of channels.
 !
 ! $Id$
 !
@@ -77,8 +78,8 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    integer                    :: number_of_bands
    character(len=MAX_NC_NAME) :: band_names
    logical                    :: flag
-   integer                    :: iband,comma_i,comma_i_old
-   integer                    :: band_name_length,current_band
+   integer                    :: i_band,i_comma,i_comma_old
+   integer                    :: band_names_length,current_band
    integer(kind=sint)         :: fv, vr(2)
    real(kind=sreal)           :: scale_factors(20), offsets(20)
    integer(kind=lint)         :: start(3), stride(3), edge(3)
@@ -103,7 +104,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       SDS_name_2 = "EV_500_Aggr1km_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_500M"
    end if
-   if (band >= 8 .and. band<= 19 .or. band == 26) then
+   if (band >= 8 .and. band <= 19 .or. band == 26) then
       SDS_name = "EV_1KM_RefSB"
       SDS_name_2 = "EV_1KM_RefSB_Uncert_Indexes"
       Dim_band_index = "Band_1KM_RefSB"
@@ -142,31 +143,39 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    band_names=trim(adjustl(band_names))
 
    ! remove NULL characters
-   comma_i=index(band_names, achar(0))
-   do while (comma_i .gt. 0)
-      band_names(comma_i:comma_i) = ' '
-      comma_i=index(band_names, achar(0))
+   i_comma=index(band_names, achar(0))
+   do while (i_comma .gt. 0)
+      band_names(i_comma:i_comma) = ' '
+      i_comma=index(band_names, achar(0))
    end do
 
    if (verbose) write(*,*), 'Bands found: ', trim(band_names)
 
    flag = .true.
-   comma_i_old=1
-   band_name_length=len_trim(band_names)
+   i_comma_old=1
+   band_names_length=len_trim(band_names)
 
-   do iband=1,number_of_bands
-      if (iband .eq. number_of_bands) then
-         read(band_names(comma_i_old:band_name_length), '(i2)') current_band
+   do i_band=1,number_of_bands
+      if (i_band .eq. number_of_bands) then
+         read(band_names(i_comma_old:band_names_length), '(i2)') current_band
       else
-         comma_i=index(trim(adjustl(band_names(comma_i_old:band_name_length))),&
-              ',')+comma_i_old-1
-         read(band_names(comma_i_old:comma_i-1), '(i6)') current_band
-         comma_i_old=comma_i+1
+         i_comma=index(band_names(i_comma_old:band_names_length),',') + i_comma_old - 1
+
+         if (i_comma - i_comma_old .eq. 1) then
+            read(band_names(i_comma_old:i_comma-1), '(i1)') current_band
+         else if (i_comma - i_comma_old .eq. 2) then
+            read(band_names(i_comma_old:i_comma-1), '(i2)') current_band
+         else if (i_comma - i_comma_old .eq. 4) then
+            read(band_names(i_comma_old:i_comma-1), '(i2)') current_band
+            i_comma_old=i_comma+2
+         end if
+
+         i_comma_old=i_comma+1
       end if
 
       if (current_band .eq. band) then
          flag = .false.
-         if (verbose) write(*,*), 'Selected band is: ',current_band,iband
+         if (verbose) write(*,*), 'Selected band is: ',current_band,i_band
          exit
       end if
    end do
@@ -180,7 +189,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    ! data stored with 0 offset
    start(2) = iystart-1
    start(1) = ixstart-1
-   start(3) = iband-1
+   start(3) = i_band-1
 
    stride = 1
 
@@ -214,7 +223,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       do ix=ixstart,ixstop
          if (temp(ix,jy) .ge. vr(1) .and. temp(ix,jy) .le. vr(2)) then
             level1b_buffer(ix,jy) = (real(temp(ix,jy),kind=sreal) - &
-                 offsets(iband)) * scale_factors(iband)
+                 offsets(i_band)) * scale_factors(i_band)
          else
             level1b_buffer(ix,jy) = sreal_fill_value
          end if

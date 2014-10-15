@@ -16,6 +16,8 @@
 ! 2012/06/01, MJ: writes initial version.
 ! 2012/06/18, GT: Made some changes for dual view indexing
 ! 2012/08/22, GT: Added nview (number of viewing geometries)
+! 2014/10/15, GM: Added map_ids_abs_to_ref_band_land and
+!    map_ids_abs_to_ref_band_sea and removed channel_proc_flag.
 !
 ! $Id$
 !
@@ -48,15 +50,10 @@ module channel_structures
       !wrt original instrument definition
       !Note that these values may well repeat for multi-view instruments, like
       !AATSR: (/ 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7 /)
-      integer(kind=lint), dimension(:), pointer ::  channel_ids_instr
+      integer(kind=lint), dimension(:), pointer :: channel_ids_instr
       !wrt plain numbering 1,2,..... with regard to increasing wavelength and
       !then view
-      integer(kind=lint), dimension(:), pointer ::  channel_ids_abs
-
-
-      !channel number wrt its position in the RTTOV coefficient file
-      integer(kind=lint), dimension(:), pointer ::  channel_ids_rttov_coef_sw, &
-           channel_ids_rttov_coef_lw
+      integer(kind=lint), dimension(:), pointer :: channel_ids_abs
 
       !wavelength (in micrometers) array wrt to absolute channel numbering
       ! i.e. For all AATSR channels in both views, this would be
@@ -66,16 +63,19 @@ module channel_structures
       !arrays containing 0/1 flags to identify to which part (sw/lw) of the
       !spectrum they are assigned. could be used to determine the number of
       !channels used as well.
-      integer(kind=lint), dimension(:), pointer ::  channel_sw_flag
-      integer(kind=lint), dimension(:), pointer ::  channel_lw_flag
+      integer(kind=lint), dimension(:), pointer :: channel_sw_flag
+      integer(kind=lint), dimension(:), pointer :: channel_lw_flag
+
+      !channel number wrt its position in the RTTOV coefficient file
+      integer(kind=lint), dimension(:), pointer :: channel_ids_rttov_coef_sw
+      integer(kind=lint), dimension(:), pointer :: channel_ids_rttov_coef_lw
+
+      !map the abs channel ids to the ancillary reflectance input bands
+      integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_land
+      integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_sea
 
       !arrays containing the viewing geometry index for each channel
       integer(kind=lint), dimension(:), pointer ::  channel_view_ids
-
-      !array specifying if channel is processed
-      !(I know we agreed to process all channels anyway, but it might be handy
-      !to still include this even if it set to "1")
-      integer(kind=lint), dimension(:), pointer ::  channel_proc_flag
 
    end type channel_info_s
 

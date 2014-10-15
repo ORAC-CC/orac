@@ -65,12 +65,15 @@
 !   described from emissivity file.
 ! 19/08/2014, AP: Comment out reading of unused emissivity fields. They will be
 !   used eventually; hence why the code remains.
+! 15/10/2014, GM: Changes related to supporting an arbitrary set of LW channels.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+#define ONLY_GET_MIXED_CHANNELS
 
 subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
            imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
@@ -103,12 +106,12 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    ! Local variables
    character(len=path_length)                         :: cimss_emis_path_file
    type(emis_s)                                       :: emis
-   integer(kind=sint),              dimension(1)      :: embands=[1]
-!   integer(kind=sint),              dimension(3)      :: embands=[1,8,9]
+   integer                                            :: i_lw_chans
+   integer                                            :: n_mixed_chans
    real(kind=sreal),    allocatable, dimension(:,:,:) :: transemis, summat
    real(kind=sreal),    allocatable, dimension(:,:)   :: counter
-   integer(kind=lint)                                 :: i,j,k,lat,lon
-   integer(kind=lint)                                 :: nland
+   integer                                            :: i,j,k,lat,lon
+   integer                                            :: nland
    type(interpol_s)                                   :: interp
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_surface_emissivity()'
@@ -123,14 +126,17 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    if (verbose) write(*,*) 'nland: ', nland
 
    ! If there are no land pixels in the scene, we have nothing more to do
-   if (nland == 0 .or. count(channel_info%channel_ids_abs .eq. 4) == 0) return
+   if (nland == 0 .or. channel_info%nchannels_lw == 0) return
+
+   i_lw_chans = channel_info%nchannels_total - channel_info%nchannels_lw + 1
 
    ! embands is modis numbering of IR channels where,
-   ! channel_info%channel_ids_abs .gt. 3
-   if (verbose) write(*,*) 'n channels for land reflectance: ', &
-                           channel_info%channel_ids_abs
-   if (verbose) write(*,*) 'modis numbering for these IR channels: ', &
-                           embands
+   ! channel_info%channel_lw_flag .ne. 0
+   if (verbose) write(*,*) 'n channels for land emissivity: ', &
+                           channel_info%nchannels_lw
+
+   if (verbose) write(*,*) 'intrument bands for land emissivity: ', &
+                           channel_info%channel_ids_instr(i_lw_chans:)
 
    ! Select correct modis file
    if (assume_full_path) then
@@ -141,15 +147,26 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    if (verbose) write(*,*) 'cimss_emis_path_file: ', trim(cimss_emis_path_file)
 
    ! Read the data itself
-   if (read_cimss_emissivity(cimss_emis_path_file, emis, embands, verbose) .ne. 0) then
-        write(*,*) 'ERROR: read_cimss_emissivity(), problem reading CIMSS emissivity file: ', &
-        cimss_emis_path_file
+#ifdef ONLY_GET_MIXED_CHANNELS
+   if (read_cimss_emissivity(cimss_emis_path_file, emis, &
+       channel_info%channel_wl_abs(i_lw_chans:channel_info%nchannels_sw), &
+       verbose) .ne. 0) then
+#else
+   if (read_cimss_emissivity(cimss_emis_path_file, emis, &
+       channel_info%channel_wl_abs(i_lw_chans:channel_info%nchannels_total), &
+       verbose) .ne. 0) then
+#endif
+        write(*,*) 'ERROR: read_cimss_emissivity(), problem reading CIMSS ' // &
+                   'emissivity file: ', cimss_emis_path_file
         stop error_stop_code
    end if
 
    ! This emissivity data has very few missing values, but there are some. Set
    ! these to 0.999 (as close to 1 as the emissivity data itself gets). This is
    ! also a vaguely reasonable value for the water as well....
+
+   n_mixed_chans = channel_info%nchannels_sw - i_lw_chans + 1
+
    allocate(transemis(emis%nlon,emis%nlat,emis%nbands))
    do i=1,emis%nbands
       transemis(:,:,i) = transpose(emis%emissivity(:,:,i))
@@ -166,12 +183,14 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
                  emis%lat0, emis%lat_invdel, emis%nlat, &
                  imager_geolocation%longitude(i,j), &
                  imager_geolocation%latitude(i,j), interp)
-
-            k=1
-!            do k=1,channel_info%nchannels_lw
+#ifdef ONLY_GET_MIXED_CHANNELS
+             do k=1,n_mixed_chans
+#else
+             do k=1,channel_info%nchannels_lw
+#endif
                call interp_field(transemis(:,:,k), surface%emissivity(i,j,k), &
                     interp)
-!            end do
+             end do
          end if
       end do
    end do
@@ -180,8 +199,11 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    allocate(counter(preproc_dims%min_lon:preproc_dims%max_lon, &
         preproc_dims%min_lat:preproc_dims%max_lat))
    allocate(summat(preproc_dims%min_lon:preproc_dims%max_lon, &
-        preproc_dims%min_lat:preproc_dims%max_lat, 1))
-!       preproc_dims%min_lat:preproc_dims%max_lat, channel_info%nchannels_lw))
+#ifdef ONLY_GET_MIXED_CHANNELS
+        preproc_dims%min_lat:preproc_dims%max_lat, n_mixed_chans))
+#else
+        preproc_dims%min_lat:preproc_dims%max_lat, channel_info%nchannels_lw))
+#endif
    counter=0
    summat=0.
    do j=1,emis%nlat
@@ -202,9 +224,15 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
 
    do j=preproc_dims%min_lat,preproc_dims%max_lat
       do i=preproc_dims%min_lon,preproc_dims%max_lon
-         if (counter(i,j) .gt. 0) &
-            preproc_surf%emissivity(i,j,1:1) = summat(i,j,:) / real(counter(i,j))
-!           preproc_surf%emissivity(i,j, : ) = summat(i,j,:) / real(counter(i,j))
+         if (counter(i,j) .gt. 0) then
+#ifdef ONLY_GET_MIXED_CHANNELS
+            preproc_surf%emissivity(i,j,1:n_mixed_chans) = summat(i,j,:) / &
+               real(counter(i,j))
+#else
+            preproc_surf%emissivity(i,j, :             ) = summat(i,j,:) / &
+               real(counter(i,j))
+#endif
+         endif
       end do
    end do
 

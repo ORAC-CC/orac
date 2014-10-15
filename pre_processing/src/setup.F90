@@ -54,6 +54,9 @@ contains
 ! 2013/09/16, AP: removed channel_flag, preproc_dims, date
 ! 2014/09/10, AP: Order of RTTOV channels for AATSR reversed.
 ! 2014/09/19, AP: Fixed bug in reading platform for Metop AVHRR.
+! 2014/10/15, GM: Changes related to supporting an arbitrary set of MODIS
+!    channels.  Simplified changing the desired channels by automating the
+!    setting of channel arrays/indexes.
 !
 ! $Id$
 !
@@ -61,14 +64,13 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
+subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
      hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
-   use channel_structures
-   use date_type_structures
    use preproc_constants
    use preproc_structures
+   use channel_structures
 
    implicit none
 
@@ -82,21 +84,18 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   integer(kind=sint)                            :: intdummy1,intdummy2
+   integer                                       :: intdummy1
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_modis()'
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_aatsr()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
-   !check if l1b and geo file are of the same granule
-   intdummy1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   intdummy2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
-
-   if (trim(adjustl(l1b_path_file(intdummy1+10:intdummy1+26))) .ne. &
-       trim(adjustl(geo_path_file(intdummy2+7:intdummy2+23)))) then
+   !check if l1b and angles files identical
+   if (trim(adjustl(l1b_path_file)) .ne. &
+       trim(adjustl(geo_path_file))) then
       write(*,*)
-      write(*,*) 'ERROR: setup_modis(): Geolocation and L1b files are for ' // &
+      write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
                & 'different granules'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
@@ -104,58 +103,59 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
       stop error_stop_code
    end if
 
-   !which modis are we processing?
-   intdummy1=index(trim(adjustl(l1b_path_file)),'1KM.')
-   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MYD') &
-        platform='AQUA'
-   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MOD') &
-        platform='TERRA'
+   !which aatsr are we processing?
+   intdummy1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
+   platform='ENV'
 
-   !Get year, doy, hour and minute as integers
-   cyear=trim(adjustl(l1b_path_file(intdummy1+5:intdummy1+8)))
-   cdoy=trim(adjustl(l1b_path_file(intdummy1+9:intdummy1+11)))
-   chour=trim(adjustl(l1b_path_file(intdummy1+13:intdummy1+14)))
-   cminute=trim(adjustl(l1b_path_file(intdummy1+15:intdummy1+16)))
+   !Get year, month,day,hour and minute as character
+   cyear=trim(adjustl(l1b_path_file(intdummy1-45:intdummy1-42)))
+   cmonth=trim(adjustl(l1b_path_file(intdummy1-41:intdummy1-40)))
+   cday=trim(adjustl(l1b_path_file(intdummy1-39:intdummy1-38)))
+   chour=trim(adjustl(l1b_path_file(intdummy1-36:intdummy1-35)))
+   cminute=trim(adjustl(l1b_path_file(intdummy1-34:intdummy1-33)))
 
-   read(cdoy(1:len_trim(cdoy)), '(I3)') doy
+   !get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth,'(i2)') month
+   read(cday,'(i2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
-   !transform doy to date in year
-   call DOY2GREG(doy,year,month,day)
+   call GREG2DOY(year, month, day, doy)
+   write(cdoy, '(i3.3)') doy
 
-   !get month and day as text
-   write(cmonth, '(i2.2)') month
-   write(cday, '(i2.2)') day
-
-   !now set up the channels
+   ! now set up the channels
    channel_info%nviews = 1
    channel_info%nchannels_total = 6
    call allocate_channel_info(channel_info)
 
-   !numbering wrt instrument definition
-   channel_info%channel_ids_instr = (/ 1, 2, 6, 20, 31, 32 /)
-   !numbering wrt to increasing wl, starting at 1
+   ! numbering wrt instrument definition
+   ! AATSR has a 0.55 micron channel so instrument channel numbering starts at 2
+   channel_info%channel_ids_instr = (/ 2, 3, 4, 5, 6, 7 /)
+   ! numbering wrt to increasing wl, starting at 1 (0.67 micron)
    channel_info%channel_ids_abs = (/ 1, 2, 3, 4, 5, 6 /)
    !which are the wl of those channels (approximate)
-   channel_info%channel_wl_abs = (/ 0.67, 0.87, 1.60, 3.70, 11.017, 12.032 /)
+   channel_info%channel_wl_abs = (/ 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
    channel_info%channel_view_ids = 1
 
-   !which channels have sw/lw components
+   ! which channels have sw/lw components
    channel_info%channel_sw_flag = (/ 1, 1, 1, 1, 0, 0 /)
    channel_info%nchannels_sw = 4
    channel_info%channel_lw_flag = (/ 0, 0, 0, 1, 1, 1 /)
    channel_info%nchannels_lw = 3
-   !channel number wrt RTTOV coefficient file
+
+   !channel number wrt RTTOV coefficient file (channels in ascending wavenumber)
    allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
-   channel_info%channel_ids_rttov_coef_sw = (/ 1, 2, 6, 20 /)
+   channel_info%channel_ids_rttov_coef_sw = (/ 5, 4, 3, 2 /)
    allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
-   channel_info%channel_ids_rttov_coef_lw = (/ 1, 11, 12 /)
+   channel_info%channel_ids_rttov_coef_lw = (/ 3, 2, 1 /)
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
+   channel_info%map_ids_abs_to_ref_band_land = (/ 1, 2, 6, 0 /)
+   channel_info%map_ids_abs_to_ref_band_sea  = (/ 1, 2, 6, 20 /)
 
-end subroutine setup_modis
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
+
+end subroutine setup_aatsr
 
 
 subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
@@ -178,7 +178,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   integer(kind=sint)                            :: intdummy1,intdummy2
+   integer                                       :: intdummy1,intdummy2
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_avhrr()'
 
@@ -204,14 +204,14 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    intdummy2=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
    platform=trim(adjustl(l1b_path_file(intdummy2+1:intdummy1-47)))
 
-   !Get year, month,day,hour and minute as character
+   !get year, month,day,hour and minute as character
    cyear=trim(adjustl(l1b_path_file(intdummy1-45:intdummy1-42)))
    cmonth=trim(adjustl(l1b_path_file(intdummy1-41:intdummy1-40)))
    cday=trim(adjustl(l1b_path_file(intdummy1-39:intdummy1-38)))
    chour=trim(adjustl(l1b_path_file(intdummy1-36:intdummy1-35)))
    cminute=trim(adjustl(l1b_path_file(intdummy1-34:intdummy1-33)))
 
-   !Get year, month, day, hour and minute as integers
+   !get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
    read(cmonth,'(i2)') month
    read(cday,'(i2)') day
@@ -242,26 +242,29 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    channel_info%nchannels_sw = 4
    channel_info%channel_lw_flag = (/ 0, 0, 0, 1, 1, 1 /)
    channel_info%nchannels_lw = 3
+
    !channel number wrt RTTOV coefficient file
    allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
    channel_info%channel_ids_rttov_coef_sw = (/ 1, 2, 3, 4 /)
    allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
    channel_info%channel_ids_rttov_coef_lw = (/ 1, 2, 3 /)
 
+   channel_info%map_ids_abs_to_ref_band_land = (/ 1, 2, 6, 0 /)
+   channel_info%map_ids_abs_to_ref_band_sea  = (/ 1, 2, 6, 20 /)
+
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
 end subroutine setup_avhrr
 
-!---------------------------------------------------------
-!---------------------------------------------------------
 
-subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
+subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
      hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
+   use channel_structures
+   use date_type_structures
    use preproc_constants
    use preproc_structures
-   use channel_structures
 
    implicit none
 
@@ -275,18 +278,49 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   integer(kind=sint)                            :: intdummy1
+   integer                                       :: intdummy1,intdummy2
 
-   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_aatsr()'
+   integer            :: i, i_sw, i_lw
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total                                   = 36
+                                                                                  ! 1,         2,         3,         4,         5,         6,         7,         8,         9,         10,        11,        12,        13,        14,        15,        16,        17,        18,        19,        20,        21,        22,        23,        24,        25,        26,        27,        28,        29,        30,        31,        32,        33,        34,        35,        36
+   real,    parameter :: all_channel_wl_abs (all_nchannels_total)              = (/ 0.67,      0.87,      4.690e-01, 5.550e-01, 1.240e+00, 1.60,      2.130e+00, 4.125e-01, 4.430e-01, 4.880e-01, 5.310e-01, 5.510e-01, 6.670e-01, 6.780e-01, 7.480e-01, 8.695e-01, 9.050e-01, 9.360e-01, 9.400e-01, 3.70,      3.959e+00, 3.959e+00, 4.050e+00, 4.466e+00, 4.516e+00, 1.375e+00, 6.715e+00, 7.325e+00, 8.550e+00, 9.730e+00, 11.017,    12.032,    1.334e+01, 1.363e+01, 1.394e+01, 1.423e+01 /)
+!  real,    parameter :: all_channel_wl_abs (all_nchannels_total)              = (/ 6.450e-01, 8.585e-01, 4.690e-01, 5.550e-01, 1.240e+00, 1.640e+00, 2.130e+00, 4.125e-01, 4.430e-01, 4.880e-01, 5.310e-01, 5.510e-01, 6.670e-01, 6.780e-01, 7.480e-01, 8.695e-01, 9.050e-01, 9.360e-01, 9.400e-01, 3.750e+00, 3.959e+00, 3.959e+00, 4.050e+00, 4.466e+00, 4.516e+00, 1.375e+00, 6.715e+00, 7.325e+00, 8.550e+00, 9.730e+00, 1.103e+01, 1.202e+01, 1.334e+01, 1.363e+01, 1.394e+01, 1.423e+01 /)
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total)              = (/ 1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1,         0,         0,         1,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0  /)
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total)              = (/ 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         1,         1,         1,         1,         1,         1,         0,         1,         1,         1,         1,         1,         1,         1,         1,         1,         1  /)
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total)    = (/ 1,         2,         3,         4,         5,         6,         7,         8,         9,         10,        11,        12,        13,        14,        15,        16,        17,        18,        19,        20,        21,        22,        23,        0,         0,         24,        0,         0,         0,         0,         0,         0,         0,         0,         0,         0  /)
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total)    = (/ 0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         1,         2,         3,         4,         5,         6,         0,         7,         8,         9,         10,        11,        12,        13,        14,        15,        16 /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = (/ 1,         2,         0,         0,         0,         6,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0 /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea (all_nchannels_total) = (/ 1,         2,         0,         0,         0,         6,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         20,        0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0,         0 /)
+
+   ! Only these need to be set to change the desired channels. All other channel
+   ! related arrays/indexes are set automatically given the static instrument
+   ! channel definition above.
+
+   ! The legacy channels
+   integer, parameter :: nchannels_total = 6
+   integer, parameter :: channel_ids_instr(nchannels_total) = &
+      (/ 1, 2, 6, 20, 31, 32 /)
+
+   ! All currently supported channels
+!  integer, parameter :: nchannels_total = 15
+!  integer, parameter :: channel_ids_instr(nchannels_total) = &
+!    (/ 1, 2, 6, 20, 24, 25, 27, 28, 29, 30, 31, 32, 33, 35, 36 /)
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_modis()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
-   !check if l1b and angles files identical
-   if (trim(adjustl(l1b_path_file)) .ne. &
-       trim(adjustl(geo_path_file))) then
+   !check if l1b and geo file are of the same granule
+   intdummy1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
+   intdummy2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+
+   if (trim(adjustl(l1b_path_file(intdummy1+10:intdummy1+26))) .ne. &
+       trim(adjustl(geo_path_file(intdummy2+7:intdummy2+23)))) then
       write(*,*)
-      write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
+      write(*,*) 'ERROR: setup_modis(): Geolocation and L1b files are for ' // &
                & 'different granules'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
@@ -294,54 +328,119 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
       stop error_stop_code
    end if
 
-   !which aatsr are we processing?
-   intdummy1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
-   platform='ENV'
+   !which modis are we processing?
+   intdummy1=index(trim(adjustl(l1b_path_file)),'1KM.')
+   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MYD') &
+        platform='AQUA'
+   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MOD') &
+        platform='TERRA'
 
-   !Get year, month,day,hour and minute as character
-   cyear=trim(adjustl(l1b_path_file(intdummy1-45:intdummy1-42)))
-   cmonth=trim(adjustl(l1b_path_file(intdummy1-41:intdummy1-40)))
-   cday=trim(adjustl(l1b_path_file(intdummy1-39:intdummy1-38)))
-   chour=trim(adjustl(l1b_path_file(intdummy1-36:intdummy1-35)))
-   cminute=trim(adjustl(l1b_path_file(intdummy1-34:intdummy1-33)))
+   !get year, doy, hour and minute as integers
+   cyear=trim(adjustl(l1b_path_file(intdummy1+5:intdummy1+8)))
+   cdoy=trim(adjustl(l1b_path_file(intdummy1+9:intdummy1+11)))
+   chour=trim(adjustl(l1b_path_file(intdummy1+13:intdummy1+14)))
+   cminute=trim(adjustl(l1b_path_file(intdummy1+15:intdummy1+16)))
 
-   !Get year, month, day, hour and minute as integers
+   read(cdoy(1:len_trim(cdoy)), '(I3)') doy
    read(cyear(1:len_trim(cyear)), '(I4)') year
-   read(cmonth,'(i2)') month
-   read(cday,'(i2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
-   call GREG2DOY(year, month, day, doy)
-   write(cdoy, '(i3.3)') doy
+   !transform doy to date in year
+   call DOY2GREG(doy,year,month,day)
 
-   ! now set up the channels
+   !get month and day as text
+   write(cmonth, '(i2.2)') month
+   write(cday, '(i2.2)') day
+
    channel_info%nviews = 1
-   channel_info%nchannels_total = 6
+
+   !now set up the channels
+   channel_info%nchannels_total = nchannels_total
+
    call allocate_channel_info(channel_info)
 
-   ! numbering wrt instrument definition
-   ! AATSR has a 0.55 micron channel so instrument channel numbering starts at 2
-   channel_info%channel_ids_instr = (/ 2, 3, 4, 5, 6, 7 /)
-   ! numbering wrt to increasing wl, starting at 1 (0.67 micron)
-   channel_info%channel_ids_abs = (/ 1, 2, 3, 4, 5, 6 /)
-   !which are the wl of those channels (approximate)
-   channel_info%channel_wl_abs = (/ 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
+   channel_info%channel_ids_instr = channel_ids_instr
+
+   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
+      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
+      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
+      all_map_ids_abs_to_ref_band_sea)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
+
+end subroutine setup_modis
+
+
+subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
+      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
+      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
+      all_map_ids_abs_to_ref_band_sea)
+
+   use channel_structures
+
+   implicit none
+
+   type(channel_info_s), intent(inout) :: channel_info
+   integer,              intent(in)    :: all_nchannels_total
+   real,                 intent(in)    :: all_channel_wl_abs (:)
+   integer,              intent(in)    :: all_channel_sw_flag(:)
+   integer,              intent(in)    :: all_channel_lw_flag(:)
+   integer,              intent(in)    :: all_channel_ids_rttov_coef_sw(:)
+   integer,              intent(in)    :: all_channel_ids_rttov_coef_lw(:)
+   integer,              intent(in)    :: all_map_ids_abs_to_ref_band_land(:)
+   integer,              intent(in)    :: all_map_ids_abs_to_ref_band_sea(:)
+
+   integer :: i
+   integer :: i_sw
+   integer :: i_lw
+
+   do i = 1, channel_info%nchannels_total
+      channel_info%channel_ids_abs(i) = i
+
+      channel_info%channel_wl_abs (i) = &
+         all_channel_wl_abs (channel_info%channel_ids_instr(i))
+
+      channel_info%channel_sw_flag(i) = &
+         all_channel_sw_flag(channel_info%channel_ids_instr(i))
+      channel_info%channel_lw_flag(i) = &
+         all_channel_lw_flag(channel_info%channel_ids_instr(i))
+   enddo
+
    channel_info%channel_view_ids = 1
 
-   ! which channels have sw/lw components
-   channel_info%channel_sw_flag = (/ 1, 1, 1, 1, 0, 0 /)
-   channel_info%nchannels_sw = 4
-   channel_info%channel_lw_flag = (/ 0, 0, 0, 1, 1, 1 /)
-   channel_info%nchannels_lw = 3
-   !channel number wrt RTTOV coefficient file (channels in ascending wavenumber)
+   channel_info%nchannels_sw = &
+      sum(channel_info%channel_sw_flag(1:channel_info%nchannels_total))
    allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
-   channel_info%channel_ids_rttov_coef_sw = (/ 5, 4, 3, 2 /)
+   channel_info%channel_ids_rttov_coef_sw = 0
+
+   channel_info%nchannels_lw = &
+      sum(channel_info%channel_lw_flag(1:channel_info%nchannels_total))
    allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
-   channel_info%channel_ids_rttov_coef_lw = (/ 3, 2, 1 /)
+   channel_info%channel_ids_rttov_coef_lw = 0
 
-   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
+   i_sw = 1
+   i_lw = 1
+   do i = 1, channel_info%nchannels_total
+      if (channel_info%channel_sw_flag(i) .ne. 0) then
+         channel_info%channel_ids_rttov_coef_sw(i_sw) = &
+            all_channel_ids_rttov_coef_sw(channel_info%channel_ids_instr(i))
 
-end subroutine setup_aatsr
+         channel_info%map_ids_abs_to_ref_band_land(i_sw) = &
+            all_map_ids_abs_to_ref_band_land(channel_info%channel_ids_instr(i))
+
+         channel_info%map_ids_abs_to_ref_band_sea (i_sw) = &
+            all_map_ids_abs_to_ref_band_sea (channel_info%channel_ids_instr(i))
+
+         i_sw = i_sw + 1
+      endif
+      if (channel_info%channel_lw_flag(i) .ne. 0) then
+         channel_info%channel_ids_rttov_coef_lw(i_lw) = &
+            all_channel_ids_rttov_coef_lw(channel_info%channel_ids_instr(i))
+         i_lw = i_lw + 1
+      endif
+   enddo
+
+end subroutine common_setup
 
 end module setup_instrument
