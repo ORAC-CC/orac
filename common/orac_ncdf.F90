@@ -204,7 +204,6 @@ subroutine read_dreal_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -245,7 +244,6 @@ subroutine read_dreal_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -292,7 +290,6 @@ subroutine read_dreal_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -342,7 +339,6 @@ subroutine read_dreal_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -391,7 +387,6 @@ subroutine read_sreal_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -432,7 +427,6 @@ subroutine read_sreal_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -479,7 +473,6 @@ subroutine read_sreal_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -529,7 +522,6 @@ subroutine read_sreal_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -578,7 +570,6 @@ subroutine read_lint_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -619,7 +610,6 @@ subroutine read_lint_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -666,7 +656,6 @@ subroutine read_lint_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -716,7 +705,6 @@ subroutine read_lint_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -765,7 +753,6 @@ subroutine read_sint_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -806,7 +793,6 @@ subroutine read_sint_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -853,7 +839,6 @@ subroutine read_sint_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -903,7 +888,6 @@ subroutine read_sint_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -952,7 +936,6 @@ subroutine read_byte_1d(ncid, name, val, verbose, dim, ind)
    counter = size(val,1)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -993,7 +976,6 @@ subroutine read_byte_2d(ncid, name, val, verbose, dim, ind)
    counter(2) = size(val,2)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -1040,7 +1022,6 @@ subroutine read_byte_3d(ncid, name, val, verbose, dim, ind)
    counter(3) = size(val,3)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then
@@ -1090,7 +1071,6 @@ subroutine read_byte_4d(ncid, name, val, verbose, dim, ind)
    counter(4) = size(val,4)
    stride = 1
 
-   if (verbose) print*,'Reading variable: ',trim(name)
    include 'nc_open_field.inc'
 
    if (present(dim)) then

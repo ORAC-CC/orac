@@ -22,6 +22,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
    
+   if (verbose) print*,'Reading variable: ',trim(name)
+
    ! read data
    ierr = nf90_get_var(ncid, vid, arr, start, counter, stride)
    if (ierr.ne.NF90_NOERR) then
@@ -29,7 +31,6 @@
       print*,trim(nc_error(ierr))
       stop error_stop_code
    endif
-   if (verbose) print*,'Reading variable: ',trim(name)
    
    ! replace file's fill value with our own and apply scale factor/offset
    where (arr.eq.fv) arr = fill

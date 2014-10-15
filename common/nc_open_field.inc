@@ -20,6 +20,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
    
+   if (verbose) print*,'Opening variable: ',trim(name)
+
    ! locate variable in file
    ierr = nf90_inq_varid(ncid, name, vid)
    if (ierr.ne.NF90_NOERR) then
