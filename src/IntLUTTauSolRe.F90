@@ -126,7 +126,7 @@ subroutine Int_LUT_TauSolRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, status)
 
    ! Local variables
 
-   integer                               :: i, ii, ii2, j, jj, k, kk
+   integer                               :: i, j, jj, k, kk
    integer                               :: NChans
    integer, parameter                    :: iXm1 = -1
    integer, parameter                    :: iX0  =  0

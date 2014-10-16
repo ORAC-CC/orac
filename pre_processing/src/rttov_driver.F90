@@ -208,7 +208,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    logical                              :: write_rttov
 
    ! Loop variables
-   integer(kind=lint)                   :: i_coef, j, jch
+   integer(kind=lint)                   :: i_coef, j
    integer(kind=lint)                   :: i_, j_
    integer(kind=lint)                   :: count, nchan
    integer(kind=lint)                   :: idim, jdim

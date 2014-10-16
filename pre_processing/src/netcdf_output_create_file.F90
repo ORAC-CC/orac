@@ -1289,7 +1289,6 @@ subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
 
    ! Local
    integer                    :: ierr
-   integer                    :: nlon_x_nlat
    character(len=file_length) :: ctitle
    integer                    :: ncid
    integer                    :: dimids_1d(1)

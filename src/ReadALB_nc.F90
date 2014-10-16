@@ -93,7 +93,6 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer :: i
    integer :: ncid
 !  integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
 

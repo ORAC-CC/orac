@@ -66,7 +66,6 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
 
    integer                                 :: jch
    real(sreal)                             :: amf
-   real(sreal), dimension(nchan)           :: tau_total
    real(sreal), dimension(nchan,nlev,1,1)  :: dummy_tac, dummy_tbc
 
    if (write_flag) then
