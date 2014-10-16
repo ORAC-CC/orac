@@ -79,6 +79,9 @@
 !       Performance improvements.  Primarily through elimination of unused
 !       memory references and computations especially when setting local
 !       variable G.
+!    16th Oct 2014, Greg McGarragh:
+!       Moved a large amount of code that was common to all IntLUT* subroutines
+!       into Int_LUT_Common()
 !
 ! Bugs:
 !    None known.
@@ -87,7 +90,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, &
+subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
    status)
 
    use CTRL_def
@@ -99,186 +102,87 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, icrpr, &
 
    ! Argument declarations
 
-   real, dimension(:,:,:,:,:,:), intent(in)  :: F
-                                	          ! The array to be interpolated.
+   real, dimension(:,:,:,:,:,:), intent(in) :: F
+                                               ! The array to be interpolated.
    type(LUT_Grid_t),             intent(in)  :: Grid
-                                                  ! LUT grid data
+                                                ! LUT grid data
    type(GZero_t),                intent(in)  :: GZero
-                                                  ! Struct containing "zero'th" grid
-                                                  ! points
+                                                ! Struct containing "zero'th" grid
+                                                ! points
    type(CTRL_t),                 intent(in)  :: Ctrl
    real, dimension(:),           intent(out) :: FInt
-                                                  ! Interpolated value of F at the
-					          ! required Tau, SunZen, Re values
-					          ! (1 value per channel).
+                                                ! Interpolated value of F at the
+					        ! required Tau, Re values, (1 value
+                                                ! per channel).
    real, dimension(:,:),         intent(out) :: FGrads
-                                	          ! Gradients of F wrt Tau and Re at
-					          ! required Tau, SunZen, Re values
-					          ! (1 value per channel).
-   integer,                      intent(in)  :: icrpr
+                                                ! Gradients of F wrt Tau and Re at
+					        ! required Tau, Re values, (1 value
+                                                ! per channel).
+   integer,                      intent(in)  :: iCRP
    integer,                      intent(out) :: status
 
    ! Local variables
 
-   integer                       :: i, j, jj, k, kk
-   integer                       :: NChans    ! Number of channels in LUT arrays
-                                              ! etc
-   real, dimension(-1:2,-1:2)    :: G         ! A Matrix of dimension NTau,Nre
+   integer                               :: i, ii, ii2, j, jj, k, kk
+   integer                               :: NChans
+   integer, parameter                    :: iXm1 = -1
+   integer, parameter                    :: iX0  =  0
+   integer, parameter                    :: iX1  =  1
+   integer, parameter                    :: iXp1 =  2
+   integer, dimension(-1:2)              :: T_index
+   integer, dimension(-1:2)              :: R_index
+   real, dimension(size(FInt),-1:2,-1:2) :: G ! A Matrix of dimension NTau,Nre
                                               ! used to store array only
                                               ! interpolated to current viewing
                                               ! geometry
-   real, dimension(size(FInt),4) :: Y         ! A vector to contain the values
- 					      ! of F at (iT0,iR0), (iT0,iR1),
-					      ! (iT1,iR1) and (iT1,iR0)
-					      ! respectively (i.e. anticlockwise
-					      ! from the bottom left)
-   real, dimension(size(FInt),4) :: dYdTau    ! Gradients of F wrt Tau at the
-					      ! same points as Y
-   real, dimension(size(FInt),4) :: dYdRe     ! Gradients of F wrt Re at the
-					      ! same points as Y
-   real, dimension(size(FInt),4) :: ddY       ! 2nd order cross derivatives of
-					      ! F wrt Tau and Re at the same
-					      ! points
-   real, dimension(4)            :: Yin, Yinb, dYdTauin, dYdRein, ddYin
-                                              ! Temporary store for input of
-					      ! BiCubic subroutine
-   real                          :: a1, a2, a3
-                                              ! Temporary store for output of
-					      ! BiCubic subroutine
-
-   integer, parameter            :: iXm1 = -1
-   integer, parameter            :: iX0  =  0
-   integer, parameter            :: iX1  =  1
-   integer, parameter            :: iXp1 =  2
-
-   integer, dimension(-1:2)      :: T_index
-   integer, dimension(-1:2)      :: R_index
 
    NChans = size(F,1)
 
-   ! Construct the input vectors for BCuInt: Function values at four LUT points
+   ! Construct the input Int_LUT_Common(): Function values at four LUT points
    ! around our X
-
    do i = 1, NChans
-      T_index(-1) = GZero%iTm1(i,icrpr)
-      T_index( 0) = GZero%iT0 (i,icrpr)
-      T_index( 1) = GZero%iT1 (i,icrpr)
-      T_index( 2) = GZero%iTp1(i,icrpr)
-      R_index(-1) = GZero%iRm1(i,icrpr)
-      R_index( 0) = GZero%iR0 (i,icrpr)
-      R_index( 1) = GZero%iR1 (i,icrpr)
-      R_index( 2) = GZero%iRp1(i,icrpr)
+      T_index(-1) = GZero%iTm1(i,iCRP)
+      T_index( 0) = GZero%iT0 (i,iCRP)
+      T_index( 1) = GZero%iT1 (i,iCRP)
+      T_index( 2) = GZero%iTp1(i,iCRP)
+      R_index(-1) = GZero%iRm1(i,iCRP)
+      R_index( 0) = GZero%iR0 (i,iCRP)
+      R_index( 1) = GZero%iR1 (i,iCRP)
+      R_index( 2) = GZero%iRp1(i,iCRP)
 
       do j = iXm1, iXp1
          jj = T_index(j)
          do k = iXm1, iXp1
             kk = R_index(k)
-            G(j,k) = 0.
-            G(j,k) = G(j,k) + &
-               ((GZero%RA1(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA0(i,icrpr),kk))
-            G(j,k) = G(j,k) + &
-               ((GZero%RA1(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%dSoZ(i,icrpr)) * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA0(i,icrpr),kk))
-            G(j,k) = G(j,k) + &
-               ((GZero%RA1(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA0(i,icrpr),kk))
-            G(j,k) = G(j,k) + &
-               ((GZero%RA1(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%dSoZ(i,icrpr)) * &
-               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA0(i,icrpr),kk))
-            G(j,k) = G(j,k) + &
-               ((GZero%dRA(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA1(i,icrpr),kk))
-            G(j,k) = G(j,k) + &
-               ((GZero%dRA(i,icrpr) * GZero%Sa1(i,icrpr)  * GZero%dSoZ(i,icrpr)) * &
-               F(i,jj,GZero%iSaZ0(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA1(i,icrpr),kk))
-            G(j,k) = G(j,k) + &
-               ((GZero%dRA(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%So1(i,icrpr))  * &
-               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ0(i,icrpr),GZero%iRA1(i,icrpr),kk))
-            G(j,k) = G(j,k) + &
-               ((GZero%dRA(i,icrpr) * GZero%dSaZ(i,icrpr) * GZero%dSoZ(i,icrpr)) * &
-               F(i,jj,GZero%iSaZ1(i,icrpr),GZero%iSoZ1(i,icrpr),GZero%iRA1(i,icrpr),kk))
+            G(i,j,k) = 0.
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%RA1(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%So1(i,iCRP))  * &
+               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA0(i,iCRP),kk))
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%RA1(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%dSoZ(i,iCRP)) * &
+               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA0(i,iCRP),kk))
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%RA1(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%So1(i,iCRP))  * &
+               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA0(i,iCRP),kk))
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%RA1(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%dSoZ(i,iCRP)) * &
+               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA0(i,iCRP),kk))
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%dRA(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%So1(i,iCRP))  * &
+               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA1(i,iCRP),kk))
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%dRA(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%dSoZ(i,iCRP)) * &
+               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA1(i,iCRP),kk))
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%dRA(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%So1(i,iCRP))  * &
+               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA1(i,iCRP),kk))
+            G(i,j,k) = G(i,j,k) + &
+               ((GZero%dRA(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%dSoZ(i,iCRP)) * &
+               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA1(i,iCRP),kk))
          end do
       end do
-
-      Y(i,1) = G(iX0,iX0)
-      Y(i,4) = G(iX0,iX1)
-      Y(i,3) = G(iX1,iX1)
-      Y(i,2) = G(iX1,iX0)
-
-      if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
-         ! Function derivatives at four LUT points around our X....
-
-         ! WRT to Tau
-         dYdTau(i,1) = (G(iX1,iX0) - G(iXm1,iX0))/ &
-                       (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr))
-         dYdTau(i,2) = (G(iXp1,iX0) - G(iX0,iX0))/ &
-                       (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
-         dYdTau(i,3) = (G(iXp1,iX1) - G(iX0,iX1))/ &
-                       (Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr))
-         dYdTau(i,4) = (G(iX1,iX1) - G(iXm1,iX1))/ &
-                       (Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr))
-
-         ! WRT to Re
-         dYDRe(i,1) = (G(iX0,iX1) - G(iX0,iXm1))/ &
-                      (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
-         dYDRe(i,2) = (G(iX1,iX1) - G(iX1,iXm1))/ &
-                      (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr))
-         dYDRe(i,3) = (G(iX1,iXp1) - G(iX1,iX0))/ &
-                      (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
-         dYDRe(i,4) = (G(iX0,iXp1) - G(iX0,iX0))/ &
-                      (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr))
-
-         ! Cross derivatives (dY^2/dTaudRe)
-         ddY(i,1) = (G(iX1,iX1) - G(iX1,iXm1) - G(iXm1,iX1) + G(iXm1,iXm1)) / &
-                    ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
-         ddY(i,2) = (G(iXp1,iX1) - G(iXp1,iXm1) - G(iX0,iX1) + G(iX0,iXm1)) / &
-                    ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iR1(i,icrpr),icrpr) - Grid%Re(i,GZero%iRm1(i,icrpr),icrpr)))
-         ddY(i,3) = (G(iXp1,iXp1) - G(iXp1,iX0) - G(iX0,iXp1) + G(iX0,iX0)) / &
-                    ((Grid%Tau(i,GZero%iTp1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iT0(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
-         ddY(i,4) = (G(iX1,iXp1) - G(iX1,iX0) - G(iXm1,iXp1) + G(iXm1,iX0)) / &
-                    ((Grid%Tau(i,GZero%iT1(i,icrpr),icrpr) - Grid%Tau(i,GZero%iTm1(i,icrpr),icrpr)) * &
-                     (Grid%Re(i,GZero%iRp1(i,icrpr),icrpr) - Grid%Re(i,GZero%iR0(i,icrpr),icrpr)))
-      end if
    end do
 
-   ! Now call the adapted Numerical Recipes BCuInt subroutine to perform the
-   ! interpolation to our desired state vector [Or the equivalent linint
-   ! subroutine - Oct 2011]
-   if (Ctrl%LUTIntflag .eq. LUTIntMethLinear) then
-      do i = 1,NChans
-         Yin=Y(i,:)
-         call linint(Yin,Grid%Tau(i,GZero%iT0(i,icrpr),icrpr), &
-                         Grid%Tau(i,GZero%iT1(i,icrpr),icrpr), &
-                         Grid%Re(i,GZero%iR0(i,icrpr),icrpr), &
-                         Grid%Re(i,GZero%iR1(i,icrpr),icrpr), &
-                         GZero%dT(i,icrpr),GZero%dR(i,icrpr),a1,a2,a3)
-         FInt(i) = a1
-         FGrads(i,1) = a2
-         FGrads(i,2) = a3
-      end do
-   else if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
-      do i = 1,NChans
-         Yinb=Y(i,:)
-         dYdTauin=dYdTau(i,:)
-         dYdRein=dYdRe(i,:)
-         ddYin=ddY(i,:)
-         call bcuint(Yinb,dYdTauin,dYdRein,ddYin, &
-                     Grid%Tau(i,GZero%iT0(i,icrpr),icrpr), &
-                     Grid%Tau(i,GZero%iT1(i,icrpr),icrpr), &
-                     Grid%Re(i,GZero%iR0(i,icrpr),icrpr), &
-                     Grid%Re(i,GZero%iR1(i,icrpr),icrpr), &
-                     GZero%dT(i,icrpr),GZero%dR(i,icrpr),a1,a2,a3)
-         FInt(i) = a1
-         FGrads(i,1) = a2
-         FGrads(i,2) = a3
-      end do
-   else
-      status = LUTIntflagErr
-      call Write_Log(Ctrl, 'IntLUTTauSatRe.f90: LUT Interp flag error:', status)
-   end if
+   call Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, 0, 0, status)
 
 end subroutine Int_LUT_TauSatSolAziRe
