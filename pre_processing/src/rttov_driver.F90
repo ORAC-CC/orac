@@ -113,6 +113,8 @@
 !    Solar transmission now relative to TOA rather than top level.
 ! 2014/09/28, GM: Fixed a significant performance regression by rearranging the
 !    rtm variable dimensions.
+! 2014/10/23, OS: set do_checkinput config variable to .false.; this avoids
+!  extrapolation to negative profile values, causing a fatal RTTOV error
 !
 ! $Id$
 !
@@ -262,7 +264,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Initialise options structure (leaving default settings be)
    opts % interpolation % addinterp        = .true.  ! Interpolate input profile
    ! Removed as occassionally returns negative ozone at 0.005 hPa
-!  opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
+   ! opts % interpolation % reg_limit_extrap = .true.  ! Extrapolate to 0.5 Pa
+   opts % config % do_checkinput = .false. ! necessary due to negative
+     ! extrapolated values; from RTTOV 11 homepage: turns off RTTOV's internal
+     ! checking for unphysical profile values and values outside the
+     ! regression limits (NB by doing this the extrapolated values outside
+     ! the regression limits will be reset to the limits: it will not result
+     ! in unphysical extrapolated profile values being used)
    opts % rt_all % use_q2m   = .false. ! Do not use surface humidity
    opts % rt_all % addrefrac = .true.  ! Include refraction in path calc
    opts % rt_ir % addsolar   = .false. ! Do not include reflected solar

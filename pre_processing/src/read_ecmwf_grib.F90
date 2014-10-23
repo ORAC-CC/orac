@@ -46,6 +46,7 @@
 !
 ! History:
 ! 2014/05/07, AP: First version.
+! 2014/08/20, OS: Adaptations made for cray-fortran compiler specific issues
 !
 ! $Id$
 !
@@ -54,8 +55,13 @@
 ! for additional debugging output.
 !-------------------------------------------------------------------------------
 
+#ifndef WRAPPER
 subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
      preproc_prtm,verbose)
+#else
+subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
+     preproc_prtm,verbose,mytask)
+#endif
 
    use grib_api
    use preproc_constants
@@ -71,10 +77,9 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    integer(lint), parameter                  :: BUFFER = 2000000
    integer(lint), external                   :: INTIN,INTOUT,INTF
-
    integer(lint)                             :: fu,stat,lun,nbytes
    integer(lint)                             :: in_words,out_words
-   logical                                   :: lun_exists, lun_used
+   logical                                   :: lun_exists, lun_used, open_status
    integer(lint), dimension(BUFFER)          :: in_data,out_data
    integer(lint)                             :: iblank(4)
    real(dreal)                               :: zni(1),zno(1),grid(2),area(4)
@@ -85,6 +90,12 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    integer(lint)                             :: n,ni,nj,i,j,plpresent
    real(sreal), dimension(:),   allocatable  :: pl,val
    real(sreal), dimension(:,:), pointer      :: array
+
+   ! this is for the wrapper                                                                                                                                         
+#ifdef WRAPPER
+   integer                                  :: mytask
+   character(len=100)                       :: system_call
+#endif
 
    ! open the ECMWF file
    call PBOPEN(fu, ecmwf_file, 'r', stat)
@@ -129,12 +140,23 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
            stop 'ERROR: read_ecmwf_grib(): INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.'
 
       ! open a scratch file to store the interpolated product
+#ifndef WRAPPER
       open(unit=lun,status='SCRATCH',iostat=stat,form='UNFORMATTED')
+#else
+      write(name,"(A5,I0.5)") 'orac.', mytask
+      open(unit=lun,file=trim(adjustl(name)),iostat=stat,form='UNFORMATTED', &
+           status='REPLACE')
+#endif
       if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Failed to open scratch file.'
-      inquire(unit=lun,name=name)
+      inquire(unit=lun,name=name,opened=open_status)
 
       ! write interpolated field to scratch file
       write(lun) out_data(1:out_words)
+
+#ifdef WRAPPER
+      ! close scratch file
+      close(unit=lun,status='KEEP')
+#endif
 
       ! read scratch file
       call grib_open_file(fid,name,'r',stat)
@@ -174,8 +196,16 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       call grib_close_file(fid,stat)
       if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error closing GRIB field.'
 
+#ifndef WRAPPER
       ! close scratch file
       close(unit=lun)
+#else
+      ! remove scratch file
+      if (open_status) then
+         write(system_call,"(A6,A50)") 'rm -f ', trim(adjustl(name))
+         call system(system_call)
+      endif
+#endif
 
       ! select correct output array
       select case (param)

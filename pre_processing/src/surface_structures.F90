@@ -14,6 +14,7 @@
 ! History:
 ! 2012/02/13, GT: First version.
 ! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/09/17, CS: Added surface%nise_mask.                                                  
 !
 ! $Id$
 !
@@ -28,11 +29,15 @@ module surface_structures
    implicit none
 
    type surface_s
+
       ! Index numbers of measurement channels for each albedo value
       integer(kind=sint), dimension(:), pointer  :: albedo_chan
 
       ! Index numbers of measurement channels for each emissivity value
       integer(kind=sint), dimension(:), pointer  :: emissivity_chan
+
+      ! SNOW/ICE mask based on NISE aux. data
+      integer(kind=byte), dimension(:,:), pointer :: nise_mask 
 
       real(kind=sreal), dimension(:,:,:), pointer :: albedo
 

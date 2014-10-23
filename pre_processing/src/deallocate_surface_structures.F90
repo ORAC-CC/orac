@@ -15,6 +15,7 @@
 ! History:
 ! 2012/05/01, GT: First version
 ! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/10/23, OS: added deallocation of nise_mask
 !
 ! $Id$
 !
@@ -36,6 +37,7 @@ subroutine deallocate_surface_structures(surface,include_full_brdf)
 
    deallocate(surface%albedo)
    deallocate(surface%emissivity)
+   deallocate(surface%nise_mask)
 
    if (include_full_brdf) then
       deallocate(surface%rho_0v)

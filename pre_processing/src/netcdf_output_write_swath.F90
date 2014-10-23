@@ -38,6 +38,8 @@
 ! 2014/09/02, GM: Use the nc_write_array interface from the orac_ncdf module
 !    in the common library.
 ! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
+! 2014/10/23, OS: added new variables to be written to output: cldtype, cldmask,
+!  cccot_pre, lusflag, dem, nisemask
 !
 ! $Id$
 !
@@ -46,7 +48,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocation, &
-   imager_measurements,imager_time,netcdf_info,channel_info,surface,include_full_brdf)
+   imager_measurements,imager_time,imager_pavolonis,netcdf_info,channel_info, &
+   surface,include_full_brdf)
 
    use channel_structures
    use imager_structures
@@ -62,6 +65,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    type(imager_geolocation_s),  intent(in) :: imager_geolocation
    type(imager_measurements_s), intent(in) :: imager_measurements
    type(imager_time_s),         intent(in) :: imager_time
+   type(imager_pavolonis_s),    intent(in) :: imager_pavolonis
    type(netcdf_output_info_s),  intent(in) :: netcdf_info
    type(channel_info_s),        intent(in) :: channel_info
    type(surface_s),             intent(in) :: surface
@@ -244,7 +248,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    end if
 
 
-   ! clf file (cflag)
+   ! clf file (cflag, cldtype, cldmask, cccot_pre)
 
    call nc_write_array( &
            netcdf_info%ncid_clf, &
@@ -254,6 +258,29 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
 
+   call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'cldtype', &
+           netcdf_info%vid_cldtype, &
+           imager_pavolonis%cldtype(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+
+   call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'cldmask', &
+           netcdf_info%vid_cldmask, &
+           imager_pavolonis%cldmask(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+
+   call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'cccot_pre', &
+           netcdf_info%vid_cccot_pre, &
+           imager_pavolonis%cccot_pre(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
 
    ! geo file (solzen, satzen, solaz, relazi)
 
@@ -316,12 +343,35 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
 
    call nc_write_array( &
            netcdf_info%ncid_lsf, &
-           'lat', &
+           'lsflag', &
            netcdf_info%vid_lsflag, &
            imager_flags%lsflag(imager_geolocation%startx:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
 
+   call nc_write_array( &
+           netcdf_info%ncid_lsf, &
+           'lusflag', &
+           netcdf_info%vid_lusflag, &
+           imager_flags%lusflag(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+
+   call nc_write_array( &
+           netcdf_info%ncid_lsf, &
+           'dem', &
+           netcdf_info%vid_dem, &
+           imager_geolocation%dem(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+
+   call nc_write_array( &
+           netcdf_info%ncid_lsf, &
+           'nisemask', &
+           netcdf_info%vid_nisemask, &
+           surface%nise_mask(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
 
    ! msi file (indexes, time, measurements)
 

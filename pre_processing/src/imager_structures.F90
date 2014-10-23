@@ -22,6 +22,8 @@
 ! 2012/07/05, CP: nmaxchannels and nchannels info is now in channel_infor array
 ! 2012/12/13, CP: added startyi and endye
 ! 2013/09/02, AP: Removed startyi, endye.
+! 2014/09/17, CS: Added imager_pavolonis, imager_geolocation%usgs_dem and
+!  imager_flags%lusflag 
 !
 ! $Id$
 !
@@ -53,6 +55,8 @@ module imager_structures
       real(kind=sreal), dimension(:,:), pointer ::  latitude
       real(kind=sreal), dimension(:,:), pointer ::  longitude
 
+      integer(kind=lint), dimension(:,:), pointer ::  dem
+
       integer(kind=lint), dimension(:,:), pointer ::  uscan
       integer(kind=lint), dimension(:,:), pointer ::  vscan
 
@@ -71,6 +75,7 @@ module imager_structures
 
    type imager_flags_s
 
+      integer(kind=byte), dimension(:,:), pointer :: lusflag
       integer(kind=byte), dimension(:,:), pointer :: lsflag
       integer(kind=byte), dimension(:,:), pointer :: cflag
 
@@ -81,6 +86,17 @@ module imager_structures
       real(kind=dreal), dimension(:,:), pointer ::  time
 
    end type imager_time_s
+
+   type imager_pavolonis_s
+
+      integer(kind=sint), dimension(:,:), pointer ::  sunglint_mask
+      integer(kind=sint), dimension(:,:), pointer ::  sfctype
+      integer(kind=byte), dimension(:,:), pointer ::  cldtype
+      integer(kind=byte), dimension(:,:), pointer ::  cldmask
+      real(kind=sreal),   dimension(:,:), pointer ::  cccot_pre
+      integer(kind=byte), dimension(:,:), pointer ::  cirrus_quality
+
+   end type imager_pavolonis_s
 
 contains
 

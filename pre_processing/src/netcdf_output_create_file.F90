@@ -81,6 +81,9 @@
 ! 2014/09/28, GM: Remove layer dimensions as they were not used any more.
 ! 2014/09/28, GM: Make the rest of the error messaging consistent with the new
 !    format.
+! 2014/10/23, OS: Added various variables due to implementation of USGS data,
+!  Pavolonies cloud typing, and NN cloud mask: cldtype, cldmask, cccot_pre,
+!   lusflag, dem, nisemask
 !
 ! $Id$
 !
@@ -828,6 +831,38 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
 
+      ! define cldtype variable
+      call nc_def_var_byte_packed_byte( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cldtype', &
+              netcdf_info%vid_cldtype, &
+              verbose, ierr, &
+              deflate_level = deflate_level_byte, &
+              shuffle = shuffle_byte, &
+              fill_value = byte_fill_value)
+
+      ! define cldmask variable
+      call nc_def_var_byte_packed_byte( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cldmask', &
+              netcdf_info%vid_cldmask, &
+              verbose, ierr, &
+              deflate_level = deflate_level_byte, &
+              shuffle = shuffle_byte, &
+              fill_value = byte_fill_value)
+
+      ! define cccot_pre variable
+      call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cccot_pre', &
+              netcdf_info%vid_cccot_pre, &
+              verbose, ierr, &
+              deflate_level = deflate_level_sreal, &
+              shuffle = shuffle_sreal, &
+              fill_value = sreal_fill_value)
 
    ! open geo file
    else if (type .eq. NETCDF_OUTPUT_FILE_GEO) then
@@ -1020,6 +1055,36 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
 
+      ! define lusflag variable
+      call nc_def_var_byte_packed_byte( &
+              netcdf_info%ncid_lsf, &
+              dimids_2d, &
+              'lusflag', &
+              netcdf_info%vid_lusflag, &
+              verbose, ierr, &
+              deflate_level = deflate_level_byte, &
+              shuffle = shuffle_byte, &
+              fill_value = byte_fill_value)
+
+      ! define dem variable
+      call nc_def_var_long_packed_long( &
+              netcdf_info%ncid_lsf, &
+              dimids_2d, &
+              'dem', &
+              netcdf_info%vid_dem, &
+              verbose, ierr, &
+              fill_value = lint_fill_value)
+
+      ! define nise_mask variable
+      call nc_def_var_byte_packed_byte( &
+              netcdf_info%ncid_lsf, &
+              dimids_2d, &
+              'nisemask', &
+              netcdf_info%vid_nisemask, &
+              verbose, ierr, &
+              deflate_level = deflate_level_byte, &
+              shuffle = shuffle_byte, &
+              fill_value = byte_fill_value)
 
    ! open msi file
    else if (type .eq. NETCDF_OUTPUT_FILE_MSI) then

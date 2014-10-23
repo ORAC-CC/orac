@@ -15,6 +15,7 @@
 ! 2014/09/16, GM: Added NETCDF_OUTPUT_FILE_* parameters and moved the structure
 !    netcdf_output_info_s into here.
 ! 2014/09/28, GM: Remove layer dimids as they were not used any more.
+! 2014/10/23, OS: Added output variables to clf and lsf file.
 !
 ! $Id$
 !
@@ -79,7 +80,7 @@ module netcdf_output
       integer :: vid_rho_0v_data, vid_rho_0d_data, vid_rho_dv_data, vid_rho_dd_data
 
       ! clf file
-      integer :: vid_cflag
+      integer :: vid_cflag, vid_cldtype, vid_cldmask, vid_cccot_pre
 
       ! config file:
       integer :: vid_msi_instr_ch_numbers_config, vid_msi_abs_ch_numbers_config, &
@@ -94,7 +95,7 @@ module netcdf_output
       integer :: vid_lat, vid_lon
 
       ! lsf file
-      integer :: vid_lsflag
+      integer :: vid_lsflag, vid_lusflag, vid_dem, vid_nisemask
 
       ! lwrtm file:
       integer :: vid_lw_channel_abs_ids, vid_lw_channel_instr_ids, vid_lw_channel_wvl

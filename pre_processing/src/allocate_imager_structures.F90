@@ -26,6 +26,10 @@
 ! 2012/07/04, CP: removed nviews from data
 ! 2012/12/13, CP: changed ydimension to imager_geolocation%ny
 ! 2013/09/11, AP: Removed startyi, endye.
+! 2014/09/17, CS: Added                                                                     
+!                 imager_pavolonis%CLDTYPE/CLDMASK/CCCOT/SFCTYPE/SUNGLINT_MASK,             
+!                 imager_geolocation%USGS_DEM, and                                          
+!                 imager_flags%LUSFLAG
 !
 ! $Id$
 !
@@ -34,7 +38,9 @@
 !-------------------------------------------------------------------------------
 
 subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
-     imager_flags,imager_time,imager_measurements,channel_info)
+     & imager_flags,imager_time,imager_measurements,imager_pavolonis, &
+     & channel_info)
+
 
    use channel_structures
    use preproc_constants
@@ -46,6 +52,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    type(imager_flags_s),        intent(out)   :: imager_flags
    type(imager_time_s),         intent(out)   :: imager_time
    type(imager_measurements_s), intent(out)   :: imager_measurements
+   type(imager_pavolonis_s),    intent(out)   :: imager_pavolonis
    type(channel_info_s),        intent(inout) :: channel_info
 
    allocate(imager_geolocation%latitude(&
@@ -57,6 +64,11 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
    imager_geolocation%longitude=sreal_fill_value
+
+   allocate(imager_geolocation%dem(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_geolocation%dem=sint_fill_value
 
    allocate(imager_geolocation%uscan(&
         imager_geolocation%startx:imager_geolocation%endx, &
@@ -88,6 +100,11 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         1:imager_geolocation%ny,imager_angles%nviews))
    imager_angles%relazi=sreal_fill_value
 
+   allocate(imager_flags%lusflag(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_flags%lusflag=byte_fill_value
+
    allocate(imager_flags%lsflag(&
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
@@ -111,5 +128,35 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny,1:channel_info%nchannels_total))
    imager_measurements%uncertainty=sreal_fill_value
+
+   allocate(imager_pavolonis%cldtype(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%cldtype=byte_fill_value
+
+   allocate(imager_pavolonis%sfctype(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%sfctype=sint_fill_value
+
+   allocate(imager_pavolonis%cldmask(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%cldmask=byte_fill_value
+
+   allocate(imager_pavolonis%sunglint_mask(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%sunglint_mask=sint_fill_value
+
+   allocate(imager_pavolonis%cccot_pre(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%cccot_pre=sreal_fill_value
+
+   allocate(imager_pavolonis%cirrus_quality(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%cirrus_quality=byte_fill_value
 
 end subroutine allocate_imager_structures

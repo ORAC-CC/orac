@@ -42,6 +42,8 @@
 ! 2014/01/12, GM: Cleaned up the code.
 ! 2014/07/23, AP: More efficient array writing
 ! 2014/10/15, GM: Fixes related to supporting an arbitrary set of channels.
+! 2014/10/23, OS: Removes superfluous commata in write statements causing
+!  CRAY-ftn compiler to exit
 !
 ! $Id$
 !
@@ -116,9 +118,9 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    end if
 
    if (verbose) then
-      write(*,*), 'SDS_name: ', trim(SDS_name)
-      write(*,*), 'SDS_name_2: ', trim(SDS_name_2)
-      write(*,*), 'Dim_band_index: ', trim(Dim_band_index)
+      write(*,*) 'SDS_name: ', trim(SDS_name)
+      write(*,*) 'SDS_name_2: ', trim(SDS_name_2)
+      write(*,*) 'Dim_band_index: ', trim(Dim_band_index)
    end if
 
    file_id = fid
@@ -128,13 +130,13 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
    number_of_bands = dimsizes(3)
 
    if (verbose) then
-      write(*,*), 'sfginfo() output',trim(adjustl(SDS_name_2))
-      write(*,*), '   name: ', trim(adjustl(tmpname))
-      write(*,*), '   rank: ', rank
-      write(*,*), '   dimsizes: ', dimsizes
-      write(*,*), '   type: ', type
-      write(*,*), '   nattrs: ', num_attrs
-      write(*,*), 'Number of MODIS bands: ', number_of_bands
+      write(*,*) 'sfginfo() output',trim(adjustl(SDS_name_2))
+      write(*,*) '   name: ', trim(adjustl(tmpname))
+      write(*,*) '   rank: ', rank
+      write(*,*) '   dimsizes: ', dimsizes
+      write(*,*) '   type: ', type
+      write(*,*) '   nattrs: ', num_attrs
+      write(*,*) 'Number of MODIS bands: ', number_of_bands
    end if
 
    band_names=''
@@ -149,7 +151,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
       i_comma=index(band_names, achar(0))
    end do
 
-   if (verbose) write(*,*), 'Bands found: ', trim(band_names)
+   if (verbose) write(*,*) 'Bands found: ', trim(band_names)
 
    flag = .true.
    i_comma_old=1
@@ -175,7 +177,7 @@ subroutine read_modis_l1b_radiances_2(fid, band, Cal_type_is_refl, &
 
       if (current_band .eq. band) then
          flag = .false.
-         if (verbose) write(*,*), 'Selected band is: ',current_band,i_band
+         if (verbose) write(*,*) 'Selected band is: ',current_band,i_band
          exit
       end if
    end do

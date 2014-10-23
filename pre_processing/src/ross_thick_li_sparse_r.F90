@@ -23,6 +23,7 @@
 !
 ! History:
 ! 2014/08/10, GM: First version.
+! 2014/08/20, OS: marked C-style comment as Fortran comment
 !
 ! $Id$
 !
@@ -265,7 +266,7 @@ subroutine li_common(aux, aux2, p, p_, q)
 
    cos_t     = aux2%g * h
 
-   if (cos_t .gt. 1.) then /* overlap area = 0 */
+   if (cos_t .gt. 1.) then ! overlap area = 0 
      q = 1.
    else
      q = 1. - (acos(cos_t) - sqrt(1. - cos_t * cos_t) * cos_t) / PI

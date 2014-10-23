@@ -198,6 +198,11 @@
 ! 2014/08/10: GM Changes related to new BRDF support.
 ! 2014/09/11: AP Remove one level from preproc_prtm grid as it wasn't written
 !                to or necessary.
+! 2014/10/23: OS added reading of USGS land use/DEM file; implemented
+!                Pavolonis cloud typing algorithm; built in new neural network cloud mask
+!                in preprocessing, based on radiances and auxiliary data;
+!                implemented CRAY fortran-based alternative for scratch
+!                file I/O of ERA-Interim data
 !
 ! $Id$
 !
@@ -212,6 +217,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 #endif
 
    use channel_structures
+   use cloud_typing_pavolonis, only: cloud_type
    use correct_for_ice_snow_m
    use ecmwf_m
    use global_attributes
@@ -231,6 +237,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    use surface_emissivity
    use surface_reflectance
    use surface_structures
+   use USGS_physiography
 
    implicit none
 
@@ -240,16 +247,19 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    character(len=path_length)       :: driver_path_file
    character(len=path_length)       :: l1b_path_file
    character(len=path_length)       :: geo_path_file
+   character(len=path_length)       :: usgs_path_file
    character(len=path_length)       :: ecmwf_path,ecmwf_path_file
    character(len=path_length)       :: rttov_coef_path
    character(len=path_length)       :: rttov_emiss_path
    character(len=path_length)       :: nise_ice_snow_path
    character(len=path_length)       :: modis_albedo_path
+   character(len=path_length)       :: modis_brdf_path
    character(len=path_length)       :: cimss_emiss_path
    character(len=path_length)       :: output_path
    character(len=path_length)       :: aatsr_calib_path_file
    character(len=path_length)       :: ecmwf_path2,ecmwf_path_file2
    character(len=path_length)       :: ecmwf_path3,ecmwf_path_file3
+   character(len=1)                 :: cgrid_flag
    character(len=attribute_length)  :: cdellon,cdellat
    character(len=cmd_arg_length)    :: cstartx,cendx,cstarty,cendy
    character(len=cmd_arg_length)    :: cecmwf_flag
@@ -311,6 +321,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    type(imager_geolocation_s)       :: imager_geolocation
    type(imager_measurements_s)      :: imager_measurements
    type(imager_time_s)              :: imager_time
+   type(imager_pavolonis_s)         :: imager_pavolonis
+
+   type(USGS_s)                     :: usgs
 
    type(ecmwf_s)                    :: ecmwf
 
@@ -402,12 +415,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       read(11,*) sensor
       read(11,*) l1b_path_file
       read(11,*) geo_path_file
+      read(11,*) USGS_path_file
       read(11,*) ecmwf_path
       read(11,*) rttov_coef_path
       read(11,*) rttov_emiss_path
       read(11,*) nise_ice_snow_path
       read(11,*) modis_albedo_path
+      read(11,*) modis_brdf_path
       read(11,*) cimss_emiss_path
+      read(11,*) cgrid_flag
       read(11,*) cdellon
       read(11,*) cdellat
       read(11,*) output_path
@@ -628,7 +644,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       ! measurements, and surface data
       if (verbose) write(*,*) 'Allocate imager and surface structures'
       call allocate_imager_structures(imager_geolocation,imager_angles, &
-           imager_flags,imager_time,imager_measurements,channel_info)
+           imager_flags,imager_time,imager_measurements,imager_pavolonis, &
+           channel_info)
+
       call allocate_surface_structures(surface,imager_geolocation,channel_info, &
            include_full_brdf)
 
@@ -676,7 +694,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       end select
       if (verbose) then
          write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
-         write(*,*),'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
+         write(*,*) 'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
       end if
       call rearrange_ecmwf(ecmwf)
 
@@ -695,12 +713,17 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       call build_preproc_fields(preproc_dims,preproc_geoloc,preproc_geo, &
            imager_geolocation,imager_angles)
 
-      ! read ecmwf era interim fil
+      ! read ecmwf era interim file
       if (verbose) write(*,*) 'Read ecmwf era interim file'
       select case (ecmwf_flag)
       case(0)
+#ifndef WRAPPER
          call read_ecmwf_grib(ecmwf_path_file,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
+#else
+         call read_ecmwf_grib(ecmwf_path_file,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose,mytask)
+#endif
       case(1)
          if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
          call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims, &
@@ -718,6 +741,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
          call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
 
+#ifndef WRAPPER
          if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
          call read_ecmwf_grib(ecmwf_path_file2,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
@@ -725,7 +749,23 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
          if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file3)
          call read_ecmwf_grib(ecmwf_path_file3,preproc_dims, &
               preproc_geoloc,preproc_prtm,verbose)
+#else
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
+         call read_ecmwf_grib(ecmwf_path_file2,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose,mytask)
+
+         if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file3)
+         call read_ecmwf_grib(ecmwf_path_file3,preproc_dims, &
+              preproc_geoloc,preproc_prtm,verbose,mytask)
+#endif
       end select
+
+      ! read USGS physiography file, including land use and DEM data
+      ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
+      if (verbose) write(*,*) 'Reading USGS path: ',trim(usgs_path_file)
+      call get_USGS_data(usgs_path_file, imager_flags, imager_geolocation, usgs , &
+           assume_full_paths, verbose)
+
       ! compute geopotential vertical coordinate from pressure coordinate
       call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
@@ -741,6 +781,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
+
       call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
            preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,netcdf_info,&
            channel_info,year,month,day,verbose)
@@ -754,9 +795,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       ! select correct reflectance files and calculate surface reflectance
       ! over land and ocean
       if (verbose) write(*,*) 'Get surface reflectance'
-      call get_surface_reflectance(cyear, cdoy, modis_albedo_path, imager_flags, &
-           imager_geolocation, imager_angles, channel_info, ecmwf, assume_full_paths, &
-           include_full_brdf, verbose, surface)
+      call get_surface_reflectance(cyear, cdoy, modis_albedo_path, modis_brdf_path, &
+           imager_flags, imager_geolocation, imager_angles, channel_info, ecmwf, &
+           assume_full_paths, include_full_brdf, verbose, surface)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
@@ -766,10 +807,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
            preproc_dims, surface, cyear, cmonth, cday, channel_info, &
            assume_full_paths, verbose)
 
+      if (verbose) write(*,*) 'Calculate Pavolonis cloud phase'
+      call cloud_type(surface, imager_flags, imager_angles, &
+           imager_geolocation, imager_measurements, imager_pavolonis, verbose)
+     
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &
-           imager_geolocation,imager_measurements,imager_time,netcdf_info, &
-           channel_info,surface,include_full_brdf)
+           imager_geolocation,imager_measurements,imager_time, &
+           imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf)
 
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'
@@ -781,7 +826,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
-           imager_flags, imager_time, imager_measurements)
+           imager_flags, imager_time, imager_measurements, imager_pavolonis)
       call deallocate_surface_structures(surface, include_full_brdf)
 
    end do ! end looping over chunks

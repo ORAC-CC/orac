@@ -23,6 +23,7 @@
 ! 2012/12/13, CP: changed ydimension to imager_geolocation%ny
 ! 2013/09/06, AP: tidying
 ! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/09/17, CS: Added surface%nise_mask
 !
 ! $Id$
 !
@@ -54,6 +55,11 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, 
    allocate(surface%albedo(imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny,channel_info%nchannels_sw))
    surface%albedo=sreal_fill_value
+
+   allocate(surface%nise_mask(&
+            imager_geolocation%startx:imager_geolocation%endx, &
+            1:imager_geolocation%ny))
+   surface%nise_mask=byte_fill_value
 
    allocate(surface%emissivity( &
             imager_geolocation%startx:imager_geolocation%endx, &

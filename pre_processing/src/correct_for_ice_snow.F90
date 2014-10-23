@@ -85,7 +85,10 @@ contains
 !   returning albedo > 1
 ! 2014/08/05, AP: Explicit bilinear interpolation, rather than function call.
 !   Removing old code.
-!
+! 2014/09/17, CS: nise_mask added in surface_structures.F90,                               
+!   i.e. surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90                       
+!   for correcting the land use map (currently USGS)
+!             
 ! $Id$
 !
 ! Bugs:
@@ -96,6 +99,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
       surface,cyear,cmonth,cday,channel_info,assume_full_path,verbose)
 
    use channel_structures
+   use constants_cloud_typing_pavolonis
    use imager_structures
    use nise_m
    use preproc_constants
@@ -264,7 +268,8 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
 
             call apply_ice_correction(real(easex-real(xi)), &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
-                 preproc_dims, surface%albedo(i,j,:),channel_info)
+                 preproc_dims, surface%albedo(i,j,:),channel_info, &
+                 surface%nise_mask(i,j))
 
          else ! Repeat for the Southern Hemisphere
 
@@ -334,7 +339,8 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
 
             call apply_ice_correction(real(easex-real(xi)), &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
-                 preproc_dims, surface%albedo(i,j,:), channel_info)
+                 preproc_dims, surface%albedo(i,j,:), channel_info, &
+                 surface%nise_mask(i,j))
          end if
       end do
    end do
@@ -349,12 +355,13 @@ end subroutine correct_for_ice_snow
 !-------------------------------------------------------------------------------
 
 subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
-     preproc_dims, pixel_ref,channel_info)
+     preproc_dims, pixel_ref,channel_info, nise_mask_flag)
 
    use preproc_constants
    use preproc_structures
    use interpol
    use channel_structures
+   use CONSTANTS_CLOUD_TYPING_PAVOLONIS
 
    implicit none
 
@@ -369,6 +376,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    real,             dimension(1)                  :: pixel_ice
    integer(kind=lint)                              :: i
    logical                                         :: snw_frac
+   integer(kind=byte)                              :: nise_mask_flag
 
    snw_frac=.false.
 
@@ -404,15 +412,24 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    if (snw_frac) then
       ! snow adjacent pixel assumed completely snowy
       pixel_ref = snow_albedo
+      nise_mask_flag = sym%YES
    else if (pixel_ice(1).eq.1.) then
       ! completely icy
       pixel_ref = ice_albedo
+      nise_mask_flag = sym%YES
    else if (pixel_ice(1).gt.0.) then
       ! somewhat icy
       do i=1,channel_info%nchannels_sw
          if (pixel_ref(i) .ne. sreal_fill_value) pixel_ref(i) = &
               (1. - pixel_ice(1))*pixel_ref(i) + pixel_ice(1)*ice_albedo(i)
       end do
+      if (pixel_ice(1) .ge. 0.15) then
+         nise_mask_flag = sym%YES
+      else
+         nise_mask_flag = sym%NO
+      endif
+   else 
+      nise_mask_flag = sym%NO
    end if
 
 end subroutine apply_ice_correction

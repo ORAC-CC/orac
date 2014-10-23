@@ -18,6 +18,7 @@
 # 2014/08/22, Greg McGarragh: Use the library file instead of the object list
 #    for the executable and make the executable dependent on the library file.
 #    Now 'make' will build both the executable and library in one command.
+# 2014/10/23, Oliver Sus: Changes related to USGS, Pavolonis, and NN cloud mask.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -41,16 +42,21 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/build_preproc_fields.o \
                   $(OBJS)/calender.o \
                   $(OBJS)/channel_structures.o \
+                  $(OBJS)/cloud_typing_pavolonis.o \                                 
+                  $(OBJS)/constants_cloud_typing_pavolonis.o \
                   $(OBJS)/correct_for_ice_snow.o \
                   $(OBJS)/cox_munk.o \
                   $(OBJS)/date_type_structure.o \
                   $(OBJS)/define_preprop_grid.o \
                   $(OBJS)/ecmwf.o \
                   $(OBJS)/fill_grid.o \
+                  $(OBJS)/get_USGS_data.o \      
                   $(OBJS)/imager_structures.o \
                   $(OBJS)/map_time_to_pixel.o \
                   $(OBJS)/mcd43c.o \
                   $(OBJS)/netcdf_output.o \
+                  $(OBJS)/neural_net_preproc.o \    
+                  $(OBJS)/neural_net_constants.o \     
                   $(OBJS)/nise_def.o \
                   $(OBJS)/nr.o \
                   $(OBJS)/preparation.o \
@@ -61,6 +67,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_cimss_emissivity.o \
                   $(OBJS)/read_imager.o \
                   $(OBJS)/read_modis.o \
+                  $(OBJS)/read_USGS_file.o \           
                   $(OBJS)/ross_thick_li_sparse_r.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/set_ecmwf.o \
