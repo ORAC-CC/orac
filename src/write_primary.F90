@@ -27,6 +27,8 @@
 ! 2014/09/01, Greg McGarragh: Start using the common/orac_ncdf.F90 write_array
 !    interface.
 ! 2014/09/17, Greg McGarragh: Bug fix, forgot to offset y dimension of output.
+! 2014/10/24, Oliver Sus: added variables cldtype, cloudmask, cccot_pre, lusflags,
+!    dem, and nisemask
 !
 ! $Id$
 !
@@ -155,5 +157,24 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
 
    call nc_write_array(ncid,'illum',output_data%vid_illum,&
            output_data%illum(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'cldtype',output_data%vid_cldtype,&
+           output_data%cldtype(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'cldmask',output_data%vid_cldmask,&
+           output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre,&
+           output_data%cccot_pre(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'lusflag',output_data%vid_lusflag,&
+           output_data%lusflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'dem',output_data%vid_dem,&
+           output_data%dem(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'nisemask',output_data%vid_nisemask,&
+           output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
 
 end subroutine write_primary

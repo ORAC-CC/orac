@@ -27,6 +27,8 @@
 ! 2014/01/01, Greg McGarragh: Fixed the range in NY for initializations. Plus,
 !    no need for explicit indexing in these cases anyway.
 ! 2014/05/27, Greg McGarragh: Some cleanup.
+! 2014/10/24, Oliver Sus: added allocation of cldtype, cldmask, cccot_pre,
+!    lusflag, dem, nisemask
 !
 ! $Id$
 !
@@ -57,7 +59,6 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews, &
 
    allocate(output_data%vid_rel_azi(NViews))
    output_data%vid_rel_azi=0
-
 
    allocate(output_data%time(ixstart:ixstop,iystart:iystop))
    output_data%time(ixstart:ixstop,iystart:iystop)=sreal_fill_value
@@ -145,6 +146,24 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews, &
 
    allocate(output_data%illum(ixstart:ixstop,iystart:iystop))
    output_data%illum(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
+   allocate(output_data%cldtype(ixstart:ixstop,iystart:iystop))
+   output_data%cldtype(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
+   allocate(output_data%cldmask(ixstart:ixstop,iystart:iystop))
+   output_data%cldmask(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
+   allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
+   output_data%cccot_pre(ixstart:ixstop,iystart:iystop)=sreal_fill_value
+
+   allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
+   output_data%lusflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
+   allocate(output_data%dem(ixstart:ixstop,iystart:iystop))
+   output_data%dem(ixstart:ixstop,iystart:iystop)=sint_fill_value
+
+   allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
+   output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
 
 end subroutine alloc_output_data_primary
 

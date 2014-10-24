@@ -72,6 +72,8 @@
 !       Cleaned up the code.
 !    15th Aug 2014, Adam Povey:
 !       Switching to preprocessor NCDF routines.
+!    24th Oct 2014, Oliver Sus:
+!       Added new variables CldType, CloudMask, and CCCOT_pre
 !
 ! Bugs:
 !    None known.
@@ -106,8 +108,14 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    ! Allocate MSI_Data%CloudFlags array size
    allocate(MSI_Data%CloudFlags(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%CldType(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%CloudMask(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%CCCOT_pre(Ctrl%Ind%Xmax, SegSize))
 
    call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
+   call nc_read_array(ncid, "cldtype", MSI_Data%CldType, verbose)
+   call nc_read_array(ncid, "cldmask", MSI_Data%CloudMask, verbose)
+   call nc_read_array(ncid, "cccot_pre", MSI_Data%CCCOT_pre, verbose)
 
    ! Close cloud flag file
    if (nf90_close(ncid) /= NF90_NOERR) &

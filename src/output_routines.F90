@@ -20,6 +20,9 @@
 !    13th Jun 2014, Greg McGarragh : Original version, output_data_*
 !       structures taken from SPixel module.
 !    16th Sep 2014, Greg McGarragh : Added output_utils.F90.
+!    24th Oct 2014, Oliver Sus: added variables cldtype, cloudmask, cccot_pre, lusflags,
+!       dem, and nisemask
+
 !
 ! Bugs:
 !    None known.
@@ -83,6 +86,17 @@ module output_routines
 
       integer                       :: vid_illum
 
+      integer                       :: vid_cldtype
+
+      integer                       :: vid_cldmask
+
+      integer                       :: vid_cccot_pre
+
+      integer                       :: vid_lusflag
+
+      integer                       :: vid_dem
+
+      integer                       :: vid_nisemask
 
       real(kind=dreal)              :: time_scale,time_offset,time_vmin,time_vmax
 
@@ -162,6 +176,23 @@ module output_routines
       integer(kind=byte)            :: illum_scale,illum_offset
       integer(kind=byte)            :: illum_vmin,illum_vmax
 
+      integer(kind=byte)            :: cldtype_scale,cldtype_offset
+      integer(kind=byte)            :: cldtype_vmin,cldtype_vmax
+
+      integer(kind=byte)            :: cldmask_scale,cldmask_offset
+      integer(kind=byte)            :: cldmask_vmin,cldmask_vmax
+
+      real(kind=sreal)              :: cccot_pre_scale,cccot_pre_offset
+      real(kind=sreal)              :: cccot_pre_vmin,cccot_pre_vmax
+
+      integer(kind=byte)            :: lusflag_scale,lusflag_offset
+      integer(kind=byte)            :: lusflag_vmin,lusflag_vmax
+
+      integer(kind=sint)            :: dem_scale,dem_offset
+      integer(kind=sint)            :: dem_vmin,dem_vmax
+
+      integer(kind=byte)            :: nisemask_scale,nisemask_offset
+      integer(kind=byte)            :: nisemask_vmin,nisemask_vmax
 
       real(kind=dreal),   dimension(:,:),   pointer :: time
 
@@ -214,6 +245,18 @@ module output_routines
       integer(kind=sint), dimension(:,:),   pointer :: qcflag
 
       integer(kind=byte), dimension(:,:),   pointer :: illum
+
+      integer(kind=byte), dimension(:,:),   pointer :: cldtype
+
+      integer(kind=byte), dimension(:,:),   pointer :: cldmask
+
+      real(kind=sreal),   dimension(:,:),   pointer :: cccot_pre
+
+      integer(kind=byte), dimension(:,:),   pointer :: lusflag
+
+      integer(kind=sint), dimension(:,:),   pointer :: dem
+
+      integer(kind=byte), dimension(:,:),   pointer :: nisemask
 
    end type output_data_primary
 

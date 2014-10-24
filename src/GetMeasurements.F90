@@ -206,7 +206,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-
                   call T2R(1, SAD_Chan(j), SPixel%Ym(i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(j)%Thermal%NeHomog(Ctrl%CloudType) + &
@@ -243,7 +242,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-
                   call T2R(1, SAD_Chan(j), SPixel%Ym(i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(j)%Thermal%NeCoreg(Ctrl%CloudType) + &

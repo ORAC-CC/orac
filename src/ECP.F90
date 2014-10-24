@@ -647,7 +647,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       !$OMP DO SCHEDULE(GUIDED)
       do j = iystart,iystop,ystep
 
-!        write(*,*) 'thread,iystart,iystop,iy: ', thread_id,iystart,iystop,j
+        !write(*,*) 'thread,iystart,iystop,iy: ', thread_id,iystart,iystop,j
 
          ! Set the location of the pixel within the image (Y0) and within the
          ! current image segment (YSeg0).
@@ -779,7 +779,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       !$OMP END DO
 
       if (SPixel_alloc) call Dealloc_SPixel(Ctrl, SPixel, status)
-
       if (RTM_Pc_alloc) call Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
 
       !$OMP END PARALLEL

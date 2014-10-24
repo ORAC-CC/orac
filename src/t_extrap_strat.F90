@@ -18,6 +18,7 @@
 ! History:
 ! 2014/05/24, C. Poulsen: Original code based on idl find_tp.pro
 ! 2014/08/04, G. McGarragh: A bit of cleanup.
+! 2014/08/19, O. Sus: removed superfluous commata after write statements
 !
 ! $Id$
 !
@@ -44,7 +45,7 @@ subroutine t_extrap_strat(SPixel,ztp,index_ztp)
 
    if (test .eq. 1) then
       write(*,*)'ztp index_zt ',ztp,index_ztp
-      write(*,*),'before strat told=[ $'
+      write(*,*)'before strat told=[ $'
       do k=1,SPixel%RTM%LW%Np
          write(*,*)SPixel%RTM%LW%T(k),',$'
       end do
@@ -69,7 +70,7 @@ subroutine t_extrap_strat(SPixel,ztp,index_ztp)
    end do
 
    if (test .eq. 1) then
-      write(*,*),' after strat tnew=[ $'
+      write(*,*)' after strat tnew=[ $'
       do k=1,SPixel%RTM%LW%Np
          write(*,*)SPixel%RTM%LW%T(k),',$'
       end do

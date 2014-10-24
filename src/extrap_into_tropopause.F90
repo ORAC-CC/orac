@@ -17,6 +17,7 @@
 ! 2012/05/24, C. Poulsen: Original code, based on idl t_extrap_tp.pro
 ! 2014/03/14, C. Poulsen: debugged and tested
 ! 2014/08/04, G. McGarragh: A bit of cleanup.
+! 2014/08/20, O. Sus: removed superfluous commata after write statements
 !
 ! $Id$
 !
@@ -73,7 +74,7 @@ subroutine extrap_into_tropopause(SPixel)
    ! this is atypical value for a moist adiabatic lapse rate (see wikipedia)
 !  lr=-5 !lapse rate K/km
 !  if (z(1) .le. z(2)) then
-!     write(*,*),'z must be in descending order !'
+!     write(*,*) 'z must be in descending order !'
 !  end if
 
 
@@ -81,7 +82,7 @@ subroutine extrap_into_tropopause(SPixel)
 !  call find_tropopause(t,z,ztp,nlevs,index_ztp)
 
    if (ztp .eq. -999) then
-      write(*,*),'tropopause not found !',ztp
+      write(*,*) 'tropopause not found !',ztp
    end if
 
    ! now extrapolate the tropopause into stratosphere

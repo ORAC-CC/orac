@@ -39,6 +39,8 @@
 !       Some cleanup.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
+!    24th Oct 2014, Oliver Sus:
+!       added deallocation of CldType, CloudMask, CCCOT_pre, LUSFlags, DEM, nisemask
 !
 ! Bugs:
 !    None known.
@@ -86,5 +88,12 @@ subroutine Dealloc_Data(Ctrl, MSI_Data, status)
    if (associated(MSI_Data%Scan%vscan))   deallocate(MSI_Data%Scan%vscan)
 
    if (associated(MSI_Data%illum))        deallocate(MSI_Data%illum)
+
+   if (associated(MSI_Data%CldType))      deallocate(MSI_Data%CldType)
+   if (associated(MSI_Data%CloudMask))      deallocate(MSI_Data%CloudMask)
+   if (associated(MSI_Data%CCCOT_pre))      deallocate(MSI_Data%CCCOT_pre)
+   if (associated(MSI_Data%LUSFlags))      deallocate(MSI_Data%LUSFlags)
+   if (associated(MSI_Data%DEM))      deallocate(MSI_Data%DEM)
+   if (associated(MSI_Data%nisemask))      deallocate(MSI_Data%nisemask)
 
 end subroutine Dealloc_Data

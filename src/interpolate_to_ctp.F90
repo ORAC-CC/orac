@@ -103,8 +103,9 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    if (kspot .ne. 0 ) then
       mon_k=mon_k_trop
    end if
-
+   
    if (kspot .eq. 0) then
+
       ! profile may have unusual inversions
 
       invert_temp(1:mon_k_trop)=invert_t(1:mon_k_trop)
@@ -115,15 +116,13 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       ! try to find match in this sorted profile
       call locate_int(invert_temp(1:mon_k_trop),mon_k_trop,BT_o,kspot)
 
-
- ! if observed BT (BT_o) is larger than all values in RTM-derived
+      ! if observed BT (BT_o) is larger than all values in RTM-derived
       ! profile stretch, set kspot to 0; otherwise, the approach above would 
       ! set kspot to 59 and finally choose a very low BP_o
       ! accordingly, if BT_o < minval(invert_temp), kspot is set to 59,
       ! because IF condition in locate_int is never TRUE and iteration will
       ! stop at top temperature level
       if ( BT_o .gt. invert_temp(mon_k_trop) ) kspot = 0
-
 
       if (kspot .ne. 0) then
          do i=1,mon_k_trop

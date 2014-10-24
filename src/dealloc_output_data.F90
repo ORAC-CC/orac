@@ -23,6 +23,8 @@
 ! 2013/12/16, Greg McGarragh: Add deallocation of output_data%ctt_error,
 !    output_data%cth_error, and output_data_sec%ds and a bit cleanup.
 ! 2014/05/27, Greg McGarragh: Some cleanup.
+! 2014/10/24, Oliver Sus: added deallocation of cldtype, cldmask, cccot_pre,
+!    lusflag, dem, nisemask
 !
 ! $Id$
 !
@@ -83,6 +85,13 @@ subroutine dealloc_output_data_primary(output_data)
    deallocate(output_data%qcflag)
 
    deallocate(output_data%illum)
+
+   deallocate(output_data%cldtype)
+   deallocate(output_data%cldmask)
+   deallocate(output_data%cccot_pre)
+   deallocate(output_data%lusflag)
+   deallocate(output_data%dem)
+   deallocate(output_data%nisemask)
 
 end subroutine dealloc_output_data_primary
 

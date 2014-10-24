@@ -32,6 +32,8 @@
 ! 2014/06/13, GM: Cleaned up the code.
 ! 2014/08/31, GM: Update to use general routines in the current module.
 ! 2014/09/17, GM: Fixed handling of missing values in some cases.
+! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
+!    dem, and nisemask
 !
 ! $Id$
 !
@@ -365,5 +367,45 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    ! illum
    !----------------------------------------------------------------------------
    output_data%illum(i,j)=MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0,1)
+
+   !-------------------------------------------------------------------------------
+   ! cldtype
+   !-------------------------------------------------------------------------------
+   output_data%cldtype(i,j)=int(MSI_Data%cldtype(SPixel%Loc%X0, SPixel%Loc&
+        &%YSeg0), kind=byte)
+
+   !-------------------------------------------------------------------------------
+   ! cldmask
+   !-------------------------------------------------------------------------------
+   output_data%cldmask(i,j)=int(MSI_Data%cloudmask(SPixel%Loc%X0, SPixel%Loc&
+        &%YSeg0), kind=byte)
+
+   !-------------------------------------------------------------------------------
+   ! cccot_pre
+   !-------------------------------------------------------------------------------
+   temp_real=MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+   call prepare_float_packed_float( &
+           temp_real, output_data%cccot_pre(i,j), &
+           output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
+           sreal_fill_value, sreal_fill_value, &
+           output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
+           sreal_fill_value)
+
+   !-------------------------------------------------------------------------------
+   ! lusflag
+   !-------------------------------------------------------------------------------
+   output_data%lusflag(i,j)=int(MSI_Data%LUSFlags(SPixel%Loc%X0, SPixel%Loc&
+        &%YSeg0), kind=byte)
+
+   !-------------------------------------------------------------------------------
+   ! dem
+   !-------------------------------------------------------------------------------
+   output_data%dem(i,j)=int(MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%YSeg0), kind=sint)
+
+   !-------------------------------------------------------------------------------
+   ! lusflag
+   !-------------------------------------------------------------------------------
+   output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
+        &%YSeg0), kind=byte)
 
 end subroutine prepare_primary

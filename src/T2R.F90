@@ -31,6 +31,7 @@
 !       are cured here not the actual reason for the overflow (unknown) nor is
 !       this condition reported as status.
 !     4th Feb 2014, Matthias Jerg: Fixes bug in above fix.
+!    24th Oct 2014, Oliver Sus: Some minor changes to deal with float under/overflow issues.
 !
 ! Bugs:
 !   None known.
@@ -56,10 +57,13 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
    ! Define local variables
 
-   real(4) :: BB(NChan)
-   real(4) :: C(NChan)
-   real(4) :: T_eff(NChan)
+   real(8) :: BB(NChan)
+   real(8) :: C(NChan)
+   real(8) :: T_eff(NChan)
    real(4) :: huge_value, log_huge_value
+   real(8) :: dummy_nominator(NChan)
+   real(8) :: dummy_denominator(NChan)
+   real(8) :: dummy_result(NChan)
 
    ! Set status to zero
 
@@ -80,7 +84,10 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
    ! Calculate change in radiances with temperature
 
-   d_R_d_T = min((SAD_Chan%Thermal%B1 * BB * C * SAD_Chan%Thermal%T2) / &
-                 ( T_eff * (C-1.0) * (C-1.0) ), huge_value)
+   dummy_nominator = SAD_Chan%Thermal%B1 * BB * C * SAD_Chan%Thermal%T2
+   dummy_denominator =  T_eff * (C-1.0) * (C-1.0)
+   dummy_result = dummy_nominator / dummy_denominator
+   dummy_result = min(dummy_result, huge_value)
+   d_R_d_T = dummy_result
 
 end subroutine T2R

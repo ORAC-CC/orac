@@ -39,6 +39,8 @@
 ! 2014/08/31, GM: Update to use general routines now in the common library.
 ! 2014/09/16, GM: Update for changes in the general routines in the common
 !    library.
+! 2014/10/24, OS: Some minor refactoring. Added output variables cldtype,
+!    cldmask, cccot_pre, lusflag, DEM, and nisemask
 !
 ! $Id$
 !
@@ -848,18 +850,177 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            'illum', &
            output_data%vid_illum, &
            verbose,ierr, &
+           flag_values='1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
+           flag_meanings='Day, Twilight, Night, Daynore, DayMissingSingleVisFirst, ' // &
+               'DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, ' // & 
+               'DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, ' // &
+               'NightMissingSingleIRThird', &
            long_name     = 'illumination flag', &
            standard_name = 'illumination_flag', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%illum_scale, &
            add_offset    = output_data%illum_offset, &
            valid_min     = output_data%illum_vmin, &
-           valid_max     = output_data%illum_vmax, &
-           flag_values   = '1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
-           flag_meanings = 'Day Twilight Night Daynore DayMissingSingleVisFirst, DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, NightMissingSingleIRThird')
+           valid_max     = output_data%illum_vmax &
+           )
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! cloud type (ie. Pavolonis phase)
+   !----------------------------------------------------------------------------
+   output_data%cldtype_scale=1
+   output_data%cldtype_offset=0
+   output_data%cldtype_vmin=0
+   output_data%cldtype_vmax=8
+
+   input_dummy2='Bit 0=clear Bit 1=N/A Bit 2=fog Bit 3=water Bit 4=supercooled'
+   input_dummy2=trim(adjustl(input_dummy2))//' Bit 5=mixed Bit 6=opaque_ice Bit 7=cirrus'
+   input_dummy2=trim(adjustl(input_dummy2))//' Bit 8=overlap'
+
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'cldtype', &
+           output_data%vid_cldtype, &
+           verbose,ierr, &
+           long_name     = 'Pavolonis cloud type', &
+           standard_name = 'Pavolonis_cloud_type', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%cldtype_scale, &
+           add_offset    = output_data%cldtype_offset, &
+           valid_min     = output_data%cldtype_vmin, &
+           valid_max     = output_data%cldtype_vmax, &
+           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b', &
+           flag_meanings = trim(adjustl(input_dummy2)))
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
+   !----------------------------------------------------------------------------
+   ! cloud mask
+   !----------------------------------------------------------------------------
+   output_data%cldmask_scale=1
+   output_data%cldmask_offset=0
+   output_data%cldmask_vmin=0
+   output_data%cldmask_vmax=1
+
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'cldmask', &
+           output_data%vid_cldmask, &
+           verbose,ierr, &
+           long_name     = 'Neural net cloud mask (radiance based)', &
+           standard_name = 'Neural_net_cloud_mask', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%cldmask_scale, &
+           add_offset    = output_data%cldmask_offset, &
+           valid_min     = output_data%cldmask_vmin, &
+           valid_max     = output_data%cldmask_vmax, &
+           flag_values   = '0b, 1b', &
+           flag_meanings = 'clear, cloudy')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! CCCOT_pre (cloud optical thickness)
+   !----------------------------------------------------------------------------
+   output_data%cccot_pre_scale=1.0
+   output_data%cccot_pre_offset=0.0
+   output_data%cccot_pre_vmin=-1.0
+   output_data%cccot_pre_vmax=2.0
+
+   call nc_def_var_float_packed_float( &
+           ncid, &
+           dims_var, &
+           'cccot_pre', &
+           output_data%vid_cccot_pre, &
+           verbose,ierr, &
+           long_name     = 'neural network cloud optical thickness', &
+           standard_name = 'NN_CCCOT', &
+           fill_value    = sreal_fill_value, &
+           scale_factor  = output_data%cccot_pre_scale, &
+           add_offset    = output_data%cccot_pre_offset, &
+           valid_min     = output_data%cccot_pre_vmin, &
+           valid_max     = output_data%cccot_pre_vmax)
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! lusflag
+   !----------------------------------------------------------------------------
+   output_data%lusflag_scale=1
+   output_data%lusflag_offset=0
+   output_data%lusflag_vmin=1
+   output_data%lusflag_vmax=24
+
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'lusflag', &
+           output_data%vid_lusflag, &
+           verbose,ierr, &
+           long_name     = 'land use flag', &
+           standard_name = 'land_use_mask', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%lusflag_scale, &
+           add_offset    = output_data%lusflag_offset, &
+           valid_min     = output_data%lusflag_vmin, &
+           valid_max     = output_data%lusflag_vmax, &
+           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, &
+           &12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, 20b, 21b, 22b, 23b, 24b', &
+           flag_meanings = 'see usgs.gov')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! DEM
+   !----------------------------------------------------------------------------
+   output_data%dem_scale=1
+   output_data%dem_offset=0
+   output_data%dem_vmin=0
+   output_data%dem_vmax=10000
+
+   call nc_def_var_short_packed_short( &
+           ncid, &
+           dims_var, &
+           'dem', &
+           output_data%vid_dem, &
+           verbose,ierr, &
+           long_name     = 'Digital elevation model', &
+           standard_name = 'dem', &
+           fill_value    = int(-1,kind=sint), &
+           scale_factor  = output_data%dem_scale, &
+           add_offset    = output_data%dem_offset, &
+           valid_min     = output_data%dem_vmin, &
+           valid_max     = output_data%dem_vmax)
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
+   !----------------------------------------------------------------------------
+   ! nise mask
+   !----------------------------------------------------------------------------
+   output_data%nisemask_scale=1
+   output_data%nisemask_offset=0
+   output_data%nisemask_vmin=0
+   output_data%nisemask_vmax=1
+
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'nisemask', &
+           output_data%vid_nisemask, &
+           verbose,ierr, &
+           long_name     = 'NISE snow/ice mask', &
+           standard_name = 'NISE_mask', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%nisemask_scale, &
+           add_offset    = output_data%nisemask_offset, &
+           valid_min     = output_data%nisemask_vmin, &
+           valid_max     = output_data%nisemask_vmax, &
+           flag_values   = '0b, 1b', &
+           flag_meanings = 'snow/ice free, snow/ice')
+
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    !

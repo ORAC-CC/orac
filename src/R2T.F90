@@ -37,6 +37,7 @@
 !       Fixed division by zero in log by simple workaround. Should possibly
 !       avoided altogether.
 !     4th Aug 2014, Greg McGarragh: Cleaned up the code.
+!    24th Oct 2014, Oliver Sus: Avoid division by zero.
 !
 ! Bugs:
 !   None known.
@@ -65,11 +66,16 @@ subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 
    integer :: i
    real(4) :: C(NChan)
-   real(4) :: T_eff(NChan)
+   real(8) :: T_eff(NChan)
+   real(4) :: tiny_value
+   real(4) :: huge_value
 
    ! Set error status to zero
 
    status = 0
+
+   tiny_value = tiny(1.0)
+   huge_value = huge(1.0)
 
    ! Begin calculating temperatures
 
@@ -77,9 +83,8 @@ subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
       if (R(i) .le. ditherm6) R(i) = max(R(i),ditherm6)
    end do
 
-   C = log( ( SAD_Chan(:)%Thermal%B1 / R ) + 1.0 )
-   T_eff = SAD_Chan(:)%Thermal%B2 / C
-
+   C = max( log( (SAD_Chan(:)%Thermal%B1 / R ) + 1.0 ), tiny_value )   
+   T_eff = min( SAD_Chan(:)%Thermal%B2 / C, huge_value )
    T = (T_eff-SAD_Chan(:)%Thermal%T1) / SAD_Chan(:)%Thermal%T2
 
    ! Calculate the change in brightness temperature w.r.t. radiance

@@ -110,6 +110,9 @@
 !       Some intent changes.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
+!    24th Oct 2014, Oliver Sus:
+!       Some refactoring, e.g. breaking up long lines of code that caused CRAY-ftn
+!       compiler to exit
 !
 ! Bugs:
 !   None known.
@@ -119,45 +122,48 @@
 !------------------------------------------------------------------------------------
 subroutine derivative_wrt_crp_parameter(SPixel, i_param, i_equation_form, CRP, d_CRP, T, Tbc2, rho_0v, rho_0d, rho_dv, rho_dd, d_REF)
 
-   use SPixel_def
+  use SPixel_def
 
-   implicit none
+  implicit none
 
-   type(SPixel_t), intent(in)  :: SPixel
-   integer,        intent(in)  :: i_param
-   integer,        intent(in)  :: i_equation_form
-   real,           intent(in)  :: CRP(SPixel%Ind%NSolar,MaxCRProps)
-   real,           intent(in)  :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
-   real,           intent(in)  :: T(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc2(SPixel%Ind%NSolar)
-   real,           intent(in)  :: rho_0v(SPixel%Ind%NSolar)
-   real,           intent(in)  :: rho_0d(SPixel%Ind%NSolar)
-   real,           intent(in)  :: rho_dv(SPixel%Ind%NSolar)
-   real,           intent(in)  :: rho_dd(SPixel%Ind%NSolar)
-   real,           intent(out) :: d_REF(SPixel%Ind%NSolar)
+  type(SPixel_t), intent(in)  :: SPixel
+  integer,        intent(in)  :: i_param
+  integer,        intent(in)  :: i_equation_form
+  real,           intent(in)  :: CRP(SPixel%Ind%NSolar,MaxCRProps)
+  real,           intent(in)  :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
+  real,           intent(in)  :: T(SPixel%Ind%NSolar)
+  real,           intent(in)  :: Tbc2(SPixel%Ind%NSolar)
+  real,           intent(in)  :: rho_0v(SPixel%Ind%NSolar)
+  real,           intent(in)  :: rho_0d(SPixel%Ind%NSolar)
+  real,           intent(in)  :: rho_dv(SPixel%Ind%NSolar)
+  real,           intent(in)  :: rho_dd(SPixel%Ind%NSolar)
+  real,           intent(out) :: d_REF(SPixel%Ind%NSolar)
 
-if (i_equation_form .eq. 1) then
-   d_REF = T * ( &
-                d_CRP(:,IRBd,i_param) + &
-
-                d_CRP(:,ITB,i_param) * (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2   +   CRP(:,ITB) * (rho_0v - rho_0d) * d_CRP(:,ITB_u,i_param) * Tbc2 + &
-
-                ((d_CRP(:,ITB,i_param) * rho_0d + d_CRP(:,ITFBd,i_param) * rho_dd) * CRP(:,ITd)                    +   (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) *                        d_CRP(:,ITd,i_param))  * Tbc2  / (1. - rho_dd * CRP(:,IRFd) * Tbc2) - &
-
-                (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * CRP(:,ITd) * Tbc2 * (-rho_dd) * d_CRP(:,IRFd,i_param) * Tbc2 / ((1. - rho_dd * CRP(:,IRFd) * Tbc2) * (1. - rho_dd * CRP(:,IRFd) * Tbc2)) &
-               )
-else if (i_equation_form .eq. 2) then
-   d_REF = T * ( &
-                 d_CRP(:,IRBd,i_param) + &
-
-                 d_CRP(:,ITB,i_param) * (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2   +    CRP(:,ITB) * (rho_0v - rho_0d) * d_CRP(:,ITB_u,i_param) * Tbc2 + &
-
-                 ((d_CRP(:,ITB,i_param) * rho_0d + d_CRP(:,ITFBd,i_param) * rho_dd) * (CRP(:,ITB_u) + CRP(:,ITd))   +   (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * (d_CRP(:,ITB_u,i_param) + d_CRP(:,ITd,i_param)))  * Tbc2  / (1. - rho_dd * CRP(:,IRFd) * Tbc2) - &
-
-                 (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * rho_dd) * CRP(:,ITd) * Tbc2 * (-rho_dd) * d_CRP(:,IRFd,i_param) * Tbc2 / ((1. - rho_dd * CRP(:,IRFd) * Tbc2) * (1. - rho_dd * CRP(:,IRFd) * Tbc2)) &
-               )
-else
-endif
+  if (i_equation_form .eq. 1) then
+     d_REF = T * ( d_CRP(:,IRBd,i_param) + d_CRP(:,ITB,i_param) *      &
+          (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2 + CRP(:,ITB) *       &
+          (rho_0v - rho_0d) * d_CRP(:,ITB_u,i_param) * Tbc2 +          &
+          ((d_CRP(:,ITB,i_param) * rho_0d + d_CRP(:,ITFBd,i_param) *   &
+          rho_dd) * CRP(:,ITd) + (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) * & 
+          rho_dd) * d_CRP(:,ITd,i_param))  * Tbc2  / (1. - rho_dd *    &
+          CRP(:,IRFd) * Tbc2) - (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) *  &
+          rho_dd) * CRP(:,ITd) * Tbc2 * (-rho_dd) *                    &
+          d_CRP(:,IRFd,i_param) * Tbc2 / ((1. - rho_dd * CRP(:,IRFd) * &
+          Tbc2) * (1. - rho_dd * CRP(:,IRFd) * Tbc2)) )
+  else if (i_equation_form .eq. 2) then
+     d_REF = T * ( d_CRP(:,IRBd,i_param) + d_CRP(:,ITB,i_param) *      &
+          (rho_0v - rho_0d) * CRP(:,ITB_u) * Tbc2 + CRP(:,ITB) *       &
+          (rho_0v - rho_0d) * d_CRP(:,ITB_u,i_param) * Tbc2 +          &
+          ((d_CRP(:,ITB,i_param) * rho_0d + d_CRP(:,ITFBd,i_param) *   &
+          rho_dd) * (CRP(:,ITB_u) + CRP(:,ITd)) + (CRP(:,ITB) *        &
+          rho_0d + CRP(:,ITFBd) * rho_dd) * (d_CRP(:,ITB_u,i_param) +  &
+          d_CRP(:,ITd,i_param)))  * Tbc2  / (1. - rho_dd *             &
+          CRP(:,IRFd) * Tbc2) - (CRP(:,ITB) * rho_0d + CRP(:,ITFBd) *  &
+          rho_dd) * CRP(:,ITd) * Tbc2 * (-rho_dd) *                    &
+          d_CRP(:,IRFd,i_param) * Tbc2 / ((1. - rho_dd * CRP(:,IRFd) * &
+          Tbc2) * (1. - rho_dd * CRP(:,IRFd) * Tbc2)) )
+  else
+  endif
 
 end subroutine derivative_wrt_crp_parameter
 

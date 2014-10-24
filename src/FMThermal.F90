@@ -149,6 +149,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
    delta_Ts = X(ITs) - SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
 
    ! Update clear radiances at each RTM pressure level
+
    R_clear = SPixel%RTM%LW%R_clear(ThF:ThL) + &
       (delta_Ts * SPixel%RTM%LW%dB_dTs(ThF:ThL) * SPixel%RTM%LW%Ems(ThF:ThL) * &
       SPixel%RTM%LW%Tac(ThF:ThL,1))
@@ -175,6 +176,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
       RTM_Pc%LW%Rac_up(ThF:ThL)
 
    ! Calculate part cloudy radiances (a linear combination of R_clear and R_over)
+
    R = (X(IFr) * R_over) + ((1.0 - X(IFr)) * R_clear)
 
    ! Calculate product X%frac*Tac (for efficiency)

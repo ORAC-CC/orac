@@ -127,7 +127,6 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Set R_Clear using Rbc_up at the TOA
    SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
 
-
    call interp_field2(RTM%LW%P,   SPixel%RTM%SW%P,   interp)
    call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
    call interp_field2(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, interp)

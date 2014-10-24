@@ -39,6 +39,8 @@
 !    27/05/2014, GM: Some cleanup.
 !    2014/09/09, GM: Changes related to new BRDF support.
 !    2014/09/17, GM: Added Nullify_Data()
+!    2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
+!       dem, and nisemask
 !
 ! Bugs:
 !    None known.
@@ -50,6 +52,7 @@
 module Data_def
 
    use ECP_Constants
+   use common_constants
 
    implicit none
 
@@ -75,10 +78,16 @@ module Data_def
       real(4), pointer            :: rho_0d(:,:,:)
       real(4), pointer            :: rho_dv(:,:,:)
       real(4), pointer            :: rho_dd(:,:,:)
-      real(4),            pointer :: CloudFlags(:,:)
+      real(4), pointer            :: CloudFlags(:,:)
+      integer(kind=byte), pointer :: cldtype(:,:)
+      integer(kind=byte), pointer :: cloudmask(:,:)
+      real(kind=sreal), pointer   :: cccot_pre(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
-      integer(kind=byte), pointer :: LSFlags(:,:)
+      integer(kind=byte), pointer :: lsflags(:,:)
+      integer(kind=byte), pointer :: lusflags(:,:)
+      integer(kind=sint), pointer :: dem(:,:)
+      integer(kind=byte), pointer :: nisemask(:,:)
       real(8),            pointer :: time(:,:)
       real(4),            pointer :: MSI(:,:,:)
       type(Scan_t)                :: Scan
