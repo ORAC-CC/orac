@@ -1,6 +1,6 @@
-subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,ierr,chunksizes,deflate_level,shuffle, &
-   long_name,standard_name,fill_value,scale_factor,add_offset, &
-   valid_min,valid_max,units,flag_values,flag_meanings)
+subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,ierr,chunksizes&
+     &,deflate_level,shuffle, long_name,standard_name,fill_value,scale_factor&
+     &,add_offset, valid_min,valid_max,units,flag_values,flag_meanings)
 
    use common_constants
    use netcdf
