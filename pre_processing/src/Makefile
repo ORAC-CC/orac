@@ -42,7 +42,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/build_preproc_fields.o \
                   $(OBJS)/calender.o \
                   $(OBJS)/channel_structures.o \
-                  $(OBJS)/cloud_typing_pavolonis.o \                                 
+                  $(OBJS)/cloud_typing_pavolonis.o \
                   $(OBJS)/constants_cloud_typing_pavolonis.o \
                   $(OBJS)/correct_for_ice_snow.o \
                   $(OBJS)/cox_munk.o \
@@ -50,13 +50,13 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/define_preprop_grid.o \
                   $(OBJS)/ecmwf.o \
                   $(OBJS)/fill_grid.o \
-                  $(OBJS)/get_USGS_data.o \      
+                  $(OBJS)/get_USGS_data.o \
                   $(OBJS)/imager_structures.o \
                   $(OBJS)/map_time_to_pixel.o \
                   $(OBJS)/mcd43c.o \
                   $(OBJS)/netcdf_output.o \
-                  $(OBJS)/neural_net_preproc.o \    
-                  $(OBJS)/neural_net_constants.o \     
+                  $(OBJS)/neural_net_preproc.o \
+                  $(OBJS)/neural_net_constants.o \
                   $(OBJS)/nise_def.o \
                   $(OBJS)/nr.o \
                   $(OBJS)/preparation.o \
@@ -67,7 +67,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_cimss_emissivity.o \
                   $(OBJS)/read_imager.o \
                   $(OBJS)/read_modis.o \
-                  $(OBJS)/read_USGS_file.o \           
+                  $(OBJS)/read_USGS_file.o \
                   $(OBJS)/ross_thick_li_sparse_r.o \
                   $(OBJS)/rttov_driver.o \
                   $(OBJS)/set_ecmwf.o \
@@ -86,7 +86,7 @@ PREPROC_OBJ_MAIN = $(OBJS)/preprocessing_for_orac.o
 
 # Compilation rules
 $(OBJS)/%.o: %.f90
-	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj  $(AUXFLAGS) $<
+	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.F90
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<

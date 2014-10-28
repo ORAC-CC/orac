@@ -39,13 +39,13 @@ module ecmwf_m
 
 contains
 
-include 'deallocate_ecmwf_structures.F90'
-include 'compute_geopot_coordinate.F90'
-include 'read_ecmwf_wind_nc.F90'
-include 'read_ecmwf_wind_grib.F90'
-include 'read_ecmwf_wind_badc.F90'
-include 'read_ecmwf_nc.F90'
-include 'read_ecmwf_grib.F90'
-include 'rearrange_ecmwf.F90'
+#include 'deallocate_ecmwf_structures.F90'
+#include 'compute_geopot_coordinate.F90'
+#include 'read_ecmwf_wind_nc.F90'
+#include 'read_ecmwf_wind_grib.F90'
+#include 'read_ecmwf_wind_badc.F90'
+#include 'read_ecmwf_nc.F90'
+#include 'read_ecmwf_grib.F90'
+#include 'rearrange_ecmwf.F90'
 
 end module ecmwf_m

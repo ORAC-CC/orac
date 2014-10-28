@@ -1,25 +1,24 @@
-!-------------------------------------------------------------------------------           
-! Name: get_USGS_data.F90                                                        
-!                                                                                          
-! Purpose:                                                                                 
-! Open and read USGS global land use and DEM data. Collocate with preproc orbit.           
-!                                                                                           
-! Description and Algorithm details:                                                        
-! 1) 
-                                                                                       
-! Arguments:                                                                                
-! Name                Type   In/Out/Both Description                                        
+!-------------------------------------------------------------------------------
+! Name: get_USGS_data.F90
 !
-!------------------------------------------------------------------------------             
-! path_to_USGS_file   string in   Full path to USGS file                            
-!                                                                                           
-! History:                                                                                  
-! 2014/09/23, OS: writes code to read data from USGS file.                       
-!                                                                                           
-!                                                                                           
-! Bugs:                                                                                     
-! None known.                                                                               
-!-------------------------------------------------------------------------------            
+! Purpose:
+! Open and read USGS global land use and DEM data. Collocate with preproc orbit.
+!
+! Description and Algorithm details:
+! 1)
+! Arguments:
+! Name                Type   In/Out/Both Description
+!
+!------------------------------------------------------------------------------
+! path_to_USGS_file   string in   Full path to USGS file
+!
+! History:
+! 2014/09/23, OS: writes code to read data from USGS file.
+!
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
 subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, usgs, &
      assume_full_paths, verbose)
@@ -31,20 +30,20 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, us
   implicit none
 
   character(len=path_length),  intent(in)    :: path_to_USGS_file
-  type(imager_flags_s),        intent(in)    :: imager_flags
-  type(imager_geolocation_s),  intent(in)    :: imager_geolocation
+  type(imager_flags_s),        intent(inout) :: imager_flags
+  type(imager_geolocation_s),  intent(inout) :: imager_geolocation
   logical,                     intent(in)    :: assume_full_paths
   logical,                     intent(in)    :: verbose
   type(usgs_s),                intent(out)   :: usgs
   logical                          :: USGS_file_exist
   character(len=7)                 :: USGS_file_read
   integer(kind=4)                  :: i,j
-  integer(kind=sint) :: stat
-  integer(kind=sint),dimension(2) :: nearest_xy
+  integer(kind=sint)               :: stat
+  integer(kind=sint), dimension(2) :: nearest_xy
 
   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_USGS_data()'
 
-  ! Check that the defined file exists and is readable                                     
+  ! Check that the defined file exists and is readable
   inquire(file=trim(path_to_USGS_file), exist=USGS_file_exist, &
        read=USGS_file_read)
   if (.not.USGS_file_exist) then
@@ -87,7 +86,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, us
   ! Reset land surface flag to 1, i.e. all land
   imager_flags%lsflag = 1
   ! Set pixels to 0 where land use flags equals water flag value (=16)
-  where(imager_flags%lusflag .eq. 16) imager_flags%lsflag = 0 ! Change hard-coded 
+  where(imager_flags%lusflag .eq. 16) imager_flags%lsflag = 0 ! Change hard-coded
   ! value to sym%water_flag from pavolonis_constants
 
   call deallocate_usgs(usgs)

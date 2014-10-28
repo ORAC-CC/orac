@@ -230,7 +230,7 @@ contains
        !  below 0. (=fillvalue)
 
        if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
-            & .and. ch5 .lt. 0) cldflag = sint_fill_value
+            & .and. ch5 .lt. 0) cldflag = byte_fill_value
 
        ! end of noob if loop
     endif
