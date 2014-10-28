@@ -78,6 +78,7 @@
 # -ggas_folder    The path containing NCDF ECMWF files named ggas.
 # -gpam_folder    The path containing NCDF ECMWF files named gpam.
 # -ice_folder     The path containing NISE ice/snow files.
+# -usgs_file      The file name of a USGS land-use data file.
 # -verbose        Print all status statements during processing.
 #
 # MAIN PROCESSOR ONLY ARGUMENTS)
@@ -163,6 +164,9 @@ ice_folder=$data_repos/ice_snow
 
 # path where modis emissivity files are located
 emiss_folder=$data_repos/emissivity
+
+# path for USGS land use file
+path_to_usgs=$data_repos/Aux_file_CM_SAF_AVHRR_GAC_ori_0.05deg.nc
 
 #------------------------------------------------------------------------------
 # MANAGE SETTINGS
@@ -312,6 +316,10 @@ while [[ $# > 0 ]]; do
         -tool_folder)
             shift
             tool_folder="$1"
+            ;;
+        -usgs_file)
+            shift
+            path_to_usgs="$1"
             ;;
         -verbose)
             verbose=true
