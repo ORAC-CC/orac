@@ -93,24 +93,35 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer :: ncid
-!  integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers
+   integer                     :: ncid, i, j
+   integer(kind=lint)          :: cdim
+   integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers, subs
 
    ! Open ALB file
    if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Aux)
    call nc_open(ncid, Ctrl%Fid%Aux)
 
-   ! Allocate instrument channel indice array
-!  allocate(alb_instr_ch_numbers(Ctrl%Ind%NSolar))
-
    ! Read instrument channel indices from file
-!  call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, verbose)
+   cdim = nc_dim_length(ncid, 'nc_alb', verbose)
+   allocate(alb_instr_ch_numbers(cdim))
+   call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, verbose)
+
+   ! Find the subscripts Ctrl%Ind%ysolar within alb_abs_ch_numbers
+   allocate(subs(Ctrl%Ind%NSolar))
+   do i=1,Ctrl%Ind%NSolar
+      do j=1,cdim
+         if (alb_instr_ch_numbers(j) .eq. Ctrl%Ind%ysolar(i)) then
+            subs(i) = j
+            exit
+         end if
+      end do
+   end do
 
    ! Allocate Data%ALB structure
    allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
 
    ! Read solar channels from albedo field
-   call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, 3, Ctrl%Ind%ysolar)
+   call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, 3, subs)
 
    if (verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
       minval(MSI_Data%ALB)
@@ -122,13 +133,14 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
       allocate(MSI_Data%rho_dv(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
       allocate(MSI_Data%rho_dd(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
 
-      call nc_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, verbose, 3, Ctrl%Ind%ysolar)
-      call nc_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, verbose, 3, Ctrl%Ind%ysolar)
-      call nc_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, verbose, 3, Ctrl%Ind%ysolar)
-      call nc_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, verbose, 3, Ctrl%Ind%ysolar)
+      call nc_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, verbose, 3, subs)
+      call nc_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, verbose, 3, subs)
+      call nc_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, verbose, 3, subs)
+      call nc_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, verbose, 3, subs)
    endif
 
-!  deallocate(alb_instr_ch_numbers)
+   deallocate(alb_instr_ch_numbers)
+   deallocate(subs)
 
    ! Close alb input file
    if (nf90_close(ncid) /= NF90_NOERR) &
