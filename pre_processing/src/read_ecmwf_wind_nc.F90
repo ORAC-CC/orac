@@ -113,6 +113,7 @@ end subroutine read_ecmwf_wind_nc
 !
 ! History:
 ! 2014/05/07, AP: First version.
+! 2014/11/04, AP: Added skin_temp reading.
 !
 ! Bugs:
 ! None known.
@@ -197,6 +198,14 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
             call nc_read_array(fid,name,val,verbose)
             ecmwf%v10=val(:,:,1,1)
+            deallocate(val)
+         end if
+      case('SKT')
+         if (.not.associated(ecmwf%skin_temp)) then
+            allocate(ecmwf%skin_temp(ecmwf%xdim,ecmwf%ydim))
+            allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
+            call nc_read_array(fid,name,val,verbose)
+            ecmwf%skin_temp=val(:,:,1,1)
             deallocate(val)
          end if
       end select
