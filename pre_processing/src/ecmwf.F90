@@ -17,6 +17,7 @@
 ! 2013/10/23, AP: Tidying
 ! 2014/02/10, AP: removed _nc_ structures as redundant. Shortened DIM names.
 ! 2014/05/06, AP: Simplified to just one structure.
+! 2014/11/04, OS: added skin temperature to ecmwf structure
 !
 ! $Id$
 !
@@ -34,7 +35,7 @@ module ecmwf_m
       integer(kind=lint)                        :: xdim,ydim,kdim
       real(kind=sreal), dimension(:),   pointer :: lat,lon
       real(kind=sreal), dimension(:),   pointer :: avec,bvec
-      real(kind=sreal), dimension(:,:), pointer :: u10,v10
+      real(kind=sreal), dimension(:,:), pointer :: u10,v10,skin_temp
    end type ecmwf_s
 
 contains

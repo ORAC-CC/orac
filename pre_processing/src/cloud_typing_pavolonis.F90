@@ -7,6 +7,10 @@
 !
 ! History: 
 !       23rd Oct 2014, CS: Original version.
+!        4th Nov 2014, OS: ecmwf structure containing skin temperature now passed
+!                          as argument; bilinear interpolation of skin temperature
+!                          on orbit grid; added snow/ice and skin temperature to
+!                          NN cloud mask call arguments
 !
 ! Bugs:
 !    None known
@@ -196,7 +200,8 @@ contains
 
   ! =====================================================================
   subroutine CLOUD_TYPE(surface, imager_flags, imager_angles,&
-       & imager_geolocation, imager_measurements, imager_pavolonis, verbose)
+       & imager_geolocation, imager_measurements, imager_pavolonis, &
+       & ecmwf, verbose)
     ! =====================================================================
 
     !-- load necessary variable fields and constants
@@ -205,6 +210,8 @@ contains
     use SURFACE_STRUCTURES
     use NEURAL_NET_PREPROC
     use CONSTANTS_CLOUD_TYPING_PAVOLONIS
+    use interpol
+    use ecmwf_m, only : ecmwf_s
 
 
     !-- parameters to be passed
@@ -216,6 +223,7 @@ contains
     type(imager_measurements_s), intent(in)    :: imager_measurements
     type(imager_pavolonis_s), intent(inout)    :: imager_pavolonis
     logical,                     intent(in)    :: verbose
+    type(ecmwf_s),               intent(in)    :: ecmwf
 
     !-- Declare some variables to hold various thresholds.
 
@@ -250,7 +258,8 @@ contains
          & start_line, end_line, start_pix, end_pix, npix
     logical :: day
     real    :: t4_filter_thresh, nir_ref
-
+    real(kind=sreal),allocatable,dimension(:,:) :: skint
+    type(interpol_s), allocatable, dimension(:) :: interp
 
     ! --------------------------------------------------------------------
     !
@@ -313,12 +322,28 @@ contains
     !
     !---------------------------------------------------------------------
 
+    allocate(skint(imager_geolocation%startx:imager_geolocation%endx, &
+         & 1:imager_geolocation%ny))
+    skint=sreal_fill_value
+    allocate(interp(1))
 
+    write(*,*) "starting bilinear interpolation of skint on orbit grid"
 
-    !*********************************************************************
-    ! 			EXECUTABLE CODE
-    !*********************************************************************
+    do i=1,imager_geolocation%ny
+       do j=imager_geolocation%startx,imager_geolocation%endx
 
+          call bilinear_coef(ecmwf%lon, ecmwf%xdim, ecmwf%lat, &
+               ecmwf%ydim, imager_geolocation%longitude(j,i), &
+               imager_geolocation%latitude(j,i), interp(1))
+
+          call interp_field (ecmwf%skin_temp, skint(j,i), interp(1))
+
+       end do
+    end do
+
+    write(*,*) "interpolation finished"
+
+    deallocate(interp)
     !-- copy land use flag array to Surface TYPE array
     imager_pavolonis%SFCTYPE = imager_flags%LUSFLAG
 
@@ -445,13 +470,14 @@ contains
                & BTD_Ch4_Ch5, BTD_Ch4_Ch3b, &
                & imager_angles%SOLZEN(i,j,imager_angles%NVIEWS), &
                & imager_geolocation%DEM(i,j), &
-               & sym%NISE_FLAG, imager_flags%LSFLAG(i,j), &
+               & surface%NISE_MASK(i,j), imager_flags%LSFLAG(i,j), &
                & imager_flags%LUSFLAG(i,j), &
                & imager_pavolonis%SFCTYPE(i,j), &
                & imager_pavolonis%CCCOT_pre(i,j), &
                & imager_pavolonis%CLDMASK(i,j) , &
+               & imager_geolocation%LATITUDE(i,j) , &
+               & skint(i,j) , &
                & verbose )
-          !write(*,*) "leaving ann_cloud_mask for pixel i/j = ", i, j
 
           !-- First Pavolonis test: clear or cloudy
 
@@ -1233,7 +1259,7 @@ contains
        !-- end of pixel loop
     end do i_loop2
 
-
+    deallocate(skint)
 
     ! =====================================================================
   end subroutine CLOUD_TYPE

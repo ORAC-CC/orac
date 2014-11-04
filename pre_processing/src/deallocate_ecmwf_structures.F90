@@ -15,6 +15,7 @@
 ! History:
 ! 2012/01/13, MJ: produces draft code for ERA Interim grib 1 parameters required
 ! 2014/05/07, AP: new version of structures
+! 2014/11/04, OS: added deallocation of skin temperature
 !
 ! $Id$
 !
@@ -36,5 +37,6 @@ subroutine deallocate_ecmwf_structures(ecmwf)
    deallocate(ecmwf%bvec)
    deallocate(ecmwf%u10)
    deallocate(ecmwf%v10)
+   deallocate(ecmwf%skin_temp)
 
 end subroutine deallocate_ecmwf_structures

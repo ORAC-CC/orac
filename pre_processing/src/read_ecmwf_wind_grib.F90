@@ -22,6 +22,7 @@
 !
 ! History:
 ! 2014/05/07, AP: First version.
+! 2014/11/04, OS: added reading of skin temperature
 !
 ! $Id$
 !
@@ -90,6 +91,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
    allocate(ecmwf%bvec(nk+1))
    allocate(ecmwf%u10(ni,nj))
    allocate(ecmwf%v10(ni,nj))
+   allocate(ecmwf%skin_temp(ni,nj))
 
    nlevels=0
    do while (stat .ne. GRIB_END_OF_FILE)
@@ -126,6 +128,12 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
          if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading V10.'
 
          ecmwf%v10=reshape(val, (/ni,nj/))
+      case(235)
+         ! skin temperature
+         call grib_get(gid,'values',val,stat)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading skin_temp.'
+
+         ecmwf%skin_temp=reshape(val, (/ni,nj/))
       end select
 
       ! advance file position

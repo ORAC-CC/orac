@@ -203,6 +203,7 @@
 !                in preprocessing, based on radiances and auxiliary data;
 !                implemented CRAY fortran-based alternative for scratch
 !                file I/O of ERA-Interim data
+! 2014/11/24: OS ecmwf structure is now passed as argument to Pavolonis/NN cloud mask
 !
 ! $Id$
 !
@@ -696,6 +697,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       if (verbose) then
          write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
          write(*,*) 'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
+         write(*,*) 'SKINT) Min: ',minval(ecmwf%skin_temp),', Max: ',maxval(ecmwf%skin_temp)
       end if
       call rearrange_ecmwf(ecmwf)
 
@@ -810,7 +812,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase'
       call cloud_type(surface, imager_flags, imager_angles, &
-           imager_geolocation, imager_measurements, imager_pavolonis, verbose)
+           imager_geolocation, imager_measurements, imager_pavolonis, &
+           ecmwf, verbose)
      
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &

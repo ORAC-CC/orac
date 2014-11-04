@@ -23,6 +23,7 @@
 ! 2013/11/05, GT: Bug fix. Moved declaration of dim1 & dim2 to before they
 !   are used in the definition of var.
 ! 2014/05/07, AP: Restructuring for smaller ECMWF structure.
+! 2014/11/04, OS: added skin temperature
 !
 ! $Id$
 !
@@ -39,6 +40,7 @@ subroutine rearrange_ecmwf(ecmwf)
    integer                      :: date, ind, i
    real(kind=sreal)             :: utemp(ecmwf%xdim,ecmwf%ydim)
    real(kind=sreal)             :: vtemp(ecmwf%xdim,ecmwf%ydim)
+   real(kind=sreal)             :: skinttemp(ecmwf%xdim,ecmwf%ydim)
    real(kind=sreal)             :: lontemp(ecmwf%xdim), lattemp(ecmwf%ydim)
 
    ! find dateline
@@ -49,21 +51,24 @@ subroutine rearrange_ecmwf(ecmwf)
    ind = ecmwf%xdim + 1 - date
 
    ! swap left and right halfs into a temp array
-   utemp(1:ind,:) = ecmwf%u10(date:,:)
-   vtemp(1:ind,:) = ecmwf%v10(date:,:)
-   lontemp(1:ind) = ecmwf%lon(date:) - 360.
-   utemp(date:,:) = ecmwf%u10(1:ind,:)
-   vtemp(date:,:) = ecmwf%v10(1:ind,:)
-   lontemp(date:) = ecmwf%lon(1:ind)
+   utemp(1:ind,:)     = ecmwf%u10(date:,:)
+   vtemp(1:ind,:)     = ecmwf%v10(date:,:)
+   skinttemp(1:ind,:) = ecmwf%skin_temp(date:,:)
+   lontemp(1:ind)     = ecmwf%lon(date:) - 360.
+   utemp(date:,:)     = ecmwf%u10(1:ind,:)
+   vtemp(date:,:)     = ecmwf%v10(1:ind,:)
+   skinttemp(date:,:) = ecmwf%skin_temp(1:ind,:)
+   lontemp(date:)     = ecmwf%lon(1:ind)
 
    ecmwf%lon = lontemp
 
    ! flip in the y direction from the temp to the original
    lattemp=ecmwf%lat
    do i=1,ecmwf%ydim
-      ecmwf%u10(:,ecmwf%ydim+1-i) = utemp(:,i)
-      ecmwf%v10(:,ecmwf%ydim+1-i) = vtemp(:,i)
-      ecmwf%lat(ecmwf%ydim+1-i)   = lattemp(i)
+      ecmwf%u10(:,ecmwf%ydim+1-i)       = utemp(:,i)
+      ecmwf%v10(:,ecmwf%ydim+1-i)       = vtemp(:,i)
+      ecmwf%skin_temp(:,ecmwf%ydim+1-i) = skinttemp(:,i)
+      ecmwf%lat(ecmwf%ydim+1-i)         = lattemp(i)
    end do
 
 end subroutine rearrange_ecmwf

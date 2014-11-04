@@ -8,6 +8,9 @@
 !
 ! History:
 !    23th Oct 2014, SteSta + OS: Original version.
+!     4th Nov 2014, SteSta + OS: implemented new cloud mask version, which is now
+!         also available for twilight and additionally uses ECMWF skin 
+!         temperature and flags for snow/ice and land/sea 
 !
 ! Bugs:
 !    None known
@@ -23,9 +26,8 @@ contains
 
   !------------------------------------------------------------------------
   subroutine ann_cloud_mask(ch1, ch2, ch3b, ch4, ch5,  &
-       & btd_ch4_ch5, btd_ch4_ch3b, &
-       & solzen, dem, niseflag, &
-       & lsflag, lusflag, sfctype, cccot_pre, cldflag, verbose)
+       & btd_ch4_ch5, btd_ch4_ch3b, solzen, dem, niseflag, lsflag, &
+       & lusflag, sfctype, cccot_pre, cldflag, lat, skint, verbose)
     !------------------------------------------------------------------------
 
     use constants_cloud_typing_pavolonis
@@ -35,7 +37,6 @@ contains
     integer(kind=sint) :: noob     !# of pixels out of bounds
     integer(kind=sint) :: nneurons !# of employed neurons
     integer(kind=sint) :: ninput   !# of input dimensions of ann
-    !integer(kind=sint) :: noutput  !# of output dimensions (1 as we only have cm)
 
     real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
     real(kind=sreal),allocatable, dimension(:)   :: input,outv
@@ -43,13 +44,14 @@ contains
     real(kind=sreal) :: output     
     real(kind=sreal) :: oscales(3)
     real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
-
+    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 
+    ! 3 = night
 
     ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
-    integer(kind=byte), intent(in) :: lsflag, lusflag
-    integer(kind=sint), intent(in) :: niseflag, sfctype
+    integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
+    integer(kind=sint), intent(in) :: sfctype
     integer(kind=lint), intent(in) :: dem
-    real(kind=sreal),   intent(in) :: solzen
+    real(kind=sreal),   intent(in) :: solzen, lat, skint
     real(kind=sreal),   intent(in) :: ch1, ch2, ch3b, ch4, ch5
     real(kind=sreal),   intent(in) :: btd_ch4_ch5, btd_ch4_ch3b
     logical,            intent(in) :: verbose
@@ -58,11 +60,18 @@ contains
     integer(kind=byte), intent(out) :: cldflag
     real(kind=sreal),   intent(out) :: cccot_pre
 
+    if ( ( solzen .gt. 0 ) .and. (solzen  .lt. 80) ) then
+       illum_nn = 1
+    elseif (solzen  .ge. 80. .and. solzen .lt. 95.)  then       
+       illum_nn = 2
+    elseif (solzen  .ge. 95.) then
+       illum_nn = 3
+    else
+       illum_nn = 0
+    endif
 
     ! --- if day
-    if ( ( solzen .gt. 0 ) .and. (solzen  .lt. 80) ) then
-
-       !if (verbose) write(*,*) 'Processing ANN_CM for DAY'
+    if ( illum_nn .eq. 1 ) then
 
        nneurons = nneurons_ex3 		!set number of neurons
        ninput   = ninput_ex3    	!set number of input parameter for the neural network
@@ -94,20 +103,13 @@ contains
        input(3) = ch4 	        ! ch4 11 µm
        input(4) = ch5 	        ! ch5 12 µm
        input(5) = btd_ch4_ch5   ! 11-12 µm
+       input(6) = skint         ! ERA-Interim skin temperature
+       input(7) = niseflag      ! snow/ice information
+       input(8) = lsflag        ! land/sea flag
 
-       !for now, lets try this
-       if (sfctype .eq. niseflag) then
-          input(6) = 24
-       else
-          input(6) = lusflag 	! land_use
-       endif
+    elseif ( illum_nn .eq. 2 )  then       
 
-       input(7) = dem	! dem
-
-    elseif (solzen  .ge. 80) then
-       ! --- night
-
-       !if (verbose) write(*,*) 'Processing ANN_CM for NIGHT/TWILIGHT'
+       ! TWILIGHT
 
        nneurons       = nneurons_ex4 	!set number of neurons
        ninput         = ninput_ex4 	!set number of input parameter for the neural network
@@ -134,21 +136,50 @@ contains
 
        !input
        allocate(input(ninput+1)) 
+       input(1) = ch4 	        ! ch4 11 µm
+       input(2) = ch5 	        ! ch5 12 µm
+       input(3) = btd_ch4_ch5 	! 11-12 µm
+       input(4) = skint
+       input(5) = niseflag
+       input(6) = lsflag
+
+    elseif ( illum_nn .eq. 3 ) then
+
+       ! --- night
+
+       nneurons       = nneurons_ex5 	!set number of neurons
+       ninput         = ninput_ex5 	!set number of input parameter for the neural network
+
+       !ranges variables within training was performed
+       allocate(minmax_train(ninput,2))
+       minmax_train=minmax_train_ex5
+
+       !"weights" for input
+       allocate(inv(ninput+1,nneurons))
+       inv=inv_ex5
+
+       !"weights" for output
+       allocate(outv(nneurons+1))
+       outv=outv_ex5
+
+       allocate(scales(ninput,2))
+       scales=scales_ex5 		!parameters to scale input?
+       oscales=oscales_ex5		!parameters to scale output?
+       temperature=temperature_ex5	!"temperature" for sigmoid function
+       cutoff=cutoff_ex5
+       bias_i=bias_i_ex5
+       bias_h=bias_h_ex5
+
+       !input
+       allocate(input(ninput+1)) 
        input(1) = ch3b 	        ! ch3b 3.7µm
        input(2) = ch4 	        ! ch4 11 µm
        input(3) = ch5 	        ! ch5 12 µm
        input(4) = btd_ch4_ch3b	! 11-3.7 µm
        input(5) = btd_ch4_ch5 	! 11-12 µm
-       input(6) = cos(solzen * d2r)
-
-       !for now, lets try this
-       if ( sfctype .eq. niseflag ) then
-          input(7) = 24
-       else
-          input(7) = lusflag 	! land_use
-       endif
-
-       input(8) = dem	! dem
+       input(6) = skint
+       input(7) = niseflag
+       input(8) = lsflag
 
     else
 
@@ -159,12 +190,9 @@ contains
 
 
     ! --- subroutine which carries out neural network computation
-    !write(*,*) "calling neural_net with input = ", input
     call neural_net(nneurons,ninput,minmax_train,inv,outv, &
          & input,scales,oscales,cutoff,bias_i,bias_h,     &
          & temperature,output,noob)
-    !write(*,*) "leaving neural_net with input = ", input
-    !write(*,*) "neural_net output = ", output
 
     ! --- ensure that CCCOT is within 0 - 1 range
     cccot_pre = max( min( output, 1.0 ), 0.0)
@@ -231,6 +259,11 @@ contains
 
        if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
             & .and. ch5 .lt. 0) cldflag = byte_fill_value
+       if (lat .lt. -65. .AND. lat .gt. -90. .AND. lsflag .eq. 1 .AND. &
+            & niseflag .eq. 1 .AND. illum_nn .eq. 3) &
+            & cldflag = sint_fill_value ! for cold land surfaces (Antarctica)
+       !  ch3b saturates and NN by default masks all pixels as cloudy; here
+       !  set to fill value because no information available
 
        ! end of noob if loop
     endif
@@ -257,14 +290,12 @@ contains
     integer(kind=sint) :: ninput 
 
     real(kind=sreal) :: minmax_train(ninput,2),scales(ninput,2),oscales(3),&
-         & inv(ninput+1,nneurons),outv(nneurons+1)!,input(ninput+1,2)
+         & inv(ninput+1,nneurons),outv(nneurons+1)
     real(kind=sreal),dimension(:),intent(inout) :: input 
-    !real(kind=sreal),allocatable, dimension(:,:) :: sigmoide  
     real(kind=sreal) :: sigmoide
     real(kind=sreal) :: intermed(nneurons+1),vector_res1(nneurons),scalar_res2
     real(kind=sreal) ::temperature,bias_i,bias_h,cutoff
 
-    !logical,allocatable, dimension(:) :: lbounds
     logical :: lbounds
 
     real(kind=sreal),intent(out) :: output     
@@ -276,15 +307,11 @@ contains
     lbounds=all( (input(1:ninput) .ge. minmax_train(1:ninput,1)) .and. &
          & ( input(1:ninput) .le. minmax_train(1:ninput,2) ) )
 
-    !write(*,*) "lbounds = ", lbounds
-
     if(lbounds) then
        noob=0_lint
     else
        noob=1_lint
     endif
-
-    !write(*,*) "noob = ", noob
 
     !-----------------------------------------------------------------------
 
@@ -297,12 +324,10 @@ contains
 
     !apply constant to additional input element
     input(ninput+1)=bias_i
-    !write(*,*) "input = ", input
 
     !perform vector*matrix multiplication of input vector with 
     !matrix of weights (ninput+1).(ninput+1,nneurons)=(nneurons)
     vector_res1=matmul(input,inv)
-    !write(*,*) "vector_res1 = ", vector_res1
 
     !apply sigmoidal function to each element of resultinf vector vector_res1
     do ineuron=1,nneurons
@@ -313,24 +338,19 @@ contains
 
     !extend intermediate result by one element
     intermed(nneurons+1)=bias_h  
-    !write(*,*) "intermed = ", intermed
 
     !perform scalar product of intermediate result with output vector
     ! weights: (nneurons+1)*(nneurons+1)
 
     !resulting in a scalar 
     scalar_res2=dot_product(intermed,outv)
-    !write(*,*) "scalar_res2 = ", scalar_res2
 
     !apply sigmoidal function to scalar result 
     call sigmoide_function(temperature/float(nneurons),cutoff,scalar_res2,sigmoide)
-    !write(*,*) "sigmoide = ", sigmoide
     output=sigmoide
 
     !rescale output 
-    !write(*,*) "oscales = ", oscales
     output=(output-oscales(1))/oscales(2)-oscales(3)
-    !write(*,*) "output within SR neural_net = ", output
 
     !-------------------------------------------------------------------------
   end subroutine neural_net
