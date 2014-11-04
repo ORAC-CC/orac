@@ -7,7 +7,7 @@ $(OBJS)/calender.o: $(OBJS)/date_type_structure.o $(OBJS)/preproc_constants.o
 $(OBJS)/channel_structures.o: $(OBJS)/preproc_constants.o \
         allocate_channel_info.F90 deallocate_channel_info.F90
 $(OBJS)/cloud_typing_pavolonis.o: $(OBJS)/constants_cloud_typing_pavolonis.o \
-        $(OBJS)/imager_structures.o $(OBJS)/neural_net_preproc.o \
+        $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/neural_net_preproc.o \
         $(OBJS)/surface_structures.o pavolonis_fill_coefficients.inc
 $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/constants_cloud_typing_pavolonis.o $(OBJS)/imager_structures.o \

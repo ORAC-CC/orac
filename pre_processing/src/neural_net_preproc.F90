@@ -261,7 +261,7 @@ contains
             & .and. ch5 .lt. 0) cldflag = byte_fill_value
        if (lat .lt. -65. .AND. lat .gt. -90. .AND. lsflag .eq. 1 .AND. &
             & niseflag .eq. 1 .AND. illum_nn .eq. 3) &
-            & cldflag = sint_fill_value ! for cold land surfaces (Antarctica)
+            & cldflag = byte_fill_value ! for cold land surfaces (Antarctica)
        !  ch3b saturates and NN by default masks all pixels as cloudy; here
        !  set to fill value because no information available
 

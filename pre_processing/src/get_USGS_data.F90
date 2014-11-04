@@ -57,7 +57,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, us
   end if
 
   ! Read the data themselves
-  if (read_USGS_file(trim(path_to_USGS_file), usgs, verbose) .ne. 0) then
+  if (read_USGS_file(path_to_USGS_file, usgs, verbose) .ne. 0) then
      write(*,*) 'ERROR: read_USGS_file(), problem reading USGS file: ', &
           trim(path_to_USGS_file)
      stop error_stop_code

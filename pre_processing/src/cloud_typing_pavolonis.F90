@@ -1175,7 +1175,7 @@ contains
 
        !-- loop over scanlines
        !j_loop2: do j = j1,j2
-       j_loop2: do j = imager_geolocation%STARTY, imager_geolocation%ENDY
+       j_loop2: do j = 1, imager_geolocation%NY
 
           if (imager_pavolonis%CLDTYPE(i,j) .ne. sym%CIRRUS_TYPE .and. &
                & imager_pavolonis%CLDTYPE(i,j) .ne. sym%OVERLAP_TYPE) cycle
@@ -1189,8 +1189,8 @@ contains
           !end_line   = min(j2,j + n_box)
           !start_pix  = max(1,i - n_box)
           !end_pix    = min(num_pix,i + n_box)
-          start_line = max(imager_geolocation%STARTY,j - n_box)
-          end_line   = min(imager_geolocation%ENDY,j + n_box)
+          start_line = max(1,j - n_box)
+          end_line   = min(imager_geolocation%NY,j + n_box)
           start_pix  = max(imager_geolocation%STARTX,i - n_box)
           end_pix    = min(imager_geolocation%ENDX,i + n_box)
           npix       = ((end_line - start_line)+1)*((end_pix - start_pix)+1)
