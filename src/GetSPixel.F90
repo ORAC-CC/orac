@@ -260,6 +260,9 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    integer :: ios       ! I/O status for breakpoint file
    integer :: StartChan ! First valid channel for pixel, used in breakpoints.
 #endif
+#ifdef DEBUG
+   character(180)                :: message
+#endif
 
    ! Set status to zero
    stat = 0
@@ -276,32 +279,32 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! Check Cloud flags (0 or 1)
    call check_value(MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
-        CloudMax, CloudMin, SPixel, 'cloud flag', SPixCloudFl)
+        CloudMax, CloudMin, SPixel, 'cloud flag', SPixCloudFl, Ctrl)
 
    ! Land/Sea flags (0 or 1)
    call check_value(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
-        FlagMax, FlagMin, SPixel, 'land/sea flag', SPixLandFl)
+        FlagMax, FlagMin, SPixel, 'land/sea flag', SPixLandFl, Ctrl)
 
    !  Make this work if pixel is in daylight
    !  Geometry - Solar zenith (between 0o and 90o)
    !call check_value(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
-   !     90.0, 0.0, SPixel, 'solar zenith angle', SPixSolZen)
+   !     90.0, 0.0, SPixel, 'solar zenith angle', SPixSolZen, Ctrl)
 
    ! Geometry - Satellite zenith (between 0o and 90o)
    call check_value(MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0, :), &
-        SatZenMax, SatZenMin, SPixel, 'satellite zenith angl', SPixSatZen)
+        SatZenMax, SatZenMin, SPixel, 'satellite zenith angl', SPixSatZen, Ctrl)
 
    ! Geometry - Azimuth (between 0o and 180o)
    call check_value(MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0, :), &
-        RelAziMax, RelAziMin, SPixel, 'azimuth angle', SPixRelAzi)
+        RelAziMax, RelAziMin, SPixel, 'azimuth angle', SPixRelAzi, Ctrl)
 
    ! Location - Latitude (between -90o and 90o)
    call check_value(MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
-        LatMax, LatMin, SPixel, 'location latitude', SPixLat)
+        LatMax, LatMin, SPixel, 'location latitude', SPixLat, Ctrl)
 
    ! Location - Longitude (between -180o and 180o)
    call check_value(MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
-        LonMax, LonMin, SPixel, 'location longitude', SPixLon)
+        LonMax, LonMin, SPixel, 'location longitude', SPixLon, Ctrl)
 
    ! These checks for missing data are already performed when the illumination
    ! condition is chosen. The result of the check is defined by the illumination
@@ -317,7 +320,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (conf%channel_mixed_flag_use(Ctrl%Ind%ysolar_msi(i)) .eq. 0) &
             call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                              Ctrl%Ind%ysolar_msi(i)), RefMax, RefMin, SPixel, &
-                             'MSI reflectance', SPixRef)
+                             'MSI reflectance', SPixRef, Ctrl)
       end do
    end if
 
@@ -327,7 +330,8 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
       thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                                 Ctrl%Ind%ythermal_msi(i))
    end do
-   call check_value(thermal, BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp)
+   call check_value(thermal, BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp, &
+        Ctrl)
    deallocate(thermal)
 
 

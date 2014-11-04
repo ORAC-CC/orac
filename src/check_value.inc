@@ -9,6 +9,7 @@
 ! History:
 !    25th Jul 2014, AP: Original version.
 !     1st Aug 2014, GM: Comment out zeroing of SPixel%Mask.
+!     4th Nov 2014, AP: Remove undefined variables.
 !
 ! $Id$
 !
@@ -22,6 +23,6 @@
 
 #ifdef DEBUG
    write(unit=message, fmt=*) 'Get_SPixel: WARNING - Found '//trim(name)// &
-        &' out of range in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0, a
-   call Write_log(Ctrl, trim(message), stat)
+        &' out of range in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0
+   call Write_log(Ctrl, trim(message), 0)
 #endif

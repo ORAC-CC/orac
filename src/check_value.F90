@@ -33,6 +33,7 @@
 ! History:
 !    25th Jul 2014, AP: Original version, replacing CheckFloatArray.F90 and
 !       CheckByteArray.F90.
+!     4th Nov 2014, AP: Pass Ctrl through to Write_Log
 !
 ! Bugs:
 !    None known.
@@ -52,7 +53,8 @@ module check_value_m
    end interface check_value
 contains
 
-subroutine check_value_float0(val, max, min, SPixel, name, flag_bit)
+subroutine check_value_float0(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
    use SPixel_def
    implicit none
 
@@ -61,6 +63,7 @@ subroutine check_value_float0(val, max, min, SPixel, name, flag_bit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -71,7 +74,8 @@ subroutine check_value_float0(val, max, min, SPixel, name, flag_bit)
 
 end subroutine check_value_float0
 
-subroutine check_value_float1(val, max, min, SPixel, name, flag_bit)
+subroutine check_value_float1(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
    use SPixel_def
    implicit none
 
@@ -80,6 +84,7 @@ subroutine check_value_float1(val, max, min, SPixel, name, flag_bit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -90,7 +95,8 @@ subroutine check_value_float1(val, max, min, SPixel, name, flag_bit)
 
 end subroutine check_value_float1
 
-subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, limit)
+subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
    use SPixel_def
    implicit none
 
@@ -99,6 +105,7 @@ subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, limit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message
@@ -110,7 +117,8 @@ subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, limit)
 
 end subroutine check_value_float1_l
 
-subroutine check_value_float2(val, max, min, SPixel, name, flag_bit)
+subroutine check_value_float2(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
    use SPixel_def
    implicit none
 
@@ -119,6 +127,7 @@ subroutine check_value_float2(val, max, min, SPixel, name, flag_bit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -129,7 +138,8 @@ subroutine check_value_float2(val, max, min, SPixel, name, flag_bit)
 
 end subroutine check_value_float2
 
-subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, limit)
+subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
    use SPixel_def
    implicit none
 
@@ -138,6 +148,7 @@ subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, limit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message
@@ -151,7 +162,8 @@ end subroutine check_value_float2_l
 
 !-----------------------------------------------------------------------------
 
-subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit)
+subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
    use SPixel_def
    use ECP_constants, only: byte
    implicit none
@@ -161,6 +173,7 @@ subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -171,7 +184,8 @@ subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit)
 
 end subroutine check_value_byte0
 
-subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit)
+subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
    use SPixel_def
    use ECP_constants, only: byte
    implicit none
@@ -181,6 +195,7 @@ subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -191,7 +206,8 @@ subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit)
 
 end subroutine check_value_byte1
 
-subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, limit)
+subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
    use SPixel_def
    use ECP_constants, only: byte
    implicit none
@@ -201,6 +217,7 @@ subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, limit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message
@@ -212,7 +229,8 @@ subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, limit)
 
 end subroutine check_value_byte1_l
 
-subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit)
+subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
    use SPixel_def
    use ECP_constants, only: byte
    implicit none
@@ -222,6 +240,7 @@ subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
 #ifdef DEBUG
    character(180)                :: message
 #endif
@@ -232,7 +251,8 @@ subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit)
 
 end subroutine check_value_byte2
 
-subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, limit)
+subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
    use SPixel_def
    use ECP_constants, only: byte
    implicit none
@@ -242,6 +262,7 @@ subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, limit)
    type(SPixel_t), intent(inout) :: SPixel
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
 #ifdef DEBUG
    character(180)                :: message
