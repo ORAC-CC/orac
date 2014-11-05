@@ -134,11 +134,9 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
                      i_missing_vis_ref=ic
                      MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) = MissingXn
                   end if
-               end if
 
                ! Check the tau channels
-               if ((Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch1) .and. &
-                   (Ctrl%Ind%Y_id(Ctrl%Ind%ysolar(ic)) .ne. refch2)) then
+               else
                   flag = .false.
                   if (ic .lt. Ctrl%Ind%ThermalFirst) then
                      if (MSI_Data%MSI(i,j,Ctrl%Ind%ysolar_msi(ic)) .lt. RefMin .or. &

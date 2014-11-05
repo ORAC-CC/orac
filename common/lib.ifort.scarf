@@ -1,6 +1,6 @@
 #export LD_LIBRARY_PATH=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64/:/work/ralspace/rsg_group/cloud_ecv/libraries/eprlibdir/:/work/ralspace/rsg_group/cloud_ecv/libraries/szlib/:/apps/netCDF/4.3.0/intel/lib/:/apps/netCDF/4.2/fortran/intel/lib/
-PREPROCLIB=/work/ralspace/rsg_group/cloud_ecv/code/code_v2316/pre_processing/src/
-#PREPROCINCLUDE=/work/ralspace/rsg_group/cloud_ecv/code/code_v2316/pre_processing/src/obj/
+PREPROCLIB=/work/ralspace/rsg_group/cloud_ecv/code/code_v2316/pre_processing/
+#PREPROCINCLUDE=/work/ralspace/rsg_group/cloud_ecv/code/code_v2316/pre_processing/obj/
 
 RSG_LIB_BASE=/work/ralspace/rsg_group/cloud_ecv/libraries
 

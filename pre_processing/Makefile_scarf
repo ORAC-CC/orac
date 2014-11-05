@@ -160,7 +160,7 @@ orac_preproc.x: $(PREPROC_OBJ) Makefile
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_INC) > dependencies.inc
+	@../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_INC) > dependencies.inc
 
 tidy clean:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod

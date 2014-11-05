@@ -1,6 +1,6 @@
 
 # folder for object files
-OBJS=/misc/cluster_home/cpoulsen/orac_svn/v17/pre_processing/src/
+OBJS=/misc/cluster_home/cpoulsen/orac_svn/v17/pre_processing/
 
 # Define fortran 90 compiler 
 F90=/opt/intel/composer_xe_2011_sp1.8.273/bin/intel64/ifort 

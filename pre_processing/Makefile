@@ -31,7 +31,7 @@
 include $(ORAC_LIB)
 include $(ORAC_ARCH)
 
-ORAC_COMMON   = ../../common
+ORAC_COMMON   = ../common
 
 
 # Define object files to be linked. N.B. files containing module definitions
@@ -108,7 +108,7 @@ libpreproc.a: $(PREPROC_OBJ) Makefile
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_OBJ_MAIN) > dependencies.inc
+	@../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x

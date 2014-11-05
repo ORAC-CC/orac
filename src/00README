@@ -76,7 +76,7 @@ The Pre-processor
 --------------------------------------
 
 The pre-processor code is in the folder
-http://proj.badc.rl.ac.uk/orac/trunk/pre_preprocessing/src and is
+http://proj.badc.rl.ac.uk/orac/trunk/pre_preprocessing and is
 compiled with a Makefile. This is controlled by two files:
 - The archfile, which sets the Fortran and C compilers to be used and
 the settings for those compilers; 
@@ -112,7 +112,7 @@ orac_preproc.x.
 
 Due to the large number of arguments for the pre-processor, it is
 called with the shell script
-http://proj.badc.rl.ac.uk/orac/browser/trunk/pre_processing/src/run_preproc.sh. You
+http://proj.badc.rl.ac.uk/orac/browser/trunk/pre_processing/run_preproc.sh. You
 should produce a local version of this file, corresponding to your own
 file structure. The first block of variables defined in that script
 are details to be added to the header of the output files. Then:
