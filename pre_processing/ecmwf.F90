@@ -18,6 +18,7 @@
 ! 2014/02/10, AP: removed _nc_ structures as redundant. Shortened DIM names.
 ! 2014/05/06, AP: Simplified to just one structure.
 ! 2014/11/04, OS: added skin temperature to ecmwf structure
+! 2014/11/19, GM: C #includes should use double quotes.
 !
 ! $Id$
 !
@@ -40,13 +41,13 @@ module ecmwf_m
 
 contains
 
-#include 'deallocate_ecmwf_structures.F90'
-#include 'compute_geopot_coordinate.F90'
-#include 'read_ecmwf_wind_nc.F90'
-#include 'read_ecmwf_wind_grib.F90'
-#include 'read_ecmwf_wind_badc.F90'
-#include 'read_ecmwf_nc.F90'
-#include 'read_ecmwf_grib.F90'
-#include 'rearrange_ecmwf.F90'
+#include "deallocate_ecmwf_structures.F90"
+#include "compute_geopot_coordinate.F90"
+#include "read_ecmwf_wind_nc.F90"
+#include "read_ecmwf_wind_grib.F90"
+#include "read_ecmwf_wind_badc.F90"
+#include "read_ecmwf_nc.F90"
+#include "read_ecmwf_grib.F90"
+#include "rearrange_ecmwf.F90"
 
 end module ecmwf_m

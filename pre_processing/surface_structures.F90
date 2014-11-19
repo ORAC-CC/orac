@@ -14,7 +14,8 @@
 ! History:
 ! 2012/02/13, GT: First version.
 ! 2014/08/10, GM: Changes related to new BRDF support.
-! 2014/09/17, CS: Added surface%nise_mask.                                                  
+! 2014/09/17, CS: Added surface%nise_mask.
+! 2014/11/19, GM: C #includes should use double quotes.
 !
 ! $Id$
 !
@@ -37,7 +38,7 @@ module surface_structures
       integer(kind=sint), dimension(:), pointer  :: emissivity_chan
 
       ! SNOW/ICE mask based on NISE aux. data
-      integer(kind=byte), dimension(:,:), pointer :: nise_mask 
+      integer(kind=byte), dimension(:,:), pointer :: nise_mask
 
       real(kind=sreal), dimension(:,:,:), pointer :: albedo
 
@@ -51,7 +52,7 @@ module surface_structures
 
 contains
 
-#include 'allocate_surface_structures.F90'
-#include 'deallocate_surface_structures.F90'
+#include "allocate_surface_structures.F90"
+#include "deallocate_surface_structures.F90"
 
 end module surface_structures
