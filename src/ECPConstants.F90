@@ -98,6 +98,8 @@
 !    2014/08/30, Greg McGarragh: Use common_constants and remove pi and d2r as
 !       they are in common_constants.
 !    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
+!    2014/11/20, Oliver Sus: increased BTMax from 330 to 350 K, thus providing 
+!       retrieval results for warm land surfaces (e.g. Sahara, Namib)
 !
 ! Bugs:
 !    None known.
@@ -149,7 +151,7 @@ module ECP_constants
    real, parameter    :: RefMin           =  0.0    ! Reflectance
    real, parameter    :: RefMax           =  1.5
    real, parameter    :: BTMin            =  140.0  ! Brightness temperature
-   real, parameter    :: BTMax            =  330.0
+   real, parameter    :: BTMax            =  350.0   
 
    ! Missing data (fill) values
    real, parameter    :: MissingXn        = -999.   ! Value for "missing data" used as output when a SPixel is not processed.
