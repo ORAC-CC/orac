@@ -203,7 +203,9 @@
 !                in preprocessing, based on radiances and auxiliary data;
 !                implemented CRAY fortran-based alternative for scratch
 !                file I/O of ERA-Interim data
-! 2014/11/24: OS ecmwf structure is now passed as argument to Pavolonis/NN cloud mask
+! 2014/11/04: OS ecmwf structure is now passed as argument to Pavolonis/NN cloud mask
+! 2014/11/21: GM Remove the no longer used cgrid_flag from driver file input.
+!                Was previously removed from command line input.
 !
 ! $Id$
 !
@@ -260,7 +262,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    character(len=path_length)       :: aatsr_calib_path_file
    character(len=path_length)       :: ecmwf_path2,ecmwf_path_file2
    character(len=path_length)       :: ecmwf_path3,ecmwf_path_file3
-   character(len=1)                 :: cgrid_flag
    character(len=attribute_length)  :: cdellon,cdellat
    character(len=cmd_arg_length)    :: cstartx,cendx,cstarty,cendy
    character(len=cmd_arg_length)    :: cecmwf_flag
@@ -425,7 +426,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       read(11,*) modis_albedo_path
       read(11,*) modis_brdf_path
       read(11,*) cimss_emiss_path
-      read(11,*) cgrid_flag
       read(11,*) cdellon
       read(11,*) cdellat
       read(11,*) output_path
