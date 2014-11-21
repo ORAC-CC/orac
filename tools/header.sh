@@ -92,6 +92,7 @@
 #
 # History :
 # 2014/07/28, AP: Original version (from test_orac.sh and test_preproc.sh).
+# 2014/11/21, GM: Added $brdf_folder.
 #
 #------------------------------------------------------------------------------
 # DEFINE LOCAL FOLDERS
@@ -142,6 +143,9 @@ out_folder=$data_repos/testoutput
 
 # path to albedo files (in folders by year)
 albedo_folder=$data_repos/albedo
+
+# path to brdf files (in folders by year)
+brdf_folder=$data_repos/albedo
 
 # path to channel information
 coeffs_folder=$rttov_dir/rtcoef_rttov11
