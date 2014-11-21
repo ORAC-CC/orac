@@ -21,6 +21,7 @@
 ! History:
 ! 2014/05/07, AP: First version.
 ! 2014/07/24, GM: Nullify pointers to safely use the associated intrinsic.
+! 2014/11/21, GM: Nullify recently added ecmwf%skin_temp.
 !
 ! $Id$
 !
@@ -81,6 +82,7 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    nullify(ecmwf%lat)
    nullify(ecmwf%u10)
    nullify(ecmwf%v10)
+   nullify(ecmwf%skin_temp)
 
    ! loop over given files (order not necessarily known)
    call read_ecmwf_wind_file(ecmwf_path,ecmwf)
