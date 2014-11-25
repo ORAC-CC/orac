@@ -41,6 +41,7 @@
 !    library.
 ! 2014/10/24, OS: Some minor refactoring. Added output variables cldtype,
 !    cldmask, cccot_pre, lusflag, DEM, and nisemask
+! 2014/11/25, AP: Move scaling/offset definitions to output_routines.
 !
 ! $Id$
 !
@@ -86,11 +87,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   output_data%time_scale=1.0
-   output_data%time_offset=0.0
-   output_data%time_vmin=0.0
-   output_data%time_vmax=1.0e10
-
    if (trim(Ctrl%inst%name) .eq. 'AATSR') then
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
@@ -117,11 +113,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! lat
    !----------------------------------------------------------------------------
-   output_data%lat_scale=1.0
-   output_data%lat_offset=0.0
-   output_data%lat_vmin=-90.0
-   output_data%lat_vmax=90.0
-
    call nc_def_var_float_packed_float( &
            ncid, &
            dims_var, &
@@ -142,11 +133,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! lon
    !----------------------------------------------------------------------------
-   output_data%lon_scale=1.0
-   output_data%lon_offset=0.0
-   output_data%lon_vmin=-180.0
-   output_data%lon_vmax=180.0
-
    call nc_def_var_float_packed_float( &
            ncid, &
            dims_var, &
@@ -178,11 +164,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
       input_dummy2='solar zenith angle for view no '//trim(adjustl(input_num))
       input_dummy3='solar_zenith_angle_for_view_no_'//trim(adjustl(input_num))
 
-      output_data%sol_scale=1.0
-      output_data%sol_offset=0.0
-      output_data%sol_vmin=-180.0
-      output_data%sol_vmax=180.0
-
       call nc_def_var_float_packed_float( &
               ncid, &
               dims_var, &
@@ -206,11 +187,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
       input_dummy2='sensor zenith angle for view no '//trim(adjustl(input_num))
       input_dummy3='sensor_zenith_angle_for_view_no_'//trim(adjustl(input_num))
-
-      output_data%sat_scale=1.0
-      output_data%sat_offset=0.0
-      output_data%sat_vmin=-180.0
-      output_data%sat_vmax=180.0
 
       call nc_def_var_float_packed_float( &
               ncid, &
@@ -236,11 +212,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
       input_dummy2='relative azimuth angle for view no '//trim(adjustl(input_num))
       input_dummy3='relative_azimuth_angle_for_view_no_'//trim(adjustl(input_num))
 
-      output_data%azi_scale=1.0
-      output_data%azi_offset=0.0
-      output_data%azi_vmin=-180.0
-      output_data%azi_vmax=180.0
-
       call nc_def_var_float_packed_float( &
               ncid, &
               dims_var, &
@@ -263,11 +234,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cot
    !----------------------------------------------------------------------------
-   output_data%cot_scale=0.01
-   output_data%cot_offset=0.0
-   output_data%cot_vmin=0
-   output_data%cot_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -287,11 +253,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cot_uncertainty
    !----------------------------------------------------------------------------
-   output_data%cot_error_scale=0.01
-   output_data%cot_error_offset=0.0
-   output_data%cot_error_vmin=output_data%cot_vmin
-   output_data%cot_error_vmax=output_data%cot_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -311,11 +272,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! ref
    !----------------------------------------------------------------------------
-   output_data%ref_scale=0.01
-   output_data%ref_offset=0.0
-   output_data%ref_vmin=0
-   output_data%ref_vmax=20000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -336,11 +292,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! ref_uncertainty
    !----------------------------------------------------------------------------
-   output_data%ref_error_scale=0.01
-   output_data%ref_error_offset=0.0
-   output_data%ref_error_vmin=output_data%ref_vmin
-   output_data%ref_error_vmax=output_data%ref_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -361,11 +312,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! ctp
    !----------------------------------------------------------------------------
-   output_data%ctp_scale=0.1
-   output_data%ctp_offset=0.0
-   output_data%ctp_vmin=0
-   output_data%ctp_vmax=12000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -386,11 +332,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! ctp_uncertainty
    !----------------------------------------------------------------------------
-   output_data%ctp_error_scale=0.1
-   output_data%ctp_error_offset=0.0
-   output_data%ctp_error_vmin=output_data%ctp_vmin
-   output_data%ctp_error_vmax=output_data%ctp_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -411,11 +352,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cc_total
    !----------------------------------------------------------------------------
-   output_data%cct_scale=0.01
-   output_data%cct_offset=0.0
-   output_data%cct_vmin=0
-   output_data%cct_vmax=100
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -435,11 +371,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cc_total_uncertainty
    !----------------------------------------------------------------------------
-   output_data%cct_error_scale=0.01
-   output_data%cct_error_offset=0.0
-   output_data%cct_error_vmin=output_data%cct_vmin
-   output_data%cct_error_vmax=output_data%cct_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -459,11 +390,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! stemp
    !----------------------------------------------------------------------------
-   output_data%stemp_scale=0.01
-   output_data%stemp_offset=0.0
-   output_data%stemp_vmin=0
-   output_data%stemp_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -484,11 +410,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! stemp_uncertainty
    !----------------------------------------------------------------------------
-   output_data%stemp_error_scale=0.01
-   output_data%stemp_error_offset=0.0
-   output_data%stemp_error_vmin=output_data%stemp_vmin
-   output_data%stemp_error_vmax=output_data%stemp_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -509,11 +430,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cth
    !----------------------------------------------------------------------------
-   output_data%cth_scale=0.01
-   output_data%cth_offset=0.0
-   output_data%cth_vmin=0
-   output_data%cth_vmax=2000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -534,11 +450,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cth_uncertainty
    !----------------------------------------------------------------------------
-   output_data%cth_error_scale=0.01
-   output_data%cth_error_offset=0.0
-   output_data%cth_error_vmin=output_data%cth_vmin
-   output_data%cth_error_vmax=output_data%cth_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -559,11 +470,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! ctt
    !----------------------------------------------------------------------------
-   output_data%ctt_scale=0.01
-   output_data%ctt_offset=0.0
-   output_data%ctt_vmin=0
-   output_data%ctt_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -584,11 +490,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! ctt_uncertainty
    !----------------------------------------------------------------------------
-   output_data%ctt_error_scale=0.01
-   output_data%ctt_error_offset=0.0
-   output_data%ctt_error_vmin=output_data%ctt_vmin
-   output_data%ctt_error_vmax=output_data%ctt_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -609,11 +510,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cwp
    !----------------------------------------------------------------------------
-   output_data%cwp_scale=1.0
-   output_data%cwp_offset=0.0
-   output_data%cwp_vmin=0
-   output_data%cwp_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -634,11 +530,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cwp_uncertainty
    !----------------------------------------------------------------------------
-   output_data%cwp_error_scale=1.0
-   output_data%cwp_error_offset=0.0
-   output_data%cwp_error_vmin=output_data%cwp_vmin
-   output_data%cwp_error_vmax=output_data%cwp_vmax
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -659,11 +550,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! convergence
    !----------------------------------------------------------------------------
-   output_data%convergence_scale=1
-   output_data%convergence_offset=0
-   output_data%convergence_vmin=0
-   output_data%convergence_vmax=1
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -685,9 +571,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! niter
    !----------------------------------------------------------------------------
-   output_data%niter_scale=1
-   output_data%niter_offset=0
-   output_data%niter_vmin=0
    output_data%niter_vmax=Ctrl%Invpar%MaxIter
 
    call nc_def_var_byte_packed_byte( &
@@ -709,11 +592,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! phase
    !----------------------------------------------------------------------------
-   output_data%phase_scale=1
-   output_data%phase_offset=0
-   output_data%phase_vmin=0
-   output_data%phase_vmax=2
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -735,11 +613,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! costja
    !----------------------------------------------------------------------------
-   output_data%costja_scale=1.0
-   output_data%costja_offset=0.0
-   output_data%costja_vmin=0.0
-   output_data%costja_vmax=100000.
-
    call nc_def_var_float_packed_float( &
            ncid, &
            dims_var, &
@@ -759,11 +632,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! costjm
    !----------------------------------------------------------------------------
-   output_data%costjm_scale=1.0
-   output_data%costjm_offset=0.0
-   output_data%costjm_vmin=0.0
-   output_data%costjm_vmax=100000.
-
    call nc_def_var_float_packed_float( &
            ncid, &
            dims_var, &
@@ -783,11 +651,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! lsflag
    !----------------------------------------------------------------------------
-   output_data%lsflag_scale=1
-   output_data%lsflag_offset=0
-   output_data%lsflag_vmin=0
-   output_data%lsflag_vmax=6
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -809,11 +672,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   output_data%qcflag_scale=1
-   output_data%qcflag_offset=0
-   output_data%qcflag_vmin=0
-   output_data%qcflag_vmax=254
-
    input_dummy2='Bit 0 unused, always set to 0, Bits 1-5 set to 1 if state variable error out of bounds'
    input_dummy2=trim(adjustl(input_dummy2))//', Bit 6 set to 1 if no convergence achieved'
    input_dummy2=trim(adjustl(input_dummy2))//', Bit 7 set to 1 if cost too large.'
@@ -839,11 +697,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! illum
    !----------------------------------------------------------------------------
-   output_data%illum_scale=1
-   output_data%illum_offset=0
-   output_data%illum_vmin=1
-   output_data%illum_vmax=12
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -868,11 +721,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cloud type (ie. Pavolonis phase)
    !----------------------------------------------------------------------------
-   output_data%cldtype_scale=1
-   output_data%cldtype_offset=0
-   output_data%cldtype_vmin=0
-   output_data%cldtype_vmax=8
-
    input_dummy2='Bit 0=clear Bit 1=N/A Bit 2=fog Bit 3=water Bit 4=supercooled'
    input_dummy2=trim(adjustl(input_dummy2))//' Bit 5=mixed Bit 6=opaque_ice Bit 7=cirrus'
    input_dummy2=trim(adjustl(input_dummy2))//' Bit 8=overlap'
@@ -898,11 +746,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! cloud mask
    !----------------------------------------------------------------------------
-   output_data%cldmask_scale=1
-   output_data%cldmask_offset=0
-   output_data%cldmask_vmin=0
-   output_data%cldmask_vmax=1
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -924,11 +767,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! CCCOT_pre (cloud optical thickness)
    !----------------------------------------------------------------------------
-   output_data%cccot_pre_scale=1.0
-   output_data%cccot_pre_offset=0.0
-   output_data%cccot_pre_vmin=-1.0
-   output_data%cccot_pre_vmax=2.0
-
    call nc_def_var_float_packed_float( &
            ncid, &
            dims_var, &
@@ -948,11 +786,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! lusflag
    !----------------------------------------------------------------------------
-   output_data%lusflag_scale=1
-   output_data%lusflag_offset=0
-   output_data%lusflag_vmin=1
-   output_data%lusflag_vmax=24
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -975,11 +808,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! DEM
    !----------------------------------------------------------------------------
-   output_data%dem_scale=1
-   output_data%dem_offset=0
-   output_data%dem_vmin=0
-   output_data%dem_vmax=10000
-
    call nc_def_var_short_packed_short( &
            ncid, &
            dims_var, &
@@ -999,11 +827,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    ! nise mask
    !----------------------------------------------------------------------------
-   output_data%nisemask_scale=1
-   output_data%nisemask_offset=0
-   output_data%nisemask_vmin=0
-   output_data%nisemask_vmax=1
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
