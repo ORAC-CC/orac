@@ -18,6 +18,7 @@ PRO COLOUR_cbw,Colours,Greys
 
 ; Date        Author Comment
 ; 17 Dec 2003  RGG   NEW, derived from colour_ps
+; 25 Nov 2014  ACP   Fixed management of greys.
 
   r=2.55*[25, 35,  70,   0,   0,   0,   0,  0,   0,  70, 100, 100, 100, 85, 100]
   g=2.55*[40, 0,   0,    0,  55, 100, 100, 70, 100, 100, 100,  70,  55, 25,   0]
@@ -27,7 +28,6 @@ PRO COLOUR_cbw,Colours,Greys
   If (N_Elements(Greys) Eq 0) Then Greys = 0
 
   If (Colours+Greys+2 Gt !d.n_colors) Then Stop, 'Too many Grey and colour levels for device'
-
 ; Smooth Colour Range over Number of Available colours
   If ( (!d.name eq 'X')or (!d.name eq 'WIN') or (!d.name eq 'Z') or (!d.name eq 'PS') ) then begin
     If (!d.name Eq 'PS') Then DEVICE,BITS=8,/COLOR
@@ -35,19 +35,16 @@ PRO COLOUR_cbw,Colours,Greys
       rc = byte(interpol(r,findgen(15)/14., findgen(Colours)/(Colours - 1)))
       gc = byte(interpol(g,findgen(15)/14., findgen(Colours)/(Colours - 1)))
       bc = byte(interpol(b,findgen(15)/14., findgen(Colours)/(Colours - 1)))
-    EndIf
-    If (Greys Gt 1) Then Begin
-      rg = byte(255 * findgen(Greys)/(Greys - 1))
-      gg = byte(255 * findgen(Greys)/(Greys - 1))
-      bg = byte(255 * findgen(Greys)/(Greys - 1))
-    EndIf
+    Endif
+    ; Make black, white, and requested greys
+    rg = byte(255 * findgen(Greys+2)/(Greys + 1))
     
   ENDIf
   If (!d.name eq 'LJ') Then DEVICE,DEPTH=4,/FLOYD
 
-  r = [0, rc, rg, 255]
-  g = [0, gc, gg, 255]
-  b = [0, bc, bg, 255]
+  r = [0, rc, rg[1:*]]
+  g = [0, gc, rg[1:*]]
+  b = [0, bc, rg[1:*]]
   TVLCT, r,g,b
 
 ; Set up !p.color to point to white 

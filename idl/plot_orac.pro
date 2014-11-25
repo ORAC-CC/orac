@@ -92,7 +92,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary, $
                diff_only=diff_only, short=short, wat=wat, suffix=suff, $
                full=full, clear=clear, add=add
-   ON_ERROR, 0
+   ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; process inputs

@@ -100,6 +100,7 @@
 ;               without !P.MULTI.
 ;   DATELINE  = centre map around the International Date Line rather than the
 ;               Greenwich Meridian.
+;   WHITE_BACK = force the background to be white (and lines to be black).
 ;	
 ; OUTPUTS:
 ;   plotposition = [x_min,y_min,x_max,y_max], the position of the plot window.
@@ -128,6 +129,10 @@
 ;   28 Jul 2014 - ACP: Fixed bug in with FALSECOLOUR that allocated the wrong
 ;      background colour.
 ;   06 Aug 2014 - G Thomas: Made falsecolour keyword functional
+;   13 Oct 2014 - ACP: CARTESIAN now forces the central latitude to be zero so 
+;      ensure the expected x-y grid is plotted.
+;   15 Oct 2014 - ACP: Alter colourbar behaviour to make sense. Add WHITE_BACK 
+;      keyword.
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -147,7 +152,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    position=pos,xmargin=xmar,ymargin=ymar,btickformat=btickf, $
                    plotpoints=plotpoints, plotpsym=plotpsym, debug=debug, $
                    stop=stp, silent=silent, label=label, bposition=bpos, $
-                   central_azimuth=azi,plot_colour=colour
+                   central_azimuth=azi, plot_colour=colour, white_back=white
 
    ON_ERROR, KEYWORD_SET(debug) || KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT HIDDEN, LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
@@ -194,7 +199,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
 
    ;; save current colourtable
    TVLCT, save_ct, /get
-   
+
    ;; set limits of plot sensibly
    if ~KEYWORD_SET(lim) then if N_ELEMENTS(filter) eq n then $
       lim=[MIN(lat[WHERE(filter)],max=maxlat,/nan), $
@@ -231,9 +236,18 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
    endif 
 
    ;;--------------------------------------------------------------------------
+   ;; select background colour
+   if !d.name eq 'PS' || KEYWORD_SET(white) then white_back=1 else white_back=0
+   background_save = !p.background
+   background = white_back ? (falsecolour ? 16777215 : 255) : 0
+   !p.background = background
+   
    ;; set map grid in current plotting area and read its position with 
    ;; other properties
-   if ~KEYWORD_SET(centre) then centre=.5*[lim[0]+lim[2], lim[1]+lim[3]]
+   if ~KEYWORD_SET(centre) then begin
+      if KEYWORD_SET(cartesian) then centre=[0.,.5*(lim[1]+lim[3])] $
+      else centre=.5*[lim[0]+lim[2], lim[1]+lim[3]]
+   endif
    MAP_SET,limit=limit,advance=advance,xmar=xmar,ymar=ymar,/noborder, $
            title=tit,charsize=charsize,isotropic=isotropic,position=pos, $
            noerase=noerase,central=azi,centre[0],centre[1]
@@ -266,9 +280,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
 
    ;; load the Z buffer, set to the size of the plotting area
    SET_PLOT,'Z',/copy
-   !p.background = falsecolour? save_ct[psave.background,0]+ $
-                   256l*(save_ct[psave.background,1]+ $
-                         256l*save_ct[psave.background,2]) : psave.background
+   !p.background = background
    ERASE
    DEVICE,get_pixel_depth=pix_depth
    DEVICE,set_res=[xs,ys],z_buffer=0,set_pixel_depth=falsecolour ? 24 : 8
@@ -375,12 +387,19 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          then TVLCT, mycolours $
          else MESSAGE,'MYCOLOURS mest be an [nlevels,3] byte array.'
       endif else if N_ELEMENTS(colourtable) eq 1 then begin
-         LOADCT,/silent,colourtable,ncolors=colours,rgb_table=rgb
+         LOADCT,/silent,colourtable,ncolors=colours,rgb_table=rgb_,/bottom
+         ;; force first indices to be black/white
+         rgb=BYTARR(colours+2,3)
+         rgb[0,*] = 0
+         rgb[1:colours,*] = rgb_
+         rgb[colours+1,*] = 255
+
          if KEYWORD_SET(back) $
          then TVLCT,REVERSE(rgb[*,0]),REVERSE(rgb[*,1]),REVERSE(rgb[*,2]) $
          else TVLCT,rgb
       endif $
       else if KEYWORD_SET(diffcolourbar) then $
+         ;; colours+1 as tables use 0=black and ncol=white
          COLOUR_WHTEDIFF,colours+1,back=back $
       else if KEYWORD_SET(diffcolourgrey) then $
          COLOUR_WHTEDIFF,colours+1,/grey,back=back $
@@ -390,19 +409,31 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       else if KEYWORD_SET(rywdiff) then COLOUR_PS,colours+1,/rywdiff $
       else if KEYWORD_SET(d2colourbar) then COLOUR_PS,colours+1,/bwr2diff $
       else if KEYWORD_SET(omi) then COLOUR_PS,colours+1,/omi $
-      else COLOUR_CBW,colours,4 ; the second argument is GREYS
+      else COLOUR_CBW,colours,2 ; the second argument is GREYS
 
       ;; assign colour values for points outside of designated range
-      if KEYWORD_SET(nogrey) then begin
-         bot_colour=colours
-         top_colour=0
-      endif else if KEYWORD_SET(diffcolourbar) OR $
+      if KEYWORD_SET(mycolours) || KEYWORD_SET(nogrey) || $
+         KEYWORD_SET(diffcolourbar) || KEYWORD_SET(diffcolourgrey) || $
+         KEYWORD_SET(rywdiff) || KEYWORD_SET(d2colourbar) || $
          KEYWORD_SET(diffcolourgrey) then begin
          bot_colour=1
          top_colour=colours-1
-      endif else begin
+      endif else if KEYWORD_SET(omi) || N_ELEMENTS(colourtable) eq 1 then begin
+         ;; invent two greys for bottom/top colours
+         TVLCT,r,g,b,/get
+         r[colours+1]=85
+         g[colours+1]=85
+         b[colours+1]=85
+         r[colours+2]=170
+         g[colours+2]=170
+         b[colours+2]=170
+         TVLCT,r,g,b
+
          bot_colour=colours+2
-         top_colour=colours+3
+         top_colour=colours+1
+      endif else begin
+         bot_colour=colours+1
+         top_colour=colours+2
       endelse
       q=WHERE(index lt 1,nq) & if nq gt 0 then index[q]=bot_colour
       q=WHERE(index gt nlevels,nq) & if nq gt 0 then index[q]=top_colour
@@ -429,25 +460,26 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
            ysize=(pos[3]-pos[1]),/norm,true=falsecolour ? 3:0 $
    else TV,image,pos[0]*!d.x_size,pos[1]*!d.y_size,true=falsecolour ? 3:0
    if falsecolour then if ~decomp then DEVICE,decomposed=0
-   TVLCT, save_ct
 
    ;; add desired features
-   LOADCT,0,/silent
-   cblack = KEYWORD_SET(colour) ? colour : (prev_plot eq 'PS' ? 0 : 255)
+   if KEYWORD_SET(colour) then TVLCT, save_ct else begin
+      LOADCT,0,/silent
+      colour = white_back ? 0 : 255
+   endelse
    if ~KEYWORD_SET(nogrid) then $
       MAP_GRID,box=~KEYWORD_SET(nobox),label=label,/nogrid, $
-               charsize=charsize,color=cblack
+               charsize=charsize,color=colour
    if KEYWORD_SET(nogrid) || KEYWORD_SET(nobox) then $ 
       ;; draw box as I skipped it earlier
       PLOTS,[pos[0],pos[2],pos[2],pos[0],pos[0]], $
-            [pos[1],pos[1],pos[3],pos[3],pos[1]],color=cblack,/normal
+            [pos[1],pos[1],pos[3],pos[3],pos[1]],color=colour,/normal
    if ~KEYWORD_SET(nocontinents) then $
       MAP_CONTINENTS,hires=hires,countries=countries,usa=usa, $
                      coast=KEYWORD_SET(coast) || KEYWORD_SET(countries), $
-                     rivers=rivers,color=cblack
+                     rivers=rivers,color=colour
    if KEYWORD_SET(plotpoints) then  $
       PLOTS,plotpoints[*,1],plotpoints[*,0],psym=plotpsym,symsize=2, $
-            thick=3,color=cblack
+            thick=3,color=colour
 
    if ~nocolourbar then begin
 ;     cw=CONVERT_COORD(!d.x_ch_size,0,0,/device,/to_norm)
@@ -477,12 +509,12 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                  yrange=yrange, $
                  ytickname=colourbar_labels,ytitle=units, $
                  yticks=N_ELEMENTS(colourbar_labels)-1,ytickv=mid_lev
-         LOADCT,0,/silent
-         AXIS,charsize=charsize,color=cblack,yaxis=0,ylog=log,ystyle=1, $
+         if KEYWORD_SET(colour) then TVLCT, save_ct else LOADCT,0,/silent
+         AXIS,charsize=charsize,color=colour,yaxis=0,ylog=log,ystyle=1, $
               yrange=yrange,yticklen=.2, $
               ytickname=colourbar_labels,ytitle=units, $
               yticks=N_ELEMENTS(colourbar_labels)-1,ytickf=btickf,ytickv=mid_lev
-         AXIS,charsize=charsize,color=cblack,yaxis=1,ylog=log,ystyle=1, $
+         AXIS,charsize=charsize,color=colour,yaxis=1,ylog=log,ystyle=1, $
               yrange=yrange,yticklen=.2, $
               ytickname=REPLICATE(' ',N_ELEMENTS(colourbar_labels)), $
               ytitle=units,yticks=N_ELEMENTS(colourbar_labels)-1,ytickv=mid_lev
@@ -491,24 +523,25 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          ;; Otherwise, label axis normally.
          if ~KEYWORD_SET(keyticks) then keyticks=6
          CONTOUR,levels##[1,1],[0,1],levels,c_colors=INDGEN(nlevels)+1, $
-                 charsize=charsize,color=cblack,/device,/fill,levels=levels, $
+                 charsize=charsize,color=colour,/device,/fill,levels=levels, $
                  /noerase,position=bpos,xminor=1,xstyle=4,xtickname=[' ',' '], $
                  xticks=1,ylog=log,ystyle=5,yrange=levels[[0,nlevels-1]], $
                  yticklen=.2,ytitle=units,yticks=(nlevels-1) < keyticks
-         LOADCT,0,/silent
-         AXIS,charsize=charsize,color=cblack,yaxis=0,ylog=log,ystyle=1, $
+         if KEYWORD_SET(colour) then TVLCT, save_ct else LOADCT,0,/silent
+         AXIS,charsize=charsize,color=colour,yaxis=0,ylog=log,ystyle=1, $
                  yrange=levels[[0,nlevels-1]],yticklen=.2,ytitle=units, $
                  yticks=(nlevels-1) < keyticks,ytickf=btickf
-         AXIS,charsize=charsize,color=cblack,yaxis=1,ylog=log,ystyle=1, $
+         AXIS,charsize=charsize,color=colour,yaxis=1,ylog=log,ystyle=1, $
                  yrange=levels[[0,nlevels-1]],yticklen=.2, $
                  ytickname=REPLICATE(' ',10),ytitle=units, $
                  yticks=(nlevels-1) < keyticks
       endelse
-      PLOTS,pointx,pointy1,/device,color=cblack
-      PLOTS,pointx,pointy2,/device,color=cblack
+      PLOTS,pointx,pointy1,/device,color=colour
+      PLOTS,pointx,pointy2,/device,color=colour
 
       ;; reset plotting window
       !p=psave & !x=xsave & !y=ysave
+      !p.background = background_save
    endif 
 
    TVLCT, save_ct

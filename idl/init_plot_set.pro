@@ -59,7 +59,8 @@
 ;   28 Jul 2014 - ACP: Initial version
 ;-
 FUNCTION INIT_PLOT_SET, frames, lim, cent, label, font_s=font_s, $
-                        xsize=xs, ysize=ys, nx=nx, ny=ny, scale=scale
+                        xsize=xs, ysize=ys, nx=nx, ny=ny, scale=scale, $
+                        left=left, bottom=bott
    ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -73,6 +74,8 @@ FUNCTION INIT_PLOT_SET, frames, lim, cent, label, font_s=font_s, $
       xs*=scale
       ys*=scale
    endif
+   if ~KEYWORD_SET(left) then left=7.0
+   if ~KEYWORD_SET(bott) then bott=1.5
 
    ;; form plot settings structure
    plot_set = {tag:'', label:label, sheet:-1, font_s:font_s, xs:xs, ys:ys,  $
@@ -93,10 +96,10 @@ FUNCTION INIT_PLOT_SET, frames, lim, cent, label, font_s=font_s, $
    sy=5.0*plot_set.cs           ; vertical padding around plot
    tx=(plot_set.xs - sx*plot_set.nx) / plot_set.nx ; width of a plot
    ty=(plot_set.ys - sy*plot_set.ny) / plot_set.ny ; height of a plot
-   plot_set.x0=(7.0*plot_set.cs + $
+   plot_set.x0=(left*plot_set.cs + $
                 (tx+sx)*FINDGEN(plot_set.nx))/plot_set.xs ; left edge
    plot_set.x1=plot_set.x0 + tx/plot_set.xs               ; right edge
-   plot_set.y0=(1.5*plot_set.cs + (ty+sy)* $
+   plot_set.y0=(bott*plot_set.cs + (ty+sy)* $
                 (plot_set.ny-1.-FINDGEN(plot_set.ny)))/plot_set.ys ; bottom edge
    plot_set.y1=plot_set.y0 + ty/plot_set.ys                        ; top edge
 
