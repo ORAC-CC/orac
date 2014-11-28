@@ -31,6 +31,9 @@
 ! History:
 ! 2014/09/11, AP: First version.
 ! 2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
+! 2014/11/28, GM: A previous fix to the correction of transmittance for mass
+!    path (amf) in rttov_driver() was incorrect. The relevant code then got
+!    moved into here.  The correct fix has now been implemented.
 !
 ! $Id$
 !
@@ -71,7 +74,6 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    if (write_flag) then
       ! Equivalent to effective_2way_za
       amf = cos(satza*d2r)
-      amf = amf / (amf + 1.)
 
       ! Calculate required above/below cloud transmittances
       do jch=1,nchan
