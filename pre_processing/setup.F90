@@ -59,6 +59,7 @@ contains
 !    setting of channel arrays/indexes.
 ! 2014/10/23, OS: Refactoring overly long lines of code, causing CRAY-ftn
 !    compiler to exit
+! 2014/12/01, CS: updated setup_avhrr to read new ECC_GAC AVHRR data
 !
 ! $Id$
 !
@@ -179,46 +180,130 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
-
    integer                                       :: intdummy1,intdummy2
+   integer                                       :: i, j, k, l
+   character(len=path_length)                    :: strdummy1, strdummy2
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_avhrr()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
-   !check if l1b and angles file are for the same orbit
-   intdummy1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
-   intdummy2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
-   if (trim(adjustl(l1b_path_file(1:intdummy1-1))) .ne. &
-       trim(adjustl(geo_path_file(1:intdummy2-1)))) then
-      write(*,*)
-      write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-               & 'different granules'
-      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
-      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+   ! check if old/new avhrr filename
+   i = index(trim(adjustl(l1b_path_file)),'/', back=.true.)
 
-      stop error_stop_code
+   if (trim(adjustl(l1b_path_file(i+1:i+8))) .eq.'ECC_GAC_') then
+
+       if (verbose) write(*,*) ' *** new avhrr input file'
+
+       !check if l1b and angles file are for the same orbit
+       intdummy1=index(trim(adjustl(l1b_path_file)),'ECC_GAC_avhrr',back=.true.)
+       intdummy2=index(trim(adjustl(geo_path_file)),'ECC_GAC_sunsatangles',back=.true.)
+
+       if (trim(adjustl(l1b_path_file(1:intdummy1-1))) .ne. &
+           trim(adjustl(geo_path_file(1:intdummy2-1)))) then
+          write(*,*)
+          write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
+                   & 'different granules'
+          write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+          write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+
+          stop error_stop_code
+       end if
+
+       strdummy1 = l1b_path_file
+       do k=1, 4
+
+           l=len(trim(strdummy1))
+           j=index(strdummy1,'_', back=.true.)
+
+           strdummy2=strdummy1
+           strdummy1=strdummy1(1:j-1)
+           strdummy2=strdummy2(j+1:)
+
+           if (k .eq. 2) then
+               !get year, month,day,hour and minute as character
+               cyear=trim(adjustl(strdummy2(1:4)))
+               cmonth=trim(adjustl(strdummy2(5:6)))
+               cday=trim(adjustl(strdummy2(7:8)))
+               chour=trim(adjustl(strdummy2(10:11)))
+               cminute=trim(adjustl(strdummy2(12:13)))
+           end if
+
+           if (k .eq. 4) then
+               !which avhrr are we processing?
+               platform=trim(adjustl(strdummy2))
+           end if
+
+       enddo
+
+
+       !get year, month, day, hour and minute as integers
+       read(cyear(1:len_trim(cyear)), '(I4)') year
+       read(cmonth,'(i2)') month
+       read(cday,'(i2)') day
+       read(chour(1:len_trim(chour)), '(I2)') hour
+       read(cminute(1:len_trim(cminute)), '(I2)') minute
+
+   else
+
+       if (verbose) write(*,*) ' *** old avhrr input file'
+
+       !check if l1b and angles file are for the same orbit
+       intdummy1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
+       intdummy2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
+
+       if (trim(adjustl(l1b_path_file(1:intdummy1-1))) .ne. &
+           trim(adjustl(geo_path_file(1:intdummy2-1)))) then
+          write(*,*)
+          write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
+                   & 'different granules'
+          write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+          write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+
+          stop error_stop_code
+       end if
+
+       strdummy1 = l1b_path_file
+       do k=1, 7
+
+           l=len(trim(strdummy1))
+           j=index(strdummy1,'_', back=.true.)
+
+           strdummy2=strdummy1
+           strdummy1=strdummy1(1:j-1)
+           strdummy2=strdummy2(j+1:)
+
+           if (k .eq. 6) then
+               !get hour and minute as character
+               chour=trim(adjustl(strdummy2(1:2)))
+               cminute=trim(adjustl(strdummy2(3:4)))
+           end if
+           if (k .eq. 7) then
+               !get year, month,day as character
+               cyear=trim(adjustl(strdummy2(1:4)))
+               cmonth=trim(adjustl(strdummy2(5:6)))
+               cday=trim(adjustl(strdummy2(7:8)))
+           end if
+
+       enddo
+
+       ! one last time for platform
+       l=len(trim(strdummy1))
+       j=index(strdummy1,'/', back=.true.)
+       strdummy2=strdummy1
+       strdummy1=strdummy1(1:j-1)
+       strdummy2=strdummy2(j+1:)
+       platform=trim(adjustl(strdummy2))
+
+       !get year, month, day, hour and minute as integers
+       read(cyear(1:len_trim(cyear)), '(I4)') year
+       read(cmonth,'(i2)') month
+       read(cday,'(i2)') day
+       read(chour(1:len_trim(chour)), '(I2)') hour
+       read(cminute(1:len_trim(cminute)), '(I2)') minute
+
    end if
-
-   !which avhrr are we processing?
-   intdummy1=index(trim(adjustl(l1b_path_file)),'.h5',back=.true.)
-   intdummy2=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   platform=trim(adjustl(l1b_path_file(intdummy2+1:intdummy1-47)))
-
-   !get year, month,day,hour and minute as character
-   cyear=trim(adjustl(l1b_path_file(intdummy1-45:intdummy1-42)))
-   cmonth=trim(adjustl(l1b_path_file(intdummy1-41:intdummy1-40)))
-   cday=trim(adjustl(l1b_path_file(intdummy1-39:intdummy1-38)))
-   chour=trim(adjustl(l1b_path_file(intdummy1-36:intdummy1-35)))
-   cminute=trim(adjustl(l1b_path_file(intdummy1-34:intdummy1-33)))
-
-   !get year, month, day, hour and minute as integers
-   read(cyear(1:len_trim(cyear)), '(I4)') year
-   read(cmonth,'(i2)') month
-   read(cday,'(i2)') day
-   read(chour(1:len_trim(chour)), '(I2)') hour
-   read(cminute(1:len_trim(cminute)), '(I2)') minute
 
    !added doy calculation for avhrr
    call GREG2DOY(year,month,day,doy)

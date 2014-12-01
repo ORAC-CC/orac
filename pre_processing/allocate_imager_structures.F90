@@ -30,6 +30,7 @@
 !                 imager_pavolonis%CLDTYPE/CLDMASK/CCCOT/SFCTYPE/SUNGLINT_MASK,             
 !                 imager_geolocation%USGS_DEM, and                                          
 !                 imager_flags%LUSFLAG
+! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
 !
 ! $Id$
 !
@@ -158,5 +159,10 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
    imager_pavolonis%cirrus_quality=byte_fill_value
+
+   allocate(imager_pavolonis%emis_ch3b(&
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%emis_ch3b=sreal_fill_value
 
 end subroutine allocate_imager_structures

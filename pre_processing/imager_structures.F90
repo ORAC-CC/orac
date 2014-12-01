@@ -24,6 +24,7 @@
 ! 2013/09/02, AP: Removed startyi, endye.
 ! 2014/09/17, CS: Added imager_pavolonis, imager_geolocation%usgs_dem and
 !  imager_flags%lusflag 
+! 2014/12/01, OS: added variable emis_ch3b to Pavolonis imager structure
 !
 ! $Id$
 !
@@ -95,6 +96,7 @@ module imager_structures
       integer(kind=byte), dimension(:,:), pointer ::  cldmask
       real(kind=sreal),   dimension(:,:), pointer ::  cccot_pre
       integer(kind=byte), dimension(:,:), pointer ::  cirrus_quality
+      real(kind=sreal),   dimension(:,:), pointer ::  emis_ch3b
 
    end type imager_pavolonis_s
 

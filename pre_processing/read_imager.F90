@@ -41,6 +41,8 @@ contains
 !   don't have proper masks.
 ! 2012/09/04, GT: Corrected AATSR sensor name
 ! 2013/09/06, AP: tidying
+! 2014/12/01, OS: removed call to read_avhrr_land_sea_mask, which was obsolete
+!   as land/sea information is now read in SR read_USGS_file
 !
 ! $Id$
 !
@@ -98,10 +100,6 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       !read the angles and lat/lon info of the orbit
       call read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
            imager_angles, imager_flags,imager_time,n_along_track,verbose)
-
-      !read land/sea flag from physiography file
-      call read_avhrr_land_sea_mask(path_to_geo_file,imager_geolocation, &
-           imager_angles,imager_flags,imager_time)
 
       !read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
       call read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &

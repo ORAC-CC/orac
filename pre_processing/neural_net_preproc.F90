@@ -11,6 +11,11 @@
 !     4th Nov 2014, SteSta + OS: implemented new cloud mask version, which is now
 !         also available for twilight and additionally uses ECMWF skin 
 !         temperature and flags for snow/ice and land/sea 
+!    20th Nov 2014, SteSta + OS: implemented new temporal fill values for all
+!         channels, which was necessary because with these cloud mask classifies pixels
+!         with missing Ch3b data (accidentally) correctly as cloud
+!    20th Nov 2914, SteSta + OS: removed previous implementation; instead, for missing
+!         Ch3b nighttime pixels, twilight cloud mask is applied
 !
 ! Bugs:
 !    None known
@@ -25,9 +30,9 @@ module NEURAL_NET_PREPROC
 contains
 
   !------------------------------------------------------------------------
-  subroutine ann_cloud_mask(ch1, ch2, ch3b, ch4, ch5,  &
-       & btd_ch4_ch5, btd_ch4_ch3b, solzen, dem, niseflag, lsflag, &
-       & lusflag, sfctype, cccot_pre, cldflag, lat, skint, verbose)
+  subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
+       & solzen, dem, niseflag, lsflag, &
+       & lusflag, sfctype, cccot_pre, cldflag, lat, skint, ch3a_on_avhrr_flag, verbose)
     !------------------------------------------------------------------------
 
     use constants_cloud_typing_pavolonis
@@ -49,23 +54,44 @@ contains
 
     ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
     integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
-    integer(kind=sint), intent(in) :: sfctype
+    integer(kind=sint), intent(in) :: sfctype, ch3a_on_avhrr_flag
     integer(kind=lint), intent(in) :: dem
     real(kind=sreal),   intent(in) :: solzen, lat, skint
-    real(kind=sreal),   intent(in) :: ch1, ch2, ch3b, ch4, ch5
-    real(kind=sreal),   intent(in) :: btd_ch4_ch5, btd_ch4_ch3b
+    real(kind=sreal),   intent(in) :: channel1, channel2, channel3b, channel4, channel5
     logical,            intent(in) :: verbose
 
     ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
     integer(kind=byte), intent(out) :: cldflag
     real(kind=sreal),   intent(out) :: cccot_pre
 
-    if ( ( solzen .gt. 0 ) .and. (solzen  .lt. 80) ) then
+    ! LOCAL variables
+    real(kind=sreal) :: ch1, ch2, ch3b, ch4, ch5    
+    real(kind=sreal) :: btd_ch4_ch5, btd_ch4_ch3b
+
+    if ( channel1 .eq. sreal_fill_value ) then
+       ch1 = channel1
+    else
+       ch1 = channel1 * 100.
+    endif
+
+    if ( channel2 .eq. sreal_fill_value ) then
+       ch2 = channel2
+    else
+       ch2 = channel2 * 100.
+    endif
+
+    ch3b = channel3b
+    ch4 = channel4
+    ch5 = channel5
+    btd_ch4_ch5  = ch4 - ch5
+    btd_ch4_ch3b = ch4 - ch3b
+
+    if ( ( solzen .gt. 0 ) .and. (solzen  .le. 80) ) then
        illum_nn = 1
-    elseif (solzen  .ge. 80. .and. solzen .lt. 95.)  then       
-       illum_nn = 2
-    elseif (solzen  .ge. 95.) then
+    elseif (solzen  .gt. 80.)  then       
        illum_nn = 3
+       ! use twilight net if ch3b is missing at night/twilight:
+       if ( ch3a_on_avhrr_flag .eq. sym%INEXISTENT ) illum_nn = 2
     else
        illum_nn = 0
     endif
@@ -98,8 +124,8 @@ contains
 
        ! input
        allocate(input(ninput+1)) 
-       input(1) = ch1 *100.	! ch1 600nm
-       input(2) = ch2 *100.	! ch2 800nm
+       input(1) = ch1    	! ch1 600nm
+       input(2) = ch2   	! ch2 800nm
        input(3) = ch4 	        ! ch4 11 µm
        input(4) = ch5 	        ! ch5 12 µm
        input(5) = btd_ch4_ch5   ! 11-12 µm
@@ -259,9 +285,9 @@ contains
 
        if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
             & .and. ch5 .lt. 0) cldflag = byte_fill_value
-       if (lat .lt. -65. .AND. lat .gt. -90. .AND. lsflag .eq. 1 .AND. &
-            & niseflag .eq. 1 .AND. illum_nn .eq. 3) &
-            & cldflag = byte_fill_value ! for cold land surfaces (Antarctica)
+       !        if (lat .lt. -65. .AND. lat .gt. -90. .AND. lsflag .eq. 1 .AND. &
+       !             & niseflag .eq. 1 .AND. illum_nn .eq. 3 .and. ch3b .lt. 0) &
+       !             & cldflag = byte_fill_value ! for cold land surfaces (Antarctica)
        !  ch3b saturates and NN by default masks all pixels as cloudy; here
        !  set to fill value because no information available
 

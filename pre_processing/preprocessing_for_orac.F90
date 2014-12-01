@@ -208,6 +208,7 @@
 !                Was previously removed from command line input.
 ! 2014/11/21: GM Add modis_brdf_path to command line input which was previously
 !                added to driver file input.
+! 2014/12/01: OS Platform and DOY now passed as arguments to cloud_type call
 !
 ! $Id$
 !
@@ -816,7 +817,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase'
       call cloud_type(surface, imager_flags, imager_angles, &
            imager_geolocation, imager_measurements, imager_pavolonis, &
-           ecmwf, verbose)
+           ecmwf, platform, doy, verbose)
      
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &

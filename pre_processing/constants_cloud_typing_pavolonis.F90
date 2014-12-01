@@ -45,6 +45,7 @@
 !
 ! History:
 !  23rd Oct 2014, CS: original version
+!  1st  Dec 2014, OS: added PROB_OPAQUE_ICE_TYPE
 !
 ! Calling Sequece:
 !   use CONSTANTS_CLOUD_TYPING_PAVOLONIS
@@ -78,6 +79,7 @@ module CONSTANTS_CLOUD_TYPING_PAVOLONIS
      INTEGER(kind=sint) :: OPAQUE_ICE_TYPE = 6
      INTEGER(kind=sint) :: CIRRUS_TYPE = 7
      INTEGER(kind=sint) :: OVERLAP_TYPE = 8
+     INTEGER(kind=sint) :: PROB_OPAQUE_ICE_TYPE = 9 ! missing ch3.7 due to low S/N
 
      !--- used for sunglint_mask, nise_mask
      INTEGER(kind=sint) :: NO = 0
