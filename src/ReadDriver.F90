@@ -68,6 +68,8 @@
 !    2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
 !       variables
 !    2014/09/17, GM: Use the DiFlag* constants instead of integer values.
+!    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100, as
+!                    otherwise ~30% of converged pixels are lost in l2tol3 processing
 !
 ! Bugs:
 !    NViews should be changed for dual view
