@@ -23,6 +23,7 @@
 !    24th Oct 2014, Oliver Sus: added variables cldtype, cloudmask, cccot_pre, 
 !       lusflags, dem, and nisemask
 !    25th Nov 2014, Adam Povey: Move scaling/offset definitions here.
+!     1st Dec 2014, Oliver Sus: new cldtype_vmax = 9
 !
 ! Bugs:
 !    None known.
@@ -212,7 +213,7 @@ module output_routines
       integer(kind=byte)            :: cldtype_scale  = 1
       integer(kind=byte)            :: cldtype_offset = 0
       integer(kind=byte)            :: cldtype_vmin   = 0
-      integer(kind=byte)            :: cldtype_vmax   = 8
+      integer(kind=byte)            :: cldtype_vmax   = 9
 
       integer(kind=byte)            :: cldmask_scale  = 1
       integer(kind=byte)            :: cldmask_offset = 0

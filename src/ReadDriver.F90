@@ -779,7 +779,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
    ! Set Ctrl%QC
 
    ! Maximum acceptable retrieval cost
-   Ctrl%QC%MaxJ = 10.0
+   Ctrl%QC%MaxJ = 100.0
 
    ! Maximum acceptable retrieval errors
    Ctrl%QC%MaxS(1) = 0.08

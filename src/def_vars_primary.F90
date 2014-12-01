@@ -42,6 +42,7 @@
 ! 2014/10/24, OS: Some minor refactoring. Added output variables cldtype,
 !    cldmask, cccot_pre, lusflag, DEM, and nisemask
 ! 2014/11/25, AP: Move scaling/offset definitions to output_routines.
+! 2014/12/01, OS: added flag 9 = prob_opaque_ice to Pavolonis cloud type
 !
 ! $Id$
 !
@@ -723,7 +724,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    !----------------------------------------------------------------------------
    input_dummy2='Bit 0=clear Bit 1=N/A Bit 2=fog Bit 3=water Bit 4=supercooled'
    input_dummy2=trim(adjustl(input_dummy2))//' Bit 5=mixed Bit 6=opaque_ice Bit 7=cirrus'
-   input_dummy2=trim(adjustl(input_dummy2))//' Bit 8=overlap'
+   input_dummy2=trim(adjustl(input_dummy2))//' Bit 8=overlap Bit 9=prob_opaque_ice'
 
    call nc_def_var_byte_packed_byte( &
            ncid, &
@@ -738,7 +739,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            add_offset    = output_data%cldtype_offset, &
            valid_min     = output_data%cldtype_vmin, &
            valid_max     = output_data%cldtype_vmax, &
-           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b', &
+           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b', &
            flag_meanings = trim(adjustl(input_dummy2)))
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
