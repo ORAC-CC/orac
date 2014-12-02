@@ -24,6 +24,7 @@
 ! 2013/09/06, AP: tidying
 ! 2014/08/10, GM: Changes related to new BRDF support.
 ! 2014/09/17, CS: Added surface%nise_mask
+! 2014/12/02, GM: Remove unused surface%albedo_chan and surface%emissivity_chan.
 !
 ! $Id$
 !
@@ -45,12 +46,6 @@ subroutine allocate_surface_structures(surface,imager_geolocation,channel_info, 
    type(imager_geolocation_s), intent(in)  :: imager_geolocation
    type(channel_info_s),       intent(in)  :: channel_info
    logical,                    intent(in)  :: include_full_brdf
-
-   allocate(surface%albedo_chan(channel_info%nchannels_sw))
-   surface%albedo_chan=sreal_fill_value
-
-   allocate(surface%emissivity_chan(channel_info%nchannels_lw))
-   surface%emissivity_chan=sreal_fill_value
 
    allocate(surface%albedo(imager_geolocation%startx:imager_geolocation%endx, &
             1:imager_geolocation%ny,channel_info%nchannels_sw))
