@@ -2007,7 +2007,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
    do i = 1, n_points
-      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+     if (solza(i) .gt. maxsza_twi .or. &
+         u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
          rho_0v(:, i) = fill_value
          cycle
       end if
@@ -2028,7 +2029,8 @@ if (.false.) then
    rho_0d = 0.
 
    do i = 1, n_points
-      if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
+      if (solza(i) .gt. maxsza_twi .or. &
+          u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
          rho_0d(:, i) = fill_value
          cycle
       end if
@@ -2079,6 +2081,11 @@ else
       end if
 
       do j = 1, n_points
+         if (solza(j) .gt. maxsza_twi) then
+            rho_0d(:, j) = fill_value
+            cycle
+         end if
+
          solza2 = solza(j) * d2r
          call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
          do l = 1, n_quad_theta

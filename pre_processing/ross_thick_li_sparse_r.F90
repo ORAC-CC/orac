@@ -266,7 +266,7 @@ subroutine li_common(aux, aux2, p, p_, q)
 
    cos_t     = aux2%g * h
 
-   if (cos_t .gt. 1.) then ! overlap area = 0 
+   if (cos_t .gt. 1.) then ! overlap area = 0
      q = 1.
    else
      q = 1. - (acos(cos_t) - sqrt(1. - cos_t * cos_t) * cos_t) / PI
@@ -615,6 +615,11 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
    do i = 1, n_points
+      if (solza(i) .gt. maxsza_twi) then
+            rho_0v(:, i) = fill_value
+            cycle
+      endif
+
       solza2 = solza(i) * d2r
       satza2 = satza(i) * d2r
       relaz2 = relaz(i) * d2r
@@ -640,6 +645,11 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    rho_0d = 0.
 
    do i = 1, n_points
+      if (solza(i) .gt. maxsza_twi) then
+            rho_0d(:, i) = fill_value
+            cycle
+      endif
+
       solza2 = solza(i) * d2r
       do j = 1, n_quad_theta
          satza2 = qx_theta(j)

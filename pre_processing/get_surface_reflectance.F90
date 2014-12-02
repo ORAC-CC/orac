@@ -95,6 +95,9 @@
 ! 15/10/2014, GM: Changes related to supporting an arbitrary set of SW channels.
 !    Still limited by availability from the land and ocean reflectance sources.
 ! 23/10/2014, OS: added support for reading full BRDF file path
+! 02/12/2014, GM: Fixed handling of night.  Values that are not dependent on
+!    solar zenith angle (albedo, rho_dv, and rho_dd) are computed at night.
+!    Values that are (rho_0v and rho_0d) are not computed and set to fill.
 !
 ! $Id$
 !
@@ -196,20 +199,25 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
        1:imager_geolocation%ny))
 
   mask = imager_geolocation%latitude  .ne. sreal_fill_value .and. &
-       imager_geolocation%longitude .ne. sreal_fill_value
+         imager_geolocation%longitude .ne. sreal_fill_value
 
-  if (include_full_brdf) then
-     do k=1,imager_angles%nviews
-        mask = mask .and. &
-             imager_angles%solzen(:,:,k) .ne. sreal_fill_value .and. &
-             imager_angles%satzen(:,:,k) .ne. sreal_fill_value .and. &
-             imager_angles%solazi(:,:,k) .ne. sreal_fill_value .and. &
-             imager_angles%relazi(:,:,k) .ne. sreal_fill_value
-     end do
-  end if
+  do k=1,imager_angles%nviews
+     mask = mask .and. &
+        imager_angles%solzen(:,:,k) .ne. sreal_fill_value .and. &
+        imager_angles%satzen(:,:,k) .ne. sreal_fill_value .and. &
+        imager_angles%solazi(:,:,k) .ne. sreal_fill_value .and. &
+        imager_angles%relazi(:,:,k) .ne. sreal_fill_value
+  end do
 
-  ! Count the number of land pixels, using the imager land/sea mask
-  nland = count(imager_flags%lsflag .eq. 1 .and. mask)
+  ! Albedo, rho_dv, and rho_dd are all valid at night rho_0v and rho_0d are
+  ! not.  At night we have two choices: (1) compute what we can (albedo, rho_dv,
+  ! and rho_dd) at the expense of some processing time and set rho_0v and rho_0d
+  ! to fill, or (2) set all reflectance values to fill since the main processor
+  ! won't use them anyway.  The code below should be uncommented for option 2.
+  ! Otherwise, the case of solzen > maxsza_twi is checked at the BRDF code level.
+! do k=1,imager_angles%nviews
+!    mask = mask .and. imager_angles%solzen(:,:,k) .lt. maxsza_twi
+! end do
 
   ! Count the number of land and sea pixels, using the imager land/sea mask
   nsea  = count(mask .and. imager_flags%lsflag .eq. 0)
@@ -296,7 +304,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         if (verbose) write(*,*) 'modis_brdf_path_file: ', trim(modis_brdf_path_file)
      end if
 
-     ! Read the data itself                                                               
+     ! Read the data itself
      call read_mcd43c3(modis_surf_path_file, mcdc3, n_ref_chans, bands, &
                        read_ws, read_bs, read_qc, verbose, stat)
 
@@ -414,16 +422,6 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   !----------------------------------------------------------------------------
   ! Compute sea surface reflectance
   !----------------------------------------------------------------------------
-  ! don't evaluate Cox and Munk for night points
-  if (include_full_brdf) then
-     do k=1,imager_angles%nviews
-        mask = mask .and. imager_angles%solzen(:,:,k) .lt. maxsza_twi
-     end do
-  end if
-
-  ! Count the number of sea pixels, using the imager land/sea mask
-  nsea  = count(imager_flags%lsflag .eq. 0 .and. mask)
-
   if (nsea .gt. 0) then
      ! Allocate and populate the local arrays required for sea pixels
      allocate(solzasea(nsea))
