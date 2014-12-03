@@ -17,6 +17,9 @@
 !                          extra-polar regions if Ch3b is missing; significant bug fix:
 !                          wrong ch3b emissivity and reflectance were used in old code, 
 !                          which are now correctly calculated and applied
+!        3rd Dec 2014, OS: use default coefficients for AATSR until these will be calculated
+!                          and implemented here; skip pixel if input SOLZEN is negative;
+!                          pass SATZEN as argument to NN cloud mask
 !
 ! Bugs:
 !    None known
@@ -403,6 +406,10 @@ contains
        j_loop: do j = 1, imager_geolocation%ny !imager_geolocation%STARTY,
           ! imager_geolocation%ENDY 
 
+          !-- check if solar zenith angle is > 0
+
+          if ( imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) .lt. 0. ) cycle
+
           !-- check if Ch3a is available or not (fill_value is negative)
 
           if ( imager_measurements%DATA(i,j,3) .ge. 0 .and. &
@@ -476,6 +483,7 @@ contains
                & imager_measurements%DATA(i,j,5), &
                & imager_measurements%DATA(i,j,6), &
                & imager_angles%SOLZEN(i,j,imager_angles%NVIEWS), &
+               & imager_angles%SATZEN(i,j,imager_angles%NVIEWS), &
                & imager_geolocation%DEM(i,j), &
                & surface%NISE_MASK(i,j), imager_flags%LSFLAG(i,j), &
                & imager_flags%LUSFLAG(i,j), &
@@ -485,6 +493,7 @@ contains
                & imager_geolocation%LATITUDE(i,j) , &
                & skint(i,j) , &
                & ch3a_on_avhrr_flag, &
+               & i, j, &
                & verbose )
 
           !-- First Pavolonis test: clear or cloudy
@@ -504,7 +513,8 @@ contains
 
           !-- neither ch3a nor ch3b available
 
-          ! caution: also when ch3b (3.7) is fill value, no cloud type will be assigned
+          !-- at night, assign probably opaque ice flag
+          !-- as ch3.7 has fill value due to low S/N
           if ( ch3a_on_avhrr_flag == -1 ) then
              if ( ( imager_geolocation%LATITUDE(i,j) < 65.0 .and. &
                   & imager_geolocation%LATITUDE(i,j) > -65.0 ) .and. &
@@ -1440,6 +1450,8 @@ contains
        index = 12
     case ("AQUA")
        index = 13
+    case ("ENV")
+       index = 14 ! use default coefficients for AATSR until values are available
     case ("default")
        index = 14
     case default

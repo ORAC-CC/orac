@@ -14,8 +14,10 @@
 !    20th Nov 2014, SteSta + OS: implemented new temporal fill values for all
 !         channels, which was necessary because with these cloud mask classifies pixels
 !         with missing Ch3b data (accidentally) correctly as cloud
-!    20th Nov 2914, SteSta + OS: removed previous implementation; instead, for missing
+!    20th Nov 2014, SteSta + OS: removed previous implementation; instead, for missing
 !         Ch3b nighttime pixels, twilight cloud mask is applied
+!     3rd Dec 2014, SteSta + OS: SATZEN is used for correcting viewing angle effect
+!         in NN output for AVHRR - still testing
 !
 ! Bugs:
 !    None known
@@ -31,8 +33,9 @@ contains
 
   !------------------------------------------------------------------------
   subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
-       & solzen, dem, niseflag, lsflag, &
-       & lusflag, sfctype, cccot_pre, cldflag, lat, skint, ch3a_on_avhrr_flag, verbose)
+       & solzen, satzen, dem, niseflag, lsflag, &
+       & lusflag, sfctype, cccot_pre, cldflag, lat, skint, ch3a_on_avhrr_flag, &
+       & i, j, verbose)
     !------------------------------------------------------------------------
 
     use constants_cloud_typing_pavolonis
@@ -56,8 +59,9 @@ contains
     integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
     integer(kind=sint), intent(in) :: sfctype, ch3a_on_avhrr_flag
     integer(kind=lint), intent(in) :: dem
-    real(kind=sreal),   intent(in) :: solzen, lat, skint
+    real(kind=sreal),   intent(in) :: solzen, lat, skint, satzen
     real(kind=sreal),   intent(in) :: channel1, channel2, channel3b, channel4, channel5
+    integer(kind=lint), intent(in) :: i, j
     logical,            intent(in) :: verbose
 
     ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
@@ -209,7 +213,9 @@ contains
 
     else
 
-       if (verbose) write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
+       if (verbose) then
+          write(*,*) "Solar zenith angle < 0 in neural_net_preproc"
+       endif
 
        ! --- end of day/night if loop
     endif
@@ -219,6 +225,10 @@ contains
     call neural_net(nneurons,ninput,minmax_train,inv,outv, &
          & input,scales,oscales,cutoff,bias_i,bias_h,     &
          & temperature,output,noob)
+
+    ! --- correct for viewing angle (smile) effect - test phase for AVHRR
+    output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
+    if ( i .eq. 1 .and. j .eq. 100 ) write(*,*) "smile = ", ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
     ! --- ensure that CCCOT is within 0 - 1 range
     cccot_pre = max( min( output, 1.0 ), 0.0)
