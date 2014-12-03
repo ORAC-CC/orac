@@ -22,6 +22,8 @@
 !                          pass SATZEN as argument to NN cloud mask
 !        3rd Dec 2014, GM: Added Planck coefficients for AATSR derived from
 !                          SADChan Planck coefficients.
+!        3rd Dec 2014, OS: changed nrows of coefficients and reshape command to include
+!                          new AATSR coefficients
 !
 ! Bugs:
 !    None known
@@ -1422,7 +1424,7 @@ contains
     integer(kind=byte) :: index ! index of row containing platform-specific coefficients
     real(kind=sreal),parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
     real(kind=sreal),parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
-    real(kind=sreal), dimension(4,14) :: coefficients ! coefficients containing variables
+    real(kind=sreal), dimension(4,15) :: coefficients ! coefficients containing variables
 
     ! select approproate row of coefficient values
     select case (input_platform)
@@ -1486,9 +1488,9 @@ contains
          2687.039,  0.996570,  2.05822, 5.076, & !metopa
          2641.775,  0.999341,  0.47705, 4.804, & !terra
          2647.409,  0.999336,  0.48184, 4.822, & !aqua
-         2675.166,  0.996344, 1.72695, 5.030, & !env (aatsr)
+         2675.166,  0.996344,  1.72695, 5.030, & !env (aatsr)
          2670.000,  0.998000,  1.75000, 5.000  & !default
-         /), (/ 4, 14 /) )
+         /), (/ 4, 15 /) )
 
     PlanckInv(1) = Planck_C1 * coefficients( 1 , index )**3 / &
          ( exp( Planck_C2 * coefficients( 1 , index ) / &
