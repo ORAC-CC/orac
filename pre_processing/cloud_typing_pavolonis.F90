@@ -20,6 +20,8 @@
 !        3rd Dec 2014, OS: use default coefficients for AATSR until these will be calculated
 !                          and implemented here; skip pixel if input SOLZEN is negative;
 !                          pass SATZEN as argument to NN cloud mask
+!        3rd Dec 2014, GM: Added Planck coefficients for AATSR derived from
+!                          SADChan Planck coefficients.
 !
 ! Bugs:
 !    None known
@@ -1398,7 +1400,7 @@ contains
 !     !-------------------------------------------------------------------
 
 
-!     ! =====================================================================
+  ! =====================================================================
 !   end subroutine CLOUD_RETYPE
   ! =====================================================================
 
@@ -1451,9 +1453,9 @@ contains
     case ("AQUA")
        index = 13
     case ("ENV")
-       index = 14 ! use default coefficients for AATSR until values are available
-    case ("default")
        index = 14
+    case ("default")
+       index = 15
     case default
        write(*,*) "Error: Platform name does not match local string in function PlanckInv"
        write(*,*) "Input platform name = ", input_platform 
@@ -1464,6 +1466,11 @@ contains
     !   a: alpha parameter                                                                
     !   b: beta parameter   
     !   solcon: solar constant
+
+    ! Conversion from SADChan Planck coefficients to the ones here:
+    ! v = (B1 / Planck_C1)^(1/3) = B2 / Planck_C2
+    ! a = T2
+    ! b = T1
     coefficients = reshape( (/ &
     !        v          a         b     solcon
          2684.525,  0.997083,  1.94221, 5.061, & !noaa07
@@ -1479,6 +1486,7 @@ contains
          2687.039,  0.996570,  2.05822, 5.076, & !metopa
          2641.775,  0.999341,  0.47705, 4.804, & !terra
          2647.409,  0.999336,  0.48184, 4.822, & !aqua
+         2675.166,  0.996344e, 1.72695, 5.030, & !env (aatsr)
          2670.000,  0.998000,  1.75000, 5.000  & !default
          /), (/ 4, 14 /) )
 
@@ -1491,7 +1499,7 @@ contains
   end function PlanckInv
 
 
-  !***********************************************************************
+!***********************************************************************
 end module CLOUD_TYPING_PAVOLONIS
 !***********************************************************************
 ! End of module CLOUD_TYPING_PAVOLONIS
