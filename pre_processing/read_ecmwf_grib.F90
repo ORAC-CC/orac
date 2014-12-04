@@ -47,6 +47,7 @@
 ! History:
 ! 2014/05/07, AP: First version.
 ! 2014/08/20, OS: Adaptations made for cray-fortran compiler specific issues
+! 2014/12/04, OS: include job ID in scratch file name - only for wrapper 
 !
 ! $Id$
 !
@@ -60,12 +61,13 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
      preproc_prtm,verbose)
 #else
 subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
-     preproc_prtm,verbose,mytask)
+     preproc_prtm,verbose,mytask,jid)
 #endif
 
    use grib_api
    use preproc_constants
    use preproc_structures
+   use common_constants
 
    implicit none
 
@@ -91,10 +93,20 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    real(sreal), dimension(:),   allocatable  :: pl,val
    real(sreal), dimension(:,:), pointer      :: array
 
-   ! this is for the wrapper                                                                                                                                         
+   ! this is for the wrapper                                                       
 #ifdef WRAPPER
-   integer                                  :: mytask
-   character(len=100)                       :: system_call
+   integer                                  :: mytask, cutoff, jid_int, jid_length
+   character(len=file_length)               :: jid, jid_temp
+   character(len=file_length)               :: system_call
+
+   ! extract job ID integer variable for subsequent naming of scratch files
+   cutoff = index(trim(adjustl(jid)),'_', back=.true.)
+   jid_temp = jid( 1 : ( cutoff - 1 ) )
+   cutoff = index(trim(adjustl(jid_temp)),'_ID', back=.true.)
+   jid_temp = jid_temp( cutoff + 3 : )
+   jid_length = len_trim(jid_temp)
+   read(jid_temp, '(I10)') jid_int
+
 #endif
 
    ! open the ECMWF file
@@ -143,7 +155,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 #ifndef WRAPPER
       open(unit=lun,status='SCRATCH',iostat=stat,form='UNFORMATTED')
 #else
-      write(name,"(A5,I0.5)") 'orac.', mytask
+      write(name,"(A5,I0.10,A1,I0.5)") 'orac_', jid_int, '.', mytask
       open(unit=lun,file=trim(adjustl(name)),iostat=stat,form='UNFORMATTED', &
            status='REPLACE')
 #endif

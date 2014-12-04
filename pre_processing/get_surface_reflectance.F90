@@ -574,7 +574,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
                      channel_info%channel_lw_flag(k) .ne. 0) then
                     surface%albedo(j,i,k) = 1.0 - surface%emissivity(j,i,kk)
 
-                    if (include_full_brdf) then
+                    if (include_full_brdf) then 
                        surface%rho_0v(j,i,k) = 0.
                        surface%rho_0d(j,i,k) = 0.
                        surface%rho_dv(j,i,k) = 0.

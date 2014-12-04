@@ -209,6 +209,7 @@
 ! 2014/11/21: GM Add modis_brdf_path to command line input which was previously
 !                added to driver file input.
 ! 2014/12/01: OS Platform and DOY now passed as arguments to cloud_type call
+! 2014/12/04: OS wrapper job ID is new call argument and is passed to SR read_ecmwf_grib
 !
 ! $Id$
 !
@@ -219,7 +220,7 @@
 #ifndef WRAPPER
 program preprocessing
 #else
-subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
+subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,jid)
 #endif
 
    use channel_structures
@@ -244,6 +245,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    use surface_reflectance
    use surface_structures
    use USGS_physiography
+   use common_constants
 
    implicit none
 
@@ -352,6 +354,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
    ! this is for the wrapper
 #ifdef WRAPPER
    integer :: mytask,ntasks,lower_bound,upper_bound
+   character(len=file_length) :: jid
 #endif
 !  include "sigtrap.F90"
 
@@ -361,6 +364,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 #else
    nargs=-1
 #endif
+
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
       call get_command_argument(1,sensor)
@@ -729,7 +733,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
               preproc_geoloc,preproc_prtm,verbose)
 #else
          call read_ecmwf_grib(ecmwf_path_file,preproc_dims, &
-              preproc_geoloc,preproc_prtm,verbose,mytask)
+              preproc_geoloc,preproc_prtm,verbose,mytask,jid)
 #endif
       case(1)
          if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
@@ -759,11 +763,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file)
 #else
          if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
          call read_ecmwf_grib(ecmwf_path_file2,preproc_dims, &
-              preproc_geoloc,preproc_prtm,verbose,mytask)
+              preproc_geoloc,preproc_prtm,verbose,mytask,jid)
 
          if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file3)
          call read_ecmwf_grib(ecmwf_path_file3,preproc_dims, &
-              preproc_geoloc,preproc_prtm,verbose,mytask)
+              preproc_geoloc,preproc_prtm,verbose,mytask,jid)
 #endif
       end select
 
