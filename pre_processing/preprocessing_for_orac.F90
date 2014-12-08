@@ -209,7 +209,7 @@
 ! 2014/11/21: GM Add modis_brdf_path to command line input which was previously
 !                added to driver file input.
 ! 2014/12/01: OS Platform and DOY now passed as arguments to cloud_type call
-! 2014/12/04: OS wrapper job ID is new call argument and is passed to SR read_ecmwf_grib
+! 2014/12/01: CP: add new global and source attributes
 !
 ! $Id$
 !
@@ -228,6 +228,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use correct_for_ice_snow_m
    use ecmwf_m
    use global_attributes
+   use source_attributes	
    use hdf5
    use imager_structures
    use netcdf, only: nf90_inq_libvers
@@ -278,7 +279,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=cmd_arg_length)    :: cinclude_full_brdf
 
    type(global_attributes_s)        :: global_atts
-
+   type(source_attributes_s)        :: source_atts	
    integer                          :: ecmwf_flag
    logical                          :: chunkproc
    integer(kind=sint)               :: day_night
@@ -412,6 +413,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call get_command_argument(43,cuse_chunking)
       call get_command_argument(44,cassume_full_paths)
       call get_command_argument(45,cinclude_full_brdf)
+      call get_command_argument(46,global_atts%rttov_version)
+      call get_command_argument(47,global_atts%ecmwf_version)
+      call get_command_argument(48,global_atts%svn_version)
+
    else
       if (nargs .eq. 1) then
       ! if just one argument => this is driver file which contains everything
@@ -468,8 +473,12 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       read(11,*) cuse_chunking
       read(11,*) cassume_full_paths
       read(11,*) cinclude_full_brdf
+      read(11,*) global_atts%rttov_version
+      read(11,*) global_atts%ecmwf_version
+      read(11,*) global_atts%svn_version
       close(11)
    end if ! nargs gt 1
+
 
    ! get the NetCDF version
    global_atts%netcdf_version=nf90_inq_libvers()
@@ -495,6 +504,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use_chunking=parse_logical(cuse_chunking)
    assume_full_paths=parse_logical(cassume_full_paths)
    include_full_brdf=parse_logical(cinclude_full_brdf)
+   global_atts%brdf_flag='no'
+!   if (cinclude_full_brdf .eq. .true.) then
+!   global_atts%brdf_flag='yes'
+!   endif
 
    ! initialise some counts, offset variables...
    along_track_offset=0
@@ -515,6 +528,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
         write(*,*) 'ERROR: GEO file does not exist: ', trim(geo_path_file)
         stop error_stop_code
    end if
+
+   source_atts%level1b_file=l1b_path_file
+   source_atts%geo_file=geo_path_file	
+
    if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
@@ -775,18 +792,19 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
       if (verbose) write(*,*) 'Reading USGS path: ',trim(USGS_path_file)
       call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, usgs,&
-           assume_full_paths, verbose)
-
+           assume_full_paths,source_atts, verbose)
+      if (verbose) write(*,*) 'compute geopotential verticle coords'
       ! compute geopotential vertical coordinate from pressure coordinate
       call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'
       if (verbose) write(*,*) 'output_path: ',trim(output_path)
+
       call netcdf_output_create(output_path,lwrtm_file, &
            swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
            geo_file,loc_file,alb_file,scan_file,platform,sensor,global_atts, &
-           cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
+           source_atts,cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
            imager_geolocation,netcdf_info,channel_info,include_full_brdf, &
            verbose)
 
@@ -801,14 +819,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*) 'Get surface emissivity'
       call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
            imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
-           assume_full_paths, verbose, surface, preproc_surf)
+           assume_full_paths, verbose, surface, preproc_surf,source_atts)
 
       ! select correct reflectance files and calculate surface reflectance
       ! over land and ocean
       if (verbose) write(*,*) 'Get surface reflectance'
       call get_surface_reflectance(cyear, cdoy, modis_albedo_path, modis_brdf_path, &
            imager_flags, imager_geolocation, imager_angles, channel_info, ecmwf, &
-           assume_full_paths, include_full_brdf, verbose, surface)
+           assume_full_paths, include_full_brdf, verbose, surface,source_atts)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
@@ -816,12 +834,21 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*) 'Correct for ice and snow'
       call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
            preproc_dims, surface, cyear, cmonth, cday, channel_info, &
-           assume_full_paths, verbose)
-
+           assume_full_paths,source_atts, verbose)
+write(*,*)' after  source_atts%sea_ice_file', source_atts%sea_ice_file
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase'
       call cloud_type(surface, imager_flags, imager_angles, &
            imager_geolocation, imager_measurements, imager_pavolonis, &
            ecmwf, platform, doy, verbose)
+
+
+   ! Create config file
+      call netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
+        platform,sensor,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
+        preproc_dims,imager_geolocation,netcdf_info,channel_info,verbose)
+
+
      
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &
