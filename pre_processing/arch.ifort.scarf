@@ -1,6 +1,7 @@
 
 # folder for object files
-OBJS=/work/ralspace/rsg_group/cloud_ecv/code/code_v2/pre_processing/
+OBJS=/work/ralspace/rsg_group/cloud_ecv/code/code_v2740/trunk/pre_processing/obj/
+#OBJS=/home/escg/scarf165/trunk/pre_processing/obj/
 #OBJS=obj
 
 
@@ -9,20 +10,23 @@ OBJS=/work/ralspace/rsg_group/cloud_ecv/code/code_v2/pre_processing/
 
 
 #new
-F90=/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233//bin/intel64/ifort
+
+#F90=/apps/intel/2015.0.090/composer_xe_2015.0.090/bin/intel64/ifort
 
 #/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/compiler/lib/intel64:/apps/intel/2011.6.233/composer_xe_2011_sp1.6.233/ipp/lib/intel64:/apps/lsf8/8.0/linux2.6-glibc2.3-x86_64/lib:/opt/vdt/1.8.1/globus/lib:/opt/vdt/1.8.1/glite/lib
 
 #set compiler flags
-FFLAGS=-g -check all -heap-arrays -traceback
-LFLAGS=-g -check all -heap-arrays -traceback
 
 
-#FFLAGS=-O0  -check bounds  -traceback  -static 
-# gcc debugging flags for C code
-CFLAGS=-g -Wall
-# gfortran debugging flags
-#FFLAGS=-g -Wall -xf95-cpp-input -fbacktrace
-#LFLAGS=-g -Wall -fbacktrace
+LFLAGS=-g -check all -heap-arrays -traceback -L/apps/libs/netCDF/intel12/fortran/4.2/lib -lnetcdff -L/apps/libs/HDF5/intel12/1.8.11/lib -L/apps/libs/netCDF/intel12/4.3.0/lib -lnetcdf -lnetcdf
+
+
+FFLAGS=-O3 -xHost -ip -no-prec-div -static-intel -I/apps/libs/netCDF/intel12/fortran/4.2/include -L/apps/libs/netCDF/intel12/fortran/4.2/lib -lnetcdff -L/apps/libs/HDF5/intel12/1.8.11/lib -L/apps/libs/netCDF/intel12/4.3.0/lib -lnetcdf -lnetcdf
+
+
+
+CFLAGS=-I/apps/libs/netCDF/intel12/fortran/4.2/include -I/apps/libs/HDF5/intel12/1.8.11/include -I/apps/libs/netCDF/intel12/4.3.0/include -L/apps/libs/netCDF/intel12/fortran/4.2/lib -L/apps/libs/HDF5/intel12/1.8.11/lib -L/apps/libs/netCDF/intel12/4.3.0/lib -lnetcdf -lnetcdf
+
+
 
 AUXFLAGS=-module $(OBJS)
