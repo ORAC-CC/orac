@@ -10,6 +10,7 @@ $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o DeallocData.F90 \
 $(OBJS)/DecomposeCholesky.o: $(OBJS)/ECPConstants.o
 $(OBJS)/Diag.o: $(OBJS)/ECPConstants.o
 $(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o
+$(OBJS)/blmodification.o: $(OBJS)/SPixel.o
 $(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GZero.o \
         $(OBJS)/IntLUTRoutines.o $(OBJS)/InterpolRoutines.o $(OBJS)/RTM_Pc.o \
         $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o FM.F90 FMSolar.F90 \
