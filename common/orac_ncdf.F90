@@ -21,7 +21,7 @@
 !    nc_def_var_*() routines.
 ! 2014/10/24, OS: removed superfluous commata in write statements, causing
 !    CRAY-ftn compiler to exit
-!
+!  2014/12/01, CP: added new source attributes 
 ! $Id$
 !-------------------------------------------------------------------------------
 
@@ -1119,21 +1119,24 @@ end subroutine read_byte_4d
 ! 2014/08/31, GM: Make the global attribute list consistent with CF-1.4.
 ! 2014/08/31, GM: Moved to the orac common tree.
 ! 2014/09/01, GM: Generalize for use in both the main and preprocessors.
+! 2014/12/01, CP: updated to include source attributes
 
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_put_common_attributes(ncid, global_atts)
+subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
 
    use netcdf
 
    use global_attributes
+   use source_attributes
 
    implicit none
 
    integer,                   intent(in) :: ncid
    type(global_attributes_s), intent(in) :: global_atts
+   type(source_attributes_s), intent(in) :: source_atts
 
    integer :: ierr
 
@@ -1141,8 +1144,10 @@ subroutine nc_put_common_attributes(ncid, global_atts)
    !----------------------------------------------------------------------------
    ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
    !----------------------------------------------------------------------------
+
    ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', &
         trim(global_atts%Conventions))
+
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
          ', name: Conventions'
@@ -1341,6 +1346,106 @@ subroutine nc_put_common_attributes(ncid, global_atts)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
           ', name: License'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'RTTOV_version', &
+        trim(global_atts%Rttov_version))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: rttov_version'
+      stop error_stop_code
+   endif
+
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'ECMWF_version', &
+        trim(global_atts%ecmwf_version))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: ecmwf_version'
+      stop error_stop_code
+   endif
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'SVN_version', &
+        trim(global_atts%svn_version))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: svn_version'
+      stop error_stop_code
+   endif
+
+!
+!now out put source attributes
+!
+
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Albedo_file', &
+        trim(source_atts%albedo_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: albedo_file'
+      stop error_stop_code
+   endif
+
+
+
+  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'BRDF_file', &
+        trim(source_atts%brdf_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: brdf_file'
+      stop error_stop_code
+   endif
+
+
+  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Emissivity_file', &
+        trim(source_atts%emissivity_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: emissivity_file'
+      stop error_stop_code
+   endif
+
+  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'USGS_file', &
+        trim(source_atts%usgs_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: usgs_file'
+      stop error_stop_code
+   endif
+
+
+  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Snow_file', &
+        trim(source_atts%snow_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: snow_file'
+      stop error_stop_code
+   endif
+
+
+  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Sea_Ice_file', &
+        trim(source_atts%sea_ice_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: sea_ice_file'
+      stop error_stop_code
+   endif
+
+  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Level1b_file', &
+        trim(source_atts%level1b_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: Level1b_file'
+      stop error_stop_code
+   endif
+
+
+
+  ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Geo_file', &
+        trim(source_atts%geo_file))
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+          ', name: geo_file'
       stop error_stop_code
    endif
 
