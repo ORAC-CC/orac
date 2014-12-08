@@ -16,6 +16,7 @@
 ! 2014/08/31, GM: Make global attribute list CF-1.4 compliant.
 ! 2014/08/31, GM: Modify global_attributes_s field names to relate to their
 !    global attribute field.
+! 2014/12/01, CP added new global attributes
 !
 ! $Id$
 !
@@ -60,6 +61,10 @@ module global_attributes
       character(len=attribute_length)      :: Keywords
       character(len=attribute_length)      :: Summary
       character(len=attribute_length)      :: License
+      character(len=attribute_length)      :: rttov_version
+      character(len=attribute_length_long) :: ecmwf_version
+      character(len=attribute_length)      :: svn_version
+      character(len=attribute_length)      :: brdf_flag	
 
       character(len=attribute_length)      :: file_version
    end type global_attributes_s
