@@ -29,6 +29,7 @@
 ! 2014/09/17, Greg McGarragh: Bug fix, forgot to offset y dimension of output.
 ! 2014/10/24, Oliver Sus: added variables cldtype, cloudmask, cccot_pre, lusflags,
 !    dem, and nisemask
+!  2014/12/01, CP added cloud albedo
 !
 ! $Id$
 !
@@ -175,6 +176,18 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
 
    call nc_write_array(ncid,'nisemask',output_data%vid_nisemask,&
            output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+  do i=1,Ctrl%Ind%Nsolar
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+
+      input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
+!	write(*,*)'input_dummy',input_dummy
+! 	write(*,*)'y_id',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+!        write(*,*)'y_id output',output_data%cloud_albedo(ixstart:,iystart:,i)
+      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+              output_data%vid_cloud_albedo(i),output_data%cloud_albedo(ixstart:,iystart:,i), &
+              1,1,n_x,1,1,n_y)
+   end do
 
 
 end subroutine write_primary
