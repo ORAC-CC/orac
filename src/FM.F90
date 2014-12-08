@@ -127,6 +127,7 @@
 !      independent so that contents of CRP and d_CRP do not need to be passed
 !      from the thermal call to the solar call.
 !   20140715, CP: Changed illumination logic.
+!   20141201, CP: added in cloud albedo
 !
 ! Bugs:
 !   None known.
@@ -135,7 +136,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
+subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo,status)
 
    use Ctrl_def
    use ECP_Constants
@@ -157,6 +158,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: X(MaxStateVar)
    real,             intent(out)   :: Y(SPixel%Ind%Ny)
+   real,              intent(out)   :: cloud_albedo(SPixel%Ind%NSolar)
    real,             intent(out)   :: dY_dX(SPixel%Ind%Ny,(MaxStateVar+1))
    integer,          intent(out)   :: status
 
@@ -166,6 +168,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    integer       :: ThF, ThL ! First, last thermal channel indices
    type(GZero_t) :: GZero
    real          :: CRP(SPixel%Ind%Ny, MaxCRProps)
+!   real          :: d_cloud_albedo(SPixel%Ind%NySolar, 2))	
    real          :: d_CRP(SPixel%Ind%Ny, MaxCRProps, 2)
    real          :: BT(SPixel%Ind%NThermal)
    real          :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
@@ -248,9 +251,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
       CRP   = 0.0
       d_CRP = 0.0
 
+
       call FM_Thermal(Ctrl, SAD_LUT, SPixel, &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
-              RTM_Pc, X, GZero, CRP, d_CRP, BT, d_BT, Rad, d_Rad, status)
+              RTM_Pc, X, GZero, CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:), d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:), BT, d_BT, Rad, d_Rad, status)
 
       ! Daytime
       if ((SPixel%Illum(1) .ne. Inight .and. SPixel%Illum(1) .ne. Itwi ) .and. status == 0) then
@@ -284,8 +288,15 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
          Ref   = 0.0
          d_Ref = 0.0
 
-         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
-                 Ref, d_Ref, status)
+         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,:), d_CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,:,:), &
+                 Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast), d_Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,:), status)
+
+         cloud_albedo(:)=CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,IRD)
+!	 write(*,*)'FM CRP',CRP(:,IRD)
+!	 write(*,*)'FM cloud_albedo',cloud_albedo,SPixel%Ind%NSolar,Ctrl%Ind%Nsolar,SPixel%Ind%SolarFirst,SPixel%Ind%SolarLast
+ 
+!        d_cloud_albedo(:,:)=d_CRP(:,IRd,:) 
+
 
          ! Combine the results from the LW and SW forward models
          if (status == 0) then
