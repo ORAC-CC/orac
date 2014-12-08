@@ -20,19 +20,21 @@
 !    CF-1.4.
 ! 2014/09/01, Greg McGarragh: Make use of the general shared routine
 !    nc_put_common_attributes().
-!
+! 2014/12/01 CP added remove global attributes read out directly now in read_config file
 ! $Id: nc_create.F90 2355 2014-09-09 23:16:38Z gmcgarragh $
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, status)
+subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, global_atts,source_atts,status)
 
    use netcdf
 
    use common_constants
    use global_attributes
+   use source_attributes
+
    use orac_ncdf
 
    implicit none
@@ -51,7 +53,8 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, status)
    ! Local
    integer                   :: ierr, xdim, ydim
    character(len=128)        :: temp_string
-   type(global_attributes_s) :: global_atts
+   type(global_attributes_s), intent(inout)  :: global_atts
+   type(source_attributes_s), intent(inout)  :: source_atts
 
 
    !----------------------------------------------------------------------------
@@ -78,14 +81,12 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, status)
    end if
 
 
-   !----------------------------------------------------------------------------
-   ! Set global_attributes structure
-   !----------------------------------------------------------------------------
+  
 
-   ! Global attribute 'Conventions' as defined by CF-1.4, section 2.6.1.
-   global_atts%Conventions               = 'Conventions!!!'
-
-   ! Global attributes for the 'Description of file contents' as defined by
+   !----------------------------------------------------------------------------
+   ! Write global attributes to the netcdf output
+   !----------------------------------------------------------------------------
+  ! Global attributes for the 'Description of file contents' as defined by
    ! CF-1.4, section 2.6.2.
    if (type .eq. 1) then
       global_atts%title = 'ESA CCI Cloud Retrieval Products L2 Primary File'
@@ -96,44 +97,7 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, status)
       stop
    endif
 
-   global_atts%institution               = 'institution!!!'
-   global_atts%source                    = 'source!!!'
-   global_atts%history                   = 'history!!!'
-   global_atts%references                = 'references!!!'
-   global_atts%comment                   = 'comment!!!'
-
-   ! Extra global attributes defined by ORAC
-   global_atts%Project                   = 'Project!!!'
-   global_atts%File_Name                 = 'File_Name!!!'
-   global_atts%UUID                      = 'UUID!!!'
-   global_atts%NetCDF_Version            = 'NetCDF_Version!!!'
-   global_atts%Product_Name              = 'Product_Name!!!'
-
-   temp_string=trim('year!!!')//trim('month!!!')//trim('day!!!')
-   global_atts%Product_Date              = trim(temp_string)
-
-   global_atts%Production_Time           = 'Production_Time!!!'
-   global_atts%L2_Processor              = 'ORAC'
-   global_atts%L2_Processor_Version      = 'L2_Processor_Version!!!'
-   global_atts%Platform                  = 'Platform!!!'
-   global_atts%Sensor                    = 'Sensor!!!'
-
-   global_atts%AATSR_Processing_Version = ' '
-   if (inst_name .eq. 'ATSR' .or. inst_name .eq. 'AATSR') then
-      global_atts%AATSR_Processing_Version = '3.01'
-   endif
-
-   global_atts%Contact_Email             = 'Contact_Email!!!'
-   global_atts%Contact_Website           = 'Contact_Website!!!'
-   global_atts%Keywords                  = 'Keywords!!!'
-   global_atts%Summary                   = 'Summary!!!'
-   global_atts%License                   = 'GNU General Public License (GPL), Version 3'
-
-
-   !----------------------------------------------------------------------------
-   ! Write global attributes to the netcdf output
-   !----------------------------------------------------------------------------
-   call nc_put_common_attributes(ncid, global_atts)
+   call nc_put_common_attributes(ncid, global_atts,source_atts)
 
 
    !----------------------------------------------------------------------------
