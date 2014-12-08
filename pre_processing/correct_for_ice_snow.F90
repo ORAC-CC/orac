@@ -27,6 +27,7 @@ contains
 ! cday           string in   Day of month, as a 2 character string.
 ! channel_info   struct in   Structure summarising the channels to be processed
 ! assume_full_path      in   T: inputs are filenames; F: folder names
+! source_atts struct in   Source attributes
 !                logic
 ! verbose        logic  in   T: print status information; F: don't
 !
@@ -88,7 +89,9 @@ contains
 ! 2014/09/17, CS: nise_mask added in surface_structures.F90,                               
 !   i.e. surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90                       
 !   for correcting the land use map (currently USGS)
+! 2014/1/12, CP: added source atts                               
 !             
+
 ! $Id$
 !
 ! Bugs:
@@ -96,7 +99,7 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
-      surface,cyear,cmonth,cday,channel_info,assume_full_path,verbose)
+      surface,cyear,cmonth,cday,channel_info,assume_full_path,source_atts,verbose)
 
    use channel_structures
    use constants_cloud_typing_pavolonis
@@ -105,10 +108,12 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    use preproc_constants
    use preproc_structures
    use surface_structures
+   use source_attributes
 
    implicit none
 
    ! Arguments
+   type(source_attributes_s),  intent(inout) :: source_atts
    character(len=path_length), intent(in)    :: nise_path
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
    type(preproc_dims_s),       intent(in)    :: preproc_dims
@@ -171,7 +176,9 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
       end if
    end if
    if (verbose) write(*,*)'nise_path_file: ', trim(nise_path_file)
-
+   source_atts%snow_file=trim(nise_path_file)
+   source_atts%sea_ice_file=trim(nise_path_file)
+ write(*,*)'  source_atts%sea_ice_file', source_atts%sea_ice_file
    ! Check that the defined file exists and is readable
    inquire(file=trim(nise_path_file), exist=nise_file_exist, &
         read=nise_file_read)

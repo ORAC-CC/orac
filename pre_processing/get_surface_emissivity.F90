@@ -66,6 +66,7 @@
 ! 19/08/2014, AP: Comment out reading of unused emissivity fields. They will be
 !   used eventually; hence why the code remains.
 ! 15/10/2014, GM: Changes related to supporting an arbitrary set of LW channels.
+! 1/12/2014,  CP: added source attributes
 !
 ! $Id$
 !
@@ -77,7 +78,7 @@
 
 subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
            imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
-           assume_full_path, verbose, surface, preproc_surf)
+           assume_full_path, verbose, surface, preproc_surf,source_atts)
 
    use channel_structures
    use cimss_emissivity
@@ -86,6 +87,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    use preproc_constants
    use preproc_structures
    use surface_structures
+   use source_attributes
 
    implicit none
 
@@ -102,7 +104,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    logical,                     intent(in)    :: verbose
    type(surface_s),             intent(inout) :: surface
    type(preproc_surf_s),        intent(inout) :: preproc_surf
-
+    type(source_attributes_s),  intent(inout)        :: source_atts
    ! Local variables
    character(len=path_length)                         :: cimss_emis_path_file
    type(emis_s)                                       :: emis
@@ -145,6 +147,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
       call select_modis_emiss_file(cyear,cdoy,cimss_emis_path,cimss_emis_path_file)
    end if
    if (verbose) write(*,*) 'cimss_emis_path_file: ', trim(cimss_emis_path_file)
+
+   source_atts%emissivity_file=trim(cimss_emis_path_file)
 
    ! Read the data itself
 #ifdef ONLY_GET_MIXED_CHANNELS
