@@ -68,6 +68,7 @@
 !    2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
 !       variables
 !    2014/09/17, GM: Use the DiFlag* constants instead of integer values.
+!    2014/12/01, CP: added in global and source attribute read capability
 !    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100, as
 !                    otherwise ~30% of converged pixels are lost in l2tol3 processing
 !
@@ -83,19 +84,23 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
+subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts,source_atts, status)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
    use config_def
    use CTRL_def
    use ECP_constants
+   use global_attributes
+   use source_attributes
 
    implicit none
 
    ! Argument declarations
    type(CTRL_t),           intent(out)   :: Ctrl
    type(config_struct),    intent(out)   :: conf
+   type(global_attributes_s), intent(inout) :: global_atts
+   type(source_attributes_s), intent(inout) :: source_atts
    character(*),           intent(out)   :: message
    integer,                intent(in)    :: nargs
    character(FilenameLen), intent(inout) :: drifile
@@ -183,7 +188,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
    write(*,*) 'Ctrl%FID%CONFIG: ',trim(Ctrl%FID%CONFIG)
 
    ! Read config file in order to set all channel related info
-   call read_config_file(Ctrl,conf)
+   call read_config_file(Ctrl,conf, global_atts,source_atts)
    ! Check if input ok
    if (Ctrl%Ind%NAvail .ne. conf%nc) then
       write(*,*) 'ERROR: Ctrl%Ind%NAvail .ne. conf%nc: Problem with file or driver!', &
@@ -697,7 +702,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, status)
    ! used
    Ctrl%RS%Flag = SelmAux ! Selection method
 
-   Ctrl%RS%use_full_brdf = .false.
+   Ctrl%RS%use_full_brdf = .true.
 
    allocate(ref_solar_sea(Ctrl%Ind%NChans))
    ref_solar_sea=0.0
