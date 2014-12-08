@@ -203,6 +203,7 @@
 !    2014/04/02, CP: Fixed bug where temp was not reassigned.
 !    2014/04/02, MJ: Fixed bug where Diag%ss was not initialized.
 !    2014/07/24, AP: Removed unused status variable.
+!    2014/07/24, CP: Added in cloud albedo
 !
 ! Bugs:
 !    None known.
@@ -241,6 +242,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    integer :: stat                ! Local error status flag
    real    :: Y(SPixel%Ind%Ny)    ! TOA reflectances, radiances etc for partly-
                                   ! cloudy conditions. Returned by FM
+   real    :: cloud_albedo(SPixel%Ind%NSolar)    ! cloud albedo Returned by FM
    real    :: dY_dX(SPixel%Ind%Ny,MaxStateVar+1)
                                   ! Derivatives d[ref]/d[tau,Re,pc,f,Ts,Rs]t
    real    :: Kx(SPixel%Ind%Ny, SPixel%Nx)
@@ -336,9 +338,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    ! should be provided un-scaled. Only used in the FM call and Xdiff(?)
    ! AS Mar 2011 assume only 1 cloud class in use so SAD_LUT dimension is 1
    if (stat == 0) &
-      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, stat)
+      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, cloud_albedo, stat)
 
    Diag%Y0(1:SPixel%Ind%Ny)=Y
+ 
 
    ! Convert dY_dX to Kx and Kbj.
    if (stat == 0) &
@@ -597,8 +600,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
          ! Calculate Y for Xn + delta_X. Xplus_dX is currently un-scaled.
          if (stat == 0) &
             call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
-                    dY_dX, stat)
-
+                    dY_dX,cloud_albedo, stat)
+         Diag%cloud_albedo(1:SPixel%Ind%NSolar)=cloud_albedo(1:SPixel%Ind%NSolar)
+	
          ! Set new Kx, Kbj, Sy and SyInv
          if (stat == 0) call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
          if (stat == 0) call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
