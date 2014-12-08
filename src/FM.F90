@@ -158,7 +158,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: X(MaxStateVar)
    real,             intent(out)   :: Y(SPixel%Ind%Ny)
-   real,              intent(out)   :: cloud_albedo(SPixel%Ind%NSolar)
+   real,              intent(out)  :: cloud_albedo(SPixel%Ind%NSolar)
    real,             intent(out)   :: dY_dX(SPixel%Ind%Ny,(MaxStateVar+1))
    integer,          intent(out)   :: status
 
@@ -254,7 +254,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
 
       call FM_Thermal(Ctrl, SAD_LUT, SPixel, &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
-              RTM_Pc, X, GZero, CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:), d_CRP(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,:,:), BT, d_BT, Rad, d_Rad, status)
+              RTM_Pc, X, GZero, CRP, d_CRP, BT, d_BT, Rad, d_Rad, status)
 
       ! Daytime
       if ((SPixel%Illum(1) .ne. Inight .and. SPixel%Illum(1) .ne. Itwi ) .and. status == 0) then
@@ -288,10 +288,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
          Ref   = 0.0
          d_Ref = 0.0
 
-         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,:), d_CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,:,:), &
-                 Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast), d_Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,:), status)
+         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
+                 Ref, d_Ref, status)
 
-         cloud_albedo(:)=CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,IRD)
+         cloud_albedo(:)=CRP(1:SPixel%Ind%NSolar,IRD)
 !        d_cloud_albedo(:,:)=d_CRP(:,IRd,:) 
 
 
