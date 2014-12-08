@@ -63,6 +63,7 @@
 !    30/07/2014, GM: Put the duplicate interpolation code into subroutines.
 !    19/08/2014, AP: Using the preprocessor's interpolation routines.
 !    28/09/2014, GM: Updated to conform with a new arrangement of dimensions.
+!    11/11/2014, CP: Updated to include boundary layer cth correction to temperature profile
 !
 ! Bugs:
 !    None known.
@@ -136,11 +137,13 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
 
    ! Modify profile in boundary layer inversion not implemented yet
-   !     call Blmodification(SPixel)
+          call Blmodification(SPixel)
 
    ! Extrapolate temperature profile into stratosphere to deal with deep
    ! convective clouds primarily in tropics that push through the trop.
-   call extrap_into_tropopause(SPixel)
+	   call extrap_into_tropopause(SPixel)
+
+
 
 
    ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
