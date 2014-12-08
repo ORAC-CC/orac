@@ -89,7 +89,7 @@
 !       Do not assume that Set_CRP_Solar() took care of the mixed channels.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
-!
+!    1st Dec. 2014 CP: added in interpolation for cloud albedo
 ! Bugs:
 !    None known.
 !
@@ -124,7 +124,7 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
                                 	  ! Interpolated gradients of CRPOut in
 					  ! Tau and Re
    integer,                intent(out) :: status
-
+   integer :: test
    ! Local variables
 #ifdef DEBUG
    integer :: i, j
@@ -158,9 +158,23 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITB_u), dCRPOut(:,ITB_u,:), &
            ITB, 0, 0, status)
 
+
+
    call Int_LUT_TauSolRe(SAD_LUT%TFbd(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd), dCRPOut(:,ITFBd,:), &
            ITFBd, status)
+
+
+
+   !
+   !now add in an interpolation of RD to solar zenith  which is equivalent to black sky cloud albedo
+   !
+
+   call Int_LUT_TauSatRe(SAD_LUT%Rd(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:), &
+           IRd, 0, 0, status)
+
+
 
    ! Td is interpolated in Tau, SatZen and Re Only process the channels that are
    ! exclusively solar. Channels with a thermal component are interpolated by
@@ -174,11 +188,15 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
            ITd, 0, 0, status)
-
+ 
    ! RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
+
+
    call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd(Ind%SolarFirst:Ind%SolarLast,:,:,:,:,:), &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), &
            iRBd, status)
+
+
 
 #ifdef DEBUG
 !   write(*,*) ' SetCRPSolar: Tb values (2 channels only)'
