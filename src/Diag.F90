@@ -26,6 +26,7 @@
 !       Added averaging kernel to structure
 !    21th May 2014, Greg McGarragh:
 !       Cleaned up the code.
+!    1st Dec. 2014, CP added cloud albedo
 !
 ! Bugs:
 !   None known.
@@ -78,6 +79,8 @@ module Diag_def
 				    ! solution X for active state variables.
       real          :: AK(MaxStateVar,MaxStateVar)
                                     ! Averaging kernel matrix
+      real          :: cloud_albedo(MaxNumSolar)
+                                    ! Cloud albedo
    end type Diag_t
 
 end module Diag_def
