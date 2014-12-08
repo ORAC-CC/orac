@@ -11,6 +11,7 @@
 ! Name           Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! global_atts    struct  in   Structure detailing NCDF header contents.
+! source_atts    struct  in   Structure detailing source attributes
 ! cyear          string  in   Year, as a 4 character string.
 ! cmonth         string  in   Month of year, as a 2 character string.
 ! cday           string  in   Day of month, as a 2 character string.
@@ -84,6 +85,7 @@
 ! 2014/10/23, OS: Added various variables due to implementation of USGS data,
 !  Pavolonies cloud typing, and NN cloud mask: cldtype, cldmask, cccot_pre,
 !   lusflag, dem, nisemask
+! 2014/01/12, CP: Added in source attributes
 !
 ! $Id$
 !
@@ -91,14 +93,15 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,type,preproc_dims,netcdf_info,channel_info,verbose)
 
    use netcdf
 
    use channel_structures
    use global_attributes
-   use imager_structures
+   use source_attributes
+    use imager_structures
    use orac_ncdf
    use preproc_constants
    use preproc_structures
@@ -107,6 +110,8 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
 
    ! Input
    type(global_attributes_s),      intent(in)    :: global_atts
+   type(source_attributes_s),      intent(in)    :: source_atts
+
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -542,7 +547,7 @@ subroutine netcdf_create_rtm(global_atts,cyear,cmonth,cday,chour,cminute, &
    if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) ncid=netcdf_info%ncid_lwrtm
    if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) ncid=netcdf_info%ncid_swrtm
 
-   call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
+   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle,platform,sensor, &
                                      path,cyear,cmonth,cday,chour,cminute)
 
 
@@ -596,7 +601,7 @@ end subroutine netcdf_create_rtm
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
    platform,sensor,path,type,imager_geolocation,imager_angles,netcdf_info, &
    channel_info,include_full_brdf,verbose)
 
@@ -604,14 +609,16 @@ subroutine netcdf_create_swath(global_atts,cyear,cmonth,cday,chour,cminute, &
 
    use channel_structures
    use global_attributes
+   use source_attributes
    use imager_structures
    use orac_ncdf
    use preproc_constants
 
    implicit none
 
-   ! Input
+   ! Inpu
    type(global_attributes_s),      intent(in)    :: global_atts
+   type(source_attributes_s),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -1276,7 +1283,7 @@ endif
    if (type .eq. NETCDF_OUTPUT_FILE_MSI) ncid=netcdf_info%ncid_msi
    if (type .eq. NETCDF_OUTPUT_FILE_UV)  ncid=netcdf_info%ncid_scan
 
-   call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
+   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle,platform,sensor, &
                                      path,cyear,cmonth,cday,chour,cminute)
 
 
@@ -1296,6 +1303,7 @@ end subroutine netcdf_create_swath
 ! Name           Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! global_atts    struct  in   Structure detailing NCDF header contents.
+! source_atts    struct  in   Structure detailing source file information
 ! cyear          string  in   Year, as a 4 character string.
 ! cmonth         string  in   Month of year, as a 2 character string.
 ! cday           string  in   Day of month, as a 2 character string.
@@ -1317,11 +1325,13 @@ end subroutine netcdf_create_swath
 !    all the nc_create_file_*() routines.
 ! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
+! 1/12/2014 CP : added source attributes
+
 !    common library.
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
+subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
      platform,sensor,path,preproc_dims,imager_geolocation,netcdf_info, &
      channel_info,verbose)
 
@@ -1329,6 +1339,8 @@ subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
 
    use channel_structures
    use global_attributes
+   use source_attributes
+
    use imager_structures
    use orac_ncdf
    use preproc_constants
@@ -1338,6 +1350,7 @@ subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
 
    ! Input
    type(global_attributes_s),      intent(in)    :: global_atts
+   type(source_attributes_s),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -1503,7 +1516,7 @@ subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
    ncid=netcdf_info%ncid_config
 
    ! set up attributes common to all output files
-   call netcdf_put_common_attributes(ncid,global_atts,ctitle,platform,sensor, &
+   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle,platform,sensor, &
                                      path, cyear,cmonth,cday,chour,cminute)
 
 
@@ -1519,18 +1532,20 @@ subroutine netcdf_create_config(global_atts,cyear,cmonth,cday,chour,cminute, &
 end subroutine netcdf_create_config
 
 
-subroutine netcdf_put_common_attributes(ncid,global_atts,title,platform,sensor, &
+subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title,platform,sensor, &
                                         path,cyear,cmonth,cday,chour,cminute)
 
    use netcdf
 
    use global_attributes
+   use source_attributes
    use orac_ncdf
 
    implicit none
 
    integer,                        intent(in) :: ncid
    type(global_attributes_s),      intent(in) :: global_atts
+   type(source_attributes_s),      intent(in) :: source_atts
    character(len=file_length),     intent(in) :: title
    character(len=platform_length), intent(in) :: platform
    character(len=sensor_length),   intent(in) :: sensor
@@ -1544,8 +1559,10 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,title,platform,sensor, 
    character(len=platform_length) :: PLATFORM_UPPER_CASE
    integer                        :: position,length
    type(global_attributes_s)      :: global_atts2
+   type(source_attributes_s)      :: source_atts2
 
    global_atts2 = global_atts
+   source_atts2 = source_atts	
 
    global_atts2%title  = trim(title)
    global_atts2%source = 'source!!!'
@@ -1555,6 +1572,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,title,platform,sensor, 
    global_atts2%File_Name    = trim(path(position+1:length))
 
    global_atts2%Product_Name = 'Product_Name!!!'
+   global_atts2%svn_version = 'xxx'
 
    global_atts2%Product_Date = trim(cyear)//trim(cmonth)//trim(cday)// &
                                trim(chour)//trim(cminute)
@@ -1569,6 +1587,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,title,platform,sensor, 
       global_atts2%AATSR_Processing_Version = '3.01'
    endif
 
-   call nc_put_common_attributes(ncid, global_atts2)
+   call nc_put_common_attributes(ncid, global_atts2,source_atts2)
+ 
 
 end subroutine netcdf_put_common_attributes
