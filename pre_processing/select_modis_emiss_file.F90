@@ -30,6 +30,7 @@
 ! 2013/11/01, GM: Cleaned up code.
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/26, MJ: fixed error with data type of year for mod-operation.
+! 2014/11/26, CP: modified for chnage in file versioning numbering prior to 2007
 
 ! $Id$
 !
@@ -124,10 +125,20 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
 
    emis_date_s=dates_s(pos)
 
-   cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
+! files earlier than 2007 do not have the version number in the name
+
+  if ( year .le. 2007) then
+     cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
+        '/global_emis_inf10_monthFilled_MYD11C3.A'// &
+        trim(adjustl(cyear))// &
+        trim(adjustl(emis_date_s))//'.nc'
+	else 
+
+   	cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
         '/global_emis_inf10_monthFilled_MYD11C3.A'// &
         trim(adjustl(cyear))// &
         trim(adjustl(emis_date_s))//'.041'//'.nc'
+   endif
 
    ! Check that the defined file exists and is readable
    inquire(file=trim(cimss_emis_path_file), exist=cimss_emis_file_exist, &
