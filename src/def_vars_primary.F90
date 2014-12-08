@@ -41,9 +41,7 @@
 !    library.
 ! 2014/10/24, OS: Some minor refactoring. Added output variables cldtype,
 !    cldmask, cccot_pre, lusflag, DEM, and nisemask
-! 2014/11/25, AP: Move scaling/offset definitions to output_routines.
-! 2014/12/01, OS: added flag 9 = prob_opaque_ice to Pavolonis cloud type
-!
+! 2010/11/12 CP added cloud albedo
 ! $Id$
 !
 ! Bugs:
@@ -70,7 +68,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
    character(len=512) :: input_dummy3
-   integer            :: ierr
+   integer            :: ierr,i,j
    integer            :: iviews
    logical            :: verbose = .false.
 
@@ -843,6 +841,46 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            valid_max     = output_data%nisemask_vmax, &
            flag_values   = '0b, 1b', &
            flag_meanings = 'snow/ice free, snow/ice')
+
+   !----------------------------------------------------------------------------
+   !cloud a albedo_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,Ctrl%Ind%Nsolar
+
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+
+      do j=1,Ctrl%Ind%Nsolar
+         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ysolar(j)) then
+            output_data%cloud_albedo_scale(i)=0.0001
+            output_data%cloud_albedo_offset(i)=0.0
+            output_data%cloud_albedo_vmin(i)=0
+            output_data%cloud_albedo_vmax(i)=11000
+
+            input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
+            input_dummy2='cloud_albedo in channel no '//trim(adjustl(input_num))
+
+            call nc_def_var_short_packed_float( &
+                    ncid, &
+                    dims_var, &
+                    trim(adjustl(input_dummy)), &
+                    output_data%vid_cloud_albedo(i), &
+                    verbose,ierr, &
+                    long_name     = trim(adjustl(input_dummy2)), &
+                    standard_name = trim(adjustl(input_dummy)), &
+                    fill_value    = sint_fill_value, &
+                    scale_factor  = output_data%cloud_albedo_scale(i), &
+                    add_offset    = output_data%cloud_albedo_offset(i), &
+                    valid_min     = output_data%cloud_albedo_vmin(i), &
+                    valid_max     = output_data%cloud_albedo_vmax(i))
+
+            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+         end if
+      end do
+   end do
+
+
+
+
 
    if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
