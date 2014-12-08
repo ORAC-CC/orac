@@ -137,14 +137,11 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
 
    ! Modify profile in boundary layer inversion not implemented yet
-          call Blmodification(SPixel)
+   call Blmodification(SPixel)
 
    ! Extrapolate temperature profile into stratosphere to deal with deep
    ! convective clouds primarily in tropics that push through the trop.
-	   call extrap_into_tropopause(SPixel)
-
-
-
+   call extrap_into_tropopause(SPixel)
 
    ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
    ! one per channel, to convert).

@@ -21,7 +21,8 @@
 !    nc_def_var_*() routines.
 ! 2014/10/24, OS: removed superfluous commata in write statements, causing
 !    CRAY-ftn compiler to exit
-!  2014/12/01, CP: added new source attributes 
+! 2014/12/01, CP: added new source attributes
+!
 ! $Id$
 !-------------------------------------------------------------------------------
 

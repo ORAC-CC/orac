@@ -104,7 +104,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    logical,                     intent(in)    :: verbose
    type(surface_s),             intent(inout) :: surface
    type(preproc_surf_s),        intent(inout) :: preproc_surf
-    type(source_attributes_s),  intent(inout)        :: source_atts
+    type(source_attributes_s),  intent(inout) :: source_atts
    ! Local variables
    character(len=path_length)                         :: cimss_emis_path_file
    type(emis_s)                                       :: emis

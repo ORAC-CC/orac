@@ -41,7 +41,10 @@
 !    library.
 ! 2014/10/24, OS: Some minor refactoring. Added output variables cldtype,
 !    cldmask, cccot_pre, lusflag, DEM, and nisemask
-! 2010/11/12 CP added cloud albedo
+! 2014/11/25, AP: Move scaling/offset definitions to output_routines. 
+! 2014/12/01, OS: added flag 9 = prob_opaque_ice to Pavolonis cloud type 
+! 2010/11/12, CP: added cloud albedo
+!
 ! $Id$
 !
 ! Bugs:

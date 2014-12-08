@@ -220,7 +220,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    implicit none
    type(global_attributes_s) :: global_atts
-   type(source_attributes_s):: source_atts
+   type(source_attributes_s) :: source_atts
    type(config_struct) :: conf
    type(CTRL_t)        :: Ctrl
    type(Data_t)        :: MSI_Data
@@ -345,13 +345,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! read it, if not leave it to the Read_Driver routine to deal with it
 
 
-!#ifndef WRAPPER
-!   nargs=command_argument_count()
-!#else
-!   nargs=-1
-!#endif
+#ifndef WRAPPER
+   nargs=command_argument_count()
+#else
+   nargs=-1
+#endif
 
-nargs=1
    write(*,*) 'inside preproc',nargs
 
    if (nargs .eq. 1 ) then
@@ -557,29 +556,26 @@ nargs=1
       if (status == 0) then
          write(*,*) 'path1: ',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
          call nc_create(Ctrl%FID%L2_primary_outputpath_and_file, ncid_primary, &
-            ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 1, global_atts,source_atts,status)
+            ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 1, &
+            global_atts, source_atts, status)
 
          write(*,*) 'path2: ',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
          call nc_create(Ctrl%FID%L2_secondary_outputpath_and_file, ncid_secondary, &
-           ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 2, global_atts,source_atts, status)
+           ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 2, &
+           global_atts, source_atts, status)
 
          ! Allocate output arrays
-write(*,*) 'allocate primary' 
          call alloc_output_data_primary(ixstart,ixstop,iystart,iystop, &
                                         Ctrl%Ind%NViews,Ctrl%Ind%Ny, output_data_1)
-write(*,*) 'allocate secondary' 
          call alloc_output_data_secondary(ixstart,ixstop,iystart,iystop, &
                                           Ctrl%Ind%Ny,MaxStateVar,lcovar, &
                                           output_data_2)
-write(*,*) 'def vars primary' 
          ! Create NetCDF files and variables
          call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1, &
                                status)
-write(*,*) 'def vars sec' 
          call def_vars_secondary(Ctrl, conf, lcovar, ncid_secondary, dims_var, &
                                  output_data_2, status)
       end if
-write(*,*) 'def vars sec end' 
 
       ! Set i, the counter for the image x dimension, for the first row processed.
       i = ixstart
@@ -601,7 +597,6 @@ write(*,*) 'def vars sec end'
       allocate(avj_line(iystart:iystop))
       avj_line=0.0
 
-write(*,*) 'aa' 
 #ifdef USE_TIMING
    m1=mclock()
    write(*,111) m1
@@ -614,27 +609,24 @@ write(*,*) 'aa'
    write(*,115) cpu_secs
 #endif
 
-!#ifdef _OPENMP
+#ifdef _OPENMP
       ! Along track loop is parallelized with OpenMP
-!      nthreads = omp_get_max_threads()
-!      write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
+      nthreads = omp_get_max_threads()
+      write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
 
       ! Start OMP section by spawning the threads
       !$OMP PARALLEL &
       !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_id,RTM_Pc,SPixel,SPixel_Alloc,RTM_Pc_Alloc,Diag,conv,dummyreal) &
       !$OMP FIRSTPRIVATE(status)
-!      thread_id = omp_get_thread_num()
-!      write(*,*) 'Thread ', thread_id+1, 'is active'
-!#endif
+      thread_id = omp_get_thread_num()
+      write(*,*) 'Thread ', thread_id+1, 'is active'
+#endif
 
-write(*,*) 'bb'       
       !  Allocate sizes of SPixel sub-structure arrays
       call Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
       if (status == 0) RTM_Pc_Alloc = .true.
-write(*,*) 'cc'       
       call Alloc_SPixel(Ctrl, RTM, SPixel, status)
       if (status == 0) SPixel_Alloc = .true.
-write(*,*) 'dd'       
 
       ! Set RTM pressure values in SPixel (will not change from here on)
       SPixel%RTM%LW%Np = RTM%LW%Np
@@ -765,21 +757,21 @@ write(*,*) 'dd'
                      call Zero_Diag(Ctrl, Diag, status)
                   end if
                end if ! btest if closes
-!write(*,*) 'gg'       
+
                ! Write the outputs
 
                conv=1
                if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
                   conv=0
                end if
-!write(*,*)'m6'
+
                ! Copy output to spixel_scan_out structures
                call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
                                     Diag, output_data_1, status)
-!write(*,*)'m5'
+
                call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
                                       output_data_2, status)
-!write(*,*)'m4'
+
 
             end if ! End of status check after Get_SPixel
 
@@ -816,7 +808,6 @@ write(*,*) 'dd'
                               iystart, iystop, output_data_2, status)
       end if
 
-write(*,*)'m3'
       if (status == 0) then
          TotPix    = sum(totpix_line)
          Totmissed = sum(totmissed_line)
@@ -841,7 +832,7 @@ write(*,*)'m3'
       end if
 
    end if  ! End of status check at start of product generation section
-write(*,*)'m1'
+
 
    ! Deallocate some vectors for openMP
    deallocate(totpix_line)
@@ -867,7 +858,6 @@ write(*,*)'m1'
    if (SAD_LUT_Alloc) call Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
    if (RTM_alloc)     call Dealloc_RTM(Ctrl, RTM, status)
 
-write(*,*)'m2'
    call Dealloc_Data(Ctrl, MSI_Data, status)
 
    if (status == 0) then

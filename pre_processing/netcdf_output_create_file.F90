@@ -547,8 +547,9 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour,cmi
    if (type .eq. NETCDF_OUTPUT_FILE_LWRTM) ncid=netcdf_info%ncid_lwrtm
    if (type .eq. NETCDF_OUTPUT_FILE_SWRTM) ncid=netcdf_info%ncid_swrtm
 
-   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle,platform,sensor, &
-                                     path,cyear,cmonth,cday,chour,cminute)
+   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
+                                     platform,sensor,path,cyear,cmonth,cday, &
+                                     chour,cminute)
 
 
    ! close definition section
@@ -601,9 +602,9 @@ end subroutine netcdf_create_rtm
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
-   platform,sensor,path,type,imager_geolocation,imager_angles,netcdf_info, &
-   channel_info,include_full_brdf,verbose)
+subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+   cminute,platform,sensor,path,type,imager_geolocation,imager_angles, &
+   netcdf_info,channel_info,include_full_brdf,verbose)
 
    use netcdf
 
@@ -616,7 +617,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,c
 
    implicit none
 
-   ! Inpu
+   ! Input
    type(global_attributes_s),      intent(in)    :: global_atts
    type(source_attributes_s),      intent(in)    :: source_atts
    character(len=date_length),     intent(in)    :: cyear
@@ -1283,8 +1284,9 @@ endif
    if (type .eq. NETCDF_OUTPUT_FILE_MSI) ncid=netcdf_info%ncid_msi
    if (type .eq. NETCDF_OUTPUT_FILE_UV)  ncid=netcdf_info%ncid_scan
 
-   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle,platform,sensor, &
-                                     path,cyear,cmonth,cday,chour,cminute)
+   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
+                                     platform,sensor,path,cyear,cmonth,cday, &
+                                     chour,cminute)
 
 
    ! close definition section
@@ -1331,9 +1333,9 @@ end subroutine netcdf_create_swath
 !
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
-     platform,sensor,path,preproc_dims,imager_geolocation,netcdf_info, &
-     channel_info,verbose)
+subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
+     chour,cminute,platform,sensor,path,preproc_dims,imager_geolocation, &
+     netcdf_info,channel_info,verbose)
 
    use netcdf
 
@@ -1516,8 +1518,9 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,chour,
    ncid=netcdf_info%ncid_config
 
    ! set up attributes common to all output files
-   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle,platform,sensor, &
-                                     path, cyear,cmonth,cday,chour,cminute)
+   call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
+                                     platform,sensor,path, cyear,cmonth,cday, &
+                                     chour,cminute)
 
 
    ! close definition section
@@ -1532,8 +1535,9 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,chour,
 end subroutine netcdf_create_config
 
 
-subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title,platform,sensor, &
-                                        path,cyear,cmonth,cday,chour,cminute)
+subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
+                                        platform,sensor,path,cyear,cmonth,cday, &
+                                        chour,cminute)
 
    use netcdf
 

@@ -67,7 +67,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    integer            :: k
    integer(kind=sint) :: temp_short_ctp_error
    real(kind=sreal)   :: temp_real, temp_real_ctp_error
-   real(kind=sreal) :: dummyreal
+   real(kind=sreal)   :: dummyreal
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------

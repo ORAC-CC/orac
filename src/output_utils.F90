@@ -20,14 +20,17 @@
 !    CF-1.4.
 ! 2014/09/01, Greg McGarragh: Make use of the general shared routine
 !    nc_put_common_attributes().
-! 2014/12/01 CP added remove global attributes read out directly now in read_config file
+! 2014/12/01, CP: added remove global attributes read out directly now in
+!    read_config file
+!
 ! $Id: nc_create.F90 2355 2014-09-09 23:16:38Z gmcgarragh $
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, global_atts,source_atts,status)
+subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
+     global_atts, source_atts, status)
 
    use netcdf
 

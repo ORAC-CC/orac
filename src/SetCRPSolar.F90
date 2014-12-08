@@ -89,7 +89,9 @@
 !       Do not assume that Set_CRP_Solar() took care of the mixed channels.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
-!    1st Dec. 2014 CP: added in interpolation for cloud albedo
+!    1st Dec. 2014, CP:
+!       Added in interpolation for cloud albedo
+!
 ! Bugs:
 !    None known.
 !

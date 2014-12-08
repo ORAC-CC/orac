@@ -49,7 +49,7 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
    integer,                   intent(in)    :: iystart
    integer,                   intent(in)    :: iystop
    integer,                   intent(in)    :: NViews
-  integer,                     intent(in)    :: Ny
+  integer,                     intent(in)   :: Ny
    type(output_data_primary), intent(inout) :: output_data
 
 
@@ -167,7 +167,7 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
    allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
    output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
 
-write(*,*),'alloc_ouput ny ',ny
+
    allocate(output_data%vid_cloud_albedo(Ny))
    output_data%vid_cloud_albedo=0
 

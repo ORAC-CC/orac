@@ -96,7 +96,10 @@
 ! 15/10/2014, GM: Changes related to supporting an arbitrary set of SW channels.
 !    Still limited by availability from the land and ocean reflectance sources.
 ! 23/10/2014, OS: added support for reading full BRDF file path
-! 1/12/2014, CP: added source_atts
+! 02/12/2014, GM: Fixed handling of night.  Values that are not dependent on 
+!    solar zenith angle (albedo, rho_dv, and rho_dd) are computed at night. 
+!    Values that are (rho_0v and rho_0d) are not computed and set to fill. 
+! 01/12/2014, CP: added source_atts
 !
 ! $Id$
 !

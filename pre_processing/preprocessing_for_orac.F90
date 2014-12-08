@@ -199,17 +199,20 @@
 ! 2014/09/11: AP Remove one level from preproc_prtm grid as it wasn't written
 !                to or necessary.
 ! 2014/10/23: OS added reading of USGS land use/DEM file; implemented
-!                Pavolonis cloud typing algorithm; built in new neural network cloud mask
-!                in preprocessing, based on radiances and auxiliary data;
-!                implemented CRAY fortran-based alternative for scratch
+!                Pavolonis cloud typing algorithm; built in new neural network
+!                cloud mask in preprocessing, based on radiances and auxiliary
+!                data; implemented CRAY fortran-based alternative for scratch
 !                file I/O of ERA-Interim data
-! 2014/11/04: OS ecmwf structure is now passed as argument to Pavolonis/NN cloud mask
+! 2014/11/04: OS ecmwf structure is now passed as argument to Pavolonis/NN cloud
+!                mask
 ! 2014/11/21: GM Remove the no longer used cgrid_flag from driver file input.
 !                Was previously removed from command line input.
 ! 2014/11/21: GM Add modis_brdf_path to command line input which was previously
 !                added to driver file input.
 ! 2014/12/01: OS Platform and DOY now passed as arguments to cloud_type call
-! 2014/12/01: CP: add new global and source attributes
+! 2014/12/04: OS wrapper job ID is new call argument and is passed to SR
+!                read_ecmwf_grib
+! 2014/12/01: CP add new global and source attributes
 !
 ! $Id$
 !
@@ -835,18 +838,18 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
            preproc_dims, surface, cyear, cmonth, cday, channel_info, &
            assume_full_paths,source_atts, verbose)
-write(*,*)' after  source_atts%sea_ice_file', source_atts%sea_ice_file
+
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase'
       call cloud_type(surface, imager_flags, imager_angles, &
            imager_geolocation, imager_measurements, imager_pavolonis, &
            ecmwf, platform, doy, verbose)
 
 
-   ! Create config file
-      call netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
-        trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
-        preproc_dims,imager_geolocation,netcdf_info,channel_info,verbose)
+      ! Create config file
+      call netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,&
+           chour,cminute,platform,sensor,&
+           trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
+           preproc_dims,imager_geolocation,netcdf_info,channel_info,verbose)
 
 
      

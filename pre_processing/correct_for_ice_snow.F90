@@ -86,12 +86,11 @@ contains
 !   returning albedo > 1
 ! 2014/08/05, AP: Explicit bilinear interpolation, rather than function call.
 !   Removing old code.
-! 2014/09/17, CS: nise_mask added in surface_structures.F90,                               
-!   i.e. surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90                       
+! 2014/09/17, CS: nise_mask added in surface_structures.F90,
+!   i.e. surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90
 !   for correcting the land use map (currently USGS)
 ! 2014/1/12, CP: added source atts                               
-!             
-
+!
 ! $Id$
 !
 ! Bugs:
@@ -99,7 +98,8 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
-      surface,cyear,cmonth,cday,channel_info,assume_full_path,source_atts,verbose)
+      surface,cyear,cmonth,cday,channel_info,assume_full_path,source_atts, &
+      verbose)
 
    use channel_structures
    use constants_cloud_typing_pavolonis
@@ -178,7 +178,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    if (verbose) write(*,*)'nise_path_file: ', trim(nise_path_file)
    source_atts%snow_file=trim(nise_path_file)
    source_atts%sea_ice_file=trim(nise_path_file)
- write(*,*)'  source_atts%sea_ice_file', source_atts%sea_ice_file
+
    ! Check that the defined file exists and is readable
    inquire(file=trim(nise_path_file), exist=nise_file_exist, &
         read=nise_file_read)

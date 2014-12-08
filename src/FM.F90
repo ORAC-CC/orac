@@ -292,9 +292,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
                  Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast), d_Ref(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,:), status)
 
          cloud_albedo(:)=CRP(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast,IRD)
-!	 write(*,*)'FM CRP',CRP(:,IRD)
-!	 write(*,*)'FM cloud_albedo',cloud_albedo,SPixel%Ind%NSolar,Ctrl%Ind%Nsolar,SPixel%Ind%SolarFirst,SPixel%Ind%SolarLast
- 
 !        d_cloud_albedo(:,:)=d_CRP(:,IRd,:) 
 
 
