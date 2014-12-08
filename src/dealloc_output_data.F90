@@ -25,6 +25,7 @@
 ! 2014/05/27, Greg McGarragh: Some cleanup.
 ! 2014/10/24, Oliver Sus: added deallocation of cldtype, cldmask, cccot_pre,
 !    lusflag, dem, nisemask
+! 2012/12/01, Caroline Poulsen: added in cloud albedo
 !
 ! $Id$
 !
@@ -43,6 +44,16 @@ subroutine dealloc_output_data_primary(output_data)
    deallocate(output_data%vid_sol_zen)
    deallocate(output_data%vid_sat_zen)
    deallocate(output_data%vid_rel_azi)
+
+   deallocate(output_data%vid_cloud_albedo)
+   deallocate(output_data%cloud_albedo)
+
+   deallocate(output_data%cloud_albedo_vmin)
+   deallocate(output_data%cloud_albedo_vmax)
+   deallocate(output_data%cloud_albedo_scale)
+   deallocate(output_data%cloud_albedo_offset)
+
+
 
    deallocate(output_data%time)
 

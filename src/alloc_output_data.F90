@@ -29,6 +29,7 @@
 ! 2014/05/27, Greg McGarragh: Some cleanup.
 ! 2014/10/24, Oliver Sus: added allocation of cldtype, cldmask, cccot_pre,
 !    lusflag, dem, nisemask
+! 2014/12/01, CP added in cloud albedo
 !
 ! $Id$
 !
@@ -36,7 +37,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews, &
+subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
                                      output_data)
 
    use ECP_Constants
@@ -48,6 +49,7 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews, &
    integer,                   intent(in)    :: iystart
    integer,                   intent(in)    :: iystop
    integer,                   intent(in)    :: NViews
+  integer,                     intent(in)    :: Ny
    type(output_data_primary), intent(inout) :: output_data
 
 
@@ -164,6 +166,24 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews, &
 
    allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
    output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
+write(*,*),'alloc_ouput ny ',ny
+   allocate(output_data%vid_cloud_albedo(Ny))
+   output_data%vid_cloud_albedo=0
+
+
+   allocate(output_data%cloud_albedo_scale(Ny))
+   output_data%cloud_albedo_scale=sreal_fill_value
+   allocate(output_data%cloud_albedo_offset(Ny))
+   output_data%cloud_albedo_offset=sreal_fill_value
+   allocate(output_data%cloud_albedo_vmin(Ny))
+   output_data%cloud_albedo_vmin=sint_fill_value
+   allocate(output_data%cloud_albedo_vmax(Ny))
+   output_data%cloud_albedo_vmax=sint_fill_value
+
+
+   allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%cloud_albedo=sint_fill_value
 
 end subroutine alloc_output_data_primary
 
