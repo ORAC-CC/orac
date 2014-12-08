@@ -24,6 +24,7 @@
 !                          SADChan Planck coefficients.
 !        3rd Dec 2014, OS: changed nrows of coefficients and reshape command to include
 !                          new AATSR coefficients
+!   2014/12/01 CP added check for missing AATSR 12 um channel
 !
 ! Bugs:
 !    None known
@@ -282,6 +283,7 @@ contains
     !---- CC4CL requirements and adaptions for Pavolonis alg.
 
     integer(kind=sint) :: ch3a_on_avhrr_flag
+    integer(kind=sint) :: ch7_on_atsr_flag	
     real(kind=sreal)   :: glint_angle, coszen
     real(kind=sreal)   :: BTD_Ch3b_Ch4
     real(kind=sreal)   :: BTD_Ch4_Ch5
@@ -434,6 +436,15 @@ contains
 
           endif
 
+! check is ATSR 12um channel is missing
+!	  write(*,*) ' imager_measurements',imager_measurements%DATA(i,j,:)
+          if ( imager_measurements%DATA(i,j,5) .ge. 100 .and. &
+               & imager_measurements%DATA(i,j,6) .lt. 100.) then
+	       ch7_on_atsr_flag = sym%NO 
+
+	  endif
+
+
           !-- check for sunglint and save result: 
           !   imager_pavolonis%SUNGLINT_MASK(i,j)
 
@@ -526,6 +537,15 @@ contains
                   & imager_pavolonis%CLDTYPE(i,j) = sym%PROB_OPAQUE_ICE_TYPE
              cycle
           endif
+
+
+! 12um channel can occasionally be missing particuarly for AATSR instrument
+          ! also when ch7 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
+          if ( ch7_on_atsr_flag == -1 ) then
+             imager_pavolonis%CLDTYPE(i,j) = sym%PROB_OPAQUE_ICE_TYPE
+             cycle
+          endif
+
 
           ! calculate ch3b emissivity and reflectance
           PlanckInv_out  = PlanckInv( platform, imager_measurements%DATA(i,j,4) )
