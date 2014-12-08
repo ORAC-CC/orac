@@ -136,7 +136,7 @@ license='http://proj.badc.rl.ac.uk/orac/wiki/License'
 # assume the hierachy of the ORAC repository
 orac_folder=$orac_repos/src
 preproc_folder=$orac_repos/pre_processing
-postproc_folder=$orac_repos/../post_processing
+postproc_folder=$orac_repos/post_processing
 tool_folder=$orac_repos/tools
 in_folder=$data_repos/testinput
 out_folder=$data_repos/testoutput
