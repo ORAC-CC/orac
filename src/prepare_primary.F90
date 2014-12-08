@@ -34,6 +34,7 @@
 ! 2014/09/17, GM: Fixed handling of missing values in some cases.
 ! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
 !    dem, and nisemask
+! 2014/11/15, CP: added cloud albedo
 ! 2014/11/25, AP: Fixed bug in writing cth|ctt_uncertainty.
 !
 ! $Id$
@@ -66,7 +67,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    integer            :: k
    integer(kind=sint) :: temp_short_ctp_error
    real(kind=sreal)   :: temp_real, temp_real_ctp_error
-
+   real(kind=sreal) :: dummyreal
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
@@ -405,5 +406,23 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
         &%YSeg0), kind=byte)
+
+ 
+ !----------------------------------------------------------------------------
+   ! cloud_albedo
+   !----------------------------------------------------------------------------
+   do k=1,Ctrl%Ind%Nsolar
+      dummyreal=Diag%cloud_albedo(k)
+!      write(*,*),'prepare cloud_albedo dummyreal',dummyreal
+      call prepare_short_packed_float( &
+           dummyreal, output_data%cloud_albedo(i,j,k), &
+           output_data%cloud_albedo_scale(k), output_data%cloud_albedo_offset(k), &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cloud_albedo_vmin(k), output_data%cloud_albedo_vmax(k), &
+           sint_fill_value)
+   end do
+
+
+
 
 end subroutine prepare_primary
