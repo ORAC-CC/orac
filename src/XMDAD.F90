@@ -107,6 +107,7 @@
 !    2012/10/02, CP: Changed selection of first guess height.
 !    2013/11/22, MJ: Rewrites selection of ctp FG/AP based on BT interpolation.
 !    2014/08/01, GM: Cleaned up the code.
+!    2014/12/08, CP: Made error output more specific
 !
 ! Bugs:
 !    None known.
@@ -180,6 +181,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
          if (SetErr) Err = MDADErrTau
       else ! Can't calculate Tau unless it's daylight
+      write(*,*)'Cant calculate Tau unless its daylight'
          status = XMDADMeth
       end if
 
@@ -214,9 +216,11 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
             !FG does not need Error but AP does
             Err = MDADErrPc
+	    write(*,*)'FG does not need Error but AP does'
             status = XMDADMeth
          end if
       else ! Can't calculate Pc if required LW channels not selected
+      	   write(*,*)'Cant calculate Pc if required LW channels not selected'
          status = XMDADMeth
       end if
 
