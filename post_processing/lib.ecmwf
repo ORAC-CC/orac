@@ -1,0 +1,12 @@
+#POSTPROC
+
+#Set up libraries and includes
+INC=-I./
+LIBS=$(ECLIB)
+
+#obsolete:
+#NCDFLIB=/cmsaf/cmsaf-cld4/mjerg/libs/netcdf_gfortran_337/lib
+#NCDFINCLUDE=/cmsaf/cmsaf-cld4/mjerg/libs/netcdf_gfortran_337/include
+#LIBS=-L$(NCDFLIB) -lnetcdf 
+#INC=-I./  -I$(NCDFINCLUDE)
+

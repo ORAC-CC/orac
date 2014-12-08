@@ -1,0 +1,17 @@
+#POSTPROC
+F90=ec_f90
+LD=ec_f90
+
+#set compiler flags for ECMWF
+#performance
+#omp
+#FFLAGS=-g -O3  -qsmp=omp -qstrict  -qipa -qfullpath -qsaveopt -qnosave  -qarch=auto -bmaxstack:0x8000000000 
+#serial
+FFLAGS=-g -O3 -qnosmp -qstrict -qipa -qfullpath  -qsaveopt  -qarch=auto
+
+#debugging and checking
+#FFLAGS=-g -C  -qnosmp -qsaveopt -qextcheck -qflttrap -qsigtrap
+#FFLAGS=-qnooptimize -qextchk -qsaveopt -qsmp=noopt -qinitauto=7fc00000 -qflttrap -qsigtrap -qcheck -qdbg -qfullpath -qhalt -qwarn64 -qarch=auto -bnoquiet
+
+
+

@@ -1,0 +1,57 @@
+'/scratch/ms/de/sf4/esa_cci_c_proc/output/20081001_MODIS_AQUA_proc_2_process_ID10136680_US1366622804/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612/main/Climate Change Initiative - European Space Agency_Deutscher Wetterdienst_MODIS_ORACV1.0_AQUA_20130422T092647Z_200810010000_1.0WAT.primary.nc'
+'/scratch/ms/de/sf4/esa_cci_c_proc/output/20081001_MODIS_AQUA_proc_2_process_ID10136680_US1366622804/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612/main/Climate Change Initiative - European Space Agency_Deutscher Wetterdienst_MODIS_ORACV1.0_AQUA_20130422T092647Z_200810010000_1.0ICE.primary.nc'
+'/scratch/ms/de/sf4/esa_cci_c_proc/output/20081001_MODIS_AQUA_proc_2_process_ID10136680_US1366622804/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612/main/Climate Change Initiative - European Space Agency_Deutscher Wetterdienst_MODIS_ORACV1.0_AQUA_20130422T092647Z_200810010000_1.0WAT.secondary.nc'
+'/scratch/ms/de/sf4/esa_cci_c_proc/output/20081001_MODIS_AQUA_proc_2_process_ID10136680_US1366622804/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612/main/Climate Change Initiative - European Space Agency_Deutscher Wetterdienst_MODIS_ORACV1.0_AQUA_20130422T092647Z_200810010000_1.0ICE.secondary.nc'
+'/scratch/ms/de/sf4/esa_cci_c_proc/output/20081001_MODIS_AQUA_proc_2_process_ID10136680_US1366622804/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612/post/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612.primary.nc'
+'/scratch/ms/de/sf4/esa_cci_c_proc/output/20081001_MODIS_AQUA_proc_2_process_ID10136680_US1366622804/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612/post/MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612.secondary.nc'
+0.1 0.1
+30.0 200.0
+0.1 0.1
+999.0 999.0
+1000000.0
+1.5
+1.39
+0.2
+0.3
+1 2 20 31 32
+MODIS
+1
+0
+19.0
+19.0
+19.0
+14.0
+150.0
+275.0
+295.0
+280.0
+907.0
+957.0
+50.0
+1100.0
+100000.0
+a2702a8e-5a0d-4d61-ba7a-c5ef0a4ae442
+409036d9-e76b-4faf-9d3d-69e04e4cedff
+AQUA
+20130422T092647Z
+'L2 final output'
+L2
+3.6.3
+CF-1.5
+'Deutscher Wetterdienst'
+ORAC
+1.0
+contact.cloudcci@dwd.de
+www.esa-cloud-cci.info
+www.esa-cloud-cci.info
+'Dataset produced by DWDs ORAC prototype retrieval system installed at ECMWF in first phase of ESA Cloud CCI.'
+'This dataset contains Level-2 cloud products from satellite observations. Level-2 data are raw satellite observations processed to geophysical quantities but in the original satellite orbit.'
+'satellite,observation,cloud'
+'These data were produced at ESACCI as part of the ESA Cloud CCI project.'
+'Climate Change Initiative - European Space Agency'
+'ESA CCI Data Policy: free and open access'
+1.0
+MODIS_AQUA_Collection 6
+MYD021KM.A2008275.0000.006.2012070101608.bspscs_000500694612.nc
+'NetCDF Climate Forecast (CF) Metadata Convention version 18'
+#END
