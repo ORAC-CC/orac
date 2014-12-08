@@ -215,6 +215,7 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/Diag.o \
            $(OBJS)/ECPConstants.o \
            $(OBJS)/extrap_into_tropopause.o \
+	   $(OBJS)/blmodification.o \
            $(OBJS)/FindLUN.o \
            $(OBJS)/FMRoutines.o \
            $(OBJS)/GetGeometry.o \
