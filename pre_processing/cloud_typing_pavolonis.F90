@@ -24,7 +24,8 @@
 !                          SADChan Planck coefficients.
 !        3rd Dec 2014, OS: changed nrows of coefficients and reshape command to include
 !                          new AATSR coefficients
-!   2014/12/01 CP added check for missing AATSR 12 um channel
+!        1st Dec 2014, CP: added check for missing AATSR 12 um channel
+!       10th Dec 2014, GM: Fixed the last change above.
 !
 ! Bugs:
 !    None known
@@ -146,18 +147,18 @@ contains
   ! NIR_PHASE_THRES		= 1.6 micron phase threshold
   ! NIR_CIRRUS_THRES		= 1.6 micron cirrus threshold
   ! NIR_OVER_THRES		= Minimum 1.6 um reflectance allowed 
-  !                                for cloud overlap over SNOW/ICE.
+  !                               for cloud overlap over SNOW/ICE.
   ! BTD3811_PHASE_THRES		= 3.75um - 11um thresholds used for phase determination.
   ! EMS38_PHASE_THRES		= 3.75 um thresholds used for phase determination.
   ! BTD1112_DOVERLAP_THRES	= 11um - 12um cloud overlap threshold
-  ! BTD1112_CIRRUS_THRES		= 11um - 12um cirrus threshold
+  ! BTD1112_CIRRUS_THRES	= 11um - 12um cirrus threshold
   ! BTD1112_NOVERLAP_THRES_L	= Split window nighttime low cloud overlap threshold
   ! BTD1112_NOVERLAP_THRES_H	= Split window nighttime high cloud overlap threshold
   ! EMS38_NOVERLAP_THRES_L	= EMS38 nighttime low cloud overlap threshold
   ! EMS38_NOVERLAP_THRES_H	= EMS38 nighttime high cloud overlap threshold
-  ! MIN_BTD1112_DOVERLAP		= The minimum 11um - 12um BTD allowed
+  ! MIN_BTD1112_DOVERLAP	= The minimum 11um - 12um BTD allowed
   !  for overlap detection. 
-  ! MIN_BTD1112_NOVERLAP		= The minimum allowed Bt_Ch31 -
+  ! MIN_BTD1112_NOVERLAP	= The minimum allowed Bt_Ch31 -
   !  Bt_Ch32 allowed for nighttime overlap 
   ! A1 = Coefficient needed to determine the 11um - 12um BTD for cirrus detection
   ! B1 = Coefficient needed to determine the 11um -
@@ -298,9 +299,9 @@ contains
 
     ! -- Parameters used here
     !
-    ! cirrus_quality 	= quality of cirrus flag
-    ! coszen	   	= cosine of the solar zenith angle
-    ! ch3a_on_avhrr_flag	= whether or not AVHRR channel 3a is 
+    ! cirrus_quality 	  = quality of cirrus flag
+    ! coszen	   	  = cosine of the solar zenith angle
+    ! ch3a_on_avhrr_flag  = whether or not AVHRR channel 3a is 
     !                       used (sym%NO, sym%YES, sym%INEXISTENT)
     ! BTD                 = Brightness Temperature Difference
     ! BTD_Ch3b_Ch4        = BT Ch3b minus BT Ch4
@@ -436,12 +437,11 @@ contains
 
           endif
 
-! check is ATSR 12um channel is missing
-!	  write(*,*) ' imager_measurements',imager_measurements%DATA(i,j,:)
+          ! check is ATSR 12um channel is missing
+          ch7_on_atsr_flag = sym%YES
           if ( imager_measurements%DATA(i,j,5) .ge. 100 .and. &
-               & imager_measurements%DATA(i,j,6) .lt. 100.) then
-	       ch7_on_atsr_flag = sym%NO 
-
+               & imager_measurements%DATA(i,j,6) .lt. 100. ) then
+	       ch7_on_atsr_flag = sym%NO
 	  endif
 
 
@@ -539,9 +539,9 @@ contains
           endif
 
 
-! 12um channel can occasionally be missing particuarly for AATSR instrument
+          ! 12um channel can occasionally be missing particuarly for AATSR instrument
           ! also when ch7 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
-          if ( ch7_on_atsr_flag == -1 ) then
+          if ( ch7_on_atsr_flag == sym%NO ) then
              imager_pavolonis%CLDTYPE(i,j) = sym%PROB_OPAQUE_ICE_TYPE
              cycle
           endif
