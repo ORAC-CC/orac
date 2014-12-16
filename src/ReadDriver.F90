@@ -188,7 +188,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts,source_a
    write(*,*) 'Ctrl%FID%CONFIG: ',trim(Ctrl%FID%CONFIG)
 
    ! Read config file in order to set all channel related info
-   call read_config_file(Ctrl,conf, global_atts,source_atts)
+   call read_config_file(Ctrl,conf,global_atts,source_atts)
    ! Check if input ok
    if (Ctrl%Ind%NAvail .ne. conf%nc) then
       write(*,*) 'ERROR: Ctrl%Ind%NAvail .ne. conf%nc: Problem with file or driver!', &

@@ -442,7 +442,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
       call Read_SAD(Ctrl, SAD_Chan, SAD_LUT, status)
       if (status == 0) SAD_LUT_Alloc = .true.
-      write(*,*) 'Reading SAF files done (status)',status
+      write(*,*) 'Reading SAD files done (status)',status
    end if
 
 

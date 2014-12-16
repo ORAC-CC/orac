@@ -20,7 +20,7 @@
 !    CF-1.4.
 ! 2014/09/01, Greg McGarragh: Make use of the general shared routine
 !    nc_put_common_attributes().
-! 2014/12/01, CP: added remove global attributes read out directly now in
+! 2014/12/01, CP: Added remove global attributes read out directly now in
 !    read_config file
 !
 ! $Id: nc_create.F90 2355 2014-09-09 23:16:38Z gmcgarragh $
@@ -84,12 +84,10 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    end if
 
 
-  
-
    !----------------------------------------------------------------------------
    ! Write global attributes to the netcdf output
    !----------------------------------------------------------------------------
-  ! Global attributes for the 'Description of file contents' as defined by
+   ! Global attributes for the 'Description of file contents' as defined by
    ! CF-1.4, section 2.6.2.
    if (type .eq. 1) then
       global_atts%title = 'ESA CCI Cloud Retrieval Products L2 Primary File'
