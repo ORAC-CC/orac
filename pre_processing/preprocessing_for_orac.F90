@@ -231,7 +231,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use correct_for_ice_snow_m
    use ecmwf_m
    use global_attributes
-   use source_attributes	
+   use source_attributes
    use hdf5
    use imager_structures
    use netcdf, only: nf90_inq_libvers
@@ -282,7 +282,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=cmd_arg_length)    :: cinclude_full_brdf
 
    type(global_attributes_s)        :: global_atts
-   type(source_attributes_s)        :: source_atts	
+   type(source_attributes_s)        :: source_atts
    integer                          :: ecmwf_flag
    logical                          :: chunkproc
    integer(kind=sint)               :: day_night
@@ -507,10 +507,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use_chunking=parse_logical(cuse_chunking)
    assume_full_paths=parse_logical(cassume_full_paths)
    include_full_brdf=parse_logical(cinclude_full_brdf)
-   global_atts%brdf_flag='no'
-!   if (cinclude_full_brdf .eq. .true.) then
-!   global_atts%brdf_flag='yes'
-!   endif
 
    ! initialise some counts, offset variables...
    along_track_offset=0
@@ -533,7 +529,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    end if
 
    source_atts%level1b_file=l1b_path_file
-   source_atts%geo_file=geo_path_file	
+   source_atts%geo_file=geo_path_file
 
    if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
@@ -844,15 +840,12 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_geolocation, imager_measurements, imager_pavolonis, &
            ecmwf, platform, doy, verbose)
 
-
       ! Create config file
       call netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,&
            chour,cminute,platform,sensor,&
            trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
            preproc_dims,imager_geolocation,netcdf_info,channel_info,verbose)
 
-
-     
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &
            imager_geolocation,imager_measurements,imager_time, &
