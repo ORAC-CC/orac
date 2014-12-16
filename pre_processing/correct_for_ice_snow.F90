@@ -86,10 +86,11 @@ contains
 !   returning albedo > 1
 ! 2014/08/05, AP: Explicit bilinear interpolation, rather than function call.
 !   Removing old code.
-! 2014/09/17, CS: nise_mask added in surface_structures.F90,
-!   i.e. surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90
-!   for correcting the land use map (currently USGS)
-! 2014/1/12, CP: added source atts                               
+! 2014/09/17, CS: nise_mask added in surface_structures.F90, i.e.
+!   surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90 for correcting
+!   the land use map (currently USGS)
+! 2014/12/01, CP: Added source atts.
+! 2014/12/16, GM: Added support for 2011 to 2014.
 !
 ! $Id$
 !
@@ -131,7 +132,8 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    type(nise_s)                     :: nise
    real(kind=sreal), dimension(2,2) :: nise_tmp
    real(kind=sreal), dimension(8)   :: nise_tmp2
-   real                             :: fmonth
+   integer                          :: iyear
+   integer                          :: imonth
    character(len=path_length)       :: nise_path_file
    logical                          :: nise_file_exist
    character(len=7)                 :: nise_file_read
@@ -153,8 +155,9 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    snow_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
    ice_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
    !  ice_albedo  = (/ 0.497, 0.289, 0.070,  0.0 /)
-   !  convert a string to a float
-   read (cmonth,*) fmonth
+
+   read (cyear,*) iyear
+   read (cmonth,*) imonth
 
    ! Do we need to load both Northern and Southern Hemisphere data?
    if (any(imager_geolocation%latitude .gt. 0)) north=1
@@ -164,13 +167,12 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    if (assume_full_path) then
       nise_path_file = nise_path
    else
-      if ((trim(adjustl(cyear)) .eq. '2010') .or. &
-           (trim(adjustl(cyear)) .eq. '2009' .and. fmonth .gt. 8 )) then
-         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'// &
+      if ((iyear .le. 2008) .or. (iyear .eq. 2009 .and. imonth .le. 8)) then
+         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'// &
                         trim(adjustl(cyear))//trim(adjustl(cmonth))// &
                         trim(adjustl(cday))//'.HDFEOS'
       else
-         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMIF13_'// &
+         nise_path_file=trim(adjustl(nise_path))//'/'//'NISE_SSMISF17_'// &
                         trim(adjustl(cyear))//trim(adjustl(cmonth))// &
                         trim(adjustl(cday))//'.HDFEOS'
       end if
@@ -191,7 +193,6 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
                & 'but is not readable: ', trim(nise_path_file)
       stop error_stop_code
    end if
-
 
    stat = read_nsidc_nise(nise_path_file, nise, north, south, verbose)
 
@@ -435,7 +436,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
       else
          nise_mask_flag = sym%NO
       endif
-   else 
+   else
       nise_mask_flag = sym%NO
    end if
 
