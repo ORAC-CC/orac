@@ -214,7 +214,7 @@
 !                read_ecmwf_grib
 ! 2014/12/01: CP Add new global and source attributes
 ! 2014/12/16: GM Fix writing of attributes introduced in the change above by
-!                reordering some subroutine calls and putting subroutine 
+!                reordering some subroutine calls and putting subroutine
 !                netcdf_create_config() back into netcdf_output_create().
 !
 ! $Id$

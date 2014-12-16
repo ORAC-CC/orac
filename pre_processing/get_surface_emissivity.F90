@@ -66,7 +66,7 @@
 ! 19/08/2014, AP: Comment out reading of unused emissivity fields. They will be
 !   used eventually; hence why the code remains.
 ! 15/10/2014, GM: Changes related to supporting an arbitrary set of LW channels.
-! 1/12/2014,  CP: added source attributes
+! 1/12/2014,  CP: Added source attributes.
 !
 ! $Id$
 !
@@ -78,7 +78,7 @@
 
 subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
            imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
-           assume_full_path, verbose, surface, preproc_surf,source_atts)
+           assume_full_path, verbose, surface, preproc_surf, source_atts)
 
    use channel_structures
    use cimss_emissivity
@@ -86,8 +86,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    use interpol
    use preproc_constants
    use preproc_structures
-   use surface_structures
    use source_attributes
+   use surface_structures
 
    implicit none
 

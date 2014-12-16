@@ -65,16 +65,16 @@
 
 subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, &
-   platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour,cminute,preproc_dims, &
-   imager_angles,imager_geolocation,netcdf_info,channel_info, &
+   platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
+   preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info, &
    include_full_brdf,verbose)
 
    use channel_structures
    use global_attributes
-   use source_attributes
    use imager_structures
    use preproc_constants
    use preproc_structures
+   use source_attributes
 
    implicit none
 
@@ -105,7 +105,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
 
    ! Create config file
    call netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,&
-        chour,cminute,platform,sensor,&
+        chour,cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
         preproc_dims,imager_geolocation,netcdf_info,channel_info,verbose)
 
@@ -113,22 +113,24 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    ! Create RTM files
 
    ! create prtm file
-   call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)), &
         NETCDF_OUTPUT_FILE_PRTM, preproc_dims, netcdf_info,channel_info, &
         verbose)
 
    ! create lwrtm file
-   call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,&
+        platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), &
         NETCDF_OUTPUT_FILE_LWRTM,preproc_dims, netcdf_info,channel_info, &
         verbose)
 
    ! create swrtm file
-   call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,&
+        platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)), &
         NETCDF_OUTPUT_FILE_SWRTM, preproc_dims, netcdf_info,channel_info, &
         verbose)
@@ -137,50 +139,50 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    ! Create swath based files
 
    ! create alb file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(alb_file)), &
         NETCDF_OUTPUT_FILE_ABL,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)
 
    ! create clf file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(cf_file)), &
         NETCDF_OUTPUT_FILE_CLF,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)
 
    ! create geo file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)), &
         NETCDF_OUTPUT_FILE_GEO,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)
 
    ! create loc file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(loc_file)), &
         NETCDF_OUTPUT_FILE_LOC,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)
 
    ! create lsf file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)), &
         NETCDF_OUTPUT_FILE_LSF,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)
 
    ! create msi file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)), &
         NETCDF_OUTPUT_FILE_MSI,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)
 
    ! create uv file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour,cminute,&
-        platform,sensor,&
+   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
+        cminute,platform,sensor, &
         trim(adjustl(output_path))//'/'//trim(adjustl(scan_file)), &
         NETCDF_OUTPUT_FILE_UV,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)

@@ -96,10 +96,10 @@
 ! 15/10/2014, GM: Changes related to supporting an arbitrary set of SW channels.
 !    Still limited by availability from the land and ocean reflectance sources.
 ! 23/10/2014, OS: added support for reading full BRDF file path
-! 02/12/2014, GM: Fixed handling of night.  Values that are not dependent on 
-!    solar zenith angle (albedo, rho_dv, and rho_dd) are computed at night. 
-!    Values that are (rho_0v and rho_0d) are not computed and set to fill. 
-! 01/12/2014, CP: added source_atts
+! 02/12/2014, GM: Fixed handling of night.  Values that are not dependent on
+!    solar zenith angle (albedo, rho_dv, and rho_dd) are computed at night.
+!    Values that are (rho_0v and rho_0d) are not computed and set to fill.
+! 01/12/2014, CP: Added source attributes.
 !
 ! $Id$
 !
@@ -109,7 +109,7 @@
 
 subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path, &
      imager_flags, imager_geolocation, imager_angles, channel_info, ecmwf, &
-     assume_full_path, include_full_brdf, verbose, surface,source_atts)
+     assume_full_path, include_full_brdf, verbose, surface, source_atts)
 
   use channel_structures
   use cox_munk_m
@@ -121,8 +121,8 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   use preproc_constants
   use preproc_structures
   use ross_thick_li_sparse_r_m
-  use surface_structures
   use source_attributes
+  use surface_structures
 
   implicit none
 
@@ -307,6 +307,9 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         if (verbose) write(*,*) 'modis_brdf_path_file: ', trim(modis_brdf_path_file)
      end if
 
+     source_atts%albedo_file=trim(modis_surf_path_file)
+     source_atts%brdf_file=trim(modis_brdf_path_file)
+
      ! Read the data itself
      call read_mcd43c3(modis_surf_path_file, mcdc3, n_ref_chans, bands, &
                        read_ws, read_bs, read_qc, verbose, stat)
@@ -315,10 +318,6 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         call read_mcd43c1(modis_brdf_path_file, mcdc1, n_ref_chans, bands, &
                           read_brdf, read_qc, verbose, stat)
      end if
-
-     source_atts%albedo_file=trim(modis_surf_path_file)
-     source_atts%brdf_file=trim(modis_brdf_path_file)
-write(*,*) ' source_atts%brdf_file',  source_atts%brdf_file
 
      ! Fill missing data in the MODIS surface reflectance using a nearest
      ! neighbour technique. Note we cannot allocate tmp_data until we've created
@@ -581,7 +580,7 @@ write(*,*) ' source_atts%brdf_file',  source_atts%brdf_file
                      channel_info%channel_lw_flag(k) .ne. 0) then
                     surface%albedo(j,i,k) = 1.0 - surface%emissivity(j,i,kk)
 
-                    if (include_full_brdf) then 
+                    if (include_full_brdf) then
                        surface%rho_0v(j,i,k) = 0.
                        surface%rho_0d(j,i,k) = 0.
                        surface%rho_dv(j,i,k) = 0.

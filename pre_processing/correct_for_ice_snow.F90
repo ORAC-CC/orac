@@ -89,7 +89,7 @@ contains
 ! 2014/09/17, CS: nise_mask added in surface_structures.F90, i.e.
 !   surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90 for correcting
 !   the land use map (currently USGS)
-! 2014/12/01, CP: Added source atts.
+! 2014/12/01, CP: Added source attributes.
 ! 2014/12/16, GM: Added support for 2011 to 2014.
 !
 ! $Id$
@@ -108,13 +108,12 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    use nise_m
    use preproc_constants
    use preproc_structures
-   use surface_structures
    use source_attributes
+   use surface_structures
 
    implicit none
 
    ! Arguments
-   type(source_attributes_s),  intent(inout) :: source_atts
    character(len=path_length), intent(in)    :: nise_path
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
    type(preproc_dims_s),       intent(in)    :: preproc_dims
@@ -122,6 +121,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    character(len=date_length), intent(in)    :: cyear,cmonth,cday
    type(channel_info_s),       intent(in)    :: channel_info
    logical,                    intent(in)    :: assume_full_path
+   type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
    ! Local variables
@@ -178,6 +178,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
       end if
    end if
    if (verbose) write(*,*)'nise_path_file: ', trim(nise_path_file)
+
    source_atts%snow_file=trim(nise_path_file)
    source_atts%sea_ice_file=trim(nise_path_file)
 

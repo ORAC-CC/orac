@@ -14,28 +14,28 @@
 !
 ! History:
 ! 2014/09/23, OS: writes code to read data from USGS file.
-! 2014/12/01, CP: add source attributes
+! 2014/12/01, CP: Added source attributes.
 !
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, usgs, &
-     assume_full_paths, source_atts, verbose)
+subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
+     usgs, assume_full_paths, source_atts, verbose)
 
   use imager_structures
   use orac_ncdf
-  use USGS_physiography
   use source_attributes
+  use USGS_physiography
 
   implicit none
 
   character(len=path_length),  intent(in)    :: path_to_USGS_file
   type(imager_flags_s),        intent(inout) :: imager_flags
   type(imager_geolocation_s),  intent(inout) :: imager_geolocation
-  type(source_attributes_s),   intent(inout) :: source_atts
   logical,                     intent(in)    :: assume_full_paths
+  type(source_attributes_s),   intent(inout) :: source_atts
   logical,                     intent(in)    :: verbose
   type(usgs_s),                intent(out)   :: usgs
   logical                          :: USGS_file_exist
@@ -58,6 +58,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, us
           & 'but is not readable: ', trim(path_to_USGS_file)
      stop error_stop_code
   end if
+
   source_atts%usgs_file=path_to_USGS_file
 
   ! Read the data themselves

@@ -93,25 +93,25 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
-     platform,sensor,path,type,preproc_dims,netcdf_info,channel_info,verbose)
+subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
+     cminute, platform,sensor,path,type,preproc_dims,netcdf_info,channel_info, &
+     verbose)
 
    use netcdf
 
    use channel_structures
    use global_attributes
-   use source_attributes
-    use imager_structures
+   use imager_structures
    use orac_ncdf
    use preproc_constants
    use preproc_structures
+   use source_attributes
 
    implicit none
 
    ! Input
    type(global_attributes_s),      intent(in)    :: global_atts
    type(source_attributes_s),      intent(in)    :: source_atts
-
    character(len=date_length),     intent(in)    :: cyear
    character(len=date_length),     intent(in)    :: cmonth
    character(len=date_length),     intent(in)    :: cday
@@ -610,10 +610,10 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
 
    use channel_structures
    use global_attributes
-   use source_attributes
    use imager_structures
    use orac_ncdf
    use preproc_constants
+   use source_attributes
 
    implicit none
 
@@ -1341,12 +1341,11 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
 
    use channel_structures
    use global_attributes
-   use source_attributes
-
    use imager_structures
    use orac_ncdf
    use preproc_constants
    use preproc_structures
+   use source_attributes
 
    implicit none
 
@@ -1566,7 +1565,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    type(source_attributes_s)      :: source_atts2
 
    global_atts2 = global_atts
-   source_atts2 = source_atts	
+   source_atts2 = source_atts
 
    global_atts2%title  = trim(title)
    global_atts2%source = 'source!!!'
@@ -1593,6 +1592,6 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    global_atts2%SVN_Version = 'xxx'
 
    call nc_put_common_attributes(ncid, global_atts2,source_atts2)
- 
+
 
 end subroutine netcdf_put_common_attributes
