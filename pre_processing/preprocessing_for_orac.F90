@@ -210,9 +210,12 @@
 ! 2014/11/21: GM Add modis_brdf_path to command line input which was previously
 !                added to driver file input.
 ! 2014/12/01: OS Platform and DOY now passed as arguments to cloud_type call
-! 2014/12/04: OS wrapper job ID is new call argument and is passed to SR
+! 2014/12/04: OS Wrapper job ID is new call argument and is passed to SR
 !                read_ecmwf_grib
-! 2014/12/01: CP add new global and source attributes
+! 2014/12/01: CP Add new global and source attributes
+! 2014/12/16: GM Fix writing of attributes introduced in the change above by
+!                reordering some subroutine calls and putting subroutine 
+!                netcdf_create_config() back into netcdf_output_create().
 !
 ! $Id$
 !
@@ -391,17 +394,17 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call get_command_argument(18,cendy)
       call get_command_argument(19,global_atts%NetCDF_Version)
       call get_command_argument(20,global_atts%Conventions)
-      call get_command_argument(21,global_atts%Institution)
+      call get_command_argument(21,global_atts%institution)
       call get_command_argument(22,global_atts%L2_Processor)
       call get_command_argument(23,global_atts%L2_Processor_Version)
       call get_command_argument(24,global_atts%Contact_Email)
       call get_command_argument(25,global_atts%Contact_Website)
       call get_command_argument(26,global_atts%file_version)
-      call get_command_argument(27,global_atts%References)
-      call get_command_argument(28,global_atts%History)
+      call get_command_argument(27,global_atts%references)
+      call get_command_argument(28,global_atts%history)
       call get_command_argument(29,global_atts%Summary)
       call get_command_argument(30,global_atts%Keywords)
-      call get_command_argument(31,global_atts%Comment)
+      call get_command_argument(31,global_atts%comment)
       call get_command_argument(32,global_atts%Project)
       call get_command_argument(33,global_atts%License)
       call get_command_argument(34,global_atts%UUID)
@@ -476,9 +479,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       read(11,*) cuse_chunking
       read(11,*) cassume_full_paths
       read(11,*) cinclude_full_brdf
-      read(11,*) global_atts%rttov_version
-      read(11,*) global_atts%ecmwf_version
-      read(11,*) global_atts%svn_version
+      read(11,*) global_atts%RTTOV_Version
+      read(11,*) global_atts%ECMWF_Version
+      read(11,*) global_atts%SVN_Version
       close(11)
    end if ! nargs gt 1
 
@@ -796,24 +799,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! compute geopotential vertical coordinate from pressure coordinate
       call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
-      ! create output netcdf files.
-      if (verbose) write(*,*) 'Create output netcdf files'
-      if (verbose) write(*,*) 'output_path: ',trim(output_path)
-
-      call netcdf_output_create(output_path,lwrtm_file, &
-           swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
-           geo_file,loc_file,alb_file,scan_file,platform,sensor,global_atts, &
-           source_atts,cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
-           imager_geolocation,netcdf_info,channel_info,include_full_brdf, &
-           verbose)
-
-      ! perform RTTOV calculations
-      if (verbose) write(*,*) 'Perform RTTOV calculations'
-
-      call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
-           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,netcdf_info,&
-           channel_info,year,month,day,verbose)
-
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
       call get_surface_emissivity(cyear, cdoy, cimss_emiss_path, imager_flags, &
@@ -840,12 +825,24 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_geolocation, imager_measurements, imager_pavolonis, &
            ecmwf, platform, doy, verbose)
 
-      ! Create config file
-      call netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,&
-           chour,cminute,platform,sensor,&
-           trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
-           preproc_dims,imager_geolocation,netcdf_info,channel_info,verbose)
+      ! create output netcdf files.
+      if (verbose) write(*,*) 'Create output netcdf files'
+      if (verbose) write(*,*) 'output_path: ',trim(output_path)
 
+      call netcdf_output_create(output_path,lwrtm_file, &
+           swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
+           geo_file,loc_file,alb_file,scan_file,platform,sensor,global_atts, &
+           source_atts,cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
+           imager_geolocation,netcdf_info,channel_info,include_full_brdf, &
+           verbose)
+
+      ! perform RTTOV calculations
+      if (verbose) write(*,*) 'Perform RTTOV calculations'
+      call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
+           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,netcdf_info,&
+           channel_info,year,month,day,verbose)
+
+      ! write netcdf output files
       if (verbose) write(*,*) 'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &
            imager_geolocation,imager_measurements,imager_time, &

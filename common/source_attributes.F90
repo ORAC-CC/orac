@@ -32,8 +32,8 @@ module source_attributes
       character(len=attribute_length_long) :: brdf_file
       character(len=attribute_length_long) :: emissivity_file
       character(len=attribute_length_long) :: usgs_file
-      character(len=attribute_length_long) :: sea_ice_file
       character(len=attribute_length_long) :: snow_file
+      character(len=attribute_length_long) :: sea_ice_file
       character(len=attribute_length_long) :: level1b_file
       character(len=attribute_length_long) :: geo_file
 

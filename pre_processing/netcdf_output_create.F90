@@ -54,7 +54,8 @@
 ! 2014/07/10, AP: Removed nx, ny arguments.
 ! 2014/08/10, GM: Changes related to new BRDF support.
 ! 2014/09/28, GM: Removed use_chunking argument.
-! 2014/01/12, CP added source attributes
+! 2014/01/12, CP: added source attributes
+! 2014/12/16, GM: Put back netcdf_create_config() moved out in the above change.
 !
 ! $Id$
 !
@@ -102,6 +103,11 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    logical,                        intent(in)    :: verbose
 
 
+   ! Create config file
+   call netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday,&
+        chour,cminute,platform,sensor,&
+        trim(adjustl(output_path))//'/'//trim(adjustl(config_file)),&
+        preproc_dims,imager_geolocation,netcdf_info,channel_info,verbose)
 
 
    ! Create RTM files

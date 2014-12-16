@@ -1576,20 +1576,21 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
    global_atts2%File_Name    = trim(path(position+1:length))
 
    global_atts2%Product_Name = 'Product_Name!!!'
-   global_atts2%svn_version = 'xxx'
 
    global_atts2%Product_Date = trim(cyear)//trim(cmonth)//trim(cday)// &
                                trim(chour)//trim(cminute)
 
    PLATFORM_UPPER_CASE=platform
    if (platform(1:4) .eq. 'noaa') PLATFORM_UPPER_CASE(1:4)='NOAA'
-   global_atts2%platform = trim(PLATFORM_UPPER_CASE)
-   global_atts2%sensor   = trim(sensor)
+   global_atts2%Platform = trim(PLATFORM_UPPER_CASE)
+   global_atts2%Sensor   = trim(sensor)
 
    global_atts2%AATSR_Processing_Version = ' '
    if (sensor .eq. 'ATSR' .or. sensor .eq. 'AATSR') then
       global_atts2%AATSR_Processing_Version = '3.01'
    endif
+
+   global_atts2%SVN_Version = 'xxx'
 
    call nc_put_common_attributes(ncid, global_atts2,source_atts2)
  
