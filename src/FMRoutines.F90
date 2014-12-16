@@ -30,10 +30,12 @@
 !       Same change applied to SetCRPThermal.
 !    27th Feb 2001, Andy Smith:
 !       Set_CRP_Thermal no longer requires argument First.
-!    20th Dec 2014, Greg McGarragh:
+!    20th Dec 2013, Greg McGarragh:
 !       Cleaned up code.
-!    24th Dec 2014, Greg McGarragh:
+!    24th Dec 2013, Greg McGarragh:
 !       Some intent changes.
+!    16th Dec 2014, Greg McGarragh:
+!       Added LUT name mapping: IR_0v = IRBd, etc.
 !
 ! Bugs:
 !    None known.
@@ -44,7 +46,18 @@
 
 module FM_Routines_def
 
+   use ECP_Constants
+
    implicit none
+
+   integer, parameter :: IR_0v = IRBd
+   integer, parameter :: IR_dv = IRd
+   integer, parameter :: IR_dd = IRFd
+   integer, parameter :: IT_00 = ITB
+   integer, parameter :: IT_vv = ITB_u
+   integer, parameter :: IT_dv = ITd
+   integer, parameter :: IT_0d = ITFBd
+   integer, parameter :: IT_dd = ITFd
 
 contains
 
