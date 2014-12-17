@@ -38,7 +38,7 @@
 ! 2014/08/31, GM: Update to use general routines now in the common library.
 ! 2014/09/16, GM: Update for changes in the general routines in the common
 !    library.
-!
+! 2014/12/17, CP: added offset value to stemp and brightness temperature values
 ! $Id$
 !
 ! Bugs:
@@ -283,7 +283,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    ! stemp_ap
    !----------------------------------------------------------------------------
    output_data%stemp_ap_scale=0.01
-   output_data%stemp_ap_offset=0.0
+   output_data%stemp_ap_offset=100.0
    output_data%stemp_ap_vmin=0
    output_data%stemp_ap_vmax=32000
 
@@ -308,7 +308,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    ! stemp_fg
    !----------------------------------------------------------------------------
    output_data%stemp_fg_scale=0.01
-   output_data%stemp_fg_offset=0.0
+   output_data%stemp_fg_offset=100.0
    output_data%stemp_fg_vmin=0
    output_data%stemp_fg_vmax=32000
 
@@ -404,7 +404,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
       do j=1,Ctrl%Ind%Nthermal
          if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ythermal(j) ) then
             output_data%channels_scale(i)=0.01
-            output_data%channels_offset(i)=0.0
+            output_data%channels_offset(i)=100.0
             output_data%channels_vmin(i)=0
             output_data%channels_vmax(i)=32000
 
@@ -472,7 +472,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
       do j=1,Ctrl%Ind%Nthermal
          if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ythermal(j)) then
             output_data%y0_scale(i)=0.01
-            output_data%y0_offset(i)=0.0
+            output_data%y0_offset(i)=100.0
             output_data%y0_vmin(i)=0
             output_data%y0_vmax(i)=32000
 
@@ -539,7 +539,7 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
       do j=1,Ctrl%Ind%Nthermal
          if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ythermal(j)) then
             output_data%residuals_scale(i)=0.01
-            output_data%residuals_offset(i)=0.0
+            output_data%residuals_offset(i)=100.0
             output_data%residuals_vmin(i)=-32000
             output_data%residuals_vmax(i)=32000
 
