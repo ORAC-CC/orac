@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name:
+! Name: 
 !    Read_Driver
 !
 ! Purpose:
@@ -8,7 +8,13 @@
 !
 ! Description:
 !    Reads the values from the "driver" file used to set run-time options into
-!    the CTRL structure.
+!    the CTRL structure. Settings beyond the typical can be overriden in the
+!    driver using lines such as,
+!       Ctrl%Run_ID = ABCD
+!    The variable to change is identified before an = sign (with structure
+!    references expressed by % or .) and its value is after the = sign. #
+!    denotes a comment. Arrays should be delimited with commas, then semicolons
+!    though whitespace, then commas is acceptable.
 !
 ! Arguments:
 !    Name    Type    In/Out/Both Description
@@ -71,7 +77,8 @@
 !    2014/12/01, CP: added in global and source attribute read capability
 !    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100, as
 !                    otherwise ~30% of converged pixels are lost in l2tol3 processing
-!    2014/12/17, AP: Converted read statements to parse_driver statements.
+!    2014/12/17, AP: Converted read statements to parse_driver statements. Permit
+!                    optional overrides of default behaviour from driver.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -114,7 +121,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    integer                         :: ios      ! Iostat value from file open, read etc.
    integer                         :: dri_lun  ! Unit number for driver file
    character(FilenameLen)          :: input_path,input_filename,scratch_dir,lut_dir
-   character(FilenameLen)          :: suffix,outname,line
+   character(FilenameLen)          :: outname,line,label
    logical                         :: file_exists, found
    real, allocatable, dimension(:) :: solar_store_sea,solar_store_land
    real, allocatable, dimension(:) :: ref_solar_sea,ref_solar_land
@@ -185,8 +192,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    if (parse_driver(dri_lun, line) == 0) call parse_string(line, Ctrl%Ind%NAvail)
    write(*,*) 'Number of available channels in preproc files: ',Ctrl%Ind%NAvail
 
-   suffix='.config.nc'
-   Ctrl%FID%CONFIG=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
+   Ctrl%FID%CONFIG=trim(adjustl(Ctrl%fid%input_filename))//'.config.nc'
    Ctrl%FID%CONFIG=trim(adjustl(Ctrl%FID%CONFIG))
    write(*,*) 'Ctrl%FID%CONFIG: ',trim(Ctrl%FID%CONFIG)
 
@@ -312,29 +318,19 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    Ctrl%SAD_Dir=trim(adjustl(lut_dir))//'/'
    write(*,*)'Ctrl%SAD_Dir: ',trim(adjustl(Ctrl%SAD_Dir))
 
-   suffix='.msi.nc'
-   Ctrl%FID%MSI=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
+   Ctrl%FID%MSI=trim(adjustl(Ctrl%fid%input_filename))//'.msi.nc'
    Ctrl%FID%MSI=trim(adjustl(Ctrl%FID%MSI))
    write(*,*)'Ctrl%FID%MSI: ',trim(adjustl(Ctrl%FID%MSI))
-   suffix='.lwrtm.nc'
-   Ctrl%FID%LWRTM=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
+   Ctrl%FID%LWRTM=trim(adjustl(Ctrl%fid%input_filename))//'.lwrtm.nc'
    write(*,*) 'Ctrl%FID%LWRTM: ',trim(adjustl(Ctrl%FID%LWRTM))
-   suffix='.swrtm.nc'
-   Ctrl%FID%SWRTM=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
-   suffix='.prtm.nc'
-   Ctrl%FID%PRTM=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
-   suffix='.lsf.nc'
-   Ctrl%FID%LS=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
-   suffix='.clf.nc'
-   Ctrl%FID%CF=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
-   suffix='.geo.nc'
-   Ctrl%FID%Geo=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
-   suffix='.loc.nc'
-   Ctrl%FID%Loc=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
-   suffix='.uv.nc'
-   Ctrl%FID%uv=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
-   suffix='.alb.nc'
-   Ctrl%FID%Aux=trim(adjustl(Ctrl%fid%input_filename))//trim(adjustl(suffix))
+   Ctrl%FID%SWRTM=trim(adjustl(Ctrl%fid%input_filename))//'.swrtm.nc'
+   Ctrl%FID%PRTM=trim(adjustl(Ctrl%fid%input_filename))//'.prtm.nc'
+   Ctrl%FID%LS=trim(adjustl(Ctrl%fid%input_filename))//'.lsf.nc'
+   Ctrl%FID%CF=trim(adjustl(Ctrl%fid%input_filename))//'.clf.nc'
+   Ctrl%FID%Geo=trim(adjustl(Ctrl%fid%input_filename))//'.geo.nc'
+   Ctrl%FID%Loc=trim(adjustl(Ctrl%fid%input_filename))//'.loc.nc'
+   Ctrl%FID%uv=trim(adjustl(Ctrl%fid%input_filename))//'.uv.nc'
+   Ctrl%FID%Aux=trim(adjustl(Ctrl%fid%input_filename))//'.alb.nc'
 
    outname=trim(adjustl(scratch_dir))//'/'//trim(adjustl(input_filename))//&
       trim(adjustl(Ctrl%CloudClass%Name))
@@ -435,25 +431,6 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    Ctrl%Ind%X_Dy(4) = 4
    Ctrl%Ind%X_Dy(5) = 5
 
-   Ctrl%Ind%NxI_Dy = MaxStateVar - Ctrl%Ind%Nx_Dy
-
-   ! Set active and inactive state variables
-   k = 0
-   do i=1, MaxStateVar
-      found = .false.
-      do j=1, Ctrl%Ind%Nx_Dy ! Look for the variable index in the active array
-         if (Ctrl%Ind%X_Dy(j) == i) then
-            found = .true.
-            exit
-         end if
-      end do
-      if (.not. found) then ! Not found in active set
-         k = k + 1          ! Add to inactive array
-         Ctrl%Ind%XI_Dy(k) = i
-      end if
-      if (k == Ctrl%Ind%NxI_Dy) exit ! Correct number of values found
-   end do
-
    ! Twilight options
    Ctrl%Ind%Nx_Tw = 3   ! number of active state variables
 
@@ -461,23 +438,6 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    Ctrl%Ind%X_Tw(2) = 4
    Ctrl%Ind%X_Tw(3) = 5
 
-   Ctrl%Ind%NxI_Tw = MaxStateVar - Ctrl%Ind%Nx_Tw
-
-   k = 0
-   do i=1, MaxStateVar
-      found = .false.
-      do j=1, Ctrl%Ind%Nx_Tw ! Look for the variable index in the active array
-         if (Ctrl%Ind%X_Tw(j) == i) then
-            found = .true.
-            exit
-         end if
-      end do
-      if (.not. found) then ! Not found in active set
-         k = k + 1          ! Add to inactive array
-         Ctrl%Ind%XI_Tw(k) = i
-      end if
-      if (k == Ctrl%Ind%NxI_Tw) exit ! Correct number of values found
-   end do
 
    ! Night options
    Ctrl%Ind%Nx_Ni = 3   ! number of active state variables
@@ -486,23 +446,6 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    Ctrl%Ind%X_Ni(2) = 4
    Ctrl%Ind%X_Ni(3) = 5
 
-   Ctrl%Ind%NxI_Ni = MaxStateVar - Ctrl%Ind%Nx_Ni
-
-   k = 0
-   do i=1, MaxStateVar
-      found = .false.
-      do j=1, Ctrl%Ind%Nx_Ni ! Look for the variable index in the active array
-         if (Ctrl%Ind%X_Ni(j) == i) then
-            found = .true.
-            exit
-         end if
-      end do
-      if (.not. found) then ! Not found in active set
-         k = k + 1          ! Add to inactive array
-         Ctrl%Ind%XI_Ni(k) = i
-      end if
-      if (k == Ctrl%Ind%NxI_Ni) exit ! Correct number of values found
-   end do
 
    Ctrl%Ind%NViews=1
    allocate(Ctrl%Ind%viewidx(Ctrl%Ind%nchans))
@@ -800,7 +743,174 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    Ctrl%QC%MaxS(4) = 0.2
    Ctrl%QC%MaxS(5) = 2.0
 
+   
+   !----------------------------------------------------------------------------
+   ! Consider optional lines of driver file
+   !----------------------------------------------------------------------------
+   do while (parse_driver(dri_lun, line, label) == 0)
+      call clean_driver_label(label)
+      select case (label)
+      case('CTRL%RUN_ID')
+         call parse_string(line, Ctrl%Run_ID)
+      case('CTRL%DATA_DIR')
+         call parse_string(line, Ctrl%Data_Dir)
+      case('CTRL%OUT_DIR')
+         call parse_string(line, Ctrl%Out_Dir)
+      case('CTRL%SAD_DIR')
+         call parse_string(line, Ctrl%SAD_Dir)
+      case('CTRL%FID%MSI')
+         call parse_string(line, Ctrl%FID%MSI)
+       case('CTRL%FID%LWRTM')
+        call parse_string(line, Ctrl%FID%LWRTM)
+      case('CTRL%FID%SWRTM')
+         call parse_string(line, Ctrl%FID%SWRTM)
+      case('CTRL%FID%PRTM')
+         call parse_string(line, Ctrl%FID%PRTM)
+      case('CTRL%FID%LS')
+         call parse_string(line, Ctrl%FID%LS)
+      case('CTRL%FID%CF')
+         call parse_string(line, Ctrl%FID%CF)
+      case('CTRL%FID%GEO')
+         call parse_string(line, Ctrl%FID%Geo)
+      case('CTRL%FID%LOC')
+         call parse_string(line, Ctrl%FID%Loc)
+      case('CTRL%FID%UV')
+         call parse_string(line, Ctrl%FID%uv)
+      case('CTRL%FID%AUX')
+         call parse_string(line, Ctrl%FID%Aux)
+      case('CTRL%FID%L2_PRIMARY')
+         call parse_string(line, Ctrl%FID%L2_primary_outputpath_and_file)
+      case('CTRL%FID%L2_SECONDARY')
+         call parse_string(line, Ctrl%FID%L2_secondary_outputpath_and_file)
+      case('CTRL%FID%LOG')
+         call parse_string(line, Ctrl%FID%Log)
+      case('CTRL%FID%DIAG')
+         call parse_string(line, Ctrl%FID%Diag)
+      case('CTRL%FID%BKP')
+         call parse_string(line, Ctrl%FID%BkP)
+      case('CTRL%BKPL')
+         call parse_string(line, Ctrl%Bkpl)
+      case('CTRL%DIAGL')
+         call parse_string(line, Ctrl%Diagl)
+      case('CTRL%RTMINTFLAG')
+         call parse_string(line, Ctrl%RTMIntflag)
+      case('CTRL%LUTINTFLAG')
+         call parse_string(line, Ctrl%LUTIntflag)
+      case('CTRL%MAXSATZEN')
+         call parse_string(line, Ctrl%MaxSatZen)
+      case('CTRL%MAXSOLZEN')
+         call parse_string(line, Ctrl%MaxSolZen)
+      case('CTRL%SUNSET')
+         call parse_string(line, Ctrl%Sunset)
+      case('CTRL%IND%WS')
+         call parse_string(line, Ctrl%Ind%Ws)
+      case('CTRL%IND%NX_DY')
+         call parse_string(line, Ctrl%Ind%NX_DY)
+      case('CTRL%IND%X_DY')
+         call parse_string(line, Ctrl%Ind%X_DY)
+      case('CTRL%IND%NX_TW')
+         call parse_string(line, Ctrl%Ind%NX_TW)
+      case('CTRL%IND%X_TW')
+         call parse_string(line, Ctrl%Ind%X_TW)
+     case('CTRL%IND%NX_NI')
+         call parse_string(line, Ctrl%Ind%NX_NI)
+      case('CTRL%IND%X_NI')
+         call parse_string(line, Ctrl%Ind%X_NI)
+      case('CTRL%IND%NVIEWS')
+         call parse_string(line, Ctrl%Ind%NViews)
+      case('CTRL%IND%VIEWIDX')
+         call parse_string(line, Ctrl%Ind%Viewidx)
+       case('CTRL%AP')
+         call parse_string(line, Ctrl%AP)
+      case('CTRL%FG')
+         call parse_string(line, Ctrl%FG)
+      case('CTRL%XB')
+         call parse_string(line, Ctrl%XB)
+      case('CTRL%X0')
+         call parse_string(line, Ctrl%X0)
+      case('CTRL%SX')
+         call parse_string(line, Ctrl%Sx)
+      case('CTRL%RS%FLAG')
+         call parse_string(line, Ctrl%RS%Flag)
+       case('CTRL%RS%SB')
+         call parse_string(line, Ctrl%RS%Sb)
+      case('CTRL%RS%CB')
+         call parse_string(line, Ctrl%RS%Cb)
+      case('CTRL%EQMPN%RS')
+         call parse_string(line, Ctrl%EqMPN%Rs)
+      case('CTRL%EQMPN%TH')
+         call parse_string(line, Ctrl%EqMPN%TH)
+      case('CTRL%EQMPN%HOMOG')
+         call parse_string(line, Ctrl%EqMPN%Homog)
+      case('CTRL%EQMPN%COREG')
+         call parse_string(line, Ctrl%EqMPN%Coreg)
+      case('CTRL%INVPAR%MQSTART')
+         call parse_string(line, Ctrl%Invpar%MqStart)
+      case('CTRL%INVPAR%MQSTEP')
+         call parse_string(line, Ctrl%Invpar%MqStep)
+      case('CTRL%INVPAR%MAXITER')
+         call parse_string(line, Ctrl%Invpar%MaxIter)
+      case('CTRL%INVPAR%MAXPHASE')
+         call parse_string(line, Ctrl%Invpar%MaxPhase)
+      case('CTRL%INVPAR%CCJ')
+         call parse_string(line, Ctrl%Invpar%Ccj)
+      case('CTRL%INVPAR%XSCALE')
+         call parse_string(line, Ctrl%Invpar%XScale)
+      case('CTRL%INVPAR%XLLIM')
+         call parse_string(line, Ctrl%Invpar%XLLim)
+      case('CTRL%INVPAR%XULIM')
+         call parse_string(line, Ctrl%Invpar%XULim)
+      case('CTRL%QC%MAXJ')
+         call parse_string(line, Ctrl%QC%MaxJ)
+      case('CTRL%QC%MAXS')
+         call parse_string(line, Ctrl%QC%MaxS)
+      case default
+         print*,'ERROR: ReadDriver(): Unknown option ',trim(label)
+      end select
+   end do
 
+   ! --------------------------------------------------------------------------
+   ! Things that had to be moved to after the optional lines
+   ! -------------------------------------------------------------------------
+   ! Sort out inactive elements of day/night/twilight arrays
+
+   Ctrl%Ind%NxI_Dy = MaxStateVar - Ctrl%Ind%Nx_Dy
+
+   ! Set active and inactive state variables
+   k = 0
+   do i=1, MaxStateVar
+      found = .false.
+      do j=1, Ctrl%Ind%Nx_Dy ! Look for the variable index in the active array
+         if (Ctrl%Ind%X_Dy(j) == i) then
+            found = .true.
+            exit
+         end if
+      end do
+      if (.not. found) then ! Not found in active set
+         k = k + 1          ! Add to inactive array
+         Ctrl%Ind%XI_Dy(k) = i
+      end if
+      if (k == Ctrl%Ind%NxI_Dy) exit ! Correct number of values found
+   end do
+   
+   Ctrl%Ind%NxI_Ni = MaxStateVar - Ctrl%Ind%Nx_Ni
+
+   k = 0
+   do i=1, MaxStateVar
+      found = .false.
+      do j=1, Ctrl%Ind%Nx_Ni ! Look for the variable index in the active array
+         if (Ctrl%Ind%X_Ni(j) == i) then
+            found = .true.
+            exit
+         end if
+      end do
+      if (.not. found) then ! Not found in active set
+         k = k + 1          ! Add to inactive array
+         Ctrl%Ind%XI_Ni(k) = i
+      end if
+      if (k == Ctrl%Ind%NxI_Ni) exit ! Correct number of values found
+   end do
+      
    !----------------------------------------------------------------------------
    ! Now do some checks
    !----------------------------------------------------------------------------

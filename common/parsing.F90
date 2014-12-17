@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: parsing.F90
+! Name: parsing.F90 
 !
 ! Purpose:
 ! A module containing the following routines for parsing strings:
@@ -22,7 +22,9 @@ module parsing
            parse_string_0d_strg, parse_string_0d_byte, parse_string_0d_sint, &
            parse_string_0d_lint, parse_string_0d_sreal, parse_string_0d_dreal, &
            parse_string_1d_byte, parse_string_1d_sint, &
-           parse_string_1d_lint, parse_string_1d_sreal, parse_string_1d_dreal
+           parse_string_1d_lint, parse_string_1d_sreal, parse_string_1d_dreal, &
+           parse_string_2d_byte, parse_string_2d_sint, &
+           parse_string_2d_lint, parse_string_2d_sreal, parse_string_2d_dreal
    end interface parse_string
 contains
 
@@ -139,43 +141,53 @@ end function parse_driver
 !-------------------------------------------------------------------------------
 #define PARSE_STRING_TYPE integer
 #define PARSE_STRING_KIND byte
-#define PARSE_STRING_NAME parse_string_1d_byte
+#define PARSE_STRING_NAME_1D parse_string_1d_byte
+#define PARSE_STRING_NAME_2D parse_string_2d_byte
 #include "parse_string.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
-#undef PARSE_STRING_NAME
+#undef PARSE_STRING_NAME_1D
+#undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE integer
 #define PARSE_STRING_KIND sint
-#define PARSE_STRING_NAME parse_string_1d_sint
+#define PARSE_STRING_NAME_1D parse_string_1d_sint
+#define PARSE_STRING_NAME_2D parse_string_2d_sint
 #include "parse_string.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
-#undef PARSE_STRING_NAME
+#undef PARSE_STRING_NAME_1D
+#undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE integer
 #define PARSE_STRING_KIND lint
-#define PARSE_STRING_NAME parse_string_1d_lint
+#define PARSE_STRING_NAME_1D parse_string_1d_lint
+#define PARSE_STRING_NAME_2D parse_string_2d_lint
 #include "parse_string.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
-#undef PARSE_STRING_NAME
+#undef PARSE_STRING_NAME_1D
+#undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE real
 #define PARSE_STRING_KIND sreal
-#define PARSE_STRING_NAME parse_string_1d_sreal
+#define PARSE_STRING_NAME_1D parse_string_1d_sreal
+#define PARSE_STRING_NAME_2D parse_string_2d_sreal
 #include "parse_string.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
-#undef PARSE_STRING_NAME
+#undef PARSE_STRING_NAME_1D
+#undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE real
 #define PARSE_STRING_KIND dreal
-#define PARSE_STRING_NAME parse_string_1d_dreal
+#define PARSE_STRING_NAME_1D parse_string_1d_dreal
+#define PARSE_STRING_NAME_2D parse_string_2d_dreal
 #include "parse_string.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
-#undef PARSE_STRING_NAME
+#undef PARSE_STRING_NAME_1D
+#undef PARSE_STRING_NAME_2D
 
 subroutine parse_string_0d_byte(in, out)
    implicit none
@@ -255,5 +267,54 @@ subroutine parse_string_0d_strg(in, out)
 
    out = in(a:b)
 end subroutine parse_string_0d_strg
+
+!-------------------------------------------------------------------------------
+! Name: clean_driver_label
+!
+! Purpose:
+! Capitalise the input and convert all full stops into % such that a driver
+! file label can be used in a simple select case statement. Code taken from:
+! http://stackoverflow.com/questions/10759375/how-can-i-write-a-to-upper-or-to-lower-function-in-f90
+!
+! Description and Algorithm details:
+! 1) Loop through letters.
+! 2) If lowercase, make uppercase.
+! 3) If a ., make a %.
+!
+! Arguments:
+! Name  Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! in    string  In  The string to translate.
+!
+! Return value:
+! out   string  Out An uppercase string.
+!
+! History:
+! 2014/12/17, AP: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine clean_driver_label(in)
+   implicit none
+
+   character(len=*), intent(inout) :: in
+
+   Integer :: ic, i
+
+   character(26), parameter :: cap = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+   character(26), parameter :: low = 'abcdefghijklmnopqrstuvwxyz'
+
+   ! Capitalize each letter if it is lowercase
+   do i = 1, len_trim(in)
+      ic = index(low, in(i:i))
+      if (ic > 0) then
+         in(i:i) = cap(ic:ic)
+      else
+         ! Turn full stops into %
+         if (in(i:i) == '.') in(i:i) = '%'
+      end if
+   end do
+end subroutine clean_driver_label
 
 end module parsing
