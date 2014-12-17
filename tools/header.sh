@@ -520,7 +520,7 @@ if (( $do_all || $do_NITAATSR )); then
     endy[$i]=37454
     daynight[$i]=2
 
-    frame[$i]=4
+    frame[$i]=1
     let i+=1
 fi
 

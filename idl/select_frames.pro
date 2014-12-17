@@ -38,7 +38,16 @@
 ;
 ; MODIFICATION HISTORY:
 ;   28 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;   10 Dec 2014 - New logic, abandoning doing something clever. Find the min/max 
+;                 of the corners of the swath. If any points in the swath are
+;                 within 2 deg of the dateline, shift to a 0-360 coord system 
+;                 first.
 ;-
+FUNCTION ANY, a
+   for i=1,N_ELEMENTS(a)-1 do if a[i] || a[i-1] then RETURN, 1b
+   RETURN, 0b
+END
+
 PRO SELECT_FRAMES, lat, lon, line1, nl1, frames, cent, lim
    ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
@@ -61,28 +70,18 @@ PRO SELECT_FRAMES, lat, lon, line1, nl1, frames, cent, lim
          lim[*,i]=[-90.,-180.,maxlat,180.] 
       endif else begin
          cent[*,i]=[lat[nl1/2, middle], lon[nl1/2, middle]]
-         ;; Determine the left and right-most lons of first swath edge
-         if lon[0,start] gt lon[1,start] OR $
-            lon[1,start] gt lon[2,start] then begin
-            minl1=lon[nl1-1,start]
-            maxl1=lon[0,start]
-         endif else begin
-            minl1=lon[0,start]
-            maxl1=lon[nl1-1,start]
-         endelse
-         ;; Determine the left and right-most lons of second swath edge
-         if lon[0,endl] gt lon[1,endl] OR $
-            lon[1,endl] gt lon[2,endl] then begin
-            minl2=lon[nl1-1,endl]
-            maxl2=lon[0,endl]
-         endif else begin
-            minl2=lon[0,endl]
-            maxl2=lon[nl1-1,endl]
-         endelse
-         ;; Check if dateline crosses swath
-         minlon = ABS(minl1-minl2) gt 180. XOR minl1 lt minl2 ? minl1 : minl2
-         maxlon = ABS(maxl1-maxl2) gt 180. XOR maxl1 gt maxl2 ? maxl1 : maxl2
-         lim[*,i]=[minlat,minlon,maxlat,maxlon]      
+  
+         ;; If within 2 deg of dateline, assume it is crossed
+         corners = [lon[0,start],lon[nl1-1,start],lon[0,endl],lon[nl1-1,endl]]
+         if ANY(ABS(lon[*,start : endl]) gt 178.) then begin
+            ;; Centre plot on dateline rather than meridian
+            corners[WHERE(corners lt 0.)] += 360.
+            minlon = MIN(corners, max=maxlon)
+            if minlon gt 180. then minlon -= 360.
+            if maxlon gt 180. then maxlon -= 360.
+         endif else minlon = MIN(corners, max=maxlon) ; Dateline not crossed
+            
+         lim[*,i] = [minlat, minlon, maxlat, maxlon]
       endelse
    endfor
 

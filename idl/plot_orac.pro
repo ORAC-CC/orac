@@ -15,7 +15,7 @@
 ;           [, /preproc] [, prev_revision=value] [, root=string] [, xsize=value]
 ;           [, ysize=value] [, nx=value] [, ny=value] [, font_size=value]
 ;           [, scale=value] [, label=string] [, /relative] [, frames=value]
-;           [, /keep_ps] [, \wat|/ice] [, /secondary] [, /diff_only]
+;           [, /keep_ps] [, /wat|/ice] [, /secondary] [, /diff_only]
 ;           [, /full] [, /clear] [, add=string]
 ;
 ; INPUTS:
@@ -85,6 +85,7 @@
 ;   19 Aug 2014 - ACP: Bug in DIFF_ONLY keyword.
 ;   19 Sep 2014 - ACP: New RTM output field names.
 ;   07 Oct 2014 - ACP: Switched RTM array ordering.
+;   09 Dec 2014 - ACP: Change plot title to something useful.
 ;-
 PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
@@ -92,12 +93,11 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary, $
                diff_only=diff_only, short=short, wat=wat, suffix=suff, $
                full=full, clear=clear, add=add
-   ON_ERROR, 2
+   ON_ERROR, KEYWORD_SET(stop) ? 0:2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; process inputs
    if ~KEYWORD_SET(fdr) then fdr=GETENV('TESTOUT')
-   revision=STRING(rev,format='(i0)')
    if SIZE(inst,/type) ne 7 then MESSAGE,'INSTRUMENT must be a string.'
    kc=KEYWORD_SET(comp)
    if ~KEYWORD_SET(frames) then frames=1
@@ -281,6 +281,15 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
       endfor
       DEVICE,/close
 
+      ;; Change plot titles to something useful
+      ff=FILE_SEARCH(root[i]+tag+'.N[0-9][0-9].eps', count=nff)
+      for j=0,nff-1 do begin
+         SPAWN, "cat "+ff[j]+" | sed 's/%%Title:.*/" + $
+                "%%Title: "+inst+' V'+plot_set.label+"/' >! "+root[i] + $
+                'scratch.eps'
+         FILE_MOVE, root[i]+'scratch.eps', ff[j], /overwrite
+      endfor
+
       ;; merge individual PDFs and delete pieces
       CD,folder,current=cur_cd
       SPAWN,'gs -dNOPAUSE -sDEVICE=pdfwrite -sOUTPUTFILE='+root[i]+tag+'.pdf '+ $
@@ -290,8 +299,10 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
             '] >> setpagedevice" '+ $
             '-dBATCH '+root[i]+tag+'.N[0-9][0-9].eps > /dev/null'
       CD,cur_cd
-      if ~KEYWORD_SET(keep_ps) then $
-         FILE_DELETE,FILE_SEARCH(root[i]+tag+'.N[0-9][0-9].eps')
+      if ~KEYWORD_SET(keep_ps) then begin
+         fdel = FILE_SEARCH(root[i]+tag+'.N[0-9][0-9].eps', count=ndel)
+         if ndel gt 0 then FILE_DELETE, fdel
+      endif
    endfor
    SET_PLOT,'x'
    TVLCT, save_ct
