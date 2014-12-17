@@ -71,6 +71,7 @@
 !    2014/12/01, CP: added in global and source attribute read capability
 !    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100, as
 !                    otherwise ~30% of converged pixels are lost in l2tol3 processing
+!    2014/12/17, AP: Converted read statements to parse_driver statements.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -93,6 +94,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    use CTRL_def
    use ECP_constants
    use global_attributes
+   use parsing
    use source_attributes
 
    implicit none
@@ -112,7 +114,7 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    integer                         :: ios      ! Iostat value from file open, read etc.
    integer                         :: dri_lun  ! Unit number for driver file
    character(FilenameLen)          :: input_path,input_filename,scratch_dir,lut_dir
-   character(FilenameLen)          :: suffix,outname
+   character(FilenameLen)          :: suffix,outname,line
    logical                         :: file_exists, found
    real, allocatable, dimension(:) :: solar_store_sea,solar_store_land
    real, allocatable, dimension(:) :: ref_solar_sea,ref_solar_land
@@ -161,26 +163,26 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    ! Read the driver file and the config file
    !----------------------------------------------------------------------------
 
-   read(dri_lun, *, err=999, iostat=ios) input_path
+   if (parse_driver(dri_lun, line) == 0) call parse_string(line, input_path)
    write(*,*)'input directory: ',trim(adjustl(input_path))
 
-   read(dri_lun, *, err=999, iostat=ios) input_filename
+   if (parse_driver(dri_lun, line) == 0) call parse_string(line, input_filename)
    write(*,*)'input filename: ',trim(adjustl(input_filename))
 
    Ctrl%fid%input_filename=trim(adjustl(input_path))//'/'//trim(adjustl(input_filename))
 
-   read(dri_lun, *, err=999, iostat=ios) scratch_dir
+   if (parse_driver(dri_lun, line) == 0) call parse_string(line, scratch_dir)
    write(*,*)'output directory: ', trim(adjustl(scratch_dir))
 
-   read(dri_lun, *, err=999, iostat=ios) lut_dir
+   if (parse_driver(dri_lun, line) == 0) call parse_string(line, lut_dir)
    write(*,*) 'lut_dir: ',trim(adjustl(lut_dir))
 
-   read(dri_lun, *, err=999, iostat=ios) Ctrl%Inst%Name
+   if (parse_driver(dri_lun, line) == 0) call parse_string(line, Ctrl%Inst%Name)
    write(*,*)'Ctrl%Inst%Name: ',trim(adjustl(Ctrl%Inst%Name))
 
    ! Number of channels in preprocessing file
    ! (this is actually not really necessary as we have that in the config file)
-   read(dri_lun, *, err=999, iostat=ios) Ctrl%Ind%NAvail
+   if (parse_driver(dri_lun, line) == 0) call parse_string(line, Ctrl%Ind%NAvail)
    write(*,*) 'Number of available channels in preproc files: ',Ctrl%Ind%NAvail
 
    suffix='.config.nc'
@@ -199,7 +201,8 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
 
    ! Read processing flag from driver
    allocate(conf%channel_proc_flag(conf%nc))
-   read(dri_lun, *, err=999, iostat=ios)(conf%channel_proc_flag(i),i=1,conf%nc)
+   if (parse_driver(dri_lun, line) == 0) &
+        call parse_string(line, conf%channel_proc_flag)
    if (sum(conf%channel_proc_flag) .lt. 1 .or. sum(conf%channel_proc_flag) .gt. conf%nc .or. &
        .not. (any(conf%channel_proc_flag .eq. 0) .or. any(conf%channel_proc_flag .eq. 1))) then
       write(*,*) 'ERROR: channel flag from driver wrong: ',conf%channel_proc_flag
@@ -286,7 +289,8 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
               conf%nmixed_use,conf%channel_mixed_flag_use
 
    ! Read in cloud class (aka phase of no aerosols processed)
-   read(dri_lun, *, err=999, iostat=ios) Ctrl%CloudClass%Name
+   if (parse_driver(dri_lun, line) == 0) &
+        call parse_string(line, Ctrl%CloudClass%Name)
    write(*,*)'Ctrl%CloudClass%Name: ',trim(adjustl(Ctrl%CloudClass%Name))
 
 

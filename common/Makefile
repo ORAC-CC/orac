@@ -20,6 +20,7 @@ PREPROC_OBJ_F90=$(OBJS)/common_constants.o \
                 $(OBJS)/global_attributes.o \
                 $(OBJS)/interpol.o \
                 $(OBJS)/orac_ncdf.o \
+                $(OBJS)/parsing.o \
                 $(OBJS)/source_attributes.o
 
 
