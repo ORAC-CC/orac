@@ -20,11 +20,11 @@
 !    13th Jun 2014, Greg McGarragh : Original version, output_data_*
 !       structures taken from SPixel module.
 !    16th Sep 2014, Greg McGarragh : Added output_utils.F90.
-!    24th Oct 2014, Oliver Sus: added variables cldtype, cloudmask, cccot_pre,  
-!       lusflags, dem, and nisemask 
-!    25th Nov 2014, Adam Povey: Move scaling/offset definitions here. 
-!     1st Dec 2014, Oliver Sus: new cldtype_vmax = 9 
-!     1st Dec 2014, CP: added cloud albedo
+!    24th Oct 2014, Oliver Sus: added variables cldtype, cloudmask,
+!       cccot_pre, lusflags, dem, and nisemask
+!    25th Nov 2014, Adam Povey: Move scaling/offset definitions here.
+!     1st Dec 2014, Oliver Sus: new cldtype_vmax = 9
+!     1st Dec 2014, Caroline Poulsen: added cloud albedo
 !
 ! Bugs:
 !    None known.
@@ -57,8 +57,6 @@ module output_routines
       integer                       :: vid_phase
 
       integer,dimension(:), pointer :: vid_cloud_albedo
-
-    
 
       integer                       :: vid_costja
       integer                       :: vid_costjm
@@ -243,13 +241,12 @@ module output_routines
       integer(kind=sint)            :: dem_vmin   = 0
       integer(kind=sint)            :: dem_vmax   = 10000
 
-
-      real(kind=sreal),   dimension(:), pointer :: cloud_albedo_scale,cloud_albedo_offset
-      integer(kind=sint), dimension(:), pointer :: cloud_albedo_vmin,cloud_albedo_vmax
-
-
       integer(kind=byte)            :: nisemask_scale,nisemask_offset
       integer(kind=byte)            :: nisemask_vmin,nisemask_vmax
+
+      real(kind=sreal),   dimension(:),     pointer :: cloud_albedo_scale,cloud_albedo_offset
+      integer(kind=sint), dimension(:),     pointer :: cloud_albedo_vmin,cloud_albedo_vmax
+
 
       real(kind=dreal),   dimension(:,:),   pointer :: time
 
@@ -274,9 +271,6 @@ module output_routines
 
 !     integer(kind=sint), dimension(:,:),   pointer :: albedo
 !     integer(kind=sint), dimension(:,:),   pointer :: albedo_error
-
-
-     integer(kind=sint), dimension(:,:,:),   pointer :: cloud_albedo
 
 
       integer(kind=sint), dimension(:,:),   pointer :: stemp
@@ -318,6 +312,8 @@ module output_routines
       integer(kind=sint), dimension(:,:),   pointer :: dem
 
       integer(kind=byte), dimension(:,:),   pointer :: nisemask
+
+     integer(kind=sint), dimension(:,:,:),  pointer :: cloud_albedo
 
    end type output_data_primary
 

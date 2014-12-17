@@ -41,8 +41,8 @@
 !    library.
 ! 2014/10/24, OS: Some minor refactoring. Added output variables cldtype,
 !    cldmask, cccot_pre, lusflag, DEM, and nisemask
-! 2014/11/25, AP: Move scaling/offset definitions to output_routines. 
-! 2014/12/01, OS: added flag 9 = prob_opaque_ice to Pavolonis cloud type 
+! 2014/11/25, AP: Move scaling/offset definitions to output_routines.
+! 2014/12/01, OS: added flag 9 = prob_opaque_ice to Pavolonis cloud type
 ! 2010/11/12, CP: added cloud albedo
 !
 ! $Id$
@@ -707,7 +707,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            verbose,ierr, &
            flag_values='1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
            flag_meanings='Day, Twilight, Night, Daynore, DayMissingSingleVisFirst, ' // &
-               'DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, ' // & 
+               'DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, ' // &
                'DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, ' // &
                'NightMissingSingleIRThird', &
            long_name     = 'illumination flag', &
@@ -845,8 +845,10 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
            flag_values   = '0b, 1b', &
            flag_meanings = 'snow/ice free, snow/ice')
 
+   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
+
    !----------------------------------------------------------------------------
-   !cloud a albedo_in_channel_no_*
+   ! cloud a albedo_in_channel_no_*
    !----------------------------------------------------------------------------
    do i=1,Ctrl%Ind%Nsolar
 
@@ -881,11 +883,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data, status)
       end do
    end do
 
-
-
-
-
-   if (ierr .ne. NF90_NOERR) status=PrimaryFileDefinitionErr
 
    !----------------------------------------------------------------------------
    !

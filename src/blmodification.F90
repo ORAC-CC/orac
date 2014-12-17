@@ -1,18 +1,28 @@
-!BLmodification.F90
+!-------------------------------------------------------------------------------
+! Name:
+!    blmodification.F90
 !
 ! Purpose:
+!    Modifies boundary layer inversion if found.
 !
-!    modifies boundary layer inversion if found
+! Description:
+!
+! Arguments:
+!    Name Type In/Out/Both Description
+!    N/A
 !
 ! Algorithm:
-!
 !    From OCA ATBD
 !
-! History:
-!    First version 11/11/2014 C. Poulsen
+! Local variables:
+!    Name Type Description
+!    N/A
 !
-! Bugs
-!    None known
+! History:
+!    11/11/2014, C. Poulsen: First version
+!
+! Bugs:
+!    None known.
 !
 !    Could use humidity subsidence inver sion in the future
 !
@@ -20,18 +30,17 @@
 !
 !---------------------------------------------------------------------
 subroutine Blmodification(SPixel)
-   
+
    use SPixel_def
 
    implicit none
-   
+
    !  Declare arguments
    type(SPixel_t), intent(inout) :: SPixel
 
    real    :: bllr,max_pressure ! boundary layer lapse rate
    integer :: i,j,k,np,BLindexbottom,newindex,test,bltop,depth
    logical :: bltrue
-
 
 
    max_pressure=600.0
@@ -73,15 +82,13 @@ subroutine Blmodification(SPixel)
       newindex=BLindexbottom+2
 
       ! calculate lapse rate using 2 levels below
-      bllr=(SPixel%RTM%LW%T(newindex-1)-SPixel%RTM%LW%T(newindex))/(SPixel%RTM%LW%P(newindex-1)-SPixel%RTM%LW%P(newindex))
-
-      !      write(*,*)'bllr',bllr
+      bllr=(SPixel%RTM%LW%T(newindex-1)-SPixel%RTM%LW%T(newindex))/ &
+         (SPixel%RTM%LW%P(newindex-1)-SPixel%RTM%LW%P(newindex))
 
       ! make a search for top of boundary layer inversion; start from bl bottom
-
       depth=1.0
-      !  do i = SPixel%RTM%LW%Np-depth,1,-1
-      !begin at -2 to force some depth to the feature
+!     do i = SPixel%RTM%LW%Np-depth,1,-1
+      ! begin at -2 to force some depth to the feature
       do k=BLindexbottom-2,1,-1
 
          if (SPixel%RTM%LW%T(k) .lt. SPixel%RTM%LW%T(k+1)) then
@@ -93,10 +100,7 @@ subroutine Blmodification(SPixel)
 
       enddo
 
-
-      !print out new temperature profile
-      !
-
+      ! print out new temperature profile
       if (test .eq. 1) then
          write(*,*)'bltop bottom',bltop,BLindexbottom
          write(*,*)'bl true'
@@ -118,29 +122,25 @@ subroutine Blmodification(SPixel)
          write(*,*)']'
       endif
 
-      !modify temperature profile to reaplce profile wher the inversion is
+      ! modify temperature profile to reaplce profile wher the inversion is
       bltop=bltop-depth
 
       do k=BLindexbottom ,bltop,-1
 
-
-         SPixel%RTM%LW%T(k)=SPixel%RTM%LW%T(BLindexbottom)+bllr*(SPixel%RTM%LW%P(k)-SPixel%RTM%LW%P(BLindexbottom))
+         SPixel%RTM%LW%T(k)=SPixel%RTM%LW%T(BLindexbottom)+bllr*(SPixel%RTM%LW%P(k)- &
+            SPixel%RTM%LW%P(BLindexbottom))
 
       enddo
 
-      !print out new temperature profile
-      !
+      ! print out new temperature profile
       if (test .eq. 1) then
          write(*,*),'tnew=[ $'
          do k=1,SPixel%RTM%LW%Np
             write(*,*)SPixel%RTM%LW%T(k),',$'
-
          enddo
          write(*,*)']'
       endif
 
-
    endif ! bltrue
-
 
 end subroutine Blmodification

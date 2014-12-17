@@ -53,8 +53,6 @@ subroutine dealloc_output_data_primary(output_data)
    deallocate(output_data%cloud_albedo_scale)
    deallocate(output_data%cloud_albedo_offset)
 
-
-
    deallocate(output_data%time)
 
    deallocate(output_data%lon)
@@ -122,20 +120,20 @@ subroutine dealloc_output_data_secondary(output_data,lcovar)
    deallocate(output_data%vid_y0)
    deallocate(output_data%vid_residuals)
 
-   deallocate(output_data%albedo_vmin)
-   deallocate(output_data%albedo_vmax)
    deallocate(output_data%albedo_scale)
    deallocate(output_data%albedo_offset)
+   deallocate(output_data%albedo_vmin)
+   deallocate(output_data%albedo_vmax)
 
    deallocate(output_data%channels_scale)
    deallocate(output_data%channels_offset)
    deallocate(output_data%channels_vmin)
    deallocate(output_data%channels_vmax)
 
-   deallocate(output_data%y0_vmin)
-   deallocate(output_data%y0_vmax)
    deallocate(output_data%y0_scale)
    deallocate(output_data%y0_offset)
+   deallocate(output_data%y0_vmin)
+   deallocate(output_data%y0_vmax)
 
    deallocate(output_data%residuals_scale)
    deallocate(output_data%residuals_offset)

@@ -216,20 +216,21 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use SPixel_def
    use global_attributes
    use source_attributes
+
    ! Local variable declarations
 
    implicit none
    type(global_attributes_s) :: global_atts
    type(source_attributes_s) :: source_atts
-   type(config_struct) :: conf
-   type(CTRL_t)        :: Ctrl
-   type(Data_t)        :: MSI_Data
-   type(Diag_t)        :: Diag       ! Diagnostic struct returned by Invert_Marquardt
-   type(RTM_t)         :: RTM
-   type(RTM_Pc_t)      :: RTM_Pc
+   type(config_struct)       :: conf
+   type(CTRL_t)              :: Ctrl
+   type(Data_t)              :: MSI_Data
+   type(Diag_t)              :: Diag       ! Diagnostic struct returned by Invert_Marquardt
+   type(RTM_t)               :: RTM
+   type(RTM_Pc_t)            :: RTM_Pc
    type(SAD_Chan_t), allocatable, dimension(:) :: SAD_Chan
-   type(SAD_LUT_t)     :: SAD_LUT
-   type(SPixel_t)      :: SPixel
+   type(SAD_LUT_t)           :: SAD_LUT
+   type(SPixel_t)            :: SPixel
 
    integer             :: i, j, jj, m
    integer             :: ios        ! I/O status value from file operations
@@ -362,7 +363,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    verbose=.true.
 
    ! Read Ctrl struct from driver file
-   call Read_Driver(Ctrl,conf,message,nargs,drifile, global_atts,source_atts,status)
+   call Read_Driver(Ctrl,conf,message,nargs,drifile,global_atts,source_atts,status)
 
    ! Read dimensions of preprocessing swath files first:
    call read_input_dimensions_msi(Ctrl%Fid%MSI,Ctrl%FID%Geo, &

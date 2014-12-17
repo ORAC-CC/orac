@@ -84,7 +84,8 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts,source_atts, status)
+subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
+                       source_atts, status)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
@@ -97,14 +98,14 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts,source_a
    implicit none
 
    ! Argument declarations
-   type(CTRL_t),           intent(out)   :: Ctrl
-   type(config_struct),    intent(out)   :: conf
+   type(CTRL_t),              intent(out)   :: Ctrl
+   type(config_struct),       intent(out)   :: conf
+   character(*),              intent(out)   :: message
+   integer,                   intent(in)    :: nargs
+   character(FilenameLen),    intent(inout) :: drifile
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
-   character(*),           intent(out)   :: message
-   integer,                intent(in)    :: nargs
-   character(FilenameLen), intent(inout) :: drifile
-   integer,                intent(out)   :: status
+   integer,                   intent(out)   :: status
 
    ! Local variables
    integer                         :: i,ii,j,jj,k

@@ -43,21 +43,22 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    implicit none
 
    ! Input
-   character(len=*),intent(in)  :: path
-   integer,         intent(in)  :: nx, ny
-   character(len=*),intent(in)  :: inst_name
-   integer,         intent(in)  :: type
+   character(len=*),          intent(in)    :: path
+   integer,                   intent(in)    :: nx, ny
+   character(len=*),          intent(in)    :: inst_name
+   integer,                   intent(in)    :: type
 
    ! Output
-   integer,         intent(out) :: ncid
-   integer,         intent(out) :: dims_var(2)
-   integer,         intent(out) :: status
+   integer,                   intent(out)   :: ncid
+   integer,                   intent(out)   :: dims_var(2)
+   integer,                   intent(out)   :: status
+
+   type(global_attributes_s), intent(inout) :: global_atts
+   type(source_attributes_s), intent(inout) :: source_atts
 
    ! Local
-   integer                   :: ierr, xdim, ydim
-   character(len=128)        :: temp_string
-   type(global_attributes_s), intent(inout)  :: global_atts
-   type(source_attributes_s), intent(inout)  :: source_atts
+   integer            :: ierr, xdim, ydim
+   character(len=128) :: temp_string
 
 
    !----------------------------------------------------------------------------

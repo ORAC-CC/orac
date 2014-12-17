@@ -22,7 +22,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_config_file(Ctrl, conf,global_atts, source_atts)
+subroutine read_config_file(Ctrl, conf, global_atts, source_atts)
 
    use config_def
    use CTRL_def
@@ -32,14 +32,14 @@ subroutine read_config_file(Ctrl, conf,global_atts, source_atts)
 
    implicit none
 
-   type(Ctrl_t),        intent(in)    :: Ctrl
-   type(config_struct), intent(inout) :: conf
-   type(global_attributes_s) :: global_atts
-   type(source_attributes_s) :: source_atts
+   type(Ctrl_t),        intent(in)          :: Ctrl
+   type(config_struct), intent(inout)       :: conf
+   type(global_attributes_s), intent(inout) :: global_atts
+   type(source_attributes_s), intent(inout) :: source_atts
 
-   logical                            :: verbose = .true.
+   logical :: verbose = .true.
 
-   integer                            :: ncid
+   integer :: ncid
 
    ! Open config file for reading
    call nc_open(ncid, Ctrl%FID%CONFIG)
