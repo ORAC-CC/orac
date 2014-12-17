@@ -33,6 +33,7 @@
   ! 2014/11/20 OS: corrected Julian Date format; added Pavolonis cloud phase variable
   ! 2014/12/01 OS: added flag 9 = prob_opaque_ice
   ! 2014/12/03 CP: added cloud albedo
+  ! 2014/12/17 CP: removed unknown form mask naming
   !
   ! $Id$
   !
@@ -633,7 +634,7 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
   flag_vals(2)=1_byte
   flag_vals(3)=2_byte
   CALL nc_defdata_byte_flag_value_pp(ncid_primary, dims_var, 'phase', spixel_scan_out%vidphase, 'cloud phase flag', &
-       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,3,1, 'clear/unknown liquid ice',&
+       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,3,1, 'clear liquid ice',&
        & spixel_scan_out%byte_fill_value, &
        & spixel_scan_out%phase_scale,spixel_scan_out%phase_offset, &
        & spixel_scan_out%phase_vmin,spixel_scan_out%phase_vmax, wo,ierr)
@@ -653,7 +654,7 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
   flag_vals(2)=1_byte
   flag_vals(3)=2_byte
   CALL nc_defdata_byte_flag_value_pp(ncid_primary, dims_var, 'phase_pavolonis', spixel_scan_out%vidphase_pavolonis, 'cloud phase flag Pavolonis', &
-       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,3,1, 'clear/unknown liquid ice',&
+       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,3,1, 'clear liquid ice',&
        & spixel_scan_out%byte_fill_value, &
        & spixel_scan_out%phase_pavolonis_scale,spixel_scan_out%phase_pavolonis_offset, &
        & spixel_scan_out%phase_pavolonis_vmin,spixel_scan_out%phase_pavolonis_vmax, wo,ierr)
