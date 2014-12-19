@@ -252,20 +252,21 @@ subroutine parse_string_0d_strg(in, out)
    character(len=1), parameter   :: excess(2) = ["'", '"']
    integer                       :: l, a, b
 
-   if (any(excess == in(1:1))) then
+   out = adjustl(in)
+   if (any(excess == out(1:1))) then
       a = 2
    else
       a = 1
    end if
 
-   l = len_trim(in)
-   if (any(excess == in(l:l))) then
+   l = len_trim(out)
+   if (any(excess == out(l:l))) then
       b = l-1
    else
       b = l
    end if
 
-   out = in(a:b)
+   out = adjustl(out(a:b))
 end subroutine parse_string_0d_strg
 
 !-------------------------------------------------------------------------------
