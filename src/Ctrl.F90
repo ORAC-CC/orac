@@ -107,6 +107,7 @@
 !    2012/10/12, C. Poulsen: added defaultctrl%sx category!
 !    2014/01/15, Greg McGarragh: No need for Ctrl%DefaultSx any more.
 !    2014/01/25, Greg McGarragh: Cleaned up the code.
+!    2014/12/19, Adam Povey: Removing unneccessary fields.
 !
 ! Bugs:
 !   None known.
@@ -124,7 +125,7 @@ module CTRL_def
    ! Define a type to hold File names used by the ECP
 
    type FID_t
-      character(FilenameLen) :: CONFIG	           ! Multi-Spectral Image
+      character(FilenameLen) :: Config	           ! Configuration 
       character(FilenameLen) :: MSI	           ! Multi-Spectral Image
       character(FilenameLen) :: LWRTM	           ! LW Rad Trans Model results
       character(FilenameLen) :: SWRTM	           ! SW Rad Trans Model results
@@ -132,25 +133,14 @@ module CTRL_def
       character(FilenameLen) :: LS	           ! Land/sea map
       character(FilenameLen) :: CF	           ! Cloud flag
       character(FilenameLen) :: Geo                ! Geometry (sun-satellite)
-      character(FilenameLen) :: illum              ! illumination
       character(FilenameLen) :: Loc                ! Location (latitudes/longs)
       character(FilenameLen) :: uv                 ! scan lines u/v
-      character(FilenameLen) :: Aux	           ! ??? Look-Up Tables ???
-      character(FilenameLen) :: Out	           ! ECP results output
+      character(FilenameLen) :: Alb	           ! Surface albedo, emissivity
       character(FilenameLen) :: Diag	           ! ECP o/p diagnostics
       character(FilenameLen) :: BkP	           ! ECP Break-Point file
       character(FilenameLen) :: Log	           ! ECP log file
-      character(FilenameLen) :: res	           ! ECP log file
-      character(FilenameLen) :: qc	           ! ECP log file
-      character(FilenameLen) :: geoout	           ! ECP log file
-      character(FilenameLen) :: runinfo	           ! ECP log file
-      character(FilenameLen) :: input	           ! ECP log file
-      character(FilenameLen) :: apfg	           ! ECP log file
-      character(FilenameLen) :: scan	           ! ECP log file
-      character(FilenameLen) :: input_filename     ! Multi-Spectral Image
-      character(FilenameLen) :: L2_primary_outputpath_and_file
-      character(FilenameLen) :: L2_secondary_outputpath_and_file
-      character(FilenameLen) :: L1_input_outputpath_and_file
+      character(FilenameLen) :: L2_primary         ! Primary output file
+      character(FilenameLen) :: L2_secondary       ! Secondary output file
    end type FID_t
 
    ! Define a type for instrument info
@@ -161,110 +151,97 @@ module CTRL_def
 
    ! Resolution info
    type Resoln_t
-      integer                :: Space              ! Deg. of spatial resolution (pixels)
+      integer                :: Space              ! Deg. of spatial resolution
+                                                   ! (pixels)
       integer                :: AMeth              ! Averaging method
       integer                :: SegSize            ! Image segment size (no. of
                                                    ! rows of super-pixels that
                                                    ! make up a segment).
-      integer                :: Time               ! Temporal av'ging required (slots)
+      integer                :: Time               ! Temporal av'ging required 
+                                                   ! (slots)
    end type Resoln_t
 
    ! Indices: includes pixels to be used, channel and state variable indices and
    ! "warm-start" pixel indices.
-   !
-   ! Notes on channel IDs and indices:
-   !
-   ! The Y array holds the channel identifier numbers (IDs) for the channels
-   ! used. (These are FIXED for each instrument and allow the system to link
-   ! to channel dependent SAD data sets).
-   !
-   ! YSolar and YThermal hold the indices of the Solar and Thermal channels in
-   ! the Y array (so YSolar always runs from 1 to NSolar and YThermal runs from
-   ! the first channel with a thermal component to the last element of Y).
    type Ind_t
-      integer                :: XMax               ! Max no. of pixels in x direction
-      integer                :: YMax               ! Max no. of pixels in y direction
-      integer                :: NChans             ! No. of instrument channels available.
-      integer                :: Navail             ! No. of instrument channels actually
-                                                   ! used
-      integer                :: NInstViews         ! No. of instrument views available
-      integer                :: NViews             ! Number of instrument views (forward,
-                                                   ! nadir etc) selected
-      integer, pointer       :: ViewIdx(:)         ! Array of view values, 1 per channel
-                                                   ! / Y_ID
-      integer                :: X0                 ! Lower left pixel x co-ordinate
-      integer                :: Y0                 ! Lower left pixel y co-ordinate
-      integer                :: X1                 ! Upper right pixel x co-ordinate
-      integer                :: Y1                 ! Upper right pixel y co-ordinate
-      integer                :: Ws                 ! Warm start flag
-      integer                :: Xstart             ! Warm start X
-      integer                :: Ystart             ! Warm start Y
-      integer                :: Ny                 ! Number of channels to use
-      integer                :: Nyp                ! Number of channels in preprocessing
-                                                   ! file
-      integer, pointer       :: Y_Id(:)            ! Array of channel IDs
-      integer, pointer       :: ChI(:)             ! Array of channel IDs
-      integer                :: Nx_Dy              ! Number of active state variables
-                                                   ! for daylight conditions
-      integer                :: Nx_Tw              ! Number of active state variables
-                                                   ! for twilight conditions
-      integer                :: Nx_Ni              ! Number of active state variables
-                                                   ! for night conditions
-      integer                :: NxI_Dy             ! Number of inactive state variables
-                                                   ! for daylight conditions
-      integer                :: NxI_Tw             ! Number of inactive state variables
-                                                   ! for twilight conditions
-      integer                :: NxI_Ni             ! Number of inactive state variables
-                                                   ! for night conditions
-      integer                :: X_Dy(MaxStateVar)  ! Array of active state variable
-                                                   ! indices for daylight conditions
-      integer                :: X_Tw(MaxStateVar)  ! Array of active state variable
-                                                   ! indices for twilight conditions
-      integer                :: X_Ni(MaxStateVar)  ! Array of active state variable
-                                                   ! indices for night conditions
-      integer                :: XI_Dy(MaxStateVar) ! Array of inactive state variable
-                                                   ! indices for daylight conditions
-      integer                :: XI_Tw(MaxStateVar) ! Array of inactive state variable
-                                                   ! indices for twilight conditions
-      integer                :: XI_Ni(MaxStateVar) ! Array of inactive state variable
-                                                   ! indices for night conditions
-      integer                :: Nsolar             ! No. of channels with solar source
-      integer                :: Nthermal           ! No. of chan with thermal source
-      integer, pointer       :: Ysolar(:)          ! Array of solar channel indices
+      ! Channel indexing variables
+      integer                :: Ny                 ! No. of instrument channels 
+                                                   ! actually used
+      integer                :: NAvail             ! No. of instrument channels 
+                                                   ! available.
+      integer, pointer       :: Y_Id(:)            ! Instrument IDs for used chs
+      integer, pointer       :: ICh(:)             ! Array indices for used chs
+      integer                :: NSolar             ! No. of chs with solar source
+      integer                :: NThermal           ! No. of chs w/ thermal source
+      integer                :: NMixed             ! Number of mixed solar/
+                                                   ! thermal channels
+      integer, pointer       :: YSolar(:)          ! Array indices for solar chs
                                                    ! i.e. indices in Y array, not
                                                    ! channel IDs.
-      integer, pointer       :: Ythermal(:)        ! Array of thermal channel indices
-      integer, pointer       :: ysolar_msi(:)
-      integer, pointer       :: ythermal_msi(:)
+      integer, pointer       :: YThermal(:)        ! Array indices for thermal ch
+      integer, pointer       :: YMixed(:)          ! Array indices for mixed chs
       integer                :: ThermalFirst       ! Index of first thermal ID
       integer                :: ThermalLast        ! Index of last thermal ID
       integer                :: SolarFirst         ! Index of first solar ID
       integer                :: SolarLast          ! Index of last thermal ID
-      integer                :: NMixed             ! Number of mixed solar/thermal chans
-      integer                :: MDAD_LW            ! Index of channel at (or nearest
-                                                   ! to) 11 um used in MDAD method for
-                                                   ! setting FG (AP)
-                                                   ! cloud pressure and phase
-      integer                :: MDAD_SW            ! Index of channel at (or nearest
-                                                   ! to) 0.67 used in MDAD method for
-                                                   ! setting FG (AP) cloud optical depth
+      
+      ! View indexing variables
+      integer                :: NInstViews         ! No. of instrument views 
+                                                   ! available
+      integer                :: NViews             ! Number of instrument views 
+                                                   ! (forward,
+                                                   ! nadir etc) selected
+      integer, pointer       :: ViewIdx(:)         ! Array of view values, 1 per
+                                                   ! channel
+
+      ! Spatial grid indexing variables
+      integer                :: XMax               ! Max no. of pixels in x 
+                                                   ! direction
+      integer                :: YMax               ! Max no. of pixels in y 
+                                                   ! direction
+      integer                :: X0                 ! Lower left pixel x coord
+      integer                :: Y0                 ! Lower left pixel y coord
+      integer                :: X1                 ! Upper right pixel x coord
+      integer                :: Y1                 ! Upper right pixel y coord
+      integer                :: Ws                 ! Warm start flag
+      integer                :: Xstart             ! Warm start X
+      integer                :: Ystart             ! Warm start Y
+
+      ! State vector indexing variables
+      integer                :: Nx_Dy              ! Number of active state
+                                                   ! variables for daylight
+      integer                :: Nx_Tw              ! Number of active state
+                                                   ! variables for twilight
+      integer                :: Nx_Ni              ! Number of active state
+                                                   ! variables for night
+      integer                :: NxI_Dy             ! Number of inactive state
+                                                   ! for daylight conditions
+      integer                :: NxI_Tw             ! Number of inactive state
+                                                   ! variables for twilight
+      integer                :: NxI_Ni             ! Number of inactive state
+                                                   ! variables for night
+      integer                :: X_Dy(MaxStateVar)  ! Active state variable 
+                                                   ! indices for daylight
+      integer                :: X_Tw(MaxStateVar)  ! Active state variable 
+                                                   ! indices for twilight
+      integer                :: X_Ni(MaxStateVar)  ! Active state variable 
+                                                   ! indices for night
+      integer                :: XI_Dy(MaxStateVar) ! Inactive state variable 
+                                                   ! indices for daylight
+      integer                :: XI_Tw(MaxStateVar) ! Inactive state variable 
+                                                   ! indices for twilight
+      integer                :: XI_Ni(MaxStateVar) ! Inactive state variable 
+                                                   ! indices for night
+      integer                :: MDAD_LW            ! Index of channel at (or
+                                                   ! nearest to) 11 um used in
+                                                   ! MDAD method for setting FG
+                                                   ! (AP) cloud pressure and
+                                                   ! phase
+      integer                :: MDAD_SW            ! Index of channel at (or
+                                                   ! nearest to) 0.67 used in
+                                                   ! MDAD method for setting FG
+                                                   ! (AP) cloud optical depth
    end type Ind_t
-
-   ! Cloud class info
-   type CloudClass_t
-      integer                :: N                  ! No. of classes available
-      integer                :: Id                 ! Identifier
-      character(3)           :: Name               ! Class name
-
-   end type CloudClass_t
-
-   ! Phase (water/ice) info
-   type Phaset_t
-      real                   :: Ice                ! Temperature below which first guess
-                                                   ! phase switches to ice
-      real                   :: Water              ! Temp. above which first guess phase
-                                                   ! switches to water
-   end type Phaset_t
 
    ! Surface Reflectance parameters
    ! Arrays are set by Ctrl%ind%nsolar - presumably max possible is total no
@@ -286,12 +263,6 @@ module CTRL_def
       integer                :: CoReg              ! Flag to use Eqmpn from coReg errors
    end type EqMPN_t
 
-   ! Noise
-   type Noise_t
-      real                   :: NEFR               ! Noise equivalent fractional reflection
-      real                   :: NEBT               ! Noise equivalent brightness temperature
-   end type Noise_t
-
    ! Inversion parameters
    type Invpar_t
       real                   :: MqStart            ! Marquardt starting parameter
@@ -310,13 +281,6 @@ module CTRL_def
       real                   :: MaxS(MaxStateVar)  ! Maximum acceptable error in state variable
 				                   ! at solution.
    end type QC_t
-
-   ! Super pixel parameters (hidden)
-   type SPix_t
-      integer                :: NPixel             ! Number of pixels in super pixel
-      integer                :: Xc                 ! Relative x coordinate of centre pixel
-      integer                :: Yc                 ! Relative y coordinate of centre pixel
-   end type SPix_t
 
    ! Main Ctrl structure.
    ! Note that the FG and AP arrays are 2-d, to allow separate options for
@@ -347,11 +311,10 @@ module CTRL_def
       type (Inst_t)          :: Inst
       type (Resoln_t)        :: Resoln
       type (Ind_t)           :: Ind
-      type (CloudClass_t)    :: CloudClass
+      character(3)           :: CloudClass         ! Name of LUT to use
       integer                :: CloudType          ! Cloud type flag, distinct from
                                                    ! cloud class, used to define
                                                    ! the homog/coreg noise.
-      type (Phaset_t)        :: Phaset
       integer                :: Ap(MaxStateVar,3)  ! A Priori options
       integer                :: Fg(MaxStateVar,3)  ! First-guess options for
                                                    ! state vector plus phase.
@@ -364,10 +327,8 @@ module CTRL_def
       real, pointer          :: Sy(:,:)            ! Measurement error covariance.
       type (SurfRef_t)       :: RS
       type (EqMPN_t)         :: EqMPN
-      type (Noise_t)         :: Noise
       type (Invpar_t)        :: Invpar
       type (QC_t)            :: QC                 ! Quality control structure
-      type (SPix_t)          :: Spix
    end type CTRL_t
 
 contains

@@ -49,7 +49,7 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
    integer,                   intent(in)    :: iystart
    integer,                   intent(in)    :: iystop
    integer,                   intent(in)    :: NViews
-  integer,                     intent(in)   :: Ny
+   integer,                   intent(in)    :: Ny
    type(output_data_primary), intent(inout) :: output_data
 
 

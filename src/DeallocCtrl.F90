@@ -22,6 +22,7 @@
 !    20th Dec 2011, Caroline Poulsen: Changed Ctrl to be inout (from in)
 !    12th Jan 2014, Greg McGarragh: Added some missing deallocates.
 !    27th May 2014, Greg McGarragh: Some cleanup.
+!    19th Dec 2014, Adam Povey: Removing ysolar_msi, ythermal_msi.
 !
 ! Bugs:
 !    None known.
@@ -40,12 +41,10 @@ subroutine Dealloc_Ctrl(Ctrl, status)
    integer,      intent(inout) :: status
 
    deallocate(Ctrl%Ind%ViewIdx)
-   deallocate(Ctrl%Ind%Y_Id)
-   deallocate(Ctrl%Ind%ChI)
-   deallocate(Ctrl%Ind%Ysolar)
-   deallocate(Ctrl%Ind%Ythermal)
-   deallocate(Ctrl%Ind%Ysolar_msi)
-   deallocate(Ctrl%Ind%Ythermal_msi)
+   deallocate(Ctrl%Ind%Y_ID)
+   deallocate(Ctrl%Ind%ICh)
+   deallocate(Ctrl%Ind%YSolar)
+   deallocate(Ctrl%Ind%YThermal)
    deallocate(Ctrl%Rs%B)
    deallocate(Ctrl%Sy)
 

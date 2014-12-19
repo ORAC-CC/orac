@@ -15,6 +15,7 @@
 ! 2014/08/02, GM: Cleaned up the code.
 ! 2014/08/15, AP: Use preprocessor NCDF functions.
 ! 2014/10/07, AP: Removed read of layer dimensions.
+! 2014/12/19, AP: Number of channels read in ReadDriver. Removed from here.
 !
 ! $Id$
 !
@@ -22,7 +23,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim, &
+subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
      verbose)
 
    use ECP_Constants
@@ -32,7 +33,7 @@ subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim, &
 
    character(len=FilenameLen), intent(in)  :: fname_msi
    character(len=FilenameLen), intent(in)  :: fname_geo
-   integer(kind=lint),         intent(out) :: xdim,ydim,cdim,vdim
+   integer(kind=lint),         intent(out) :: xdim,ydim,vdim
    logical,                    intent(in)  :: verbose
 
    integer                                 :: ncid
@@ -43,7 +44,7 @@ subroutine read_input_dimensions_msi(fname_msi,fname_geo,xdim,ydim,cdim,vdim, &
 
    xdim = nc_dim_length(ncid, 'nx_msi', verbose)
    ydim = nc_dim_length(ncid, 'ny_msi', verbose)
-   cdim = nc_dim_length(ncid, 'nc_msi', verbose)
+   !cdim = nc_dim_length(ncid, 'nc_msi', verbose)
 
    ! Close msi file
    if (nf90_close(ncid) .ne. NF90_NOERR) &

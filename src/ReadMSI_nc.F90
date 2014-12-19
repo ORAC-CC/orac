@@ -180,11 +180,11 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%Ny))
    allocate(MSI_Data%time(Ctrl%Ind%Xmax, SegSize))
 
-   call nc_read_array(ncid, "msi_data", MSI_Data%MSI, verbose, 3, Ctrl%Ind%Chi)
+   call nc_read_array(ncid, "msi_data", MSI_Data%MSI, verbose, 3, Ctrl%Ind%ICh)
    call nc_read_array(ncid, "time_data", MSI_Data%time, verbose)
 
    ! Read instrument channel indices from file
-!  allocate(msi_instr_ch_numbers(Ctrl%Ind%Nyp))
+!  allocate(msi_instr_ch_numbers(Ctrl%Ind%Navail))
 !  call nc_read_array(ncid,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
 !  deallocate(msi_instr_ch_numbers)
 

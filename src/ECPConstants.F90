@@ -347,6 +347,8 @@ module ECP_constants
    integer, parameter :: AMethInvalid               = 1004 ! SPixel averaging method
    integer, parameter :: LimitMethInvalid           = 1005
    integer, parameter :: SegSizeInvalid             = 1006 ! Image segment size
+   integer, parameter :: DriverFileIncompat         = 1007
+   integer, parameter :: BadCloudClass              = 1008
    integer, parameter :: ICFileOpenErr              = 1010
    integer, parameter :: ICFileReadErr              = 1011
    integer, parameter :: InstIDInvalid              = 1012

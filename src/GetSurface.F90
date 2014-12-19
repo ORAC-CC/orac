@@ -126,6 +126,9 @@
 !    2014/08/01, GM: Use of SPixel%spixel_*_y_to_ctrl_y_index(:) to properly
 !       index the right channels from the surface fields.
 !    2014/09/09, GM: Changes related to new BRDF support.
+!    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!       channels with respect to the channels actually processed, rather than the
+!       MSI file.
 !
 ! Bugs:
 !    AS, Mar 2011. The Aux method albedo code includes specific handling for
@@ -270,7 +273,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       do i = 1,SPixel%Ind%NSolar
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
-         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(ii)) .eq. 5 .and. Ctrl%Inst%Name .eq. 'AATSR') then
+         if (Ctrl%Ind%Y_Id(ii) .eq. 5 .and. Ctrl%Inst%Name .eq. 'AATSR') then
             if (SPixel%Surface%Flags == 0) then ! sea
                SPixel_b(i) = Ctrl%Rs%b(ii,1)
                if (Ctrl%RS%use_full_brdf) &
@@ -284,17 +287,17 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
             solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
 
             SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                          Ctrl%Ind%ysolar_msi(ii)) / solar_factor
+                          Ctrl%Ind%YSolar(ii)) / solar_factor
 
             if (Ctrl%RS%use_full_brdf) then
                SPixel_b2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+                                      Ctrl%Ind%YSolar(i)) / solar_factor
                SPixel_b2(i,IRho_0D) = MSI_Data%rho_0d(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+                                      Ctrl%Ind%YSolar(i)) / solar_factor
                SPixel_b2(i,IRho_DV) = MSI_Data%rho_dv(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+                                      Ctrl%Ind%YSolar(i)) / solar_factor
                SPixel_b2(i,IRho_DD) = MSI_Data%rho_dd(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                                      Ctrl%Ind%ysolar_msi(i)) / solar_factor
+                                      Ctrl%Ind%YSolar(i)) / solar_factor
             endif
 
             ! If sea and then sun glint replace by Ctrl value, otherwise if land,

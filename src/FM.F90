@@ -168,7 +168,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
    integer       :: ThF, ThL ! First, last thermal channel indices
    type(GZero_t) :: GZero
    real          :: CRP(SPixel%Ind%Ny, MaxCRProps)
-!   real          :: d_cloud_albedo(SPixel%Ind%NySolar, 2))	
+!   real          :: d_cloud_albedo(SPixel%Ind%NSolar, 2))	
    real          :: d_CRP(SPixel%Ind%Ny, MaxCRProps, 2)
    real          :: BT(SPixel%Ind%NThermal)
    real          :: d_BT(SPixel%Ind%NThermal, MaxStateVar)

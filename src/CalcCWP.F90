@@ -8,17 +8,12 @@
 !
 ! Arguments:
 !    Name Type In/Out/Both Description
-!    N/A
+!    Ctrl       struct  ECP control structure read from driver file
+!    SPixel     struct  Structure for the pixel currently being retrieved.
+!    status     int     Status of Write_log routine.
 !
 ! Algorithm:
 !
-!
-! Local variables:
-!    Name       Type    Description
-!    Ctrl       struct  ECP control structure read from driver file
-!    SAD_CloudClass     Array of structures each containing info on a cloud
-!
-!    status     logical
 !
 ! History:
 !     8th Nov 2011, Caroline Poulsen: original version adapted from idl version
@@ -28,6 +23,7 @@
 !    2014/06/11, CP: removes automatic crash if ice wat class not specified so
 !      can cope with aerosol class
 !    2014/07/23, AP: added value for al10e2.
+!    2014/12/19, AP: Renaming CloudClass field in Ctrl.
 !
 ! Bugs:
 !   None known.
@@ -36,7 +32,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Calc_CWP(Ctrl,SPixel, status)
+subroutine Calc_CWP(Ctrl, SPixel, status)
 
    ! Modules used by this program.
    use CTRL_def
@@ -62,10 +58,10 @@ subroutine Calc_CWP(Ctrl,SPixel, status)
    real    :: al10e2 =.188612 ! =al10e*al10e
 
 
-   if (trim(Ctrl%CloudClass%Name) == 'WAT') then
+   if (trim(Ctrl%CloudClass) == 'WAT') then
       rho=rhowat
       fac=(4./3.)*rho/qextwat
-   else if (trim(Ctrl%CloudClass%Name) == 'ICE') then
+   else if (trim(Ctrl%CloudClass) == 'ICE') then
       rho=rhoice
       fac=(4./3.)*rho/qextice
    else
@@ -76,7 +72,7 @@ subroutine Calc_CWP(Ctrl,SPixel, status)
    end if
 
    ! Do not calculate for aerosol class
-   if (trim(Ctrl%CloudClass%Name) == 'WAT' .or. trim(Ctrl%CloudClass%Name) == 'ICE') then
+   if (trim(Ctrl%CloudClass) == 'WAT' .or. trim(Ctrl%CloudClass) == 'ICE') then
 
       tenpcot=10.**(SPixel%Xn(iTau))
 
