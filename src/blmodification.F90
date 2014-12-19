@@ -20,6 +20,7 @@
 !
 ! History:
 !    11/11/2014, C. Poulsen: First version
+!    19/12/2014, C. Poulsen:  changed depth of boundary layer inversion from 1-->2 as this seems to give better results. This is now consistent with OCA(EUMETSAT) code.
 !
 ! Bugs:
 !    None known.
@@ -86,7 +87,7 @@ subroutine Blmodification(SPixel)
          (SPixel%RTM%LW%P(newindex-1)-SPixel%RTM%LW%P(newindex))
 
       ! make a search for top of boundary layer inversion; start from bl bottom
-      depth=1.0
+      depth=2.0
 !     do i = SPixel%RTM%LW%Np-depth,1,-1
       ! begin at -2 to force some depth to the feature
       do k=BLindexbottom-2,1,-1
