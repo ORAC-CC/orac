@@ -213,6 +213,9 @@
 !       the check is defined by the illumination condition so the checks in
 !       this subroutine have been disabled except to set QC.
 !     9th Sep 2014, Greg McGarragh: Changes related to new BRDF support.
+!    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
+!       solar/thermal channels with respect to the channels actually processed,
+!       rather than the MSI file.
 !
 ! Bugs:
 !    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -223,10 +226,9 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
+subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    use check_value_m
-   use config_def
    use CTRL_def
    use Data_def
    use ECP_Constants
@@ -240,7 +242,6 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! Define arguments
 
    type(CTRL_t),        intent(in)    :: Ctrl
-   type(config_struct), intent(in)    :: conf
    type(SAD_Chan_t),    intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
    type(Data_t),        intent(in)    :: MSI_Data
    type(RTM_t),         intent(in)    :: RTM
@@ -317,9 +318,9 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0, :))
    if (minsolzen < Ctrl%MaxSolzen) then
       do i = 1,Ctrl%Ind%Nsolar
-         if (conf%channel_mixed_flag_use(Ctrl%Ind%ysolar_msi(i)) .eq. 0) &
+         if (.not. any(Ctrl%Ind%YMixed == Ctrl%Ind%YSolar(i))) &
             call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                             Ctrl%Ind%ysolar_msi(i)), RefMax, RefMin, SPixel, &
+                             Ctrl%Ind%YSolar(i)), RefMax, RefMin, SPixel, &
                              'MSI reflectance', SPixRef, Ctrl)
       end do
    end if
@@ -328,7 +329,7 @@ subroutine Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
    allocate(thermal(Ctrl%Ind%Nthermal))
    do i = 1,Ctrl%Ind%Nthermal
       thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-                                Ctrl%Ind%ythermal_msi(i))
+                                Ctrl%Ind%YThermal(i))
    end do
    call check_value(thermal, BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp, &
         Ctrl)

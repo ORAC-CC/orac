@@ -206,7 +206,6 @@ ORAC_COMMON   = ../common
 ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/CheckLimits.o \
            $(OBJS)/check_value.o \
-           $(OBJS)/config.o \
            $(OBJS)/CPL.o \
            $(OBJS)/CRP.o \
            $(OBJS)/Ctrl.o \
@@ -241,7 +240,6 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/output_routines.o \
            $(OBJS)/polint.o \
            $(OBJS)/R2T.o \
-           $(OBJS)/read_config_file.o \
            $(OBJS)/read_input_dimensions.o \
            $(OBJS)/read_sat_data_nc.o \
            $(OBJS)/ReadALB_nc.o \

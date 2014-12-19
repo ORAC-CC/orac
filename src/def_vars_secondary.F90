@@ -39,16 +39,19 @@
 ! 2014/09/16, GM: Update for changes in the general routines in the common
 !    library.
 ! 2014/12/17, CP: added offset value to stemp and brightness temperature values
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, rather than the
+!    MSI file.
+!
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
+subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data, &
                               status)
 
-   use config_def
    use CTRL_def
    use orac_ncdf
    use SPixel_def
@@ -58,7 +61,6 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    implicit none
 
    type(CTRL_t),                intent(in)    :: Ctrl
-   type(config_struct),         intent(in)    :: conf
    logical,                     intent(in)    :: lcovar
    integer,                     intent(in)    :: ncid
    integer,                     intent(in)    :: dims_var(2)
@@ -334,35 +336,31 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    !----------------------------------------------------------------------------
    do i=1,Ctrl%Ind%Nsolar
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%YSolar(i))
 
-      do j=1,Ctrl%Ind%Nsolar
-         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ysolar(j)) then
-            output_data%albedo_scale(i)=0.0001
-            output_data%albedo_offset(i)=0.0
-            output_data%albedo_vmin(i)=0
-            output_data%albedo_vmax(i)=10000
+      output_data%albedo_scale(i)=0.0001
+      output_data%albedo_offset(i)=0.0
+      output_data%albedo_vmin(i)=0
+      output_data%albedo_vmax(i)=10000
 
-            input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
-            input_dummy2='albedo in channel no '//trim(adjustl(input_num))
+      input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
+      input_dummy2='albedo in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float( &
-                    ncid, &
-                    dims_var, &
-                    trim(adjustl(input_dummy)), &
-                    output_data%vid_albedo(i), &
-                    verbose,ierr, &
-                    long_name     = trim(adjustl(input_dummy2)), &
-                    standard_name = trim(adjustl(input_dummy)), &
-                    fill_value    = sint_fill_value, &
-                    scale_factor  = output_data%albedo_scale(i), &
-                    add_offset    = output_data%albedo_offset(i), &
-                    valid_min     = output_data%albedo_vmin(i), &
-                    valid_max     = output_data%albedo_vmax(i))
-
-            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         end if
-      end do
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_albedo(i), &
+           verbose,ierr, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = trim(adjustl(input_dummy)), &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%albedo_scale(i), &
+           add_offset    = output_data%albedo_offset(i), &
+           valid_min     = output_data%albedo_vmin(i), &
+           valid_max     = output_data%albedo_vmax(i))
+      
+      if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
    end do
 
    !----------------------------------------------------------------------------
@@ -370,66 +368,60 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    !----------------------------------------------------------------------------
    do i=1,Ctrl%Ind%Ny
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
-      do j=1,Ctrl%Ind%Nsolar
-         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ysolar(j) .and. &
-             conf%channel_mixed_flag_use(i) .eq. 0) then
-            output_data%channels_scale(i)=0.0001
-            output_data%channels_offset(i)=0.0
-            output_data%channels_vmin(i)=0
-            output_data%channels_vmax(i)=10000
+      if (any(Ctrl%Ind%YSolar == Ctrl%Ind%ICh(i)) .and. &
+           .not. any(Ctrl%Ind%YMixed == Ctrl%Ind%ICh(i))) then
+         output_data%channels_scale(i)=0.0001
+         output_data%channels_offset(i)=0.0
+         output_data%channels_vmin(i)=0
+         output_data%channels_vmax(i)=10000
 
-            input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
-            input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
+         input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
+         
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_channels(i), &
+              verbose,ierr, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%channels_scale(i), &
+              add_offset    = output_data%channels_offset(i), &
+              valid_min     = output_data%channels_vmin(i), &
+              valid_max     = output_data%channels_vmax(i))
+         
+         if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+      else
+         output_data%channels_scale(i)=0.01
+         output_data%channels_offset(i)=100.0
+         output_data%channels_vmin(i)=0
+         output_data%channels_vmax(i)=32000
 
-            call nc_def_var_short_packed_float( &
-                    ncid, &
-                    dims_var, &
-                    trim(adjustl(input_dummy)), &
-                    output_data%vid_channels(i), &
-                    verbose,ierr, &
-                    long_name     = trim(adjustl(input_dummy2)), &
-                    standard_name = trim(adjustl(input_dummy)), &
-                    fill_value    = sint_fill_value, &
-                    scale_factor  = output_data%channels_scale(i), &
-                    add_offset    = output_data%channels_offset(i), &
-                    valid_min     = output_data%channels_vmin(i), &
-                    valid_max     = output_data%channels_vmax(i))
+         input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
 
-            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         end if
-      end do
-
-      do j=1,Ctrl%Ind%Nthermal
-         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ythermal(j) ) then
-            output_data%channels_scale(i)=0.01
-            output_data%channels_offset(i)=100.0
-            output_data%channels_vmin(i)=0
-            output_data%channels_vmax(i)=32000
-
-            input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
-            input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
-
-            call nc_def_var_short_packed_float( &
-                    ncid, &
-                    dims_var, &
-                    trim(adjustl(input_dummy)), &
-                    output_data%vid_channels(i), &
-                    verbose,ierr, &
-                    long_name     = trim(adjustl(input_dummy2)), &
-                    standard_name = trim(adjustl(input_dummy)), &
-                    fill_value    = sint_fill_value, &
-                    scale_factor  = output_data%channels_scale(i), &
-                    add_offset    = output_data%channels_offset(i), &
-                    valid_min     = output_data%channels_vmin(i), &
-                    valid_max     = output_data%channels_vmax(i), &
-                    units         = 'kelvin')
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_channels(i), &
+              verbose,ierr, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%channels_scale(i), &
+              add_offset    = output_data%channels_offset(i), &
+              valid_min     = output_data%channels_vmin(i), &
+              valid_max     = output_data%channels_vmax(i), &
+              units         = 'kelvin')
 
 
-            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         end if
-      end do
+         if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+      end if
 
    end do
 
@@ -438,65 +430,59 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    !----------------------------------------------------------------------------
    do i=1,Ctrl%Ind%Ny
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
-      do j=1,Ctrl%Ind%Nsolar
-         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ysolar(j) .and. &
-	     conf%channel_mixed_flag_use(i) .eq. 0) then
-            output_data%y0_scale(i)=0.0001
-            output_data%y0_offset(i)=0.0
-            output_data%y0_vmin(i)=0
-            output_data%y0_vmax(i)=10000
+      if (any(Ctrl%Ind%YSolar == Ctrl%Ind%ICh(i)) .and. &
+           .not. any(Ctrl%Ind%YMixed == Ctrl%Ind%ICh(i))) then
+         output_data%y0_scale(i)=0.0001
+         output_data%y0_offset(i)=0.0
+         output_data%y0_vmin(i)=0
+         output_data%y0_vmax(i)=10000
 
-            input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
-            input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
+         input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float( &
-                    ncid, &
-                    dims_var, &
-                    trim(adjustl(input_dummy)), &
-                    output_data%vid_y0(i), &
-                    verbose,ierr, &
-                    long_name     = trim(adjustl(input_dummy2)), &
-                    standard_name = trim(adjustl(input_dummy)), &
-                    fill_value    = sint_fill_value, &
-                    scale_factor  = output_data%y0_scale(i), &
-                    add_offset    = output_data%y0_offset(i), &
-                    valid_min     = output_data%y0_vmin(i), &
-                    valid_max     = output_data%y0_vmax(i))
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_y0(i), &
+              verbose,ierr, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%y0_scale(i), &
+              add_offset    = output_data%y0_offset(i), &
+              valid_min     = output_data%y0_vmin(i), &
+              valid_max     = output_data%y0_vmax(i))
+         
+         if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+      else
+         output_data%y0_scale(i)=0.01
+         output_data%y0_offset(i)=100.0
+         output_data%y0_vmin(i)=0
+         output_data%y0_vmax(i)=32000
 
-            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         end if
-      end do
+         input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
 
-      do j=1,Ctrl%Ind%Nthermal
-         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ythermal(j)) then
-            output_data%y0_scale(i)=0.01
-            output_data%y0_offset(i)=100.0
-            output_data%y0_vmin(i)=0
-            output_data%y0_vmax(i)=32000
-
-            input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
-            input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
-
-            call nc_def_var_short_packed_float( &
-                    ncid, &
-                    dims_var, &
-                    trim(adjustl(input_dummy)), &
-                    output_data%vid_y0(i), &
-                    verbose,ierr, &
-                    long_name     = trim(adjustl(input_dummy2)), &
-                    standard_name = trim(adjustl(input_dummy)), &
-                    fill_value    = sint_fill_value, &
-                    scale_factor  = output_data%y0_scale(i), &
-                    add_offset    = output_data%y0_offset(i), &
-                    valid_min     = output_data%y0_vmin(i), &
-                    valid_max     = output_data%y0_vmax(i), &
-                    units         = 'kelvin')
-
-            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         end if
-      end do
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_y0(i), &
+              verbose,ierr, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%y0_scale(i), &
+              add_offset    = output_data%y0_offset(i), &
+              valid_min     = output_data%y0_vmin(i), &
+              valid_max     = output_data%y0_vmax(i), &
+              units         = 'kelvin')
+         
+         if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+      end if
 
    end do
 
@@ -505,65 +491,59 @@ subroutine def_vars_secondary(Ctrl, conf, lcovar, ncid, dims_var, output_data, &
    !----------------------------------------------------------------------------
    do i=1,Ctrl%Ind%Ny
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
-      do j=1,Ctrl%Ind%Nsolar
-         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ysolar(j) .and. &
-             conf%channel_mixed_flag_use(i) .eq. 0) then
-            output_data%residuals_scale(i)=0.0001
-            output_data%residuals_offset(i)=0.0
-            output_data%residuals_vmin(i)=-10000
-            output_data%residuals_vmax(i)=10000
+      if (any(Ctrl%Ind%YSolar == Ctrl%Ind%ICh(i)) .and. &
+           .not. any(Ctrl%Ind%YMixed == Ctrl%Ind%ICh(i))) then
+         output_data%residuals_scale(i)=0.0001
+         output_data%residuals_offset(i)=0.0
+         output_data%residuals_vmin(i)=-10000
+         output_data%residuals_vmax(i)=10000
 
-            input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
-            input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
+         input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
 
-            call nc_def_var_short_packed_float( &
-                    ncid, &
-                    dims_var, &
-                    trim(adjustl(input_dummy)), &
-                    output_data%vid_residuals(i), &
-                    verbose,ierr, &
-                    long_name     = trim(adjustl(input_dummy2)), &
-                    standard_name = trim(adjustl(input_dummy)), &
-                    fill_value    = sint_fill_value, &
-                    scale_factor  = output_data%residuals_scale(i), &
-                    add_offset    = output_data%residuals_offset(i), &
-                    valid_min     = output_data%residuals_vmin(i), &
-                    valid_max     = output_data%residuals_vmax(i))
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_residuals(i), &
+              verbose,ierr, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%residuals_scale(i), &
+              add_offset    = output_data%residuals_offset(i), &
+              valid_min     = output_data%residuals_vmin(i), &
+              valid_max     = output_data%residuals_vmax(i))
+         
+         if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+      else
+         output_data%residuals_scale(i)=0.01
+         output_data%residuals_offset(i)=100.0
+         output_data%residuals_vmin(i)=-32000
+         output_data%residuals_vmax(i)=32000
 
-            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         end if
-      end do
+         input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
 
-      do j=1,Ctrl%Ind%Nthermal
-         if (Ctrl%Ind%Chi(i) .eq. Ctrl%Ind%Ythermal(j)) then
-            output_data%residuals_scale(i)=0.01
-            output_data%residuals_offset(i)=100.0
-            output_data%residuals_vmin(i)=-32000
-            output_data%residuals_vmax(i)=32000
-
-            input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
-            input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
-
-            call nc_def_var_short_packed_float( &
-                    ncid, &
-                    dims_var, &
-                    trim(adjustl(input_dummy)), &
-                    output_data%vid_residuals(i), &
-                    verbose,ierr, &
-                    long_name     = trim(adjustl(input_dummy2)), &
-                    standard_name = trim(adjustl(input_dummy)), &
-                    fill_value    = sint_fill_value, &
-                    scale_factor  = output_data%residuals_scale(i), &
-                    add_offset    = output_data%residuals_offset(i), &
-                    valid_min     = output_data%residuals_vmin(i), &
-                    valid_max     = output_data%residuals_vmax(i), &
-                    units         = 'kelvin')
-
-            if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
-         end if
-      end do
+         call nc_def_var_short_packed_float( &
+              ncid, &
+              dims_var, &
+              trim(adjustl(input_dummy)), &
+              output_data%vid_residuals(i), &
+              verbose,ierr, &
+              long_name     = trim(adjustl(input_dummy2)), &
+              standard_name = trim(adjustl(input_dummy)), &
+              fill_value    = sint_fill_value, &
+              scale_factor  = output_data%residuals_scale(i), &
+              add_offset    = output_data%residuals_offset(i), &
+              valid_min     = output_data%residuals_vmin(i), &
+              valid_max     = output_data%residuals_vmax(i), &
+              units         = 'kelvin')
+         
+         if (ierr .ne. NF90_NOERR) status=SecondaryFileDefinitionErr
+      end if
 
    end do
 

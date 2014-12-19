@@ -66,6 +66,9 @@
 !    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !    2014/09/09, GM: Changes related to new BRDF support.
+!    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!       channels with respect to the channels actually processed, rather than the
+!       MSI file.
 !
 ! Bugs:
 !    None known.
@@ -98,8 +101,8 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers, subs
 
    ! Open ALB file
-   if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Aux)
-   call nc_open(ncid, Ctrl%Fid%Aux)
+   if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Alb)
+   call nc_open(ncid, Ctrl%Fid%Alb)
 
    ! Read instrument channel indices from file
    cdim = nc_dim_length(ncid, 'nc_alb', verbose)
@@ -110,7 +113,7 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    allocate(subs(Ctrl%Ind%NSolar))
    do i=1,Ctrl%Ind%NSolar
       do j=1,cdim
-         if (alb_instr_ch_numbers(j) .eq. Ctrl%Ind%ysolar(i)) then
+         if (alb_instr_ch_numbers(j) == Ctrl%Ind%ICh(Ctrl%Ind%YSolar(i))) then
             subs(i) = j
             exit
          end if

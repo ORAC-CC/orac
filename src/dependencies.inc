@@ -3,7 +3,6 @@ $(OBJS)/CheckLimits.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o \
         $(OBJS)/SPixel.o
 $(OBJS)/check_value.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o \
         check_value.inc
-$(OBJS)/config.o: $(OBJS)/ECPConstants.o
 $(OBJS)/Ctrl.o: $(OBJS)/ECPConstants.o DeallocCtrl.F90
 $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o DeallocData.F90 \
         NullifyData.F90
@@ -30,7 +29,7 @@ $(OBJS)/GetRTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GetLwSwRTM.o \
         $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o
 $(OBJS)/GetSPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/GetIllum.o $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o \
-        $(OBJS)/check_value.o $(OBJS)/config.o
+        $(OBJS)/check_value.o
 $(OBJS)/GetSurface.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
 $(OBJS)/GetX.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
@@ -54,20 +53,18 @@ $(OBJS)/InvertMarquardt.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o 
 $(OBJS)/locate.o: $(OBJS)/ECPConstants.o
 $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o \
-        $(OBJS)/config.o alloc_output_data.F90 dealloc_output_data.F90 \
-        def_vars_primary.F90 def_vars_secondary.F90 output_utils.F90 \
-        prepare_primary.F90 prepare_secondary.F90 write_primary.F90 \
-        write_secondary.F90
+        alloc_output_data.F90 dealloc_output_data.F90 def_vars_primary.F90 \
+        def_vars_secondary.F90 output_utils.F90 prepare_primary.F90 \
+        prepare_secondary.F90 write_primary.F90 write_secondary.F90
 $(OBJS)/polint.o: $(OBJS)/ECPConstants.o
 $(OBJS)/R2T.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o
-$(OBJS)/read_config_file.o: $(OBJS)/Ctrl.o $(OBJS)/config.o
 $(OBJS)/read_input_dimensions.o: $(OBJS)/ECPConstants.o
 $(OBJS)/read_sat_data_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SADChan.o
 $(OBJS)/ReadALB_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SADChan.o
 $(OBJS)/ReadCloudFlags_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o \
         $(OBJS)/ECPConstants.o
-$(OBJS)/ReadDriver.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/config.o
+$(OBJS)/ReadDriver.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o read_config_file.F90
 $(OBJS)/ReadGeometry_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
 $(OBJS)/ReadIllum_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o
 $(OBJS)/ReadLocation_nc.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o
@@ -104,6 +101,6 @@ $(OBJS)/XMDAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
 $(OBJS)/XSDAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o
 $(OBJS)/ZeroDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o
 $(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
-        $(OBJS)/ECPConstants.o $(OBJS)/RTM.o $(OBJS)/RTM_Pc.o $(OBJS)/ReadSAD.o \
-        $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o $(OBJS)/config.o \
-        $(OBJS)/output_routines.o
+        $(OBJS)/ECPConstants.o $(OBJS)/RTM.o $(OBJS)/RTM_Pc.o \
+        $(OBJS)/ReadDriver.o $(OBJS)/ReadSAD.o $(OBJS)/SADChan.o \
+        $(OBJS)/SADLUT.o $(OBJS)/SPixel.o $(OBJS)/output_routines.o

@@ -83,6 +83,9 @@
 !     1st Aug 2014, Greg McGarragh:
 !          Use refactored code into Find_MDAD_LW() and Find_MDAD_SW() to use
 !          here and elsewhere.
+!    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
+!          solar/thermalchannels with respect to the channels actually processed,
+!          rather than the  MSI file.
 !
 ! Bugs:
 !    None known.
@@ -137,11 +140,11 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
       ! Generate channel file name from Ctrl struct info. This sets the channel
       ! to be used in instrument notation for reading from SAD.
       write(*,*) 'Ctrl%Inst%Name(1:5): ', trim(Ctrl%Inst%Name(1:5))
-      if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) < 10) then
+      if (Ctrl%Ind%Y_Id(i) < 10) then
          if (trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
-            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
          else
-            select case (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)))
+            select case (Ctrl%Ind%Y_Id(i))
             case (1)
                chan_num='Ch1'
             case (2)
@@ -158,7 +161,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
          end if
 
       else
-         write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+         write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(i)
       end if
 
       write(*,*) 'chan_num read in: ', trim(adjustl(chan_num))
@@ -210,7 +213,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
 
                NThermal = NThermal + 1
 
-!	       Ctrl%Ind%YThermal(Ctrl%Ind%NThermal) = i
 
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B1
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B2
@@ -237,8 +239,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
             if (SAD_Chan(i)%Solar%Flag > 0) then
                Ctrl%Ind%SolarLast = i
                NSolar = NSolar + 1
-
-!	       Ctrl%Ind%YSolar(Ctrl%Ind%NSolar) = i
 
                read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
                   SAD_Chan(i)%Solar%F1

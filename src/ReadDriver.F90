@@ -75,10 +75,12 @@
 !       variables
 !    2014/09/17, GM: Use the DiFlag* constants instead of integer values.
 !    2014/12/01, CP: added in global and source attribute read capability
-!    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100, as
-!                    otherwise ~30% of converged pixels are lost in l2tol3 processing
+!    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100,
+!                    as otherwise ~30% of converged pixels are lost in l2tol3
+!                    processing
 !    2014/12/17, AP: Converted read statements to parse_driver statements. Permit
 !                    optional overrides of default behaviour from driver.
+!    2014/12/19, AP: Tidying. Cleaning the management of channel indexing.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -91,13 +93,13 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-
-subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
-                       source_atts, status)
+module orac_io
+contains
+   
+subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
-   use config_def
    use CTRL_def
    use ECP_constants
    use global_attributes
@@ -108,246 +110,199 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
 
    ! Argument declarations
    type(CTRL_t),              intent(out)   :: Ctrl
-   type(config_struct),       intent(out)   :: conf
-   character(*),              intent(out)   :: message
-   integer,                   intent(in)    :: nargs
-   character(FilenameLen),    intent(inout) :: drifile
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
-   integer,                   intent(out)   :: status
+   logical,                   intent(in)    :: verbose
 
    ! Local variables
-   integer                         :: i,ii,j,jj,k
-   integer                         :: ios      ! Iostat value from file open, read etc.
-   integer                         :: dri_lun  ! Unit number for driver file
-   character(FilenameLen)          :: input_path,input_filename,scratch_dir,lut_dir
-   character(FilenameLen)          :: outname,line,label
-   logical                         :: file_exists, found
-   real, allocatable, dimension(:) :: solar_store_sea,solar_store_land
-   real, allocatable, dimension(:) :: ref_solar_sea,ref_solar_land
+   character(FilenameLen)             :: drifile
+   integer                            :: i,ii,i0,i1,i2,j
+   integer                            :: ios
+   integer                            :: dri_lun
+   character(FilenameLen)             :: input_path, input_filename, scratch_dir
+   character(FilenameLen)             :: lut_dir, root_filename
+   character(FilenameLen)             :: outname, line, label
+   logical                            :: file_exists
+   real,    allocatable, dimension(:) :: solar_store_sea, solar_store_land
+   real,    allocatable, dimension(:) :: ref_solar_sea, ref_solar_land
+   integer, allocatable, dimension(:) :: channel_ids_instr, channel_proc_flag
+   integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
 
-   status = 0
 
    !----------------------------------------------------------------------------
-   ! Open the driver file
+   ! Locate the driver file
    !----------------------------------------------------------------------------
-
-   ! If there is nothing in drifile because it was not passed, get it as env.
-   ! variable
-   if (len_trim(adjustl(drifile)) .eq. 0 ) then
-      call get_environment_variable("ORAC_TEXTIN",drifile)
+#ifndef WRAPPER
+   if (command_argument_count() == 1) then
+#else
+   if (.false.)
+#endif
+      drifile = ''
+      call get_command_argument(1, drifile)
+   else
+      call get_environment_variable("ORAC_TEXTIN", drifile)
    end if
-
-   ! If drifile is not '-' the check that the drifile exists
-   if (drifile .ne. '-' .or. nargs .eq. -1 ) then
-      inquire(file=drifile, exist=file_exists)
-      if (.not. file_exists) then
-         status = DriverFileNotFound
-         message = 'Read_Driver: Driver file not found'
-         write(*,*)' Driver file pointed to by ORAC_DRIVER does not exist'
-      end if
-   end if
-
-   write(*,*)'driver file: ',trim(drifile)
 
    ! If drifile is '-' read the file from standard input otherwise read drifile
-   if (status == 0) then
-      if (drifile .eq. '-') then
-         dri_lun = input_unit
-      else
-         call Find_Lun(dri_lun)
-         open(unit=dri_lun, file=drifile, iostat=ios)
-         if (ios /= 0) then
-            status = DriverFileOpenErr
-            message = 'Read_Driver: unable to open driver file'
-            write(*,*)' Unable to open driver file: ',trim(drifile)
-         end if
+   if (drifile == '-') then
+      dri_lun = input_unit
+   else
+      ! Check drifile exists
+      inquire(file=drifile, exist=file_exists)
+      if (.not. file_exists) then
+         write(*,*)' Driver file pointed to by ORAC_DRIVER does not exist'
+         stop DriverFileNotFound
+      end if
+      
+      if (verbose) write(*,*) 'Driver file: ',trim(drifile)
+      
+      ! Open the driver file
+      call find_lun(dri_lun)
+      open(unit=dri_lun, file=drifile, iostat=ios)
+      if (ios /= 0) then
+         write(*,*)' Unable to open driver file: ',trim(drifile)
+         stop DriverFileOpenErr
       end if
    end if
 
 
    !----------------------------------------------------------------------------
-   ! Read the driver file and the config file
+   ! Read the driver file
    !----------------------------------------------------------------------------
-
+   ! Read folder paths
    if (parse_driver(dri_lun, line) == 0) call parse_string(line, input_path)
-   write(*,*)'input directory: ',trim(adjustl(input_path))
+   if (verbose) write(*,*) 'Input directory: ',trim(input_path)
 
    if (parse_driver(dri_lun, line) == 0) call parse_string(line, input_filename)
-   write(*,*)'input filename: ',trim(adjustl(input_filename))
-
-   Ctrl%fid%input_filename=trim(adjustl(input_path))//'/'//trim(adjustl(input_filename))
+   if (verbose) write(*,*) 'Input filename: ',trim(input_filename)
 
    if (parse_driver(dri_lun, line) == 0) call parse_string(line, scratch_dir)
-   write(*,*)'output directory: ', trim(adjustl(scratch_dir))
+   if (verbose) write(*,*) 'Output directory: ',trim(scratch_dir)
 
    if (parse_driver(dri_lun, line) == 0) call parse_string(line, lut_dir)
-   write(*,*) 'lut_dir: ',trim(adjustl(lut_dir))
+   if (verbose) write(*,*) 'LUT directory: ',trim(lut_dir)
 
+   ! Set filenames
+   Ctrl%Data_Dir = trim(scratch_dir)//'/'
+   Ctrl%Out_Dir  = trim(scratch_dir)//'/'
+   Ctrl%SAD_Dir  = trim(lut_dir)//'/'
+   if (verbose) then
+      write(*,*) 'Ctrl%Data_Dir: ',trim(Ctrl%Data_Dir)
+      write(*,*) 'Ctrl%out_Dir: ',trim(Ctrl%out_Dir)
+      write(*,*) 'Ctrl%SAD_Dir: ',trim(Ctrl%SAD_Dir)
+   end if
+   
+   root_filename   = trim(input_path)//'/'//trim(input_filename)
+   Ctrl%FID%MSI    = trim(root_filename)//'.msi.nc'
+   Ctrl%FID%LWRTM  = trim(root_filename)//'.lwrtm.nc'
+   Ctrl%FID%SWRTM  = trim(root_filename)//'.swrtm.nc'
+   Ctrl%FID%PRTM   = trim(root_filename)//'.prtm.nc'
+   Ctrl%FID%LS     = trim(root_filename)//'.lsf.nc'
+   Ctrl%FID%CF     = trim(root_filename)//'.clf.nc'
+   Ctrl%FID%Geo    = trim(root_filename)//'.geo.nc'
+   Ctrl%FID%Loc    = trim(root_filename)//'.loc.nc'
+   Ctrl%FID%uv     = trim(root_filename)//'.uv.nc'
+   Ctrl%FID%Alb    = trim(root_filename)//'.alb.nc'
+   Ctrl%FID%Config = trim(root_filename)//'.config.nc'
+   if (verbose) write(*,*) 'Ctrl%FID%Config: ',trim(Ctrl%FID%Config)
+
+   ! Read name of instrument
    if (parse_driver(dri_lun, line) == 0) call parse_string(line, Ctrl%Inst%Name)
-   write(*,*)'Ctrl%Inst%Name: ',trim(adjustl(Ctrl%Inst%Name))
+   write(*,*) 'Ctrl%Inst%Name: ',trim(Ctrl%Inst%Name)
 
    ! Number of channels in preprocessing file
    ! (this is actually not really necessary as we have that in the config file)
    if (parse_driver(dri_lun, line) == 0) call parse_string(line, Ctrl%Ind%NAvail)
-   write(*,*) 'Number of available channels in preproc files: ',Ctrl%Ind%NAvail
+   if (verbose) write(*,*) &
+        'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
 
-   Ctrl%FID%CONFIG=trim(adjustl(Ctrl%fid%input_filename))//'.config.nc'
-   Ctrl%FID%CONFIG=trim(adjustl(Ctrl%FID%CONFIG))
-   write(*,*) 'Ctrl%FID%CONFIG: ',trim(Ctrl%FID%CONFIG)
-
-   ! Read config file in order to set all channel related info
-   call read_config_file(Ctrl,conf,global_atts,source_atts)
-   ! Check if input ok
-   if (Ctrl%Ind%NAvail .ne. conf%nc) then
-      write(*,*) 'ERROR: Ctrl%Ind%NAvail .ne. conf%nc: Problem with file or driver!', &
-                 Ctrl%Ind%NAvail,conf%nc
-      stop
-   end if
+   ! Read channel related info
+   call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
+     channel_lw_flag, global_atts, source_atts, verbose)
 
    ! Read processing flag from driver
-   allocate(conf%channel_proc_flag(conf%nc))
+   allocate(channel_proc_flag(Ctrl%Ind%Navail))
    if (parse_driver(dri_lun, line) == 0) &
-        call parse_string(line, conf%channel_proc_flag)
-   if (sum(conf%channel_proc_flag) .lt. 1 .or. sum(conf%channel_proc_flag) .gt. conf%nc .or. &
-       .not. (any(conf%channel_proc_flag .eq. 0) .or. any(conf%channel_proc_flag .eq. 1))) then
-      write(*,*) 'ERROR: channel flag from driver wrong: ',conf%channel_proc_flag
-      stop
+        call parse_string(line, channel_proc_flag)
+   if (sum(channel_proc_flag) < 1 .or. &
+       sum(channel_proc_flag) > Ctrl%Ind%Navail .or. &
+       any(channel_proc_flag /= 0 .and. channel_proc_flag /= 1)) then
+      write(*,*) 'ERROR: channel flag from driver wrong: ',channel_proc_flag
+      stop DriverFileIncompat
    end if
-   write(*,*) 'channel flag from driver: ',conf%channel_proc_flag
+   if (verbose) write(*,*) 'channel flag from driver: ',channel_proc_flag
 
-   ! Determine the number of channels to be used. Some of the following is not
-   ! (yet) used leave in there for potential later use for the time being
-   Ctrl%Ind%NChans=sum(conf%channel_proc_flag)
-   write(*,*) 'Ctrl%Ind%NChan: ',Ctrl%Ind%NChans
+   ! Determine the number of channels to be used.
+   Ctrl%Ind%Ny       = count(channel_proc_flag == 1)
+   Ctrl%Ind%NSolar   = count(channel_sw_flag == 1 .and. channel_proc_flag == 1)
+   Ctrl%Ind%NThermal = count(channel_lw_flag == 1 .and. channel_proc_flag == 1)
+   Ctrl%Ind%NMixed   = count(channel_sw_flag == 1 .and. channel_lw_flag == 1 &
+                             .and. channel_proc_flag == 1)
+   if (verbose) write(*,*) 'Ny,NSolar,NThermal,NMixed: ',Ctrl%Ind%Ny, &
+        Ctrl%Ind%NSolar,Ctrl%Ind%NThermal,Ctrl%Ind%NMixed
 
-   ! These are the indices wrt the position of the channels in the preproc file
-   ! which are to be used. Determine them from the indices in the file and proc.
-   ! flag.
-   allocate(Ctrl%Ind%Chi(Ctrl%Ind%NChans))
-   Ctrl%Ind%Chi=0
-   ii=0
-   do i=1,conf%nc
-      if (conf%channel_proc_flag(i) .eq. 1 ) then
-         ii=ii+1
-         Ctrl%Ind%Chi(ii)=conf%channel_ids_abs(i)
+   ! Produce channel indexing arrays
+   allocate(Ctrl%Ind%ICh(Ctrl%Ind%Ny))
+   allocate(Ctrl%Ind%Y_ID(Ctrl%Ind%Ny))
+   allocate(Ctrl%Ind%YSolar(Ctrl%Ind%NSolar))
+   allocate(Ctrl%Ind%YThermal(Ctrl%Ind%NThermal))
+   allocate(Ctrl%Ind%YMixed(Ctrl%Ind%NMixed))
+   ii = 0
+   i0 = 0
+   i1 = 0
+   i2 = 0
+   do i=1,Ctrl%Ind%Navail
+      ! Identify processing channels WITH RESPECT TO THE PREPROC FILE
+      if (channel_proc_flag(i) == 1) then
+         ii = ii+1
+         Ctrl%Ind%ICh(ii) = i ! Fortran array index for channel
+         Ctrl%Ind%Y_ID(ii) = channel_ids_instr(i) ! Instrument channel number
+      end if
+      ! Identify solar and thermal channels WITH RESPECT TO CTRL%IND%ICH
+      if (channel_sw_flag(i) == 1) then
+         i0 = i0+1
+         Ctrl%Ind%YSolar(i0) = ii
+      end if
+      if (channel_lw_flag(i) == 1) then
+         i1 = i1+1
+         Ctrl%Ind%YThermal(i1) = ii
+      end if
+      if (channel_sw_flag(i) == 1 .and. channel_lw_flag(i) == 1) then
+         i2 = i2+1
+         Ctrl%Ind%YMixed(i2) = ii
       end if
    end do
-! Thses are the channels to be used
-   write(*,*) 'CHI: ',Ctrl%Ind%Chi
-
-   ! These are the channels available in the file wrt numbering in the instrument
-   allocate(Ctrl%Ind%Y_Id(conf%nc))
-   Ctrl%Ind%y_id=conf%channel_ids_instr
-   write(*,*) 'Y_ID: ',Ctrl%Ind%Y_Id
-
-   ! Determine number of channels in lw,sw, and mixed in preproc_file
-   conf%nsolar=0
-   conf%nthermal=0
-   conf%nmixed=0
-
-   conf%nsolar_use=0
-   conf%nthermal_use=0
-   conf%nmixed_use=0
-
-   conf%nsolar=sum(conf%channel_sw_flag)
-   conf%nthermal=sum(conf%channel_lw_flag)
-
-   allocate(conf%channel_sw_flag_use(Ctrl%Ind%NChans))
-   conf%channel_sw_flag_use=0
-   allocate(conf%channel_lw_flag_use(Ctrl%Ind%NChans))
-   conf%channel_lw_flag_use=0
-   allocate(conf%channel_mixed_flag_use(Ctrl%Ind%NChans))
-   conf%channel_mixed_flag_use=0
-
-   ii=0
-   do i=1,conf%nc
-      if (conf%channel_sw_flag(i) .eq. 1 .and. conf%channel_lw_flag(i) .eq. 1) then
-         conf%nmixed=conf%nmixed+1
-      end if
-
-      ! These treat only the channels actually used
-      if (conf%channel_proc_flag(i) .eq. 1) then
-         ii=ii+1
-         if (conf%channel_sw_flag(i) .eq. 1 ) then
-            conf%nsolar_use=conf%nsolar_use+1
-            conf%channel_sw_flag_use(ii)=1
-         end if
-         if (conf%channel_lw_flag(i) .eq. 1) then
-            conf%nthermal_use=conf%nthermal_use+1
-            conf%channel_lw_flag_use(ii)=1
-         end if
-         if (conf%channel_sw_flag(i) .eq. 1 .and. conf%channel_lw_flag(i) .eq. 1) then
-            conf%nmixed_use=conf%nmixed_use+1
-            conf%channel_mixed_flag_use(ii)=1
-         end if
-      end if
-   end do
-
-   write(*,*) 'Flags solar, thermal and mixed of used channels:'
-   write(*,*) 'conf%nsolar,conf%nthermal: ', &
-              conf%nsolar,conf%nthermal
-   write(*,*) 'conf%nsolar_use,conf%channel_sw_flag_use: ', &
-              conf%nsolar_use,conf%channel_sw_flag_use
-   write(*,*) 'conf%nthermal_use,conf%channel_lw_flag_use: ', &
-              conf%nthermal_use,conf%channel_lw_flag_use
-   write(*,*) 'conf%nmixed_use,conf%channel_mixed_flag_use: ', &
-              conf%nmixed_use,conf%channel_mixed_flag_use
+   if (verbose) then
+      write(*,*) 'Ctrl%Ind%ICh: ',Ctrl%Ind%ICh
+      write(*,*) 'Ctrl%Ind%Y_ID: ',Ctrl%Ind%Y_ID
+      write(*,*) 'Ctrl%Ind%YSolar: ',Ctrl%Ind%YSolar
+      write(*,*) 'Ctrl%Ind%YThermal: ',Ctrl%Ind%YThermal
+      write(*,*) 'Ctrl%Ind%YMixed: ',Ctrl%Ind%YMixed
+   end if
 
    ! Read in cloud class (aka phase of no aerosols processed)
    if (parse_driver(dri_lun, line) == 0) &
-        call parse_string(line, Ctrl%CloudClass%Name)
-   write(*,*)'Ctrl%CloudClass%Name: ',trim(adjustl(Ctrl%CloudClass%Name))
+        call parse_string(line, Ctrl%CloudClass)
+   if (verbose) write(*,*)'Ctrl%CloudClass: ',trim(Ctrl%CloudClass)
 
 
    !----------------------------------------------------------------------------
    ! Set the rest of the Ctrl structure
    !----------------------------------------------------------------------------
 
-   ! Set filenames
-
-   Ctrl%Run_ID=trim(adjustl(scratch_dir))
-   write(*,*)'Ctrl%Run_ID: ',trim(adjustl(Ctrl%Run_ID))
-
-   Ctrl%Data_Dir=trim(adjustl(scratch_dir))//'/'
-   write(*,*)'Ctrl%Data_Dir: ',trim(adjustl(Ctrl%Data_Dir))
-
-   Ctrl%Out_Dir=trim(adjustl(scratch_dir))//'/'
-   write(*,*)'Ctrl%out_Dir: ',trim(adjustl(Ctrl%out_Dir))
-
-   Ctrl%SAD_Dir=trim(adjustl(lut_dir))//'/'
-   write(*,*)'Ctrl%SAD_Dir: ',trim(adjustl(Ctrl%SAD_Dir))
-
-   Ctrl%FID%MSI=trim(adjustl(Ctrl%fid%input_filename))//'.msi.nc'
-   Ctrl%FID%MSI=trim(adjustl(Ctrl%FID%MSI))
-   write(*,*)'Ctrl%FID%MSI: ',trim(adjustl(Ctrl%FID%MSI))
-   Ctrl%FID%LWRTM=trim(adjustl(Ctrl%fid%input_filename))//'.lwrtm.nc'
-   write(*,*) 'Ctrl%FID%LWRTM: ',trim(adjustl(Ctrl%FID%LWRTM))
-   Ctrl%FID%SWRTM=trim(adjustl(Ctrl%fid%input_filename))//'.swrtm.nc'
-   Ctrl%FID%PRTM=trim(adjustl(Ctrl%fid%input_filename))//'.prtm.nc'
-   Ctrl%FID%LS=trim(adjustl(Ctrl%fid%input_filename))//'.lsf.nc'
-   Ctrl%FID%CF=trim(adjustl(Ctrl%fid%input_filename))//'.clf.nc'
-   Ctrl%FID%Geo=trim(adjustl(Ctrl%fid%input_filename))//'.geo.nc'
-   Ctrl%FID%Loc=trim(adjustl(Ctrl%fid%input_filename))//'.loc.nc'
-   Ctrl%FID%uv=trim(adjustl(Ctrl%fid%input_filename))//'.uv.nc'
-   Ctrl%FID%Aux=trim(adjustl(Ctrl%fid%input_filename))//'.alb.nc'
-
-   outname=trim(adjustl(scratch_dir))//'/'//trim(adjustl(input_filename))//&
-      trim(adjustl(Ctrl%CloudClass%Name))
-   Ctrl%FID%L2_primary_outputpath_and_file=trim(adjustl(outname))//'.primary.nc'
-   write(*,*) 'Ctrl%FID%L2_primary_outputpath_and_file: ', &
-              trim(Ctrl%FID%L2_primary_outputpath_and_file)
-   Ctrl%FID%L2_secondary_outputpath_and_file=trim(adjustl(outname))//'.secondary.nc'
-   write(*,*) 'Ctrl%FID%L2_secondary_outputpath_and_file: ', &
-              trim(Ctrl%FID%L2_secondary_outputpath_and_file)
-
-   Ctrl%FID%Log=trim(adjustl(outname))//'.log'
-   write(*,*)'Ctrl%FID%Log: ',trim(adjustl(Ctrl%FID%Log))
-   Ctrl%FID%Diag=trim(adjustl(outname))//'.diag'
-   write(*,*)'Ctrl%FID%Diag: ',trim(adjustl(Ctrl%FID%Diag))
-   Ctrl%FID%BkP=trim(adjustl(outname))//'bkp'
-   write(*,*)'Ctrl%FID%BkP: ',trim(adjustl(Ctrl%FID%BkP))
-
+   outname=trim(scratch_dir)//'/'//trim(input_filename)//trim(Ctrl%CloudClass)
+   Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
+   Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
+   Ctrl%FID%Log          = trim(outname)//'.log'
+   Ctrl%FID%Diag         = trim(outname)//'.diag'
+   Ctrl%FID%BkP          = trim(outname)//'bkp'
+   if (verbose) then
+      write(*,*) 'Ctrl%FID%L2_primary: ', trim(Ctrl%FID%L2_primary)
+      write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
+      write(*,*) 'Ctrl%FID%Log: ',trim(Ctrl%FID%Log)
+      write(*,*) 'Ctrl%FID%Diag: ',trim(Ctrl%FID%Diag)
+      write(*,*) 'Ctrl%FID%BkP: ',trim(Ctrl%FID%BkP)
+   end if
 
    ! The level of breakpoint output when the code is compiled with breakpoint
    ! option Ctrl%Bkpl
@@ -378,45 +333,8 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
 
 
    ! Set stuff in Ctrl%Ind
-
-   Ctrl%Ind%Ny = Ctrl%Ind%NChans
-
    Ctrl%Ind%Ws = 0 ! warm start option i.e enables user to start partway through
                    ! a scene
-
-   ! This stores for the used channels the number of channels, where mixed
-   ! channels are included in both on the l.h.s.
-   Ctrl%Ind%Nsolar=conf%nsolar_use
-   Ctrl%Ind%Nthermal=conf%nthermal_use
-
-   ! Use to assign to measurement indices
-   allocate(Ctrl%Ind%Ysolar(Ctrl%Ind%Nsolar))
-   Ctrl%Ind%Ysolar=-1
-   allocate(Ctrl%Ind%Ythermal(Ctrl%Ind%Nthermal))
-   Ctrl%Ind%Ythermal=-1
-
-   allocate(Ctrl%Ind%Ysolar_msi(Ctrl%Ind%Nsolar))
-   Ctrl%Ind%Ysolar_msi=-1
-   allocate(Ctrl%Ind%Ythermal_msi(Ctrl%Ind%Nthermal))
-   Ctrl%Ind%Ythermal_msi=-1
-
-   ii=0
-   jj=0
-   do i=1,Ctrl%Ind%NChans
-      if (conf%channel_sw_flag_use(i) .eq. 1 ) then
-         ii=ii+1
-         Ctrl%Ind%Ysolar(ii)=Ctrl%Ind%Chi(i) ! these are the indices wrt the preproc file
-         Ctrl%Ind%Ysolar_msi(ii)=i           ! these are the indices wrt the order in the MSI array
-      end if
-      if (conf%channel_lw_flag_use(i) .eq. 1) then
-         jj=jj+1
-         Ctrl%Ind%Ythermal(jj)=Ctrl%Ind%Chi(i)! these are the indices wrt the preproc file
-         Ctrl%Ind%Ythermal_msi(jj)=i          ! these are the indices wrt the order in the MSI array
-      end if
-   end do
-
-   write(*,*) 'Ctrl%Ind%Ysolar/msi: ',Ctrl%Ind%Ysolar,Ctrl%Ind%Ysolar_msi
-   write(*,*) 'Ctrl%Ind%Ythermal/msi: ',Ctrl%Ind%Ythermal,Ctrl%Ind%Ythermal_msi
 
 
    ! For each of the day, twilight, night active state variable arrays, read the
@@ -425,64 +343,56 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    ! Day options
    Ctrl%Ind%Nx_Dy = 5   ! number of active state variables
 
-   Ctrl%Ind%X_Dy(1) = 1 ! indices of state parameters
-   Ctrl%Ind%X_Dy(2) = 2
-   Ctrl%Ind%X_Dy(3) = 3
-   Ctrl%Ind%X_Dy(4) = 4
-   Ctrl%Ind%X_Dy(5) = 5
+   Ctrl%Ind%X_Dy(1) = ITau ! indices of state parameters
+   Ctrl%Ind%X_Dy(2) = IRe
+   Ctrl%Ind%X_Dy(3) = IPc
+   Ctrl%Ind%X_Dy(4) = IFr
+   Ctrl%Ind%X_Dy(5) = ITs
 
    ! Twilight options
    Ctrl%Ind%Nx_Tw = 3   ! number of active state variables
 
-   Ctrl%Ind%X_Tw(1) = 3 ! indices of state parameters
-   Ctrl%Ind%X_Tw(2) = 4
-   Ctrl%Ind%X_Tw(3) = 5
+   Ctrl%Ind%X_Tw(1) = IPc ! indices of state parameters
+   Ctrl%Ind%X_Tw(2) = IFr
+   Ctrl%Ind%X_Tw(3) = ITs
 
 
    ! Night options
    Ctrl%Ind%Nx_Ni = 3   ! number of active state variables
 
-   Ctrl%Ind%X_Ni(1) = 3 ! indices of state parameters
-   Ctrl%Ind%X_Ni(2) = 4
-   Ctrl%Ind%X_Ni(3) = 5
+   Ctrl%Ind%X_Ni(1) = IPc ! indices of state parameters
+   Ctrl%Ind%X_Ni(2) = IFr
+   Ctrl%Ind%X_Ni(3) = ITs
 
-
+   ! Force single view (for the time being)
    Ctrl%Ind%NViews=1
-   allocate(Ctrl%Ind%viewidx(Ctrl%Ind%nchans))
-
-   do i=1,Ctrl%Ind%nchans
-      Ctrl%Ind%Viewidx(i)=1
-   end do
-
-
-   Ctrl%CloudClass%Id = 1
-
+   allocate(Ctrl%Ind%Viewidx(Ctrl%Ind%Ny))
+   Ctrl%Ind%Viewidx = 1
 
    Ctrl%CloudType     = 1 ! use this to select which coreg/homog errors to use
-
 
    ! Set a priori options (Tau,Re,Pc,F,Ts)
 
    ! Day
-   Ctrl%AP(1,1)=SelmCtrl
-   Ctrl%AP(2,1)=SelmCtrl
-   Ctrl%AP(3,1)=SelmCtrl
-   Ctrl%AP(4,1)=SelmMeas
-   Ctrl%AP(5,1)=SelmAux
+   Ctrl%AP(ITau,IDay) = SelmCtrl
+   Ctrl%AP(IRe,IDay)  = SelmCtrl
+   Ctrl%AP(IPc,IDay)  = SelmCtrl
+   Ctrl%AP(IFr,IDay)  = SelmMeas
+   Ctrl%AP(ITs,IDay)  = SelmAux
 
    ! Twilight
-   Ctrl%AP(1,2)=SelmCtrl
-   Ctrl%AP(2,2)=SelmCtrl
-   Ctrl%AP(3,2)=SelmCtrl
-   Ctrl%AP(4,2)=SelmMeas
-   Ctrl%AP(5,2)=SelmAux
+   Ctrl%AP(ITau,ITwi) = SelmCtrl
+   Ctrl%AP(IRe,ITwi)  = SelmCtrl
+   Ctrl%AP(IPc,ITwi)  = SelmCtrl
+   Ctrl%AP(IFr,ITwi)  = SelmMeas
+   Ctrl%AP(ITs,ITwi)  = SelmAux
 
    ! Night
-   Ctrl%AP(1,3)=SelmCtrl
-   Ctrl%AP(2,3)=SelmCtrl
-   Ctrl%AP(3,3)=SelmCtrl
-   Ctrl%AP(4,3)=SelmMeas
-   Ctrl%AP(5,3)=SelmAux
+   Ctrl%AP(ITau,INight) = SelmCtrl
+   Ctrl%AP(IRe,INight)  = SelmCtrl
+   Ctrl%AP(IPc,INight)  = SelmCtrl
+   Ctrl%AP(IFr,INight)  = SelmMeas
+   Ctrl%AP(ITs,INight)  = SelmAux
 
 
    ! Set first guess options (Tau,Re,Pc,F,Ts)
@@ -493,112 +403,113 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    ! Ctrl%FG(state variable, time of day)
 
    ! Day
-   Ctrl%FG(1,1) = SelmCtrl
-   Ctrl%FG(2,1) = SelmCtrl
-   Ctrl%FG(3,1) = SelmMeas ! from ir profile
-   Ctrl%FG(4,1) = SelmCtrl
-   Ctrl%FG(5,1) = SelmAux  ! from auxiliary file
+   Ctrl%FG(ITau,IDay) = SelmCtrl
+   Ctrl%FG(IRe,IDay)  = SelmCtrl
+   Ctrl%FG(IPc,IDay)  = SelmMeas ! from ir profile
+   Ctrl%FG(IFr,IDay)  = SelmCtrl
+   Ctrl%FG(ITs,IDay)  = SelmAux  ! from auxiliary file
 
    ! Twilight
-   Ctrl%FG(1,2) = SelmCtrl
-   Ctrl%FG(2,2) = SelmCtrl
-   Ctrl%FG(3,2) = SelmMeas ! from ir profile
-   Ctrl%FG(4,2) = SelmCtrl
-   Ctrl%FG(5,2) = SelmAux  ! from auxiliary file
+   Ctrl%FG(ITau,ITwi) = SelmCtrl
+   Ctrl%FG(IRe,ITwi)  = SelmCtrl
+   Ctrl%FG(IPc,ITwi)  = SelmMeas ! from ir profile
+   Ctrl%FG(IFr,ITwi)  = SelmCtrl
+   Ctrl%FG(ITs,ITwi)  = SelmAux  ! from auxiliary file
 
    ! Night
-   Ctrl%FG(1,3) = SelmCtrl
-   Ctrl%FG(2,3) = SelmCtrl
-   Ctrl%FG(3,3) = SelmMeas ! from ir profile
-   Ctrl%FG(4,3) = SelmCtrl
-   Ctrl%FG(5,3) = SelmAux  ! from auxiliary file
+   Ctrl%FG(ITau,INight) = SelmCtrl
+   Ctrl%FG(IRe,INight)  = SelmCtrl
+   Ctrl%FG(IPc,INight)  = SelmMeas ! from ir profile
+   Ctrl%FG(IFr,INight)  = SelmCtrl
+   Ctrl%FG(ITs,INight)  = SelmAux  ! from auxiliary file
 
 
-   ! Set default a priori values. Quite often these values with a very high
-   ! uncertainty
-   if (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
-      Ctrl%XB(1) = 0.8
-      Ctrl%XB(2) = 12.
-      Ctrl%XB(3) = 900.
-      Ctrl%XB(4) = 1.
-      Ctrl%XB(5) = 300.0
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'ICE') then
-      Ctrl%XB(1) = 0.8
-      Ctrl%XB(2) = 30.
-      Ctrl%XB(3) = 400.
-      Ctrl%XB(4) = 1.
-      Ctrl%XB(5) = 300.0
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'EYJ') then
-      Ctrl%XB(1) = 0.8
-      Ctrl%XB(2) = 0.5
-      Ctrl%XB(3) = 1000.
-      Ctrl%XB(4) = 1.
-      Ctrl%XB(5) = 300.
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'MAR') then
-      Ctrl%XB(1) = 0.1
-      Ctrl%XB(2) = 1.8
-      Ctrl%XB(3) = 1000.
-      Ctrl%XB(4) = 1.
-      Ctrl%XB(5) = 300.
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'DES') then
-      Ctrl%XB(1) = 0.0
-      Ctrl%XB(2) = 1.4
-      Ctrl%XB(3) = 1000.
-      Ctrl%XB(4) = 1.
-      Ctrl%XB(5) = 300.
-   end if
+   ! Set default a priori and first guess values. Quite often these values have a
+   ! very high uncertainty
+   select case (trim(Ctrl%CloudClass))
+   case('WAT')
+      Ctrl%XB(ITau) = 0.8
+      Ctrl%XB(IRe) = 12.
+      Ctrl%XB(IPc) = 900.
+      Ctrl%XB(IFr) = 1.
+      Ctrl%XB(ITs) = 300.0
+      
+      Ctrl%X0(ITau) = 0.8
+      Ctrl%X0(IRe) = 12.
+      Ctrl%X0(IPc) = 700.
+      Ctrl%X0(IFr) = 1.
+      Ctrl%X0(ITs) = 300.
+   case('ICE')
+      Ctrl%XB(ITau) = 0.8
+      Ctrl%XB(IRe) = 30.
+      Ctrl%XB(IPc) = 400.
+      Ctrl%XB(IFr) = 1.
+      Ctrl%XB(ITs) = 300.0
+      
+      Ctrl%X0(ITau) = 0.8
+      Ctrl%X0(IRe) = 30.
+      Ctrl%X0(IPc) = 400.
+      Ctrl%X0(IFr) = 1.
+      Ctrl%X0(ITs) = 300.
+   case('EYJ')
+      Ctrl%XB(ITau) = 0.8
+      Ctrl%XB(IRe) = 0.5
+      Ctrl%XB(IPc) = 1000.
+      Ctrl%XB(IFr) = 1.
+      Ctrl%XB(ITs) = 300.
+      
+      Ctrl%X0(ITau) = 0.8
+      Ctrl%X0(IRe) = 0.5
+      Ctrl%X0(IPc) = 1000.
+      Ctrl%X0(IFr) = 1.
+      Ctrl%X0(ITs) = 300.
+   case('MAR')
+      Ctrl%XB(ITau) = 0.1
+      Ctrl%XB(IRe) = 1.8
+      Ctrl%XB(IPc) = 1000.
+      Ctrl%XB(IFr) = 1.
+      Ctrl%XB(ITs) = 300.
+      
+      Ctrl%X0(ITau) = 0.1
+      Ctrl%X0(IRe) = 1.8
+      Ctrl%X0(IPc) = 1000.
+      Ctrl%X0(IFr) = 1.
+      Ctrl%X0(ITs) = 300.
+   case('DES')
+      Ctrl%XB(ITau) = 0.0
+      Ctrl%XB(IRe) = 1.4
+      Ctrl%XB(IPc) = 1000.
+      Ctrl%XB(IFr) = 1.
+      Ctrl%XB(ITs) = 300.
+      
+      Ctrl%X0(ITau) = 0.0
+      Ctrl%X0(IRe) = 1.4
+      Ctrl%X0(IPc) = 1000.
+      Ctrl%X0(IFr) = 1.
+      Ctrl%X0(ITs) = 300.
+   case default
+      write(*,*) 'ERROR: ReadDriver(): Unsupported cloud/aerosol class.'
+      stop BadCloudClass
+   end select
 
 
-   ! Set default first guess default values
-   if (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
-      Ctrl%X0(1) = 0.8
-      Ctrl%X0(2) = 12.
-      Ctrl%X0(3) = 700.
-      Ctrl%X0(4) = 1.
-      Ctrl%X0(5) = 300.
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'ICE') then
-      Ctrl%X0(1) = 0.8
-      Ctrl%X0(2) = 30.
-      Ctrl%X0(3) = 400.
-      Ctrl%X0(4) = 1.
-      Ctrl%X0(5) = 300.
 
-   ! For a small selection of aerosol types
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'EYJ') then
-      Ctrl%X0(1) = 0.8
-      Ctrl%X0(2) = 0.5
-      Ctrl%X0(3) = 1000.
-      Ctrl%X0(4) = 1.
-      Ctrl%X0(5) = 300.
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'MAR') then
-      Ctrl%X0(1) = 0.1
-      Ctrl%X0(2) = 1.8
-      Ctrl%X0(3) = 1000.
-      Ctrl%X0(4) = 1.
-      Ctrl%X0(5) = 300.
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'DES') then
-      Ctrl%X0(1) = 0.0
-      Ctrl%X0(2) = 1.4
-      Ctrl%X0(3) = 1000.
-      Ctrl%X0(4) = 1.
-      Ctrl%X0(5) = 300.
-   end if
    ! may want to put these in Get_Illum routine at some point
    ! Set default a priori error covariance
-   if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
-       (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
-       (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
-      Ctrl%Sx(1) = 1.0e+01 ! optical depth
-      Ctrl%Sx(2) = 1.0e-01 ! effective radii
-      Ctrl%Sx(3) = 1.0e+06 ! ctp
-      Ctrl%Sx(4) = 1.0e-10 ! fraction
-      Ctrl%Sx(5) = 1.0e+00 ! surface temperature
+   if ((trim(Ctrl%CloudClass) .eq. 'EYJ' ) .or. &
+       (trim(Ctrl%CloudClass) .eq. 'MAR' ) .or. &
+       (trim(Ctrl%CloudClass) .eq. 'DES' ) ) then
+      Ctrl%Sx(ITau) = 1.0e+01 ! optical depth
+      Ctrl%Sx(IRe) = 1.0e-01 ! effective radii
+      Ctrl%Sx(IPc) = 1.0e+06 ! ctp
+      Ctrl%Sx(IFr) = 1.0e-10 ! fraction
+      Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
    else
-      Ctrl%Sx(1) = 1.0e+08 ! optical depth
-      Ctrl%Sx(2) = 1.0e+08 ! effective radii
-      Ctrl%Sx(3) = 1.0e+06 ! ctp
-      Ctrl%Sx(4) = 1.0e-10 ! fraction
-      Ctrl%Sx(5) = 1.0e+00 ! surface temperature
+      Ctrl%Sx(ITau) = 1.0e+08 ! optical depth
+      Ctrl%Sx(IRe) = 1.0e+08 ! effective radii
+      Ctrl%Sx(IPc) = 1.0e+06 ! ctp
+      Ctrl%Sx(IFr) = 1.0e-10 ! fraction
+      Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
    end if
 
    Ctrl%Max_SDAD = 10 ! No. of pixels where state is valid for SDAD setting
@@ -612,8 +523,8 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    ! Look at the channel numbers and determine what combination of vis/mixed/ir
    ! channels. This is instrument dependant so if introducing a new instrument
    ! channel info needs to be stored here
-   allocate(solar_store_sea(conf%nc))
-   allocate(solar_store_land(conf%nc))
+   allocate(solar_store_sea(Ctrl%Ind%Navail))
+   allocate(solar_store_land(Ctrl%Ind%Navail))
 
    ! Set some default arrays for surface reflection
    if ((trim(Ctrl%Inst%Name) .eq. trim('MODIS-AQUA')) .or.&
@@ -652,14 +563,11 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
 
    Ctrl%RS%use_full_brdf = .true.
 
-   allocate(ref_solar_sea(Ctrl%Ind%NChans))
-   ref_solar_sea=0.0
-   allocate(ref_solar_land(Ctrl%Ind%NChans))
-   ref_solar_land=0.0
-
+   allocate(ref_solar_sea(Ctrl%Ind%Ny))
+   allocate(ref_solar_land(Ctrl%Ind%Ny))
    ii=1
-   do i=1,conf%nc
-      if (conf%channel_proc_flag(i) .eq. 1) then
+   do i=1,Ctrl%Ind%Navail
+      if (channel_proc_flag(i) .eq. 1) then
          ref_solar_sea(ii)=solar_store_sea(i)
          ref_solar_land(ii)=solar_store_land(i)
          ii=ii+1
@@ -670,8 +578,9 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
 
    allocate(Ctrl%RS%B(Ctrl%Ind%Nsolar,2))
    Ctrl%RS%B=0.0
-   Ctrl%RS%B(1:Ctrl%Ind%Nsolar,1) = ref_solar_sea(1:Ctrl%Ind%Nsolar)/100.0 ! valid for 0.67/0.87/1.6 channels
-   Ctrl%RS%B(1:Ctrl%Ind%Nsolar,2) = ref_solar_land(1:Ctrl%Ind%Nsolar)/100.0
+   ! valid for 0.67/0.87/1.6 channels
+   Ctrl%RS%B(Ctrl%Ind%Ysolar,1) = ref_solar_sea(Ctrl%Ind%Ysolar)/100.0
+   Ctrl%RS%B(Ctrl%Ind%Ysolar,2) = ref_solar_land(Ctrl%Ind%Ysolar)/100.0
    deallocate(ref_solar_sea)
    deallocate(ref_solar_land)
 
@@ -695,40 +604,40 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    Ctrl%Invpar%MaxPhase  = 3          ! Maximum # of phase changes
    Ctrl%Invpar%Ccj       = 0.05       ! Cost convergence criteria
 
-   Ctrl%Invpar%XScale(1) = 10.0       ! Scaling parameters (Tau,Re,Pc,F,Ts)
-   Ctrl%Invpar%XScale(2) = 1.0
-   Ctrl%Invpar%XScale(3) = 1.0
-   Ctrl%Invpar%XScale(4) = 1000.0
-   Ctrl%Invpar%XScale(5) = 1.0
+   Ctrl%Invpar%XScale(ITau) = 10.0       ! Scaling parameters (Tau,Re,Pc,F,Ts)
+   Ctrl%Invpar%XScale(IRe) = 1.0
+   Ctrl%Invpar%XScale(IPc) = 1.0
+   Ctrl%Invpar%XScale(IFr) = 1000.0
+   Ctrl%Invpar%XScale(ITs) = 1.0
 
-   Ctrl%Invpar%XLLim(1)  = -3.0
+   Ctrl%Invpar%XLLim(ITau)  = -3.0
 
-   if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
-       (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
-       (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
-      Ctrl%Invpar%XLLim(2) = 0.01
+   if ((trim(Ctrl%CloudClass) .eq. 'EYJ' ) .or. &
+       (trim(Ctrl%CloudClass) .eq. 'MAR' ) .or. &
+       (trim(Ctrl%CloudClass) .eq. 'DES' ) ) then
+      Ctrl%Invpar%XLLim(IRe) = 0.01
    else
-      Ctrl%Invpar%XLLim(2) = 0.1
+      Ctrl%Invpar%XLLim(IRe) = 0.1
    end if
-   Ctrl%Invpar%XLLim(3)  = 10.0
-   Ctrl%Invpar%XLLim(4)  = 1.0
-   Ctrl%Invpar%XLLim(5)  = 250.0
+   Ctrl%Invpar%XLLim(IPc)  = 10.0
+   Ctrl%Invpar%XLLim(IFr)  = 1.0
+   Ctrl%Invpar%XLLim(ITs)  = 250.0
 
    ! Upper limit on state Ctrl.Invpar.XULim
-   Ctrl%Invpar%XULim(1) = 2.408
-   if (trim(Ctrl%CloudClass%Name) .eq. 'WAT') then
-      Ctrl%Invpar%XULim(2) = 35.0
-   else if (trim(Ctrl%CloudClass%Name) .eq. 'ICE') then
-      Ctrl%Invpar%XULim(2) = 100.0
-   else if ((trim(Ctrl%CloudClass%Name) .eq. 'EYJ' ) .or. &
-            (trim(Ctrl%CloudClass%Name) .eq. 'MAR' ) .or. &
-            (trim(Ctrl%CloudClass%Name) .eq. 'DES' ) ) then
-      Ctrl%Invpar%XULim(2) = 20.0
+   Ctrl%Invpar%XULim(ITau) = 2.408
+   if (trim(Ctrl%CloudClass) .eq. 'WAT') then
+      Ctrl%Invpar%XULim(IRe) = 35.0
+   else if (trim(Ctrl%CloudClass) .eq. 'ICE') then
+      Ctrl%Invpar%XULim(IRe) = 100.0
+   else if ((trim(Ctrl%CloudClass) .eq. 'EYJ' ) .or. &
+            (trim(Ctrl%CloudClass) .eq. 'MAR' ) .or. &
+            (trim(Ctrl%CloudClass) .eq. 'DES' ) ) then
+      Ctrl%Invpar%XULim(IRe) = 20.0
    end if
 
-   Ctrl%Invpar%XULim(3) = 1200.0
-   Ctrl%Invpar%XULim(4) = 1.0
-   Ctrl%Invpar%XULim(5) = 320.0
+   Ctrl%Invpar%XULim(IPc) = 1200.0
+   Ctrl%Invpar%XULim(IFr) = 1.0
+   Ctrl%Invpar%XULim(ITs) = 320.0
 
 
    ! Set Ctrl%QC
@@ -737,11 +646,11 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    Ctrl%QC%MaxJ = 100.0
 
    ! Maximum acceptable retrieval errors
-   Ctrl%QC%MaxS(1) = 0.08
-   Ctrl%QC%MaxS(2) = 3.0
-   Ctrl%QC%MaxS(3) = 200.
-   Ctrl%QC%MaxS(4) = 0.2
-   Ctrl%QC%MaxS(5) = 2.0
+   Ctrl%QC%MaxS(ITau) = 0.08
+   Ctrl%QC%MaxS(IRe) = 3.0
+   Ctrl%QC%MaxS(IPc) = 200.
+   Ctrl%QC%MaxS(IFr) = 0.2
+   Ctrl%QC%MaxS(ITs) = 2.0
 
    
    !----------------------------------------------------------------------------
@@ -750,8 +659,6 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
       select case (label)
-      case('CTRL%RUN_ID')
-         call parse_string(line, Ctrl%Run_ID)
       case('CTRL%DATA_DIR')
          call parse_string(line, Ctrl%Data_Dir)
       case('CTRL%OUT_DIR')
@@ -776,12 +683,12 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
          call parse_string(line, Ctrl%FID%Loc)
       case('CTRL%FID%UV')
          call parse_string(line, Ctrl%FID%uv)
-      case('CTRL%FID%AUX')
-         call parse_string(line, Ctrl%FID%Aux)
+      case('CTRL%FID%ALB')
+         call parse_string(line, Ctrl%FID%Alb)
       case('CTRL%FID%L2_PRIMARY')
-         call parse_string(line, Ctrl%FID%L2_primary_outputpath_and_file)
+         call parse_string(line, Ctrl%FID%L2_primary)
       case('CTRL%FID%L2_SECONDARY')
-         call parse_string(line, Ctrl%FID%L2_secondary_outputpath_and_file)
+         call parse_string(line, Ctrl%FID%L2_secondary)
       case('CTRL%FID%LOG')
          call parse_string(line, Ctrl%FID%Log)
       case('CTRL%FID%DIAG')
@@ -872,140 +779,121 @@ subroutine Read_Driver(Ctrl, conf, message, nargs, drifile, global_atts, &
    ! --------------------------------------------------------------------------
    ! Things that had to be moved to after the optional lines
    ! -------------------------------------------------------------------------
+
    ! Sort out inactive elements of day/night/twilight arrays
-
    Ctrl%Ind%NxI_Dy = MaxStateVar - Ctrl%Ind%Nx_Dy
-
-   ! Set active and inactive state variables
-   k = 0
-   do i=1, MaxStateVar
-      found = .false.
-      do j=1, Ctrl%Ind%Nx_Dy ! Look for the variable index in the active array
-         if (Ctrl%Ind%X_Dy(j) == i) then
-            found = .true.
-            exit
-         end if
-      end do
-      if (.not. found) then ! Not found in active set
-         k = k + 1          ! Add to inactive array
-         Ctrl%Ind%XI_Dy(k) = i
-      end if
-      if (k == Ctrl%Ind%NxI_Dy) exit ! Correct number of values found
-   end do
-   
+   Ctrl%Ind%NxI_Tw = MaxStateVar - Ctrl%Ind%Nx_Tw
    Ctrl%Ind%NxI_Ni = MaxStateVar - Ctrl%Ind%Nx_Ni
 
-   k = 0
+   ! Set inactive state variables
+   i0 = 0
+   i1 = 0
+   i2 = 0
    do i=1, MaxStateVar
-      found = .false.
-      do j=1, Ctrl%Ind%Nx_Ni ! Look for the variable index in the active array
-         if (Ctrl%Ind%X_Ni(j) == i) then
-            found = .true.
-            exit
-         end if
-      end do
-      if (.not. found) then ! Not found in active set
-         k = k + 1          ! Add to inactive array
-         Ctrl%Ind%XI_Ni(k) = i
+      if (.not. any(Ctrl%Ind%X_Dy == i)) then
+         i0 = i0+1
+         Ctrl%Ind%XI_Dy(i0) = i
       end if
-      if (k == Ctrl%Ind%NxI_Ni) exit ! Correct number of values found
+      if (.not. any(Ctrl%Ind%X_Tw == i)) then
+         i1 = i1+1
+         Ctrl%Ind%XI_Tw(i1) = i
+      end if
+      if (.not. any(Ctrl%Ind%X_Ni == i)) then
+         i2 = i2+1
+         Ctrl%Ind%XI_Ni(i2) = i
+      end if
    end do
       
    !----------------------------------------------------------------------------
    ! Now do some checks
    !----------------------------------------------------------------------------
-   if (status == 0) then
-      ! Check that the first-guess methods for all variables are legal in ORAC
-      ! and supported. Not all legal values are supported for all variables.
-      ! N.B. not all supported methods can be used in all conditions and this is
-      ! NOT CHECKED here.
-
-      do j=1,3 ! loop over day, twi, night values for FG
-         do i=1, MaxStateVar
-            select case (Ctrl%Fg(i,j))
-            case (SelmCtrl)
-               continue
-
-            case (SelmMeas)
-               if (i == IRe .or. i == ITs) then
-                  status = FGMethErr
-                  message = 'Read_Driver: MDAD method not supported ' // &
-                            'for setting first guess Re, Ts'
-               end if
-
-            case (SelmAux)
-               if (i /= ITs) then
-                  status = FGMethErr
-                  message = 'Read_Driver: AUX method ONLY supported ' // &
-                            'for setting first guess Ts'
-               end if
-
-            case default
-               status = FGMethErr
-               write(unit=message, fmt=*) 'Read_Driver: Invalid method ', &
-                                          'for first-guess state variable ',i
-            end select
-         end do
+   ! Check that the first-guess methods for all variables are legal in ORAC
+   ! and supported. Not all legal values are supported for all variables.
+   ! N.B. not all supported methods can be used in all conditions and this is
+   ! NOT CHECKED here.
+   
+   do j=1,3 ! loop over day, twi, night values for FG
+      do i=1, MaxStateVar
+         select case (Ctrl%Fg(i,j))
+         case (SelmCtrl)
+            continue
+            
+         case (SelmMeas)
+            if (i == IRe .or. i == ITs) then
+               write(*,*) 'Read_Driver: MDAD method not supported ' // &
+                    'for setting first guess Re, Ts'
+               stop FGMethErr
+            end if
+            
+         case (SelmAux)
+            if (i /= ITs) then
+               write(*,*) 'Read_Driver: AUX method ONLY supported ' // &
+                    'for setting first guess Ts'
+               stop FGMethErr
+            end if
+            
+         case default
+            write(*,*) 'Read_Driver: Invalid method ', &
+                 'for first-guess state variable ',i
+            stop FGMethErr
+         end select
       end do
-   end if ! end of status check
+   end do
 
-   if (status == 0) then
-      ! Check validity of a priori selection options. Not all legal values are
-      ! supported for all variables.
-
-      do j=1, 3
-         do i=1, MaxStateVar
-            select case (Ctrl%Ap(i,j))
-            case (SelmCtrl)
-               continue
-
-            case (SelmMeas)
-               if (i == IRe .or. i == ITs) then
-                  status = APMethErr
-                  message = 'Read_Driver: MDAD method not supported for ' //&
-                            'setting a priori Re, Ts'
-               end if
-
-            case (SelmAux)
-               if (i /= ITs) then
-                  status = APMethErr
-                  message = 'Read_Driver: AUX method ONLY supported ' // &
-                            'for setting a priori Ts'
-               end if
-
-            case default
-               status = APMethErr
-               write(unit=message, fmt=*) &
-                  'Read_Driver: Invalid method for a priori state variable ',i
-            end select
-         end do
+   ! Check validity of a priori selection options. Not all legal values are
+   ! supported for all variables.
+   do j=1, 3
+      do i=1, MaxStateVar
+         select case (Ctrl%Ap(i,j))
+         case (SelmCtrl)
+            continue
+            
+         case (SelmMeas)
+            if (i == IRe .or. i == ITs) then
+               write(*,*) 'Read_Driver: MDAD method not supported for ' //&
+                    'setting a priori Re, Ts'
+               stop APMethErr
+            end if
+            
+         case (SelmAux)
+            if (i /= ITs) then
+               write(*,*) 'Read_Driver: AUX method ONLY supported ' // &
+                    'for setting a priori Ts'
+               stop APMethErr
+            end if
+            
+         case default
+            write(*,*) &
+                 'Read_Driver: Invalid method for a priori state variable ',i
+            stop APMethErr
+         end select
       end do
-   end if ! end of status check
+   end do
 
-   if (status == 0) then
-      ! Check validity of surface reflectance flag
+   ! Check validity of surface reflectance flag
+   select case (Ctrl%RS%Flag)
+   case (SelmCtrl, SelmAux)
+      continue
+   case (SelmMeas)
+      write(*,*) 'Read_Driver: surface reflectance method not supported'
+      stop GetSurfaceMeth
+   case default
+      write(*,*) 'Read_Driver: invalid surface reflectance method'
+      stop GetSurfaceMeth
+   end select
 
-      select case (Ctrl%RS%Flag)
-      case (SelmCtrl, SelmAux)
-         continue
-      case (SelmMeas)
-         status = GetSurfaceMeth
-         message = 'Read_Driver: surface reflectance method not supported'
-      case default
-         status = GetSurfaceMeth
-         message = 'Read_Driver: invalid surface reflectance method'
-      end select
-      ! Warning - status value may be lost if a read error occurs later on in
-      ! this routine.
-   end if ! end of status==0 check
-
-999 if (ios /= 0) then          ! Don't write error messages out here.
-      status = DriverFileReadErr ! Log file not open yet.
-      message = 'Read_Driver: error reading driver file'
-   end if
-
-   if (drifile .ne. '-') then
+   
+   ! Clean up
+   if (drifile /= '-') then
       close(unit=dri_lun)
    end if
 
+   deallocate(channel_ids_instr)
+   deallocate(channel_sw_flag)
+   deallocate(channel_lw_flag)
+
 end subroutine Read_Driver
+
+#include "read_config_file.F90"
+
+end module orac_io

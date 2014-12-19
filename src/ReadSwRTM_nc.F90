@@ -80,7 +80,10 @@
 !    2014/07/23, AP: Commented out unused code for future deletion.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !    2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
-!    28/09/2014, GM: Updated to conform with a new arrangement of dimensions.
+!    2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
+!    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!       channels with respect to the channels actually processed, rather than the
+!       MSI file.
 !
 ! Bugs:
 !    None known.
@@ -165,7 +168,7 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
          ! Signal that the required channel has been found by incrementing
          ! chan_found and break out of the inner loop to start search for
          ! next instrument channel
-         if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) == ChanID(j)) then
+         if (Ctrl%Ind%Y_Id(i) == ChanID(j)) then
             chan_found = chan_found + 1
             index(chan_found) = j
             exit

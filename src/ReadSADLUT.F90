@@ -707,7 +707,7 @@ subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
    character(*), intent(out) :: LUT_file
 
    LUT_file = trim(Ctrl%SAD_Dir) // '/' // trim(Ctrl%Inst%Name) // '_' // &
-              trim(Ctrl%CloudClass%Name) // '_' // trim(lut_name) // '_' &
+              trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
               // trim(chan_num) // '.sad'
 
 end subroutine create_lut_filename
@@ -778,6 +778,9 @@ end subroutine create_lut_filename
 !       Use a subroutine to create the LUT filenames.
 !    10th Oct 2014, Greg McGarragh:
 !       Use the new LUT read code.
+!    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
+!       solar/thermalchannels with respect to the channels actually processed,
+!       rather than the  MSI file.
 !
 ! Bugs:
 !   None known.
@@ -839,27 +842,28 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
 
    do i=1, Ctrl%Ind%Ny
-      if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) < 10) then
+      if (Ctrl%Ind%Y_Id(i) < 10) then
          if (trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
-            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
          else
-            if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 1) then
+            select case (Ctrl%Ind%Y_Id(Ctrl%Ind%ICh(i)))
+            case(1)
                chan_num='Ch1'
-            else if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 2) then
+            case(2)
                chan_num='Ch2'
-            else if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 3) then
+            case(3)
                chan_num='Ch3a'
-            else if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 4) then
+            case(4)
                chan_num='Ch3b'
-            else if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 5) then
+            case(5)
                chan_num='Ch4'
-            else if (Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i)) .eq. 6) then
+            case(6)
                chan_num='Ch5'
-            end if
+            end select
 
          end if
       else
-         write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+         write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(i)
       end if
       write(*,*) 'Channel number',trim(adjustl(chan_num))
 
@@ -906,8 +910,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_Read_LUT_1) then
       ! Write out SAD_LUT Name and Wavelength
-      write(bkp_lun, *)'Name in cloud class struct: ', &
-           Ctrl%CloudClass%Name
+      write(bkp_lun, *)'Name in cloud class struct: ', Ctrl%CloudClass
    end if
 
    if (Ctrl%Bkpl >= BkpL_Read_LUT_2) then

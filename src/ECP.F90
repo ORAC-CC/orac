@@ -184,6 +184,9 @@
 !       when a retrieval is not possible.
 !    2014/08/18, Adam Povey: Updating to preprocessor's NCDF routines.
 !    2014/12/01, CP: added new global and source attributes
+!    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!       channels with respect to the channels actually processed, rather than the
+!       MSI file. Eliminate conf structure.
 !
 ! Bugs:
 !    None known.
@@ -200,12 +203,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Modules used by this program.
 
-   use config_def
    use CTRL_def
    use Data_def
    use Diag_def
    use ECP_Constants
    use omp_lib
+   use orac_io
    use orac_ncdf, only: nf90_close, NF90_NOERR
    use output_routines
    use Read_SAD_def
@@ -222,7 +225,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    implicit none
    type(global_attributes_s) :: global_atts
    type(source_attributes_s) :: source_atts
-   type(config_struct)       :: conf
    type(CTRL_t)              :: Ctrl
    type(Data_t)              :: MSI_Data
    type(Diag_t)              :: Diag       ! Diagnostic struct returned by Invert_Marquardt
@@ -342,32 +344,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Product generation section
    !----------------------------------------------------------------------------
 
-   ! Look if path to driver file was given on the command line. If yes, then
-   ! read it, if not leave it to the Read_Driver routine to deal with it
-
-
-#ifndef WRAPPER
-   nargs=command_argument_count()
-#else
-   nargs=-1
-#endif
-
-   write(*,*) 'inside preproc',nargs
-
-   if (nargs .eq. 1 ) then
-      drifile=''
-      call get_command_argument(1,drifile)
-   end if
-
    ! Temporary until this is made an argument (somehow)
    verbose=.true.
 
    ! Read Ctrl struct from driver file
-   call Read_Driver(Ctrl,conf,message,nargs,drifile,global_atts,source_atts,status)
+   call Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Read dimensions of preprocessing swath files first:
-   call read_input_dimensions_msi(Ctrl%Fid%MSI,Ctrl%FID%Geo, &
-      Ctrl%Ind%Xmax,Ctrl%Ind%YMax,Ctrl%Ind%Nyp,Ctrl%Ind%NInstViews,verbose)
+   call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
+      Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NInstViews, verbose)
 
 
    ! Now set the corners of the domain based on what's in the input files
@@ -384,7 +369,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Open the log file specified in Ctrl
    call find_lun(log_lun)
    open(unit=log_lun, file=Ctrl%FID%Log, status='replace', iostat=ios)
-   write(*,*) log_lun,ios,trim(adjustl(Ctrl%FID%Log))
+   write(*,*) log_lun,ios,trim(Ctrl%FID%Log)
 
    if (ios == 0) then
       call Date_and_Time(date=date, time=time)
@@ -399,12 +384,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    end if
    close(unit=log_lun)
 
-   ! Handle any error status returned by Read_Driver
-   ! (special case - ReadDriver can't report it's own errors because it has to
-   ! read the log file name from the driver file before the log file can be used).
-   if (status /= 0) then
-      call Write_Log(Ctrl, message, status)
-   end if
 
 #ifdef BKP
    ! Clear the breakpoint file (if breakpoints required)
@@ -519,7 +498,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #ifdef USE_ADAPTIVE_PROCESSING
       ! Adaptive processing:
       lhres = .false. ! "high" resolution flag
-      if (index(trim(adjustl(Ctrl%Inst%Name)),'MODIS') .ge. 1) then
+      if (index(trim(Ctrl%Inst%Name),'MODIS') .ge. 1) then
 
          ! Set special range
          range_lat(1) = 42.0
@@ -555,13 +534,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
       ! Open the netcdf output files
       if (status == 0) then
-         write(*,*) 'path1: ',trim(adjustl(Ctrl%FID%L2_primary_outputpath_and_file))
-         call nc_create(Ctrl%FID%L2_primary_outputpath_and_file, ncid_primary, &
+         write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
+         call nc_create(Ctrl%FID%L2_primary, ncid_primary, &
             ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 1, &
             global_atts, source_atts, status)
 
-         write(*,*) 'path2: ',trim(adjustl(Ctrl%FID%L2_secondary_outputpath_and_file))
-         call nc_create(Ctrl%FID%L2_secondary_outputpath_and_file, ncid_secondary, &
+         write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
+         call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, &
            ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 2, &
            global_atts, source_atts, status)
 
@@ -574,7 +553,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          ! Create NetCDF files and variables
          call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1, &
                                status)
-         call def_vars_secondary(Ctrl, conf, lcovar, ncid_secondary, dims_var, &
+         call def_vars_secondary(Ctrl, lcovar, ncid_secondary, dims_var, &
                                  output_data_2, status)
       end if
 
@@ -679,7 +658,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
             ! Set up the super-pixel data values.
             if (status == 0) then
-               call Get_SPixel(Ctrl, conf, SAD_Chan, MSI_Data, RTM, SPixel, status)
+               call Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
             end if
 
             if (status == 0) then
@@ -867,16 +846,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    end if
 
    call Dealloc_Ctrl(Ctrl, status)
-
-   deallocate(conf%channel_ids_instr)
-   deallocate(conf%channel_ids_abs)
-   deallocate(conf%channel_sw_flag)
-   deallocate(conf%channel_lw_flag)
-   deallocate(conf%channel_proc_flag)
-   deallocate(conf%channel_sw_flag_use)
-   deallocate(conf%channel_lw_flag_use)
-   deallocate(conf%channel_mixed_flag_use)
-
 
    close(unit=diag_lun)
 

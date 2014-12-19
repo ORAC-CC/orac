@@ -26,6 +26,9 @@
 ! 2014/09/01, Greg McGarragh: Start using the common/orac_ncdf.F90 write_array
 !    interface.
 ! 2014/09/17, Greg McGarragh: Bug fix, forgot to offset y dimension of output.
+! 2014/12/19, Adam Povey: YSolar and YThermal now contain the index of
+!     solar/thermal channels with respect to the channels actually processed,
+!     rather than the MSI file.
 !
 ! $Id$
 !
@@ -90,7 +93,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
            output_data%stemp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    do i=1,Ctrl%Ind%Nsolar
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
       input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
@@ -99,7 +102,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    end do
 
    do i=1,Ctrl%Ind%Ny
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
       input_dummy='radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
@@ -108,7 +111,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    end do
 
    do i=1,Ctrl%Ind%Ny
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
       input_dummy='firstguess_radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
@@ -117,7 +120,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    end do
 
    do i=1,Ctrl%Ind%Ny
-	write(input_num,"(i4)")Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+	write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
         input_dummy='radiance_residual_in_channel_no_'//trim(adjustl(input_num))
 
 	call nc_write_array(ncid,trim(adjustl(input_dummy)), &

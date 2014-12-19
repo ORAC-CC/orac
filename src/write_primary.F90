@@ -30,6 +30,9 @@
 ! 2014/10/24, Oliver Sus: added variables cldtype, cloudmask, cccot_pre, lusflags,
 !    dem, and nisemask
 ! 2014/12/01, Caroline Poulsen: added cloud albedo
+! 2014/12/19, Adam Povey: YSolar and YThermal now contain the index of
+!     solar/thermal channels with respect to the channels actually processed,
+!     rather than the MSI file.
 !
 ! $Id$
 !
@@ -178,7 +181,7 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
            output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    do i=1,Ctrl%Ind%Nsolar
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%Chi(i))
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
