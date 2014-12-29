@@ -76,11 +76,11 @@
 !    2014/09/17, GM: Use the DiFlag* constants instead of integer values.
 !    2014/12/01, CP: added in global and source attribute read capability
 !    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100,
-!                    as otherwise ~30% of converged pixels are lost in l2tol3
-!                    processing
-!    2014/12/17, AP: Converted read statements to parse_driver statements. Permit
-!                    optional overrides of default behaviour from driver.
+!       as otherwise ~30% of converged pixels are lost in l2tol3 processing
+!    2014/12/17, AP: Converted read statements to parse_driver statements.
+!       Permit optional overrides of default behaviour from driver.
 !    2014/12/19, AP: Tidying. Cleaning the management of channel indexing.
+!    2014/12/29, GM: Fixed a bug in the channel indexing changes above.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -257,19 +257,20 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          ii = ii+1
          Ctrl%Ind%ICh(ii) = i ! Fortran array index for channel
          Ctrl%Ind%Y_ID(ii) = channel_ids_instr(i) ! Instrument channel number
-      end if
-      ! Identify solar and thermal channels WITH RESPECT TO CTRL%IND%ICH
-      if (channel_sw_flag(i) == 1) then
-         i0 = i0+1
-         Ctrl%Ind%YSolar(i0) = ii
-      end if
-      if (channel_lw_flag(i) == 1) then
-         i1 = i1+1
-         Ctrl%Ind%YThermal(i1) = ii
-      end if
-      if (channel_sw_flag(i) == 1 .and. channel_lw_flag(i) == 1) then
-         i2 = i2+1
-         Ctrl%Ind%YMixed(i2) = ii
+
+         ! Identify solar and thermal channels WITH RESPECT TO CTRL%IND%ICH
+         if (channel_sw_flag(i) == 1) then
+            i0 = i0+1
+            Ctrl%Ind%YSolar(i0) = ii
+         end if
+         if (channel_lw_flag(i) == 1) then
+            i1 = i1+1
+            Ctrl%Ind%YThermal(i1) = ii
+         end if
+         if (channel_sw_flag(i) == 1 .and. channel_lw_flag(i) == 1) then
+            i2 = i2+1
+            Ctrl%Ind%YMixed(i2) = ii
+         end if
       end if
    end do
    if (verbose) then

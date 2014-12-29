@@ -779,8 +779,10 @@ end subroutine create_lut_filename
 !    10th Oct 2014, Greg McGarragh:
 !       Use the new LUT read code.
 !    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
-!       solar/thermalchannels with respect to the channels actually processed,
-!       rather than the  MSI file.
+!       solar/thermal channels with respect to the channels actually processed,
+!       rather than the MSI file.
+!    29th Dec 2014, Greg McGarragh:
+!       Fixed a bug in the channel indexing changes above.
 !
 ! Bugs:
 !   None known.
@@ -846,7 +848,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
          if (trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
             write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
          else
-            select case (Ctrl%Ind%Y_Id(Ctrl%Ind%ICh(i)))
+            select case (Ctrl%Ind%Y_Id(i))
             case(1)
                chan_num='Ch1'
             case(2)
