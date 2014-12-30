@@ -54,6 +54,11 @@
 !   surface flag.
 ! 2014/05/08, AP: Complete rewrite, vastly tidying the original and updating to
 !   the new ecmwf structure.
+! 2014/12/30, GM: Allocate old_data and new_data on the heap explicitly rather
+!   than declaring them automatic. In this case, as automatic, gfortran, and
+!   maybe other compilers, were allocating the arrays on the stack overflowing
+!   the stack when running with OpenMP. These arrays are big enough that they
+!   should be explicitly allocated on the heap anyway.
 !
 ! $Id$
 !
@@ -81,10 +86,10 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    integer(lint),     external              :: INTIN,INTOUT,INTF
    integer(lint),     parameter             :: BUFFER = 2000000
 
-   integer(lint),     dimension(1)          :: intv,old_grib,new_grib
+   integer(lint),            dimension(1)   :: intv,old_grib,new_grib
    real(dreal)                              :: grid(2),area(4)
-   real(dreal),       dimension(BUFFER)     :: old_data,new_data
-   character(len=20), dimension(1)          :: charv
+   real(dreal), allocatable, dimension(:)   :: old_data,new_data
+   character(len=20),        dimension(1)   :: charv
 
    real(sreal),       pointer               :: array2d(:,:), array3d(:,:,:)
    integer(4)                               :: n,ni,nj,i,j,k,ivar
@@ -96,6 +101,9 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    real(sreal) :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
 
    n=ecmwf%xdim*ecmwf%ydim
+
+   allocate(old_data(BUFFER))
+   allocate(new_data(BUFFER))
 
    ! input details of new grid (see note in read_ecmwf_grib)
    charv(1)='yes'
@@ -232,5 +240,8 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    if (nf90_close(fid) .ne. NF90_NOERR) &
         stop 'ERROR: read_ecmwf_nc(): Failure to close file.'
+
+   deallocate(old_data)
+   deallocate(new_data)
 
 end subroutine read_ecmwf_nc
