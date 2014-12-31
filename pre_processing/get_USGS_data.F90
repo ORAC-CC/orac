@@ -5,17 +5,16 @@
 ! Open and read USGS global land use and DEM data. Collocate with preproc orbit.
 !
 ! Description and Algorithm details:
-! 1)
-! Arguments:
-! Name                Type   In/Out/Both Description
 !
+! Arguments:
+! Name              Type   In/Out/Both Description
 !------------------------------------------------------------------------------
-! path_to_USGS_file   string in   Full path to USGS file
+! path_to_USGS_file string in          Full path to USGS file
 !
 ! History:
 ! 2014/09/23, OS: writes code to read data from USGS file.
 ! 2014/12/01, CP: Added source attributes.
-!
+! 2014/12/31, GM: Parallelized the main loop with OpenMP.
 !
 ! Bugs:
 ! None known.
@@ -38,6 +37,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
   type(source_attributes_s),   intent(inout) :: source_atts
   logical,                     intent(in)    :: verbose
   type(usgs_s),                intent(out)   :: usgs
+
   logical                          :: USGS_file_exist
   character(len=7)                 :: USGS_file_read
   integer(kind=4)                  :: i,j
@@ -69,6 +69,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
   end if
 
   ! Do collocation of imager pixels with USGS data
+!$OMP PARALLEL PRIVATE(i, j, nearest_xy)
+!$OMP DO SCHEDULE(GUIDED)
   do i=imager_geolocation%startx,imager_geolocation%endx
      do j=1,imager_geolocation%ny
 
@@ -87,6 +89,8 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
 
      enddo
   enddo
+!$OMP END DO
+!$OMP END PARALLEL
 
   ! Reset land surface flag to 1, i.e. all land
   imager_flags%lsflag = 1

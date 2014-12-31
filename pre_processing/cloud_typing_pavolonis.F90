@@ -26,6 +26,7 @@
 !                          new AATSR coefficients
 !        1st Dec 2014, CP: added check for missing AATSR 12 um channel
 !       10th Dec 2014, GM: Fixed the last change above.
+!       31st Dec 2014, GM: Parallelized the cloud typing loop with OpenMP.
 !
 ! Bugs:
 !    None known
@@ -398,6 +399,40 @@ contains
     ! num_pix = n_across_track (number of pixels per scanline)
 
     !---------------------------------------------------------------------
+!$OMP PARALLEL &
+!$OMP PRIVATE(i) &
+!$OMP PRIVATE(j) &
+!$OMP PRIVATE(ch3a_on_avhrr_flag) &
+!$OMP PRIVATE(ch7_on_atsr_flag) &
+!$OMP PRIVATE(glint_angle) &
+!$OMP PRIVATE(BTD_Ch4_Ch5) &
+!$OMP PRIVATE(BTD_Ch3b_Ch4) &
+!$OMP PRIVATE(day) &
+!$OMP PRIVATE(PlanckInv_out) &
+!$OMP PRIVATE(rad_ch3b) &
+!$OMP PRIVATE(solcon_ch3b) &
+!$OMP PRIVATE(rad_ch3b_emis) &
+!$OMP PRIVATE(mu0) &
+!$OMP PRIVATE(esd) &
+!$OMP PRIVATE(c_sun) &
+!$OMP PRIVATE(ref_ch3b) &
+!$OMP PRIVATE(nir_ref) &
+!$OMP PRIVATE(index1) &
+!$OMP PRIVATE(index2) &
+!$OMP PRIVATE(BTD1112_CIRRUS_THRES) &
+!$OMP PRIVATE(BTD1112_DOVERLAP_THRES) &
+!$OMP PRIVATE(wflg) &
+!$OMP PRIVATE(NIR_CIRRUS_THRES) &
+!$OMP PRIVATE(NIR_PHASE_THRES) &
+!$OMP PRIVATE(NIR_OVER_THRES) &
+!$OMP PRIVATE(BTD3811_PHASE_THRES) &
+!$OMP PRIVATE(EMS38_PHASE_THRES) &
+!$OMP PRIVATE(BTD1112_NOVERLAP_THRES_H) &
+!$OMP PRIVATE(BTD1112_NOVERLAP_THRES_L) &
+!$OMP PRIVATE(EMS38_NOVERLAP_THRES_H) &
+!$OMP PRIVATE(EMS38_NOVERLAP_THRES_L)
+
+!$OMP DO SCHEDULE(GUIDED)
     !-- loop over all pixels (x)
     !i_loop: do  i = 1, num_pix
 
@@ -1201,6 +1236,8 @@ contains
 
        !pixel loop
     end do i_loop
+!$OMP END DO
+!$OMP END PARALLEL
     !---------------------------------------------------------------------
 
 
