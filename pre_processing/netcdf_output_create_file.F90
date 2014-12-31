@@ -85,7 +85,7 @@
 ! 2014/10/23, OS: Added various variables due to implementation of USGS data,
 !  Pavolonies cloud typing, and NN cloud mask: cldtype, cldmask, cccot_pre,
 !   lusflag, dem, nisemask
-! 2014/01/12, CP: Added in source attributes
+! 2014/12/01, CP: Added in source attributes.
 !
 ! $Id$
 !
@@ -133,7 +133,6 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
    integer                    :: dimids_2d(2)
    integer                    :: dimids_3d(3)
    integer                    :: dimids_4d(4)
-   integer                    :: ierr
    integer(lint)              :: nlon, nlat
 
 
@@ -196,7 +195,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'lw_channel_abs_ids', &
               netcdf_info%vid_lw_channel_abs_ids, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       call nc_def_var_long_packed_long( &
@@ -204,7 +203,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'lw_channel_instr_ids', &
               netcdf_info%vid_lw_channel_instr_ids, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       call nc_def_var_float_packed_float( &
@@ -212,7 +211,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'lw_channel_wvl', &
               netcdf_info%vid_lw_channel_wvl, &
-              verbose, ierr, &
+              verbose, &
               fill_value = sreal_fill_value)
 
       ! define 3-D variables
@@ -226,7 +225,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_3d, &
               'emiss_lw', &
               netcdf_info%vid_emiss_lw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -244,7 +243,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_4d, &
               'tac_lw', &
               netcdf_info%vid_tac_lw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -255,7 +254,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_4d, &
               'tbc_lw', &
               netcdf_info%vid_tbc_lw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -266,7 +265,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_4d, &
               'rbc_up_lw', &
               netcdf_info%vid_rbc_up_lw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -277,7 +276,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_4d, &
               'rac_up_lw', &
               netcdf_info%vid_rac_up_lw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -288,7 +287,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_4d, &
               'rac_down_lw', &
               netcdf_info%vid_rac_down_lw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -349,7 +348,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'sw_channel_abs_ids', &
               netcdf_info%vid_sw_channel_abs_ids, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       call nc_def_var_long_packed_long( &
@@ -357,7 +356,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'sw_channel_instr_ids', &
               netcdf_info%vid_sw_channel_instr_ids, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       call nc_def_var_float_packed_float( &
@@ -365,7 +364,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'sw_channel_wvl', &
               netcdf_info%vid_sw_channel_wvl, &
-              verbose, ierr, &
+              verbose, &
               fill_value = sreal_fill_value)
 
 
@@ -381,7 +380,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_4d, &
               'tac_sw', &
               netcdf_info%vid_tac_sw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -392,7 +391,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_4d, &
               'tbc_sw', &
               netcdf_info%vid_tbc_sw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -446,7 +445,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'lon_rtm', &
               netcdf_info%vid_lon_pw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -458,7 +457,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_1d, &
               'lat_rtm', &
               netcdf_info%vid_lat_pw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -474,7 +473,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_2d, &
               'skint_rtm', &
               netcdf_info%vid_skint_pw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -485,7 +484,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_2d, &
               'explnsp_rtm', &
               netcdf_info%vid_lnsp_pw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -496,7 +495,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
 !              dimids_2d, &
 !              'lsf_rtm', &
 !              netcdf_info%vid_lsf_pw, &
-!              verbose, ierr, &
+!              verbose, &
 !              deflate_level = deflate_level_sreal, &
 !              shuffle = shuffle_sreal, &
 !              fill_value = sreal_fill_value)
@@ -513,7 +512,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_3d, &
               'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -524,7 +523,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_3d, &
               'tprofile_rtm', &
               netcdf_info%vid_tprofile_lev_pw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -535,7 +534,7 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_3d, &
               'hprofile_rtm', &
               netcdf_info%vid_hprofile_lev_pw, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -637,7 +636,6 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
    logical,                        intent(in)    :: verbose
 
    ! Local
-   integer                    :: ierr
    character(len=file_length) :: ctitle
    integer                    :: ncid
    integer                    :: dimids_1d(1)
@@ -700,7 +698,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_1d, &
               'alb_abs_ch_numbers', &
               netcdf_info%vid_alb_abs_ch_numbers, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       dimids_1d(1) = netcdf_info%dimid_c_emis
@@ -710,7 +708,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_1d, &
               'emis_abs_ch_numbers', &
               netcdf_info%vid_emis_abs_ch_numbers, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
 
@@ -724,7 +722,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_3d, &
               'alb_data', &
               netcdf_info%vid_alb_data, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -740,7 +738,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_3d, &
               'emis_data', &
               netcdf_info%vid_emis_data, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -756,7 +754,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  dimids_3d, &
                  'rho_0v_data', &
                  netcdf_info%vid_rho_0v_data, &
-                 verbose, ierr, &
+                 verbose, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -766,7 +764,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  dimids_3d, &
                  'rho_0d_data', &
                  netcdf_info%vid_rho_0d_data, &
-                 verbose, ierr, &
+                 verbose, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -776,7 +774,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  dimids_3d, &
                  'rho_dv_data', &
                  netcdf_info%vid_rho_dv_data, &
-                 verbose, ierr, &
+                 verbose, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -786,7 +784,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  dimids_3d, &
                  'rho_dd_data', &
                  netcdf_info%vid_rho_dd_data, &
-                 verbose, ierr, &
+                 verbose, &
                  deflate_level = deflate_level_sreal, &
                  shuffle = shuffle_sreal, &
                  fill_value = sreal_fill_value)
@@ -834,7 +832,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'cflag', &
               netcdf_info%vid_cflag, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -845,7 +843,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'cldtype', &
               netcdf_info%vid_cldtype, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -856,7 +854,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'cldmask', &
               netcdf_info%vid_cldmask, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -867,7 +865,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'cccot_pre', &
               netcdf_info%vid_cccot_pre, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -921,7 +919,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_3d, &
               'solzen', &
               netcdf_info%vid_solzen, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -932,7 +930,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_3d, &
               'satzen', &
               netcdf_info%vid_satzen, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -943,7 +941,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_3d, &
               'solaz', &
               netcdf_info%vid_solaz, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -954,7 +952,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_3d, &
               'relazi', &
               netcdf_info%vid_relazi, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1001,7 +999,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'lat', &
               netcdf_info%vid_lat, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1012,7 +1010,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'lon', &
               netcdf_info%vid_lon, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1058,7 +1056,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'lsflag', &
               netcdf_info%vid_lsflag, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -1069,7 +1067,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'lusflag', &
               netcdf_info%vid_lusflag, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -1080,7 +1078,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'dem', &
               netcdf_info%vid_dem, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       ! define nise_mask variable
@@ -1089,7 +1087,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               dimids_2d, &
               'nisemask', &
               netcdf_info%vid_nisemask, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
@@ -1150,7 +1148,7 @@ endif
               dimids_1d, &
               'msi_instr_ch_numbers', &
               netcdf_info%vid_msi_instr_ch_numbers, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       call nc_def_var_long_packed_long( &
@@ -1158,7 +1156,7 @@ endif
               dimids_1d, &
               'msi_abs_ch_numbers', &
               netcdf_info%vid_msi_abs_ch_numbers, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       call nc_def_var_float_packed_float( &
@@ -1166,7 +1164,7 @@ endif
               dimids_1d, &
               'msi_abs_ch_wl', &
               netcdf_info%vid_msi_abs_ch_wl, &
-              verbose, ierr, &
+              verbose, &
               fill_value = sreal_fill_value)
 
       call nc_def_var_long_packed_long( &
@@ -1174,7 +1172,7 @@ endif
               dimids_1d, &
               'msi_ch_swflag', &
               netcdf_info%vid_msi_ch_swflag, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
       call nc_def_var_long_packed_long( &
@@ -1182,7 +1180,7 @@ endif
               dimids_1d, &
               'msi_ch_lwflag', &
               netcdf_info%vid_msi_ch_lwflag, &
-              verbose, ierr, &
+              verbose, &
               fill_value = lint_fill_value)
 
 
@@ -1195,7 +1193,7 @@ endif
               dimids_2d, &
               'time_data', &
               netcdf_info%vid_time, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_dreal, &
               shuffle = shuffle_dreal, &
               fill_value = dreal_fill_value)
@@ -1211,7 +1209,7 @@ endif
               dimids_3d, &
               'msi_data', &
               netcdf_info%vid_msi_data, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
@@ -1258,7 +1256,7 @@ endif
               dimids_2d, &
               'uscan', &
               netcdf_info%vid_uscan, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_lint, &
               shuffle = shuffle_lint, &
               fill_value = lint_fill_value)
@@ -1269,7 +1267,7 @@ endif
               dimids_2d, &
               'vscan', &
               netcdf_info%vid_vscan, &
-              verbose, ierr, &
+              verbose, &
               deflate_level = deflate_level_lint, &
               shuffle = shuffle_lint, &
               fill_value = lint_fill_value)
@@ -1327,9 +1325,8 @@ end subroutine netcdf_create_swath
 !    all the nc_create_file_*() routines.
 ! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/09/16, GM: Use the nc_def_var routine from the orac_ncdf module in the
-! 1/12/2014 CP : added source attributes
-
 !    common library.
+! 2014/12/01, CP: Added in source attributes.
 !
 !-------------------------------------------------------------------------------
 
@@ -1367,7 +1364,6 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
    logical,                        intent(in)    :: verbose
 
    ! Local
-   integer                    :: ierr
    character(len=file_length) :: ctitle
    integer                    :: ncid
    integer                    :: dimids_1d(1)
@@ -1458,7 +1454,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'msi_instr_ch_numbers', &
            netcdf_info%vid_msi_instr_ch_numbers_config, &
-           verbose, ierr, &
+           verbose, &
            fill_value = lint_fill_value)
 
    call nc_def_var_long_packed_long( &
@@ -1466,7 +1462,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'msi_abs_ch_numbers', &
            netcdf_info%vid_msi_abs_ch_numbers_config, &
-           verbose, ierr, &
+           verbose, &
            fill_value = lint_fill_value)
 
    call nc_def_var_float_packed_float( &
@@ -1474,7 +1470,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'msi_abs_ch_wl', &
            netcdf_info%vid_msi_abs_ch_wl_config, &
-           verbose, ierr, &
+           verbose, &
            fill_value = sreal_fill_value)
 
    call nc_def_var_long_packed_long( &
@@ -1482,7 +1478,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'msi_ch_swflag', &
            netcdf_info%vid_msi_ch_swflag_config, &
-           verbose, ierr, &
+           verbose, &
            fill_value = lint_fill_value)
 
    call nc_def_var_long_packed_long( &
@@ -1490,7 +1486,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'msi_ch_lwflag', &
            netcdf_info%vid_msi_ch_lwflag_config, &
-           verbose, ierr, &
+           verbose, &
            fill_value = lint_fill_value)
 
    dimids_1d(1) = netcdf_info%dimid_c_config_alb
@@ -1500,7 +1496,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'alb_abs_ch_numbers', &
            netcdf_info%vid_alb_abs_ch_numbers_config, &
-           verbose, ierr, &
+           verbose, &
            fill_value = lint_fill_value)
 
    dimids_1d(1) = netcdf_info%dimid_c_config_emis
@@ -1510,7 +1506,7 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'emis_abs_ch_numbers', &
            netcdf_info%vid_emis_abs_ch_numbers_config, &
-           verbose, ierr, &
+           verbose, &
            fill_value = lint_fill_value)
 
 

@@ -41,7 +41,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
-                         output_data, status)
+                         output_data)
 
    use CTRL_def
    use orac_ncdf
@@ -56,15 +56,12 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
    integer,                   intent(in)    :: iystart
    integer,                   intent(in)    :: iystop
    type(output_data_primary), intent(inout) :: output_data
-   integer,                   intent(inout) :: status
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
    integer            :: i
    integer            :: n_x
    integer            :: n_y
-
-   status = 0
 
    n_x = ixstop - ixstart + 1
    n_y = iystop - iystart + 1

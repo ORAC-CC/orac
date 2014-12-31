@@ -44,7 +44,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
-                           Diag, output_data, status)
+                           Diag, output_data)
 
    use CTRL_def
    use Data_def
@@ -62,12 +62,13 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    type(SPixel_t),            intent(in)    :: SPixel
    type(Diag_t),              intent(in)    :: Diag
    type(output_data_primary), intent(inout) :: output_data
-   integer,                   intent(inout) :: status
 
    integer            :: k
    integer(kind=sint) :: temp_short_ctp_error
    real(kind=sreal)   :: temp_real, temp_real_ctp_error
    real(kind=sreal)   :: dummyreal
+
+
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
@@ -248,7 +249,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       output_data%cth_error(i,j)=sint_fill_value
    else if (temp_short_ctp_error .gt. output_data%ctp_error_vmax) then
       output_data%cth_error(i,j)=output_data%cth_error_vmax
-   else 
+   else
       temp_real=abs(RTM_Pc%dHc_dPc/10./1000.)*temp_real_ctp_error
       call prepare_short_packed_float( &
            temp_real, output_data%cth_error(i,j), &
@@ -407,7 +408,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
         &%YSeg0), kind=byte)
 
- 
+
  !----------------------------------------------------------------------------
    ! cloud_albedo
    !----------------------------------------------------------------------------

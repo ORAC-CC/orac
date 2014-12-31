@@ -23,6 +23,9 @@
 !    CRAY-ftn compiler to exit
 ! 2014/12/01, CP: Added new source attributes
 ! 2014/12/16, GM: Added nc_get_common_attributes().
+! 2014/12/31, GM: Removed ierr output argument from nc_def_var_*() routines as
+!    it severed no purpose since errors are handled to program exit within the
+!    routines themselves.
 !
 ! $Id$
 !-------------------------------------------------------------------------------

@@ -291,7 +291,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            imager_angles%solzen(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny, &
-           1, 1, imager_angles%nviews)
+           1, 1, channel_info%nviews)
 
    call nc_write_array( &
            netcdf_info%ncid_geo, &
@@ -300,7 +300,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            imager_angles%satzen(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny, &
-           1, 1, imager_angles%nviews)
+           1, 1, channel_info%nviews)
 
    call nc_write_array( &
            netcdf_info%ncid_geo, &
@@ -309,7 +309,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            imager_angles%solazi(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny, &
-           1, 1, imager_angles%nviews)
+           1, 1, channel_info%nviews)
 
    call nc_write_array( &
            netcdf_info%ncid_geo, &
@@ -318,7 +318,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            imager_angles%relazi(imager_geolocation%startx:,:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny, &
-           1, 1, imager_angles%nviews)
+           1, 1, channel_info%nviews)
 
 
    ! loc file (lat, lon)

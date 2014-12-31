@@ -37,7 +37,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
-                             output_data, status)
+                             output_data)
 
    use CTRL_def
    use Data_def
@@ -53,7 +53,6 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    type(SPixel_t),              intent(in)    :: SPixel
    type(Diag_t),                intent(in)    :: Diag
    type(output_data_secondary), intent(inout) :: output_data
-   integer,                     intent(inout) :: status
 
    integer          :: ii,k,l
    real(kind=sreal) :: dummyreal

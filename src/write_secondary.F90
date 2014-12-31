@@ -37,7 +37,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
-                           iystart, iystop, output_data, status)
+                           iystart, iystop, output_data)
 
    use CTRL_def
    use orac_ncdf
@@ -54,15 +54,12 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    integer,                     intent(in)    :: iystart
    integer,                     intent(in)    :: iystop
    type(output_data_secondary), intent(inout) :: output_data
-   integer,                     intent(inout) :: status
 
    character(len=32)  :: input_num,input_num1,input_num2
    character(len=512) :: input_dummy
    integer            :: i, j
    integer            :: n_x
    integer            :: n_y
-
-   status = 0
 
    n_x = ixstop - ixstart + 1
    n_y = iystop - iystart + 1
