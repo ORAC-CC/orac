@@ -91,6 +91,8 @@
 !    Performance can probably be increased further using a higher dimension
 !    LUT while performance for calculating rho_dd can be improved using a
 !    similar technique.
+! 31 Dec 2014, Greg McGarragh: Parallelized the main loops in the interface
+!    subroutine with OpenMP.
 !
 ! $Id$
 !
@@ -2006,6 +2008,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    !----------------------------------------------------------------------------
    if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
+!$OMP PARALLEL PRIVATE(i, j, shared_geo_wind)
+!$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
      if (solza(i) .gt. maxsza_twi .or. &
          u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
@@ -2019,7 +2023,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
          call cox_munk3(j, shared_band(j), shared_geo_wind, rho_0v(j,i))
       end do
    end do
-
+!$OMP END DO
+!$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
    if (verbose) write(*,*) 'cox_munk_rho_0v_0d_dv_and_dd(): computing rho_0d'
@@ -2027,7 +2032,8 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 ! The full computation
 if (.false.) then
    rho_0d = 0.
-
+!$OMP PARALLEL PRIVATE(i, j, k, l, aa, a2, satza2, relaz2, shared_geo_wind)
+!$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (solza(i) .gt. maxsza_twi .or. &
           u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
@@ -2052,6 +2058,9 @@ if (.false.) then
 
       rho_0d(:, i) = rho_0d(:, i) / pi
    end do
+!$OMP END DO
+!$OMP END PARALLEL
+
 ! Fast LUT version
 else
    lut_d_theta = 2 * pi / (lut_n_theta - 1.)
@@ -2079,7 +2088,8 @@ else
          rho_0d(:, i) = fill_value
          cycle
       end if
-
+!$OMP PARALLEL PRIVATE(j, l, m, a, a2, solza2, shared_wind, shared_band_geo2)
+!$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
          if (solza(j) .gt. maxsza_twi) then
             rho_0d(:, j) = fill_value
@@ -2101,6 +2111,8 @@ else
 
          rho_0d(i, j) = rho_0d(i, j) / pi
       end do
+!$OMP END DO
+!$OMP END PARALLEL
    end do
 
    deallocate(shared_band_geo)
@@ -2112,7 +2124,8 @@ end if
 ! The full computation
 if (.false.) then
    rho_dv = 0.
-
+!$OMP PARALLEL PRIVATE(i, j, k, l, aa, a2, solza2, relaz2, shared_geo_wind)
+!$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
          rho_dv(:, i) = fill_value
@@ -2136,6 +2149,9 @@ if (.false.) then
 
       rho_dv(:, i) = rho_dv(:, i) / pi
    end do
+!$OMP END DO
+!$OMP END PARALLEL
+
 ! Fast LUT version
 else
    lut_d_theta = 2 * pi / (lut_n_theta - 1.)
@@ -2163,7 +2179,8 @@ else
          rho_dv(:, i) = fill_value
          cycle
       end if
-
+!$OMP PARALLEL PRIVATE(j, l, m, a, a2, satza2, shared_wind, shared_band_geo2)
+!$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
          satza2 = satza(j) * d2r
          call cox_munk4_calc_shared_wind(bands(i), u10(j), v10(j), shared_wind)
@@ -2180,6 +2197,8 @@ else
 
          rho_dv(i, j) = rho_dv(i, j) / pi
       end do
+!$OMP END DO
+!$OMP END PARALLEL
    end do
 
    deallocate(shared_band_geo)
@@ -2218,7 +2237,8 @@ end if
          rho_dd(:, i) = fill_value
          cycle
       end if
-
+!$OMP PARALLEL PRIVATE(j, k, l, m, a, a2, a3, shared_wind)
+!$OMP DO SCHEDULE(GUIDED)
       do j = 1, n_points
          call cox_munk4_calc_shared_wind(int(bands(i), kind=lint), &
                                          u10(j), v10(j), shared_wind)
@@ -2237,7 +2257,8 @@ end if
 
          rho_dd(i, j) = rho_dd(i, j) * 2.
       end do
-
+!$OMP END DO
+!$OMP END PARALLEL
    end do
 
    deallocate(shared_band_geo)

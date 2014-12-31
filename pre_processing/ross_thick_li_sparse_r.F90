@@ -24,6 +24,8 @@
 ! History:
 ! 2014/08/10, GM: First version.
 ! 2014/08/20, OS: marked C-style comment as Fortran comment
+! 2014/12/31, GM: Parallelized the main loops in the interface subroutine with
+!    OpenMP.
 !
 ! $Id$
 !
@@ -614,6 +616,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    !----------------------------------------------------------------------------
    if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
+!$OMP PARALLEL PRIVATE(i, j, k, l, solza2, satza2, relaz2, aux_brdf, aux_kernel)
+!$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (solza(i) .gt. maxsza_twi) then
             rho_0v(:, i) = fill_value
@@ -637,13 +641,15 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
                                             f(:, j, i), rho_0v(j, i))
       end do
    end do
-
+!$OMP END DO
+!$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
    if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0d'
    !----------------------------------------------------------------------------
    rho_0d = 0.
-
+!$OMP PARALLEL PRIVATE(i, j, k, l, a, a2, solza2, satza2, relaz2, aux_brdf2, aux_kernel2)
+!$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (solza(i) .gt. maxsza_twi) then
             rho_0d(:, i) = fill_value
@@ -680,13 +686,15 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          rho_0d(j, i) = rho_0d(j, i) / pi
       end do
    end do
-
+!$OMP END DO
+!$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
    if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dv'
    !----------------------------------------------------------------------------
    rho_dv = 0.
-
+!$OMP PARALLEL PRIVATE(i, j, k, l, a, a2, solza2, satza2, relaz2, aux_brdf2, aux_kernel2)
+!$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       satza2 = satza(i) * d2r
       do j = 1, n_quad_theta
@@ -718,7 +726,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          rho_dv(j, i) = rho_dv(j, i) / pi
       end do
    end do
-
+!$OMP END DO
+!$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
    if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dd'
@@ -737,7 +746,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    end do
 
    rho_dd = 0.
-
+!$OMP PARALLEL PRIVATE(i, j, k, l, a, a2, a3)
+!$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       do j = 1, n_bands
          if (any(f(:, j, i) .eq. fill_value)) then
@@ -762,7 +772,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
          rho_dd(j, i) = rho_dd(j, i) * 2.
       end do
    end do
-
+!$OMP END DO
+!$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
    ! Deallocate arrays
