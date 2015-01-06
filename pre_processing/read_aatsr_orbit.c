@@ -7,6 +7,8 @@
       not *_forward_* but are actually *_fward_*.
    04/25/2014, Greg McGarragh: Add the "is_lut_drift_corrected" flag to the
       output from read_aatsr_orbit().
+   01/06/2015, Greg McGarragh: Fixed a bug when requesting a startx and nx other
+      than 0 and 512.
 
    $Id$
  **/
@@ -231,7 +233,7 @@ void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
 {
   EPR_SBandId *bid;
   EPR_SRaster *raster = NULL;
-  uint stepx=1, stepy=1, i, j;
+  uint stepx=1, stepy=1, i, ii, j;
   int stat;
 
   // Get a band ID for the requested band
@@ -254,8 +256,8 @@ void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
      accept values of i or j outside the valid range if you are reading less
      than the entire array. */
   for (j=0; j<ny; j++) {
-    for (i=x0; i<x0+nx; i++) {
-      out[i + j*nx] = epr_get_pixel_as_float(raster, i, j);
+    for (i=x0, ii=0; i<x0+nx; i++, ii++) {
+      out[ii + j*nx] = epr_get_pixel_as_float(raster, i, j);
     }
   }
 
@@ -272,7 +274,7 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 {
   EPR_SBandId *bid;
   EPR_SRaster *raster = NULL;
-  uint stepx=1, stepy=1, i, j;
+  uint stepx=1, stepy=1, i, ii, j;
   int stat;
 
   // Get a band ID for the requested band
@@ -295,8 +297,8 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
      accept values of i or j outside the valid range if you are reading less
      than the entire array. */
   for (j=0; j<ny; j++) {
-    for (i=x0; i<x0+nx; i++) {
-      out[i + j*nx] = (short) epr_get_pixel_as_uint(raster, i, j);
+    for (i=x0, ii=0; i<x0+nx; i++, ii++) {
+      out[ii + j*nx] = (short) epr_get_pixel_as_uint(raster, i, j);
     }
   }
 
