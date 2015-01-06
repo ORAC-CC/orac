@@ -64,9 +64,6 @@ subroutine check_value_float0(val, max, min, SPixel, name, flag_bit, Ctrl)
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (val > max .or. val < min) then
 #include "check_value.inc"
@@ -85,9 +82,6 @@ subroutine check_value_float1(val, max, min, SPixel, name, flag_bit, Ctrl)
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
@@ -107,9 +101,6 @@ subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, Ctrl, lim
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"
@@ -128,9 +119,6 @@ subroutine check_value_float2(val, max, min, SPixel, name, flag_bit, Ctrl)
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
@@ -150,9 +138,6 @@ subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, Ctrl, lim
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"
@@ -174,9 +159,6 @@ subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit, Ctrl)
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (val > max .or. val < min) then
 #include "check_value.inc"
@@ -196,9 +178,6 @@ subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit, Ctrl)
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
@@ -219,9 +198,6 @@ subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, Ctrl, limi
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"
@@ -241,9 +217,6 @@ subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit, Ctrl)
    character(*),   intent(in)    :: name
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (any(val > max .or. val < min)) then
 #include "check_value.inc"
@@ -264,9 +237,6 @@ subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, Ctrl, limi
    integer,        intent(in)    :: flag_bit
    type(CTRL_t),   intent(in)    :: Ctrl
    integer,        intent(in)    :: limit
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    if (count(val > max .or. val < min) > limit) then
 #include "check_value.inc"

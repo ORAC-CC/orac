@@ -92,8 +92,7 @@ subroutine Get_CloudFlags(Ctrl, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   character(180) :: message
-   integer        :: Xc, Yc ! Centre co-ordinates of SPixel arrays
+   integer :: Xc, Yc ! Centre co-ordinates of SPixel arrays
 
    ! Set status to zero
    status = 0

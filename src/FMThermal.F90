@@ -137,6 +137,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
+   status = 0
 
    ! Use ThF and ThL to access the first and last required thermal channels from
    ! RTM_Pc and SPixel %LW arrays, since these are always allocated to size
@@ -241,8 +242,8 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
 	   position='append', &
 	   iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-	 call Write_Log(Ctrl, 'FM_Thermal: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: FM_Thermal(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          write(bkp_lun,'(/,a)')'FM_Thermal:'
       end if

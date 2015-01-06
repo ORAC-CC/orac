@@ -20,7 +20,6 @@
 !                                      this routine: solar constant is
 !                                      modified from annual average to value for
 !                                      the day of the ALB data.
-!    status   int          Out         Error status
 !
 ! Algorithm:
 !

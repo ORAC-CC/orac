@@ -63,13 +63,15 @@ subroutine Set_Limits(Ctrl, SPixel, status)
 
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   integer,        intent(inout) :: status
+   integer,        intent(out)   :: status
 
    ! Local variable declarations
 
    integer :: i
    real    :: delta_Ts ! The maximum deviation from the a priori value allowed
                        ! for Ts.
+
+   status = 0
 
    ! Set the upper and lower limits for the current super-pixel.
    ! SPixel U/LLim arrays are full length, i.e. big enough to hold the full ECP

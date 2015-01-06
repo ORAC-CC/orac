@@ -92,7 +92,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
+subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    use Ctrl_def
    use ECP_Constants
@@ -105,7 +105,6 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(RTM_t),    intent(in)    :: RTM
    type(SPixel_t), intent(out)   :: SPixel
-   integer,        intent(inout) :: status
 
    ! Declare local variables
 
@@ -172,7 +171,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel, status)
    if (Ctrl%RS%use_full_brdf) then
       allocate(SPixel%Rs2            (Ctrl%Ind%NSolar, MaxRho_XX))
       allocate(SPixel%SRs2           (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
-   endif
+   end if
 
    !  Solar constant
 

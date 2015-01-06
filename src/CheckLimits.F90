@@ -65,11 +65,13 @@ subroutine Check_Limits(Ctrl, X, SPixel, RTM_Pc, phase_change, status)
    type(SPixel_t), intent(inout) :: SPixel
    type(RTM_Pc_t), intent(in)    :: RTM_Pc
    logical,        intent(inout) :: phase_change
-   integer,        intent(inout) :: status
+   integer,        intent(out)   :: status
 
    ! Local variable declarations
 
    integer :: i
+
+   status = 0
 
    phase_change = .false.
 

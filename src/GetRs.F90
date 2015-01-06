@@ -84,8 +84,6 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, stat
 
    ! Define local variables
 
-   character(180) :: message
-
    ! Set status to zero
    status = 0
 
@@ -97,7 +95,7 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, stat
       if (Ctrl%RS%use_full_brdf) then
          SPixel%Rs2(:,:)    = SPixel_b2(:,:)
          SPixel%SRs2(:,:,:) = SPixel_Sb2(:, :,:)
-      endif
+      end if
 
       if (SPixel%Surface%Flags == 1) then
          SPixel%Surface%Land = 1
@@ -107,9 +105,8 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, stat
          SPixel%Surface%Sea  = 1
       end if
    else
+      write(*,*) 'ERROR: Get_Rs(): Pixel contains bad data'
       status = GetRsCentPix
-      write(unit=message, fmt=*) 'Get_Rs: pixel contains bad data'
-      call Write_log(Ctrl, trim(message), status)
    end if
 
 end subroutine Get_Rs

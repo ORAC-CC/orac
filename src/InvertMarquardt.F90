@@ -242,9 +242,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    integer :: stat                ! Local error status flag
    real    :: Y(SPixel%Ind%Ny)    ! TOA reflectances, radiances etc for partly-
                                   ! cloudy conditions. Returned by FM
-   real    :: cloud_albedo(SPixel%Ind%NSolar)    ! cloud albedo Returned by FM
    real    :: dY_dX(SPixel%Ind%Ny,MaxStateVar+1)
                                   ! Derivatives d[ref]/d[tau,Re,pc,f,Ts,Rs]t
+   real    :: cloud_albedo(SPixel%Ind%NSolar)
+                                  ! cloud albedo Returned by FM
    real    :: Kx(SPixel%Ind%Ny, SPixel%Nx)
                                   ! Scaled, active part of dY_dX
    real    :: Kbj(SPixel%Ind%Ny, SPixel%Ind%NSolar)
@@ -304,7 +305,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                                   ! "Model parameter" error covariance.
    real    :: temp(SPixel%Nx, SPixel%Nx)
                                   ! work around "array temporary" warning
-   character(120) :: message      ! String for error messages.
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
    integer :: ios                 ! I/O status for breakpoint file
@@ -315,15 +315,15 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    status    = 0
 
    Y         = 0.
-   J         = 0.
    dY_dX     = 0.
    Kx        = 0.
    Kbj       = 0.
-   SPixel%Sn = 0.
+   KxT_SyI   = 0.
+   J         = 0.
+   d2J_dX2   = 0.
    Diag%st   = 0.
    Diag%ss   = 0.
-   d2J_dX2   = 0.
-   KxT_SyI   = 0.
+   SPixel%Sn = 0.
 
    huge_value = huge(1.0)/Ctrl%InvPar%MqStep
 
@@ -338,10 +338,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    ! should be provided un-scaled. Only used in the FM call and Xdiff(?)
    ! AS Mar 2011 assume only 1 cloud class in use so SAD_LUT dimension is 1
    if (stat == 0) &
-      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, cloud_albedo, stat)
+      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, &
+              cloud_albedo, stat)
 
    Diag%Y0(1:SPixel%Ind%Ny)=Y
- 
 
    ! Convert dY_dX to Kx and Kbj.
    if (stat == 0) &
@@ -354,16 +354,16 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
 
    ! Calculate SyInv and SxInv
-   if (stat == 0) then
+   if (stat == 0) &
       call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
 
-      if (stat == 0) &
-         error_matrix=SPixel%Sx(SPixel%X, SPixel%X)
+   if (stat == 0) then
+      error_matrix=SPixel%Sx(SPixel%X, SPixel%X)
 
-         call Invert_Cholesky(error_matrix, SxInv, SPixel%Nx, stat)
+      call Invert_Cholesky(error_matrix, SxInv, SPixel%Nx, stat)
 #ifdef DEBUG
       if (stat /= 0) &
-         call Write_Log(Ctrl, 'Invert_Marquardt: Error in Invert_Cholesky', stat)
+         write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
    end if
 
@@ -404,9 +404,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
            position='append', &
            iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-         call Write_Log(Ctrl, &
-                     'Invert_Marquardt: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          write(bkp_lun,'(/,a)')'Invert_Marquardt:'
          if (Ctrl%Bkpl >= BkpL_InvertMarquardt_2) then
@@ -509,11 +508,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       minusdJ_dX=-dJ_dX
 
       call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
-
 #ifdef DEBUG
       if (stat /= 0) &
-           call Write_Log(Ctrl, 'Invert_Marquardt: Error in Solve_Cholesky', &
-                          stat)
+         write(*, *) 'ERROR: Invert_Marquardt(): Error in Solve_Cholesky'
 #endif
       ! De-scale delta_X so that the X passed to FM can be kept un-scaled
       delta_X = delta_X / Ctrl%Invpar%XScale(SPixel%X)
@@ -530,9 +527,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
               position='append', &
               iostat=ios)
          if (ios /= 0) then
-            status = BkpFileOpenErr
-            call Write_Log(Ctrl, &
-               'Invert_Marquardt: Error opening breakpoint file', status)
+            write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
+            stop BkpFileOpenErr
          else
             write(bkp_lun,'(a)')'Invert_Marquardt:'
             write(bkp_lun,'(2x,a,11(f9.3,1x))') 'Y:            ',Y
@@ -600,19 +596,17 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
          ! Calculate Y for Xn + delta_X. Xplus_dX is currently un-scaled.
          if (stat == 0) &
             call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
-                    dY_dX,cloud_albedo, stat)
+                    dY_dX, cloud_albedo, stat)
          Diag%cloud_albedo(1:SPixel%Ind%NSolar)=cloud_albedo(1:SPixel%Ind%NSolar)
-	
+
          ! Set new Kx, Kbj, Sy and SyInv
          if (stat == 0) call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
          if (stat == 0) call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
          if (stat == 0) then
             call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
-
             if (stat /= 0) then
 #ifdef DEBUG
-               call Write_Log(Ctrl, &
-                           'Invert_Marquardt: Error in Invert_Cholesky', stat)
+               write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
             else
                ! Calculate new cost, J.
@@ -682,8 +676,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
          ! overwrite status has been called since).
 #ifdef DEBUG
          if (stat /= 0) &
-            call Write_Log(Ctrl, 'Invert_Marquardt: Error in Solve_Cholesky', &
-                           stat)
+            write(*, *) 'ERROR: Invert_Marquardt(): Error in Solve_Cholesky'
 #endif
          ! Set and de-scale the new delta_X
          if (stat == 0) delta_X = delta_X / Ctrl%Invpar%XScale(SPixel%X)
@@ -700,9 +693,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                  position='append', &
                  iostat=ios)
             if (ios /= 0) then
-               status = BkpFileOpenErr
-               call Write_Log(Ctrl, &
-                     'Invert_Marquardt: Error opening breakpoint file', status)
+               write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
+               stop BkpFileOpenErr
             else
                write(bkp_lun,'(/,a,i2)')'Invert_Marquardt Iteration ',iter
                write(bkp_lun,'(2x,a,5(f9.3,1x))')     'State:        ',Xplus_dX
@@ -776,7 +768,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       Diag%St(1:SPixel%Nx, 1:SPixel%Nx) = temp
 #ifdef DEBUG
       if (stat /= 0) &
-         call Write_Log(Ctrl, 'Invert_Marquardt: Error in Invert_Cholesky', stat)
+         write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
    end if
 
@@ -833,9 +825,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       ! state variables contributing to each element).
       SPixel%Sn = 0.0
       if (SPixel%Nx > 0  .and. SPixel%NxI == 0 ) then
-         SPixel%Sn(SPixel%X, SPixel%X)   = &
-              Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
-         !write(*,*) 'went in here'
+         SPixel%Sn(SPixel%X, SPixel%X) = &
+            Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
       end if
 
       if (SPixel%NxI > 0) then
@@ -851,11 +842,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                  (Ctrl%Invpar%XScale(l) * Ctrl%Invpar%XScale(m))
          end do
          if (SPixel%Sn(m,m) < 0) then
-            write(unit=message, fmt='(a,i1,a,i1,a,e11.4,a,2(i4,1x))') &
-                 'Invert_Marquardt: warning: negative error value in Sn(', m, &
-                 ',', m, '), value: ',&
-                 SPixel%Sn(m,m), ' location x,y ', SPixel%Loc%X0, SPixel%Loc%Y0
-            call Write_Log(Ctrl, message, stat)
+            write(*, fmt='(a,i1,a,i1,a,e11.4,a,2(i4,1x))') &
+                 'WARNING: Invert_Marquardt(): Negative error value in Sn(', m, &
+                 ',', m, '), value: ', SPixel%Sn(m,m), ' location x,y ', &
+                 SPixel%Loc%X0, SPixel%Loc%Y0
             SPixel%Sn(m,m) = 0.0
          end if
       end do
@@ -884,7 +874,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
         NPhaseChanges, Y, Sy, Diag, stat)
 
-
    ! Write final solution and close breakpoint output file
 
 #ifdef BKP
@@ -896,9 +885,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
            position='append', &
            iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-         call Write_Log(Ctrl, &
-                     'Invert_Marquardt: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          if (convergence) then
             write(bkp_lun,'(/,2x,a,i2,a)')'Invert_marquardt: convergence after ',&

@@ -1,11 +1,10 @@
-subroutine Dealloc_LUT_Grid(LUT_Grid, status)
+subroutine Dealloc_LUT_Grid(LUT_Grid)
 
    implicit none
 
    ! Declare arguments
 
    type(LUT_Grid_t), intent(inout) :: LUT_Grid
-   integer,          intent(inout) :: status
 
    deallocate(LUT_Grid%MaxTau)
    deallocate(LUT_Grid%MinTau)
@@ -81,7 +80,7 @@ end subroutine Dealloc_LUT_Grid
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
+subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
    use Ctrl_def
 
@@ -91,13 +90,12 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
 
    type(Ctrl_t),    intent(in)    :: Ctrl
    type(SAD_LUT_t), intent(inout) :: SAD_LUT
-   integer,         intent(inout) :: status
 
    deallocate(SAD_LUT%Wavelength)
 
    deallocate(SAD_LUT%table_used_for_channel)
 
-   call Dealloc_LUT_Grid(SAD_LUT%Grid, status)
+   call Dealloc_LUT_Grid(SAD_LUT%Grid)
 
    deallocate(SAD_LUT%Rd)
    deallocate(SAD_LUT%Rfd)

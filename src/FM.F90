@@ -136,7 +136,8 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo,status)
+subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
+              cloud_albedo, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -158,7 +159,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: X(MaxStateVar)
    real,             intent(out)   :: Y(SPixel%Ind%Ny)
-   real,              intent(out)  :: cloud_albedo(SPixel%Ind%NSolar)
+   real,             intent(out)   :: cloud_albedo(SPixel%Ind%NSolar)
    real,             intent(out)   :: dY_dX(SPixel%Ind%Ny,(MaxStateVar+1))
    integer,          intent(out)   :: status
 
@@ -168,7 +169,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
    integer       :: ThF, ThL ! First, last thermal channel indices
    type(GZero_t) :: GZero
    real          :: CRP(SPixel%Ind%Ny, MaxCRProps)
-!   real          :: d_cloud_albedo(SPixel%Ind%NSolar, 2))	
+!  real          :: d_cloud_albedo(SPixel%Ind%NySolar, 2))
    real          :: d_CRP(SPixel%Ind%Ny, MaxCRProps, 2)
    real          :: BT(SPixel%Ind%NThermal)
    real          :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
@@ -184,6 +185,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
    integer       :: ios     ! I/O status for breakpoint file
 #endif
 
+   status = 0
+
    Y     = 0.0
    dy_dX = 0.0
 
@@ -198,9 +201,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
               RTM_Pc, status)
    else
+      write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
+                 Ctrl%LUTIntflag
       status = RTMIntflagErr
-      call Write_Log(Ctrl, 'FM.f90: RTM Interp thermal flag error:', status)
-      write(*,*) 'FM.f90: RTM Interp thermal flag error:', status
+      return
    end if
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
@@ -265,9 +269,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
          else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
             call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
          else
+            write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
+                       Ctrl%LUTIntflag
             status = RTMIntflagErr
-            call Write_Log(Ctrl, 'FM.f90: RTM Interp solar flag error:', status)
-            write(*,*) 'FM.f90: RTM Interp solar flag error:', status
+            return
          end if
 
          RTM_Pc%Tac(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast) = &
@@ -292,7 +297,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
                  Ref, d_Ref, status)
 
          cloud_albedo(:)=CRP(1:SPixel%Ind%NSolar,IRD)
-!        d_cloud_albedo(:,:)=d_CRP(:,IRd,:) 
+!        d_cloud_albedo(:,:)=d_CRP(:,IRd,:)
 
 
          ! Combine the results from the LW and SW forward models
@@ -398,8 +403,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, cloud_albedo
 	   position='append', &
 	   iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-	 call Write_Log(Ctrl, 'FM: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: FM(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          write(bkp_lun,'(/,a)')'FM:'
       end if

@@ -44,7 +44,7 @@
 !    None known.
 !
 !-------------------------------------------------------------------------------
-subroutine grid_dimension_read(filename, n_name, d_name, v_name, l_lun, &
+subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
                                i_chan, i_lut, nTau, dTau, MinTau, MaxTau, Tau)
 
    implicit none
@@ -54,7 +54,7 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, l_lun, &
    character(*), intent(in)    :: n_name
    character(*), intent(in)    :: d_name
    character(*), intent(in)    :: v_name
-   integer,      intent(in)    :: l_lun
+   integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
    integer,      intent(inout) :: nTau(:,:)
@@ -67,18 +67,18 @@ subroutine grid_dimension_read(filename, n_name, d_name, v_name, l_lun, &
    integer :: i
    integer :: iostat
 
-   read(l_lun, *, iostat=iostat) nTau(i_chan, i_lut), dTau(i_chan, i_lut)
+   read(lun, *, iostat=iostat) nTau(i_chan, i_lut), dTau(i_chan, i_lut)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: grid_dimension_read(), Error reading ', trim(n_name), &
+      write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(n_name), &
          ' and ', trim(d_name), ' from SAD LUT file: ', trim(filename)
-      stop error_stop_code
+      stop LUTFileReadErr
    end if
 
-   read(l_lun, *, iostat=iostat) (Tau(i_chan, i, i_lut), i=1, nTau(i_chan, i_lut))
+   read(lun, *, iostat=iostat) (Tau(i_chan, i, i_lut), i=1, nTau(i_chan, i_lut))
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: grid_dimension_read(), Error reading ', trim(v_name), &
+      write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(v_name), &
                                 ' from SAD LUT file: ', trim(filename)
-      stop error_stop_code
+      stop LUTFileReadErr
    end if
 
    MinTau(i_chan,i_lut)  = Tau(i_chan, 1, i_lut)
@@ -159,14 +159,14 @@ end subroutine grid_dimension_copy
 !    None known.
 !
 !-------------------------------------------------------------------------------
-subroutine read_grid_dimensions(filename, l_lun, i_chan, SAD_LUT, has_sol_zen, &
+subroutine read_grid_dimensions(filename, lun, i_chan, SAD_LUT, has_sol_zen, &
                                 has_sat_zen, has_rel_azi, i_lut, i_lut2)
 
    implicit none
 
    ! Argument declarations
    character(*),    intent(in)           :: filename
-   integer,         intent(in)           :: l_lun
+   integer,         intent(in)           :: lun
    integer,         intent(in)           :: i_chan
    type(SAD_LUT_t), intent(inout)        :: SAD_LUT
    logical,         intent(in)           :: has_sol_zen
@@ -177,7 +177,7 @@ subroutine read_grid_dimensions(filename, l_lun, i_chan, SAD_LUT, has_sol_zen, &
 
    ! Read the Tau dimension
    call grid_dimension_read(filename, 'nTau', 'dTau', 'Tau', &
-                            l_lun, i_chan, i_lut, &
+                            lun, i_chan, i_lut, &
                             SAD_LUT%Grid%nTau, SAD_LUT%Grid%dTau, &
                             SAD_LUT%Grid%MinTau, SAD_LUT%Grid%MaxTau, &
                             SAD_LUT%Grid%Tau)
@@ -192,7 +192,7 @@ subroutine read_grid_dimensions(filename, l_lun, i_chan, SAD_LUT, has_sol_zen, &
    if (has_sat_zen) then
       ! Read the Satzen dimension
       call grid_dimension_read(filename, 'nSatzen', 'dSatzen', 'Satzen', &
-                               l_lun, i_chan, i_lut, &
+                               lun, i_chan, i_lut, &
                                SAD_LUT%Grid%nSatzen, SAD_LUT%Grid%dSatzen, &
                                SAD_LUT%Grid%MinSatzen, SAD_LUT%Grid%MaxSatzen, &
                                SAD_LUT%Grid%Satzen)
@@ -208,7 +208,7 @@ subroutine read_grid_dimensions(filename, l_lun, i_chan, SAD_LUT, has_sol_zen, &
    if (has_sol_zen) then
       ! Read the Solzen dimension
       call grid_dimension_read(filename, 'nSolzen', 'dSolzen', 'Solzen', &
-                               l_lun, i_chan, i_lut, &
+                               lun, i_chan, i_lut, &
                                SAD_LUT%Grid%nSolzen, SAD_LUT%Grid%dSolzen, &
                                SAD_LUT%Grid%MinSolzen, SAD_LUT%Grid%MaxSolzen, &
                                SAD_LUT%Grid%Solzen)
@@ -224,7 +224,7 @@ subroutine read_grid_dimensions(filename, l_lun, i_chan, SAD_LUT, has_sol_zen, &
    if (has_rel_azi) then
       ! Read the Relazi dimension
       call grid_dimension_read(filename, 'nRelazi', 'dRelazi', 'Relazi', &
-                               l_lun, i_chan, i_lut, &
+                               lun, i_chan, i_lut, &
                                SAD_LUT%Grid%nRelazi, SAD_LUT%Grid%dRelazi, &
                                SAD_LUT%Grid%MinRelazi, SAD_LUT%Grid%MaxRelazi, &
                                SAD_LUT%Grid%Relazi)
@@ -235,11 +235,11 @@ subroutine read_grid_dimensions(filename, l_lun, i_chan, SAD_LUT, has_sol_zen, &
                                   SAD_LUT%Grid%MinRelazi, SAD_LUT%Grid%MaxRelazi, &
                                   SAD_LUT%Grid%Relazi)
       end if
-   endif
+   end if
 
    ! Read the Re dimension
    call grid_dimension_read(filename, 'nRe', 'dRe', 'Re', &
-                            l_lun, i_chan, i_lut, &
+                            lun, i_chan, i_lut, &
                             SAD_LUT%Grid%nRe, SAD_LUT%Grid%dRe, &
                             SAD_LUT%Grid%MinRe, SAD_LUT%Grid%MaxRe, &
                             SAD_LUT%Grid%Re)
@@ -277,7 +277,7 @@ end subroutine read_grid_dimensions
 !    None known.
 !
 !-------------------------------------------------------------------------------
-subroutine read_values_2d(filename, v_name, l_lun, i_chan, i_lut, &
+subroutine read_values_2d(filename, v_name, lun, i_chan, i_lut, &
                           n_i, n_j, values)
 
    implicit none
@@ -285,7 +285,7 @@ subroutine read_values_2d(filename, v_name, l_lun, i_chan, i_lut, &
    ! Argument declarations
    character(*), intent(in)    :: filename
    character(*), intent(in)    :: v_name
-   integer,      intent(in)    :: l_lun
+   integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
    integer,      intent(inout) :: n_i(:,:)
@@ -296,12 +296,12 @@ subroutine read_values_2d(filename, v_name, l_lun, i_chan, i_lut, &
    integer :: i, j
    integer :: iostat
 
-   read(l_lun, *, iostat=iostat) ((values(i_chan, i, j), &
+   read(lun, *, iostat=iostat) ((values(i_chan, i, j), &
       i = 1, n_i(i_chan, i_lut)), j = 1, n_j(i_chan, i_lut))
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: read_values_2d(), Error reading ', v_name, &
+      write(*,*) 'ERROR: read_values_2d(): Error reading ', v_name, &
          ' from file: ', trim(v_name), trim(filename)
-      stop error_stop_code
+      stop LUTFileReadErr
    end if
 
 end subroutine read_values_2d
@@ -310,14 +310,14 @@ end subroutine read_values_2d
 !-------------------------------------------------------------------------------
 ! Read 3d LUT values
 !-------------------------------------------------------------------------------
-subroutine read_values_3d(filename, v_name, l_lun, i_chan, i_lut, &
+subroutine read_values_3d(filename, v_name, lun, i_chan, i_lut, &
                           n_i, n_j, n_k, values)
 
    implicit none
 
    character(*), intent(in)    :: filename
    character(*), intent(in)    :: v_name
-   integer,      intent(in)    :: l_lun
+   integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
    integer,      intent(inout) :: n_i(:,:)
@@ -329,13 +329,13 @@ subroutine read_values_3d(filename, v_name, l_lun, i_chan, i_lut, &
    integer :: i, j, k
    integer :: iostat
 
-   read(l_lun, *, iostat=iostat) (((values(i_chan, i, j, k), &
+   read(lun, *, iostat=iostat) (((values(i_chan, i, j, k), &
       i = 1, n_i(i_chan, i_lut)), j = 1, n_j(i_chan, i_lut)), &
       k = 1, n_k(i_chan, i_lut))
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: read_values_3d(), Error reading ', v_name, &
+      write(*,*) 'ERROR: read_values_3d(): Error reading ', v_name, &
          ' from file: ', trim(v_name), trim(filename)
-      stop error_stop_code
+      stop LUTFileReadErr
    end if
 
 end subroutine read_values_3d
@@ -364,7 +364,7 @@ end subroutine read_values_3d
 !    None known.
 !
 !-------------------------------------------------------------------------------
-subroutine read_values_5d(filename, v_name, l_lun, i_chan, i_lut, &
+subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
                           n_i, n_j, n_k, n_l, n_m, values)
 
    implicit none
@@ -372,7 +372,7 @@ subroutine read_values_5d(filename, v_name, l_lun, i_chan, i_lut, &
    ! Argument declarations
    character(*), intent(in)    :: filename
    character(*), intent(in)    :: v_name
-   integer,      intent(in)    :: l_lun
+   integer,      intent(in)    :: lun
    integer,      intent(in)    :: i_chan
    integer,      intent(in)    :: i_lut
    integer,      intent(inout) :: n_i(:,:)
@@ -386,14 +386,14 @@ subroutine read_values_5d(filename, v_name, l_lun, i_chan, i_lut, &
    integer :: i, j, k, l, m
    integer :: iostat
 
-   read(l_lun, *, iostat=iostat) (((((values(i_chan, i, j, k, l, m), &
+   read(lun, *, iostat=iostat) (((((values(i_chan, i, j, k, l, m), &
       i = 1, n_i(i_chan, i_lut)), j = 1, n_j(i_chan, i_lut)), &
       k = 1, n_k(i_chan, i_lut)), l = 1, n_l(i_chan, i_lut)), &
       m = 1, n_m(i_chan, i_lut))
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: read_values_5d(), Error reading ', v_name, &
+      write(*,*) 'ERROR: read_values_5d(): Error reading ', v_name, &
          ' from file: ', trim(v_name), trim(filename)
-      stop error_stop_code
+      stop LUTFileReadErr
    end if
 
 end subroutine read_values_5d
@@ -443,14 +443,14 @@ subroutine Read_LUT_Xd_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    real,            intent(inout), optional :: values2(:,:,:)
 
    ! Local variables
-   integer :: l_lun
+   integer :: lun
    integer :: iostat
 
-   call Find_LUN(l_lun)
-   open(unit = l_lun, file = LUT_file, status = 'old', iostat = iostat)
+   call Find_LUN(lun)
+   open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: Read_LUT_Xd_sat(), Error opening file: ', trim(LUT_file)
-      stop error_stop_code
+      write(*,*) 'ERROR: Read_LUT_Xd_sat(): Error opening file: ', trim(LUT_file)
+      stop LUTFileOpenErr
    end if
 
    SAD_LUT%table_used_for_channel(i_chan, i_lut)  = .true.
@@ -468,23 +468,23 @@ subroutine Read_LUT_Xd_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    end if
 
    ! Read Wavelength
-   read(l_lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
+   read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
 
    ! Read the grid dimensions
-   call read_grid_dimensions(LUT_file, l_lun, i_chan, SAD_LUT, .false., .true., &
+   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .false., .true., &
                              .false., i_lut, i_lut2)
 
    ! Read in the i_lut array
-   call read_values_3d(LUT_file, name,  l_lun, i_chan, i_lut, &
+   call read_values_3d(LUT_file, name,  lun, i_chan, i_lut, &
            SAD_LUT%Grid%nTau, SAD_LUT%Grid%nSatzen, SAD_LUT%Grid%nRe, values)
 
    if (present(i_lut2)) then
       ! Read in the i_lut2 array.
-      call read_values_2d(LUT_file, name2, l_lun, i_chan, i_lut2, &
+      call read_values_2d(LUT_file, name2, lun, i_chan, i_lut2, &
               SAD_LUT%Grid%nTau, SAD_LUT%Grid%nRe, values2)
-   endif
+   end if
 
-   close(unit = l_lun)
+   close(unit = lun)
 
 end subroutine Read_LUT_Xd_sat
 
@@ -533,14 +533,14 @@ subroutine Read_LUT_Xd_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    real,            intent(inout), optional :: values2(:,:,:)
 
    ! Local variables
-   integer :: l_lun
+   integer :: lun
    integer :: iostat
 
-   call Find_LUN(l_lun)
-   open(unit = l_lun, file = LUT_file, status = 'old', iostat = iostat)
+   call Find_LUN(lun)
+   open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: Read_LUT_Xd_sol(), Error opening file: ', trim(LUT_file)
-      stop error_stop_code
+      write(*,*) 'ERROR: Read_LUT_Xd_sol(): Error opening file: ', trim(LUT_file)
+      stop LUTFileOpenErr
    end if
 
    SAD_LUT%table_used_for_channel(i_chan, i_lut)  = .true.
@@ -558,23 +558,23 @@ subroutine Read_LUT_Xd_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    end if
 
    ! Read Wavelength
-   read(l_lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
+   read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
 
    ! Read the grid dimensions
-   call read_grid_dimensions(LUT_file, l_lun, i_chan, SAD_LUT, .true., .false., &
+   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .true., .false., &
                              .false., i_lut, i_lut2)
 
    ! Read in the i_lut array
-   call read_values_3d(LUT_file, name, l_lun, i_chan, i_lut, &
+   call read_values_3d(LUT_file, name, lun, i_chan, i_lut, &
            SAD_LUT%Grid%nTau, SAD_LUT%Grid%nSolzen, SAD_LUT%Grid%nRe, values)
 
    if (present(i_lut2)) then
       ! Read in the i_lut2 array.
-      call read_values_2d(LUT_file, name2, l_lun, i_chan, i_lut2, &
+      call read_values_2d(LUT_file, name2, lun, i_chan, i_lut2, &
               SAD_LUT%Grid%nTau, SAD_LUT%Grid%nRe, values2)
-      endif
+      end if
 
-   close(unit = l_lun)
+   close(unit = lun)
 
 end subroutine Read_LUT_Xd_sol
 
@@ -624,14 +624,14 @@ subroutine Read_LUT_Xd_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    real,            intent(inout), optional :: values2(:,:,:,:)
 
    ! Local variables
-   integer :: l_lun
+   integer :: lun
    integer :: iostat
 
-   call Find_LUN(l_lun)
-   open(unit = l_lun, file = LUT_file, status = 'old', iostat = iostat)
+   call Find_LUN(lun)
+   open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: Read_LUT_Xd_both(), Error opening file: ', trim(LUT_file)
-      stop error_stop_code
+      write(*,*) 'ERROR: Read_LUT_Xd_both(): Error opening file: ', trim(LUT_file)
+      stop LUTFileOpenErr
    end if
 
    SAD_LUT%table_used_for_channel(i_chan, i_lut)  = .true.
@@ -649,24 +649,24 @@ subroutine Read_LUT_Xd_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    end if
 
    ! Read Wavelength
-   read(l_lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
+   read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
 
    ! Read the grid dimensions
-   call read_grid_dimensions(LUT_file, l_lun, i_chan, SAD_LUT, .true., .true., &
+   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .true., .true., &
                              .true., i_lut, i_lut2)
 
    ! Read in the i_lut array
-   call read_values_5d(LUT_file, name, l_lun, i_chan, i_lut, &
+   call read_values_5d(LUT_file, name, lun, i_chan, i_lut, &
            SAD_LUT%Grid%nTau, SAD_LUT%Grid%nSatzen, SAD_LUT%Grid%nSolzen, &
            SAD_LUT%Grid%nRelazi, SAD_LUT%Grid%nRe, values)
 
    if (present(i_lut2)) then
       ! Read in the i_lut2 array.
-      call read_values_3d(LUT_file, name2, l_lun, i_chan, i_lut2, &
+      call read_values_3d(LUT_file, name2, lun, i_chan, i_lut2, &
               SAD_LUT%Grid%nTau, SAD_LUT%Grid%nSolzen, SAD_LUT%Grid%nRe, values2)
-      endif
+      end if
 
-   close(unit = l_lun)
+   close(unit = lun)
 
 end subroutine Read_LUT_Xd_both
 
@@ -822,10 +822,10 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 	   position='append', &
 	   iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-	 call Write_Log(Ctrl, 'Read_LUT: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: Read_SAD_LUT(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
-         write(bkp_lun,*)'Read_LUT:'
+         write(bkp_lun,*) 'Read_LUT:'
       end if
    end if
 #endif

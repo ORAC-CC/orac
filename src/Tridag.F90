@@ -55,13 +55,13 @@ subroutine tridag_ser(a,b,c,r,u)
 
    n = size(b)
    bet=b(1)
-   if (bet == 0.0) write(*,*) 'tridag_ser: Error at stage 1'
+   if (bet == 0.0) write(*,*) 'ERROR: tridag_ser(): Error at stage 1'
       u(1)=r(1)/bet
       do j=2,n
          gam(j)=c(j-1)/bet
          bet=b(j)-a(j-1)*gam(j)
          if (bet == 0.0) &
-                 write(*,*) 'tridag_ser: Error at stage 2'
+                 write(*,*) 'ERROR: tridag_ser(): Error at stage 2'
          u(j)=(r(j)-a(j-1)*u(j-1))/bet
       end do
       do j=n-1,1,-1
@@ -92,7 +92,7 @@ recursive subroutine tridag_par(a,b,c,r,u)
        call tridag_ser(a,b,c,r,u)
    else
       if (maxval(abs(b(1:n))) == 0.0) &
-          write(*,*) 'tridag_par: possible singular matrix'
+          write(*,*) 'WARNING: tridag_par(): possible singular matrix'
       n2=size(y)
       nm=size(pivc)
       nx=size(x)

@@ -40,7 +40,8 @@
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
 !    24th Oct 2014, Oliver Sus:
-!       added deallocation of CldType, CloudMask, CCCOT_pre, LUSFlags, DEM, nisemask
+!       added deallocation of CldType, CloudMask, CCCOT_pre, LUSFlags, DEM,
+!       nisemask
 !
 ! Bugs:
 !    None known.
@@ -49,7 +50,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Dealloc_Data(Ctrl, MSI_Data, status)
+subroutine Dealloc_Data(Ctrl, MSI_Data)
 
    use Ctrl_def
 
@@ -58,7 +59,6 @@ subroutine Dealloc_Data(Ctrl, MSI_Data, status)
    ! Declare arguments
    type(Ctrl_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   integer,      intent(inout) :: status
 
    if (associated(MSI_Data%ALB))          deallocate(MSI_Data%ALB)
 
@@ -67,7 +67,7 @@ subroutine Dealloc_Data(Ctrl, MSI_Data, status)
       if (associated(MSI_Data%rho_0d))    deallocate(MSI_Data%rho_0d)
       if (associated(MSI_Data%rho_dv))    deallocate(MSI_Data%rho_dv)
       if (associated(MSI_Data%rho_dd))    deallocate(MSI_Data%rho_dd)
-   endif
+   end if
 
    if (associated(MSI_Data%CloudFlags))   deallocate(MSI_Data%CloudFlags)
 
@@ -90,10 +90,10 @@ subroutine Dealloc_Data(Ctrl, MSI_Data, status)
    if (associated(MSI_Data%illum))        deallocate(MSI_Data%illum)
 
    if (associated(MSI_Data%CldType))      deallocate(MSI_Data%CldType)
-   if (associated(MSI_Data%CloudMask))      deallocate(MSI_Data%CloudMask)
-   if (associated(MSI_Data%CCCOT_pre))      deallocate(MSI_Data%CCCOT_pre)
-   if (associated(MSI_Data%LUSFlags))      deallocate(MSI_Data%LUSFlags)
-   if (associated(MSI_Data%DEM))      deallocate(MSI_Data%DEM)
-   if (associated(MSI_Data%nisemask))      deallocate(MSI_Data%nisemask)
+   if (associated(MSI_Data%CloudMask))    deallocate(MSI_Data%CloudMask)
+   if (associated(MSI_Data%CCCOT_pre))    deallocate(MSI_Data%CCCOT_pre)
+   if (associated(MSI_Data%LUSFlags))     deallocate(MSI_Data%LUSFlags)
+   if (associated(MSI_Data%DEM))          deallocate(MSI_Data%DEM)
+   if (associated(MSI_Data%nisemask))     deallocate(MSI_Data%nisemask)
 
 end subroutine Dealloc_Data

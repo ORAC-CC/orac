@@ -125,7 +125,7 @@ module CTRL_def
    ! Define a type to hold File names used by the ECP
 
    type FID_t
-      character(FilenameLen) :: Config	           ! Configuration 
+      character(FilenameLen) :: Config	           ! Configuration
       character(FilenameLen) :: MSI	           ! Multi-Spectral Image
       character(FilenameLen) :: LWRTM	           ! LW Rad Trans Model results
       character(FilenameLen) :: SWRTM	           ! SW Rad Trans Model results
@@ -157,7 +157,7 @@ module CTRL_def
       integer                :: SegSize            ! Image segment size (no. of
                                                    ! rows of super-pixels that
                                                    ! make up a segment).
-      integer                :: Time               ! Temporal av'ging required 
+      integer                :: Time               ! Temporal av'ging required
                                                    ! (slots)
    end type Resoln_t
 
@@ -165,9 +165,9 @@ module CTRL_def
    ! "warm-start" pixel indices.
    type Ind_t
       ! Channel indexing variables
-      integer                :: Ny                 ! No. of instrument channels 
+      integer                :: Ny                 ! No. of instrument channels
                                                    ! actually used
-      integer                :: NAvail             ! No. of instrument channels 
+      integer                :: NAvail             ! No. of instrument channels
                                                    ! available.
       integer, pointer       :: Y_Id(:)            ! Instrument IDs for used chs
       integer, pointer       :: ICh(:)             ! Array indices for used chs
@@ -184,20 +184,20 @@ module CTRL_def
       integer                :: ThermalLast        ! Index of last thermal ID
       integer                :: SolarFirst         ! Index of first solar ID
       integer                :: SolarLast          ! Index of last thermal ID
-      
+
       ! View indexing variables
-      integer                :: NInstViews         ! No. of instrument views 
+      integer                :: NInstViews         ! No. of instrument views
                                                    ! available
-      integer                :: NViews             ! Number of instrument views 
+      integer                :: NViews             ! Number of instrument views
                                                    ! (forward,
                                                    ! nadir etc) selected
       integer, pointer       :: ViewIdx(:)         ! Array of view values, 1 per
                                                    ! channel
 
       ! Spatial grid indexing variables
-      integer                :: XMax               ! Max no. of pixels in x 
+      integer                :: XMax               ! Max no. of pixels in x
                                                    ! direction
-      integer                :: YMax               ! Max no. of pixels in y 
+      integer                :: YMax               ! Max no. of pixels in y
                                                    ! direction
       integer                :: X0                 ! Lower left pixel x coord
       integer                :: Y0                 ! Lower left pixel y coord
@@ -220,17 +220,17 @@ module CTRL_def
                                                    ! variables for twilight
       integer                :: NxI_Ni             ! Number of inactive state
                                                    ! variables for night
-      integer                :: X_Dy(MaxStateVar)  ! Active state variable 
+      integer                :: X_Dy(MaxStateVar)  ! Active state variable
                                                    ! indices for daylight
-      integer                :: X_Tw(MaxStateVar)  ! Active state variable 
+      integer                :: X_Tw(MaxStateVar)  ! Active state variable
                                                    ! indices for twilight
-      integer                :: X_Ni(MaxStateVar)  ! Active state variable 
+      integer                :: X_Ni(MaxStateVar)  ! Active state variable
                                                    ! indices for night
-      integer                :: XI_Dy(MaxStateVar) ! Inactive state variable 
+      integer                :: XI_Dy(MaxStateVar) ! Inactive state variable
                                                    ! indices for daylight
-      integer                :: XI_Tw(MaxStateVar) ! Inactive state variable 
+      integer                :: XI_Tw(MaxStateVar) ! Inactive state variable
                                                    ! indices for twilight
-      integer                :: XI_Ni(MaxStateVar) ! Inactive state variable 
+      integer                :: XI_Ni(MaxStateVar) ! Inactive state variable
                                                    ! indices for night
       integer                :: MDAD_LW            ! Index of channel at (or
                                                    ! nearest to) 11 um used in

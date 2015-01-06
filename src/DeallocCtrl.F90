@@ -31,14 +31,13 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Dealloc_Ctrl(Ctrl, status)
+subroutine Dealloc_Ctrl(Ctrl)
 
    implicit none
 
    ! Declare arguments
 
    type(Ctrl_t), intent(inout) :: Ctrl
-   integer,      intent(inout) :: status
 
    deallocate(Ctrl%Ind%ViewIdx)
    deallocate(Ctrl%Ind%Y_ID)

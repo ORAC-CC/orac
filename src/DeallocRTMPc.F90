@@ -32,7 +32,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
+subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc)
 
    use Ctrl_def
 
@@ -42,7 +42,6 @@ subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
 
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(RTM_Pc_t), intent(inout) :: RTM_Pc
-   integer,        intent(inout) :: status
 
    ! Deallocate sizes of SW sub-structure arrays
 

@@ -155,6 +155,8 @@ subroutine Int_LUT_TauRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, status)
                                               ! interpolated to current viewing
                                               ! geometry
 
+   status = 0
+
    NChans = size(F,1)
 
    ! Construct the input Int_LUT_Common(): Function values at four LUT points

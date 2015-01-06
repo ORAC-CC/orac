@@ -49,6 +49,8 @@ subroutine Invert_Cholesky(A, D, n, Status)
 
    integer :: i
 
+   Status = 0
+
    D = A
 
    call Decompose_Cholesky(D, n, Status)

@@ -60,7 +60,9 @@ subroutine Zero_Diag(Ctrl, Diag, status)
 
    type(Ctrl_t), intent(in)    :: Ctrl
    type(Diag_t), intent(inout) :: Diag
-   integer,      intent(inout) :: status
+   integer,      intent(out)   :: status
+
+   status = 0
 
    ! Set all requested diagnostic values to zero.
    ! 1) Quality control flag:

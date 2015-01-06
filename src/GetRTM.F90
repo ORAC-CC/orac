@@ -71,8 +71,6 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    ! Declare local variables
 
-   character(180) :: message
-
    ! Set status to zero
 
    status = 0
@@ -85,44 +83,28 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    ! Longwave
    if (SPixel%Loc%Lat > RTM%Lw%Grid%MaxLat) then
-      status = GetRTMLwMaxLat
-      write(unit=message, fmt=*) &
-         'Get_RTM: Maximum LW RTM latitude exceeded by super pixel ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0,SPixel%Loc%Lat, RTM%Lw%Grid%MaxLat
-      write(*, *) &
-         'Get_RTM: Maximum LW RTM latitude exceeded by super pixel ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0,SPixel%Loc%Lat, RTM%Lw%Grid%MaxLat
-      call Write_log(Ctrl, trim(message), status)
+      write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM latitude exceeded by ' // &
+         'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
+         SPixel%Loc%Lat, RTM%Lw%Grid%MaxLat
+!        status = GetRTMLwMaxLat
    end if
    if (SPixel%Loc%Lat < RTM%Lw%Grid%MinLat) then
-      status = GetRTMLwMinLat
-      write(unit=message, fmt=*) &
-         'Get_RTM: Minimum LW RTM latitude exceeds super pixel latitude ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
-      write(*, fmt=*) &
-         'Get_RTM: Minimum LW RTM latitude exceeds super pixel latitude ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0,SPixel%Loc%Lat < RTM%Lw%Grid%MinLat
-      call Write_log(Ctrl, trim(message), status)
+      write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM latitude exceeds ', &
+         'super pixel latitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
+         SPixel%Loc%Lat, RTM%Lw%Grid%MinLat
+!        status = GetRTMLwMinLat
    end if
    if (SPixel%Loc%Lon > RTM%Lw%Grid%MaxLon) then
-      status = GetRTMLwMaxLon
-      write(unit=message, fmt=*) &
-         'Get_RTM: Maximum LW RTM longitude exceeded in super pixel ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
-      write(*, *) &
-         'Get_RTM: Maximum LW RTM longitude exceeded in super pixel ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%X0, SPixel%Loc%Y0
-      call Write_log(Ctrl, trim(message), status)
+      write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM longitude exceeded in ' // &
+         'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
+         SPixel%Loc%Lon, RTM%Lw%Grid%MaxLon
+!        status = GetRTMLwMaxLon
    end if
    if (SPixel%Loc%Lon < RTM%Lw%Grid%MinLon) then
-      status = GetRTMLwMinLon
-      write(unit=message, fmt=*) &
-         'Get_RTM: Minimum LW RTM longitude exceeds super pixel longitude ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
-      write(*, *) &
-         'Get_RTM: Minimum LW RTM longitude exceeds super pixel longitude ' &
-         // 'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
-      call Write_log(Ctrl, trim(message), status)
+      write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM longitude exceeds ', &
+         'super pixel longitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
+         SPixel%Loc%Lon, RTM%Lw%Grid%MinLon
+!        status = GetRTMLwMinLon
    end if
 
    ! Shortwave

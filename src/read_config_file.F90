@@ -67,7 +67,9 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    ! Read global attributes
    call nc_get_common_attributes(ncid, global_atts, source_atts)
 
-   if (nf90_close(ncid) /= NF90_NOERR) &
-        stop 'ERROR: read_config_file(): Error closing file.'
+   if (nf90_close(ncid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_config_file(): Error closing file.'
+      stop error_stop_code
+   end if
 
 end subroutine read_config_file

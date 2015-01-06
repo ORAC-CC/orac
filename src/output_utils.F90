@@ -30,7 +30,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
-     global_atts, source_atts, status)
+     global_atts, source_atts)
 
    use netcdf
 
@@ -51,14 +51,12 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    ! Output
    integer,                   intent(out)   :: ncid
    integer,                   intent(out)   :: dims_var(2)
-   integer,                   intent(out)   :: status
 
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
 
    ! Local
-   integer            :: ierr, xdim, ydim
-   character(len=128) :: temp_string
+   integer :: ierr, xdim, ydim
 
 
    !----------------------------------------------------------------------------
@@ -66,22 +64,21 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    !----------------------------------------------------------------------------
    ierr = nf90_create(path, NF90_CLOBBER, ncid)
    if (ierr .ne. NF90_NOERR) then
-      status = -1
-      write(*,*) 'ERROR: nf90_create(), filename = ', trim(path)
-      stop
+      write(*,*) 'ERROR: nf90_create(): filename = ', trim(path)
+      stop error_stop_code
    end if
 
    ! Define the 3 dimensions: time / lat / lon
    ierr = nf90_def_dim(ncid, 'across_track', nx, xdim)
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_def_dim(), dim_name = across_track, xdim = ', xdim
-      stop
+      write(*,*) 'ERROR: nf90_def_dim(): dim_name = across_track, xdim = ', xdim
+      stop error_stop_code
    end if
 
    ierr = nf90_def_dim(ncid, 'along_track', ny, ydim)
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_def_dim(), dim_name = along_track,  ydim = ', ydim
-      stop
+      write(*,*) 'ERROR: nf90_def_dim(): dim_name = along_track,  ydim = ', ydim
+      stop error_stop_code
    end if
 
 
@@ -95,9 +92,9 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    else if (type .eq. 2) then
       global_atts%title = 'ESA CCI Cloud Retrieval Products L2 Secondary File'
    else
-      write(*,*) 'ERROR: nf90_create(), invalid file type: ', type
-      stop
-   endif
+      write(*,*) 'ERROR: nf90_create(): invalid file type: ', type
+      stop error_stop_code
+   end if
 
    call nc_put_common_attributes(ncid, global_atts,source_atts)
 
@@ -108,7 +105,7 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    ierr = nf90_enddef(ncid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'
-      stop
+      stop error_stop_code
    end if
 
 

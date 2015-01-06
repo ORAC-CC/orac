@@ -46,6 +46,8 @@ subroutine Solve_Cholesky(A, b, x, n, Status)
 
    real, dimension(n,n) :: D
 
+   Status = 0
+
    D = A
 
    call Decompose_Cholesky(D, n, Status)

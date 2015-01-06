@@ -76,8 +76,6 @@ subroutine Get_Location(Ctrl, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   character(180) :: message
-
    ! Initialise
    status  = 0
 

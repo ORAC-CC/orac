@@ -111,7 +111,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: Pc
-   integer,          intent(inout) :: status
+   integer,          intent(out)   :: status
 
    ! Define local variables
 
@@ -143,7 +143,6 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    real    :: delta_Pc
    real    :: dB_dT(SPixel%Ind%Nthermal) ! Gradient of Planck function wrt Temp.
    integer :: ThF, ThL                   ! First, last thermal channel indices for RTM_Pc%LW arrays
-   character(ECPLogReclen) :: message
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
@@ -169,12 +168,11 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
-      status = IntTransErr ! Set status to indicate failure of interpolation
-      write(unit=message, fmt=*) 'ERROR: Interpol_Thermal(), Interpolation failure, ', &
-         'SPixel starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
-         SPixel%RTM%LW%P(1), SPixel%RTM%LW%P(SPixel%RTM%LW%Np), Pc
-      call Write_Log(Ctrl, trim(message), status) ! Write to log
-      stop
+      write(*, *) 'ERROR: Interpol_Thermal(): Interpolation failure, SPixel ' // &
+         'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
+         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
+      status = IntTransErr
+!     stop IntTransErr
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards
@@ -339,8 +337,8 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
            position='append', &
            iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-         call Write_Log(Ctrl, 'Interpol_Thermal_spline: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: Interpol_Thermal_spline(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          write(bkp_lun,'(/,a,/)')'Interpol_Thermal_spline:'
       end if

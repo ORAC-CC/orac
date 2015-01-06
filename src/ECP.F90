@@ -81,7 +81,7 @@
 !
 ! History:
 !     2nd Aug 2000, Andy Smith: Original version (in development)
-!    11th July 2001, Andy Smith:
+!    11th Jul 2001, Andy Smith:
 !       Preparing main program for integration with other ECP routines.
 !    15th Aug 2001, Andy Smith:
 !       First fully working version of ECP. Includes image segmentation.
@@ -187,7 +187,7 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file. Eliminate conf structure.
-!    2015/1/6 CP: bug fix removed status from primary and secondary def, prep and write
+!
 ! Bugs:
 !    None known.
 !
@@ -223,11 +223,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Local variable declarations
 
    implicit none
+
    type(global_attributes_s) :: global_atts
    type(source_attributes_s) :: source_atts
    type(CTRL_t)              :: Ctrl
    type(Data_t)              :: MSI_Data
-   type(Diag_t)              :: Diag       ! Diagnostic struct returned by Invert_Marquardt
+   type(Diag_t)              :: Diag ! Diagnostic struct returned by Invert_Marquardt
    type(RTM_t)               :: RTM
    type(RTM_Pc_t)            :: RTM_Pc
    type(SAD_Chan_t), allocatable, dimension(:) :: SAD_Chan
@@ -240,7 +241,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer             :: nargs
    character(len=FilenameLen) &
                        :: drifile
-   character(180)      :: message    ! Error message string returned by Read_Driver
    logical             :: verbose    ! Verbose print-out flag
    integer             :: log_lun    ! Logical Unit Number for log file
    integer             :: diag_lun   ! Logical unit number for diagnostics file
@@ -269,15 +269,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                          ! retrieval
    real                :: AvJ      = 0.0 ! Average cost per successful retrieval
 
-   logical             :: RTM_Pc_alloc  = .false. ! Indicates Alloc_RTM_Pc called
-                                                  ! and ran successfully.
-   logical             :: RTM_alloc     = .false. ! Indicates Read_RTM called and ran
-                                                  ! successfully, arrays are allocated.
-   logical             :: SAD_LUT_alloc = .false. ! Indicates Read_LUT called and
-                                                  ! ran successfully, arrays are allocated.
-   logical             :: SPixel_alloc  = .false. ! Indicates that Alloc_SPixel
-                                                  ! has been called and ran successfully.
-
    ! netcdf related variables:
    integer :: ncid_primary,ncid_secondary,dims_var(2)
 
@@ -295,7 +286,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    real(kind=sreal) :: dummyreal
 
    ! OpenMP related variables
-   integer :: nthreads,thread_id
+   integer :: n_threads,thread_num
 
    ! Some more variables for OpenMP implementation
    integer, allocatable, dimension(:) :: totpix_line,totmissed_line,totconv_line, &
@@ -340,12 +331,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 115 format(1x,'TIMING: Ratio cpu_secs/real_secs:',1x,d15.5)
 #endif
 
-   !----------------------------------------------------------------------------
-   ! Product generation section
-   !----------------------------------------------------------------------------
+   status = 0
 
    ! Temporary until this is made an argument (somehow)
-   verbose=.true.
+   verbose = .true.
+
+
+   !----------------------------------------------------------------------------
+   ! Program initialization section
+   !----------------------------------------------------------------------------
 
    ! Read Ctrl struct from driver file
    call Read_Driver(Ctrl, global_atts, source_atts, verbose)
@@ -365,216 +359,196 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    Ctrl%Ind%Ystart = 1
    Ctrl%Resoln%SegSize = Ctrl%Ind%YMax
 
-
+if (.false.) then
    ! Open the log file specified in Ctrl
    call find_lun(log_lun)
    open(unit=log_lun, file=Ctrl%FID%Log, status='replace', iostat=ios)
-   write(*,*) log_lun,ios,trim(Ctrl%FID%Log)
-
-   if (ios == 0) then
-      call Date_and_Time(date=date, time=time)
-      time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)
-      write(log_lun, *)' ORAC '
-      write(log_lun, *)' Start time: ', time_str
-!     write(log_lun, *)' Run ID: ',Ctrl%Run_ID
-   else
-      write(*,*)' Error opening log file'
-      write(*,*) Ctrl%FID%Log
-      stop
+   if (ios /= 0) then
+      write(*,*) 'ERROR: Error opening log file: ', Ctrl%FID%Log
+      stop error_stop_code
    end if
+   call Date_and_Time(date=date, time=time)
+   time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)
+   write(log_lun, *)' ORAC '
+   write(log_lun, *)' Run ID: ', Ctrl%Run_ID
+   write(log_lun, *)' Start time: ', time_str
    close(unit=log_lun)
 
-
+   ! Open the diagnostic file specified in Ctrl
+   call find_lun(diag_lun)
+   open(unit=diag_lun, file=Ctrl%FID%Diag, status='replace', &
+        form='Unformatted', iostat=ios)
+   if (ios /= 0) then
+      write(*,*) 'ERROR: Error opening diagnostics file: ', Ctrl%FID%Diag
+      stop error_stop_code
+   end if
+end if
 #ifdef BKP
    ! Clear the breakpoint file (if breakpoints required)
-   if (status == 0 .and. Ctrl%Bkpl > 0) then
+   if (Ctrl%Bkpl > 0) then
       call find_lun(bkp_lun)
       open(unit=bkp_lun, file=Ctrl%FID%Bkp, status='replace', iostat=ios)
-
-      if (ios == 0) then
-         write(bkp_lun, *)' ORAC breakpoint output'
-         write(bkp_lun, *)' Start time: ', time_str
-!        write(bkp_lun, *)' Run ID: ',Ctrl%Run_ID
-         write(bkp_lun, *)
-      else
-         status = BkpFileOpenErr
-         call Write_Log(Ctrl, 'Main: Error opening breakpoint file', status)
+      if (ios /= 0) then
+         write(*,*) 'ERROR: Read_SAD_LUT(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       end if
+      write(bkp_lun, *)' ORAC breakpoint output'
+      write(bkp_lun, *)' Run ID: ', Ctrl%Run_ID
+      write(bkp_lun, *)' Start time: ', time_str
+      write(bkp_lun, *)
       close(unit=bkp_lun)
    end if
 #endif
 
-   ! Open the output and diagnostic files
-   call find_lun(diag_lun)
-   open(unit=diag_lun, file=Ctrl%FID%Diag, form='Unformatted', &
-        status='replace', iostat=ios, err=999)
-   if (ios /= 0) then
-      write(*,*)' Error opening log file'
-      write(*,*) Ctrl%FID%Log
-      stop
-   end if
-
-
    ! Set the size of the SAD_Chan and Cloud Class arrays based on the Ctrl
    ! parameters and read the SAD values.
-   if (status == 0) then
-      allocate(SAD_Chan(Ctrl%Ind%Ny))
+   allocate(SAD_Chan(Ctrl%Ind%Ny))
 
-      call Read_SAD(Ctrl, SAD_Chan, SAD_LUT, status)
-      if (status == 0) SAD_LUT_Alloc = .true.
-      write(*,*) 'Reading SAD files done (status)',status
-   end if
+   write(*,*) 'Reading SAD files'
+   call Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
 
    ! Make read in rttov data in one go, no more segment reads
-   if (status == 0) then
-      call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
-           RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NPLAY, RTM%LW%NLWF, verbose)
+   call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
+        RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NPLAY, RTM%LW%NLWF, verbose)
 
-      call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
-           RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NPLAY, RTM%SW%NSWF, verbose)
+   call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
+        RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NPLAY, RTM%SW%NSWF, verbose)
 
-      ! Don't read the lowest (surface) level
-      RTM%LW%NP=RTM%LW%NPLAY
-      RTM%SW%NP=RTM%SW%NPLAY
+   ! Don't read the lowest (surface) level
+   RTM%LW%NP=RTM%LW%NPLAY
+   RTM%SW%NP=RTM%SW%NPLAY
 
-      call Read_LwRTM_nc(Ctrl, RTM, status)
-      call Read_SwRTM_nc(Ctrl, RTM, status)
-      if (status == 0) then
-         RTM_Alloc = .true.
-      end if
-   end if
+   call Read_LwRTM_nc(Ctrl, RTM, verbose)
+   call Read_SwRTM_nc(Ctrl, RTM, verbose)
+
 
    !----------------------------------------------------------------------------
    ! Product generation section
    !----------------------------------------------------------------------------
 
-   if (status == 0) then
+   ! Loop over required super pixel X0,Y0 coordinates
+   !
+   ! Determine start and stop values for the loop counters depending on whether
+   ! a "warm start" is required. Modify start and stop x values so that only
+   ! whole super-pixels are processed. A SPixel of size 3 with a left-hand
+   ! corner at 511 will go outside of an image of size 512. Also, if the
+   ! starting pixel is not a whole number of Super-Pixels from the first line
+   ! in the image data, some SPixels in the selected area will cross boundaries
+   ! between image segments.
 
-      ! Loop over required super pixel X0,Y0 coordinates
-      !
-      ! Determine start and stop values for the loop counters depending on whether
-      ! a "warm start" is required. Modify start and stop x values so that only
-      ! whole super-pixels are processed. A SPixel of size 3 with a left-hand
-      ! corner at 511 will go outside of an image of size 512. Also, if the
-      ! starting pixel is not a whole number of Super-Pixels from the first line
-      ! in the image data, some SPixels in the selected area will cross boundaries
-      ! between image segments.
+   if (Ctrl%Ind%Ws == 0) then
+      ixstart = Ctrl%Ind%X0
+      iystart = Ctrl%Ind%Y0
+   else
+      ! Warm start. Use Xstart, YStart
+      ixstart = Ctrl%Ind%Xstart
+      iystart = Ctrl%Ind%Ystart
+   end if
 
-      if (Ctrl%Ind%Ws == 0) then
-         ixstart = Ctrl%Ind%X0
-         iystart = Ctrl%Ind%Y0
+   ! Set the stop values
+   ixstop = Ctrl%Ind%X1
+   iystop = Ctrl%Ind%Y1
+
+   write(*,*) 'Start line: ', iystart
+   write(*,*) 'Stop line: ', iystop
+   write(*,*) 'Total number of lines: ', (iystop - iystart) + 1
+
+
+   SegSize = Ctrl%Resoln%SegSize
+   select case (mod(iystart,SegSize))
+   ! 0 = last row of segment; 1 = 1st row of segment
+   case (0, 1)
+      NSegs = iystart / SegSize
+   ! Mid-segment
+   case default
+      NSegs = (iystart / SegSize) + 1
+   end select
+
+
+   ! Read all the swath data
+   call Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+
+   xstep = 1
+   ystep = 1
+#ifdef USE_ADAPTIVE_PROCESSING
+   ! Adaptive processing:
+   lhres = .false. ! "high" resolution flag
+   if (index(trim(Ctrl%Inst%Name),'MODIS') .ge. 1) then
+
+      ! Set special range
+      range_lat(1) = 42.0
+      range_lat(2) = 53.0
+
+      range_lon(1) = 0.0
+      range_lon(2) = 18.0
+
+      ! Look if any pixel in current granule is in special range
+      lhres=any(MSI_Data%Location%Lat .ge. range_lat(1) .and. &
+                MSI_Data%Location%Lat .le. range_lat(2) .and. &
+                MSI_Data%Location%Lon .ge. range_lon(1) .and. &
+                MSI_Data%Location%Lon .le. range_lon(2))
+
+      ! If yes, do higher resolution processing there.
+      if (lhres) then
+         xstep = 1
+         ystep = 1
+      ! Otherwise process reduced amount of pixels to speed things up
       else
-         ! Warm start. Use Xstart, YStart
-         ixstart = Ctrl%Ind%Xstart
-         iystart = Ctrl%Ind%Ystart
+         xstep = 2
+         ystep = 2
       end if
-
-      ! Set the stop values
-      ixstop = Ctrl%Ind%X1
-      iystop = Ctrl%Ind%Y1
-
-      write(*,*) 'Start line: ', iystart
-      write(*,*) 'Stop line: ', iystop
-      write(*,*) 'Total number of lines: ', (iystop - iystart) + 1
-
-
-      SegSize = Ctrl%Resoln%SegSize
-      select case (mod(iystart,SegSize))
-      ! 0 = last row of segment; 1 = 1st row of segment
-      case (0, 1)
-         NSegs = iystart / SegSize
-      ! Mid-segment
-      case default
-         NSegs = (iystart / SegSize) + 1
-      end select
-
-
-      ! Read all the swath data
-      call Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+   else
+      lhres = .true.
 
       xstep = 1
       ystep = 1
-#ifdef USE_ADAPTIVE_PROCESSING
-      ! Adaptive processing:
-      lhres = .false. ! "high" resolution flag
-      if (index(trim(Ctrl%Inst%Name),'MODIS') .ge. 1) then
+   end if
 
-         ! Set special range
-         range_lat(1) = 42.0
-         range_lat(2) = 53.0
-
-         range_lon(1) = 0.0
-         range_lon(2) = 18.0
-
-         ! Look if any pixel in current granule is in special range
-         lhres=any(MSI_Data%Location%Lat .ge. range_lat(1) .and. &
-                   MSI_Data%Location%Lat .le. range_lat(2) .and. &
-                   MSI_Data%Location%Lon .ge. range_lon(1) .and. &
-                   MSI_Data%Location%Lon .le. range_lon(2))
-
-         ! If yes, do higher resolution processing there.
-         if (lhres) then
-            xstep = 1
-            ystep = 1
-         ! Otherwise process reduced amount of pixels to speed things up
-         else
-            xstep = 2
-            ystep = 2
-         end if
-      else
-         lhres = .true.
-
-         xstep = 1
-         ystep = 1
-      end if
-
-      write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
+   write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
 #endif
 
-      ! Open the netcdf output files
-      if (status == 0) then
-         write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
-         call nc_create(Ctrl%FID%L2_primary, ncid_primary, &
-            ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 1, &
-            global_atts, source_atts, status)
+   ! Open the netcdf output files
+   write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
+   call nc_create(Ctrl%FID%L2_primary, ncid_primary, &
+      ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 1, &
+      global_atts, source_atts)
 
-         write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
-         call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, &
-           ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 2, &
-           global_atts, source_atts, status)
+   write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
+   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, &
+     ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 2, &
+     global_atts, source_atts)
 
-         ! Allocate output arrays
-         call alloc_output_data_primary(ixstart,ixstop,iystart,iystop, &
-                                        Ctrl%Ind%NViews,Ctrl%Ind%Ny, output_data_1)
-         call alloc_output_data_secondary(ixstart,ixstop,iystart,iystop, &
-                                          Ctrl%Ind%Ny,MaxStateVar,lcovar, &
-                                          output_data_2)
-         ! Create NetCDF files and variables
-         call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1)
-         call def_vars_secondary(Ctrl, lcovar, ncid_secondary, dims_var, &
-                                 output_data_2)
-      end if
+   ! Allocate output arrays
+   call alloc_output_data_primary(ixstart,ixstop,iystart,iystop, &
+                                  Ctrl%Ind%NViews,Ctrl%Ind%Ny, output_data_1)
+   call alloc_output_data_secondary(ixstart,ixstop,iystart,iystop, &
+                                    Ctrl%Ind%Ny,MaxStateVar,lcovar, &
+                                    output_data_2)
+   ! Create NetCDF files and variables
+   call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1)
+   call def_vars_secondary(Ctrl, lcovar, ncid_secondary, dims_var, &
+                           output_data_2)
 
-      ! Set i, the counter for the image x dimension, for the first row processed.
-      i = ixstart
+   ! Set i, the counter for the image x dimension, for the first row processed.
+   i = ixstart
 
 
-      ! This is to make things easier for OpenMP
-      allocate(totpix_line(iystart:iystop))
-      totpix_line=0
-      allocate(totmissed_line(iystart:iystop))
-      totmissed_line=0
-      allocate(totconv_line(iystart:iystop))
-      totconv_line=0
-      allocate(totmaxj_line(iystart:iystop))
-      totmaxj_line=0
-      allocate(aviter_line(iystart:iystop))
-      aviter_line=0
-      allocate(avphch_line(iystart:iystop))
-      avphch_line=0
-      allocate(avj_line(iystart:iystop))
-      avj_line=0.0
+   ! This is to make things easier for OpenMP
+   allocate(totpix_line(iystart:iystop))
+   totpix_line=0
+   allocate(totmissed_line(iystart:iystop))
+   totmissed_line=0
+   allocate(totconv_line(iystart:iystop))
+   totconv_line=0
+   allocate(totmaxj_line(iystart:iystop))
+   totmaxj_line=0
+   allocate(aviter_line(iystart:iystop))
+   aviter_line=0
+   allocate(avphch_line(iystart:iystop))
+   avphch_line=0
+   allocate(avj_line(iystart:iystop))
+   avj_line=0.0
 
 #ifdef USE_TIMING
    m1=mclock()
@@ -589,86 +563,136 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
 #ifdef _OPENMP
-      ! Along track loop is parallelized with OpenMP
-      nthreads = omp_get_max_threads()
-      write(*,*) 'ORAC along-track loop now running on', nthreads, 'threads'
+   ! Along track loop is parallelized with OpenMP
+   n_threads = omp_get_max_threads()
+   write(*,*) 'ORAC along-track loop now running on', n_threads, 'threads'
 
-      ! Start OMP section by spawning the threads
-      !$OMP PARALLEL &
-      !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_id,RTM_Pc,SPixel,SPixel_Alloc,RTM_Pc_Alloc,Diag,conv,dummyreal) &
-      !$OMP FIRSTPRIVATE(status)
-      thread_id = omp_get_thread_num()
-      write(*,*) 'Thread ', thread_id+1, 'is active'
+   ! Start OMP section by spawning the threads
+   !$OMP PARALLEL &
+   !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_num,RTM_Pc,SPixel) &
+   !$OMP PRIVATE(Diag,conv,dummyreal) &
+   !$OMP FIRSTPRIVATE(status)
+
+   thread_num = omp_get_thread_num()
+   write(*,*) 'Thread ', thread_num+1, 'is active'
 #endif
 
-      !  Allocate sizes of SPixel sub-structure arrays
-      call Alloc_RTM_Pc(Ctrl, RTM_Pc, status)
-      if (status == 0) RTM_Pc_Alloc = .true.
-      call Alloc_SPixel(Ctrl, RTM, SPixel, status)
-      if (status == 0) SPixel_Alloc = .true.
+   !  Allocate sizes of SPixel sub-structure arrays
+   call Alloc_RTM_Pc(Ctrl, RTM_Pc)
+   call Alloc_SPixel(Ctrl, RTM, SPixel)
 
-      ! Set RTM pressure values in SPixel (will not change from here on)
-      SPixel%RTM%LW%Np = RTM%LW%Np
-      SPixel%RTM%SW%NP = RTM%SW%Np
+   ! Set RTM pressure values in SPixel (will not change from here on)
+   SPixel%RTM%LW%Np = RTM%LW%Np
+   SPixel%RTM%SW%NP = RTM%SW%Np
+
+   ! Initialise values required before main loop begins, e.g. first guess
+   ! phase which may be required for SDAD first guess/a priori setting in the
+   ! first SPixel when no retrieved data is available.
+   SPixel%XnSav = Ctrl%Xb
+   SPixel%SnSav = 0
+   do m=1,MaxStateVar
+      SPixel%SnSav(m,m) = Ctrl%Sx(m) ** 2
+   end do
+   SPixel%Loc%LastX0 = 1
+   SPixel%Loc%LastX0 = 1
+
+   ! Start OMP parallel loop for along track direction.
+   !$OMP DO SCHEDULE(GUIDED)
+   do j = iystart,iystop,ystep
+
+!     write(*,*) 'thread,iystart,iystop,iy: ', thread_num,iystart,iystop,j
+
+      ! Set the location of the pixel within the image (Y0) and within the
+      ! current image segment (YSeg0).
+      SPixel%Loc%Y0 = j
+
+      if (mod(SPixel%Loc%Y0, SegSize) == 0) then
+         SPixel%Loc%YSeg0 = SegSize
+      else
+         SPixel%Loc%YSeg0 = SPixel%Loc%Y0 - &
+            ((SPixel%Loc%Y0/SegSize) * SegSize)
+      end if
 
 
-      ! Initialise values required before main loop begins, e.g. first guess
-      ! phase which may be required for SDAD first guess/a priori setting in the
-      ! first SPixel when no retrieved data is available.
-      SPixel%XnSav = Ctrl%Xb
-      SPixel%SnSav = 0
-      do m=1,MaxStateVar
-         SPixel%SnSav(m,m) = Ctrl%Sx(m) ** 2
-      end do
-      SPixel%Loc%LastX0 = 1
-      SPixel%Loc%LastX0 = 1
+      ! The X loop is unbounded. This allows for the changing X limits required
+      ! on warm start: for the first row of SPixels processed the X range is
+      ! Ctrl%Ind%Xstart to ixstop; for the remainder it is X0 to ixstop (in
+      ! both cases the limits used are modified to whole numbers of SPixels).
+      do i = ixstart,ixstop,xstep
+         SPixel%Loc%X0 = i
 
-      ! Start OMP parallel loop for along track direction.
-      !$OMP DO SCHEDULE(GUIDED)
-      do j = iystart,iystop,ystep
+         Diag%Y0    = MissingXn
+         Diag%YmFit = MissingXn
+         Diag%AK    = sreal_fill_value
 
-        !write(*,*) 'thread,iystart,iystop,iy: ', thread_id,iystart,iystop,j
+!        TotPix = TotPix+1
+         TotPix_line(j) = TotPix_line(j)+1
 
-         ! Set the location of the pixel within the image (Y0) and within the
-         ! current image segment (YSeg0).
-         SPixel%Loc%Y0 = j
-
-         if (mod(SPixel%Loc%Y0, SegSize) == 0) then
-            SPixel%Loc%YSeg0 = SegSize
-         else
-            SPixel%Loc%YSeg0 = SPixel%Loc%Y0 - &
-               ((SPixel%Loc%Y0/SegSize) * SegSize)
+         ! Set up the super-pixel data values.
+         if (status == 0) then
+            call Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          end if
 
+         if (status == 0) then
 
-         ! The X loop is unbounded. This allows for the changing X limits required
-         ! on warm start: for the first row of SPixels processed the X range is
-         ! Ctrl%Ind%Xstart to ixstop; for the remainder it is X0 to ixstop (in
-         ! both cases the limits used are modified to whole numbers of SPixels).
-         do i = ixstart,ixstop,xstep
-            SPixel%Loc%X0 = i
+            ! If the super-pixel cannot be processed, zero the outputs and
+            ! diag struct.
 
-            Diag%Y0    = MissingXn
-            Diag%YmFit = MissingXn
-            Diag%AK    = sreal_fill_value
+            if (btest(SPixel%QC, SPixNoProc)) then
+!              TotMissed = TotMissed+1
+               Totmissed_line(j) = Totmissed_line(j)+1
 
-!           TotPix = TotPix+1
-            TotPix_line(j) = TotPix_line(j)+1
+               SPixel%Xn        = MissingXn
+               SPixel%Sn        = MissingSn
+               SPixel%CWP       = MissingXn
+               SPixel%CWP_error = MissingSn
 
-            ! Set up the super-pixel data values.
-            if (status == 0) then
-               call Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
-            end if
+               ! These are not filled as they are FM related products but
+               ! they are actually output so we fill them here for lack of
+               ! better place.
+               RTM_Pc%Hc        = MissingXn
+               RTM_Pc%dHc_dPc   = MissingXn
+               RTM_Pc%Tc        = MissingXn
+               RTM_Pc%dTc_dPc   = MissingXn
 
-            if (status == 0) then
+               call Zero_Diag(Ctrl, Diag, status)
+            else
+               Diag%AK = 0
 
-               ! If the super-pixel cannot be processed, zero the outputs and
-               ! diag struct.
+               ! No indication that the SPixel should not be processed, do the
+               ! inversion.
+               Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
+                                     RTM_Pc, Diag, status)
 
-               if (btest(SPixel%QC, SPixNoProc)) then
-!                 TotMissed = TotMissed+1
-                  Totmissed_line(j) = Totmissed_line(j)+1
+               ! Calculate the Cloud water path CWP
+               if (status == 0) then
+                  call Calc_CWP(Ctrl, SPixel)
+               end if
 
+               ! Set values required for overall statistics 1st bit test on QC
+               ! flag determines whether convergence occurred.
+               if (status == 0) then
+                  if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
+
+!                    TotConv = TotConv+1
+                     TotConv_line(j) = TotConv_line(j)+1
+!                    AvIter  = AvIter + Diag%Iterations
+                     AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
+                     if (Diag%PhaseChanges >= 0) then
+!                       AvPhCh = AvPhCh + Diag%PhaseChanges
+                        AvPhCh_line(j) = AvPhCh_line(j) + Diag%PhaseChanges
+                     else
+!                       AvPhCh = AvPhCh + Ctrl%InvPar%MaxPhase
+                        AvPhCh_line(j) = AvPhCh_line(j) + Ctrl%InvPar%MaxPhase
+                     end if
+!                    AvJ = AvJ + Diag%Jm + Diag%Ja
+                     AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
+                  end if
+                  if (btest(Diag%QCFlag,MaxStateVar+2)) then
+!                    TotMaxJ = TotMaxJ+1
+                     TotMaxJ_line(j) = TotMaxJ_line(j)+1
+                  end if
+               else
                   SPixel%Xn        = MissingXn
                   SPixel%Sn        = MissingSn
                   SPixel%CWP       = MissingXn
@@ -678,92 +702,40 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                   ! they are actually output so we fill them here for lack of
                   ! better place.
                   RTM_Pc%Hc        = MissingXn
-                  RTM_Pc%dHc_dPc   = MissingXn
+                  RTM_Pc%dHc_dPc   = MissingSn
                   RTM_Pc%Tc        = MissingXn
-                  RTM_Pc%dTc_dPc   = MissingXn
+                  RTM_Pc%dTc_dPc   = MissingSn
 
                   call Zero_Diag(Ctrl, Diag, status)
-               else
-                  Diag%AK = 0
-
-                  ! No indication that the SPixel should not be processed, do the
-                  ! inversion.
-                  Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
-                                        RTM_Pc, Diag, status)
-
-                  ! Calculate the Cloud water path CWP
-                  if (status == 0) then
-                     call Calc_CWP(Ctrl, SPixel, status)
-                  endif
-
-                  ! Set values required for overall statistics 1st bit test on QC
-                  ! flag determines whether convergence occurred.
-                  if (status == 0) then
-                     if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
-
-!                       TotConv = TotConv+1
-                        TotConv_line(j) = TotConv_line(j)+1
-!                       AvIter  = AvIter + Diag%Iterations
-                        AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
-                        if (Diag%PhaseChanges >= 0) then
-!                          AvPhCh = AvPhCh + Diag%PhaseChanges
-                           AvPhCh_line(j) = AvPhCh_line(j) + Diag%PhaseChanges
-                        else
-!                          AvPhCh = AvPhCh + Ctrl%InvPar%MaxPhase
-                           AvPhCh_line(j) = AvPhCh_line(j) + Ctrl%InvPar%MaxPhase
-                        end if
-!                       AvJ = AvJ + Diag%Jm + Diag%Ja
-                        AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
-                     end if
-                     if (btest(Diag%QCFlag,MaxStateVar+2)) then
-!                       TotMaxJ = TotMaxJ+1
-                        TotMaxJ_line(j) = TotMaxJ_line(j)+1
-                     end if
-                  else
-                     SPixel%Xn        = MissingXn
-                     SPixel%Sn        = MissingSn
-                     SPixel%CWP       = MissingXn
-                     SPixel%CWP_error = MissingSn
-
-                     ! These are not filled as they are FM related products but
-                     ! they are actually output so we fill them here for lack of
-                     ! better place.
-                     RTM_Pc%Hc        = MissingXn
-                     RTM_Pc%dHc_dPc   = MissingSn
-                     RTM_Pc%Tc        = MissingXn
-                     RTM_Pc%dTc_dPc   = MissingSn
-
-                     call Zero_Diag(Ctrl, Diag, status)
-                  end if
-               end if ! btest if closes
-
-               ! Write the outputs
-
-               conv=1
-               if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
-                  conv=0
                end if
+            end if ! btest if closes
 
-               ! Copy output to spixel_scan_out structures
-               call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
-                                    Diag, output_data_1)
+            ! Write the outputs
 
-               call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
-                                      output_data_2)
+            conv = 1
+            if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
+               conv = 0
+            end if
 
+            ! Copy output to spixel_scan_out structures
+            call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
+                                 Diag, output_data_1)
 
-            end if ! End of status check after Get_SPixel
+            call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
+                                   output_data_2)
 
-         end do ! End of super-pixel X loop
+         end if ! End of status check after Get_SPixel
 
-      end do ! End of super-pixel Y loop
+      end do ! End of super-pixel X loop
 
-      !$OMP END DO
+   end do ! End of super-pixel Y loop
 
-      if (SPixel_alloc) call Dealloc_SPixel(Ctrl, SPixel, status)
-      if (RTM_Pc_alloc) call Dealloc_RTM_Pc(Ctrl, RTM_Pc, status)
+   !$OMP END DO
 
-      !$OMP END PARALLEL
+   call Dealloc_SPixel(Ctrl, SPixel)
+   call Dealloc_RTM_Pc(Ctrl, RTM_Pc)
+
+   !$OMP END PARALLEL
 
 #ifdef USE_TIMING
    m2=mclock()
@@ -777,40 +749,32 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,115) cpu_secs
 #endif
 
-      status = 0
+   ! Write output from spixel_scan_out structures NetCDF files
+   call write_primary(Ctrl, ncid_primary, ixstart, ixstop, iystart, iystop, &
+                      output_data_1)
+   call write_secondary(Ctrl, lcovar, SPixel, ncid_secondary, ixstart, ixstop, &
+                        iystart, iystop, output_data_2)
 
-      if (status == 0) then
-         ! Write output from spixel_scan_out structures NetCDF files
-         call write_primary(Ctrl, ncid_primary, ixstart, ixstop, iystart, iystop, &
-                            output_data_1)
-         call write_secondary(Ctrl, lcovar, SPixel, ncid_secondary, ixstart, ixstop, &
-                              iystart, iystop, output_data_2)
-      end if
+   TotPix    = sum(totpix_line)
+   Totmissed = sum(totmissed_line)
+   Totconv   = sum(totconv_line)
+   aviter    = sum(aviter_line)
+   avphch    = sum(avphch_line)
+   avj       = sum(avj_line)
+   totmaxj   = sum(totmaxj_line)
 
-      if (status == 0) then
-         TotPix    = sum(totpix_line)
-         Totmissed = sum(totmissed_line)
-         Totconv   = sum(totconv_line)
-         aviter    = sum(aviter_line)
-         avphch    = sum(avphch_line)
-         avj       = sum(avj_line)
-         totmaxj   = sum(totmaxj_line)
-
-         write(*,*)' Total super-pixels processed          ',TotPix
-         write(*,*)' Total skipped due to 0 cloud or error ',TotMissed
-         write(*,*)' No. of retrievals converged           ',TotConv
-         if (TotConv > 0) then
-            write(*,*)' Avge no. of iter per conv.            ',&
-               float(AvIter)/float(TotConv)
-            write(*,*)' Avge no. of phase ch per conv.        ',&
-               float(AvPhCh)/float(TotConv)
-            write(*,*)' Avge cost per conv                    ',&
-               AvJ / float(TotConv)
-            write(*,*)' No. of retrieval costs > max          ',TotMaxJ
-         end if
-      end if
-
-   end if  ! End of status check at start of product generation section
+   write(*,*)' Total super-pixels processed          ',TotPix
+   write(*,*)' Total skipped due to 0 cloud or error ',TotMissed
+   write(*,*)' No. of retrievals converged           ',TotConv
+   if (TotConv > 0) then
+      write(*,*)' Avge no. of iter per conv.            ',&
+         float(AvIter)/float(TotConv)
+      write(*,*)' Avge no. of phase ch per conv.        ',&
+         float(AvPhCh)/float(TotConv)
+      write(*,*)' Avge cost per conv                    ',&
+         AvJ / float(TotConv)
+      write(*,*)' No. of retrieval costs > max          ',TotMaxJ
+   end if
 
 
    ! Deallocate some vectors for openMP
@@ -832,50 +796,32 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! allocatable arrays. Hence call a routine to dealloc the internal arrays
    ! before deallocating the array of structs.
 
-   if (allocated(SAD_Chan)) deallocate(SAD_Chan)
-!  if (allocated(SAD_CloudClass)) deallocate(SAD_CloudClass)
-   if (SAD_LUT_Alloc) call Dealloc_SAD_LUT(Ctrl, SAD_LUT, status)
-   if (RTM_alloc)     call Dealloc_RTM(Ctrl, RTM, status)
+   deallocate(SAD_Chan)
+   call Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
-   call Dealloc_Data(Ctrl, MSI_Data, status)
+   call Dealloc_RTM(Ctrl, RTM)
 
-   if (status == 0) then
-      call dealloc_output_data_primary(output_data_1)
-      call dealloc_output_data_secondary(output_data_2,lcovar)
-   end if
+   call Dealloc_Data(Ctrl, MSI_Data)
 
-   call Dealloc_Ctrl(Ctrl, status)
+   call dealloc_output_data_primary(output_data_1)
+   call dealloc_output_data_secondary(output_data_2,lcovar)
 
+   call Dealloc_Ctrl(Ctrl)
+if (.false.) then
    close(unit=diag_lun)
-
+end if
    ! Close netcdf output files
-   if (status == 0) then
-      if (nf90_close(ncid_primary) .ne. NF90_NOERR) then
-         status=PrimaryFileCloseErr
-
-         write(*,*) 'nc_close.F90: netcdf primary file close error:', status
-         call Write_Log(Ctrl,'nc_close.F90: netcdf primary file close error:', status)
-         stop
-      end if
-
-      if (nf90_close(ncid_secondary) .ne. NF90_NOERR) then
-         status=SecondaryFileCloseErr
-
-         write(*,*) 'nc_close.F90: netcdf secondary file close error:', status
-         call Write_Log(Ctrl,'nc_close.F90: netcdf secondary file close error:', status)
-         stop
-      end if
+   if (nf90_close(ncid_primary) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: Error closing primary output file'
+      stop PrimaryFileCloseErr
    end if
 
-999 if (ios /= 0) then
-       status = OutFileOpenErr
-       call Write_Log(Ctrl,'Error opening output or diagnostic file',status)
+   if (nf90_close(ncid_secondary) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: Error closing secondary output file'
+      stop SecondaryFileCloseErr
    end if
 
-
-   call Write_Log(Ctrl, 'ORAC ending', status)
-
-   write(*,*)'Ending with status ',status
+   write(*,*) 'ORAC is ending successfully'
 
 #ifdef USE_TIMING
    m3=mclock()

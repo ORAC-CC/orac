@@ -60,7 +60,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
+subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun)
 
    use Ctrl_def
    use Diag_def
@@ -75,7 +75,6 @@ subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
    type(SPixel_t), intent(in)  :: SPixel
    type(Diag_t),   intent(in)  :: Diag
    integer,        intent(in)  :: diag_lun
-   integer,        intent(out) :: status
 
    ! Local variables
 
@@ -180,8 +179,8 @@ subroutine Write_Diag(Ctrl, SPixel, Diag, diag_lun, status)
    !  Error handling
 
 999 if (ios /= 0) then
-      status = DiagFileWriteErr
-      call Write_Log(Ctrl, 'Error writing to diagnostic file',status)
+      write(*,*) 'ERROR: Write_Diag(): Error writing to diagnostic file'
+      stop error_stop_code
    end if
 
 end subroutine Write_Diag

@@ -50,9 +50,6 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
    integer,        intent(out)   :: status
 
    ! Define local variables
-#ifdef DEBUG
-    character(180) :: message
-#endif
 
    ! Initialise
    status = 0
@@ -73,9 +70,8 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
    if (SPixel%Surface%Land + SPixel%Surface%Sea > 1) then
       ! Write warning to log file that the surface pixel contains mixed surface
       ! types
-      write(unit=message, fmt=*) &
-         'Get_Surface: WARNING pixel contains mixed surface types'
-      call Write_log(Ctrl, trim(message), status)
+      write(*,*) 'WARNING: Get_LSF() pixel contains mixed surface types'
+      status = -1
    end if
 #endif
 

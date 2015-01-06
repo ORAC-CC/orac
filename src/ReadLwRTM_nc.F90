@@ -171,8 +171,11 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, verbose)
 
    ! Close PRTM input file
-   if (nf90_close(ncid) /= NF90_NOERR) &
-      stop 'ERROR: read_lwrtm_nc(): Error closing PRTM file.'
+   if (nf90_close(ncid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: Read_LwRTM_nc(): Error closing PRTM file: ', &
+                 Ctrl%FID%PRTM
+      stop error_stop_code
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -184,15 +187,21 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
-       nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
-      stop 'ERROR: read_lwrtm_nc(): Could not read global attributes.'
+       nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) then
+      write(*,*) 'ERROR: Read_LwRTM_nc(): Could not read global attributes: ', &
+                 Ctrl%FID%LWRTM
+      stop error_stop_code
+   end if
    if (sensor =='AATSR') then
       instname=trim(adjustl(sensor))
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
-   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) &
-      stop 'ERROR: read_lwrtm_nc(): Instrument in RTM header inconsistent'
+   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) then
+      write(*,*) 'ERROR: Read_LwRTM_nc(): Instrument in LWRTM header inconsistent: ', &
+                 trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%Inst%Name))
+      stop error_stop_code
+   end if
 
    allocate(ChanID(RTM%LW%NLWF))
 !  allocate(WvNumber(RTM%LW%NLWF))
@@ -202,7 +211,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 !  call nc_read_array(ncid, "lw_channel_wvl", WvNumber, verbose)
 
    if (verbose) write(*,*) &
-      'LW channel instrument ids for RTM in LW preprocessing file',ChanID
+      'LW channel instrument ids for RTM in LW preprocessing file: ',ChanID
 
    ! Check that required thermal channels are present
 
@@ -230,8 +239,11 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
       end do
    end do
 
-   if (chan_found /= Ctrl%Ind%NThermal) &
-      stop 'ERROR: read_lwrtm_nc(): required instrument channels not found'
+   if (chan_found /= Ctrl%Ind%NThermal) then
+      write(*,*) 'ERROR: Read_LwRTM_nc(): Required instrument channels not ' // &
+                 'found in: ', Ctrl%FID%LWRTM
+      stop error_stop_code
+   end if
 
    ! Allocate arrays
    allocate(RTM%LW%Ems(Ctrl%Ind%NThermal,RTM%LW%Grid%NLon,RTM%LW%Grid%NLat))
@@ -259,8 +271,11 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    if (allocated(index))    deallocate(index)
 
    ! Close LwRTM input file
-   if (nf90_close(ncid) /= NF90_NOERR) &
-      stop 'ERROR: read_lwrtm_nc(): Error closing file.'
+   if (nf90_close(ncid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: Read_LwRTM_nc(): Error closing LWRTM file: ', &
+                 Ctrl%FID%LWRTM
+      stop error_stop_code
+   end if
 
    ! Calculate grid parameters for use in Get_LwRTM
    ! Corners of the grid

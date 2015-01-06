@@ -100,7 +100,7 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
    type(SPixel_t), intent(in)    :: SPixel
    real,           intent(in)    :: Pc
    type(RTM_Pc_t), intent(inout) :: RTM_Pc
-   integer,        intent(inout) :: status
+   integer,        intent(out)   :: status
 
    ! Define local variables
 
@@ -115,7 +115,6 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
    real    :: delta_Tbc(SPixel%Ind%NSolar)
    real    :: d2Tac_dP2(SPixel%Ind%NSolar,SPixel%RTM%SW%Np)
    real    :: d2Tbc_dP2(SPixel%Ind%NSolar,SPixel%RTM%SW%Np)
-   character(ECPLogReclen) :: message
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
@@ -131,12 +130,11 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
-      status = IntTransErr ! Set status to indicate failure of interpolation
-      write(unit=message, fmt=*) 'ERROR: Interpol_Solar(), Interpolation failure, ', &
-         'SPixel starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
+      write(*, *) 'ERROR: Interpol_Solar_spline(): Interpolation failure, SPixel ' // &
+         'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
          SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
-      call Write_Log(Ctrl, trim(message), status) ! Write to log
-      stop
+      status = IntTransErr
+!     stop IntTransErr
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards
@@ -204,9 +202,8 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
            position='append', &
            iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-         call Write_Log(Ctrl, 'Interpol_Solar_spline: Error opening breakpoint file', &
-            status)
+         write(*,*) 'ERROR: Interpol_Solar_spline(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          write(bkp_lun,*)'Interpol_Solar_spline:'
       end if

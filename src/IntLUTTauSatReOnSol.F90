@@ -108,6 +108,8 @@ subroutine Int_LUT_TauSatReOnSol(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
                                               ! interpolated to current viewing
                                               ! geometry
 
+   status = 0
+
    NChans = size(F,1)
 
    ! Construct the input Int_LUT_Common(): Function values at four LUT points
@@ -133,7 +135,7 @@ subroutine Int_LUT_TauSatReOnSol(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
                        (GZero%dSaZSoZ(ii2,iCRP) * F(i,jj,GZero%iSaZSoZ1(ii2,iCRP),kk))
          end do
       end do
-   enddo
+   end do
 
    call Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
                        i_chan_to_ctrl_offset, i_chan_to_spixel_offset, status)

@@ -63,7 +63,8 @@
 !    30/07/2014, GM: Put the duplicate interpolation code into subroutines.
 !    19/08/2014, AP: Using the preprocessor's interpolation routines.
 !    28/09/2014, GM: Updated to conform with a new arrangement of dimensions.
-!    11/11/2014, CP: Updated to include boundary layer cth correction to temperature profile
+!    11/11/2014, CP: Updated to include boundary layer cth correction to
+!       temperature profile
 !
 ! Bugs:
 !    None known.

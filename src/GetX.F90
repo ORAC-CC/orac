@@ -119,6 +119,8 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    real    :: X      ! State variable value returned by X_MDAD
    real    :: Err    ! Error value returned by X_MDAD
 
+   status = 0
+
    SetErr = .false.
 
    ! Set a priori and associated error covariance, then set first guess.
@@ -205,8 +207,8 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
          case (SelmMeas)  ! MDAD method. Not supported for all variables.
             call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
             if (status .ne. 0) then
-               write(*,*) 'X_MDAD failed with status:',status
-               exit
+               write(*,*) 'ERROR: X_MDAD(): failed with status:',status
+               stop error_stop_code
             end if
             SPixel%X0(i) = X
          case (Sacura)    ! First guess is set using sacura

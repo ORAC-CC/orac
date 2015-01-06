@@ -33,14 +33,14 @@ subroutine X_AUX(SPixel, index, X, err, status)
 
 !  Declare arguments
 
-   integer        :: index
-   real           :: X
-   real           :: err
-   integer        :: status
+   integer :: index
+   real    :: X
+   real    :: err
+   integer :: status
 
 !  Declare local variables
 
-   character(180) :: message
+   status = 0
 
 !  Parameters supported are Tau, Pc and f.
 
@@ -66,13 +66,11 @@ subroutine X_AUX(SPixel, index, X, err, status)
 
       case (iTs)
 
-!     Write message to log if AUX method not supported for state variable
-
       case default
 
          status = XAUXMeth
-	 write(unit=message, fmt=*) 'X_AUX: Method not supported for state variable index: ', index
-         call Write_log(Ctrl, trim(message), status)
+         write(*, *) 'ERROR: X_AUX(): Method not supported for state ' \\ &
+                     'variable index: ', index
 
    end select
 

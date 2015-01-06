@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: 
+! Name:
 !    Read_Driver
 !
 ! Purpose:
@@ -20,7 +20,6 @@
 !    Name    Type    In/Out/Both Description
 !    Ctrl    Ctrl_t  out         Control struct defined in CTRL_def
 !    message string  inout       Error message returned to calling routine
-!    status  int     out         Status returned to calling function
 !
 ! Algorithm:
 !    N/A
@@ -95,7 +94,7 @@
 !-------------------------------------------------------------------------------
 module orac_io
 contains
-   
+
 subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
@@ -150,17 +149,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       ! Check drifile exists
       inquire(file=drifile, exist=file_exists)
       if (.not. file_exists) then
-         write(*,*)' Driver file pointed to by ORAC_DRIVER does not exist'
+         write(*,*)'ERROR: ReadDriver(): Driver file pointed to by ' // &
+                   'ORAC_DRIVER does not exist: ', drifile
          stop DriverFileNotFound
       end if
-      
+
       if (verbose) write(*,*) 'Driver file: ',trim(drifile)
-      
+
       ! Open the driver file
       call find_lun(dri_lun)
       open(unit=dri_lun, file=drifile, iostat=ios)
       if (ios /= 0) then
-         write(*,*)' Unable to open driver file: ',trim(drifile)
+         write(*,*)'ERROR: ReadDriver(): Unable to open driver file: ', &
+                   trim(drifile)
          stop DriverFileOpenErr
       end if
    end if
@@ -191,7 +192,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       write(*,*) 'Ctrl%out_Dir: ',trim(Ctrl%out_Dir)
       write(*,*) 'Ctrl%SAD_Dir: ',trim(Ctrl%SAD_Dir)
    end if
-   
+
    root_filename   = trim(input_path)//'/'//trim(input_filename)
    Ctrl%FID%MSI    = trim(root_filename)//'.msi.nc'
    Ctrl%FID%LWRTM  = trim(root_filename)//'.lwrtm.nc'
@@ -227,7 +228,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    if (sum(channel_proc_flag) < 1 .or. &
        sum(channel_proc_flag) > Ctrl%Ind%Navail .or. &
        any(channel_proc_flag /= 0 .and. channel_proc_flag /= 1)) then
-      write(*,*) 'ERROR: channel flag from driver wrong: ',channel_proc_flag
+      write(*,*) 'ERROR: ReadDriver(): channel flag from driver wrong: ', &
+                 channel_proc_flag
       stop DriverFileIncompat
    end if
    if (verbose) write(*,*) 'channel flag from driver: ',channel_proc_flag
@@ -290,6 +292,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    !----------------------------------------------------------------------------
    ! Set the rest of the Ctrl structure
    !----------------------------------------------------------------------------
+   Ctrl%Run_ID = 'none'
 
    outname=trim(scratch_dir)//'/'//trim(input_filename)//trim(Ctrl%CloudClass)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
@@ -434,7 +437,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%XB(IPc) = 900.
       Ctrl%XB(IFr) = 1.
       Ctrl%XB(ITs) = 300.0
-      
+
       Ctrl%X0(ITau) = 0.8
       Ctrl%X0(IRe) = 12.
       Ctrl%X0(IPc) = 700.
@@ -446,7 +449,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%XB(IPc) = 400.
       Ctrl%XB(IFr) = 1.
       Ctrl%XB(ITs) = 300.0
-      
+
       Ctrl%X0(ITau) = 0.8
       Ctrl%X0(IRe) = 30.
       Ctrl%X0(IPc) = 400.
@@ -458,7 +461,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%XB(IPc) = 1000.
       Ctrl%XB(IFr) = 1.
       Ctrl%XB(ITs) = 300.
-      
+
       Ctrl%X0(ITau) = 0.8
       Ctrl%X0(IRe) = 0.5
       Ctrl%X0(IPc) = 1000.
@@ -470,7 +473,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%XB(IPc) = 1000.
       Ctrl%XB(IFr) = 1.
       Ctrl%XB(ITs) = 300.
-      
+
       Ctrl%X0(ITau) = 0.1
       Ctrl%X0(IRe) = 1.8
       Ctrl%X0(IPc) = 1000.
@@ -482,7 +485,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%XB(IPc) = 1000.
       Ctrl%XB(IFr) = 1.
       Ctrl%XB(ITs) = 300.
-      
+
       Ctrl%X0(ITau) = 0.0
       Ctrl%X0(IRe) = 1.4
       Ctrl%X0(IPc) = 1000.
@@ -653,7 +656,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%QC%MaxS(IFr) = 0.2
    Ctrl%QC%MaxS(ITs) = 2.0
 
-   
+
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
@@ -804,7 +807,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          Ctrl%Ind%XI_Ni(i2) = i
       end if
    end do
-      
+
    !----------------------------------------------------------------------------
    ! Now do some checks
    !----------------------------------------------------------------------------
@@ -812,29 +815,29 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! and supported. Not all legal values are supported for all variables.
    ! N.B. not all supported methods can be used in all conditions and this is
    ! NOT CHECKED here.
-   
+
    do j=1,3 ! loop over day, twi, night values for FG
       do i=1, MaxStateVar
          select case (Ctrl%Fg(i,j))
          case (SelmCtrl)
             continue
-            
+
          case (SelmMeas)
             if (i == IRe .or. i == ITs) then
-               write(*,*) 'Read_Driver: MDAD method not supported ' // &
+               write(*,*) 'ERROR: Read_Driver(): MDAD method not supported ' // &
                     'for setting first guess Re, Ts'
                stop FGMethErr
             end if
-            
+
          case (SelmAux)
             if (i /= ITs) then
-               write(*,*) 'Read_Driver: AUX method ONLY supported ' // &
+               write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
                     'for setting first guess Ts'
                stop FGMethErr
             end if
-            
+
          case default
-            write(*,*) 'Read_Driver: Invalid method ', &
+            write(*,*) 'ERROR: Read_Driver(): Invalid method ', &
                  'for first-guess state variable ',i
             stop FGMethErr
          end select
@@ -848,24 +851,24 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          select case (Ctrl%Ap(i,j))
          case (SelmCtrl)
             continue
-            
+
          case (SelmMeas)
             if (i == IRe .or. i == ITs) then
-               write(*,*) 'Read_Driver: MDAD method not supported for ' //&
-                    'setting a priori Re, Ts'
+               write(*,*) 'ERROR: Read_Driver(): MDAD method not supported ' // &
+                    'for setting a priori Re, Ts'
                stop APMethErr
             end if
-            
+
          case (SelmAux)
             if (i /= ITs) then
-               write(*,*) 'Read_Driver: AUX method ONLY supported ' // &
+               write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
                     'for setting a priori Ts'
                stop APMethErr
             end if
-            
+
          case default
-            write(*,*) &
-                 'Read_Driver: Invalid method for a priori state variable ',i
+            write(*,*) 'ERROR: Read_Driver(): Invalid method for a priori ' // &
+                 'state variable ',i
             stop APMethErr
          end select
       end do
@@ -876,14 +879,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    case (SelmCtrl, SelmAux)
       continue
    case (SelmMeas)
-      write(*,*) 'Read_Driver: surface reflectance method not supported'
+      write(*,*) 'ERROR: Read_Driver(): surface reflectance method not supported'
       stop GetSurfaceMeth
    case default
-      write(*,*) 'Read_Driver: invalid surface reflectance method'
+      write(*,*) 'ERROR: Read_Driver(): invalid surface reflectance method'
       stop GetSurfaceMeth
    end select
 
-   
+
    ! Clean up
    if (drifile /= '-') then
       close(unit=dri_lun)

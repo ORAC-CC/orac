@@ -70,7 +70,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
-   integer            :: i, j
+   integer            :: i
    logical            :: verbose = .false.
 
 
@@ -79,7 +79,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    if (nf90_redef(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_redef()'
-      stop
+      stop error_stop_code
    end if
 
 
@@ -545,7 +545,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    if (nf90_enddef(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'
-      stop
+      stop error_stop_code
    end if
 
 end subroutine def_vars_secondary

@@ -105,11 +105,13 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
                                                   ! Error covariance in
                                                   ! measurements
    type(Diag_t),   intent(inout) :: Diag          ! Diagnostic structure
-   integer,        intent(inout) :: status
+   integer,        intent(out)   :: status
 
    ! Local variables
 
    integer :: m
+
+   status = 0
 
    ! Set diagnostic values
    ! 1) Quality control flag: bits 1-5 represent state variables (bit set to 1

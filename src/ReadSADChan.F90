@@ -16,7 +16,6 @@
 !    Name      Type   In/Out/Both     Description
 !    Ctrl      struct In              Control structure defined in Ctrl_def
 !    SAD_Chan  array of structs (out) Channel description info.
-!    status    int    out             Indicates success/failure of subroutine.
 !
 ! Algorithm:
 !    for each channel described in the Ctrl struct
@@ -94,7 +93,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
+subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    use Ctrl_def
    use ECP_Constants
@@ -105,7 +104,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
 
    type(Ctrl_t),                   intent(inout) :: Ctrl
    type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
-   integer,                        intent(inout) :: status
 
    ! Local variables
 
@@ -116,30 +114,27 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
    integer                :: ios              ! I/O status from file open/read
    integer                :: ThermalFirstSet  ! ThermalFirst setting flag
    character(FilenameLen) :: filename         ! File name as read from chan desc file
-   character(2048)        :: message          ! Error message to pass to Write_Log
    integer                :: NSolar, NThermal ! Local values used to check
                                               ! whether selected channels match
 					      ! totals indicated in driver file.
    logical                :: file_exists
 
-   status = 0
    ThermalFirstSet = 0 ! ThermalFirst not set
-   NThermal = 0
-   NSolar = 0
-   Ctrl%Sy = 0.
+   NThermal        = 0
+   NSolar          = 0
+   Ctrl%Sy         = 0.
 
-   write(*,*)'Number of channels used, Ctrl%Ind%Ny: ',Ctrl%Ind%Ny
+   write(*,*) 'Number of channels used, Ctrl%Ind%Ny: ',Ctrl%Ind%Ny
 
    call Find_LUN(c_lun)
 
    ! Loop over channels
    do i=1, Ctrl%Ind%Ny
-      ! Drop out of loop if an open or write error occurred last time round
-      if (status /= 0) exit
 
       ! Generate channel file name from Ctrl struct info. This sets the channel
       ! to be used in instrument notation for reading from SAD.
       write(*,*) 'Ctrl%Inst%Name(1:5): ', trim(Ctrl%Inst%Name(1:5))
+
       if (Ctrl%Ind%Y_Id(i) < 10) then
          if (trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
             write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
@@ -166,141 +161,131 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
 
       write(*,*) 'chan_num read in: ', trim(adjustl(chan_num))
 
-      chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) &
-         & // '_' // trim(chan_num) // '.sad'
-      write(*,*)'chan_file read in: ',trim(adjustl(chan_file))
-      ! Open the file
+      chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // &
+         '_' // trim(chan_num) // '.sad'
+      write(*,*) 'chan_file read in: ',trim(adjustl(chan_file))
+
+      ! Check if file exists
       inquire(file=chan_file, exist=file_exists)
       if (.not. file_exists) then
-         write(message, *) 'Read_Chan: SAD file not found.'
-         call Write_Log(Ctrl, trim(message), status)
-         ios=-1
-      else
-         open(unit=c_lun, file=chan_file, iostat=ios)
+         write(*,*) 'ERROR: Read_SAD_Chan(): SAD channel file not found.', &
+                    trim(chan_file)
+         stop error_stop_code
       end if
+
+      ! Open the file
+      open(unit=c_lun, file=chan_file, iostat=ios)
       if (ios /= 0) then
-         status = ChanFileOpenErr
-         write(message, *) 'Read_Chan: Error opening file ', trim(chan_file)
-         call Write_Log(Ctrl, trim(message), status)
-      else
-         ! Read the file contents into the SAD_Chan(i) structure
-         read(c_lun, *, err=999, iostat=ios) filename
-         read(c_lun, '(A10)', err=999, iostat=ios) SAD_Chan(i)%Desc
-         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%FileID
-
-         ! Check FileID vs. expected value (i.e. value in filename vs. value in
-         ! file)
-         if (trim(SAD_Chan(i)%FileID) /= trim(chan_num)) then
-            status = ChanFileDataErr
-            write(message, *) &
-               'Read_Chan: channel ID inconsistent with file name in ', &
-               chan_file
-            call Write_Log(Ctrl, trim(message), status)
-         end if
-
-         if (status == 0) then
-            read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%WvN
-            read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%Flag
-
-            write(*,*)'Specs (wavenumber and t-flag):', &
-               SAD_Chan(i)%WvN,SAD_Chan(i)%Thermal%Flag
-
-            if (SAD_Chan(i)%Thermal%Flag > 0) then
-               if (ThermalFirstSet == 0) then
-                  Ctrl%Ind%ThermalFirst = i
-                  ThermalFirstSet = 1 ! ThermalFirst set
-               end if
-
-               NThermal = NThermal + 1
-
-
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B1
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%B2
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T1
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%T2
-               read(c_lun, *, err=999, iostat=ios) &
-                  (SAD_Chan(i)%Thermal%NeHomog(j), j=1,MaxCloudType)
-               read(c_lun, *, err=999, iostat=ios) &
-                  (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
-
-               do j=1,MaxCloudType
-	          SAD_Chan(i)%Thermal%NeHomog(j) = &
-                     SAD_Chan(i)%Thermal%NeHomog(j) ** 2
-                  SAD_Chan(i)%Thermal%NeCoreg(j) = &
-                     SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
-               end do
-
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%NEBT
-               SAD_Chan(i)%Thermal%NEBT = SAD_Chan(i)%Thermal%NEBT ** 2
-            end if
-
-            read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Flag
-            write(*,*)'Specs (s-flag): ',SAD_Chan(i)%Solar%Flag
-            if (SAD_Chan(i)%Solar%Flag > 0) then
-               Ctrl%Ind%SolarLast = i
-               NSolar = NSolar + 1
-
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
-                  SAD_Chan(i)%Solar%F1
-               read(c_lun, *, err=999, iostat=ios) &
-                  (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
-               read(c_lun, *, err=999, iostat=ios) &
-                  (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
-
-               do j=1,MaxCloudType
-                  SAD_Chan(i)%Solar%NeHomog(j) = &
-                     (SAD_Chan(i)%Solar%NeHomog(j) / 100.0) ** 2
-
-                  SAD_Chan(i)%Solar%NeCoreg(j) = &
-                     (SAD_Chan(i)%Solar%NeCoreg(j) / 100.0) ** 2
-               end do
-
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%NedR
-               SAD_Chan(i)%Solar%NedR = &
-                  (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2
-
-               ! Convert Rs from a percentage to a fraction
-               read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Rs
-               SAD_Chan(i)%Solar%Rs = SAD_Chan(i)%Solar%Rs / 100.0
-
-            end if
-
-            ! Set the measurement error covariance for the channel
-            ! Thermal/mixed use NEBT, Solar use NEdR
-            if (SAD_Chan(i)%Thermal%Flag > 0) then
-               Ctrl%Sy(i,i) = SAD_Chan(i)%Thermal%NEBT
-            else
-               Ctrl%Sy(i,i) = SAD_Chan(i)%Solar%NedR
-            end if
-         end if
-
-999      if (ios /= 0) then
-            status = ChanFileReadErr
-            write(message, *) &
-               'Read_Chan: Error reading channel description file ', &
-               chan_file
-            call Write_Log(Ctrl, trim(message), status)
-         end if
-
-         close(c_lun)
+         write(*,*) 'ERROR: Read_SAD_Chan(): Error opening SAD channel file: ', &
+                    trim(chan_file)
+         stop ChanFileOpenErr
       end if
+
+      ! Read the file contents into the SAD_Chan(i) structure
+      read(c_lun, *, err=999, iostat=ios) filename
+      read(c_lun, '(A10)', err=999, iostat=ios) SAD_Chan(i)%Desc
+      read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%FileID
+
+      ! Check FileID vs. expected value (i.e. value in filename vs. value in ! file)
+      if (trim(SAD_Chan(i)%FileID) /= trim(chan_num)) then
+         write(*,*) 'ERROR: Read_SAD_Chan(): channel ID inconsistent with ' // &
+                    'file name in: ', trim(chan_file)
+         stop ChanFileDataErr
+      end if
+
+      read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%WvN
+      read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%Flag
+      write(*,*) 'Specs (wavenumber and t-flag):', SAD_Chan(i)%WvN, &
+                 SAD_Chan(i)%Thermal%Flag
+
+      if (SAD_Chan(i)%Thermal%Flag > 0) then
+         if (ThermalFirstSet == 0) then
+            Ctrl%Ind%ThermalFirst = i
+            ThermalFirstSet = 1 ! ThermalFirst set
+         end if
+
+         NThermal = NThermal + 1
+
+
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%B1
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%B2
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%T1
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%T2
+         read(c_lun, *, err=999, iostat=ios) &
+            (SAD_Chan(i)%Thermal%NeHomog(j), j=1,MaxCloudType)
+         read(c_lun, *, err=999, iostat=ios) &
+            (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
+
+         do j=1,MaxCloudType
+	    SAD_Chan(i)%Thermal%NeHomog(j) = &
+               SAD_Chan(i)%Thermal%NeHomog(j) ** 2
+            SAD_Chan(i)%Thermal%NeCoreg(j) = &
+               SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
+         end do
+
+         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%NEBT
+         SAD_Chan(i)%Thermal%NEBT = SAD_Chan(i)%Thermal%NEBT ** 2
+      end if
+
+      read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Flag
+      write(*,*) 'Specs (s-flag): ',SAD_Chan(i)%Solar%Flag
+
+      if (SAD_Chan(i)%Solar%Flag > 0) then
+         Ctrl%Ind%SolarLast = i
+         NSolar = NSolar + 1
+
+         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
+            SAD_Chan(i)%Solar%F1
+         read(c_lun, *, err=999, iostat=ios) &
+            (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
+         read(c_lun, *, err=999, iostat=ios) &
+            (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
+
+         do j=1,MaxCloudType
+            SAD_Chan(i)%Solar%NeHomog(j) = &
+               (SAD_Chan(i)%Solar%NeHomog(j) / 100.0) ** 2
+
+            SAD_Chan(i)%Solar%NeCoreg(j) = &
+               (SAD_Chan(i)%Solar%NeCoreg(j) / 100.0) ** 2
+         end do
+
+         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%NedR
+         SAD_Chan(i)%Solar%NedR = &
+            (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2
+
+         ! Convert Rs from a percentage to a fraction
+         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Rs
+         SAD_Chan(i)%Solar%Rs = SAD_Chan(i)%Solar%Rs / 100.0
+      end if
+
+      ! Set the measurement error covariance for the channel
+      ! Thermal/mixed use NEBT, Solar use NEdR
+      if (SAD_Chan(i)%Thermal%Flag > 0) then
+         Ctrl%Sy(i,i) = SAD_Chan(i)%Thermal%NEBT
+      else
+         Ctrl%Sy(i,i) = SAD_Chan(i)%Solar%NedR
+      end if
+
+999   if (ios /= 0) then
+         write(*,*) 'ERROR: Read_SAD_Chan(): Error reading channel ' // &
+                    'description file: ', trim(chan_file)
+         stop ChanFileReadErr
+      end if
+
+      close(c_lun)
    end do
 
    ! Check the NSolar and NThermal totals vs. the driver file values
-   write(*,*)'NSolar,Ctrl%Ind%NSolar: ',NSolar,Ctrl%Ind%NSolar
+   write(*,*) 'NSolar,Ctrl%Ind%NSolar: ',NSolar,Ctrl%Ind%NSolar
    if (NSolar /= Ctrl%Ind%NSolar) then
-      status = DriverFileDataErr
-      call Write_Log(Ctrl, &
-         'Read_Chan: Error in NSolar value in driver file', status)
-      stop
+      write(*,*) 'ERROR: Read_SAD_Chan(): Error in NSolar value in driver file'
+      stop DriverFileDataErr
    end if
 
-   write(*,*)'NThermal,Ctrl%Ind%NThermal: ',NThermal,Ctrl%Ind%NThermal
+   write(*,*) 'NThermal,Ctrl%Ind%NThermal: ',NThermal,Ctrl%Ind%NThermal
    if (NThermal /= Ctrl%Ind%NThermal) then
-      status = DriverFileDataErr
-      call Write_Log(Ctrl, &
-         'Read_Chan: Error in NThermal value in driver file', status)
-      stop
+      write(*,*) 'ERROR: Read_SAD_Chan(): Error in NThermal value in driver file'
+      stop DriverFileDataErr
    end if
 
    ! If no thermal channels are selected, ThermalFirst is 0. However, some solar
@@ -315,7 +300,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan, status)
    Ctrl%Ind%ThermalLast = Ctrl%Ind%Ny
 
    write(*,*) 'First/Last channels wrt number of channels used in '// &
-      & 'successive order (aka stored in MSI array)'
+              'successive order (aka stored in MSI array)'
    write(*,*) 'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
    write(*,*) 'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
 

@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!   Calc CWP
+!   Calc_CWP
 !
 ! Description:
 !    This routine calculates the Cloud water path and the associated error on
@@ -32,7 +32,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Calc_CWP(Ctrl, SPixel, status)
+subroutine Calc_CWP(Ctrl, SPixel)
 
    ! Modules used by this program.
    use CTRL_def
@@ -44,10 +44,8 @@ subroutine Calc_CWP(Ctrl, SPixel, status)
    ! Argument declarations
    type(CTRL_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   integer,        intent(inout) :: status
 
    ! Local variable declarations
-   integer :: ios = 0.        ! I/O status value from file operations
    real    :: rho             ! liquid or water density
    real    :: fac             ! CWP factor
    real    :: s_cot_cre       ! co-variance cot, effective radius (from
@@ -90,11 +88,6 @@ subroutine Calc_CWP(Ctrl, SPixel, status)
       SPixel%cwp_error=SPixel%Xn(iRe)*SPixel%Xn(iRe)*s_cot+ &
                        tenpcot*tenpcot*SPixel%Sn(iRe,iRe)+ &
                        2.* tenpcot*SPixel%Xn(iRe)*s_cot_cre
-
-      if (ios /= 0) then
-         status = CWP_Calcerror
-         call Write_Log(Ctrl,'Error calculating CWP',status)
-      end if
  end if
 
 end subroutine Calc_CWP

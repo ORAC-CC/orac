@@ -75,7 +75,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
    character(len=512) :: input_dummy3
-   integer            :: i, j
+   integer            :: i
    integer            :: iviews
    logical            :: verbose = .false.
 
@@ -85,7 +85,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    if (nf90_redef(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_redef()'
-      stop
+      stop error_stop_code
    end if
 
 
@@ -739,7 +739,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            valid_min     = output_data%lusflag_vmin, &
            valid_max     = output_data%lusflag_vmax, &
            flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, &
-           &12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, 20b, 21b, 22b, 23b, 24b', &
+              & 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, 20b, 21b, 22b, 23b, 24b', &
            flag_meanings = 'see usgs.gov')
 
    !----------------------------------------------------------------------------
@@ -814,7 +814,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    if (nf90_enddef(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_enddef()'
-      stop
+      stop error_stop_code
    end if
 
 end subroutine def_vars_primary

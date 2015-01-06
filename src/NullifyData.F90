@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name:
 !    Nullify_Data
 !
@@ -12,7 +13,7 @@
 !    Name Type Description
 !
 ! History:
-!    24th Oct 2001, Greg McGarragh:Original version
+!    10th Sep 2014, Greg McGarragh: Original version
 !
 ! Bugs:
 !    None known.
@@ -38,7 +39,7 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
       nullify(MSI_Data%rho_0d)
       nullify(MSI_Data%rho_dv)
       nullify(MSI_Data%rho_dd)
-   endif
+   end if
 
    nullify(MSI_Data%CloudFlags)
 

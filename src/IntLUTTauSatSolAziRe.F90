@@ -136,6 +136,8 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
                                               ! interpolated to current viewing
                                               ! geometry
 
+   status = 0
+
    NChans = size(F,1)
 
    ! Construct the input Int_LUT_Common(): Function values at four LUT points

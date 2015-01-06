@@ -20,7 +20,6 @@
 !                                       of this struct is populated by this
 !                                       routine, and is overwritten on
 !                                       successive calls.
-!    status   integer       Out         Error status
 !
 ! Algorithm:
 !
@@ -157,7 +156,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
                      n_vis_bad_tau=n_vis_bad_tau+1
                      i_missing_vis_tau=ic
                      MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) = MissingXn
-                  endif
+                  end if
                end if
             end do
 

@@ -207,7 +207,7 @@
 !    17th Jun 2014, Caroline Poulsen: modified code so retrieval performed if a
 !       single ir channel is missing
 !    25th Jul 2014, Adam Povey: Tidying code with check_value subroutine.
-!       Fixing bug that meant SPixAll wasn't necessarily set if pixel failed.
+!       Fixing bug that meant SPixal wasn't necessarily set if pixel failed.
 !     1st Aug 2014, Greg McGarragh: Checks for missing data are already
 !       performed when the illumination condition is chosen and the result of
 !       the check is defined by the illumination condition so the checks in
@@ -248,8 +248,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    type(SPixel_t),      intent(inout) :: SPixel
    integer,             intent(out)   :: status
 
-   !#define DEBUG
-
    ! Define local variables
 
    integer           :: i, j
@@ -261,12 +259,9 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    integer :: ios       ! I/O status for breakpoint file
    integer :: StartChan ! First valid channel for pixel, used in breakpoints.
 #endif
-#ifdef DEBUG
-   character(180)                :: message
-#endif
 
    ! Set status to zero
-   stat = 0
+   stat   = 0
    status = 0
 
    ! Initialise Mask
@@ -354,9 +349,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       SPixel%QC = ibset(SPixel%QC, SPixAll)
       stat = SPixelInvalid ! pixel is invalid
 #ifdef DEBUG
-      write(unit=message, fmt=*) &
-            'Get_SPixel: NMask zero in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0
-      call Write_log(Ctrl, trim(message), stat)
+      write(*, *) 'WARNING: Get_SPixel(): NMask zero in pixel at: ', &
+                  SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
 
    else
@@ -375,19 +369,17 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          SPixel%QC = ibset(SPixel%QC, SPixNoCloud)
          stat = SPixelCloudFrac
 #ifdef DEBUG
-         write(unit=message, fmt=*) &
-              'Get_SPixel: zero cloud fraction in super pixel starting at:' &
-              , SPixel%Loc%X0, SPixel%Loc%Y0
-         call Write_log(Ctrl, trim(message), stat)
+         write(*, *) 'WARNING: Get_SPixel(): Zero cloud fraction in super ' // &
+                     'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
       else
          ! Call 'Get_' subroutines. Use of stat here assumes that no subordinate
-         ! routine returns a non-zero status value unless it is to flag a super-
-         ! pixel data problem.
+         ! routine returns a non-zero status value unless it is to flag a
+         ! super-pixel data problem.
          if (stat == 0) then
             call Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-!              write(*,*) 'WARNING: Get_Illum', stat
+!              write(*,*) 'WARNING: Get_Illum()', stat
                SPixel%QC = ibset(SPixel%QC, SPixillum)
             end if
          end if
@@ -395,7 +387,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (stat == 0) then
             call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_Geometry', stat
+!              write(*,*)  'WARNING: Get_Geometry()', stat
                SPixel%QC = ibset(SPixel%QC, SPixGeom)
             end if
          end if
@@ -403,7 +395,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (stat == 0) then
             call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
             if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_RTM', stat
+!              write(*,*)  'WARNING: Get_RTM()', stat
                SPixel%QC = ibset(SPixel%QC, SPixRTM)
             end if
          end if
@@ -411,7 +403,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (stat == 0) then
             call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_Measurements', stat
+!              write(*,*)  'WARNING: Get_Measurements()', stat
                SPixel%QC = ibset(SPixel%QC, SPixMeas)
             end if
          end if
@@ -420,7 +412,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (stat == 0 .and. SPixel%Ind%NSolar /= 0) then
             call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_Surface', stat
+!              write(*,*)  'WARNING: Get_Surface()', stat
                SPixel%QC = ibset(SPixel%QC, SPixSurf)
             else
                do i=1,Ctrl%Ind%NSolar
@@ -430,7 +422,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
                    if (Ctrl%RS%use_full_brdf) then
                       SPixel%Rs2(i,:) = SPixel%Rs2(i,:) &
                          / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
-                   endif
+                   end if
                end do
             end if
          end if
@@ -438,14 +430,14 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (stat == 0 .and. SPixel%Ind%NSolar == 0) then
             call Get_LSF(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
-!              write(*,*) 'WARNING: Get_LSF', stat
+!              write(*,*) 'WARNING: Get_LSF()', stat
             end if
          end if
 
          if (stat == 0) then
             call Get_X(Ctrl, SAD_Chan, SPixel, stat)
             if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_X', stat
+!              write(*,*)  'WARNING: Get_X()', stat
                SPixel%QC = ibset(SPixel%QC, SPixFGAP)
             end if
          end if
@@ -503,11 +495,10 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       end if ! End of stat check before solar channel actions
    end if ! End of "NMask 0" check
 
-   ! If stat indicates a "super-pixel fatal" condition set the quality control
-   ! flag bit to indicate no processing.
+   ! If stat indicates a "super-pixel fatal" condition set the quality
+   ! control flag bit to indicate no processing.
 
    if (stat /= 0) SPixel%QC = ibset(SPixel%QC, SPixNoProc)
-
 
 
    ! If the super-pixel will not be processed, zero the first guess and a priori
@@ -530,8 +521,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
            position='append', &
            iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-         call Write_Log(Ctrl, 'Get_SPixel: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: Get_SPixel(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          write(bkp_lun,'(/,a)')'Get_SPixel:'
       end if

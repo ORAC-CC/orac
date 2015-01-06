@@ -166,9 +166,6 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    integer        :: i,ii,j,jj,intflag
 !  integer        :: qc1,qc2 ! N.B. qc vars are set but not used
    real           :: solar_factor
-#ifdef DEBUG
-   character(180) :: message
-#endif
 
    ! Initialise output
    status               = 0
@@ -298,7 +295,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                                       Ctrl%Ind%YSolar(i)) / solar_factor
                SPixel_b2(i,IRho_DD) = MSI_Data%rho_dd(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                                       Ctrl%Ind%YSolar(i)) / solar_factor
-            endif
+            end if
 
             ! If sea and then sun glint replace by Ctrl value, otherwise if land,
             ! check for missing values and replace by Ctrl value
@@ -312,13 +309,11 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
             if (SPixel%Surface%Flags == 0) then ! sea
                if (SPixel_b(i) .ge. 1.0) then
-                  status = SPixelSurfglint
 #ifdef DEBUG
-                  write(unit=message, fmt=*) &
-                  'Get_Surface: Sunglint region predicted over ocean in pixel at: ', &
-                  SPixel%Loc%X0, SPixel%Loc%Y0
-                  call Write_log(Ctrl, trim(message), status)
+                  write(*, *) 'WARNING: Get_Surface(): Sunglint region predicted ' // &
+                              'over ocean in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
+                  status = SPixelSurfglint
                end if
 
             else if (SPixel_b(i) == 0.0) then ! missing land
@@ -408,16 +403,11 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       end if
    end if
 
-#ifdef DEBUG
    if (SPixel%Surface%Land + SPixel%Surface%Sea > 1) then
-      ! Write warning to log file that the surface pixel contains mixed surface
-      ! types
-
-      write(unit=message, fmt=*) &
-          'Get_Surface: WARNING pixel contains mixed surface types'
-      call Write_log(Ctrl, trim(message), status)
-
-   end if
+#ifdef DEBUG
+      write(*, *) 'WARNING: Get_Surface(): pixel contains mixed surface types'
 #endif
+      status = -1
+   end if
 
 end subroutine Get_Surface

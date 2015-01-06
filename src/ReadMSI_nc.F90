@@ -22,7 +22,6 @@
 !                                       by this routine: solar constant is
 !                                       modified from annual average to value
 !                                       for the day of the MSI data.
-!    status   int           Out         Error status
 !
 ! Algorithm:
 !    Ff (MSI files are not yet open)
@@ -41,9 +40,6 @@
 !          Read MSI array of size defined by Ctrl structure
 !          If read error
 !             Write error message to log file
-!          If end of file or end of record (io status < 0)
-!             Check current segment no. vs. expected last segment in file
-!             if current segment is not last, report error
 !    Leave MSI file open for further reads
 !
 ! Local variables:
@@ -172,7 +168,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
               SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
               (SAD_Chan(i)%Solar%F1 * cos(2 * Pi * Ctrl%DOY / 365.))
       end do
-   endif
+   end if
 
    ! Read MSI file
 
@@ -189,7 +185,9 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 !  deallocate(msi_instr_ch_numbers)
 
    ! Close MSI input file
-   if (nf90_close(ncid) /= NF90_NOERR) &
-      stop 'ERROR: read_msi_nc(): Error closing file.'
+   if (nf90_close(ncid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_msi_nc(): Error closing file.'
+      stop error_stop_code
+   end if
 
 end subroutine Read_MSI_nc

@@ -133,8 +133,8 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
          do j=1,SPixel%Nx
             write(input_num1,"(i4)") i
             write(input_num2,"(i4)") j
-            input_dummy='covariance_matrix_element_' &
-               & //trim(adjustl(input_num1))//trim(adjustl(input_num2))
+            input_dummy='covariance_matrix_element_' // &
+                 trim(adjustl(input_num1))//trim(adjustl(input_num2))
             call nc_write_array(ncid,input_dummy,output_data%vid_covariance(i,j),&
                     output_data%covariance(ixstart:,:,i,j),1,1,n_x,1,1,n_y)
          end do

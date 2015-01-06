@@ -92,7 +92,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
+subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
 
    use CTRL_def
    use ECP_Constants
@@ -129,15 +129,21 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
-       nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) &
-      stop 'ERROR: read_swrtm_nc(): Could not read global attributes.'
+       nf90_get_att(ncid, NF90_GLOBAL, "Platform", platform) /= NF90_NOERR) then
+      write(*,*) 'ERROR: Read_SwRTM_nc(): Could not read global attributes: ', &
+                 Ctrl%FID%LWRTM
+      stop error_stop_code
+   end if
    if (sensor =='AATSR') then
       instname=trim(adjustl(sensor))
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
-   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) &
-      stop 'ERROR: read_swrtm_nc(): Instrument in RTM header inconsistent'
+   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) then
+      write(*,*) 'ERROR: Read_SwRTM_nc(): Instrument in LWRTM header inconsistent: ', &
+                 trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%Inst%Name))
+      stop error_stop_code
+   end if
 
    allocate(ChanID(RTM%SW%NSWF))
 !  allocate(WvNumber(RTM%SW%NSWF))
@@ -176,8 +182,12 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
       end do
    end do
 
-   if (chan_found /= Ctrl%Ind%NSolar) &
-      stop 'ERROR: read_swrtm_nc(): required instrument channels not found'
+   if (chan_found /= Ctrl%Ind%NSolar) then
+      write(*,*) 'ERROR: Read_SwRTM_nc(): Required instrument channels not ' // &
+                 'found in: ', Ctrl%FID%LWRTM
+      stop error_stop_code
+   end if
+
 
    ! Allocate arrays
    allocate(RTM%SW%Tbc(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
@@ -189,11 +199,14 @@ subroutine Read_SWRTM_nc(Ctrl, RTM, verbose)
    call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, verbose, 1, index)
 
    ! Close SwRTM input file
-   if (nf90_close(ncid) /= NF90_NOERR) &
-      stop 'ERROR: read_swrtm_nc(): Error closing file.'
+   if (nf90_close(ncid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: Read_SwRTM_nc(): Error closing SWRTM file: ', &
+                 Ctrl%FID%LWRTM
+      stop error_stop_code
+   end if
 
    if (allocated(index)) deallocate(index)
 !  if (allocated(WvNumber)) deallocate(WvNumber)
    if (allocated(ChanID)) deallocate(ChanID)
 
-end subroutine Read_SWRTM_nc
+end subroutine Read_SwRTM_nc

@@ -43,7 +43,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Dealloc_RTM(Ctrl, RTM, status)
+subroutine Dealloc_RTM(Ctrl, RTM)
 
    use Ctrl_def
 
@@ -52,7 +52,6 @@ subroutine Dealloc_RTM(Ctrl, RTM, status)
 !  Declare arguments
    type(Ctrl_t), intent(in)    :: Ctrl
    type(RTM_t),  intent(inout) :: RTM
-   integer,      intent(inout) :: status
 
 !  Deallocate sizes of SW sub-structure arrays
    if (Ctrl%Ind%Ny-Ctrl%Ind%NThermal > 0) then

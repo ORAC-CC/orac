@@ -63,6 +63,8 @@ subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
 
    integer :: NPix
 
+   status = 0
+
 !  Parameters supported are Tau, Re, Pc, f and Ts.
 
 !  Spixel%XnSav and SnSav contain the last "good" retrieval. Spixel%Loc%X0Last

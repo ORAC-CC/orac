@@ -181,7 +181,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
          if (SetErr) Err = MDADErrTau
       else ! Can't calculate Tau unless it's daylight
-         write(*,*)'Cant calculate Tau unless its daylight'
+         write(*,*)'ERROR: X_MDAD(): Cant calculate Tau unless its daylight'
          status = XMDADMeth
       end if
 
@@ -205,7 +205,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
          ! Exclude negative Rad_o (can arise due to approximation in the RTM)
          if (Rad_o >= 0.0) then
             ! Convert overcast radiance back to brightness temperature
-            call R2T(1, SAD_Chan(Ctrl%Ind%MDAD_LW), Rad_o, BT_o, dT_dR,status)
+            call R2T(1, SAD_Chan(Ctrl%Ind%MDAD_LW), Rad_o, BT_o, dT_dR, status)
 
             ! Interpolate for the BT to the rad. profile to get Pc FG/AP
             call interpolate2ctp(SPixel,Ctrl,BT_o,X,Err)
@@ -216,11 +216,11 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
             !FG does not need Error but AP does
             Err = MDADErrPc
-	    write(*,*)'FG does not need Error but AP does'
+	    write(*,*)'ERROR: X_MDAD(): FG does not need Error but AP does'
             status = XMDADMeth
          end if
       else ! Can't calculate Pc if required LW channels not selected
-      	 write(*,*)'Cant calculate Pc if required LW channels not selected'
+      	 write(*,*)'ERROR: X_MDAD(): Cant calculate Pc if required LW channels not selected'
          status = XMDADMeth
       end if
 

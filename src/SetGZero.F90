@@ -130,7 +130,7 @@ subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
                           SPixel%Geom%Satzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSolzen(ii,j)-1),1)
             end if
             if (SAD_LUT%table_uses_relazi(j)) then
-               GZero%iRA0(i,j)  = &
+               GZero%iRA0(i,j) = &
                   max(min(locate(SAD_LUT%Grid%Relazi(ii,1:SAD_LUT%Grid%nRelazi(ii,j),j),&
                           SPixel%Geom%Relazi(SPixel%ViewIdx(i))),SAD_LUT%Grid%nRelazi(ii,j)-1),1)
             end if
@@ -174,7 +174,6 @@ subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
             GZero%iRm1(i,j) = GZero%iR0(i,j)-1
             GZero%iRp1(i,j) = GZero%iR1(i,j)+1
          end if
-
       end do
 
       ! Calculate dT, dR: these are the distances in T, R, etc from the grid

@@ -155,6 +155,8 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
    real               :: a1, a2, a3 ! Temporary store for output of BiCubic
                                     ! subroutine
 
+   status = 0
+
    ! Calculte the function derivatives at four LUT points around our X
    do i = 1, NChans
       ii = i_chan_to_ctrl_offset + i
@@ -235,9 +237,10 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
                      Grid%Re(ii,GZero%iR1(ii2,iCRP),iCRP), &
                      GZero%dT(ii2,iCRP),GZero%dR(ii2,iCRP),a1,a2,a3)
       else
+         write(*,*) 'ERROR: Int_LUT_Common(): Invalid value for Ctrl%LUTIntflag: ', &
+                    Ctrl%LUTIntflag
          status = LUTIntflagErr
-         call Write_Log(Ctrl, 'Int_LUT_Routines_def.F90:call_int_routine(): ' // &
-                            & 'LUT Interp flag error:', status)
+         return
       end if
 
       FInt(i) = a1

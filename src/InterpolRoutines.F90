@@ -61,7 +61,6 @@ subroutine find_Pc(Ctrl, Np, P, Pc, i_Pc, status)
    integer,      intent(out) :: status
 
    integer :: i
-   character(ECPLogReclen) :: message
 
    status = 0
 
@@ -70,20 +69,20 @@ subroutine find_Pc(Ctrl, Np, P, Pc, i_Pc, status)
       i_Pc = Np-1
       if (abs(Pc - P(Np)) > 50.0) then
          ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) &
-            'WARNING: Interpol_Solar(), Extrapolation, high, P(1), P(Np), Pc: ', &
-            P(1), P(Np), Pc
-         call Write_Log(Ctrl, trim(message), status) ! Write to log
+#ifdef DEBUG
+         write(*,*) 'WARNING: Interpol_*(): Extrapolation, high, ' // &
+            'P(1), P(Np), Pc: ', P(1), P(Np), Pc
+#endif
       end if
    else if (Pc < P(1)) then
       ! When Pc is below the lowest pressure in RTM
       i_Pc = 1
       if (abs(Pc - P(1)) > 50.0) then
          ! When there is a difference of more than 50 hPa between Pc and RTM level
-         write(unit=message, fmt=*) &
-            'WARNING: Interpol_Solar(), Extrapolation, low, P(1), P(Np), Pc: ', &
-            P(1), P(Np), Pc
-         call Write_Log(Ctrl, trim(message), status) ! Write to log
+#ifdef DEBUG
+         write(*,*) 'WARNING: Interpol_*(): Extrapolation, low, ' // &
+            'P(1), P(Np), Pc: ', P(1), P(Np), Pc
+#endif
       end if
    else if (Pc == P(Np)) then
       i_Pc = Np-1

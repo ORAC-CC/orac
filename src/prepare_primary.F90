@@ -96,7 +96,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = 10.0**SPixel%Xn(1)
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot(i,j), &
            output_data%cot_scale, output_data%cot_offset, &
@@ -108,7 +108,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = sqrt(SPixel%Sn(1,1))
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot_error(i,j), &
            output_data%cot_error_scale, output_data%cot_error_offset, &
@@ -123,7 +123,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = SPixel%Xn(2)
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%ref(i,j), &
            output_data%ref_scale, output_data%ref_offset, &
@@ -135,7 +135,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = sqrt(SPixel%Sn(2,2))
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%ref_error(i,j), &
            output_data%ref_error_scale, output_data%ref_error_offset, &
@@ -150,7 +150,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = SPixel%Xn(3)
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%ctp(i,j), &
            output_data%ctp_scale, output_data%ctp_offset, &
@@ -165,7 +165,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_short_ctp_error = ( int(temp_real_ctp_error, kind=sint) - &
                                output_data%ctp_error_scale &
                              ) / output_data%ctp_error_scale
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real_ctp_error, output_data%ctp_error(i,j), &
            output_data%ctp_error_scale, output_data%ctp_error_offset, &
@@ -180,7 +180,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = SPixel%Xn(4)
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%cct(i,j), &
            output_data%cct_scale, output_data%cct_offset, &
@@ -192,7 +192,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = sqrt(SPixel%Sn(4,4))
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
            output_data%cct_error_scale, output_data%cct_error_offset, &
@@ -207,7 +207,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = SPixel%Xn(5)
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%stemp(i,j), &
            output_data%stemp_scale, output_data%stemp_offset, &
@@ -219,7 +219,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = sqrt(SPixel%Sn(5,5))
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%stemp_error(i,j), &
            output_data%stemp_error_scale, output_data%stemp_error_offset, &
@@ -234,7 +234,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = RTM_Pc%Hc/10./1000. ! now it's in km
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%cth(i,j), &
            output_data%cth_scale, output_data%cth_offset, &
@@ -266,7 +266,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = RTM_Pc%Tc
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%ctt(i,j), &
            output_data%ctt_scale, output_data%ctt_offset, &
@@ -298,7 +298,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = SPixel%CWP
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%cwp(i,j), &
            output_data%cwp_scale, output_data%cwp_offset, &
@@ -310,7 +310,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sreal_fill_value
    else
       temp_real = sqrt(SPixel%CWP_error)
-   endif
+   end if
    call prepare_short_packed_float( &
            temp_real, output_data%cwp_error(i,j), &
            output_data%cwp_error_scale, output_data%cwp_error_offset, &
@@ -372,13 +372,13 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    ! cldtype
    !----------------------------------------------------------------------------
    output_data%cldtype(i,j)=int(MSI_Data%cldtype(SPixel%Loc%X0, SPixel%Loc&
-        &%YSeg0), kind=byte)
+        %YSeg0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
    output_data%cldmask(i,j)=int(MSI_Data%cloudmask(SPixel%Loc%X0, SPixel%Loc&
-        &%YSeg0), kind=byte)
+        %YSeg0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! cccot_pre
@@ -395,7 +395,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    ! lusflag
    !----------------------------------------------------------------------------
    output_data%lusflag(i,j)=int(MSI_Data%LUSFlags(SPixel%Loc%X0, SPixel%Loc&
-        &%YSeg0), kind=byte)
+        %YSeg0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! dem
@@ -406,15 +406,13 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    ! lusflag
    !----------------------------------------------------------------------------
    output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
-        &%YSeg0), kind=byte)
+        %YSeg0), kind=byte)
 
-
- !----------------------------------------------------------------------------
+   !----------------------------------------------------------------------------
    ! cloud_albedo
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%Nsolar
       dummyreal=Diag%cloud_albedo(k)
-!      write(*,*),'prepare cloud_albedo dummyreal',dummyreal
       call prepare_short_packed_float( &
            dummyreal, output_data%cloud_albedo(i,j,k), &
            output_data%cloud_albedo_scale(k), output_data%cloud_albedo_offset(k), &
@@ -422,8 +420,5 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            output_data%cloud_albedo_vmin(k), output_data%cloud_albedo_vmax(k), &
            sint_fill_value)
    end do
-
-
-
 
 end subroutine prepare_primary

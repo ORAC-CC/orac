@@ -53,7 +53,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Dealloc_SPixel(Ctrl, SPixel, status)
+subroutine Dealloc_SPixel(Ctrl, SPixel)
 
    use Ctrl_def
 
@@ -63,7 +63,6 @@ subroutine Dealloc_SPixel(Ctrl, SPixel, status)
 
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   integer,        intent(inout) :: status
 
    ! Declare local variables
 
@@ -122,7 +121,7 @@ subroutine Dealloc_SPixel(Ctrl, SPixel, status)
    if (Ctrl%RS%use_full_brdf) then
       deallocate(SPixel%Rs2)
       deallocate(SPixel%SRs2)
-   endif
+   end if
 
    !  Solar constant
 

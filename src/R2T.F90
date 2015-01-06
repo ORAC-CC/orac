@@ -83,8 +83,8 @@ subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
       if (R(i) .le. ditherm6) R(i) = max(R(i),ditherm6)
    end do
 
-   C = max( log( (SAD_Chan(:)%Thermal%B1 / R ) + 1.0 ), tiny_value )   
-   T_eff = min( SAD_Chan(:)%Thermal%B2 / C, huge_value )
+   C = max( log( (SAD_Chan(:)%Thermal%B1 / R ) + 1.0 ), tiny_value)
+   T_eff = min( SAD_Chan(:)%Thermal%B2 / C, huge_value)
    T = (T_eff-SAD_Chan(:)%Thermal%T1) / SAD_Chan(:)%Thermal%T2
 
    ! Calculate the change in brightness temperature w.r.t. radiance

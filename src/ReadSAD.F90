@@ -26,13 +26,8 @@ contains
 !                       Out         Read_Chan
 !    SAD_LUT    array of structs    Cloud Radiative Property Look Up Tables
 !                       Out         Populated by Read_LUT.
-!    status     int     Out         Status/error code. Set non-zero if an error
-!                                   occurs in any of the subordinate routines.
 !
 ! Algorithm:
-!    if status ok, call function to read cloud class config file
-!    if status ok, call function to read channel characterisation files
-!    if status ok, call function to read Look-Up Tables
 !
 ! Local variables:
 !    Name Type Description
@@ -63,7 +58,7 @@ contains
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT, status)
+subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
    use CTRL_def
    use ECP_Constants
@@ -76,15 +71,12 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT, status)
    type(CTRL_t),                   intent(inout) :: Ctrl
    type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
    type(SAD_LUT_t),                intent(inout) :: SAD_LUT
-   integer,                        intent(inout) :: status
 
    ! Read channel sad files
-   if (status == 0) call Read_SAD_Chan(Ctrl, SAD_Chan, status)
-   write(*,*)'Read SAD channel information, status: ', status
+   call Read_SAD_Chan(Ctrl, SAD_Chan)
 
    ! Read Look up tables
-   if (status == 0) call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT)
-   write(*,*)'Read SAD LUTs, status: ', 0
+   call Read_SAD_LUT (Ctrl, SAD_Chan, SAD_LUT)
 
 end subroutine Read_SAD
 

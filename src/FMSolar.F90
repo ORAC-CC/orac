@@ -191,7 +191,8 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
                (SPixel%Rs2(:,IRho_0V) - SPixel%Rs2(:,IRho_DD)) * &
                d_CRP(:,IT_dv,i_param)) * Tbc_0d + &
             ((d_CRP(:,IT_00,i_param) * SPixel%Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * SPixel%Rs2(:,IRho_DD) * Tbc_d) * c + b *                                   d_CRP(:,IT_dv,i_param) * Tbc_d)  / a + &
+               d_CRP(:,IT_0d,i_param) * SPixel%Rs2(:,IRho_DD) * Tbc_d) * c + b * &
+               d_CRP(:,IT_dv,i_param) * Tbc_d)  / a + &
             b * (c)  * SPixel%Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / a**2
    else if (i_equation_form .eq. 2) then
       d_l = d_CRP(:,IR_0v,i_param) + &
@@ -219,7 +220,7 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
                CRP(:,IR_dd) * SPixel%Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param) * &
                Tbc_dd * Tbc_v)) / a + &
             b * (c) * SPixel%Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / a**2
-   endif
+   end if
 
    REF_over_l = Tac_0v * d_l
 
@@ -304,6 +305,8 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
+   status = 0
+
    ! Interpolate cloud radiative property LUT data to the current Tau, Re values.
    ! Note that Set_CRP_Solar interpolates values for all solar channels, except
    ! in the case of Td. This is interpolated by SetCRPThermal, which is called
@@ -449,7 +452,7 @@ else
           b * c / a
 
       REF_over = Tac_0v * d
-   endif
+   end if
 
    ! Calculate top of atmosphere reflectance for fractional cloud cover
    REF = X(IFr) * REF_over + (1.0-X(IFr)) * SPixel%RTM%REF_clear
@@ -475,7 +478,7 @@ else
       ! Above cloud at viewing angle:
       Tac_v_l(i) = RTM_Pc%dTac_dPc(i) * SPixel%Geom%SEC_v(SPixel%ViewIdx(i)) * &
          RTM_Pc%Tac(i) ** (SPixel%Geom%SEC_v(SPixel%ViewIdx(i)) - 1.)
-   enddo
+   end do
 
    ! Calculate the derivative of the solar transmittance from TOA to cloud-top
    ! times the viewing transmittance from cloud-top to TOA
@@ -523,7 +526,7 @@ else
                Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * SPixel%Rs2(:,IRho_DV) * &
                CRP(:,IT_vv) * Tbc_dd * Tbc_v_l)) / a + &
             b * c * SPixel%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / a**2
-   endif
+   end if
 
    REF_over_l = Tac_0v_l * d + Tac_0v * d_l
 
@@ -555,12 +558,12 @@ else
    else
       d_l =  CRP(:,IT_0D) * rho_dd_l * Tbc_d * c / a &
           +  b * c * rho_dd_l * CRP(:,IR_dd) * Tbc_dd / a**2
-   endif
+   end if
 
    REF_over_l = Tac_0v * d_l
 
    d_REF(:,IRs) = X(IFr) * REF_over_l + (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs
-endif
+end if
    ! Open breakpoint file if required, and write out reflectances and gradients.
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_FM_Solar) then
@@ -571,8 +574,8 @@ endif
 	   position='append', &
 	   iostat=ios)
       if (ios /= 0) then
-         status = BkpFileOpenErr
-	 call Write_Log(Ctrl, 'FM_Solar: Error opening breakpoint file', status)
+         write(*,*) 'ERROR: FM_Solar(): Error opening breakpoint file'
+         stop BkpFileOpenErr
       else
          write(bkp_lun,*)'FM_Solar:'
       end if

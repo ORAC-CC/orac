@@ -47,9 +47,11 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    !cdim = nc_dim_length(ncid, 'nc_msi', verbose)
 
    ! Close msi file
-   if (nf90_close(ncid) .ne. NF90_NOERR) &
-        stop 'READ_INPUT_DIM: Failure to close MSI file.'
-
+   if (nf90_close(ncid) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions_msi(): Error closing MSI ' // &
+                 'file: ', fname_msi
+      stop error_stop_code
+   end if
 
    ! Open geo file
    call nc_open(ncid,fname_geo)
@@ -59,8 +61,11 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    vdim = nc_dim_length(ncid, 'nv_geo', verbose)
 
    ! Close geo file
-   if (nf90_close(ncid) .ne. NF90_NOERR) &
-      stop 'READ_INPUT_DIM: Failure to close GEO file.'
+   if (nf90_close(ncid) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions_msi(): Error closing GEO ' // &
+                 'file: ', fname_geo
+      stop error_stop_code
+   end if
 
 end subroutine read_input_dimensions_msi
 
@@ -90,8 +95,11 @@ subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
    channeldim = nc_dim_length(ncid, 'nlw_channels', verbose)
 
    ! Close file
-   if (nf90_close(ncid) .ne. NF90_NOERR) &
-      stop 'READ_INPUT_DIM: Failure to close LWRTM file.'
+   if (nf90_close(ncid) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
+                 'LWRTM file: ', fname
+      stop error_stop_code
+   end if
 
 end subroutine read_input_dimensions_lwrtm
 
@@ -121,7 +129,10 @@ subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim, &
    channeldim = nc_dim_length(ncid, 'nsw_channels', verbose)
 
    ! Close file
-   if (nf90_close(ncid) .ne. NF90_NOERR) &
-      stop 'READ_INPUT_DIM: Failure to close SWRTM file.'
+   if (nf90_close(ncid) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions_swrtm(): Error closing ' // &
+                 'SWRTM file: ', fname
+      stop error_stop_code
+   end if
 
 end subroutine read_input_dimensions_swrtm

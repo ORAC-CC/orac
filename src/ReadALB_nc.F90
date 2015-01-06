@@ -22,7 +22,6 @@
 !                                      by this routine: solar constant is
 !                                      modified from annual average to value
 !                                      for the day of the ALB data.
-!   status   int           Out         Error status
 !
 ! Algorithm:
 !    If (ALB files are not yet open)
@@ -41,9 +40,6 @@
 !          Read ALB array of size defined by Ctrl structure
 !          If read error
 !             Write error message to log file
-!          If end of file or end of record (io status < 0)
-!             Check current segment no. vs. expected last segment in file
-!             If current segment is not last, report error
 !    Leave ALB file open for further reads
 !
 ! Local variables:
@@ -140,13 +136,15 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
       call nc_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, verbose, 3, subs)
       call nc_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, verbose, 3, subs)
       call nc_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, verbose, 3, subs)
-   endif
+   end if
 
    deallocate(alb_instr_ch_numbers)
    deallocate(subs)
 
    ! Close alb input file
-   if (nf90_close(ncid) /= NF90_NOERR) &
-      stop 'ERROR: read_alb_nc(): Error closing file.'
+   if (nf90_close(ncid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_alb_nc(): Error closing file.'
+      stop error_stop_code
+   end if
 
 end subroutine Read_ALB_nc

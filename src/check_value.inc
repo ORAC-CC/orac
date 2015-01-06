@@ -22,7 +22,6 @@
    SPixel%QC = ibset(SPixel%QC, flag_bit)
 
 #ifdef DEBUG
-   write(unit=message, fmt=*) 'Get_SPixel: WARNING - Found '//trim(name)// &
-        &' out of range in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0
-   call Write_log(Ctrl, trim(message), 0)
+   write(*, *) 'WARNING: check_value(), Found '//trim(name)// ' out of ' // &
+             & 'range in pixel at:', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif

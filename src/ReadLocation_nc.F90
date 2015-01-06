@@ -16,7 +16,6 @@
 !                                to be populated with data from the file. This
 !                                is overwritten as successive segments of data
 !                                are read in.
-!    status   int    Out         Error status
 !
 ! Algorithm:
 !    if (MSI files are not yet open)
@@ -83,7 +82,9 @@ subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    call nc_read_array(ncid, "lon", MSI_Data%Location%Lon, verbose)
 
    ! Close location file
-   if (nf90_close(ncid) /= NF90_NOERR) &
-      stop 'ERROR: read_location_nc(): Error closing file.'
+   if (nf90_close(ncid) /= NF90_NOERR) then
+      write(*,*) 'ERROR: read_location_nc(): Error closing file.'
+      stop error_stop_code
+   end if
 
 end subroutine Read_Location_nc

@@ -53,7 +53,7 @@ subroutine Find_Lun(lun)
    end do
 
    if (.not. found_lun) then
-      write(*,*) 'Find_Lun: could not find free LUN in range 20 to 100'
+      write(*,*) 'ERROR: Find_Lun(): Could not find free LUN in range 20 to 100'
       lun = -1
    end if
 
