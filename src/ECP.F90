@@ -187,7 +187,7 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file. Eliminate conf structure.
-!
+!    2015/1/6 CP: bug fix removed status from primary and secondary def, prep and write
 ! Bugs:
 !    None known.
 !
@@ -551,10 +551,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                           Ctrl%Ind%Ny,MaxStateVar,lcovar, &
                                           output_data_2)
          ! Create NetCDF files and variables
-         call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1, &
-                               status)
+         call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1)
          call def_vars_secondary(Ctrl, lcovar, ncid_secondary, dims_var, &
-                                 output_data_2, status)
+                                 output_data_2)
       end if
 
       ! Set i, the counter for the image x dimension, for the first row processed.
@@ -747,10 +746,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
                ! Copy output to spixel_scan_out structures
                call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
-                                    Diag, output_data_1, status)
+                                    Diag, output_data_1)
 
                call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
-                                      output_data_2, status)
+                                      output_data_2)
 
 
             end if ! End of status check after Get_SPixel
@@ -783,9 +782,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       if (status == 0) then
          ! Write output from spixel_scan_out structures NetCDF files
          call write_primary(Ctrl, ncid_primary, ixstart, ixstop, iystart, iystop, &
-                            output_data_1, status)
+                            output_data_1)
          call write_secondary(Ctrl, lcovar, SPixel, ncid_secondary, ixstart, ixstop, &
-                              iystart, iystop, output_data_2, status)
+                              iystart, iystop, output_data_2)
       end if
 
       if (status == 0) then
