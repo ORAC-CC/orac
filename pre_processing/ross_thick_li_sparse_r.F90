@@ -26,6 +26,8 @@
 ! 2014/08/20, OS: marked C-style comment as Fortran comment
 ! 2014/12/31, GM: Parallelized the main loops in the interface subroutine with
 !    OpenMP.
+! 2015/01/05, GM: Fixed a couple of bugs in the OpenMP parallelization that come
+!    out when compiling with ifort.
 !
 ! $Id$
 !
@@ -45,58 +47,58 @@ module ross_thick_li_sparse_r_m
 
    ! Structure containing auxiliary values common to all BRDF kernels
    type brdf_aux_type
-      real(kind=sreal) :: theta1;
-      real(kind=sreal) :: cos_theta1;
-      real(kind=sreal) :: sin_theta1;
-      real(kind=sreal) :: tan_theta1;
-      real(kind=sreal) :: tan_theta1_2;
+      real(kind=sreal) :: theta1
+      real(kind=sreal) :: cos_theta1
+      real(kind=sreal) :: sin_theta1
+      real(kind=sreal) :: tan_theta1
+      real(kind=sreal) :: tan_theta1_2
 
-      real(kind=sreal) :: theta2;
-      real(kind=sreal) :: cos_theta2;
-      real(kind=sreal) :: sin_theta2;
-      real(kind=sreal) :: tan_theta2;
-      real(kind=sreal) :: tan_theta2_2;
+      real(kind=sreal) :: theta2
+      real(kind=sreal) :: cos_theta2
+      real(kind=sreal) :: sin_theta2
+      real(kind=sreal) :: tan_theta2
+      real(kind=sreal) :: tan_theta2_2
 
-      real(kind=sreal) :: phi;
-      real(kind=sreal) :: cos_phi;
-      real(kind=sreal) :: sin_phi;
-      real(kind=sreal) :: sin_phi_2;
+      real(kind=sreal) :: phi
+      real(kind=sreal) :: cos_phi
+      real(kind=sreal) :: sin_phi
+      real(kind=sreal) :: sin_phi_2
    end type brdf_aux_type
 
    ! Structure containing auxiliary values based on brdf_aux_type values that
    ! are common to both the Li-Sparse-R and Li-Dense-R kernels.
    type kernel_aux_li_r_type
-      real(kind=sreal) :: a;
-      real(kind=sreal) :: b;
-      real(kind=sreal) :: c;
-      real(kind=sreal) :: d;
-      real(kind=sreal) :: e;
-      real(kind=sreal) :: g;
+      real(kind=sreal) :: a
+      real(kind=sreal) :: b
+      real(kind=sreal) :: c
+      real(kind=sreal) :: d
+      real(kind=sreal) :: e
+      real(kind=sreal) :: g
 
-      real(kind=sreal) :: tan_theta_i_p;
-      real(kind=sreal) :: tan_theta_r_p;
+      real(kind=sreal) :: tan_theta_i_p
+      real(kind=sreal) :: tan_theta_r_p
 
-      real(kind=sreal) :: tan_theta_i_p_2;
-      real(kind=sreal) :: tan_theta_r_p_2;
+      real(kind=sreal) :: tan_theta_i_p_2
+      real(kind=sreal) :: tan_theta_r_p_2
 
-      real(kind=sreal) :: theta_i_p;
-      real(kind=sreal) :: theta_r_p;
+      real(kind=sreal) :: theta_i_p
+      real(kind=sreal) :: theta_r_p
 
-      real(kind=sreal) :: cos_theta_i_p;
-      real(kind=sreal) :: sin_theta_i_p;
+      real(kind=sreal) :: cos_theta_i_p
+      real(kind=sreal) :: sin_theta_i_p
 
-      real(kind=sreal) :: cos_theta_r_p;
-      real(kind=sreal) :: sin_theta_r_p;
+      real(kind=sreal) :: cos_theta_r_p
+      real(kind=sreal) :: sin_theta_r_p
 
-      real(kind=sreal) :: r;
+      real(kind=sreal) :: r
    end type kernel_aux_li_r_type
 
    ! Structure containing auxiliary values based on brdf_aux_type values that
    ! are common to both the Ross-Thin and Ross-Thick kernels.
    type kernel_aux_ross_type
-      real(kind=sreal) :: a;
-      real(kind=sreal) :: b;
-      real(kind=sreal) :: c;
+      real(kind=sreal) :: a
+      real(kind=sreal) :: b
+      real(kind=sreal) :: c
    end type kernel_aux_ross_type
 
    ! Structure containing auxiliary values for the Ross-Thick_Li-Sparse_R kernel.
@@ -478,7 +480,7 @@ subroutine ross_thick_li_sparse_r_kernel(aux, aux_kernel, p_ross, p_li_r, f, K)
    type(kernel_aux_ross_thick_li_sparse_r_type), intent(in)  :: aux_kernel
    real(kind=sreal),                             intent(in)  :: p_ross(1)
    real(kind=sreal),                             intent(in)  :: p_li_r(2)
-   real(kind=sreal),                             intent(in)  :: f(3)
+   real(kind=sreal),                             intent(in)  :: f(:)
    real(kind=sreal),                             intent(out) :: K
 
    real(kind=sreal) :: K_ross_thick
@@ -487,7 +489,7 @@ subroutine ross_thick_li_sparse_r_kernel(aux, aux_kernel, p_ross, p_li_r, f, K)
    call ross_thick_kernel(aux, aux_kernel%ross, p_ross, K_ross_thick)
    call li_sparse_kernel (aux, aux_kernel%li_r, p_li_r, k_li_r_sparse)
 
-   K = f(1) + f(2) * k_ross_thick + f(3) * k_li_r_sparse;
+   K = f(1) + f(2) * k_ross_thick + f(3) * k_li_r_sparse
 
 end subroutine
 
@@ -596,11 +598,6 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
 
    allocate(qx_cos_sin_qw_theta(n_quad_theta))
 
-   allocate(aux_brdf2(n_quad_theta, n_quad_phi))
-   allocate(aux_brdf3(n_quad_theta, n_quad_theta, n_quad_phi))
-   allocate(aux_kernel2(n_quad_theta, n_quad_phi))
-   allocate(aux_kernel3(n_quad_theta, n_quad_theta, n_quad_phi))
-
 
    !----------------------------------------------------------------------------
    ! Calculate Gauss-Legendre quadrature over zenith theta and azimuthal phi
@@ -616,7 +613,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    !----------------------------------------------------------------------------
    if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_0v'
    !----------------------------------------------------------------------------
-!$OMP PARALLEL PRIVATE(i, j, k, l, solza2, satza2, relaz2, aux_brdf, aux_kernel)
+!$OMP PARALLEL PRIVATE(i, j, solza2, satza2, relaz2, aux_brdf, aux_kernel)
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (solza(i) .gt. maxsza_twi) then
@@ -649,6 +646,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    !----------------------------------------------------------------------------
    rho_0d = 0.
 !$OMP PARALLEL PRIVATE(i, j, k, l, a, a2, solza2, satza2, relaz2, aux_brdf2, aux_kernel2)
+   allocate(aux_brdf2(n_quad_theta, n_quad_phi))
+   allocate(aux_kernel2(n_quad_theta, n_quad_phi))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (solza(i) .gt. maxsza_twi) then
@@ -687,6 +686,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
       end do
    end do
 !$OMP END DO
+   deallocate(aux_brdf2)
+   deallocate(aux_kernel2)
 !$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
@@ -694,6 +695,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    !----------------------------------------------------------------------------
    rho_dv = 0.
 !$OMP PARALLEL PRIVATE(i, j, k, l, a, a2, solza2, satza2, relaz2, aux_brdf2, aux_kernel2)
+   allocate(aux_brdf2(n_quad_theta, n_quad_phi))
+   allocate(aux_kernel2(n_quad_theta, n_quad_phi))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       satza2 = satza(i) * d2r
@@ -727,11 +730,16 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
       end do
    end do
 !$OMP END DO
+   deallocate(aux_brdf2)
+   deallocate(aux_kernel2)
 !$OMP END PARALLEL
 
    !----------------------------------------------------------------------------
    if (verbose) print *, 'ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(): computing rho_dd'
    !----------------------------------------------------------------------------
+   allocate(aux_brdf3(n_quad_theta, n_quad_theta, n_quad_phi))
+   allocate(aux_kernel3(n_quad_theta, n_quad_theta, n_quad_phi))
+
    do j = 1, n_quad_theta
       solza2 = qx_theta(j)
       do k = 1, n_quad_theta
@@ -746,7 +754,7 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    end do
 
    rho_dd = 0.
-!$OMP PARALLEL PRIVATE(i, j, k, l, a, a2, a3)
+!$OMP PARALLEL PRIVATE(i, j, k, l, m, a, a2, a3)
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       do j = 1, n_bands
@@ -774,6 +782,8 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    end do
 !$OMP END DO
 !$OMP END PARALLEL
+   deallocate(aux_brdf3)
+   deallocate(aux_kernel3)
 
    !----------------------------------------------------------------------------
    ! Deallocate arrays
@@ -785,11 +795,6 @@ subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd(n_bands, solza, satza, &
    deallocate(qw_phi)
 
    deallocate(qx_cos_sin_qw_theta)
-
-   deallocate(aux_brdf2)
-   deallocate(aux_brdf3)
-   deallocate(aux_kernel2)
-   deallocate(aux_kernel3)
 
 end subroutine ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd
 

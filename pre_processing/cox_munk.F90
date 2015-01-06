@@ -93,6 +93,8 @@
 !    similar technique.
 ! 31 Dec 2014, Greg McGarragh: Parallelized the main loops in the interface
 !    subroutine with OpenMP.
+! 06 Jan 2015, GM: Fixed a couple of bugs in the OpenMP parallelization that
+!    come out when compiling with ifort.
 !
 ! $Id$
 !
@@ -1997,7 +1999,6 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
    !----------------------------------------------------------------------------
    !
    !----------------------------------------------------------------------------
-   allocate(aa(n_bands))
    allocate(shared_band(n_bands))
 
    do i = 1, n_bands
@@ -2033,6 +2034,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
 if (.false.) then
    rho_0d = 0.
 !$OMP PARALLEL PRIVATE(i, j, k, l, aa, a2, satza2, relaz2, shared_geo_wind)
+   allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (solza(i) .gt. maxsza_twi .or. &
@@ -2059,6 +2061,7 @@ if (.false.) then
       rho_0d(:, i) = rho_0d(:, i) / pi
    end do
 !$OMP END DO
+   deallocate(aa)
 !$OMP END PARALLEL
 
 ! Fast LUT version
@@ -2125,6 +2128,7 @@ end if
 if (.false.) then
    rho_dv = 0.
 !$OMP PARALLEL PRIVATE(i, j, k, l, aa, a2, solza2, relaz2, shared_geo_wind)
+   allocate(aa(n_bands))
 !$OMP DO SCHEDULE(GUIDED)
    do i = 1, n_points
       if (u10(i) .eq. fill_value .or. u10(i) .eq. fill_value) then
@@ -2150,6 +2154,7 @@ if (.false.) then
       rho_dv(:, i) = rho_dv(:, i) / pi
    end do
 !$OMP END DO
+   deallocate(aa)
 !$OMP END PARALLEL
 
 ! Fast LUT version
@@ -2207,7 +2212,6 @@ end if
    !----------------------------------------------------------------------------
    !
    !----------------------------------------------------------------------------
-   deallocate(aa)
    deallocate(shared_band)
 
 
