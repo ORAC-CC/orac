@@ -204,6 +204,7 @@
 !    2014/04/02, MJ: Fixed bug where Diag%ss was not initialized.
 !    2014/07/24, AP: Removed unused status variable.
 !    2014/07/24, CP: Added in cloud albedo
+!    2015/01/09, AP: Patch memory leak with cloud_albedo.
 !
 ! Bugs:
 !    None known.
@@ -597,7 +598,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
          if (stat == 0) &
             call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
                     dY_dX, cloud_albedo, stat)
-         Diag%cloud_albedo(1:SPixel%Ind%NSolar)=cloud_albedo(1:SPixel%Ind%NSolar)
+         if (SPixel%Ind%NSolar > 0) then
+            Diag%cloud_albedo(1:SPixel%Ind%NSolar) = &
+                 cloud_albedo(1:SPixel%Ind%NSolar)
+         else
+            Diag%cloud_albedo = 0
+         end if
 
          ! Set new Kx, Kbj, Sy and SyInv
          if (stat == 0) call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
