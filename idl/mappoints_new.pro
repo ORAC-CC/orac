@@ -133,6 +133,7 @@
 ;      ensure the expected x-y grid is plotted.
 ;   15 Oct 2014 - ACP: Alter colourbar behaviour to make sense. Add WHITE_BACK 
 ;      keyword.
+;   19 Dec 2014 - ACP: Slight tweak to MYCOLOURS.
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -383,9 +384,12 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       colours=nlevels
       if KEYWORD_SET(mycolours) then begin
          smc=SIZE(mycolours)
-         if smc[0] eq 2 && smc[1] eq nlevels && smc[2] eq 3 $
-         then TVLCT, mycolours $
-         else MESSAGE,'MYCOLOURS mest be an [nlevels,3] byte array.'
+         if smc[0] eq 2 && smc[1] eq nlevels && smc[2] eq 3 then begin
+            tempcol=BYTARR(nlevels+2,3)
+            tempcol[1:nlevels,*]=mycolours
+            tempcol[nlevels+1,*]=255b
+            TVLCT, tempcol
+         endif else MESSAGE,'MYCOLOURS must be an [nlevels,3] byte array.'
       endif else if N_ELEMENTS(colourtable) eq 1 then begin
          LOADCT,/silent,colourtable,ncolors=colours,rgb_table=rgb_,/bottom
          ;; force first indices to be black/white
@@ -417,7 +421,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          KEYWORD_SET(rywdiff) || KEYWORD_SET(d2colourbar) || $
          KEYWORD_SET(diffcolourgrey) then begin
          bot_colour=1
-         top_colour=colours-1
+         top_colour=colours
       endif else if KEYWORD_SET(omi) || N_ELEMENTS(colourtable) eq 1 then begin
          ;; invent two greys for bottom/top colours
          TVLCT,r,g,b,/get
