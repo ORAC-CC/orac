@@ -107,16 +107,11 @@ for j in ${!sensor[*]}; do
     echo $preproc_folder/orac_preproc.x "${arg[@]}" 1>> $log_file
     echo '' 1>> $log_file
 
-#  Non-parallel version:
-#  sec=`date +"%s"`
-#  $preproc_folder/orac_preproc.x "${arg[@]}" >> $log_file 2>&1
-#  if (( $? != 0 )); then
-#      echo "${label[$j]}: Error."
-#      exit -2
-#  fi
-#  echo 'Processing took '$((`date +"%s"`-$sec))' s'
+    # Non-parallel version:
+#    $preproc_folder/orac_preproc.x "${arg[@]}" >> $log_file 2>&1
+#    echo "Processed ${label[$j]}"
 
-  # parallel version
+    # parallel version
     com="$com$preproc_folder/orac_preproc.x ${arg[@]} >> $log_file 2>&1 && "\
 "echo 'Processed ${label[$j]}'"$'\n'
 # the second line prints 'Processed' on completition

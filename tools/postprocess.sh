@@ -19,11 +19,17 @@
 #
 # History:
 # 2014/07/28, AP: Original version
+# 2015/01/06, AP: Ammending how -drop and -v21 are managed.
 #
 set -e
 
 source header.sh
-
+if (( $drop )); then
+    for i in ${!label[*]}; do
+        label[$i]=${label[$i]}$desc
+    done      
+fi     
+  
 #------------------------------------------------------------------------------
 # RUN ORAC POST-PROCESSOR
 #------------------------------------------------------------------------------
@@ -38,7 +44,8 @@ for inst in ${label[*]}; do
     while IFS= read -r -d $'\0' tmp; do
         # take only the part of the filename before _ORACV (differentiate chunks)
         files[fi++]="${tmp%*_ORACV*}"
-    done < <(find $fdr -name "$inst_*ORACV${revision}*WAT.primary.nc" \
+    done < <(find $fdr \
+        -name "$inst_*ORACV${revision}_*_${file_version}WAT.primary.nc" \
         -printf "%f\0")
     if (( "${#files}" == 0 )); then
         echo 'No files found. Check revision number.'

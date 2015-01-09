@@ -84,6 +84,9 @@
 # MAIN PROCESSOR ONLY ARGUMENTS)
 # -drop           Don't use the second and fifth channels. Mostly intended for
 #                 bug identification rather than useful processing.
+# -chan           A more general form of -drop, this directly sets the channel
+#                 processing flag (a string on space-delimited 0/1's for each
+#                 channel).
 # -ICE            Use the ice-cloud look-up tables rather than the default WAT.
 # -v21            Use version 2.1 AATSR data. Default is version 2.0.
 #
@@ -93,6 +96,7 @@
 # History :
 # 2014/07/28, AP: Original version (from test_orac.sh and test_preproc.sh).
 # 2014/11/21, GM: Added $brdf_folder.
+# 2015/01/09, AP: Ammending how -drop and -v21 are managed. Adding -chan.
 #
 #------------------------------------------------------------------------------
 # DEFINE LOCAL FOLDERS
@@ -196,6 +200,7 @@ drop=0
 badc_flag=1
 verbose=true
 brdf_flag=true
+channels='1 1 1 1 1 1'
 
 # perl command used at end of script. specifies which lines of log file
 # are printed
@@ -219,11 +224,17 @@ while [[ $# > 0 ]]; do
             shift
             calib_folder="$1"
             ;;
+        -chan)
+            shift
+            channels="$1"
+            drop=1
+            ;;
         -coeffs_folder)
             shift
             coeffs_folder="$1"
             ;;
         -drop)
+            channels='1 0 1 1 0 1'
             drop=1
             ;;
         -ecmwf)
@@ -570,17 +581,17 @@ if (( $short )); then for i in ${!label[*]}; do
 done
 fi
 
-# set which channels should be used by the retrieval
-if (( $drop )); then
-    channels='1 0 1 1 0 1'
-    for i in ${!label[*]}; do
-       label[$i]=${label[i]}D
-    done
-else
-    channels='1 1 1 1 1 1'
-fi
-
 # for only_compare, kill $sensor whilst leaving $label alone
 if (( $skip_proc )); then
     unset sensor
+fi
+
+if (( $drop)); then 
+    desc=D`echo $channels | sed -e 's/[ \t]//g'`
+fi
+
+# Denote AATSR V2.1 files with at the end of the filename.
+# THIS WILL MARK NON-AATSR FILES AS WELL. Haven't had better idea yet.
+if (( $v21 )); then
+    file_version='V2.1'
 fi

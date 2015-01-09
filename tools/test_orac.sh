@@ -33,10 +33,12 @@
 #    parallelisation as ORAC already parallel.
 # 2014/07/14, AP: Added THRESH and ONLY_COMPARE arguments.
 # 2014/07/28, AP: Moved arguments into header script.
+# 2015/01/06, AP: Ammending how -drop and -v21 are managed.
 #
 set -e
 
 source header.sh
+
 
 #------------------------------------------------------------------------------
 # RUN ORAC PROCESSOR
@@ -48,30 +50,37 @@ com=()
 for j in ${!sensor[*]}; do
     echo "Processing ${label[$j]}"
 
-   # locate output folder
+    # locate output folder
     folder=$out_folder/'V'$revision/${label[$j]}
     if [ ! -d $folder ]; then
-        echo 'Preprocessor output folder does not exist for ${label[$j]}.'
+        echo "Preprocessor output folder does not exist for ${label[$j]}."
         continue
     fi
-    output_folder=$folder
+    # If dropping channels, put output in separate folder.
+    if (( $drop )); then
+        output_folder=$folder$desc
+        if [ ! -d $output_folder ]; then mkdir -p $output_folder; fi
+    else
+        output_folder=$folder
+    fi
 
-   # find root file names
+    # find root file names
     unset files i
     while IFS= read -r -d $'\0' tmp; do
         files[i++]="$tmp"
-    done < <(find $folder -name "${label[$j]}_*ORACV${revision}*alb.nc" \
+    done < <(find $folder \
+        -name "${label[$j]}_*ORACV${revision}_*_${file_version}.alb.nc" \
         -printf "%f\0")
     if (( "${#files}" == 0 )); then
         echo 'No files found. Check revision number.'
         continue
     fi
 
-   # loop over files found
+    # loop over files found
     for alb in ${files[*]}; do
         fileroot=${alb:0:$((${#alb}-7))}
 
-       # write driver file
+        # write driver file
         driver_file=$driver_file_base${label[$j]}.txt
         driver="'$folder'
 '$fileroot'
@@ -83,7 +92,7 @@ $channels
 $phase"
         echo "$driver" 1> $driver_file
 
-       # make header for log file
+        # make header for log file
         log_file=$output_folder/${label[$j]}
         if (( $drop )); then log_file=$log_file'D'; fi
         log_file=$log_file'_ORAC_'$phase'_V'$revision'_'`date +"%y%m%d_%H%M"`.log
@@ -98,7 +107,7 @@ $phase"
         echo '-----------------' 1>> $log_file
         echo '' 1>> $log_file
 
-       #  Non-parallel version:
+        #  Non-parallel version:
         $orac_folder/orac $driver_file >> $log_file 2>&1
         if (( $? != 0 )); then
             echo "${label[$j]}: Error."
@@ -107,7 +116,7 @@ $phase"
         echo "Processed ${label[$j]}"
         perl -ne "$perl" $log_file
 
-       # parallel version
+        # parallel version
 #       com="$com$orac_folder/orac $driver_file >> $log_file 2>&1 && "\
 #"echo 'Processed ${label[$j]}' && perl -ne '$perl' $log_file"$'\n'
 # the second line prints 'Processed' and convergence data on completition
@@ -122,6 +131,11 @@ rm -f $driver_file_base*
 #------------------------------------------------------------------------------
 # CHECK RESULTS
 #------------------------------------------------------------------------------
+if (( $drop )); then
+    for i in ${!label[*]}; do
+        label[$i]=${label[$i]}$desc
+    done      
+fi     
 # call IDL routine to compare this output to the previous version
 if (( $do_compare && ("$?" == 0) )); then
     $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav -args $out_folder \
