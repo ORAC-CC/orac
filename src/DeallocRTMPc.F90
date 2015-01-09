@@ -24,6 +24,7 @@
 ! History:
 !    22nd Oct 2001, Andy Smith: Original version
 !    27th May 2014, Greg McGarragh: Some cleanup.
+!     7th Jan 2015, Adam Povey: Eliminate write to RTM_Pc%Tac, Tbc.
 !
 ! Bugs:
 !    None known.
@@ -68,12 +69,5 @@ subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc)
       deallocate(RTM_Pc%LW%dRac_dwn_dPc)
       deallocate(RTM_Pc%LW%dRbc_up_dPc)
    end if
-
-   ! Deallocate sizes of the main structure arrays
-
-   deallocate(RTM_Pc%Tac)
-   deallocate(RTM_Pc%Tbc)
-   deallocate(RTM_Pc%dTac_dPc)
-   deallocate(RTM_Pc%dTbc_dPc)
 
 end subroutine Dealloc_RTM_Pc

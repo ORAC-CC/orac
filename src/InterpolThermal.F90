@@ -69,13 +69,15 @@
 !       Cleaned up the code.
 !     5th Aug 2014, Greg McGarragh:
 !       Put Interpol_* common code into subroutine find_Pc().
+!     7th Jan 2015, Adam Povey:
+!       Use SPixel index arrays rather than ThF,ThL.
 !
 ! Bugs:
 !    None known.
 !
 ! $Id$
 !
-!------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
@@ -91,26 +93,26 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    type(CTRL_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(in)    :: SPixel
    real,             intent(in)    :: Pc
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%NThermal)
    type(RTM_Pc_t) ,  intent(inout) :: RTM_Pc
    integer,          intent(out)   :: status
 
    ! Define local variables
 
    integer :: i
-   integer :: ThF, ThL                           ! First, last thermal channel
-                                                 ! indices for RTM_Pc%LW arrays
+   integer :: Thermal(SPixel%Ind%NThermal)       ! Indices of thermal channel
+                                                 ! for RTM_Pc%LW arrays
    real    :: delta_p                            ! Difference in pressure between
                                                  ! consecutive RTM levels
-   real    :: delta_Tac(SPixel%Ind%Nthermal)     ! Difference in Tac between
+   real    :: delta_Tac(SPixel%Ind%NThermal)     ! Difference in Tac between
                                                  ! consecutive RTM levels
-   real    :: delta_Tbc(SPixel%Ind%Nthermal)     ! Difference in Tbc between
+   real    :: delta_Tbc(SPixel%Ind%NThermal)     ! Difference in Tbc between
                                                  ! consecutive RTM levels
-   real    :: delta_Rac_up(SPixel%Ind%Nthermal)  ! Difference in Rac_up between
+   real    :: delta_Rac_up(SPixel%Ind%NThermal)  ! Difference in Rac_up between
                                                  ! consecutive RTM levels
-   real    :: delta_Rac_dwn(SPixel%Ind%Nthermal) ! Difference in Rac_dwn between
+   real    :: delta_Rac_dwn(SPixel%Ind%NThermal) ! Difference in Rac_dwn between
                                                  ! consecutive RTM levels
-   real    :: delta_Rbc_up(SPixel%Ind%Nthermal)  ! Difference in Rbc_up between
+   real    :: delta_Rbc_up(SPixel%Ind%NThermal)  ! Difference in Rbc_up between
                                                  ! consecutive RTM levels
    real    :: delta_T                            ! Difference in temp between
                                                  ! consecutive RTM levels
@@ -118,15 +120,16 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
                                                  ! consecutive RTM levels
    real    :: dT_dPc                             ! Change in Temp w.r.t. Pc
    real    :: dH_dPc                             ! Change in GPH w.r.t. Pc
-   real    :: T(SPixel%Ind%Nthermal)             ! Temp at Pc
-   real    :: H(SPixel%Ind%Nthermal)             ! GPH at Pc
+   real    :: T(SPixel%Ind%NThermal)             ! Temp at Pc
+   real    :: H(SPixel%Ind%NThermal)             ! GPH at Pc
    real    :: delta_Pc                           ! Difference in pressure between
                                                  ! Pc and lower RTM level
-   real    :: delta_Tc(SPixel%Ind%Nthermal)      ! Difference in trans. between
+   real    :: delta_Tc(SPixel%Ind%NThermal)      ! Difference in trans. between
                                                  ! Pc and lower RTM level
-   real    :: delta_Rc(SPixel%Ind%Nthermal)      ! Difference in radiance between
+   real    :: delta_Rc(SPixel%Ind%NThermal)      ! Difference in radiance between
                                                  ! Pc and lower RTM level
-   real    :: dB_dT(SPixel%Ind%Nthermal)         ! Gradient of Planck function
+   real    :: R(SPixel%Ind%NThermal)             ! Radiances
+   real    :: dB_dT(SPixel%Ind%NThermal)         ! Gradient of Planck function
                                                  ! w.r.t surface T
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
@@ -136,18 +139,11 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    ! Set initial value of error status equal to zero (i.e. no error)
    status = 0
 
-   ! Use ThF and ThL to access the first and last required thermal channels from
-   ! RTM_Pc and SPixel %LW arrays, since these are always allocated to size
-   ! Ctrl%Ind%NThermal, but not all thermal channels are used in all pixels
-   ! hence SPixel%Ind%ThermalFirst may not equal Ctrl%Ind%ThermalFirst.
-
-   ! The above is case in twilight condition for that given pixel where the
-   ! mixed channels is excluded.
-   ThF = 1 + SPixel%Ind%ThermalFirst - Ctrl%Ind%ThermalFirst
-   ThL = Ctrl%Ind%NThermal
-
-   ! Search for Pc in the LW RTM pressure levels. If Pc lies outwith the RTM
-   ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
+   ! Subscripts for thermal channels in RTM arrays
+   Thermal = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(:SPixel%Ind%NThermal)
+	
+   ! Search for Pc in the LW RTM pressure levels. If Pc lies outside the RTM
+   ! pressure levels avoid search and set index to 1 or the penultimate RTM level
    call find_Pc(Ctrl, SPixel%RTM%LW%Np, SPixel%RTM%LW%P, Pc, i, status)
 
    if (status /= 0) then
@@ -168,25 +164,25 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
       ! Change in transmittances between RTM levels i and i+1
       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
-      delta_Tac = SPixel%RTM%LW%Tac(ThF:ThL,i+1) - SPixel%RTM%LW%Tac(ThF:ThL,i)
-      delta_Tbc = SPixel%RTM%LW%Tbc(ThF:ThL,i+1) - SPixel%RTM%LW%Tbc(ThF:ThL,i)
+      delta_Tac = SPixel%RTM%LW%Tac(Thermal,i+1) - SPixel%RTM%LW%Tac(Thermal,i)
+      delta_Tbc = SPixel%RTM%LW%Tbc(Thermal,i+1) - SPixel%RTM%LW%Tbc(Thermal,i)
 
       ! Gradients of transmittance w.r.t. pressure (around Pc)
-      RTM_Pc%LW%dTac_dPc(ThF:ThL) = delta_Tac / delta_p
-      RTM_Pc%LW%dTbc_dPc(ThF:ThL) = delta_Tbc / delta_p
+      RTM_Pc%LW%dTac_dPc(Thermal) = delta_Tac / delta_p
+      RTM_Pc%LW%dTbc_dPc(Thermal) = delta_Tbc / delta_p
 
       ! Change in radiances between RTM levels i and i+1
-      delta_Rac_up  = SPixel%RTM%LW%Rac_up(ThF:ThL,i+1) - &
-                      SPixel%RTM%LW%Rac_up(ThF:ThL,i)
-      delta_Rac_dwn = SPixel%RTM%LW%Rac_dwn(ThF:ThL,i+1) - &
-                      SPixel%RTM%LW%Rac_dwn(ThF:ThL,i)
-      delta_Rbc_up  = SPixel%RTM%LW%Rbc_up(ThF:ThL,i+1) - &
-                      SPixel%RTM%LW%Rbc_up(ThF:ThL,i)
+      delta_Rac_up  = SPixel%RTM%LW%Rac_up(Thermal,i+1) - &
+                      SPixel%RTM%LW%Rac_up(Thermal,i)
+      delta_Rac_dwn = SPixel%RTM%LW%Rac_dwn(Thermal,i+1) - &
+                      SPixel%RTM%LW%Rac_dwn(Thermal,i)
+      delta_Rbc_up  = SPixel%RTM%LW%Rbc_up(Thermal,i+1) - &
+                      SPixel%RTM%LW%Rbc_up(Thermal,i)
 
       ! Gradients of radiances w.r.t. pressure (around Pc)
-      RTM_Pc%LW%dRac_up_dPc(ThF:ThL)  = delta_Rac_up  / delta_p
-      RTM_Pc%LW%dRac_dwn_dPc(ThF:ThL) = delta_Rac_dwn / delta_p
-      RTM_Pc%LW%dRbc_up_dPc(ThF:ThL)  = delta_Rbc_up  / delta_p
+      RTM_Pc%LW%dRac_up_dPc(Thermal)  = delta_Rac_up  / delta_p
+      RTM_Pc%LW%dRac_dwn_dPc(Thermal) = delta_Rac_dwn / delta_p
+      RTM_Pc%LW%dRbc_up_dPc(Thermal)  = delta_Rbc_up  / delta_p
 
       ! Change in temperature between RTM levels i and i+1
       delta_T = SPixel%RTM%LW%T(i+1) - SPixel%RTM%LW%T(i)
@@ -212,24 +208,24 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       delta_Pc = Pc - SPixel%RTM%LW%P(i)
 
       ! Diff. in trans. from gradient
-      delta_Tc = delta_Pc * RTM_Pc%LW%dTac_dPc(ThF:ThL)
+      delta_Tc = delta_Pc * RTM_Pc%LW%dTac_dPc(Thermal)
       ! Abs. above cloud trans.
-      RTM_Pc%LW%Tac(ThF:ThL) = SPixel%RTM%LW%Tac(ThF:ThL,i) + delta_Tc
+      RTM_Pc%LW%Tac(Thermal) = SPixel%RTM%LW%Tac(Thermal,i) + delta_Tc
 
       ! Diff. in trans. from gradient
-      delta_Tc = delta_Pc * RTM_Pc%LW%dTbc_dPc(ThF:ThL)
+      delta_Tc = delta_Pc * RTM_Pc%LW%dTbc_dPc(Thermal)
       ! Abs. below cloud trans.
-      RTM_Pc%LW%Tbc(ThF:ThL) = SPixel%RTM%LW%Tbc(ThF:ThL,i) + delta_Tc
+      RTM_Pc%LW%Tbc(Thermal) = SPixel%RTM%LW%Tbc(Thermal,i) + delta_Tc
 
       ! Interpolated radiances
-      delta_Rc = delta_Pc * RTM_Pc%LW%dRac_up_dPc(ThF:ThL)
-      RTM_Pc%LW%Rac_up(ThF:ThL) = SPixel%RTM%LW%Rac_up(ThF:ThL,i) + delta_Rc
+      delta_Rc = delta_Pc * RTM_Pc%LW%dRac_up_dPc(Thermal)
+      RTM_Pc%LW%Rac_up(Thermal) = SPixel%RTM%LW%Rac_up(Thermal,i) + delta_Rc
 
-      delta_Rc = delta_Pc * RTM_Pc%LW%dRac_dwn_dPc(ThF:ThL)
-      RTM_Pc%LW%Rac_dwn(ThF:ThL) = SPixel%RTM%LW%Rac_dwn(ThF:ThL,i) + delta_Rc
+      delta_Rc = delta_Pc * RTM_Pc%LW%dRac_dwn_dPc(Thermal)
+      RTM_Pc%LW%Rac_dwn(Thermal) = SPixel%RTM%LW%Rac_dwn(Thermal,i) + delta_Rc
 
-      delta_Rc = delta_Pc * RTM_Pc%LW%dRbc_up_dPc(ThF:ThL)
-      RTM_Pc%LW%Rbc_up(ThF:ThL) = SPixel%RTM%LW%Rbc_up(ThF:ThL,i) + delta_Rc
+      delta_Rc = delta_Pc * RTM_Pc%LW%dRbc_up_dPc(Thermal)
+      RTM_Pc%LW%Rbc_up(Thermal) = SPixel%RTM%LW%Rbc_up(Thermal,i) + delta_Rc
 
       ! Interpolated Planck functions: calculate T and convert to B using T2R
       ! delta_T here is the step from the next lowest level to the current Pc,
@@ -244,8 +240,9 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       RTM_Pc%Tc = SPixel%RTM%LW%T(i) + delta_T
       T = RTM_Pc%Tc
 
-      call T2R(SPixel%Ind%Nthermal, SAD_Chan, T, RTM_Pc%LW%B(ThF:ThL), dB_dT, status)
-      RTM_Pc%LW%dB_dPc(ThF:ThL) = dT_dPc * dB_dT
+      call T2R(SPixel%Ind%NThermal, SAD_Chan, T, R, dB_dT, status)
+      RTM_Pc%LW%B(Thermal) = R
+      RTM_Pc%LW%dB_dPc(Thermal) = dT_dPc * dB_dT
 
       ! Set current GPH and save the rate of change w.r.t. Pc for use later
       RTM_Pc%Hc = SPixel%RTM%LW%H(i) + delta_H
@@ -268,11 +265,13 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
          write(bkp_lun,'(/,a,/)')'Interpol_Thermal:'
       end if
 
-      do i=ThF,ThL
-         write(bkp_lun,'(a,i2,5(a,f9.4))') 'Channel index: ', i, &
-            ' Tac: ', RTM_Pc%LW%Tac(i), ' Tbc: ', RTM_Pc%LW%Tbc(i), &
-            ' Rac up: ', RTM_Pc%LW%Rac_up(i), ' Rac dwn: ', RTM_Pc%LW%Rac_dwn(i),&
-            ' Rbc up: ', RTM_Pc%LW%Rbc_up(i)
+      do i=1,SPixel%Ind%NThermal
+         write(bkp_lun,'(a,i2,5(a,f9.4))') 'Channel index: ', Thermal(i), &
+            ' Tac: ', RTM_Pc%LW%Tac(Thermal(i)), &
+            ' Tbc: ', RTM_Pc%LW%Tbc(Thermal(i), &
+            ' Rac up: ', RTM_Pc%LW%Rac_up(Thermal(i)), &
+            ' Rac dwn: ', RTM_Pc%LW%Rac_dwn(Thermal(i)),&
+            ' Rbc up: ', RTM_Pc%LW%Rbc_up(Thermal(i))
       end do
 
       write(bkp_lun, '(a,/)') 'Interpol_Thermal: end'

@@ -128,6 +128,7 @@
 !      from the thermal call to the solar call.
 !   20140715, CP: Changed illumination logic.
 !   20141201, CP: added in cloud albedo
+!   20150107, AP: Eliminate write to RTM_Pc%Tac, Tbc. Now within models.
 !
 ! Bugs:
 !   None known.
@@ -166,7 +167,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    ! Declare local variables
 
    integer       :: i
-   integer       :: ThF, ThL ! First, last thermal channel indices
    type(GZero_t) :: GZero
    real          :: CRP(SPixel%Ind%Ny, MaxCRProps)
 !  real          :: d_cloud_albedo(SPixel%Ind%NySolar, 2))
@@ -227,30 +227,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    ! Assign long wave transmittances to the combined Tac and Tbc vectors.
 
-   ! Use ThF and ThL to access the first and last required thermal channels from
-   ! RTM_Pc%LW arrays, since these are always allocated to size
-   ! Ctrl%Ind%NThermal, but not all thermal channels are used in all SPixels
-   ! (hence SPixel%Ind%ThermalFirst may not equal Ctrl%Ind%ThermalFirst). The
-   ! problem does not occur with solar channels as we always use either all
-   ! requested solar channels or none at all.
-
    if (status == 0) then
-      ! These next two lines exclude the mixed channel during twilight conditions
-      ! from the treatment of the thermal channels in the LW array(r.h.s). On
-      ! l.h.s this is done via getillum
-      ThF = 1 + SPixel%Ind%ThermalFirst - Ctrl%Ind%ThermalFirst
-      ThL = Ctrl%Ind%NThermal
-
-      RTM_Pc%Tac(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast) = &
-         RTM_Pc%LW%Tac(ThF:ThL)
-      RTM_Pc%Tbc(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast) = &
-         RTM_Pc%LW%Tbc(ThF:ThL)
-
-      RTM_Pc%dTac_dPc(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast) = &
-         RTM_Pc%LW%dTac_dPc(ThF:ThL)
-      RTM_Pc%dTbc_dPc(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast) = &
-         RTM_Pc%LW%dTbc_dPc(ThF:ThL)
-
       ! Call thermal forward model (required for day, twilight and night)
       CRP   = 0.0
       d_CRP = 0.0
@@ -274,16 +251,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
             status = RTMIntflagErr
             return
          end if
-
-         RTM_Pc%Tac(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast) = &
-            RTM_Pc%SW%Tac(:)
-         RTM_Pc%Tbc(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast) = &
-            RTM_Pc%SW%Tbc(:)
-
-         RTM_Pc%dTac_dPc(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast) = &
-            RTM_Pc%SW%dTac_dPc(:)
-         RTM_Pc%dTbc_dPc(SPixel%Ind%SolarFirst:SPixel%Ind%SolarLast) = &
-            RTM_Pc%SW%dTbc_dPc(:)
 
          ! Call short wave forward model. Note that solar channels only are
          ! passed (including mixed channels).

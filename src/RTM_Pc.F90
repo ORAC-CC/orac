@@ -43,6 +43,8 @@
 !       w.r.t pressure. Allows us to calculate an error on Tc for output.
 !    27th May 2014, Greg McGarragh:
 !       Some cleanup.
+!     7th Jan 2015, Adam Povey:
+!       Eliminate write to RTM_Pc%Tac, Tbc.
 !
 ! Bugs:
 !    None known.
@@ -87,10 +89,6 @@ module RTM_Pc_def
    type RTM_Pc_t
       type(RTM_Pc_LW_t) :: LW              ! Long wave
       type(RTM_Pc_SW_t) :: SW              ! Short wave
-      real, pointer     :: Tac(:)          ! Combined long and short wave transmittances
-      real, pointer     :: Tbc(:)          ! Combined long and short wave transmittances
-      real, pointer     :: dTac_dPc(:)     ! Gradient of Tac w.r.t cloud pressure
-      real, pointer     :: dTbc_dPc(:)     ! Gradient of Tbc w.r.t cloud pressure
       real              :: Tc              ! Temperature at Pc
       real              :: Hc              ! geopotentail height at Pc
       real              :: dHc_dPc         ! Rate of change of Hc w.r.t Pc

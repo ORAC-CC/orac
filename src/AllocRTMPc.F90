@@ -49,6 +49,7 @@
 !    2012/11/03, MJ: Changed allocation of SW arrays.
 !    2013/01/17, MJ: Added dTc_dPc and dHc_dPc.
 !    2014/05/27, GM: Some cleanup.
+!    2015/01/07, AP: Eliminate write to RTM_Pc%Tac, Tbc.
 !
 ! Bugs:
 !    None known.
@@ -95,11 +96,6 @@ subroutine Alloc_RTM_Pc(Ctrl, RTM_Pc)
    end if
 
    ! Allocate sizes of the main structure arrays
-
-   allocate(RTM_Pc%Tac(Ctrl%Ind%NY))
-   allocate(RTM_Pc%Tbc(Ctrl%Ind%NY))
-   allocate(RTM_Pc%dTac_dPc(Ctrl%Ind%Ny))
-   allocate(RTM_Pc%dTbc_dPc(Ctrl%Ind%Ny))
 
    RTM_Pc%Hc=sreal_fill_value
    RTM_Pc%Tc=sreal_fill_value
