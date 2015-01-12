@@ -86,6 +86,8 @@
 !       Some intent changes.
 !     9th Jan 2015, Adam Povey:
 !       Replacing ThF:ThL with SPixel index array. Eliminate RTM_Pc%Tac, Tbc.
+!    12th Jan 2015, Adam Povey:
+!       Remove CRP arguments.
 !
 ! Bugs:
 !   None known.
@@ -94,8 +96,8 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
-                      d_CRP, BT, d_BT, R, d_R, status)
+subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
+                      BT, d_BT, R, d_R, status)
 
    use CTRL_def
    use ECP_Constants
@@ -116,8 +118,6 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: X(MaxStateVar)
    type(GZero_t),    intent(in)    :: GZero
-   real,             intent(inout) :: CRP(SPixel%Ind%Nthermal, MaxCRProps)
-   real,             intent(inout) :: d_CRP(SPixel%Ind%Nthermal, MaxCRProps, 2)
    real,             intent(out)   :: BT(SPixel%Ind%Nthermal)
    real,             intent(out)   :: d_BT(SPixel%Ind%Nthermal, MaxStateVar)
    real,             intent(out)   :: R(SPixel%Ind%Nthermal)
@@ -126,6 +126,8 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, CRP, &
 
    ! Define local variables
 
+   real    :: CRP(SPixel%Ind%Nthermal, MaxCRProps)
+   real    :: d_CRP(SPixel%Ind%Nthermal, MaxCRProps, 2)
    integer :: i
    integer :: Thermal(SPixel%Ind%NThermal)
    real    :: delta_Ts

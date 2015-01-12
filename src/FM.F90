@@ -130,6 +130,8 @@
 !   20141201, CP: added in cloud albedo
 !   20150107, AP: Eliminate write to RTM_Pc%Tac, Tbc. Now within models.
 !   20150112, CP: bugfix to  cloud albedo
+!   20150112, AP: Replacing First:Last channel indexing with generic, array-based
+!      indexing. Make CRP an output of
 ! Bugs:
 !   None known.
 !
@@ -168,9 +170,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    integer       :: i
    type(GZero_t) :: GZero
-   real          :: CRP(SPixel%Ind%Ny, MaxCRProps)
-!  real          :: d_cloud_albedo(SPixel%Ind%NySolar, 2))
-   real          :: d_CRP(SPixel%Ind%Ny, MaxCRProps, 2)
+   real          :: CRP(SPixel%Ind%NSolar, MaxCRProps)
+!  real          :: d_cloud_albedo(SPixel%Ind%NSolar, 2))
+   real          :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, 2)
    real          :: BT(SPixel%Ind%NThermal)
    real          :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
    real          :: Rad(SPixel%Ind%NThermal)
@@ -178,7 +180,11 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    real          :: Ref(SPixel%Ind%NSolar)
    real          :: d_Ref(SPixel%Ind%NSolar, MaxStateVar+1)
    real          :: Y_R(SPixel%Ind%NMixed)
+   real          :: T(SPixel%Ind%NMixed)
    real          :: dT_dR(SPixel%Ind%NMixed)
+   integer       :: Thermal(SPixel%Ind%NThermal)
+   integer       :: itherm(SPixel%Ind%NMixed)
+   integer       :: isolar(SPixel%Ind%NMixed)
 #ifdef BKP
    integer       :: j
    integer       :: bkp_lun ! Unit number for breakpoint file
@@ -190,23 +196,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    Y     = 0.0
    dy_dX = 0.0
 
-   ! Call routine to interpolate RTM data to the cloud pressure level.
-   ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
-   if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
-      call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
-              SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
-              RTM_Pc, status)
-   else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
-      call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
-              SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
-              RTM_Pc, status)
-   else
-      write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
-                 Ctrl%LUTIntflag
-      status = RTMIntflagErr
-      return
-   end if
-
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
    call Allocate_GZero(GZero, SPixel)
 
@@ -214,7 +203,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT, GZero, status)
    end if
 
-   ! Combine long and short wave transmittance values (depending on whether it
+   ! Evaluate long and short wave transmittance values (depending on whether it
    ! is daytime, twilight or nighttime).
    !
    ! Note: For channels that are both thermal and solar the transmittances are
@@ -225,139 +214,115 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    ! calls are independent so that contents of CRP and d_CRP do not need to be
    ! passed from the thermal call to the solar call.
 
-   ! Assign long wave transmittances to the combined Tac and Tbc vectors.
 
-   if (status == 0) then
+   ! Call thermal forward model (required for day, twilight and night)
+   if (SPixel%Ind%NThermal > 0 .and. status == 0) then
+      Thermal = SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal)
+      
+      ! Call routine to interpolate RTM data to the cloud pressure level.
+      ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
+      if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
+         call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
+              SAD_Chan(Thermal), RTM_Pc, status)
+      else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
+         call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
+              SAD_Chan(Thermal), RTM_Pc, status)
+      else
+         write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
+              Ctrl%LUTIntflag
+         status = RTMIntflagErr
+         return
+      end if
+
       ! Call thermal forward model (required for day, twilight and night)
+      call FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan(Thermal), &
+              RTM_Pc, X, GZero, BT, d_BT, Rad, d_Rad, status)
+      
+      ! Copy results into output vectors
+      Y(SPixel%Ind%YThermal) = BT
+      dY_dX(SPixel%Ind%YThermal,1:MaxStateVar) = d_BT
+
+      ! Although there is no value w.r.t Rs for the thermal channels, the
+      ! dY_dX contains space for it, so set it to 0.
+      dY_dX(SPixel%Ind%YThermal, IRs) = 0
+   end if
+
+   ! Call solar forward model
+   if (SPixel%Ind%NSolar > 0 .and. status == 0) then
+      ! Call routine to interpolate RTM data to the cloud pressure level.
+      ! Interpol_Solar populates the SW part of RTM_Pc.
+      if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
+         call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc, status)
+      else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
+         call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
+      else
+         write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
+              Ctrl%LUTIntflag
+         status = RTMIntflagErr
+         return
+      end if
+      
+      ! Call short wave forward model. Note that solar channels only are
+      ! passed (including mixed channels).
       CRP   = 0.0
       d_CRP = 0.0
-      cloud_albedo=0.0
 
-      call FM_Thermal(Ctrl, SAD_LUT, SPixel, &
-              SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
-              RTM_Pc, X, GZero, CRP, d_CRP, BT, d_BT, Rad, d_Rad, status)
+      Ref   = 0.0
+      d_Ref = 0.0
+      
+      call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
+           Ref, d_Ref, status)
 
-      ! Daytime
-      if ((SPixel%Illum(1) .ne. Inight .and. SPixel%Illum(1) .ne. Itwi ) .and. status == 0) then
-         ! Call routine to interpolate RTM data to the cloud pressure level.
-         ! Interpol_Solar populates the SW part of RTM_Pc.
-         if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
-            call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc, status)
-         else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
-            call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
-         else
-            write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
-                       Ctrl%LUTIntflag
-            status = RTMIntflagErr
-            return
-         end if
-
-         ! Call short wave forward model. Note that solar channels only are
-         ! passed (including mixed channels).
-         CRP   = 0.0
-         d_CRP = 0.0
-
-         Ref   = 0.0
-         d_Ref = 0.0
-
-         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP(1:SPixel%Ind%NSolar,:), d_CRP(1:SPixel%Ind%NSolar,:,2), &
-                 Ref, d_Ref, status)
-
-         cloud_albedo(:)=CRP(1:SPixel%Ind%NSolar,IRfbd)
-
-
-         ! Combine the results from the LW and SW forward models
-         if (status == 0) then
-            ! Purely solar channels
-            Y(1:(SPixel%Ind%ThermalFirst-1)) = Ref(1:(SPixel%Ind%ThermalFirst-1))
-
-            dY_dX(1:(SPixel%Ind%ThermalFirst-1),:) = d_Ref(1:(SPixel%Ind%ThermalFirst-1),:)
-
-
-            ! Purely thermal channels. Y array is of size Ny channels, whereas
-            ! BT and d_BT hold only thermal channels. 1+SPixel%Ind%NMixed
-            ! offsets the starting index by the number of mixed channels (s.b.)
-            Y(SPixel%Ind%SolarLast+1:SPixel%Ind%Ny) = &
-               BT(1+SPixel%Ind%NMixed:SPixel%Ind%NThermal)
-
-            dY_dX(SPixel%Ind%SolarLast+1:SPixel%Ind%Ny,1:MaxStateVar) = &
-               d_BT(1+SPixel%Ind%NMixed:SPixel%Ind%NThermal,:)
-
-            ! Although there is no value w.r.t Rs for the thermal channels, the
-            ! dY_dX contains space for it, so set it to 0.
-            dY_dX(SPixel%Ind%SolarLast+1:SPixel%Ind%Ny, IRs) = 0
-
-            ! Mixed channels - when there are mixed channels present loop over
-            ! them.  The mixed channel measurements are in brightness temperature.
-            ! Convert reflectances to radiances using the solar constant f0 and
-            ! calculate total radiances. The total radiances are converted to
-            ! brightness temperatures using R2T.
-
-            if (SPixel%Ind%SolarLast >= SPixel%Ind%ThermalFirst) then
-
-               ! Sum the radiances and the reflectances (converted to radiances
-               ! using f0) to give total radiance for the current scene, Y_R.
-               Y_R(:) =  Rad(1:SPixel%Ind%NMixed) + &
-                  (SPixel%f0(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast) * &
-                  Ref(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast))
-
-               ! Call R2T to convert the scene radiance Y_R to brightness
-               ! temperature. Write the result into the appropriate part of the
-               ! measurement vector Y. The gradient dT_dR calculated at the scene
-               ! radiance is used later.
-               call R2T( SPixel%Ind%NMixed,&
-                  SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast),  &
-                  Y_R(:), Y(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast), &
-                  dT_dR(:), status)
-
-               if (status == 0) then
-                  ! The gradients in Y w.r.t. state vector X.  Use dT_dR
-                  ! calculated in the previous call to R2T to convert dR_dX to
-                  ! dT_dX (i.e. dY_dX). Write result into appropriate part of
-                  ! dY_dX array.
-                  do i=1,MaxStateVar
-
-                     dY_dX(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast,i) = &
-                        (d_Rad(1:SPixel%Ind%NMixed,i) + &
-                        (SPixel%f0(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast) * &
-                        d_Ref(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast,i))) * &
-                        dT_dR(:)
-
-                  end do
-
-                  ! Deal with the Rs terms
-                  dY_dX(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast,IRs) = &
-                     SPixel%f0(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast) * &
-                     d_Ref(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast,IRs) * &
-                     dT_dR(:)
-
-               end if ! status == 0 from R2T
-            end if ! (SolarLast >= ThermalFirst)
-         end if ! status == 0 from FM_Solar
-
-      ! Twilight and nighttime
-      else if ((SPixel%Illum(1) .eq.  ITwi .or. SPixel%Illum(1) .eq. INight) &
-              .and. status == 0) then
-         ! Solar channels are set to zeros as these are not used (replace
-         ! previous SPixel values)
-!        Y(1:(SPixel%Ind%ThermalFirst-1))       = 0.0
-!        dY_dX(1:(SPixel%Ind%ThermalFirst-1),:) = 0.0
-
-         ! All available thermal channels (not mixed channels at twilight)
-
-!        Y(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast)                   = BT
-!        dY_dX(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast,1:MaxStateVar) = d_BT(:,:)
-
-         ! The above is not necessary since Y and dY_dX are passed with size
-         ! SPixel%Ind%Ny. Hence, for nighttime or twilight there are only
-         ! thermal channels passed.
-         Y(1:SPixel%Ind%Ny)      = BT(1:SPixel%Ind%Ny)
-         dY_dX(:, 1:MaxStateVar) = d_BT
-      end if
+      ! Copy results into output vectors (may overwrite mixed chs)
+      Y(SPixel%Ind%YSolar) = Ref
+      dY_dX(SPixel%Ind%YSolar,:) = d_Ref
+      cloud_albedo = CRP(:,IRD)
+!     d_cloud_albedo = d_CRP(:,IRd,:)
    end if
+
+   
+   ! Mixed channels - when there are mixed channels present loop over
+   ! them.  The mixed channel measurements are in brightness temperature
+   ! Convert reflectances to radiances using the solar constant f0 and
+   ! calculate total radiances. The total radiances are converted to
+   ! brightness temperatures using R2T.
+   if (SPixel%Ind%NMixed > 0 .and. status == 0) then
+      itherm = SPixel%spixel_y_mixed_to_spixel_y_thermal(1:SPixel%Ind%NMixed)
+      isolar = SPixel%spixel_y_mixed_to_spixel_y_solar(1:SPixel%Ind%NMixed)
+
+      ! Sum the radiances and the reflectances (converted to radiances
+      ! using f0) to give total radiance for the current scene, Y_R.
+      Y_R =  Rad(itherm) + SPixel%f0(isolar) * Ref(isolar)
+
+      ! Call R2T to convert the scene radiance Y_R to brightness
+      ! temperature. Write the result into the appropriate part of the
+      ! measurement vector Y. The gradient dT_dR calculated at the scene
+      ! radiance is used later.
+      call R2T(SPixel%Ind%NMixed, SAD_Chan(SPixel%Ind%YMixed),  &
+               Y_R, T, dT_dR, status)
+      if (status == 0) then
+         ! Write output into Y array
+         Y(SPixel%Ind%YMixed) = T
+         
+         ! The gradients in Y w.r.t. state vector X.  Use dT_dR
+         ! calculated in the previous call to R2T to convert dR_dX to
+         ! dT_dX (i.e. dY_dX). Write result into appropriate part of
+         ! dY_dX array.
+         do i=1,MaxStateVar
+            dY_dX(SPixel%Ind%YMixed,i) = (d_Rad(itherm,i) + &
+                 SPixel%f0(isolar) * d_Ref(isolar,i)) * dT_dR
+         end do
+
+         ! Deal with the Rs terms
+         dY_dX(SPixel%Ind%YMixed,IRs) = &
+              SPixel%f0(isolar) * d_Ref(isolar,IRs) * dT_dR
+
+      end if ! status == 0 from R2T
+   end if ! SPixel%Ind%NMixed > 0
 
    call Deallocate_GZero(GZero)
 
+   
    ! Open breakpoint file if required, and write our reflectances and gradients.
 
 #ifdef BKP
@@ -380,12 +345,12 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       do i=1, SPixel%Ind%NThermal
          write(bkp_lun,'(3a,f9.4,a,5f9.4)')'Channel: ', &
-	    SAD_Chan(i+(SPixel%Ind%ThermalFirst-1))%Desc,  &
+	    SAD_Chan(SPixel%Ind%YThermal(i))%Desc,  &
 	    ' Rad ',Rad(i), ' dRad ',(d_Rad(i,j), j=1,MaxStateVar)
       end do
       do i=1, SPixel%Ind%NThermal
          write(bkp_lun,'(3a,f9.4,a,5f9.4)')'Channel: ', &
-	    SAD_Chan(i+(SPixel%Ind%ThermalFirst-1))%Desc, &
+	    SAD_Chan(SPixel%Ind%YThermal(i))%Desc, &
 	    ' BT  ',BT(i), ' dBT  ',(d_BT(i,j), j=1,MaxStateVar)
       end do
       write(bkp_lun,'(/)')
@@ -393,8 +358,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       if (SPixel%Geom%Solzen(1) < Ctrl%MaxSolzen) then
          do i=1, SPixel%Ind%NSolar
             write(bkp_lun,'(3a,f9.4,a,6f9.4)')'Channel: ', &
-	       SAD_Chan(i)%Desc, ' Ref ',Ref(i), ' dRef ', &
-	       (d_Ref(i,j),j=1,MaxStateVar+1)
+	       SAD_Chan(SPixel%Ind%YSolar(i))%Desc, &
+               ' Ref ',Ref(SPixel%Ind%YSolar(i)), &
+               ' dRef ', (d_Ref(SPixel%Ind%YSolar(i),j),j=1,MaxStateVar+1)
 	 end do
          write(bkp_lun,'(/)')
 
@@ -407,7 +373,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
        do i=1, SPixel%Ind%NThermal
 	    write(bkp_lun,'(3a,f9.4,a,6f9.4)') 'Channel: ', &
-	       SAD_Chan(i+(SPixel%Ind%ThermalFirst-1))%Desc, ' Y: ',Y(i),&
+	       SAD_Chan(SPixel%Ind%YThermal(i))%Desc, &
+               ' Y: ',Y(SPixel%Ind%YThermal(i)),&
 	       ' dY_dX: ',(dY_dX(i,j),j=1,MaxStateVar+1)
 	 end do
       end if
