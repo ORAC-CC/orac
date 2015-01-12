@@ -216,6 +216,7 @@
 !    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
 !       solar/thermal channels with respect to the channels actually processed,
 !       rather than the MSI file.
+!    12th Jan 2015, Adam Povey: Switching to Ctrl%Ind%Ch_Is rather than any().
 !
 ! Bugs:
 !    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -313,7 +314,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0, :))
    if (minsolzen < Ctrl%MaxSolzen) then
       do i = 1,Ctrl%Ind%Nsolar
-         if (.not. any(Ctrl%Ind%YMixed == Ctrl%Ind%YSolar(i))) &
+         if (.not. btest(Ctrl%Ind%Ch_Is(Ctrl%Ind%YSolar(i)), ThermalBit)) &
             call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                              Ctrl%Ind%YSolar(i)), RefMax, RefMin, SPixel, &
                              'MSI reflectance', SPixRef, Ctrl)

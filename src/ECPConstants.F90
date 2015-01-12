@@ -100,7 +100,9 @@
 !    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
 !    2014/11/20, Oliver Sus: increased BTMax from 330 to 350 K, thus providing 
 !       retrieval results for warm land surfaces (e.g. Sahara, Namib)
-!    2015/01/09 CP added rfbd for cloud albedo calculations
+!    2015/01/09, Caroline Poulsen: added rfbd for cloud albedo calculations
+!    2015/01/12, Adam Povey: Added bit positions for Ctrl%Ind%Ch_Is.
+!
 ! Bugs:
 !    None known.
 !
@@ -261,6 +263,10 @@ module ECP_constants
    integer, parameter :: SelmMeas         = 2
    integer, parameter :: SelmAux          = 3
    integer, parameter :: Sacura           = 4
+
+   ! Bit positions used in Ctrl%Ind%Ch_Is flag
+   integer, parameter :: SolarBit         = 0
+   integer, parameter :: ThermalBit       = 1
 
    ! Super-pixel quality control flag: bit numbers for flagging problems with
    ! different super-pixel data

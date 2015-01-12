@@ -80,6 +80,7 @@
 !       Permit optional overrides of default behaviour from driver.
 !    2014/12/19, AP: Tidying. Cleaning the management of channel indexing.
 !    2014/12/29, GM: Fixed a bug in the channel indexing changes above.
+!    2015/01/12, AP: Adding Ctrl%Ind%Ch_Is.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -246,6 +247,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Produce channel indexing arrays
    allocate(Ctrl%Ind%ICh(Ctrl%Ind%Ny))
    allocate(Ctrl%Ind%Y_ID(Ctrl%Ind%Ny))
+   allocate(Ctrl%Ind%Ch_Is(Ctrl%Ind%Ny))
+   Ctrl%Ind%Ch_Is = 0
    allocate(Ctrl%Ind%YSolar(Ctrl%Ind%NSolar))
    allocate(Ctrl%Ind%YThermal(Ctrl%Ind%NThermal))
    allocate(Ctrl%Ind%YMixed(Ctrl%Ind%NMixed))
@@ -264,14 +267,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (channel_sw_flag(i) == 1) then
             i0 = i0+1
             Ctrl%Ind%YSolar(i0) = ii
+            Ctrl%Ind%Ch_Is(ii) = ibset(Ctrl%Ind%Ch_Is(ii), SolarBit)
          end if
          if (channel_lw_flag(i) == 1) then
             i1 = i1+1
             Ctrl%Ind%YThermal(i1) = ii
+            Ctrl%Ind%Ch_Is(ii) = ibset(Ctrl%Ind%Ch_Is(ii), ThermalBit)
          end if
          if (channel_sw_flag(i) == 1 .and. channel_lw_flag(i) == 1) then
             i2 = i2+1
             Ctrl%Ind%YMixed(i2) = ii
+!            Ctrl%Ind%Ch_Is(ii) = ibset(Ctrl%Ind%Ch_Is(ii), MixedBit)
          end if
       end if
    end do
