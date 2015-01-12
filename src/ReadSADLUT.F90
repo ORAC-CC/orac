@@ -10,6 +10,7 @@
 ! History:
 !    10th Oct 2014, Greg McGarragh:
 !       Original version.
+!    9/1/2015 CP added Rfbd
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -871,9 +872,12 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
 
       ! Read the Rd, Td files for all channels (solar and thermal)
+
       call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
       call Read_LUT_Xd_sat(Ctrl, LUT_file, i, SAD_LUT, IRd, "Rd", SAD_LUT%Rd, &
                            i_lut2 = IRfd, name2 = "Rfd", values2 = SAD_LUT%Rfd)
+
+
 
       call create_lut_filename(Ctrl, 'TD', chan_num, LUT_File)
       call Read_LUT_Xd_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
@@ -882,10 +886,12 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then
 
-         ! Read the Rbd file
-         call create_lut_filename(Ctrl, 'RBD', chan_num, LUT_File)
-         call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
-                               SAD_LUT%Rbd)
+
+ 
+     ! Read the Rd for cloud albedo, Td files for all channels (solar and thermal)
+      call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
+      call Read_LUT_Xd_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", SAD_LUT%Rfbd)
+
 
          ! Read the Tb file
          call create_lut_filename(Ctrl, 'TB', chan_num, LUT_File)
@@ -897,6 +903,12 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
          call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
                                SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
                                values2 = SAD_LUT%Tfbd)
+
+         call create_lut_filename(Ctrl, 'RBD', chan_num, LUT_File)
+         call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
+                               SAD_LUT%Rbd)
+
+
       end if
 
 
@@ -955,6 +967,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
    if (Ctrl%Ind%NSolar > 0) then
       SAD_LUT%Rbd  = SAD_LUT%Rbd  / 100.
+      SAD_LUT%RFbd  = SAD_LUT%RFbd  / 100.
       SAD_LUT%Tbd  = SAD_LUT%Tbd  / 100.
       SAD_LUT%Tb   = SAD_LUT%Tb   / 100.
       SAD_LUT%Tfbd = SAD_LUT%Tfbd / 100.

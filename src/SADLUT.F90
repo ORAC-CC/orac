@@ -28,6 +28,7 @@
 !    12th Jan 2014, Greg McGarragh: Increase nmaxre to 23 for the ice LUTs.
 !    16th Jan 2014, Greg McGarragh: Added SAD_LUT%table_use* arrays.
 !    23rd Jan 2014, Greg McGarragh: Cleaned up the code.
+!    9/1/2015 CP added Rfbd
 !
 ! Bugs:
 !    None known.
@@ -123,6 +124,11 @@ module SAD_LUT_def
 
       real, pointer :: Tfbd(:,:,:,:)
                        ! Diffuse part of beam transmission (flux)
+		       ! Dimensions: channel, Tau, SolZen, Re
+
+
+      real, pointer :: Rfbd(:,:,:,:)
+                       ! Diffuse part of diffuse reflectance
 		       ! Dimensions: channel, Tau, SolZen, Re
 
       real, pointer :: Tfd(:,:,:)

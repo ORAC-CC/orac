@@ -100,7 +100,7 @@
 !    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
 !    2014/11/20, Oliver Sus: increased BTMax from 330 to 350 K, thus providing 
 !       retrieval results for warm land surfaces (e.g. Sahara, Namib)
-!
+!    2015/01/09 CP added rfbd for cloud albedo calculations
 ! Bugs:
 !    None known.
 !
@@ -192,7 +192,7 @@ module ECP_constants
    integer, parameter :: LUTIntMethBicubic = 1
 
    ! The following max sizes apply to the SAD_LUT arrays
-   integer, parameter :: MaxCRProps       = 10
+   integer, parameter :: MaxCRProps       = 11
 
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
@@ -207,6 +207,7 @@ module ECP_constants
    integer, parameter :: ITFBd            = 8       !  "    "  TFBd "   "   "
    integer, parameter :: ITFd             = 9       !  "    "  TFd  "   "   "
    integer, parameter :: IEm              = 10      !  "    "  Em   "   "   "
+   integer, parameter :: IRFBd            = 11      ! Index of RFBd data in array
 
    ! The following max sizes apply to the brdf arrays
    integer, parameter :: MaxRho_XX        = 4

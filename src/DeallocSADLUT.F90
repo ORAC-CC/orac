@@ -1,3 +1,28 @@
+!-------------------------------------------------------------------------------
+! Name:
+!    DeAlloc_SAD_LUT
+!
+! Purpose:
+!
+! Arguments:
+!    Name Type In/Out/Both Description
+!
+! Algorithm:
+!
+! Local variables:
+!    Name Type Description
+!
+! History:
+!    10th Oct 2014, Greg McGarragh: Original version
+!    9/1/2015 CP added Rfbd
+! Bugs:
+!    None known.
+!
+! $Id$
+!
+!-------------------------------------------------------------------------------
+
+
 subroutine Dealloc_LUT_Grid(LUT_Grid)
 
    implicit none
@@ -107,6 +132,7 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
       deallocate(SAD_LUT%Tb)
       deallocate(SAD_LUT%Tbd)
       deallocate(SAD_LUT%Tfbd)
+      deallocate(SAD_LUT%Rfbd)
    end if
 
    if (Ctrl%Ind%NThermal > 0) then

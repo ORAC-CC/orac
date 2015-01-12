@@ -36,6 +36,8 @@
 !       Some intent changes.
 !    16th Dec 2014, Greg McGarragh:
 !       Added LUT name mapping: IR_0v = IRBd, etc.
+!    9th Jan 2015, CP:
+!       Added LUT name mapping: IR_0d = IRFBd
 !
 ! Bugs:
 !    None known.
@@ -58,6 +60,7 @@ module FM_Routines_def
    integer, parameter :: IT_dv = ITd
    integer, parameter :: IT_0d = ITFBd
    integer, parameter :: IT_dd = ITFd
+   integer, parameter :: IR_0d = IRFBd
 
 contains
 
