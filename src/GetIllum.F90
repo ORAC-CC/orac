@@ -31,6 +31,8 @@
 !     1st Aug 2014, Greg McGarragh: Fixes and refactoring related to the above
 !       change and cleanup.
 !     7th Aug 2014, Adam Povey: Fix bug in subscripting of FG, AP arrays.
+!    12th Jan 2015, Adam Povey: Adding YSolar, YThermal, YMixed to setup_indices.
+!       Use Ctrl%Ind%Ch_Is flag instead of any() to identify channels.
 !
 ! Bugs:
 !    Warning At the moment only one view is specified.
@@ -367,18 +369,63 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
    integer,        intent(in)    :: i_missing(:)
 
    integer :: i
-   integer :: ii
+   integer :: ii, i0, i1, i2
 
    SPixel%spixel_y_to_ctrl_y_index                 = -1
    SPixel%spixel_y_solar_to_ctrl_y_index           = -1
    SPixel%spixel_y_thermal_to_ctrl_y_index         = -1
    SPixel%spixel_y_solar_to_ctrl_y_solar_index     = -1
    SPixel%spixel_y_thermal_to_ctrl_y_thermal_index = -1
+   SPixel%spixel_y_mixed_to_spixel_y_solar         = -1
+   SPixel%spixel_y_mixed_to_spixel_y_thermal       = -1
 
+   if (SPixel%Ind%NSolar .gt. 0) then
+      deallocate(SPixel%Ind%YSolar)
+      allocate(SPixel%Ind%YSolar(SPixel%Ind%NSolar))
+   end if
+   if (SPixel%Ind%NThermal .gt. 0) then
+      deallocate(SPixel%Ind%YThermal)
+      allocate(SPixel%Ind%YThermal(SPixel%Ind%NThermal))
+   end if
+   if (SPixel%Ind%NMixed .gt. 0) then
+      deallocate(SPixel%Ind%YMixed)
+      allocate(SPixel%Ind%YMixed(SPixel%Ind%NMixed))
+   end if
+   
    ii = 1
+   i0 = 1
+   i1 = 1
+   i2 = 1
    do i = 1, Ctrl%Ind%Ny
       if (any(i .eq. i_missing)) &
          cycle
+
+      ! N??? > 0 checks ensure channels not disabled in above logic
+      ! ACP: This is stupid. Do better in near future.
+      if (btest(Ctrl%Ind%Ch_Is(i), SolarBit) .and. &
+           SPixel%Ind%NSolar .gt. 0) then
+         ! Mixed channels out of those to be retrieved
+         if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit) .and. &
+            SPixel%Ind%NMixed .gt. 0) then
+            
+            SPixel%Ind%YMixed(i2) = ii
+            SPixel%spixel_y_mixed_to_spixel_y_solar(i2) = i0
+            SPixel%spixel_y_mixed_to_spixel_y_thermal(i2) = i1
+            i2 = i2 + 1
+         end if
+         
+         ! Solar channels out of those to be retrieved
+         SPixel%Ind%YSolar(i0) = ii
+         i0 = i0 + 1
+      end if
+      
+      ! Thermal channels out of those to be retrieved
+      if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
+         SPixel%Ind%YThermal(i1) = ii
+         i1 = i1 + 1
+      end if
+      
+      ! Channels to be retrieved out of those in Ctrl%Ind%ICh
       SPixel%spixel_y_to_ctrl_y_index(ii) = i
       ii = ii + 1
    end do
@@ -386,28 +433,11 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
    if (SPixel%Ind%NSolar .gt. 0) then
       ii = 1
       do i = 1, Ctrl%Ind%NSolar
-         if (any(i .eq. i_missing)) &
+         if (any(Ctrl%Ind%YSolar(i) .eq. i_missing)) &
             cycle
-         SPixel%spixel_y_solar_to_ctrl_y_index(ii) = i
-         ii = ii + 1
-      end do
-   end if
-
-   if (SPixel%Ind%NThermal .gt. 0) then
-      ii = 1
-      do i = Ctrl%Ind%ThermalFirst, Ctrl%Ind%Ny
-         if (any(i .eq. i_missing)) &
-            cycle
-         SPixel%spixel_y_thermal_to_ctrl_y_index(ii) = i
-         ii = ii + 1
-      end do
-   end if
-
-   if (SPixel%Ind%NSolar .gt. 0) then
-      ii = 1
-      do i = 1, Ctrl%Ind%NSolar
-         if (any(i .eq. i_missing)) &
-            cycle
+         ! Solar channels to be retrieved out of those in Ctrl%Ind%ICh
+         SPixel%spixel_y_solar_to_ctrl_y_index(ii) = Ctrl%Ind%YSolar(i)
+         ! Solar channels to be retrieved out of solar channels in Ctrl%Ind%ICh
          SPixel%spixel_y_solar_to_ctrl_y_solar_index(ii) = i
          ii = ii + 1
       end do
@@ -415,10 +445,13 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
 
    if (SPixel%Ind%NThermal .gt. 0) then
       ii = 1
-      do i = Ctrl%Ind%ThermalFirst, Ctrl%Ind%Ny
-         if (any(i .eq. i_missing)) &
+      do i = 1, Ctrl%Ind%NThermal
+         if (any(Ctrl%Ind%YThermal(i) .eq. i_missing)) &
             cycle
-         SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(ii) = i - Ctrl%Ind%ThermalFirst + 1
+         ! Thermal channels to be retrieved out of those in Ctrl%Ind%ICh
+         SPixel%spixel_y_thermal_to_ctrl_y_index(ii) = Ctrl%Ind%YThermal(i)
+         ! Thermal channels to be retrieved out of thermal chs in Ctrl%Ind%ICh
+         SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(ii) = i
          ii = ii + 1
       end do
    end if

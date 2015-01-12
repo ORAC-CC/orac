@@ -45,6 +45,8 @@
 !       Added more SPixel to Ctrl map indexes.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
+!    12th Jan 2015, Adam Povey:
+!       Added YSolar,YThermal.
 !
 ! Bugs:
 !   None known.
@@ -135,6 +137,9 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
    deallocate(SPixel%ViewIdx)
    deallocate(SPixel%X)
    deallocate(SPixel%XI)
+   deallocate(SPixel%Ind%YSolar)
+   deallocate(SPixel%Ind%YThermal)
+   deallocate(SPixel%Ind%YMixed)
    deallocate(SPixel%spixel_y_to_ctrl_y_index)
    deallocate(SPixel%spixel_y_solar_to_ctrl_y_index)
    deallocate(SPixel%spixel_y_thermal_to_ctrl_y_index)

@@ -122,6 +122,7 @@
 !       cleanup.
 !    2014/08/01, Greg McGarragh: Added more SPixel to Ctrl map indexes.
 !    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
+!    2015/01/12, Adam Povey: Adding YThermal, YSolar.
 !
 ! Bugs:
 !    None known.
@@ -240,6 +241,10 @@ module SPixel_def
       integer             :: Ny           ! Number of viable measurement channels
       integer             :: NSolar       ! Number of viable solar channels
       integer             :: NThermal     ! Number of viable thermal channels
+      integer, pointer    :: YSolar(:)    ! Array indices wrt Ctrl%Ind%ICh for
+                                          ! solar channels
+      integer, pointer    :: YThermal(:)  ! Array indices for thermal channels
+      integer, pointer    :: YMixed(:)    ! Array indices for mixed channels
       integer             :: ThermalFirst ! Index of first channel with a thermal component
       integer             :: ThermalLast  ! Index of last channel with a thermal component
       integer             :: SolarFirst   ! Index of first channel with a solar component
@@ -331,6 +336,8 @@ module SPixel_def
       integer, pointer    :: spixel_y_thermal_to_ctrl_y_index(:)
       integer, pointer    :: spixel_y_solar_to_ctrl_y_solar_index(:)
       integer, pointer    :: spixel_y_thermal_to_ctrl_y_thermal_index(:)
+      integer, pointer    :: spixel_y_mixed_to_spixel_y_solar(:)
+      integer, pointer    :: spixel_y_mixed_to_spixel_y_thermal(:)
    end type SPixel_t
 
 contains
