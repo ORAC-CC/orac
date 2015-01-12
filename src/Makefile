@@ -236,7 +236,6 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/InvertCholesky.o \
            $(OBJS)/InvertCholeskyDC.o \
            $(OBJS)/InvertMarquardt.o \
-           $(OBJS)/locate.o \
            $(OBJS)/output_routines.o \
            $(OBJS)/polint.o \
            $(OBJS)/R2T.o \

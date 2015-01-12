@@ -21,7 +21,9 @@
 !    division by zero if temperature is constant and some cleanup.
 ! 2014/06/10, MJ: Catches another div. by zero.
 ! 2014/08/01, GM: Cleaned up the code.
-! 2014/08/01, CP: Implemented (Sus) bug fix where if the BT was warmer than the lowest level then the FG temperature was set the lowest temperature.
+! 2014/08/01, CP: Implemented (Sus) bug fix where if the BT was warmer than the
+!    lowest level then the FG temperature was set the lowest temperature.
+! 2015/01/12, AP: Use existing locate function.
 !
 ! $Id$
 !
@@ -33,6 +35,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
    use Ctrl_def
    use ECP_Constants
+   use Int_Routines_def
    use SPixel_def
 
    implicit none
@@ -98,12 +101,12 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
    ! locate kspot (within profile up tp mon_k), with invert_t(kspot) <= bt_o <
    ! invert_t(kspot+1) we interpolate between those two below then
-   call locate_int(invert_t(1:mon_k_trop),mon_k_trop,BT_o,kspot)
+   kspot = locate(invert_t(1:mon_k_trop),BT_o)
 
    if (kspot .ne. 0 ) then
       mon_k=mon_k_trop
    end if
-   
+
    if (kspot .eq. 0) then
 
       ! profile may have unusual inversions
@@ -114,7 +117,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       call hpsort(mon_k_trop,invert_temp(1:mon_k_trop))
 
       ! try to find match in this sorted profile
-      call locate_int(invert_temp(1:mon_k_trop),mon_k_trop,BT_o,kspot)
+      kspot = locate(invert_t(1:mon_k_trop),BT_o)
 
       ! if observed BT (BT_o) is larger than all values in RTM-derived
       ! profile stretch, set kspot to 0; otherwise, the approach above would 
