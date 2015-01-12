@@ -129,7 +129,7 @@
 !   20140715, CP: Changed illumination logic.
 !   20141201, CP: added in cloud albedo
 !   20150107, AP: Eliminate write to RTM_Pc%Tac, Tbc. Now within models.
-!
+!   20150112, CP: bugfix to  cloud albedo
 ! Bugs:
 !   None known.
 !
@@ -231,7 +231,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       ! Call thermal forward model (required for day, twilight and night)
       CRP   = 0.0
       d_CRP = 0.0
-
+      cloud_albedo=0.0
 
       call FM_Thermal(Ctrl, SAD_LUT, SPixel, &
               SAD_Chan(SPixel%Ind%ThermalFirst:SPixel%Ind%ThermalLast), &
@@ -260,11 +260,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
          Ref   = 0.0
          d_Ref = 0.0
 
-         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
+         call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP(1:SPixel%Ind%NSolar,:), d_CRP(1:SPixel%Ind%NSolar,:,2), &
                  Ref, d_Ref, status)
 
-         cloud_albedo(:)=CRP(1:SPixel%Ind%NSolar,IRD)
-!        d_cloud_albedo(:,:)=d_CRP(:,IRd,:)
+         cloud_albedo(:)=CRP(1:SPixel%Ind%NSolar,IRfbd)
 
 
          ! Combine the results from the LW and SW forward models
