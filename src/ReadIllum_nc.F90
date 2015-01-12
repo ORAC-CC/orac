@@ -50,6 +50,7 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
+!    2015/01/12, AP: Simplify logic for identifying missing channels.
 !
 ! Bugs:
 !    None known.
@@ -63,6 +64,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    use CTRL_def
    use Data_def
    use ECP_Constants
+   use Int_Routines_def, only : find_in_array
 
    implicit none
 
@@ -110,66 +112,53 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
          do view = 1,Ctrl%Ind%NViews
             n_vis_bad_ref=0
             n_vis_bad_tau=0
+            n_ir_bad=0
             i_missing_vis_ref=-1
             i_missing_vis_tau=-1
-
-            ! Check solar channels
-            do ic=1,Ctrl%Ind%Nsolar
-               ! Check the ref channels
-               if ((Ctrl%Ind%Y_ID(ic) .eq. refch1) .or. &
-                   (Ctrl%Ind%Y_ID(ic) .eq. refch2)) then
-                  flag = .false.
-                  if (ic .lt. Ctrl%Ind%ThermalFirst) then
-                     if (MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .lt. RefMin .or. &
-                         MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .gt. RefMax) then
-                        flag = .true.
-                     end if
-                  else
-                     if (MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .lt. BTMin .or. &
-                         MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .gt. BTMax) then
-                        flag = .true.
-                     end if
-                  end if
-
-                  if (flag) then
-                     n_vis_bad_ref=n_vis_bad_ref+1
-                     i_missing_vis_ref=ic
-                     MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) = MissingXn
-                  end if
-
-               ! Check the tau channels
-               else
-                  flag = .false.
-                  if (ic .lt. Ctrl%Ind%ThermalFirst) then
-                     if (MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .lt. RefMin .or. &
-                         MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .gt. RefMax) then
-                        flag = .true.
-                     end if
-                  else
-                     if (MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .lt. BTMin .or. &
-                         MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) .gt. BTMax) then
-                        flag = .true.
-                     end if
-                  end if
-
-                  if (flag) then
-                     n_vis_bad_tau=n_vis_bad_tau+1
-                     i_missing_vis_tau=ic
-                     MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) = MissingXn
-                  end if
-               end if
-            end do
-
-            n_ir_bad=0
             i_missing_ir=-1
 
-            ! Check ir channels
-            do ic=1,Ctrl%Ind%Nthermal
-               if (MSI_Data%MSI(i,j,Ctrl%Ind%YThermal(ic)) .lt. BTMin .or. &
-                   MSI_Data%MSI(i,j,Ctrl%Ind%YThermal(ic)) .gt. BTMax) then
-                  n_ir_bad=n_ir_bad+1
-                  i_missing_ir=ic
-                  MSI_Data%MSI(i,j,Ctrl%Ind%YThermal(ic)) = MissingXn
+            do ic=1,Ctrl%Ind%Ny
+               ! Select appropriate limits for the value based on if this channel
+               ! is listed as being thermal. (ACP: Some flag of channel
+               ! properties would be more efficient.)
+               flag = .false.
+               if (btest(Ctrl%Ind%Ch_Is(ic), ThermalBit)) then
+                  if (MSI_Data%MSI(i,j,ic) < BTMin .or. &
+                      MSI_Data%MSI(i,j,ic) > BTMax) then
+                     ! Missing mixed channels need to be noted twice
+                     if (btest(Ctrl%Ind%Ch_Is(ic), SolarBit)) flag = .true.
+                     
+                     ! Note missing thermal channel
+                     n_ir_bad=n_ir_bad+1
+                     i_missing_ir=find_in_array(Ctrl%Ind%YThermal, ic)
+                     MSI_Data%MSI(i,j,ic) = MissingXn
+                     ! ACP: The above simple counts channels in the order
+                     ! presented, not in increasing wavelength (as do equivalents
+                     ! below).
+                  end if
+               else
+                  if (MSI_Data%MSI(i,j,ic) < RefMin .or. &
+                      MSI_Data%MSI(i,j,ic) > RefMax) then
+                     flag = .true. ! Assume non-thermal implies solar
+                     
+                     MSI_Data%MSI(i,j,ic) = MissingXn
+                  end if
+               end if
+
+               if (flag) then
+                  ! Note which type of solar channel was missing
+                  if (Ctrl%Ind%Y_ID(ic) == refch1 .or. &
+                      Ctrl%Ind%Y_ID(ic) == refch2) then
+                     ! Effective radius channel
+                     n_vis_bad_ref=n_vis_bad_ref+1
+                     i_missing_vis_ref=find_in_array(Ctrl%Ind%YSolar, ic)
+                     MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) = MissingXn
+                  else
+                     ! Tau channel
+                     n_vis_bad_tau=n_vis_bad_tau+1
+                     i_missing_vis_tau=find_in_array(Ctrl%Ind%YSolar, ic)
+                     MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) = MissingXn
+                  end if
                end if
             end do
 

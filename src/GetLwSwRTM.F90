@@ -65,6 +65,7 @@
 !    28/09/2014, GM: Updated to conform with a new arrangement of dimensions.
 !    11/11/2014, CP: Updated to include boundary layer cth correction to
 !       temperature profile
+!    12/01/2015, AP: Replace ThermalFirst:ThermalLast indexing with YThermal.
 !
 ! Bugs:
 !    None known.
@@ -148,8 +149,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! one per channel, to convert).
 
    T_Array = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-   call T2R(Ctrl%Ind%NThermal, &
-        SAD_Chan(Ctrl%Ind%ThermalFirst:Ctrl%Ind%ThermalLast), &
+   call T2R(Ctrl%Ind%NThermal, SAD_Chan(Ctrl%Ind%YThermal), &
         T_Array, R, SPixel%RTM%LW%dB_dTs, status)
 
 end subroutine Get_LwSwRTM

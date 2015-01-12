@@ -108,6 +108,7 @@
 !    2013/11/22, MJ: Rewrites selection of ctp FG/AP based on BT interpolation.
 !    2014/08/01, GM: Cleaned up the code.
 !    2014/12/08, CP: Made error output more specific
+!    2015/01/12, AP: Replace use of ThermalFirst.
 !
 ! Bugs:
 !    None known.
@@ -120,6 +121,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
    use Ctrl_def
    use ECP_Constants
+   use Int_Routines_def, only : find_in_array
    use SAD_Chan_def
    use SPixel_def
 
@@ -145,6 +147,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    real    :: Rad_o
    real    :: dR_dT
    real    :: dT_dR
+   integer :: MDAD_LW_to_ctrl_ythermal
 
    status = 0
 
@@ -187,7 +190,12 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
    case (iPc) ! Cloud pressure, Pc
 
-      if (SPixel%Ind%MDAD_LW > 0) then
+      ! Ctrl%Ind%MDAD_LW indexes the desired channel wrt Ctrl%Ind%ICh
+      ! Find the corresponding index wrt Ctrl%Ind%YThermal
+      MDAD_LW_to_ctrl_ythermal = find_in_array(Ctrl%Ind%YThermal, &
+                                               Ctrl%Ind%MDAD_LW)
+         
+      if (SPixel%Ind%MDAD_LW > 0 .and. MDAD_LW_to_ctrl_ythermal > 0) then
          ! Convert observed brightness temperature to radiance
          ! Uses channel nearest 11 microns, index Ctrl%Ind%MDAD_LW in SAD_Chan,
          ! but SPixel%Ind%MDAD_LW in the measurement array.
@@ -197,10 +205,8 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
          ! Calculate overcast radiance from observed radiance and cloud
          ! fraction. Note MDAD_LW must be offset for use with R_Clear since
          ! R_Clear stores thermal channels only.
-         Rad_o = ( Rad - &
-              SPixel%RTM%LW%R_clear(Ctrl%Ind%MDAD_LW-Ctrl%Ind%ThermalFirst+1) * &
-              (1.0 - SPixel%Cloud%Fraction))  &
-              / SPixel%Cloud%Fraction
+         Rad_o = (Rad - SPixel%RTM%LW%R_clear(MDAD_LW_to_ctrl_ythermal) * &
+              (1.0 - SPixel%Cloud%Fraction)) / SPixel%Cloud%Fraction
 
          ! Exclude negative Rad_o (can arise due to approximation in the RTM)
          if (Rad_o >= 0.0) then
