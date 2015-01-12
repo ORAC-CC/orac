@@ -44,6 +44,7 @@
 !    MSI file.
 ! 2014/12/31, GM: Remove useless error control especially since nc_def_var_*
 !    routines handle errors to exit.
+! 2015/01/12, AP: Bug fix in my previous commit.
 !
 ! $Id$
 !
@@ -346,8 +347,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
 
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
-      if (any(Ctrl%Ind%YSolar == Ctrl%Ind%ICh(i)) .and. &
-           .not. any(Ctrl%Ind%YMixed == Ctrl%Ind%ICh(i))) then
+      if (any(Ctrl%Ind%YSolar == i) .and. .not. any(Ctrl%Ind%YMixed == i)) then
          output_data%channels_scale(i)=0.0001
          output_data%channels_offset(i)=0.0
          output_data%channels_vmin(i)=0
@@ -403,8 +403,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
 
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
-      if (any(Ctrl%Ind%YSolar == Ctrl%Ind%ICh(i)) .and. &
-           .not. any(Ctrl%Ind%YMixed == Ctrl%Ind%ICh(i))) then
+      if (any(Ctrl%Ind%YSolar == i) .and. .not. any(Ctrl%Ind%YMixed == i)) then
          output_data%y0_scale(i)=0.0001
          output_data%y0_offset(i)=0.0
          output_data%y0_vmin(i)=0
@@ -460,8 +459,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
 
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
-      if (any(Ctrl%Ind%YSolar == Ctrl%Ind%ICh(i)) .and. &
-           .not. any(Ctrl%Ind%YMixed == Ctrl%Ind%ICh(i))) then
+      if (any(Ctrl%Ind%YSolar == i) .and. .not. any(Ctrl%Ind%YMixed == i)) then
          output_data%residuals_scale(i)=0.0001
          output_data%residuals_offset(i)=0.0
          output_data%residuals_vmin(i)=-10000
