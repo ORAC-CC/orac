@@ -313,7 +313,8 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    ! Note that Set_CRP_Solar interpolates values for all solar channels, except
    ! in the case of Td. This is interpolated by SetCRPThermal, which is called
    ! by FMThermal prior to this routine.
-   call Set_CRP_Solar(Ctrl, SPixel%Ind, GZero, SAD_LUT, CRP, d_CRP, status)
+   call Set_CRP_Solar(Ctrl, SPixel%Ind, SPixel%spixel_y_solar_to_ctrl_y_index, &
+        GZero, SAD_LUT, CRP, d_CRP, status)
 
    ! Calculate above cloud (ac) beam transmittances
    do i=1,SPixel%Ind%NSolar

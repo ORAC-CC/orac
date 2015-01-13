@@ -157,7 +157,9 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
       SPixel%RTM%LW%Tac(Thermal,1))
 
    ! Set up the LW cloud radiative properties
-   call Set_CRP_Thermal(Ctrl, SPixel%Ind, GZero, SAD_LUT, CRP, d_CRP, status)
+   call Set_CRP_Thermal(Ctrl, SPixel%Ind, &
+        SPixel%spixel_y_thermal_to_ctrl_y_index, &
+        GZero, SAD_LUT, CRP, d_CRP, status)
 
    ! Calculate product dB_dTs * SPixel%RTM%LW%Ems (for efficiency)
    Es_dB_dTs = SPixel%RTM%LW%dB_dTs(Thermal) * SPixel%RTM%LW%Ems(Thermal)

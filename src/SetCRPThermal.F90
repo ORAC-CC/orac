@@ -64,6 +64,8 @@
 !       Cleaned up code.
 !    24th Jan 2014, Greg McGarragh:
 !       Some intent changes.
+!    13th Jan 2015, Adam Povey:
+!       Switch to array-based channel indexing rather than using offsets.
 !
 ! Bugs:
 !    None known.
@@ -72,7 +74,8 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_CRP_Thermal(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
+subroutine Set_CRP_Thermal(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
+     CRPOut, dCRPOut, status)
 
    use Ctrl_def
    use GZero_def
@@ -88,6 +91,7 @@ subroutine Set_CRP_Thermal(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    type(Ctrl_t),           intent(in)  :: Ctrl
    type(SPixel_Ind_t),     intent(in)  :: Ind
+   integer,                intent(in)  :: chan_to_ctrl_index(:)
    type(GZero_t),          intent(in)  :: GZero
                                           ! Struct containing "zero'th" grid
                                           ! points
@@ -111,16 +115,16 @@ subroutine Set_CRP_Thermal(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    ! Td, Rd and Em are interpolated in Tau, SatZen and Re over a range of
    ! channels from First to NY.
-   call Int_LUT_TauSatRe(SAD_LUT%Rd(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
+   call Int_LUT_TauSatRe(SAD_LUT%Rd, Ind%NThermal, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:), iRd, &
-           Ctrl%Ind%NSolar - Ctrl%Ind%NMixed,Ind%NSolar - Ind%NMixed, status)
+           chan_to_ctrl_index, Ind%YThermal, status)
 
-   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
+   call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NThermal, &
            SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:),  iTd, &
-           Ctrl%Ind%NSolar - Ctrl%Ind%NMixed, Ind%NSolar - Ind%NMixed, status)
+           chan_to_ctrl_index, Ind%YThermal, status)
 
-   call Int_LUT_TauSatRe(SAD_LUT%Em(Ind%ThermalFirst:Ind%ThermalLast,:,:,:), &
+   call Int_LUT_TauSatRe(SAD_LUT%Em, Ind%NThermal, &
            SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,IEm), dCRPOut(:,IEm,:), iEm, &
-           Ctrl%Ind%NSolar - Ctrl%Ind%NMixed,Ind%NSolar - Ind%NMixed, status)
+           chan_to_ctrl_index, Ind%YThermal, status)
 
 end subroutine Set_CRP_Thermal

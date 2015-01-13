@@ -96,6 +96,8 @@ include 'IntLUTTauSolRe.F90'
 !    16th Oct 2014, Greg McGarragh:
 !       Removed the multiple instances of this code in the IntLUT* routines and
 !       created this one shared subroutine.
+!    13th Jan 2015, Adam Povey:
+!       Switch to array-based channel indexing rather than using offsets.
 !
 ! $Id$
 !
@@ -105,7 +107,7 @@ include 'IntLUTTauSolRe.F90'
 !-------------------------------------------------------------------------------
 
 subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
-   i_chan_to_ctrl_offset, i_chan_to_spixel_offset, status)
+   chan_to_ctrl_index, chan_to_spixel_index, status)
 
    use CTRL_def
    use GZero_def
@@ -133,8 +135,10 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
                                       ! Gradients of F wrt Tau and Re at
                                       ! required Tau, SatZen, Re values (1 value
                                       ! per channel).
-   integer,                           intent(in)  :: i_chan_to_ctrl_offset
-   integer,                           intent(in)  :: i_chan_to_spixel_offset
+   integer,                           intent(in)  :: chan_to_ctrl_index(:)
+                                      ! Indices for input channels wrt Ctrl
+   integer,                           intent(in)  :: chan_to_spixel_index(:)
+                                      ! Indices for input channels wrt SPixel
    integer,                           intent(out) :: status
 
    integer            :: i, ii, ii2
@@ -159,8 +163,8 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
 
    ! Calculte the function derivatives at four LUT points around our X
    do i = 1, NChans
-      ii = i_chan_to_ctrl_offset + i
-      ii2 = i_chan_to_spixel_offset + i
+      ii = chan_to_ctrl_index(i)
+      ii2 = chan_to_spixel_index(i)
 
       Y(1) = G(i,iX0,iX0)
       Y(4) = G(i,iX0,iX1)
@@ -171,10 +175,10 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
       ! perform the interpolation to our desired state vector
       if (Ctrl%LUTIntflag .eq. LUTIntMethLinear) then
          call linint(Y,Grid%Tau(ii,GZero%iT0(ii2,iCRP),iCRP), &
-                         Grid%Tau(ii,GZero%iT1(ii2,iCRP),iCRP), &
-                         Grid%Re (ii,GZero%iR0(ii2,iCRP),iCRP), &
-                         Grid%Re (ii,GZero%iR1(ii2,iCRP),iCRP), &
-                         GZero%dT(ii2,iCRP),GZero%dR(ii2,iCRP),a1,a2,a3)
+                       Grid%Tau(ii,GZero%iT1(ii2,iCRP),iCRP), &
+                       Grid%Re (ii,GZero%iR0(ii2,iCRP),iCRP), &
+                       Grid%Re (ii,GZero%iR1(ii2,iCRP),iCRP), &
+                       GZero%dT(ii2,iCRP),GZero%dR(ii2,iCRP),a1,a2,a3)
       else if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
          ! WRT to Tau
          dYdTau(1) = (G(i,iX1,iX0) - G(i,iXm1,iX0)) / &

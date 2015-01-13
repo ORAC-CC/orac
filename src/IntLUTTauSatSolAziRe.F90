@@ -82,6 +82,8 @@
 !    16th Oct 2014, Greg McGarragh:
 !       Moved a large amount of code that was common to all IntLUT* subroutines
 !       into Int_LUT_Common()
+!    13th Jan 2015, Adam Povey:
+!       Switch to array-based channel indexing rather than using offsets.
 !
 ! Bugs:
 !    None known.
@@ -90,8 +92,8 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
-   status)
+subroutine Int_LUT_TauSatSolAziRe(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &
+     iCRP, chan_to_ctrl_index, chan_to_spixel_index, status)
 
    use CTRL_def
    use GZero_def
@@ -104,6 +106,7 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
 
    real, dimension(:,:,:,:,:,:), intent(in) :: F
                                                ! The array to be interpolated.
+   integer,                      intent(in)  :: NChans
    type(LUT_Grid_t),             intent(in)  :: Grid
                                                 ! LUT grid data
    type(GZero_t),                intent(in)  :: GZero
@@ -119,12 +122,15 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
 					        ! required Tau, Re values, (1 value
                                                 ! per channel).
    integer,                      intent(in)  :: iCRP
+   integer,                      intent(in)  :: chan_to_ctrl_index(:)
+                                                ! Indices for input chs wrt Ctrl
+   integer,                      intent(in)  :: chan_to_spixel_index(:)
+                                                ! Indices for input chs wrt SPixel
    integer,                      intent(out) :: status
 
    ! Local variables
 
-   integer                               :: i, j, jj, k, kk
-   integer                               :: NChans
+   integer                               :: i, ii, ii2, j, jj, k, kk
    integer, parameter                    :: iXm1 = -1
    integer, parameter                    :: iX0  =  0
    integer, parameter                    :: iX1  =  1
@@ -138,19 +144,20 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
 
    status = 0
 
-   NChans = size(F,1)
-
    ! Construct the input Int_LUT_Common(): Function values at four LUT points
    ! around our X
    do i = 1, NChans
-      T_index(-1) = GZero%iTm1(i,iCRP)
-      T_index( 0) = GZero%iT0 (i,iCRP)
-      T_index( 1) = GZero%iT1 (i,iCRP)
-      T_index( 2) = GZero%iTp1(i,iCRP)
-      R_index(-1) = GZero%iRm1(i,iCRP)
-      R_index( 0) = GZero%iR0 (i,iCRP)
-      R_index( 1) = GZero%iR1 (i,iCRP)
-      R_index( 2) = GZero%iRp1(i,iCRP)
+      ii = chan_to_ctrl_index(i)
+      ii2 = chan_to_spixel_index(i)
+
+      T_index(-1) = GZero%iTm1(ii2,iCRP)
+      T_index( 0) = GZero%iT0 (ii2,iCRP)
+      T_index( 1) = GZero%iT1 (ii2,iCRP)
+      T_index( 2) = GZero%iTp1(ii2,iCRP)
+      R_index(-1) = GZero%iRm1(ii2,iCRP)
+      R_index( 0) = GZero%iR0 (ii2,iCRP)
+      R_index( 1) = GZero%iR1 (ii2,iCRP)
+      R_index( 2) = GZero%iRp1(ii2,iCRP)
 
       do j = iXm1, iXp1
          jj = T_index(j)
@@ -158,33 +165,34 @@ subroutine Int_LUT_TauSatSolAziRe(F, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
             kk = R_index(k)
             G(i,j,k) = 0.
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%RA1(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%So1(i,iCRP))  * &
-               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA0(i,iCRP),kk))
+               ((GZero%RA1(ii2,iCRP) * GZero%Sa1(ii2,iCRP)  * GZero%So1(ii2,iCRP))  * &
+               F(ii,jj,GZero%iSaZ0(ii2,iCRP),GZero%iSoZ0(ii2,iCRP),GZero%iRA0(ii2,iCRP),kk))
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%RA1(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%dSoZ(i,iCRP)) * &
-               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA0(i,iCRP),kk))
+               ((GZero%RA1(ii2,iCRP) * GZero%Sa1(ii2,iCRP)  * GZero%dSoZ(ii2,iCRP)) * &
+               F(ii,jj,GZero%iSaZ0(ii2,iCRP),GZero%iSoZ1(ii2,iCRP),GZero%iRA0(ii2,iCRP),kk))
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%RA1(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%So1(i,iCRP))  * &
-               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA0(i,iCRP),kk))
+               ((GZero%RA1(ii2,iCRP) * GZero%dSaZ(ii2,iCRP) * GZero%So1(ii2,iCRP))  * &
+               F(ii,jj,GZero%iSaZ1(ii2,iCRP),GZero%iSoZ0(ii2,iCRP),GZero%iRA0(ii2,iCRP),kk))
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%RA1(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%dSoZ(i,iCRP)) * &
-               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA0(i,iCRP),kk))
+               ((GZero%RA1(ii2,iCRP) * GZero%dSaZ(ii2,iCRP) * GZero%dSoZ(ii2,iCRP)) * &
+               F(ii,jj,GZero%iSaZ1(ii2,iCRP),GZero%iSoZ1(ii2,iCRP),GZero%iRA0(ii2,iCRP),kk))
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%dRA(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%So1(i,iCRP))  * &
-               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA1(i,iCRP),kk))
+               ((GZero%dRA(ii2,iCRP) * GZero%Sa1(ii2,iCRP)  * GZero%So1(ii2,iCRP))  * &
+               F(ii,jj,GZero%iSaZ0(ii2,iCRP),GZero%iSoZ0(ii2,iCRP),GZero%iRA1(ii2,iCRP),kk))
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%dRA(i,iCRP) * GZero%Sa1(i,iCRP)  * GZero%dSoZ(i,iCRP)) * &
-               F(i,jj,GZero%iSaZ0(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA1(i,iCRP),kk))
+               ((GZero%dRA(ii2,iCRP) * GZero%Sa1(ii2,iCRP)  * GZero%dSoZ(ii2,iCRP)) * &
+               F(ii,jj,GZero%iSaZ0(ii2,iCRP),GZero%iSoZ1(ii2,iCRP),GZero%iRA1(ii2,iCRP),kk))
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%dRA(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%So1(i,iCRP))  * &
-               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ0(i,iCRP),GZero%iRA1(i,iCRP),kk))
+               ((GZero%dRA(ii2,iCRP) * GZero%dSaZ(ii2,iCRP) * GZero%So1(ii2,iCRP))  * &
+               F(ii,jj,GZero%iSaZ1(ii2,iCRP),GZero%iSoZ0(ii2,iCRP),GZero%iRA1(ii2,iCRP),kk))
             G(i,j,k) = G(i,j,k) + &
-               ((GZero%dRA(i,iCRP) * GZero%dSaZ(i,iCRP) * GZero%dSoZ(i,iCRP)) * &
-               F(i,jj,GZero%iSaZ1(i,iCRP),GZero%iSoZ1(i,iCRP),GZero%iRA1(i,iCRP),kk))
+               ((GZero%dRA(ii2,iCRP) * GZero%dSaZ(ii2,iCRP) * GZero%dSoZ(ii2,iCRP)) * &
+               F(ii,jj,GZero%iSaZ1(ii2,iCRP),GZero%iSoZ1(ii2,iCRP),GZero%iRA1(ii2,iCRP),kk))
          end do
       end do
    end do
 
-   call Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, 0, 0, status)
+   call Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
+                       chan_to_ctrl_index, chan_to_spixel_index, status)
 
 end subroutine Int_LUT_TauSatSolAziRe

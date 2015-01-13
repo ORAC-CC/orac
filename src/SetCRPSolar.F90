@@ -91,6 +91,8 @@
 !       Changes related to new BRDF support.
 !     1st Dec 2014, Caroline Poulsen:
 !       Added in interpolation for cloud albedo
+!    13th Jan 2015, Adam Povey:
+!       Switch to array-based channel indexing rather than using offsets.
 !
 ! Bugs:
 !    None known.
@@ -99,7 +101,8 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
+subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
+     CRPOut, dCRPOut, status)
 
    use Ctrl_def
    use GZero_def
@@ -115,6 +118,7 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
 
    type(Ctrl_t),           intent(in)  :: Ctrl
    type(SPixel_Ind_t),     intent(in)  :: Ind
+   integer,                intent(in)  :: chan_to_ctrl_index(:)
    type(GZero_t),          intent(in)  :: GZero
                                           ! Struct containing "zero'th" grid
                                           ! points
@@ -154,32 +158,32 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    !only do if solar zenith angle lt. 90 because LUT tables doe not extend very far
 
 
-   call Int_LUT_TauSolRe(SAD_LUT%rfbd(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+   call Int_LUT_TauSolRe(SAD_LUT%rfbd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,Irfbd), dCRPOut(:,Irfbd,:), &
-           Irfbd, status)
+           Irfbd, chan_to_ctrl_index, Ind%YSolar, status)
 
 
-   call Int_LUT_TauSolRe(SAD_LUT%TFbd(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+   call Int_LUT_TauSolRe(SAD_LUT%TFbd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd), dCRPOut(:,ITFBd,:), &
-           ITFBd, status)
+           ITFBd, chan_to_ctrl_index, Ind%YSolar, status)
 
 
-   call Int_LUT_TauRe(SAD_LUT%RFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
+   call Int_LUT_TauRe(SAD_LUT%RFd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRFd), dCRPOut(:,IRFd,:), &
-           IRFd, status)
+           IRFd,chan_to_ctrl_index, Ind%YSolar,  status)
 
-   call Int_LUT_TauRe(SAD_LUT%TFd(Ind%SolarFirst:Ind%SolarLast,:,:), &
+   call Int_LUT_TauRe(SAD_LUT%TFd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), &
-           ITFd, status)
+           ITFd, chan_to_ctrl_index, Ind%YSolar, status)
 
    ! Tb and TFBd are interpolated in Tau, Solzen and Re
-   call Int_LUT_TauSolRe(SAD_LUT%Tb(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+   call Int_LUT_TauSolRe(SAD_LUT%Tb, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITB), dCRPOut(:,ITB,:), &
-           ITB, status)
+           ITB, chan_to_ctrl_index, Ind%YSolar, status)
 
-   call Int_LUT_TauSatReOnSol(SAD_LUT%Tb(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+   call Int_LUT_TauSatReOnSol(SAD_LUT%Tb, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITB_u), dCRPOut(:,ITB_u,:), &
-           ITB, 0, 0, status)
+           ITB, chan_to_ctrl_index, Ind%YSolar, status)
 
 
 
@@ -192,15 +196,15 @@ subroutine Set_CRP_Solar(Ctrl, Ind, GZero, SAD_LUT, CRPOut, dCRPOut, status)
    ! calls are independent so that contents of CRP and d_CRP do not need to be
    ! passed from the thermal call to the solar call.
 
-   call Int_LUT_TauSatRe(SAD_LUT%Td(Ind%SolarFirst:Ind%SolarLast,:,:,:), &
+   call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
-           ITd, 0, 0, status)
+           ITd, chan_to_ctrl_index, Ind%YSolar, status)
 
    ! RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
 
-   call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd(Ind%SolarFirst:Ind%SolarLast,:,:,:,:,:), &
+   call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), &
-           iRBd, status)
+           iRBd, chan_to_ctrl_index, Ind%YSolar, status)
 
 
 
