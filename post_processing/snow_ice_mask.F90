@@ -2,20 +2,25 @@
 !    snow_ice_mask
 !
 ! Purpose:
-!    Apply snow/ice identification mask which uses albedo cth and Istomina tests!          to determine if a scene is snow or ice and NOT cloud covered. This should remove some erroneous identification of snow/ice of cloud in the polar regions. It will also work over other snow covered surfaces. When thses scenes are misidentified erroneous high cloud cover and optical depths are detected over the poles
+!    Apply snow/ice identification mask which uses albedo, cth and Istomina tests to determine 
+! if a scene is snow or ice and NOT cloud covered. This should remove some erroneous
+! identification of snow/ice of cloud in the polar regions. It will also work over 
+! other snow covered surfaces. When these scenes are misidentified erroneous high
+! cloud cover and optical depths are detected over the poles. The Istomina tests will
+! also work over land but the application here is specific to ice/snow surfaces
 !
 ! Description:
 !    
 ! Arguments:
 !    Name       Type    In/Out/Both    Description
-!    inputs: primary data, secondary data, instrument id,
+!    inputs: primary data, secondary data, instrument type instrument id, index of array
 !    outputs: clear snow flag
 !
 ! Algorithm:
 !    Operates on a single pixel so should be included in a loop     
 !    1. check that snow is present using albedo mask
-!;   2. calculate a subset of Istomina tests
-!    3. apply CTH threshold
+!    2. calculate a subset of Istomina tests (i.e. test only relevant to heritage channels)
+!    3. Apply CTH threshold
 !    4. different tests applicable day or night
 
 !
@@ -29,16 +34,17 @@
 !   29/09/2014 Caroline Poulsen :fixed up flagging at night
 !   24/10/2014 Oliver Sus: shortened overly long line
 !   20/11/2014 Oliver Sus: deactivated use of module neural_net_constants
-!
-!2014/12/03 CP added in common_constants should eventually remove vartypes_pp
+!   2014/12/03 CP added in common_constants should eventually remove vartypes_pp
+!   2015/01/12 CP added in more comments to make it clearer.
 !
 ! Bugs:
 !    None known.
 !
-! currently only applicabsele to 3.7um retrievals could be easily adapted to 1.6 retrievals.
+! currently only applicable to 3.7um retrievals could be easily adapted to 1.6 retrievals.
 ! does not have AVHRR and MODIS channels in it.
-! a mask on a DEM would be a better solution
-!s
+! It would be advantageous to refine the CTH threshold using a DEM
+! .67,.87,1.6,3.7,11,12- heritage channels only used at the moment
+!
 ! $Id$
 !
 
@@ -51,14 +57,10 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   !---------------------------------------------------
 
   use netcdf
-
   use scanline_structure
-
   use vartypes_pp
   use common_constants
   use structures_pp
-
-  !use neural_net_constants
 
   implicit none
   type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary, l2_input_2dice_primary
@@ -71,46 +73,51 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   real(kind=sreal) :: eq5_value,eq6_value,eq7_value,eq8_value,opd_thres
   real(kind=sreal) :: alb1_thres,alb2_thres,cth_thres_sea,cth_thres_land,cth_thres_opd_land,cth_thres_opd_sea
    CHARACTER(len= attribute_length) :: cinst
-! .67,.87,1.6,3.7,11,12
+
 
 !set default flag
   snow_ice_flag=0
+!Istomina thresholds
   eq5_thres=0.02 
   eq6_thres=0.02
   eq7_thres=0.8
   eq8_thres=0.1
+!albedo thresholds
+
   alb1_thres=0.2
   alb2_thres=0.1
+
+!CTH/OPD/RE thresholds
+
   cth_thres_sea=2.9!km
   cth_thres_land=4.0!km
   cth_thres_opd_land=2.0!km this should be more strict
   cth_thres_opd_sea=1.0!km this should be more strict
   opd_thres=150.
-
+  re_min=43
+  re_max=60
 
 
 !
 !set up the channels for each instrument
 !
 
-! check albedo of scene this should be the uncorrected (i.e no sza correction) if albedo high enough then proceed.
+! check albedo of scene this should be the uncorrected (i.e no sza correction) if albedo high (i.e. indicates an snow/ice scene) enough then proceed.
 
-
-!write(*,*)'albedo',l2_input_2d_secondary%albedo_IN_CHANNEL_NO_2(i,j),l2_input_2d_secondary%albedo_IN_CHANNEL_NO_3(i,j),alb1_thres,alb2_thres 
 
   if (l2_input_2d_secondary%albedo_IN_CHANNEL_NO_2(i,j) .gt. alb1_thres .and. l2_input_2d_secondary%albedo_IN_CHANNEL_NO_3(i,j) .gt. alb2_thres) then
 
-!write(*,*)'albedo',l2_input_2d_secondary%albedo_IN_CHANNEL_NO_2(i,j),l2_input_2d_secondary%albedo_IN_CHANNEL_NO_3(i,j)
+
 
      !
-     !calculate istomina equations
+     !calculate Istomina equations
      !
 
 
      
 ! check what instrument used
      
-!     write(*,*)'cinst', cinst
+
      if (cinst .eq. 'AATSR') then
         
         ch1=l2_input_2d_secondary%reflectance_in_channel_no_2(i,j) 
@@ -154,8 +161,9 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
      
      eq6_value=abs((ch3-ch5)/ch3)
      
-!write(*,*)'eq5_value eq6_value',eq5_value,eq6_value
-!write(*,*)'l2_input_2dice_primary%illum(i,j) ',l2_input_2dice_primary%illum(i,j) 
+!
+!check what illumination eg. day/night
+!
      if(l2_input_2dice_primary%illum(i,j) .eq. 1_byte .or.&
           & l2_input_2dice_primary%illum(i,j) .eq. 4_byte .or. &
           & l2_input_2dice_primary%illum(i,j) .eq. 5_byte .or.&
@@ -164,14 +172,18 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
           & l2_input_2dice_primary%illum(i,j) .eq. 8_byte .or. &
           & l2_input_2dice_primary%illum(i,j) .eq. 9_byte  ) then
 
-        ! day Istomina eq.8 day only currently not used.
+        ! day Istomina eq. 8 day only currently not used.
         
         eq8_value=(ch2-ch1)/ch2
         
-!  write(*,*)'cth',l2_input_2dice_primary%cth(i,j)      
+
         if ((eq5_value .lt. eq5_thres) .and. (eq6_value .lt. eq6_thres)) then
 
+              ! apply CTH thresholds different over sea than over land
+              
+
            !over sea
+
            if (l2_input_2dice_primary%lsflag(i,j) .eq. 0_byte) then
               
               if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_sea) then
@@ -182,8 +194,6 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
                          
            else
               !over land
-              ! apply CTH thresholds different over sea than over land
-              
               
               if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_land) then
                  snow_ice_flag=1
@@ -197,12 +207,12 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
 
         ! possibility to add some more tests based on optical depth/ height/effective radius
         if (l2_input_2dice_primary%lsflag(i,j) .eq. 0_byte) then
+	!sea
            if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_opd_sea) then
-              if (l2_input_2dice_primary%cot(i,j) .gt. opd_thres .and. l2_input_2dice_primary%ref(i,j) .gt. 43 .and. l2_input_2dice_primary%ref(i,j) .lt. 60 ) then
+              if (l2_input_2dice_primary%cot(i,j) .gt. opd_thres .and. l2_input_2dice_primary%ref(i,j) .gt. re_min .and. l2_input_2dice_primary%ref(i,j) .lt. re_max ) then
 
                  snow_ice_flag=1
-!write(*,*)'snow flag c',snow_ice_flag
-!                 write(*,*)' optical depth flag sea',l2_input_2dice_primary%cot(i,j) ,l2_input_2dice_primary%ref(i,j),l2_input_2dice_primary%cth(i,j) 
+
               endif
            endif
            
@@ -210,9 +220,9 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
         else
            !land
            if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_opd_land) then
-              if (l2_input_2dice_primary%cot(i,j) .gt. opd_thres .and. l2_input_2dice_primary%ref(i,j) .gt. 40 .and. l2_input_2dice_primary%ref(i,j) .lt. 60 ) then
+              if (l2_input_2dice_primary%cot(i,j) .gt. opd_thres .and. l2_input_2dice_primary%ref(i,j) .gt. re_min .and. l2_input_2dice_primary%ref(i,j) .lt. re_max ) then
                  snow_ice_flag=1
-!                 write(*,*)' optical depth flag land', snow_ice_flag,l2_input_2dice_primary%cot(i,j) ,l2_input_2dice_primary%ref(i,j),l2_input_2dice_primary%cth(i,j) 
+
               endif
            endif
         endif
@@ -228,9 +238,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
               if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_sea) then
                  snow_ice_flag=1
               endif!cth
-              
-              
-                         
+                          
            else
               !over land
               ! apply CTH thresholds different over sea than over land
@@ -244,8 +252,6 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
            endif ! land/sea
 
         endif!istomina tests
-
-
 
         
      endif! illumination
