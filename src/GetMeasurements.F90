@@ -103,6 +103,8 @@
 !     1st Aug 2014, Greg McGarragh:
 !       The above change requires use of SPixel%spixel_y_to_ctrl_y_index(:) to
 !       properly index the right channels from MSI_Data%MSI(:,:,:) and cleanup.
+!    13th Jan 2015, Adam Povey:
+!       Remove ThermalFirst,ThermalLast.
 !
 ! Bugs:
 !    None known.
@@ -132,8 +134,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Define local variables
 
    integer :: i, ii, j, jj
-!  integer :: N_ThermChan
-   integer :: StartChan ! Loop start value, first thermal channel
    real    :: Rad       ! Radiance calculated from noise equivalent brightness
                         ! temperature used in setting Sy for mixed thermal /
                         ! solar channels.
@@ -141,17 +141,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! Set status to zero
    status = 0
-
-   ! Check whether solar channels can be used and allocate size of SPixel%Ym
-
-!  if (SPixel%Geom%Solzen > Ctrl%MaxSolZen) then
-!     N_ThermChan = Ctrl%Ind%Ny - Ctrl%Ind%NSolar
-
-   if (SPixel%Ind%NSolar == 0) then
-      StartChan = SPixel%Ind%ThermalFirst
-   else
-      StartChan = SPixel%Ind%SolarFirst
-   end if
 
    deallocate(SPixel%Ym)
    allocate(SPixel%Ym(SPixel%Ind%Ny))
@@ -161,10 +150,6 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Assign SPixel values.
    ! Use Ctrl indices for the Data array since this is populated for all
    ! requested channels (not just those that are valid for the current SPixel).
-
-!  SPixel%Ym = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
-!                           StartChan:Ctrl%Ind%Ny)
-!  SPixel%ViewIdx = Ctrl%Ind%ViewIdx(StartChan:Ctrl%Ind%Ny)
    do i = 1, SPixel%Ind%Ny
       ii = SPixel%spixel_y_to_ctrl_y_index(i)
       SPixel%Ym(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, ii)
@@ -177,7 +162,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    deallocate(SPixel%Sy)
    allocate(SPixel%Sy(SPixel%Ind%Ny, SPixel%Ind%Ny))
-!  SPixel%Sy = Ctrl%Sy(StartChan:SPixel%Ind%ThermalLast, StartChan:SPixel%Ind%ThermalLast)
+
    do i = 1, SPixel%Ind%Ny
       ii = SPixel%spixel_y_to_ctrl_y_index(i)
       do j = 1, SPixel%Ind%Ny
@@ -192,7 +177,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    if (Ctrl%Eqmpn%Homog /= 0) then
       do i = 1, SPixel%Ind%Ny
-         j = i+StartChan-1
+         ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
          if (SPixel%Ym(i) .le. 0.0) then
             SPixel%Sy(i,i) = 1.e6
@@ -200,31 +185,31 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
          ! Daylight
          if (SPixel%Illum(1) .ne. INight .and. SPixel%Illum(1) .ne. ITwi) then
-            if (SAD_Chan(j)%Solar%Flag /= 0) then
-               if (SAD_Chan(j)%Thermal%Flag /= 0) then
+            if (SAD_Chan(ii)%Solar%Flag /= 0) then
+               if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                   ! Both solar and thermal => mixed
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-                  call T2R(1, SAD_Chan(j), SPixel%Ym(i), Rad, dR_dT, status)
+                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(j)%Thermal%NeHomog(Ctrl%CloudType) + &
-                     SAD_Chan(j)%Solar%NeHomog(Ctrl%CloudType) * &
-                     (SAD_Chan(j)%Solar%f0 / dR_dT) ** 2
+                     SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
+                     SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
+                     (SAD_Chan(ii)%Solar%f0 / dR_dT) ** 2
 
                else
                   ! Pure solar channel, just add the solar NedR contribution
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(j)%Solar%NeHomog(Ctrl%CloudType) * &
+                     SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
                      SPixel%Ym(i) * SPixel%Ym(i)
                end if
             end if
 
          ! Night/twilight, only thermal channel info required
          else
-            if (SAD_Chan(j)%Thermal%Flag /= 0) then
+            if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                  SAD_Chan(j)%Thermal%NeHomog(Ctrl%CloudType)
+                  SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType)
             end if
          end if
       end do
@@ -232,34 +217,34 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    if (Ctrl%Eqmpn%Coreg /= 0) then
       do i = 1, SPixel%Ind%Ny
-         j = i+StartChan-1
+         ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
          ! Daylight
          if (SPixel%Illum(1) == IDay) then
-            if (SAD_Chan(j)%Solar%Flag /= 0) then
-               if (SAD_Chan(j)%Thermal%Flag /= 0) then
+            if (SAD_Chan(ii)%Solar%Flag /= 0) then
+               if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                   ! both solar and thermal => mixed
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-                  call T2R(1, SAD_Chan(j), SPixel%Ym(i), Rad, dR_dT, status)
+                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(j)%Thermal%NeCoreg(Ctrl%CloudType) + &
-                     SAD_Chan(j)%Solar%NeCoreg(Ctrl%CloudType) * &
-                     (SAD_Chan(j)%Solar%f0 / dR_dT) ** 2
+                     SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
+                     SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
+                     (SAD_Chan(ii)%Solar%f0 / dR_dT) ** 2
 
                else ! Pure solar channel, just add the solar NedR contribution
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                     SAD_Chan(j)%Solar%NeCoreg(Ctrl%CloudType) * &
+                     SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
                      SPixel%Ym(i) * SPixel%Ym(i)
                end if
             end if
 
          ! Night/twilight, only thermal channel info required
          else
-            if (SAD_Chan(j)%Thermal%Flag /= 0) then
+            if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
-                  SAD_Chan(j)%Thermal%NeCoreg(Ctrl%CloudType)
+                  SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType)
             end if
          end if
       end do

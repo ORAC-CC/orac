@@ -216,7 +216,8 @@
 !    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
 !       solar/thermal channels with respect to the channels actually processed,
 !       rather than the MSI file.
-!    12th Jan 2015, Adam Povey: Switching to Ctrl%Ind%Ch_Is rather than any().
+!    13th Jan 2015, Adam Povey: Switching to Ctrl%Ind%Ch_Is rather than any().
+!       Removing First:Last channel indexing.
 !
 ! Bugs:
 !    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -234,6 +235,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    use Data_def
    use ECP_Constants
    use Get_Illum_m
+   use Int_Routines_def, only : find_in_array
    use RTM_def
    use SAD_Chan_def
    use SPixel_def
@@ -252,6 +254,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! Define local variables
 
    integer           :: i, j
+   integer           :: ictrl, ispix, itherm, isolar
    real              :: minsolzen
    integer           :: stat ! Local status value
    real, allocatable :: thermal(:)
@@ -323,7 +326,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! MSI - Temperatures (between 150.0K and 330.0K)
    allocate(thermal(Ctrl%Ind%Nthermal))
-   do i = 1,Ctrl%Ind%Nthermal
+   do i = 1,Ctrl%Ind%NThermal
       thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                                 Ctrl%Ind%YThermal(i))
    end do
@@ -446,44 +449,42 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
       end if ! End of "if stat" after cloud fraction check
 
-      if (stat == 0 .and. SPixel%Ind%NSolar /= 0) then
+      if (stat == 0 .and. SPixel%Ind%NSolar > 0) then
          ! Set the solar constant for the solar channels used in this SPixel.
 
-         do i=SPixel%Ind%SolarFirst,SPixel%Ind%SolarLast
-            SPixel%f0(i) = SAD_Chan(i)%Solar%f0
+         do i=1,SPixel%Ind%NSolar
+            SPixel%f0(i) = &
+                 SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Solar%f0
          end do
 
          ! Calculate transmittances along the slant paths (solar and viewing)
          ! Pick up the "purely solar" channel values from the SW RTM, and the
-         ! mixed solar and thermal channels from the LW RTM.
+         ! mixed channels from the LW RTM.
+         do i=1,SPixel%Ind%NSolar
+            ictrl = SPixel%spixel_y_solar_to_ctrl_y_index(i)
+            ispix = SPixel%Ind%YSolar(i)
+            isolar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
-         if (SPixel%Ind%Ny-SPixel%Ind%NThermal > 0) then
-            do i=1,SPixel%Ind%Ny-SPixel%Ind%NThermal
-               SPixel%RTM%Tsf_o(i) = SPixel%RTM%SW%Tsf(i) &
-                  ** SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+            if (btest(Ctrl%Ind%Ch_Is(ictrl), ThermalBit)) then
+               itherm = find_in_array(Ctrl%Ind%YThermal, ictrl)
+               
+               ! The Tsf_o, v calculations differ for mixed channels
+               ! because the Tac value used to set Tsf is given at the view
+               ! angle, rather than the nadir as in the SW channels RTM.
+               SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(itherm) &
+                    ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix)) / &
+                        SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix)))
+               
+               SPixel%RTM%Tsf_v(i) = SPixel%RTM%LW%Tsf(itherm)
+            else
+               ! Purely solar channel
+               SPixel%RTM%Tsf_o(i) = SPixel%RTM%SW%Tsf(isolar) &
+                    ** SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix))
 
-               SPixel%RTM%Tsf_v(i) = SPixel%RTM%SW%Tsf(i) &
-                  ** SPixel%Geom%SEC_v(SPixel%ViewIdx(i))
-            end do
-         end if
-
-
-         ! LW Tsf array is of size NThermal, but we only want the mixed channels.
-         ! The Tsf_o, v calculations differ for LW, because here the Tac value
-         ! used to set Tsf is given at the view angle, rather than the nadir as in
-         ! the SW channels RTM.
-         if (SPixel%Ind%NThermal > 0) then
-            j=1
-            do i = SPixel%Ind%ThermalFirst, SPixel%Ind%SolarLast
-               SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(j) &
-                    ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) / &
-                    SPixel%Geom%SEC_v(SPixel%ViewIdx(i)))
-               j = j+1
-            end do
-
-            SPixel%RTM%Tsf_v(SPixel%Ind%ThermalFirst:SPixel%Ind%SolarLast) = &
-                 SPixel%RTM%LW%Tsf(1:SPixel%Ind%NMixed)
-         end if
+               SPixel%RTM%Tsf_v(i) = SPixel%RTM%SW%Tsf(isolar) &
+                    ** SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix))
+            end if
+         end do
 
          ! Calculate top of atmosphere reflectance for clear conditions
          ! (all arrays are sized NSolar).

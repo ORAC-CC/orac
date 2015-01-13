@@ -28,8 +28,8 @@ $(OBJS)/GetRs.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/SPixel.o
 $(OBJS)/GetRTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GetLwSwRTM.o \
         $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o
 $(OBJS)/GetSPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
-        $(OBJS)/GetIllum.o $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/SPixel.o \
-        $(OBJS)/check_value.o
+        $(OBJS)/GetIllum.o $(OBJS)/IntRoutines.o $(OBJS)/RTM.o $(OBJS)/SADChan.o \
+        $(OBJS)/SPixel.o $(OBJS)/check_value.o
 $(OBJS)/GetSurface.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/SPixel.o
 $(OBJS)/GetX.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
