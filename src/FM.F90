@@ -276,8 +276,10 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       ! Copy results into output vectors (may overwrite mixed chs)
       Y(SPixel%Ind%YSolar) = Ref
       dY_dX(SPixel%Ind%YSolar,:) = d_Ref
-      cloud_albedo = CRP(:,IRD)
-!     d_cloud_albedo = d_CRP(:,IRd,:)
+      cloud_albedo = CRP(:,IRfbd)
+
+
+!     d_cloud_albedo = d_CRP(:,IRfbd,:)
    end if
 
    
