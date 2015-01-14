@@ -207,8 +207,8 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
          case (SelmMeas)  ! MDAD method. Not supported for all variables.
             call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
             if (status .ne. 0) then
-               write(*,*) 'ERROR: X_MDAD(): failed with status:',status
-               stop error_stop_code
+               write(*,*) 'WARNING: X_MDAD(): Failed with status:',status
+               exit
             end if
             SPixel%X0(i) = X
          case (Sacura)    ! First guess is set using sacura
