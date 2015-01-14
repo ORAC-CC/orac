@@ -69,7 +69,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   integer          :: snow_ice_flag,i,j
   real(kind=sreal) :: ch1,ch2,ch3,ch4,ch5,ch6,ch7
   real(kind=sreal) :: eq5,eq6,eq7,eq8
-  real(kind=sreal) :: eq5_thres,eq6_thres,eq7_thres,eq8_thres
+  real(kind=sreal) :: eq5_thres,eq6_thres,eq7_thres,eq8_thres,re_min,re_max
   real(kind=sreal) :: eq5_value,eq6_value,eq7_value,eq8_value,opd_thres
   real(kind=sreal) :: alb1_thres,alb2_thres,cth_thres_sea,cth_thres_land,cth_thres_opd_land,cth_thres_opd_sea
    CHARACTER(len= attribute_length) :: cinst
@@ -87,7 +87,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   alb1_thres=0.2
   alb2_thres=0.1
 
-!CTH/OPD/RE thresholds
+!CTH/OPD/RE threshold for checking we are not looking at an ice cloud at a low height which is morelikely snow/ice
 
   cth_thres_sea=2.9!km
   cth_thres_land=4.0!km
@@ -95,7 +95,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   cth_thres_opd_sea=1.0!km this should be more strict
   opd_thres=150.
   re_min=43
-  re_max=60
+  re_max=120
 
 
 !
