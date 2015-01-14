@@ -21,10 +21,10 @@ module scanline_structure
 
      integer :: vidlat, vidlon,vidtime
 
-     integer,dimension(:), pointer :: vidsat_zen,vidsol_zen,vidrel_azi
+     integer,dimension(:), pointer :: vidsat_zen,vidsol_zen,vidrel_azi,vidcloud_albedo
 
      integer :: vidcot,vidref, vidctp,vidcct,vidstemp, vidcth,vidcccot,vidcccot_pre
-     integer :: vidctt, vidcwp,vidcloud_albedo
+     integer :: vidctt, vidcwp
      integer :: vidcoterror,vidreferror, vidctperror,vidccterror,vidctherror,vidctterror
      integer :: vidstemperror,vidcwperror
 

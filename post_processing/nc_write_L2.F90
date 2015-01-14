@@ -94,9 +94,6 @@ SUBROUTINE nc_write_L2_float_pp(ncid,var_name,vid,v,ix,nx,jy,ny,wo,ierr)
      write(*,*) 'wrote variable: ', trim(var_name)
   ENDIF
 
-  write(*,*) 'start, counter,stride', start, counter,stride
-  write(*,*)'ix,nx,jy,ny',ix,nx,jy,ny
-  write(*,*)'ncid',ncid
 
   ierr = NF90_PUT_VAR(ncid, vid, v(ix:nx,jy:ny), start, counter,stride)
 

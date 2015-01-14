@@ -57,8 +57,13 @@ subroutine alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,NViews,spixel
   
   nchan=2
 
+  allocate(spixel_scan_out%vidcloud_albedo(Nchan))
+  spixel_scan_out%vidcloud_albedo=0
+
   allocate(spixel_scan_out%vidsat_zen(NViews))
   spixel_scan_out%vidsat_zen=0
+
+
 
   allocate(spixel_scan_out%vidsol_zen(NViews))
   spixel_scan_out%vidsol_zen=0

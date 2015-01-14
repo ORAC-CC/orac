@@ -193,13 +193,13 @@
    do iinput=1,nchan_solar
  
       write(input_num,"(i4)") solar_chan_id(iinput)
- write(*,*)' cloud albedo',spixel_scan_out%cloud_albedo(:,:,iinput)
+
   
       input_dummy=trim(adjustl(input_num))
 
       write(*,*)'write_primary cloud albedo','cloud_albedo_in_channel_no_'//input_dummy
 
-           CALL nc_write_L2_short_pp(ncid_primary,'cloud_albedo_in_channel_no_'//input_dummy,spixel_scan_out%vidcloud_albedo,&
+           CALL nc_write_L2_short_pp(ncid_primary,'cloud_albedo_in_channel_no_'//input_dummy,spixel_scan_out%vidcloud_albedo(iinput),&
        spixel_scan_out%cloud_albedo(:,:,iinput),ixstart,ixstop,iystart,iystop,wo,ierr)
            end do
 

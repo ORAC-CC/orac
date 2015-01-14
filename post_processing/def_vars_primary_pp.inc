@@ -436,16 +436,16 @@
   !===============================
   ! Cloud ALBEDO
   !===============================
-      spixel_scan_out%cloud_albedo_scale=0.1
-      spixel_scan_out%cloud_albedo_offset=0.00
-      spixel_scan_out%cloud_albedo_vmin=0!*spixel_scan_out%lon_scale
-      spixel_scan_out%cloud_albedo_vmax=10000!*spixel_scan_out%lon_scale
-      !      write(*,*) ncid_primary
+    spixel_scan_out%cloud_albedo_scale=0.0001
+      spixel_scan_out%cloud_albedo_offset=0.0
+      spixel_scan_out%cloud_albedo_vmin=0
+      spixel_scan_out%cloud_albedo_vmax=11000
+
 
 write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor 
   !cloud_albedo
    if ( global_atts%sensor .eq. 'AATSR') then 
-   solar_chan_id=(/ 2,3 /)
+   solar_chan_id=(/ 2,3/)
    endif
    if ( global_atts%sensor .eq. 'MODIS') then
     solar_chan_id=(/ 1,2 /)
@@ -465,7 +465,7 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
 
  
          CALL nc_defdata_short_pp(ncid_primary, dims_var, trim(adjustl(input_dummy)),&
-              & spixel_scan_out%vidcloud_albedo, trim(adjustl(input_dummy)), &
+              & spixel_scan_out%vidcloud_albedo(iinput), trim(adjustl(input_dummy)), &
               & trim(adjustl(input_dummy)), '', &
               & spixel_scan_out%int_fill_value,&
               & spixel_scan_out%cloud_albedo_scale,spixel_scan_out%cloud_albedo_offset,&
