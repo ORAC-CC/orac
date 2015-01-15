@@ -130,6 +130,8 @@
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
 !    2015/01/15, AP: Facilitate channel indexing in :arbitrary order.
+!    2015/01/15, AP: The preprocessed MODIS albedo data was always rejected for
+!       Ch5 of AATSR. There is no reason to do so. This has been removed.
 !
 ! Bugs:
 !    AS, Mar 2011. The Aux method albedo code includes specific handling for
@@ -272,69 +274,56 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
          ic = SPixel%spixel_y_solar_to_ctrl_y_index(i)
 
-         if (Ctrl%Ind%Y_Id(ic) .eq. 5 .and. &
-              Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
-            if (SPixel%Surface%Flags == 0) then ! sea
-               SPixel_b(i) = Ctrl%Rs%b(ii,1)
-               if (Ctrl%RS%use_full_brdf) &
-                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(ii,1)
-           else
-               SPixel_b(i) = Ctrl%Rs%b(ii,2)
-               if (Ctrl%RS%use_full_brdf) &
-                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(ii,2)
-            end if
-         else
-            solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
+         solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
 
-            SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, ii) / &
-                 solar_factor
+         SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, ii) / &
+              solar_factor
 
-            if (Ctrl%RS%use_full_brdf) then
-               SPixel_b2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &
-                                      SPixel%Loc%YSeg0, ii) / solar_factor
-               SPixel_b2(i,IRho_0D) = MSI_Data%rho_0d(SPixel%Loc%X0, &
-                                      SPixel%Loc%YSeg0, ii) / solar_factor
-               SPixel_b2(i,IRho_DV) = MSI_Data%rho_dv(SPixel%Loc%X0, &
-                                      SPixel%Loc%YSeg0, ii) / solar_factor
-               SPixel_b2(i,IRho_DD) = MSI_Data%rho_dd(SPixel%Loc%X0, &
-                                      SPixel%Loc%YSeg0, ii) / solar_factor
-            end if
+         if (Ctrl%RS%use_full_brdf) then
+            SPixel_b2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &
+                                   SPixel%Loc%YSeg0, ii) / solar_factor
+            SPixel_b2(i,IRho_0D) = MSI_Data%rho_0d(SPixel%Loc%X0, &
+                                   SPixel%Loc%YSeg0, ii) / solar_factor
+            SPixel_b2(i,IRho_DV) = MSI_Data%rho_dv(SPixel%Loc%X0, &
+                                   SPixel%Loc%YSeg0, ii) / solar_factor
+            SPixel_b2(i,IRho_DD) = MSI_Data%rho_dd(SPixel%Loc%X0, &
+                                   SPixel%Loc%YSeg0, ii) / solar_factor
+         end if
 
-            ! If sea and then sun glint replace by Ctrl value, otherwise if land,
-            ! check for missing values and replace by Ctrl value
-            !
-            ! N.B. assumes either all channel albedos are present, or none are.
+         ! If sea and then sun glint replace by Ctrl value, otherwise if land,
+         ! check for missing values and replace by Ctrl value
+         !
+         ! N.B. assumes either all channel albedos are present, or none are.
 
-!           qc1=0
-!           qc2=0
-!           call mvbits(MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0,5),0,2,qc1,0)
-!           call mvbits(MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0,6),0,4,qc2,0)
+!        qc1=0
+!        qc2=0
+!        call mvbits(MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0,5),0,2,qc1,0)
+!        call mvbits(MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0,6),0,4,qc2,0)
 
-            if (SPixel%Surface%Flags == 0) then ! sea
-               if (SPixel_b(i) .ge. 1.0) then
+         if (SPixel%Surface%Flags == 0) then ! sea
+            if (SPixel_b(i) .ge. 1.0) then
 #ifdef DEBUG
-                  write(*, *) 'WARNING: Get_Surface(): Sunglint region predicted ' // &
-                              'over ocean in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
+               write(*, *) 'WARNING: Get_Surface(): Sunglint region predicted ' // &
+                    'over ocean in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-                  status = SPixelSurfglint
-               end if
-
-            else if (SPixel_b(i) == 0.0) then ! missing land
-               SPixel_b(i) = Ctrl%Rs%b(ii,2)
-               if (Ctrl%RS%use_full_brdf) &
-                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(ii,2)
-            else if (SPixel_b(i) >  1.0) then ! odd value for land
-               SPixel_b(i) = Ctrl%Rs%b(ii,2)
-               if (Ctrl%RS%use_full_brdf) &
-                  SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(ii,2)
-            ! Comment out this section to install loose qc
-!           else if (( qc1 == 1) .and. (qc2 >= 9 )) then
-               ! Use the default value MODIS not reliable
-!              SPixel_b(i) = Ctrl%Rs%b(ii,2)
-!           else if (( qc1 > 1)) then
-               ! Use the default value MODIS not reliable
-!              SPixel_b(i) = Ctrl%Rs%b(ii,2)
+               status = SPixelSurfglint
             end if
+
+         else if (SPixel_b(i) == 0.0) then ! missing land
+            SPixel_b(i) = Ctrl%Rs%b(ii,2)
+            if (Ctrl%RS%use_full_brdf) &
+                 SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(ii,2)
+         else if (SPixel_b(i) >  1.0) then ! odd value for land
+            SPixel_b(i) = Ctrl%Rs%b(ii,2)
+            if (Ctrl%RS%use_full_brdf) &
+                 SPixel_b2(i,IRho_DD) = Ctrl%Rs%b(ii,2)
+         ! Comment out this section to install loose qc
+!        else if (( qc1 == 1) .and. (qc2 >= 9 )) then
+            ! Use the default value MODIS not reliable
+!           SPixel_b(i) = Ctrl%Rs%b(ii,2)
+!        else if (( qc1 > 1)) then
+            ! Use the default value MODIS not reliable
+!           SPixel_b(i) = Ctrl%Rs%b(ii,2)
          end if
       end do
 
