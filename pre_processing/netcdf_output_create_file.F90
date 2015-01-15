@@ -86,6 +86,7 @@
 !  Pavolonies cloud typing, and NN cloud mask: cldtype, cldmask, cccot_pre,
 !   lusflag, dem, nisemask
 ! 2014/12/01, CP: Added in source attributes.
+! 2015/01/15, AP: Eliminate channel_ids_abs.
 !
 ! $Id$
 !
@@ -1151,14 +1152,6 @@ endif
               verbose, &
               fill_value = lint_fill_value)
 
-      call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_msi, &
-              dimids_1d, &
-              'msi_abs_ch_numbers', &
-              netcdf_info%vid_msi_abs_ch_numbers, &
-              verbose, &
-              fill_value = lint_fill_value)
-
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_msi, &
               dimids_1d, &
@@ -1454,14 +1447,6 @@ subroutine netcdf_create_config(global_atts,source_atts,cyear,cmonth,cday, &
            dimids_1d, &
            'msi_instr_ch_numbers', &
            netcdf_info%vid_msi_instr_ch_numbers_config, &
-           verbose, &
-           fill_value = lint_fill_value)
-
-   call nc_def_var_long_packed_long( &
-           netcdf_info%ncid_config, &
-           dimids_1d, &
-           'msi_abs_ch_numbers', &
-           netcdf_info%vid_msi_abs_ch_numbers_config, &
            verbose, &
            fill_value = lint_fill_value)
 

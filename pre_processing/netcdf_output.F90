@@ -16,6 +16,7 @@
 !    netcdf_output_info_s into here.
 ! 2014/09/28, GM: Remove layer dimids as they were not used any more.
 ! 2014/10/23, OS: Added output variables to clf and lsf file.
+! 2015/01/15, AP: Eliminate channel_abs_ids.
 !
 ! $Id$
 !
@@ -83,7 +84,7 @@ module netcdf_output
       integer :: vid_cflag, vid_cldtype, vid_cldmask, vid_cccot_pre
 
       ! config file:
-      integer :: vid_msi_instr_ch_numbers_config, vid_msi_abs_ch_numbers_config, &
+      integer :: vid_msi_instr_ch_numbers_config, &
                  vid_msi_abs_ch_wl_config, vid_msi_ch_lwflag_config, &
                  vid_msi_ch_swflag_config, vid_msi_ch_procflag_config, &
                  vid_alb_abs_ch_numbers_config, vid_emis_abs_ch_numbers_config
@@ -105,7 +106,7 @@ module netcdf_output
       integer :: vid_rbc_up_lw, vid_rac_up_lw, vid_rac_down_lw
 
       ! msi file:
-      integer :: vid_msi_instr_ch_numbers,vid_msi_abs_ch_numbers,vid_msi_abs_ch_wl
+      integer :: vid_msi_instr_ch_numbers,vid_msi_abs_ch_wl
       integer :: vid_msi_ch_swflag,vid_msi_ch_lwflag,vid_msi_ch_procflag
       integer :: vid_time
       integer :: vid_msi_data

@@ -18,6 +18,7 @@
 ! 2013/09/06, AP: removed redundant arguments
 ! 2014/10/15, GM: Added allocation of map_ids_abs_to_ref_band_land and
 !    map_ids_abs_to_ref_band_sea and removed allocation of channel_proc_flag.
+! 2015/01/15, AP: Eliminate channel_ids_abs.
 !
 ! $Id$
 !
@@ -35,8 +36,6 @@ subroutine allocate_channel_info(channel_info)
 
    allocate(channel_info%channel_ids_instr(channel_info%nchannels_total))
    channel_info%channel_ids_instr=lint_fill_value
-   allocate(channel_info%channel_ids_abs(channel_info%nchannels_total))
-   channel_info%channel_ids_abs=lint_fill_value
 
    allocate(channel_info%channel_wl_abs(channel_info%nchannels_total))
    channel_info%channel_wl_abs=sreal_fill_value

@@ -40,6 +40,7 @@
 ! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/10/23, OS: added new variables to be written to output: cldtype, cldmask,
 !  cccot_pre, lusflag, dem, nisemask
+! 2015/01/15, AP: Eliminate channel_ids_abs.
 !
 ! $Id$
 !
@@ -90,13 +91,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
 
    call nc_write_array( &
            netcdf_info%ncid_config, &
-           'msi_instr_ch_numbers', &
-           netcdf_info%vid_msi_abs_ch_numbers_config, &
-           channel_info%channel_ids_abs, &
-           1, 1, channel_info%nchannels_total)
-
-   call nc_write_array( &
-           netcdf_info%ncid_config, &
            'msi_abs_ch_wl', &
            netcdf_info%vid_msi_abs_ch_wl_config, &
            channel_info%channel_wl_abs, &
@@ -121,7 +115,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    ii=1
    do i=1,channel_info%nchannels_total
       if (channel_info%channel_sw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=channel_info%channel_ids_abs(i)
+         dummy_chan_vec1d(ii)=i
          ii=ii+1
       end if
    end do
@@ -139,7 +133,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    ii=1
    do i=1,channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=channel_info%channel_ids_abs(i)
+         dummy_chan_vec1d(ii)=i
          ii=ii+1
       end if
    end do
@@ -160,7 +154,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    ii=1
    do i=1,channel_info%nchannels_total
       if (channel_info%channel_sw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=channel_info%channel_ids_abs(i)
+         dummy_chan_vec1d(ii)=i
          ii=ii+1
       end if
    end do
@@ -178,7 +172,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    ii=1
    do i=1,channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i) .eq. 1) then
-         dummy_chan_vec1d(ii)=channel_info%channel_ids_abs(i)
+         dummy_chan_vec1d(ii)=i
          ii=ii+1
       end if
    end do
@@ -380,13 +374,6 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            'msi_instr_ch_numbers', &
            netcdf_info%vid_msi_instr_ch_numbers, &
            channel_info%channel_ids_instr, &
-           1, 1, channel_info%nchannels_total)
-
-   call nc_write_array( &
-           netcdf_info%ncid_msi, &
-           'msi_instr_ch_numbers', &
-           netcdf_info%vid_msi_abs_ch_numbers, &
-           channel_info%channel_ids_abs, &
            1, 1, channel_info%nchannels_total)
 
    call nc_write_array( &

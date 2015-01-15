@@ -18,6 +18,7 @@
 ! 2012/08/22, GT: Added nview (number of viewing geometries)
 ! 2014/10/15, GM: Added map_ids_abs_to_ref_band_land and
 !    map_ids_abs_to_ref_band_sea and removed channel_proc_flag.
+! 2015/01/15, AP: Eliminate channel_ids_abs.
 !
 ! $Id$
 !
@@ -51,9 +52,6 @@ module channel_structures
       !Note that these values may well repeat for multi-view instruments, like
       !AATSR: (/ 1, 2, 3, 4, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7 /)
       integer(kind=lint), dimension(:), pointer :: channel_ids_instr
-      !wrt plain numbering 1,2,..... with regard to increasing wavelength and
-      !then view
-      integer(kind=lint), dimension(:), pointer :: channel_ids_abs
 
       !wavelength (in micrometers) array wrt to absolute channel numbering
       ! i.e. For all AATSR channels in both views, this would be

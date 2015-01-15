@@ -114,7 +114,8 @@
 ! 2014/09/28, GM: Fixed a significant performance regression by rearranging the
 !    rtm variable dimensions.
 ! 2014/10/23, OS: set do_checkinput config variable to .false.; this avoids
-!  extrapolation to negative profile values, causing a fatal RTTOV error
+!    extrapolation to negative profile values, causing a fatal RTTOV error
+! 2015/01/15, AP: Eliminate channel_ids_abs.
 !
 ! $Id$
 !
@@ -287,7 +288,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    do i_coef=1,channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i_coef) == 1) then
          count = count + 1
-         dummy_lint_1dveca(count)  = channel_info%channel_ids_abs(i_coef)
+         dummy_lint_1dveca(count)  = i_coef
          dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
          dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
       end if
@@ -316,7 +317,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    do i_coef=1,channel_info%nchannels_total
       if (channel_info%channel_sw_flag(i_coef) == 1) then
          count = count + 1
-         dummy_lint_1dveca(count)  = channel_info%channel_ids_abs(i_coef)
+         dummy_lint_1dveca(count)  = i_coef
          dummy_lint_1dvecb(count)  = channel_info%channel_ids_instr(i_coef)
          dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
       end if

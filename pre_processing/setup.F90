@@ -60,6 +60,7 @@ contains
 ! 2014/10/23, OS: Refactoring overly long lines of code, causing CRAY-ftn
 !    compiler to exit
 ! 2014/12/01, CS: updated setup_avhrr to read new ECC_GAC AVHRR data
+! 2015/01/15, AP: Eliminate channel_ids_abs.
 !
 ! $Id$
 !
@@ -135,8 +136,6 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    ! numbering wrt instrument definition
    ! AATSR has a 0.55 micron channel so instrument channel numbering starts at 2
    channel_info%channel_ids_instr = (/ 2, 3, 4, 5, 6, 7 /)
-   ! numbering wrt to increasing wl, starting at 1 (0.67 micron)
-   channel_info%channel_ids_abs = (/ 1, 2, 3, 4, 5, 6 /)
    !which are the wl of those channels (approximate)
    channel_info%channel_wl_abs = (/ 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
    channel_info%channel_view_ids = 1
@@ -315,11 +314,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    call allocate_channel_info(channel_info)
 
    !numbering wrt instrument definition
-   !3=3B,6=3A (that's how it is in the HDF5 input file)
+   !3=3A,4=3B,5=4,6=5 (not how it is in the HDF5 input file but habit by now)
    channel_info%channel_ids_instr = (/ 1, 2, 3, 4, 5, 6 /)
-   !numbering wrt to increasing wl, starting at 1
-   !3=3A,4=3B
-   channel_info%channel_ids_abs = (/ 1, 2, 3, 4, 5, 6 /)
    !which are the wl of those channels (approximate)
    channel_info%channel_wl_abs = (/ 0.63, 0.8625, 1.61, 3.74, 10.8, 12.0 /)
    channel_info%channel_view_ids = 1
@@ -533,8 +529,6 @@ subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
    integer :: i_lw
 
    do i = 1, channel_info%nchannels_total
-      channel_info%channel_ids_abs(i) = i
-
       channel_info%channel_wl_abs (i) = &
          all_channel_wl_abs (channel_info%channel_ids_instr(i))
 
