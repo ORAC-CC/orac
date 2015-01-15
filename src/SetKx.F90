@@ -37,6 +37,8 @@
 !       Changes Kx assignment
 !    21th May 2014, Greg McGarragh:
 !       Cleaned up the code.
+!    15th Jan 2015, Adam Povey:
+!       Facilitate channel indexing in arbitrary order.
 !
 ! Bugs:
 !   None known.
@@ -83,7 +85,8 @@ subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)
 
    if (Ctrl%Eqmpn%Rs == 1) then
       do i = 1, SPixel%Ind%NSolar
-         Kbj(i,i) = dY_dX(i,MaxStateVar+1)
+         Kbj(SPixel%Ind%YSolar(i),i) = &
+              dY_dX(SPixel%Ind%YSolar(i),MaxStateVar+1)
       end do
    end if
 
