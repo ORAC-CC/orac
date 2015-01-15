@@ -89,7 +89,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    call nc_write_array(ncid,'stemp_ap',output_data%vid_stemp_fg,&
            output_data%stemp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   do i=1,Ctrl%Ind%Nsolar
+   do i=1,Ctrl%Ind%NSolar
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
       input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
 

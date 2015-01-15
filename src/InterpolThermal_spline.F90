@@ -37,7 +37,7 @@
 !       increasing pressure. Previously, if Pc was equal to P(1) it was not
 !       matched (and if Pc < P(1) it's P index is set to 1!)
 !     1st March 2001, Andy Smith:
-!       Fixed dB_dT declaration. Was scalar, should have been array (Nthermal).
+!       Fixed dB_dT declaration. Was scalar, should have been array (NThermal).
 !    15th Mar 2001, Andy Smith:
 !       Added ThF and ThL indices for RTM_Pc%LW arrays. Required because these
 !       arrays are allocated to match the no. of thermal channels requested, but
@@ -110,7 +110,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    type(CTRL_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(in)    :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%NThermal)
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: Pc
    integer,          intent(out)   :: status
@@ -124,27 +124,27 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    real    :: k0                         ! Spline coefficient
    real    :: k1                         ! Spline coefficient
    real    :: delta_p
-   real    :: delta_Tac(SPixel%Ind%Nthermal)
-   real    :: delta_Tbc(SPixel%Ind%Nthermal)
-   real    :: delta_Rac_up(SPixel%Ind%Nthermal)
-   real    :: delta_Rac_dwn(SPixel%Ind%Nthermal)
-   real    :: delta_Rbc_up(SPixel%Ind%Nthermal)
+   real    :: delta_Tac(SPixel%Ind%NThermal)
+   real    :: delta_Tbc(SPixel%Ind%NThermal)
+   real    :: delta_Rac_up(SPixel%Ind%NThermal)
+   real    :: delta_Rac_dwn(SPixel%Ind%NThermal)
+   real    :: delta_Rbc_up(SPixel%Ind%NThermal)
    real    :: delta_T                    ! Step in Temp between pressure levels
    real    :: delta_H                    ! Step in GPH between pressure levels
    real    :: dT_dPc                     ! Gradient of T wrt Pc
    real    :: dH_dPc                     ! Gradient of GPH wrt Pc
-   real    :: T(SPixel%Ind%Nthermal)     ! Calculated Temp at Pc. T2R wants array
-   real    :: H(SPixel%Ind%Nthermal)     ! Calculated GPH at Pc.
+   real    :: T(SPixel%Ind%NThermal)     ! Calculated Temp at Pc. T2R wants array
+   real    :: H(SPixel%Ind%NThermal)     ! Calculated GPH at Pc.
    real    :: d2T_dP2(SPixel%RTM%LW%Np)
    real    :: d2H_dP2(SPixel%RTM%LW%Np)
-   real    :: d2Tac_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real    :: d2Tbc_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real    :: d2Rac_up_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real    :: d2Rac_dwn_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
-   real    :: d2Rbc_up_dP2(SPixel%Ind%Nthermal,SPixel%RTM%LW%Np)
+   real    :: d2Tac_dP2(SPixel%Ind%NThermal,SPixel%RTM%LW%Np)
+   real    :: d2Tbc_dP2(SPixel%Ind%NThermal,SPixel%RTM%LW%Np)
+   real    :: d2Rac_up_dP2(SPixel%Ind%NThermal,SPixel%RTM%LW%Np)
+   real    :: d2Rac_dwn_dP2(SPixel%Ind%NThermal,SPixel%RTM%LW%Np)
+   real    :: d2Rbc_up_dP2(SPixel%Ind%NThermal,SPixel%RTM%LW%Np)
    real    :: delta_Pc
    real    :: R(SPixel%Ind%NThermal)
-   real    :: dB_dT(SPixel%Ind%Nthermal) ! Gradient of Planck function wrt Temp.
+   real    :: dB_dT(SPixel%Ind%NThermal) ! Gradient of Planck function wrt Temp.
    integer :: Thermal(SPixel%Ind%NThermal) ! Indices of thermal channel for RTM_Pc%LW arrays
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
@@ -301,7 +301,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
                   (k0 * d2T_dP2(i)) + (k1 * d2T_dP2(i+1))
       T = RTM_Pc%Tc
 
-      call T2R(SPixel%Ind%Nthermal, SAD_Chan, T, R, dB_dT, status)
+      call T2R(SPixel%Ind%NThermal, SAD_Chan, T, R, dB_dT, status)
       RTM_Pc%LW%B(Thermal) = R
       RTM_Pc%LW%dB_dPc(Thermal) = dT_dPc * dB_dT
 

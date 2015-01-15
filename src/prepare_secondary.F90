@@ -143,7 +143,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! albedo
    !----------------------------------------------------------------------------
-   do k=1,Ctrl%Ind%Nsolar
+   do k=1,Ctrl%Ind%NSolar
       dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%YSeg0,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%albedo(i,j,k), &

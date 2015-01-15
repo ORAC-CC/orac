@@ -92,7 +92,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   if (trim(Ctrl%inst%name) .eq. 'AATSR') then
+   if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
@@ -781,7 +781,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! cloud a albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ctrl%Ind%Nsolar
+   do i=1,Ctrl%Ind%NSolar
 
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%YSolar(i))
 

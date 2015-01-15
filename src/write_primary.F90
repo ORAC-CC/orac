@@ -177,7 +177,7 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
    call nc_write_array(ncid,'nisemask',output_data%vid_nisemask,&
            output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   do i=1,Ctrl%Ind%Nsolar
+   do i=1,Ctrl%Ind%NSolar
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
 
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))

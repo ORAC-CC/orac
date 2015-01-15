@@ -474,7 +474,7 @@ end if
 #ifdef USE_ADAPTIVE_PROCESSING
    ! Adaptive processing:
    lhres = .false. ! "high" resolution flag
-   if (index(trim(Ctrl%Inst%Name),'MODIS') .ge. 1) then
+   if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
 
       ! Set special range
       range_lat(1) = 42.0

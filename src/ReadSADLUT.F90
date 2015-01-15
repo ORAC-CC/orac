@@ -846,7 +846,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
    do i=1, Ctrl%Ind%Ny
       if (Ctrl%Ind%Y_Id(i) < 10) then
-         if (trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
+         if (Ctrl%Inst%Name(1:5) .ne. 'AVHRR') then
             write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
          else
             select case (Ctrl%Ind%Y_Id(i))

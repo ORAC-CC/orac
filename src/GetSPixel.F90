@@ -316,7 +316,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! MSI - Reflectances (between 0 and 1)
    minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0, :))
    if (minsolzen < Ctrl%MaxSolzen) then
-      do i = 1,Ctrl%Ind%Nsolar
+      do i = 1,Ctrl%Ind%NSolar
          if (.not. btest(Ctrl%Ind%Ch_Is(Ctrl%Ind%YSolar(i)), ThermalBit)) &
             call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                              Ctrl%Ind%YSolar(i)), RefMax, RefMin, SPixel, &
@@ -325,7 +325,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    end if
 
    ! MSI - Temperatures (between 150.0K and 330.0K)
-   allocate(thermal(Ctrl%Ind%Nthermal))
+   allocate(thermal(Ctrl%Ind%NThermal))
    do i = 1,Ctrl%Ind%NThermal
       thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
                                 Ctrl%Ind%YThermal(i))

@@ -411,7 +411,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! cloud_albedo
    !----------------------------------------------------------------------------
-   do k=1,Ctrl%Ind%Nsolar
+   do k=1,Ctrl%Ind%NSolar
       dummyreal=Diag%cloud_albedo(k)
       call prepare_short_packed_float( &
            dummyreal, output_data%cloud_albedo(i,j,k), &

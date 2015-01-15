@@ -114,28 +114,28 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    type(CTRL_t),     intent(in)    :: Ctrl
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
    type(SPixel_t),   intent(in)    :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%Nthermal)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%NThermal)
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: X(MaxStateVar)
    type(GZero_t),    intent(in)    :: GZero
-   real,             intent(out)   :: BT(SPixel%Ind%Nthermal)
-   real,             intent(out)   :: d_BT(SPixel%Ind%Nthermal, MaxStateVar)
-   real,             intent(out)   :: R(SPixel%Ind%Nthermal)
-   real,             intent(out)   :: d_R(SPixel%Ind%Nthermal, MaxStateVar)
+   real,             intent(out)   :: BT(SPixel%Ind%NThermal)
+   real,             intent(out)   :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
+   real,             intent(out)   :: R(SPixel%Ind%NThermal)
+   real,             intent(out)   :: d_R(SPixel%Ind%NThermal, MaxStateVar)
    integer,          intent(out)   :: status
 
    ! Define local variables
 
-   real    :: CRP(SPixel%Ind%Nthermal, MaxCRProps)
-   real    :: d_CRP(SPixel%Ind%Nthermal, MaxCRProps, 2)
+   real    :: CRP(SPixel%Ind%NThermal, MaxCRProps)
+   real    :: d_CRP(SPixel%Ind%NThermal, MaxCRProps, 2)
    integer :: i
    integer :: Thermal(SPixel%Ind%NThermal)
    real    :: delta_Ts
-   real    :: R_clear(SPixel%Ind%Nthermal)
-   real    :: R_over(SPixel%Ind%Nthermal)
-   real    :: Es_dB_dTs(SPixel%Ind%Nthermal)
-   real    :: fTac(SPixel%Ind%Nthermal)
-   real    :: dT_dR(SPixel%Ind%Nthermal)
+   real    :: R_clear(SPixel%Ind%NThermal)
+   real    :: R_over(SPixel%Ind%NThermal)
+   real    :: Es_dB_dTs(SPixel%Ind%NThermal)
+   real    :: fTac(SPixel%Ind%NThermal)
+   real    :: dT_dR(SPixel%Ind%NThermal)
 #ifdef BKP
    integer :: j       ! For breakpoint output loops
    integer :: bkp_lun ! Unit number for breakpoint file
@@ -211,7 +211,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
       (1.0 - X(IFr)) * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1)
 
    ! Convert radiances to brightness temperatures
-   call R2T(SPixel%Ind%Nthermal, SAD_Chan, R, BT, dT_dR, status)
+   call R2T(SPixel%Ind%NThermal, SAD_Chan, R, BT, dT_dR, status)
 
    ! Calculate the change in brightness temperatures w.r.t. state parameters
    ! using dBT_dX = dT_dR * dR_dX (loop through each state parameter)

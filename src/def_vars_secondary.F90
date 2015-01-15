@@ -314,7 +314,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ctrl%Ind%Nsolar
+   do i=1,Ctrl%Ind%NSolar
 
       write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%YSolar(i))
 

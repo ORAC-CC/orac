@@ -127,7 +127,7 @@ subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
 
                GZero%iSaZSoZ0(i,j) = &
                   max(min(locate(SAD_LUT%Grid%SolZen(ii,1:SAD_LUT%Grid%nSolzen(ii,j),j),&
-                          SPixel%Geom%Satzen(Spixel%ViewIdx(i))),SAD_LUT%Grid%nSolzen(ii,j)-1),1)
+                          SPixel%Geom%Satzen(SPixel%ViewIdx(i))),SAD_LUT%Grid%nSolzen(ii,j)-1),1)
             end if
             if (SAD_LUT%table_uses_relazi(j)) then
                GZero%iRA0(i,j) = &
@@ -193,7 +193,7 @@ subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
 
             if (SAD_LUT%table_uses_satzen(j)) then
                GZero%dSaZ(i,j) = &
-                  (SPixel%Geom%SatZen(Spixel%ViewIdx(i)) - SAD_LUT%Grid%SatZen(ii,GZero%iSaZ0(i,j),j)) / &
+                  (SPixel%Geom%SatZen(SPixel%ViewIdx(i)) - SAD_LUT%Grid%SatZen(ii,GZero%iSaZ0(i,j),j)) / &
                   (SAD_LUT%Grid%SatZen(ii,GZero%iSaZ1(i,j),j) - SAD_LUT%Grid%SatZen(ii,GZero%iSaZ0(i,j),j))
             end if
 
@@ -201,16 +201,16 @@ subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
             ! (including mixed)
             if (SAD_LUT%table_uses_solzen(j)) then
                GZero%dSoZ(i,j) = &
-                  (SPixel%Geom%SolZen(Spixel%ViewIdx(i)) - SAD_LUT%Grid%SolZen(ii,GZero%iSoZ0(i,j),j)) / &
+                  (SPixel%Geom%SolZen(SPixel%ViewIdx(i)) - SAD_LUT%Grid%SolZen(ii,GZero%iSoZ0(i,j),j)) / &
                   (SAD_LUT%Grid%SolZen(ii,GZero%iSoZ1(i,j),j) - SAD_LUT%Grid%SolZen(ii,GZero%iSoZ0(i,j),j))
 
                GZero%dSaZSoZ(i,j) = &
-                  (SPixel%Geom%SatZen(Spixel%ViewIdx(i)) - SAD_LUT%Grid%SolZen(ii,GZero%iSaZSoZ0(i,j),j)) / &
+                  (SPixel%Geom%SatZen(SPixel%ViewIdx(i)) - SAD_LUT%Grid%SolZen(ii,GZero%iSaZSoZ0(i,j),j)) / &
                   (SAD_LUT%Grid%SolZen(ii,GZero%iSaZSoZ1(i,j),j) - SAD_LUT%Grid%SolZen(ii,GZero%iSaZSoZ0(i,j),j))
             end if
             if (SAD_LUT%table_uses_relazi(j)) then
                GZero%dRA(i,j) = &
-                  (SPixel%Geom%RelAzi(Spixel%ViewIdx(i)) - SAD_LUT%Grid%RelAzi(ii,GZero%iRA0(i,j),j)) / &
+                  (SPixel%Geom%RelAzi(SPixel%ViewIdx(i)) - SAD_LUT%Grid%RelAzi(ii,GZero%iRA0(i,j),j)) / &
                   (SAD_LUT%Grid%RelAzi(ii,GZero%iRA1(i,j),j) - SAD_LUT%Grid%RelAzi(ii,GZero%iRA0(i,j),j))
             end if
          end if
