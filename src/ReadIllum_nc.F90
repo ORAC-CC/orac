@@ -51,6 +51,8 @@
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
 !    2015/01/12, AP: Simplify logic for identifying missing channels.
+!    2015/01/15, GM: Bug fix in illumination logic under twilight conditions and
+!       removed old logic.
 !
 ! Bugs:
 !    None known.
@@ -168,108 +170,6 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
             ! Now determine illumination conditions based on solar illumination
             ! and amount of available channels.
-if (.false.) then
-            !-------------------------------------------------------------------
-            ! Original logic
-            !-------------------------------------------------------------------
-
-            ! All channels available
-            if (n_vis_bad_ref .eq. 0 .and. n_vis_bad_tau .eq. 0) then
-               ! Daytime
-               if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolZen) then
-                  MSI_Data%Illum(i,j,view) = IDay
-
-               ! Twilight
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
-                        MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
-                  MSI_Data%Illum(i,j,view) = ITwi
-
-               ! Night
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
-                  MSI_Data%Illum(i,j,view) = INight
-               end if
-
-            ! Some solar channels missing
-            else if (n_vis_bad_ref .gt. 0 .or. n_vis_bad_tau .gt. 0) then
-               ! Twilight
-               if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
-                   MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
-                  MSI_Data%Illum(i,j,view) = ITwi
-
-               ! Night
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
-                  MSI_Data%Illum(i,j,view) = INight
-               end if
-            end if
-
-else if (.false.) then
-            !-------------------------------------------------------------------
-            ! Caroline's new logic
-            !-------------------------------------------------------------------
-
-            if (n_vis_bad_ref .eq. 0) then
-               ! Daytime, all sw channels and all lw channels
-               if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolZen .and. &
-                   n_vis_bad_tau .eq. 0 .and. n_ir_bad .eq. 0) then
-                  MSI_Data%Illum(i,j,view) = IDay
-
-               ! Daytime, a single sw channel missing
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolZen .and. &
-                        n_vis_bad_tau .eq. 1 .and. n_ir_bad .eq. 0)  then
-                  if (i_missing_vis_tau .eq. 1)  then
-                     MSI_Data%Illum(i,j,view) = IDayMissingSingleVisFirst
-                  else if (i_missing_vis_tau .eq. 2)  then
-                     MSI_Data%Illum(i,j,view) = IDayMissingSingleVisSecond
-                  end if
-
-               ! Daytime, a single ir channel missing good
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolZen .and. &
-                        n_vis_bad_tau .eq. 0 .and. n_ir_bad .eq. 1)  then
-                  if (i_missing_ir .eq. 1)  then
-                     MSI_Data%Illum(i,j,view) = IDayMissingSingleIRFirst
-                  else if (i_missing_ir .eq. 2)  then
-                     MSI_Data%Illum(i,j,view) = IDayMissingSingleIRSecond
-                  else if (i_missing_ir .eq. 3)  then
-                     MSI_Data%Illum(i,j,view) = IDayMissingSingleIRThird
-                  end if
-
-               ! Sun is close to sunset
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
-                        MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
-                  MSI_Data%Illum(i,j,view) = ITwi
-
-               ! Sun is below horizon
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
-                  MSI_Data%Illum(i,j,view) = INight
-               end if
-
-            ! Some solar channels gone only do night retrieval
-            else if (n_vis_bad_ref .gt. 0 .or. n_vis_bad_tau .gt. 0) then
-               if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
-                   MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
-                  MSI_Data%Illum(i,j,view) = ITwi
-
-               ! Sun below horizon
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset .and. &
-                        n_ir_bad .eq. 0) then
-                  MSI_Data%Illum(i,j,view) = INight
-
-               else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset .and. &
-                        n_ir_bad .gt. 0) then
-                  if (i_missing_ir .eq. 1)  then
-                     MSI_Data%Illum(i,j,view) = INightMissingSingleIRFirst
-                  else if (i_missing_ir .eq. 2)  then
-                     MSI_Data%Illum(i,j,view) = INightMissingSingleIRSecond
-                  else if (i_missing_ir .eq. 3)  then
-                     MSI_Data%Illum(i,j,view) = INightMissingSingleIRThird
-                  end if
-               end if
-            end if
-
-else
-            !-------------------------------------------------------------------
-            ! Greg's new logic (based on Caroline's but catches a couple more cases)
-            !-------------------------------------------------------------------
 
             ! Daytime
             if (MSI_Data%Geometry%Sol(i, j, 1) .lt. Ctrl%MaxSolZen) then
@@ -320,7 +220,11 @@ else
             ! Twilight
             else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
                      MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
-               MSI_Data%Illum(i,j,view) = ITwi
+               if (n_ir_bad .eq. 1) then
+                  if (i_missing_ir .eq. 1) then
+                     MSI_Data%Illum(i,j,view) = ITwi
+                  endif
+               endif
 
             ! Night time
             else if (MSI_Data%Geometry%Sol(i, j, 1) .gt. Ctrl%Sunset) then
@@ -340,7 +244,6 @@ else
                   end if
                end if
             end if
-end if
          end do
       end do
    end do
