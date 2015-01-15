@@ -30,6 +30,7 @@
 ! 2013/09/06, AP: tidying, changed channel identification to use 'channel'
 !   attribute within the file
 ! 2014/07/23, AP: don't apply 0.01 scale factor to missing values.
+! 2015/01/15, AP: Permit arbitrary ordering of the channels.
 !
 ! $Id$
 !
@@ -58,7 +59,8 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
    integer                                       :: ichannel,err_code
    integer(kind=lint)                            :: l1b_id
    real(kind=sreal), allocatable, dimension(:,:) :: temp
-   character(len=6)                              :: cimage,cich
+   character(len=1)                              :: cich
+   character(len=6)                              :: cimage
    character(len=10)                             :: channel_number
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_avhrr_l1b_radiances()'
@@ -77,10 +79,29 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
    call h5fopen_f(path_to_l1b_file,h5f_acc_rdonly_f,l1b_id,err_code)
 
    do ichannel=1,channel_info%nchannels_total
-      if (verbose) write(*,*) 'Read AVHRR channel: ', ichannel
+      ! Translate our instrument channel number into the actual instrument number
+      ! We give inst ch numbers in increasing wavelength. The AVHRR numbers do
+      ! that except that the 1.6um channel was added later - hence it's #6.
+      select case (channel_info%channel_ids_instr(ichannel))
+      case(1)
+         cich='1'
+      case(2)
+         cich='2'
+      case(3)
+         cich='6'
+      case(4)
+         cich='3'
+      case(5)
+         cich='4'
+      case(6)
+         cich='5'
+      case default
+         write(*,*) 'ERROR: read_avhrr_l1b_radiances(): Invalid channel number.'
+         stop error_stop_code
+      end select
+      cimage='image'//cich
 
-      write(cich,'(i1)') ichannel
-      cimage='image'//trim(adjustl(cich))
+      if (verbose) write(*,*) 'Read AVHRR channel: '//cich 
 
       call read_avhrr_l1b_radiances_2(l1b_id, &
            cimage,"data",cimage//'/what', &
@@ -88,36 +109,17 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geol
            imager_geolocation%starty,imager_geolocation%endy, &
            channel_number,temp,verbose)
 
-      ! copy arrays over and bring in 1,2,3a,3b,4,5 order,
-      ! storage in the imager_measurements%data array is strictLy with
-      ! increasing wavelength. apply division by 100.0 to convert from percent
+      ! copy arrays over. apply division by 100.0 to convert from percent
       ! to fraction  representation for SW reflectances. All LW channels have
       ! BTs assigned to them already.
+      ! image1,2,3,4,5,6 => Ch 1,2,3B,4,5,3A
       select case(channel_number)
-      case('1') !image 1 in the file is channel 1 of AVHRR
+      case('1','2','3a','3A')
          where (temp .ne. sreal_fill_value)
-            imager_measurements%data(:,:,1)=temp/100.0
+            imager_measurements%data(:,:,ichannel)=temp/100.0
          end where
-      case('2') !image 2 in the file is channel 2 of AVHRR
-         where (temp .ne. sreal_fill_value)
-            imager_measurements%data(:,:,2)=temp/100.0
-         end where
-      case('3b') !image 3 in the file is channel 3B of AVHRR
-         imager_measurements%data(:,:,4)=temp
-      case('4') !image 4 in the file is channel 4 of AVHRR
-         imager_measurements%data(:,:,5)=temp
-      case('5') !image 5 in the file is channel 5 of AVHRR
-         imager_measurements%data(:,:,6)=temp
-      case('3a') !image 6 in the file is channel 3A of AVHRR
-         where (temp .ne. sreal_fill_value)
-            imager_measurements%data(:,:,3)=temp/100.0
-         end where
-      case('3B') ! just in case
-         imager_measurements%data(:,:,4)=temp
-      case('3A') ! just in case
-         where (temp .ne. sreal_fill_value)
-            imager_measurements%data(:,:,3)=temp/100.0
-         end where
+      case('3b','3B','4','5')
+         imager_measurements%data(:,:,ichannel)=temp
       case default
          write(*,*) 'ERROR: read_avhrr_l1b_radiances(): invalid AVHRR channel: ', &
                     channel_number

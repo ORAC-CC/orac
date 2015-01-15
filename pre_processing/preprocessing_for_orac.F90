@@ -821,9 +821,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            assume_full_paths,source_atts, verbose)
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase'
-      call cloud_type(surface, imager_flags, imager_angles, &
-           imager_geolocation, imager_measurements, imager_pavolonis, &
-           ecmwf, platform, doy, verbose)
+      call cloud_type(channel_info, sensor, surface, imager_flags, &
+           imager_angles, imager_geolocation, imager_measurements, &
+          imager_pavolonis,  ecmwf, platform, doy, verbose)
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'

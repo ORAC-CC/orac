@@ -95,6 +95,8 @@
 !    subroutine with OpenMP.
 ! 06 Jan 2015, GM: Fixed a couple of bugs in the OpenMP parallelization that
 !    come out when compiling with ifort.
+! 15 Jan 2015, AP: Bug fix. Passing channel index into cox_munk3 wasn't
+!    compatible with arbitrary channel ordering.
 !
 ! $Id$
 !
@@ -2021,7 +2023,7 @@ subroutine cox_munk_rho_0v_0d_dv_and_dd(bands, solza, satza, solaz, relaz, &
       call cox_munk3_calc_shared_geo_wind(solza(i), satza(i), 0., relaz(i), &
                                           u10(i), v10(i), shared_geo_wind)
       do j = 1, n_bands
-         call cox_munk3(j, shared_band(j), shared_geo_wind, rho_0v(j,i))
+         call cox_munk3(bands(j), shared_band(j), shared_geo_wind, rho_0v(j,i))
       end do
    end do
 !$OMP END DO
@@ -2051,7 +2053,7 @@ if (.false.) then
             call cox_munk3_calc_shared_geo_wind(solza(i), satza2, 0., relaz2, &
                                                 u10(i), v10(i), shared_geo_wind)
             do l = 1, n_bands
-               call cox_munk3(l, shared_band(l), shared_geo_wind, a2)
+               call cox_munk3(bands(l), shared_band(l), shared_geo_wind, a2)
                aa(l) = aa(l) + a2 * qw_phi(k)
             end do
          end do
@@ -2144,7 +2146,7 @@ if (.false.) then
             call cox_munk3_calc_shared_geo_wind(solza2, satza(i), 0., relaz2, &
                                                 u10(i), v10(i), shared_geo_wind)
             do l = 1, n_bands
-               call cox_munk3(l, shared_band(l), shared_geo_wind, a2)
+               call cox_munk3(bands(l), shared_band(l), shared_geo_wind, a2)
                aa(l) = aa(l) + a2 * qw_phi(k)
             end do
          end do

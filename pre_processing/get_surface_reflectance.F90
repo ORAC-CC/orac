@@ -100,6 +100,7 @@
 !    solar zenith angle (albedo, rho_dv, and rho_dd) are computed at night.
 !    Values that are (rho_0v and rho_0d) are not computed and set to fill.
 ! 01/12/2014, CP: Added source attributes.
+! 14/01/2015, AP: Allow the code to accept channels in arbitrary order.
 !
 ! $Id$
 !
@@ -154,7 +155,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   integer, dimension(n_modbands)                  :: modbands
   integer, parameter                              :: n_coxbands = 4
   integer, dimension(n_coxbands)                  :: coxbands
-  integer, allocatable, dimension(:)              :: bands
+  integer, allocatable, dimension(:)              :: bands, band_to_sw_index
   integer                                         :: n_ref_chans
   real(kind=sreal), allocatable, dimension(:,:)   :: tmp_data
   integer(kind=byte), allocatable, dimension(:,:) :: fg_mask
@@ -241,7 +242,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         allocate(solazlnd(nland))
         allocate(relazlnd(nland))
         allocate(wgtlnd(3,channel_info%nchannels_sw,nland))
-        allocate(rholnd (channel_info%nchannels_sw,nland,4))
+        allocate(rholnd(channel_info%nchannels_sw,nland,4))
      end if
 
      ! Read MODIS MCD43C3 surface reflectance data
@@ -252,34 +253,47 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      modbands = (/ 1, 2, 3, 4, 5, 6, 7 /)
 
      ii = 0
-     do i = 1, channel_info%nchannels_sw
-        flag = .true.
-        do j = 1, n_modbands
-           if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. modbands(j)) then
-              flag = .false.
-              ii = ii + 1
-              exit
-           endif
-        enddo
+     kk = 1
+     do i = 1, channel_info%nchannels_total
+        ! Loop over all shortwave channels
+        if (channel_info%channel_sw_flag(i) .ne. 0) then
+           flag = .true.
+           do j = 1, n_modbands
+              ! Find the MODIS band that corresponds that the channel
+              if (channel_info%map_ids_abs_to_ref_band_land(kk) .eq. &
+                   modbands(j)) then
+                 flag = .false.
+                 ii = ii + 1
+                 exit
+              endif
+           enddo
 
-        if (flag .and. channel_info%channel_lw_flag(i) .eq. 0) then
-           write(*,*) 'ERROR: get_surface_reflectance(), instrument ' // &
-              'channel ', channel_info%channel_ids_instr(i), ' does not ' // &
-              'have a corresponding land reflectance product channel'
-           stop error_stop_code
-        endif
+           ! Flag channels without a MODIS band unless they are mixed
+           if (flag .and. channel_info%channel_lw_flag(i) .eq. 0) then
+              write(*,*) 'ERROR: get_surface_reflectance(), instrument ' // &
+                   'channel ', channel_info%channel_ids_instr(i), ' does ' // &
+                   'not have a corresponding land reflectance product channel'
+              stop error_stop_code
+           endif
+
+           kk = kk + 1
+        end if
      enddo
      n_ref_chans = ii
 
      if (verbose) write(*,*) 'n channels for land reflectance: ', n_ref_chans
 
      allocate(bands(n_ref_chans))
+     allocate(band_to_sw_index(n_ref_chans))
 
      ii = 1
      do i = 1, channel_info%nchannels_sw
         do j = 1, n_modbands
            if (channel_info%map_ids_abs_to_ref_band_land(i) .eq. modbands(j)) then
+              ! List of bands of be read
               bands(ii) = modbands(j)
+              ! Indices of bands to be read wrt the shortwave channels
+              band_to_sw_index(ii) = i
               ii = ii + 1
               exit
            endif
@@ -357,16 +371,20 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      end do
 
      do i=1,n_ref_chans
+        ii = band_to_sw_index(i)
+        ! Use i for band arrays that run 1:n_ref_chans
+        ! Use ii for sw arrays that run 1:nchannels_sw
+
         tmp_data = mcdc3%WSA(:,:,i)
 
         call fill_grid(tmp_data, sreal_fill_value, fg_mask)
 
         do lndcount=1,nland
-           call interp_field(tmp_data, wsalnd(i,lndcount), interp(lndcount))
+           call interp_field(tmp_data, wsalnd(ii,lndcount), interp(lndcount))
         end do
 
         if (verbose) write(*,*) 'Land WSA: channel, min, max = ', &
-             i, minval(wsalnd(i,:)), maxval(wsalnd(i,:))
+             i, minval(wsalnd(ii,:)), maxval(wsalnd(ii,:))
 
         if (include_full_brdf) then
            do j = 1, 3
@@ -375,7 +393,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
               call fill_grid(tmp_data, sreal_fill_value, fg_mask)
 
               do lndcount=1,nland
-                 call interp_field(tmp_data, wgtlnd(j,i,lndcount), &
+                 call interp_field(tmp_data, wgtlnd(j,ii,lndcount), &
                       interp(lndcount))
               end do
            end do
@@ -401,7 +419,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         end do
 
         call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd &
-           (n_ref_chans, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, &
+           (channel_info%nchannels_sw, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, &
             sreal_fill_value, rholnd(:,:,1), rholnd(:,:,2), rholnd(:,:,3), &
             rholnd(:,:,4), verbose)
      end if
@@ -410,6 +428,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
 
      ! Do some clean-up
      deallocate(bands)
+     deallocate(band_to_sw_index)
      deallocate(tmp_data)
      deallocate(fg_mask)
      deallocate(interp)
@@ -468,12 +487,16 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      if (verbose) write(*,*) 'n channels for sea reflectance: ', n_ref_chans
 
      allocate(bands(n_ref_chans))
+     allocate(band_to_sw_index(n_ref_chans))
 
      ii = 1
      do i = 1, channel_info%nchannels_sw
         do j = 1, n_coxbands
            if (channel_info%map_ids_abs_to_ref_band_sea(i) .eq. coxbands(j)) then
+              ! Indices of bands of be read
               bands(ii) = j
+              ! Indices of bands to be read wrt the shortwave channels
+              band_to_sw_index(ii) = i
               ii = ii + 1
               exit
            endif
@@ -508,7 +531,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      deallocate(interp)
 
      do i = 1, n_ref_chans
-        call cox_munk3_calc_shared_band(i, cox_munk_shared_band(i))
+        call cox_munk3_calc_shared_band(bands(i), cox_munk_shared_band(i))
      end do
 
      do j = 1, nsea
@@ -517,19 +540,23 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
             u10sea(j), v10sea(j), cox_munk_shared_geo_wind)
 
         do i = 1, n_ref_chans
-           call cox_munk3(i, cox_munk_shared_band(i), &
-                             cox_munk_shared_geo_wind, refsea(i, j))
+           ii = band_to_sw_index(i)
+           call cox_munk3(bands(i), cox_munk_shared_band(i), &
+                             cox_munk_shared_geo_wind, refsea(ii, j))
         end do
      end do
 
      if (verbose) then
         do i = 1, n_ref_chans
+           ii = band_to_sw_index(i)
            write(*,*) 'Sea reflectance: channel, min, max = ', &
-                      i, minval(refsea(i,:)), maxval(refsea(i,:))
+                      i, minval(refsea(ii,:)), maxval(refsea(ii,:))
         end do
      end if
 
      if (include_full_brdf) then
+        ! ACP: This retains the bug I addressed for the land, wherein rhosea
+        !      is subscripted 1,n_bands rather than 1,nchannels_sw
         call cox_munk_rho_0v_0d_dv_and_dd(bands, solzasea, satzasea, &
            solazsea, relazsea, u10sea, v10sea, sreal_fill_value, &
            rhosea(:,:,1), rhosea(:,:,2), rhosea(:,:,3), rhosea(:,:,4), verbose)
@@ -543,9 +570,10 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      deallocate(u10sea)
      deallocate(v10sea)
      deallocate(bands)
+     deallocate(band_to_sw_index)
   end if ! End of sea surface reflectance setting
 
-
+  
   !----------------------------------------------------------------------------
   ! Copy the reflectance values from land and sea into the output surface
   ! reflectance structure.
@@ -574,21 +602,23 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
               ! The MCD43CX products do not provide reflectance in the mixed
               ! channnels therefore we use 1-emissivity as the land surface
               ! albedo or rho_dd
-              kk = 1
-              do k = 1, channel_info%nchannels_sw
+              ii = 0
+              kk = 0
+              do k = 1, channel_info%nchannels_total
+                 if (channel_info%channel_sw_flag(k) .ne. 0) ii = ii + 1
+                 if (channel_info%channel_lw_flag(k) .ne. 0) kk = kk + 1
                  if (channel_info%channel_sw_flag(k) .ne. 0 .and. &
                      channel_info%channel_lw_flag(k) .ne. 0) then
-                    surface%albedo(j,i,k) = 1.0 - surface%emissivity(j,i,kk)
+                     surface%albedo(j,i,ii) = 1.0 - surface%emissivity(j,i,kk)
 
-                    if (include_full_brdf) then
-                       surface%rho_0v(j,i,k) = 0.
-                       surface%rho_0d(j,i,k) = 0.
-                       surface%rho_dv(j,i,k) = 0.
-                       surface%rho_dd(j,i,k) = 1.0 - surface%emissivity(j,i,kk)
-                    end if
-                    kk = kk + 1
-                 endif
-              enddo
+                     if (include_full_brdf) then
+                        surface%rho_0v(j,i,ii) = 0.
+                        surface%rho_0d(j,i,ii) = 0.
+                        surface%rho_dv(j,i,ii) = 0.
+                        surface%rho_dd(j,i,ii) = 1.0 - surface%emissivity(j,i,kk)
+                     end if
+                  end if
+              end do
 
               lndcount = lndcount+1
 
@@ -620,7 +650,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   if (allocated(refsea)) deallocate(refsea)
   if (allocated(rhosea)) deallocate(rhosea)
 
-
+  
   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_surface_reflectance()'
 
 end subroutine get_surface_reflectance
