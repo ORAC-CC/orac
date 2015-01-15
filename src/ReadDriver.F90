@@ -80,7 +80,7 @@
 !       Permit optional overrides of default behaviour from driver.
 !    2014/12/19, AP: Tidying. Cleaning the management of channel indexing.
 !    2014/12/29, GM: Fixed a bug in the channel indexing changes above.
-!    2015/01/12, AP: Adding Ctrl%Ind%Ch_Is.
+!    2015/01/15, AP: Adding Ctrl%Ind%Ch_Is. Revised setting of Ctrl%RS%B.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -123,8 +123,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    character(FilenameLen)             :: lut_dir, root_filename
    character(FilenameLen)             :: outname, line, label
    logical                            :: file_exists
-   real,    allocatable, dimension(:) :: solar_store_sea, solar_store_land
-   real,    allocatable, dimension(:) :: ref_solar_sea, ref_solar_land
    integer, allocatable, dimension(:) :: channel_ids_instr, channel_proc_flag
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
 
@@ -530,69 +528,64 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Set Ctrl%RS
 
-   ! Look at the channel numbers and determine what combination of vis/mixed/ir
-   ! channels. This is instrument dependant so if introducing a new instrument
-   ! channel info needs to be stored here
-   allocate(solar_store_sea(Ctrl%Ind%Navail))
-   allocate(solar_store_land(Ctrl%Ind%Navail))
-
-   ! Set some default arrays for surface reflection
-   if ((trim(Ctrl%Inst%Name) .eq. trim('MODIS-AQUA')) .or.&
-       (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA')) .or. &
-       !this is a fudge but probably a harmless one:
-       (trim(Ctrl%Inst%Name(1:5)) .eq. trim('AVHRR')) ) then
-      solar_store_sea(1)  = 2.0
-      solar_store_sea(2)  = 1.0
-      solar_store_sea(3)  = 0.0
-      solar_store_sea(4)  = 0.0
-      solar_store_sea(5)  = 0.0
-      solar_store_sea(6)  = 1.0
-
-      solar_store_land(1) = 10.0
-      solar_store_land(2) = 1.0
-      solar_store_land(3) = 0.0
-      solar_store_land(4) = 0.0
-      solar_store_land(5) = 0.0
-      solar_store_land(6) = 1.0
-   else if (Ctrl%Inst%Name .eq. 'AATSR') then
-      solar_store_sea(1)  = 5.
-      solar_store_sea(2)  = 2.0
-      solar_store_sea(3)  = 1.0
-      solar_store_sea(4)  = 1.0
-
-      solar_store_land(1) = 15.0
-      solar_store_land(2) = 10.0
-      solar_store_land(3) = 1.0
-      solar_store_land(4) = 1.0
-   end if
-
-   ! Set default surface reflectance values for channels used. This just maps
-   ! the values from all channels in the file to the ones which will be actually
-   ! used
    Ctrl%RS%Flag = SelmAux ! Selection method
-
    Ctrl%RS%use_full_brdf = .true.
 
-   allocate(ref_solar_sea(Ctrl%Ind%Ny))
-   allocate(ref_solar_land(Ctrl%Ind%Ny))
-   ii=1
-   do i=1,Ctrl%Ind%Navail
-      if (channel_proc_flag(i) .eq. 1) then
-         ref_solar_sea(ii)=solar_store_sea(i)
-         ref_solar_land(ii)=solar_store_land(i)
-         ii=ii+1
-      end if
-   end do
-   deallocate(solar_store_sea)
-   deallocate(solar_store_land)
-
-   allocate(Ctrl%RS%B(Ctrl%Ind%Nsolar,2))
-   Ctrl%RS%B=0.0
-   ! valid for 0.67/0.87/1.6 channels
-   Ctrl%RS%B(Ctrl%Ind%Ysolar,1) = ref_solar_sea(Ctrl%Ind%Ysolar)/100.0
-   Ctrl%RS%B(Ctrl%Ind%Ysolar,2) = ref_solar_land(Ctrl%Ind%Ysolar)/100.0
-   deallocate(ref_solar_sea)
-   deallocate(ref_solar_land)
+   ! Set default surface reflectance values for channels used.
+   ! Additional instruments/channels need to be added explicitly.
+   allocate(Ctrl%RS%B(Ctrl%Ind%NSolar,2))
+   if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
+      do i=1, Ctrl%Ind%NSolar
+         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
+         case(1)
+            Ctrl%RS%B(i,1) = 0.02
+            Ctrl%RS%B(i,2) = 0.10
+         case(2)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case(6)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case default
+            Ctrl%RS%B(i,:) = 0.00
+         end select
+      end do
+   else if (Ctrl%Inst%Name(1:5) .eq. 'AVHRR') then
+      do i=1, Ctrl%Ind%NSolar
+         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
+         case(1)
+            Ctrl%RS%B(i,1) = 0.02
+            Ctrl%RS%B(i,2) = 0.10
+         case(2)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case(3)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case default
+            Ctrl%RS%B(i,:) = 0.00
+         end select
+      end do
+   else if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
+      do i=1, Ctrl%Ind%NSolar
+         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
+         case(1)
+            Ctrl%RS%B(i,1) = 0.05
+            Ctrl%RS%B(i,2) = 0.15
+         case(2)
+            Ctrl%RS%B(i,1) = 0.02
+            Ctrl%RS%B(i,2) = 0.10
+         case(3)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case(4)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case default
+            Ctrl%RS%B(i,:) = 0.00
+         end select
+      end do
+   end if
 
    Ctrl%RS%Sb            = 20.0/100.0 ! Percentage error in surface reflectance
    Ctrl%RS%Cb            = 0.2        ! Correlation between surface reflectance

@@ -85,6 +85,7 @@
 !    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
 !          solar/thermalchannels with respect to the channels actually processed,
 !          rather than the  MSI file.
+!    13th Jan 2015, Adam Povey: Remove First:Last channel indexing.
 !
 ! Bugs:
 !    None known.
@@ -136,7 +137,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       write(*,*) 'Ctrl%Inst%Name(1:5): ', trim(Ctrl%Inst%Name(1:5))
 
       if (Ctrl%Ind%Y_Id(i) < 10) then
-         if (trim(Ctrl%Inst%Name(1:5)) .ne. 'AVHRR') then
+         if (Ctrl%Inst%Name(1:5) .ne. 'AVHRR') then
             write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
          else
             select case (Ctrl%Ind%Y_Id(i))
@@ -199,11 +200,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
                  SAD_Chan(i)%Thermal%Flag
 
       if (SAD_Chan(i)%Thermal%Flag > 0) then
-         if (ThermalFirstSet == 0) then
-            Ctrl%Ind%ThermalFirst = i
-            ThermalFirstSet = 1 ! ThermalFirst set
-         end if
-
          NThermal = NThermal + 1
 
 
@@ -231,7 +227,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       write(*,*) 'Specs (s-flag): ',SAD_Chan(i)%Solar%Flag
 
       if (SAD_Chan(i)%Solar%Flag > 0) then
-         Ctrl%Ind%SolarLast = i
          NSolar = NSolar + 1
 
          read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
@@ -287,22 +282,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       write(*,*) 'ERROR: Read_SAD_Chan(): Error in NThermal value in driver file'
       stop DriverFileDataErr
    end if
-
-   ! If no thermal channels are selected, ThermalFirst is 0. However, some solar
-   ! routines rely on ThermalFirst-1 to index the last purely solar channel.
-   ! Make sure a value is set.
-   if (ThermalFirstSet == 0) then
-      Ctrl%Ind%ThermalFirst = Ctrl%Ind%SolarLast + 1
-   end if
-
-   ! Set SolarFirst and ThermalLast
-   Ctrl%Ind%SolarFirst = 1
-   Ctrl%Ind%ThermalLast = Ctrl%Ind%Ny
-
-   write(*,*) 'First/Last channels wrt number of channels used in '// &
-              'successive order (aka stored in MSI array)'
-   write(*,*) 'SolarFirst/Last: ', Ctrl%Ind%SolarFirst, Ctrl%Ind%SolarLast
-   write(*,*) 'ThermalFirst/Last: ', Ctrl%Ind%ThermalFirst, Ctrl%Ind%ThermalLast
 
    ! Number of channels with both solar and thermal components (needed in FM).
    Ctrl%Ind%NMixed = Ctrl%Ind%NSolar + Ctrl%Ind%NThermal - Ctrl%Ind%Ny

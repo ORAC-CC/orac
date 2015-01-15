@@ -93,14 +93,13 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    ! Set channel number in instrument notation which can be used for effective
    ! radius retrieval (could be made dynamic but set static for each instrument
    ! here).  Also, set minimum radiance.
-   if ((trim(Ctrl%inst%name) .eq. trim('MODIS-AQUA')) .or. &
-       (trim(Ctrl%Inst%Name) .eq. trim('MODIS-TERRA'))) then
+   if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
       refch1=6
       refch2=20
-   else if (trim(Ctrl%inst%name(1:5)) .eq. 'AVHRR') then
+   else if (Ctrl%Inst%Name(1:5) .eq. 'AVHRR') then
       refch1=3
       refch2=4
-   else if (trim(Ctrl%inst%name)      .eq. 'AATSR') then
+   else if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
       refch1=4
       refch2=5
    end if
@@ -154,12 +153,12 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
                      ! Effective radius channel
                      n_vis_bad_ref=n_vis_bad_ref+1
                      i_missing_vis_ref=find_in_array(Ctrl%Ind%YSolar, ic)
-                     MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) = MissingXn
+                     MSI_Data%MSI(i,j,ic) = MissingXn
                   else
                      ! Tau channel
                      n_vis_bad_tau=n_vis_bad_tau+1
                      i_missing_vis_tau=find_in_array(Ctrl%Ind%YSolar, ic)
-                     MSI_Data%MSI(i,j,Ctrl%Ind%YSolar(ic)) = MissingXn
+                     MSI_Data%MSI(i,j,ic) = MissingXn
                   end if
                end if
             end do

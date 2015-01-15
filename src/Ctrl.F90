@@ -108,7 +108,7 @@
 !    2014/01/15, Greg McGarragh: No need for Ctrl%DefaultSx any more.
 !    2014/01/25, Greg McGarragh: Cleaned up the code.
 !    2014/12/19, Adam Povey: Removing unneccessary fields.
-!    2015/01/12, Adam Povey: Adding Ch_Is, YMixed.
+!    2015/01/13, Adam Povey: Adding Ch_Is, YMixed. Removing First:Last indexes.
 !
 ! Bugs:
 !   None known.
@@ -183,10 +183,6 @@ module CTRL_def
       integer, pointer       :: YMixed(:)          ! Array indices for mixed chs
       integer, pointer       :: Ch_Is(:)           ! A bit flag of ch properties
                                                    ! such as thermal, solar
-      integer                :: ThermalFirst       ! Index of first thermal ID
-      integer                :: ThermalLast        ! Index of last thermal ID
-      integer                :: SolarFirst         ! Index of first solar ID
-      integer                :: SolarLast          ! Index of last thermal ID
 
       ! View indexing variables
       integer                :: NInstViews         ! No. of instrument views

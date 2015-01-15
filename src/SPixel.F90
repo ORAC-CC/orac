@@ -122,7 +122,7 @@
 !       cleanup.
 !    2014/08/01, Greg McGarragh: Added more SPixel to Ctrl map indexes.
 !    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
-!    2015/01/12, Adam Povey: Adding YThermal, YSolar.
+!    2015/01/13, Adam Povey: Adding YThermal, YSolar. Removing First:Last indexes
 !
 ! Bugs:
 !    None known.
@@ -241,15 +241,11 @@ module SPixel_def
       integer             :: Ny           ! Number of viable measurement channels
       integer             :: NSolar       ! Number of viable solar channels
       integer             :: NThermal     ! Number of viable thermal channels
+      integer             :: NMixed       ! Number of mixed solar/thermal channels
       integer, pointer    :: YSolar(:)    ! Array indices wrt Ctrl%Ind%ICh for
                                           ! solar channels
       integer, pointer    :: YThermal(:)  ! Array indices for thermal channels
       integer, pointer    :: YMixed(:)    ! Array indices for mixed channels
-      integer             :: ThermalFirst ! Index of first channel with a thermal component
-      integer             :: ThermalLast  ! Index of last channel with a thermal component
-      integer             :: SolarFirst   ! Index of first channel with a solar component
-      integer             :: SolarLast    ! Index of last channel with a solar component
-      integer             :: NMixed       ! Number of mixed solar/thermal channels
       integer             :: MDAD_LW      ! Index of channel at (or nearest to)
                                           ! 11 um. Used in MDAD method for setting
                                           ! FG (AP) cloud pressure and phase
