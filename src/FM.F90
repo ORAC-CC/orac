@@ -182,9 +182,11 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    real          :: Y_R(SPixel%Ind%NMixed)
    real          :: T(SPixel%Ind%NMixed)
    real          :: dT_dR(SPixel%Ind%NMixed)
-   integer       :: Thermal(SPixel%Ind%NThermal)
    integer       :: itherm(SPixel%Ind%NMixed)
    integer       :: isolar(SPixel%Ind%NMixed)
+   
+   type(SAD_Chan_t) :: SAD_therm(SPixel%Ind%NThermal)
+   type(SAD_Chan_t) :: SAD_mixed(SPixel%Ind%NMixed)
 #ifdef BKP
    integer       :: j
    integer       :: bkp_lun ! Unit number for breakpoint file
@@ -217,16 +219,17 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    ! Call thermal forward model (required for day, twilight and night)
    if (SPixel%Ind%NThermal > 0 .and. status == 0) then
-      Thermal = SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal)
+      SAD_therm = SAD_Chan( &
+           SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal))
       
       ! Call routine to interpolate RTM data to the cloud pressure level.
       ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
       if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
          call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
-              SAD_Chan(Thermal), RTM_Pc, status)
+              SAD_therm, RTM_Pc, status)
       else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
          call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
-              SAD_Chan(Thermal), RTM_Pc, status)
+              SAD_therm, RTM_Pc, status)
       else
          write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
               Ctrl%LUTIntflag
@@ -235,7 +238,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       end if
 
       ! Call thermal forward model (required for day, twilight and night)
-      call FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan(Thermal), &
+      call FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_therm, &
               RTM_Pc, X, GZero, BT, d_BT, Rad, d_Rad, status)
       
       ! Copy results into output vectors
@@ -277,8 +280,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       Y(SPixel%Ind%YSolar) = Ref
       dY_dX(SPixel%Ind%YSolar,:) = d_Ref
       cloud_albedo = CRP(:,IRfbd)
-
-
 !     d_cloud_albedo = d_CRP(:,IRfbd,:)
    end if
 
@@ -300,8 +301,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       ! temperature. Write the result into the appropriate part of the
       ! measurement vector Y. The gradient dT_dR calculated at the scene
       ! radiance is used later.
-      call R2T(SPixel%Ind%NMixed, SAD_Chan(SPixel%Ind%YMixed),  &
-               Y_R, T, dT_dR, status)
+      SAD_mixed = SAD_Chan(SPixel%Ind%YMixed)
+      call R2T(SPixel%Ind%NMixed, SAD_mixed, Y_R, T, dT_dR, status)
       if (status == 0) then
          ! Write output into Y array
          Y(SPixel%Ind%YMixed) = T

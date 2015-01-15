@@ -269,7 +269,6 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/SquareCholeskyDC.o \
            $(OBJS)/t_extrap_strat.o \
            $(OBJS)/T2R.o \
-           $(OBJS)/WriteDiag.o \
            $(OBJS)/WriteLog.o \
            $(OBJS)/XMDAD.o \
            $(OBJS)/XSDAD.o \

@@ -100,6 +100,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    type(interpol_s) :: interp
    real             :: R(Ctrl%Ind%NThermal)
    real             :: T_Array(Ctrl%Ind%NThermal)
+   type(SAD_Chan_t) :: SAD_temp(Ctrl%Ind%NThermal)
 
    ! Set status to zero
    status = 0
@@ -149,7 +150,8 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! one per channel, to convert).
 
    T_Array = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-   call T2R(Ctrl%Ind%NThermal, SAD_Chan(Ctrl%Ind%YThermal), &
+   SAD_temp = SAD_Chan(Ctrl%Ind%YThermal)
+   call T2R(Ctrl%Ind%NThermal, SAD_temp, &
         T_Array, R, SPixel%RTM%LW%dB_dTs, status)
 
 end subroutine Get_LwSwRTM

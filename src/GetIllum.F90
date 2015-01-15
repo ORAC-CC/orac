@@ -31,8 +31,9 @@
 !     1st Aug 2014, Greg McGarragh: Fixes and refactoring related to the above
 !       change and cleanup.
 !     7th Aug 2014, Adam Povey: Fix bug in subscripting of FG, AP arrays.
-!    12th Jan 2015, Adam Povey: Adding YSolar, YThermal, YMixed to setup_indices.
-!       Use Ctrl%Ind%Ch_Is flag instead of any() to identify channels.
+!    13th Jan 2015, Adam Povey: Adding YSolar, YThermal, YMixed to setup_indices.
+!       Use Ctrl%Ind%Ch_Is flag instead of any() to identify channels. Remove
+!       First:Last channel indexing.
 !
 ! Bugs:
 !    Warning At the moment only one view is specified.
@@ -97,10 +98,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = Ctrl%Ind%NSolar
          SPixel%Ind%NThermal = Ctrl%Ind%NThermal
          SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-         SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst
-         SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
 
          SPixel%Nx = Ctrl%Ind%Nx_Dy
          deallocate(SPixel%X)
@@ -125,10 +122,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = Ctrl%Ind%NSolar-1
          SPixel%Ind%NThermal = Ctrl%Ind%NThermal
          SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-         SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst+1
-         SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
 
          SPixel%Nx = Ctrl%Ind%Nx_Dy
          deallocate(SPixel%X)
@@ -141,7 +134,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
 
          i_missing = -1
-         i_missing(1) =  1
+         i_missing(1) =  Ctrl%Ind%YSolar(1)
 
          SPixel%FG = Ctrl%FG(:,IDay)
          SPixel%AP = Ctrl%AP(:,IDay)
@@ -154,10 +147,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = Ctrl%Ind%NSolar-1
          SPixel%Ind%NThermal = Ctrl%Ind%NThermal
          SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-         SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst
-         SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast-1
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
 
          SPixel%Nx = Ctrl%Ind%Nx_Dy
          deallocate(SPixel%X)
@@ -170,7 +159,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
 
          i_missing = -1
-         i_missing(1) =  2
+         i_missing(1) =  Ctrl%Ind%YSolar(2)
 
          SPixel%FG = Ctrl%FG(:,IDay)
          SPixel%AP = Ctrl%AP(:,IDay)
@@ -183,10 +172,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = Ctrl%Ind%NSolar
          SPixel%Ind%NThermal = Ctrl%Ind%NThermal-1
          SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-         SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst
-         SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst+1
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
 
          SPixel%Nx = Ctrl%Ind%Nx_Dy
          deallocate(SPixel%X)
@@ -199,7 +184,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
 
          i_missing = -1
-         i_missing(1) =  Ctrl%Ind%ThermalFirst
+         i_missing(1) =  Ctrl%Ind%YThermal(1)
 
          SPixel%FG = Ctrl%FG(:,IDay)
          SPixel%AP = Ctrl%AP(:,IDay)
@@ -212,10 +197,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = Ctrl%Ind%NSolar
          SPixel%Ind%NThermal = Ctrl%Ind%NThermal-1
          SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-         SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst
-         SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast-1
 
          SPixel%Nx = Ctrl%Ind%Nx_Dy
          deallocate(SPixel%X)
@@ -228,7 +209,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
 
          i_missing = -1
-         i_missing(1) =  Ctrl%Ind%ThermalFirst + 1
+         i_missing(1) =  Ctrl%Ind%YThermal(2)
 
          SPixel%FG = Ctrl%FG(:,IDay)
          SPixel%AP = Ctrl%AP(:,IDay)
@@ -239,10 +220,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = Ctrl%Ind%NSolar
          SPixel%Ind%NThermal = Ctrl%Ind%NThermal-1
          SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-         SPixel%Ind%SolarFirst = Ctrl%Ind%SolarFirst
-         SPixel%Ind%SolarLast = Ctrl%Ind%SolarLast
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast-1
 
          SPixel%Nx = Ctrl%Ind%Nx_Dy
          deallocate(SPixel%X)
@@ -255,7 +232,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
 
          i_missing = -1
-         i_missing(1) =  Ctrl%Ind%ThermalFirst + 2
+         i_missing(1) =  Ctrl%Ind%YThermal(3)
 
          SPixel%FG = Ctrl%FG(:,IDay)
          SPixel%AP = Ctrl%AP(:,IDay)
@@ -269,10 +246,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = 0
          SPixel%Ind%NThermal = SPixel%Ind%Ny
          SPixel%Ind%NMixed = 0
-         SPixel%Ind%SolarFirst = 0
-         SPixel%Ind%SolarLast = 0
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%SolarLast+1
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
 
          SPixel%Nx = Ctrl%Ind%Nx_Tw
          deallocate(SPixel%X)
@@ -287,7 +260,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ii = 1
          i_missing = -1
          do i = 1, Ctrl%Ind%NSolar
-            i_missing(ii) = i
+            i_missing(ii) = Ctrl%Ind%YSolar(i)
             ii = ii + 1
          end do
 
@@ -311,10 +284,6 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          SPixel%Ind%NSolar = 0
          SPixel%Ind%NThermal = SPixel%Ind%Ny
          SPixel%Ind%NMixed = 0
-         SPixel%Ind%SolarFirst = 0
-         SPixel%Ind%SolarLast = 0
-         SPixel%Ind%ThermalFirst = Ctrl%Ind%ThermalFirst
-         SPixel%Ind%ThermalLast = Ctrl%Ind%ThermalLast
 
          SPixel%Nx = Ctrl%Ind%Nx_Ni
          deallocate(SPixel%X)
@@ -328,8 +297,10 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
          ii = 1
          i_missing = -1
-         do i = 1, Ctrl%Ind%NSolar - Ctrl%Ind%NMixed
-            i_missing(ii) = i
+         do i = 1, Ctrl%Ind%NSolar
+            if (btest(Ctrl%Ind%Ch_Is(Ctrl%Ind%YSolar(i)), ThermalBit)) &
+                 cycle
+            i_missing(ii) = Ctrl%Ind%YSolar(i)
             ii = ii + 1
          end do
 
@@ -400,8 +371,6 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
       if (any(i .eq. i_missing)) &
          cycle
 
-      ! N??? > 0 checks ensure channels not disabled in above logic
-      ! ACP: This is stupid. Do better in near future.
       if (btest(Ctrl%Ind%Ch_Is(i), SolarBit) .and. &
            SPixel%Ind%NSolar .gt. 0) then
          ! Mixed channels out of those to be retrieved
