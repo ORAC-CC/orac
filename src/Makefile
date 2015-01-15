@@ -206,8 +206,6 @@ ORAC_COMMON   = ../common
 ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/CheckLimits.o \
            $(OBJS)/check_value.o \
-           $(OBJS)/CPL.o \
-           $(OBJS)/CRP.o \
            $(OBJS)/Ctrl.o \
            $(OBJS)/Data.o \
            $(OBJS)/DecomposeCholesky.o \

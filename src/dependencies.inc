@@ -93,8 +93,6 @@ $(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/RTM.o \
         AllocSPixel.F90 DeallocSPixel.F90
 $(OBJS)/t_extrap_strat.o: $(OBJS)/SPixel.o
 $(OBJS)/T2R.o: $(OBJS)/SADChan.o
-$(OBJS)/WriteDiag.o: $(OBJS)/Ctrl.o $(OBJS)/Diag.o $(OBJS)/ECPConstants.o \
-        $(OBJS)/SPixel.o
 $(OBJS)/WriteLog.o: $(OBJS)/Ctrl.o
 $(OBJS)/XMDAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         $(OBJS)/SADChan.o $(OBJS)/SPixel.o
