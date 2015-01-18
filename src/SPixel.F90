@@ -122,7 +122,10 @@
 !       cleanup.
 !    2014/08/01, Greg McGarragh: Added more SPixel to Ctrl map indexes.
 !    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
-!    2015/01/13, Adam Povey: Adding YThermal, YSolar. Removing First:Last indexes
+!    2015/01/13, Adam Povey: Adding YThermal, YSolar. Removing First:Last
+!       indexes
+!    2015/01/18, Greg McGarragh: Put all related Get*() subroutines and
+!       check_value() subroutines into this module.
 !
 ! Bugs:
 !    None known.
@@ -136,6 +139,21 @@ module SPixel_def
    use ECP_Constants
 
    implicit none
+
+   private
+
+   public :: RTM_SW_t, &
+             RTM_LW_t, &
+             SPixel_RTM_t, &
+             SPixel_Geom_t, &
+             Loc_t, &
+             Cloud_t, &
+             Surface_t, &
+             SPixel_Ind_t, &
+             SPixel_t, &
+             Alloc_SPixel, &
+             Dealloc_SPixel, &
+             Get_SPixel
 
    ! Define a type for the Short Wave RTM parameters
 
@@ -222,7 +240,7 @@ module SPixel_def
 
 
    type Cloud_t
-!     integer             :: NCloudy      ! Number of cloudy pixels in super pixel
+      integer             :: NCloudy      ! Number of cloudy pixels in super pixel
       real                :: Fraction     ! Cloud fraction for super pixel
       real                :: Flags        ! Cloud flags
    end type Cloud_t
@@ -336,9 +354,213 @@ module SPixel_def
       integer, pointer    :: spixel_y_mixed_to_spixel_y_thermal(:)
    end type SPixel_t
 
+
+   interface check_value
+      module procedure check_value_float0, &
+           check_value_float1, check_value_float1_l, &
+           check_value_float2, check_value_float2_l, &
+           check_value_byte0, &
+           check_value_byte1, check_value_byte1_l, &
+           check_value_byte2, check_value_byte2_l
+   end interface check_value
+
 contains
 
-include 'AllocSPixel.F90'
-include 'DeallocSPixel.F90'
+#include "AllocSPixel.F90"
+#include "DeallocSPixel.F90"
+
+#include "GetGeometry.F90"
+#include "GetIllum.F90"
+#include "GetLSF.F90"
+#include "GetLwSwRTM.F90"
+#include "GetMeasurements.F90"
+#include "GetRTM.F90"
+#include "GetRs.F90"
+#include "GetSurface.F90"
+#include "GetX.F90"
+
+#include "GetSPixel.F90"
+
+
+subroutine check_value_float0(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
+   implicit none
+
+   real,           intent(in)    :: val
+   real,           intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+
+   if (val > max .or. val < min) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_float0
+
+subroutine check_value_float1(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
+   implicit none
+
+   real,           intent(in)    :: val(:)
+   real,           intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+
+   if (any(val > max .or. val < min)) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_float1
+
+subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
+   implicit none
+
+   real,           intent(in)    :: val(:)
+   real,           intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+   integer,        intent(in)    :: limit
+
+   if (count(val > max .or. val < min) > limit) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_float1_l
+
+subroutine check_value_float2(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
+   implicit none
+
+   real,           intent(in)    :: val(:,:)
+   real,           intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+
+   if (any(val > max .or. val < min)) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_float2
+
+subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
+   implicit none
+
+   real,           intent(in)    :: val(:,:)
+   real,           intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+   integer,        intent(in)    :: limit
+
+   if (count(val > max .or. val < min) > limit) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_float2_l
+
+!-----------------------------------------------------------------------------
+
+subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
+   use ECP_constants, only: byte
+   implicit none
+
+   integer(byte),  intent(in)    :: val
+   integer(byte),  intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+
+   if (val > max .or. val < min) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_byte0
+
+subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
+   use ECP_constants, only: byte
+   implicit none
+
+   integer(byte),  intent(in)    :: val(:)
+   integer(byte),  intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+
+   if (any(val > max .or. val < min)) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_byte1
+
+subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
+   use ECP_constants, only: byte
+   implicit none
+
+   integer(byte),  intent(in)    :: val(:)
+   integer(byte),  intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+   integer,        intent(in)    :: limit
+
+   if (count(val > max .or. val < min) > limit) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_byte1_l
+
+subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit, Ctrl)
+   use CTRL_def
+   use ECP_constants, only: byte
+   implicit none
+
+   integer(byte),  intent(in)    :: val(:,:)
+   integer(byte),  intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+
+   if (any(val > max .or. val < min)) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_byte2
+
+subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, Ctrl, limit)
+   use CTRL_def
+   use ECP_constants, only: byte
+   implicit none
+
+   integer(byte),  intent(in)    :: val(:,:)
+   integer(byte),  intent(in)    :: max, min
+   type(SPixel_t), intent(inout) :: SPixel
+   character(*),   intent(in)    :: name
+   integer,        intent(in)    :: flag_bit
+   type(CTRL_t),   intent(in)    :: Ctrl
+   integer,        intent(in)    :: limit
+
+   if (count(val > max .or. val < min) > limit) then
+#include "check_value.inc"
+   end if
+
+end subroutine check_value_byte2_l
 
 end module SPixel_def

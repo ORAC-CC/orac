@@ -118,8 +118,8 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    use CTRL_def
    use Data_def
    use ECP_Constants
+   use planck
    use SAD_Chan_def
-   use SPixel_def
 
    implicit none
 
@@ -134,10 +134,10 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Define local variables
 
    integer :: i, ii, j, jj
-   real    :: Rad       ! Radiance calculated from noise equivalent brightness
-                        ! temperature used in setting Sy for mixed thermal /
-                        ! solar channels.
-   real    :: dR_dT     ! Gradient of Rad w.r.t temp.
+   real    :: Rad(1)   ! Radiance calculated from noise equivalent brightness
+                       ! temperature used in setting Sy for mixed thermal /
+                       ! solar channels.
+   real    :: dR_dT(1) ! Gradient of Rad w.r.t temp.
 
    ! Set status to zero
    status = 0
@@ -191,11 +191,11 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i), Rad, dR_dT, status)
+                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i:i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
                      SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
-                     (SAD_Chan(ii)%Solar%f0 / dR_dT) ** 2
+                     (SAD_Chan(ii)%Solar%f0 / dR_dT(1)) ** 2
 
                else
                   ! Pure solar channel, just add the solar NedR contribution
@@ -227,11 +227,11 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i), Rad, dR_dT, status)
+                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i:i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
                      SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
-                     (SAD_Chan(ii)%Solar%f0 / dR_dT) ** 2
+                     (SAD_Chan(ii)%Solar%f0 / dR_dT(1)) ** 2
 
                else ! Pure solar channel, just add the solar NedR contribution
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &

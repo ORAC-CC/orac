@@ -74,18 +74,14 @@
 !
 !-------------------------------------------------------------------------------
 
-module Get_LwSwRTM_m
-
-contains
-
 subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    use Ctrl_def
    use ECP_Constants
    use interpol
+   use planck
    use RTM_def
    use SAD_Chan_def
-   use SPixel_def
 
    implicit none
 
@@ -155,5 +151,3 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
         T_Array, R, SPixel%RTM%LW%dB_dTs, status)
 
 end subroutine Get_LwSwRTM
-
-end module Get_LwSwRTM_m

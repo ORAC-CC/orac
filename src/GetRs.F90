@@ -64,11 +64,11 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
+
 subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, status)
 
    use CTRL_def
    use Data_def
-   use SPixel_def
 
    implicit none
 

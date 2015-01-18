@@ -101,13 +101,12 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    use CTRL_def
    use ECP_Constants
    use SAD_Chan_def
-   use SPixel_def
 
    implicit none
 
    ! Declare arguments
 
-   type(Ctrl_t),     intent(inout) :: Ctrl
+   type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(out)   :: status

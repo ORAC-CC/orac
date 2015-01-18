@@ -44,23 +44,12 @@
 !
 !-------------------------------------------------------------------------------
 
-module Get_Illum_m
-
-   implicit none
-
-   private
-
-   public :: Get_Illum
-
-contains
-
 subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    use CTRL_def
    use Data_def
    use ECP_Constants
    use SAD_Chan_def
-   use SPixel_def
 
    implicit none
 
@@ -331,7 +320,6 @@ end subroutine Get_Illum
 subroutine setup_indexes(Ctrl, SPixel, i_missing)
 
    use CTRL_def
-   use SPixel_def
 
    implicit none
 
@@ -362,7 +350,7 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
       deallocate(SPixel%Ind%YMixed)
       allocate(SPixel%Ind%YMixed(SPixel%Ind%NMixed))
    end if
-   
+
    ii = 1
    i0 = 1
    i1 = 1
@@ -376,24 +364,24 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
          ! Mixed channels out of those to be retrieved
          if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit) .and. &
             SPixel%Ind%NMixed .gt. 0) then
-            
+
             SPixel%Ind%YMixed(i2) = ii
             SPixel%spixel_y_mixed_to_spixel_y_solar(i2) = i0
             SPixel%spixel_y_mixed_to_spixel_y_thermal(i2) = i1
             i2 = i2 + 1
          end if
-         
+
          ! Solar channels out of those to be retrieved
          SPixel%Ind%YSolar(i0) = ii
          i0 = i0 + 1
       end if
-      
+
       ! Thermal channels out of those to be retrieved
       if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
          SPixel%Ind%YThermal(i1) = ii
          i1 = i1 + 1
       end if
-      
+
       ! Channels to be retrieved out of those in Ctrl%Ind%ICh
       SPixel%spixel_y_to_ctrl_y_index(ii) = i
       ii = ii + 1
@@ -426,5 +414,3 @@ subroutine setup_indexes(Ctrl, SPixel, i_missing)
    end if
 
 end subroutine setup_indexes
-
-end module Get_Illum_m

@@ -147,7 +147,6 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    use CTRL_def
    use Data_def
    use ECP_Constants
-   use SPixel_def
 
    implicit none
 

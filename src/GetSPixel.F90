@@ -230,15 +230,12 @@
 
 subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
-   use check_value_m
    use CTRL_def
    use Data_def
    use ECP_Constants
-   use Get_Illum_m
    use Int_Routines_def, only : find_in_array
    use RTM_def
    use SAD_Chan_def
-   use SPixel_def
 
    implicit none
 
@@ -467,14 +464,14 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
             if (btest(Ctrl%Ind%Ch_Is(ictrl), ThermalBit)) then
                itherm = find_in_array(Ctrl%Ind%YThermal, ictrl)
-               
+
                ! The Tsf_o, v calculations differ for mixed channels
                ! because the Tac value used to set Tsf is given at the view
                ! angle, rather than the nadir as in the SW channels RTM.
                SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(itherm) &
                     ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix)) / &
                         SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix)))
-               
+
                SPixel%RTM%Tsf_v(i) = SPixel%RTM%LW%Tsf(itherm)
             else
                ! Purely solar channel
