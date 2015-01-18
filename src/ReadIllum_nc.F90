@@ -64,7 +64,6 @@
 subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
-   use Data_def
    use ECP_Constants
    use Int_Routines_def, only : find_in_array
 
@@ -72,7 +71,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    ! Argument declarations
 
-   type(CTRL_t), intent(inout) :: Ctrl
+   type(CTRL_t), intent(in)    :: Ctrl
    integer,      intent(in)    :: NSegs    ! Number of segments read so far
    integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
                                            ! pixels.
@@ -128,7 +127,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
                       MSI_Data%MSI(i,j,ic) > BTMax) then
                      ! Missing mixed channels need to be noted twice
                      if (btest(Ctrl%Ind%Ch_Is(ic), SolarBit)) flag = .true.
-                     
+
                      ! Note missing thermal channel
                      n_ir_bad=n_ir_bad+1
                      i_missing_ir=find_in_array(Ctrl%Ind%YThermal, ic)
@@ -141,7 +140,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
                   if (MSI_Data%MSI(i,j,ic) < RefMin .or. &
                       MSI_Data%MSI(i,j,ic) > RefMax) then
                      flag = .true. ! Assume non-thermal implies solar
-                     
+
                      MSI_Data%MSI(i,j,ic) = MissingXn
                   end if
                end if

@@ -1,3 +1,4 @@
+!-------------------------------------------------------------------------------
 ! Name:
 !    Dealloc_Data
 !
@@ -70,6 +71,9 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    end if
 
    if (associated(MSI_Data%CloudFlags))   deallocate(MSI_Data%CloudFlags)
+   if (associated(MSI_Data%cldtype))      deallocate(MSI_Data%cldtype)
+   if (associated(MSI_Data%cloudmask))    deallocate(MSI_Data%cloudmask)
+   if (associated(MSI_Data%cccot_pre))    deallocate(MSI_Data%cccot_pre)
 
    if (associated(MSI_Data%Geometry%Sol)) deallocate(MSI_Data%Geometry%Sol)
    if (associated(MSI_Data%Geometry%Sat)) deallocate(MSI_Data%Geometry%Sat)
@@ -80,6 +84,10 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
 
    if (associated(MSI_Data%LSFlags))      deallocate(MSI_Data%LSFlags)
 
+   if (associated(MSI_Data%lusFlags))     deallocate(MSI_Data%lusFlags)
+   if (associated(MSI_Data%dem))          deallocate(MSI_Data%dem)
+   if (associated(MSI_Data%nisemask))     deallocate(MSI_Data%nisemask)
+
    if (associated(MSI_Data%time))         deallocate(MSI_Data%time)
 
    if (associated(MSI_Data%MSI))          deallocate(MSI_Data%MSI)
@@ -88,12 +96,5 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    if (associated(MSI_Data%Scan%vscan))   deallocate(MSI_Data%Scan%vscan)
 
    if (associated(MSI_Data%illum))        deallocate(MSI_Data%illum)
-
-   if (associated(MSI_Data%CldType))      deallocate(MSI_Data%CldType)
-   if (associated(MSI_Data%CloudMask))    deallocate(MSI_Data%CloudMask)
-   if (associated(MSI_Data%CCCOT_pre))    deallocate(MSI_Data%CCCOT_pre)
-   if (associated(MSI_Data%LUSFlags))     deallocate(MSI_Data%LUSFlags)
-   if (associated(MSI_Data%DEM))          deallocate(MSI_Data%DEM)
-   if (associated(MSI_Data%nisemask))     deallocate(MSI_Data%nisemask)
 
 end subroutine Dealloc_Data

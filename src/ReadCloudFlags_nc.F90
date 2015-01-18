@@ -84,7 +84,6 @@
 subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
-   use Data_def
    use ECP_Constants
    use orac_ncdf
 
@@ -105,16 +104,15 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
    call nc_open(ncid, Ctrl%Fid%CF)
 
-   ! Allocate MSI_Data%CloudFlags array size
    allocate(MSI_Data%CloudFlags(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%CldType(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%CloudMask(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%CCCOT_pre(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%cloudmask(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, SegSize))
 
    call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
-   call nc_read_array(ncid, "cldtype", MSI_Data%CldType, verbose)
-   call nc_read_array(ncid, "cldmask", MSI_Data%CloudMask, verbose)
-   call nc_read_array(ncid, "cccot_pre", MSI_Data%CCCOT_pre, verbose)
+   call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, verbose)
+   call nc_read_array(ncid, "cldmask", MSI_Data%cloudmask, verbose)
+   call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, verbose)
 
    ! Close cloud flag file
    if (nf90_close(ncid) /= NF90_NOERR) then

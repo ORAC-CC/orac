@@ -113,7 +113,6 @@
 subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    use CTRL_def
-   use Data_def
    use ECP_Constants
    use orac_ncdf
    use SAD_Chan_def
@@ -124,7 +123,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    type(CTRL_t),     intent(inout) :: Ctrl
    integer,          intent(in)    :: NSegs    ! Number of segments read so far
-   integer,          intent(inout) :: SegSize  ! Size of image segment in rows of
+   integer,          intent(in)    :: SegSize  ! Size of image segment in rows of
                                                ! pixels.
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
@@ -138,7 +137,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    ! NetCDF related
    integer           :: ncid
    character(len=12) :: prod_date
-!   integer(kind=lint), allocatable, dimension(:) :: msi_instr_ch_numbers
+!  integer(kind=lint), allocatable, dimension(:) :: msi_instr_ch_numbers
 
    ! Open MSI file
    if (verbose) write(*,*) 'Imagery file: ', trim(Ctrl%Fid%MSI)
@@ -186,7 +185,7 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    ! Close MSI input file
    if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: read_msi_nc(): Error closing file.'
+      write(*,*) 'ERROR: Read_MSI_nc(): Error closing file.'
       stop error_stop_code
    end if
 

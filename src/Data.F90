@@ -41,6 +41,7 @@
 !    2014/09/17, GM: Added Nullify_Data()
 !    2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
 !       dem, and nisemask
+!    2015/01/18, GM: Put all related Read*() subroutines into this module.
 !
 ! Bugs:
 !    None known.
@@ -52,9 +53,15 @@
 module Data_def
 
    use ECP_Constants
-   use common_constants
 
-   implicit none
+   private
+
+   public :: Geometry_t, &
+             Location_t, &
+             Scan_t, &
+             Data_t, &
+             Dealloc_Data, &
+             Read_Data_nc
 
    type Geometry_t
       real(4), pointer :: Sol(:,:,:)
@@ -84,7 +91,7 @@ module Data_def
       real(kind=sreal), pointer   :: cccot_pre(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
-      integer(kind=byte), pointer :: lsflags(:,:)
+      integer(kind=byte), pointer :: LSFlags(:,:)
       integer(kind=byte), pointer :: lusflags(:,:)
       integer(kind=sint), pointer :: dem(:,:)
       integer(kind=byte), pointer :: nisemask(:,:)
@@ -96,7 +103,18 @@ module Data_def
 
 contains
 
-include 'DeallocData.F90'
-include 'NullifyData.F90'
+#include "NullifyData.F90"
+#include "DeallocData.F90"
+
+#include "ReadALB_nc.F90"
+#include "ReadCloudFlags_nc.F90"
+#include "ReadGeometry_nc.F90"
+#include "ReadIllum_nc.F90"
+#include "ReadLSFlags_nc.F90"
+#include "ReadLocation_nc.F90"
+#include "ReadMSI_nc.F90"
+#include "ReadScanLines_nc.F90"
+
+#include "ReadData_nc.F90"
 
 end module Data_def

@@ -467,7 +467,7 @@ end if
 
 
    ! Read all the swath data
-   call Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+   call Read_Data_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    xstep = 1
    ystep = 1

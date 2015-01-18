@@ -238,18 +238,9 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/polint.o \
            $(OBJS)/R2T.o \
            $(OBJS)/read_input_dimensions.o \
-           $(OBJS)/read_sat_data_nc.o \
-           $(OBJS)/ReadALB_nc.o \
-           $(OBJS)/ReadCloudFlags_nc.o \
            $(OBJS)/ReadDriver.o \
-           $(OBJS)/ReadGeometry_nc.o \
-           $(OBJS)/ReadIllum_nc.o \
-           $(OBJS)/ReadLocation_nc.o \
-           $(OBJS)/ReadLSFlags_nc.o \
            $(OBJS)/ReadLwRTM_nc.o \
-           $(OBJS)/ReadMSI_nc.o \
            $(OBJS)/ReadSAD.o \
-           $(OBJS)/ReadScanLines_nc.o \
            $(OBJS)/ReadSwRTM_nc.o \
            $(OBJS)/RTM.o \
            $(OBJS)/RTM_Pc.o \

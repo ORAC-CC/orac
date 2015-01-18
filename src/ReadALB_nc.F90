@@ -76,7 +76,6 @@
 subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
-   use Data_def
    use ECP_Constants
    use orac_ncdf
    use SAD_Chan_def

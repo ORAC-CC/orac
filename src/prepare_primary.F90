@@ -394,7 +394,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! lusflag
    !----------------------------------------------------------------------------
-   output_data%lusflag(i,j)=int(MSI_Data%LUSFlags(SPixel%Loc%X0, SPixel%Loc&
+   output_data%lusflag(i,j)=int(MSI_Data%lusflags(SPixel%Loc%X0, SPixel%Loc&
         %YSeg0), kind=byte)
 
    !----------------------------------------------------------------------------

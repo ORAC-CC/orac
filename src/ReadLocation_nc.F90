@@ -55,7 +55,6 @@
 subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
-   use Data_def
    use orac_ncdf
 
    implicit none

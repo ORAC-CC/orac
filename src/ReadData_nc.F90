@@ -1,6 +1,6 @@
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_sat_data_nc
+!    Read_Data_nc
 !
 ! Purpose:
 !    Controls the reading of Multi Spectral Image (ALB) values from ATSR-type
@@ -42,19 +42,18 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+subroutine Read_Data_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    use netcdf
 
    use CTRL_def
-   use Data_def
    use SAD_Chan_def
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
+   type(CTRL_t),     intent(inout) :: Ctrl
    integer,          intent(in)    :: NSegs
    integer,          intent(in)    :: SegSize
    type(Data_t),     intent(inout) :: MSI_Data
@@ -95,4 +94,4 @@ subroutine Read_SatData_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    if (verbose)  write(*,*) 'Reading Illumination data'
    call Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
-end subroutine Read_SatData_nc
+end subroutine Read_Data_nc

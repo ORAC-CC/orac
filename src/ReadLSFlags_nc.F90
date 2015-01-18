@@ -82,7 +82,6 @@
 subroutine Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    use CTRL_def
-   use Data_def
    use ECP_Constants
    use orac_ncdf
 
@@ -104,13 +103,13 @@ subroutine Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    call nc_open(ncid, Ctrl%Fid%LS)
 
    allocate(MSI_Data%LSFlags(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%LUSFlags(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%DEM(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%lusflags(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%dem(Ctrl%Ind%Xmax, SegSize))
    allocate(MSI_Data%nisemask(Ctrl%Ind%Xmax, SegSize))
 
    call nc_read_array(ncid, "lsflag", MSI_Data%LSFlags, verbose)
-   call nc_read_array(ncid, "lusflag", MSI_Data%LUSFlags, verbose)
-   call nc_read_array(ncid, "dem", MSI_Data%DEM, verbose)
+   call nc_read_array(ncid, "lusflag", MSI_Data%lusflags, verbose)
+   call nc_read_array(ncid, "dem", MSI_Data%dem, verbose)
    call nc_read_array(ncid, "nisemask", MSI_Data%nisemask, verbose)
 
    ! Close LSF file
