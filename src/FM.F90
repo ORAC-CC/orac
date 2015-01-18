@@ -127,11 +127,11 @@
 !      independent so that contents of CRP and d_CRP do not need to be passed
 !      from the thermal call to the solar call.
 !   20140715, CP: Changed illumination logic.
-!   20141201, CP: added in cloud albedo
+!   20141201, CP: Added in cloud albedo.
 !   20150107, AP: Eliminate write to RTM_Pc%Tac, Tbc. Now within models.
-!   20150112, CP: bugfix to  cloud albedo
+!   20150112, CP: Bugfix to cloud albedo.
 !   20150112, AP: Replacing First:Last channel indexing with generic, array-based
-!      indexing. Make CRP an output of
+!      indexing.
 ! Bugs:
 !   None known.
 !
@@ -162,8 +162,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: X(MaxStateVar)
    real,             intent(out)   :: Y(SPixel%Ind%Ny)
-   real,             intent(out)   :: cloud_albedo(SPixel%Ind%NSolar)
    real,             intent(out)   :: dY_dX(SPixel%Ind%Ny,(MaxStateVar+1))
+   real,             intent(out)   :: cloud_albedo(SPixel%Ind%NSolar)
    integer,          intent(out)   :: status
 
    ! Declare local variables
@@ -171,7 +171,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    integer       :: i
    type(GZero_t) :: GZero
    real          :: CRP(SPixel%Ind%NSolar, MaxCRProps)
-!  real          :: d_cloud_albedo(SPixel%Ind%NSolar, 2))
    real          :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, 2)
    real          :: BT(SPixel%Ind%NThermal)
    real          :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
@@ -184,7 +183,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    real          :: dT_dR(SPixel%Ind%NMixed)
    integer       :: itherm(SPixel%Ind%NMixed)
    integer       :: isolar(SPixel%Ind%NMixed)
-   
+
    type(SAD_Chan_t) :: SAD_therm(SPixel%Ind%NThermal)
    type(SAD_Chan_t) :: SAD_mixed(SPixel%Ind%NMixed)
 #ifdef BKP
@@ -221,7 +220,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    if (SPixel%Ind%NThermal > 0 .and. status == 0) then
       SAD_therm = SAD_Chan( &
            SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal))
-      
+
       ! Call routine to interpolate RTM data to the cloud pressure level.
       ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
       if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
@@ -240,7 +239,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       ! Call thermal forward model (required for day, twilight and night)
       call FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_therm, &
               RTM_Pc, X, GZero, BT, d_BT, Rad, d_Rad, status)
-      
+
       ! Copy results into output vectors
       Y(SPixel%Ind%YThermal) = BT
       dY_dX(SPixel%Ind%YThermal,1:MaxStateVar) = d_BT
@@ -264,7 +263,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
          status = RTMIntflagErr
          return
       end if
-      
+
       ! Call short wave forward model. Note that solar channels only are
       ! passed (including mixed channels).
       CRP   = 0.0
@@ -272,7 +271,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       Ref   = 0.0
       d_Ref = 0.0
-      
+
       call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
            Ref, d_Ref, status)
 
@@ -280,10 +279,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       Y(SPixel%Ind%YSolar) = Ref
       dY_dX(SPixel%Ind%YSolar,:) = d_Ref
       cloud_albedo = CRP(:,IRfbd)
-!     d_cloud_albedo = d_CRP(:,IRfbd,:)
    end if
 
-   
+
    ! Mixed channels - when there are mixed channels present loop over
    ! them.  The mixed channel measurements are in brightness temperature
    ! Convert reflectances to radiances using the solar constant f0 and
@@ -306,7 +304,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       if (status == 0) then
          ! Write output into Y array
          Y(SPixel%Ind%YMixed) = T
-         
+
          ! The gradients in Y w.r.t. state vector X.  Use dT_dR
          ! calculated in the previous call to R2T to convert dR_dX to
          ! dT_dX (i.e. dY_dX). Write result into appropriate part of
@@ -325,7 +323,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    call Deallocate_GZero(GZero)
 
-   
+
    ! Open breakpoint file if required, and write our reflectances and gradients.
 
 #ifdef BKP

@@ -14,7 +14,8 @@
 !
 ! History:
 !    10th Oct 2014, Greg McGarragh: Original version
-!    9/1/2015 CP added Rfbd
+!     9th Jan 2015, Caroline Poulsen: Added Rfbd.
+
 ! Bugs:
 !    None known.
 !
@@ -129,10 +130,10 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
    if (Ctrl%Ind%NSolar > 0) then
       deallocate(SAD_LUT%Rbd)
+      deallocate(SAD_LUT%Rfbd)
       deallocate(SAD_LUT%Tb)
       deallocate(SAD_LUT%Tbd)
       deallocate(SAD_LUT%Tfbd)
-      deallocate(SAD_LUT%Rfbd)
    end if
 
    if (Ctrl%Ind%NThermal > 0) then

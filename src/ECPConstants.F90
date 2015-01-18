@@ -98,9 +98,9 @@
 !    2014/08/30, Greg McGarragh: Use common_constants and remove pi and d2r as
 !       they are in common_constants.
 !    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
-!    2014/11/20, Oliver Sus: increased BTMax from 330 to 350 K, thus providing 
+!    2014/11/20, Oliver Sus: increased BTMax from 330 to 350 K, thus providing
 !       retrieval results for warm land surfaces (e.g. Sahara, Namib)
-!    2015/01/09, Caroline Poulsen: added rfbd for cloud albedo calculations
+!    2015/01/09, Caroline Poulsen: Added IRFBd for cloud albedo calculations.
 !    2015/01/12, Adam Povey: Added bit positions for Ctrl%Ind%Ch_Is.
 !
 ! Bugs:
@@ -153,7 +153,7 @@ module ECP_constants
    real, parameter    :: RefMin           =  0.0    ! Reflectance
    real, parameter    :: RefMax           =  1.5
    real, parameter    :: BTMin            =  140.0  ! Brightness temperature
-   real, parameter    :: BTMax            =  350.0   
+   real, parameter    :: BTMax            =  350.0
 
    ! Missing data (fill) values
    real, parameter    :: MissingXn        = -999.   ! Value for "missing data" used as output when a SPixel is not processed.
@@ -200,16 +200,16 @@ module ECP_constants
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
 
    integer, parameter :: IRBd             = 1       ! Index of RBd data in array
-   integer, parameter :: IRd              = 2       !  "    "  Rd   "   "   "
-   integer, parameter :: IRFd             = 3       !  "    "  RFd  "   "   "
-   integer, parameter :: ITB              = 4       !  "    "  TB   "   "   "
-   integer, parameter :: ITB_u            = 5       !  "    "  TB   "   "   "
-   integer, parameter :: ITBd             = 6       !  "    "  TBd  "   "   "
-   integer, parameter :: ITd              = 7       !  "    "  Td   "   "   "
-   integer, parameter :: ITFBd            = 8       !  "    "  TFBd "   "   "
-   integer, parameter :: ITFd             = 9       !  "    "  TFd  "   "   "
-   integer, parameter :: IEm              = 10      !  "    "  Em   "   "   "
-   integer, parameter :: IRFBd            = 11      ! Index of RFBd data in array
+   integer, parameter :: IRFBd            = 2       !  "    "  RFBd "   "   "
+   integer, parameter :: IRd              = 3       !  "    "  Rd   "   "   "
+   integer, parameter :: IRFd             = 4       !  "    "  RFd  "   "   "
+   integer, parameter :: ITB              = 5       !  "    "  TB   "   "   "
+   integer, parameter :: ITB_u            = 6       !  "    "  TB   "   "   "
+   integer, parameter :: ITBd             = 7       !  "    "  TBd  "   "   "
+   integer, parameter :: ITd              = 8       !  "    "  Td   "   "   "
+   integer, parameter :: ITFBd            = 9       !  "    "  TFBd "   "   "
+   integer, parameter :: ITFd             = 10      !  "    "  TFd  "   "   "
+   integer, parameter :: IEm              = 11      !  "    "  Em   "   "   "
 
    ! The following max sizes apply to the brdf arrays
    integer, parameter :: MaxRho_XX        = 4

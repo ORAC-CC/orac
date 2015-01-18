@@ -28,7 +28,7 @@
 !    12th Jan 2014, Greg McGarragh: Increase nmaxre to 23 for the ice LUTs.
 !    16th Jan 2014, Greg McGarragh: Added SAD_LUT%table_use* arrays.
 !    23rd Jan 2014, Greg McGarragh: Cleaned up the code.
-!    9/1/2015 CP added Rfbd
+!     9th Jan 2015, Caroline Poulsen: Added Rfbd.
 !
 ! Bugs:
 !    None known.
@@ -100,44 +100,43 @@ module SAD_LUT_def
 
       real, pointer :: Rbd(:,:,:,:,:,:)
                        ! Bi-directional reflectance
-		       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
-
-      real, pointer :: Rd(:,:,:,:)
-                       ! Diffuse reflectance
-		       ! Dimensions: channel, Tau, SatZen, Re
-
-      real, pointer :: Rfd(:,:,:)
-                       ! Diffuse reflectivity
-		       ! Dimensions: channel, Tau, Re
-
-      real, pointer :: Tb(:,:,:,:)
-                       ! Direct part of beam transmission
-		       ! Dimensions: channel, Tau, SolZen, Re
-
-      real, pointer :: Tbd(:,:,:,:,:,:)
-                       ! Bi-directional reflectance
-		       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
-
-      real, pointer :: Td(:,:,:,:)
-                       ! Diffuse transmission
-		       ! Dimensions: channel, Tau, SatZen, Re
-
-      real, pointer :: Tfbd(:,:,:,:)
-                       ! Diffuse part of beam transmission (flux)
-		       ! Dimensions: channel, Tau, SolZen, Re
-
+                       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
 
       real, pointer :: Rfbd(:,:,:,:)
                        ! Diffuse part of diffuse reflectance
-		       ! Dimensions: channel, Tau, SolZen, Re
+                       ! Dimensions: channel, Tau, SolZen, Re
+
+      real, pointer :: Rd(:,:,:,:)
+                       ! Diffuse reflectance
+                       ! Dimensions: channel, Tau, SatZen, Re
+
+      real, pointer :: Rfd(:,:,:)
+                       ! Diffuse reflectivity
+                       ! Dimensions: channel, Tau, Re
+
+      real, pointer :: Tb(:,:,:,:)
+                       ! Direct part of beam transmission
+                       ! Dimensions: channel, Tau, SolZen, Re
+
+      real, pointer :: Tbd(:,:,:,:,:,:)
+                       ! Bi-directional reflectance
+                       ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
+
+      real, pointer :: Td(:,:,:,:)
+                       ! Diffuse transmission
+                       ! Dimensions: channel, Tau, SatZen, Re
+
+      real, pointer :: Tfbd(:,:,:,:)
+                       ! Diffuse part of beam transmission (flux)
+                       ! Dimensions: channel, Tau, SolZen, Re
 
       real, pointer :: Tfd(:,:,:)
                        ! Diffuse reflectivity
-		       ! Dimensions: channel, Tau, Re
+                       ! Dimensions: channel, Tau, Re
 
       real, pointer :: Em(:,:,:,:)
                        ! Diffuse emissivity
-		       ! Dimensions: channel, Tau, SatZen, Re
+                       ! Dimensions: channel, Tau, SatZen, Re
    end type SAD_LUT_t
 
 contains

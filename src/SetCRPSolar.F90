@@ -130,7 +130,7 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
                                 	  ! Interpolated gradients of CRPOut in
 					  ! Tau and Re
    integer,                intent(out) :: status
-   integer :: test
+
    ! Local variables
 #ifdef DEBUG
    integer :: i, j
@@ -145,38 +145,20 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    ! N.B. Grid is the same for all SAD_LUT channels in a given cloud class -
    ! channel is a dimension of the LUT arrays inside SAD_LUT.
 
-   ! Call functions to interpolate the arrays: TFd and RFD are interpolated only
-   ! in Tau and Re.
+   ! Call functions to interpolate the arrays
 
+   call Int_LUT_TauSatSolAziRe(SAD_LUT%Rbd, Ind%NSolar, &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), &
+           iRBd, chan_to_ctrl_index, Ind%YSolar, status)
 
+   call Int_LUT_TauSolRe(SAD_LUT%Rfbd, Ind%NSolar, &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRfbd), dCRPOut(:,IRfbd,:), &
+           IRfbd, chan_to_ctrl_index, Ind%YSolar, status)
 
-
-
-   !
-   !now add in an interpolation of RD to solar zenith  which is equivalent to black sky cloud albedo
-   !
-   !only do if solar zenith angle lt. 90 because LUT tables doe not extend very far
-
-
-   call Int_LUT_TauSolRe(SAD_LUT%rfbd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,Irfbd), dCRPOut(:,Irfbd,:), &
-           Irfbd, chan_to_ctrl_index, Ind%YSolar, status)
-
-
-   call Int_LUT_TauSolRe(SAD_LUT%TFbd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd), dCRPOut(:,ITFBd,:), &
-           ITFBd, chan_to_ctrl_index, Ind%YSolar, status)
-
-
-   call Int_LUT_TauRe(SAD_LUT%RFd, Ind%NSolar, &
+   call Int_LUT_TauRe(SAD_LUT%Rfd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRFd), dCRPOut(:,IRFd,:), &
            IRFd,chan_to_ctrl_index, Ind%YSolar,  status)
 
-   call Int_LUT_TauRe(SAD_LUT%TFd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), &
-           ITFd, chan_to_ctrl_index, Ind%YSolar, status)
-
-   ! Tb and TFBd are interpolated in Tau, Solzen and Re
    call Int_LUT_TauSolRe(SAD_LUT%Tb, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITB), dCRPOut(:,ITB,:), &
            ITB, chan_to_ctrl_index, Ind%YSolar, status)
@@ -185,28 +167,17 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITB_u), dCRPOut(:,ITB_u,:), &
            ITB, chan_to_ctrl_index, Ind%YSolar, status)
 
-
-
-   ! Td is interpolated in Tau, SatZen and Re Only process the channels that are
-   ! exclusively solar. Channels with a thermal component are interpolated by
-   ! SetCRPThermal.
-   !
-   ! 2014/05/28, GM: This was causing problems that were hard to debug and
-   ! gained little in performance.  Now the Solar and Thermal forward model
-   ! calls are independent so that contents of CRP and d_CRP do not need to be
-   ! passed from the thermal call to the solar call.
+   call Int_LUT_TauSolRe(SAD_LUT%Tfbd, Ind%NSolar, &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFbd), dCRPOut(:,ITFBd,:), &
+           ITFBd, chan_to_ctrl_index, Ind%YSolar, status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), &
            ITd, chan_to_ctrl_index, Ind%YSolar, status)
 
-   ! RBd is interpolated in Tau, SatZen, SolZen, RelAzi and Re
-
-   call Int_LUT_TauSatSolAziRe(SAD_LUT%RBd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), &
-           iRBd, chan_to_ctrl_index, Ind%YSolar, status)
-
-
+   call Int_LUT_TauRe(SAD_LUT%Tfd, Ind%NSolar, &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), &
+           ITFd, chan_to_ctrl_index, Ind%YSolar, status)
 
 #ifdef DEBUG
 !   write(*,*) ' SetCRPSolar: Tb values (2 channels only)'
@@ -228,14 +199,14 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
 !   end do
 
 !  For debugging: check interpolated values
-   write(*,*) ' SetCRPSolar: TFd values, solar 1st to solar last: ',Ind%SolarFirst,&
-     Ind%SolarLast
+   write(*,*) ' SetCRPSolar: TFd values, solar 1st to solar last: ', &
+      Ind%SolarFirst,Ind%SolarLast
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR1(j,iTFd)),  &
+         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR1(j,iTFd)), &
          SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR1(j,iTFd))
       write(*,*)' Function values at bot corners', &
-         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR0(j,iTFd)),  &
+         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR0(j,iTFd)), &
          SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR0(j,iTFd))
 
       write(*,*)' Interpolated value ',CRPOut(j,ITFd)
@@ -247,16 +218,18 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*) 'channels',j,Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-         SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR1(j,iRFd)),  &
+         SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR1(j,iRFd)), &
          SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR1(j,iRFd))
       write(*,*)' Function values at bot corners', &
-        SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR0(j,iRFd)),  &
+        SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR0(j,iRFd)), &
         SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR0(j,iRFd))
 
       write(*,*)' Interpolated value ',CRPOut(j,IRFd)
       write(*,*)' Gradient values    ',(dCRPOut(j,IRFd,i),i=1,2)
-      write(*,*) 'Indices of corners', GZero%iT0(j,iRFd), GZero%iT1(j,iRFd),GZero%iR0(j,iRFd), GZero%iR1(j,iRFd)
-      write(*,*) 'ranges of indices',SAD_LUT%Grid%nTau(j,iRFd),SAD_LUT%Grid%nre(j,iRFd)
+      write(*,*) 'Indices of corners', GZero%iT0(j,iRFd), GZero%iT1(j,iRFd), &
+         GZero%iR0(j,iRFd), GZero%iR1(j,iRFd)
+      write(*,*) 'ranges of indices',SAD_LUT%Grid%nTau(j,iRFd), &
+         SAD_LUT%Grid%nre(j,iRFd)
       write(*,*)
    end do
 #endif

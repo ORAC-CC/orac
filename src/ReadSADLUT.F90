@@ -10,7 +10,6 @@
 ! History:
 !    10th Oct 2014, Greg McGarragh:
 !       Original version.
-!    9/1/2015 CP added Rfbd
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -784,6 +783,8 @@ end subroutine create_lut_filename
 !       rather than the MSI file.
 !    29th Dec 2014, Greg McGarragh:
 !       Fixed a bug in the channel indexing changes above.
+!      9th Jan 2015 Caroline Poulsen:
+!        Added Rfbd.
 !
 ! Bugs:
 !   None known.
@@ -871,46 +872,43 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       write(*,*) 'Channel number',trim(adjustl(chan_num))
 
 
-      ! Read the Rd, Td files for all channels (solar and thermal)
-
+      ! Read the Rd and Rfd LUTs from the Rd file for all channels (solar and
+      ! thermal)
       call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
       call Read_LUT_Xd_sat(Ctrl, LUT_file, i, SAD_LUT, IRd, "Rd", SAD_LUT%Rd, &
                            i_lut2 = IRfd, name2 = "Rfd", values2 = SAD_LUT%Rfd)
 
-
-
+      ! Read the Td and Tfd LUTs from the Td file for all channels (solar and
+      ! thermal)
       call create_lut_filename(Ctrl, 'TD', chan_num, LUT_File)
       call Read_LUT_Xd_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
                            i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
 
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then
-
-
- 
-     ! Read the Rd for cloud albedo, Td files for all channels (solar and thermal)
-      call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
-      call Read_LUT_Xd_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", SAD_LUT%Rfbd)
-
-
-         ! Read the Tb file
-         call create_lut_filename(Ctrl, 'TB', chan_num, LUT_File)
-         call Read_LUT_Xd_sol(Ctrl, LUT_file, i, SAD_LUT, ITb, "Tb", &
-                              SAD_LUT%Tb)
-
-         ! Read the Tbd/TFbd file
-         call create_lut_filename(Ctrl, 'TBD', chan_num, LUT_File)
-         call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
-                               SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
-                               values2 = SAD_LUT%Tfbd)
-
+         ! Read the Rbd LUT from the Rbd files
          call create_lut_filename(Ctrl, 'RBD', chan_num, LUT_File)
          call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
                                SAD_LUT%Rbd)
 
+         ! Read the Rd file into the Rfbd table.  This is a temporary solution
+         ! until the Rfbd table becomes available in the Rbd file.  Rd is close
+         ! but not the same as Rfbd.
+         call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
+         call Read_LUT_Xd_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", &
+                               SAD_LUT%Rfbd)
 
+         ! Read the Tb file LUT from the Tb files
+         call create_lut_filename(Ctrl, 'TB', chan_num, LUT_File)
+         call Read_LUT_Xd_sol(Ctrl, LUT_file, i, SAD_LUT, ITb, "Tb", &
+                              SAD_LUT%Tb)
+
+         ! Read the Tbd and Tfbd LUTs from the Tbd files
+         call create_lut_filename(Ctrl, 'TBD', chan_num, LUT_File)
+         call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
+                               SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
+                               values2 = SAD_LUT%Tfbd)
       end if
-
 
       ! Read thermal channel LUTs
       if (SAD_Chan(i)%Thermal%Flag > 0) then

@@ -14,7 +14,8 @@
 !
 ! History:
 !    10th Oct 2014, Greg McGarragh: Original version
-!    9/1/2015 CP added Rfbd
+!     9th Jan 2015, Caroline Poulsen: Added Rfbd.
+
 ! Bugs:
 !    None known.
 !
@@ -105,15 +106,14 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
    if (Ctrl%Ind%NSolar > 0) then
       allocate(SAD_LUT%Rbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%nmaxsatzen, &
                SAD_LUT%Grid%NmaxSolzen, SAD_LUT%Grid%nmaxrelazi, SAD_LUT%Grid%nmaxre))
+      allocate(SAD_LUT%Rfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%nmaxtau, SAD_LUT%Grid%nmaxsolzen, &
+               SAD_LUT%Grid%nmaxre))
       allocate(SAD_LUT%Tb(Ctrl%Ind%Ny, SAD_LUT%Grid%nmaxtau, SAD_LUT%Grid%nmaxsolzen, &
                SAD_LUT%Grid%nmaxre))
       allocate(SAD_LUT%Tbd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, SAD_LUT%Grid%nmaxsatzen, &
                SAD_LUT%Grid%NmaxSolzen, SAD_LUT%Grid%nmaxrelazi, SAD_LUT%Grid%nmaxre))
       allocate(SAD_LUT%Tfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%nmaxtau, SAD_LUT%Grid%nmaxsolzen, &
                SAD_LUT%Grid%nmaxre))
-      allocate(SAD_LUT%Rfbd(Ctrl%Ind%Ny, SAD_LUT%Grid%nmaxtau, SAD_LUT%Grid%nmaxsolzen, &
-               SAD_LUT%Grid%nmaxre))
-
    end if
 
    if (Ctrl%Ind%NThermal > 0) then
