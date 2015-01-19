@@ -93,7 +93,8 @@
 ! $Id$
 !
 !-------------------------------------------------------------------------------
-module orac_io
+module read_driver_m
+
 contains
 
 subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
@@ -104,6 +105,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    use ECP_constants
    use global_attributes
    use parsing
+   use read_utils
    use source_attributes
 
    implicit none
@@ -897,6 +899,4 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
 end subroutine Read_Driver
 
-#include "read_config_file.F90"
-
-end module orac_io
+end module read_driver_m

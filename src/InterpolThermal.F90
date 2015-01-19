@@ -82,6 +82,7 @@
 subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    use CTRL_def
+   use planck
    use RTM_Pc_def
    use SAD_Chan_def
    use SPixel_def
@@ -141,7 +142,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    ! Subscripts for thermal channels in RTM arrays
    Thermal = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(:SPixel%Ind%NThermal)
-	
+
    ! Search for Pc in the LW RTM pressure levels. If Pc lies outside the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level
    call find_Pc(Ctrl, SPixel%RTM%LW%Np, SPixel%RTM%LW%P, Pc, i, status)

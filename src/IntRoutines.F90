@@ -18,7 +18,9 @@
 !    N/A
 !
 ! History:
-!    23th May 2014, Greg McGarragh: Original version.
+!    23rd May 2014, Greg McGarragh: Original version.
+!    19th Jan 2015, Greg McGarragh:
+!       Put polint.F90 into this module.
 !
 ! Bugs:
 !    None known.
@@ -39,6 +41,8 @@ include 'Linint.F90'
 include 'Locate.F90'
 include 'Spline.F90'
 include 'Tridag.F90'
+include 'polint.F90'
+
 
 !---------------------------------------------------------------------
 ! Name:

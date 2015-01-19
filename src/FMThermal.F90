@@ -102,6 +102,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    use CTRL_def
    use ECP_Constants
    use GZero_def
+   use planck
    use RTM_Pc_def
    use SAD_Chan_def
    use SAD_LUT_def
@@ -172,7 +173,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    R_over = (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd)  + &
              RTM_Pc%LW%B(Thermal)       * CRP(:,IEm)  + &
              RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) * RTM_Pc%LW%Tac + &
-            RTM_Pc%LW%Rac_up(Thermal)
+             RTM_Pc%LW%Rac_up(Thermal)
 
    ! Calculate part cloudy radiances (a linear combination of R_clear and R_over)
 
@@ -194,14 +195,14 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
                         RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IRd,Ire))
 
    ! Gradient w.r.t. cloud pressure, Pc
-   d_R(:,IPc) = X(IFr) * ( RTM_Pc%LW%dTac_dPc(Thermal) *                  &
-                           ( RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd) +   &
-                             RTM_Pc%LW%B(Thermal)       * CRP(:,IEm) +   &
-                             RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd))  &
-                         + RTM_Pc%LW%dRac_up_dPc(Thermal))               &
-              + fTac * ( RTM_Pc%LW%dRbc_up_dPc(Thermal)  * CRP(:,ITd) + &
-                         RTM_Pc%LW%dB_dPc(Thermal)       * CRP(:,IEm) + &
-                         RTM_Pc%LW%dRac_dwn_dPc(Thermal) * CRP(:,IRd))
+   d_R(:,IPc) = X(IFr) * (RTM_Pc%LW%dTac_dPc(Thermal) * &
+                             (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd) + &
+                              RTM_Pc%LW%B(Thermal)       * CRP(:,IEm) + &
+                              RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) + &
+                             RTM_Pc%LW%dRac_up_dPc(Thermal)) &
+              + fTac * (RTM_Pc%LW%dRbc_up_dPc(Thermal)  * CRP(:,ITd) + &
+                        RTM_Pc%LW%dB_dPc(Thermal)       * CRP(:,IEm) + &
+                        RTM_Pc%LW%dRac_dwn_dPc(Thermal) * CRP(:,IRd))
 
    ! Gradient w.r.t. cloud fraction, f
    d_R(:,IFr) = R_over - R_clear

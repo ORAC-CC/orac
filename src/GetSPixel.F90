@@ -344,7 +344,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0)
 
    ! If all Mask flags are 0 there are no good pixels in the current SPixel, do
-   ! not process. Set QC flag and report to the log.
+   ! not process and set QC flag.
 
    if (SPixel%NMask == 0) then
       SPixel%QC = ibset(SPixel%QC, SPixAll)

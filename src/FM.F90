@@ -146,6 +146,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    use ECP_Constants
    use GZero_def
    use Interpol_Routines_def
+   use planck
    use RTM_Pc_def
    use SAD_Chan_def
    use SAD_LUT_def
@@ -168,28 +169,27 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    ! Declare local variables
 
-   integer       :: i
-   type(GZero_t) :: GZero
-   real          :: CRP(SPixel%Ind%NSolar, MaxCRProps)
-   real          :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, 2)
-   real          :: BT(SPixel%Ind%NThermal)
-   real          :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
-   real          :: Rad(SPixel%Ind%NThermal)
-   real          :: d_Rad(SPixel%Ind%NThermal, MaxStateVar)
-   real          :: Ref(SPixel%Ind%NSolar)
-   real          :: d_Ref(SPixel%Ind%NSolar, MaxStateVar+1)
-   real          :: Y_R(SPixel%Ind%NMixed)
-   real          :: T(SPixel%Ind%NMixed)
-   real          :: dT_dR(SPixel%Ind%NMixed)
-   integer       :: itherm(SPixel%Ind%NMixed)
-   integer       :: isolar(SPixel%Ind%NMixed)
-
+   integer          :: i
+   type(GZero_t)    :: GZero
+   real             :: CRP(SPixel%Ind%NSolar, MaxCRProps)
+   real             :: d_CRP(SPixel%Ind%NSolar, MaxCRProps, 2)
+   real             :: BT(SPixel%Ind%NThermal)
+   real             :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
+   real             :: Rad(SPixel%Ind%NThermal)
+   real             :: d_Rad(SPixel%Ind%NThermal, MaxStateVar)
+   real             :: Ref(SPixel%Ind%NSolar)
+   real             :: d_Ref(SPixel%Ind%NSolar, MaxStateVar+1)
+   real             :: Y_R(SPixel%Ind%NMixed)
+   real             :: T(SPixel%Ind%NMixed)
+   real             :: dT_dR(SPixel%Ind%NMixed)
+   integer          :: itherm(SPixel%Ind%NMixed)
+   integer          :: isolar(SPixel%Ind%NMixed)
    type(SAD_Chan_t) :: SAD_therm(SPixel%Ind%NThermal)
    type(SAD_Chan_t) :: SAD_mixed(SPixel%Ind%NMixed)
 #ifdef BKP
-   integer       :: j
-   integer       :: bkp_lun ! Unit number for breakpoint file
-   integer       :: ios     ! I/O status for breakpoint file
+   integer          :: j
+   integer          :: bkp_lun ! Unit number for breakpoint file
+   integer          :: ios     ! I/O status for breakpoint file
 #endif
 
    status = 0
@@ -206,15 +206,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    ! Evaluate long and short wave transmittance values (depending on whether it
    ! is daytime, twilight or nighttime).
-   !
-   ! Note: For channels that are both thermal and solar the transmittances are
-   ! taken from the interpolated thermal RTM values.
-   !
-   ! 2014/05/28, GM: This was causing problems that were hard to debug and
-   ! gained little in performance.  Now the Solar and Thermal forward model
-   ! calls are independent so that contents of CRP and d_CRP do not need to be
-   ! passed from the thermal call to the solar call.
-
 
    ! Call thermal forward model (required for day, twilight and night)
    if (SPixel%Ind%NThermal > 0 .and. status == 0) then
@@ -293,7 +284,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       ! Sum the radiances and the reflectances (converted to radiances
       ! using f0) to give total radiance for the current scene, Y_R.
-      Y_R =  Rad(itherm) + SPixel%f0(isolar) * Ref(isolar)
+      Y_R = Rad(itherm) + SPixel%f0(isolar) * Ref(isolar)
 
       ! Call R2T to convert the scene radiance Y_R to brightness
       ! temperature. Write the result into the appropriate part of the

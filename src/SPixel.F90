@@ -126,6 +126,9 @@
 !       indexes
 !    2015/01/18, Greg McGarragh: Put all related Get*() subroutines and
 !       check_value() subroutines into this module.
+!    19th Jan 2015, Greg McGarragh:
+!       Put XAUX.F90, XMDAD.F90, and XSDAD.F90 into this module.
+
 !
 ! Bugs:
 !    None known.
@@ -377,6 +380,9 @@ contains
 #include "GetRTM.F90"
 #include "GetRs.F90"
 #include "GetSurface.F90"
+!#include "XAUX.F90"
+#include "XMDAD.F90"
+#include "XSDAD.F90"
 #include "GetX.F90"
 
 #include "GetSPixel.F90"

@@ -34,13 +34,13 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
 
    implicit none
 
-   type(Ctrl_t),              intent(in)    :: Ctrl
-   integer, allocatable, dimension(:),     intent(inout) :: channel_ids_instr
-   integer, allocatable, dimension(:),     intent(inout) :: channel_sw_flag
-   integer, allocatable, dimension(:),     intent(inout) :: channel_lw_flag
-   type(global_attributes_s), intent(inout) :: global_atts
-   type(source_attributes_s), intent(inout) :: source_atts
-   logical,                   intent(in)    :: verbose
+   type(Ctrl_t),                       intent(in)    :: Ctrl
+   integer, allocatable, dimension(:), intent(inout) :: channel_ids_instr
+   integer, allocatable, dimension(:), intent(inout) :: channel_sw_flag
+   integer, allocatable, dimension(:), intent(inout) :: channel_lw_flag
+   type(global_attributes_s),          intent(inout) :: global_atts
+   type(source_attributes_s),          intent(inout) :: source_atts
+   logical,                            intent(in)    :: verbose
 
    integer :: ncid
 

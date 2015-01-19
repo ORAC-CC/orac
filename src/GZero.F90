@@ -37,6 +37,8 @@
 !       Add allocate and deallocate subroutines.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
+!    19th Jan 2015, Greg McGarragh:
+!       Put SetGZero.F90 into this module.
 !
 ! Bugs:
 !    None known.
@@ -187,5 +189,8 @@ subroutine Deallocate_GZero(GZero)
    deallocate(GZero%SaSo1)
 
 end subroutine Deallocate_GZero
+
+
+#include "SetGZero.F90"
 
 end module GZero_def

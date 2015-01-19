@@ -26,7 +26,11 @@
 !       Added averaging kernel to structure
 !    21th May 2014, Greg McGarragh:
 !       Cleaned up the code.
-!    1st Dec. 2014, CP added cloud albedo
+!     1st Dec 2014, Caroline Poulsen:
+!       Added cloud albedo.
+!    19th Jan 2015, Greg McGarragh:
+!       Put ZeroDiag.F90 and SetDiag.F90 into this module.
+
 !
 ! Bugs:
 !   None known.
@@ -82,5 +86,10 @@ module Diag_def
       real          :: cloud_albedo(MaxNumSolar)
                                     ! Cloud albedo
    end type Diag_t
+
+contains
+
+#include "ZeroDiag.F90"
+#include "SetDiag.F90"
 
 end module Diag_def

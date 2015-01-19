@@ -45,7 +45,6 @@ subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
 
    use ECP_Constants
    use Ctrl_def
-   use SPixel_def
 
    implicit none
 

@@ -97,7 +97,6 @@ subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
    use CTRL_def
    use ECP_Constants
    use orac_ncdf
-   use RTM_def
 
    implicit none
 

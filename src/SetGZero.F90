@@ -73,10 +73,9 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Set_GZero(Tau, Re, Ctrl,SPixel, SAD_LUT, GZero, status)
+subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
 
    use Ctrl_def
-   use GZero_def
    use Int_Routines_def
    use SAD_LUT_def
    use SPixel_def

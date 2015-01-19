@@ -81,7 +81,6 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
                     NPhaseChanges, Y, Sy, Diag, status)
 
    use Ctrl_def
-   use Diag_def
    use ECP_Constants
    use SPixel_def
 

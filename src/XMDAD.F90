@@ -122,8 +122,8 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    use Ctrl_def
    use ECP_Constants
    use Int_Routines_def, only : find_in_array
+   use planck
    use SAD_Chan_def
-   use SPixel_def
 
    implicit none
 
@@ -142,11 +142,11 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    real    :: FGOP(11)
    real    :: Ref_o
    integer :: iFGOP
-   real    :: BT_o
-   real    :: Rad
-   real    :: Rad_o
-   real    :: dR_dT
-   real    :: dT_dR
+   real    :: BT_o(1)
+   real    :: Rad(1)
+   real    :: Rad_o(1)
+   real    :: dR_dT(1)
+   real    :: dT_dR(1)
    integer :: MDAD_LW_to_ctrl_ythermal
 
    status = 0
@@ -194,24 +194,26 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
       ! Find the corresponding index wrt Ctrl%Ind%YThermal
       MDAD_LW_to_ctrl_ythermal = find_in_array(Ctrl%Ind%YThermal, &
                                                Ctrl%Ind%MDAD_LW)
-         
+
       if (SPixel%Ind%MDAD_LW > 0 .and. MDAD_LW_to_ctrl_ythermal > 0) then
          ! Convert observed brightness temperature to radiance
          ! Uses channel nearest 11 microns, index Ctrl%Ind%MDAD_LW in SAD_Chan,
          ! but SPixel%Ind%MDAD_LW in the measurement array.
-         call T2R(1, SAD_Chan(Ctrl%Ind%MDAD_LW), &
-                  SPixel%Ym(SPixel%Ind%MDAD_LW), Rad, dR_dT, status)
+         call T2R(1, SAD_Chan(Ctrl%Ind%MDAD_LW:SPixel%Ind%MDAD_LW), &
+                  SPixel%Ym(SPixel%Ind%MDAD_LW:SPixel%Ind%MDAD_LW), &
+                  Rad, dR_dT, status)
 
          ! Calculate overcast radiance from observed radiance and cloud
          ! fraction. Note MDAD_LW must be offset for use with R_Clear since
          ! R_Clear stores thermal channels only.
-         Rad_o = (Rad - SPixel%RTM%LW%R_clear(MDAD_LW_to_ctrl_ythermal) * &
+         Rad_o = (Rad(1) - SPixel%RTM%LW%R_clear(MDAD_LW_to_ctrl_ythermal) * &
               (1.0 - SPixel%Cloud%Fraction)) / SPixel%Cloud%Fraction
 
          ! Exclude negative Rad_o (can arise due to approximation in the RTM)
-         if (Rad_o >= 0.0) then
+         if (Rad_o(1) >= 0.0) then
             ! Convert overcast radiance back to brightness temperature
-            call R2T(1, SAD_Chan(Ctrl%Ind%MDAD_LW), Rad_o, BT_o, dT_dR, status)
+            call R2T(1, SAD_Chan(Ctrl%Ind%MDAD_LW:Ctrl%Ind%MDAD_LW), Rad_o, &
+                     BT_o, dT_dR, status)
 
             ! Interpolate for the BT to the rad. profile to get Pc FG/AP
             call interpolate2ctp(SPixel,Ctrl,BT_o,X,Err)

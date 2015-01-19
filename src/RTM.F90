@@ -46,6 +46,8 @@
 !       Some cleanup.
 !    13th Aug 2014, Adam Povey:
 !       Adding Wrap flag to save repeated calculation in GetLwSwRTM.
+!    19th Jan 2015, Greg McGarragh:
+!       Put ReadSwRTM_nc.F90 and ReadLwRTM_nc.F90 into this module.
 !
 ! Bugs:
 !    None known.
@@ -128,6 +130,8 @@ module RTM_def
 
 contains
 
-include 'DeallocRTM.F90'
+#include "DeallocRTM.F90"
+#include "ReadSwRTM_nc.F90"
+#include "ReadLwRTM_nc.F90"
 
 end module RTM_def

@@ -77,27 +77,27 @@ module output_routines
       real(kind=dreal)              :: time_vmin   = 0.0
       real(kind=dreal)              :: time_vmax   = 1.0e10
 
-      real(kind=sreal)              :: lat_scale   = 1.0
-      real(kind=sreal)              :: lat_offset  = 0.0
-      real(kind=sreal)              :: lat_vmin    = -90.0
-      real(kind=sreal)              :: lat_vmax    = 90.0
-      real(kind=sreal)              :: lon_scale   = 1.0
-      real(kind=sreal)              :: lon_offset  = 0.0
-      real(kind=sreal)              :: lon_vmin    = -180.0
-      real(kind=sreal)              :: lon_vmax    = 180.0
+      real(kind=sreal)              :: lat_scale  = 1.0
+      real(kind=sreal)              :: lat_offset = 0.0
+      real(kind=sreal)              :: lat_vmin   = -90.0
+      real(kind=sreal)              :: lat_vmax   = 90.0
+      real(kind=sreal)              :: lon_scale  = 1.0
+      real(kind=sreal)              :: lon_offset = 0.0
+      real(kind=sreal)              :: lon_vmin   = -180.0
+      real(kind=sreal)              :: lon_vmax   = 180.0
 
-      real(kind=sreal)              :: sol_scale   = 1.0
-      real(kind=sreal)              :: sol_offset  = 0.0
-      real(kind=sreal)              :: sol_vmin    = -180.0
-      real(kind=sreal)              :: sol_vmax    = 180.0
-      real(kind=sreal)              :: sat_scale   = 1.0
-      real(kind=sreal)              :: sat_offset  = 0.0
-      real(kind=sreal)              :: sat_vmin    = -180.0
-      real(kind=sreal)              :: sat_vmax    = 180.0
-      real(kind=sreal)              :: azi_scale   = 1.0
-      real(kind=sreal)              :: azi_offset  = 0.0
-      real(kind=sreal)              :: azi_vmin    = -180.0
-      real(kind=sreal)              :: azi_vmax    = 180.0
+      real(kind=sreal)              :: sol_scale  = 1.0
+      real(kind=sreal)              :: sol_offset = 0.0
+      real(kind=sreal)              :: sol_vmin   = -180.0
+      real(kind=sreal)              :: sol_vmax   = 180.0
+      real(kind=sreal)              :: sat_scale  = 1.0
+      real(kind=sreal)              :: sat_offset = 0.0
+      real(kind=sreal)              :: sat_vmin   = -180.0
+      real(kind=sreal)              :: sat_vmax   = 180.0
+      real(kind=sreal)              :: azi_scale  = 1.0
+      real(kind=sreal)              :: azi_offset = 0.0
+      real(kind=sreal)              :: azi_vmin   = -180.0
+      real(kind=sreal)              :: azi_vmax   = 180.0
 
       real(kind=sreal)              :: cot_scale        = 0.01
       real(kind=sreal)              :: cot_offset       = 0.0

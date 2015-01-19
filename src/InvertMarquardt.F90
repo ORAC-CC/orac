@@ -215,6 +215,7 @@
 
 subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, status)
 
+   use Cholesky
    use Ctrl_def
    use Diag_def
    use ECP_Constants

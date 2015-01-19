@@ -204,64 +204,34 @@ ORAC_COMMON   = ../common
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
 ORAC_OBJ = $(OBJS)/CalcCWP.o \
-           $(OBJS)/CheckLimits.o \
-           $(OBJS)/check_value.o \
+           $(OBJS)/Cholesky.o \
            $(OBJS)/Ctrl.o \
            $(OBJS)/Data.o \
-           $(OBJS)/DecomposeCholesky.o \
            $(OBJS)/Diag.o \
            $(OBJS)/ECPConstants.o \
            $(OBJS)/extrap_into_tropopause.o \
-	   $(OBJS)/blmodification.o \
+           $(OBJS)/blmodification.o \
            $(OBJS)/FindLUN.o \
            $(OBJS)/FMRoutines.o \
-           $(OBJS)/GetGeometry.o \
-           $(OBJS)/GetIllum.o \
-           $(OBJS)/GetLSF.o \
-           $(OBJS)/GetLwSwRTM.o \
-           $(OBJS)/GetMeasurements.o \
-           $(OBJS)/GetRs.o \
-           $(OBJS)/GetRTM.o \
-           $(OBJS)/GetSPixel.o \
-           $(OBJS)/GetSurface.o \
-           $(OBJS)/GetX.o \
            $(OBJS)/GZero.o \
            $(OBJS)/hpsort.o \
            $(OBJS)/interpolate_to_ctp.o \
            $(OBJS)/IntRoutines.o \
            $(OBJS)/InterpolRoutines.o \
            $(OBJS)/IntLUTRoutines.o \
-           $(OBJS)/InvertCholesky.o \
-           $(OBJS)/InvertCholeskyDC.o \
-           $(OBJS)/InvertMarquardt.o \
+           $(OBJS)/Inversion.o \
            $(OBJS)/output_routines.o \
-           $(OBJS)/polint.o \
-           $(OBJS)/R2T.o \
-           $(OBJS)/read_input_dimensions.o \
+           $(OBJS)/planck.o \
+           $(OBJS)/read_utils.o \
            $(OBJS)/ReadDriver.o \
-           $(OBJS)/ReadLwRTM_nc.o \
            $(OBJS)/ReadSAD.o \
-           $(OBJS)/ReadSwRTM_nc.o \
            $(OBJS)/RTM.o \
            $(OBJS)/RTM_Pc.o \
            $(OBJS)/SADChan.o \
            $(OBJS)/SADLUT.o \
-           $(OBJS)/SetDiag.o \
-           $(OBJS)/SetGZero.o \
-           $(OBJS)/SetKx.o \
-           $(OBJS)/SetLimits.o \
-           $(OBJS)/SetSy.o \
-           $(OBJS)/SetUnit.o \
-           $(OBJS)/SolveCholesky.o \
-           $(OBJS)/SolveCholeskyDC.o \
            $(OBJS)/SPixel.o \
-           $(OBJS)/SquareCholeskyDC.o \
            $(OBJS)/t_extrap_strat.o \
-           $(OBJS)/T2R.o \
-           $(OBJS)/WriteLog.o \
-           $(OBJS)/XMDAD.o \
-           $(OBJS)/XSDAD.o \
-           $(OBJS)/ZeroDiag.o
+           $(OBJS)/WriteLog.o
 
 ORAC_OBJ_MAIN = $(OBJS)/ECP.o
 
