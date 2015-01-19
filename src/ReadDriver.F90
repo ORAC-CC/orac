@@ -81,6 +81,7 @@
 !    2014/12/19, AP: Tidying. Cleaning the management of channel indexing.
 !    2014/12/29, GM: Fixed a bug in the channel indexing changes above.
 !    2015/01/15, AP: Adding Ctrl%Ind%Ch_Is. Revised setting of Ctrl%RS%B.
+!    2015/01/19, GM: Added error handling for parsing the driver file.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -172,16 +173,24 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Read the driver file
    !----------------------------------------------------------------------------
    ! Read folder paths
-   if (parse_driver(dri_lun, line) == 0) call parse_string(line, input_path)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, input_path) /= 0) call h_p_e('input directory')
+   endif
    if (verbose) write(*,*) 'Input directory: ',trim(input_path)
 
-   if (parse_driver(dri_lun, line) == 0) call parse_string(line, input_filename)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, input_filename) /= 0) call h_p_e('input filename')
+   endif
    if (verbose) write(*,*) 'Input filename: ',trim(input_filename)
 
-   if (parse_driver(dri_lun, line) == 0) call parse_string(line, scratch_dir)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, scratch_dir) /= 0) call h_p_e('output directory')
+   endif
    if (verbose) write(*,*) 'Output directory: ',trim(scratch_dir)
 
-   if (parse_driver(dri_lun, line) == 0) call parse_string(line, lut_dir)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, lut_dir) /= 0) call h_p_e('LUT directory')
+   endif
    if (verbose) write(*,*) 'LUT directory: ',trim(lut_dir)
 
    ! Set filenames
@@ -209,12 +218,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    if (verbose) write(*,*) 'Ctrl%FID%Config: ',trim(Ctrl%FID%Config)
 
    ! Read name of instrument
-   if (parse_driver(dri_lun, line) == 0) call parse_string(line, Ctrl%Inst%Name)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, Ctrl%Inst%Name) /= 0) call h_p_e('Ctrl%Inst%Name')
+   endif
    write(*,*) 'Ctrl%Inst%Name: ',trim(Ctrl%Inst%Name)
 
    ! Number of channels in preprocessing file
    ! (this is actually not really necessary as we have that in the config file)
-   if (parse_driver(dri_lun, line) == 0) call parse_string(line, Ctrl%Ind%NAvail)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, Ctrl%Ind%NAvail) /= 0) &
+         call h_p_e('number of channels expected in preproc files')
+   endif
    if (verbose) write(*,*) &
         'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
 
@@ -224,8 +238,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Read processing flag from driver
    allocate(channel_proc_flag(Ctrl%Ind%Navail))
-   if (parse_driver(dri_lun, line) == 0) &
-        call parse_string(line, channel_proc_flag)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, channel_proc_flag) /= 0) call h_p_e('channel flags')
+   endif
    if (sum(channel_proc_flag) < 1 .or. &
        sum(channel_proc_flag) > Ctrl%Ind%Navail .or. &
        any(channel_proc_flag /= 0 .and. channel_proc_flag /= 1)) then
@@ -290,8 +305,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    end if
 
    ! Read in cloud class (aka phase of no aerosols processed)
-   if (parse_driver(dri_lun, line) == 0) &
-        call parse_string(line, Ctrl%CloudClass)
+   if (parse_driver(dri_lun, line) == 0) then
+      if (parse_string(line, Ctrl%CloudClass) /= 0) &
+         call h_p_e('Ctrl%CloudClass')
+   endif
    if (verbose) write(*,*)'Ctrl%CloudClass: ',trim(Ctrl%CloudClass)
 
 
@@ -665,121 +682,123 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       call clean_driver_label(label)
       select case (label)
       case('CTRL%DATA_DIR')
-         call parse_string(line, Ctrl%Data_Dir)
+         if (parse_string(line, Ctrl%Data_Dir)         /= 0) call h_p_e(label)
       case('CTRL%OUT_DIR')
-         call parse_string(line, Ctrl%Out_Dir)
+         if (parse_string(line, Ctrl%Out_Dir)          /= 0) call h_p_e(label)
       case('CTRL%SAD_DIR')
-         call parse_string(line, Ctrl%SAD_Dir)
+         if (parse_string(line, Ctrl%SAD_Dir)          /= 0) call h_p_e(label)
       case('CTRL%FID%MSI')
-         call parse_string(line, Ctrl%FID%MSI)
-       case('CTRL%FID%LWRTM')
-        call parse_string(line, Ctrl%FID%LWRTM)
+         if (parse_string(line, Ctrl%FID%MSI)          /= 0) call h_p_e(label)
+      case('CTRL%FID%LWRTM')
+         if (parse_string(line, Ctrl%FID%LWRTM)        /= 0) call h_p_e(label)
       case('CTRL%FID%SWRTM')
-         call parse_string(line, Ctrl%FID%SWRTM)
+         if (parse_string(line, Ctrl%FID%SWRTM)        /= 0) call h_p_e(label)
       case('CTRL%FID%PRTM')
-         call parse_string(line, Ctrl%FID%PRTM)
+         if (parse_string(line, Ctrl%FID%PRTM)         /= 0) call h_p_e(label)
       case('CTRL%FID%LS')
-         call parse_string(line, Ctrl%FID%LS)
+         if (parse_string(line, Ctrl%FID%LS)           /= 0) call h_p_e(label)
       case('CTRL%FID%CF')
-         call parse_string(line, Ctrl%FID%CF)
+         if (parse_string(line, Ctrl%FID%CF)           /= 0) call h_p_e(label)
       case('CTRL%FID%GEO')
-         call parse_string(line, Ctrl%FID%Geo)
+         if (parse_string(line, Ctrl%FID%Geo)          /= 0) call h_p_e(label)
       case('CTRL%FID%LOC')
-         call parse_string(line, Ctrl%FID%Loc)
+         if (parse_string(line, Ctrl%FID%Loc)          /= 0) call h_p_e(label)
       case('CTRL%FID%UV')
-         call parse_string(line, Ctrl%FID%uv)
+         if (parse_string(line, Ctrl%FID%uv)           /= 0) call h_p_e(label)
       case('CTRL%FID%ALB')
-         call parse_string(line, Ctrl%FID%Alb)
+         if (parse_string(line, Ctrl%FID%Alb)          /= 0) call h_p_e(label)
       case('CTRL%FID%L2_PRIMARY')
-         call parse_string(line, Ctrl%FID%L2_primary)
+         if (parse_string(line, Ctrl%FID%L2_primary)   /= 0) call h_p_e(label)
       case('CTRL%FID%L2_SECONDARY')
-         call parse_string(line, Ctrl%FID%L2_secondary)
+         if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
       case('CTRL%FID%LOG')
-         call parse_string(line, Ctrl%FID%Log)
+         if (parse_string(line, Ctrl%FID%Log)          /= 0) call h_p_e(label)
       case('CTRL%FID%DIAG')
-         call parse_string(line, Ctrl%FID%Diag)
+         if (parse_string(line, Ctrl%FID%Diag)         /= 0) call h_p_e(label)
       case('CTRL%FID%BKP')
-         call parse_string(line, Ctrl%FID%BkP)
+         if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
       case('CTRL%BKPL')
-         call parse_string(line, Ctrl%Bkpl)
+         if (parse_string(line, Ctrl%Bkpl)             /= 0) call h_p_e(label)
       case('CTRL%DIAGL')
-         call parse_string(line, Ctrl%Diagl)
+         if (parse_string(line, Ctrl%Diagl)            /= 0) call h_p_e(label)
       case('CTRL%RTMINTFLAG')
-         call parse_string(line, Ctrl%RTMIntflag)
+         if (parse_string(line, Ctrl%RTMIntflag)       /= 0) call h_p_e(label)
       case('CTRL%LUTINTFLAG')
-         call parse_string(line, Ctrl%LUTIntflag)
+         if (parse_string(line, Ctrl%LUTIntflag)       /= 0) call h_p_e(label)
       case('CTRL%MAXSATZEN')
-         call parse_string(line, Ctrl%MaxSatZen)
+         if (parse_string(line, Ctrl%MaxSatZen)        /= 0) call h_p_e(label)
       case('CTRL%MAXSOLZEN')
-         call parse_string(line, Ctrl%MaxSolZen)
+         if (parse_string(line, Ctrl%MaxSolZen)        /= 0) call h_p_e(label)
       case('CTRL%SUNSET')
-         call parse_string(line, Ctrl%Sunset)
+         if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
       case('CTRL%IND%WS')
-         call parse_string(line, Ctrl%Ind%Ws)
+         if (parse_string(line, Ctrl%Ind%Ws)           /= 0) call h_p_e(label)
       case('CTRL%IND%NX_DY')
-         call parse_string(line, Ctrl%Ind%NX_DY)
+         if (parse_string(line, Ctrl%Ind%NX_DY)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_DY')
-         call parse_string(line, Ctrl%Ind%X_DY)
+         if (parse_string(line, Ctrl%Ind%X_DY)         /= 0) call h_p_e(label)
       case('CTRL%IND%NX_TW')
-         call parse_string(line, Ctrl%Ind%NX_TW)
+         if (parse_string(line, Ctrl%Ind%NX_TW)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_TW')
-         call parse_string(line, Ctrl%Ind%X_TW)
-     case('CTRL%IND%NX_NI')
-         call parse_string(line, Ctrl%Ind%NX_NI)
+         if (parse_string(line, Ctrl%Ind%X_TW)         /= 0) call h_p_e(label)
+      case('CTRL%IND%NX_NI')
+         if (parse_string(line, Ctrl%Ind%NX_NI)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_NI')
-         call parse_string(line, Ctrl%Ind%X_NI)
+         if (parse_string(line, Ctrl%Ind%X_NI)         /= 0) call h_p_e(label)
       case('CTRL%IND%NVIEWS')
-         call parse_string(line, Ctrl%Ind%NViews)
+         if (parse_string(line, Ctrl%Ind%NViews)       /= 0) call h_p_e(label)
       case('CTRL%IND%VIEWIDX')
-         call parse_string(line, Ctrl%Ind%Viewidx)
-       case('CTRL%AP')
-         call parse_string(line, Ctrl%AP)
+         if (parse_string(line, Ctrl%Ind%Viewidx)      /= 0) call h_p_e(label)
+      case('CTRL%AP')
+         if (parse_string(line, Ctrl%AP)               /= 0) call h_p_e(label)
       case('CTRL%FG')
-         call parse_string(line, Ctrl%FG)
+         if (parse_string(line, Ctrl%FG)               /= 0) call h_p_e(label)
       case('CTRL%XB')
-         call parse_string(line, Ctrl%XB)
+         if (parse_string(line, Ctrl%XB)               /= 0) call h_p_e(label)
       case('CTRL%X0')
-         call parse_string(line, Ctrl%X0)
+         if (parse_string(line, Ctrl%X0)               /= 0) call h_p_e(label)
       case('CTRL%SX')
-         call parse_string(line, Ctrl%Sx)
+         if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
       case('CTRL%RS%FLAG')
-         call parse_string(line, Ctrl%RS%Flag)
+         if (parse_string(line, Ctrl%RS%Flag)          /= 0) call h_p_e(label)
        case('CTRL%RS%SB')
-         call parse_string(line, Ctrl%RS%Sb)
+         if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
       case('CTRL%RS%CB')
-         call parse_string(line, Ctrl%RS%Cb)
+         if (parse_string(line, Ctrl%RS%Cb)            /= 0) call h_p_e(label)
       case('CTRL%EQMPN%RS')
-         call parse_string(line, Ctrl%EqMPN%Rs)
+         if (parse_string(line, Ctrl%EqMPN%Rs)         /= 0) call h_p_e(label)
       case('CTRL%EQMPN%TH')
-         call parse_string(line, Ctrl%EqMPN%TH)
+         if (parse_string(line, Ctrl%EqMPN%TH)         /= 0) call h_p_e(label)
       case('CTRL%EQMPN%HOMOG')
-         call parse_string(line, Ctrl%EqMPN%Homog)
+         if (parse_string(line, Ctrl%EqMPN%Homog)      /= 0) call h_p_e(label)
       case('CTRL%EQMPN%COREG')
-         call parse_string(line, Ctrl%EqMPN%Coreg)
+         if (parse_string(line, Ctrl%EqMPN%Coreg)      /= 0) call h_p_e(label)
       case('CTRL%INVPAR%MQSTART')
-         call parse_string(line, Ctrl%Invpar%MqStart)
+         if (parse_string(line, Ctrl%Invpar%MqStart)   /= 0) call h_p_e(label)
       case('CTRL%INVPAR%MQSTEP')
-         call parse_string(line, Ctrl%Invpar%MqStep)
+         if (parse_string(line, Ctrl%Invpar%MqStep)    /= 0) call h_p_e(label)
       case('CTRL%INVPAR%MAXITER')
-         call parse_string(line, Ctrl%Invpar%MaxIter)
+         if (parse_string(line, Ctrl%Invpar%MaxIter)   /= 0) call h_p_e(label)
       case('CTRL%INVPAR%MAXPHASE')
-         call parse_string(line, Ctrl%Invpar%MaxPhase)
+         if (parse_string(line, Ctrl%Invpar%MaxPhase)  /= 0) call h_p_e(label)
       case('CTRL%INVPAR%CCJ')
-         call parse_string(line, Ctrl%Invpar%Ccj)
+         if (parse_string(line, Ctrl%Invpar%Ccj)       /= 0) call h_p_e(label)
       case('CTRL%INVPAR%XSCALE')
-         call parse_string(line, Ctrl%Invpar%XScale)
+         if (parse_string(line, Ctrl%Invpar%XScale)    /= 0) call h_p_e(label)
       case('CTRL%INVPAR%XLLIM')
-         call parse_string(line, Ctrl%Invpar%XLLim)
+         if (parse_string(line, Ctrl%Invpar%XLLim)     /= 0) call h_p_e(label)
       case('CTRL%INVPAR%XULIM')
-         call parse_string(line, Ctrl%Invpar%XULim)
+         if (parse_string(line, Ctrl%Invpar%XULim)     /= 0) call h_p_e(label)
       case('CTRL%QC%MAXJ')
-         call parse_string(line, Ctrl%QC%MaxJ)
+         if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
       case('CTRL%QC%MAXS')
-         call parse_string(line, Ctrl%QC%MaxS)
+         if (parse_string(line, Ctrl%QC%MaxS)          /= 0) call h_p_e(label)
       case default
-         print*,'ERROR: ReadDriver(): Unknown option ',trim(label)
+         print*,'ERROR: ReadDriver(): Unknown option: ',trim(label)
+         stop error_stop_code
       end select
    end do
+
 
    ! --------------------------------------------------------------------------
    ! Things that had to be moved to after the optional lines
@@ -808,6 +827,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          Ctrl%Ind%XI_Ni(i2) = i
       end if
    end do
+
 
    !----------------------------------------------------------------------------
    ! Now do some checks
@@ -898,5 +918,21 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    deallocate(channel_lw_flag)
 
 end subroutine Read_Driver
+
+
+! handle_parse_error (h_p_e)
+subroutine h_p_e(label)
+
+   use ECP_constants
+
+   implicit none
+
+   character(len=*) :: label
+
+   print*,'ERROR: ReadDriver(): Error parsing value for: ',trim(label)
+
+   stop error_stop_code
+
+end subroutine h_p_e
 
 end module read_driver_m

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: parsing.F90 
+! Name: parsing.F90
 !
 ! Purpose:
 ! A module containing the following routines for parsing strings:
@@ -14,9 +14,14 @@
 
 module parsing
    use common_constants
-   
+
    implicit none
-   
+
+   ! Return status constants (0 means no error).
+   integer, parameter :: PARSE_ERR_CONV     = 1 ! Conversion error
+   integer, parameter :: PARSE_ERR_TOO_FEW  = 2 ! Too few array elements
+   integer, parameter :: PARSE_ERR_TOO_MANY = 3 ! Too many array elements
+
    interface parse_string
       module procedure &
            parse_string_0d_strg, parse_string_0d_byte, parse_string_0d_sint, &
@@ -66,14 +71,14 @@ function parse_driver(lun, data, label) result(ios)
    integer,          intent(in)            :: lun
    character(len=*), intent(out)           :: data
    character(len=*), intent(out), optional :: label
-   
-   integer                    :: ios   
+
+   integer                    :: ios
    integer                    :: id
    character(len=path_length) :: line
 
    ios  = 0
    line = '#'
-   
+
    ! Loop over comment lines
    do while (ios == 0 .and. line(1:1) .eq. '#')
       read(lun, '(A)', iostat=ios) line
@@ -101,7 +106,7 @@ function parse_driver(lun, data, label) result(ios)
          data  = adjustl(line)
       end if
    end if
-   
+
 end function parse_driver
 
 !-------------------------------------------------------------------------------
@@ -135,6 +140,8 @@ end function parse_driver
 !
 ! History:
 ! 2014/12/17, AP: Original version.
+! 2015/01/19, GM: Better error handling and no setting of output to fill_value
+!    on error.
 !
 ! Bugs:
 ! None known.
@@ -189,68 +196,80 @@ end function parse_driver
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
 
-subroutine parse_string_0d_byte(in, out)
+integer function parse_string_0d_byte(in, out) result(status)
    implicit none
 
    character(len=*), intent(in)  :: in
    integer(byte),    intent(out) :: out
    integer                       :: ios
-   
-   read(in, *, iostat=ios) out
-   if (ios /= 0) out = byte_fill_value
-end subroutine parse_string_0d_byte
 
-subroutine parse_string_0d_sint(in, out)
+   status = 0
+
+   read(in, *, iostat=ios) out
+   if (ios /= 0) status = PARSE_ERR_CONV
+end function parse_string_0d_byte
+
+integer function parse_string_0d_sint(in, out) result(status)
    implicit none
 
    character(len=*), intent(in)  :: in
    integer(sint),    intent(out) :: out
    integer                       :: ios
-   
-   read(in, *, iostat=ios) out
-   if (ios /= 0) out = sint_fill_value
-end subroutine parse_string_0d_sint
 
-subroutine parse_string_0d_lint(in, out)
+   status = 0
+
+   read(in, *, iostat=ios) out
+   if (ios /= 0) status = PARSE_ERR_CONV
+end function parse_string_0d_sint
+
+integer function parse_string_0d_lint(in, out) result(status)
    implicit none
 
    character(len=*), intent(in)  :: in
    integer(lint),    intent(out) :: out
    integer                       :: ios
-   
-   read(in, *, iostat=ios) out
-   if (ios /= 0) out = lint_fill_value
-end subroutine parse_string_0d_lint
 
-subroutine parse_string_0d_sreal(in, out)
+   status = 0
+
+   read(in, *, iostat=ios) out
+   if (ios /= 0) status = PARSE_ERR_CONV
+end function parse_string_0d_lint
+
+integer function parse_string_0d_sreal(in, out) result(status)
    implicit none
 
    character(len=*), intent(in)  :: in
    real(sreal),      intent(out) :: out
    integer                       :: ios
-   
-   read(in, *, iostat=ios) out
-   if (ios /= 0) out = sreal_fill_value
-end subroutine parse_string_0d_sreal
 
-subroutine parse_string_0d_dreal(in, out)
+   status = 0
+
+   read(in, *, iostat=ios) out
+   if (ios /= 0) status = PARSE_ERR_CONV
+end function parse_string_0d_sreal
+
+integer function parse_string_0d_dreal(in, out) result(status)
    implicit none
 
    character(len=*), intent(in)  :: in
    real(dreal),      intent(out) :: out
    integer                       :: ios
-   
-   read(in, *, iostat=ios) out
-   if (ios /= 0) out = dreal_fill_value
-end subroutine parse_string_0d_dreal
 
-subroutine parse_string_0d_strg(in, out)
+   status = 0
+
+   read(in, *, iostat=ios) out
+   if (ios /= 0) status = PARSE_ERR_CONV
+end function parse_string_0d_dreal
+
+integer function parse_string_0d_strg(in, out) result(status)
    implicit none
 
    character(len=*), intent(in)  :: in
    character(len=*), intent(out) :: out
    character(len=1), parameter   :: excess(2) = ["'", '"']
    integer                       :: l, a, b
+
+   status = 0
 
    out = adjustl(in)
    if (any(excess == out(1:1))) then
@@ -267,7 +286,7 @@ subroutine parse_string_0d_strg(in, out)
    end if
 
    out = adjustl(out(a:b))
-end subroutine parse_string_0d_strg
+end function parse_string_0d_strg
 
 !-------------------------------------------------------------------------------
 ! Name: clean_driver_label
