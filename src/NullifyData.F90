@@ -14,6 +14,8 @@
 !
 ! History:
 !    10th Sep 2014, Greg McGarragh: Original version
+!    19th Dec 2015, Greg McGarragh: Added nullifications for recently added
+!       variables.
 !
 ! Bugs:
 !    None known.
@@ -43,6 +45,10 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
 
    nullify(MSI_Data%CloudFlags)
 
+   nullify(MSI_Data%cldtype)
+   nullify(MSI_Data%cloudmask)
+   nullify(MSI_Data%cccot_pre)
+
    nullify(MSI_Data%Geometry%Sol)
    nullify(MSI_Data%Geometry%Sat)
    nullify(MSI_Data%Geometry%Azi)
@@ -51,6 +57,10 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
    nullify(MSI_Data%Location%Lon)
 
    nullify(MSI_Data%LSFlags)
+
+   nullify(MSI_Data%lusflags)
+   nullify(MSI_Data%dem)
+   nullify(MSI_Data%nisemask)
 
    nullify(MSI_Data%time)
 
