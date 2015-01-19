@@ -229,6 +229,7 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/RTM_Pc.o \
            $(OBJS)/SADChan.o \
            $(OBJS)/SADLUT.o \
+           $(OBJS)/sad_util.o \
            $(OBJS)/SPixel.o \
            $(OBJS)/t_extrap_strat.o \
            $(OBJS)/WriteLog.o

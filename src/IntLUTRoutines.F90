@@ -99,8 +99,6 @@ include 'IntLUTTauSolRe.F90'
 !    13th Jan 2015, Adam Povey:
 !       Switch to array-based channel indexing rather than using offsets.
 !
-! $Id$
-!
 ! Bugs:
 !    None known.
 !

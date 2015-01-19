@@ -86,6 +86,7 @@
 !          solar/thermalchannels with respect to the channels actually processed,
 !          rather than the  MSI file.
 !    13th Jan 2015, Adam Povey: Remove First:Last channel indexing.
+!    19th Jan 2015, Greg McGarragh: Use make_sad_chan_num().
 !
 ! Bugs:
 !    None known.
@@ -98,6 +99,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    use Ctrl_def
    use ECP_Constants
+   use sad_util
 
    implicit none
 
@@ -131,36 +133,11 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    ! Loop over channels
    do i=1, Ctrl%Ind%Ny
-
       ! Generate channel file name from Ctrl struct info. This sets the channel
       ! to be used in instrument notation for reading from SAD.
-      write(*,*) 'Ctrl%Inst%Name(1:5): ', trim(Ctrl%Inst%Name(1:5))
 
-      if (Ctrl%Ind%Y_Id(i) < 10) then
-         if (Ctrl%Inst%Name(1:5) .ne. 'AVHRR') then
-            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
-         else
-            select case (Ctrl%Ind%Y_Id(i))
-            case (1)
-               chan_num='Ch1'
-            case (2)
-               chan_num='Ch2'
-            case (3)
-               chan_num='Ch3a'
-            case (4)
-               chan_num='Ch3b'
-            case (5)
-               chan_num='Ch4'
-            case (6)
-               chan_num='Ch5'
-            end select
-         end if
-
-      else
-         write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(i)
-      end if
-
-      write(*,*) 'chan_num read in: ', trim(adjustl(chan_num))
+      call make_sad_chan_num(Ctrl, i, chan_num)
+      write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
 
       chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // &
          '_' // trim(chan_num) // '.sad'

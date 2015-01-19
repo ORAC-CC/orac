@@ -48,9 +48,11 @@ $(OBJS)/ReadSAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
 $(OBJS)/RTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o DeallocRTM.F90 \
         ReadLwRTM_nc.F90 ReadSwRTM_nc.F90
 $(OBJS)/RTM_Pc.o: $(OBJS)/Ctrl.o AllocRTMPc.F90 DeallocRTMPc.F90
-$(OBJS)/SADChan.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o ReadSADChan.F90
+$(OBJS)/SADChan.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/sad_util.o \
+        ReadSADChan.F90
 $(OBJS)/SADLUT.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
-        AllocSADLUT.F90 DeallocSADLUT.F90 ReadSADLUT.F90
+        $(OBJS)/sad_util.o AllocSADLUT.F90 DeallocSADLUT.F90 ReadSADLUT.F90
+$(OBJS)/sad_util.o: $(OBJS)/Ctrl.o
 $(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/IntRoutines.o $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/planck.o \
         AllocSPixel.F90 DeallocSPixel.F90 GetGeometry.F90 GetIllum.F90 \

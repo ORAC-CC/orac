@@ -785,6 +785,8 @@ end subroutine create_lut_filename
 !       Fixed a bug in the channel indexing changes above.
 !      9th Jan 2015 Caroline Poulsen:
 !        Added Rfbd.
+!    19th Jan 2015, Greg McGarragh:
+!        Use make_sad_chan_num().
 !
 ! Bugs:
 !   None known.
@@ -795,6 +797,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
    use CTRL_def
    use SAD_Chan_def
+   use sad_util
 
    implicit none
 
@@ -846,31 +849,10 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
 
    do i=1, Ctrl%Ind%Ny
-      if (Ctrl%Ind%Y_Id(i) < 10) then
-         if (Ctrl%Inst%Name(1:5) .ne. 'AVHRR') then
-            write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i)
-         else
-            select case (Ctrl%Ind%Y_Id(i))
-            case(1)
-               chan_num='Ch1'
-            case(2)
-               chan_num='Ch2'
-            case(3)
-               chan_num='Ch3a'
-            case(4)
-               chan_num='Ch3b'
-            case(5)
-               chan_num='Ch4'
-            case(6)
-               chan_num='Ch5'
-            end select
-
-         end if
-      else
-         write(chan_num, '(a2,i2)') 'Ch',Ctrl%Ind%Y_Id(i)
-      end if
-      write(*,*) 'Channel number',trim(adjustl(chan_num))
-
+      ! Generate channel file name from Ctrl struct info. This sets the channel
+      ! to be used in instrument notation for reading from SAD.
+      call make_sad_chan_num(Ctrl, i, chan_num)
+      write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
 
       ! Read the Rd and Rfd LUTs from the Rd file for all channels (solar and
       ! thermal)
