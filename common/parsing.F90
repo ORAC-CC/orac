@@ -24,8 +24,9 @@ module parsing
 
    interface parse_string
       module procedure &
-           parse_string_0d_strg, parse_string_0d_byte, parse_string_0d_sint, &
-           parse_string_0d_lint, parse_string_0d_sreal, parse_string_0d_dreal, &
+           parse_string_0d_strg, parse_string_0d_logical, parse_string_0d_byte, &
+           parse_string_0d_sint, parse_string_0d_lint, parse_string_0d_sreal, &
+           parse_string_0d_dreal, &
            parse_string_1d_byte, parse_string_1d_sint, &
            parse_string_1d_lint, parse_string_1d_sreal, parse_string_1d_dreal, &
            parse_string_2d_byte, parse_string_2d_sint, &
@@ -208,6 +209,19 @@ integer function parse_string_0d_byte(in, out) result(status)
    read(in, *, iostat=ios) out
    if (ios /= 0) status = PARSE_ERR_CONV
 end function parse_string_0d_byte
+
+integer function parse_string_0d_logical(in, out) result(status)
+   implicit none
+
+   character(len=*), intent(in)  :: in
+   logical,          intent(out) :: out
+   integer                       :: ios
+
+   status = 0
+
+   read(in, *, iostat=ios) out
+   if (ios /= 0) status = PARSE_ERR_CONV
+end function parse_string_0d_logical
 
 integer function parse_string_0d_sint(in, out) result(status)
    implicit none
