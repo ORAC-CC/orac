@@ -82,6 +82,7 @@
 !    2014/12/29, GM: Fixed a bug in the channel indexing changes above.
 !    2015/01/15, AP: Adding Ctrl%Ind%Ch_Is. Revised setting of Ctrl%RS%B.
 !    2015/01/19, GM: Added error handling for parsing the driver file.
+!    2015/01/20, GM: Bug fix: any() was being used on uninitialized data.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -814,15 +815,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    i1 = 0
    i2 = 0
    do i=1, MaxStateVar
-      if (.not. any(Ctrl%Ind%X_Dy == i)) then
+      if (.not. any(Ctrl%Ind%X_Dy(1:Ctrl%Ind%Nx_Dy) == i)) then
          i0 = i0+1
          Ctrl%Ind%XI_Dy(i0) = i
       end if
-      if (.not. any(Ctrl%Ind%X_Tw == i)) then
+      if (.not. any(Ctrl%Ind%X_Tw(1:Ctrl%Ind%Nx_Tw) == i)) then
          i1 = i1+1
          Ctrl%Ind%XI_Tw(i1) = i
       end if
-      if (.not. any(Ctrl%Ind%X_Ni == i)) then
+      if (.not. any(Ctrl%Ind%X_Ni(1:Ctrl%Ind%Nx_Ni) == i)) then
          i2 = i2+1
          Ctrl%Ind%XI_Ni(i2) = i
       end if
