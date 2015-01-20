@@ -53,6 +53,7 @@
 !    2015/01/12, AP: Simplify logic for identifying missing channels.
 !    2015/01/15, GM: Bug fix in illumination logic under twilight conditions and
 !       removed old logic.
+!    2015/01/20, GM: Fixed my previous commit.
 !
 ! Bugs:
 !    None known.
@@ -218,10 +219,8 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
             ! Twilight
             else if (MSI_Data%Geometry%Sol(i, j, 1) .ge. Ctrl%MaxSolZen .and. &
                      MSI_Data%Geometry%Sol(i, j, 1) .le. Ctrl%Sunset) then
-               if (n_ir_bad .eq. 1) then
-                  if (i_missing_ir .eq. 1) then
-                     MSI_Data%Illum(i,j,view) = ITwi
-                  endif
+               if (n_ir_bad .eq. 0) then
+                  MSI_Data%Illum(i,j,view) = ITwi
                endif
 
             ! Night time
