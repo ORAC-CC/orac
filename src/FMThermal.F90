@@ -88,6 +88,8 @@
 !       Replacing ThF:ThL with SPixel index array. Eliminate RTM_Pc%Tac, Tbc.
 !    12th Jan 2015, Adam Povey:
 !       Remove CRP arguments.
+!    21th Jan 2015, Greg McGarragh:
+!       Fixed some cases were the required 'Thermal' subscripts were missing.
 !
 ! Bugs:
 !   None known.
@@ -144,7 +146,6 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
 #endif
    status = 0
 
-   ! Use ThF and ThL to access the first and last required thermal channels from
    ! Subscripts for thermal channels in RTM arrays
    Thermal = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(:SPixel%Ind%NThermal)
 
@@ -167,20 +168,20 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
 
    ! Update below cloud radiance after interpolation to Pc
    RTM_Pc%LW%Rbc_up(Thermal) = RTM_Pc%LW%Rbc_up(Thermal) + &
-      (delta_Ts * Es_dB_dTs * RTM_Pc%LW%Tbc)
+      (delta_Ts * Es_dB_dTs * RTM_Pc%LW%Tbc(Thermal))
 
    ! Calculate overcast radiances at cloud pressure level
    R_over = (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd)  + &
              RTM_Pc%LW%B(Thermal)       * CRP(:,IEm)  + &
-             RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) * RTM_Pc%LW%Tac + &
-             RTM_Pc%LW%Rac_up(Thermal)
+             RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) * &
+             RTM_Pc%LW%Tac(Thermal) + RTM_Pc%LW%Rac_up(Thermal)
 
    ! Calculate part cloudy radiances (a linear combination of R_clear and R_over)
 
    R = (X(IFr) * R_over) + ((1.0 - X(IFr)) * R_clear)
 
    ! Calculate product X%frac*Tac (for efficiency)
-   fTac = X(IFr) * RTM_Pc%LW%Tac
+   fTac = X(IFr) * RTM_Pc%LW%Tac(Thermal)
 
    ! Calculate radiance gradients
 
@@ -208,7 +209,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    d_R(:,IFr) = R_over - R_clear
 
    ! Gradient w.r.t. surface temperature, Ts
-   d_R(:,ITs) = fTac * Es_dB_dTs * RTM_Pc%LW%Tbc * CRP(:,ITd) + &
+   d_R(:,ITs) = fTac * Es_dB_dTs * RTM_Pc%LW%Tbc(Thermal) * CRP(:,ITd) + &
       (1.0 - X(IFr)) * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1)
 
    ! Convert radiances to brightness temperatures
