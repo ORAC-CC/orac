@@ -149,7 +149,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    SPixel%RTM%LW%Np = RTM%LW%Np
    SPixel%RTM%SW%Np = RTM%SW%Np
 
-   ! Overall RTM transmittances and reflectances
+   ! Overall RTM transmittances and reflectances (Reallocated in GetSPixel)
 
    allocate(SPixel%RTM%Tsf_o         (Ctrl%Ind%NSolar))
    allocate(SPixel%RTM%Tsf_v         (Ctrl%Ind%NSolar))
@@ -164,7 +164,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    allocate(SPixel%Geom%SEC_o        (Ctrl%Ind%NViews))
    allocate(SPixel%Geom%SEC_v        (Ctrl%Ind%NViews))
 
-   ! Get_Surface arrays
+   ! Get_Surface arrays (Reallocated in GetSurface)
 
    allocate(SPixel%Rs                (Ctrl%Ind%NSolar))
    allocate(SPixel%SRs               (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
@@ -173,15 +173,13 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
       allocate(SPixel%SRs2           (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
    end if
 
-   !  Solar constant
+   !  Solar constant (Reallocated in GetSPixel)
 
    allocate(SPixel%f0                (Ctrl%Ind%NSolar))
 
    ! Initialise super-pixel active and inactive state vectors, measurements and
    ! errors. Allocate and initialise here in case the first (few) SPixel(s)
-   ! aren't processed and these arrays remain unallocated. Write_Diag will try
-   ! to write them out for all SPixels. Get_SPixel (or subordinate functions)
-   ! will reallocate them.
+   ! aren't processed and these arrays remain unallocated.
 
    SPixel%Ind%Ny = 0
    SPixel%Ind%NSolar = 0
@@ -189,20 +187,18 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    allocate(SPixel%Illum(Ctrl%Ind%NViews))
 
+   ! These reallocated in GetMeasurements
    allocate(SPixel%Ym(1))
-
    allocate(SPixel%Sy(1,1))
-
    allocate(SPixel%ViewIdx(1))
    SPixel%ViewIdx(1)=1
 
+   ! These reallocated in GetIllum
    SPixel%Nx = MaxStateVar
    allocate(SPixel%X(SPixel%Nx))
    SPixel%X  = 0
    allocate(SPixel%XI(SPixel%Nx))
    SPixel%XI = 0
-
-   ! Not strictly required, but tidier than using if(.not.allocated())
    allocate(SPixel%Ind%YSolar(Ctrl%Ind%NSolar))
    allocate(SPixel%Ind%YThermal(Ctrl%Ind%NThermal))
    allocate(SPixel%Ind%YMixed(Ctrl%Ind%NMixed))

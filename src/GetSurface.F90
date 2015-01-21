@@ -129,9 +129,11 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
-!    2015/01/15, AP: Facilitate channel indexing in :arbitrary order.
+!    2015/01/15, AP: Facilitate channel indexing in arbitrary order.
 !    2015/01/15, AP: The preprocessed MODIS albedo data was always rejected for
 !       Ch5 of AATSR. There is no reason to do so. This has been removed.
+!    2015/01/20, AP: Tidying redundant code.
+!    2015/01/21, AP: Move allocations of reflectance arrays here.
 !
 ! Bugs:
 !    AS, Mar 2011. The Aux method albedo code includes specific handling for
@@ -165,7 +167,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    real           :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
    real           :: SPixel_b2( SPixel%Ind%NSolar, MaxRho_XX)
    real           :: SPixel_Sb2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX)
-   integer        :: i, ii, ic, j, jj, intflag
+   integer        :: i, ii, ic, j, jj, iflag
 !  integer        :: qc1,qc2 ! N.B. qc vars are set but not used
    real           :: solar_factor
 
@@ -179,6 +181,18 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    SPixel_Sb            = 0.0
    SPixel_b2            = 0.0
    SPixel_Sb2           = 0.0
+
+   ! Reallocate surface reflectances to appropriate length
+   deallocate(SPixel%Rs)
+   allocate(SPixel%Rs(SPixel%Ind%NSolar))
+   deallocate(SPixel%SRs)
+   allocate(SPixel%SRs(SPixel%Ind%NSolar, SPixel%Ind%NSolar))
+   if (Ctrl%RS%use_full_brdf) then
+      deallocate(SPixel%Rs2)
+      allocate(SPixel%Rs2(SPixel%Ind%NSolar, MaxRho_XX))
+      deallocate(SPixel%SRs2)
+      allocate(SPixel%SRs2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX))
+   end if
 
    ! Get the surface reflectances etc for the super pixel array according to
    ! the specified method
@@ -207,44 +221,28 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       Sb = Ctrl%Rs%Sb
       b  = Ctrl%Rs%b
 
+      ! sea flags set to 0 in SPixel%Surface%Flags, land flags set to 1
+      iflag = SPixel%Surface%Flags + 1
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
-         ! Calculate b (sea then land, sea flags set at 0 in SPixel%Surface%Flags,
-         !                            land flags set at 1 in SPixel%Surface%Flags)
-         intflag = SPixel%Surface%Flags
+         ! Calculate b
+         SPixel_b(i) = float(SPixel%Mask) * b(ii,iflag)
 
-         SPixel_b(i) = float(-(intflag-1)) * float(SPixel%Mask) * b(ii,1)
-
-         SPixel_b(i) = SPixel_b(i) + (float(intflag) * float(SPixel%Mask) * b(ii,2))
 
          ! Calculate Sb
 
-         ! On diagonals (sea then land)
-
-         ! Sea
-         SPixel_Sb(i,i) = float(-(intflag-1)) * float(SPixel%Mask) * &
-			  b(ii,1) * b(ii,1) * Sb(ii,1) * Sb(ii,1)
-
-         ! Land
-	 SPixel_Sb(i,i) = SPixel_Sb(i,i) + (float(intflag) * float(SPixel%Mask) * &
-                          b(ii,2) * b(ii,2) * Sb(ii,2) * Sb(ii,2))
+         ! On diagonals
+         SPixel_Sb(i,i) = float(SPixel%Mask) * &
+			  b(ii,iflag) * b(ii,iflag) * Sb(ii,iflag) * Sb(ii,iflag)
 
          ! Off diagonals (loop over half of the matrix, and swap indices for
          ! other half, sea then land)
-
          do j = i+1, SPixel%Ind%NSolar
             jj = SPixel%spixel_y_solar_to_ctrl_y_solar_index(j)
 
-            ! Sea
-	    SPixel_Sb(i,j) = float(-(intflag-1)) * float(SPixel%Mask) * &
-	                     b(ii,1) * b(jj,1) * Sb(ii,1) * Sb(jj,1) * Ctrl%Rs%Cb
-
-	    SPixel_Sb(j,i) = SPixel_Sb(i,j)
-
-            ! Land
-	    SPixel_Sb(i,j) = SPixel_Sb(i,j) + (float(intflag) * float(SPixel%Mask) * &
-                             b(ii,2) * b(jj,2) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
+	    SPixel_Sb(i,j) = float(SPixel%Mask) * Ctrl%Rs%Cb * &
+	                     b(ii,iflag) * b(jj,iflag) * Sb(ii,iflag) * Sb(jj,iflag)
 
 	    SPixel_Sb(j,i) = SPixel_Sb(i,j)
          end do
@@ -327,6 +325,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       end do
 
       ! Calculate Sb
+      iflag = SPixel%Surface%Flags + 1
       if (status == 0) then
          SPixel%Surface%NLand = SPixel%Surface%Flags
          SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
@@ -338,16 +337,8 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
             ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
             ! On diagonals
-            intflag = SPixel%Surface%Flags
-
-            if (SPixel%Surface%Sea == 1) then
-               SPixel_Sb(i,i) = float(-(SPixel%Surface%Flags-1)) * float(SPixel%Mask) * &
-                                SPixel_b(i) * SPixel_b(i) * Sb(ii,1) * Sb(ii,1)
-
-            else
-               SPixel_Sb(i,i) = SPixel_Sb(i,i) + (float(intflag) * float(SPixel%Mask) * &
-                                SPixel_b(i) * SPixel_b(i) * Sb(ii,2) * Sb(ii,2))
-            end if
+            SPixel_Sb(i,i) = float(SPixel%Mask) * &
+                             SPixel_b(i) * SPixel_b(i) * Sb(ii,iflag) * Sb(ii,iflag)
 
             if (Ctrl%RS%use_full_brdf) &
                SPixel_Sb2(i,i,:) = SPixel_Sb(i,i)
@@ -364,14 +355,8 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
             do j = i+1, SPixel%Ind%NSolar
                jj = SPixel%spixel_y_solar_to_ctrl_y_solar_index(j)
 
-               if (SPixel%Surface%Sea == 1) then
-                  SPixel_Sb(i,j) = float(-(intflag-1)) * float(SPixel%Mask) * &
-                                    SPixel_b(i) * SPixel_b(j) * Sb(ii,1) * Sb(jj,1) * Ctrl%Rs%Cb
-
-               else
-                  SPixel_Sb(i,j) = SPixel_Sb(i,j) + (float(intflag) * float(SPixel%Mask) * &
-                                    SPixel_b(i) * SPixel_b(j) * Sb(ii,2) * Sb(jj,2) * Ctrl%Rs%Cb)
-               end if
+               SPixel_Sb(i,j) = float(SPixel%Mask) * Ctrl%Rs%Cb * &
+                                SPixel_b(i) * SPixel_b(j) * Sb(ii,iflag) * Sb(jj,iflag)
 
                if (Ctrl%RS%use_full_brdf) &
                   SPixel_Sb2(i,j,:) = SPixel_Sb(i,j)

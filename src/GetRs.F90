@@ -57,6 +57,8 @@
 !       Some cleanup.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
+!    21st Jan 2015, Adam Povey:
+!       Corrected array dimensions.
 !
 ! Bugs:
 !    None known.
@@ -76,10 +78,10 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, stat
 
    type(CTRL_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   real,           intent(in)    :: SPixel_b (Ctrl%Ind%NSolar)
-   real,           intent(in)    :: SPixel_Sb(Ctrl%Ind%NSolar, Ctrl%Ind%NSolar)
-   real,           intent(in)    :: SPixel_b2 (Ctrl%Ind%NSolar, MaxRho_XX)
-   real,           intent(in)    :: SPixel_Sb2(Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX)
+   real,           intent(in)    :: SPixel_b (SPixel%Ind%NSolar)
+   real,           intent(in)    :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
+   real,           intent(in)    :: SPixel_b2 (SPixel%Ind%NSolar, MaxRho_XX)
+   real,           intent(in)    :: SPixel_Sb2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX)
    integer,        intent(out)   :: status
 
    ! Define local variables
@@ -89,12 +91,12 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, stat
 
    ! Check mask to see if pixel is 'good'
    if (SPixel%Mask == 1) then
-      SPixel%Rs(:)    = SPixel_b(:)
-      SPixel%SRs(:,:) = SPixel_Sb(:, :)
+      SPixel%Rs  = SPixel_b
+      SPixel%SRs = SPixel_Sb
 
       if (Ctrl%RS%use_full_brdf) then
-         SPixel%Rs2(:,:)    = SPixel_b2(:,:)
-         SPixel%SRs2(:,:,:) = SPixel_Sb2(:, :,:)
+         SPixel%Rs2  = SPixel_b2
+         SPixel%SRs2 = SPixel_Sb2
       end if
 
       if (SPixel%Surface%Flags == 1) then
