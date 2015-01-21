@@ -30,6 +30,7 @@
 ! 2013/05/16, MJ: changed filtering of angles wrt fill value: multi-view is
 !   accounted for.
 ! 2014/05/07, AP: Move contents of make_preproc_grid here. Update structures.
+! 2015/21/01, OS: bug fix in setting lon_i/lat_i min/max limits
 !
 ! $Id$
 !
@@ -94,7 +95,10 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
               preproc_dims%lon_offset)*preproc_dims%dellon, kind=lint) + 1
          lat_j=floor((imager_geolocation%latitude(i,j) + &
               preproc_dims%lat_offset)*preproc_dims%dellat, kind=lint) + 1
-         if (lon_i .gt. preproc_dims%max_lon) lon_i=preproc_dims%min_lon
+
+         if (lon_i .lt. preproc_dims%min_lon) lon_i=preproc_dims%min_lon
+         if (lat_j .lt. preproc_dims%min_lat) lat_j=preproc_dims%min_lat
+         if (lon_i .gt. preproc_dims%max_lon) lon_i=preproc_dims%max_lon
          if (lat_j .gt. preproc_dims%max_lat) lat_j=preproc_dims%max_lat
 
          if (all(imager_angles%satzen(i,j,:) .gt. sreal_fill_value)) then
