@@ -87,6 +87,8 @@
 !       Put Interpol_* common code into subroutine find_Pc().
 !     7th Jan 2015, Adam Povey:
 !       Use SPixel index arrays rather than ThF,ThL.
+!    21st Jan 2015, Adam Povey:
+!       Finishing the previous commit.
 !
 ! Bugs:
 !   None known.
@@ -175,15 +177,15 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
       do j = 1,SPixel%Ind%NThermal
          call spline(SPixel%RTM%LW%P, &
-            SPixel%RTM%LW%Tac(Thermal(j),:),d2Tac_dP2(Thermal(j),:))
+            SPixel%RTM%LW%Tac(Thermal(j),:),d2Tac_dP2(j,:))
          call spline(SPixel%RTM%LW%P, &
-            SPixel%RTM%LW%Tbc(Thermal(j),:),d2Tbc_dP2(Thermal(j),:))
+            SPixel%RTM%LW%Tbc(Thermal(j),:),d2Tbc_dP2(j,:))
          call spline(SPixel%RTM%LW%P, &
-            SPixel%RTM%LW%Rac_up(Thermal(j),:),d2Rac_up_dP2(Thermal(j),:))
+            SPixel%RTM%LW%Rac_up(Thermal(j),:),d2Rac_up_dP2(j,:))
          call spline(SPixel%RTM%LW%P, &
-            SPixel%RTM%LW%Rac_dwn(Thermal(j),:),d2Rac_dwn_dP2(Thermal(j),:))
+            SPixel%RTM%LW%Rac_dwn(Thermal(j),:),d2Rac_dwn_dP2(j,:))
          call spline(SPixel%RTM%LW%P, &
-            SPixel%RTM%LW%Rbc_up(Thermal(j),:),d2Rbc_up_dP2(Thermal(j),:))
+            SPixel%RTM%LW%Rbc_up(Thermal(j),:),d2Rbc_up_dP2(j,:))
       end do
 
       call spline(SPixel%RTM%LW%P,SPixel%RTM%LW%T,d2T_dP2)
@@ -207,10 +209,10 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
       ! Gradients of transmittance w.r.t. pressure (around Pc)
       do j = 1,SPixel%Ind%NThermal
-         RTM_Pc%LW%dTac_dPc(Thermal(j)) = (delta_Tac(Thermal(j)) / delta_p) - &
-              (k0 * d2Tac_dP2(Thermal(j),i)) + (k1 * d2Tac_dP2(Thermal(j),i+1))
-         RTM_Pc%LW%dTbc_dPc(Thermal(j)) = (delta_Tbc(Thermal(j)) / delta_p) - &
-              (k0 * d2Tbc_dP2(Thermal(j),i)) + (k1 * d2Tbc_dP2(Thermal(j),i+1))
+         RTM_Pc%LW%dTac_dPc(Thermal(j)) = (delta_Tac(j) / delta_p) - &
+              (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
+         RTM_Pc%LW%dTbc_dPc(Thermal(j)) = (delta_Tbc(j) / delta_p) - &
+              (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
       end do
 
       ! Change in radiances between RTM levels i and i+1
@@ -223,18 +225,12 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
       ! Gradients of radiances w.r.t. pressure (around Pc)
       do j = 1,SPixel%Ind%NThermal
-          RTM_Pc%LW%dRac_up_dPc(Thermal(j)) = &
-              (delta_Rac_up(Thermal(j)) / delta_p) - &
-              (k0 * d2Rac_up_dP2(Thermal(j),i)) + &
-              (k1 * d2Rac_up_dP2(Thermal(j),i+1))
-          RTM_Pc%LW%dRac_dwn_dPc(Thermal(j)) = &
-              (delta_Rac_dwn(Thermal(j)) / delta_p) - &
-              (k0 * d2Rac_dwn_dP2(Thermal(j),i)) + &
-              (k1 * d2Rac_dwn_dP2(Thermal(j),i+1))
-          RTM_Pc%LW%dRbc_up_dPc(Thermal(j)) = &
-              (delta_Rbc_up(Thermal(j)) / delta_p) - &
-              (k0 * d2Rbc_up_dP2(Thermal(j),i)) + &
-              (k1 * d2Rbc_up_dP2(Thermal(j),i+1))
+          RTM_Pc%LW%dRac_up_dPc(Thermal(j)) = (delta_Rac_up(j) / delta_p) - &
+              (k0 * d2Rac_up_dP2(j,i)) + (k1 * d2Rac_up_dP2(j,i+1))
+          RTM_Pc%LW%dRac_dwn_dPc(Thermal(j)) = (delta_Rac_dwn(j) / delta_p) - &
+              (k0 * d2Rac_dwn_dP2(j,i)) + (k1 * d2Rac_dwn_dP2(j,i+1))
+          RTM_Pc%LW%dRbc_up_dPc(Thermal(j)) = (delta_Rbc_up(j) / delta_p) - &
+              (k0 * d2Rbc_up_dP2(j,i)) + (k1 * d2Rbc_up_dP2(j,i+1))
       end do
 
       ! Change in temperature between RTM levels i and i+1
@@ -266,25 +262,25 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       do j = 1,SPixel%Ind%NThermal
          RTM_Pc%LW%Tac(Thermal(j)) = (dP * SPixel%RTM%LW%Tac(Thermal(j),i)) + &
               (p1 * SPixel%RTM%LW%Tac(Thermal(j),i+1)) + &
-              (k0 * d2Tac_dP2(Thermal(j),i)) + (k1 * d2Tac_dP2(Thermal(j),i+1))
+              (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
 
       ! Diff. in trans from gradient
          RTM_Pc%LW%Tbc(Thermal(j)) = (dP * SPixel%RTM%LW%Tbc(Thermal(j),i)) + &
               (p1 * SPixel%RTM%LW%Tbc(Thermal(j),i+1)) + &
-              (k0 * d2Tbc_dP2(Thermal(j),i)) + (k1 * d2Tbc_dP2(Thermal(j),i+1))
+              (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
 
       ! Interpolated radiances
          RTM_Pc%LW%Rac_up(Thermal(j)) = (dP * SPixel%RTM%LW%Rac_up(Thermal(j),i)) + &
               (p1 * SPixel%RTM%LW%Rac_up(Thermal(j),i+1)) + &
-              (k0 * d2Rac_up_dP2(Thermal(j),i)) + (k1 * d2Rac_up_dP2(Thermal(j),i+1))
+              (k0 * d2Rac_up_dP2(j,i)) + (k1 * d2Rac_up_dP2(j,i+1))
 
          RTM_Pc%LW%Rac_dwn(Thermal(j)) = (dP * SPixel%RTM%LW%Rac_dwn(Thermal(j),i)) + &
               (p1 * SPixel%RTM%LW%Rac_dwn(Thermal(j),i+1)) + &
-              (k0 * d2Rac_dwn_dP2(Thermal(j),i)) + (k1 * d2Rac_dwn_dP2(Thermal(j),i+1))
+              (k0 * d2Rac_dwn_dP2(j,i)) + (k1 * d2Rac_dwn_dP2(j,i+1))
 
          RTM_Pc%LW%Rbc_up(Thermal(j))  = (dP * SPixel%RTM%LW%Rbc_up(Thermal(j),i)) + &
               (p1 * SPixel%RTM%LW%Rbc_up(Thermal(j),i+1)) + &
-              (k0 * d2Rbc_up_dP2(Thermal(j),i)) + (k1 * d2Rbc_up_dP2(Thermal(j),i+1))
+              (k0 * d2Rbc_up_dP2(j,i)) + (k1 * d2Rbc_up_dP2(j,i+1))
       end do
 
       ! Interpolated Planck functions: calculate T and convert to B using T2R

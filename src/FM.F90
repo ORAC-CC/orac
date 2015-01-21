@@ -132,6 +132,8 @@
 !   20150112, CP: Bugfix to cloud albedo.
 !   20150112, AP: Replacing First:Last channel indexing with generic, array-based
 !      indexing.
+!   20150121, AP: Finishing the previous commit.
+!
 ! Bugs:
 !   None known.
 !
@@ -337,12 +339,12 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       do i=1, SPixel%Ind%NThermal
          write(bkp_lun,'(3a,f9.4,a,5f9.4)')'Channel: ', &
-	    SAD_Chan(SPixel%Ind%YThermal(i))%Desc,  &
+	    SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc,  &
 	    ' Rad ',Rad(i), ' dRad ',(d_Rad(i,j), j=1,MaxStateVar)
       end do
       do i=1, SPixel%Ind%NThermal
          write(bkp_lun,'(3a,f9.4,a,5f9.4)')'Channel: ', &
-	    SAD_Chan(SPixel%Ind%YThermal(i))%Desc, &
+	    SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc, &
 	    ' BT  ',BT(i), ' dBT  ',(d_BT(i,j), j=1,MaxStateVar)
       end do
       write(bkp_lun,'(/)')
@@ -350,9 +352,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       if (SPixel%Geom%Solzen(1) < Ctrl%MaxSolzen) then
          do i=1, SPixel%Ind%NSolar
             write(bkp_lun,'(3a,f9.4,a,6f9.4)')'Channel: ', &
-	       SAD_Chan(SPixel%Ind%YSolar(i))%Desc, &
-               ' Ref ',Ref(SPixel%Ind%YSolar(i)), &
-               ' dRef ', (d_Ref(SPixel%Ind%YSolar(i),j),j=1,MaxStateVar+1)
+	       SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Desc, &
+               ' Ref ',Ref(i), ' dRef ',(d_Ref(i,j),j=1,MaxStateVar+1)
 	 end do
          write(bkp_lun,'(/)')
 
@@ -365,9 +366,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
        do i=1, SPixel%Ind%NThermal
 	    write(bkp_lun,'(3a,f9.4,a,6f9.4)') 'Channel: ', &
-	       SAD_Chan(SPixel%Ind%YThermal(i))%Desc, &
+	       SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc, &
                ' Y: ',Y(SPixel%Ind%YThermal(i)),&
-	       ' dY_dX: ',(dY_dX(i,j),j=1,MaxStateVar+1)
+	       ' dY_dX: ',(dY_dX(SPixel%Ind%YThermal(i),j),j=1,MaxStateVar+1)
 	 end do
       end if
       write(bkp_lun,'(/)')

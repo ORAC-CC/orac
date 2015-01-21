@@ -76,6 +76,8 @@
 !       Cleaned up the code.
 !     5th Aug 2014, Greg McGarragh:
 !       Put Interpol_* common code into subroutine find_Pc().
+!    21st Jan 2015, Adam Povey:
+!       Updated channel indexing to array-based form.
 !
 ! Bugs:
 !    None known.
@@ -106,6 +108,8 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    integer :: i
    integer :: j
+   integer :: Solar(SPixel%Ind%NSolar)     ! Indices of solar channels
+                                           ! for RTM_Pc%SW
    real    :: dP ! Fractional distance of Pc from bottom of interval
    real    :: P1 ! Fractional distance of Pc from top of interval
    real    :: k0 ! Spline coefficient
@@ -122,6 +126,9 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    ! Set initial value of error status equal to zero (i.e. no error)
    status = 0
+
+   ! Subscripts for solar channels in RTM arrays
+   Solar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(:SPixel%Ind%NSolar)
 
    ! Search for Pc in the SW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
@@ -140,10 +147,10 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       ! Note: Implicit looping over instrument channels from here onwards
 
       do j = 1, SPixel%Ind%NSolar
-         call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
-            SPixel%RTM%SW%Tac(j,1:SPixel%RTM%SW%Np),d2Tac_dP2(j,1:SPixel%RTM%SW%Np))
-         call spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np),&
-             SPixel%RTM%SW%Tbc(j,1:SPixel%RTM%SW%Np),d2Tbc_dP2(j,1:SPixel%RTM%SW%Np))
+         call spline(SPixel%RTM%SW%P, &
+              SPixel%RTM%SW%Tac(Solar(j),:),d2Tac_dP2(j,:))
+         call spline(SPixel%RTM%SW%P, &
+              SPixel%RTM%SW%Tbc(Solar(j),:),d2Tbc_dP2(j,:))
       end do
 
       ! Change in pressure between RTM levels i and i+1
@@ -158,8 +165,8 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
       ! Change in transmittances between RTM levels i and i+1
       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
-      delta_Tac = SPixel%RTM%SW%Tac(:,i+1) - SPixel%RTM%SW%Tac(:,i)
-      delta_Tbc = SPixel%RTM%SW%Tbc(:,i+1) - SPixel%RTM%SW%Tbc(:,i)
+      delta_Tac = SPixel%RTM%SW%Tac(Solar,i+1) - SPixel%RTM%SW%Tac(Solar,i)
+      delta_Tbc = SPixel%RTM%SW%Tbc(Solar,i+1) - SPixel%RTM%SW%Tbc(Solar,i)
 
       ! Gradients of transmittance w.r.t. pressure (around Pc)
       do j = 1, SPixel%Ind%NSolar
@@ -179,14 +186,12 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       k1 = (((p1*p1*p1)-p1) * (delta_p*delta_p))/6.0
 
       do j = 1, SPixel%Ind%NSolar
-         RTM_Pc%SW%Tac(j) = (dP * SPixel%RTM%SW%Tac(j,i)) + &
-             (p1 * SPixel%RTM%SW%Tac(j,i+1)) + &
+         RTM_Pc%SW%Tac(j) = (dP * SPixel%RTM%SW%Tac(Solar(j),i)) + &
+             (p1 * SPixel%RTM%SW%Tac(Solar(j),i+1)) + &
              (k0 * d2Tac_dP2(j,i)) + (k1 * d2Tac_dP2(j,i+1))
-      end do
 
-      do j = 1, SPixel%Ind%NSolar
-         RTM_Pc%SW%Tbc(j) = (dP * SPixel%RTM%SW%Tbc(j,i)) + &
-             (p1 * SPixel%RTM%SW%Tbc(j,i+1)) + &
+         RTM_Pc%SW%Tbc(j) = (dP * SPixel%RTM%SW%Tbc(Solar(j),i)) + &
+             (p1 * SPixel%RTM%SW%Tbc(Solar(j),i+1)) + &
              (k0 * d2Tbc_dP2(j,i)) + (k1 * d2Tbc_dP2(j,i+1))
       end do
    end if
@@ -209,10 +214,10 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       end if
 
       write(bkp_lun,'(a)') 'Chan ind  Tac       Tbc       dTac_dPc  dTbc_dPc'
-      do i=1, SPixel%Ind%NY - SPixel%Ind%NThermal
+      do i=1, SPixel%Ind%NSolar
          write(bkp_lun,'(5x,i2,4(1x,f9.4))') i, &
-            RTM_Pc%SW%Tac(i), RTM_Pc%SW%Tbc(i), RTM_Pc%SW%dTac_dPc(i), &
-            RTM_Pc%SW%dTbc_dPc(i)
+            RTM_Pc%SW%Tac(Solar(i)), RTM_Pc%SW%Tbc(Solar(i)), &
+            RTM_Pc%SW%dTac_dPc(Solar(i)), RTM_Pc%SW%dTbc_dPc(Solar(i))
       end do
 
       write(bkp_lun, '(a,/)') 'Interpol_Solar_spline: end'

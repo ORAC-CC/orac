@@ -62,13 +62,15 @@
 !       Cleaned up the code.
 !     5th Aug 2014, Greg McGarragh:
 !       Put Interpol_* common code into subroutine find_Pc().
+!    21st Jan 2015, Adam Povey:
+!       Updated channel indexing to array-based form.
 !
 ! Bugs:
 !    None known.
 !
 ! $Id$
 !
-!------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
@@ -89,6 +91,8 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
    ! Define local variables
 
    integer :: i
+   integer :: Solar(SPixel%Ind%NSolar)     ! Indices of solar channels
+                                           ! for RTM_Pc%SW
    real    :: delta_p                      ! Difference in pressure between
                                            ! consecutive RTM levels
    real    :: delta_Tac(SPixel%Ind%NSolar) ! Difference in Tac between
@@ -106,6 +110,9 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    ! Set initial value of error status equal to zero (i.e. no error)
    status = 0
+
+   ! Subscripts for solar channels in RTM arrays
+   Solar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(:SPixel%Ind%NSolar)
 
    ! Search for Pc in the SW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
@@ -129,12 +136,12 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
       ! Change in transmittances between RTM levels i and i+1
       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
-      delta_Tac = SPixel%RTM%SW%Tac(:,i+1) - SPixel%RTM%SW%Tac(:,i)
-      delta_Tbc = SPixel%RTM%SW%Tbc(:,i+1) - SPixel%RTM%SW%Tbc(:,i)
+      delta_Tac = SPixel%RTM%SW%Tac(Solar,i+1) - SPixel%RTM%SW%Tac(Solar,i)
+      delta_Tbc = SPixel%RTM%SW%Tbc(Solar,i+1) - SPixel%RTM%SW%Tbc(Solar,i)
 
       ! Gradients of transmittance w.r.t. pressure (around Pc)
-      RTM_Pc%SW%dTac_dPc = delta_Tac / delta_p
-      RTM_Pc%SW%dTbc_dPc = delta_Tbc / delta_p
+      RTM_Pc%SW%dTac_dPc(Solar) = delta_Tac / delta_p
+      RTM_Pc%SW%dTbc_dPc(Solar) = delta_Tbc / delta_p
 
       ! Interpolated transmittances
       ! (Sign conventions same as for delta_p. If Pc is outwith the RTM pressure
@@ -146,14 +153,14 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
       delta_Pc = Pc - SPixel%RTM%SW%P(i)
 
       ! Diff. in trans. from gradient
-      delta_Tc = delta_Pc * RTM_Pc%SW%dTac_dPc
+      delta_Tc = delta_Pc * RTM_Pc%SW%dTac_dPc(Solar)
       ! Abs. above cloud trans.
-      RTM_Pc%SW%Tac = SPixel%RTM%SW%Tac(:,i) + delta_Tc
+      RTM_Pc%SW%Tac(Solar) = SPixel%RTM%SW%Tac(Solar,i) + delta_Tc
 
       ! Diff. in trans. from gradient
-      delta_Tc = delta_Pc * RTM_Pc%SW%dTbc_dPc
+      delta_Tc = delta_Pc * RTM_Pc%SW%dTbc_dPc(Solar)
       ! Abs. below cloud trans.
-      RTM_Pc%SW%Tbc = SPixel%RTM%SW%Tbc(:,i) + delta_Tc
+      RTM_Pc%SW%Tbc(Solar) = SPixel%RTM%SW%Tbc(Solar,i) + delta_Tc
    end if
 
    ! Open breakpoint file if required, and write our transmittances etc.
@@ -173,10 +180,10 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
       end if
 
       write(bkp_lun,'(a)') 'Chan ind  Tac       Tbc       dTac_dPc  dTbc_dPc'
-      do i=1, SPixel%Ind%NY - SPixel%Ind%NThermal
+      do i=1, SPixel%Ind%NSolar
       	 write(bkp_lun,'(5x,i2,4(1x,f9.4))') i, &
-	    RTM_Pc%SW%Tac(i), RTM_Pc%SW%Tbc(i), RTM_Pc%SW%dTac_dPc(i), &
-	    RTM_Pc%SW%dTbc_dPc(i)
+	    RTM_Pc%SW%Tac(Solar(i)), RTM_Pc%SW%Tbc(Solar(i)), &
+	    RTM_Pc%SW%dTac_dPc(Solar(i)), RTM_Pc%SW%dTbc_dPc(Solar(i))
       end do
 
       write(bkp_lun, '(a,/)') 'Interpol_Solar: end'

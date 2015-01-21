@@ -117,6 +117,8 @@
 !       Eliminate write to RTM_Pc%Tac, Tbc.
 !    15th Jan 2015, Adam Povey:
 !       Facilitate channel indexing in arbitrary order.
+!    21st Jan 2015, Adam Povey:
+!       Finishing the last commit.
 !
 ! Bugs:
 !   None known.
@@ -263,6 +265,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    integer, parameter :: i_equation_form = 1
 
    integer :: i
+   integer :: Solar(SPixel%Ind%NSolar)
    real    :: a(SPixel%Ind%NSolar)
    real    :: b(SPixel%Ind%NSolar)
    real    :: c(SPixel%Ind%NSolar)
@@ -309,8 +312,12 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
 #endif
+
    status = 0
 
+   ! Subscripts for solar channels in RTM arrays
+   Solar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(:SPixel%Ind%NSolar)
+      
    ! Interpolate cloud radiative property LUT data to the current Tau, Re values.
    ! Note that Set_CRP_Solar interpolates values for all solar channels, except
    ! in the case of Td. This is interpolated by SetCRPThermal, which is called
@@ -318,31 +325,29 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    call Set_CRP_Solar(Ctrl, SPixel%Ind, SPixel%spixel_y_solar_to_ctrl_y_index, &
         GZero, SAD_LUT, CRP, d_CRP, status)
 
-   ! Calculate above cloud (ac) beam transmittances
-   do i=1,SPixel%Ind%NSolar
+   do i=1, SPixel%Ind%NSolar
+      ! Calculate above cloud (ac) beam transmittances
       ! At solar zenith angle:
-      Tac_0(i) = RTM_Pc%SW%Tac(i) ** &
+      Tac_0(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
            SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
       ! At sensor viewing angle:
-      Tac_v(i) = RTM_Pc%SW%Tac(i) ** &
-      SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+      Tac_v(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
+           SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+
+      ! Calculate below cloud (bc) beam transmittances      
+      ! At solar zenith angle:
+      Tbc_0(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
+           SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+      ! At sensor viewing angle:
+      Tbc_v(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
+           SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+      ! At sensor viewing angle:
+      Tbc_d(i) = RTM_Pc%SW%Tbc(Solar(i)) ! ** (1. / cos(66. * d2r))
    end do
 
    ! Calculate solar transmittance from TOA to cloud-top times the viewing
    ! transmittance from cloud-top to TOA
    Tac_0v = Tac_0 * Tac_v
-
-   ! Calculate below cloud (bc) beam transmittances
-   do i=1,SPixel%Ind%NSolar
-      ! At solar zenith angle:
-      Tbc_0(i) = RTM_Pc%SW%Tbc(i) ** &
-           SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-      ! At sensor viewing angle:
-      Tbc_v(i) = RTM_Pc%SW%Tbc(i) ** &
-           SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-      ! At sensor viewing angle:
-      Tbc_d(i) = RTM_Pc%SW%Tbc(i) ! ** (1. / cos(66. * d2r))
-   end do
 
    ! Calculate transmittance from cloud to surface times transmittance from
    ! surface to cloud
@@ -393,14 +398,15 @@ if (.not. Ctrl%RS%use_full_brdf) then
       Tbc_dd, T_all, S, S_dnom, Sp, d_REF)
 
    ! Derivative w.r.t. cloud-top pressure, P_c
-   do i=1,SPixel%Ind%NSolar
+   do i=1, SPixel%Ind%NSolar
       d_REF(i,IPc) = X(IFr) * &
-         (1.0 * RTM_Pc%SW%dTac_dPc(i) * &
+         (1.0 * RTM_Pc%SW%dTac_dPc(Solar(i)) * &
                 (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) + &
                  SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))) &
-              * REF_over(i) / RTM_Pc%SW%Tac(i)) + &
-         (2.0 * RTM_Pc%SW%dTbc_dPc(i) * Tac_0v(i) * S(i) * RTM_Pc%SW%Tbc(i) * &
-              ((1.0/Tbc_dd(i)) + (CRP(i,IRFd) * SPixel%Rs(i) / S_dnom(i))))
+              * REF_over(i) / RTM_Pc%SW%Tac(Solar(i))) + &
+         (2.0 * RTM_Pc%SW%dTbc_dPc(Solar(i)) * Tac_0v(i) * S(i) * &
+                RTM_Pc%SW%Tbc(Solar(i)) * &
+                (1.0/Tbc_dd(i) + CRP(i,IRFd) * SPixel%Rs(i) / S_dnom(i)))
    end do
 
    ! Derivative w.r.t. cloud fraction, f
@@ -410,7 +416,7 @@ if (.not. Ctrl%RS%use_full_brdf) then
    d_REF(:,ITs) = 0.0 ! Constant and zero
 
    ! Derivative w.r.t. surface reflectance, R_s
-   do i=1,SPixel%Ind%NSolar
+   do i=1, SPixel%Ind%NSolar
       d_REF(i,IRs) = &
          (X(IFr) * Tac_0v(i) * &
              (Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc_dd(i) / S_dnom(i))) + &
@@ -479,16 +485,16 @@ else
       Tbc_dd, SPixel%Rs2, d_REF(:,IRe), a, b, c)
 
    ! Calculate the derivatives of the above cloud (ac) beam transmittances
-   do i=1,SPixel%Ind%NSolar
+   do i=1, SPixel%Ind%NSolar
       ! Above cloud at solar zenith angle:
-      Tac_0_l(i) = RTM_Pc%SW%dTac_dPc(i) * &
+      Tac_0_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
          SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tac(i) ** &
+         RTM_Pc%SW%Tac(Solar(i)) ** &
             (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
       ! Above cloud at viewing angle:
-      Tac_v_l(i) = RTM_Pc%SW%dTac_dPc(i) * &
+      Tac_v_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
          SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tac(i) ** &
+         RTM_Pc%SW%Tac(Solar(i)) ** &
             (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
    end do
 
@@ -497,17 +503,19 @@ else
    Tac_0v_l = Tac_0_l * Tac_v + Tac_0 * Tac_v_l
 
    ! Calculate the derivatives of the below cloud (bc) beam transmittances
-   do i=1,SPixel%Ind%NSolar
+   do i=1, SPixel%Ind%NSolar
       ! At solar zenith angle:
-      Tbc_0_l(i) = RTM_Pc%SW%dTbc_dPc(i) * &
+      Tbc_0_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
          SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tbc(i) ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(i)) - 1.)
+         RTM_Pc%SW%Tbc(Solar(i)) ** &
+            (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
       ! At sensor viewing angle:
-      Tbc_v_l(i) = RTM_Pc%SW%dTbc_dPc(i) * &
+      Tbc_v_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
          SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tbc(i) ** (SPixel%Geom%SEC_v(SPixel%ViewIdx(i)) - 1.)
+         RTM_Pc%SW%Tbc(Solar(i)) ** &
+            (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
       ! At sensor viewing angle:
-      Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(i) ! * (1. / cos(66. * d2r)) * RTM_Pc%SW%Tbc(i) ** (1. / cos(66. * d2r) - 1.)
+      Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) ! * (1. / cos(66. * d2r)) * RTM_Pc%SW%Tbc(i) ** (1. / cos(66. * d2r) - 1.)
    end do
 
    ! Calculate the derivative of the diffuse transmittance from cloud to
@@ -594,7 +602,7 @@ end if
          write(bkp_lun,*)'FM_Solar:'
       end if
 
-      do i=SPixel%Ind%SolarFirst, SPixel%Ind%SolarLast
+      do i=1, SPixel%Ind%NSolar
       	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
 	    ' Ref:         ', Ref(i)
       	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
@@ -617,7 +625,7 @@ end if
 	    ' CRP(:,IRFd): ',CRP(i,IRFd)
       end do
 
-      do i=SPixel%Ind%SolarFirst, SPixel%Ind%SolarLast
+      do i=1, SPixel%Ind%NSolar
       	 write(bkp_lun,'(a,i2,a,6f9.4)') 'Channel index: ', i, &
 	    ' dRef: ', (d_Ref(i,j),j=1,MaxStateVar+1)
       end do

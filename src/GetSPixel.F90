@@ -218,6 +218,7 @@
 !       rather than the MSI file.
 !    13th Jan 2015, Adam Povey: Switching to Ctrl%Ind%Ch_Is rather than any().
 !       Removing First:Last channel indexing.
+!    21st Jan 2015, Adam Povey: Moved allocated of SPixel%RTM%... here.
 !
 ! Bugs:
 !    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -416,13 +417,13 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 !              write(*,*)  'WARNING: Get_Surface()', stat
                SPixel%QC = ibset(SPixel%QC, SPixSurf)
             else
-               do i=1,Ctrl%Ind%NSolar
+               do i=1,SPixel%Ind%NSolar
                   SPixel%Rs(i) = SPixel%Rs(i) &
-                       / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+                       / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
 
                    if (Ctrl%RS%use_full_brdf) then
                       SPixel%Rs2(i,:) = SPixel%Rs2(i,:) &
-                         / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+                        / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
                    end if
                end do
             end if
@@ -448,7 +449,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
       if (stat == 0 .and. SPixel%Ind%NSolar > 0) then
          ! Set the solar constant for the solar channels used in this SPixel.
-
+         deallocate(SPixel%f0)
+         allocate(SPixel%f0(SPixel%Ind%NSolar))
          do i=1,SPixel%Ind%NSolar
             SPixel%f0(i) = &
                  SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Solar%f0
@@ -457,7 +459,16 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          ! Calculate transmittances along the slant paths (solar and viewing)
          ! Pick up the "purely solar" channel values from the SW RTM, and the
          ! mixed channels from the LW RTM.
-         do i=1,SPixel%Ind%NSolar
+         deallocate(SPixel%RTM%Tsf_o)
+         allocate(SPixel%RTM%Tsf_o         (SPixel%Ind%NSolar))
+         deallocate(SPixel%RTM%Tsf_v)
+         allocate(SPixel%RTM%Tsf_v         (SPixel%Ind%NSolar))
+         deallocate(SPixel%RTM%Ref_clear)
+         allocate(SPixel%RTM%Ref_clear     (SPixel%Ind%NSolar))
+         deallocate(SPixel%RTM%dRef_clear_dRs)
+         allocate(SPixel%RTM%dRef_clear_dRs(SPixel%Ind%NSolar))
+        
+         do i=1, SPixel%Ind%NSolar
             ictrl = SPixel%spixel_y_solar_to_ctrl_y_index(i)
             ispix = SPixel%Ind%YSolar(i)
             isolar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
@@ -510,7 +521,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    end if
 
    ! Open breakpoint file if required, and write out reflectances and gradients.
-
+   ! Definitely not functional.
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_Get_SPixel) then
       call Find_Lun(bkp_lun)
