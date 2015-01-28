@@ -809,8 +809,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
             Dy_Kb   = matmul(Dy, Kb)
 
-            Sb(SPixel%NxI+1:, SPixel%NxI+1:) = &
-               SPixel%SRs(1:SPixel%Ind%NSolar, 1:SPixel%Ind%NSolar)
+            Sb(SPixel%NxI+1:, SPixel%NxI+1:) = SPixel%SRs
 
             Diag%Ss = matmul(Dy_Kb, matmul(Sb, transpose(Dy_Kb)) )
          else

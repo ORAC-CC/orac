@@ -88,13 +88,17 @@
 !       is not modified.
 !     1st Aug 2014, Greg McGarragh:
 !       Cleaned up the code.
+!    27th Jan 2015, Adam Povey:
+!       Switched first guess auxilliary surface temperature from lowest T
+!       level to skint to be consistent with a priori. As rttov_driver.F90 sets
+!       these to be the same, it makes little difference other than tidiness.
 !
 ! Bugs:
 !    None known.
 !
 ! $Id$
 !
-!------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
 subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
@@ -214,7 +218,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
          case (SelmAUX)   ! AUX method not supported for most vars.
             if (i == ITs) &
-               SPixel%X0(i) = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+               SPixel%X0(i) = SPixel%RTM%LW%skint
          end select
 
          ! Ctrl method, used if method is Ctrl or other methods failed.

@@ -83,6 +83,8 @@
 !    2015/01/15, AP: Adding Ctrl%Ind%Ch_Is. Revised setting of Ctrl%RS%B.
 !    2015/01/19, GM: Added error handling for parsing the driver file.
 !    2015/01/20, GM: Bug fix: any() was being used on uninitialized data.
+!    2015/01/28, AP: Use consistent FG and AP. Turn off retrieval of phase.
+!       Increase a priori uncertainty on CTP to equal that of other variables.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -369,28 +371,28 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! array and set up the corresponding inactive array.
 
    ! Day options
-   Ctrl%Ind%Nx_Dy = 5   ! number of active state variables
+   Ctrl%Ind%Nx_Dy = 4   ! number of active state variables
 
    Ctrl%Ind%X_Dy(1) = ITau ! indices of state parameters
    Ctrl%Ind%X_Dy(2) = IRe
    Ctrl%Ind%X_Dy(3) = IPc
-   Ctrl%Ind%X_Dy(4) = IFr
-   Ctrl%Ind%X_Dy(5) = ITs
+   Ctrl%Ind%X_Dy(4) = ITs
+!   Ctrl%Ind%X_Dy(5) = IFr
 
    ! Twilight options
-   Ctrl%Ind%Nx_Tw = 3   ! number of active state variables
+   Ctrl%Ind%Nx_Tw = 2   ! number of active state variables
 
    Ctrl%Ind%X_Tw(1) = IPc ! indices of state parameters
-   Ctrl%Ind%X_Tw(2) = IFr
-   Ctrl%Ind%X_Tw(3) = ITs
+   Ctrl%Ind%X_Tw(2) = ITs
+!   Ctrl%Ind%X_Tw(3) = IFr
 
 
    ! Night options
-   Ctrl%Ind%Nx_Ni = 3   ! number of active state variables
+   Ctrl%Ind%Nx_Ni = 2   ! number of active state variables
 
    Ctrl%Ind%X_Ni(1) = IPc ! indices of state parameters
-   Ctrl%Ind%X_Ni(2) = IFr
-   Ctrl%Ind%X_Ni(3) = ITs
+   Ctrl%Ind%X_Ni(2) = ITs
+!   Ctrl%Ind%X_Ni(3) = IFr
 
    ! Force single view (for the time being)
    Ctrl%Ind%NViews=1
@@ -464,7 +466,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
       Ctrl%X0(ITau) = 0.8
       Ctrl%X0(IRe) = 12.
-      Ctrl%X0(IPc) = 700.
+      Ctrl%X0(IPc) = 900.
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
    case('ICE')
@@ -529,14 +531,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
        (trim(Ctrl%CloudClass) .eq. 'DES' ) ) then
       Ctrl%Sx(ITau) = 1.0e+01 ! optical depth
       Ctrl%Sx(IRe) = 1.0e-01 ! effective radii
-      Ctrl%Sx(IPc) = 1.0e+06 ! ctp
-      Ctrl%Sx(IFr) = 1.0e-10 ! fraction
+      Ctrl%Sx(IPc) = 1.0e+08 ! ctp
+      Ctrl%Sx(IFr) = 1.0e+08 ! fraction
       Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
    else
       Ctrl%Sx(ITau) = 1.0e+08 ! optical depth
       Ctrl%Sx(IRe) = 1.0e+08 ! effective radii
-      Ctrl%Sx(IPc) = 1.0e+06 ! ctp
-      Ctrl%Sx(IFr) = 1.0e-10 ! fraction
+      Ctrl%Sx(IPc) = 1.0e+08 ! ctp
+      Ctrl%Sx(IFr) = 1.0e+08 ! fraction
       Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
    end if
 
