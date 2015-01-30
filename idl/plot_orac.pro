@@ -86,6 +86,7 @@
 ;   19 Sep 2014 - ACP: New RTM output field names.
 ;   07 Oct 2014 - ACP: Switched RTM array ordering.
 ;   09 Dec 2014 - ACP: Change plot title to something useful.
+;   20 Jan 2015 - ACP: Change layers plotted for RTM to be more interesting.
 ;-
 PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                prev_revision=old, root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
@@ -267,12 +268,12 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                   WRAP_MAPPOINTS, data[l,*,*], lat_rtm, lon_rtm, $
                                   debug=stop, short=short, $
                                   set[k],plot_set,filt[l,*,*],line2,nl2,0.5,l
-               5: for l=0,N_ELEMENTS(data[*,0,0])-1,20 do $
+               5: for l=10,N_ELEMENTS(data[*,0,0])-1,20 do $
                   WRAP_MAPPOINTS, data[l,*,*], lat_rtm, lon_rtm, $
                                   debug=stop, short=short, $
                                   set[k],plot_set,filt[l,*,*],line2,nl2,0.5,l
                6: for m=0,N_ELEMENTS(data[*,0,0,0])-1 do $
-                  for l=0,N_ELEMENTS(data[0,*,0,0])-1,20 do $
+                  for l=10,N_ELEMENTS(data[0,*,0,0])-1,20 do $
                      WRAP_MAPPOINTS, data[m,l,*,*], lat_rtm, lon_rtm, $
                                      debug=stop, short=short, $
                                      set[k],plot_set,filt[m,l,*,*],line2,nl2,0.5,l,m

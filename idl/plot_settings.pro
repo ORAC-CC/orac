@@ -63,6 +63,7 @@
 ;   25 Jul 2014 - ACP: Added additional illumination flags.
 ;   28 Jul 2014 - ACP: Added falsecolour and difference plots.
 ;   19 Sep 2014 - ACP: New RTM output field names.
+;   20 Jan 2015 - ACP: Update fields to current outputs.
 ;-
 FUNCTION PLOT_SETTINGS, suffix, inst
    ON_ERROR, 2
@@ -124,11 +125,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
       end
       'CONFIG': begin
          out[i].name='msi_instr_ch_numbers'
-         out[i].mode=0
-         out[i].full=1
-         ++i
-
-         out[i].name='msi_abs_ch_numbers'
          out[i].mode=0
          out[i].full=1
          ++i
@@ -294,11 +290,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].full=1
 ;         ++i
 
-;         out[i].name='msi_abs_ch_numbers'
-;         out[i].mode=0
-;         out[i].full=1
-;         ++i
-
 ;         out[i].name='msi_abs_ch_wl'
 ;         out[i].mode=0
 ;         out[i].full=1
@@ -340,17 +331,17 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].full=1
 ;         ++i
 
-         out[i].name='lon_rtm'
-         out[i].mode=3
-         out[i].full=1
-         out[i].title=FMT('RTM longitude','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='lon_rtm'
+;         out[i].mode=3
+;         out[i].full=1
+;         out[i].title=FMT('RTM longitude','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='lat_rtm'
-         out[i].mode=3
-         out[i].full=1
-         out[i].title=FMT('RTM latitude','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='lat_rtm'
+;         out[i].mode=3
+;         out[i].full=1
+;         out[i].title=FMT('RTM latitude','!9'+STRING(176b)+'!X')
+;         ++i
 
          out[i].name='skint_rtm'
          out[i].mode=3
@@ -520,10 +511,10 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Cloud fraction','%')
          ++i
 
-         out[i].name='cc_total_uncertainty'
-         out[i].mode=1
-         out[i].title=FMT('Cloud fraction !Ms!N','%')
-         ++i
+;         out[i].name='cc_total_uncertainty'
+;         out[i].mode=1
+;         out[i].title=FMT('Cloud fraction !Ms!N','%')
+;         ++i
 
          out[i].name='cth'
          out[i].mode=1
@@ -545,15 +536,15 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Cloud top temperature !Ms!N','K')
          ++i
 
-         out[i].name='convergence'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Convergence flag')
-         out[i].btf=''
-         out[i].blabels[0:1]=['Yes','No']
-         out[i].range=[0,1]
-         out[i].nlevels=2
-         ++i
+;         out[i].name='convergence'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Convergence flag')
+;         out[i].btf=''
+;         out[i].blabels[0:1]=['Yes','No']
+;         out[i].range=[0,1]
+;         out[i].nlevels=2
+;         ++i
 
          out[i].name='niter'
          out[i].mode=1
@@ -609,54 +600,54 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].nlevels=12
          ++i
 
-         out[i].name='satellite_zenith_view_no1'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Nadir satellite zenith','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='satellite_zenith_view_no1'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Nadir satellite zenith','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='solar_zenith_view_no1'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Nadir solar zenith','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='solar_zenith_view_no1'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Nadir solar zenith','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='rel_azimuth_view_no1'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Nadir relative azimuth','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='rel_azimuth_view_no1'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Nadir relative azimuth','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='lon'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Longitude','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='lon'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Longitude','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='lat'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Latitude','!9'+STRING(176b)+'!X')
-         ++i
+;         out[i].name='lat'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Latitude','!9'+STRING(176b)+'!X')
+;         ++i
 
-         out[i].name='time'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Observation time','JDN')
-         ++i
+;         out[i].name='time'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Observation time','JDN')
+;         ++i
       end
       'SECONDARY': begin 
-         out[i].name='scanline_u'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Scan u','-')
-         ++i
+;         out[i].name='scanline_u'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Scan u','-')
+;         ++i
 
-         out[i].name='scanline_v'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Scan v','-')
-         ++i
+;         out[i].name='scanline_v'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Scan v','-')
+;         ++i
 
          out[i].name='cot_ap'
          out[i].mode=1

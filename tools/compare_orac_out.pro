@@ -75,6 +75,8 @@
 ;   11 Jul 2014 - AP: Changed threshold to 1d-6 rather than 2d-7.
 ;   14 Jul 2014 - AP: Made threshold an argument.
 ;   01 Aug 2014 - AP: Can deal with fields being removed.
+;   30 Jan 2014 - AP: Remove UV file. Change formatting for points differing
+;                 below rounding error threshold.
 ;-
 PRO COMPARE_ORAC_OUT
    args=COMMAND_LINE_ARGS(count=nargs)
@@ -88,7 +90,7 @@ PRO COMPARE_ORAC_OUT
 
    ;; appropriate file extensions
    if mode eq 'preproc' $
-      then a='.'+['alb','config','clf','geo','loc','lsf','msi','uv', $
+      then a='.'+['alb','config','clf','geo','loc','lsf','msi', $
                'lwrtm','prtm','swrtm']+'.nc' $
       else a='.'+['primary','secondary']+'.nc'
 
@@ -147,8 +149,11 @@ PRO COMPARE_ORAC_OUT
                   pass=0
                endif else begin
                   trash=WHERE(ABS((c2-c1)/c1) gt thres,nt)
-                  PRINT,var.name,a[i],j,nt, format='(A0," (",A0,",",I0,'+ $
-                        '") - ",I0," points are different by > '+sthres+'")'
+                  if nt gt 0 then $
+                     PRINT,var.name,a[i],j,nt, format='(A0," (",A0,",",I0,'+ $
+                           '") - ",I0," points are different by > '+sthres+'")' $
+                  else PRINT,var.name,a[i],j, format='("   ",A0," (",A0,",",I0,'+ $
+                           '") - 0 points are different by > '+sthres+'")'
                   pass=0
                endelse
             endif
