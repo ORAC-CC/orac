@@ -43,6 +43,7 @@
 !    24th Oct 2014, Oliver Sus:
 !       added deallocation of CldType, CloudMask, CCCOT_pre, LUSFlags, DEM,
 !       nisemask
+!    30th Jan 2015, Adam Povey: Remove uscan and vscan as unnecessary.
 !
 ! Bugs:
 !    None known.
@@ -91,9 +92,6 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    if (associated(MSI_Data%time))         deallocate(MSI_Data%time)
 
    if (associated(MSI_Data%MSI))          deallocate(MSI_Data%MSI)
-
-   if (associated(MSI_Data%Scan%uscan))   deallocate(MSI_Data%Scan%uscan)
-   if (associated(MSI_Data%Scan%vscan))   deallocate(MSI_Data%Scan%vscan)
 
    if (associated(MSI_Data%illum))        deallocate(MSI_Data%illum)
 

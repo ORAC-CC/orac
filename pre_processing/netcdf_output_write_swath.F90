@@ -41,6 +41,7 @@
 ! 2014/10/23, OS: added new variables to be written to output: cldtype, cldmask,
 !  cccot_pre, lusflag, dem, nisemask
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
@@ -414,23 +415,5 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            1, 1, imager_geolocation%ny, &
            1, 1, channel_info%nchannels_total)
 
-
-   ! uv file, (uscan, vscan)
-
-   call nc_write_array( &
-           netcdf_info%ncid_scan, &
-           'uscan', &
-           netcdf_info%vid_uscan, &
-           imager_geolocation%uscan(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
-
-   call nc_write_array( &
-           netcdf_info%ncid_scan, &
-           'vscan', &
-           netcdf_info%vid_vscan, &
-           imager_geolocation%vscan(imager_geolocation%startx:,:), &
-           1, 1, n_x, &
-           1, 1, imager_geolocation%ny)
 
 end subroutine netcdf_output_write_swath

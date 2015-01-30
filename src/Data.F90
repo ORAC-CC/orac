@@ -42,6 +42,7 @@
 !    2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
 !       dem, and nisemask
 !    2015/01/18, GM: Put all related Read*() subroutines into this module.
+!    2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
 ! Bugs:
 !    None known.
@@ -74,11 +75,6 @@ module Data_def
       real(4), pointer :: Lon(:,:)
    end type Location_t
 
-   type Scan_t
-      real(4), pointer :: uscan(:,:)
-      real(4), pointer :: vscan(:,:)
-   end type Scan_t
-
    type Data_t
       real(4), pointer            :: ALB(:,:,:)
       real(4), pointer            :: rho_0v(:,:,:)
@@ -97,7 +93,6 @@ module Data_def
       integer(kind=byte), pointer :: nisemask(:,:)
       real(8),            pointer :: time(:,:)
       real(4),            pointer :: MSI(:,:,:)
-      type(Scan_t)                :: Scan
       integer, pointer            :: illum(:,:,:)
    end type Data_t
 
@@ -113,7 +108,6 @@ contains
 #include "ReadLSFlags_nc.F90"
 #include "ReadLocation_nc.F90"
 #include "ReadMSI_nc.F90"
-#include "ReadScanLines_nc.F90"
 
 #include "ReadData_nc.F90"
 

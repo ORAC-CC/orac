@@ -88,9 +88,6 @@ subroutine Read_Data_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    if (verbose)  write(*,*) 'Reading MSI data'
    call Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
-!   if (verbose)  write(*,*) 'Reading Scanline data'
-!   call Read_Scanlines_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
-
    if (verbose)  write(*,*) 'Reading Illumination data'
    call Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 

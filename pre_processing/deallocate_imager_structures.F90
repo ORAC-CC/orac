@@ -25,6 +25,7 @@
 ! 2014/09/17: CS: added deallocation statements for image_pavolonis,                        
 !                 imager_geolocation%usgs_dem, imager_flags%lusflag
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b 
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
@@ -49,8 +50,6 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_geolocation%latitude)
    deallocate(imager_geolocation%longitude)
    deallocate(imager_geolocation%dem)
-   deallocate(imager_geolocation%vscan)
-   deallocate(imager_geolocation%uscan)
    deallocate(imager_angles%solzen)
    deallocate(imager_angles%satzen)
    deallocate(imager_angles%relazi)

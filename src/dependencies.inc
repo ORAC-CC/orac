@@ -6,8 +6,7 @@ $(OBJS)/Ctrl.o: $(OBJS)/ECPConstants.o DeallocCtrl.F90
 $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         $(OBJS)/SADChan.o DeallocData.F90 NullifyData.F90 ReadALB_nc.F90 \
         ReadCloudFlags_nc.F90 ReadData_nc.F90 ReadGeometry_nc.F90 \
-        ReadIllum_nc.F90 ReadLSFlags_nc.F90 ReadLocation_nc.F90 ReadMSI_nc.F90 \
-        ReadScanLines_nc.F90
+        ReadIllum_nc.F90 ReadLSFlags_nc.F90 ReadLocation_nc.F90 ReadMSI_nc.F90
 $(OBJS)/Diag.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o \
         SetDiag.F90 ZeroDiag.F90
 $(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o

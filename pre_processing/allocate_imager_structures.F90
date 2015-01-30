@@ -31,6 +31,7 @@
 !                 imager_geolocation%USGS_DEM, and                                          
 !                 imager_flags%LUSFLAG
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
@@ -39,8 +40,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
-     & imager_flags,imager_time,imager_measurements,imager_pavolonis, &
-     & channel_info)
+     imager_flags,imager_time,imager_measurements,imager_pavolonis, &
+     channel_info)
 
 
    use channel_structures
@@ -70,16 +71,6 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
    imager_geolocation%dem=sint_fill_value
-
-   allocate(imager_geolocation%uscan(&
-        imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
-   imager_geolocation%uscan=lint_fill_value
-
-   allocate(imager_geolocation%vscan(&
-        imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny))
-   imager_geolocation%vscan=lint_fill_value
 
    allocate(imager_angles%solzen(&
         imager_geolocation%startx:imager_geolocation%endx, &

@@ -16,6 +16,7 @@
 !    10th Sep 2014, Greg McGarragh: Original version
 !    19th Dec 2015, Greg McGarragh: Added nullifications for recently added
 !       variables.
+!    30th Jan 2015, Adam Povey: Remove uscan and vscan as unnecessary.
 !
 ! Bugs:
 !    None known.
@@ -65,9 +66,6 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
    nullify(MSI_Data%time)
 
    nullify(MSI_Data%MSI)
-
-   nullify(MSI_Data%Scan%uscan)
-   nullify(MSI_Data%Scan%vscan)
 
    nullify(MSI_Data%illum)
 

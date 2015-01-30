@@ -31,6 +31,7 @@
 !   accounted for.
 ! 2014/05/07, AP: Move contents of make_preproc_grid here. Update structures.
 ! 2015/21/01, OS: bug fix in setting lon_i/lat_i min/max limits
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
@@ -82,9 +83,6 @@ subroutine build_preproc_fields(preproc_dims, preproc_geoloc, preproc_geo, &
    !loop over imager data
    do j=1,imager_geolocation%ny
       do i=imager_geolocation%startx,imager_geolocation%endx
-
-         imager_geolocation%uscan(i,j)=i
-         imager_geolocation%vscan(i,j)=j
 
          ! if geolocation isn't there, do nothing
          if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &

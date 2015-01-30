@@ -180,11 +180,4 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
         NETCDF_OUTPUT_FILE_MSI,imager_geolocation,imager_angles, &
         netcdf_info,channel_info,include_full_brdf,verbose)
 
-   ! create uv file
-   call netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, &
-        cminute,platform,sensor, &
-        trim(adjustl(output_path))//'/'//trim(adjustl(scan_file)), &
-        NETCDF_OUTPUT_FILE_UV,imager_geolocation,imager_angles, &
-        netcdf_info,channel_info,include_full_brdf,verbose)
-
 end subroutine netcdf_output_create

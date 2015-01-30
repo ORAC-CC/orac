@@ -88,6 +88,7 @@
 ! 2014/12/01, CP: Added in source attributes.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
+!    Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
@@ -1169,64 +1170,6 @@ endif
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
-
-
-   ! open uv file
-   else if (type .eq. NETCDF_OUTPUT_FILE_UV) then
-
-      ctitle='ORAC Preprocessing scan output file'
-
-
-      ! create file
-      if (nf90_create(path, IOR(NF90_HDF5,NF90_CLASSIC_MODEL), &
-          netcdf_info%ncid_scan) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), filename: ', path
-         stop error_stop_code
-      end if
-
-
-      ! define dimensions
-      if (nf90_def_dim(netcdf_info%ncid_scan, 'nx_scan', &
-          imager_geolocation%endx-imager_geolocation%startx+1, &
-          netcdf_info%dimid_x_scan) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: nx_scan'
-         stop error_stop_code
-      end if
-
-      if (nf90_def_dim(netcdf_info%ncid_scan, 'ny_scan', &
-          imager_geolocation%endy-imager_geolocation%starty+1, &
-          netcdf_info%dimid_y_scan) .ne. NF90_NOERR) then
-         write(*,*)  'ERROR: netcdf_create_rtm(1), nf90_create(), dimension '// &
-            & 'name: ny_scan'
-         stop error_stop_code
-      end if
-
-
-      dimids_2d(1)=netcdf_info%dimid_x_scan
-      dimids_2d(2)=netcdf_info%dimid_y_scan
-
-      ! define uscan
-      call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_scan, &
-              dimids_2d, &
-              'uscan', &
-              netcdf_info%vid_uscan, &
-              verbose, &
-              deflate_level = deflate_level_lint, &
-              shuffle = shuffle_lint, &
-              fill_value = lint_fill_value)
-
-      ! define vscan
-      call nc_def_var_long_packed_long( &
-              netcdf_info%ncid_scan, &
-              dimids_2d, &
-              'vscan', &
-              netcdf_info%vid_vscan, &
-              verbose, &
-              deflate_level = deflate_level_lint, &
-              shuffle = shuffle_lint, &
-              fill_value = lint_fill_value)
    endif
 
    ! set up attributes common to all output files
@@ -1236,7 +1179,6 @@ endif
    if (type .eq. NETCDF_OUTPUT_FILE_LOC) ncid=netcdf_info%ncid_loc
    if (type .eq. NETCDF_OUTPUT_FILE_LSF) ncid=netcdf_info%ncid_lsf
    if (type .eq. NETCDF_OUTPUT_FILE_MSI) ncid=netcdf_info%ncid_msi
-   if (type .eq. NETCDF_OUTPUT_FILE_UV)  ncid=netcdf_info%ncid_scan
 
    call netcdf_put_common_attributes(ncid,global_atts,source_atts,ctitle, &
                                      platform,sensor,path,cyear,cmonth,cday, &

@@ -18,6 +18,7 @@
 ! 2014/10/23, OS: Added output variables to clf and lsf file.
 ! 2015/01/15, AP: Eliminate channel_abs_ids.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
+!    Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
@@ -39,7 +40,6 @@ module netcdf_output
    integer, parameter :: NETCDF_OUTPUT_FILE_MSI    = 8
    integer, parameter :: NETCDF_OUTPUT_FILE_PRTM   = 9
    integer, parameter :: NETCDF_OUTPUT_FILE_SWRTM  = 10
-   integer, parameter :: NETCDF_OUTPUT_FILE_UV     = 11
 
    type netcdf_output_info_s
 
@@ -116,9 +116,6 @@ module netcdf_output
       integer :: vid_lon_pw, vid_lat_pw
       integer :: vid_satzen_pw, vid_solzen_pw
       integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw
-
-      ! scan file
-      integer :: vid_uscan, vid_vscan
 
       ! swrtm file:
       integer :: vid_sw_channel_abs_ids, vid_sw_channel_instr_ids, vid_sw_channel_wvl

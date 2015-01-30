@@ -25,6 +25,7 @@
 ! 2014/09/17, CS: Added imager_pavolonis, imager_geolocation%usgs_dem and
 !  imager_flags%lusflag 
 ! 2014/12/01, OS: added variable emis_ch3b to Pavolonis imager structure
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
@@ -57,9 +58,6 @@ module imager_structures
       real(kind=sreal), dimension(:,:), pointer ::  longitude
 
       integer(kind=lint), dimension(:,:), pointer ::  dem
-
-      integer(kind=lint), dimension(:,:), pointer ::  uscan
-      integer(kind=lint), dimension(:,:), pointer ::  vscan
 
    end type imager_geolocation_s
 
