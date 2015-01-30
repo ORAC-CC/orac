@@ -128,7 +128,8 @@
 !       check_value() subroutines into this module.
 !    19th Jan 2015, Greg McGarragh:
 !       Put XAUX.F90, XMDAD.F90, and XSDAD.F90 into this module.
-
+!    30th Jan 2015, Adam Povey:
+!       Remove redundant fields.
 !
 ! Bugs:
 !    None known.
@@ -162,7 +163,6 @@ module SPixel_def
 
    type RTM_SW_t
       integer             :: Np           ! Number of pressure levels
-      real                :: Lat          ! Latitude
       real, pointer       :: P(:)         ! Array of pressure levels (1:SW%Np)
       real, pointer       :: Tbc(:,:)     ! Surface to P channel transmittances
       real, pointer       :: Tac(:,:)     ! P to TOA channel transmittances
@@ -176,8 +176,6 @@ module SPixel_def
       integer             :: Np           ! Number of pressure levels
       real                :: Lat          ! Latitude
       real                :: Lon          ! Longitude
-      real                :: skint        ! skin temperature
-      real                :: sp           ! Surface pressure
       real, pointer       :: P(:)         ! Array of pressure levels
       real, pointer       :: Ems(:)       ! Channel emissivities
       real, pointer       :: Tac(:,:)     ! P to space channel transmittances
@@ -187,7 +185,6 @@ module SPixel_def
       real, pointer       :: Rac_Dwn(:,:) ! Downwelling radiances from atmosphere at P
       real, pointer       :: Rbc_Up(:,:)  ! Upwelling radiances from atmosphere at P
       real, pointer       :: R_clear(:)   ! Clear upwelling TOA radiance
-      real, pointer       :: Bs(:)        ! Planck radiances at surface.
       real, pointer       :: T(:)         ! Temperature at P. (1:LW%Np)
       real, pointer       :: H(:)         ! geopotential height at P. (1:LW%Np)
       real, pointer       :: dB_dTs(:)    ! Gradient of Bs w.r.t surface temp.

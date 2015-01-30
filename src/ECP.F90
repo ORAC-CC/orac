@@ -413,10 +413,10 @@ end if
 
    ! Make read in rttov data in one go, no more segment reads
    call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
-        RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NPLAY, RTM%LW%NLWF, verbose)
+        RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NLWF, verbose)
 
    call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
-        RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NPLAY, RTM%SW%NSWF, verbose)
+        RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, verbose)
 
    call Read_LwRTM_nc(Ctrl, RTM, verbose)
    call Read_SwRTM_nc(Ctrl, RTM, verbose)

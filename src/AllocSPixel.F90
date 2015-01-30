@@ -84,6 +84,8 @@
 !       Added more SPixel to Ctrl map indexes.
 !     9th Sep 2014, Greg McGarragh:
 !       Changes related to new BRDF support.
+!    30th Jan 2015, Adam Povey:
+!       Remove redundant fields.
 !
 ! Bugs:
 !   None known.
@@ -137,7 +139,6 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    allocate(SPixel%RTM%LW%Rac_dwn    (Ctrl%Ind%NThermal,RTM%LW%NP))
    allocate(SPixel%RTM%LW%Rbc_up     (Ctrl%Ind%NThermal,RTM%LW%NP))
    allocate(SPixel%RTM%LW%R_clear    (Ctrl%Ind%NThermal))
-   allocate(SPixel%RTM%LW%Bs         (Ctrl%Ind%NThermal))
    allocate(SPixel%RTM%LW%dB_dTs     (Ctrl%Ind%NThermal))
    allocate(SPixel%RTM%LW%Ems        (Ctrl%Ind%NThermal))
    allocate(SPixel%RTM%LW%T          (RTM%LW%NP))

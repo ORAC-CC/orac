@@ -50,6 +50,8 @@
 !    20th Jan 2015, Greg McGarragh:
 !       Added deallocation of spixel_y_mixed_to_spixel_y_solar and 
 !       spixel_y_mixed_to_spixel_y_thermal.
+!    30th Jan 2015, Adam Povey:
+!       Remove redundant fields.
 !
 ! Bugs:
 !   None known.
@@ -97,7 +99,6 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
    deallocate(SPixel%RTM%LW%Rac_dwn)
    deallocate(SPixel%RTM%LW%Rbc_up)
    deallocate(SPixel%RTM%LW%R_clear)
-   deallocate(SPixel%RTM%LW%Bs)
    deallocate(SPixel%RTM%LW%dB_dTs)
    deallocate(SPixel%RTM%LW%Ems)
    deallocate(SPixel%RTM%LW%T)

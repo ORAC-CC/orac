@@ -12,9 +12,6 @@
 ! Algorithm:
 !     N/A
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    15th Dec 2000, Kevin Smith: Original version
 !    11th Jan 2001, Kevin Smith: Added Grid substructures for use in Get_RTM
@@ -48,6 +45,8 @@
 !       Adding Wrap flag to save repeated calculation in GetLwSwRTM.
 !    19th Jan 2015, Greg McGarragh:
 !       Put ReadSwRTM_nc.F90 and ReadLwRTM_nc.F90 into this module.
+!    30th Jan 2015, Adam Povey:
+!       Eliminate redundant fields.
 !
 ! Bugs:
 !    None known.
@@ -81,12 +80,10 @@ module RTM_def
 
    type SW_t
       integer          :: NP               ! No of pressure levels
-      integer          :: NPLAY            ! No of pressure layers
       integer          :: NSWF             ! Number of solar channels in SWRTM File
       integer          :: NV               ! Number of views in SWRTM File
-      real,    pointer :: Lat(:,:)         ! Latitude values in grid (lat,lon)
-      real,    pointer :: Lon(:,:)         ! Longitude values (lat,lon)
-      real,    pointer :: Tac(:,:,:,:)     ! Transmittance above cloud      ! (lat,lon, channel, pressure)
+      real,    pointer :: Tac(:,:,:,:)     ! Transmittance above cloud
+                                           ! (lat,lon, channel, pressure)
       real,    pointer :: Tbc(:,:,:,:)     ! Transmittance below cloud
                                            ! (lat, lon, channel, pressure)
       type(RTM_Grid_t) :: Grid
@@ -96,18 +93,13 @@ module RTM_def
 
    type LW_t
       integer          :: NP               ! No of pressure levels
-      integer          :: NPLAY            ! No of pressure layers
       integer          :: NLWF             ! Number of thermal channels in LWRTM File
       integer          :: NV               ! Number of views in LWRTM File
       real,    pointer :: Lat(:,:)         ! Latitude values in grid (lat,lon)
       real,    pointer :: Lon(:,:)         ! Longitude values (lat,lon)
-      real,    pointer :: skint(:,:)       ! skin temperature
-      real,    pointer :: sp(:,:)          ! surface pressure
       real,    pointer :: P(:,:,:)         ! Pressure values (lat,lon,pressure)
       real,    pointer :: T(:,:,:)         ! Temperatures (lat,lon,pressure)
       real,    pointer :: H(:,:,:)         ! geopotential height
-      real,    pointer :: Bs(:,:,:)        ! Planck radiances at surface
-                                           ! (lat,lon,channels)
       real,    pointer :: Ems(:,:,:)       ! Emissivity (lat,lon,channels)
       real,    pointer :: Tac(:,:,:,:)     ! Transmittance above cloud
                                            ! (lat,lon,channels,pressure)
@@ -119,7 +111,6 @@ module RTM_def
                                            ! (lat,lon,channels,pressure)
       real,    pointer :: Rbc_up(:,:,:,:)  ! Upwelling radiance below cloud
                                            ! (lat,lon,channels,pressure)
-!     real,    pointer :: R_clear(:,:,:)
       type(RTM_Grid_t) :: Grid
    end type LW_t
 

@@ -16,6 +16,7 @@
 ! 2014/08/15, AP: Use preprocessor NCDF functions.
 ! 2014/10/07, AP: Removed read of layer dimensions.
 ! 2014/12/19, AP: Number of channels read in ReadDriver. Removed from here.
+! 2014/01/30, AP: Remove NLayer as redundant.
 !
 ! $Id$
 !
@@ -71,7 +72,7 @@ end subroutine read_input_dimensions_msi
 
 
 subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
-     laydim,channeldim,verbose)
+     channeldim,verbose)
 
    use ECP_Constants
    use orac_ncdf
@@ -79,7 +80,7 @@ subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
    implicit none
 
    character(len=FilenameLen),intent(in)  :: fname
-   integer(kind=lint),        intent(out) :: xdim,ydim,levdim,laydim, &
+   integer(kind=lint),        intent(out) :: xdim,ydim,levdim, &
                                              channeldim
    logical,                   intent(in)  :: verbose
 
@@ -91,7 +92,6 @@ subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
    levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
-   laydim = levdim-1
    channeldim = nc_dim_length(ncid, 'nlw_channels', verbose)
 
    ! Close file
@@ -105,7 +105,7 @@ end subroutine read_input_dimensions_lwrtm
 
 
 subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim, &
-     laydim,channeldim,verbose)
+     channeldim,verbose)
 
    use ECP_Constants
    use orac_ncdf
@@ -113,7 +113,7 @@ subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim, &
    implicit none
 
    character(len=FilenameLen), intent(in)  :: fname
-   integer(kind=lint),         intent(out) :: xdim,ydim,levdim,laydim, &
+   integer(kind=lint),         intent(out) :: xdim,ydim,levdim, &
                                               channeldim
    logical,                    intent(in)  :: verbose
 
@@ -125,7 +125,6 @@ subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim, &
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
    levdim = nc_dim_length(ncid, 'nlevels_rtm', verbose)
-   laydim = levdim-1
    channeldim = nc_dim_length(ncid, 'nsw_channels', verbose)
 
    ! Close file

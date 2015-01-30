@@ -94,6 +94,8 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
+!    2015/01/30, AP: Remove sp and skint and redundant. Use bottom of T and P
+!       arrays in RTM instead.
 !
 ! Bugs:
 !    None known.
@@ -141,9 +143,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    allocate(RTM%LW%lat(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
    allocate(RTM%LW%lon(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
 
-   allocate(RTM%LW%skint(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-   allocate(RTM%LW%sp   (RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-
    allocate(RTM%LW%P(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
    allocate(RTM%LW%T(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
    allocate(RTM%LW%H(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
@@ -163,8 +162,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    end do
    deallocate(dummy1d)
 
-   call nc_read_array(ncid, "skint_rtm", RTM%LW%skint, verbose)
-   call nc_read_array(ncid, "explnsp_rtm", RTM%LW%sp, verbose)
    call nc_read_array(ncid, "pprofile_rtm", RTM%LW%P, verbose)
    call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, verbose)
    call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, verbose)

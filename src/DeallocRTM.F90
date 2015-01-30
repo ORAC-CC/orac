@@ -35,6 +35,7 @@
 !    16th Dec 2013, Greg McGarragh: Add deallocation of RTM%LW%skint and
 !       RTM%LW%sp and a bit of cleanup.
 !    27th May 2014, Greg McGarragh: Some more cleanup.
+!    30th Jan 2015, Adam Povey: Eliminate redundant fields.
 !
 ! Bugs:
 !    None known.
@@ -55,8 +56,6 @@ subroutine Dealloc_RTM(Ctrl, RTM)
 
 !  Deallocate sizes of SW sub-structure arrays
    if (Ctrl%Ind%Ny-Ctrl%Ind%NThermal > 0) then
-!      deallocate(RTM%SW%Lat)
-!      deallocate(RTM%SW%Lon)
       deallocate(RTM%SW%Tac)
       deallocate(RTM%SW%Tbc)
    end if
@@ -65,12 +64,9 @@ subroutine Dealloc_RTM(Ctrl, RTM)
    if (Ctrl%Ind%NThermal > 0) then
       deallocate(RTM%LW%Lat)
       deallocate(RTM%LW%Lon)
-      deallocate(RTM%LW%skint)
-      deallocate(RTM%LW%sp)
       deallocate(RTM%LW%P)
       deallocate(RTM%LW%T)
       deallocate(RTM%LW%H)
-!     deallocate(RTM%LW%Bs)
       deallocate(RTM%LW%Ems)
       deallocate(RTM%LW%Tac)
       deallocate(RTM%LW%Tbc)

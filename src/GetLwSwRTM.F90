@@ -66,6 +66,8 @@
 !    11/11/2014, CP: Updated to include boundary layer cth correction to
 !       temperature profile
 !    12/01/2015, AP: Replace ThermalFirst:ThermalLast indexing with YThermal.
+!    30/01/2015, AP: Remove skint and sp as redundant. Use bottom of T and P
+!       arrays in SPixel%RTM instead.
 !
 ! Bugs:
 !    None known.
@@ -110,8 +112,6 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    call interp_field2(RTM%LW%P,       SPixel%RTM%LW%P,       interp)
    call interp_field2(RTM%LW%T,       SPixel%RTM%LW%T,       interp)
    call interp_field2(RTM%LW%H,       SPixel%RTM%LW%H,       interp)
-   call interp_field (RTM%LW%skint,   SPixel%RTM%LW%skint,   interp)
-   call interp_field (RTM%LW%sp,      SPixel%RTM%LW%sp,      interp)
    call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
    call interp_field2(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
    call interp_field2(RTM%LW%Tbc,     SPixel%RTM%LW%Tbc,     interp)
