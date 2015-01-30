@@ -109,6 +109,7 @@
 !    2014/01/25, Greg McGarragh: Cleaned up the code.
 !    2014/12/19, Adam Povey: Removing unneccessary fields.
 !    2015/01/13, Adam Povey: Adding Ch_Is, YMixed. Removing First:Last indexes.
+!    2015/01/30, Adam Povey: Remove Ws, Xstart, Ystart as depreciated.
 !
 ! Bugs:
 !   None known.
@@ -202,9 +203,6 @@ module CTRL_def
       integer                :: Y0                 ! Lower left pixel y coord
       integer                :: X1                 ! Upper right pixel x coord
       integer                :: Y1                 ! Upper right pixel y coord
-      integer                :: Ws                 ! Warm start flag
-      integer                :: Xstart             ! Warm start X
-      integer                :: Ystart             ! Warm start Y
 
       ! State vector indexing variables
       integer                :: Nx_Dy              ! Number of active state

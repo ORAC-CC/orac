@@ -85,6 +85,7 @@
 !    2015/01/20, GM: Bug fix: any() was being used on uninitialized data.
 !    2015/01/28, AP: Use consistent FG and AP. Turn off retrieval of phase.
 !       Increase a priori uncertainty on CTP to equal that of other variables.
+!    2015/01/30, AP: Allow warm start coordinates to be specified.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -363,9 +364,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
 
    ! Set stuff in Ctrl%Ind
-   Ctrl%Ind%Ws = 0 ! warm start option i.e enables user to start partway through
-                   ! a scene
-
 
    ! For each of the day, twilight, night active state variable arrays, read the
    ! array and set up the corresponding inactive array.
@@ -398,6 +396,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Ind%NViews=1
    allocate(Ctrl%Ind%Viewidx(Ctrl%Ind%Ny))
    Ctrl%Ind%Viewidx = 1
+
+   ! Use default processing (i.e. process everything in file)
+   Ctrl%Ind%X0 = 0
+   Ctrl%Ind%X1 = 0
+   Ctrl%Ind%Y0 = 0
+   Ctrl%Ind%Y1 = 0
 
    Ctrl%CloudType     = 1 ! use this to select which coreg/homog errors to use
 
@@ -734,8 +738,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%MaxSolZen)        /= 0) call h_p_e(label)
       case('CTRL%SUNSET')
          if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
-      case('CTRL%IND%WS')
-         if (parse_string(line, Ctrl%Ind%Ws)           /= 0) call h_p_e(label)
       case('CTRL%IND%NX_DY')
          if (parse_string(line, Ctrl%Ind%NX_DY)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_DY')
@@ -752,6 +754,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%Ind%NViews)       /= 0) call h_p_e(label)
       case('CTRL%IND%VIEWIDX')
          if (parse_string(line, Ctrl%Ind%Viewidx)      /= 0) call h_p_e(label)
+      case('CTRL%IND%X0')
+         if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
+      case('CTRL%IND%X1')
+         if (parse_string(line, Ctrl%Ind%X1)           /= 0) call h_p_e(label)
+      case('CTRL%IND%Y0')
+         if (parse_string(line, Ctrl%Ind%Y0)           /= 0) call h_p_e(label)
+      case('CTRL%IND%Y1')
+         if (parse_string(line, Ctrl%Ind%Y1)           /= 0) call h_p_e(label)
       case('CTRL%AP')
          if (parse_string(line, Ctrl%AP)               /= 0) call h_p_e(label)
       case('CTRL%FG')

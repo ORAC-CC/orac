@@ -187,7 +187,8 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file. Eliminate conf structure.
-!    2014/01/30, AP: Read surface level of RTTOV files.
+!    2014/01/30, AP: Read surface level of RTTOV files. Allow warm start
+!       coordinates to be specified in the driver file.
 !
 ! Bugs:
 !    None known.
@@ -351,15 +352,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
       Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NInstViews, verbose)
 
-
-   ! Now set the corners of the domain based on what's in the input files
-   Ctrl%Ind%X0 = 1
-   Ctrl%Ind%Y0 = 1
-   Ctrl%Ind%X1 = Ctrl%Ind%XMax
-   Ctrl%Ind%Y1 = Ctrl%Ind%YMax
-
-   Ctrl%Ind%Xstart = 1
-   Ctrl%Ind%Ystart = 1
+   ! Set range to be processed
    Ctrl%Resoln%SegSize = Ctrl%Ind%YMax
 
 if (.false.) then
@@ -427,27 +420,28 @@ end if
    !----------------------------------------------------------------------------
 
    ! Loop over required super pixel X0,Y0 coordinates
-   !
-   ! Determine start and stop values for the loop counters depending on whether
-   ! a "warm start" is required. Modify start and stop x values so that only
-   ! whole super-pixels are processed. A SPixel of size 3 with a left-hand
-   ! corner at 511 will go outside of an image of size 512. Also, if the
-   ! starting pixel is not a whole number of Super-Pixels from the first line
-   ! in the image data, some SPixels in the selected area will cross boundaries
-   ! between image segments.
 
-   if (Ctrl%Ind%Ws == 0) then
+   ! Set the start/stop positions
+   if (Ctrl%Ind%X0 >= 1 .and. Ctrl%Ind%X0 <= Ctrl%Ind%XMax) then
       ixstart = Ctrl%Ind%X0
+   else
+      ixstart = 1
+   end if
+   if (Ctrl%Ind%X1 >= 1 .and. Ctrl%Ind%X1 <= Ctrl%Ind%XMax) then
+      ixstop  = Ctrl%Ind%X1
+   else
+      ixstop  = Ctrl%Ind%XMax
+   end if
+   if (Ctrl%Ind%Y0 >= 1 .and. Ctrl%Ind%Y0 <= Ctrl%Ind%YMax) then
       iystart = Ctrl%Ind%Y0
    else
-      ! Warm start. Use Xstart, YStart
-      ixstart = Ctrl%Ind%Xstart
-      iystart = Ctrl%Ind%Ystart
+      iystart = 1
    end if
-
-   ! Set the stop values
-   ixstop = Ctrl%Ind%X1
-   iystop = Ctrl%Ind%Y1
+   if (Ctrl%Ind%Y1 >= 1 .and. Ctrl%Ind%Y1 <= Ctrl%Ind%YMax) then
+      iystop  = Ctrl%Ind%Y1
+   else
+      iystop  = Ctrl%Ind%YMax
+   end if
 
    write(*,*) 'Start line: ', iystart
    write(*,*) 'Stop line: ', iystop
