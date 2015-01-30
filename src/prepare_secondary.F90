@@ -67,7 +67,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%Xb(1)
+   dummyreal=SPixel%Xb(ITau)
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_ap(i,j), &
            output_data%cot_ap_scale, output_data%cot_ap_offset, &
@@ -75,7 +75,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
            output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
            output_data%cot_ap_vmax)
 
-   dummyreal=SPixel%X0(1)
+   dummyreal=SPixel%X0(ITau)
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_fg(i,j), &
            output_data%cot_fg_scale, output_data%cot_fg_offset, &
@@ -86,7 +86,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! ref_ap, ref_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%Xb(2)
+   dummyreal=SPixel%Xb(IRe)
    call prepare_short_packed_float( &
            dummyreal, output_data%ref_ap(i,j), &
            output_data%ref_ap_scale, output_data%ref_ap_offset, &
@@ -94,7 +94,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
            output_data%ref_ap_vmin, output_data%ref_ap_vmax, &
            output_data%ref_ap_vmax)
 
-   dummyreal=SPixel%X0(2)
+   dummyreal=SPixel%X0(IRe)
    call prepare_short_packed_float( &
            dummyreal, output_data%ref_fg(i,j), &
            output_data%ref_fg_scale, output_data%ref_fg_offset, &
@@ -105,7 +105,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! ctp_ap, ctp_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%Xb(3)
+   dummyreal=SPixel%Xb(IPc)
    call prepare_short_packed_float( &
            dummyreal, output_data%ctp_ap(i,j), &
            output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
@@ -113,7 +113,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
            output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
            output_data%ctp_ap_vmax)
 
-   dummyreal=SPixel%X0(3)
+   dummyreal=SPixel%X0(IPc)
    call prepare_short_packed_float( &
            dummyreal, output_data%ctp_fg(i,j), &
            output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
@@ -124,7 +124,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! stemp_ap, stemp_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%X0(5)
+   dummyreal=SPixel%X0(ITs)
    call prepare_short_packed_float( &
            dummyreal, output_data%stemp_ap(i,j), &
            output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
@@ -132,7 +132,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
            output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
            output_data%stemp_ap_vmax)
 
-   dummyreal=SPixel%X0(5)
+   dummyreal=SPixel%X0(ITs)
    call prepare_short_packed_float( &
            dummyreal, output_data%stemp_fg(i,j), &
            output_data%stemp_fg_scale, output_data%stemp_fg_offset, &

@@ -92,10 +92,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! cot, cot_error
    !----------------------------------------------------------------------------
-   if (SPixel%Xn(1) .eq. MissingXn) then
+   if (SPixel%Xn(ITau) .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = 10.0**SPixel%Xn(1)
+      temp_real = 10.0**SPixel%Xn(ITau)
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot(i,j), &
@@ -104,10 +104,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            output_data%cot_vmin, output_data%cot_vmax, &
            output_data%cot_vmax)
 
-   if (SPixel%Sn(1,1) .eq. MissingSn) then
+   if (SPixel%Sn(ITau,ITau) .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-      temp_real = sqrt(SPixel%Sn(1,1))
+      temp_real = sqrt(SPixel%Sn(ITau,ITau))
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot_error(i,j), &
@@ -119,10 +119,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! ref, ref_error
    !----------------------------------------------------------------------------
-   if (SPixel%Xn(2) .eq. MissingXn) then
+   if (SPixel%Xn(IRe) .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = SPixel%Xn(2)
+      temp_real = SPixel%Xn(IRe)
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%ref(i,j), &
@@ -131,10 +131,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            output_data%ref_vmin, output_data%ref_vmax, &
            output_data%ref_vmax)
 
-   if (SPixel%Sn(2,2) .eq. MissingSn) then
+   if (SPixel%Sn(IRe,IRe) .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-      temp_real = sqrt(SPixel%Sn(2,2))
+      temp_real = sqrt(SPixel%Sn(IRe,IRe))
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%ref_error(i,j), &
@@ -146,10 +146,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! ctp, ctp_error
    !----------------------------------------------------------------------------
-   if (SPixel%Xn(3) .eq. MissingXn) then
+   if (SPixel%Xn(IPc) .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = SPixel%Xn(3)
+      temp_real = SPixel%Xn(IPc)
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%ctp(i,j), &
@@ -158,10 +158,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            output_data%ctp_vmin, output_data%ctp_vmax, &
            output_data%ctp_vmax)
 
-   if (SPixel%Sn(3,3) .eq. MissingSn) then
+   if (SPixel%Sn(IPc,IPc) .eq. MissingSn) then
       temp_real_ctp_error=sreal_fill_value
    else
-      temp_real_ctp_error = sqrt(SPixel%Sn(3,3))
+      temp_real_ctp_error = sqrt(SPixel%Sn(IPc,IPc))
       temp_short_ctp_error = ( int(temp_real_ctp_error, kind=sint) - &
                                output_data%ctp_error_scale &
                              ) / output_data%ctp_error_scale
@@ -176,10 +176,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! cct, cct_error
    !----------------------------------------------------------------------------
-   if (SPixel%Xn(4) .eq. MissingXn) then
+   if (SPixel%Xn(IFr) .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = SPixel%Xn(4)
+      temp_real = SPixel%Xn(IFr)
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cct(i,j), &
@@ -188,10 +188,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            output_data%cct_vmin, output_data%cct_vmax, &
            sint_fill_value)
 
-   if (SPixel%Sn(4,4) .eq. MissingSn) then
+   if (SPixel%Sn(IFr,IFr) .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-      temp_real = sqrt(SPixel%Sn(4,4))
+      temp_real = sqrt(SPixel%Sn(IFr,IFr))
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
@@ -203,10 +203,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! stemp, stemp_error
    !----------------------------------------------------------------------------
-   if (SPixel%Xn(5) .eq. MissingXn) then
+   if (SPixel%Xn(ITs) .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = SPixel%Xn(5)
+      temp_real = SPixel%Xn(ITs)
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%stemp(i,j), &
@@ -215,10 +215,10 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            output_data%stemp_vmin, output_data%stemp_vmax, &
            output_data%stemp_vmax)
 
-   if (SPixel%Sn(5,5) .eq. MissingSn) then
+   if (SPixel%Sn(ITs,ITs) .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-      temp_real = sqrt(SPixel%Sn(5,5))
+      temp_real = sqrt(SPixel%Sn(ITs,ITs))
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%stemp_error(i,j), &
