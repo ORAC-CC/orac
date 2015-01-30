@@ -87,6 +87,7 @@
 !   lusflag, dem, nisemask
 ! 2014/12/01, CP: Added in source attributes.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 !
 ! $Id$
 !
@@ -462,44 +463,6 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &
               fill_value = sreal_fill_value)
-
-
-      ! define 2-D variables
-      dimids_2d(1)=netcdf_info%dimid_x_pw
-      dimids_2d(2)=netcdf_info%dimid_y_pw
-
-      ! define skint_rtm
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_2d, &
-              'skint_rtm', &
-              netcdf_info%vid_skint_pw, &
-              verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-      ! define explnsp_rtm
-      call nc_def_var_float_packed_float( &
-              netcdf_info%ncid_prtm, &
-              dimids_2d, &
-              'explnsp_rtm', &
-              netcdf_info%vid_lnsp_pw, &
-              verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
-              fill_value = sreal_fill_value)
-
-      ! define lsf_rtm
-!      call nc_def_var_float_packed_float( &
-!              netcdf_info%ncid_prtm, &
-!              dimids_2d, &
-!              'lsf_rtm', &
-!              netcdf_info%vid_lsf_pw, &
-!              verbose, &
-!              deflate_level = deflate_level_sreal, &
-!              shuffle = shuffle_sreal, &
-!              fill_value = sreal_fill_value)
 
 
       ! define 3-D variables

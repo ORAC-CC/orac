@@ -116,6 +116,7 @@
 ! 2014/10/23, OS: set do_checkinput config variable to .false.; this avoids
 !    extrapolation to negative profile values, causing a fatal RTTOV error
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 !
 ! $Id$
 !
@@ -427,15 +428,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
               netcdf_info%vid_lat_pw, &
               (/profiles(count)%latitude/), &
               1, j_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'skint_rtm', &
-              netcdf_info%vid_skint_pw, &
-              reshape((/profiles(count)%skin%t/), (/1,1/)), &
-              1, i_, 1, 1, j_, 1)
-         call nc_write_array(netcdf_info%ncid_prtm, 'explnsp_rtm', &
-              netcdf_info%vid_lnsp_pw, &
-              reshape((/profiles(count)%s2m%p/), (/1,1/)), &
-              1, i_, 1, 1, j_, 1)
-          call nc_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
+         call nc_write_array(netcdf_info%ncid_prtm, 'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
               reshape(profiles(count)%p, (/nlevels,1,1/)), &
               1, 1, nlevels, 1, i_, 1, 1, j_, 1)

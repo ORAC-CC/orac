@@ -17,6 +17,7 @@
 ! 2014/09/28, GM: Remove layer dimids as they were not used any more.
 ! 2014/10/23, OS: Added output variables to clf and lsf file.
 ! 2015/01/15, AP: Eliminate channel_abs_ids.
+! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 !
 ! $Id$
 !
@@ -113,7 +114,6 @@ module netcdf_output
 
       ! prtm file:
       integer :: vid_lon_pw, vid_lat_pw
-      integer :: vid_skint_pw, vid_lnsp_pw, vid_lsf_pw
       integer :: vid_satzen_pw, vid_solzen_pw
       integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw
 
