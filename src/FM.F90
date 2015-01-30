@@ -133,6 +133,7 @@
 !   20150112, AP: Replacing First:Last channel indexing with generic, array-based
 !      indexing.
 !   20150121, AP: Finishing the previous commit.
+!   20150130, GM: Fixed a bug in the recent channel indexing changes.
 !
 ! Bugs:
 !   None known.
@@ -292,7 +293,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       ! temperature. Write the result into the appropriate part of the
       ! measurement vector Y. The gradient dT_dR calculated at the scene
       ! radiance is used later.
-      SAD_mixed = SAD_Chan(SPixel%Ind%YMixed)
+      SAD_mixed = SAD_Chan(SPixel%spixel_y_to_ctrl_y_index(SPixel%Ind%YMixed))
       call R2T(SPixel%Ind%NMixed, SAD_mixed, Y_R, T, dT_dR, status)
       if (status == 0) then
          ! Write output into Y array
