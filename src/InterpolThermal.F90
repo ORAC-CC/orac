@@ -119,10 +119,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
                                                  ! consecutive RTM levels
    real    :: delta_H                            ! Difference in GPH between
                                                  ! consecutive RTM levels
-   real    :: dT_dPc                             ! Change in Temp w.r.t. Pc
-   real    :: dH_dPc                             ! Change in GPH w.r.t. Pc
    real    :: T(SPixel%Ind%NThermal)             ! Temp at Pc
-   real    :: H(SPixel%Ind%NThermal)             ! GPH at Pc
    real    :: delta_Pc                           ! Difference in pressure between
                                                  ! Pc and lower RTM level
    real    :: delta_Tc(SPixel%Ind%NThermal)      ! Difference in trans. between
@@ -188,16 +185,14 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! Change in temperature between RTM levels i and i+1
       delta_T = SPixel%RTM%LW%T(i+1) - SPixel%RTM%LW%T(i)
 
+      ! Gradient of Planck functions w.r.t. pressure (around Pc)
+      RTM_Pc%dTc_dPc = delta_T / delta_p
+
       ! Change in GPH between RTM levels i and i+1
       delta_H = SPixel%RTM%LW%H(i+1) - SPixel%RTM%LW%H(i)
 
-      ! Gradient of Planck functions w.r.t. pressure (around Pc)
-      dT_dPc = delta_T / delta_p
-      RTM_Pc%dTc_dPc = dT_dPc
-
       ! Gradient of delta GPH w.r.t. pressure (around Pc)
-      dH_dPc = delta_H / delta_p
-      RTM_Pc%dHc_dPc = dH_dPc
+      RTM_Pc%dHc_dPc = delta_H / delta_p
 
       ! Interpolated transmittances
       ! (Sign conventions same as for delta_p. If Pc is outwith the RTM pressure
@@ -228,26 +223,22 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       delta_Rc = delta_Pc * RTM_Pc%LW%dRbc_up_dPc(Thermal)
       RTM_Pc%LW%Rbc_up(Thermal) = SPixel%RTM%LW%Rbc_up(Thermal,i) + delta_Rc
 
-      ! Interpolated Planck functions: calculate T and convert to B using T2R
-      ! delta_T here is the step from the next lowest level to the current Pc,
-      ! unlike above where it is the step between RTM levels.
-      delta_T = delta_Pc * dT_dPc
-
-      ! Set up GPH
-      delta_H = delta_Pc * dH_dPc
-
       ! Set current temperature RTM_Pc%Tc and calculate equivalent radiance.
       ! (T2R requires T to be an array).
+      delta_T = delta_Pc * RTM_Pc%dTc_dPc
       RTM_Pc%Tc = SPixel%RTM%LW%T(i) + delta_T
       T = RTM_Pc%Tc
 
+      ! Interpolated Planck functions: calculate T and convert to B using T2R
+      ! delta_T here is the step from the next lowest level to the current Pc,
+      ! unlike above where it is the step between RTM levels.
       call T2R(SPixel%Ind%NThermal, SAD_Chan, T, R, dB_dT, status)
       RTM_Pc%LW%B(Thermal) = R
-      RTM_Pc%LW%dB_dPc(Thermal) = dT_dPc * dB_dT
+      RTM_Pc%LW%dB_dPc(Thermal) = RTM_Pc%dTc_dPc * dB_dT
 
-      ! Set current GPH and save the rate of change w.r.t. Pc for use later
+      ! Set current GPH
+      delta_H = delta_Pc * RTM_Pc%dHc_dPc
       RTM_Pc%Hc = SPixel%RTM%LW%H(i) + delta_H
-      H = RTM_Pc%Hc
    end if
 
    ! Open breakpoint file if required, and write our reflectances and gradients.

@@ -64,7 +64,7 @@ subroutine find_Pc(Ctrl, Np, P, Pc, i_Pc, status)
 
    status = 0
 
-   if (Pc > P(Np)) then
+   if (Pc >= P(Np)) then
       ! When Pc is above highest pressure in RTM
       i_Pc = Np-1
       if (abs(Pc - P(Np)) > 50.0) then
@@ -84,8 +84,6 @@ subroutine find_Pc(Ctrl, Np, P, Pc, i_Pc, status)
             'P(1), P(Np), Pc: ', P(1), P(Np), Pc
 #endif
       end if
-   else if (Pc == P(Np)) then
-      i_Pc = Np-1
    else
       ! Search through RTM levels sequentially to find those bounding Pc
       do i = 1, Np-1

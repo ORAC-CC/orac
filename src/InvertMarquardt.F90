@@ -334,7 +334,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    ! Dynamically set upper limit of cloud top pressure to lowest profile
    ! pressure of current pixel.
-   SPixel%XULim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
+   SPixel%XULim(iPc)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
 
    ! Calculate measurements at first-guess state vector X0 (SPixel%X0. X0
    ! should be provided un-scaled. Only used in the FM call and Xdiff(?)

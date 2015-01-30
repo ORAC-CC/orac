@@ -120,8 +120,6 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    call interp_field2(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
 
    ! Set surface level to TOA transmittances
-   ! ACP: ECP.F90 set RTM%LW%Np to RTM%LW%Nplayer, which means this isn't the
-   !      surface. Is this line correct in that case?
    SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%LW%Np)
 
    ! Set R_Clear using Rbc_up at the TOA

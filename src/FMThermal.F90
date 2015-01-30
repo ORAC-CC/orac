@@ -149,22 +149,20 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    ! Subscripts for thermal channels in RTM arrays
    Thermal = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(:SPixel%Ind%NThermal)
 
-   ! Calculate delta_Ts
-   delta_Ts = X(ITs) - SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-
-   ! Update clear radiances at each RTM pressure level
-
-   R_clear = SPixel%RTM%LW%R_clear(Thermal) + &
-      (delta_Ts * SPixel%RTM%LW%dB_dTs(Thermal) * SPixel%RTM%LW%Ems(Thermal) * &
-      SPixel%RTM%LW%Tac(Thermal,1))
-
    ! Set up the LW cloud radiative properties
    call Set_CRP_Thermal(Ctrl, SPixel%Ind, &
         SPixel%spixel_y_thermal_to_ctrl_y_index, &
         GZero, SAD_LUT, CRP, d_CRP, status)
 
+   ! Calculate delta_Ts
+   delta_Ts = X(ITs) - SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+
    ! Calculate product dB_dTs * SPixel%RTM%LW%Ems (for efficiency)
    Es_dB_dTs = SPixel%RTM%LW%dB_dTs(Thermal) * SPixel%RTM%LW%Ems(Thermal)
+
+   ! Update clear radiances at each RTM pressure level
+   R_clear = SPixel%RTM%LW%R_clear(Thermal) + &
+      (delta_Ts * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1))
 
    ! Update below cloud radiance after interpolation to Pc
    RTM_Pc%LW%Rbc_up(Thermal) = RTM_Pc%LW%Rbc_up(Thermal) + &
