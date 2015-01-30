@@ -154,7 +154,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
             ! Error setting could be much more sophisticated. The current scheme
             ! takes no account of relative proportions of land/sea in the
             ! current SPixel.
-            SPixel%Xb(i)   = SPixel%RTM%LW%skint
+            SPixel%Xb(i)   = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
             if (SPixel%Surface%Sea == 1)  &
                SPixel%Sx(i,i) = (AUXErrTsSea * Ctrl%Invpar%XScale(i)) ** 2
             if (SPixel%Surface%Land == 1) &
@@ -218,7 +218,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
          case (SelmAUX)   ! AUX method not supported for most vars.
             if (i == ITs) &
-               SPixel%X0(i) = SPixel%RTM%LW%skint
+               SPixel%X0(i) = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
          end select
 
          ! Ctrl method, used if method is Ctrl or other methods failed.

@@ -187,6 +187,7 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file. Eliminate conf structure.
+!    2014/01/30, AP: Read surface level of RTTOV files.
 !
 ! Bugs:
 !    None known.
@@ -416,10 +417,6 @@ end if
 
    call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
         RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NPLAY, RTM%SW%NSWF, verbose)
-
-   ! Don't read the lowest (surface) level
-   RTM%LW%NP=RTM%LW%NPLAY
-   RTM%SW%NP=RTM%SW%NPLAY
 
    call Read_LwRTM_nc(Ctrl, RTM, verbose)
    call Read_SwRTM_nc(Ctrl, RTM, verbose)
