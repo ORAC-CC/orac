@@ -9,9 +9,6 @@
 ! Arguments:
 !    Name     Type   In/Out/Both Description
 !    Ctrl     struct Both        Control structure
-!    NSegs    int    In          Number of image segments read in by previous
-!                                calls to this routine.
-!    SegSize  int    In          Number of rows of pixels in an image segment.
 !    MSI_Data struct Both        Data structure: contains the cloud flag array
 !                                to be populated with data from the file. This
 !                                is overwritten as successive segments of data
@@ -36,14 +33,12 @@
 !              Write error message to log file
 !    Leave cloud flag file open for later reads
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    2012/08/22, MJ: Uses original routine and implements reading of netcdf
 !       data.
 !    2014/08/02, GM: Cleaned up the code.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
+!    2014/01/30, AP: Remove NSegs, SegSize arguments.
 !
 ! Bugs:
 !    None known.
@@ -52,7 +47,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+subroutine Read_Location_nc(Ctrl, MSI_Data, verbose)
 
    use CTRL_def
    use orac_ncdf
@@ -62,9 +57,6 @@ subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    ! Argument declarations
 
    type(CTRL_t), intent(in)    :: Ctrl
-   integer,      intent(in)    :: NSegs    ! Number of segments read so far
-   integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
-                                           ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
@@ -74,8 +66,8 @@ subroutine Read_Location_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    if (verbose) write(*,*) 'Location file: ', trim(Ctrl%Fid%Loc)
    call nc_open(ncid, Ctrl%Fid%Loc)
 
-   allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
    call nc_read_array(ncid, "lat", MSI_Data%Location%Lat, verbose)
    call nc_read_array(ncid, "lon", MSI_Data%Location%Lon, verbose)

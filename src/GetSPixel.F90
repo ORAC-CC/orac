@@ -61,9 +61,6 @@
 !    to flag a problem in a super-pixel. The calling routine can set status=0
 !    after checking.
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    29th Nov 2000, Kevin M. Smith:
 !       Original version
@@ -219,6 +216,7 @@
 !    13th Jan 2015, Adam Povey: Switching to Ctrl%Ind%Ch_Is rather than any().
 !       Removing First:Last channel indexing.
 !    21st Jan 2015, Adam Povey: Moved allocated of SPixel%RTM%... here.
+!    30th Jan 2015, Adam Povey: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! Bugs:
 !    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -276,32 +274,32 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! a retrieval. The SPixel Mask is set to flag problems in particular pixels.
 
    ! Check Cloud flags (0 or 1)
-   call check_value(MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+   call check_value(MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%Y0), &
         CloudMax, CloudMin, SPixel, 'cloud flag', SPixCloudFl, Ctrl)
 
    ! Land/Sea flags (0 or 1)
-   call check_value(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+   call check_value(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0), &
         FlagMax, FlagMin, SPixel, 'land/sea flag', SPixLandFl, Ctrl)
 
    !  Make this work if pixel is in daylight
    !  Geometry - Solar zenith (between 0o and 90o)
-   !call check_value(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+   !call check_value(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0), &
    !     90.0, 0.0, SPixel, 'solar zenith angle', SPixSolZen, Ctrl)
 
    ! Geometry - Satellite zenith (between 0o and 90o)
-   call check_value(MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0, :), &
+   call check_value(MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0, :), &
         SatZenMax, SatZenMin, SPixel, 'satellite zenith angl', SPixSatZen, Ctrl)
 
    ! Geometry - Azimuth (between 0o and 180o)
-   call check_value(MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0, :), &
+   call check_value(MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0, :), &
         RelAziMax, RelAziMin, SPixel, 'azimuth angle', SPixRelAzi, Ctrl)
 
    ! Location - Latitude (between -90o and 90o)
-   call check_value(MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+   call check_value(MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0), &
         LatMax, LatMin, SPixel, 'location latitude', SPixLat, Ctrl)
 
    ! Location - Longitude (between -180o and 180o)
-   call check_value(MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0), &
+   call check_value(MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0), &
         LonMax, LonMin, SPixel, 'location longitude', SPixLon, Ctrl)
 
    ! These checks for missing data are already performed when the illumination
@@ -312,11 +310,11 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! from Get_Illum() below. For now these loops are still here to set SPixel%QC.
 
    ! MSI - Reflectances (between 0 and 1)
-   minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0, :))
+   minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0, :))
    if (minsolzen < Ctrl%MaxSolzen) then
       do i = 1,Ctrl%Ind%NSolar
          if (.not. btest(Ctrl%Ind%Ch_Is(Ctrl%Ind%YSolar(i)), ThermalBit)) &
-            call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+            call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, &
                              Ctrl%Ind%YSolar(i)), RefMax, RefMin, SPixel, &
                              'MSI reflectance', SPixRef, Ctrl)
       end do
@@ -325,7 +323,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! MSI - Temperatures (between 150.0K and 330.0K)
    allocate(thermal(Ctrl%Ind%NThermal))
    do i = 1,Ctrl%Ind%NThermal
-      thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, &
+      thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, &
                                 Ctrl%Ind%YThermal(i))
    end do
    call check_value(thermal, BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp, &
@@ -341,8 +339,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! mask where the data for a given pixel fails each check.
 
    SPixel%NMask = SPixel%Mask
-   SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%YSeg0)
-   SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+   SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0)
+   SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0)
 
    ! If all Mask flags are 0 there are no good pixels in the current SPixel, do
    ! not process and set QC flag.
@@ -361,7 +359,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       ! Removal of Super-pixel averaging: replace call to GetCloudFlags with a
       ! simple assignment. "Flags" is now 1 single flag.
 
-      SPixel%Cloud%Flags = MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+      SPixel%Cloud%Flags = MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
       SPixel%Cloud%Fraction = SPixel%Cloud%Flags
 
 

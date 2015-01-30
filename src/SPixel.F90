@@ -19,9 +19,6 @@
 ! Algorithm:
 !    N/A
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    24th Nov 2000, Andy Smith: Original version
 !     1st Dec 2000, Andy Smith:
@@ -219,17 +216,8 @@ module SPixel_def
    ! Define a type for the locational parameters
 
    type Loc_t
-      ! X0, Xn, Xc, Y0, Yn, Yc are co-ordinates within the whole image
-      ! AS, Apr 2011: Xc, Yc, Xn, Yn can probably be removed now that
-      ! super-pixel averaging has gone.
-      integer             :: X0           ! Super-pixel 'left' x co-ordinate
-      integer             :: Xn           ! Super-pixel 'right' x co-ordinate
-      integer             :: Xc           ! Super-pixel central x co-ordinate
-      integer             :: Y0           ! Super-pixel 'bottom' y co-ordinate
-      integer             :: Yn           ! Super-pixel 'top' y co-ordinate
-      integer             :: Yc           ! Super-pixel central y co-ordinate
-      integer             :: YSeg0        ! Super-pixel 'bottom' y co-ordinate
-                                          ! within an image segment
+      integer             :: X0           ! Pixel x co-ordinate
+      integer             :: Y0           ! Pixel y co-ordinate
       real                :: Lat          ! Super-pixel mean latitude
       real                :: Lon          ! Super-pixel mean longitude
       integer             :: LastX0       ! Value of X0 for last successful
@@ -377,7 +365,6 @@ contains
 #include "GetRTM.F90"
 #include "GetRs.F90"
 #include "GetSurface.F90"
-!#include "XAUX.F90"
 #include "XMDAD.F90"
 #include "XSDAD.F90"
 #include "GetX.F90"

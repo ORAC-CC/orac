@@ -42,9 +42,6 @@
 !       diagonal value in Sy
 !       - same day/twi/night conditions apply as for NeHomog
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    29th Nov 2000, Kevin M. Smith: Original version
 !     4th Dec 2000, Kevin M. Smith: corrections to 'average all' method
@@ -105,6 +102,8 @@
 !       properly index the right channels from MSI_Data%MSI(:,:,:) and cleanup.
 !    13th Jan 2015, Adam Povey:
 !       Remove ThermalFirst,ThermalLast.
+!    30th Jan 2015, Adam Povey:
+!       Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! Bugs:
 !    None known.
@@ -152,7 +151,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! requested channels (not just those that are valid for the current SPixel).
    do i = 1, SPixel%Ind%Ny
       ii = SPixel%spixel_y_to_ctrl_y_index(i)
-      SPixel%Ym(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, ii)
+      SPixel%Ym(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, ii)
       SPixel%ViewIdx(i) = Ctrl%Ind%ViewIdx(ii)
    end do
    SPixel%Ind%Nviews = Ctrl%Ind%NViews

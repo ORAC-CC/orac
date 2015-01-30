@@ -42,9 +42,6 @@
 !    - AUX
 !         Use albedo value read from Aux file.
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !     1st December, 2000, Kevin M. Smith:
 !       Original version
@@ -134,6 +131,7 @@
 !       Ch5 of AATSR. There is no reason to do so. This has been removed.
 !    2015/01/20, AP: Tidying redundant code.
 !    2015/01/21, AP: Move allocations of reflectance arrays here.
+!    2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! Bugs:
 !    AS, Mar 2011. The Aux method albedo code includes specific handling for
@@ -209,7 +207,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       ! assignment only needs to be done once for each run rather than once per
       !      super-pixel.
 
-      SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+      SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
 
       ! Loop over channels to assign b, Sb. Cb is taken straight from Ctrl%Rs%Cb
       ! in both methods.
@@ -263,7 +261,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    ! AUX method: use Albedo data to set Rs
    else if (Ctrl%Rs%Flag == SelmAux) then
 
-      SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+      SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
 
       Sb = Ctrl%Rs%Sb
 
@@ -273,29 +271,24 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
          solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
 
-         SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0, ii) / &
+         SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, ii) / &
               solar_factor
 
          if (Ctrl%RS%use_full_brdf) then
             SPixel_b2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &
-                                   SPixel%Loc%YSeg0, ii) / solar_factor
+                                   SPixel%Loc%Y0, ii) / solar_factor
             SPixel_b2(i,IRho_0D) = MSI_Data%rho_0d(SPixel%Loc%X0, &
-                                   SPixel%Loc%YSeg0, ii) / solar_factor
+                                   SPixel%Loc%Y0, ii) / solar_factor
             SPixel_b2(i,IRho_DV) = MSI_Data%rho_dv(SPixel%Loc%X0, &
-                                   SPixel%Loc%YSeg0, ii) / solar_factor
+                                   SPixel%Loc%Y0, ii) / solar_factor
             SPixel_b2(i,IRho_DD) = MSI_Data%rho_dd(SPixel%Loc%X0, &
-                                   SPixel%Loc%YSeg0, ii) / solar_factor
+                                   SPixel%Loc%Y0, ii) / solar_factor
          end if
 
          ! If sea and then sun glint replace by Ctrl value, otherwise if land,
          ! check for missing values and replace by Ctrl value
          !
          ! N.B. assumes either all channel albedos are present, or none are.
-
-!        qc1=0
-!        qc2=0
-!        call mvbits(MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0,5),0,2,qc1,0)
-!        call mvbits(MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%YSeg0,6),0,4,qc2,0)
 
          if (SPixel%Surface%Flags == 0) then ! sea
             if (SPixel_b(i) .ge. 1.0) then

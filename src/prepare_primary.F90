@@ -13,9 +13,6 @@
 ! Return value:
 ! Name Type Description
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 ! 2011/12/19, Matthias Jerg: Creates initial version
 ! 2012/01/06, Matthias Jerg: Added in cwp
@@ -36,6 +33,7 @@
 !    dem, and nisemask
 ! 2014/11/15, CP: added cloud albedo
 ! 2014/11/25, AP: Fixed bug in writing cth|ctt_uncertainty.
+! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !
@@ -72,7 +70,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   output_data%time(i,j)=MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+   output_data%time(i,j)=MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
 
    !----------------------------------------------------------------------------
    ! lat, lon
@@ -84,9 +82,9 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    ! sol_zen, sat_zen, rel_azi
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%NViews
-      output_data%sol_zen(i,j,k)=MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0,k)
-      output_data%sat_zen(i,j,k)=MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0,k)
-      output_data%rel_azi(i,j,k)=MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0,k)
+      output_data%sol_zen(i,j,k)=MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0,k)
+      output_data%sat_zen(i,j,k)=MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0,k)
+      output_data%rel_azi(i,j,k)=MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0,k)
    end do
 
    !----------------------------------------------------------------------------
@@ -356,7 +354,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! lsflag
    !----------------------------------------------------------------------------
-   output_data%lsflag(i,j)=int(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0), kind=byte)
+   output_data%lsflag(i,j)=int(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! qcflag
@@ -366,24 +364,24 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! illum
    !----------------------------------------------------------------------------
-   output_data%illum(i,j)=MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0,1)
+   output_data%illum(i,j)=MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0,1)
 
    !----------------------------------------------------------------------------
    ! cldtype
    !----------------------------------------------------------------------------
    output_data%cldtype(i,j)=int(MSI_Data%cldtype(SPixel%Loc%X0, SPixel%Loc&
-        %YSeg0), kind=byte)
+        %Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
    output_data%cldmask(i,j)=int(MSI_Data%cloudmask(SPixel%Loc%X0, SPixel%Loc&
-        %YSeg0), kind=byte)
+        %Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! cccot_pre
    !----------------------------------------------------------------------------
-   temp_real=MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+   temp_real=MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%Y0)
    call prepare_float_packed_float( &
            temp_real, output_data%cccot_pre(i,j), &
            output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
@@ -395,18 +393,18 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    ! lusflag
    !----------------------------------------------------------------------------
    output_data%lusflag(i,j)=int(MSI_Data%lusflags(SPixel%Loc%X0, SPixel%Loc&
-        %YSeg0), kind=byte)
+        %Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! dem
    !----------------------------------------------------------------------------
-   output_data%dem(i,j)=int(MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%YSeg0), kind=sint)
+   output_data%dem(i,j)=int(MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%Y0), kind=sint)
 
    !----------------------------------------------------------------------------
    ! lusflag
    !----------------------------------------------------------------------------
    output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
-        %YSeg0), kind=byte)
+        %Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! cloud_albedo

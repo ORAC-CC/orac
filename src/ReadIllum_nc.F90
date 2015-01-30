@@ -8,9 +8,6 @@
 ! Arguments:
 !    Name     Type          In/Out/Both Description
 !    Ctrl     struct        Both        Control structure
-!    NSegs    int           In          Number of image segments read in by
-!                                       previous calls to this routine.
-!    SegSize  int           In          Size of image segment in rows of pixels.
 !    MSI_files_open Logical In          Indicates whether the MSI data file is
 !                                       open (if not, open it).
 !    lun      int           Both        File unit number set by this routine
@@ -22,9 +19,6 @@
 !                                       successive calls.
 !
 ! Algorithm:
-!
-! Local variables:
-!    Name Type Description
 !
 ! History:
 !    18/06/2012, C. Poulsen: Original version
@@ -54,6 +48,7 @@
 !    2015/01/15, GM: Bug fix in illumination logic under twilight conditions and
 !       removed old logic.
 !    2015/01/20, GM: Fixed my previous commit.
+!    2014/01/30, AP: Remove NSegs, SegSize arguments.
 !
 ! Bugs:
 !    None known.
@@ -62,7 +57,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+subroutine Read_Illum_nc(Ctrl, MSI_Data, verbose)
 
    use CTRL_def
    use ECP_Constants
@@ -73,9 +68,6 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    ! Argument declarations
 
    type(CTRL_t), intent(in)    :: Ctrl
-   integer,      intent(in)    :: NSegs    ! Number of segments read so far
-   integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
-                                           ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
@@ -87,7 +79,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    integer :: n_vis_bad_ref,n_vis_bad_tau,n_ir_bad
    integer :: i_missing_vis_ref,i_missing_vis_tau,i_missing_ir
 
-   allocate(MSI_Data%illum(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NViews))
+   allocate(MSI_Data%illum(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    MSI_Data%illum=byte_fill_value
 
    ! Set channel number in instrument notation which can be used for effective
@@ -109,7 +101,7 @@ subroutine Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    ! First ensure that the illumination is consistent in all views
    ! loop over observations in y direction
    do i = 1,Ctrl%Ind%Xmax
-      do j = 1,Ctrl%Resoln%SegSize
+      do j = 1,Ctrl%Ind%Ymax
          do view = 1,Ctrl%Ind%NViews
             n_vis_bad_ref=0
             n_vis_bad_tau=0

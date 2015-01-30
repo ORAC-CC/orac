@@ -9,9 +9,6 @@
 ! Arguments:
 !    Name     Type   In/Out/Both Description
 !    Ctrl     struct Both        Control structure
-!    NSegs    int    In          Number of image segments read in by previous
-!                                calls to this routine.
-!    SegSize  int    In          Number of rows of pixels in an image segment.
 !    MSI_Data struct Both        Data structure: contains the cloud flag array
 !                                to be populated with data from the file. This
 !                                is overwritten as successive segments of data
@@ -35,9 +32,6 @@
 !           If read error
 !              Write error message to log file
 !    Leave cloud flag file open for later reads
-!
-! Local variables:
-!    Name Type Description
 !
 ! History:
 !     3rd Nov 2000, Kevin M. Smith: Original version
@@ -73,6 +67,8 @@
 !       Switching to preprocessor NCDF routines.
 !    24th Oct 2014, Oliver Sus:
 !       Added new variables CldType, CloudMask, and CCCOT_pre
+!    30th Jan 2015, Adam Povey:
+!       Remove NSegs, SegSize arguments.
 !
 ! Bugs:
 !    None known.
@@ -81,7 +77,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
 
    use CTRL_def
    use ECP_Constants
@@ -92,9 +88,6 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    ! Argument declarations
 
    type(CTRL_t), intent(in)    :: Ctrl
-   integer,      intent(in)    :: NSegs    ! Number of segments read so far
-   integer,      intent(in)    :: SegSize  ! Size of image segment in rows of
-                                           ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
@@ -104,10 +97,10 @@ subroutine Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
    call nc_open(ncid, Ctrl%Fid%CF)
 
-   allocate(MSI_Data%CloudFlags(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%cloudmask(Ctrl%Ind%Xmax, SegSize))
-   allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%CloudFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cloudmask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
    call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, verbose)

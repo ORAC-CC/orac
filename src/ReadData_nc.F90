@@ -9,10 +9,6 @@
 ! Arguments:
 !    Name     Type         In/Out/Both Description
 !    Ctrl     struct       Both        Control structure (date is read in here).
-!    NSegs    int          In          Number of image segments read in by
-!                                      previous calls to this routine.
-!    SegSize  int          In          Number of rows of pixels in an image
-!                                      forth for subsequent reads.
 !    MSI_Data struct       Both        Data structure: the ALB data part of this
 !                                      struct is populated by this routine, and
 !                                      is overwritten on successive calls.
@@ -22,9 +18,7 @@
 !                                      the day of the ALB data.
 !
 ! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+!    Open everything in order, using dedicated routines for each.
 !
 ! History:
 !    ????/??/??, Matthias Jerg: Original version.
@@ -42,7 +36,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_Data_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    use netcdf
 
@@ -54,8 +48,6 @@ subroutine Read_Data_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    ! Define arguments
 
    type(CTRL_t),     intent(inout) :: Ctrl
-   integer,          intent(in)    :: NSegs
-   integer,          intent(in)    :: SegSize
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
    logical,          intent(in)    :: verbose
@@ -70,25 +62,25 @@ subroutine Read_Data_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
 
    if (Ctrl%RS%Flag == SelmAux) then
       if (verbose) write(*,*) 'Reading Albedo data'
-      call Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+      call Read_ALB_nc(Ctrl, MSI_Data, verbose)
    end if
 
    if (verbose) write(*,*) 'Reading Cloud Flag data'
-   call Read_CloudFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+   call Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
 
    if (verbose) write(*,*) 'Reading Geometry data'
-   call Read_Geometry_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+   call Read_Geometry_nc(Ctrl, MSI_Data, verbose)
 
    if (verbose) write(*,*) 'Reading Location data'
-   call Read_Location_nc(Ctrl, NSegs, SegSize,MSI_Data, verbose)
+   call Read_Location_nc(Ctrl, MSI_Data, verbose)
 
    if (verbose)  write(*,*) 'Reading LS Flag data'
-   call Read_LSFlags_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+   call Read_LSFlags_nc(Ctrl, MSI_Data, verbose)
 
    if (verbose)  write(*,*) 'Reading MSI data'
-   call Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+   call Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    if (verbose)  write(*,*) 'Reading Illumination data'
-   call Read_Illum_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+   call Read_Illum_nc(Ctrl, MSI_Data, verbose)
 
 end subroutine Read_Data_nc

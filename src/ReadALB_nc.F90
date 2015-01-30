@@ -10,10 +10,6 @@
 !   Name     Type          In/Out/Both Description
 !   Ctrl     struct        Both        Control structure (date is read in
 !                                      here).
-!   NSegs    int           In          Number of image segments read in by
-!                                      previous calls to this routine.
-!   SegSize  int           In          Number of rows of pixels in an image
-!                                      segment.
 !   MSI_Data struct        Both        Data structure: the ALB data part
 !                                      of this struct is populated by this
 !                                      routine, and is overwritten on
@@ -42,9 +38,6 @@
 !             Write error message to log file
 !    Leave ALB file open for further reads
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    29th May 2002, Caroline Poulsen: Original version copied from READ_MSI.
 !    29th Oct 2002, Caroline Poulsen: Fixed bug too many arguments in the header
@@ -65,6 +58,7 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
+!    2014/01/30, AP: Remove NSegs, SegSize arguments.
 !
 ! Bugs:
 !    None known.
@@ -73,7 +67,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
+subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
 
    use CTRL_def
    use ECP_Constants
@@ -82,12 +76,8 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    implicit none
 
-   ! Argument declarations
-
+   ! Argument declarations 
    type(CTRL_t), intent(in)    :: Ctrl
-   integer,      intent(in)    :: NSegs     ! Number of segments read so far
-   integer,      intent(in)    :: SegSize   ! Size of image segment in rows of
-                                            ! pixels.
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
@@ -116,7 +106,7 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
    end do
 
    ! Allocate Data%ALB structure
-   allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+   allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
 
    ! Read solar channels from albedo field
    call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, 3, subs)
@@ -126,10 +116,10 @@ subroutine Read_ALB_nc(Ctrl, NSegs, SegSize, MSI_Data, verbose)
 
    if (Ctrl%RS%use_full_brdf) then
       ! Allocate Data%rho_xx structures
-      allocate(MSI_Data%rho_0v(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
-      allocate(MSI_Data%rho_0d(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
-      allocate(MSI_Data%rho_dv(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
-      allocate(MSI_Data%rho_dd(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%NSolar))
+      allocate(MSI_Data%rho_0v(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
+      allocate(MSI_Data%rho_0d(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
+      allocate(MSI_Data%rho_dv(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
+      allocate(MSI_Data%rho_dd(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
 
       call nc_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, verbose, 3, subs)
       call nc_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, verbose, 3, subs)

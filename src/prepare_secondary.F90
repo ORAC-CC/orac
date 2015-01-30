@@ -13,9 +13,6 @@
 ! Return value:
 ! Name Type Description
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 ! 2011/12/19, Matthias Jerg: Creates initial version
 ! 2012/01/05, Caroline Poulsen: Add in reflectances and brightness temperature
@@ -29,6 +26,7 @@
 ! 2014/06/13, Greg McGarragh: Cleaned up the code.
 ! 2014/08/31, Greg McGarragh: Update to use general routines in the current
 !    module.
+! 2014/01/30, Adam Povey: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !
@@ -144,7 +142,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    ! albedo
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%NSolar
-      dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%YSeg0,k)
+      dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%Y0,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%albedo(i,j,k), &
            output_data%albedo_scale(k), output_data%albedo_offset(k), &
@@ -157,7 +155,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    ! channels
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%Ny
-      dummyreal=MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%YSeg0, k)
+      dummyreal=MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, k)
       call prepare_short_packed_float( &
            dummyreal, output_data%channels(i,j,k), &
            output_data%channels_scale(k), output_data%channels_offset(k), &

@@ -12,9 +12,6 @@
 ! Algorithm:
 !    N/A
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    17th Aug 2000, Andy Smith: original version
 !    22nd Nov 2000, Andy Smith:
@@ -110,6 +107,7 @@
 !    2014/12/19, Adam Povey: Removing unneccessary fields.
 !    2015/01/13, Adam Povey: Adding Ch_Is, YMixed. Removing First:Last indexes.
 !    2015/01/30, Adam Povey: Remove Ws, Xstart, Ystart as depreciated.
+!       Remove Resoln structure as superpixeling only in preprocessing.
 !
 ! Bugs:
 !   None known.
@@ -150,18 +148,6 @@ module CTRL_def
       integer                :: ID
       character(InstNameLen) :: Name
    end type Inst_t
-
-   ! Resolution info
-   type Resoln_t
-      integer                :: Space              ! Deg. of spatial resolution
-                                                   ! (pixels)
-      integer                :: AMeth              ! Averaging method
-      integer                :: SegSize            ! Image segment size (no. of
-                                                   ! rows of super-pixels that
-                                                   ! make up a segment).
-      integer                :: Time               ! Temporal av'ging required
-                                                   ! (slots)
-   end type Resoln_t
 
    ! Indices: includes pixels to be used, channel and state variable indices and
    ! "warm-start" pixel indices.
@@ -306,7 +292,6 @@ module CTRL_def
       real                   :: MaxSolZen          ! Daynight/twilight boundary
       real                   :: Sunset             ! SolZen angle for sunset
       type (Inst_t)          :: Inst
-      type (Resoln_t)        :: Resoln
       type (Ind_t)           :: Ind
       character(3)           :: CloudClass         ! Name of LUT to use
       integer                :: CloudType          ! Cloud type flag, distinct from

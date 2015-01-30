@@ -10,10 +10,6 @@
 !    Name     Type          In/Out/Both Description
 !    Ctrl     struct        Both        Control structure (date is read in
 !                                       here).
-!    NSegs    int           In          Number of image segments read in by
-!                                       previous calls to this routine.
-!    SegSize  int           In          Number of rows of pixels in an image
-!                                       segment.
 !    MSI_Data struct        Both        Data structure: the MSI data part of
 !                                       this struct is populated by this
 !                                       routine, and is overwritten on
@@ -41,9 +37,6 @@
 !          If read error
 !             Write error message to log file
 !    Leave MSI file open for further reads
-!
-! Local variables:
-!    Name Type Description
 !
 ! History:
 !     3rd Nov 2000, Kevin M. Smith:
@@ -102,6 +95,7 @@
 !    2014/04/18, GM: Cleaned up the code.
 !    2014/04/30, GM: Fixed a bug introduced by a previous change.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
+!    2014/01/30, AP: Remove NSegs, SegSize arguments.
 !
 ! Bugs:
 !    None known.
@@ -110,7 +104,7 @@
 !
 !-------------------------------------------------------------------------------
 
-subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    use CTRL_def
    use ECP_Constants
@@ -122,9 +116,6 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    ! Argument declarations
 
    type(CTRL_t),     intent(inout) :: Ctrl
-   integer,          intent(in)    :: NSegs    ! Number of segments read so far
-   integer,          intent(in)    :: SegSize  ! Size of image segment in rows of
-                                               ! pixels.
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
    logical,          intent(in)    :: verbose
@@ -172,8 +163,8 @@ subroutine Read_MSI_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
    ! Read MSI file
 
    ! Allocate Data%MSI structure size to match image segments to be used.
-   allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, SegSize, Ctrl%Ind%Ny))
-   allocate(MSI_Data%time(Ctrl%Ind%Xmax, SegSize))
+   allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
+   allocate(MSI_Data%time(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
    call nc_read_array(ncid, "msi_data", MSI_Data%MSI, verbose, 3, Ctrl%Ind%ICh)
    call nc_read_array(ncid, "time_data", MSI_Data%time, verbose)

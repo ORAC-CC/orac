@@ -26,9 +26,6 @@
 !    illumination.
 !    Calculate the airmass factors for the observation and viewing geometry
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    27th Nov 2000, Kevin M. Smith: Original version
 !    30th Nov 2000, Kevin M. Smith:
@@ -89,6 +86,8 @@
 !       Remove illumination calculation. Illum is now an array of values
 !    30th Jul 2014, Greg McGarragh:
 !       Cleaned up the code.
+!    30th Jan 2015, Adam Povey:
+!       Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! Bugs:
 !    None known.
@@ -121,9 +120,9 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    status = 0
 
    ! Assign SPixel values for satellite geometry
-   SPixel%Geom%SolZen = MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%YSeg0, :)
-   SPixel%Geom%SatZen = MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%YSeg0, :)
-   SPixel%Geom%RelAzi = MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%YSeg0, :)
+   SPixel%Geom%SolZen = MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0, :)
+   SPixel%Geom%SatZen = MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0, :)
+   SPixel%Geom%RelAzi = MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0, :)
 
    ! Set status non-zero if satellite zenith angle is outside the allowed range
    ! specified in Ctrl. (Use absolute y location in the error message rather

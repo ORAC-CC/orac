@@ -19,12 +19,10 @@
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    08/02/2012, Caroline Poulsen: Original version
 !    30/07/2014, Greg McGarragh: Cleaned up the code.
+!    30/01/2015, Adam Povey: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! Bugs:
 !   None known.
@@ -59,7 +57,7 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
    SPixel%Surface%NSea  = 0
 
 
-   SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%YSeg0)
+   SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
    SPixel%Surface%NLand = SPixel%Surface%Flags
    SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
 

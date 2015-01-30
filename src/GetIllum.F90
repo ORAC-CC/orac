@@ -18,9 +18,6 @@
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
-!
 ! History:
 !    15th Jun 2012, Caroline Poulsen: Original version
 !    17th Jul 2012, Caroline Poulsen: Changed value 1 to nviews
@@ -34,6 +31,8 @@
 !    13th Jan 2015, Adam Povey: Adding YSolar, YThermal, YMixed to setup_indices.
 !       Use Ctrl%Ind%Ch_Is flag instead of any() to identify channels. Remove
 !       First:Last channel indexing.
+!    30th Jan 2015, Adam Povey:
+!       Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! Bugs:
 !    Warning At the moment only one view is specified.
@@ -76,7 +75,7 @@ subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! current super-pixel is Ctrl%Ind%Y(SPixel%Ind%ThermalFirst).
 
    do i_view=1,Ctrl%Ind%NViews
-      SPixel%illum(i_view) = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%YSeg0, i_view)
+      SPixel%illum(i_view) = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
 
       ! Daylight
       if (SPixel%illum(i_view) .eq. IDay) then

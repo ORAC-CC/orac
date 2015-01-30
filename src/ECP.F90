@@ -73,12 +73,6 @@
 !    - write out overall statistics
 !    - close files
 !
-! Local variables:
-!    Name Type Description
-!    Do we really need a list here that is the same as the "Local variable
-!    declarations" section below, descriptions and all, and is subject to rot
-!    unlike the declaration section below.
-!
 ! History:
 !     2nd Aug 2000, Andy Smith: Original version (in development)
 !    11th Jul 2001, Andy Smith:
@@ -188,7 +182,7 @@
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file. Eliminate conf structure.
 !    2014/01/30, AP: Read surface level of RTTOV files. Allow warm start
-!       coordinates to be specified in the driver file.
+!       coordinates to be specified in the driver file. Remove SegSize.
 !
 ! Bugs:
 !    None known.
@@ -352,9 +346,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
       Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NInstViews, verbose)
 
-   ! Set range to be processed
-   Ctrl%Resoln%SegSize = Ctrl%Ind%YMax
-
 if (.false.) then
    ! Open the log file specified in Ctrl
    call find_lun(log_lun)
@@ -448,19 +439,8 @@ end if
    write(*,*) 'Total number of lines: ', (iystop - iystart) + 1
 
 
-   SegSize = Ctrl%Resoln%SegSize
-   select case (mod(iystart,SegSize))
-   ! 0 = last row of segment; 1 = 1st row of segment
-   case (0, 1)
-      NSegs = iystart / SegSize
-   ! Mid-segment
-   case default
-      NSegs = (iystart / SegSize) + 1
-   end select
-
-
    ! Read all the swath data
-   call Read_Data_nc(Ctrl, NSegs, SegSize, MSI_Data, SAD_Chan, verbose)
+   call Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    xstep = 1
    ystep = 1
@@ -595,17 +575,8 @@ end if
 
 !     write(*,*) 'thread,iystart,iystop,iy: ', thread_num,iystart,iystop,j
 
-      ! Set the location of the pixel within the image (Y0) and within the
-      ! current image segment (YSeg0).
+      ! Set the location of the pixel within the image (Y0)
       SPixel%Loc%Y0 = j
-
-      if (mod(SPixel%Loc%Y0, SegSize) == 0) then
-         SPixel%Loc%YSeg0 = SegSize
-      else
-         SPixel%Loc%YSeg0 = SPixel%Loc%Y0 - &
-            ((SPixel%Loc%Y0/SegSize) * SegSize)
-      end if
-
 
       ! The X loop is unbounded. This allows for the changing X limits required
       ! on warm start: for the first row of SPixels processed the X range is
