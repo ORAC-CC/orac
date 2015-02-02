@@ -21,6 +21,7 @@
 ! 2014/08/01, CP: Implemented (Sus) bug fix where if the BT was warmer than the
 !    lowest level then the FG temperature was set the lowest temperature.
 ! 2015/01/12, AP: Use existing locate function.
+! 2014/02/02, AP: Bug fix. Interpolation was never happening.
 !
 ! $Id$
 !
@@ -191,7 +192,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
 
       ! call the polynomial interpolation (so far linear), return interpolated
       ! ctp and uncertainty estimate delctp
-      if (invert_t(upper_index)-invert_t(lower_index) .gt. ditherm3) then
+      if (abs(invert_t(upper_index)-invert_t(lower_index)) .gt. ditherm3) then
          call polint(invert_t(lower_index:upper_index), &
                      invert_p(lower_index:upper_index), &
                      upper_index-lower_index+1,BT_o,BP_o,DBP_o)
