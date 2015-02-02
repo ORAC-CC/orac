@@ -8,9 +8,6 @@
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 ! 2013/11/22, MJ: Writes routine which return ctp FG including uncertainty
 !    information based on interpolation of brightness temperature.
@@ -59,7 +56,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    real    :: invert_temp(SPixel%RTM%LW%Np)
 
    ! set default values if anything goes wrong
-   BP_o=Ctrl%X0(3)
+   BP_o=Ctrl%X0(iPc)
 
    ! FG does not need Error but AP does
    DBP_o=MDADErrPc
@@ -117,7 +114,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       call hpsort(mon_k_trop,invert_temp(1:mon_k_trop))
 
       ! try to find match in this sorted profile
-      kspot = locate(invert_t(1:mon_k_trop),BT_o)
+      kspot = locate(invert_temp(1:mon_k_trop),BT_o)
 
       ! if observed BT (BT_o) is larger than all values in RTM-derived
       ! profile stretch, set kspot to 0; otherwise, the approach above would 

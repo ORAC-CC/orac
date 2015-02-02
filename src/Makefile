@@ -230,8 +230,7 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/SADChan.o \
            $(OBJS)/SADLUT.o \
            $(OBJS)/sad_util.o \
-           $(OBJS)/SPixel.o \
-           $(OBJS)/t_extrap_strat.o
+           $(OBJS)/SPixel.o
 
 ORAC_OBJ_MAIN = $(OBJS)/ECP.o
 
