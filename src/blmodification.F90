@@ -27,6 +27,10 @@
 !       1  -->2 as this seems to give better results. This is now consistent
 !       with OCA(EUMETSAT) code.
 !    30/01/2015, A. Povey: Tidying.
+!    03/02/2015, G. McGarragh: Bug fix: If BLindexbottom was found to
+!       be SPixel%RTM%LW%Np-1 then the estimate of the BL lapse rate
+!       went out of array bounds.  Changed maximum BLindexbottom to
+!       SPixel%RTM%LW%Np-2.
 !
 ! Bugs:
 !    Could use humidity subsidence inversion in the future
@@ -54,7 +58,7 @@ subroutine Blmodification(SPixel)
    BLindexbottom = 0
 
    ! Loop from bottom to top of atmosphere
-   do i = SPixel%RTM%LW%Np-1,2,-1
+   do i = SPixel%RTM%LW%Np-2,2,-1
       ! Check that we haven't left the boundary layer
       if (SPixel%RTM%LW%P(i) .le. max_pressure) exit
 
