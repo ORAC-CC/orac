@@ -326,7 +326,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    character(len=file_length)       :: lwrtm_file,swrtm_file,prtm_file
    character(len=file_length)       :: msi_file,cf_file,lsf_file,config_file
-   character(len=file_length)       :: geo_file,loc_file,alb_file,scan_file
+   character(len=file_length)       :: geo_file,loc_file,alb_file
 
    type(channel_info_s)             :: channel_info
 
@@ -690,11 +690,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! ancillary input...
       if (verbose) write(*,*) 'Carry out any preparatory steps'
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-           cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor, &
-           platform,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2, &
-           ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
-           global_atts,ecmwf_flag,imager_geolocation,i_chunk,assume_full_paths, &
-           verbose)
+           cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear, &
+           cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3, &
+           ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts, &
+           ecmwf_flag,imager_geolocation,i_chunk,assume_full_paths,verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
@@ -829,12 +828,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*) 'Create output netcdf files'
       if (verbose) write(*,*) 'output_path: ',trim(output_path)
 
-      call netcdf_output_create(output_path,lwrtm_file, &
-           swrtm_file,prtm_file,config_file,msi_file,cf_file,lsf_file, &
-           geo_file,loc_file,alb_file,scan_file,platform,sensor,global_atts, &
-           source_atts,cyear,cmonth,cday,chour,cminute,preproc_dims,imager_angles, &
-           imager_geolocation,netcdf_info,channel_info,include_full_brdf, &
-           verbose)
+      call netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
+           config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
+           platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
+           cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
+           channel_info,include_full_brdf,verbose)
 
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'

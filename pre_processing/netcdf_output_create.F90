@@ -21,7 +21,6 @@
 ! geo_file       string  in   Full path to output file geolocation.
 ! loc_file       string  in   Full path to output file location.
 ! alb_file       string  in   Full path to output file albedo.
-! scan_file      string  in   Full path to output file scan position/
 ! platform       string  in   Name of satellite platform.
 ! sensor         string  in   Name of sensor.
 ! global_atts    struct  in   Structure detailing NCDF header contents.
@@ -64,8 +63,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
-   config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file, &
-   platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
+   config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, platform, &
+   sensor,global_atts,source_atts,cyear,cmonth,cday,chour,cminute, &
    preproc_dims,imager_angles,imager_geolocation,netcdf_info,channel_info, &
    include_full_brdf,verbose)
 
@@ -82,8 +81,7 @@ subroutine netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
    character(len=file_length),     intent(in)    :: lwrtm_file,swrtm_file, &
                                                     prtm_file,config_file, &
                                                     msi_file,cf_file,lsf_file, &
-                                                    geo_file,loc_file,alb_file, &
-                                                    scan_file
+                                                    geo_file,loc_file,alb_file
    character(len=platform_length), intent(in)    :: platform
    character(len=sensor_length),   intent(in)    :: sensor
    type(global_attributes_s),      intent(in)    :: global_atts

@@ -52,7 +52,5 @@ subroutine netcdf_output_close(netcdf_info)
         print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF PRTM.'
    if (nf90_close(netcdf_info%ncid_swrtm).ne.NF90_NOERR) &
         print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF SWRTM.'
-   if (nf90_close(netcdf_info%ncid_scan).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF UV.'
 
 end subroutine netcdf_output_close

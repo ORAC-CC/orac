@@ -29,7 +29,6 @@ contains
 ! geo_file         string out Full path to output file geolocation.
 ! loc_file         string out Full path to output file location.
 ! alb_file         string out Full path to output file albedo.
-! scan_file        string out Full path to output file scan position/
 ! sensor           string in  Name of sensor.
 ! platform         string in  Name of satellite platform.
 ! hour             stint  in  Hour of day (0-59)
@@ -81,9 +80,9 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-     cf_file,lsf_file,geo_file,loc_file,alb_file,scan_file,sensor,platform, &
-     cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3, &
-     ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts,ecmwf_flag, &
+     cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &
+     cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_path_file, &
+     ecmwf_path_file2,ecmwf_path_file3,global_atts,ecmwf_flag, &
      imager_geolocation,i_chunk,assume_full_path,verbose)
 
    use imager_structures
@@ -95,8 +94,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=file_length),     intent(out) :: lwrtm_file,swrtm_file, &
                                                   prtm_file,config_file, &
                                                   msi_file,cf_file,lsf_file, &
-                                                  geo_file,loc_file,alb_file, &
-                                                  scan_file
+                                                  geo_file,loc_file,alb_file
    character(len=sensor_length),   intent(in)  :: sensor
    character(len=platform_length), intent(in)  :: platform
    character(len=date_length),     intent(in)  :: cyear,cmonth,cday,chour,cminute
@@ -192,7 +190,6 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    geo_file=trim(adjustl(file_base))//'.geo.nc'
    loc_file=trim(adjustl(file_base))//'.loc.nc'
    alb_file=trim(adjustl(file_base))//'.alb.nc'
-   scan_file=trim(adjustl(file_base))//'.uv.nc'
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving preparation()'
 

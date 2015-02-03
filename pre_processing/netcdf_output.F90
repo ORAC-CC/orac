@@ -45,22 +45,21 @@ module netcdf_output
 
       ! file ids
       integer :: ncid_alb, ncid_clf, ncid_config, ncid_geo, ncid_loc, ncid_lsf,  &
-                 ncid_lwrtm, ncid_msi, ncid_prtm, ncid_scan, ncid_swrtm
+                 ncid_lwrtm, ncid_msi, ncid_prtm, ncid_swrtm
 
       ! fundamental dimensions ids for the different dimensions in the different
       ! files
       integer :: dimid_lw_channels, dimid_sw_channels
 
-      integer :: dimid_x_alb,  dimid_y_alb
-      integer :: dimid_x_cf,   dimid_y_cf
-      integer :: dimid_x_geo,  dimid_y_geo, dimid_v_geo
-      integer :: dimid_x_loc,  dimid_y_loc
-      integer :: dimid_x_lsf,  dimid_y_lsf
-      integer :: dimid_x_lw,   dimid_y_lw,  dimid_v_lw
-      integer :: dimid_x_msi,  dimid_y_msi, dimid_v_msi
-      integer :: dimid_x_pw,   dimid_y_pw
-      integer :: dimid_x_sw,   dimid_y_sw,  dimid_v_sw
-      integer :: dimid_x_scan, dimid_y_scan
+      integer :: dimid_x_alb, dimid_y_alb
+      integer :: dimid_x_cf,  dimid_y_cf
+      integer :: dimid_x_geo, dimid_y_geo, dimid_v_geo
+      integer :: dimid_x_loc, dimid_y_loc
+      integer :: dimid_x_lsf, dimid_y_lsf
+      integer :: dimid_x_lw,  dimid_y_lw,  dimid_v_lw
+      integer :: dimid_x_msi, dimid_y_msi, dimid_v_msi
+      integer :: dimid_x_pw,  dimid_y_pw
+      integer :: dimid_x_sw,  dimid_y_sw,  dimid_v_sw
 
       integer :: dimid_xy_lw, dimid_xy_pw, dimid_xy_sw
 
