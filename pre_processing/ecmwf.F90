@@ -19,6 +19,7 @@
 ! 2014/05/06, AP: Simplified to just one structure.
 ! 2014/11/04, OS: added skin temperature to ecmwf structure
 ! 2014/11/19, GM: C #includes should use double quotes.
+! 2014/02/04, OS: added include of read_ecmwf_wind_dwd.F90
 !
 ! $Id$
 !
@@ -46,6 +47,7 @@ contains
 #include "read_ecmwf_wind_nc.F90"
 #include "read_ecmwf_wind_grib.F90"
 #include "read_ecmwf_wind_badc.F90"
+#include "read_ecmwf_wind_dwd.F90"
 #include "read_ecmwf_nc.F90"
 #include "read_ecmwf_grib.F90"
 #include "rearrange_ecmwf.F90"
