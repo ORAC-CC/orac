@@ -18,6 +18,8 @@
 !         Ch3b nighttime pixels, twilight cloud mask is applied
 !     3rd Dec 2014, SteSta + OS: SATZEN is used for correcting viewing angle effect
 !         in NN output for AVHRR - still testing
+!     4th Feb 2014, SteSta + OS: now using sym%NO to set twilight flag when ch3b missing at night;
+!         now using twilight cloud mask for 80 < solzen < 90
 !
 ! Bugs:
 !    None known
@@ -92,10 +94,12 @@ contains
 
     if ( ( solzen .gt. 0 ) .and. (solzen  .le. 80) ) then
        illum_nn = 1
-    elseif (solzen  .gt. 80.)  then       
+    elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then       
+       illum_nn = 2
+    elseif (solzen  .gt. 90)  then       
        illum_nn = 3
        ! use twilight net if ch3b is missing at night/twilight:
-       if ( ch3a_on_avhrr_flag .eq. sym%INEXISTENT ) illum_nn = 2
+       if ( ch3a_on_avhrr_flag .ne. sym%NO ) illum_nn = 2
     else
        illum_nn = 0
     endif
@@ -228,7 +232,6 @@ contains
 
     ! --- correct for viewing angle (smile) effect - test phase for AVHRR
     output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
-    if ( i .eq. 1 .and. j .eq. 100 ) write(*,*) "smile = ", ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
     ! --- ensure that CCCOT is within 0 - 1 range
     cccot_pre = max( min( output, 1.0 ), 0.0)
