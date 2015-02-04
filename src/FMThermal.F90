@@ -184,14 +184,14 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    ! Calculate radiance gradients
 
    ! Gradient w.r.t. cloud optical depth, tau
-   d_R(:,ITau) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,ITd,Itau) + &
-                         RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,Itau) + &
-                         RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IRd,Itau))
+   d_R(:,ITau) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,ITd,ITau) + &
+                         RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,ITau) + &
+                         RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IRd,ITau))
 
    ! Gradient w.r.t. effective radius, re
-   d_R(:,IRe) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,ITd,Ire) + &
-                        RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,Ire) + &
-                        RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IRd,Ire))
+   d_R(:,IRe) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,ITd,IRe) + &
+                        RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,IRe) + &
+                        RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IRd,IRe))
 
    ! Gradient w.r.t. cloud pressure, Pc
    d_R(:,IPc) = X(IFr) * (RTM_Pc%LW%dTac_dPc(Thermal) * &

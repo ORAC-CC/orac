@@ -282,7 +282,6 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    real    :: Tbc_dv(SPixel%Ind%NSolar)
    real    :: Tbc_dd(SPixel%Ind%NSolar)
 
-   real    :: REF_cld(SPixel%Ind%NSolar)
    real    :: REF_over(SPixel%Ind%NSolar)
 
    real    :: T_all(SPixel%Ind%NSolar)
@@ -317,7 +316,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
    ! Subscripts for solar channels in RTM arrays
    Solar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(:SPixel%Ind%NSolar)
-      
+
    ! Interpolate cloud radiative property LUT data to the current Tau, Re values.
    ! Note that Set_CRP_Solar interpolates values for all solar channels, except
    ! in the case of Td. This is interpolated by SetCRPThermal, which is called
@@ -334,7 +333,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
       Tac_v(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
            SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
 
-      ! Calculate below cloud (bc) beam transmittances      
+      ! Calculate below cloud (bc) beam transmittances
       ! At solar zenith angle:
       Tbc_0(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
            SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))

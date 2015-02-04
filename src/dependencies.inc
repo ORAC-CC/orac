@@ -4,9 +4,10 @@ $(OBJS)/Cholesky.o: $(OBJS)/ECPConstants.o DecomposeCholesky.F90 \
         SolveCholeskyDC.F90 SquareCholeskyDC.F90
 $(OBJS)/Ctrl.o: $(OBJS)/ECPConstants.o DeallocCtrl.F90
 $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
-        $(OBJS)/SADChan.o DeallocData.F90 NullifyData.F90 ReadALB_nc.F90 \
-        ReadCloudFlags_nc.F90 ReadData_nc.F90 ReadGeometry_nc.F90 \
-        ReadIllum_nc.F90 ReadLSFlags_nc.F90 ReadLocation_nc.F90 ReadMSI_nc.F90
+        $(OBJS)/SADChan.o DeallocData.F90 DetermineIllum.F90 NullifyData.F90 \
+        ReadALB_nc.F90 ReadCloudFlags_nc.F90 ReadData_nc.F90 ReadGeometry_nc.F90 \
+        ReadLSFlags_nc.F90 ReadLocation_nc.F90 ReadMSI_nc.F90 \
+        sabotage_inputs.F90
 $(OBJS)/Diag.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o \
         SetDiag.F90 ZeroDiag.F90
 $(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o
@@ -55,11 +56,9 @@ $(OBJS)/sad_util.o: $(OBJS)/Ctrl.o
 $(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/IntRoutines.o $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/planck.o \
         AllocSPixel.F90 DeallocSPixel.F90 GetGeometry.F90 GetIllum.F90 \
-        GetLSF.F90 GetLwSwRTM.F90 GetMeasurements.F90 GetRTM.F90 GetRs.F90 \
-        GetSPixel.F90 GetSurface.F90 GetX.F90 XMDAD.F90 XSDAD.F90 \
+        GetIndexing.F90 GetLSF.F90 GetLwSwRTM.F90 GetMeasurements.F90 GetRTM.F90 \
+        GetRs.F90 GetSPixel.F90 GetSurface.F90 GetX.F90 XMDAD.F90 XSDAD.F90 \
         check_value.inc
-$(OBJS)/t_extrap_strat.o: $(OBJS)/SPixel.o
-$(OBJS)/WriteLog.o: $(OBJS)/Ctrl.o
 $(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/Inversion.o $(OBJS)/RTM.o \
         $(OBJS)/RTM_Pc.o $(OBJS)/ReadDriver.o $(OBJS)/ReadSAD.o \

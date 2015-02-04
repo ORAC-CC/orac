@@ -24,6 +24,8 @@
 !    27th May 2014, Greg McGarragh: Some cleanup.
 !    19th Dec 2014, Adam Povey: Removing ysolar_msi, ythermal_msi.
 !    12th Jan 2015, Adam Povey: Adding Ch_Is, YMixed.
+!     4th Feb 2015, Greg McGarragh: Add sabotage_inputs flag and retrieval
+!       channel requirements arrays.
 !
 ! Bugs:
 !    None known.
@@ -47,7 +49,13 @@ subroutine Dealloc_Ctrl(Ctrl)
    deallocate(Ctrl%Ind%YSolar)
    deallocate(Ctrl%Ind%YThermal)
    deallocate(Ctrl%Ind%YMixed)
+
    deallocate(Ctrl%Rs%B)
+
    deallocate(Ctrl%Sy)
+
+   deallocate(Ctrl%tau_chans)
+   deallocate(Ctrl%r_e_chans)
+   deallocate(Ctrl%ir_chans)
 
 end subroutine Dealloc_Ctrl

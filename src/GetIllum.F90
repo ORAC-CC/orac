@@ -3,8 +3,6 @@
 !    Get_Illum
 !
 ! Purpose:
-!    Determines the illumination of a scene by assessing the visible and ir
-!    channel values
 !
 ! Arguments:
 !    Name     Type    In/Out/Both Description
@@ -18,398 +16,47 @@
 !
 ! Algorithm:
 !
+! Local variables:
+!    Name Type Description
+!
 ! History:
-!    15th Jun 2012, Caroline Poulsen: Original version
-!    17th Jul 2012, Caroline Poulsen: Changed value 1 to nviews
-!    16th Jan 2014, Greg McGarragh: Added initialization of
-!       SPixel%spixel_y_to_ctrl_y_index.
-!    11th Jun 2014, Caroline Poulsen: Added in different illumination options
-!       that maybe the result of occasional missing channels.
-!     1st Aug 2014, Greg McGarragh: Fixes and refactoring related to the above
-!       change and cleanup.
-!     7th Aug 2014, Adam Povey: Fix bug in subscripting of FG, AP arrays.
-!    13th Jan 2015, Adam Povey: Adding YSolar, YThermal, YMixed to setup_indices.
-!       Use Ctrl%Ind%Ch_Is flag instead of any() to identify channels. Remove
-!       First:Last channel indexing.
-!    30th Jan 2015, Adam Povey:
-!       Replace YSeg0 with Y0 as superpixeling removed.
+!     4th Feb 2015, Greg McGarragh:
+!       Original version.
 !
 ! Bugs:
-!    Warning At the moment only one view is specified.
-!    Warning this routine has far to much dependence on heritage channel
-!    selection should be re written if many more channels are used.
+!    None known.
 !
 ! $Id$
 !
 !-------------------------------------------------------------------------------
 
-subroutine Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
+subroutine Get_Illum(Ctrl, SPixel, MSI_Data, status)
 
    use CTRL_def
    use Data_def
    use ECP_Constants
-   use SAD_Chan_def
 
    implicit none
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
-   type(SPixel_t),   intent(inout) :: SPixel
-   type(Data_t),     intent(in)    :: MSI_Data
-   integer,          intent(out)   :: status
+   type(CTRL_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(inout) :: SPixel
+   type(Data_t),   intent(in)    :: MSI_Data
+   integer,        intent(out)   :: status
 
    ! Define local variables
 
-   integer :: i_view,i,ii
-   integer :: i_missing(MaxNumMeas)
+   integer :: i_view
 
    ! Set status to zero
    status = 0
 
    ! Determine whether super pixel geometry corresponds to day, twilight or
-   ! night and set up SPixel%Ind values accordingly. The ThermalFirst,
-   ! ThermalLast etc indices in SPixel%Ind are set relative to the Ctrl%Ind%Y
-   ! array. Hence the first thermal channel in Y which is to be used in the
-   ! current super-pixel is Ctrl%Ind%Y(SPixel%Ind%ThermalFirst).
+   ! night and set up SPixel%Ind values accordingly.
 
    do i_view=1,Ctrl%Ind%NViews
       SPixel%illum(i_view) = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
-
-      ! Daylight
-      if (SPixel%illum(i_view) .eq. IDay) then
-         ! Daylight
-
-         ! These are a straight copy from the Ctrl values (i.e. all channels are allowed)
-         SPixel%Ind%Ny = Ctrl%Ind%Ny
-         SPixel%Ind%NSolar = Ctrl%Ind%NSolar
-         SPixel%Ind%NThermal = Ctrl%Ind%NThermal
-         SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-
-         SPixel%Nx = Ctrl%Ind%Nx_Dy
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
-
-         i_missing = -1
-
-         SPixel%FG = Ctrl%FG(:,IDay)
-         SPixel%AP = Ctrl%AP(:,IDay)
-
-      else if (SPixel%illum(i_view) .eq. IDayMissingSingleVisFirst) then
-         status = 1 ! Disable this configuration
-
-         ! The first visible channel is missing
-         SPixel%Ind%Ny = Ctrl%Ind%Ny-1
-         SPixel%Ind%NSolar = Ctrl%Ind%NSolar-1
-         SPixel%Ind%NThermal = Ctrl%Ind%NThermal
-         SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-
-         SPixel%Nx = Ctrl%Ind%Nx_Dy
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
-
-         i_missing = -1
-         i_missing(1) =  Ctrl%Ind%YSolar(1)
-
-         SPixel%FG = Ctrl%FG(:,IDay)
-         SPixel%AP = Ctrl%AP(:,IDay)
-
-      else if (SPixel%illum(i_view) .eq. IDayMissingSingleVisSecond) then
-         status = 1 ! Disable this configuration
-
-         ! The second visible channel is missing
-         SPixel%Ind%Ny = Ctrl%Ind%Ny-1
-         SPixel%Ind%NSolar = Ctrl%Ind%NSolar-1
-         SPixel%Ind%NThermal = Ctrl%Ind%NThermal
-         SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-
-         SPixel%Nx = Ctrl%Ind%Nx_Dy
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
-
-         i_missing = -1
-         i_missing(1) =  Ctrl%Ind%YSolar(2)
-
-         SPixel%FG = Ctrl%FG(:,IDay)
-         SPixel%AP = Ctrl%AP(:,IDay)
-
-      else if (SPixel%illum(i_view) .eq. IDayMissingSingleIRFirst) then
-         status = 1 ! Disable this configuration
-
-         ! The first ir channel is missing
-         SPixel%Ind%Ny = Ctrl%Ind%Ny-1
-         SPixel%Ind%NSolar = Ctrl%Ind%NSolar
-         SPixel%Ind%NThermal = Ctrl%Ind%NThermal-1
-         SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-
-         SPixel%Nx = Ctrl%Ind%Nx_Dy
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
-
-         i_missing = -1
-         i_missing(1) =  Ctrl%Ind%YThermal(1)
-
-         SPixel%FG = Ctrl%FG(:,IDay)
-         SPixel%AP = Ctrl%AP(:,IDay)
-
-      else if (SPixel%illum(i_view) .eq. IDayMissingSingleIRSecond) then
-         status = 1 ! Disable this configuration
-
-         !  The second ir channel is missing
-         SPixel%Ind%Ny = Ctrl%Ind%Ny-1
-         SPixel%Ind%NSolar = Ctrl%Ind%NSolar
-         SPixel%Ind%NThermal = Ctrl%Ind%NThermal-1
-         SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-
-         SPixel%Nx = Ctrl%Ind%Nx_Dy
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
-
-         i_missing = -1
-         i_missing(1) =  Ctrl%Ind%YThermal(2)
-
-         SPixel%FG = Ctrl%FG(:,IDay)
-         SPixel%AP = Ctrl%AP(:,IDay)
-
-      else if (SPixel%illum(i_view) .eq. IDayMissingSingleIRThird) then
-         ! The third ir channel is missing
-         SPixel%Ind%Ny = Ctrl%Ind%Ny-1
-         SPixel%Ind%NSolar = Ctrl%Ind%NSolar
-         SPixel%Ind%NThermal = Ctrl%Ind%NThermal-1
-         SPixel%Ind%NMixed = Ctrl%Ind%NMixed
-
-         SPixel%Nx = Ctrl%Ind%Nx_Dy
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Dy(1:Ctrl%Ind%NX_Dy)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Dy(1:Ctrl%Ind%NXI_Dy)
-
-         i_missing = -1
-         i_missing(1) =  Ctrl%Ind%YThermal(3)
-
-         SPixel%FG = Ctrl%FG(:,IDay)
-         SPixel%AP = Ctrl%AP(:,IDay)
-
-      else if  (SPixel%illum(i_view) .eq. ITwi)  then
-         ! Twilight
-
-         ! Only pure thermal channels are allowed (i.e. mixed channels are excluded)
-
-         SPixel%Ind%Ny = Ctrl%Ind%Ny-Ctrl%Ind%NSolar
-         SPixel%Ind%NSolar = 0
-         SPixel%Ind%NThermal = SPixel%Ind%Ny
-         SPixel%Ind%NMixed = 0
-
-         SPixel%Nx = Ctrl%Ind%Nx_Tw
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Tw(1:Ctrl%Ind%Nx_Tw)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Tw(1:Ctrl%Ind%NxI_Tw)
-
-         ii = 1
-         i_missing = -1
-         do i = 1, Ctrl%Ind%NSolar
-            i_missing(ii) = Ctrl%Ind%YSolar(i)
-            ii = ii + 1
-         end do
-
-         SPixel%FG = Ctrl%FG(:,ITwi)
-         SPixel%AP = Ctrl%AP(:,ITwi)
-
-      else if (SPixel%illum(i_view) .eq. INightMissingSingleIRFirst) then
-          status = 1 ! Disable this configuration
-
-      else if (SPixel%illum(i_view) .eq. INightMissingSingleIRSecond) then
-          status = 1 ! Disable this configuration
-
-      else if (SPixel%illum(i_view) .eq. INightMissingSingleIRThird) then
-          status = 1 ! Disable this configuration
-
-      else if (SPixel%illum(i_view) .eq. INight) then
-         ! Night
-
-         ! Channels with a thermal component are allowed (i.e. mixed channels are included)
-         SPixel%Ind%Ny = Ctrl%Ind%NThermal
-         SPixel%Ind%NSolar = 0
-         SPixel%Ind%NThermal = SPixel%Ind%Ny
-         SPixel%Ind%NMixed = 0
-
-         SPixel%Nx = Ctrl%Ind%Nx_Ni
-         deallocate(SPixel%X)
-         allocate(SPixel%X(SPixel%Nx))
-         SPixel%X = Ctrl%Ind%X_Ni(1:Ctrl%Ind%Nx_Ni)
-
-         SPixel%NxI = MaxStateVar - SPixel%Nx
-         deallocate(SPixel%XI)
-         allocate(SPixel%XI(SPixel%NxI))
-         SPixel%XI = Ctrl%Ind%XI_Ni(1:Ctrl%Ind%NxI_Ni)
-
-         ii = 1
-         i_missing = -1
-         do i = 1, Ctrl%Ind%NSolar
-            if (btest(Ctrl%Ind%Ch_Is(Ctrl%Ind%YSolar(i)), ThermalBit)) &
-                 cycle
-            i_missing(ii) = Ctrl%Ind%YSolar(i)
-            ii = ii + 1
-         end do
-
-         SPixel%FG = Ctrl%FG(:,INight)
-         SPixel%AP = Ctrl%AP(:,INight)
-      else
-          status = 1
-      end if
-
-      if (status .eq. 0) then
-         call setup_indexes(Ctrl, SPixel, i_missing)
-
-         SPixel%Ind%MDAD_SW = Find_MDAD_SW(SPixel%Ind%Ny, SAD_Chan, &
-            SPixel%spixel_y_to_ctrl_y_index)
-         SPixel%Ind%MDAD_LW = Find_MDAD_LW(SPixel%Ind%Ny, SAD_Chan, &
-            SPixel%spixel_y_to_ctrl_y_index)
-      end if
-
-      if (i_view > 1) then
-         if (SPixel%Illum(i_view - 1) /= SPixel%Illum(i_view)) &
-              status = SPixelIllum
-      end if
    end do
 
 end subroutine Get_Illum
-
-
-subroutine setup_indexes(Ctrl, SPixel, i_missing)
-
-   use CTRL_def
-
-   implicit none
-
-   type(CTRL_t),   intent(in)    :: Ctrl
-   type(SPixel_t), intent(inout) :: SPixel
-   integer,        intent(in)    :: i_missing(:)
-
-   integer :: i
-   integer :: ii, i0, i1, i2
-
-   SPixel%spixel_y_to_ctrl_y_index                 = -1
-   SPixel%spixel_y_solar_to_ctrl_y_index           = -1
-   SPixel%spixel_y_thermal_to_ctrl_y_index         = -1
-   SPixel%spixel_y_solar_to_ctrl_y_solar_index     = -1
-   SPixel%spixel_y_thermal_to_ctrl_y_thermal_index = -1
-   SPixel%spixel_y_mixed_to_spixel_y_solar         = -1
-   SPixel%spixel_y_mixed_to_spixel_y_thermal       = -1
-
-   if (SPixel%Ind%NSolar .gt. 0) then
-      deallocate(SPixel%Ind%YSolar)
-      allocate(SPixel%Ind%YSolar(SPixel%Ind%NSolar))
-   end if
-   if (SPixel%Ind%NThermal .gt. 0) then
-      deallocate(SPixel%Ind%YThermal)
-      allocate(SPixel%Ind%YThermal(SPixel%Ind%NThermal))
-   end if
-   if (SPixel%Ind%NMixed .gt. 0) then
-      deallocate(SPixel%Ind%YMixed)
-      allocate(SPixel%Ind%YMixed(SPixel%Ind%NMixed))
-   end if
-
-   ii = 1
-   i0 = 1
-   i1 = 1
-   i2 = 1
-   do i = 1, Ctrl%Ind%Ny
-      if (any(i .eq. i_missing)) &
-         cycle
-
-      if (btest(Ctrl%Ind%Ch_Is(i), SolarBit) .and. &
-           SPixel%Ind%NSolar .gt. 0) then
-         ! Mixed channels out of those to be retrieved
-         if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit) .and. &
-            SPixel%Ind%NMixed .gt. 0) then
-
-            SPixel%Ind%YMixed(i2) = ii
-            SPixel%spixel_y_mixed_to_spixel_y_solar(i2) = i0
-            SPixel%spixel_y_mixed_to_spixel_y_thermal(i2) = i1
-            i2 = i2 + 1
-         end if
-
-         ! Solar channels out of those to be retrieved
-         SPixel%Ind%YSolar(i0) = ii
-         i0 = i0 + 1
-      end if
-
-      ! Thermal channels out of those to be retrieved
-      if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
-         SPixel%Ind%YThermal(i1) = ii
-         i1 = i1 + 1
-      end if
-
-      ! Channels to be retrieved out of those in Ctrl%Ind%ICh
-      SPixel%spixel_y_to_ctrl_y_index(ii) = i
-      ii = ii + 1
-   end do
-
-   if (SPixel%Ind%NSolar .gt. 0) then
-      ii = 1
-      do i = 1, Ctrl%Ind%NSolar
-         if (any(Ctrl%Ind%YSolar(i) .eq. i_missing)) &
-            cycle
-         ! Solar channels to be retrieved out of those in Ctrl%Ind%ICh
-         SPixel%spixel_y_solar_to_ctrl_y_index(ii) = Ctrl%Ind%YSolar(i)
-         ! Solar channels to be retrieved out of solar channels in Ctrl%Ind%ICh
-         SPixel%spixel_y_solar_to_ctrl_y_solar_index(ii) = i
-         ii = ii + 1
-      end do
-   end if
-
-   if (SPixel%Ind%NThermal .gt. 0) then
-      ii = 1
-      do i = 1, Ctrl%Ind%NThermal
-         if (any(Ctrl%Ind%YThermal(i) .eq. i_missing)) &
-            cycle
-         ! Thermal channels to be retrieved out of those in Ctrl%Ind%ICh
-         SPixel%spixel_y_thermal_to_ctrl_y_index(ii) = Ctrl%Ind%YThermal(i)
-         ! Thermal channels to be retrieved out of thermal chs in Ctrl%Ind%ICh
-         SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(ii) = i
-         ii = ii + 1
-      end do
-   end if
-
-end subroutine setup_indexes

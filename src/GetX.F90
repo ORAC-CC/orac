@@ -9,11 +9,11 @@
 !
 ! Arguments:
 !    Name           Type    In/Out/Both Description
-!    Ctrl           struct  In     Control structure
-!    SAD_CloudClass struct  In     SAD cloud class structure
-!    SPixel         struct  Both   Super-pixel structure (contains the phase and
-!                                  AP, FG arrays to be set).
-!    status         integer Out    Error status
+!    Ctrl           struct  In   Control structure
+!    SAD_CloudClass struct  In   SAD cloud class structure
+!    SPixel         struct  Both Super-pixel structure (contains the phase and
+!                                AP, FG arrays to be set).
+!    status         integer Out  Error status
 !
 ! Algorithm:
 !    Set "first guess" phase to the value for the retrieval (phase is no longer
@@ -165,7 +165,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
       ! Ctrl method, used if method is Ctrl or other methods failed.
       ! Ctrl%Sx is squared after reading in.
       if (SPixel%AP(i) == SelmCtrl .or. &
-          (SPixel%AP(i) == SelmMeas .and. status == XMDADMeth) ) then
+          (SPixel%AP(i) == SelmMeas .and. status == XMDADMeth)) then
          SPixel%Xb(i) = Ctrl%Xb(i)
 
          if (any(SPixel%X .eq. i)) then
@@ -174,16 +174,6 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
             ! Assume that the inactive state variables are well known do not try
             ! to retrieve
             SPixel%Sx(i,i) = (1.0e-5     * Ctrl%Invpar%XScale(i)) ** 2
-         end if
-
-         if (SPixel%Illum(1) == IDay .or. SPixel%Illum(1) == IDaynore) then
-            ! Check if all IR channels are present
-            ! If only one is present then remove surface temperature state
-            ! variable from state vector by setting uncertainty to a very small
-            ! number SPixel%QC = ibset(SPixel%QC, SPixTemp)
-            if (btest(SPixel%QC,SPixTemp )) then
-               ! Check at least one thermal channel is present
-            end if
          end if
 
          status = 0
@@ -199,7 +189,6 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
       if (SPixel%FG(i) == SPixel%AP(i)) then
 
          SPixel%X0(i) = SPixel%Xb(i)
-
       else
          if (status /= 0) exit
 
@@ -210,11 +199,10 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
          case (SelmMeas)  ! MDAD method. Not supported for all variables.
             call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
             if (status .ne. 0) then
-               write(*,*) 'WARNING: X_MDAD(): Failed with status:',status
+!              write(*,*) 'WARNING: X_MDAD(): Failed with status:',status
                exit
             end if
             SPixel%X0(i) = X
-         case (Sacura)    ! First guess is set using sacura
 
          case (SelmAUX)   ! AUX method not supported for most vars.
             if (i == ITs) &

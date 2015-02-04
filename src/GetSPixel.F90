@@ -217,6 +217,8 @@
 !       Removing First:Last channel indexing.
 !    21st Jan 2015, Adam Povey: Moved allocated of SPixel%RTM%... here.
 !    30th Jan 2015, Adam Povey: Replace YSeg0 with Y0 as superpixeling removed.
+!     4th Feb 2015, Greg McGarragh: Changes related to the new missing channel,
+!       illumination, and channel selection code.
 !
 ! Bugs:
 !    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
@@ -249,7 +251,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! Define local variables
 
-   integer           :: i, j
+   integer           :: i
    integer           :: ictrl, ispix, itherm, isolar
    real              :: minsolzen
    integer           :: stat ! Local status value
@@ -330,7 +332,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
         Ctrl)
    deallocate(thermal)
 
-
    ! End of range checking. From here on any non-zero stat value is fatal for
    ! the super-pixel. Set the QC flag bits both for the individual error
    ! condition and to indicate no processing for the SPixel.
@@ -377,10 +378,18 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          ! routine returns a non-zero status value unless it is to flag a
          ! super-pixel data problem.
          if (stat == 0) then
-            call Get_Illum(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
+            call Get_Illum(Ctrl, SPixel, MSI_Data, stat)
             if (stat /= 0) then
 !              write(*,*) 'WARNING: Get_Illum()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixillum)
+               SPixel%QC = ibset(SPixel%QC, SPixIllum)
+            end if
+         end if
+
+         if (stat == 0) then
+            call Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
+            if (stat /= 0) then
+!              write(*,*) 'WARNING: Get_Indexing()', stat
+               SPixel%QC = ibset(SPixel%QC, SPixIllum)
             end if
          end if
 
@@ -389,6 +398,14 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
             if (stat /= 0) then
 !              write(*,*)  'WARNING: Get_Geometry()', stat
                SPixel%QC = ibset(SPixel%QC, SPixGeom)
+            end if
+         end if
+
+         if (stat == 0 .and. SPixel%Ind%NSolar == 0) then
+            call Get_LSF(Ctrl, SPixel, MSI_Data, stat)
+            if (stat /= 0) then
+!              write(*,*) 'WARNING: Get_LSF()', stat
+               SPixel%QC = ibset(SPixel%QC, SPixLSF)
             end if
          end if
 
@@ -427,13 +444,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
             end if
          end if
 
-         if (stat == 0 .and. SPixel%Ind%NSolar == 0) then
-            call Get_LSF(Ctrl, SPixel, MSI_Data, stat)
-            if (stat /= 0) then
-!              write(*,*) 'WARNING: Get_LSF()', stat
-            end if
-         end if
-
          if (stat == 0) then
             call Get_X(Ctrl, SAD_Chan, SPixel, stat)
             if (stat /= 0) then
@@ -441,7 +451,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
                SPixel%QC = ibset(SPixel%QC, SPixFGAP)
             end if
          end if
-
 
       end if ! End of "if stat" after cloud fraction check
 
@@ -465,7 +474,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          allocate(SPixel%RTM%Ref_clear     (SPixel%Ind%NSolar))
          deallocate(SPixel%RTM%dRef_clear_dRs)
          allocate(SPixel%RTM%dRef_clear_dRs(SPixel%Ind%NSolar))
-        
+
          do i=1, SPixel%Ind%NSolar
             ictrl = SPixel%spixel_y_solar_to_ctrl_y_index(i)
             ispix = SPixel%Ind%YSolar(i)
@@ -559,8 +568,9 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       if (btest(SPixel%QC, SPixAll)) write(bkp_lun,*)'SPixAll '
       if (btest(SPixel%QC, SPixNoCloud)) write(bkp_lun,*)'SPixNoCloud'
       if (btest(SPixel%QC, SPixNoAvge)) write(bkp_lun,*)'SPixNoAvge'
+      if (btest(SPixel%QC, SPixIllum)) write(bkp_lun,*)'SPixIllum '
+      if (btest(SPixel%QC, SPixIndexing)) write(bkp_lun,*)'SPixIndexing '
       if (btest(SPixel%QC, SPixGeom)) write(bkp_lun,*)'SPixGeom '
-      if (btest(SPixel%QC, SPixillum)) write(bkp_lun,*)'SPixillum '
       if (btest(SPixel%QC, SPixLoc)) write(bkp_lun,*)'SPixLoc '
       if (btest(SPixel%QC, SPixRTM)) write(bkp_lun,*)'SPixRTM '
       if (btest(SPixel%QC, SPixMeas)) write(bkp_lun,*)'SPixMeas '

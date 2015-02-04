@@ -16,6 +16,7 @@
 !                                      this routine: solar constant is
 !                                      modified from annual average to value for
 !                                      the day of the ALB data.
+!    verbose  logical      In          Verbose print-out flag
 !
 ! Algorithm:
 !    Open everything in order, using dedicated routines for each.
@@ -28,6 +29,8 @@
 !       actually used.
 !    2014/04/20, GM: Added call to Nullify_Data() as some pointers may not be
 !       associated.
+!    2015/02/04, GM: Changes related to the new missing channel, illumination,
+!       and channel selection code.
 !
 ! Bugs:
 !   None known.
@@ -52,7 +55,7 @@ subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
    logical,          intent(in)    :: verbose
 
-   ! Nullify pointers in case some are not associated
+   ! Nullify pointers in case some are not associated.
    call Nullify_Data(Ctrl, MSI_Data)
 
    ! Define local variables
@@ -74,13 +77,18 @@ subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    if (verbose) write(*,*) 'Reading Location data'
    call Read_Location_nc(Ctrl, MSI_Data, verbose)
 
-   if (verbose)  write(*,*) 'Reading LS Flag data'
+   if (verbose) write(*,*) 'Reading LS Flag data'
    call Read_LSFlags_nc(Ctrl, MSI_Data, verbose)
 
-   if (verbose)  write(*,*) 'Reading MSI data'
+   if (verbose) write(*,*) 'Reading MSI data'
    call Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
-   if (verbose)  write(*,*) 'Reading Illumination data'
-   call Read_Illum_nc(Ctrl, MSI_Data, verbose)
+   if (Ctrl%sabotage_inputs) then
+      if (verbose) write(*,*) 'Sabatoging input data'
+      call sabotage_inputs(Ctrl, MSI_Data, verbose)
+   end if
+
+   if (verbose) write(*,*) 'Determining Illumination data'
+   call Determine_Illum(Ctrl, MSI_Data, verbose)
 
 end subroutine Read_Data_nc

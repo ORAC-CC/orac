@@ -13,7 +13,6 @@
 !    Ctrl   struct       In          Control structure
 !    RTM    alloc struct In          RTM structure
 !    SPixel alloc struct Both        SPixel structure
-!    status int          Out         Error status
 !
 ! Algorithm:
 !    Allocate the quality control mask and cloud flag arrays using the spatial
@@ -185,6 +184,7 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    SPixel%Ind%Ny = 0
    SPixel%Ind%NSolar = 0
    SPixel%Ind%NThermal = 0
+   SPixel%Ind%NMixed = 0
 
    allocate(SPixel%Illum(Ctrl%Ind%NViews))
 
@@ -195,10 +195,11 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    SPixel%ViewIdx(1)=1
 
    ! These reallocated in GetIllum
-   SPixel%Nx = MaxStateVar
+   SPixel%Nx = 1
    allocate(SPixel%X(SPixel%Nx))
    SPixel%X  = 0
-   allocate(SPixel%XI(SPixel%Nx))
+   SPixel%NxI = 1
+   allocate(SPixel%XI(SPixel%NxI))
    SPixel%XI = 0
    allocate(SPixel%Ind%YSolar(Ctrl%Ind%NSolar))
    allocate(SPixel%Ind%YThermal(Ctrl%Ind%NThermal))

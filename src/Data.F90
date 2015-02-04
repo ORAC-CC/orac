@@ -6,7 +6,7 @@
 !    Module defining auxiliary and image data structures/types.
 !
 ! Arguments:
-!    Name  Type In/Out/Both Description
+!    Name Type In/Out/Both Description
 !    N/A
 !
 ! Algorithm:
@@ -43,6 +43,8 @@
 !       dem, and nisemask
 !    2015/01/18, GM: Put all related Read*() subroutines into this module.
 !    2015/01/30, AP: Remove uscan and vscan as unnecessary.
+!    2015/02/04, GM: Changes related to the new missing channel, illumination,
+!       and channel selection code.
 !
 ! Bugs:
 !    None known.
@@ -84,7 +86,7 @@ module Data_def
       real(4), pointer            :: CloudFlags(:,:)
       integer(kind=byte), pointer :: cldtype(:,:)
       integer(kind=byte), pointer :: cloudmask(:,:)
-      real(kind=sreal), pointer   :: cccot_pre(:,:)
+      real(kind=sreal),   pointer :: cccot_pre(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
       integer(kind=byte), pointer :: LSFlags(:,:)
@@ -104,10 +106,13 @@ contains
 #include "ReadALB_nc.F90"
 #include "ReadCloudFlags_nc.F90"
 #include "ReadGeometry_nc.F90"
-#include "ReadIllum_nc.F90"
 #include "ReadLSFlags_nc.F90"
 #include "ReadLocation_nc.F90"
 #include "ReadMSI_nc.F90"
+
+#include "sabotage_inputs.F90"
+
+#include "DetermineIllum.F90"
 
 #include "ReadData_nc.F90"
 

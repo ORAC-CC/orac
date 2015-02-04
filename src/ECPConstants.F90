@@ -225,8 +225,8 @@ module ECP_constants
    ! 3rd index of d_CRP array in functions FM_Thermal, FM_Solar and CRP LUT
    ! interpolation functions. Also used as index of state vector array X in FM
    ! and Invert_Marquardt
-   integer, parameter :: Itau             = 1       ! Index of tau, cloud optical depth
-   integer, parameter :: Ire              = 2       ! Index of re, effective radius
+   integer, parameter :: ITau             = 1       ! Index of tau, cloud optical depth
+   integer, parameter :: IRe              = 2       ! Index of re, effective radius
 
    ! Index of values in X (state vector) array - use ITau, IRe from above, plus:
    ! (also used for the Ref and d_Ref arrays, which include an Rs component).
@@ -262,7 +262,6 @@ module ECP_constants
    integer, parameter :: SelmCtrl         = 1
    integer, parameter :: SelmMeas         = 2
    integer, parameter :: SelmAux          = 3
-   integer, parameter :: Sacura           = 4
 
    ! Bit positions used in Ctrl%Ind%Ch_Is flag
    integer, parameter :: SolarBit         = 0
@@ -287,13 +286,15 @@ module ECP_constants
    integer, parameter :: SPixAll          = 9       ! All pixels in SPixel out of range (because of 1 or more of the above)
    integer, parameter :: SPixNoCloud      = 10      ! All cloud flags 0.
    integer, parameter :: SPixNoAvge       = 11      ! Can't get SPixel cloud average
-   integer, parameter :: SPixGeom         = 12      ! Problem from Get_Geometry routine
-   integer, parameter :: SPixLoc          = 13      ! Problem from Get_Location routine
-   integer, parameter :: SPixRTM          = 14      ! Problem from Get_RTM routine
-   integer, parameter :: SPixMeas         = 15      ! Problem from Get_Measurements
-   integer, parameter :: SPixSurf         = 16      ! Problem from Get_Surface
-   integer, parameter :: SPixFGAP         = 17      ! Problem from Get_X (First Guess/A Priori setting)
-   integer, parameter :: SPixIllum        = 18      ! Problem from Get_Illum routine
+   integer, parameter :: SPixIllum        = 12      ! Problem from Get_Illum routine
+   integer, parameter :: SPixIndexing     = 13      ! Problem from Get_Indexing
+   integer, parameter :: SPixGeom         = 14      ! Problem from Get_Geometry routine
+   integer, parameter :: SPixLSF          = 15      ! Problem from Get_LSF routine
+   integer, parameter :: SPixLoc          = 16      ! Problem from Get_Location routine
+   integer, parameter :: SPixRTM          = 17      ! Problem from Get_RTM routine
+   integer, parameter :: SPixMeas         = 18      ! Problem from Get_Measurements
+   integer, parameter :: SPixSurf         = 19      ! Problem from Get_Surface
+   integer, parameter :: SPixFGAP         = 20      ! Problem from Get_X (First Guess/A Priori setting)
    integer, parameter :: SPixNoProc       = 31      ! Do not process super-pixel. Earlier flags indicate why not.
 
    ! Indices of diagnostic flags in array Ctrl%Diagl

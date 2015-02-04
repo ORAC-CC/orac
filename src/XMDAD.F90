@@ -161,7 +161,8 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
    case (iTau) ! Cloud optical depth, Tau
 
-      if (SPixel%Illum(1) == IDay .and. &
+      if ((SPixel%Illum(1) == IDay .or. &
+           SPixel%Illum(1) == IDayMissingSingleIRThird) .and. &
           SPixel%Ind%MDAD_SW > 0) then
          ! Calculate overcast reflectance.
          ! Uses channel nearest 0.67 microns, index Ctrl%Ind%MDAD_SW.
@@ -191,12 +192,12 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
    case (iPc) ! Cloud pressure, Pc
 
-       if (SPixel%Ind%MDAD_LW > 0) then
-          ! Ctrl%Ind%MDAD_LW indexes the desired channel wrt Ctrl%Ind%ICh
-          ! Find the corresponding index wrt Ctrl%Ind%YThermal
-          MDAD_LW_to_ctrl_y = SPixel%spixel_y_to_ctrl_y_index(SPixel%Ind%MDAD_LW)
-          MDAD_LW_to_ctrl_ythermal = find_in_array(Ctrl%Ind%YThermal, &
-                                                   MDAD_LW_to_ctrl_y)
+      if (SPixel%Ind%MDAD_LW > 0) then
+         ! Ctrl%Ind%MDAD_LW indexes the desired channel wrt Ctrl%Ind%ICh
+         ! Find the corresponding index wrt Ctrl%Ind%YThermal
+         MDAD_LW_to_ctrl_y = SPixel%spixel_y_to_ctrl_y_index(SPixel%Ind%MDAD_LW)
+         MDAD_LW_to_ctrl_ythermal = find_in_array(Ctrl%Ind%YThermal, &
+                                                  MDAD_LW_to_ctrl_y)
 
          ! Convert observed brightness temperature to radiance
          ! Uses channel nearest 11 microns, index Ctrl%Ind%MDAD_LW in SAD_Chan,
@@ -230,7 +231,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
             status = XMDADMeth
          end if
       else ! Can't calculate Pc if required LW channels not selected
-      	 write(*,*)'ERROR: X_MDAD(): Cant calculate Pc if required LW channels not selected'
+!        write(*,*)'ERROR: X_MDAD(): Cant calculate Pc if required LW channels not selected'
          status = XMDADMeth
       end if
 

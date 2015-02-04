@@ -108,6 +108,8 @@
 !    2015/01/13, Adam Povey: Adding Ch_Is, YMixed. Removing First:Last indexes.
 !    2015/01/30, Adam Povey: Remove Ws, Xstart, Ystart as depreciated.
 !       Remove Resoln structure as superpixeling only in preprocessing.
+!    2015/02/04, Greg McGarragh: Add sabotage_inputs flag and retrieval channel
+!       requirements arrays.
 !
 ! Bugs:
 !   None known.
@@ -311,6 +313,14 @@ module CTRL_def
       type (EqMPN_t)         :: EqMPN
       type (Invpar_t)        :: Invpar
       type (QC_t)            :: QC                 ! Quality control structure
+
+      logical                :: sabotage_inputs    ! See sabotage_input_data.F90
+
+      integer, pointer       :: tau_chans(:)       ! Channels that meet the
+                                                   ! Tau retrieval requirement
+      integer, pointer       :: r_e_chans(:)       ! Same thing but for Re
+      integer, pointer       :: ir_chans(:)        ! Same thing but for Pc, Fr,
+                                                   ! and Ts
    end type CTRL_t
 
 contains

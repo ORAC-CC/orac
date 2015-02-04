@@ -127,6 +127,8 @@
 !       Put XAUX.F90, XMDAD.F90, and XSDAD.F90 into this module.
 !    30th Jan 2015, Adam Povey:
 !       Remove redundant fields.
+!    2015/02/04, Greg McGarragh: Changes related to the new missing channel,
+!       illumination, and channel selection code.
 !
 ! Bugs:
 !    None known.
@@ -270,7 +272,7 @@ module SPixel_def
       type(Cloud_t)       :: Cloud        ! Super-pixel cloud flag info
       type(Surface_t)     :: Surface      ! Super-pixel surface flag info
       type(SPixel_Ind_t)  :: Ind          ! Numbers and indices of channels
-      integer ,pointer    :: Illum(:)     ! Illumination flag (day,twi, night)
+      integer, pointer    :: Illum(:)     ! Illumination flag (day,twi, night)
       integer             :: FG(MaxStateVar)
                                           ! Methods for setting first guess
                                           ! state vector, matched to
@@ -359,6 +361,7 @@ contains
 
 #include "GetGeometry.F90"
 #include "GetIllum.F90"
+#include "GetIndexing.F90"
 #include "GetLSF.F90"
 #include "GetLwSwRTM.F90"
 #include "GetMeasurements.F90"

@@ -830,7 +830,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       ! (by XScale squared, i.e. the product of the XScale factors for the two
       ! state variables contributing to each element).
       SPixel%Sn = 0.0
-      if (SPixel%Nx > 0  .and. SPixel%NxI == 0 ) then
+      if (SPixel%Nx > 0 .and. SPixel%NxI == 0 ) then
          SPixel%Sn(SPixel%X, SPixel%X) = &
             Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
       end if

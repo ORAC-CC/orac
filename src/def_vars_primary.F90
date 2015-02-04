@@ -178,7 +178,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
               valid_max     = output_data%sol_vmax, &
               units         = 'degrees')
 
-         !-------------------------------------------------------------------------
+      !-------------------------------------------------------------------------
       ! satellite_zenith_view_no*
       !-------------------------------------------------------------------------
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
@@ -200,7 +200,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
               valid_max     = output_data%sat_vmax, &
               units         = 'degrees')
 
-         !-------------------------------------------------------------------------
+      !-------------------------------------------------------------------------
       ! rel_azimuth_view_no*
       !-------------------------------------------------------------------------
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))

@@ -86,6 +86,8 @@
 !    2015/01/28, AP: Use consistent FG and AP. Turn off retrieval of phase.
 !       Increase a priori uncertainty on CTP to equal that of other variables.
 !    2015/01/30, AP: Allow warm start coordinates to be specified.
+!    2015/02/04, GM: Add sabotage_inputs flag and retrieval channel requirements
+!       arrays.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -179,22 +181,22 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Read folder paths
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, input_path) /= 0) call h_p_e('input directory')
-   endif
+   end if
    if (verbose) write(*,*) 'Input directory: ',trim(input_path)
 
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, input_filename) /= 0) call h_p_e('input filename')
-   endif
+   end if
    if (verbose) write(*,*) 'Input filename: ',trim(input_filename)
 
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, scratch_dir) /= 0) call h_p_e('output directory')
-   endif
+   end if
    if (verbose) write(*,*) 'Output directory: ',trim(scratch_dir)
 
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, lut_dir) /= 0) call h_p_e('LUT directory')
-   endif
+   end if
    if (verbose) write(*,*) 'LUT directory: ',trim(lut_dir)
 
    ! Set filenames
@@ -224,7 +226,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Read name of instrument
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, Ctrl%Inst%Name) /= 0) call h_p_e('Ctrl%Inst%Name')
-   endif
+   end if
    write(*,*) 'Ctrl%Inst%Name: ',trim(Ctrl%Inst%Name)
 
    ! Number of channels in preprocessing file
@@ -232,7 +234,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, Ctrl%Ind%NAvail) /= 0) &
          call h_p_e('number of channels expected in preproc files')
-   endif
+   end if
    if (verbose) write(*,*) &
         'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
 
@@ -244,7 +246,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    allocate(channel_proc_flag(Ctrl%Ind%Navail))
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, channel_proc_flag) /= 0) call h_p_e('channel flags')
-   endif
+   end if
    if (sum(channel_proc_flag) < 1 .or. &
        sum(channel_proc_flag) > Ctrl%Ind%Navail .or. &
        any(channel_proc_flag /= 0 .and. channel_proc_flag /= 1)) then
@@ -312,7 +314,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    if (parse_driver(dri_lun, line) == 0) then
       if (parse_string(line, Ctrl%CloudClass) /= 0) &
          call h_p_e('Ctrl%CloudClass')
-   endif
+   end if
    if (verbose) write(*,*)'Ctrl%CloudClass: ',trim(Ctrl%CloudClass)
 
 
@@ -369,28 +371,28 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! array and set up the corresponding inactive array.
 
    ! Day options
-   Ctrl%Ind%Nx_Dy = 4   ! number of active state variables
+   Ctrl%Ind%Nx_Dy = 4 ! number of active state variables
 
    Ctrl%Ind%X_Dy(1) = ITau ! indices of state parameters
    Ctrl%Ind%X_Dy(2) = IRe
    Ctrl%Ind%X_Dy(3) = IPc
    Ctrl%Ind%X_Dy(4) = ITs
-!   Ctrl%Ind%X_Dy(5) = IFr
+!  Ctrl%Ind%X_Dy(5) = IFr
 
    ! Twilight options
-   Ctrl%Ind%Nx_Tw = 2   ! number of active state variables
+   Ctrl%Ind%Nx_Tw = 2  ! number of active state variables
 
    Ctrl%Ind%X_Tw(1) = IPc ! indices of state parameters
    Ctrl%Ind%X_Tw(2) = ITs
-!   Ctrl%Ind%X_Tw(3) = IFr
+!  Ctrl%Ind%X_Tw(3) = IFr
 
 
    ! Night options
-   Ctrl%Ind%Nx_Ni = 2   ! number of active state variables
+   Ctrl%Ind%Nx_Ni = 2 ! number of active state variables
 
    Ctrl%Ind%X_Ni(1) = IPc ! indices of state parameters
    Ctrl%Ind%X_Ni(2) = ITs
-!   Ctrl%Ind%X_Ni(3) = IFr
+!  Ctrl%Ind%X_Ni(3) = IFr
 
    ! Force single view (for the time being)
    Ctrl%Ind%NViews=1
@@ -403,7 +405,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Ind%Y0 = 0
    Ctrl%Ind%Y1 = 0
 
-   Ctrl%CloudType     = 1 ! use this to select which coreg/homog errors to use
+   Ctrl%CloudType = 1 ! use this to select which coreg/homog errors to use
+
 
    ! Set a priori options (Tau,Re,Pc,F,Ts)
 
@@ -527,8 +530,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    end select
 
 
-
-   ! may want to put these in Get_Illum routine at some point
    ! Set default a priori error covariance
    if ((trim(Ctrl%CloudClass) .eq. 'EYJ' ) .or. &
        (trim(Ctrl%CloudClass) .eq. 'MAR' ) .or. &
@@ -682,6 +683,42 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%QC%MaxS(ITs) = 2.0
 
 
+   ! See sabotage_input_data.F90
+   CTRL%sabotage_inputs = .false.
+
+
+   ! See Ctrl.F90 for descriptions.
+   if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
+      allocate(Ctrl%tau_chans(3))
+      Ctrl%tau_chans = (/ 1, 2, 3 /)
+      allocate(Ctrl%r_e_chans(2))
+      Ctrl%r_e_chans = (/ 4, 5 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 5, 6, 7 /)
+   else if (Ctrl%Inst%Name(1:5) .eq. 'AVHRR') then
+      allocate(Ctrl%tau_chans(2))
+      Ctrl%tau_chans = (/ 1, 2 /)
+      allocate(Ctrl%r_e_chans(2))
+      Ctrl%r_e_chans = (/ 3, 4 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 4, 5, 6 /)
+   else if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
+      allocate(Ctrl%tau_chans(4))
+      Ctrl%tau_chans = (/ 1, 2, 3, 4 /)
+      allocate(Ctrl%r_e_chans(3))
+      Ctrl%r_e_chans = (/ 6, 7, 20 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 20, 31, 32 /)
+   else if (Ctrl%Inst%Name(1:6) .eq. 'SEVIRI') then
+      allocate(Ctrl%tau_chans(2))
+      Ctrl%tau_chans = (/ 1, 2 /)
+      allocate(Ctrl%r_e_chans(2))
+      Ctrl%r_e_chans = (/ 3, 4 /)
+      allocate(Ctrl%ir_chans(3))
+      Ctrl%ir_chans  = (/ 4, 9, 10 /)
+   end if
+
+
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
@@ -806,6 +843,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
       case('CTRL%QC%MAXS')
          if (parse_string(line, Ctrl%QC%MaxS)          /= 0) call h_p_e(label)
+      case('CTRL%SABOTAGE_INPUTS')
+         if (parse_string(line, Ctrl%sabotage_inputs)  /= 0) call h_p_e(label)
       case default
          print*,'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code

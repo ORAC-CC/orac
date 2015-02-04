@@ -150,8 +150,8 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       write(*, *) 'ERROR: Interpol_Thermal(): Interpolation failure, SPixel ' // &
          'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
          SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
-      status = IntTransErr
-!     stop IntTransErr
+!     status = IntTransErr
+      stop IntTransErr
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards

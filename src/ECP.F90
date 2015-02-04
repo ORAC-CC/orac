@@ -236,9 +236,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer             :: i, j, jj, m
    integer             :: ios        ! I/O status value from file operations
    integer             :: status = 0 ! Status value returned from subroutines
-   integer             :: nargs
-   character(len=FilenameLen) &
-                       :: drifile
    logical             :: verbose    ! Verbose print-out flag
    integer             :: log_lun    ! Logical Unit Number for log file
    integer             :: diag_lun   ! Logical unit number for diagnostics file
@@ -253,9 +250,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                      ! First and last super-pixel Y locations
 
    integer             :: conv       ! convergence flag
-
-   integer             :: NSegs      ! Number of image segments processed
-   integer             :: SegSize    ! Number of rows of pixels in image segment.
 
    integer             :: TotPix   = 0   ! Total number of SPixels processed
    integer             :: TotMissed= 0   ! Number of SPixels left unprocessed
@@ -308,6 +302,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! This is for the wrapper
 #ifdef WRAPPER
+   character(len=FilenameLen) :: drifile
    integer :: mytask,ntasks,lower_bound,upper_bound
 #endif
    !include "sigtrap.F90"

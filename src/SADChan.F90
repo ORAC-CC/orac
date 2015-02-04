@@ -115,12 +115,12 @@ function Find_MDAD_SW(Ny, SAD_Chan, index) result(MDAD_SW)
          ii = index(i)
       end if
 
-      ! If the channel WN is greater then 10000 cm-1 and less than 20000 cm-1
-      ! then check how close it is to 0.67 um. If it is the closest of the
-      ! channels tried so far, update the minimum difference and set the channel
-      ! index
+      ! If the channel WN is greater than 10000 cm-1 (1.0 um) and less than
+      ! 20000 cm-1 (0.5 um) then check how close it is to 14925 cm-1 (0.67 um).
+      ! If it is the closest of the channels tried so far, update the minimum
+      ! difference and set the channel index
       if (SAD_Chan(ii)%WvN > 10000.0 .and. SAD_Chan(ii)%WvN < 20000.0) then
-         ! Difference between central WN and 0.67 um
+         ! Difference between central WN and 14925 cm-1 (0.67 um)
          diff = abs(SAD_Chan(ii)%WvN - 14925.0)
          if (diff < min_diff) then
             min_diff = diff
@@ -159,11 +159,11 @@ function Find_MDAD_LW(Ny, SAD_Chan, index) result(MDAD_LW)
          ii = index(i)
       end if
 
-      ! If the channel WN is less than 2500 cm-1 then check how close it is to
-      ! 11 um. If it is the closest of the channels tried so far, update the
-      ! minimum difference and set the channel index
+      ! If the channel WN is greater than 2500 cm-1 (4.0 um) then check how
+      ! close it is to 909 cm-1 (11.0 um). If it is the closest of the channels
+      ! tried so far, update the minimum difference and set the channel index
       if (SAD_Chan(ii)%WvN < 2500.0) then
-         ! Difference between central WN and 11 um
+         ! Difference between central WN and 909 cm-1 (11.0 um)
          diff = abs(SAD_Chan(ii)%WvN - 909.0)
          if (diff < min_diff) then
             min_diff = diff

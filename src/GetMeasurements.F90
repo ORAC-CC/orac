@@ -141,14 +141,15 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Set status to zero
    status = 0
 
+   ! Reallocate to the appropriate size for the SPixel and Assign SPixel values.
+   ! Use Ctrl indices for the Data array since this is populated for all
+   ! requested channels (not just those that are valid for the current SPixel).
+
    deallocate(SPixel%Ym)
    allocate(SPixel%Ym(SPixel%Ind%Ny))
    deallocate(SPixel%ViewIdx)
    allocate(SPixel%ViewIdx(SPixel%Ind%Ny))
 
-   ! Assign SPixel values.
-   ! Use Ctrl indices for the Data array since this is populated for all
-   ! requested channels (not just those that are valid for the current SPixel).
    do i = 1, SPixel%Ind%Ny
       ii = SPixel%spixel_y_to_ctrl_y_index(i)
       SPixel%Ym(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, ii)
@@ -156,8 +157,8 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    end do
    SPixel%Ind%Nviews = Ctrl%Ind%NViews
 
-   ! Allocate the measurement error covariance array to the appropriate size for
-   ! the SPixel and set the values. Initial value is the same as Ctrl.
+   ! Reallocate the measurement error covariance array to the appropriate size
+   ! for the SPixel and set the values. Initial value is the same as Ctrl.
 
    deallocate(SPixel%Sy)
    allocate(SPixel%Sy(SPixel%Ind%Ny, SPixel%Ind%Ny))
@@ -219,7 +220,8 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
          ! Daylight
-         if (SPixel%Illum(1) == IDay) then
+         if (SPixel%Illum(1) == IDay .or. &
+             SPixel%Illum(1) == IDayMissingSingleIRThird) then
             if (SAD_Chan(ii)%Solar%Flag /= 0) then
                if (SAD_Chan(ii)%Thermal%Flag /= 0) then
                   ! both solar and thermal => mixed

@@ -19,7 +19,7 @@
 !    x      float array Both        Solution vector to A.x = b
 !    n      integer     In          Dimensions of A; loop limit
 !    Status integer     Out         Status flag: 0 = Success, 1 = Not positive
-!                                    definite
+!                                   definite
 ! Local variables:
 !    Name Type Description
 !

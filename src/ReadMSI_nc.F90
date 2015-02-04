@@ -7,17 +7,15 @@
 !    files into the DATA_MSI array.
 !
 ! Arguments:
-!    Name     Type          In/Out/Both Description
-!    Ctrl     struct        Both        Control structure (date is read in
-!                                       here).
-!    MSI_Data struct        Both        Data structure: the MSI data part of
-!                                       this struct is populated by this
-!                                       routine, and is overwritten on
-!                                       successive calls.
-!    SAD_Chan struct array  Both        Instrument channel parameters. Updated
-!                                       by this routine: solar constant is
-!                                       modified from annual average to value
-!                                       for the day of the MSI data.
+!    Name     Type         In/Out/Both Description
+!    Ctrl     struct       Both        Control structure (date is read in here).
+!    MSI_Data struct       Both        Data structure: the MSI data part of this
+!                                      struct is populated by this routine, and
+!                                      is overwritten on successive calls.
+!    SAD_Chan struct array Both        Instrument channel parameters. Updated
+!                                      by this routine: solar constant is
+!                                      modified from annual average to value for
+!                                      the day of the MSI data.
 !
 ! Algorithm:
 !    Ff (MSI files are not yet open)
@@ -96,6 +94,9 @@
 !    2014/04/30, GM: Fixed a bug introduced by a previous change.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !    2014/01/30, AP: Remove NSegs, SegSize arguments.
+!    2015/02/04, GM: Changes related to the new missing channel, illumination,
+!       and channel selection code.  In particular, setting of out-of-range
+!       measurements to MissingXn is now done here.
 !
 ! Bugs:
 !    None known.
@@ -122,8 +123,8 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    ! Local variables
 
-   integer :: i          ! Counter for DOY calculation
-   integer :: day, month ! Day and month numbers extracted from
+   integer            :: i,j,k
+   integer            :: day, month
 
    ! NetCDF related
    integer           :: ncid
@@ -179,5 +180,24 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
       write(*,*) 'ERROR: Read_MSI_nc(): Error closing file.'
       stop error_stop_code
    end if
+
+   ! Set values that are out of range to MissingXn
+   do i = 1,Ctrl%Ind%Ny
+      do j = 1,Ctrl%Ind%Ymax
+         do k = 1,Ctrl%Ind%Xmax
+            if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
+               if (MSI_Data%MSI(k,j,i) < BTMin .or. &
+                   MSI_Data%MSI(k,j,i) > BTMax) then
+                  MSI_Data%MSI(k,j,i) = MissingXn
+               end if
+            else
+               if (MSI_Data%MSI(k,j,i) < RefMin .or. &
+                   MSI_Data%MSI(k,j,i) > RefMax) then
+                  MSI_Data%MSI(k,j,i) = MissingXn
+               end if
+            end if
+         end do
+      end do
+   end do
 
 end subroutine Read_MSI_nc
