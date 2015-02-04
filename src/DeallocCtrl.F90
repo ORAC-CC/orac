@@ -26,6 +26,7 @@
 !    12th Jan 2015, Adam Povey: Adding Ch_Is, YMixed.
 !     4th Feb 2015, Greg McGarragh: Add sabotage_inputs flag and retrieval
 !       channel requirements arrays.
+!     4th Feb 2015, Greg McGarragh: Add ReChans array.
 !
 ! Bugs:
 !    None known.
@@ -57,5 +58,8 @@ subroutine Dealloc_Ctrl(Ctrl)
    deallocate(Ctrl%tau_chans)
    deallocate(Ctrl%r_e_chans)
    deallocate(Ctrl%ir_chans)
+
+   if (associated(Ctrl%ReChans)) &
+      deallocate(Ctrl%ReChans)
 
 end subroutine Dealloc_Ctrl

@@ -110,6 +110,7 @@
 !       Remove Resoln structure as superpixeling only in preprocessing.
 !    2015/02/04, Greg McGarragh: Add sabotage_inputs flag and retrieval channel
 !       requirements arrays.
+!    2015/02/04, Greg McGarragh: Add ReChans array.
 !
 ! Bugs:
 !   None known.
@@ -321,6 +322,11 @@ module CTRL_def
       integer, pointer       :: r_e_chans(:)       ! Same thing but for Re
       integer, pointer       :: ir_chans(:)        ! Same thing but for Pc, Fr,
                                                    ! and Ts
+
+      integer, pointer       :: ReChans(:)         ! A list of effective radius
+                                                   ! sensitive channels to use
+                                                   ! in an order of decreasing
+                                                   ! priority.
    end type CTRL_t
 
 contains

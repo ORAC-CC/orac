@@ -40,6 +40,9 @@
 ! History:
 !     4th Feb 2015, Greg McGarragh:
 !       Original version.
+!     4th Feb 2015, Greg McGarragh:
+!       Add support to use CTRL%ReChans.  See description in Ctrl.F90 and
+!       default values set in ReadDriver.F90.
 !
 ! Bugs:
 !    Assumes a single view for now.
@@ -130,6 +133,44 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    else
       status = SPixelIllum
       return
+   end if
+
+   ! If it is day time, Ctrl%ReChans is associated and any channels in
+   ! Ctrl%ReChans are greater than zero and match any of the available r_e
+   ! channels then pick the first one in Ctrl%ReChans that matches and set the
+   ! rest of the Ctrl%ReChans that match to missing.  If Ctrl%ReChans is not
+   ! associated it is assumed that all available r_e channels should be used.
+   if (SPixel%Illum(1) .eq. IDay .and. associated(Ctrl%ReChans)) then
+      flag = .false.
+      i_r_e_chan = 0
+      do i_chan = 1, Ctrl%Ind%Ny
+         ii_chan = find_in_array(Ctrl%r_e_chans, Ctrl%ReChans(i_chan))
+         if (ii_chan .gt. 0) then
+            ii_chan = find_in_array(Ctrl%Ind%Y_ID, Ctrl%ReChans(i_chan))
+            if (ii_chan .gt. 0) then
+               flag = .true.
+               if (.not. is_not_used_or_missing(ii_chan)) then
+                  i_r_e_chan = Ctrl%ReChans(i_chan)
+                  exit
+               end if
+            end if
+         end if
+      end do
+
+      if (.not. flag) then
+         write(*,*) 'ERROR: Get_Indexing(): No Re channel found in ' // &
+                    'Ctrl%ReChans: ', Ctrl%ReChans
+         stop error_stop_code
+      endif
+
+      if (i_r_e_chan .gt. 0) then
+         do i_chan = 1, Ctrl%Ind%Ny
+            if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%r_e_chans) .and. &
+                    Ctrl%Ind%Y_ID(i_chan) .ne. i_r_e_chan) then
+               is_not_used_or_missing(i_chan) = .true.
+            end if
+         end do
+      end if
    end if
 
    ! Find the number of channels that fit the minimum requirement in each

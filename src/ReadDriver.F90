@@ -88,6 +88,7 @@
 !    2015/01/30, AP: Allow warm start coordinates to be specified.
 !    2015/02/04, GM: Add sabotage_inputs flag and retrieval channel requirements
 !       arrays.
+!    2015/02/04, GM: Add initialization of ReChans array.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -687,8 +688,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    CTRL%sabotage_inputs = .false.
 
 
-   ! See Ctrl.F90 for descriptions.
+   ! See Ctrl.F90 for descriptions of the variables initialized below.
+   nullify(Ctrl%ReChans)
+
    if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
+      allocate(Ctrl%ReChans(2))
+      Ctrl%ReChans = (/ 5, 4 /)
+
       allocate(Ctrl%tau_chans(3))
       Ctrl%tau_chans = (/ 1, 2, 3 /)
       allocate(Ctrl%r_e_chans(2))
@@ -696,6 +702,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 5, 6, 7 /)
    else if (Ctrl%Inst%Name(1:5) .eq. 'AVHRR') then
+      allocate(Ctrl%ReChans(2))
+      if (Ctrl%Inst%Name(7:12) .eq. 'NOAA17') then
+         Ctrl%ReChans = (/ 3, 4 /)
+      else
+         Ctrl%ReChans = (/ 4, 3 /)
+      endif
+
       allocate(Ctrl%tau_chans(2))
       Ctrl%tau_chans = (/ 1, 2 /)
       allocate(Ctrl%r_e_chans(2))
@@ -703,6 +716,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 5, 6 /)
    else if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
+      allocate(Ctrl%ReChans(3))
+      Ctrl%ReChans = (/ 20, 6, 7 /)
+
       allocate(Ctrl%tau_chans(4))
       Ctrl%tau_chans = (/ 1, 2, 3, 4 /)
       allocate(Ctrl%r_e_chans(3))
@@ -710,6 +726,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 20, 31, 32 /)
    else if (Ctrl%Inst%Name(1:6) .eq. 'SEVIRI') then
+      allocate(Ctrl%ReChans(2))
+      Ctrl%ReChans = (/ 4, 3 /)
+
       allocate(Ctrl%tau_chans(2))
       Ctrl%tau_chans = (/ 1, 2 /)
       allocate(Ctrl%r_e_chans(2))
