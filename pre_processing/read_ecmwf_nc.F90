@@ -59,6 +59,9 @@
 !   maybe other compilers, were allocating the arrays on the stack overflowing
 !   the stack when running with OpenMP. These arrays are big enough that they
 !   should be explicitly allocated on the heap anyway.
+! 2014/02/04, MS+OS: Implemented nearest neighbour interpolation of ECMWF data;
+!   only activated when WRAPPER flag is set; preliminary approach which will
+!   be made obsolete when ECMWF data will be retrieved on preproc grid resolution
 !
 ! $Id$
 !
@@ -100,6 +103,12 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    real(sreal) :: dummy2d(ecmwf%xdim,ecmwf%ydim,1,1)
    real(sreal) :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
 
+   real(sreal) :: ecmwf_lon(ecmwf%xdim),ecmwf_lon_tmp(ecmwf%xdim)
+   real(sreal) :: ecmwf_lat(ecmwf%ydim)
+   integer(lint) :: pointer_x(preproc_dims%min_lon:preproc_dims%max_lon)
+   integer(lint) :: pointer_y(preproc_dims%min_lat:preproc_dims%max_lat)
+   real(sreal) :: diff_lon(ecmwf%xdim),diff_lat(ecmwf%ydim)
+
    n=ecmwf%xdim*ecmwf%ydim
 
    allocate(old_data(BUFFER))
@@ -138,6 +147,29 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 
    ! loop over variables
    do ivar=1,nvar
+
+      ! determine nearest ecmwf neighbour of preproc pixel
+#ifdef WRAPPER
+      if(ivar .eq. 1) then
+
+        call nc_read_array(fid,'lon',ecmwf_lon,verbose)
+        call nc_read_array(fid,'lat',ecmwf_lat,verbose)
+
+        where(ecmwf_lon .gt. 180.) ecmwf_lon=ecmwf_lon-360.
+
+        do i=preproc_dims%min_lon,preproc_dims%max_lon
+          diff_lon=abs(ecmwf_lon-preproc_geoloc%longitude(i))
+          pointer_x(i)=minloc(diff_lon,1)
+        enddo
+
+        do j=preproc_dims%min_lat,preproc_dims%max_lat
+          diff_lat=abs(ecmwf_lat-preproc_geoloc%latitude(j))
+          pointer_y(j)=minloc(diff_lat,1)
+        enddo
+
+      endif
+#endif
+
       ! determine if field should be read
       if (nf90_inquire_variable(fid,ivar,name) .ne. 0) &
            stop 'ERROR: read_ecmwf_nc(): NF VAR INQUIRE failed.'
@@ -169,13 +201,13 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       case('SD','sd')
          three_d=.false.
          array2d => preproc_prtm%snow_depth
-      case('U10','u10')
+      case('U10','u10','U10M')
          three_d=.false.
          array2d => preproc_prtm%u10
-      case('V10','v10')
+      case('V10','v10','V10M')
          three_d=.false.
          array2d => preproc_prtm%v10
-      case('T2','t2')
+      case('T2','t2','T2M')
          three_d=.false.
          array2d => preproc_prtm%temp2
       case('SKT','skt')
@@ -184,7 +216,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       case('SSTK','sstk')
          three_d=.false.
          array2d => preproc_prtm%sst
-      case('AL','al')
+      case('AL','al','LSM')
          three_d=.false.
          array2d => preproc_prtm%land_sea_mask
       case default
@@ -200,18 +232,28 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
             old_data(1:n)=reshape(real(dummy3d(:,:,k,1),kind=8),[n])
 
             new_len=BUFFER
+
+#ifndef WRAPPER
             if (INTF(old_grib,old_len,old_data,new_grib,new_len,new_data).ne.0)&
-                 stop 'ERROR: read_ecmwf_nc(): INTF failed.'
-            if (new_len .ne. ni*nj) print*,'Interpolation grid wrong.'
+                  stop 'ERROR: read_ecmwf_nc(): INTF failed.'
+            if (new_len .ne. ni*nj) print*,'3D Interpolation grid wrong.'
 
             ! copy data into preprocessing grid
             do j=1,nj,2
                do i=1,ni,2
                   array3d(preproc_dims%min_lon+i/2, &
-                       preproc_dims%min_lat+(nj-j)/2,k) = &
-                       real(new_data(i+(j-1)*ni), kind=4)
+                     preproc_dims%min_lat+(nj-j)/2,k) = &
+                     real(new_data(i+(j-1)*ni), kind=4)
                end do
             end do
+#else
+            ! copy data into preprocessing grid
+            do i=preproc_dims%min_lon,preproc_dims%max_lon
+               do j=preproc_dims%min_lat,preproc_dims%max_lat
+                  array3d(i,j,k) = real(dummy3d(pointer_x(i),pointer_y(j),k,1))      
+               end do
+	    end do
+#endif
          end do
          if (verbose) print*,trim(name),') Min: ',minval(array3d), &
               ', Max: ',maxval(array3d)
@@ -221,18 +263,28 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
          old_data(1:n)=reshape(real(dummy2d,kind=8),[n])
 
          new_len=BUFFER
+
+#ifndef WRAPPER
          if (INTF(old_grib,old_len,old_data,new_grib,new_len,new_data) .ne. 0) &
-              stop 'ERROR: read_ecmwf_nc(): INTF failed.'
-         if (new_len .ne. ni*nj) print*,'Interpolation grid wrong.'
+               stop 'ERROR: read_ecmwf_nc(): INTF failed.'
+         if (new_len .ne. ni*nj) print*,'2D Interpolation grid wrong.'
 
          ! copy data into preprocessing grid
          do j=1,nj,2
             do i=1,ni,2
                array2d(preproc_dims%min_lon+i/2, &
-                    preproc_dims%min_lat+(nj-j)/2) = &
-                    real(new_data(i+(j-1)*ni), kind=4)
+                  preproc_dims%min_lat+(nj-j)/2) = &
+                  real(new_data(i+(j-1)*ni), kind=4)
             end do
          end do
+#else
+         ! copy data into preprocessing grid
+         do i=preproc_dims%min_lon,preproc_dims%max_lon
+            do j=preproc_dims%min_lat,preproc_dims%max_lat
+               array2d(i,j) = real(dummy2d(pointer_x(i),pointer_y(j),1,1))
+            end do
+         end do
+#endif
          if (verbose) print*,trim(name),') Min: ',minval(array2d), &
               ', Max: ',maxval(array2d)
       end if
