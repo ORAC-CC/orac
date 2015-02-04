@@ -183,6 +183,7 @@
 !       MSI file. Eliminate conf structure.
 !    2014/01/30, AP: Read surface level of RTTOV files. Allow warm start
 !       coordinates to be specified in the driver file. Remove SegSize.
+!    2015/02/04, OS: drifile is passed as call argument for WRAPPER
 !
 ! Bugs:
 !    None known.
@@ -215,7 +216,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use SAD_Chan_def
    use SAD_LUT_def
    use SPixel_def
-   use global_attributes
+   use global_attributes 
    use source_attributes
 
    ! Local variable declarations
@@ -335,7 +336,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    !----------------------------------------------------------------------------
 
    ! Read Ctrl struct from driver file
+#ifdef WRAPPER
+   call Read_Driver(Ctrl, global_atts, source_atts, drifile, verbose)
+#else
    call Read_Driver(Ctrl, global_atts, source_atts, verbose)
+#endif
 
    ! Read dimensions of preprocessing swath files first:
    call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
@@ -544,7 +549,7 @@ end if
    thread_num = omp_get_thread_num()
    write(*,*) 'Thread ', thread_num+1, 'is active'
 #endif
-
+      
    !  Allocate sizes of SPixel sub-structure arrays
    call Alloc_RTM_Pc(Ctrl, RTM_Pc)
    call Alloc_SPixel(Ctrl, RTM, SPixel)

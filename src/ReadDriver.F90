@@ -89,6 +89,7 @@
 !    2015/02/04, GM: Add sabotage_inputs flag and retrieval channel requirements
 !       arrays.
 !    2015/02/04, GM: Add initialization of ReChans array.
+!    2015/02/04, OS: drifile is passed as call argument for WRAPPER
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -105,7 +106,11 @@ module read_driver_m
 
 contains
 
+#ifdef WRAPPER
+subroutine Read_Driver(Ctrl, global_atts, source_atts, drifile, verbose)
+#else
 subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
+#endif
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
@@ -123,9 +128,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
    logical,                   intent(in)    :: verbose
+#ifdef WRAPPER
+   character(FilenameLen)   , intent(inout) :: drifile
+#endif
 
    ! Local variables
-   character(FilenameLen)             :: drifile
    integer                            :: i,ii,i0,i1,i2,j
    integer                            :: ios
    integer                            :: dri_lun
@@ -142,14 +149,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    !----------------------------------------------------------------------------
 #ifndef WRAPPER
    if (command_argument_count() == 1) then
-#else
-   if (.false.)
-#endif
       drifile = ''
       call get_command_argument(1, drifile)
    else
       call get_environment_variable("ORAC_TEXTIN", drifile)
    end if
+#endif
+
 
    ! If drifile is '-' read the file from standard input otherwise read drifile
    if (drifile == '-') then
