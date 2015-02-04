@@ -17,6 +17,7 @@
 ! 2013/11/06, MJ: adds config file to preprocessing output which holds all
 !   relevant dimensional information.
 ! 2014/02/06, AP: removing unnecessary NCDF routines
+! 2015/02/04, GM: Terminate on error like all the other NetCDF calls.
 !
 ! $Id$
 !
@@ -27,30 +28,60 @@
 subroutine netcdf_output_close(netcdf_info)
 
    use netcdf
+   use preproc_constants
 
    implicit none
 
    type(netcdf_output_info_s), intent(in) :: netcdf_info
 
-   if (nf90_close(netcdf_info%ncid_alb).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF ALB.'
-   if (nf90_close(netcdf_info%ncid_clf).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF CLF.'
-   if (nf90_close(netcdf_info%ncid_config).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF CONFIG.'
-   if (nf90_close(netcdf_info%ncid_geo).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF GEO.'
-   if (nf90_close(netcdf_info%ncid_loc).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF LOC.'
-   if (nf90_close(netcdf_info%ncid_lsf).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF LSF.'
-   if (nf90_close(netcdf_info%ncid_lwrtm).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF LWRTM.'
-   if (nf90_close(netcdf_info%ncid_msi).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF MSI.'
-   if (nf90_close(netcdf_info%ncid_prtm).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF PRTM.'
-   if (nf90_close(netcdf_info%ncid_swrtm).ne.NF90_NOERR) &
-        print*,'CLOSE_NETCDF_OUTPUT: Error closing NCDF SWRTM.'
+   if (nf90_close(netcdf_info%ncid_alb) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".alb.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_clf) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".alb.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_config) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".config.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_geo) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".geo.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_loc) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".loc.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_lsf) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lsf.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_lwrtm) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".lwrtm.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_msi) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".msi.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_prtm) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".prtm.nc"'
+      stop error_stop_code
+   endif
+
+   if (nf90_close(netcdf_info%ncid_swrtm) .ne. NF90_NOERR) then
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".swrtm.nc"'
+      stop error_stop_code
+   endif
 
 end subroutine netcdf_output_close
