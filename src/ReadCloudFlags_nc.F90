@@ -69,6 +69,9 @@
 !       Added new variables CldType, CloudMask, and CCCOT_pre
 !    30th Jan 2015, Adam Povey:
 !       Remove NSegs, SegSize arguments.
+!     4th Feb 2015, Martin Stengel & Oliver Sus:
+!       Process only cloudy pixels and one phase; flags to be outsourced; 
+!       hard-wired cloud type values to be replaced by Pavolonis constants
 !
 ! Bugs:
 !    None known.
@@ -93,6 +96,9 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
 
    integer :: ncid
 
+   logical :: process_cloudy_only
+   logical :: process_one_phase_only
+
    ! Open cloud flag file
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
    call nc_open(ncid, Ctrl%Fid%CF)
@@ -106,6 +112,41 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, verbose)
    call nc_read_array(ncid, "cldmask", MSI_Data%cloudmask, verbose)
    call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, verbose)
+
+   ! Pavolonis cloud type values:
+
+   ! CLEAR_TYPE = 0
+   ! PROB_CLEAR_TYPE = 1 !currently not used
+   ! FOG_TYPE = 2
+   ! WATER_TYPE = 3
+   ! SUPERCOOLED_TYPE = 4
+   ! OPAQUE_ICE_TYPE = 6
+   ! CIRRUS_TYPE = 7
+   ! OVERLAP_TYPE = 8
+
+   process_cloudy_only = .true.
+   process_one_phase_only  = .true.
+
+   if( process_cloudy_only ) then
+   ! set clear-sky pixels to 0 to avoid their processing
+      where( MSI_Data%CloudMask .eq. 0 )
+         MSI_Data%CloudFlags = 0
+      endwhere
+      if( process_one_phase_only ) then
+      ! set ice pixels to 0
+         if( trim( Ctrl%CloudClass ) .eq. 'WAT' ) then
+            where( MSI_Data%CldType .ge. 6 .and. MSI_Data%CldType .le. 8 )
+               MSI_Data%CloudFlags = 0
+            endwhere
+         endif
+      ! set liquid pixels to 0
+         if( trim( Ctrl%CloudClass ) .eq. 'ICE' ) then
+            where( MSI_Data%CldType .ge. 2 .and. MSI_Data%CldType .le. 4 )
+               MSI_Data%CloudFlags = 0
+            endwhere
+         endif
+      endif
+   endif
 
    ! Close cloud flag file
    if (nf90_close(ncid) /= NF90_NOERR) then
