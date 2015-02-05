@@ -30,6 +30,7 @@
 !  (currently deactivated), and nisemask
 ! 2014/11/20 OS: added allocation of pavolonis phase
 ! 2014/11/26 Cp: added allocation of cloud_albedo
+! 2015/02/05 OS: changed nint to lint
 
 ! $Id$
 !
@@ -51,7 +52,7 @@ subroutine alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,NViews,spixel
 
   implicit none
 
-  integer(kind=nint) :: ixstart, ixstop,iystart, iystop, NViews,nchan
+  integer(kind=lint) :: ixstart, ixstop,iystart, iystop, NViews,nchan
 
   type(spixel_scanline_primary_output) :: spixel_scan_out
   
