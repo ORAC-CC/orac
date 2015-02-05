@@ -7,12 +7,14 @@
 ! 2014/10/24 OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM, and nisemask
 ! 2014/11/20 OS: added Pavolonis cloud phase related variables
 ! 2014/11/26 CP: added Pavolonis cloud_albedo
+! 2015/02/05 OS: deactivated use of vartypes_pp to force consistency with
+!                common_constants
 
 !---------------------------------------------------------------------
 
 module scanline_structure
 
-  use vartypes_pp
+  !use vartypes_pp
   use common_constants
 
   implicit none
