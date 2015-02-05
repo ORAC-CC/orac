@@ -129,7 +129,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    type(source_attributes_s), intent(inout) :: source_atts
    logical,                   intent(in)    :: verbose
 #ifdef WRAPPER
-   character(FilenameLen)   , intent(inout) :: drifile
+   character(FilenameLen),    intent(inout) :: drifile
+#else
+   character(FilenameLen)                   :: drifile
 #endif
 
    ! Local variables
