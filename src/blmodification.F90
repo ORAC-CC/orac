@@ -32,6 +32,7 @@
 !       array bounds. In addition, we want to avoid the bottom level which is
 !       the surface skin temperature. The fix: changed the maximum BLindexbottom
 !       from SPixel%RTM%LW%Np-1 to SPixel%RTM%LW%Np-3.
+!    05/02/2015, O. Sus: Removed some superfluous commata after write statements
 !
 ! Bugs:
 !    Could use humidity subsidence inversion in the future
@@ -97,14 +98,14 @@ subroutine Blmodification(SPixel)
          write(*,*)'SPixel%RTM%LW%P',SPixel%RTM%LW%P
          write(*,*)'SPixel%RTM%LW%T',SPixel%RTM%LW%T
 
-         write(*,*),'press=[ $'
+         write(*,*)'press=[ $'
          do k=1,SPixel%RTM%LW%Np
             write(*,*)SPixel%RTM%LW%P(k),',$'
 
          enddo
          write(*,*)']'
 
-         write(*,*),'told=[ $'
+         write(*,*)'told=[ $'
          do k=1,SPixel%RTM%LW%Np
             write(*,*)SPixel%RTM%LW%T(k),',$'
 
@@ -123,7 +124,7 @@ subroutine Blmodification(SPixel)
 
       ! print out new temperature profile
       if (test) then
-         write(*,*),'tnew=[ $'
+         write(*,*)'tnew=[ $'
          do k=1,SPixel%RTM%LW%Np
             write(*,*)SPixel%RTM%LW%T(k),',$'
          enddo
