@@ -9,6 +9,8 @@
 ! History:
 !    20th Nov 2914, SteSta + OS: implemented bounds check (noob)
 !    2014/12/03 CP added in common_constants should eventually remove vartypes_pp
+!    2015/02/05 OS changed nint to lint
+
 ! Bugs:
 !    None known
 !-------------------------------------------------------------------------------
@@ -25,10 +27,10 @@ subroutine neural_net(nneurons,ninput,noutput,minmax_train,inv,outv,input,scales
 
   integer(kind=lint) :: noob !number of pixels out of bounds
 
-  integer(kind=nint) :: iinput,ineuron
-  integer(kind=nint) :: nneurons !number of employed neurons
-  integer(kind=nint) :: ninput !number of criterias (input dimensions of nn)
-  integer(kind=nint) :: noutput !number of output dimensions (1 as we only have cm)
+  integer(kind=lint) :: iinput,ineuron
+  integer(kind=lint) :: nneurons !number of employed neurons
+  integer(kind=lint) :: ninput !number of criterias (input dimensions of nn)
+  integer(kind=lint) :: noutput !number of output dimensions (1 as we only have cm)
 
   real(kind=sreal) :: minmax_train(ninput,2),scales(ninput,2),oscales(3),&
        & inv(ninput+1,nneurons),input(ninput+1),outv(nneurons+1),output
