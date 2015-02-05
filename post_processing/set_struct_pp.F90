@@ -34,6 +34,7 @@
 !  for water within if condition iphase = 2 (never true for water)
 ! 2014/11/20 OS: some minor editing
 ! 2014/11/26 CP: added cloud_albedo
+! 2015/02/05 OS: changed nint to lint; added (de)allocation of phase_post 
 
 ! $Id$
 !
@@ -56,7 +57,7 @@ subroutine set_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary,xdim
 
   integer :: iphase,nchan
 
-  integer(kind=nint) ,INTENT(IN) :: xdim1km,ydim1km
+  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
   
   type(l2_input_struct_2d_primary) :: l2_input_2dice_primary
   
@@ -88,7 +89,10 @@ subroutine set_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary,xdim
 
      allocate(l2_input_2dice_primary%phase(xdim1km,ydim1km))
      l2_input_2dice_primary%phase=byte_fill_value
-     
+
+     allocate(l2_input_2dice_primary%phase_post(xdim1km,ydim1km))
+     l2_input_2dice_primary%phase_post=byte_fill_value     
+
      allocate(l2_input_2dice_primary%lsflag(xdim1km,ydim1km))
      l2_input_2dice_primary%lsflag=byte_fill_value
 
@@ -211,7 +215,7 @@ subroutine set_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary,xdim
 
   integer :: iphase,nchan
 
-  integer(kind=nint) ,INTENT(IN) :: xdim1km,ydim1km
+  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
   
   type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary
 
@@ -257,10 +261,10 @@ subroutine set_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary,xdim
 !      l2_input_2dwat_primary%illum=byte_fill_value
      
 !      !allocate(l2_input_2dwat_primary%scanline_u(xdim1km,ydim1km))
-!      !l2_input_2dwat_primary%scanline_u=nint_fill_value
+!      !l2_input_2dwat_primary%scanline_u=lint_fill_value
      
 !      !allocate(l2_input_2dwat_primary%scanline_v(xdim1km,ydim1km))
-!      !l2_input_2dwat_primary%scanline_v=nint_fill_value
+!      !l2_input_2dwat_primary%scanline_v=lint_fill_value
      
 !   endif
 
@@ -371,7 +375,7 @@ subroutine set_l2_refl_and_bt(l2_input_2d_refl_bt,xdim1km,ydim1km)
 
   implicit none
 
-  integer(kind=nint) ,INTENT(IN) :: xdim1km,ydim1km
+  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
   
   type(l2_input_struct_2d_refl_bt) :: l2_input_2d_refl_bt
   
@@ -434,11 +438,11 @@ subroutine set_l2_input_struct_2d_secondary(l2_input_2d_secondary,xdim1km,ydim1k
 
   implicit none
 
-  integer(kind=nint) ,INTENT(IN) :: xdim1km,ydim1km
+  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
 
-  integer(kind=nint),INTENT(IN)  :: nl2vars_1km,nl2vars_errors_1km,n_val_plus_error, n_oe_features
+  integer(kind=lint),INTENT(IN)  :: nl2vars_1km,nl2vars_errors_1km,n_val_plus_error, n_oe_features
 
-  !  integer(kind=nint) :: nl2vars_1km,nl2vars_errors_1km,n_val_plus_error, n_oe_features
+  !  integer(kind=lint) :: nl2vars_1km,nl2vars_errors_1km,n_val_plus_error, n_oe_features
 
   type(l2_input_struct_2d_secondary) :: l2_input_2d_secondary
 
@@ -610,6 +614,7 @@ subroutine unset_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary)
      deallocate(l2_input_2dice_primary%lon)
      deallocate(l2_input_2dice_primary%lat)
      deallocate(l2_input_2dice_primary%phase)
+     deallocate(l2_input_2dice_primary%phase_post)
      !deallocate(l2_input_2dice_primary%pchange)
 
      deallocate(l2_input_2dice_primary%satellite_zenith_view_no1)
