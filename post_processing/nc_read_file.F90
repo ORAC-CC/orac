@@ -22,7 +22,8 @@
 !2012/07/06, MJ: extensively overhauls and restructures the code
 !2014/09/20, CP: bug fix scale factor error
 !2014/10/24, OS: further bug fix on scale factor 
-!2014/12/03 CP added in common_constants should eventually remove vartypes_pp
+!2014/12/03, CP: added in common_constants should eventually remove vartypes_pp
+!2015/02/05, OS: changed nint to lint
 !
 ! $Id$
 !
@@ -444,7 +445,7 @@ SUBROUTINE nc_read_array_2d_short_orac_pp(ncid,n1,n2,cv,v_out,unit,wo)
       INTEGER, PARAMETER :: SINGLE = 4
       INTEGER, PARAMETER :: DOUBLE = 8
       integer(KIND=sint) :: v_out(1:n1,1:n2)    ! Variable (v): read in field 1-n1
-      integer(kind=nint) :: os,sf,vmin,vmax
+      integer(kind=lint) :: os,sf,vmin,vmax
       CHARACTER(LEN=unitlength) :: unit
 
       ! Local
