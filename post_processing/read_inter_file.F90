@@ -28,6 +28,7 @@
 !  (currently deactivated), and nisemask; commented out reading of variables
 !   for water within if condition iphase = 2 (never true for water)
 ! 2014/12/02 CP: reads in global and source attributes from file
+! 2015/02/05 OS: changed nint to lint
 !
 !
 !
@@ -56,12 +57,12 @@ SUBROUTINE read_inter_file_ice(iphase,fname,l2_input_2dice_primary,xdim,ydim,glo
   integer :: ivar,idim,ndim,nvar,nattr,dummyint,iphase
   integer :: ncid,ierr,ny=5,nx=5
   character(len=cpathlength) :: fname,name
-  integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
+  integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   character(len=varlength), allocatable :: dname(:)
     character(len=32)  :: input_num
    character(len=512) :: input_dummy
   character (len=varlength), allocatable, dimension(:) ::  available_names(:)
-  INTEGER(kind=nint) ::  xdim,ydim,i
+  INTEGER(kind=lint) ::  xdim,ydim,i
 
   CHARACTER(LEN=unitlength) :: dummy_unit
   type(l2_input_struct_2d_primary) :: l2_input_2dice_primary
@@ -556,7 +557,7 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
-  INTEGER(kind=nint) ::  xdim,ydim,i
+  INTEGER(kind=lint) ::  xdim,ydim,i
 
   CHARACTER(LEN=unitlength) :: dummy_unit
   type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary
