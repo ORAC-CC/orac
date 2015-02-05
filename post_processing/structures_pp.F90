@@ -24,8 +24,12 @@
 ! 2012/07/06 MJ extensively overhauls and restructures the code
 ! 2014/09/20 CP adds in extra channel variables
 ! 2014/09/29 CP adds in variable names for MODIS
-! 2014/10/24 OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM, and nisemask
+! 2014/10/24 OS added variables cccot_pre, lusflag, cldtype, cloudmask, DEM, 
+!            and nisemask
 ! 2014/12/02 CP adds in cloud_albedo
+! 2015/02/05 OS deactivated use of vartypes_pp to force consistency with
+!            common_constants; changed nint to lint; added variable
+!            phase_post
 
 ! $Id$
 !
@@ -35,7 +39,7 @@
 
 module structures_pp
 
-  use vartypes_pp
+  use common_constants
 
   implicit none
 
@@ -65,20 +69,21 @@ module structures_pp
      integer(kind=byte), dimension(:,:), pointer :: cldtype
      integer(kind=byte), dimension(:,:), pointer :: illum
      integer(kind=byte), dimension(:,:), pointer :: phase
+     integer(kind=byte), dimension(:,:), pointer :: phase_post
      integer(kind=byte), dimension(:,:), pointer :: pchange
      integer(kind=byte), dimension(:,:), pointer :: cldmask
      integer(kind=byte), dimension(:,:), pointer :: lusflag
      integer(kind=sint), dimension(:,:), pointer :: dem
      integer(kind=byte), dimension(:,:), pointer :: nisemask
-     !integer(kind=nint), dimension(:,:), pointer :: scanline_u
-     !integer(kind=nint), dimension(:,:), pointer :: scanline_v
+     !integer(kind=lint), dimension(:,:), pointer :: scanline_u
+     !integer(kind=lint), dimension(:,:), pointer :: scanline_v
 
   end type l2_input_struct_2d_primary
 
 
   type l2_input_struct_2d_refl_bt
 
-     integer(kind=nint) :: nchannels,nchannels_sw,nchannels_lw
+     integer(kind=lint) :: nchannels,nchannels_sw,nchannels_lw
 
      real(kind=sreal), dimension(:,:,:), pointer :: albedo
      real(kind=sreal), dimension(:,:,:), pointer :: reflectance_residual
