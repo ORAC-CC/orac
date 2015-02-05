@@ -71,6 +71,10 @@
   !  postprocessing cloud mask
   !2014/11/20, OS: renamed module neural_net_constants to neural_net_constants_postproc;
   !  some editing; replaced hard-coded NN values with variables     
+  !2015/02/05, OS: changed nint to lint; further replacements of variables
+  !                defined in vartypes_pp with those defined in common_constants;
+  !                added phase_post; Pavolonis phase is now used as basis for
+  !                phase-dependent variables
   !
   ! Bugs:
   !    None known.
@@ -119,46 +123,46 @@
 
       integer          :: status = 0 ! Status value returned from subroutines
       integer :: ncid,ierr,wo,ny=5,nx=5, iinput,nsolar=3,nthermal=2
-      integer(kind=nint) :: ix,iy,ixstart,ixstop,iystart,iystop,i,j,nviews=1,ia
+      integer(kind=lint) :: ix,iy,ixstart,ixstop,iystart,iystop,i,j,nviews=1,ia
       logical :: lcovar=.true.
       INTEGER :: ncid_primary,ncid_secondary,ncid_input,iviews,dims_var(2),is,js
       integer :: ivar,idim,ndim,nvar,nattr,dummyint,jdim,iphase
       real :: dummyreal,resin
 
-      character(len=cpathlength) :: ecmwf_path,path_and_file,&
+      character(len=path_length) :: ecmwf_path,path_and_file,&
            & fnamewat_prim,fnameice_prim,fnamewat_sec,fnameice_sec
       character(len=20) :: input_num,input_num1,input_num2
       character(len=500) :: input_dummy,s_input_dummy  
-      integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
+      integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
 
 
-      character(len=varlength), allocatable :: dname(:)
+      character(len=var_length), allocatable :: dname(:)
 
-      character (len=varlength), allocatable, dimension(:) ::  available_names(:)
+      character (len=var_length), allocatable, dimension(:) ::  available_names(:)
 
-      character(len=cpathlength) :: name,fname,L2_primary_outputpath_and_file, &
+      character(len=path_length) :: name,fname,L2_primary_outputpath_and_file, &
            L2_secondary_outputpath_and_file
 
-      character(len=varlength) ::  chan_id(5),inst
+      character(len=var_length) ::  chan_id(5),inst
 
       integer :: proc_flag(5)
 
-      character(len=uuid_length) :: uuid_tag_primary,uuid_tag_secondary
+      character(len=var_length) :: uuid_tag_primary,uuid_tag_secondary
 
-      integer (kind=nint)  :: xdim,ydim,levlistdim,levtypedim,timedim,k
+      integer (kind=lint)  :: xdim,ydim,levlistdim,levtypedim,timedim,k
 
       real :: minre(2),maxre(2),minod(2),maxod(2),maxcost=1000000.,costfactor=1.5, &
            cot_thres,cot_thres1,cot_thres2
 
-      integer, parameter :: IPhaseClU = 0     ! clear/unknoiwn
-      integer, parameter :: IPhaseWat = 1     ! Water
-      integer, parameter :: IPhaseIce = 2     ! Ice
+      integer(kind=byte), parameter :: IPhaseClU = 0     ! clear/unknoiwn
+      integer(kind=byte), parameter :: IPhaseWat = 1     ! Water
+      integer(kind=byte), parameter :: IPhaseIce = 2     ! Ice
 
       integer(kind=byte), allocatable, dimension(:,:) :: phaseflag
 
       integer :: penaltyflag_w, penaltyflag_i
 
-      integer(kind=nint) :: nvars=1,nvars_errors=1, n_val_plus_error=2,n_oe_features=3
+      integer(kind=lint) :: nvars=1,nvars_errors=1, n_val_plus_error=2,n_oe_features=3
 
       real (kind=sreal) ::  costice,  costwat ,newcot, costice_store, costwat_store, &
            temp_thres,temp_thres_h,temp_thres_m,temp_thres_l,temp_thres1, &
@@ -177,10 +181,10 @@
 
       integer :: nargs
 
-      character(len=description_length) :: reference,history,summary,keywords, &
+      character(len=attribute_length_long) :: reference,history,summary,keywords, &
            comment,license,csource,std_name_voc
-      character(len=paramlength) :: cprodtype, l1closure, platform, csensor
-      CHARACTER(len= attribute_length) :: cncver,ccon,cinst, &
+      character(len=attribute_length) :: cprodtype, l1closure, platform, csensor
+      CHARACTER(len=attribute_length) :: cncver,ccon,cinst, &
            instname, contact, website, prodtime, ctitle, cproc, cprocver, &
            l2cproc, l3cproc,l2cprocver, l3cprocver, prod_name, &
            year, month, day,grid_type, project,cfile_version
@@ -192,16 +196,16 @@
 
       !nn variables
       integer(kind=lint) :: noob,noob_total !number of pixels out of bounds
-      integer(kind=nint) :: nneurons !number of employed neurons
-      integer(kind=nint) :: ninput !number of criterias (input dimensions of nn)
-      integer(kind=nint) :: noutput !number of output dimensions (1 as we only have cm)
+      integer(kind=lint) :: nneurons !number of employed neurons
+      integer(kind=lint) :: ninput !number of criterias (input dimensions of nn)
+      integer(kind=lint) :: noutput !number of output dimensions (1 as we only have cm)
       real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
       real(kind=sreal),allocatable, dimension(:) :: input,outv
       real(kind=sreal) :: output
       real(kind=sreal) :: oscales(3)
       real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
       integer :: solar_chan_id(2)
-     integer(kind=lint) :: nchan_solar
+      integer(kind=lint) :: nchan_solar
 
       integer :: ibit
 
@@ -415,6 +419,7 @@
             !default: ICE wins, meaning only ice structure is overwritten 
             !and used in the end for the output
             l2_input_2dice_primary%phase(i,j)=iphaseice
+            l2_input_2dice_primary%phase_post(i,j) = iphaseice  
 
             !Determine the total cost(s) for WAT and ICE
             if(l2_input_2dwat_primary%costja(i,j) .gt. 0.0_sreal) then
@@ -450,16 +455,16 @@
  
 
             !As a reminder:
-            ! - bits 1 to MaxStateVar: set to 1 if
+            ! - bits 1 to MAXSTATEVAR: set to 1 if
             !   parameter estimated retrieval error 
             !   too large
-            ! - bit MaxStateVar+1: retrieval did not
+            ! - bit MAXSTATEVAR+1: retrieval did not
             !   converge 
-            ! - bit MaxStateVar+2: retrieval solution
+            ! - bit MAXSTATEVAR+2: retrieval solution
             !   cost too great
 
             !can only strictly evaluate cost if method has converged:
-            if ( ibits ( l2_input_2dwat_primary%qcflag(i,j), maxstatevar+1, 1 ) &
+            if ( ibits ( l2_input_2dwat_primary%qcflag(i,j), MAXSTATEVAR+1, 1 ) &
                  .ne. 0_sint ) then  !convergence NOT reached
 
                costwat=maxcost
@@ -472,7 +477,7 @@
                !leave that commented out as bounds of cost is tricky and not
                ! too well understood
 
-               if ( ibits ( l2_input_2dwat_primary%qcflag(i,j), maxstatevar+2, 1 ) &
+               if ( ibits ( l2_input_2dwat_primary%qcflag(i,j), MAXSTATEVAR+2, 1 ) &
                     .ne. 0_sint ) then  !cost NOT within bounds
 
                   ! costwat=maxcost
@@ -482,7 +487,7 @@
 
             endif
 
-            if ( ibits ( l2_input_2dice_primary%qcflag(i,j), maxstatevar+1 , 1 ) &
+            if ( ibits ( l2_input_2dice_primary%qcflag(i,j), MAXSTATEVAR+1 , 1 ) &
                  .ne. 0_sint ) then  !convergence NOT reached
 
                costice=maxcost
@@ -494,7 +499,7 @@
                !but cost out of bounds
                !leave that commented out as bounds of cost is tricky and not
                ! too well understood
-               if ( ibits ( l2_input_2dice_primary%qcflag(i,j), maxstatevar+2, 1 ) &
+               if ( ibits ( l2_input_2dice_primary%qcflag(i,j), MAXSTATEVAR+2, 1 ) &
                     .ne. 0_sint ) then  !cost NOT within bounds
 
                   ! costice=maxcost
@@ -561,6 +566,7 @@
             !set phase to unknown/clear when both phases got penalties
             if(penaltyflag_w .eq. 1 .and. penaltyflag_i .eq. 1 ) then
                l2_input_2dice_primary%phase(i,j)=IPhaseClU
+               l2_input_2dice_primary%phase_post(i,j) = IPhaseClU
                !look where uncertainties are larger (sum of other bits) and decide then?
                !write(*,*) 'sumbits',bit_size(l2_input_2dice_primary%qcflag(i,j))
                !write(*,*) 'LIQ',(btest(l2_input_2dwat_primary%qcflag(i,j)
@@ -572,8 +578,16 @@
             !Now select the phase with the smallest cost
             !overwrite ICE structure entry if WAT has smaller cost
 
-            !water has the upper hand
+            ! for post_processing phase, only keep phase information but do not use 
+            ! as basis for phase selection 
             if(costwat .le.  costice) then
+                l2_input_2dice_primary%phase_post(i,j)=iphasewat 
+            endif  
+
+            !water has the upper hand
+            ! here apply Pavolonis phase information to select retrieval phase variables 
+            if( l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
+                l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
 
                phaseflag(i,j) = 1_byte
 
@@ -636,7 +650,7 @@
                  l2_input_2dice_primary%ctt(i,j) .ge. filter_micro) then
                tempdiff=(l2_input_2dice_primary%stemp(i,j)-l2_input_2dice_primary%ctt(i,j))
             else
-               tempdiff=real_fill_value
+               tempdiff=sreal_fill_value
             endif
 
             ! DAY cloud mask
@@ -738,19 +752,19 @@
                ! Case 1) trust the ann and ...
                !just do nothing
                ! Case 2) set it to clear
-               !l2_input_2dice_primary%cccot(i,j)= real_fill_value
+               !l2_input_2dice_primary%cccot(i,j)= sreal_fill_value
                !l2_input_2dice_primary%cc_total(i,j)=0.0
                ! Case 3) set it to cloudy
                !l2_input_2dice_primary%cccot(i,j)= 1.0
                !l2_input_2dice_primary%cc_total(i,j)=1.0
                ! Case 4) set it to fillvalue
-               !l2_input_2dice_primary%cccot(i,j)=real_fill_value
-               !l2_input_2dice_primary%cc_total(i,j)=nint_fill_value
+               !l2_input_2dice_primary%cccot(i,j)=sreal_fill_value
+               !l2_input_2dice_primary%cc_total(i,j)=lint_fill_value
                ! Case 5) trust ann, set cldflag to fillvalue only if all channels are       
                !  below 0. (=fillvalue)
                if (l2_input_2dice_primary%ctp(i,j) .lt. 0 &
                     .and. l2_input_2dice_primary%stemp(i,j) .lt. 0 ) &
-                    l2_input_2dice_primary%cc_total(i,j) = nint_fill_value
+                    l2_input_2dice_primary%cc_total(i,j) = lint_fill_value
             endif
 
             !
@@ -791,18 +805,59 @@
             !Don't set fill values and leave final masking of products to user
             !obsolete: if cloud free, set primary retrieval parameters to fill value
             if(l2_input_2dice_primary%cc_total(i,j) .eq. 0.0) then
-               !           l2_input_2dice_primary%cot(i,j)=real_fill_value
-               !           l2_input_2dice_primary%ref(i,j)=real_fill_value
-               !           l2_input_2dice_primary%ctp(i,j)=real_fill_value
-               !           l2_input_2dice_primary%cth(i,j)=real_fill_value
-               !           l2_input_2dice_primary%ctt(i,j)=real_fill_value
-               !           l2_input_2dice_primary%cwp(i,j)=real_fill_value
-               !           l2_input_2dice_primary%cot_uncertainty(i,j)=real_fill_value
-               !           l2_input_2dice_primary%ref_uncertainty(i,j)=real_fill_value
-               !           l2_input_2dice_primary%ctp_uncertainty(i,j)=real_fill_value
-               !           l2_input_2dice_primary%cwp_uncertainty(i,j)=real_fill_value
+               !           l2_input_2dice_primary%cot(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%ref(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%ctp(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%cth(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%ctt(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%cwp(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%cot_uncertainty(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%ref_uncertainty(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%ctp_uncertainty(i,j)=sreal_fill_value
+               !           l2_input_2dice_primary%cwp_uncertainty(i,j)=sreal_fill_value
                !set phase to clear/unknown
                l2_input_2dice_primary%phase(i,j)=IPhaseClU
+               l2_input_2dice_primary%phase_post(i,j)=IPhaseClU
+               !endif
+
+               !water has the upper hand
+               ! here apply Pavolonis phase information to select retrieval phase variables
+
+               if (costwat .le. costice) then
+                  phaseflag(i,j) = 1_byte
+
+                  l2_input_2dice_primary%cot(i,j)=l2_input_2dwat_primary%cot(i,j)
+                  l2_input_2dice_primary%ref(i,j)=l2_input_2dwat_primary%ref(i,j)
+                  l2_input_2dice_primary%ctp(i,j)=l2_input_2dwat_primary%ctp(i,j)
+                  l2_input_2dice_primary%stemp(i,j)=l2_input_2dwat_primary%stemp(i,j)
+                  l2_input_2dice_primary%cth(i,j)=l2_input_2dwat_primary%cth(i,j)
+                  l2_input_2dice_primary%cth_uncertainty(i,j)&
+                       &=l2_input_2dwat_primary%cth_uncertainty(i,j)
+                  l2_input_2dice_primary%ctt(i,j)=l2_input_2dwat_primary%ctt(i,j)
+                  l2_input_2dice_primary%ctt_uncertainty(i,j)&
+                       &=l2_input_2dwat_primary%ctt_uncertainty(i,j)
+                  l2_input_2dice_primary%cwp(i,j)=l2_input_2dwat_primary%cwp(i,j)
+                  l2_input_2dice_primary%cot_uncertainty(i,j)&
+                       &=l2_input_2dwat_primary%cot_uncertainty(i,j)
+                  l2_input_2dice_primary%ref_uncertainty(i,j)&
+                       &=l2_input_2dwat_primary%ref_uncertainty(i,j)
+                  l2_input_2dice_primary%ctp_uncertainty(i,j)&
+                       &=l2_input_2dwat_primary%ctp_uncertainty(i,j)
+                  l2_input_2dice_primary%cc_total_uncertainty(i,j)&
+                       &=l2_input_2dwat_primary%cc_total_uncertainty(i,j)
+                  l2_input_2dice_primary%stemp_uncertainty(i,j)&
+                       &=l2_input_2dwat_primary%stemp_uncertainty(i,j)
+                  l2_input_2dice_primary%cwp_uncertainty(i,j) &
+                       &=l2_input_2dwat_primary%cwp_uncertainty(i,j)
+                  l2_input_2dice_primary%convergence(i,j)=l2_input_2dwat_primary&
+                       &%convergence(i,j)
+                  l2_input_2dice_primary%niter(i,j)=l2_input_2dwat_primary%niter(i,j)
+                  l2_input_2dice_primary%phase(i,j)=iphasewat
+                  l2_input_2dice_primary%costja(i,j)=l2_input_2dwat_primary%costja(i,j)
+                  l2_input_2dice_primary%costjm(i,j)=l2_input_2dwat_primary%costjm(i,j)
+                  l2_input_2dice_primary%qcflag(i,j)=l2_input_2dwat_primary%qcflag(i,j)
+
+               endif
             endif
 
          enddo
