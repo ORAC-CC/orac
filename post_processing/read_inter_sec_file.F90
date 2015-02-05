@@ -27,6 +27,8 @@
 !2014/10/10: A. Povey Added case statement to secondary read to very badly
 !2014/12/03: CP uncommented albedo because need for snow mask added common_constants
 !   deal with differing instrument channels.
+!2015/02/05: OS changed nint to lint; now checks for AVHRR whether ch3a or ch3b
+!               data exist in input files
 !
 ! $Id$
 !
@@ -50,12 +52,12 @@ SUBROUTINE read_refl_and_bt(iphase,fname,chan_id,l2_input_2d_refl_bt,xdim,ydim,w
    integer :: ivar,idim,ndim,nvar,nattr,dummyint
    integer :: ncid,ierr,ny=5,nx=5
    character(len=varlength) :: fname,name
-   integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
+   integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
    character(len=varlength), allocatable :: dname(:)
 
 
    character (len=varlength), allocatable, dimension(:) ::  available_names(:)
-   INTEGER (kind=nint),INTENT(OUT) ::  xdim,ydim
+   INTEGER (kind=lint),INTENT(OUT) ::  xdim,ydim
 
    CHARACTER(LEN=unitlength) ::  dummy_unit
 
@@ -92,13 +94,13 @@ SUBROUTINE read_refl_and_bt(iphase,fname,chan_id,l2_input_2d_refl_bt,xdim,ydim,w
    call nc_dim_id_pp(ncid,trim(adjustl(name)),dimids(1),wo)
    call nc_dim_length_pp(ncid,name,dimids(1),dummyint,wo)
    dimlength(1)=dummyint
-   xdim=int(dimlength(1),kind=nint)
+   xdim=int(dimlength(1),kind=lint)
 
    name='along_track'
    call nc_dim_id_pp(ncid,trim(adjustl(name)),dimids(2),wo)
    call nc_dim_length_pp(ncid,name,dimids(2),dummyint,wo)
    dimlength(2)=dummyint
-   ydim=int(dimlength(2),kind=nint)
+   ydim=int(dimlength(2),kind=lint)
 
 
    allocate(l2var_dummy(xdim,ydim))
@@ -142,20 +144,36 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
    character(len=attribute_length),    intent(in)    :: cinst
    character(len=cpathlength),         intent(in)    :: fname
    type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
-   integer(kind=nint),                 intent(in)    :: xdim, ydim
+   integer(kind=lint),                 intent(in)    :: xdim, ydim
    integer,                            intent(in)    :: wo
    integer,                            intent(out)   :: ierr
    
-   integer                   :: ncid
+   integer                   :: ncid, varid
+   integer                   :: i
+   integer,dimension(2)      :: ch_3a_3b_available
+   character(len=var_length) :: varname
    character(len=unitlength) :: dummy_unit
 
 
    write(*,*) 'Opening secondary input file ', trim(fname)
    call nc_open_pp(ncid,fname,ierr,wo)
 
+   ! Check whether ch1.6 or ch3.7 data are available for AVHRR
+   do i=1, 2
+      ch_3a_3b_available(i) = 1
+      if (i==1) then
+         varname = 'reflectance_in_channel_no_3'
+      else 
+         varname = 'brightness_temperature_in_channel_no_4'
+      endif
+      if (nf90_inq_varid(ncid,varname,varid) .ne. NF90_NOERR) &
+           ch_3a_3b_available(i) = 0
+   enddo
+
    ! Read appropriate channels from file for the instrument
    select case (cinst)
    case('AVHRR')
+
       ! Read albedo values (commented out until needed)
     call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
         'albedo_in_channel_no_1', &
@@ -167,27 +185,34 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
         'albedo_in_channel_no_3', &
         l2_input_2d_secondary%albedo_in_channel_no_3,dummy_unit,wo)
 
-      ! Read reflectances (third ch ommitted until needed)
-      call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
-           'reflectance_in_channel_no_1', &
-           l2_input_2d_secondary%reflectance_in_channel_no_1,dummy_unit,wo)
-      call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
-           'reflectance_in_channel_no_2', &
-           l2_input_2d_secondary%reflectance_in_channel_no_2,dummy_unit,wo)
+      ! Read reflectances
+    call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+        'reflectance_in_channel_no_1', &
+        l2_input_2d_secondary%reflectance_in_channel_no_1,dummy_unit,wo)
+    call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+        'reflectance_in_channel_no_2', &
+        l2_input_2d_secondary%reflectance_in_channel_no_2,dummy_unit,wo)
+    if (ch_3a_3b_available(1)==1) then
+       call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+          'reflectance_in_channel_no_3', &
+          l2_input_2d_secondary%reflectance_in_channel_no_3,dummy_unit,wo)
+    endif
 
       ! Read brightness temperatures
-      call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
-           'brightness_temperature_in_channel_no_4', &
-           l2_input_2d_secondary%brightness_temperature_in_channel_no_4, &
-           dummy_unit,wo)
-      call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
-           'brightness_temperature_in_channel_no_5', &
-           l2_input_2d_secondary%brightness_temperature_in_channel_no_5, &
-           dummy_unit,wo)
-      call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
-           'brightness_temperature_in_channel_no_6', &
-           l2_input_2d_secondary%brightness_temperature_in_channel_no_6, &
-           dummy_unit,wo)
+    if (ch_3a_3b_available(2)==1) then
+       call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+          'brightness_temperature_in_channel_no_4', &
+          l2_input_2d_secondary%brightness_temperature_in_channel_no_4, &
+          dummy_unit,wo)
+    endif
+    call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+         'brightness_temperature_in_channel_no_5', &
+         l2_input_2d_secondary%brightness_temperature_in_channel_no_5, &
+         dummy_unit,wo)
+    call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+         'brightness_temperature_in_channel_no_6', &
+         l2_input_2d_secondary%brightness_temperature_in_channel_no_6, &
+         dummy_unit,wo)
 
    case('AATSR')
       ! Read albedo values (commented out until needed)
@@ -231,9 +256,6 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
     call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
          'albedo_in_channel_no_2', &
          l2_input_2d_secondary%albedo_in_channel_no_2,dummy_unit,wo)
-!    call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
-!         'albedo_in_channel_no_6', &
-!         l2_input_2d_secondary%albedo_in_channel_no_6,dummy_unit,wo)
 
       ! Read reflectances (third ch ommitted until needed)
       call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
