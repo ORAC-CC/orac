@@ -142,10 +142,10 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
 
    character(len=30)                  :: sdate
    real(kind=dreal)                   :: T0, T1, T2, T3, T4, Tn, Tvc, dT, second
-   integer(kind=sint)                :: year, month, day, hour, minute
-   integer(sint)                     :: vc_year, vc_month, vc_day, vc_hour
-   integer(sint)                     :: vc_minute, vc_second
-   integer(sint)                     :: stat, ilow
+   integer(kind=sint)                 :: year, month, day, hour, minute
+   integer(sint)                      :: vc_year, vc_month, vc_day, vc_hour
+   integer(sint)                      :: vc_minute, vc_second
+   integer(sint)                      :: stat, ilow
 
    ! Yearly rates for exponential correction
    real(kind=sreal), parameter, dimension(4) :: K = &

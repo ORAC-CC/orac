@@ -32,12 +32,12 @@ subroutine deallocate_channel_info(channel_info)
 
    deallocate(channel_info%channel_ids_instr)
    deallocate(channel_info%channel_wl_abs)
+   deallocate(channel_info%channel_view_ids)
    deallocate(channel_info%channel_sw_flag)
    deallocate(channel_info%channel_lw_flag)
    deallocate(channel_info%channel_ids_rttov_coef_sw)
    deallocate(channel_info%channel_ids_rttov_coef_lw)
    deallocate(channel_info%map_ids_abs_to_ref_band_land)
    deallocate(channel_info%map_ids_abs_to_ref_band_sea)
-   deallocate(channel_info%channel_view_ids)
 
 end subroutine deallocate_channel_info

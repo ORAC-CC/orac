@@ -21,7 +21,8 @@ $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         compute_geopot_coordinate.F90 deallocate_ecmwf_structures.F90 \
         read_ecmwf_grib.F90 read_ecmwf_nc.F90 read_ecmwf_wind_badc.F90 \
-        read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 rearrange_ecmwf.F90
+        read_ecmwf_wind_dwd.F90 read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 \
+        rearrange_ecmwf.F90
 $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/get_USGS_data.o: $(OBJS)/imager_structures.o $(OBJS)/read_USGS_file.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \

@@ -5,12 +5,12 @@ module USGS_physiography
   implicit none
 
   type USGS_s
-     !    Data dimensions                                                                   
+     !    Data dimensions
      integer(4)                                      :: nlon, nlat
      real(kind=sreal)  , allocatable, dimension(:)   :: lon, lat
      integer(kind=byte), allocatable, dimension(:,:) :: lus
      integer(kind=sint), allocatable, dimension(:,:) :: dem, lsm
-     !    Missing data value                                                                
+     !    Missing data value
      real :: fill=sreal_fill_value
   end type USGS_s
 
@@ -18,28 +18,25 @@ module USGS_physiography
 
 contains
 
-
-  !-------------------------------------------------------------------------------          
-  ! Name: read_USGS_file.F90                                                        
-  !                                                                                         
-  ! Purpose:                                                                                
-  ! read USGS global land use and DEM data.
-  !                                                                                         
-  ! Description and Algorithm details:                                                      
-  ! 1) 
-
-  ! Arguments:                                                                             
-  ! Name                Type   In/Out/Both Description                                     
-  !
-  !------------------------------------------------------------------------------           
-  ! path_to_USGS_file   string in   Full path to USGS file                            
-  !                                                                                        
-  ! History:                                                                                
-  ! 2014/09/23, OS: writes code to read data from USGS file.                       
-  !                                                                                         
-  ! Bugs:                                                                                   
-  ! None known.                                                                             
-  !-------------------------------------------------------------------------------          
+!-------------------------------------------------------------------------------
+! Name: read_USGS_file.F90
+!
+! Purpose:
+! Read USGS global land use and DEM data.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name              Type   In/Out/Both Description
+!------------------------------------------------------------------------------
+! path_to_USGS_file string in          Full path to USGS file
+!
+! History:
+! 2014/09/23, OS: writes code to read data from USGS file.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
   function read_USGS_file(path_to_USGS_file, usgs, verbose) result (stat)
 
@@ -60,17 +57,17 @@ contains
     integer :: nDim, nVar, nAtt, uDimID, ForNM
 
 
-    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_usgs_file()'
+    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_USGS_file()'
 
     call nc_open(fid, path_to_USGS_file)
-    ! Extract information about the file                                                    
+    ! Extract information about the file
     stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
     ! dimension IDs
     stat = nf90_inq_dimid(fid, 'lon', usgs_lon_id)
     stat = nf90_inq_dimid(fid, 'lat', usgs_lat_id)
 
-    ! Extract the array dimensions                                                        
+    ! Extract the array dimensions
     stat = nf90_inquire_dimension(fid, usgs_lon_id, len=usgs_lon_dim)
     stat = nf90_inquire_dimension(fid, usgs_lat_id, len=usgs_lat_dim)
 
@@ -86,14 +83,14 @@ contains
     allocate(usgs%lsm(usgs_lon_dim,usgs_lat_dim))
     call nc_read_array(fid, 'lsm', usgs%lsm, verbose)
 
-    ! We are now finished with the main data file                                          
+    ! We are now finished with the main data file
     stat = nf90_close(fid)
 
     if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_USGS_file()'
 
   end function read_USGS_file
 
-  ! -----------------------------------------------------------
+  !-----------------------------------------------------------------------------
 
   function nearest_USGS(imager_lat, imager_lon, usgs) &
        result(nearest_xy)
@@ -118,7 +115,7 @@ contains
        else
           imager_latlon = imager_lon
        endif
-       latlon_1000 = floor(imager_latlon * 1000.) 
+       latlon_1000 = floor(imager_latlon * 1000.)
        latlon_base = floor(imager_latlon * 10.) * 100
        check50 = latlon_1000 - latlon_base
        if (imager_latlon .gt. 0) then
@@ -127,7 +124,7 @@ contains
           else
              latlon_dummy = latlon_base + 25
           endif
-       else 
+       else
           if (check50 .le. -50) then
              latlon_dummy = latlon_base - 75
           else
@@ -137,7 +134,7 @@ contains
        endif
        nearest_latlon = latlon_dummy / 1000.
        if (i .eq. 1) then
-          nearest_xy(1) = minloc(abs(usgs%lat - nearest_latlon), DIM=1) 
+          nearest_xy(1) = minloc(abs(usgs%lat - nearest_latlon), DIM=1)
        else
           nearest_xy(2) = minloc(abs(usgs%lon - nearest_latlon), DIM=1)
        endif
@@ -145,7 +142,7 @@ contains
 
   end function nearest_USGS
 
-  ! -----------------------------------------------------------
+  !-----------------------------------------------------------------------------
 
   subroutine deallocate_usgs(usgs)
 
@@ -161,6 +158,6 @@ contains
 
   end subroutine deallocate_usgs
 
-  ! -----------------------------------------------------------
+  !-----------------------------------------------------------------------------
 
 end module USGS_physiography

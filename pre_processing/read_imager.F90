@@ -85,13 +85,15 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    if (verbose) write(*,*) 'path_to_geo_file: ', trim(path_to_geo_file)
 
    !branches for the sensors
-   if (trim(adjustl(sensor)) .eq. 'MODIS') then
-      call read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
-           imager_angles,imager_flags,imager_time,n_along_track,verbose)
+   if (trim(adjustl(sensor)) .eq. 'AATSR') then
+      if (verbose) write(*,*) 'path_to_aatsr_drift_table: ', &
+                              trim(path_to_aatsr_drift_table)
 
-      !read MODIS L1b data. SW:reflectances, LW:brightness temperatures
-      call read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
-           imager_geolocation,imager_measurements,channel_info,verbose)
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
+           imager_geolocation, imager_measurements, imager_angles, &
+           imager_flags,imager_time, channel_info, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -108,17 +110,20 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
 
-   else if (trim(adjustl(sensor)) .eq. 'AATSR') then
-      if (verbose) write(*,*) 'path_to_aatsr_drift_table: ', &
-                              trim(path_to_aatsr_drift_table)
+   else if (trim(adjustl(sensor)) .eq. 'MODIS') then
+      call read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
+           imager_angles,imager_flags,imager_time,n_along_track,verbose)
 
-      ! Read the L1B data, according to the dimensions and offsets specified in
-      ! imager_geolocation
-      call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
-           imager_geolocation, imager_measurements, imager_angles, &
-           imager_flags,imager_time, channel_info, verbose)
+      !read MODIS L1b data. SW:reflectances, LW:brightness temperatures
+      call read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
+           imager_geolocation,imager_measurements,channel_info,verbose)
+
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
+
+   else
+      write(*,*) 'ERROR: read_imager(): Invalid sensor: ', trim(adjustl(sensor))
+      stop error_stop_code
    end if
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving read_imager()'

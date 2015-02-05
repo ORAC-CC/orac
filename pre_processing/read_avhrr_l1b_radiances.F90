@@ -38,8 +38,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file,imager_geolocation, &
-     imager_measurements,channel_info,verbose)
+subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
+     imager_geolocation,imager_measurements,channel_info,verbose)
 
    use channel_structures
    use hdf5

@@ -536,23 +536,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    source_atts%level1b_file=l1b_path_file
    source_atts%geo_file=geo_path_file
 
-   if (trim(adjustl(sensor)) .eq. 'MODIS') then
-      call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
-           verbose)
-
-      ! get dimensions of the modis granule
-      call read_modis_dimensions(geo_path_file,n_across_track,n_along_track)
-
-   else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
-      call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
-           verbose)
-
-      ! get dimensions of the avhrr orbit
-      call read_avhrr_dimensions(geo_path_file,n_across_track,n_along_track)
-
-   else if (trim(adjustl(sensor)) .eq. 'AATSR') then
+   if (trim(adjustl(sensor)) .eq. 'AATSR') then
       call setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
            verbose)
@@ -569,6 +553,26 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            n_along_track, along_track_offset, day_night, loc_limit, &
            n_along_track2, along_track_offset2, verbose)
 
+   else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
+      call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
+           verbose)
+
+      ! get dimensions of the avhrr orbit
+      call read_avhrr_dimensions(geo_path_file,n_across_track,n_along_track)
+
+   else if (trim(adjustl(sensor)) .eq. 'MODIS') then
+      call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
+           verbose)
+
+      ! get dimensions of the modis granule
+      call read_modis_dimensions(geo_path_file,n_across_track,n_along_track)
+
+   else
+      write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
+      stop error_stop_code
+
    end if ! end of sensor selection
 
    if (verbose) then
@@ -582,7 +586,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          write(*,*) 'n_along_track2:      ', n_along_track2
       end if
    end if
-
+if (.true.) then
    ! determine processing chunks and their dimensions
    if (verbose) write(*,*)  'Determine processing chunks and their dimensions'
    if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
@@ -645,7 +649,74 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                     n_chunks, chunk_starts, chunk_ends)
 
    end if ! end of startx and starty selection
+else
+   ! determine processing chunks and their dimensions
+   if (verbose) write(*,*) 'Determine processing chunks and their dimensions'
+   if (starty.ge.1 .and. endy.ge.1) then
+      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
+         along_pos = along_track_offset2 + n_along_track2
+         along_check = starty.gt.along_pos .or. endy.gt.along_pos
+      else
+         along_pos = along_track_offset + n_along_track
+         along_check = starty.gt.along_pos .or. endy.gt.along_pos
+      end if
+      if (along_check) then
+         write(*,*) 'ERROR: invalid along track dimensions'
+         write(*,*) '       Should be < ',along_pos
+         stop error_stop_code
+      end if
 
+      ! use specified values
+      n_chunks = 1
+
+      allocate(chunk_starts(n_chunks))
+      allocate(chunk_ends(n_chunks))
+
+      chunk_starts(1) = starty
+      chunk_ends(1)   = endy
+   else
+      if (chunkproc) then
+         chunksize = 4096
+      else
+         chunksize = n_along_track + n_along_track2
+      end if
+
+      n_segments = 1
+      segment_starts(1) = along_track_offset + 1
+      segment_ends(1)   = along_track_offset + n_along_track
+
+      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
+         n_segments = n_segments + 1
+         segment_starts(n_segments) = along_track_offset2 + 1
+         segment_ends(n_segments)   = along_track_offset2 + n_along_track2
+      end if
+
+      n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
+                               chunksize)
+
+      allocate(chunk_starts(n_chunks))
+      allocate(chunk_ends(n_chunks))
+
+      call chunkify(n_segments, segment_starts, segment_ends, chunksize, &
+                    n_chunks, chunk_starts, chunk_ends)
+
+   end if ! end of starty selection
+
+   if (startx.ge.1 .and. endx.ge.1) then
+      if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
+         write(*,*) 'ERROR: invalid across track dimensions'
+         write(*,*) '       Should be < ',n_across_track
+         stop error_stop_code
+      end if
+
+      ! use specified values
+      imager_geolocation%startx=startx
+      imager_geolocation%endx=endx
+   else
+      imager_geolocation%startx=1
+      imager_geolocation%endx=n_across_track
+   end if ! end of startx selection
+end if
    if (verbose) then
       write(*,*) 'The number of chunks to be processed: ', n_chunks
       write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, chunk_end):'
@@ -837,7 +908,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*)  'Calculate Pavolonis cloud phase'
       call cloud_type(channel_info, sensor, surface, imager_flags, &
            imager_angles, imager_geolocation, imager_measurements, &
-          imager_pavolonis,  ecmwf, platform, doy, verbose)
+           imager_pavolonis, ecmwf, platform, doy, verbose)
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'

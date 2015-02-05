@@ -527,8 +527,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       ! Loop over profiles (as the conditions for processing LW and SW are
       ! different, we can't just pass the whole array)
       count = 0
-     if (verbose) write(*,*) 'Run RTTOV'
-       do jdim=preproc_dims%min_lat,preproc_dims%max_lat
+      if (verbose) write(*,*) 'Run RTTOV'
+      do jdim=preproc_dims%min_lat,preproc_dims%max_lat
          do idim=preproc_dims%min_lon,preproc_dims%max_lon
             count = count + 1
 

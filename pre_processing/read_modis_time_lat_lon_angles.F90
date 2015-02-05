@@ -90,13 +90,13 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    call read_modis_angles(geo_id,"SolarZenith",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp)
-   imager_angles%solzen(:,:,imager_angles%nviews)=temp
+   imager_angles%solzen(:,:,1)=temp
 
    !read senszen
    call read_modis_angles(geo_id,"SensorZenith",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp)
-   imager_angles%satzen(:,:,imager_angles%nviews)=temp
+   imager_angles%satzen(:,:,1)=temp
 
    !read solazi
    allocate(temp2(imager_geolocation%startx:imager_geolocation%endx, &
@@ -104,7 +104,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    call read_modis_angles(geo_id,"SolarAzimuth",imager_geolocation%startx, &
         imager_geolocation%endx,imager_geolocation%starty, &
         imager_geolocation%endy,temp2)
-   imager_angles%solazi(:,:,imager_angles%nviews)=temp2
+   imager_angles%solazi(:,:,1)=temp2
 
    !read sensazi
    call read_modis_angles(geo_id,"SensorAzimuth",imager_geolocation%startx, &
@@ -115,7 +115,7 @@ subroutine read_modis_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
    ! Note: Relative azimuth is defined so that if the satellite is looking
    ! towards the sun (i.e. forward scattering), relative azimuth is zero.
    temp2=180.0-temp2
-   imager_angles%relazi(:,:,imager_angles%nviews) = 180.0 - &
+   imager_angles%relazi(:,:,1) = 180.0 - &
         acos(cos((temp-temp2)*d2r))/d2r
 
    !free temp arrays

@@ -19,7 +19,7 @@
 ! n_along_track       lint   out Number of pixels in the direction of travel
 ! along_track_offset  lint   out Pixel number at which reading should begin
 !                                (generally where daylight begins)
-! day_night           stint  in  1: daytime data; 2: night data
+! day_night           stint  in  1: daytime data; 2: night data; 3: everything
 ! loc_limit           sreal  in  (/ minimum latitude, minimum
 !                                longitude, maximum latitude, maximum
 !                                longitude /)

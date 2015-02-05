@@ -56,7 +56,10 @@ module channel_structures
       !wavelength (in micrometers) array wrt to absolute channel numbering
       ! i.e. For all AATSR channels in both views, this would be
       ! (/ 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12, 0.55, 0.67, 0.87, 1.6, 3.7, 11, 12 /)
-      real(kind=sreal), dimension(:), pointer ::  channel_wl_abs
+      real(kind=sreal), dimension(:), pointer :: channel_wl_abs
+
+      !arrays containing the viewing geometry index for each channel
+      integer(kind=lint), dimension(:), pointer :: channel_view_ids
 
       !arrays containing 0/1 flags to identify to which part (sw/lw) of the
       !spectrum they are assigned. could be used to determine the number of
@@ -71,9 +74,6 @@ module channel_structures
       !map the abs channel ids to the ancillary reflectance input bands
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_land
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_sea
-
-      !arrays containing the viewing geometry index for each channel
-      integer(kind=lint), dimension(:), pointer ::  channel_view_ids
 
    end type channel_info_s
 

@@ -40,6 +40,9 @@ subroutine allocate_channel_info(channel_info)
    allocate(channel_info%channel_wl_abs(channel_info%nchannels_total))
    channel_info%channel_wl_abs=sreal_fill_value
 
+   allocate(channel_info%channel_view_ids(channel_info%nchannels_total))
+   channel_info%channel_view_ids=lint_fill_value
+
    allocate(channel_info%channel_sw_flag(channel_info%nchannels_total))
    channel_info%channel_sw_flag=lint_fill_value
    allocate(channel_info%channel_lw_flag(channel_info%nchannels_total))
@@ -49,8 +52,5 @@ subroutine allocate_channel_info(channel_info)
    channel_info%map_ids_abs_to_ref_band_land=lint_fill_value
    allocate(channel_info%map_ids_abs_to_ref_band_sea(channel_info%nchannels_total))
    channel_info%map_ids_abs_to_ref_band_sea=lint_fill_value
-
-   allocate(channel_info%channel_view_ids(channel_info%nchannels_total))
-   channel_info%channel_view_ids=lint_fill_value
 
 end subroutine allocate_channel_info

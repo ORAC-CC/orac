@@ -68,8 +68,8 @@ contains
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
-     hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
    use preproc_constants
@@ -88,37 +88,72 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   integer                                       :: intdummy1
+   integer                                       :: index1
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 7
+       ! 1,    2,    3,    4,    5,    6,    7
+   real,    parameter :: all_channel_wl_abs (all_nchannels_total) = &
+      (/ 0.55, 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,    1,    1,    1,    1,    0,    0/)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,    0,    0,    0,    1,    1,    1 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 0,    5,    4,    3,    2,    0,    0 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,    0,    0,    0,    3,    2,    1 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 4,    1,    2,    6,    0,    0,    0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
+      (/ 0,    1,    2,    6,    20,   0,    0 /)
+
+
+   ! Only these need to be set to change the desired channels. All other channel
+   ! related arrays/indexes are set automatically given the static instrument
+   ! channel definition above.
+
+   integer, parameter :: nchannels_total = 6
+   integer, parameter :: channel_ids_instr(nchannels_total) = &
+      (/ 2, 3, 4, 5, 6, 7 /)
+
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_aatsr()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
-   !check if l1b and angles files identical
+   ! check if l1b and geo files identical
    if (trim(adjustl(l1b_path_file)) .ne. &
        trim(adjustl(geo_path_file))) then
       write(*,*)
-      write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-               & 'different granules'
+      write(*,*) 'ERROR: setup_aatsr(): Geolocation and L1b files are for ' // &
+               & 'different orbits'
       write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
       write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
       stop error_stop_code
    end if
 
-   !which aatsr are we processing?
-   intdummy1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
+   ! which aatsr are we processing?
+   index1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
    platform='ENV'
 
-   !Get year, month,day,hour and minute as character
-   cyear=trim(adjustl(l1b_path_file(intdummy1-45:intdummy1-42)))
-   cmonth=trim(adjustl(l1b_path_file(intdummy1-41:intdummy1-40)))
-   cday=trim(adjustl(l1b_path_file(intdummy1-39:intdummy1-38)))
-   chour=trim(adjustl(l1b_path_file(intdummy1-36:intdummy1-35)))
-   cminute=trim(adjustl(l1b_path_file(intdummy1-34:intdummy1-33)))
+   ! Get year, month, day, hour and minute as strings
+   cyear=trim(adjustl(l1b_path_file(index1-45:index1-42)))
+   cmonth=trim(adjustl(l1b_path_file(index1-41:index1-40)))
+   cday=trim(adjustl(l1b_path_file(index1-39:index1-38)))
+   chour=trim(adjustl(l1b_path_file(index1-36:index1-35)))
+   cminute=trim(adjustl(l1b_path_file(index1-34:index1-33)))
 
-   !get year, month, day, hour and minute as integers
+   ! get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
    read(cmonth,'(i2)') month
    read(cday,'(i2)') day
@@ -128,40 +163,27 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
-   ! now set up the channels
    channel_info%nviews = 1
-   channel_info%nchannels_total = 6
+
+   ! now set up the channels
+   channel_info%nchannels_total = nchannels_total
+
    call allocate_channel_info(channel_info)
 
-   ! numbering wrt instrument definition
-   ! AATSR has a 0.55 micron channel so instrument channel numbering starts at 2
-   channel_info%channel_ids_instr = (/ 2, 3, 4, 5, 6, 7 /)
-   !which are the wl of those channels (approximate)
-   channel_info%channel_wl_abs = (/ 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
-   channel_info%channel_view_ids = 1
+   channel_info%channel_ids_instr = channel_ids_instr
 
-   ! which channels have sw/lw components
-   channel_info%channel_sw_flag = (/ 1, 1, 1, 1, 0, 0 /)
-   channel_info%nchannels_sw = 4
-   channel_info%channel_lw_flag = (/ 0, 0, 0, 1, 1, 1 /)
-   channel_info%nchannels_lw = 3
-
-   !channel number wrt RTTOV coefficient file (channels in ascending wavenumber)
-   allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
-   channel_info%channel_ids_rttov_coef_sw = (/ 5, 4, 3, 2 /)
-   allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
-   channel_info%channel_ids_rttov_coef_lw = (/ 3, 2, 1 /)
-
-   channel_info%map_ids_abs_to_ref_band_land = (/ 1, 2, 6, 0 /)
-   channel_info%map_ids_abs_to_ref_band_sea  = (/ 1, 2, 6, 20 /)
+   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
+      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
+      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
+      all_map_ids_abs_to_ref_band_sea)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
 end subroutine setup_aatsr
 
 
-subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
-     hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
    use preproc_constants
@@ -179,9 +201,44 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
-   integer                                       :: intdummy1,intdummy2
+   integer                                       :: index1,index2
    integer                                       :: i, j, k, l
-   character(len=path_length)                    :: strdummy1, strdummy2
+   character(len=path_length)                    :: str1, str2
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 6
+       ! 1,    2,      3,    4,    5,    6
+   real,    parameter :: all_channel_wl_abs (all_nchannels_total) = &
+      (/ 0.63, 0.8625, 1.61, 3.74, 10.8, 12.0 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,    1,      1,    1,    0,    0 /)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,    0,      0,    1,    1,    1 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,    2,      3,    4,    0,    0 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,    0,      0,    1,    2,    3 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 1,    2,      6,    0,    0,    0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
+      (/ 1,    2,      6,    20,   0,    0 /)
+
+
+   ! Only these need to be set to change the desired channels. All other channel
+   ! related arrays/indexes are set automatically given the static instrument
+   ! channel definition above.
+
+   integer, parameter :: nchannels_total = 6
+   integer, parameter :: channel_ids_instr(nchannels_total) = &
+      (/ 1, 2, 3, 4, 5, 6 /)
+
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_avhrr()'
 
@@ -195,49 +252,46 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
 
        if (verbose) write(*,*) ' *** new avhrr input file'
 
-       !check if l1b and angles file are for the same orbit
-       intdummy1=index(trim(adjustl(l1b_path_file)),'ECC_GAC_avhrr',back=.true.)
-       intdummy2=index(trim(adjustl(geo_path_file)),'ECC_GAC_sunsatangles',back=.true.)
+       ! check if l1b and geo file are for the same orbit
+       index1=index(trim(adjustl(l1b_path_file)),'ECC_GAC_avhrr',back=.true.)
+       index2=index(trim(adjustl(geo_path_file)),'ECC_GAC_sunsatangles',back=.true.)
 
-       if (trim(adjustl(l1b_path_file(1:intdummy1-1))) .ne. &
-           trim(adjustl(geo_path_file(1:intdummy2-1)))) then
+       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
+           trim(adjustl(geo_path_file(1:index2-1)))) then
           write(*,*)
           write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-                   & 'different granules'
+                   & 'different orbits'
           write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
           write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
           stop error_stop_code
        end if
 
-       strdummy1 = l1b_path_file
+       str1 = l1b_path_file
        do k=1, 4
+           l=len(trim(str1))
+           j=index(str1,'_', back=.true.)
 
-           l=len(trim(strdummy1))
-           j=index(strdummy1,'_', back=.true.)
-
-           strdummy2=strdummy1
-           strdummy1=strdummy1(1:j-1)
-           strdummy2=strdummy2(j+1:)
+           str2=str1
+           str1=str1(1:j-1)
+           str2=str2(j+1:)
 
            if (k .eq. 2) then
-               !get year, month,day,hour and minute as character
-               cyear=trim(adjustl(strdummy2(1:4)))
-               cmonth=trim(adjustl(strdummy2(5:6)))
-               cday=trim(adjustl(strdummy2(7:8)))
-               chour=trim(adjustl(strdummy2(10:11)))
-               cminute=trim(adjustl(strdummy2(12:13)))
+               ! get year, month, day, hour and minute as strings
+               cyear=trim(adjustl(str2(1:4)))
+               cmonth=trim(adjustl(str2(5:6)))
+               cday=trim(adjustl(str2(7:8)))
+               chour=trim(adjustl(str2(10:11)))
+               cminute=trim(adjustl(str2(12:13)))
            end if
 
            if (k .eq. 4) then
-               !which avhrr are we processing?
-               platform=trim(adjustl(strdummy2))
+               ! which avhrr are we processing?
+               platform=trim(adjustl(str2))
            end if
+       end do
 
-       enddo
-
-
-       !get year, month, day, hour and minute as integers
+       ! get year, month, day, hour and minute as integers
        read(cyear(1:len_trim(cyear)), '(I4)') year
        read(cmonth,'(i2)') month
        read(cday,'(i2)') day
@@ -248,54 +302,52 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
 
        if (verbose) write(*,*) ' *** old avhrr input file'
 
-       !check if l1b and angles file are for the same orbit
-       intdummy1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
-       intdummy2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
+       ! check if l1b and angles file are for the same orbit
+       index1=index(trim(adjustl(l1b_path_file)),'_avhrr',back=.true.)
+       index2=index(trim(adjustl(geo_path_file)),'_sunsatangles',back=.true.)
 
-       if (trim(adjustl(l1b_path_file(1:intdummy1-1))) .ne. &
-           trim(adjustl(geo_path_file(1:intdummy2-1)))) then
+       if (trim(adjustl(l1b_path_file(1:index1-1))) .ne. &
+           trim(adjustl(geo_path_file(1:index2-1)))) then
           write(*,*)
           write(*,*) 'ERROR: setup_avhrr(): Geolocation and L1b files are for ' // &
-                   & 'different granules'
+                   & 'different orbits'
           write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
           write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
 
           stop error_stop_code
        end if
 
-       strdummy1 = l1b_path_file
+       str1 = l1b_path_file
        do k=1, 7
+           l=len(trim(str1))
+           j=index(str1,'_', back=.true.)
 
-           l=len(trim(strdummy1))
-           j=index(strdummy1,'_', back=.true.)
-
-           strdummy2=strdummy1
-           strdummy1=strdummy1(1:j-1)
-           strdummy2=strdummy2(j+1:)
+           str2=str1
+           str1=str1(1:j-1)
+           str2=str2(j+1:)
 
            if (k .eq. 6) then
-               !get hour and minute as character
-               chour=trim(adjustl(strdummy2(1:2)))
-               cminute=trim(adjustl(strdummy2(3:4)))
+               ! get hour and minute as strings
+               chour=trim(adjustl(str2(1:2)))
+               cminute=trim(adjustl(str2(3:4)))
            end if
            if (k .eq. 7) then
-               !get year, month,day as character
-               cyear=trim(adjustl(strdummy2(1:4)))
-               cmonth=trim(adjustl(strdummy2(5:6)))
-               cday=trim(adjustl(strdummy2(7:8)))
+               ! get year, month, day as strings
+               cyear=trim(adjustl(str2(1:4)))
+               cmonth=trim(adjustl(str2(5:6)))
+               cday=trim(adjustl(str2(7:8)))
            end if
-
-       enddo
+       end do
 
        ! one last time for platform
-       l=len(trim(strdummy1))
-       j=index(strdummy1,'/', back=.true.)
-       strdummy2=strdummy1
-       strdummy1=strdummy1(1:j-1)
-       strdummy2=strdummy2(j+1:)
-       platform=trim(adjustl(strdummy2))
+       l=len(trim(str1))
+       j=index(str1,'/', back=.true.)
+       str2=str1
+       str1=str1(1:j-1)
+       str2=str2(j+1:)
+       platform=trim(adjustl(str2))
 
-       !get year, month, day, hour and minute as integers
+       ! get year, month, day, hour and minute as integers
        read(cyear(1:len_trim(cyear)), '(I4)') year
        read(cmonth,'(i2)') month
        read(cday,'(i2)') day
@@ -304,44 +356,32 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
 
    end if
 
-   !added doy calculation for avhrr
+   ! added doy calculation for avhrr
    call GREG2DOY(year,month,day,doy)
    write(cdoy, '(i3.3)') doy
 
-   !now set up the channels
    channel_info%nviews = 1
-   channel_info%nchannels_total = 6
+
+   ! now set up the channels
+   channel_info%nchannels_total = nchannels_total
+
    call allocate_channel_info(channel_info)
 
-   !numbering wrt instrument definition
-   !3=3A,4=3B,5=4,6=5 (not how it is in the HDF5 input file but habit by now)
-   channel_info%channel_ids_instr = (/ 1, 2, 3, 4, 5, 6 /)
-   !which are the wl of those channels (approximate)
-   channel_info%channel_wl_abs = (/ 0.63, 0.8625, 1.61, 3.74, 10.8, 12.0 /)
-   channel_info%channel_view_ids = 1
+   channel_info%channel_ids_instr = channel_ids_instr
 
-   !which channels have sw/lw components
-   channel_info%channel_sw_flag = (/ 1, 1, 1, 1, 0, 0 /)
-   channel_info%nchannels_sw = 4
-   channel_info%channel_lw_flag = (/ 0, 0, 0, 1, 1, 1 /)
-   channel_info%nchannels_lw = 3
-
-   !channel number wrt RTTOV coefficient file
-   allocate(channel_info%channel_ids_rttov_coef_sw(channel_info%nchannels_sw))
-   channel_info%channel_ids_rttov_coef_sw = (/ 1, 2, 3, 4 /)
-   allocate(channel_info%channel_ids_rttov_coef_lw(channel_info%nchannels_lw))
-   channel_info%channel_ids_rttov_coef_lw = (/ 1, 2, 3 /)
-
-   channel_info%map_ids_abs_to_ref_band_land = (/ 1, 2, 6, 0 /)
-   channel_info%map_ids_abs_to_ref_band_sea  = (/ 1, 2, 6, 20 /)
+   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
+      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
+      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
+      all_map_ids_abs_to_ref_band_sea)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
 end subroutine setup_avhrr
 
 
-subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, &
-     hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
+   verbose)
 
    use calender
    use channel_structures
@@ -361,70 +401,78 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
-   integer                                       :: intdummy1,intdummy2
+   integer                                       :: index1,index2
+
 
    ! Static instrument channel definitions. (These should not be changed.)
-   integer, parameter :: all_nchannels_total                                   = 36
-                                                                                  ! 1,         2,         3,         4,         5,         6,         7,         8,         9,         10,        11,        12,        13,        14,        15,        16,        17,        18,        19,        20,        21,        22,        23,        24,        25,        26,        27,        28,        29,        30,        31,        32,        33,        34,        35,        36
-   real,    parameter :: all_channel_wl_abs (all_nchannels_total)            &
-        &  = (/ 0.67,      0.87,      4.690e-01, 5.550e-01, 1.240e+00, 1.60, &
-        &     2.130e+00, 4.125e-01, 4.430e-01, 4.880e-01, 5.310e-01, 5.510e&
-        &-01, 6.670e-01, 6.780e-01, 7.480e-01, 8.695e-01, 9.050e-01, 9.360e&
-        &-01, 9.400e-01, 3.70,      3.959e+00, 3.959e+00, 4.050e+00, 4.466e&
-        &+00, 4.516e+00, 1.375e+00, 6.715e+00, 7.325e+00, 8.550e+00, 9.730e&
-        &+00, 11.017,    12.032,    1.334e+01, 1.363e+01, 1.394e+01, 1.423e&
-        &+01 /)
+   integer, parameter :: all_nchannels_total = 36
+       ! 1,         2,         3,         4,         5,         6,
+       ! 7,         8,         9,         10,        11,        12,
+       ! 13,        14,        15,        16,        17,        18,
+       ! 19,        20,        21,        22,        23,        24,
+       ! 25,        26,        27,        28,        29,        30,
+       ! 31,        32,        33,        34,        35,        36
+   real,    parameter :: all_channel_wl_abs (all_nchannels_total) = &
+      (/ 0.67,      0.87,      4.690e-01, 5.550e-01, 1.240e+00, 1.60, &
+         2.130e+00, 4.125e-01, 4.430e-01, 4.880e-01, 5.310e-01, 5.510e-01, &
+         6.670e-01, 6.780e-01, 7.480e-01, 8.695e-01, 9.050e-01, 9.360e-01, &
+         9.400e-01, 3.70,      3.959e+00, 3.959e+00, 4.050e+00, 4.466e+00, &
+         4.516e+00, 1.375e+00, 6.715e+00, 7.325e+00, 8.550e+00, 9.730e+00, &
+         11.017,    12.032,    1.334e+01, 1.363e+01, 1.394e+01, 1.423e+01 /)
+!  real,    parameter :: all_channel_wl_abs (all_nchannels_total) = &
+!     (/ 6.450e-01, 8.585e-01, 4.690e-01, 5.550e-01, 1.240e+00, 1.640e+00, &
+!        2.130e+00, 4.125e-01, 4.430e-01, 4.880e-01, 5.310e-01, 5.510e-01, &
+!        6.670e-01, 6.780e-01, 7.480e-01, 8.695e-01, 9.050e-01, 9.360e-01, &
+!        9.400e-01, 3.750e+00, 3.959e+00, 3.959e+00, 4.050e+00, 4.466e+00, &
+!        4.516e+00, 1.375e+00, 6.715e+00, 7.325e+00, 8.550e+00, 9.730e+00, &
+!        1.103e+01, 1.202e+01, 1.334e+01, 1.363e+01, 1.394e+01, 1.423e+01 /)
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         0, &
+         0,         1,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0  /)
 
-!  real,    parameter :: all_channel_wl_abs (all_nchannels_total)              = (/ 6.450e-01, 8.585e-01, 4.690e-01, 5.550e-01, 1.240e+00, 1.640e+00, 2.130e+00, 4.125e-01, 4.430e-01, 4.880e-01, 5.310e-01, 5.510e-01, 6.670e-01, 6.780e-01, 7.480e-01, 8.695e-01, 9.050e-01, 9.360e-01, 9.400e-01, 3.750e+00, 3.959e+00, 3.959e+00, 4.050e+00, 4.466e+00, 4.516e+00, 1.375e+00, 6.715e+00, 7.325e+00, 8.550e+00, 9.730e+00, 1.103e+01, 1.202e+01, 1.334e+01, 1.363e+01, 1.394e+01, 1.423e+01 /)
-   integer, parameter :: all_channel_sw_flag(all_nchannels_total)            &
-        &  = (/ 1,         1,         1,         1,         1,         1,    &
-        &     1,         1,         1,         1,         1,         1,      &
-        &   1,         1,         1,         1,         1,         1,        &
-        & 1,         1,         1,         1,         1,         0,         0&
-        &,         1,         0,         0,         0,         0,         0, &
-        &        0,         0,         0,         0,         0  /)
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         1,         1,         1,         1,         1, &
+         1,         0,         1,         1,         1,         1, &
+         1,         1,         1,         1,         1,         1  /)
 
-   integer, parameter :: all_channel_lw_flag(all_nchannels_total)            &
-        &  = (/ 0,         0,         0,         0,         0,         0,    &
-        &     0,         0,         0,         0,         0,         0,      &
-        &   0,         0,         0,         0,         0,         0,        &
-        & 0,         1,         1,         1,         1,         1,         1&
-        &,         0,         1,         1,         1,         1,         1, &
-        &        1,         1,         1,         1,         1  /)
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,         2,         3,         4,         5,         6, &
+         7,         8,         9,         10,        11,        12, &
+         13,        14,        15,        16,        17,        18, &
+         19,        20,        21,        22,        23,        0, &
+         0,         24,        0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0  /)
 
-   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total)  &
-        &  = (/ 1,         2,         3,         4,         5,         6,    &
-        &     7,         8,         9,         10,        11,        12,     &
-        &   13,        14,        15,        16,        17,        18,       &
-        & 19,        20,        21,        22,        23,        0,         0&
-        &,         24,        0,         0,         0,         0,         0, &
-        &        0,         0,         0,         0,         0  /)
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         1,         2,         3,         4,         5, &
+         6,         0,         7,         8,         9,         10, &
+         11,        12,        13,        14,        15,        16 /)
 
-   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total)  &
-        &  = (/ 0,         0,         0,         0,         0,         0,    &
-        &     0,         0,         0,         0,         0,         0,      &
-        &   0,         0,         0,         0,         0,         0,        &
-        & 0,         1,         2,         3,         4,         5,         6&
-        &,         0,         7,         8,         9,         10,        11,&
-        &        12,        13,        14,        15,        16 /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 1,         2,         3,         4,         5,         6, &
+         7,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0 /)
 
-   integer, parameter ::&
-        & all_map_ids_abs_to_ref_band_land(all_nchannels_total) = (/ 1,      &
-        &   2,         0,         0,         0,         6,         0,        &
-        & 0,         0,         0,         0,         0,         0,         0&
-        &,         0,         0,         0,         0,         0,         0, &
-        &        0,         0,         0,         0,         0,         0,   &
-        &      0,         0,         0,         0,         0,         0,     &
-        &    0,         0,         0,         0 /)
-
-   integer, parameter :: all_map_ids_abs_to_ref_band_sea&
-        & (all_nchannels_total) = (/ 1,         2,         0,         0,     &
-        &    0,         6,         0,         0,         0,         0,       &
-        &  0,         0,         0,         0,         0,         0,         &
-        & 0,         0,         0,         20,        0,         0,         0&
-        &,         0,         0,         0,         0,         0,         0, &
-        &        0,         0,         0,         0,         0,         0,   &
-        &      0 /)
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
+      (/ 1,         2,         0,         0,         0,         6, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         20,        0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0 /)
 
 
    ! Only these need to be set to change the desired channels. All other channel
@@ -441,17 +489,18 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
 !  integer, parameter :: channel_ids_instr(nchannels_total) = &
 !    (/ 1, 2, 6, 20, 24, 25, 27, 28, 29, 30, 31, 32, 33, 35, 36 /)
 
+
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_modis()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
    if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
 
-   !check if l1b and geo file are of the same granule
-   intdummy1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
-   intdummy2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+   ! check if l1b and geo file are of the same granule
+   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
+   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
 
-   if (trim(adjustl(l1b_path_file(intdummy1+10:intdummy1+26))) .ne. &
-       trim(adjustl(geo_path_file(intdummy2+7:intdummy2+23)))) then
+   if (trim(adjustl(l1b_path_file(index1+10:index1+26))) .ne. &
+       trim(adjustl(geo_path_file(index2+7:index2+23)))) then
       write(*,*)
       write(*,*) 'ERROR: setup_modis(): Geolocation and L1b files are for ' // &
                & 'different granules'
@@ -461,34 +510,35 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day,doy, 
       stop error_stop_code
    end if
 
-   !which modis are we processing?
-   intdummy1=index(trim(adjustl(l1b_path_file)),'1KM.')
-   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MYD') &
+   ! which modis are we processing?
+   index1=index(trim(adjustl(l1b_path_file)),'1KM.')
+   if (trim(adjustl(l1b_path_file(index1-5:index1-3))) .eq. 'MYD') &
         platform='AQUA'
-   if (trim(adjustl(l1b_path_file(intdummy1-5:intdummy1-3))) .eq. 'MOD') &
+   if (trim(adjustl(l1b_path_file(index1-5:index1-3))) .eq. 'MOD') &
         platform='TERRA'
 
-   !get year, doy, hour and minute as integers
-   cyear=trim(adjustl(l1b_path_file(intdummy1+5:intdummy1+8)))
-   cdoy=trim(adjustl(l1b_path_file(intdummy1+9:intdummy1+11)))
-   chour=trim(adjustl(l1b_path_file(intdummy1+13:intdummy1+14)))
-   cminute=trim(adjustl(l1b_path_file(intdummy1+15:intdummy1+16)))
+   ! get year, doy, hour and minute as strings
+   cyear=trim(adjustl(l1b_path_file(index1+5:index1+8)))
+   cdoy=trim(adjustl(l1b_path_file(index1+9:index1+11)))
+   chour=trim(adjustl(l1b_path_file(index1+13:index1+14)))
+   cminute=trim(adjustl(l1b_path_file(index1+15:index1+16)))
 
-   read(cdoy(1:len_trim(cdoy)), '(I3)') doy
+   ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cdoy(1:len_trim(cdoy)), '(I3)') doy
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
-   !transform doy to date in year
+   ! transform doy to date in year
    call DOY2GREG(doy,year,month,day)
 
-   !get month and day as text
+   ! get month and day as text
    write(cmonth, '(i2.2)') month
    write(cday, '(i2.2)') day
 
    channel_info%nviews = 1
 
-   !now set up the channels
+   ! now set up the channels
    channel_info%nchannels_total = nchannels_total
 
    call allocate_channel_info(channel_info)
@@ -506,9 +556,9 @@ end subroutine setup_modis
 
 
 subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
-      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
-      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
-      all_map_ids_abs_to_ref_band_sea)
+   all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
+   all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
+   all_map_ids_abs_to_ref_band_sea)
 
    use channel_structures
 
@@ -536,7 +586,7 @@ subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
          all_channel_sw_flag(channel_info%channel_ids_instr(i))
       channel_info%channel_lw_flag(i) = &
          all_channel_lw_flag(channel_info%channel_ids_instr(i))
-   enddo
+   end do
 
    channel_info%channel_view_ids = 1
 
@@ -564,13 +614,13 @@ subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
             all_map_ids_abs_to_ref_band_sea (channel_info%channel_ids_instr(i))
 
          i_sw = i_sw + 1
-      endif
+      end if
       if (channel_info%channel_lw_flag(i) .ne. 0) then
          channel_info%channel_ids_rttov_coef_lw(i_lw) = &
             all_channel_ids_rttov_coef_lw(channel_info%channel_ids_instr(i))
          i_lw = i_lw + 1
-      endif
-   enddo
+      end if
+   end do
 
 end subroutine common_setup
 

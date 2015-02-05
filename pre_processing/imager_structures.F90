@@ -15,15 +15,15 @@
 ! 2011/12/19, MJ: writes sample code for MODIS L1b data.
 ! 2012/02/03, MJ: adds uncertainty array to imager_measurements_s
 ! 2012/04/24, GT: Added solar azimuth angle to the
-!   imager_angles structure (needed by surface reflectance routines)
+!    imager_angles structure (needed by surface reflectance routines)
 ! 2012/04/24, GT: Added solar azimuth angle to the
-!   imager_angles structure (needed by surface reflectance routines)
+!    imager_angles structure (needed by surface reflectance routines)
 ! 2012/07/04, CP: removed nviews for arrays!
 ! 2012/07/05, CP: nmaxchannels and nchannels info is now in channel_infor array
 ! 2012/12/13, CP: added startyi and endye
 ! 2013/09/02, AP: Removed startyi, endye.
 ! 2014/09/17, CS: Added imager_pavolonis, imager_geolocation%usgs_dem and
-!  imager_flags%lusflag 
+!    imager_flags%lusflag
 ! 2014/12/01, OS: added variable emis_ch3b to Pavolonis imager structure
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
@@ -45,8 +45,8 @@ module imager_structures
       integer(kind=lint) :: nviews
       integer(kind=lint) :: nobservations
 
-      real(kind=sreal), dimension(:,:,:), pointer ::  data
-      real(kind=sreal), dimension(:,:,:), pointer ::  uncertainty
+      real(kind=sreal), dimension(:,:,:), pointer :: data
+      real(kind=sreal), dimension(:,:,:), pointer :: uncertainty
 
    end type imager_measurements_s
 
@@ -54,10 +54,10 @@ module imager_structures
 
       integer(kind=lint) :: nx,ny,startx,starty,endx,endy
 
-      real(kind=sreal), dimension(:,:), pointer ::  latitude
-      real(kind=sreal), dimension(:,:), pointer ::  longitude
+      real(kind=sreal), dimension(:,:), pointer :: latitude
+      real(kind=sreal), dimension(:,:), pointer :: longitude
 
-      integer(kind=lint), dimension(:,:), pointer ::  dem
+      integer(kind=lint), dimension(:,:), pointer :: dem
 
    end type imager_geolocation_s
 
@@ -65,10 +65,10 @@ module imager_structures
 
       integer(kind=lint) :: nviews
 
-      real(kind=sreal), dimension(:,:,:), pointer ::  solzen
-      real(kind=sreal), dimension(:,:,:), pointer ::  satzen
-      real(kind=sreal), dimension(:,:,:), pointer ::  solazi
-      real(kind=sreal), dimension(:,:,:), pointer ::  relazi
+      real(kind=sreal), dimension(:,:,:), pointer :: solzen
+      real(kind=sreal), dimension(:,:,:), pointer :: satzen
+      real(kind=sreal), dimension(:,:,:), pointer :: solazi
+      real(kind=sreal), dimension(:,:,:), pointer :: relazi
 
    end type imager_angles_s
 
@@ -82,19 +82,19 @@ module imager_structures
 
    type imager_time_s
 
-      real(kind=dreal), dimension(:,:), pointer ::  time
+      real(kind=dreal), dimension(:,:), pointer :: time
 
    end type imager_time_s
 
    type imager_pavolonis_s
 
-      integer(kind=sint), dimension(:,:), pointer ::  sunglint_mask
-      integer(kind=sint), dimension(:,:), pointer ::  sfctype
-      integer(kind=byte), dimension(:,:), pointer ::  cldtype
-      integer(kind=byte), dimension(:,:), pointer ::  cldmask
-      real(kind=sreal),   dimension(:,:), pointer ::  cccot_pre
-      integer(kind=byte), dimension(:,:), pointer ::  cirrus_quality
-      real(kind=sreal),   dimension(:,:), pointer ::  emis_ch3b
+      integer(kind=sint), dimension(:,:), pointer :: sunglint_mask
+      integer(kind=sint), dimension(:,:), pointer :: sfctype
+      integer(kind=byte), dimension(:,:), pointer :: cldtype
+      integer(kind=byte), dimension(:,:), pointer :: cldmask
+      real(kind=sreal),   dimension(:,:), pointer :: cccot_pre
+      integer(kind=byte), dimension(:,:), pointer :: cirrus_quality
+      real(kind=sreal),   dimension(:,:), pointer :: emis_ch3b
 
    end type imager_pavolonis_s
 
