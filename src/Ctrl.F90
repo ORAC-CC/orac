@@ -296,6 +296,8 @@ module CTRL_def
       real                   :: Sunset             ! SolZen angle for sunset
       type (Inst_t)          :: Inst
       type (Ind_t)           :: Ind
+      logical                :: process_cloudy_only
+      logical                :: process_one_phase_only
       character(3)           :: CloudClass         ! Name of LUT to use
       integer                :: CloudType          ! Cloud type flag, distinct from
                                                    ! cloud class, used to define

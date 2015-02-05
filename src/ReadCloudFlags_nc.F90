@@ -96,9 +96,6 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
 
    integer :: ncid
 
-   logical :: process_cloudy_only
-   logical :: process_one_phase_only
-
    ! Open cloud flag file
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
    call nc_open(ncid, Ctrl%Fid%CF)
@@ -124,15 +121,12 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
    ! CIRRUS_TYPE = 7
    ! OVERLAP_TYPE = 8
 
-   process_cloudy_only = .true.
-   process_one_phase_only  = .true.
-
-   if( process_cloudy_only ) then
+   if( Ctrl%process_cloudy_only ) then
    ! set clear-sky pixels to 0 to avoid their processing
       where( MSI_Data%CloudMask .eq. 0 )
          MSI_Data%CloudFlags = 0
       endwhere
-      if( process_one_phase_only ) then
+      if( Ctrl%process_one_phase_only ) then
       ! set ice pixels to 0
          if( trim( Ctrl%CloudClass ) .eq. 'WAT' ) then
             where( MSI_Data%CldType .ge. 6 .and. MSI_Data%CldType .le. 8 )

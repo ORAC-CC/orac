@@ -414,6 +414,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Ind%Y0 = 0
    Ctrl%Ind%Y1 = 0
 
+
+   Ctrl%process_cloudy_only    = .true.
+   Ctrl%process_one_phase_only = .true.
+
    Ctrl%CloudType = 1 ! use this to select which coreg/homog errors to use
 
 
@@ -826,6 +830,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%Ind%Y0)           /= 0) call h_p_e(label)
       case('CTRL%IND%Y1')
          if (parse_string(line, Ctrl%Ind%Y1)           /= 0) call h_p_e(label)
+      case('CTRL%PROCESS_CLOUDY_ONLY')
+         if (parse_string(line, Ctrl%process_cloudy_only) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%PROCESS_ONE_PHASE_ONLY')
+         if (parse_string(line, Ctrl%process_one_phase_only) &
+                                                       /= 0) call h_p_e(label)
       case('CTRL%AP')
          if (parse_string(line, Ctrl%AP)               /= 0) call h_p_e(label)
       case('CTRL%FG')
