@@ -1,5 +1,6 @@
 !2014/06/04 MJ changes routine names to "*_pp" to avoid confusion when building libraries.
 !2014/12/03 CP added in common_constants should eventually remove vartypes_pp
+!2015/02/05 OS changed nint to lint
 !--------------------------------------------------
 !--------------------------------------------------
 SUBROUTINE read_input_dimensions(fname,xdim,ydim,wo)
@@ -15,11 +16,11 @@ SUBROUTINE read_input_dimensions(fname,xdim,ydim,wo)
   integer :: ivar,idim,ndim,nvar,nattr,dummyint,iphase
   integer :: ncid,ierr,ny=5,nx=5
   character(len=cpathlength) :: fname,name
-  integer (kind=nint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
+  integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   character(len=varlength), allocatable :: dname(:)
   
   character (len=varlength), allocatable, dimension(:) ::  available_names(:)
-  INTEGER(kind=nint),INTENT(OUT) ::  xdim,ydim
+  INTEGER(kind=lint),INTENT(OUT) ::  xdim,ydim
 
   call nc_open_pp(ncid,fname,ierr,wo)
   call nc_info_pp(ncid,ndim,nvar,nattr,wo)
@@ -44,13 +45,13 @@ SUBROUTINE read_input_dimensions(fname,xdim,ydim,wo)
   call nc_dim_id_pp(ncid,trim(adjustl(name)),dimids(1),wo)
   call nc_dim_length_pp(ncid,name,dimids(1),dummyint,wo)
   dimlength(1)=dummyint
-  xdim=int(dimlength(1),kind=nint)
+  xdim=int(dimlength(1),kind=lint)
   
   name='along_track'
   call nc_dim_id_pp(ncid,trim(adjustl(name)),dimids(2),wo)
   call nc_dim_length_pp(ncid,name,dimids(2),dummyint,wo)
   dimlength(2)=dummyint
-  ydim=int(dimlength(2),kind=nint)
+  ydim=int(dimlength(2),kind=lint)
 
   !close  input file
   ierr=nf90_close(ncid)
