@@ -21,6 +21,8 @@
 ! original version dwd
 ! 2014/09/20 CP  changes range of stemp-ctt from 0--> -1.5 as often the surface temperature from ECMWF is not accurate enough.
 ! 2014/11/20 OS  undid previous commit because minimum values are also used for scaling
+! 2015/02/05 OS  deactivated use of vartypes_pp to force consistency with
+!                common_constants; changed nint to lint
 
 ! $Id$
 !
@@ -32,7 +34,8 @@
 
 module neural_net_constants_postproc
 
-  use  vartypes_pp
+  ! use  vartypes_pp
+  use common_constants
 
   implicit none
 
@@ -41,7 +44,7 @@ module neural_net_constants_postproc
   !1.) cm_orac_day_extended_nn
   real, parameter :: temperature_ex1=1.0,bias_h_ex1=1.0,bias_i_ex1=1.0,cutoff_ex1=80.0
 
-  integer(kind=nint), parameter :: ninput_ex1=6,nneurons_ex1=50
+  integer(kind=lint), parameter :: ninput_ex1=6,nneurons_ex1=50
   real(kind=sreal) :: minmax_train_ex1(ninput_ex1,2),inv_ex1(ninput_ex1+1,nneurons_ex1),&
        & outv_ex1(nneurons_ex1+1),&
        & scales_ex1(ninput_ex1,2),oscales_ex1(3)
@@ -481,7 +484,7 @@ module neural_net_constants_postproc
   !2.) cm_orac_night_extended_nn
   real, parameter :: temperature_ex2=1.0,bias_h_ex2=1.0,bias_i_ex2=1.0,cutoff_ex2=80.0
 
-  integer(kind=nint), parameter :: ninput_ex2=5,nneurons_ex2=50
+  integer(kind=lint), parameter :: ninput_ex2=5,nneurons_ex2=50
   real(kind=sreal) :: minmax_train_ex2(ninput_ex2,2),inv_ex2(ninput_ex2+1,nneurons_ex2),&
        & outv_ex2(nneurons_ex2+1),&
        & scales_ex2(ninput_ex2,2),oscales_ex2(3)
