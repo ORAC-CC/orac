@@ -68,6 +68,7 @@
 !    12/01/2015, AP: Replace ThermalFirst:ThermalLast indexing with YThermal.
 !    30/01/2015, AP: Remove skint and sp as redundant. Use bottom of T and P
 !       arrays in SPixel%RTM instead.
+!    06/02/2015, AP: Move T profile alteration to Int_CTP.
 !
 ! Bugs:
 !    None known.
@@ -132,13 +133,14 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Set surface level to TOA transmittances
    SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)
 
-
+#ifdef LEGACY_CTP_MODE
    ! Modify profile in boundary layer inversion not implemented yet
    call Blmodification(SPixel)
 
    ! Extrapolate temperature profile into stratosphere to deal with deep
    ! convective clouds primarily in tropics that push through the trop.
    call extrap_into_tropopause(SPixel)
+#endif
 
    ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
    ! one per channel, to convert).

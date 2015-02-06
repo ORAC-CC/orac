@@ -165,6 +165,8 @@ module ECP_constants
    real, parameter    :: qextwat          = 2.0     ! Extinction coefficient water
    real, parameter    :: qextice          = 2.1     ! Extinction coefficient ice
 
+   real, parameter    :: g_wmo            = 9.80665 ! Gravity
+
    ! Error values
    real, parameter    :: MDADErrTau       = 1.0e+08 ! Error on a priori Tau if set by MDAD method.
    real, parameter    :: MDADErrPc        = 1.0e+08 ! Error on a priori Pc if set by MDAD method.
@@ -444,6 +446,7 @@ module ECP_constants
    integer, parameter :: FGMethErr                  = 1201
    integer, parameter :: CloudClassMethErr          = 1210
    integer, parameter :: XMDADMeth                  = 1220
+   integer, parameter :: XMDADBounds                = 1221
    integer, parameter :: XSDADMeth                  = 1230
    integer, parameter :: InvCholNotPosDef           = 1240
    integer, parameter :: OutFileOpenErr             = 1250

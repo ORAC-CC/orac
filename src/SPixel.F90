@@ -373,6 +373,7 @@ contains
 #include "GetX.F90"
 
 #include "GetSPixel.F90"
+#include "IntCTP.F90"
 
 
 subroutine check_value_float0(val, max, min, SPixel, name, flag_bit, Ctrl)

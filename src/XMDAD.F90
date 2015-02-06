@@ -110,6 +110,7 @@
 !    2014/12/08, CP: Made error output more specific
 !    2015/01/12, AP: Replace use of ThermalFirst.
 !    2015/01/22, AP: Bug fix in the last commit.
+!    2015/02/06, AP: Switch to Int_CTP rather than interpolate2ctp.
 !
 ! Bugs:
 !    None known.
@@ -193,6 +194,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    case (iPc) ! Cloud pressure, Pc
 
       if (SPixel%Ind%MDAD_LW > 0) then
+#ifdef LEGACY_CTP_MODE
          ! Ctrl%Ind%MDAD_LW indexes the desired channel wrt Ctrl%Ind%ICh
          ! Find the corresponding index wrt Ctrl%Ind%YThermal
          MDAD_LW_to_ctrl_y = SPixel%spixel_y_to_ctrl_y_index(SPixel%Ind%MDAD_LW)
@@ -227,12 +229,22 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
             !FG does not need Error but AP does
             Err = MDADErrPc
-	    write(*,*)'ERROR: X_MDAD(): FG does not need Error but AP does'
+            write(*,*)'ERROR: X_MDAD(): FG does not need Error but AP does'
             status = XMDADMeth
          end if
+#else
+         if (SPixel%Ym(SPixel%Ind%MDAD_LW) /= MissingXn) then
+            ! Interpolate for the BT to the rad. profile to get Pc FG/AP
+            call Int_CTP(SPixel, Ctrl, SPixel%Ym(SPixel%Ind%MDAD_LW), X, status)
+            if (SetErr) Err = MDADErrPc
+         else ! Invalid data available
+            status = XMDADMeth
+            write(*,*) 'WARNING: X_MDAD(): Invalid thermal data'
+         end if
+#endif
       else ! Can't calculate Pc if required LW channels not selected
-!        write(*,*)'ERROR: X_MDAD(): Cant calculate Pc if required LW channels not selected'
          status = XMDADMeth
+!         write(*,*) 'WARNING: X_MDAD(): Cant calculate Pc if required LW channels not selected'
       end if
 
    case (iFr) ! Cloud fraction, f

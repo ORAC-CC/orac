@@ -144,7 +144,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
       case (SelmMeas) ! Measurement dependent. Not supported for all variables.
          call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
-         if (status /= XMDADMeth) then
+         if (status == 0) then
             SPixel%Xb(i)   = X
             SPixel%Sx(i,i) = (Err * Ctrl%Invpar%XScale(i)) ** 2
          end if
@@ -164,8 +164,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
       ! Ctrl method, used if method is Ctrl or other methods failed.
       ! Ctrl%Sx is squared after reading in.
-      if (SPixel%AP(i) == SelmCtrl .or. &
-          (SPixel%AP(i) == SelmMeas .and. status == XMDADMeth)) then
+      if (SPixel%AP(i) == SelmCtrl .or. status /= 0) then
          SPixel%Xb(i) = Ctrl%Xb(i)
 
          if (any(SPixel%X .eq. i)) then
@@ -198,11 +197,11 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
          case (SelmMeas)  ! MDAD method. Not supported for all variables.
             call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
-            if (status .ne. 0) then
-!              write(*,*) 'WARNING: X_MDAD(): Failed with status:',status
-               exit
+            if (status == 0) then
+               SPixel%X0(i) = X
+            else
+              write(*,*) 'WARNING: X_MDAD(): Failed with status:',status
             end if
-            SPixel%X0(i) = X
 
          case (SelmAUX)   ! AUX method not supported for most vars.
             if (i == ITs) &
@@ -210,8 +209,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
          end select
 
          ! Ctrl method, used if method is Ctrl or other methods failed.
-         if (SPixel%FG(i) == SelmCtrl .or. &
-             (SPixel%FG(i) == SelmMeas .and. status == XMDADMeth)) then
+         if (SPixel%FG(i) == SelmCtrl .or. status /= 0) then
             SPixel%X0(i) = Ctrl%X0(i)
             status = 0
          end if
