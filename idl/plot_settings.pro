@@ -477,12 +477,12 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 
          out[i].name='ctp'
          out[i].mode=1
-         out[i].title=FMT('Cloud top pressure','Pa')
+         out[i].title=FMT('Cloud top pressure','hPa')
          ++i
 
          out[i].name='ctp_uncertainty'
          out[i].mode=1
-         out[i].title=FMT('Cloud top pressure !Ms!N','Pa')
+         out[i].title=FMT('Cloud top pressure !Ms!N','hPa')
          ++i
 
          out[i].name='stemp'
@@ -815,7 +815,7 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Signal degrees of freedom','-')
          ++i
 
-         vars=[8,14,24,20]
+         vars=[8,14,24,20]-2
          if STREGEX(inst,'.*M[OY]D.*',/boolean) then begin
             out[vars].name+='1'
             out[vars+1].name+='2'

@@ -67,7 +67,7 @@ for inst in ${label[*]}; do
         # write driver file
         echo "'$wat_prim'" 1> $driver
         echo "'$ice_prim'" 1>> $driver
-        echo "'$out_sec'" 1>> $driver
+        echo "'$wat_sec'" 1>> $driver
         echo "'$ice_sec'" 1>> $driver
         echo "'$out_prim'" 1>> $driver
         echo "'$out_sec'" 1>> $driver
@@ -124,6 +124,8 @@ for inst in ${label[*]}; do
 
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" 1> $log_file
         echo '' 1>> $log_file
+        echo '-----DRIVER FILE-----' 1>> $log_file
+        cat $driver 1>> $log_file
         echo 'Do this:' 1>> $log_file
         echo $postproc_folder/post_process_level2 $driver 1>> $log_file
         echo '' 1>> $log_file

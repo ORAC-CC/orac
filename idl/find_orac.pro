@@ -59,9 +59,14 @@ PRO FIND_ORAC, fdr, inst, rev, folder, root, nroot, label=label, $
    folder=ver[s[p[0]]]+'/'+inst+'/'
 
    ;; find root filenames (assuming location preproc file exists)
+   str_len=7
    root=FILE_SEARCH(folder+'*.loc.nc',count=nroot)
-   if nroot le 0 then MESSAGE,'No .LOC.NC files could be found.'
-   for i=0,nroot-1 do root[i]=STRMID(root[i],0,STRLEN(root[i])-7)
+   if nroot le 0 then begin
+      str_len=11
+      root=FILE_SEARCH(folder+'*.primary.nc',count=nroot)
+      if nroot le 0 then MESSAGE,'No .LOC.NC files could be found.'
+   endif
+   for i=0,nroot-1 do root[i]=STRMID(root[i],0,STRLEN(root[i])-str_len)
 
    if ~KEYWORD_SET(label) then label=STRING(ver_num[s[p[0]]],format='(i0)')
 

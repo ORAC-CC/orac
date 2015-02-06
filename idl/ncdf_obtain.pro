@@ -33,7 +33,24 @@
 ;
 ; MODIFICATION HISTORY:
 ;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
+;    2 Feb 2015 - ACP: Change selection of fill value to be based on output format.
 ;-
+FUNCTION NCDF_OBTAIN_FILL, in
+   ON_ERROR, 2
+   COMPILE_OPT HIDDEN
+   ;; determine appropriate fill value
+   case SIZE(in,/type) of
+      5: fill = !values.d_nan
+      4: fill = !values.f_nan
+      3: fill = -2147483647l
+      2: fill = -32767
+      1: fill = 255
+      else: MESSAGE, 'Fill value not meaningful for this field. '+ $
+                     'Use a different routine.'
+   endcase
+   return, fill
+END
+
 FUNCTION NCDF_OBTAIN, fid, name, fill
    ON_ERROR, 2
    COMPILE_OPT HIDDEN, LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
@@ -41,19 +58,8 @@ FUNCTION NCDF_OBTAIN, fid, name, fill
    ;; read data array from NCDF file and apply necessary scalling
    vid=NCDF_VARID(fid,name)
    NCDF_VARGET,fid,vid,data
-
-   ;; determine appropriate fill value
    vq=NCDF_VARINQ(fid,vid)
-   case vq.datatype of
-      'DOUBLE': fill = !values.d_nan
-      'FLOAT': fill = !values.f_nan
-      'LONG': fill = -999l
-      'INT': fill = -999
-      'BYTE': fill = 255
-      else: MESSAGE, 'Fill value not meaningful for this field. '+ $
-                     'Use a different routine.'
-   endcase
-      
+
    for aid=0,vq.natts-1 do begin
       nm=NCDF_ATTNAME(fid,vid,aid)
       case nm of
@@ -70,6 +76,7 @@ FUNCTION NCDF_OBTAIN, fid, name, fill
    endfor
    
    if KEYWORD_SET(sc) then begin
+      fill = NCDF_OBTAIN_FILL(sc)
       if KEYWORD_SET(off) then begin
          out = REPLICATE(sc,SIZE(data,/dim))
          if nvalid gt 0 then out[p_valid] = off + sc*data[p_valid] 
@@ -79,9 +86,11 @@ FUNCTION NCDF_OBTAIN, fid, name, fill
       endelse
    endif else begin
       if KEYWORD_SET(off) then begin
+         fill = NCDF_OBTAIN_FILL(off)
          out = REPLICATE(off,SIZE(data,/dim))
          if nvalid gt 0 then out[p_valid] = off + data[p_valid] 
       endif else begin
+         fill = NCDF_OBTAIN_FILL(data[0])
          out = data
       endelse
    endelse

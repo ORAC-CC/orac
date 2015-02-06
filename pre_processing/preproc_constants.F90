@@ -61,10 +61,6 @@ module preproc_constants
    real(kind=sreal),    parameter :: r_dry_air=287.05
    real(kind=sreal),    parameter :: r_water_vap=461.51
 
-   ! WMO defined gravity constant which is constant  for all latitude and heights
-   ! used to convert from gph (m^2/s^2) to height (m) by h=gph/g_wmo
-   real(kind=sreal),    parameter :: g_wmo=9.80665
-
 
    real(kind=sreal),    parameter :: maxsza_day=80.0
    real(kind=sreal),    parameter :: maxsza_twi=110.0
