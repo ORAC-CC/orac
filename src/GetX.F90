@@ -197,10 +197,12 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
          case (SelmMeas)  ! MDAD method. Not supported for all variables.
             call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
-            if (status == 0) then
-               SPixel%X0(i) = X
-            else
-              write(*,*) 'WARNING: X_MDAD(): Failed with status:',status
+            SPixel%X0(i) = X
+            if (status == XMDADBounds) then
+!              write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'
+               status = 0
+            else if (status /= 0) then
+!               write(*,*) 'ERROR: X_MDAD(): Failed with status:',status
             end if
 
          case (SelmAUX)   ! AUX method not supported for most vars.
