@@ -34,6 +34,7 @@
   ! 2014/12/01 OS: added flag 9 = prob_opaque_ice
   ! 2014/12/03 CP: added cloud albedo
   ! 2014/12/17 CP: removed unknown form mask naming
+  ! 2015/02/05 CP: changed time attribute and common constants
   !
   ! $Id$
   !
@@ -55,10 +56,27 @@
   !write(*,*) 'ncid_primary'
   !spixel_scan_out%time_fv=-2.0E+9
   spixel_scan_out%time_fv=-32767.0
-  !      pause
+ 
+if (cinst .eq. 'MODIS') then
+  time_str='days elapsed since  12:00 UTC on Jan 1 4713 BC'
+endif
+
+
+if (cinst .eq. 'AVHRR') then
+  time_str='days elapsed since  12:00 UTC on Jan 1 4713 BC'
+endif
+
+if (cinst .eq. 'AATSR') then
+
+  time_str='days elapsed since  12:00 UTC on Jan 1 2000'
+
+endif
+
+
+
   CALL nc_defdata_double_pp(ncid_primary, dims_var, 'time', spixel_scan_out%vidtime,&
        & 'time', 'time', &
-       & 'days since -4712-01-01 12:00:00' &
+       & time_str &
        & ,spixel_scan_out%time_fv,spixel_scan_out%time_scale,spixel_scan_out%time_offset&
        & ,spixel_scan_out%time_vmin,spixel_scan_out%time_vmax, wo, ierr, 'standard') 
   !	   ierr=1
@@ -117,11 +135,11 @@
   !      write(*,*) ncid_primary
   CALL nc_defdata_float_pp(ncid_primary, dims_var, trim(adjustl(input_dummy)),&
        & spixel_scan_out%vidsat_zen(1), trim(adjustl(input_dummy)), &
-       & trim(adjustl(s_input_dummy)),1, 'degrees', real_fill_value, &
+       & trim(adjustl(s_input_dummy)),1, 'degrees', sreal_fill_value, &
        & spixel_scan_out%sat_scale,spixel_scan_out%sat_offset, &
        & spixel_scan_out%sat_vmin,spixel_scan_out%sat_vmax, wo,ierr)
 
-  !MJ              & trim(adjustl(input_dummy)), 'degree', real_fill_value, &
+  !MJ              & trim(adjustl(input_dummy)), 'degree', sreal_fill_value, &
   if(ierr .ne. 0 ) status=PrimaryFileDefinitionErr
   !===============================
   !SOLZEN
@@ -140,7 +158,7 @@
   !        write(*,*) 'vor sol',iviews
   CALL nc_defdata_float_pp(ncid_primary, dims_var, trim(adjustl(input_dummy)),&
        & spixel_scan_out%vidsol_zen(1), trim(adjustl(input_dummy)), &
-       & trim(adjustl(s_input_dummy)),1,  'degrees', real_fill_value, &
+       & trim(adjustl(s_input_dummy)),1,  'degrees', sreal_fill_value, &
        & spixel_scan_out%sol_scale,spixel_scan_out%sol_offset, &
        & spixel_scan_out%sol_vmin,spixel_scan_out%sol_vmax, wo,ierr)
   !         write(*,*) 'nach sol',iviews         
@@ -162,7 +180,7 @@
 
   CALL nc_defdata_float_pp(ncid_primary, dims_var, trim(adjustl(input_dummy)),&
        & spixel_scan_out%vidrel_azi(1), trim(adjustl(input_dummy)), &
-       & trim(adjustl(s_input_dummy)),1, 'degrees', real_fill_value, &
+       & trim(adjustl(s_input_dummy)),1, 'degrees', sreal_fill_value, &
        & spixel_scan_out%azi_scale,spixel_scan_out%azi_offset, &
        & spixel_scan_out%azi_vmin,spixel_scan_out%azi_vmax, wo,ierr)
 
@@ -872,7 +890,7 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
   !     write(*,*) 'ncid_primary',ncid_primary
 !!$      CALL nc_defdata_float(ncid_primary, dims_var, 'qcflag', spixel_scan_out%vidqcflag, 'quality control flag', &
 !!$           & 'quality_control_flag', '',&
-!!$           & real_fill_value, &
+!!$           & sreal_fill_value, &
 !!$           & spixel_scan_out%qc_scale,spixel_scan_out%qc_offset, &
 !!$           & spixel_scan_out%qc_vmin,spixel_scan_out%qc_vmax, wo,ierr)
   s_input_dummy='Bit 0 unused, always set to 0, Bits 1-5 set to 1 if state variable error out of bounds'
