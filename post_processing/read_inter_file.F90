@@ -28,7 +28,7 @@
 !  (currently deactivated), and nisemask; commented out reading of variables
 !   for water within if condition iphase = 2 (never true for water)
 ! 2014/12/02 CP: reads in global and source attributes from file
-! 2015/02/05 OS: changed nint to lint
+! 2015/01/26 CP: add in ml from IR only option changed to common constants
 !
 !
 !
@@ -56,7 +56,7 @@ SUBROUTINE read_inter_file_ice(iphase,fname,l2_input_2dice_primary,xdim,ydim,glo
   INTEGER,INTENT(IN) :: wo
   integer :: ivar,idim,ndim,nvar,nattr,dummyint,iphase
   integer :: ncid,ierr,ny=5,nx=5
-  character(len=cpathlength) :: fname,name
+  character(len=path_length) :: fname,name
   integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   character(len=varlength), allocatable :: dname(:)
     character(len=32)  :: input_num
@@ -79,22 +79,22 @@ SUBROUTINE read_inter_file_ice(iphase,fname,l2_input_2dice_primary,xdim,ydim,glo
   call nc_info_pp(ncid,ndim,nvar,nattr,wo)
 
   allocate(l2var_dummy_double(xdim,ydim))
-  l2var_dummy_double=double_fill_value
+  l2var_dummy_double=dreal_fill_value
 
   allocate(l2var_dummy(xdim,ydim))
-  l2var_dummy=real_fill_value
+  l2var_dummy=dreal_fill_value
 
   allocate(l2var_dummy_short(xdim,ydim))
-  l2var_dummy_short=short_int_fill_value
+  l2var_dummy_short= sint_fill_value
 
   allocate(l2var_dummy_byte(xdim,ydim))
   l2var_dummy_byte=byte_fill_value
 
   if(iphase .eq. 2 ) then
 
-     l2var_dummy=real_fill_value
-     l2var_dummy_double=double_fill_value
-     l2var_dummy_short=short_int_fill_value
+     l2var_dummy=sreal_fill_value
+     l2var_dummy_double=dreal_fill_value
+     l2var_dummy_short= sint_fill_value
      l2var_dummy_byte=byte_fill_value
 
      !MJ? time has to be included
@@ -520,11 +520,6 @@ write(*,*)'albedo_file',source_atts%albedo_file,NF90_NOERR
    endif
 
 
-
-
-
-
-
   !close  input file
   ierr=nf90_close(ncid)
 
@@ -553,7 +548,7 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
  INTEGER,INTENT(IN) :: wo
   integer :: ivar,idim,ndim,nvar,nattr,dummyint,iphase
   integer :: ncid,ierr,ny=5,nx=5
-  character(len=cpathlength) :: fname,name
+  character(len=path_length) :: fname,name
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
@@ -571,65 +566,14 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
   call nc_info_pp(ncid,ndim,nvar,nattr,wo)
 
   allocate(l2var_dummy(xdim,ydim))
-  l2var_dummy=real_fill_value
+  l2var_dummy=sreal_fill_value
   
   allocate(l2var_dummy_short(xdim,ydim))
-  l2var_dummy_short=short_int_fill_value
+  l2var_dummy_short= sint_fill_value
 
   allocate(l2var_dummy_byte(xdim,ydim))
   l2var_dummy_byte=byte_fill_value
   
-!   if(iphase .eq. 2 ) then
-
-!      l2var_dummy=real_fill_value
-!      l2var_dummy_short=short_int_fill_value
-!      l2var_dummy_byte=byte_fill_value
-
-!      !MJ? time has to be included
-
-!      !lat/lon
-!      call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
-!           &                 'lon',l2var_dummy,dummy_unit,wo)
-!      l2_input_2dwat_primary%lon=l2var_dummy
-     
-!      call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
-!           &          'lat',l2var_dummy,dummy_unit,wo)
-!      l2_input_2dwat_primary%lat=l2var_dummy
-
-!      !satzen
-!      call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
-!           &          'sensor_view_view_no_1',l2var_dummy,dummy_unit,wo)
-!      l2_input_2dwat_primary%satellite_zenith_view_no1=l2var_dummy
-     
-!   !solzen
-!      call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
-!           &          'solar_zenith_view_no_1',l2var_dummy,dummy_unit,wo)
-!      l2_input_2dwat_primary%solar_zenith_view_no1=l2var_dummy
-
-
-!      !relazi
-!      call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
-!           &          'rel_azimuth_view_no_1',l2var_dummy,dummy_unit,wo)
-!      l2_input_2dwat_primary%rel_azimuth_view_no1=l2var_dummy
-
-! !!$  !cty
-! !!$  call nc_read_array_2d_byte_orac(ncid,xdim,ydim, &
-! !!$       &          'phase',l2var_dummy_byte,dummy_unit,wo)            
-! !!$  l2_input_2dwat_primary%cty=real(l2var_dummy_byte,kind=sreal)
-! !!$  
-
-!      !lsflag
-!      call nc_read_array_2d_byte_orac_pp(ncid,xdim,ydim, &
-!           &          'lsflag',l2var_dummy_byte,dummy_unit,wo)            
-!      l2_input_2dwat_primary%lsflag=l2var_dummy_byte
-     
-!      !illum
-!      call nc_read_array_2d_byte_orac_pp(ncid,xdim,ydim, &
-!           &          'illum',l2var_dummy_byte,dummy_unit,wo)            
-!      l2_input_2dwat_primary%illum=l2var_dummy_byte
-
-!   endif
-
 
   !ctt           
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -762,6 +706,7 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
   call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
        &          'costjm',l2var_dummy,dummy_unit,wo)            
   l2_input_2dwat_primary%costjm=l2var_dummy
+
   
   deallocate(l2var_dummy)
   deallocate(l2var_dummy_short)
@@ -775,3 +720,199 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
 
 
 END SUBROUTINE read_inter_file_water
+
+
+
+!--------------------------------------------------
+!--------------------------------------------------
+SUBROUTINE read_inter_file_mli(iphase,fname,l2_input_2dmli_primary,xdim,ydim,global_atts,source_atts,wo,ierr)
+!--------------------------------------------------
+  use netcdf
+
+  use vartypes_pp
+  
+  use structures_pp
+  use global_attributes
+  use source_attributes
+
+  implicit none
+
+   type(global_attributes_s), intent(inout) :: global_atts
+   type(source_attributes_s), intent(inout) :: source_atts
+
+ INTEGER,INTENT(IN) :: wo
+  integer :: ivar,idim,ndim,nvar,nattr,dummyint,iphase
+  integer :: ncid,ierr,ny=5,nx=5
+  character(len=path_length) :: fname,name
+   character(len=32)  :: input_num
+   character(len=512) :: input_dummy
+
+  INTEGER(kind=lint) ::  xdim,ydim,i
+
+  CHARACTER(LEN=unitlength) :: dummy_unit
+  type(l2_input_struct_2d_primary) :: l2_input_2dmli_primary
+
+  real (kind=sreal), allocatable, dimension(:,:) :: l2var_dummy
+  integer(kind=byte), allocatable, dimension(:,:) :: l2var_dummy_byte
+  integer(kind=sint), allocatable, dimension(:,:) :: l2var_dummy_short
+  integer(kind=lint) :: chan_id(2),nchan
+
+  call nc_open_pp(ncid,fname,ierr,wo)
+  call nc_info_pp(ncid,ndim,nvar,nattr,wo)
+
+  allocate(l2var_dummy(xdim,ydim))
+  l2var_dummy=sreal_fill_value
+  
+  allocate(l2var_dummy_short(xdim,ydim))
+  l2var_dummy_short= sint_fill_value
+
+  allocate(l2var_dummy_byte(xdim,ydim))
+  l2var_dummy_byte=byte_fill_value
+  
+
+  !ctt           
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'ctt',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%ctt=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'ctt_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%ctt_uncertainty=l2var_dummy
+  
+  
+  !cth
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cth=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cth_uncertainty=l2var_dummy
+  
+  !ctp
+
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'ctp',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%ctp=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'ctp_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%ctp_uncertainty=l2var_dummy
+  
+  !cct
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cc_total',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cct=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cc_total_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cct_uncertainty=l2var_dummy
+  
+  !cot
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+                   &          'cot',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cot=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cot_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cot_uncertainty=l2var_dummy
+  
+  
+  !ref
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'ref',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%ref=l2var_dummy
+
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'ref_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%ref_uncertainty=l2var_dummy
+
+  
+  
+  !cwp
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cwp',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cwp=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cwp_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cwp_uncertainty=l2var_dummy
+ 
+!cloud_albedo
+
+
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", global_atts%sensor) == &
+        NF90_NOERR) then
+   endif
+
+   if ( global_atts%sensor .eq. 'AATSR') then
+    chan_id=(/ 2,3 /)
+    endif
+   if ( global_atts%sensor .eq. 'MODIS') then
+    chan_id=(/ 1,2 /)
+    endif
+   if ( global_atts%sensor .eq. 'AVHRR') then
+    chan_id=(/ 1,2 /)
+    endif
+   nchan=2
+
+   do i=1,nchan
+  write(input_num,"(i4)") chan_id(i)
+      input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          input_dummy,l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cloud_albedo(:,:,i)=l2var_dummy
+  enddo
+
+
+  call nc_read_array_2d_short_to_short_orac_pp(ncid,xdim,ydim, &
+       &          'qcflag',l2var_dummy_short,dummy_unit,wo)            
+  l2_input_2dmli_primary%qcflag=l2var_dummy_short
+
+
+  !stemp
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'stemp',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%stemp=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'stemp_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%stemp_uncertainty=l2var_dummy
+  
+
+  !niter
+  call nc_read_array_2d_byte_orac_pp(ncid,xdim,ydim, &
+       &          'niter',l2var_dummy_byte,dummy_unit,wo)            
+  l2_input_2dmli_primary%niter=l2var_dummy_byte
+
+
+  !convergence
+  call nc_read_array_2d_byte_orac_pp(ncid,xdim,ydim, &
+       &          'convergence',l2var_dummy_byte,dummy_unit,wo)            
+  l2_input_2dmli_primary%convergence=l2var_dummy_byte
+
+  !costs
+
+  call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
+       &          'costja',l2var_dummy,dummy_unit,wo)
+  l2_input_2dmli_primary%costja=l2var_dummy
+
+
+  call nc_read_array_2d_float_orac_pp(ncid,xdim,ydim, &
+       &          'costjm',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%costjm=l2var_dummy
+  
+  deallocate(l2var_dummy)
+  deallocate(l2var_dummy_short)
+  deallocate(l2var_dummy_byte)
+  
+  
+  !close  input file
+  ierr=nf90_close(ncid)
+
+
+
+
+END SUBROUTINE read_inter_file_mli
+
+
