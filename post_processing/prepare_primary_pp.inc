@@ -31,6 +31,7 @@
   ! 2014/11/20 OS: added Pavolonis cloud phase variable, which is here classified
   !  through Pavolonis cloud types
   !  2014/11/20 CP: added cloud albedo
+  !  2015/02/07 CP: changed to common constants
   !
   ! $Id$
   !
@@ -96,7 +97,7 @@
         dummyreal=(l2_input_2dice_primary%cot(i,j)-spixel_scan_out&
              &%cot_offset)/spixel_scan_out%cot_scale
      else
-        dummyreal=real_fill_value
+        dummyreal=sreal_fill_value
      endif
 
      if( dummyreal .ge. real(spixel_scan_out%cot_vmin) .and. &
@@ -115,7 +116,7 @@
         !write(*,*) l2_input_2dice_primary%cot_uncertainty(i,j)
         dummyreal=((l2_input_2dice_primary%cot_uncertainty(i,j))-spixel_scan_out%cot_error_offset)/spixel_scan_out%cot_error_scale
      else
-        dummyreal=real_fill_value
+        dummyreal=sreal_fill_value
      endif
 
 
@@ -148,7 +149,7 @@
      if(l2_input_2dice_primary%ref_uncertainty(i,j) .ge. 0.00) then
         dummyreal=((l2_input_2dice_primary%ref_uncertainty(i,j))-spixel_scan_out%ref_error_offset)/spixel_scan_out%ref_error_scale
      else
-        dummyreal=real_fill_value
+        dummyreal=sreal_fill_value
      endif
      if( dummyreal .ge. real(spixel_scan_out%ref_error_vmin) .and. &
           & dummyreal .le. real(spixel_scan_out%ref_error_vmax)) then
@@ -177,7 +178,7 @@
      if(l2_input_2dice_primary%cwp_uncertainty(i,j) .ge. 0.00) then
         dummyreal=((l2_input_2dice_primary%CWP_uncertainty(i,j))-spixel_scan_out%cwp_error_offset)/spixel_scan_out%cwp_error_scale
      else
-        dummyreal=real_fill_value
+        dummyreal=sreal_fill_value
      endif
 
      if( dummyreal .ge. real(spixel_scan_out%cwp_error_vmin) .and. &
@@ -243,7 +244,7 @@ enddo
   if(l2_input_2dice_primary%ctp_uncertainty(i,j) .ge. 0.00) then
      dummyreal=((l2_input_2dice_primary%ctp_uncertainty(i,j))-spixel_scan_out%ctp_error_offset)/spixel_scan_out%ctp_error_scale
   else
-     dummyreal=real_fill_value
+     dummyreal=sreal_fill_value
   endif
   if( dummyreal .ge. real(spixel_scan_out%ctp_error_vmin) .and. &
        & dummyreal .le. real(spixel_scan_out%ctp_error_vmax)) then
@@ -272,7 +273,7 @@ enddo
      dummyreal=((l2_input_2dice_primary%cc_total_uncertainty(i,j))- &
           spixel_scan_out%cct_error_offset)/spixel_scan_out%cct_error_scale
   else
-     dummyreal=real_fill_value
+     dummyreal=sreal_fill_value
   endif
   if( dummyreal .ge. real(spixel_scan_out%cct_error_vmin) .and. &
        & dummyreal .le. real(spixel_scan_out%cct_error_vmax)) then
@@ -334,7 +335,7 @@ enddo
      dummyreal=(l2_input_2dice_primary%stemp_uncertainty(i,j)- &
           & spixel_scan_out%stemp_error_offset)/spixel_scan_out%stemp_error_scale
   else
-     dummyreal=real_fill_value
+     dummyreal=sreal_fill_value
   endif
   if( dummyreal .ge. real(spixel_scan_out%stemp_error_vmin,kind=sreal) .and. &
        & dummyreal .le. real(spixel_scan_out%stemp_error_vmax,kind=sreal)) then
@@ -446,7 +447,7 @@ enddo
        & dummyreal .le. real(spixel_scan_out%costjm_vmax)) then
      spixel_scan_out%costjm(i,j)=real(dummyreal,kind=sreal)!int(dummyreal, kind=sint)
   else
-     spixel_scan_out%costjm(i,j)=real_fill_value!spixel_scan_out%int_fill_value
+     spixel_scan_out%costjm(i,j)=sreal_fill_value!spixel_scan_out%int_fill_value
   endif
 
 
@@ -461,7 +462,7 @@ enddo
        & dummyreal .le. real(spixel_scan_out%costja_vmax)) then
      spixel_scan_out%costja(i,j)=real(dummyreal,kind=sreal)!int(dummyreal, kind=sint)
   else
-     spixel_scan_out%costja(i,j)=real_fill_value!spixel_scan_out%int_fill_value
+     spixel_scan_out%costja(i,j)=sreal_fill_value!spixel_scan_out%int_fill_value
   endif
 
   !               write(*,*) 'write lsflag'

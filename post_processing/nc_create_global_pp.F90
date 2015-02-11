@@ -29,6 +29,7 @@
 !2012/07/06 MJ extensively overhauls and restructures the code
 !2014/06/04 MJ changes routine names to "*_pp" to avoid confusion when building libraries.
 !2014/12/2 CP added in source and new global attributes and big tidy up
+!2015/02/07 CP changed to common constants
 !
 ! $Id$
 !
@@ -89,7 +90,7 @@ SUBROUTINE nc_create_global_l2_pp(path, ncid, nx, ny, dims_var, wo,type,global_a
 !  integer, dimension(1) :: start,counter,stride
   
   integer :: status
-  character(len=description_length) ::  ctitle
+  character(len=attribute_length_long) ::  ctitle
 
   ! End of header ----------------------------------------------------------
   

@@ -29,7 +29,7 @@
 !   deal with differing instrument channels.
 !2015/02/05: OS changed nint to lint; now checks for AVHRR whether ch3a or ch3b
 !               data exist in input files
-!
+!2015/02/07 CP: changed to common constants and tidied up string reading of instrument
 ! $Id$
 !
 ! Bugs:
@@ -104,10 +104,10 @@ SUBROUTINE read_refl_and_bt(iphase,fname,chan_id,l2_input_2d_refl_bt,xdim,ydim,w
 
 
    allocate(l2var_dummy(xdim,ydim))
-   l2var_dummy=real_fill_value
+   l2var_dummy=sreal_fill_value
 
    allocate(l2var_dummy_short(xdim,ydim))
-   l2var_dummy_short=short_int_fill_value
+   l2var_dummy_short=sint_fill_value
 
    allocate(l2var_dummy_byte(xdim,ydim))
    l2var_dummy_byte=byte_fill_value
@@ -141,8 +141,8 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
 
    implicit none
 
-   character(len=attribute_length),    intent(in)    :: cinst
-   character(len=cpathlength),         intent(in)    :: fname
+   character(len=var_length),    intent(in)    :: cinst
+   character(len=path_length),         intent(in)    :: fname
    type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
    integer(kind=lint),                 intent(in)    :: xdim, ydim
    integer,                            intent(in)    :: wo
@@ -156,9 +156,20 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
 
 
    write(*,*) 'Opening secondary input file ', trim(fname)
-   call nc_open_pp(ncid,fname,ierr,wo)
 
-   ! Check whether ch1.6 or ch3.7 data are available for AVHRR
+   call nc_open_pp(ncid,fname,ierr,wo)
+   write(*,*)'cinst',cinst
+
+ 
+
+   write(*,*)'cinst',trim(adjustl(cinst))
+
+   ! Read appropriate channels from file for the instrument
+
+   select case (trim(adjustl(cinst)))
+   case('AVHRR')
+
+  ! Check whether ch1.6 or ch3.7 data are available for AVHRR
    do i=1, 2
       ch_3a_3b_available(i) = 1
       if (i==1) then
@@ -170,9 +181,6 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
            ch_3a_3b_available(i) = 0
    enddo
 
-   ! Read appropriate channels from file for the instrument
-   select case (cinst)
-   case('AVHRR')
 
       ! Read albedo values (commented out until needed)
     call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -222,6 +230,10 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
     call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
          'albedo_in_channel_no_3', &
          l2_input_2d_secondary%albedo_in_channel_no_3,dummy_unit,wo)
+
+!	 write(*,*) 'read sec albedo2',l2_input_2d_secondary%albedo_in_channel_no_2(:,:)
+
+
 !    call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
 !         'albedo_in_channel_no_4', &
 !         l2_input_2d_secondary%albedo_in_channel_no_4,dummy_unit,wo)

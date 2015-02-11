@@ -31,6 +31,7 @@
 ! 2014/11/20 OS: added allocation of pavolonis phase
 ! 2014/11/26 Cp: added allocation of cloud_albedo
 ! 2015/02/05 OS: changed nint to lint
+! 2015/02/07 CP: changed to common constants
 
 ! $Id$
 !
@@ -73,22 +74,22 @@ subroutine alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,NViews,spixel
   spixel_scan_out%vidrel_azi=0
   
   allocate(spixel_scan_out%time(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%time(ixstart:ixstop,iystart:iystop)=real_fill_value
+  spixel_scan_out%time(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
   allocate(spixel_scan_out%lon(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%lon(ixstart:ixstop,iystart:iystop)=real_fill_value
+  spixel_scan_out%lon(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
   allocate(spixel_scan_out%lat(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%lat(ixstart:ixstop,iystart:iystop)=real_fill_value
+  spixel_scan_out%lat(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
   allocate(spixel_scan_out%sat_zen(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%sat_zen(ixstart:ixstop,iystart:iystop)=real_fill_value
+  spixel_scan_out%sat_zen(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
   allocate(spixel_scan_out%sol_zen(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%sol_zen(ixstart:ixstop,iystart:iystop)=real_fill_value
+  spixel_scan_out%sol_zen(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
   allocate(spixel_scan_out%rel_azi(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%rel_azi(ixstart:ixstop,iystart:iystop)=real_fill_value
+  spixel_scan_out%rel_azi(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
   allocate(spixel_scan_out%cot(ixstart:ixstop,iystart:iystop))
   spixel_scan_out%cot(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
@@ -169,7 +170,7 @@ subroutine alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,NViews,spixel
   spixel_scan_out%lusflag(ixstart:ixstop,iystart:iystop)=spixel_scan_out%byte_fill_value
 
   allocate(spixel_scan_out%qcflag(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%qcflag(ixstart:ixstop,iystart:iystop)=real_fill_value
+  spixel_scan_out%qcflag(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
   allocate(spixel_scan_out%illum(ixstart:ixstop,iystart:iystop))
   spixel_scan_out%illum(ixstart:ixstop,iystart:iystop)=spixel_scan_out%byte_fill_value
@@ -224,22 +225,22 @@ end subroutine alloc_spixel_scan_out_pp
 !!$ ! spixel_scan_out%vidrel_azi=0
 !!$
 !!$  allocate(spixel_scan_out%time(ixstart:ixstop))
-!!$  spixel_scan_out%time(ixstart:ixstop)=real_fill_value
+!!$  spixel_scan_out%time(ixstart:ixstop)=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out%lon(ixstart:ixstop))
-!!$  spixel_scan_out%lon(ixstart:ixstop)=real_fill_value
+!!$  spixel_scan_out%lon(ixstart:ixstop)=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out%lat(ixstart:ixstop))
-!!$  spixel_scan_out%lat(ixstart:ixstop)=real_fill_value
+!!$  spixel_scan_out%lat(ixstart:ixstop)=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out%sat_zen(ixstart:ixstop))
-!!$  spixel_scan_out%sat_zen(ixstart:ixstop)=real_fill_value
+!!$  spixel_scan_out%sat_zen(ixstart:ixstop)=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out%sol_zen(ixstart:ixstop))
-!!$  spixel_scan_out%sol_zen(ixstart:ixstop)=real_fill_value
+!!$  spixel_scan_out%sol_zen(ixstart:ixstop)=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out%rel_azi(ixstart:ixstop))
-!!$  spixel_scan_out%rel_azi(ixstart:ixstop)=real_fill_value
+!!$  spixel_scan_out%rel_azi(ixstart:ixstop)=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out%cot(ixstart:ixstop))
 !!$  spixel_scan_out%cot(ixstart:ixstop)=spixel_scan_out%int_fill_value
@@ -374,10 +375,10 @@ end subroutine alloc_spixel_scan_out_pp
 !!$  spixel_scan_out_sec%vidy0=0
 !!$
 !!$  allocate(spixel_scan_out_sec%res_scale(1:Ny))
-!!$  spixel_scan_out_sec%res_scale=real_fill_value
+!!$  spixel_scan_out_sec%res_scale=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out_sec%res_offset(1:Ny))
-!!$  spixel_scan_out_sec%res_offset=real_fill_value
+!!$  spixel_scan_out_sec%res_offset=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out_sec%res_vmin(1:Ny))
 !!$  spixel_scan_out_sec%res_vmin=spixel_scan_out_sec%int_fill_value
@@ -388,10 +389,10 @@ end subroutine alloc_spixel_scan_out_pp
 !!$
 !!$
 !!$  allocate(spixel_scan_out_sec%chans_scale(1:Ny))
-!!$  spixel_scan_out_sec%chans_scale=real_fill_value
+!!$  spixel_scan_out_sec%chans_scale=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out_sec%chans_offset(1:Ny))
-!!$  spixel_scan_out_sec%chans_offset=real_fill_value
+!!$  spixel_scan_out_sec%chans_offset=sreal_fill_value
 !!$
 !!$
 !!$  allocate(spixel_scan_out_sec%chans_vmin(1:Ny))
@@ -403,10 +404,10 @@ end subroutine alloc_spixel_scan_out_pp
 !!$
 !!$
 !!$  allocate(spixel_scan_out_sec%y0_scale(1:Ny))
-!!$  spixel_scan_out_sec%y0_scale=real_fill_value
+!!$  spixel_scan_out_sec%y0_scale=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_out_sec%y0_offset(1:Ny))
-!!$  spixel_scan_out_sec%y0_offset=real_fill_value
+!!$  spixel_scan_out_sec%y0_offset=sreal_fill_value
 !!$
 !!$
 !!$  allocate(spixel_scan_out_sec%y0_vmin(1:Ny))
@@ -435,7 +436,7 @@ end subroutine alloc_spixel_scan_out_pp
 !!$     spixel_scan_out_sec%vidcovar=0
 !!$
 !!$     allocate(spixel_scan_out_sec%covariance(ixstart:ixstop,Nx,Nx))
-!!$     spixel_scan_out_sec%covariance=real_fill_value
+!!$     spixel_scan_out_sec%covariance=sreal_fill_value
 !!$
 !!$  endif
 !!$
@@ -462,10 +463,10 @@ end subroutine alloc_spixel_scan_out_pp
 !!$  spixel_scan_in%vidinput=0
 !!$
 !!$  allocate(spixel_scan_in%input_scale(Ny))
-!!$  spixel_scan_in%input_scale=real_fill_value
+!!$  spixel_scan_in%input_scale=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_in%input_offset(Ny))
-!!$  spixel_scan_in%input_offset=real_fill_value
+!!$  spixel_scan_in%input_offset=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_in%input_vmin(Ny))
 !!$  spixel_scan_in%input_vmin=spixel_scan_in%int_fill_value
@@ -481,10 +482,10 @@ end subroutine alloc_spixel_scan_out_pp
 !!$  spixel_scan_in%viderror=0
 !!$
 !!$  allocate(spixel_scan_in%error_scale(Ny))
-!!$  spixel_scan_in%error_scale=real_fill_value
+!!$  spixel_scan_in%error_scale=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_in%error_offset(Ny))
-!!$  spixel_scan_in%error_offset=real_fill_value
+!!$  spixel_scan_in%error_offset=sreal_fill_value
 !!$
 !!$  allocate(spixel_scan_in%error_vmin(Ny))
 !!$  spixel_scan_in%error_vmin=spixel_scan_in%int_fill_value

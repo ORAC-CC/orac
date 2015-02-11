@@ -1,6 +1,7 @@
 !2014/06/04 MJ changes routine names to "*_pp" to avoid confusion when building libraries.
 !2014/12/03 CP added in common_constants should eventually remove vartypes_pp
 !2015/02/05 OS changed nint to lint
+!2015/02/05 CP updated constants file
 !--------------------------------------------------
 !--------------------------------------------------
 SUBROUTINE read_input_dimensions(fname,xdim,ydim,wo)
@@ -15,7 +16,7 @@ SUBROUTINE read_input_dimensions(fname,xdim,ydim,wo)
  INTEGER,INTENT(IN) :: wo
   integer :: ivar,idim,ndim,nvar,nattr,dummyint,iphase
   integer :: ncid,ierr,ny=5,nx=5
-  character(len=cpathlength) :: fname,name
+  character(len=path_length) :: fname,name
   integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
   character(len=varlength), allocatable :: dname(:)
   

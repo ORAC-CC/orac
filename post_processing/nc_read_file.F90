@@ -24,6 +24,7 @@
 !2014/10/24, OS: further bug fix on scale factor 
 !2014/12/03, CP: added in common_constants should eventually remove vartypes_pp
 !2015/02/05, OS: changed nint to lint
+!2015/02/07, CP: updated to common constants
 !
 ! $Id$
 !
@@ -144,7 +145,7 @@ SUBROUTINE nc_read_array_2d_float_orac_pp(ncid,n1,n2,cv,v_out,unit,wo)
          IF (wo.EQ.1) THEN
             write(*,*) '_FillVallue: not defined '
          ENDIF
-         fv=real_fill_value
+         fv=dreal_fill_value
       ENDIF
 
 
@@ -181,7 +182,7 @@ SUBROUTINE nc_read_array_2d_float_orac_pp(ncid,n1,n2,cv,v_out,unit,wo)
          IF (wo.EQ.1) THEN
             write(*,*) 'valid_min: not defined '
          ENDIF
-         vmin=-real_fill_value*real_fill_value
+         vmin=-dreal_fill_value*dreal_fill_value
       ENDIF
 
       ierr = NF90_GET_ATT(ncid, vid, 'valid_max', vmax)
@@ -192,13 +193,13 @@ SUBROUTINE nc_read_array_2d_float_orac_pp(ncid,n1,n2,cv,v_out,unit,wo)
          IF (wo.EQ.1) THEN
             write(*,*) 'valid_max: not defined '
          ENDIF
-         vmax=real_fill_value*real_fill_value
+         vmax=dreal_fill_value*dreal_fill_value
       ENDIF
 
       DO i=1,n1                                            !question: outlier /outliar
          DO j=1,n2
             IF ( v(i,j).EQ.fv .or. v(i,j) .lt. vmin .or. v(i,j) .gt. vmax ) THEN
-               v_out(i,j)=real_fill_value
+               v_out(i,j)=dreal_fill_value
             ELSE
                v_out(i,j)=(v(i,j)*sf)+os                !scaling and form to real format
             ENDIF
@@ -370,7 +371,7 @@ SUBROUTINE nc_read_array_2d_short_orac_pp(ncid,n1,n2,cv,v_out,unit,wo)
          DO j=1,n2
 
             IF ( v(i,j).EQ.fv .or. v(i,j) .lt. vmin .or. v(i,j) .gt. vmax ) THEN
-               v_out(i,j)=real_fill_value
+               v_out(i,j)=dreal_fill_value
             ELSE
                v_out(i,j)=(real(v(i,j),kind=sreal)*sf)+os                !scaling and form to real format
             ENDIF
@@ -661,7 +662,7 @@ SUBROUTINE nc_read_array_2d_double_orac_pp(ncid,n1,n2,cv,v,wo)
          IF (wo.EQ.1) THEN
             write(*,*) '_FillVallue: not defined '
          ENDIF
-         fv=real_fill_value
+         fv=dreal_fill_value
       ENDIF
 
 

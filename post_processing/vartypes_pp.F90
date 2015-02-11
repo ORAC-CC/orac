@@ -25,6 +25,7 @@
 ! 2014/11/10 OS: very minor edit
 ! 2014/12/03 CP: removed variables duplicated in common_constants
 ! 2015/02/05 OS: some cleanup; changed nint to lint
+! 2015/02/07 CP: removed all variables common to common_constants
 
 ! $Id$
 !
@@ -47,30 +48,15 @@ use common_constants
    integer, parameter :: SecondaryFileWriteErr = 1405
    integer, parameter :: PrimaryFileCloseErr = 1406
    integer, parameter :: SecondaryFileCloseErr = 1407
+   integer, parameter :: paramlength=150!16
+   integer, parameter :: varlength=150
+   integer, parameter :: inlength=2
+   integer, parameter :: uuid_length=36
+   integer, parameter :: MaxStateVar = 5  ! Max. number of state variables
 
 
-
-  integer, parameter :: currentlength=512
-  integer, parameter :: cpathlength=1024
-  integer, parameter :: filelength=512!128
-  integer, parameter :: commandlength=64
-  integer, parameter :: cfilelength=32
-  integer, parameter :: paramlength=150!16
-  integer, parameter :: dummylength=128
-  integer, parameter :: varlength=150
-
-  integer, parameter :: inlength=2
-  integer, parameter :: uuid_length=36
-  integer, parameter :: l3_outputpath_and_file_length=512
-  integer, parameter :: description_length=2048
-  integer, parameter :: MaxStateVar = 5  ! Max. number of state variables
-
-  real(kind=sreal), parameter :: real_fill_value=-999.0, filter_thres=-500.0, filter_micro=0.00, dither=1.0E-5
-  real(kind=sreal), parameter :: norm_factor=1.0E-3,dither3=1.0E-3, reduce_cost=99.0
-
-  integer(kind=sint), parameter :: short_int_fill_value=-99
-
-  real(kind=dreal), parameter :: double_fill_value=-999.0
+   real(kind=sreal), parameter ::filter_thres=-500.0, filter_micro=0.00, dither=1.0E-5
+   real(kind=sreal), parameter :: norm_factor=1.0E-3,dither3=1.0E-3, reduce_cost=99.0
 
   integer(kind=lint), parameter :: n_features=10,n_error_features=1,n_variables=10
 
