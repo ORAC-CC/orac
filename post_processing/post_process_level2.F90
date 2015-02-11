@@ -74,7 +74,11 @@
   !2015/02/05, OS: changed nint to lint; further replacements of variables
   !                defined in vartypes_pp with those defined in common_constants;
   !                added phase_post; Pavolonis phase is now used as basis for
+  !2015/02/06 CP added in case of ML IR only retrieval
+  !2015/02/06 CP tidied up phase selection removed obsolete stuff
+  !2015/02/06 CP added case of IR only multi layer selection
   !                phase-dependent variables
+  !2015/02/07 CP massive tidy up including of common constants
   !
   ! Bugs:
   !    None known.
@@ -130,7 +134,8 @@
       real :: dummyreal,resin
 
       character(len=path_length) :: ecmwf_path,path_and_file,&
-           & fnamewat_prim,fnameice_prim,fnamewat_sec,fnameice_sec
+           & fnamewat_prim,fnameice_prim,fnamewat_sec,fnameice_sec, &
+	   fnamemli_sec,fnamemli_prim
       character(len=20) :: input_num,input_num1,input_num2
       character(len=500) :: input_dummy,s_input_dummy  
       integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
@@ -141,7 +146,7 @@
       character (len=var_length), allocatable, dimension(:) ::  available_names(:)
 
       character(len=path_length) :: name,fname,L2_primary_outputpath_and_file, &
-           L2_secondary_outputpath_and_file
+           L2_secondary_outputpath_and_file,time_str
 
       character(len=var_length) ::  chan_id(5),inst
 
@@ -157,27 +162,27 @@
       integer(kind=byte), parameter :: IPhaseClU = 0     ! clear/unknoiwn
       integer(kind=byte), parameter :: IPhaseWat = 1     ! Water
       integer(kind=byte), parameter :: IPhaseIce = 2     ! Ice
+      integer(kind=byte), parameter :: IPhasemli = 3     ! MLI
 
       integer(kind=byte), allocatable, dimension(:,:) :: phaseflag
 
-      integer :: penaltyflag_w, penaltyflag_i
+      integer(kind=lint) :: nvars=1,nvars_errors=1, n_val_plus_error=2, &
+      n_oe_features=3
 
-      integer(kind=lint) :: nvars=1,nvars_errors=1, n_val_plus_error=2,n_oe_features=3
 
-      real (kind=sreal) ::  costice,  costwat ,newcot, costice_store, costwat_store, &
-           temp_thres,temp_thres_h,temp_thres_m,temp_thres_l,temp_thres1, &
-           ctp_bound, ctp_bound_up,ctp_thres, ctp_thres1,ctt_bound, &
-           ctt_bound_summer,ctt_bound_winter,ctt_thres,ctp_udivctp, tempdiff
-
-      type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary, l2_input_2dice_primary
+      real (kind=sreal) ::tempdiff,newcot
+  
+      type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary, &
+      l2_input_2dice_primary, l2_input_2dmli_primary
       type(l2_input_struct_2d_secondary) ::  l2_input_2d_secondary
-      type(l2_input_struct_2d_refl_bt) :: l2_input_2dice_refl_bt,l2_input_2dwat_refl_bt
+      type(l2_input_struct_2d_refl_bt) :: l2_input_2dice_refl_bt, &
+      l2_input_2dwat_refl_bt,l2_input_2dmli_refl_bt
       type(spixel_scanline_primary_output) :: spixel_scan_out
       type(spixel_scanline_output_rt) ::  spixel_scan_out_rt
 
       real(kind=sreal) :: precision,huge_value,log10huge_value,log10precision
 
-      integer(kind=byte) :: lsec_flag,lstrict,snow_ice_flag
+      integer(kind=byte) :: lsec_flag,lstrict,snow_ice_flag,mli_flag
 
       integer :: nargs
 
@@ -220,6 +225,7 @@
       !write(*,*) 'Along-track loop of postprocessing running on: ', nompthreads, 'threads'
 
       wo=1 ! be more verbose on output if = 1 (to be replaced with verbose keyword)
+      mli_flag=0
 
       noob=0_lint
       noob_total=0_lint
@@ -252,7 +258,7 @@
 
       endif
 
-
+write(*,*)'path_and_file',path_and_file
       !read from an external file
       open(11,file=trim(adjustl(path_and_file)), &
            & status='old', form='formatted')
@@ -260,27 +266,25 @@
       write(*,*) 'fnamewat_prim',fnamewat_prim
       read(11,*) fnameice_prim
       write(*,*) 'fnameice_prim',fnameice_prim
+      if ( mli_flag .eq. 1) then
+      	 read(11,*) fnamemli_prim
+      	 write(*,*) 'fnamemli_prim',fnamemli_prim
+      endif
+
       read(11,*) fnamewat_sec
       write(*,*) 'sec wat',fnamewat_sec
       read(11,*) fnameice_sec
       write(*,*) 'secice',fnameice_sec
+      if ( mli_flag .eq. 1) then
+      	 read(11,*) fnamemli_sec
+      	 write(*,*) 'secice',fnamemli_sec
+      endif
+
       read(11,*) L2_primary_outputpath_and_file
       write(*,*) 'prin',L2_primary_outputpath_and_file
       read(11,*) L2_secondary_outputpath_and_file
       write(*,*) 'sec',L2_secondary_outputpath_and_file
-      read(11,*) minre
-      write(*,*) 'min re',minre
-      read(11,*) maxre
-      write(*,*) 'maxre',maxre
-      read(11,*) minod
-      write(*,*) 'minod',minod
-      read(11,*) maxod
-      write(*,*) 'max od',maxod
-      read(11,*) maxcost
-      write(*,*) 'cost',maxcost
-      read(11,*) costfactor
-      write(*,*) 'costfactor',costfactor
-      read(11,*) cot_thres
+     read(11,*) cot_thres
       write(*,*) 'cot_thres',cot_thres
       read(11,*) cot_thres1
       write(*,*) 'cot_thres1',cot_thres1
@@ -294,70 +298,17 @@
       read(11,*) lsec_flag
       write(*,*) 'lsec',lsec_flag 
       read(11,*) lstrict
-      write(*,*) 'cot_thres and kind',cot_thres,cot_thres1,cot_thres2, &
+!!!xxx too late to read in here
+!      read(11,*) mli_flag
+!      write(*,*) 'mli_flag',mli_flag
+!      close(11)
+     write(*,*) 'cot_thres and kind',cot_thres,cot_thres1,cot_thres2, &
            kind(cot_thres),kind(cot_thres1),kind(cot_thres2)
-      read(11,*) temp_thres_h
-      read(11,*) temp_thres_m
-      read(11,*) temp_thres_l
-      read(11,*) temp_thres1
-      write(*,*) 'temp_thres_h,m,l',temp_thres_h,temp_thres_m,temp_thres_l, &
-           temp_thres1,kind(temp_thres_h), kind(temp_thres_m), &
-           kind(temp_thres_l),kind(temp_thres1)
-      read(11,*) ctt_bound
-      read(11,*) ctt_bound_winter
-      read(11,*) ctt_bound_summer
-      write(*,*)  'ctt_bound',ctt_bound,ctt_bound_winter,ctt_bound_summer,kind(ctt_bound), &
-           kind(ctt_bound_winter),kind(ctt_bound_summer)
-      read(11,*) ctt_thres
-      write(*,*)  'ctt_thres',ctt_thres,kind(ctt_thres)
-      read(11,*) ctp_thres
-      read(11,*) ctp_thres1
-      write(*,*)  'ctp_thres',ctp_thres,ctp_thres1,kind(ctp_thres),kind(ctp_thres1)
-      read(11,*) ctp_bound
-      write(*,*)  'ctp_bound',ctp_bound,kind(ctp_bound)
-      read(11,*) ctp_bound_up
-      write(*,*)  'ctp_bound_up',ctp_bound_up,kind(ctp_bound_up)
-      read(11,*) ctp_udivctp
-      write(*,*)  'ctp_udivctp',ctp_udivctp,kind(ctp_udivctp)
-
-      !here all those important attributes are read in to be written to the netcdf file
-!      read(11,*) uuid_tag_primary
-!      uuid_tag_primary=trim(adjustl(uuid_tag_primary))
-!      read(11,*)  uuid_tag_secondary
-!      uuid_tag_secondary=trim(adjustl(uuid_tag_secondary))
-!      read(11,*) platform
-!      read(11,*) prodtime
-!      read(11,*) prod_name
-!      read(11,*) cprodtype
-!      read(11,*) cncver
-!      read(11,*) ccon
-!      read(11,*) cinst
-!      read(11,*) l2cproc
-!      read(11,*) l2cprocver
-!      read(11,*) contact
-!      read(11,*) website
-!      read(11,*) reference
-!      read(11,*) history
-!      read(11,*) summary
-!      read(11,*) keywords
-!      read(11,*) comment
-!      read(11,*) project
-!      read(11,*) license
-!      read(11,*) cfile_version
-!      read(11,*) csource
-!      read(11,*) 
-!      read(11,*) std_name_voc
-
-      close(11)
+ 
 
 
       ! read ice and water intermediate files and put into a structure
-!      write(*,*) 'post cinst ', cinst
-!      write(*,*) 'post plat ', platform
-!      write(*,*) 'post hist ', history
-!      write(*,*) 'post prodt ', cprodtype
-!      write(*,*) 'post contact ', contact
-!      write(*,*) 'read input dimensions start'
+
       call read_input_dimensions(fnameice_prim,xdim,ydim,wo)
       write(*,*) 'read input dimensions stop'
 
@@ -378,9 +329,27 @@
       call read_inter_file_water(iphase,fnamewat_prim,l2_input_2dwat_primary, &
            xdim,ydim,global_atts,source_atts,wo,ierr)
       write(*,*) 'read wat stop'
+
       call set_l2_input_struct_2d_secondary(l2_input_2d_secondary,xdim,ydim)
-      write(*,*) 'read wat secondary start ',fnameice_sec
+      write(*,*) 'read ice secondary start ',fnameice_sec
       call  read_inter_sec_file(inst,fnameice_sec,l2_input_2d_secondary,xdim,ydim,wo,ierr)
+!write(*,*)'albedo',l2_input_2d_secondary%albedo_in_channel_no_2
+
+	mli_flag=0
+	    if (mli_flag .gt. 0 )then	
+      ! phase = MLI
+      write(*,*) 'PMLI'
+      iphase=3
+      call set_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary,xdim,ydim)
+      write(*,*) 'read mli start ',fnamemli_prim
+      call read_inter_file_mli(iphase,fnamemli_prim,l2_input_2dmli_primary, &
+           xdim,ydim,global_atts,source_atts,wo,ierr)
+      write(*,*) 'read mli stop'
+  
+
+
+	    endif
+
 
       !set the loop bounds
       ixstart=1
@@ -397,195 +366,41 @@
       write(*,*) 'Processing limits:'
       write(*,*) ixstart,ixstop
       write(*,*) iystart,iystop
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! loop over pixels        !!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-      !loop over pixels
-      !OMP PARALLEL DO &
-      !OMP PRIVATE(dummyreal,costwat,costice,temp_thres,tempdiff,i,j,nneurons
-      !,ninput,noutput,minmax_train,inv,outv,input,scales,oscales,temperature
-      !,bias_i,bias_h,output) &
-      !OMP FIRTSTPRIVATE(costfactor,newcot) &
-      !OMP REDUCTION(+:noob) &
-      !OMP SCHEDULE(GUIDED,100)
+
       do j=iystart,iystop
          do i=ixstart,ixstop
 
-            costwat=0.00_sreal
-            costice=0.00_sreal
 
-            costwat_store=0.00_sreal
-            costice_store=0.00_sreal
 
             !default: ICE wins, meaning only ice structure is overwritten 
             !and used in the end for the output
             l2_input_2dice_primary%phase(i,j)=iphaseice
             l2_input_2dice_primary%phase_post(i,j) = iphaseice  
 
-            !Determine the total cost(s) for WAT and ICE
-            if(l2_input_2dwat_primary%costja(i,j) .gt. 0.0_sreal) then
 
-               costwat=l2_input_2dwat_primary%costja(i,j)
-
-            endif
-
-            if(l2_input_2dwat_primary%costjm(i,j) .gt. 0.0_sreal) then
-
-               costwat=costwat+l2_input_2dwat_primary%costjm(i,j)
-
-            endif
-            costwat_store=costwat
-
-
-            if(l2_input_2dice_primary%costja(i,j) .gt. 0.0_sreal) then
-
-               costice=l2_input_2dice_primary%costja(i,j)
+!Information of Pavolonis cloud type
+!C,N,F,W,S,M,I,Ci,O
+!Liquid cloud phase comprises the following categories:
+!0? Clear
+!2? fog,
+!3? warm liquid water clouds, and
+!4? supercooled-mixed-phased clouds.
+!? Ice cloud phase comprises the following categories:
+!6? opaque ice clouds/deep convection,
+!7? nonopaque high ice clouds (e.g. cirrus),
+!8? cloud overlap 4 (e.g. multiple cloud layers), and
+!9? probably opaque ice clouds (e.g. neither 1.6 ìm nor 3.7 ìm channel is available during night for
+!AVHRR; 12 ìm channel is missing during night for AATSR).
 
 
-            endif
 
-            if(l2_input_2dice_primary%costjm(i,j) .gt. 0.0_sreal) then
-
-               costice=costice+l2_input_2dice_primary%costjm(i,j)
-
-            endif
-            costice_store=costice
-
-            penaltyflag_w=0
-            penaltyflag_i=0
- 
-
-            !As a reminder:
-            ! - bits 1 to MAXSTATEVAR: set to 1 if
-            !   parameter estimated retrieval error 
-            !   too large
-            ! - bit MAXSTATEVAR+1: retrieval did not
-            !   converge 
-            ! - bit MAXSTATEVAR+2: retrieval solution
-            !   cost too great
-
-            !can only strictly evaluate cost if method has converged:
-            if ( ibits ( l2_input_2dwat_primary%qcflag(i,j), MAXSTATEVAR+1, 1 ) &
-                 .ne. 0_sint ) then  !convergence NOT reached
-
-               costwat=maxcost
-               penaltyflag_w=1
-
-               !has converged
-            else
-
-               !but cost out of bounds
-               !leave that commented out as bounds of cost is tricky and not
-               ! too well understood
-
-               if ( ibits ( l2_input_2dwat_primary%qcflag(i,j), MAXSTATEVAR+2, 1 ) &
-                    .ne. 0_sint ) then  !cost NOT within bounds
-
-                  ! costwat=maxcost
-                  ! penaltyflag_w=1
-
-               endif
-
-            endif
-
-            if ( ibits ( l2_input_2dice_primary%qcflag(i,j), MAXSTATEVAR+1 , 1 ) &
-                 .ne. 0_sint ) then  !convergence NOT reached
-
-               costice=maxcost
-               penaltyflag_i=1
-
-               !has converged
-            else
-
-               !but cost out of bounds
-               !leave that commented out as bounds of cost is tricky and not
-               ! too well understood
-               if ( ibits ( l2_input_2dice_primary%qcflag(i,j), MAXSTATEVAR+2, 1 ) &
-                    .ne. 0_sint ) then  !cost NOT within bounds
-
-                  ! costice=maxcost
-                  ! penaltyflag_i=1
-
-               endif
-
-            endif
-
-            !Check physical soundness of result and re-set phase if necessary     
-
-            !check if during day
-            if(l2_input_2dice_primary%illum(i,j) .eq. 1_byte .or.&
-                 & l2_input_2dice_primary%illum(i,j) .eq. 4_byte .or. &
-                 & l2_input_2dice_primary%illum(i,j) .eq. 5_byte .or.&
-                 & l2_input_2dice_primary%illum(i,j) .eq. 6_byte .or. &
-                 & l2_input_2dice_primary%illum(i,j) .eq. 7_byte .or.&
-                 & l2_input_2dice_primary%illum(i,j) .eq. 8_byte .or. &
-                 & l2_input_2dice_primary%illum(i,j) .eq. 9_byte  ) then
-
-               !if droplets are out of reasonable water range give water a high
-               ! cost as penalty
-               if(l2_input_2dwat_primary%ref(i,j) .lt. minre(1) .or. &
-                    & l2_input_2dwat_primary%ref(i,j) .gt. maxre(1) .or.&
-                    & l2_input_2dwat_primary%cot(i,j) .lt. minod(1) .or. &
-                    & l2_input_2dwat_primary%cot(i,j)  .gt. maxod(1)) then
-                  penaltyflag_w=1
-                  costwat=maxcost
-               endif
-
-               !if crystals are out of reasonable ice range give ice a high cost as penalty
-               if(l2_input_2dice_primary%ref(i,j) .lt. minre(2) .or. &
-                    & l2_input_2dice_primary%ref(i,j) .gt. maxre(2) .or.&
-                    & l2_input_2dice_primary%cot(i,j) .lt. minod(2) .or. &
-                    & l2_input_2dice_primary%cot(i,j)  .gt. maxod(2)) then 
-                  penaltyflag_i=1
-                  costice=maxcost
-               endif
-
-               ! if missing IR channel then definitely ice
-               if(l2_input_2dice_primary%illum(i,j) .eq. 9_byte) then
-                  penaltyflag_w=1
-                  costwat=maxcost
-               endif
-
-            endif ! end of illumination if
-
-            !MJ ORG:
-            ! if (costwat .lt. costice*costfactor .or. costwat .lt. ny*costfactor .and. &
-            ! & l2_input_2dwat_primary%ctt(i,j) .gt. 273.) then
-            ! costice=maxcost
-            ! endif
-
-            !make sure no ice above 0 deg. celcius
-            if(l2_input_2dice_primary%ctt(i,j) .gt. 273.) then 
-               penaltyflag_i=1
-               costice=maxcost
-               !as there can be supercooled water no need to test the complementary
-               !and above 0 deg celcius this has to be water now
-               penaltyflag_w=0
-               costwat=costwat_store
-            endif
-
-            !set phase to unknown/clear when both phases got penalties
-            if(penaltyflag_w .eq. 1 .and. penaltyflag_i .eq. 1 ) then
-               l2_input_2dice_primary%phase(i,j)=IPhaseClU
-               l2_input_2dice_primary%phase_post(i,j) = IPhaseClU
-               !look where uncertainties are larger (sum of other bits) and decide then?
-               !write(*,*) 'sumbits',bit_size(l2_input_2dice_primary%qcflag(i,j))
-               !write(*,*) 'LIQ',(btest(l2_input_2dwat_primary%qcflag(i,j)
-               !!,ibit),ibit=1,bit_size(l2_input_2dwat_primary%qcflag(i,j)))
-               !write(*,*) 'ICE',(btest(l2_input_2dice_primary%qcflag(i,j)
-               !!,ibit),ibit=1,bit_size(l2_input_2dice_primary%qcflag(i,j)))
-            endif
-
-            !Now select the phase with the smallest cost
-            !overwrite ICE structure entry if WAT has smaller cost
-
-            ! for post_processing phase, only keep phase information but do not use 
-            ! as basis for phase selection 
-            if(costwat .le.  costice) then
-                l2_input_2dice_primary%phase_post(i,j)=iphasewat 
-            endif  
-
-            !water has the upper hand
             ! here apply Pavolonis phase information to select retrieval phase variables 
+	    ! select water type overwrite ice
             if( l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
                 l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
 
@@ -625,35 +440,19 @@
 
             endif
 
-            !Set dynamic stemp-ctt threshold for high/middle/low clouds (not
-            ! used at the moment)
-            !MJ write(*,*) 'ctp_high_middle and kinds',&
-            !MJ & ctp_high,ctp_middle,kind(ctp_high),kind(ctp_middle)
-            !high clouds
-            if( l2_input_2dice_primary%ctp(i,j) .le. ctp_high ) &
-                 temp_thres=temp_thres_h
-            !middle
-            if( l2_input_2dice_primary%ctp(i,j) .gt. ctp_high .and.&
-                 l2_input_2dice_primary%ctp(i,j) .le. ctp_middle ) &
-                 temp_thres=temp_thres_m
-            !low 
-            if( l2_input_2dice_primary%ctp(i,j) .gt. ctp_middle ) &
-                 temp_thres=temp_thres_l
 
-            !set everything to "cloud free" as default
-            l2_input_2dice_primary%cc_total(i,j)=0.0
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ! DAY cloud mask post neural net
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!compute difference between surface temperature and ctt
 
-            !now assign cloud flag by cloud mask
-
-            !compute difference between surface temperature and ctt
             if(l2_input_2dice_primary%stemp(i,j) .ge. filter_micro .and. &
                  l2_input_2dice_primary%ctt(i,j) .ge. filter_micro) then
                tempdiff=(l2_input_2dice_primary%stemp(i,j)-l2_input_2dice_primary%ctt(i,j))
             else
-               tempdiff=sreal_fill_value
+               tempdiff=dreal_fill_value
             endif
 
-            ! DAY cloud mask
             if(l2_input_2dice_primary%illum(i,j) .eq. 1_byte .or.&
                  l2_input_2dice_primary%illum(i,j) .eq. 4_byte .or. &
                  l2_input_2dice_primary%illum(i,j) .eq. 5_byte .or.&
@@ -729,6 +528,7 @@
 
             !now use nn output together with threshold to map to cloudmask
             !sea
+
             if(l2_input_2dice_primary%lsflag(i,j) .eq. 0_byte) then
                if(l2_input_2dice_primary%cccot(i,j) .gt. cot_thres1) then
                   l2_input_2dice_primary%cc_total(i,j)=1.0
@@ -744,46 +544,42 @@
                endif
             endif
 
+
+!
+!use pre processing neural net as the default cloud mask
+!!NDCCCOT_PRE(i,j) is the neural net result not a mask
+!
+
+	     l2_input_2dice_primary%cc_total(i,j)= l2_input_2dice_primary%cldmask(i,j)
+
             ! What are we doing if at least 1 input parameter is not within trained
             ! range, e.g. is a fillvalue ?
             ! For now 5 cases are defined to deal with it, choose best one later
             ! noob equals 1 if one or more input parameter is not within trained range      
             if (noob .eq. 1_lint) then
-               ! Case 1) trust the ann and ...
-               !just do nothing
-               ! Case 2) set it to clear
-               !l2_input_2dice_primary%cccot(i,j)= sreal_fill_value
-               !l2_input_2dice_primary%cc_total(i,j)=0.0
-               ! Case 3) set it to cloudy
-               !l2_input_2dice_primary%cccot(i,j)= 1.0
-               !l2_input_2dice_primary%cc_total(i,j)=1.0
-               ! Case 4) set it to fillvalue
-               !l2_input_2dice_primary%cccot(i,j)=sreal_fill_value
-               !l2_input_2dice_primary%cc_total(i,j)=lint_fill_value
-               ! Case 5) trust ann, set cldflag to fillvalue only if all channels are       
                !  below 0. (=fillvalue)
                if (l2_input_2dice_primary%ctp(i,j) .lt. 0 &
                     .and. l2_input_2dice_primary%stemp(i,j) .lt. 0 ) &
                     l2_input_2dice_primary%cc_total(i,j) = lint_fill_value
             endif
 
-            !
-            !now apply clear snow ice identification
-            !
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !now apply clear snow ice identificationon top of exist cloud mask
+            !This mask only removes cloud does not add in cloud
+	    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+!write(*,*)'snow_ice_flag before',snow_ice_flag,l2_input_2dice_primary%cc_total(i,j)
             call snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary&
                  &,snow_ice_flag,inst,i,j)
-!write(*,*)'snow_ice_flag',snow_ice_flag,l2_input_2dice_primary%cc_total(i,j)
+
             if (snow_ice_flag .eq. 1) then
                ! this pixel is actually clear not cloud
                l2_input_2dice_primary%cc_total(i,j)=0.0
-! write(*,*)'after snow_ice_flag',snow_ice_flag,l2_input_2dice_primary%cc_total(i,j)
            endif
-
+!write(*,*)'snow_ice_flag after',snow_ice_flag,l2_input_2dice_primary%cc_total(i,j)
             !sstapelb changed to log10precision 
-            !write(*,*) 'log tau',l2_input_2dice_primary%cot(i,j)
-            !MJ rearranges below lines:
             !if tau too high, set to max value not to fill value
+
             if(l2_input_2dice_primary%cot(i,j) .ge. dither) then
                if(l2_input_2dice_primary%cot_uncertainty(i,j) .le. log10precision) then
                   newcot=-999.0
@@ -805,64 +601,17 @@
             !Don't set fill values and leave final masking of products to user
             !obsolete: if cloud free, set primary retrieval parameters to fill value
             if(l2_input_2dice_primary%cc_total(i,j) .eq. 0.0) then
-               !           l2_input_2dice_primary%cot(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%ref(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%ctp(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%cth(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%ctt(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%cwp(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%cot_uncertainty(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%ref_uncertainty(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%ctp_uncertainty(i,j)=sreal_fill_value
-               !           l2_input_2dice_primary%cwp_uncertainty(i,j)=sreal_fill_value
+
                !set phase to clear/unknown
                l2_input_2dice_primary%phase(i,j)=IPhaseClU
                l2_input_2dice_primary%phase_post(i,j)=IPhaseClU
-               !endif
 
-               !water has the upper hand
-               ! here apply Pavolonis phase information to select retrieval phase variables
-
-               if (costwat .le. costice) then
-                  phaseflag(i,j) = 1_byte
-
-                  l2_input_2dice_primary%cot(i,j)=l2_input_2dwat_primary%cot(i,j)
-                  l2_input_2dice_primary%ref(i,j)=l2_input_2dwat_primary%ref(i,j)
-                  l2_input_2dice_primary%ctp(i,j)=l2_input_2dwat_primary%ctp(i,j)
-                  l2_input_2dice_primary%stemp(i,j)=l2_input_2dwat_primary%stemp(i,j)
-                  l2_input_2dice_primary%cth(i,j)=l2_input_2dwat_primary%cth(i,j)
-                  l2_input_2dice_primary%cth_uncertainty(i,j)&
-                       &=l2_input_2dwat_primary%cth_uncertainty(i,j)
-                  l2_input_2dice_primary%ctt(i,j)=l2_input_2dwat_primary%ctt(i,j)
-                  l2_input_2dice_primary%ctt_uncertainty(i,j)&
-                       &=l2_input_2dwat_primary%ctt_uncertainty(i,j)
-                  l2_input_2dice_primary%cwp(i,j)=l2_input_2dwat_primary%cwp(i,j)
-                  l2_input_2dice_primary%cot_uncertainty(i,j)&
-                       &=l2_input_2dwat_primary%cot_uncertainty(i,j)
-                  l2_input_2dice_primary%ref_uncertainty(i,j)&
-                       &=l2_input_2dwat_primary%ref_uncertainty(i,j)
-                  l2_input_2dice_primary%ctp_uncertainty(i,j)&
-                       &=l2_input_2dwat_primary%ctp_uncertainty(i,j)
-                  l2_input_2dice_primary%cc_total_uncertainty(i,j)&
-                       &=l2_input_2dwat_primary%cc_total_uncertainty(i,j)
-                  l2_input_2dice_primary%stemp_uncertainty(i,j)&
-                       &=l2_input_2dwat_primary%stemp_uncertainty(i,j)
-                  l2_input_2dice_primary%cwp_uncertainty(i,j) &
-                       &=l2_input_2dwat_primary%cwp_uncertainty(i,j)
-                  l2_input_2dice_primary%convergence(i,j)=l2_input_2dwat_primary&
-                       &%convergence(i,j)
-                  l2_input_2dice_primary%niter(i,j)=l2_input_2dwat_primary%niter(i,j)
-                  l2_input_2dice_primary%phase(i,j)=iphasewat
-                  l2_input_2dice_primary%costja(i,j)=l2_input_2dwat_primary%costja(i,j)
-                  l2_input_2dice_primary%costjm(i,j)=l2_input_2dwat_primary%costjm(i,j)
-                  l2_input_2dice_primary%qcflag(i,j)=l2_input_2dwat_primary%qcflag(i,j)
-
-               endif
             endif
 
          enddo
       enddo
-      !OMP END PARALLEL DO
+
+
       noob_total=noob_total+noob
 
       !deallocate the water structure
@@ -903,80 +652,7 @@
       !close output file
       call nc_close_pp(ncid_primary,trim(adjustl(L2_primary_outputpath_and_file)),wo)
       write(*,*) 'ss'
-      !Also work on the secondary file.
-      !These things are only placeholders at the moment!
-      if(lsec_flag .eq. 1) then
-         !     
-         !     !these can be read in from the file itself later on
-         !     l2_input_2dice_refl_bt%nchannels_sw=3
-         !     l2_input_2dice_refl_bt%nchannels_lw=2
-         !     l2_input_2dice_refl_bt%nchannels=l2_input_2dice_refl_bt%nchannels_lw+l2_input_2dice_refl_bt%nchannels_sw
-         !
-         !     l2_input_2dwat_refl_bt%nchannels_sw=l2_input_2dice_refl_bt%nchannels_sw
-         !     l2_input_2dwat_refl_bt%nchannels_lw=l2_input_2dice_refl_bt%nchannels_lw
-         !     l2_input_2dwat_refl_bt%nchannels=l2_input_2dice_refl_bt%nchannels
-         !
-         !     !process RT variables
-         !     iphase=2
-         !     call read_refl_and_bt(iphase,fnameice_sec,chan_id,l2_input_2dice_refl_bt,xdim,ydim,wo,ierr)
-         !     iphase=1
-         !     call read_refl_and_bt(iphase,fnamewat_sec,chan_id,l2_input_2dwat_refl_bt,xdim,ydim,wo,ierr)
-         !
-         !
-         !     !loop over pixels
-         !     do j=iystart,iystop
-         !        do i=ixstart,ixstop
-         !        
-         !           if(phaseflag(i,j) .eq. 1_byte) then
-         !  
-         !              l2_input_2dice_refl_bt%albedo(i,j,:)=l2_input_2dwat_refl_bt%albedo(i,j,:)
-         !              l2_input_2dice_refl_bt%reflectance_residual(i,j,:)=l2_input_2dwat_refl_bt%reflectance_residual(i,j,:)
-         !              l2_input_2dice_refl_bt%brightness_temperature_residual(i,j,:)=&
-         !                   & l2_input_2dwat_refl_bt%brightness_temperature_residual(i,j,:)
-         !              l2_input_2dice_refl_bt%reflectance(i,j,:)=l2_input_2dwat_refl_bt%reflectance(i,j,:)
-         !              l2_input_2dice_refl_bt%brightness_temperature(i,j,:)=l2_input_2dwat_refl_bt%brightness_temperature(i,j,:)
-         !
-         !           endif
-         !
-         !        enddo
-         !     enddo
-         !
-         !     !deallocate water RT structure
-         !     call unset_l2_refl_and_bt(l2_input_2dwat_refl_bt)
-         !
-         !     !now write things out
-         !     !open the netcdf output file
-         !     call nc_create_global_l2_pp(trim(adjustl(L2_secondary_outputpath_and_file)),&
-         !          & ncid_secondary,  ixstop-ixstart+1, iystop-iystart+1, dims_var, wo,1,status)
-         !
-         !     !allocate the structure which hold the output in its final form
-         !     call alloc_spixel_scan_out_rt_pp( ixstart,ixstop,iystart,iystop,l2_input_2dice_refl_bt,spixel_scan_out_rt)
-         !
-         !     !define scales,ranges etc.
-         !#include "def_vars_rt_pp.inc"
-         !     
-         !     !put results in final output arrays with final datatypes
-         !     do j=iystart,iystop
-         !        do i=ixstart,ixstop
-         !#include "prepare_rt_pp.inc"
-         !        enddo
-         !     enddo
-         !
-         !     !deallocate ice RT structure
-         !     call unset_l2_refl_and_bt(l2_input_2dice_refl_bt)
-         !     
-         !     !now write everything in one big chunk of data to disk
-         !     !include "write_rt_pp.inc.f90"
-         !     
-         !     !deallocate output structure
-         !     call dealloc_spixel_scan_out_rt_pp(spixel_scan_out_rt)
-         !
-         !     !close output file
-         !     call nc_close_pp(ncid_secondary,trim(adjustl(L2_secondary_outputpath_and_file)),wo)
-         !     
-      endif
 
-      !deallocate phaseflag
       deallocate(phaseflag)
 
 #ifdef WRAPPER
