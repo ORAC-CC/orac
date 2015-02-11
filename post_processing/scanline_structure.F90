@@ -14,7 +14,7 @@
 
 module scanline_structure
 
-  !use vartypes_pp
+
   use common_constants
 
   implicit none
