@@ -32,6 +32,8 @@
 !       31st Dec 2014, GM: Parallelized the cloud typing loop with OpenMP.
 !       14th Jan 2015, AP: Channel indexing now selected at the start of the
 !                          routine rather than hardcoded.
+!        5th Feb 2015, CP: added check for missing warm AATSR 11 um channel
+!        5th Feb 2015, CP: fixed bug that removed changed made 1st of December
 !
 ! Bugs:
 !    None known
@@ -293,7 +295,7 @@ contains
     !---- CC4CL requirements and adaptions for Pavolonis alg.
 
     integer(kind=sint) :: ch3a_on_avhrr_flag
-    integer(kind=sint) :: ch7_on_atsr_flag	
+    integer(kind=sint) :: ch7_on_atsr_flag,ch6_on_atsr_flag	
     real(kind=sreal)   :: glint_angle, coszen
     real(kind=sreal)   :: BTD_Ch3b_Ch4
     real(kind=sreal)   :: BTD_Ch4_Ch5
@@ -536,12 +538,23 @@ contains
 
           endif
 
+
           ! check is ATSR 12um channel is missing
           ch7_on_atsr_flag = sym%YES
           if ( imager_measurements%DATA(i,j,ch5) .ge. 100 .and. &
                imager_measurements%DATA(i,j,ch6) .lt. 100. ) then
 	       ch7_on_atsr_flag = sym%NO
 	  endif
+
+
+          ! check is ATSR 11um channel is missing because too warm
+          ch6_on_atsr_flag = sym%YES
+
+          if ( imager_measurements%DATA(i,j,ch6) .ge. 200 .and. &
+               imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
+	       ch6_on_atsr_flag = sym%NO
+	  endif
+
 
 
           !-- check for sunglint and save result: 
@@ -612,6 +625,30 @@ contains
 
           !-- First Pavolonis test: clear or cloudy
 
+
+
+
+
+          ! 11um channel can occasionally be missing particuarly for AATSR instrument if it gets too warm
+          ! also when ch6 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
+          if ( ch6_on_atsr_flag == sym%NO  .and.  ch7_on_atsr_flag == sym%YES) then
+             imager_pavolonis%CLDTYPE(i,j) = sym%CLEAR_TYPE	   
+	     imager_pavolonis%CLDMASK(i,j) = sym%CLEAR
+!             cycle
+          endif
+
+
+          ! 12um channel can occasionally be missing particuarly for AATSR instrument
+          ! also when ch7 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
+          if ( ch7_on_atsr_flag == sym%NO ) then
+             imager_pavolonis%CLDTYPE(i,j) = sym%PROB_OPAQUE_ICE_TYPE
+	     imager_pavolonis%CLDMASK(i,j) = sym%CLOUDY
+
+!             cycle
+          endif
+
+
+
           if ( imager_pavolonis%CLDMASK(i,j) == sym%CLEAR ) then
              imager_pavolonis%CLDTYPE(i,j) = sym%CLEAR_TYPE
              cycle
@@ -638,12 +675,6 @@ contains
           endif
 
 
-          ! 12um channel can occasionally be missing particuarly for AATSR instrument
-          ! also when ch7 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
-          if ( ch7_on_atsr_flag == sym%NO ) then
-             imager_pavolonis%CLDTYPE(i,j) = sym%PROB_OPAQUE_ICE_TYPE
-             cycle
-          endif
 
 
           ! calculate ch3b emissivity and reflectance
