@@ -124,6 +124,7 @@ contains
   !    INTEGER(kind=sint) :: OPAQUE_ICE_TYPE = 6
   !    INTEGER(kind=sint) :: CIRRUS_TYPE = 7
   !    INTEGER(kind=sint) :: OVERLAP_TYPE = 8
+ !    INTEGER(kind=sint) :: PROB_OPAQUE = 9
   !
   !
   ! INPUTS:
@@ -628,26 +629,24 @@ contains
 
 
 
-
+if (trim(adjustl(sensor)) .eq. 'AATSR') then
           ! 11um channel can occasionally be missing particuarly for AATSR instrument if it gets too warm
-          ! also when ch6 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
+          ! also when ch6 atsr is fill value,clear type is assigned
           if ( ch6_on_atsr_flag == sym%NO  .and.  ch7_on_atsr_flag == sym%YES) then
              imager_pavolonis%CLDTYPE(i,j) = sym%CLEAR_TYPE	   
 	     imager_pavolonis%CLDMASK(i,j) = sym%CLEAR
 !             cycle
           endif
 
-
           ! 12um channel can occasionally be missing particuarly for AATSR instrument
           ! also when ch7 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
           if ( ch7_on_atsr_flag == sym%NO ) then
              imager_pavolonis%CLDTYPE(i,j) = sym%PROB_OPAQUE_ICE_TYPE
 	     imager_pavolonis%CLDMASK(i,j) = sym%CLOUDY
-
+!write(*,*)'testing',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j) 
 !             cycle
           endif
-
-
+endif
 
           if ( imager_pavolonis%CLDMASK(i,j) == sym%CLEAR ) then
              imager_pavolonis%CLDTYPE(i,j) = sym%CLEAR_TYPE
@@ -663,17 +662,19 @@ contains
           endif
 
           !-- neither ch3a nor ch3b available
-
+if (trim(adjustl(sensor)) .eq. 'AVHRR') then
           !-- at night, assign probably opaque ice flag
           !-- as ch3.7 has fill value due to low S/N
+!only apply to avhrr data as when fill for aatsr it is actaully warm
           if ( ch3a_on_avhrr_flag == -1 ) then
              if ( ( imager_geolocation%LATITUDE(i,j) < 65.0 .and. &
                   imager_geolocation%LATITUDE(i,j) > -65.0 ) .and. &
                   day .eqv. .FALSE. ) & 
                   imager_pavolonis%CLDTYPE(i,j) = sym%PROB_OPAQUE_ICE_TYPE
+		
              cycle
           endif
-
+endif
 
 
 
@@ -1323,7 +1324,15 @@ contains
           !
           !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+ ! set cccot to a fake high value as otherwise gets set as clear later on
+ 
+           if  (imager_pavolonis%CLDTYPE(i,j) == sym%PROB_OPAQUE_ICE_TYPE ) then
+	     imager_pavolonis%CLDMASK(i,j) = sym%CLOUDY
+             imager_pavolonis%cccot_pre(i,j) = .99
+          endif
 
+
+!write(*,*)'testing end',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j) 
           !end scanline loop
        end do j_loop
        !-------------------------------------------------------------------
