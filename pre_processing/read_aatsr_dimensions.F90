@@ -58,7 +58,6 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    interface
       subroutine get_aatsr_dimension(l1b_file, daynight, limit, half_orbit, &
            nx, ny, miny, stat, verb) bind(C,name='get_aatsr_dimension')
-         use preproc_constants
          use iso_c_binding
 
          implicit none

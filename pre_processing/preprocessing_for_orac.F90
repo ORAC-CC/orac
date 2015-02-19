@@ -218,6 +218,7 @@
 !                netcdf_create_config() back into netcdf_output_create().
 ! 2014/02/04: OS Added calls to new SR reading ERA-Interim data from NetCDF (WRAPPER
 !                only); added call to snow/ice correction based on ERA-Interim data
+! 2015/02/19: GM Added SEVIRI support.
 !
 ! $Id$
 !
@@ -248,6 +249,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use read_avhrr
    use read_modis
    use read_imager_m
+   use read_seviri
    use rttov_driver_m
    use setup_instrument
    use surface_emissivity
@@ -355,7 +357,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    logical                          :: parse_logical
 
-   logical                          :: along_check
    integer(kind=lint)               :: along_pos
 
 !  integer, dimension(8)            :: values
@@ -569,6 +570,24 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! get dimensions of the modis granule
       call read_modis_dimensions(geo_path_file,n_across_track,n_along_track)
 
+   else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
+      call setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
+           verbose)
+
+      ! get dimensions of the seviri image.
+      ! For SEVIRI the native level 1.5 image data can come as a subimage of the
+      ! the full disk image. Regardless, n_across_track and n_along_track are
+      ! set to the constant dimensions of a full disk image as it is convenient
+      ! to operate relative to the full disk. startx, endx, starty, endy are
+      ! assumed to be given relative to the full disk. As a result, if they are
+      ! not being used (not all > 0) then they will be set to the actual image
+      ! in the image file and if they are being used (all > 0) then they need to
+      ! be checked independently relative to the actual image, both done in the
+      ! following call.
+      call read_seviri_dimensions(geo_path_file,n_across_track,n_along_track, &
+                                  startx,endx,starty,endy,verbose)
+
    else
       write(*,*) 'ERROR: Invalid sensor: ', trim(adjustl(sensor))
       stop error_stop_code
@@ -579,6 +598,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       write(*,*) 'WE ARE PROCESSING ',trim(platform),' FOR ORBIT',year,month, &
                                                                   day,hour,minute
       write(*,*) 'File dimensions determined:'
+      write(*,*) 'n_across_track:      ', n_across_track
       write(*,*) 'along_track_offset:  ', along_track_offset
       write(*,*) 'n_along_track:       ', n_along_track
       if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
@@ -586,27 +606,26 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          write(*,*) 'n_along_track2:      ', n_along_track2
       end if
    end if
-if (.true.) then
+
    ! determine processing chunks and their dimensions
    if (verbose) write(*,*)  'Determine processing chunks and their dimensions'
+
    if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
-      if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
-         write(*,*) 'ERROR: invalid across track dimensions'
-         write(*,*) '       Should be < ',n_across_track
-         STOP error_stop_code
-      end if
+     if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
+        write(*,*) 'ERROR: invalid across track dimensions'
+        write(*,*) '       Should be < ',n_across_track
+        stop error_stop_code
+     end if
       if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
          along_pos = along_track_offset2 + n_along_track2
-         along_check = starty.gt.along_pos .or. endy.gt.along_pos
       else
          along_pos = along_track_offset + n_along_track
-         along_check = starty.gt.along_pos .or. endy.gt.along_pos
       end if
-      if (along_check) then
-         write(*,*) 'ERROR: invalid along track dimensions'
-         write(*,*) '       Should be < ',along_pos
-         STOP error_stop_code
-      end if
+     if (starty.gt.along_pos .or. endy.gt.along_pos) then
+        write(*,*) 'ERROR: invalid along track dimensions'
+        write(*,*) '       Should be < ',along_pos
+        stop error_stop_code
+     end if
 
       ! use specified values
       imager_geolocation%startx=startx
@@ -649,74 +668,7 @@ if (.true.) then
                     n_chunks, chunk_starts, chunk_ends)
 
    end if ! end of startx and starty selection
-else
-   ! determine processing chunks and their dimensions
-   if (verbose) write(*,*) 'Determine processing chunks and their dimensions'
-   if (starty.ge.1 .and. endy.ge.1) then
-      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
-         along_pos = along_track_offset2 + n_along_track2
-         along_check = starty.gt.along_pos .or. endy.gt.along_pos
-      else
-         along_pos = along_track_offset + n_along_track
-         along_check = starty.gt.along_pos .or. endy.gt.along_pos
-      end if
-      if (along_check) then
-         write(*,*) 'ERROR: invalid along track dimensions'
-         write(*,*) '       Should be < ',along_pos
-         stop error_stop_code
-      end if
 
-      ! use specified values
-      n_chunks = 1
-
-      allocate(chunk_starts(n_chunks))
-      allocate(chunk_ends(n_chunks))
-
-      chunk_starts(1) = starty
-      chunk_ends(1)   = endy
-   else
-      if (chunkproc) then
-         chunksize = 4096
-      else
-         chunksize = n_along_track + n_along_track2
-      end if
-
-      n_segments = 1
-      segment_starts(1) = along_track_offset + 1
-      segment_ends(1)   = along_track_offset + n_along_track
-
-      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
-         n_segments = n_segments + 1
-         segment_starts(n_segments) = along_track_offset2 + 1
-         segment_ends(n_segments)   = along_track_offset2 + n_along_track2
-      end if
-
-      n_chunks = calc_n_chunks(n_segments, segment_starts, segment_ends, &
-                               chunksize)
-
-      allocate(chunk_starts(n_chunks))
-      allocate(chunk_ends(n_chunks))
-
-      call chunkify(n_segments, segment_starts, segment_ends, chunksize, &
-                    n_chunks, chunk_starts, chunk_ends)
-
-   end if ! end of starty selection
-
-   if (startx.ge.1 .and. endx.ge.1) then
-      if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
-         write(*,*) 'ERROR: invalid across track dimensions'
-         write(*,*) '       Should be < ',n_across_track
-         stop error_stop_code
-      end if
-
-      ! use specified values
-      imager_geolocation%startx=startx
-      imager_geolocation%endx=endx
-   else
-      imager_geolocation%startx=1
-      imager_geolocation%endx=n_across_track
-   end if ! end of startx selection
-end if
    if (verbose) then
       write(*,*) 'The number of chunks to be processed: ', n_chunks
       write(*,*) 'The chunks to be processed are (i_chunk, chunk_start, chunk_end):'

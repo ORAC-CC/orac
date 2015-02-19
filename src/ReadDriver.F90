@@ -574,16 +574,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Set default surface reflectance values for channels used.
    ! Additional instruments/channels need to be added explicitly.
    allocate(Ctrl%RS%B(Ctrl%Ind%NSolar,2))
-   if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
+   if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
       do i=1, Ctrl%Ind%NSolar
          select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
          case(1)
+            Ctrl%RS%B(i,1) = 0.05
+            Ctrl%RS%B(i,2) = 0.15
+         case(2)
             Ctrl%RS%B(i,1) = 0.02
             Ctrl%RS%B(i,2) = 0.10
-         case(2)
+         case(3)
             Ctrl%RS%B(i,1) = 0.01
             Ctrl%RS%B(i,2) = 0.01
-         case(6)
+         case(4)
             Ctrl%RS%B(i,1) = 0.01
             Ctrl%RS%B(i,2) = 0.01
          case default
@@ -606,19 +609,32 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
             Ctrl%RS%B(i,:) = 0.00
          end select
       end do
-   else if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
+   else if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
       do i=1, Ctrl%Ind%NSolar
          select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
          case(1)
-            Ctrl%RS%B(i,1) = 0.05
-            Ctrl%RS%B(i,2) = 0.15
-         case(2)
             Ctrl%RS%B(i,1) = 0.02
             Ctrl%RS%B(i,2) = 0.10
-         case(3)
+         case(2)
             Ctrl%RS%B(i,1) = 0.01
             Ctrl%RS%B(i,2) = 0.01
-         case(4)
+         case(6)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case default
+            Ctrl%RS%B(i,:) = 0.00
+         end select
+      end do
+   else if (Ctrl%Inst%Name(1:6) .eq. 'SEVIRI') then
+      do i=1, Ctrl%Ind%NSolar
+         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
+         case(1)
+            Ctrl%RS%B(i,1) = 0.02
+            Ctrl%RS%B(i,2) = 0.10
+         case(2)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case(3)
             Ctrl%RS%B(i,1) = 0.01
             Ctrl%RS%B(i,2) = 0.01
          case default

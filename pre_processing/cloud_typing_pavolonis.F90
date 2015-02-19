@@ -34,6 +34,7 @@
 !                          routine rather than hardcoded.
 !        5th Feb 2015, CP: added check for missing warm AATSR 11 um channel
 !        5th Feb 2015, CP: fixed bug that removed changed made 1st of December
+!       19th Feb 2015, GM: Added SEVIRI support.
 !
 ! Bugs:
 !    None known
@@ -362,20 +363,20 @@ contains
     !---------------------------------------------------------------------
 
     ! Determine channel indexes based on instrument channel number
-    if (trim(adjustl(sensor)) .eq. 'MODIS') then
+    if (trim(adjustl(sensor)) .eq. 'AATSR') then
        do i=1,channel_info%nchannels_total
           select case (channel_info%channel_ids_instr(i))
-          case(1)
-             ch1=i
           case(2)
+             ch1=i
+          case(3)
              ch2=i
-          case(6)
+          case(4)
              ch3=i
-          case(20)
+          case(5)
              ch4=i
-          case(31)
+          case(6)
              ch5=i
-          case(32)
+          case(7)
              ch6=i
           end select
        end do
@@ -396,20 +397,37 @@ contains
              ch6=i
           end select
        end do
-    else if (trim(adjustl(sensor)) .eq. 'AATSR') then
+    else if (trim(adjustl(sensor)) .eq. 'MODIS') then
        do i=1,channel_info%nchannels_total
           select case (channel_info%channel_ids_instr(i))
-          case(2)
+          case(1)
              ch1=i
-          case(3)
+          case(2)
              ch2=i
-          case(4)
-             ch3=i
-          case(5)
-             ch4=i
           case(6)
+             ch3=i
+          case(20)
+             ch4=i
+          case(31)
              ch5=i
-          case(7)
+          case(32)
+             ch6=i
+          end select
+       end do
+    else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
+       do i=1,channel_info%nchannels_total
+          select case (channel_info%channel_ids_instr(i))
+          case(1)
+             ch1=i
+          case(2)
+             ch2=i
+          case(3)
+             ch3=i
+          case(4)
+             ch4=i
+          case(9)
+             ch5=i
+          case(10)
              ch6=i
           end select
        end do
@@ -1585,7 +1603,7 @@ endif
     integer(kind=byte) :: index ! index of row containing platform-specific coefficients
     real(kind=sreal),parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
     real(kind=sreal),parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
-    real(kind=sreal), dimension(4,15) :: coefficients ! coefficients containing variables
+    real(kind=sreal), dimension(4,16) :: coefficients ! coefficients containing variables
 
     ! select approproate row of coefficient values
     select case (input_platform)
@@ -1617,8 +1635,10 @@ endif
        index = 13
     case ("ENV")
        index = 14
-    case ("default")
+    case ("MSG2")
        index = 15
+    case ("default")
+       index = 16
     case default
        write(*,*) "Error: Platform name does not match local string in function PlanckInv"
        write(*,*) "Input platform name = ", input_platform 
@@ -1650,8 +1670,9 @@ endif
          2641.775,  0.999341,  0.47705, 4.804, & !terra
          2647.409,  0.999336,  0.48184, 4.822, & !aqua
          2675.166,  0.996344,  1.72695, 5.030, & !env (aatsr)
+         2670.000,  0.998000,  1.75000, 5.000, & !msg2
          2670.000,  0.998000,  1.75000, 5.000  & !default
-         /), (/ 4, 15 /) )
+         /), (/ 4, 16 /) )
 
     PlanckInv(1) = Planck_C1 * coefficients( 1 , index )**3 / &
          ( exp( Planck_C2 * coefficients( 1 , index ) / &

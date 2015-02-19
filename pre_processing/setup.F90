@@ -61,6 +61,7 @@ contains
 !    compiler to exit
 ! 2014/12/01, CS: updated setup_avhrr to read new ECC_GAC AVHRR data
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/02/19, GM: Added SEVIRI support.
 !
 ! $Id$
 !
@@ -176,6 +177,8 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
       all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
       all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
       all_map_ids_abs_to_ref_band_sea)
+
+!  channel_info%chan_sw_to_snow_and_ice_index(1:channel_info%nchannels_sw) = (/ 1, 2, 3, 4 /)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
@@ -380,8 +383,7 @@ end subroutine setup_avhrr
 
 
 subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
-   verbose)
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
 
    use calender
    use channel_structures
@@ -489,7 +491,6 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
 !  integer, parameter :: channel_ids_instr(nchannels_total) = &
 !    (/ 1, 2, 6, 20, 24, 25, 27, 28, 29, 30, 31, 32, 33, 35, 36 /)
 
-
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_modis()'
 
    if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
@@ -553,6 +554,140 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
 
 end subroutine setup_modis
+
+
+subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+
+   use calender
+   use channel_structures
+   use date_type_structures
+   use preproc_constants
+   use preproc_structures
+
+   implicit none
+
+   character(len=path_length),     intent(in)    :: l1b_path_file
+   character(len=path_length),     intent(in)    :: geo_path_file
+   character(len=platform_length), intent(out)   :: platform
+   integer(kind=sint),             intent(out)   :: year,month,day,doy
+   integer(kind=sint),             intent(out)   :: hour,minute
+   character(len=date_length),     intent(out)   :: cyear,cmonth,cday
+   character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   type(channel_info_s),           intent(inout) :: channel_info
+   logical,                        intent(in)    :: verbose
+
+   integer                                       :: index1,index2
+
+
+   ! Static instrument channel definitions. (These should not be changed.)
+   integer, parameter :: all_nchannels_total = 11
+       ! 1,         2,         3,         4,         5,         6,
+       ! 7,         8,         9,         10,        11
+   real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
+      (/ 0.635, 0.81, 1.64, 3.92, 6.25, 7.35, 8.70, 9.66, 10.80, 12.00, 13.40 /)
+
+   integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
+      (/ 1,     1,    1,    1,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_channel_lw_flag(all_nchannels_total) = &
+      (/ 0,     0,    0,    1,    1,    1,    1,    1,    1,     1,     1 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
+      (/ 1,     2,    3,    4,    5,    6,    7,    8,    9,     10,    11 /)
+
+   integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
+      (/ 0,     0,    0,    0,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_land(all_nchannels_total) = &
+      (/ 1,     2,    6,    0,    0,    0,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
+      (/ 1,     2,    6,    20,   0,    6,    0,    0,    0,     0,     0 /)
+
+
+   ! Only these need to be set to change the desired channels. All other channel
+   ! related arrays/indexes are set automatically given the static instrument
+   ! channel definition above.
+
+   ! The legacy channels
+   integer, parameter :: nchannels_total = 6
+   integer, parameter :: channel_ids_instr(nchannels_total) = &
+      (/ 1, 2, 3, 4, 9, 10 /)
+
+   ! All currently supported channels
+!  integer, parameter :: nchannels_total = 11
+!  integer, parameter :: channel_ids_instr(nchannels_total) = &
+!     (/ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11/)
+
+
+   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_seviri()'
+
+   if (verbose) write(*,*) 'l1b_path_file: ', trim(l1b_path_file)
+   if (verbose) write(*,*) 'geo_path_file: ', trim(geo_path_file)
+
+   ! check if l1b and geo file are of the same granule
+   index1=index(trim(adjustl(l1b_path_file)),'/',back=.true.)
+   index2=index(trim(adjustl(geo_path_file)),'/',back=.true.)
+
+   ! check if l1b and geo files identical
+   if (trim(adjustl(l1b_path_file)) .ne. &
+       trim(adjustl(geo_path_file))) then
+      write(*,*)
+      write(*,*) 'ERROR: setup_seviri(): Geolocation and L1b files are for ' // &
+               & 'different times'
+      write(*,*) 'l1b_path_file: ', trim(adjustl(geo_path_file))
+      write(*,*) 'geo_path_file: ', trim(adjustl(l1b_path_file))
+
+      stop error_stop_code
+   end if
+
+   ! which MSG are we processing?
+   !
+   ! MSG2-SEVI-MSG15-0100-NA-20100507144241.667000000Z-995378.nat
+   !
+   index1=index(trim(adjustl(l1b_path_file)),'-')
+   platform=l1b_path_file(index1-4:index1-1)
+
+   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
+   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
+   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
+   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
+
+   ! get year, doy, hour and minute as strings
+   cyear=trim(adjustl(l1b_path_file(index1+1:index1+4)))
+   cmonth=trim(adjustl(l1b_path_file(index1+5:index1+6)))
+   cday=trim(adjustl(l1b_path_file(index1+7:index1+8)))
+   chour=trim(adjustl(l1b_path_file(index1+9:index1+10)))
+   cminute=trim(adjustl(l1b_path_file(index1+11:index1+12)))
+
+   ! get year, doy, hour and minute as integers
+   read(cyear(1:len_trim(cyear)), '(I4)') year
+   read(cmonth(1:len_trim(cmonth)), '(I2)') month
+   read(cday(1:len_trim(cday)), '(I2)') day
+   read(chour(1:len_trim(chour)), '(I2)') hour
+   read(cminute(1:len_trim(cminute)), '(I2)') minute
+
+   call GREG2DOY(year, month, day, doy)
+   write(cdoy, '(i3.3)') doy
+
+   channel_info%nviews = 1
+
+   ! now set up the channels
+   channel_info%nchannels_total = nchannels_total
+
+   call allocate_channel_info(channel_info)
+
+   channel_info%channel_ids_instr = channel_ids_instr
+
+   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
+      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
+      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
+      all_map_ids_abs_to_ref_band_sea)
+
+   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_seviri()'
+
+end subroutine setup_seviri
 
 
 subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &

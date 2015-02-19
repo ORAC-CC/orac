@@ -43,6 +43,7 @@ contains
 ! 2013/09/06, AP: tidying
 ! 2014/12/01, OS: removed call to read_avhrr_land_sea_mask, which was obsolete
 !   as land/sea information is now read in SR read_USGS_file
+! 2015/02/19, GM: Added SEVIRI support.
 !
 ! $Id$
 !
@@ -60,6 +61,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    use read_aatsr
    use read_avhrr
    use read_modis
+   use read_seviri
 
    implicit none
 
@@ -101,7 +103,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       !read the angles and lat/lon info of the orbit
       call read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation, &
-           imager_angles, imager_flags,imager_time,n_along_track,verbose)
+           imager_angles,imager_flags,imager_time,n_along_track,verbose)
 
       !read the (subset) of the orbit etc. SW:reflectances, LW:brightness temp
       call read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
@@ -117,6 +119,16 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       !read MODIS L1b data. SW:reflectances, LW:brightness temperatures
       call read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
            imager_geolocation,imager_measurements,channel_info,verbose)
+
+      !in absence of proper mask set everything to "1" for cloud mask
+      imager_flags%cflag = 1
+
+   else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
+      ! Read the L1B data, according to the dimensions and offsets specified in
+      ! imager_geolocation
+      call read_seviri_l1_5(path_to_l1b_file, &
+           imager_geolocation, imager_measurements, imager_angles, &
+           imager_flags, imager_time, channel_info, verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

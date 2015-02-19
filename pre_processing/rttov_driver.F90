@@ -117,6 +117,7 @@
 !    extrapolation to negative profile values, causing a fatal RTTOV error
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
+! 2015/02/19, GM: Added SEVIRI support.
 !
 ! $Id$
 !
@@ -240,6 +241,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    ! Determine coefficient filename (vis/IR distinction made later)
    select case (trim(sensor))
+   case('AATSR')
+      coef_file = 'rtcoef_envisat_1_atsr.dat'
    case('AVHRR')
       if (index(platform,'noaa') >= 1) then
          coef_file = 'rtcoef_noaa_'//platform(5:6)//'_avhrr.dat'
@@ -256,8 +259,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       else
          stop 'ERROR: rttov_driver(): Invalid MODIS platform.'
       end if
-   case('AATSR')
-      coef_file = 'rtcoef_envisat_1_atsr.dat'
+   case('SEVIRI')
+      coef_file = 'rtcoef_msg_2_seviri.dat'
    end select
    
    if (verbose) write(*,*) 'RTTOV coef file: ', trim(coef_file)

@@ -19,6 +19,7 @@
 #    for the executable and make the executable dependent on the library file.
 #    Now 'make' will build both the executable and library in one command.
 # 2014/10/23, Oliver Sus: Changes related to USGS, Pavolonis, and NN cloud mask.
+# 2015/02/19, Greg McGarragh: Added the read_seviri module.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -31,7 +32,7 @@
 include $(ORAC_LIB)
 include $(ORAC_ARCH)
 
-ORAC_COMMON   = ../common
+ORAC_COMMON = ../common
 
 
 # Define object files to be linked. N.B. files containing module definitions
@@ -67,6 +68,7 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_cimss_emissivity.o \
                   $(OBJS)/read_imager.o \
                   $(OBJS)/read_modis.o \
+                  $(OBJS)/read_seviri.o \
                   $(OBJS)/read_USGS_file.o \
                   $(OBJS)/ross_thick_li_sparse_r.o \
                   $(OBJS)/rttov_driver.o \
