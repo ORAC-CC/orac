@@ -107,7 +107,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    type(global_attributes_s),      intent(in)  :: global_atts
    integer,                        intent(in)  :: ecmwf_flag
    type(imager_geolocation_s),     intent(in)  :: imager_geolocation
-   integer(kind=sint),             intent(in)  :: i_chunk
+   integer,                        intent(in)  :: i_chunk
    logical,                        intent(in)  :: assume_full_path
    logical,                        intent(in)  :: verbose
 

@@ -91,6 +91,7 @@ $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_structures.o allocate_surface_structures.F90 \
         deallocate_surface_structures.F90
 $(OBJS)/test_rttov.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
+$(OBJS)/utils_for_main.o: $(OBJS)/preproc_constants.o
 $(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
         $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/correct_for_ice_snow.o \
         $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
@@ -99,4 +100,5 @@ $(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \
         $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/rttov_driver.o \
         $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
-        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o
+        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
+        $(OBJS)/utils_for_main.o

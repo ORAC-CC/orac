@@ -24,7 +24,7 @@
 ! 10) Open netcdf output
 ! 11) RTTOV calculations
 ! 12) surface calculations
-! 13) deallocate structures!
+! 13) deallocate structures
 !
 ! Arguments:
 ! Name             Type In/Out/Both      Description
@@ -80,7 +80,6 @@
 ! chunkproc        logic  in T: split AATSR orbit in 4096 row chunks, F: don't
 ! day_night        int    in 2: process only night data; 1: day (default)
 ! verbose          logic  in F: minimise information printed to screen; T: don't
-! use_chunking     logic  in T: apply chunking when writing NCDF files; F: don't
 !
 ! History:
 ! 2011/12/09: MJ produces draft code which comprises the main program and the
@@ -190,7 +189,8 @@
 ! 2014/04/21: GM Added logical option assume_full_path.
 ! 2014/05/01: GM Cleaned up the code.
 ! 2014/05/01: GM Move some allocations/deallocations to the proper subroutine.
-! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated variables
+! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated
+!                variables
 ! 2014/06/25: GM Rewrote along track chunking code fixing a bug where the second
 !                segment in AATSR night processing was not being processed when
 !                chunking was off.
@@ -216,9 +216,15 @@
 ! 2014/12/16: GM Fix writing of attributes introduced in the change above by
 !                reordering some subroutine calls and putting subroutine
 !                netcdf_create_config() back into netcdf_output_create().
-! 2014/02/04: OS Added calls to new SR reading ERA-Interim data from NetCDF (WRAPPER
-!                only); added call to snow/ice correction based on ERA-Interim data
+! 2014/02/04: OS Added calls to new SR reading ERA-Interim data from NetCDF
+!                (WRAPPER only); added call to snow/ice correction based on ERA-
+!                Interim data
 ! 2015/02/19: GM Added SEVIRI support.
+! 2015/02/24: GM Improved command line and driver file support using the parsing
+!                module in the common library including support for comments and
+!                optional arguments/fields and better error handling.
+! 2015/02/24: GM Added command line/driver file options to specify the number of
+!                channels and the channel IDs to process.
 !
 ! $Id$
 !
@@ -232,6 +238,7 @@ program preprocessing
 subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,jid)
 #endif
 
+   use common_constants
    use channel_structures
    use cloud_typing_pavolonis, only: cloud_type
    use correct_for_ice_snow_m
@@ -242,6 +249,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use imager_structures
    use netcdf, only: nf90_inq_libvers
    use netcdf_output
+   use parsing
    use preparation_m
    use preproc_constants
    use preproc_structures
@@ -256,7 +264,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    use surface_reflectance
    use surface_structures
    use USGS_physiography
-   use common_constants
+   use utils_for_main
 
    implicit none
 
@@ -284,9 +292,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=cmd_arg_length)    :: cchunkproc
    character(len=cmd_arg_length)    :: cday_night
    character(len=cmd_arg_length)    :: cverbose
-   character(len=cmd_arg_length)    :: cuse_chunking
    character(len=cmd_arg_length)    :: cassume_full_paths
    character(len=cmd_arg_length)    :: cinclude_full_brdf
+   character(len=cmd_arg_length)    :: cdummy_arg
 
    type(global_attributes_s)        :: global_atts
    type(source_attributes_s)        :: source_atts
@@ -294,26 +302,32 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: chunkproc
    integer(kind=sint)               :: day_night
    logical                          :: verbose
-   logical                          :: use_chunking
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
 
    logical                          :: check
    integer                          :: nargs
 
+   integer                          :: i
+   character(path_length)           :: line, label, value
+
+   integer                          :: n_channels
+   integer, pointer                 :: channel_ids(:)
+
    integer(kind=lint)               :: startx,endx,starty,endy
    integer(kind=lint)               :: n_across_track,n_along_track
    integer(kind=lint)               :: along_track_offset
+
+   integer(kind=lint)               :: along_pos
 
    integer                          :: segment_starts(2)
    integer                          :: segment_ends(2)
    integer                          :: n_segments
    integer                          :: chunksize
-   integer(kind=sint)               :: i_chunk
+   integer                          :: i_chunk
    integer                          :: n_chunks
    integer, allocatable             :: chunk_starts(:)
    integer, allocatable             :: chunk_ends(:)
-   integer                          :: calc_n_chunks
 
    real(kind=sreal), dimension(4)   :: loc_limit
 
@@ -355,28 +369,32 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    type(netcdf_output_info_s)       :: netcdf_info
 
-   logical                          :: parse_logical
-
-   integer(kind=lint)               :: along_pos
-
 !  integer, dimension(8)            :: values
 
    ! this is for the wrapper
 #ifdef WRAPPER
-   integer :: mytask,ntasks,lower_bound,upper_bound
-   character(len=file_length) :: jid
+   integer                          :: mytask,ntasks,lower_bound,upper_bound
+   character(len=file_length)       :: jid
 #endif
 !  include "sigtrap.F90"
 
    ! get number of arguments
 #ifndef WRAPPER
-   nargs = COMMAND_ARGUMENT_COUNT()
+   nargs = command_argument_count()
 #else
-   nargs=-1
+   nargs = -1
 #endif
+   ! Set defaults for optional arguments/fields
+   n_channels = 0
+   nullify(channel_ids)
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
+      if (nargs .lt. 48) then
+         write(*,*) 'ERROR: not enough command line arguments'
+         stop error_stop_code
+      endif
+
       call get_command_argument(1,sensor)
       call get_command_argument(2,l1b_path_file)
       call get_command_argument(3,geo_path_file)
@@ -419,75 +437,122 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call get_command_argument(40,cchunkproc)
       call get_command_argument(41,cday_night)
       call get_command_argument(42,cverbose)
-      call get_command_argument(43,cuse_chunking)
+      call get_command_argument(43,cdummy_arg)
       call get_command_argument(44,cassume_full_paths)
       call get_command_argument(45,cinclude_full_brdf)
       call get_command_argument(46,global_atts%rttov_version)
       call get_command_argument(47,global_atts%ecmwf_version)
       call get_command_argument(48,global_atts%svn_version)
 
+      do i = 49, nargs
+         call get_command_argument(i, line)
+         call parse_line(line, value, label)
+         call clean_driver_label(label)
+         call parse_optional(label, value, n_channels, channel_ids)
+      end do
+
    else
+
       if (nargs .eq. 1) then
-      ! if just one argument => this is driver file which contains everything
+         ! if just one argument => this is a driver file
          call get_command_argument(1,driver_path_file)
       else if (nargs .eq. -1) then
-         write(*,*) 'inside preproc ',trim(adjustl(driver_path_file))
+         write(*,*) 'inside preproc: ',trim(adjustl(driver_path_file))
       end if
 
       open(11,file=trim(adjustl(driver_path_file)),status='old', &
            form='formatted')
 
-      read(11,*) sensor
-      read(11,*) l1b_path_file
-      read(11,*) geo_path_file
-      read(11,*) USGS_path_file
-      read(11,*) ecmwf_path
-      read(11,*) rttov_coef_path
-      read(11,*) rttov_emiss_path
-      read(11,*) nise_ice_snow_path
-      read(11,*) modis_albedo_path
-      read(11,*) modis_brdf_path
-      read(11,*) cimss_emiss_path
-      read(11,*) cdellon
-      read(11,*) cdellat
-      read(11,*) output_path
-      read(11,*) cstartx
-      read(11,*) cendx
-      read(11,*) cstarty
-      read(11,*) cendy
-      read(11,*) global_atts%NetCDF_Version
-      read(11,*) global_atts%Conventions
-      read(11,*) global_atts%Institution
-      read(11,*) global_atts%L2_Processor
-      read(11,*) global_atts%L2_Processor_Version
-      read(11,*) global_atts%Contact_Email
-      read(11,*) global_atts%Contact_Website
-      read(11,*) global_atts%file_version
-      read(11,*) global_atts%References
-      read(11,*) global_atts%History
-      read(11,*) global_atts%Summary
-      read(11,*) global_atts%Keywords
-      read(11,*) global_atts%Comment
-      read(11,*) global_atts%Project
-      read(11,*) global_atts%License
-      read(11,*) global_atts%UUID
-      read(11,*) global_atts%Production_Time
-      read(11,*) aatsr_calib_path_file
-      read(11,*) cecmwf_flag
-      read(11,*) ecmwf_path2
-      read(11,*) ecmwf_path3
-      read(11,*) cchunkproc
-      read(11,*) cday_night
-      read(11,*) cverbose
-      read(11,*) cuse_chunking
-      read(11,*) cassume_full_paths
-      read(11,*) cinclude_full_brdf
-      read(11,*) global_atts%RTTOV_Version
-      read(11,*) global_atts%ECMWF_Version
-      read(11,*) global_atts%SVN_Version
-      close(11)
-   end if ! nargs gt 1
+      call parse_required(11, sensor,                           'sensor')
+      call parse_required(11, l1b_path_file,                    'l1b_path_file')
+      call parse_required(11, geo_path_file,                    'geo_path_file')
+      call parse_required(11, USGS_path_file,                   'USGS_path_file')
+      call parse_required(11, ecmwf_path,                       'ecmwf_path')
+      call parse_required(11, rttov_coef_path,                  'rttov_coef_path')
+      call parse_required(11, rttov_emiss_path,                 'rttov_emiss_path')
+      call parse_required(11, nise_ice_snow_path,               'nise_ice_snow_path')
+      call parse_required(11, modis_albedo_path,                'modis_albedo_path')
+      call parse_required(11, modis_brdf_path,                  'modis_brdf_path')
+      call parse_required(11, cimss_emiss_path,                 'cimss_emiss_path')
+      call parse_required(11, cdellon,                          'cdellon')
+      call parse_required(11, cdellat,                          'cdellat')
+      call parse_required(11, output_path,                      'output_path')
+      call parse_required(11, cstartx,                          'cstartx')
+      call parse_required(11, cendx,                            'cendx')
+      call parse_required(11, cstarty,                          'cstarty')
+      call parse_required(11, cendy,                            'cendy')
+      call parse_required(11, global_atts%NetCDF_Version,       'NetCDF_Version')
+      call parse_required(11, global_atts%Conventions,          'Conventions')
+      call parse_required(11, global_atts%Institution,          'Institution')
+      call parse_required(11, global_atts%L2_Processor,         'L2_Processor')
+      call parse_required(11, global_atts%L2_Processor_Version, 'L2_Processor_Version')
+      call parse_required(11, global_atts%Contact_Email,        'Contact_Email')
+      call parse_required(11, global_atts%Contact_Website,      'Contact_Website')
+      call parse_required(11, global_atts%file_version,         'file_version')
+      call parse_required(11, global_atts%References,           'References')
+      call parse_required(11, global_atts%History,              'History')
+      call parse_required(11, global_atts%Summary,              'Summary')
+      call parse_required(11, global_atts%Keywords,             'Keywords')
+      call parse_required(11, global_atts%Comment,              'Comment')
+      call parse_required(11, global_atts%Project,              'Project')
+      call parse_required(11, global_atts%License,              'License')
+      call parse_required(11, global_atts%UUID,                 'UUID')
+      call parse_required(11, global_atts%Production_Time,      'Production_Time')
+      call parse_required(11, aatsr_calib_path_file,            'aatsr_calib_path_file')
+      call parse_required(11, cecmwf_flag,                      'cecmwf_flag')
+      call parse_required(11, ecmwf_path2,                      'ecmwf_path2')
+      call parse_required(11, ecmwf_path3,                      'ecmwf_path3')
+      call parse_required(11, cchunkproc,                       'cchunkproc')
+      call parse_required(11, cday_night,                       'cday_night')
+      call parse_required(11, cverbose,                         'cverbose')
+      call parse_required(11, cdummy_arg,                       'cdummy_arg')
+      call parse_required(11, cassume_full_paths,               'cassume_full_paths')
+      call parse_required(11, cinclude_full_brdf,               'cinclude_full_brdf')
+      call parse_required(11, global_atts%RTTOV_Version,        'RTTOV_Version')
+      call parse_required(11, global_atts%ECMWF_Version,        'ECMWF_Version')
+      call parse_required(11, global_atts%SVN_Version,          'SVN_Version')
 
+      do while (parse_driver(11, value, label) == 0)
+         call clean_driver_label(label)
+         call parse_optional(label, value, n_channels, channel_ids)
+      end do
+
+      close(11)
+   end if
+
+   ! Parse appropriate type from input strings
+   if (parse_string(cdellon, preproc_dims%dellon) /= 0) &
+      call handle_parse_error('dellon')
+   if (parse_string(cdellat, preproc_dims%dellat) /= 0) &
+      call handle_parse_error('dellat')
+   if (parse_string(cstartx, startx) /= 0) &
+      call handle_parse_error('startx')
+   if (parse_string(cendx, endx) /= 0) &
+      call handle_parse_error('endx')
+   if (parse_string(cstarty, starty) /= 0) &
+      call handle_parse_error('starty')
+   if (parse_string(cendy, endy) /= 0) &
+      call handle_parse_error('endy')
+   if (parse_string(cday_night, day_night)   /= 0) &
+      call handle_parse_error('day_night')
+   if (parse_string(cecmwf_flag, ecmwf_flag) /= 0) &
+      call handle_parse_error('ecmwf_flag')
+
+   ! Still use the old parse_logical() here at supports 0 and 1
+   if (parse_logical(cchunkproc, chunkproc) /= 0) &
+      call handle_parse_error('chunkproc')
+   if (parse_logical(cverbose, verbose)     /= 0) &
+      call handle_parse_error('verbose')
+   if (parse_logical(cassume_full_paths, assume_full_paths) /= 0) &
+      call handle_parse_error('assume_full_paths')
+   if (parse_logical(cinclude_full_brdf, include_full_brdf) /= 0) &
+      call handle_parse_error('include_full_brdf')
+
+   ! Check argument/fields
+   if (n_channels .ne. 0 .and. .not. associated(channel_ids)) then
+      write(*,*) 'ERROR: options n_channels and channel_ids must be used together'
+      stop error_stop_code
+   endif
 
    ! get the NetCDF version
    global_atts%netcdf_version=nf90_inq_libvers()
@@ -498,21 +563,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 !        values(1), values(2), values(3), values(5), values(6), values(7)
 !  write(*,*) global_atts%exec_time
 !  stop
-
-   ! cast input strings into appropriate variables
-   read(cdellon, '(f10.5)') preproc_dims%dellon
-   read(cdellat, '(f10.5)') preproc_dims%dellat
-   read(cstartx(1:len_trim(cstartx)), '(I6)') startx
-   read(cendx(1:len_trim(cendx)), '(I6)') endx
-   read(cstarty(1:len_trim(cstarty)), '(I6)') starty
-   read(cendy(1:len_trim(cendy)), '(I6)') endy
-   read(cday_night(1:len_trim(cday_night)), '(I6)') day_night
-   read(cecmwf_flag(1:len_trim(cecmwf_flag)), '(I6)') ecmwf_flag
-   chunkproc=parse_logical(cchunkproc)
-   verbose=parse_logical(cverbose)
-   use_chunking=parse_logical(cuse_chunking)
-   assume_full_paths=parse_logical(cassume_full_paths)
-   include_full_brdf=parse_logical(cinclude_full_brdf)
 
    ! initialise some counts, offset variables...
    along_track_offset=0
@@ -525,13 +575,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       write(*,*) 'Determine platform, day, time, check if l1b and geo match'
    inquire(file=l1b_path_file,exist=check)
    if (.not. check) then
-        write(*,*) 'ERROR: L1B file does not exist: ', trim(l1b_path_file)
-        stop error_stop_code
+      write(*,*) 'ERROR: L1B file does not exist: ', trim(l1b_path_file)
+      stop error_stop_code
    end if
    inquire(file=geo_path_file,exist=check)
    if (.not. check) then
-        write(*,*) 'ERROR: GEO file does not exist: ', trim(geo_path_file)
-        stop error_stop_code
+      write(*,*) 'ERROR: GEO file does not exist: ', trim(geo_path_file)
+      stop error_stop_code
    end if
 
    source_atts%level1b_file=l1b_path_file
@@ -539,8 +589,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    if (trim(adjustl(sensor)) .eq. 'AATSR') then
       call setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
-           verbose)
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
 
       ! currently setup to do day only by default
       if (day_night .eq. 0) day_night=1
@@ -556,24 +606,24 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
       call setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
-           verbose)
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
 
       ! get dimensions of the avhrr orbit
       call read_avhrr_dimensions(geo_path_file,n_across_track,n_along_track)
 
    else if (trim(adjustl(sensor)) .eq. 'MODIS') then
       call setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
-           verbose)
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
 
       ! get dimensions of the modis granule
       call read_modis_dimensions(geo_path_file,n_across_track,n_along_track)
 
    else if (trim(adjustl(sensor)) .eq. 'SEVIRI') then
       call setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
-           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info, &
-           verbose)
+           doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
+           channel_info,verbose)
 
       ! get dimensions of the seviri image.
       ! For SEVIRI the native level 1.5 image data can come as a subimage of the
@@ -611,21 +661,21 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    if (verbose) write(*,*)  'Determine processing chunks and their dimensions'
 
    if (startx.ge.1 .and. endx.ge.1 .and. starty.ge.1 .and. endy.ge.1) then
-     if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
-        write(*,*) 'ERROR: invalid across track dimensions'
-        write(*,*) '       Should be < ',n_across_track
-        stop error_stop_code
-     end if
+      if (startx.gt.n_across_track .or. endx.gt.n_across_track) then
+         write(*,*) 'ERROR: invalid across track dimensions'
+         write(*,*) '       Should be < ',n_across_track
+         stop error_stop_code
+      end if
       if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
          along_pos = along_track_offset2 + n_along_track2
       else
          along_pos = along_track_offset + n_along_track
       end if
-     if (starty.gt.along_pos .or. endy.gt.along_pos) then
-        write(*,*) 'ERROR: invalid along track dimensions'
-        write(*,*) '       Should be < ',along_pos
-        stop error_stop_code
-     end if
+      if (starty.gt.along_pos .or. endy.gt.along_pos) then
+         write(*,*) 'ERROR: invalid along track dimensions'
+         write(*,*) '       Should be < ',along_pos
+         stop error_stop_code
+      end if
 
       ! use specified values
       imager_geolocation%startx=startx
@@ -906,99 +956,12 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ! deallocate the array parts of the structures
    call deallocate_channel_info(channel_info)
 
+   ! deallocate optional arguments
+   if (associated(channel_ids)) deallocate(channel_ids)
+
 #ifdef WRAPPER
 end subroutine preprocessing
 #else
 end program preprocessing
 #endif
 
-
-function parse_logical(string) result(value)
-
-   use preproc_constants
-
-   implicit none
-
-   logical :: value
-
-   character(len = cmd_arg_length), intent(in) :: string
-
-   if (trim(adjustl(string)) .eq. '1' .or.&
-       trim(adjustl(string)) .eq. 't' .or. &
-       trim(adjustl(string)) .eq. 'true' .or. &
-       trim(adjustl(string)) .eq. 'T' .or. &
-       trim(adjustl(string)) .eq. 'True') then
-        value = .true.
-   else if &
-      (trim(adjustl(string)) .eq. '0' .or. &
-       trim(adjustl(string)) .eq. 'f' .or. &
-       trim(adjustl(string)) .eq. 'false' .or. &
-       trim(adjustl(string)) .eq. 'F' .or. &
-       trim(adjustl(string)) .eq. 'False') then
-        value = .false.
-   else
-        write(*,*) 'ERROR: invalid logical argument'
-        stop error_stop_code
-   end if
-
-end function parse_logical
-
-
-
-function calc_n_chunks(n_segments, segment_starts, segment_ends, &
-                       chunk_size) result (n_chunks)
-
-   implicit none
-
-   integer, intent(in)  :: n_segments
-   integer, intent(in)  :: segment_starts(n_segments)
-   integer, intent(in)  :: segment_ends(n_segments)
-   integer, intent(in)  :: chunk_size
-   integer              :: n_chunks
-
-   integer :: i
-
-   n_chunks = 0
-
-   do i = 1, n_segments
-      n_chunks = n_chunks + (segment_ends(i) - segment_starts(i)) / chunk_size + 1
-   end do
-
-end function calc_n_chunks
-
-
-
-subroutine chunkify(n_segments, segment_starts, segment_ends, &
-                    chunk_size, n_chunks, chunk_starts, chunk_ends)
-
-   implicit none
-
-   integer, intent(in)  :: n_segments
-   integer, intent(in)  :: segment_starts(n_segments)
-   integer, intent(in)  :: segment_ends(n_segments)
-   integer, intent(in)  :: chunk_size
-   integer, intent(out) :: n_chunks
-   integer, intent(out) :: chunk_starts(*)
-   integer, intent(out) :: chunk_ends(*)
-
-   integer :: i
-
-   n_chunks = 1
-
-   do i = 1, n_segments
-      chunk_starts(n_chunks) = segment_starts(i)
-
-      do while (chunk_starts(n_chunks) + chunk_size .lt. segment_ends(i))
-         chunk_ends(n_chunks) = chunk_starts(n_chunks) + chunk_size - 1
-         n_chunks = n_chunks + 1
-         chunk_starts(n_chunks) = chunk_starts(n_chunks - 1) + chunk_size
-      end do
-
-      chunk_ends(n_chunks) = segment_ends(i)
-
-      n_chunks = n_chunks + 1
-   end do
-
-   n_chunks = n_chunks - 1
-
-end subroutine chunkify

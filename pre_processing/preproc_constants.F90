@@ -39,16 +39,6 @@ module preproc_constants
 
    implicit none
 
-!  integer, parameter :: attribute_length=128
-!  integer, parameter :: attribute_length_long=2048
-!  integer, parameter :: cmd_arg_length=16
-!  integer, parameter :: date_length=4
-!  integer, parameter :: file_length=512
-!  integer, parameter :: path_length=1024
-!  integer, parameter :: var_length=64
-!  integer, parameter :: platform_length=8
-!  integer, parameter :: sensor_length=8
-
 
    real(kind=sreal),    parameter :: dither=1.0E-3
    real(kind=sreal),    parameter :: dither_more=1.0E-7

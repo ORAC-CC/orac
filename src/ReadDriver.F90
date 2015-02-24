@@ -90,6 +90,7 @@
 !       arrays.
 !    2015/02/04, GM: Add initialization of ReChans array.
 !    2015/02/04, OS: drifile is passed as call argument for WRAPPER
+!    2015/02/24, GM: Some small fixes to driver file error handling.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -166,8 +167,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       ! Check drifile exists
       inquire(file=drifile, exist=file_exists)
       if (.not. file_exists) then
-         write(*,*)'ERROR: ReadDriver(): Driver file pointed to by ' // &
-                   'ORAC_DRIVER does not exist: ', drifile
+         write(*,*) 'ERROR: ReadDriver(): Driver file pointed to by ' // &
+                    'ORAC_DRIVER does not exist: ', drifile
          stop DriverFileNotFound
       end if
 
@@ -177,8 +178,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       call find_lun(dri_lun)
       open(unit=dri_lun, file=drifile, iostat=ios)
       if (ios /= 0) then
-         write(*,*)'ERROR: ReadDriver(): Unable to open driver file: ', &
-                   trim(drifile)
+         write(*,*) 'ERROR: ReadDriver(): Unable to open driver file: ', &
+                    trim(drifile)
          stop DriverFileOpenErr
       end if
    end if
@@ -188,24 +189,20 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Read the driver file
    !----------------------------------------------------------------------------
    ! Read folder paths
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, input_path) /= 0) call h_p_e('input directory')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, input_path) /= 0) call h_p_e('input directory')
    if (verbose) write(*,*) 'Input directory: ',trim(input_path)
 
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, input_filename) /= 0) call h_p_e('input filename')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, input_filename) /= 0) call h_p_e('input filename')
    if (verbose) write(*,*) 'Input filename: ',trim(input_filename)
 
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, scratch_dir) /= 0) call h_p_e('output directory')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, scratch_dir) /= 0) call h_p_e('output directory')
    if (verbose) write(*,*) 'Output directory: ',trim(scratch_dir)
 
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, lut_dir) /= 0) call h_p_e('LUT directory')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, lut_dir) /= 0) call h_p_e('LUT directory')
    if (verbose) write(*,*) 'LUT directory: ',trim(lut_dir)
 
    ! Set filenames
@@ -233,17 +230,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    if (verbose) write(*,*) 'Ctrl%FID%Config: ',trim(Ctrl%FID%Config)
 
    ! Read name of instrument
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, Ctrl%Inst%Name) /= 0) call h_p_e('Ctrl%Inst%Name')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%Inst%Name) /= 0) call h_p_e('Ctrl%Inst%Name')
    write(*,*) 'Ctrl%Inst%Name: ',trim(Ctrl%Inst%Name)
 
    ! Number of channels in preprocessing file
    ! (this is actually not really necessary as we have that in the config file)
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, Ctrl%Ind%NAvail) /= 0) &
-         call h_p_e('number of channels expected in preproc files')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%Ind%NAvail) /= 0) &
+      call h_p_e('number of channels expected in preproc files')
    if (verbose) write(*,*) &
         'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
 
@@ -253,9 +248,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Read processing flag from driver
    allocate(channel_proc_flag(Ctrl%Ind%Navail))
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, channel_proc_flag) /= 0) call h_p_e('channel flags')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, channel_proc_flag) /= 0) call h_p_e('channel flags')
    if (sum(channel_proc_flag) < 1 .or. &
        sum(channel_proc_flag) > Ctrl%Ind%Navail .or. &
        any(channel_proc_flag /= 0 .and. channel_proc_flag /= 1)) then
@@ -320,10 +314,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    end if
 
    ! Read in cloud class (aka phase of no aerosols processed)
-   if (parse_driver(dri_lun, line) == 0) then
-      if (parse_string(line, Ctrl%CloudClass) /= 0) &
-         call h_p_e('Ctrl%CloudClass')
-   end if
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%CloudClass) /= 0) &
+      call h_p_e('Ctrl%CloudClass')
    if (verbose) write(*,*)'Ctrl%CloudClass: ',trim(Ctrl%CloudClass)
 
 
@@ -899,7 +892,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('CTRL%SABOTAGE_INPUTS')
          if (parse_string(line, Ctrl%sabotage_inputs)  /= 0) call h_p_e(label)
       case default
-         print*,'ERROR: ReadDriver(): Unknown option: ',trim(label)
+         write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code
       end select
    end do
@@ -1032,9 +1025,9 @@ subroutine h_p_e(label)
 
    implicit none
 
-   character(len=*) :: label
+   character(len=*), intent(in) :: label
 
-   print*,'ERROR: ReadDriver(): Error parsing value for: ',trim(label)
+   write(*,*) 'ERROR: ReadDriver(): Error parsing value for: ',trim(label)
 
    stop error_stop_code
 

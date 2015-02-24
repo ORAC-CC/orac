@@ -62,6 +62,8 @@ contains
 ! 2014/12/01, CS: updated setup_avhrr to read new ECC_GAC AVHRR data
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/02/19, GM: Added SEVIRI support.
+! 2015/02/24, GM: Added the ability to change which channels are processed at
+!    run time.
 !
 ! $Id$
 !
@@ -70,7 +72,8 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
 
    use calender
    use preproc_constants
@@ -86,6 +89,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer(kind=sint),             intent(out)   :: hour,minute
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
@@ -117,13 +121,10 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 0,    1,    2,    6,    20,   0,    0 /)
 
 
-   ! Only these need to be set to change the desired channels. All other channel
-   ! related arrays/indexes are set automatically given the static instrument
-   ! channel definition above.
-
-   integer, parameter :: nchannels_total = 6
-   integer, parameter :: channel_ids_instr(nchannels_total) = &
-      (/ 2, 3, 4, 5, 6, 7 /)
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 2, 3, 4, 5, 6, 7 /)
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_aatsr()'
@@ -164,21 +165,11 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
-   channel_info%nviews = 1
-
    ! now set up the channels
-   channel_info%nchannels_total = nchannels_total
-
-   call allocate_channel_info(channel_info)
-
-   channel_info%channel_ids_instr = channel_ids_instr
-
-   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
-      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
-      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
-      all_map_ids_abs_to_ref_band_sea)
-
-!  channel_info%chan_sw_to_snow_and_ice_index(1:channel_info%nchannels_sw) = (/ 1, 2, 3, 4 /)
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
@@ -186,7 +177,8 @@ end subroutine setup_aatsr
 
 
 subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
 
    use calender
    use preproc_constants
@@ -202,6 +194,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer(kind=sint),             intent(out)   :: hour,minute
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
    integer                                       :: index1,index2
@@ -234,13 +227,10 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 1,    2,      6,    20,   0,    0 /)
 
 
-   ! Only these need to be set to change the desired channels. All other channel
-   ! related arrays/indexes are set automatically given the static instrument
-   ! channel definition above.
-
-   integer, parameter :: nchannels_total = 6
-   integer, parameter :: channel_ids_instr(nchannels_total) = &
-      (/ 1, 2, 3, 4, 5, 6 /)
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 1, 2, 3, 4, 5, 6 /)
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_avhrr()'
@@ -363,19 +353,11 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    call GREG2DOY(year,month,day,doy)
    write(cdoy, '(i3.3)') doy
 
-   channel_info%nviews = 1
-
    ! now set up the channels
-   channel_info%nchannels_total = nchannels_total
-
-   call allocate_channel_info(channel_info)
-
-   channel_info%channel_ids_instr = channel_ids_instr
-
-   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
-      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
-      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
-      all_map_ids_abs_to_ref_band_sea)
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
@@ -383,7 +365,8 @@ end subroutine setup_avhrr
 
 
 subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
 
    use calender
    use channel_structures
@@ -400,6 +383,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer(kind=sint),             intent(out)   :: hour,minute
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
@@ -477,19 +461,11 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,         0,         0,         0,         0,         0 /)
 
 
-   ! Only these need to be set to change the desired channels. All other channel
-   ! related arrays/indexes are set automatically given the static instrument
-   ! channel definition above.
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 1, 2, 6, 20, 31, 32 /)
 
-   ! The legacy channels
-   integer, parameter :: nchannels_total = 6
-   integer, parameter :: channel_ids_instr(nchannels_total) = &
-      (/ 1, 2, 6, 20, 31, 32 /)
-
-   ! All currently supported channels
-!  integer, parameter :: nchannels_total = 15
-!  integer, parameter :: channel_ids_instr(nchannels_total) = &
-!    (/ 1, 2, 6, 20, 24, 25, 27, 28, 29, 30, 31, 32, 33, 35, 36 /)
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_modis()'
 
@@ -537,19 +513,11 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    write(cmonth, '(i2.2)') month
    write(cday, '(i2.2)') day
 
-   channel_info%nviews = 1
-
    ! now set up the channels
-   channel_info%nchannels_total = nchannels_total
-
-   call allocate_channel_info(channel_info)
-
-   channel_info%channel_ids_instr = channel_ids_instr
-
-   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
-      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
-      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
-      all_map_ids_abs_to_ref_band_sea)
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
 
@@ -557,7 +525,8 @@ end subroutine setup_modis
 
 
 subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_info,verbose)
+   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
+   channel_info,verbose)
 
    use calender
    use channel_structures
@@ -574,6 +543,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer(kind=sint),             intent(out)   :: hour,minute
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
    character(len=date_length),     intent(out)   :: cdoy,chour,cminute
+   integer, pointer,               intent(in)    :: channel_ids_user(:)
    type(channel_info_s),           intent(inout) :: channel_info
    logical,                        intent(in)    :: verbose
 
@@ -606,19 +576,10 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 1,     2,    6,    20,   0,    6,    0,    0,    0,     0,     0 /)
 
 
-   ! Only these need to be set to change the desired channels. All other channel
-   ! related arrays/indexes are set automatically given the static instrument
-   ! channel definition above.
-
-   ! The legacy channels
-   integer, parameter :: nchannels_total = 6
-   integer, parameter :: channel_ids_instr(nchannels_total) = &
-      (/ 1, 2, 3, 4, 9, 10 /)
-
-   ! All currently supported channels
-!  integer, parameter :: nchannels_total = 11
-!  integer, parameter :: channel_ids_instr(nchannels_total) = &
-!     (/ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11/)
+   ! Only this below needs to be set to change the desired default channels. All
+   ! other channel related arrays/indexes are set automatically given the static
+   ! instrument channel definition above.
+   integer, parameter :: channel_ids_default(6) = (/ 1, 2, 3, 4, 9, 10 /)
 
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering setup_seviri()'
@@ -671,36 +632,29 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
 
-   channel_info%nviews = 1
-
    ! now set up the channels
-   channel_info%nchannels_total = nchannels_total
-
-   call allocate_channel_info(channel_info)
-
-   channel_info%channel_ids_instr = channel_ids_instr
-
-   call common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
-      all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
-      all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
-      all_map_ids_abs_to_ref_band_sea)
+   call common_setup(channel_info, channel_ids_user, channel_ids_default, &
+      all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+      all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_seviri()'
 
 end subroutine setup_seviri
 
 
-subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
-   all_channel_sw_flag, all_channel_lw_flag, all_channel_ids_rttov_coef_sw, &
-   all_channel_ids_rttov_coef_lw, all_map_ids_abs_to_ref_band_land, &
-   all_map_ids_abs_to_ref_band_sea)
+subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
+   all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
+   all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
+   all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
 
    use channel_structures
 
    implicit none
 
    type(channel_info_s), intent(inout) :: channel_info
-   integer,              intent(in)    :: all_nchannels_total
+   integer, pointer,     intent(in)    :: channel_ids_user(:)
+   integer,              intent(in)    :: channel_ids_default(:)
    real,                 intent(in)    :: all_channel_wl_abs (:)
    integer,              intent(in)    :: all_channel_sw_flag(:)
    integer,              intent(in)    :: all_channel_lw_flag(:)
@@ -712,6 +666,22 @@ subroutine common_setup(channel_info, all_nchannels_total, all_channel_wl_abs, &
    integer :: i
    integer :: i_sw
    integer :: i_lw
+
+   if (associated(channel_ids_user)) then
+      channel_info%nchannels_total = size(channel_ids_user)
+   else
+      channel_info%nchannels_total = size(channel_ids_default)
+   endif
+
+   channel_info%nviews = 1
+
+   call allocate_channel_info(channel_info)
+
+   if (associated(channel_ids_user)) then
+      channel_info%channel_ids_instr = channel_ids_user
+   else
+      channel_info%channel_ids_instr = channel_ids_default
+   endif
 
    do i = 1, channel_info%nchannels_total
       channel_info%channel_wl_abs (i) = &

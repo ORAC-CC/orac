@@ -33,17 +33,18 @@ module common_constants
    integer, parameter :: sreal=4
    integer, parameter :: dreal=8
 
+   integer, parameter :: cmd_arg_length=128
+   integer, parameter :: file_length=512
+   integer, parameter :: path_length=1024
+
+   integer, parameter :: date_length=4
+   integer, parameter :: platform_length=8
+   integer, parameter :: sensor_length=8
+
    integer, parameter :: attribute_length=128
    integer, parameter :: attribute_length_long=2048
    integer, parameter :: unitlength=128
-
-   integer, parameter :: cmd_arg_length=16
-   integer, parameter :: date_length=4
-   integer, parameter :: file_length=512
-   integer, parameter :: path_length=1024
    integer, parameter :: var_length=64
-   integer, parameter :: platform_length=8
-   integer, parameter :: sensor_length=8
 
    integer, parameter :: MAX_NC_NAME=256
    integer, parameter :: MAX_VAR_DIMS=32

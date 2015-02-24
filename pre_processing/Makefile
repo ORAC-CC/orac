@@ -20,6 +20,7 @@
 #    Now 'make' will build both the executable and library in one command.
 # 2014/10/23, Oliver Sus: Changes related to USGS, Pavolonis, and NN cloud mask.
 # 2015/02/19, Greg McGarragh: Added the read_seviri module.
+# 2015/02/24, Greg McGarragh: Added the utils_for_main module.
 #
 # Notes:
 # It appears that -lopenjpeg needs to be included in the LIBS list since on some
@@ -77,7 +78,8 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \
                   $(OBJS)/surface_structures.o \
-                  $(OBJS)/test_rttov.o
+                  $(OBJS)/test_rttov.o \
+                  $(OBJS)/utils_for_main.o
 
 PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o
 

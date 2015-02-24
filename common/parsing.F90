@@ -55,13 +55,14 @@ contains
 ! lun   integer In  File unit number to be read.
 ! data  string  Out Information conveyed by the next line of the driver file.
 ! label string  Out (Optional) Description of the data field, being any text in
-!   the line before a = sign. Returns '' if not present.
+!                   the line before a = sign. Returns '' if not present.
 !
 ! Return value:
 ! ios   integer Out Status value from reading.
 !
 ! History:
 ! 2014/12/17, AP: Original version.
+! 2015/02/24, GM: Use parse_line().
 !
 ! Bugs:
 ! None known.
@@ -96,19 +97,55 @@ function parse_driver(lun, data, label) result(ios)
       ! Remove end-of-line comments
       if (id > 0) line(id:) = ''
 
-      id = index(line, '=')
-      if (id > 0) then
-         ! Labelled field
-         label = adjustl(line(:id-1))
-         data  = adjustl(line(id+1:))
-      else
-         ! No label for data field
-         label = ''
-         data  = adjustl(line)
-      end if
+      call parse_line(line, data, label)
    end if
 
 end function parse_driver
+
+!-------------------------------------------------------------------------------
+! Name: parse_line
+!
+! Purpose:
+! Does step 3 of parse_driver.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name  Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! line  string  In  The line to be parsed.
+! data  string  Out Information conveyed by the next line of the driver file.
+! label string  Out (Optional) Description of the data field, being any text in
+!   the line before a = sign. Returns '' if not present.
+!
+! History:
+! 2015/02/24, GM: Pulled out of parse_driver to be used in parsing command line
+!    arguments.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine parse_line(line, data, label)
+   implicit none
+
+   character(len=*), intent(in)            :: line
+   character(len=*), intent(out)           :: data
+   character(len=*), intent(out), optional :: label
+
+   integer :: id
+
+   id = index(line, '=')
+   if (id <= 0) then
+      ! No label for data field
+      label = ''
+      data  = adjustl(line)
+   else
+      ! Labelled field (label=data)
+      label = adjustl(line(:id-1))
+      data  = adjustl(line(id+1:))
+   end if
+
+end subroutine parse_line
 
 !-------------------------------------------------------------------------------
 ! Name: parse_string
