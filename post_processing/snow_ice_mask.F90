@@ -38,6 +38,7 @@
 !   2015/01/12 CP added in more comments to make it clearer.
 !   2015/01/19 CP added in some more stringent cloud clearing
 !   2015/02/09 CP applied mask during night updated to work for AVHRR and MODIS instruments
+!   2015/02/09 CP applied mask to remove very thick ice cloud over ice surfaces
 !
 ! Bugs:
 !    None known.
@@ -73,7 +74,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   real(kind=sreal) :: eq5,eq6,eq7,eq8
   real(kind=sreal) :: eq5_thres,eq6_thres,eq7_thres,eq8_thres,re_min,re_max
   real(kind=sreal) :: eq5_thres_strict,eq6_thres_strict,eq5_thres_loose,eq6_thres_loose,re_ice
-  real(kind=sreal) :: eq5_value,eq6_value,eq7_value,eq8_value,opd_thres
+  real(kind=sreal) :: eq5_value,eq6_value,eq7_value,eq8_value,opd_thres,opd_max,eq5_thres_iwp,eq6_thres_iwp
   real(kind=sreal) :: alb1_thres,alb2_thres,cth_thres_sea,cth_thres_land,cth_thres_opd_land,cth_thres_opd_sea
    CHARACTER(len= var_length) :: cinst
 
@@ -87,6 +88,8 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   eq6_thres_strict=0.015
   eq5_thres_loose=0.02 
   eq6_thres_loose=0.02
+  eq5_thres_iwp=0.03 
+  eq6_thres_iwp=0.03
   eq7_thres=0.8
   eq8_thres=0.1
 !albedo thresholds
@@ -101,6 +104,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
   cth_thres_opd_land=2.0!km this should be more strict
   cth_thres_opd_sea=1.0!km this should be more strict
   opd_thres=150.
+  opd_max=250.
   re_ice=30
   re_min=40
   re_max=120
@@ -289,13 +293,25 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
 !apply looser Istomina tests that have an albedo test and a test on cod particually effective for grrenalnd and poles
 !
 
-	  if ((eq5_value .lt. eq5_thres_loose) .and. (eq6_value .lt. eq6_thres_loose)) then
+if ((eq5_value .lt. eq5_thres_loose) .and. (eq6_value .lt. eq6_thres_loose)) then
 	  
   if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_sea) then
   if (l2_input_2dice_primary%ref(i,j) .gt. re_min .and. l2_input_2dice_primary%cot(i,j) .gt. opd_thres) then
  snow_ice_flag=1
 endif
 endif
+endif
+
+!
+!this test used to reduce too much iwp over greenland
+!
+if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
+	  
+
+  if (l2_input_2dice_primary%cot(i,j) .gt. opd_max) then
+ snow_ice_flag=1
+endif
+
 endif
        
   endif ! albedo
