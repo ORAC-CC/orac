@@ -93,9 +93,9 @@
 !    similar technique.
 ! 31 Dec 2014, Greg McGarragh: Parallelized the main loops in the interface
 !    subroutine with OpenMP.
-! 06 Jan 2015, GM: Fixed a couple of bugs in the OpenMP parallelization that
-!    come out when compiling with ifort.
-! 15 Jan 2015, AP: Bug fix. Passing channel index into cox_munk3 wasn't
+! 06 Jan 2015, Greg McGarragh: Fixed a couple of bugs in the OpenMP
+!    parallelization that come out when compiling with ifort.
+! 15 Jan 2015, Adam Povey: Bug fix. Passing channel index into cox_munk3 wasn't
 !    compatible with arbitrary channel ordering.
 !
 ! $Id$

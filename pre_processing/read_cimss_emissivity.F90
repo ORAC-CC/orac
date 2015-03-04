@@ -64,11 +64,13 @@ contains
 !   product to the correct name: 'FillValue' to 'fill_value'.
 ! 05/11/2013, GM: It turns out some files use 'FillValue' and others
 !   use 'fill_value'.  So now we handle both cases.
-! 12/05/2014, AP: Uses orac_ncdf to avoid duplication of NCDF routines. Made into
-!   a module.
+! 12/05/2014, AP: Uses orac_ncdf to avoid duplication of NCDF routines. Made
+!   into a module.
 ! 04/08/2014, AP: Put bands as last index of emissivity array. Replaced lat|lon
-!   fields with grid definitions to be compatible with new interpolation routine.
+!   fields with grid definitions to be compatible with new interpolation
+!   routine.
 ! 15/10/2014, GM: Changes related to supporting an arbitrary set of LW channels.
+! 04/03/2015, GM: Changes related to supporting channels in arbitrary order.
 !
 ! $Id$
 !
@@ -99,7 +101,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    integer(kind=sint)                                   :: stat
 
    ! Local variables
-   integer            :: i, j, j_prev
+   integer            :: i, j
    real               :: a
    integer, parameter :: nBands = 10
    character(len=6)   :: bandList(nBands)
@@ -108,8 +110,13 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    integer            :: xdim, ydim, zdim
    integer            :: nDim, nVar, nAtt
    integer            :: uDimID, ForNM
-   real, allocatable  :: temp(:,:,:)
 !  integer(kind=1)    :: gen_loc=1
+
+   type cache_element
+      real, pointer, dimension(:,:) :: a
+   end type cache_element
+
+   type(cache_element), allocatable, dimension(:) :: cache
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_cimss_emissivity()'
 
@@ -133,7 +140,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
       write(*,*) 'ERROR: read_cimss_emissitivty(): File has more than three '//&
                & 'dimensions, filename: ', trim(path_to_file), ' nDim: ', nDim
       stop error_stop_code
-   endif
+   end if
 
    ! Three dimensions should be:
    ! xdim = latitude (strange!)
@@ -170,48 +177,63 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    end if
 
    ! Now define the emissivity array itself
-   allocate(temp(xdim,ydim,2))
+   allocate(cache(nBands))
+   do i = 1, nBands
+      nullify(cache(i)%a)
+   end do
 
    allocate(emis%emissivity(xdim,ydim,n_wavelengths))
 
    ! Extract the data for each of the requested bands
-   j      =  1
-   j_prev = -1
    do i=1,n_wavelengths
-      if (wavelengths(i) .lt. 1.e4 / emis%wavenumber(1)) then
-         call nc_read_array(fid,bandList(1),emis%emissivity(:,:,i),verbose)
-      else if (wavelengths(i) .gt. 1.e4 / emis%wavenumber(nBands)) then
-         call nc_read_array(fid,bandList(nBands),emis%emissivity(:,:,i),verbose)
+      if (wavelengths(i) .le. 1.e4 / emis%wavenumber(1)) then
+         if (.not. associated(cache(1)%a)) then
+            allocate(cache(1)%a(xdim,ydim))
+            call nc_read_array(fid,bandList(1),cache(1)%a,verbose)
+         end if
+         emis%emissivity(:,:,i) = cache(1)%a
+      else if (wavelengths(i) .ge. 1.e4 / emis%wavenumber(nBands)) then
+         if (.not. associated(cache(nBands)%a)) then
+            allocate(cache(nBands)%a(xdim,ydim))
+            call nc_read_array(fid,bandList(nBands),cache(nBands)%a,verbose)
+         end if
+         emis%emissivity(:,:,i) = cache(nBands)%a
       else
-         do while (wavelengths(i) .gt. 1.e4 / emis%wavenumber(j + 1))
+         j = 1
+         do while (.true.)
+            if (wavelengths(i) .ge. 1.e4 / emis%wavenumber(j) .and. &
+                wavelengths(i) .lt. 1.e4 / emis%wavenumber(j + 1)) exit
             j = j + 1
          end do
 
-         if (j .eq. j_prev + 1) then
-            temp(:,:,1) = temp(:,:,2)
-            call nc_read_array(fid,bandList(j+1),temp(:,:,2),verbose)
-         else if (j .ne. j_prev) then
-            call nc_read_array(fid,bandList(j  ),temp(:,:,1),verbose)
-            call nc_read_array(fid,bandList(j+1),temp(:,:,2),verbose)
-         endif
+         if (.not. associated(cache(j)%a)) then
+            allocate(cache(j)%a(xdim,ydim))
+            call nc_read_array(fid,bandList(j),cache(j)%a,verbose)
+         end if
 
-         j_prev = j
+         if (.not. associated(cache(j+1)%a)) then
+            allocate(cache(j+1)%a(xdim,ydim))
+            call nc_read_array(fid,bandList(j+1),cache(j+1)%a,verbose)
+         end if
 
          a = (wavelengths(i) - 1.e4 / emis%wavenumber(j)) / &
              (1.e4 / emis%wavenumber(j + 1) - 1.e4 / emis%wavenumber(j))
 if (USE_NEAREST_CHANNEL) then
          if (a < .5) then
-            emis%emissivity(:,:,i) = temp(:,:,1)
+            emis%emissivity(:,:,i) = cache(j)%a
          else
-            emis%emissivity(:,:,i) = temp(:,:,2)
-         endif
+            emis%emissivity(:,:,i) = cache(j + 1)%a
+         end if
 else
-         emis%emissivity(:,:,i) = (1. - a) * temp(:,:,1) + a * temp(:,:,2)
-endif
-      endif
+         emis%emissivity(:,:,i) = (1. - a) * cache(j)%a + a * cache(j + 1)%a
+end if
+      end if
    end do
 
-   deallocate(temp)
+   do i = 1, nBands
+      if (associated(cache(i)%a)) deallocate(cache(i)%a)
+   end do
+   deallocate(cache)
 
    ! We are now finished with the main data file
    stat = nf90_close(fid)

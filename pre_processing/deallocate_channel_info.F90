@@ -17,6 +17,7 @@
 ! 2014/10/15, GM: Added deallocation of map_ids_abs_to_ref_band_land and
 !    map_ids_abs_to_ref_band_sea and removed deallocation of channel_proc_flag.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
 !
 ! $Id$
 !
@@ -39,5 +40,6 @@ subroutine deallocate_channel_info(channel_info)
    deallocate(channel_info%channel_ids_rttov_coef_lw)
    deallocate(channel_info%map_ids_abs_to_ref_band_land)
    deallocate(channel_info%map_ids_abs_to_ref_band_sea)
+   deallocate(channel_info%map_ids_abs_to_snow_and_ice)
 
 end subroutine deallocate_channel_info

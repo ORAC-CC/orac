@@ -91,8 +91,9 @@ contains
 !   the land use map (currently USGS)
 ! 2014/12/01, CP: Added source attributes.
 ! 2014/12/16, GM: Added support for 2011 to 2014.
-! 2014/02/04, MS+OS: implemented correction for ice/snow based on ERA-Interim
-  !   data in SR correct_for_ice_snow_ecmwf
+! 2015/02/04, MS+OS: Implemented correction for ice/snow based on ERA-Interim
+!   data in SR correct_for_ice_snow_ecmwf
+! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
 !
 ! $Id$
 !
@@ -155,8 +156,8 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    ! (Emissivity = 1) at 3.7 microns.
    ! lambda         0.67   0.87   1.6     3.7
    snow_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
-   ice_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
-   !  ice_albedo  = (/ 0.497, 0.289, 0.070,  0.0 /)
+!  ice_albedo  = (/ 0.497, 0.289, 0.070,  0.0 /)
+   ice_albedo  = (/ 0.958, 0.868, 0.0364, 0.0 /)
 
    read (cyear,*) iyear
    read (cmonth,*) imonth
@@ -366,7 +367,7 @@ end subroutine correct_for_ice_snow
 !-------------------------------------------------------------------------------
 
 subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
-     preproc_dims, pixel_ref,channel_info, nise_mask_flag)
+     preproc_dims, pixel_ref, channel_info, nise_mask_flag)
 
    use preproc_constants
    use preproc_structures
@@ -422,23 +423,28 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
 
    if (snw_frac) then
       ! snow adjacent pixel assumed completely snowy
-      pixel_ref = snow_albedo
+      do i=1,channel_info%nchannels_sw
+         pixel_ref(i) = snow_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
+      enddo
       nise_mask_flag = sym%YES
    else if (pixel_ice(1).eq.1.) then
       ! completely icy
-      pixel_ref = ice_albedo
+      do i=1,channel_info%nchannels_sw
+         pixel_ref(i) = ice_albedo (channel_info%map_ids_abs_to_snow_and_ice(i))
+      enddo
       nise_mask_flag = sym%YES
    else if (pixel_ice(1).gt.0.) then
       ! somewhat icy
       do i=1,channel_info%nchannels_sw
          if (pixel_ref(i) .ne. sreal_fill_value) pixel_ref(i) = &
-              (1. - pixel_ice(1))*pixel_ref(i) + pixel_ice(1)*ice_albedo(i)
+              (1. - pixel_ice(1))*pixel_ref(i) + pixel_ice(1) * &
+              ice_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
       end do
       if (pixel_ice(1) .ge. 0.15) then
          nise_mask_flag = sym%YES
       else
          nise_mask_flag = sym%NO
-      endif
+      end if
    else
       nise_mask_flag = sym%NO
    end if
@@ -511,7 +517,7 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
          if(preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .or. &
              preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) then
            surface%nise_mask(i,j)=sym%YES
-         else 
+         else
            surface%nise_mask(i,j)=sym%NO
          endif
 

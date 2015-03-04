@@ -25,7 +25,7 @@
 !                 logic   in          T: inputs are filenames; F: folder names
 ! verbose         logic   in          T: print status information; F: don't
 ! surface         struct  both        Surface properties structure
-! source_atts         struct  both        Source attributes
+! source_atts     struct  both        Source attributes
 !
 ! History:
 ! 30/04/2012, GT: Finished first version
@@ -205,7 +205,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   mask = imager_geolocation%latitude  .ne. sreal_fill_value .and. &
          imager_geolocation%longitude .ne. sreal_fill_value
 
-  do k=1,imager_angles%nviews
+  do k = 1,imager_angles%nviews
      mask = mask .and. &
         imager_angles%solzen(:,:,k) .ne. sreal_fill_value .and. &
         imager_angles%satzen(:,:,k) .ne. sreal_fill_value .and. &
@@ -321,8 +321,8 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         if (verbose) write(*,*) 'modis_brdf_path_file: ', trim(modis_brdf_path_file)
      end if
 
-     source_atts%albedo_file=trim(modis_surf_path_file)
-     source_atts%brdf_file=trim(modis_brdf_path_file)
+     source_atts%albedo_file = trim(modis_surf_path_file)
+     source_atts%brdf_file   = trim(modis_brdf_path_file)
 
      ! Read the data itself
      call read_mcd43c3(modis_surf_path_file, mcdc3, n_ref_chans, bands, &
@@ -337,7 +337,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      ! neighbour technique. Note we cannot allocate tmp_data until we've created
      ! the mcd structure
      allocate(tmp_data(mcdc3%nlon,mcdc3%nlat))
-     tmp_data=0.
+     tmp_data = 0.
 
      ! Also create a bit mask that controls where we apply the data filling,
      ! limiting it to the region covered by the imager data
@@ -387,7 +387,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
              i, minval(wsalnd(ii,:)), maxval(wsalnd(ii,:))
 
         if (include_full_brdf) then
-           do j = 1, 3
+           do j=1,3
               tmp_data = mcdc1%brdf_albedo_params(:,:,j,i)
 
               call fill_grid(tmp_data, sreal_fill_value, fg_mask)
@@ -443,6 +443,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      end if
 
   end if ! End of land surface reflectance setting
+
 
   !----------------------------------------------------------------------------
   ! Compute sea surface reflectance
@@ -502,6 +503,9 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
            endif
         enddo
      enddo
+
+     if (verbose) print *, 'intrument bands: ', channel_info%channel_ids_instr
+     if (verbose) print *, 'Cox and Munk bands selected: ', bands
 
      ! Interpolate the ECMWF wind fields onto the instrument grid
      seacount = 1
@@ -573,7 +577,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      deallocate(band_to_sw_index)
   end if ! End of sea surface reflectance setting
 
-  
+
   !----------------------------------------------------------------------------
   ! Copy the reflectance values from land and sea into the output surface
   ! reflectance structure.
@@ -604,7 +608,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
               ! albedo or rho_dd
               ii = 0
               kk = 0
-              do k = 1, channel_info%nchannels_total
+              do k=1,channel_info%nchannels_total
                  if (channel_info%channel_sw_flag(k) .ne. 0) ii = ii + 1
                  if (channel_info%channel_lw_flag(k) .ne. 0) kk = kk + 1
                  if (channel_info%channel_sw_flag(k) .ne. 0 .and. &
@@ -650,7 +654,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   if (allocated(refsea)) deallocate(refsea)
   if (allocated(rhosea)) deallocate(rhosea)
 
-  
+
   if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving get_surface_reflectance()'
 
 end subroutine get_surface_reflectance

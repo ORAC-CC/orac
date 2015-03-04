@@ -19,6 +19,7 @@
 ! 2014/10/15, GM: Added map_ids_abs_to_ref_band_land and
 !    map_ids_abs_to_ref_band_sea and removed channel_proc_flag.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
 !
 ! $Id$
 !
@@ -71,9 +72,13 @@ module channel_structures
       integer(kind=lint), dimension(:), pointer :: channel_ids_rttov_coef_sw
       integer(kind=lint), dimension(:), pointer :: channel_ids_rttov_coef_lw
 
-      !map the abs channel ids to the ancillary reflectance input bands
+      !map the channel ids to the ancillary reflectance input bands
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_land
       integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_ref_band_sea
+
+      !map the channel ids to the snow and ice albedo channels in
+      !correct_for_ice_snow()
+      integer(kind=lint), dimension(:), pointer :: map_ids_abs_to_snow_and_ice
 
    end type channel_info_s
 

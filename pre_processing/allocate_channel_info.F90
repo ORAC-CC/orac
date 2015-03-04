@@ -19,6 +19,7 @@
 ! 2014/10/15, GM: Added allocation of map_ids_abs_to_ref_band_land and
 !    map_ids_abs_to_ref_band_sea and removed allocation of channel_proc_flag.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/03/04, GM: Added map_ids_abs_to_snow_and_ice.
 !
 ! $Id$
 !
@@ -52,5 +53,8 @@ subroutine allocate_channel_info(channel_info)
    channel_info%map_ids_abs_to_ref_band_land=lint_fill_value
    allocate(channel_info%map_ids_abs_to_ref_band_sea(channel_info%nchannels_total))
    channel_info%map_ids_abs_to_ref_band_sea=lint_fill_value
+
+   allocate(channel_info%map_ids_abs_to_snow_and_ice(channel_info%nchannels_total))
+   channel_info%map_ids_abs_to_snow_and_ice=lint_fill_value
 
 end subroutine allocate_channel_info

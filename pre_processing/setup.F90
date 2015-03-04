@@ -120,6 +120,9 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
       (/ 0,    1,    2,    6,    20,   0,    0 /)
 
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+      (/ 0,    1,    2,    3,    4,    0,    0 /)
+
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -169,7 +172,8 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_aatsr()'
 
@@ -225,6 +229,9 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
       (/ 1,    2,      6,    20,   0,    0 /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+      (/ 1,    2,      3,    4,    0,    0 /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -357,7 +364,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_avhrr()'
 
@@ -460,6 +468,14 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+      (/ 1,         2,         0,         0,         0,         3, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         4,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0, &
+         0,         0,         0,         0,         0,         0 /)
+
 
    ! Only this below needs to be set to change the desired default channels. All
    ! other channel related arrays/indexes are set automatically given the static
@@ -517,7 +533,8 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_modis()'
 
@@ -574,6 +591,9 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
       (/ 1,     2,    6,    20,   0,    6,    0,    0,    0,     0,     0 /)
+
+   integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
+      (/ 1,     2,    3,    4,    0,    0,    0,    0,    0,     0,     0 /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -636,7 +656,8 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    call common_setup(channel_info, channel_ids_user, channel_ids_default, &
       all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
       all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
+      all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+      all_map_ids_abs_to_snow_and_ice)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving setup_seviri()'
 
@@ -646,7 +667,8 @@ end subroutine setup_seviri
 subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    all_channel_wl_abs, all_channel_sw_flag, all_channel_lw_flag, &
    all_channel_ids_rttov_coef_sw, all_channel_ids_rttov_coef_lw, &
-   all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea)
+   all_map_ids_abs_to_ref_band_land, all_map_ids_abs_to_ref_band_sea, &
+   all_map_ids_abs_to_snow_and_ice)
 
    use channel_structures
 
@@ -662,6 +684,7 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
    integer,              intent(in)    :: all_channel_ids_rttov_coef_lw(:)
    integer,              intent(in)    :: all_map_ids_abs_to_ref_band_land(:)
    integer,              intent(in)    :: all_map_ids_abs_to_ref_band_sea(:)
+   integer,              intent(in)    :: all_map_ids_abs_to_snow_and_ice(:)
 
    integer :: i
    integer :: i_sw
@@ -717,6 +740,9 @@ subroutine common_setup(channel_info, channel_ids_user, channel_ids_default, &
 
          channel_info%map_ids_abs_to_ref_band_sea (i_sw) = &
             all_map_ids_abs_to_ref_band_sea (channel_info%channel_ids_instr(i))
+
+         channel_info%map_ids_abs_to_snow_and_ice (i_sw) = &
+            all_map_ids_abs_to_snow_and_ice (channel_info%channel_ids_instr(i))
 
          i_sw = i_sw + 1
       end if

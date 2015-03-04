@@ -138,7 +138,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
 #else
    n_chans = channel_info%nchannels_lw
 #endif
-   
+
    allocate(ch_total_index(n_chans))
    allocate(ch_lw_index(n_chans))
    j = 1
@@ -160,13 +160,12 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
       end if
    end do
 
-   ! embands is modis numbering of IR channels where,
-   ! channel_info%channel_lw_flag .ne. 0
    if (verbose) write(*,*) 'n channels for land emissivity: ', &
                            channel_info%nchannels_lw
-
    if (verbose) write(*,*) 'instrument bands for land emissivity: ', &
                            channel_info%channel_ids_instr(ch_total_index)
+   if (verbose) write(*,*) 'instument wavelengths for land emissivity: ', &
+                           channel_info%channel_wl_abs(ch_total_index)
 
    ! Select correct modis file
    if (assume_full_path) then
@@ -177,7 +176,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    end if
    if (verbose) write(*,*) 'cimss_emis_path_file: ', trim(cimss_emis_path_file)
 
-   source_atts%emissivity_file=trim(cimss_emis_path_file)
+   source_atts%emissivity_file = trim(cimss_emis_path_file)
 
    ! Read the data itself
    if (read_cimss_emissivity(cimss_emis_path_file, emis, &
@@ -190,7 +189,6 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    ! This emissivity data has very few missing values, but there are some. Set
    ! these to 0.999 (as close to 1 as the emissivity data itself gets). This is
    ! also a vaguely reasonable value for the water as well....
-
 
    allocate(transemis(emis%nlon,emis%nlat,emis%nbands))
    do i=1,emis%nbands
@@ -208,10 +206,10 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
                  emis%lat0, emis%lat_invdel, emis%nlat, &
                  imager_geolocation%longitude(i,j), &
                  imager_geolocation%latitude(i,j), interp)
-             do k=1,n_chans
-                call interp_field(transemis(:,:,k), &
-                    surface%emissivity(i,j,ch_lw_index(k)), interp)
-             end do
+            do k=1,n_chans
+               call interp_field(transemis(:,:,k), &
+                   surface%emissivity(i,j,ch_lw_index(k)), interp)
+            end do
          end if
       end do
    end do
@@ -222,19 +220,19 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    allocate(summat(preproc_dims%min_lon:preproc_dims%max_lon, &
         preproc_dims%min_lat:preproc_dims%max_lat, n_chans))
 
-   counter=0
-   summat=0.
+   counter = 0
+   summat  = 0.
    do j=1,emis%nlat
-      lat=floor((emis%lat0+(j-1)*emis%lat_del+preproc_dims%lat_offset)* &
-           preproc_dims%dellat)+1
+      lat = floor((emis%lat0+(j-1)*emis%lat_del+preproc_dims%lat_offset)* &
+            preproc_dims%dellat)+1
       if (lat.ge.preproc_dims%min_lat .and. lat.le.preproc_dims%max_lat) then
          do i=1,emis%nlon
-            lon=floor((emis%lon0+(i-1)*emis%lon_del+preproc_dims%lon_offset)* &
-                 preproc_dims%dellon)+1
+            lon = floor((emis%lon0+(i-1)*emis%lon_del+preproc_dims%lon_offset)* &
+                  preproc_dims%dellon)+1
             if (lon.ge.preproc_dims%min_lon .and. &
                  lon.le.preproc_dims%max_lon) then
-               summat(lon,lat,:)=summat(lon,lat,:)+transemis(i,j,:)
-               counter(lon,lat) =counter(lon,lat)+1
+               summat(lon,lat,:) = summat(lon,lat,:)+transemis(i,j,:)
+               counter(lon,lat)  = counter(lon,lat)+1
             end if
          end do
       end if
