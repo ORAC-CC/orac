@@ -146,7 +146,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       ! Check if file exists
       inquire(file=chan_file, exist=file_exists)
       if (.not. file_exists) then
-         write(*,*) 'ERROR: Read_SAD_Chan(): SAD channel file not found.', &
+         write(*,*) 'ERROR: Read_SAD_Chan(): SAD channel file not found: ', &
                     trim(chan_file)
          stop error_stop_code
       end if

@@ -55,7 +55,7 @@ subroutine Dealloc_RTM(Ctrl, RTM)
    type(RTM_t),  intent(inout) :: RTM
 
 !  Deallocate sizes of SW sub-structure arrays
-   if (Ctrl%Ind%Ny-Ctrl%Ind%NThermal > 0) then
+   if (Ctrl%Ind%NSolar > 0) then
       deallocate(RTM%SW%Tac)
       deallocate(RTM%SW%Tbc)
    end if

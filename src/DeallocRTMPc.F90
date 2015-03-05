@@ -46,7 +46,7 @@ subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc)
 
    ! Deallocate sizes of SW sub-structure arrays
 
-   if (Ctrl%Ind%Ny-Ctrl%Ind%NThermal > 0) then
+   if (Ctrl%Ind%NSolar > 0) then
       deallocate(RTM_Pc%SW%Tac)
       deallocate(RTM_Pc%SW%Tbc)
       deallocate(RTM_Pc%SW%dTac_dPc)

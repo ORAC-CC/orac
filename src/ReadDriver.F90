@@ -168,7 +168,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       inquire(file=drifile, exist=file_exists)
       if (.not. file_exists) then
          write(*,*) 'ERROR: ReadDriver(): Driver file pointed to by ' // &
-                    'ORAC_DRIVER does not exist: ', drifile
+                    'ORAC_DRIVER does not exist: ', trim(drifile)
          stop DriverFileNotFound
       end if
 
