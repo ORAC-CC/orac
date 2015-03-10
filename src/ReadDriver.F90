@@ -91,6 +91,7 @@
 !    2015/02/04, GM: Add initialization of ReChans array.
 !    2015/02/04, OS: drifile is passed as call argument for WRAPPER
 !    2015/02/24, GM: Some small fixes to driver file error handling.
+!    2015/03/10, GM: Added Ctrl%RS%use_full_brdf as a driver option.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -857,6 +858,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
       case('CTRL%RS%FLAG')
          if (parse_string(line, Ctrl%RS%Flag)          /= 0) call h_p_e(label)
+      case('CTRL%RS%USE_FULL_BRDF')
+         if (parse_string(line, Ctrl%RS%use_full_brdf) /= 0) call h_p_e(label)
        case('CTRL%RS%SB')
          if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
       case('CTRL%RS%CB')
