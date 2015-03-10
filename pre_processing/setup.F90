@@ -64,6 +64,8 @@ contains
 ! 2015/02/19, GM: Added SEVIRI support.
 ! 2015/02/24, GM: Added the ability to change which channels are processed at
 !    run time.
+! 2015/03/10, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
+!    and 7 for sea surface reflectance.
 !
 ! $Id$
 !
@@ -98,6 +100,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 7
+
        ! 1,    2,    3,    4,    5,    6,    7
    real,    parameter :: all_channel_wl_abs (all_nchannels_total) = &
       (/ 0.55, 0.67, 0.87, 1.61, 3.74, 10.8, 12.0 /)
@@ -118,7 +121,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 4,    1,    2,    6,    0,    0,    0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 0,    1,    2,    6,    20,   0,    0 /)
+      (/ 2,    3,    4,    6,    8,    0,    0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 0,    1,    2,    3,    4,    0,    0 /)
@@ -208,6 +211,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 6
+
        ! 1,    2,      3,    4,    5,    6
    real,    parameter :: all_channel_wl_abs (all_nchannels_total) = &
       (/ 0.63, 0.8625, 1.61, 3.74, 10.8, 12.0 /)
@@ -228,7 +232,7 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 1,    2,      6,    0,    0,    0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 1,    2,      6,    20,   0,    0 /)
+      (/ 3,    4,      6,    8,    0,    0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 1,    2,      3,    4,    0,    0 /)
@@ -400,6 +404,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 36
+
        ! 1,         2,         3,         4,         5,         6,
        ! 7,         8,         9,         10,        11,        12,
        ! 13,        14,        15,        16,        17,        18,
@@ -420,6 +425,7 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
 !        9.400e-01, 3.750e+00, 3.959e+00, 3.959e+00, 4.050e+00, 4.466e+00, &
 !        4.516e+00, 1.375e+00, 6.715e+00, 7.325e+00, 8.550e+00, 9.730e+00, &
 !        1.103e+01, 1.202e+01, 1.334e+01, 1.363e+01, 1.394e+01, 1.423e+01 /)
+
    integer, parameter :: all_channel_sw_flag(all_nchannels_total) = &
       (/ 1,         1,         1,         1,         1,         1, &
          1,         1,         1,         1,         1,         1, &
@@ -461,10 +467,10 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,         0,         0,         0,         0,         0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 1,         2,         0,         0,         0,         6, &
+      (/ 3,         4,         1,         2,         5,         6, &
+         7,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0, &
-         0,         0,         0,         0,         0,         0, &
-         0,         20,        0,         0,         0,         0, &
+         0,         8,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0 /)
 
@@ -569,6 +575,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 11
+
        ! 1,         2,         3,         4,         5,         6,
        ! 7,         8,         9,         10,        11
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
@@ -590,7 +597,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 1,     2,    6,    0,    0,    0,    0,    0,    0,     0,     0 /)
 
    integer, parameter :: all_map_ids_abs_to_ref_band_sea(all_nchannels_total)  = &
-      (/ 1,     2,    6,    20,   0,    6,    0,    0,    0,     0,     0 /)
+      (/ 3,     4,    6,    8,    0,    0,    0,    0,    0,     0,     0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
       (/ 1,     2,    3,    4,    0,    0,    0,    0,    0,     0,     0 /)

@@ -97,6 +97,9 @@
 !    parallelization that come out when compiling with ifort.
 ! 15 Jan 2015, Adam Povey: Bug fix. Passing channel index into cox_munk3 wasn't
 !    compatible with arbitrary channel ordering.
+! 10 Mar 2015, Greg McGarragh: Added support for 4.69, 0.55, 1.24, and 2.13 um.
+!    Now AATSR channel 1 and MODIS channels 3, 4, 5, and 7 will work. Also,
+!    corrected some of the wavelength dependent constants.
 !
 ! $Id$
 !
@@ -129,6 +132,45 @@ module cox_munk_m
              cox_munk4_calc_shared_band_geo, &
              cox_munk4, &
              cox_munk_rho_0v_0d_dv_and_dd
+
+
+   ! Approximate median chlorophyll-A concentration from GlobCOLOUR (mg/m3)
+   real(kind=sreal), parameter :: chlconc = 0.18
+
+   ! Refractive index of air
+   real(kind=sreal), parameter :: n_air = 1.00029
+
+   !----------------------------------------------------------------------------
+   ! Wavelength dependent coefficients. Values are taken from the sources
+   ! indicated in Sayer et al., 2010.
+   !----------------------------------------------------------------------------
+   integer,          parameter :: n_lambda = 8
+
+   real(kind=sreal), parameter :: lambda(n_lambda)  = (/ 4.69,     0.55,    0.65,    0.87,    1.24,    1.60,    2.13,     3.7     /)
+
+   ! Clean sea water refractive indices
+   real(kind=sreal), parameter :: nr(n_lambda)      = (/ 1.345,    1.341,   1.338,   1.334,   1.327,   1.323,   1.313e+0, 1.374   /)
+!  real(kind=sreal), parameter :: ni(n_lambda)      = (/ 9.55e-10, 1.96e-9, 2.23e-8, 3.91e-7, 3.55e-5, 8.55e-5, 5.73e-4,  3.60e-3 /)
+   real(kind=sreal), parameter :: ni(n_lambda)      = (/ 9.55e-10, 1.96e-9, 1.64e-8, 3.71e-7, 3.55e-5, 8.55e-5, 5.73e-4,  3.60e-3 /)
+
+   ! Water absorption at these wavelengths
+!  real(kind=sreal), parameter :: baseabs(n_lambda) = (/ 0.016,    0.064,   0.410,   5.65,    360.0,   672.0,   3.38e+3,  1.22e4  /)
+   real(kind=sreal), parameter :: baseabs(n_lambda) = (/ 0.016,    0.064,   0.350,   5.37,    360.0,   672.0,   3.38e+3,  1.22e4  /)
+
+   ! Water back-scattering coefficients
+!  real(kind=sreal), parameter :: basebsc(n_lambda) = (/ 3.84e-3,  1.93e-3, 8.87e-4, 2.65e-4, 6.22e-5, 1.91e-5, 6.28e-6,  5.00e-7 /)
+   real(kind=sreal), parameter :: basebsc(n_lambda) = (/ 3.84e-3,  1.95e-3, 9.01e-4, 2.80e-4, 6.22e-5, 2.11e-5, 6.28e-6,  6.05e-7 /)
+
+   ! White cap reflectance at same wavelengths
+!  real(kind=sreal), parameter :: Rwc(n_lambda)     = (/ 0.4,      0.4,     0.4,     0.24,    0.071,   0.06,    0.0,      0.0     /)
+   real(kind=sreal), parameter :: Rwc(n_lambda)     = (/ 0.44,     0.40,    0.35,    0.25,    0.071,   0.06,    0.0,      0.0     /)
+
+   ! Coefficients required to calculate the chl-a absorption coefficient.
+!  real(kind=sreal), parameter :: coef1(n_lambda)   = (/ 3.48e-2,  2.79e-3, 5.46e-3, 0.0,     0.0,     0.0,     0.0,      0.0     /)
+!  real(kind=sreal), parameter :: coef2(n_lambda)   = (/ 1.27e-2,  6.40e-3, 8.50e-3, 0.0,     0.0,     0.0,     0.0,      0.0     /)
+   real(kind=sreal), parameter :: coef1(n_lambda)   = (/ 3.48e-2,  2.79e-3, 4.71e-3, 0.0,     0.0,     0.0,     0.0,      0.0     /)
+   real(kind=sreal), parameter :: coef2(n_lambda)   = (/ 1.27e-2,  6.40e-3, 7.50e-3, 0.0,     0.0,     0.0,     0.0,      0.0     /)
+
 
    type cox_munk_shared_band_type
       real(kind=sreal) :: chlabs
@@ -234,19 +276,11 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
    ! Local variables
    integer                          :: i
 
-   ! Wavelength dependent constants
-   real(kind=sreal)                 :: lambda(4)
-   real(kind=sreal)                 :: nr(4), ni(4)
-   real(kind=sreal)                 :: baseabs(4), basebsc(4)
-   real(kind=sreal)                 :: Rwc(4)
+   integer                          :: npts, nbands
 
    ! Wavelength dependent constants (derived)
-   real(kind=sreal)                 :: chlabs(4), chlbsc(4)
-   real(kind=sreal)                 :: totbsc(4), eta_oc(4)
-
-   ! Other constants
-   real(kind=sreal)                 :: chlconc, n_air
-   integer                          :: npts, nbands
+   real(kind=sreal)                 :: chlabs(n_lambda), chlbsc(n_lambda)
+   real(kind=sreal)                 :: totbsc(n_lambda), eta_oc(n_lambda)
 
    ! Wind speed and direction
    real(kind=sreal), allocatable    :: ws(:), wd(:)
@@ -282,42 +316,8 @@ subroutine cox_munk(bands, solza, satza, solaz, relaz, u10, v10, rho)
    real(kind=sreal), allocatable    :: rhogl(:,:)
 
 
-   !----------------------------------------------------------------------------
-   ! Coefficients needed by the model at "heritage wavelengths". Values for
-   ! 0.65, 0.87 and 1.6 microns are taken from Sayer et al. while values for 3.7
-   ! microns are taken from references there-in or estimated from values at
-   ! lower wavelengths
-   !
-   ! For future reference, Andy Sayer's values for 0.55 microns are:
-   ! nr = 1.341, ni = 1.96e-9, baseabs = 0.064, basebsc = 1.93e-3, Rwc = 0.4
-   !----------------------------------------------------------------------------
-   lambda  = (/ 0.65,    0.87,    1.60,    3.7     /)
-
-   ! Clean sea water refractive indices
-   nr      = (/ 1.338,   1.334,   1.323,   1.374   /)
-   ni      = (/ 2.23e-8, 3.91e-7, 8.55e-5, 3.60e-3 /)
-
-   ! Water absorption at these wavelengths
-   baseabs = (/ 0.410,   5.65,    672.0,   1.22e4  /)
-
-   ! Water back-scattering coefficients
-   basebsc = (/ 8.87e-4, 2.65e-4, 1.91e-5, 5.00e-7 /)
-
-   ! White cap reflectance at same wavelengths
-   Rwc     = (/ 0.4,     0.24,    0.06,    0.0      /)
-
-   ! Approximate median chlorophyll-A concentration from GlobCOLOUR
-   chlconc = 0.18 ! (mg/m3)
-
-   ! Refractive index of air
-   n_air = 1.00029 ! Refractive index of air
-
    ! Calculate the chl-a absorption coefficient from the concentration value.
-   ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
-   ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
-   ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
-   chlabs = (/ 5.46e-3,  0.0,     0.0,     0.0 /)*(1.0-exp(-1.61*chlconc)) + &
-            (/ 8.50e-3,  0.0,     0.0,     0.0 /)*chlconc
+   chlabs = coef1*(1.0-exp(-1.61*chlconc)) + coef2*chlconc
 
    ! Next define the back-scattering coefficients for chl-a
    chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda + 0.002
@@ -713,18 +713,9 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
    ! Output arguments
    real(kind=sreal), intent(out)    :: rho
 
-   ! Wavelength dependent constants
-   real(kind=sreal)                 :: lambda(4)
-   real(kind=sreal)                 :: nr(4), ni(4)
-   real(kind=sreal)                 :: baseabs(4), basebsc(4)
-   real(kind=sreal)                 :: Rwc(4)
-
    ! Wavelength dependent constants (derived)
-   real(kind=sreal)                 :: chlabs(4), chlbsc(4)
-   real(kind=sreal)                 :: totbsc(4), eta_oc(4)
-
-   ! Other constants
-   real(kind=sreal)                 :: chlconc, n_air
+   real(kind=sreal)                 :: chlabs(n_lambda), chlbsc(n_lambda)
+   real(kind=sreal)                 :: totbsc(n_lambda), eta_oc(n_lambda)
 
    ! Wind speed and direction
    real(kind=sreal)                 :: ws, wd
@@ -760,42 +751,8 @@ subroutine cox_munk2(i_band, solza, satza, solaz, relaz, u10, v10, rho)
    real(kind=sreal)                 :: rhogl
 
 
-   !----------------------------------------------------------------------------
-   ! Coefficients needed by the model at "heritage wavelengths". Values for
-   ! 0.65, 0.87 and 1.6 microns are taken from Sayer et al. while values for 3.7
-   ! microns are taken from references there-in or estimated from values at
-   ! lower wavelengths
-   !
-   ! For future reference, Andy Sayer's values for 0.55 microns are:
-   ! nr = 1.341, ni = 1.96e-9, baseabs = 0.064, basebsc = 1.93e-3, Rwc = 0.4
-   !----------------------------------------------------------------------------
-   lambda  = (/ 0.65,    0.87,    1.60,    3.7     /)
-
-   ! Clean sea water refractive indices
-   nr      = (/ 1.338,   1.334,   1.323,   1.374   /)
-   ni      = (/ 2.23e-8, 3.91e-7, 8.55e-5, 3.60e-3 /)
-
-   ! Water absorption at these wavelengths
-   baseabs = (/ 0.410,   5.65,    672.0,   1.22e4  /)
-
-   ! Water back-scattering coefficients
-   basebsc = (/ 8.87e-4, 2.65e-4, 1.91e-5, 5.00e-7 /)
-
-   ! White cap reflectance at same wavelengths
-   Rwc     = (/ 0.4,     0.24,    0.06,    0.0     /)
-
-   ! Approximate median chlorophyll-A concentration from GlobCOLOUR
-   chlconc = 0.18 ! (mg/m3)
-
-   ! Refractive index of air
-   n_air = 1.00029 ! Refractive index of air
-
    ! Calculate the chl-a absorption coefficient from the concentration value.
-   ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
-   ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
-   ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
-   chlabs = (/ 5.46e-3,  0.0,     0.0,     0.0 /)*(1.0-exp(-1.61*chlconc)) + &
-            (/ 8.50e-3,  0.0,     0.0,     0.0 /)*chlconc
+   chlabs = coef1*(1.0-exp(-1.61*chlconc)) + coef2*chlconc
 
    ! Next define the back-scattering coefficients for chl-a
    chlbsc = 0.02*(0.5-0.25*log10(chlconc))* 0.55/lambda + 0.002
@@ -1060,17 +1017,8 @@ subroutine cox_munk3_calc_shared_band(i_band, shared)
    ! Output arguments
    type(cox_munk_shared_band_type), intent(out) :: shared
 
-   ! Wavelength dependent constants
-   real(kind=sreal), parameter :: lambda(4)  = (/ 0.65,    0.87,    1.60,    3.7     /)
-   real(kind=sreal), parameter :: basebsc(4) = (/ 8.87e-4, 2.65e-4, 1.91e-5, 5.00e-7 /)
-   real(kind=sreal), parameter :: coef1(4)   = (/ 5.46e-3, 0.0,     0.0,     0.0 /)
-   real(kind=sreal), parameter :: coef2(4)   = (/ 8.50e-3, 0.0,     0.0,     0.0 /)
-
    ! Wavelength dependent constants (derived)
-   real(kind=sreal)            :: chlbsc
-
-   ! Other constants
-   real(kind=sreal), parameter :: chlconc = 0.18 ! (mg/m3)
+   real(kind=sreal) :: chlbsc
 
 
    !----------------------------------------------------------------------------
@@ -1078,9 +1026,6 @@ subroutine cox_munk3_calc_shared_band(i_band, shared)
    !----------------------------------------------------------------------------
 
    ! Calculate the chl-a absorption coefficient from the concentration value.
-   ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
-   ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
-   ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
    shared%chlabs = coef1(i_band)*(1.0-exp(-1.61*chlconc)) + coef2(i_band)*chlconc
 
    ! Next define the back-scattering coefficients for chl-a
@@ -1283,16 +1228,6 @@ subroutine cox_munk3(i_band, shared_band, shared_geo_wind, rho)
    ! Output arguments
    real(kind=sreal),                    intent(out) :: rho
 
-   ! Wavelength dependent constants
-   real(kind=sreal), parameter :: nr(4)      = (/ 1.338,   1.334,   1.323,   1.374   /)
-   real(kind=sreal), parameter :: ni(4)      = (/ 2.23e-8, 3.91e-7, 8.55e-5, 3.60e-3 /)
-   real(kind=sreal), parameter :: baseabs(4) = (/ 0.410,   5.65,    672.0,   1.22e4  /)
-   real(kind=sreal), parameter :: Rwc(4)     = (/ 0.4,     0.24,    0.06,    0.0     /)
-
-   ! Other constants
-   real(kind=sreal), parameter :: n_air      = 1.00029 ! Refractive index of air
-   real(kind=sreal), parameter :: chlconc    = 0.18    ! (mg/m3)
-
    ! White cap reflection variables
    real(kind=sreal)            :: rhowc
 
@@ -1442,9 +1377,6 @@ subroutine cox_munk4_calc_shared_wind(i_band, u10, v10, shared)
    ! Output arguments
    type(cox_munk_shared_wind_type), intent(out) :: shared
 
-   ! Wavelength dependent constants
-   real(kind=sreal), parameter :: Rwc(4) = (/ 0.4,     0.24,    0.06,    0.0     /)
-
 
    !----------------------------------------------------------------------------
    ! Calculate wind speed and direction from wind components
@@ -1517,18 +1449,6 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
    ! Output arguments
    type(cox_munk_shared_band_geo_type), intent(out) :: shared
 
-   ! Wavelength dependent constants
-   real(kind=sreal), parameter :: lambda(4)  = (/ 0.65,    0.87,    1.60,    3.7     /)
-   real(kind=sreal), parameter :: nr(4)      = (/ 1.338,   1.334,   1.323,   1.374   /)
-   real(kind=sreal), parameter :: baseabs(4) = (/ 0.410,   5.65,    672.0,   1.22e4  /)
-   real(kind=sreal), parameter :: basebsc(4) = (/ 8.87e-4, 2.65e-4, 1.91e-5, 5.00e-7 /)
-   real(kind=sreal), parameter :: coef1(4)   = (/ 5.46e-3, 0.0,     0.0,     0.0 /)
-   real(kind=sreal), parameter :: coef2(4)   = (/ 8.50e-3, 0.0,     0.0,     0.0 /)
-
-   ! Other constants
-   real(kind=sreal), parameter :: chlconc = 0.18 ! (mg/m3)
-   real(kind=sreal), parameter :: n_air = 1.00029 ! Refractive index of air
-
    ! Under-light reflection variables
    real(kind=sreal)            :: chlabs
    real(kind=sreal)            :: chlbsc
@@ -1578,9 +1498,6 @@ subroutine cox_munk4_calc_shared_band_geo(i_band, solza, satza, solaz, relaz, sh
    !----------------------------------------------------------------------------
 
    ! Calculate the chl-a absorption coefficient from the concentration value.
-   ! This is only relevant at 0.67 (and 0.55) microns. If 0.55 is needed, the
-   ! two coefficients are 2.79e-3 & 0.0064. The equation comes from
-   ! Sathyendranath, while the coefficients are taken from Devred et al. 2006
    chlabs = coef1(i_band)*(1.0-exp(-1.61*chlconc)) + coef2(i_band)*chlconc
 
    ! Next define the back-scattering coefficients for chl-a

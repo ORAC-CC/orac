@@ -101,6 +101,8 @@
 !    Values that are (rho_0v and rho_0d) are not computed and set to fill.
 ! 01/12/2014, CP: Added source attributes.
 ! 14/01/2015, AP: Allow the code to accept channels in arbitrary order.
+! 03/10/2015, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
+!    and 7 for sea surface reflectance.
 !
 ! $Id$
 !
@@ -153,7 +155,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   type(mcd43c3)                                   :: mcdc3
   integer, parameter                              :: n_modbands = 7
   integer, dimension(n_modbands)                  :: modbands
-  integer, parameter                              :: n_coxbands = 4
+  integer, parameter                              :: n_coxbands = 8
   integer, dimension(n_coxbands)                  :: coxbands
   integer, allocatable, dimension(:)              :: bands, band_to_sw_index
   integer                                         :: n_ref_chans
@@ -174,7 +176,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   real(kind=sreal), allocatable, dimension(:)     :: u10sea, v10sea
   real(kind=sreal), allocatable, dimension(:,:)   :: refsea
   real(kind=sreal), allocatable, dimension(:,:,:) :: rhosea
-  type(cox_munk_shared_band_type)                 :: cox_munk_shared_band(4)
+  type(cox_munk_shared_band_type)                 :: cox_munk_shared_band(n_coxbands)
   type(cox_munk_shared_geo_wind_type)             :: cox_munk_shared_geo_wind
 
   ! General
@@ -463,7 +465,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
 
      ! Which channels do we need?
 
-     coxbands = (/ 1, 2, 6, 20/)
+     coxbands = (/ 1, 2, 3, 4, 5, 6, 7, 8 /)
 
      ii = 0
      do i = 1, channel_info%nchannels_sw
