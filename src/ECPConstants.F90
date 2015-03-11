@@ -102,6 +102,8 @@
 !       retrieval results for warm land surfaces (e.g. Sahara, Namib)
 !    2015/01/09, Caroline Poulsen: Added IRFBd for cloud albedo calculations.
 !    2015/01/12, Adam Povey: Added bit positions for Ctrl%Ind%Ch_Is.
+!    2015/03/11, Greg McGarragh: Increase MaxNumMeas and MaxNumSolar to 36 and
+!       20, respectively.
 !
 ! Bugs:
 !    None known.
@@ -124,8 +126,8 @@ module ECP_constants
 
    ! Maximum array lengths
    integer, parameter :: MaxDiagFlags     = 14      ! Max no. of flags in diagnostic flag
-   integer, parameter :: MaxNumMeas       = 6       ! Max no. of measurement channels
-   integer, parameter :: MaxNumSolar      = 4       ! Max no. of solar channels(ATSR -specific)
+   integer, parameter :: MaxNumMeas       = 36      ! Max no. of measurement channels
+   integer, parameter :: MaxNumSolar      = 20      ! Max no. of solar channels(ATSR -specific)
    integer, parameter :: MaxCloudClass    = 3       ! Max no. of cloud classes
    integer, parameter :: MaxCloudType     = 5       ! Max. no of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max. no. of pressure levels (in SPixel RTM arrays)
