@@ -43,6 +43,8 @@
 !     4th Feb 2015, Greg McGarragh:
 !       Add support to use CTRL%ReChans.  See description in Ctrl.F90 and
 !       default values set in ReadDriver.F90.
+!    11th Mar 2015, Greg McGarragh:
+!       Remove check for missing r_e channels. It is valid not to have any.
 !
 ! Bugs:
 !    Assumes a single view for now.
@@ -77,7 +79,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    integer :: n_chans, n_tau_chans, n_r_e_chans, n_ir_chans, &
               n_ir_chans2
    integer :: min_tau_chans, min_r_e_chans, min_ir_chans, min_x
-   logical :: flag, is_not_used_or_missing(Ctrl%Ind%Ny)
+   logical :: is_not_used_or_missing(Ctrl%Ind%Ny)
    real    :: X(MaxStateVar)
    integer :: n_bad_chans, n_bad_tau_chans, n_bad_r_e_chans, n_bad_ir_chans
 
@@ -141,14 +143,12 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! rest of the Ctrl%ReChans that match to missing.  If Ctrl%ReChans is not
    ! associated it is assumed that all available r_e channels should be used.
    if (SPixel%Illum(1) .eq. IDay .and. associated(Ctrl%ReChans)) then
-      flag = .false.
       i_r_e_chan = 0
       do i_chan = 1, Ctrl%Ind%Ny
          ii_chan = find_in_array(Ctrl%r_e_chans, Ctrl%ReChans(i_chan))
          if (ii_chan .gt. 0) then
             ii_chan = find_in_array(Ctrl%Ind%Y_ID, Ctrl%ReChans(i_chan))
             if (ii_chan .gt. 0) then
-               flag = .true.
                if (.not. is_not_used_or_missing(ii_chan)) then
                   i_r_e_chan = Ctrl%ReChans(i_chan)
                   exit
@@ -156,12 +156,6 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             end if
          end if
       end do
-
-      if (.not. flag) then
-         write(*,*) 'ERROR: Get_Indexing(): No Re channel found in ' // &
-                    'Ctrl%ReChans: ', Ctrl%ReChans
-         stop error_stop_code
-      endif
 
       if (i_r_e_chan .gt. 0) then
          do i_chan = 1, Ctrl%Ind%Ny
