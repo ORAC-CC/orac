@@ -25,8 +25,8 @@
 !    25th Nov 2014, Adam Povey: Move scaling/offset definitions here.
 !     1st Dec 2014, Oliver Sus: new cldtype_vmax = 9
 !     1st Dec 2014, Caroline Poulsen: added cloud albedo
-!     5th Mar 2015, Oliver Sus: added values to nisemask scale, offset, vmin, vmax;
-!       set cth_vmin to -0.01
+!     5th Mar 2015, Oliver Sus: added values to nisemask scale, offset, vmin,
+!       vmax; set cth_vmin to -0.01
 !
 ! Bugs:
 !    None known.
@@ -276,7 +276,6 @@ module output_routines
 !     integer(kind=sint), dimension(:,:),   pointer :: albedo
 !     integer(kind=sint), dimension(:,:),   pointer :: albedo_error
 
-
       integer(kind=sint), dimension(:,:),   pointer :: stemp
       integer(kind=sint), dimension(:,:),   pointer :: stemp_error
 
@@ -317,7 +316,7 @@ module output_routines
 
       integer(kind=byte), dimension(:,:),   pointer :: nisemask
 
-     integer(kind=sint), dimension(:,:,:),  pointer :: cloud_albedo
+      integer(kind=sint), dimension(:,:,:),  pointer :: cloud_albedo
 
    end type output_data_primary
 

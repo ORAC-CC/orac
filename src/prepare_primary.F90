@@ -29,11 +29,12 @@
 ! 2014/06/13, GM: Cleaned up the code.
 ! 2014/08/31, GM: Update to use general routines in the current module.
 ! 2014/09/17, GM: Fixed handling of missing values in some cases.
-! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
-!    dem, and nisemask
-! 2014/11/15, CP: added cloud albedo
+! 2014/10/24, OS: Added variables cldtype, cloudmask, cccot_pre, lusflags,
+!    dem, and nisemask.
+! 2014/11/15, CP: Added cloud albedo.
 ! 2014/11/25, AP: Fixed bug in writing cth|ctt_uncertainty.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
+! 2015/03/11, GM: Fixed an indexing bug in writing the cloud albedo.
 !
 ! $Id$
 !
@@ -61,7 +62,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    type(Diag_t),              intent(in)    :: Diag
    type(output_data_primary), intent(inout) :: output_data
 
-   integer            :: k
+   integer            :: k, kk
    integer(kind=sint) :: temp_short_ctp_error
    real(kind=sreal)   :: temp_real, temp_real_ctp_error
    real(kind=sreal)   :: dummyreal
@@ -409,13 +410,15 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! cloud_albedo
    !----------------------------------------------------------------------------
-   do k=1,Ctrl%Ind%NSolar
+   do k=1,SPixel%Ind%NSolar
+      kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+
       dummyreal=Diag%cloud_albedo(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%cloud_albedo(i,j,k), &
-           output_data%cloud_albedo_scale(k), output_data%cloud_albedo_offset(k), &
+           dummyreal, output_data%cloud_albedo(i,j,kk), &
+           output_data%cloud_albedo_scale(kk), output_data%cloud_albedo_offset(kk), &
            sreal_fill_value, sint_fill_value, &
-           output_data%cloud_albedo_vmin(k), output_data%cloud_albedo_vmax(k), &
+           output_data%cloud_albedo_vmin(kk), output_data%cloud_albedo_vmax(kk), &
            sint_fill_value)
    end do
 

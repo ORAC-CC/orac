@@ -52,7 +52,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    type(Diag_t),                intent(in)    :: Diag
    type(output_data_secondary), intent(inout) :: output_data
 
-   integer          :: ii,k,l
+   integer          :: k,kk,l
    real(kind=sreal) :: dummyreal
 
 
@@ -168,14 +168,14 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    ! y0
    !----------------------------------------------------------------------------
    do k=1,SPixel%Ind%NY
-      ii = SPixel%spixel_y_to_ctrl_y_index(k)
+      kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       dummyreal=Diag%Y0(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%y0(i,j,ii), &
-           output_data%y0_scale(ii), output_data%y0_offset(ii), &
+           dummyreal, output_data%y0(i,j,kk), &
+           output_data%y0_scale(kk), output_data%y0_offset(kk), &
            sreal_fill_value, sint_fill_value, &
-           output_data%y0_vmin(ii), output_data%y0_vmax(ii), &
+           output_data%y0_vmin(kk), output_data%y0_vmax(kk), &
            sint_fill_value)
    end do
 
@@ -183,14 +183,14 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    ! residuals
    !----------------------------------------------------------------------------
    do k=1,SPixel%Ind%NY
-      ii = SPixel%spixel_y_to_ctrl_y_index(k)
+      kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       dummyreal=Diag%YmFit(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%residuals(i,j,ii), &
-           output_data%residuals_scale(ii), output_data%residuals_offset(ii), &
+           dummyreal, output_data%residuals(i,j,kk), &
+           output_data%residuals_scale(kk), output_data%residuals_offset(kk), &
            sreal_fill_value, sint_fill_value, &
-           output_data%residuals_vmin(ii), output_data%residuals_vmax(ii), &
+           output_data%residuals_vmin(kk), output_data%residuals_vmax(kk), &
            sint_fill_value)
    end do
 
