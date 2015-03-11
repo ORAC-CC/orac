@@ -50,23 +50,24 @@ subroutine Dealloc_RTM(Ctrl, RTM)
 
    implicit none
 
-!  Declare arguments
+   ! Declare arguments
    type(Ctrl_t), intent(in)    :: Ctrl
    type(RTM_t),  intent(inout) :: RTM
 
-!  Deallocate sizes of SW sub-structure arrays
+   ! Deallocate SW sub-structure arrays
    if (Ctrl%Ind%NSolar > 0) then
       deallocate(RTM%SW%Tac)
       deallocate(RTM%SW%Tbc)
    end if
 
-!  Deallocate sizes of LW sub-structure arrays
+   ! Deallocate LW sub-structure arrays
+   deallocate(RTM%LW%Lat)
+   deallocate(RTM%LW%Lon)
+   deallocate(RTM%LW%P)
+   deallocate(RTM%LW%T)
+   deallocate(RTM%LW%H)
+
    if (Ctrl%Ind%NThermal > 0) then
-      deallocate(RTM%LW%Lat)
-      deallocate(RTM%LW%Lon)
-      deallocate(RTM%LW%P)
-      deallocate(RTM%LW%T)
-      deallocate(RTM%LW%H)
       deallocate(RTM%LW%Ems)
       deallocate(RTM%LW%Tac)
       deallocate(RTM%LW%Tbc)

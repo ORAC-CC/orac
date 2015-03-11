@@ -84,6 +84,8 @@
 !    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
+!    2015/03/11, GM: Do not read wavelength dependent fields if NSolar is
+!       equal to 0.
 !
 ! Bugs:
 !    None known.
@@ -187,15 +189,16 @@ subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
       stop error_stop_code
    end if
 
+   if (Ctrl%Ind%NSolar > 0) then
+      ! Allocate arrays
+      allocate(RTM%SW%Tbc(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
+         RTM%SW%Grid%NLat))
+      allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
+         RTM%SW%Grid%NLat))
 
-   ! Allocate arrays
-   allocate(RTM%SW%Tbc(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
-      RTM%SW%Grid%NLat))
-   allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
-      RTM%SW%Grid%NLat))
-
-   call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, verbose, 1, index)
-   call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, verbose, 1, index)
+      call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, verbose, 1, index)
+      call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, verbose, 1, index)
+   end if
 
    ! Close SwRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) then

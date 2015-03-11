@@ -69,6 +69,8 @@
 !    30/01/2015, AP: Remove skint and sp as redundant. Use bottom of T and P
 !       arrays in SPixel%RTM instead.
 !    06/02/2015, AP: Move T profile alteration to Int_CTP.
+!    11/03/2015, GM: Do not interpolate wavelength dependent fields if the
+!       number of measurements is equal to zero.
 !
 ! Bugs:
 !    None known.
@@ -110,15 +112,17 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
         RTM%LW%Grid%NLat, SPixel%Loc%Lon, SPixel%Loc%Lat, interp, &
         RTM%LW%Grid%Wrap)
 
-   call interp_field2(RTM%LW%P,       SPixel%RTM%LW%P,       interp)
-   call interp_field2(RTM%LW%T,       SPixel%RTM%LW%T,       interp)
-   call interp_field2(RTM%LW%H,       SPixel%RTM%LW%H,       interp)
-   call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
-   call interp_field2(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
-   call interp_field2(RTM%LW%Tbc,     SPixel%RTM%LW%Tbc,     interp)
-   call interp_field2(RTM%LW%Rac_up,  SPixel%RTM%LW%Rac_up,  interp)
-   call interp_field2(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, interp)
-   call interp_field2(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
+   call interp_field2(RTM%LW%P, SPixel%RTM%LW%P, interp)
+   call interp_field2(RTM%LW%T, SPixel%RTM%LW%T, interp)
+   call interp_field2(RTM%LW%H, SPixel%RTM%LW%H, interp)
+   if (Ctrl%Ind%NThermal .gt. 0) then
+      call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
+      call interp_field2(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
+      call interp_field2(RTM%LW%Tbc,     SPixel%RTM%LW%Tbc,     interp)
+      call interp_field2(RTM%LW%Rac_up,  SPixel%RTM%LW%Rac_up,  interp)
+      call interp_field2(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, interp)
+      call interp_field2(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
+   end if
 
    ! Set surface level to TOA transmittances
    SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%LW%Np)
@@ -126,9 +130,11 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Set R_Clear using Rbc_up at the TOA
    SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
 
-   call interp_field2(RTM%LW%P,   SPixel%RTM%SW%P,   interp)
-   call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
-   call interp_field2(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, interp)
+   call interp_field2(RTM%LW%P, SPixel%RTM%SW%P, interp)
+   if (Ctrl%Ind%NSolar .gt. 0) then
+      call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
+      call interp_field2(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, interp)
+   end if
 
    ! Set surface level to TOA transmittances
    SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)

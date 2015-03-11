@@ -96,6 +96,8 @@
 !       MSI file.
 !    2015/01/30, AP: Remove sp and skint and redundant. Use bottom of T and P
 !       arrays in RTM instead.
+!    2015/03/11, GM: Do not read wavelength dependent fields if NThermal is
+!       equal to 0.
 !
 ! Bugs:
 !    None known.
@@ -241,26 +243,28 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
       stop error_stop_code
    end if
 
-   ! Allocate arrays
-   allocate(RTM%LW%Ems(Ctrl%Ind%NThermal,RTM%LW%Grid%NLon,RTM%LW%Grid%NLat))
-   allocate(RTM%LW%Tac(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-      RTM%LW%Grid%NLat))
-   allocate(RTM%LW%Tbc(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-      RTM%LW%Grid%NLat))
-   allocate(RTM%LW%Rac_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-      RTM%LW%Grid%NLat))
-   allocate(RTM%LW%Rac_dwn(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-      RTM%LW%Grid%NLat))
-   allocate(RTM%LW%Rbc_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-      RTM%LW%Grid%NLat))
+   if (Ctrl%Ind%NThermal > 0) then
+      ! Allocate arrays
+      allocate(RTM%LW%Ems(Ctrl%Ind%NThermal,RTM%LW%Grid%NLon,RTM%LW%Grid%NLat))
+      allocate(RTM%LW%Tac(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+         RTM%LW%Grid%NLat))
+      allocate(RTM%LW%Tbc(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+         RTM%LW%Grid%NLat))
+      allocate(RTM%LW%Rac_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+         RTM%LW%Grid%NLat))
+      allocate(RTM%LW%Rac_dwn(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+         RTM%LW%Grid%NLat))
+      allocate(RTM%LW%Rbc_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
+         RTM%LW%Grid%NLat))
 
-   ! Read data into arrays
-   call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, verbose, 1, index)
-   call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, verbose, 1, index)
-   call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, verbose, 1, index)
-   call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, verbose, 1, index)
-   call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, verbose, 1, index)
-   call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, verbose, 1, index)
+      ! Read data into arrays
+      call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, verbose, 1, index)
+      call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, verbose, 1, index)
+      call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, verbose, 1, index)
+      call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, verbose, 1, index)
+      call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, verbose, 1, index)
+      call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, verbose, 1, index)
+   end if
 
 !  if (allocated(WvNumber)) deallocate(WvNumber)
    if (allocated(ChanID))   deallocate(ChanID)
