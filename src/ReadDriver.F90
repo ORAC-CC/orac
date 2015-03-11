@@ -92,6 +92,8 @@
 !    2015/02/04, OS: drifile is passed as call argument for WRAPPER
 !    2015/02/24, GM: Some small fixes to driver file error handling.
 !    2015/03/10, GM: Added Ctrl%RS%use_full_brdf as a driver option.
+!    2015/03/11, GM: Added Ctrl%ReChans as a driver option.
+!    2015/03/11, GM: Added an error check for unrecognised instruments.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -532,7 +534,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
    case default
-      write(*,*) 'ERROR: ReadDriver(): Unsupported cloud/aerosol class.'
+      write(*,*) 'ERROR: ReadDriver(): Unsupported cloud/aerosol class: ', &
+                 trim(Ctrl%CloudClass)
       stop BadCloudClass
    end select
 
@@ -635,6 +638,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
             Ctrl%RS%B(i,:) = 0.00
          end select
       end do
+   else
+      write(*,*) 'ERROR: ReadDriver(): Unsupported instrument: ', &
+                 trim(Ctrl%Inst%Name)
+      stop InstIDInvalid
    end if
 
    Ctrl%RS%Sb            = 20.0/100.0 ! Percentage error in surface reflectance
@@ -657,7 +664,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%MaxPhase  = 3          ! Maximum # of phase changes
    Ctrl%Invpar%Ccj       = 0.05       ! Cost convergence criteria
 
-   Ctrl%Invpar%XScale(ITau) = 10.0       ! Scaling parameters (Tau,Re,Pc,F,Ts)
+   Ctrl%Invpar%XScale(ITau) = 10.0    ! Scaling parameters (Tau,Re,Pc,F,Ts)
    Ctrl%Invpar%XScale(IRe) = 1.0
    Ctrl%Invpar%XScale(IPc) = 1.0
    Ctrl%Invpar%XScale(IFr) = 1000.0
@@ -729,7 +736,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          Ctrl%ReChans = (/ 3, 4 /)
       else
          Ctrl%ReChans = (/ 4, 3 /)
-      endif
+      end if
 
       allocate(Ctrl%tau_chans(2))
       Ctrl%tau_chans = (/ 1, 2 /)
@@ -894,6 +901,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%QC%MaxS)          /= 0) call h_p_e(label)
       case('CTRL%SABOTAGE_INPUTS')
          if (parse_string(line, Ctrl%sabotage_inputs)  /= 0) call h_p_e(label)
+      case('CTRL%RECHANS')
+         if (parse_string(line, Ctrl%ReChans)          /= 0) call h_p_e(label)
       case default
          write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code
