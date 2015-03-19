@@ -35,6 +35,7 @@
 ! 2014/11/25, AP: Fixed bug in writing cth|ctt_uncertainty.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/03/11, GM: Fixed an indexing bug in writing the cloud albedo.
+! 2015/03/19, OS: CTH now .ge. 0
 !
 ! $Id$
 !
@@ -232,7 +233,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    if (RTM_Pc%Hc .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = RTM_Pc%Hc/10./1000. ! now it's in km
+      temp_real = max( RTM_Pc%Hc/10./1000., 0. ) ! now it's in km, and >= 0
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cth(i,j), &

@@ -27,6 +27,7 @@
 !     1st Dec 2014, Caroline Poulsen: added cloud albedo
 !     5th Mar 2015, Oliver Sus: added values to nisemask scale, offset, vmin,
 !       vmax; set cth_vmin to -0.01
+!    19th Mar 2015, Oliver Sus: cth_vmin set to 0
 !
 ! Bugs:
 !    None known.
@@ -153,7 +154,7 @@ module output_routines
 
       real(kind=sreal)              :: cth_scale        = 0.01
       real(kind=sreal)              :: cth_offset       = 0.0
-      integer(kind=sint)            :: cth_vmin         = -0.01
+      integer(kind=sint)            :: cth_vmin         = 0
       integer(kind=sint)            :: cth_vmax         = 2000
       real(kind=sreal)              :: cth_error_scale  = 0.01
       real(kind=sreal)              :: cth_error_offset = 0.0
