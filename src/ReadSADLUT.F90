@@ -10,6 +10,8 @@
 ! History:
 !    10th Oct 2014, Greg McGarragh:
 !       Original version.
+!    18th Mar 2015, Oliver Sus:
+!       Needed to add "/" for LUT file path
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -392,7 +394,7 @@ subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
       m = 1, n_m(i_chan, i_lut))
    if (iostat .ne. 0) then
       write(*,*) 'ERROR: read_values_5d(): Error reading ', v_name, &
-         ' from file: ', trim(v_name), trim(filename)
+         ' from file: ', trim(v_name), trim(filename), lun
       stop LUTFileReadErr
    end if
 
@@ -706,7 +708,7 @@ subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
    character(*), intent(in)  :: chan_num
    character(*), intent(out) :: LUT_file
 
-   LUT_file = trim(Ctrl%SAD_Dir) // '/' // trim(Ctrl%Inst%Name) // '_' // &
+   LUT_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // '_' // &
               trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
               // trim(chan_num) // '.sad'
 
