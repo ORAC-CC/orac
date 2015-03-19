@@ -79,6 +79,7 @@
   !2015/02/06 CP added case of IR only multi layer selection
   !                phase-dependent variables
   !2015/02/07 CP massive tidy up including of common constants
+  !2015/03/19 OS COT maximum value set to 100, CWP scaled accordingly + minor editing
   !
   ! Bugs:
   !    None known.
@@ -167,16 +168,16 @@
       integer(kind=byte), allocatable, dimension(:,:) :: phaseflag
 
       integer(kind=lint) :: nvars=1,nvars_errors=1, n_val_plus_error=2, &
-      n_oe_features=3
+           n_oe_features=3
 
 
       real (kind=sreal) ::tempdiff,newcot
-  
+
       type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary, &
-      l2_input_2dice_primary, l2_input_2dmli_primary
+           l2_input_2dice_primary, l2_input_2dmli_primary
       type(l2_input_struct_2d_secondary) ::  l2_input_2d_secondary
       type(l2_input_struct_2d_refl_bt) :: l2_input_2dice_refl_bt, &
-      l2_input_2dwat_refl_bt,l2_input_2dmli_refl_bt
+           l2_input_2dwat_refl_bt,l2_input_2dmli_refl_bt
       type(spixel_scanline_primary_output) :: spixel_scan_out
       type(spixel_scanline_output_rt) ::  spixel_scan_out_rt
 
@@ -213,6 +214,9 @@
       integer(kind=lint) :: nchan_solar
 
       integer :: ibit
+
+      ! maximum COT and corresponding scaling value
+      real(kind=sreal) :: cot_max, cot_scale 
 
       !this is for the wrapper
       integer :: mytask,ntasks,lower_bound,upper_bound
@@ -258,54 +262,51 @@
 
       endif
 
-write(*,*)'path_and_file',path_and_file
+      write(*,*)'path_and_file =',path_and_file
       !read from an external file
       open(11,file=trim(adjustl(path_and_file)), &
            & status='old', form='formatted')
       read(11,*) fnamewat_prim
-      write(*,*) 'fnamewat_prim',fnamewat_prim
+      write(*,*) 'fnamewat_prim =',fnamewat_prim
       read(11,*) fnameice_prim
-      write(*,*) 'fnameice_prim',fnameice_prim
+      write(*,*) 'fnameice_prim =',fnameice_prim
       if ( mli_flag .eq. 1) then
       	 read(11,*) fnamemli_prim
-      	 write(*,*) 'fnamemli_prim',fnamemli_prim
+      	 write(*,*) 'fnamemli_prim =',fnamemli_prim
       endif
 
       read(11,*) fnamewat_sec
-      write(*,*) 'sec wat',fnamewat_sec
+      write(*,*) 'sec wat =',fnamewat_sec
       read(11,*) fnameice_sec
-      write(*,*) 'secice',fnameice_sec
+      write(*,*) 'secice =',fnameice_sec
       if ( mli_flag .eq. 1) then
       	 read(11,*) fnamemli_sec
-      	 write(*,*) 'secice',fnamemli_sec
+      	 write(*,*) 'secice =',fnamemli_sec
       endif
 
       read(11,*) L2_primary_outputpath_and_file
-      write(*,*) 'prin',L2_primary_outputpath_and_file
+      write(*,*) 'prin =',L2_primary_outputpath_and_file
       read(11,*) L2_secondary_outputpath_and_file
-      write(*,*) 'sec',L2_secondary_outputpath_and_file
-     read(11,*) cot_thres
-      write(*,*) 'cot_thres',cot_thres
+      write(*,*) 'sec =',L2_secondary_outputpath_and_file
+      read(11,*) cot_thres
+      write(*,*) 'cot_thres =',cot_thres
       read(11,*) cot_thres1
-      write(*,*) 'cot_thres1',cot_thres1
+      write(*,*) 'cot_thres1 =',cot_thres1
       read(11,*) cot_thres2
-      write(*,*) 'cot_thres2',cot_thres2
+      write(*,*) 'cot_thres2 =',cot_thres2
       read(11,*) proc_flag 
-      write(*,*)'proc', proc_flag 
+      write(*,*)'proc =', proc_flag 
       read(11,*) inst
-      write(*,*) 'insts',inst
-      write(*,*) 'fnamewat ',fnamewat_prim
+      write(*,*) 'insts =',inst
       read(11,*) lsec_flag
-      write(*,*) 'lsec',lsec_flag 
+      write(*,*) 'lsec =',lsec_flag 
       read(11,*) lstrict
 !!!xxx too late to read in here
-!      read(11,*) mli_flag
-!      write(*,*) 'mli_flag',mli_flag
-!      close(11)
-     write(*,*) 'cot_thres and kind',cot_thres,cot_thres1,cot_thres2, &
+      !      read(11,*) mli_flag
+      !      write(*,*) 'mli_flag =',mli_flag
+      !      close(11)
+      write(*,*) 'cot_thres and kind =',cot_thres,cot_thres1,cot_thres2, &
            kind(cot_thres),kind(cot_thres1),kind(cot_thres2)
- 
-
 
       ! read ice and water intermediate files and put into a structure
 
@@ -316,7 +317,7 @@ write(*,*)'path_and_file',path_and_file
       write(*,*) 'PICE'
       iphase=2
       call set_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary,xdim,ydim)
-      write(*,*) 'read ice start ', fnameice_prim
+      write(*,*) 'read ice start  =', fnameice_prim
       call read_inter_file_ice(iphase,fnameice_prim,l2_input_2dice_primary, &
            xdim,ydim,global_atts,source_atts,wo,ierr)
       write(*,*) 'read ice stop' 
@@ -325,30 +326,30 @@ write(*,*)'path_and_file',path_and_file
       write(*,*) 'PWAT'
       iphase=1
       call set_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary,xdim,ydim)
-      write(*,*) 'read wat start ',fnamewat_prim
+      write(*,*) 'read wat start  =',fnamewat_prim
       call read_inter_file_water(iphase,fnamewat_prim,l2_input_2dwat_primary, &
            xdim,ydim,global_atts,source_atts,wo,ierr)
       write(*,*) 'read wat stop'
 
       call set_l2_input_struct_2d_secondary(l2_input_2d_secondary,xdim,ydim)
-      write(*,*) 'read ice secondary start ',fnameice_sec
+      write(*,*) 'read ice secondary start  =',fnameice_sec
       call  read_inter_sec_file(inst,fnameice_sec,l2_input_2d_secondary,xdim,ydim,wo,ierr)
-!write(*,*)'albedo',l2_input_2d_secondary%albedo_in_channel_no_2
+      !write(*,*)'albedo',l2_input_2d_secondary%albedo_in_channel_no_2
 
-	mli_flag=0
-	    if (mli_flag .gt. 0 )then	
-      ! phase = MLI
-      write(*,*) 'PMLI'
-      iphase=3
-      call set_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary,xdim,ydim)
-      write(*,*) 'read mli start ',fnamemli_prim
-      call read_inter_file_mli(iphase,fnamemli_prim,l2_input_2dmli_primary, &
-           xdim,ydim,global_atts,source_atts,wo,ierr)
-      write(*,*) 'read mli stop'
-  
+      mli_flag=0
+      if (mli_flag .gt. 0 )then	
+         ! phase = MLI
+         write(*,*) 'PMLI'
+         iphase=3
+         call set_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary,xdim,ydim)
+         write(*,*) 'read mli start  =',fnamemli_prim
+         call read_inter_file_mli(iphase,fnamemli_prim,l2_input_2dmli_primary, &
+              xdim,ydim,global_atts,source_atts,wo,ierr)
+         write(*,*) 'read mli stop'
 
 
-	    endif
+
+      endif
 
 
       !set the loop bounds
@@ -367,7 +368,7 @@ write(*,*)'path_and_file',path_and_file
       write(*,*) ixstart,ixstop
       write(*,*) iystart,iystop
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! loop over pixels        !!
+      ! loop over pixels        !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -383,26 +384,26 @@ write(*,*)'path_and_file',path_and_file
             l2_input_2dice_primary%phase_post(i,j) = iphaseice  
 
 
-!Information of Pavolonis cloud type
-!C,N,F,W,S,M,I,Ci,O
-!Liquid cloud phase comprises the following categories:
-!0? Clear
-!2? fog,
-!3? warm liquid water clouds, and
-!4? supercooled-mixed-phased clouds.
-!? Ice cloud phase comprises the following categories:
-!6? opaque ice clouds/deep convection,
-!7? nonopaque high ice clouds (e.g. cirrus),
-!8? cloud overlap 4 (e.g. multiple cloud layers), and
-!9? probably opaque ice clouds (e.g. neither 1.6 ìm nor 3.7 ìm channel is available during night for
-!AVHRR; 12 ìm channel is missing during night for AATSR).
+            !Information of Pavolonis cloud type
+            !C,N,F,W,S,M,I,Ci,O
+            !Liquid cloud phase comprises the following categories:
+            !0? Clear
+            !2? fog,
+            !3? warm liquid water clouds, and
+            !4? supercooled-mixed-phased clouds.
+            !? Ice cloud phase comprises the following categories:
+            !6? opaque ice clouds/deep convection,
+            !7? nonopaque high ice clouds (e.g. cirrus),
+            !8? cloud overlap 4 (e.g. multiple cloud layers), and
+            !9? probably opaque ice clouds (e.g. neither 1.6 ìm nor 3.7 ìm channel is available during night for
+            !AVHRR; 12 ìm channel is missing during night for AATSR).
 
 
 
             ! here apply Pavolonis phase information to select retrieval phase variables 
 	    ! select water type overwrite ice
             if( l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
-                l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
+                 l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
 
                phaseflag(i,j) = 1_byte
 
@@ -440,11 +441,19 @@ write(*,*)'path_and_file',path_and_file
 
             endif
 
+            ! set COT maximum value to 100; if COT is > 100, rescale COT and CWP
+            cot_max = 100. ! should be set in driver file or module
+            if ( l2_input_2dice_primary%cot(i,j) .gt. cot_max ) then
+               cot_scale = cot_max / l2_input_2dice_primary%cot(i,j) 
+               l2_input_2dice_primary%cot(i,j) = l2_input_2dice_primary%cot(i,j) * cot_scale
+               l2_input_2dice_primary%cwp(i,j) = l2_input_2dice_primary%cwp(i,j) * cot_scale
+            endif
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! DAY cloud mask post neural net
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!compute difference between surface temperature and ctt
+            !compute difference between surface temperature and ctt
 
             if(l2_input_2dice_primary%stemp(i,j) .ge. filter_micro .and. &
                  l2_input_2dice_primary%ctt(i,j) .ge. filter_micro) then
@@ -545,12 +554,12 @@ write(*,*)'path_and_file',path_and_file
             endif
 
 
-!
-!use pre processing neural net as the default cloud mask
-!!NDCCCOT_PRE(i,j) is the neural net result not a mask
-!
+            !
+            !use pre processing neural net as the default cloud mask
+            !!NDCCCOT_PRE(i,j) is the neural net result not a mask
+            !
 
-	     l2_input_2dice_primary%cc_total(i,j)= l2_input_2dice_primary%cldmask(i,j)
+            l2_input_2dice_primary%cc_total(i,j)= l2_input_2dice_primary%cldmask(i,j)
 
             ! What are we doing if at least 1 input parameter is not within trained
             ! range, e.g. is a fillvalue ?
@@ -563,20 +572,20 @@ write(*,*)'path_and_file',path_and_file
                     l2_input_2dice_primary%cc_total(i,j) = lint_fill_value
             endif
 
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !now apply clear snow ice identificationon top of exist cloud mask
             !This mask only removes cloud does not add in cloud
-	    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-!write(*,*)'snow_ice_flag before',snow_ice_flag,l2_input_2dice_primary%cc_total(i,j)
+            ! if (nise .eq. 1 .and. cc_total) TO BE IMPLEMENTED BY OS
             call snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary&
-                 &,snow_ice_flag,inst,i,j)
+                &,snow_ice_flag,inst,i,j)
 
             if (snow_ice_flag .eq. 1) then
                ! this pixel is actually clear not cloud
                l2_input_2dice_primary%cc_total(i,j)=0.0
-           endif
-!write(*,*)'snow_ice_flag after',snow_ice_flag,l2_input_2dice_primary%cc_total(i,j)
+            endif
+
             !sstapelb changed to log10precision 
             !if tau too high, set to max value not to fill value
 
@@ -616,10 +625,10 @@ write(*,*)'path_and_file',path_and_file
 
       !deallocate the water structure
       iphase=1
- 
+
       call unset_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary)
       call unset_l2_input_struct_2d_secondary(l2_input_2d_secondary)
- 
+
       !now write things out
       !open the netcdf output file
       call nc_create_global_l2_pp(trim(adjustl(L2_primary_outputpath_and_file)),&
