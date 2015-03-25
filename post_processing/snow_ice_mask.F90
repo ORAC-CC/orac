@@ -303,7 +303,7 @@ endif
 endif
 
 !
-!this test used to reduce too much iwp over greenland
+!this test used to reduce too much iwp over greenland/poles
 !
 if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
 	  
@@ -317,18 +317,18 @@ endif
   endif ! albedo
 
 
-!!this test does not require albedo test
+!!this test does not require albedo test curently removed because it does not work at night
 !apply extra strict Istomina tests that are not dependent on albedo. This test could have implications globally particually for thin cloud put too low
 !
 
-  if ((eq5_value .lt. eq5_thres_strict) .and. (eq6_value .lt. eq6_thres_strict)) then
+!  if ((eq5_value .lt. eq5_thres_strict) .and. (eq6_value .lt. eq6_thres_strict)) then
 
 !  if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_land) then
 !  if  (l2_input_2dice_primary%ref(i,j) .gt. re_min) then
- snow_ice_flag=1
+! snow_ice_flag=1
 !endif
 !endif
-endif
+!endif
 
 end subroutine snow_ice_mask
 
