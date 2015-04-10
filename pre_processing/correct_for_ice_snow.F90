@@ -94,7 +94,8 @@ contains
 ! 2015/02/04, MS+OS: Implemented correction for ice/snow based on ERA-Interim
 !   data in SR correct_for_ice_snow_ecmwf
 ! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
-!
+! 2015/04/10, GM: Fixed the use of snow/ice albedo for the BRDF parameters.
+
 ! $Id$
 !
 ! Bugs:
@@ -102,8 +103,8 @@ contains
 !-------------------------------------------------------------------------------
 
 subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
-      surface,cyear,cmonth,cday,channel_info,assume_full_path,source_atts, &
-      verbose)
+      surface,cyear,cmonth,cday,channel_info,assume_full_path,include_full_brdf, &
+      source_atts,verbose)
 
    use channel_structures
    use constants_cloud_typing_pavolonis
@@ -124,6 +125,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    character(len=date_length), intent(in)    :: cyear,cmonth,cday
    type(channel_info_s),       intent(in)    :: channel_info
    logical,                    intent(in)    :: assume_full_path
+   logical,                    intent(in)    :: include_full_brdf
    type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
@@ -140,6 +142,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    character(len=path_length)       :: nise_path_file
    logical                          :: nise_file_exist
    character(len=7)                 :: nise_file_read
+   logical                          :: applied_flag
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering correct_for_ice_snow()'
 
@@ -281,7 +284,7 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
             call apply_ice_correction(real(easex-real(xi)), &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
                  preproc_dims, surface%albedo(i,j,:),channel_info, &
-                 surface%nise_mask(i,j))
+                 surface%nise_mask(i,j), applied_flag)
 
          else ! Repeat for the Southern Hemisphere
 
@@ -352,8 +355,15 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
             call apply_ice_correction(real(easex-real(xi)), &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
                  preproc_dims, surface%albedo(i,j,:), channel_info, &
-                 surface%nise_mask(i,j))
+                 surface%nise_mask(i,j), applied_flag)
          end if
+
+         if (include_full_brdf .and. applied_flag) then
+            surface%rho_0v(i,j,:) = 0.
+            surface%rho_0d(i,j,:) = 0.
+            surface%rho_dv(i,j,:) = 0.
+            surface%rho_dd(i,j,:) = surface%albedo(i,j,:)
+         endif
       end do
    end do
    ! Tidy up the nise structure created by the read_nsidc_snow call
@@ -367,7 +377,7 @@ end subroutine correct_for_ice_snow
 !-------------------------------------------------------------------------------
 
 subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
-     preproc_dims, pixel_ref, channel_info, nise_mask_flag)
+     preproc_dims, pixel_ref, channel_info, nise_mask_flag, applied_flag)
 
    use preproc_constants
    use preproc_structures
@@ -383,12 +393,13 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    type(preproc_dims_s),             intent(in)    :: preproc_dims
    real(kind=sreal), dimension(:),   intent(inout) :: pixel_ref
    type(channel_info_s),             intent(in)    :: channel_info
+   integer(kind=byte),               intent(out)   :: nise_mask_flag
+   logical,                          intent(out)   :: applied_flag
 
-   real,             dimension(2,2)                :: ice_frac
-   real,             dimension(1)                  :: pixel_ice
-   integer(kind=lint)                              :: i
-   logical                                         :: snw_frac
-   integer(kind=byte)                              :: nise_mask_flag
+   integer(kind=lint)               :: i
+   real,             dimension(2,2) :: ice_frac
+   real,             dimension(1)   :: pixel_ice
+   logical                          :: snw_frac
 
    snw_frac=.false.
 
@@ -421,20 +432,25 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    pixel_ice = (1.-x)*(1.-y)*ice_frac(1,1) +     x *(1.-y)*ice_frac(2,1) + &
                (1.-x)*    y *ice_frac(1,2) +     x *    y *ice_frac(2,2)
 
+   applied_flag = .false.
+
    if (snw_frac) then
       ! snow adjacent pixel assumed completely snowy
+      applied_flag = .true.
       do i=1,channel_info%nchannels_sw
          pixel_ref(i) = snow_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
       enddo
       nise_mask_flag = sym%YES
    else if (pixel_ice(1).eq.1.) then
       ! completely icy
+      applied_flag = .true.
       do i=1,channel_info%nchannels_sw
          pixel_ref(i) = ice_albedo (channel_info%map_ids_abs_to_snow_and_ice(i))
       enddo
       nise_mask_flag = sym%YES
    else if (pixel_ice(1).gt.0.) then
       ! somewhat icy
+      applied_flag = .true.
       do i=1,channel_info%nchannels_sw
          if (pixel_ref(i) .ne. sreal_fill_value) pixel_ref(i) = &
               (1. - pixel_ice(1))*pixel_ref(i) + pixel_ice(1) * &
@@ -455,7 +471,8 @@ end subroutine apply_ice_correction
 !------------------------------------------------------------------------------
 
 subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,preproc_prtm, &
-                  surface,cyear,cmonth,cday,channel_info,assume_full_path,source_atts,verbose)
+                  surface,cyear,cmonth,cday,channel_info,assume_full_path,include_full_brdf, &
+                  source_atts,verbose)
 
    use channel_structures
    use constants_cloud_typing_pavolonis
@@ -473,6 +490,7 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
    type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(preproc_prtm_s),       intent(in)    :: preproc_prtm
    logical,                    intent(in)    :: assume_full_path
+   logical,                    intent(in)    :: include_full_brdf
    type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
 
@@ -482,9 +500,10 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
    type(channel_info_s),       intent(in)    :: channel_info
 
    ! Local variables
+   logical                          :: flag
+   integer(kind=4)                  :: i,j,lon_i,lat_j
    real(kind=sreal), dimension(4)   :: snow_albedo, ice_albedo, tmp_albedo
    real(kind=sreal)                 :: snow_threshold, ice_threshold
-   integer(kind=4)                  :: i,j,lon_i,lat_j
    real                             :: fmonth
 
 
@@ -521,30 +540,41 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
            surface%nise_mask(i,j)=sym%NO
          endif
 
-! calculate albedo according to fraction of sea ice
-         if(preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .and. &
-             preproc_prtm%snow_depth(lon_i,lat_j) .lt. snow_threshold) &
+         flag = .false.
+
+         ! calculate albedo according to fraction of sea ice
+         if (preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .and. &
+             preproc_prtm%snow_depth(lon_i,lat_j) .lt. snow_threshold) then
+             flag = .true.
              surface%albedo(i,j,:) = &
              ice_albedo*preproc_prtm%sea_ice_cover(lon_i,lat_j) + &
              tmp_albedo*(1.-preproc_prtm%sea_ice_cover(lon_i,lat_j))
 
-! same as before but with snow cover on sea ice part
-         if(preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .and. &
-             preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) &
+         ! same as before but with snow cover on sea ice part
+         else if (preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .and. &
+             preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) then
+             flag = .true.
              surface%albedo(i,j,:) = &
              snow_albedo*preproc_prtm%sea_ice_cover(lon_i,lat_j) + &
              tmp_albedo*(1.-preproc_prtm%sea_ice_cover(lon_i,lat_j))
 
-! calculate albedo for snowy pixels in absence of sea ice
-         if(preproc_prtm%sea_ice_cover(lon_i,lat_j) .lt. ice_threshold .and. &
-             preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) &
+         ! calculate albedo for snowy pixels in absence of sea ice
+         else if (preproc_prtm%sea_ice_cover(lon_i,lat_j) .lt. ice_threshold .and. &
+             preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) then
+             flag = .true.
              surface%albedo(i,j,:) = snow_albedo
 
+         endif
+
+         if (include_full_brdf .and. flag) then
+            surface%rho_0v(i,j,:) = 0.
+            surface%rho_0d(i,j,:) = 0.
+            surface%rho_dv(i,j,:) = 0.
+            surface%rho_dd(i,j,:) = surface%albedo(i,j,:)
+         end if
       enddo
     enddo
 
 end subroutine correct_for_ice_snow_ecmwf
-
-
 
 end module correct_for_ice_snow_m

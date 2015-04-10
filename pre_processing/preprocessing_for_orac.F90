@@ -900,11 +900,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 #ifdef WRAPPER
       call correct_for_ice_snow_ecmwf(nise_ice_snow_path, imager_geolocation, &
            preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, channel_info, &
-           assume_full_paths, source_atts, verbose)
+           assume_full_paths, include_full_brdf, source_atts, verbose)
 #else
       call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
            preproc_dims, surface, cyear, cmonth, cday, channel_info, &
-           assume_full_paths, source_atts, verbose)
+           assume_full_paths, include_full_brdf, source_atts, verbose)
 #endif
 
       if (verbose) write(*,*)  'Calculate Pavolonis cloud phase'
