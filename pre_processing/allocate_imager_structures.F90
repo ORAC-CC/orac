@@ -70,7 +70,7 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
    allocate(imager_geolocation%dem( &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
-   imager_geolocation%dem=sint_fill_value
+   imager_geolocation%dem=lint_fill_value
 
    allocate(imager_angles%solzen( &
         imager_geolocation%startx:imager_geolocation%endx, &
