@@ -6,21 +6,21 @@ F90=ftn
 CC=cc
 
 
-OBJS=obj
+OBJS=../obj
 #OBJS=./
 WFLAG=-DWRAPPER
 AUXFLAGS=-Q $(OBJS) -J $(OBJS) $(WFLAG)
 
 #debugging
-#FFLAGS=-O noomp -eD -eC -eI -hfp_trap -rom -K trap=fp -g -ef -em #-eP
-#LFLAGS=-O noomp -eD -eC -eI -hfp_trap -rom -K trap=fp -g -ef -em #-eP
-#CFLAGS=-O noomp -eD -eC -eI -hfp_trap  -K trap=fp -g -ef -em -eP
+FFLAGS=-O noomp -eD -eC -eI -hfp_trap -rom -K trap=fp -g -ef -em #-eP
+LFLAGS=-O noomp -eD -eC -eI -hfp_trap -rom -K trap=fp -g -ef -em #-eP
+CFLAGS=-O noomp -eD -eC -eI -hfp_trap  -K trap=fp -g -ef -em -eP
 
 
 #performance serial
-FFLAGS=-O noomp -O3 -Oipa3 -Ovector3 -Ofp3 -Ocache3 -Oaggress -rom -em -ef 
-LFLAGS=-O noomp -O3 -Oipa3 -Ovector3 -Ofp3 -Ocache3 -Oaggress -rom -em -ef 	
-CFLAGS=-O noomp -O3  -ef -em
+#FFLAGS=-O noomp -O3 -Oipa3 -Ovector3 -Ofp3 -Ocache3 -Oaggress -rom -em -ef 
+#LFLAGS=-O noomp -O3 -Oipa3 -Ovector3 -Ofp3 -Ocache3 -Oaggress -rom -em -ef 
+#CFLAGS=-O noomp -O3  -ef -em
 
 #performance OMP
 #FFLAGS= -O omp -O3 -Oipa3 -Ovector3 -Ofp3 -Ocache3 -Oaggress -Oscalar3 -Othread3 -hflex_mp=tolerant -rom -em -ef

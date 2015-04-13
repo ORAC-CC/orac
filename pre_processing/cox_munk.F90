@@ -1117,7 +1117,6 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    ! Calculate wind speed and direction from wind components
    !----------------------------------------------------------------------------
    ws = sqrt(u10*u10 + v10*v10) ! Wind speed in m/s
-   !write(*,*) "u10, v10, ws = ", u10, v10, ws
    wd = acos(v10/ws)            ! Wind angle in radians from north
    if (u10 .lt. 0.0) wd = -wd   ! Azimuth angle on -180 - 180 degree interval
 
@@ -1179,13 +1178,6 @@ subroutine cox_munk3_calc_shared_geo_wind(solza, satza, solaz, relaz, u10, v10, 
    else
       shared%cosbeta = 0.0
    end if
-
-!    write(*,*) "cosomega = ", cosomega
-!    write(*,*) "shared%cos_satza = ", shared%cos_satza
-!    write(*,*) "shared%cos_solza = ", shared%cos_solza
-!    write(*,*) "shared%sin_satza = ", shared%sin_satza
-!    write(*,*) "shared%sin_solza = ", shared%sin_solza
-!    write(*,*) "shared%cos_relaz = ", shared%cos_relaz
 
    shared%w = 0.5*acos(cosomega)
 
