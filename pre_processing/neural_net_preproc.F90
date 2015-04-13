@@ -18,8 +18,11 @@
 !         Ch3b nighttime pixels, twilight cloud mask is applied
 !     3rd Dec 2014, SteSta + OS: SATZEN is used for correcting viewing angle effect
 !         in NN output for AVHRR - still testing
-!     4th Feb 2014, SteSta + OS: now using sym%NO to set twilight flag when ch3b missing at night;
+!     4th Feb 2015, SteSta + OS: now using sym%NO to set twilight flag when ch3b missing at night;
 !         now using twilight cloud mask for 80 < solzen < 90
+!    13th Mar 2015, SteSta + OS: glint angle correction of neural net output; removed bug that called
+!         neural net even though solzen is negative; added new cloud masks and threshold tests; 
+!         use surface temperature instead of skin temperature when the latter is negative
 !
 ! Bugs:
 !    None known
@@ -37,7 +40,7 @@ contains
   subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
        & solzen, satzen, dem, niseflag, lsflag, &
        & lusflag, sfctype, cccot_pre, cldflag, lat, skint, ch3a_on_avhrr_flag, &
-       & i, j, verbose)
+       & i, j, glint_angle, verbose)
     !------------------------------------------------------------------------
 
     use constants_cloud_typing_pavolonis
@@ -61,7 +64,7 @@ contains
     integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
     integer(kind=sint), intent(in) :: sfctype, ch3a_on_avhrr_flag
     integer(kind=lint), intent(in) :: dem
-    real(kind=sreal),   intent(in) :: solzen, lat, skint, satzen
+    real(kind=sreal),   intent(in) :: solzen, lat, skint, satzen, glint_angle
     real(kind=sreal),   intent(in) :: channel1, channel2, channel3b, channel4, channel5
     integer(kind=lint), intent(in) :: i, j
     logical,            intent(in) :: verbose
@@ -71,8 +74,16 @@ contains
     real(kind=sreal),   intent(out) :: cccot_pre
 
     ! LOCAL variables
-    real(kind=sreal) :: ch1, ch2, ch3b, ch4, ch5    
-    real(kind=sreal) :: btd_ch4_ch5, btd_ch4_ch3b
+    real(kind=sreal)   :: ch1, ch2, ch3b, ch4, ch5    
+    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b
+    integer(kind=sint) :: glint_mask
+    logical            :: call_neural_net
+
+    if ( glint_angle .lt. 40.0 .and. glint_angle .ne. sreal_fill_value ) then
+       glint_mask = sym%YES
+    else
+       glint_mask = sym%NO
+    endif
 
     if ( channel1 .eq. sreal_fill_value ) then
        ch1 = channel1
@@ -92,6 +103,9 @@ contains
     btd_ch4_ch5  = ch4 - ch5
     btd_ch4_ch3b = ch4 - ch3b
 
+    ! call neural net unless solzen is negative
+    call_neural_net = .TRUE.
+
     if ( ( solzen .gt. 0 ) .and. (solzen  .le. 80) ) then
        illum_nn = 1
     elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then       
@@ -102,36 +116,39 @@ contains
        if ( ch3a_on_avhrr_flag .ne. sym%NO ) illum_nn = 2
     else
        illum_nn = 0
+       ! if solzen is negative, do not call neural net
+       call_neural_net = .FALSE.
     endif
 
     ! --- if day
     if ( illum_nn .eq. 1 ) then
 
-       nneurons = nneurons_ex3 		!set number of neurons
-       ninput   = ninput_ex3    	!set number of input parameter for the neural network
+       nneurons = nneurons_ex9 		!set number of neurons
+       ninput   = ninput_ex9    	!set number of input parameter for the neural network
 
        !ranges variables within training was performed
        allocate(minmax_train(ninput,2))
-       minmax_train=minmax_train_ex3  
+       minmax_train=minmax_train_ex9  
 
        !"weights" for input
        allocate(inv(ninput+1,nneurons))
-       inv=inv_ex3
+       inv=inv_ex9
 
        !"weights" for output
        allocate(outv(nneurons+1))
-       outv=outv_ex3
+       outv=outv_ex9
 
        allocate(scales(ninput,2))
-       scales=scales_ex3 		!parameters to scale input?
-       oscales=oscales_ex3 		!parameters to scale output?
-       temperature=temperature_ex3	!"temperature" for sigmoid function
-       cutoff=cutoff_ex3
-       bias_i=bias_i_ex3
-       bias_h=bias_h_ex3
+       scales=scales_ex9 		!parameters to scale input?
+       oscales=oscales_ex9 		!parameters to scale output?
+       temperature=temperature_ex9	!"temperature" for sigmoid function
+       cutoff=cutoff_ex9
+       bias_i=bias_i_ex9
+       bias_h=bias_h_ex9
 
        ! input
        allocate(input(ninput+1)) 
+
        input(1) = ch1    	! ch1 600nm
        input(2) = ch2   	! ch2 800nm
        input(3) = ch4 	        ! ch4 11 µm
@@ -145,35 +162,38 @@ contains
 
        ! TWILIGHT
 
-       nneurons       = nneurons_ex4 	!set number of neurons
-       ninput         = ninput_ex4 	!set number of input parameter for the neural network
+       nneurons       = nneurons_ex10 	!set number of neurons
+       ninput         = ninput_ex10 	!set number of input parameter for the neural network
 
        !ranges variables within training was performed
        allocate(minmax_train(ninput,2))
-       minmax_train=minmax_train_ex4
+       minmax_train=minmax_train_ex10
 
        !"weights" for input
        allocate(inv(ninput+1,nneurons))
-       inv=inv_ex4
+       inv=inv_ex10
 
        !"weights" for output
        allocate(outv(nneurons+1))
-       outv=outv_ex4
+       outv=outv_ex10
 
        allocate(scales(ninput,2))
-       scales=scales_ex4 		!parameters to scale input?
-       oscales=oscales_ex4		!parameters to scale output?
-       temperature=temperature_ex4	!"temperature" for sigmoid function
-       cutoff=cutoff_ex4
-       bias_i=bias_i_ex4
-       bias_h=bias_h_ex4
+       scales=scales_ex10 		!parameters to scale input?
+       oscales=oscales_ex10		!parameters to scale output?
+       temperature=temperature_ex10	!"temperature" for sigmoid function
+       cutoff=cutoff_ex10
+       bias_i=bias_i_ex10
+       bias_h=bias_h_ex10
 
        !input
        allocate(input(ninput+1)) 
+
        input(1) = ch4 	        ! ch4 11 µm
        input(2) = ch5 	        ! ch5 12 µm
        input(3) = btd_ch4_ch5 	! 11-12 µm
        input(4) = skint
+       ! exclude negative skin-rad4 temperatures at night/twilight, this needs to be tested!!
+       if ( ( skint - ch4 ) .lt. 0 ) input(4) = ch4
        input(5) = niseflag
        input(6) = lsflag
 
@@ -181,28 +201,28 @@ contains
 
        ! --- night
 
-       nneurons       = nneurons_ex5 	!set number of neurons
-       ninput         = ninput_ex5 	!set number of input parameter for the neural network
+       nneurons       = nneurons_ex11 	!set number of neurons
+       ninput         = ninput_ex11 	!set number of input parameter for the neural network
 
        !ranges variables within training was performed
        allocate(minmax_train(ninput,2))
-       minmax_train=minmax_train_ex5
+       minmax_train=minmax_train_ex11
 
        !"weights" for input
        allocate(inv(ninput+1,nneurons))
-       inv=inv_ex5
+       inv=inv_ex11
 
        !"weights" for output
        allocate(outv(nneurons+1))
-       outv=outv_ex5
+       outv=outv_ex11
 
        allocate(scales(ninput,2))
-       scales=scales_ex5 		!parameters to scale input?
-       oscales=oscales_ex5		!parameters to scale output?
-       temperature=temperature_ex5	!"temperature" for sigmoid function
-       cutoff=cutoff_ex5
-       bias_i=bias_i_ex5
-       bias_h=bias_h_ex5
+       scales=scales_ex11 		!parameters to scale input?
+       oscales=oscales_ex11		!parameters to scale output?
+       temperature=temperature_ex11	!"temperature" for sigmoid function
+       cutoff=cutoff_ex11
+       bias_i=bias_i_ex11
+       bias_h=bias_h_ex11
 
        !input
        allocate(input(ninput+1)) 
@@ -212,6 +232,8 @@ contains
        input(4) = btd_ch4_ch3b	! 11-3.7 µm
        input(5) = btd_ch4_ch5 	! 11-12 µm
        input(6) = skint
+       ! exclude negative skin-rad4 temperatures at night/twilight, this needs to be tested!!
+       if ( ( skint - ch4 ) .lt. 0 ) input(6) = ch4
        input(7) = niseflag
        input(8) = lsflag
 
@@ -226,85 +248,161 @@ contains
 
 
     ! --- subroutine which carries out neural network computation
-    call neural_net(nneurons,ninput,minmax_train,inv,outv, &
-         & input,scales,oscales,cutoff,bias_i,bias_h,     &
-         & temperature,output,noob)
 
-    ! --- correct for viewing angle (smile) effect - test phase for AVHRR
-    output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
+    if ( call_neural_net ) then
 
-    ! --- ensure that CCCOT is within 0 - 1 range
-    cccot_pre = max( min( output, 1.0 ), 0.0)
+       call neural_net(nneurons,ninput,minmax_train,inv,outv, &
+            & input,scales,oscales,cutoff,bias_i,bias_h,     &
+            & temperature,output,noob)
 
-    ! --- get rid of fields
-    deallocate(minmax_train)
-    deallocate(inv)
-    deallocate(outv)
-    deallocate(input)
-    deallocate(scales)
+       ! --- correct for viewing angle effect - test phase for AVHRR
+       output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
-    ! now create BIT mask: 0=CLEAR, 1=CLOUDY, fill_value=unknown
+       ! --- correct for sunglint - test phase for AVHRR
+!       output = output + min( 0., ( 1. - cos( glint_angle * d2r ) / cos( 50. * d2r ) ) ) * 0.3
+       !the following uses a parabel equation and is almost the same as above with:
+       !max_reduce = 1./6. (at 0° glint)
+       !zero_point =   50. (turning point in degrees where reduction is set to zero.)
+       !power      =    2. (in-/decrease reduction between 0° and zero_point)
+       !output = output + min( 0., (max_reduce * ( (glint_angle / zero_point. )**power -1.) ) )
+       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
+       !output = output + min( 0., (1./6. * ( (glint_angle / 50. )**3. -1.) ) )
 
-    ! apply sea threshold
-    if ( lsflag .eq. 0_byte ) then
+       ! --- ensure that CCCOT is within 0 - 1 range
+       cccot_pre = max( min( output, 1.0 ), 0.0)
 
-       if ( cccot_pre .gt. sym%COT_THRES_SEA ) then
-          cldflag = sym%CLOUDY
-       else
-          cldflag = sym%CLEAR
-       endif
 
+       ! --- get rid of fields
+       deallocate(minmax_train)
+       deallocate(inv)
+       deallocate(outv)
+       deallocate(input)
+       deallocate(scales)
+
+       ! now create BIT mask: 0=CLEAR, 1=CLOUDY, fill_value=unknown
+
+       ! apply sea threshold
+       ! introduced more thresholds to be more flexible
+
+       ! SEA
+       if ( lsflag .eq. 0_byte ) then
+          ! Day 
+          if (illum_nn .eq. 1 ) then 
+             ! SNOW ICE 
+             if ( niseflag .eq. sym%YES ) then
+                if ( cccot_pre .gt. sym%COT_THRES_DAY_SEA_ICE ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             else ! SNOW-ICE FREE
+                if ( cccot_pre .gt. sym%COT_THRES_DAY_SEA ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             endif
+          elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
+             ! SNOW ICE
+             if ( niseflag .eq. sym%YES ) then
+                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_SEA_ICE ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             else ! SNOW ICE FREE
+                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_SEA ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             endif
+          endif
        ! apply land threshold
-    elseif ( lsflag .eq. 1_byte ) then
-
-       if( cccot_pre .gt. sym%COT_THRES_LAND ) then
-          cldflag = sym%CLOUDY
-       else
-          cldflag = sym%CLEAR
+       elseif ( lsflag .eq. 1_byte ) then
+          ! Day 
+          if (illum_nn .eq. 1 ) then 
+             ! SNOW ICE 
+             if ( niseflag .eq. sym%YES ) then
+                if ( cccot_pre .gt. sym%COT_THRES_DAY_LAND_ICE ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             else ! SNOW ICE FREE
+                if ( cccot_pre .gt. sym%COT_THRES_DAY_LAND ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             endif
+          elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
+             ! SNOW ICE
+             if ( niseflag .eq. sym%YES ) then
+                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_LAND_ICE ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             else ! SNOW ICE FREE
+                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_LAND ) then
+                   cldflag = sym%CLOUDY
+                else
+                   cldflag = sym%CLEAR
+                endif
+             endif
+          endif
+!          if( cccot_pre .gt. sym%COT_THRES_LAND ) then
+!             cldflag = sym%CLOUDY
+!          else
+!             cldflag = sym%CLEAR
+!          endif
        endif
 
-    endif
+       ! here we go. 
+       ! What are we doing if at least 1 input parameter is not in trained range
+       ! , e.g. fillvalue ?
+       ! For now 7 cases are defined to deal with it, choose best one later
+       ! noob equals 1 if one or more input parameter is not within trained range 
+       if (noob .eq. 1_lint) then
 
-    ! here we go. 
-    ! What are we doing if at least 1 input parameter is not in trained range
-    ! , e.g. fillvalue ?
-    ! For now 6 cases are defined to deal with it, choose best one later
-    ! noob equals 1 if one or more input parameter is not within trained range 
-    if (noob .eq. 1_lint) then
+          ! Case 1) trust the ann and ... 
+          !just do nothing
+          ! Case 2) set it to clear
+          !imager_pavolonis%CCCOT_pre(i,j)= sreal_fill_value
+          !imager_pavolonis%CLDMASK(i,j)=sym%CLEAR
+          ! Case 3) set it to cloudy
+          !imager_pavolonis%CCCOT_pre(i,j)= 1.0
+          !imager_pavolonis%CLDMASK(i,j)=sym%CLOUDY
+          ! Case 4) set it to fillvalue
+          !imager_pavolonis%CCCOT_pre(i,j)=sreal_fill_value
+          !imager_pavolonis%CLDMASK(i,j)=sint_fill_value
+          ! Case 5) only during nighttime! set it to cloudy if 3.7µm is fillvalue (saturated) 
+          !but 11µm is below 230 K; cloud holes; fixes at least avhrr, dont know about aatsr 
+          !if ( (solzen > 80) .and. (ch3b .lt. 0) .and. &
+          !   & (ch4 .gt. 100) .and. (ch4 .lt. 230) ) then
+          !  cccot_pre   = 1.0
+          !  cldflag = sym%CLOUDY
+          !else
+          !  cccot_pre   = sreal_fill_value
+          !  cldflag = sint_fill_value
+          !endif
+          ! Case 6) trust ann, set cldflag to fillvalue only if all channels are
+          !  below 0. (=fillvalue)
+          if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
+               & .and. ch5 .lt. 0) cldflag = byte_fill_value
+          ! Case 7) if ch3b saturates over Antarctica and NN by default masks all pixels as cloudy
+          ! set to fill value because no information available
+          !        if (lat .lt. -65. .AND. lat .gt. -90. .AND. lsflag .eq. 1 .AND. &
+          !             & niseflag .eq. 1 .AND. illum_nn .eq. 3 .and. ch3b .lt. 0) &
+          !             & cldflag = byte_fill_value ! for cold land surfaces (Antarctica)
+          ! end of noob if-loop
+       endif
 
-       ! Case 1) trust the ann and ... 
-       !just do nothing
-       ! Case 2) set it to clear
-       !imager_pavolonis%CCCOT_pre(i,j)= sreal_fill_value
-       !imager_pavolonis%CLDMASK(i,j)=sym%CLEAR
-       ! Case 3) set it to cloudy
-       !imager_pavolonis%CCCOT_pre(i,j)= 1.0
-       !imager_pavolonis%CLDMASK(i,j)=sym%CLOUDY
-       ! Case 4) set it to fillvalue
-       !imager_pavolonis%CCCOT_pre(i,j)=sreal_fill_value
-       !imager_pavolonis%CLDMASK(i,j)=sint_fill_value
-       ! Case 5) only during nighttime! set it to cloudy if 3.7µm is fillvalue (saturated) 
-       !but 11µm is below 230 K; cloud holes; fixes at least avhrr, dont know about aatsr 
-       !if ( (solzen > 80) .and. (ch3b .lt. 0) .and. &
-       !   & (ch4 .gt. 100) .and. (ch4 .lt. 230) ) then
-       !  cccot_pre   = 1.0
-       !  cldflag = sym%CLOUDY
-       !else
-       !  cccot_pre   = sreal_fill_value
-       !  cldflag = sint_fill_value
-       !endif
-       ! Case 6) trust ann, set cldflag to fillvalue only if all channels are
-       !  below 0. (=fillvalue)
+    else
 
-       if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
-            & .and. ch5 .lt. 0) cldflag = byte_fill_value
-       !        if (lat .lt. -65. .AND. lat .gt. -90. .AND. lsflag .eq. 1 .AND. &
-       !             & niseflag .eq. 1 .AND. illum_nn .eq. 3 .and. ch3b .lt. 0) &
-       !             & cldflag = byte_fill_value ! for cold land surfaces (Antarctica)
-       !  ch3b saturates and NN by default masks all pixels as cloudy; here
-       !  set to fill value because no information available
+       cldflag = byte_fill_value
 
-       ! end of noob if loop
     endif
 
     !------------------------------------------------------------------------

@@ -43,6 +43,16 @@ $(OBJS)/preparation.o: $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         allocate_preproc_structures.F90 deallocate_preproc_structures.F90
+$(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/correct_for_ice_snow.o \
+        $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
+        $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
+        $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
+        $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \
+        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/rttov_driver.o \
+        $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
+        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
+        $(OBJS)/utils_for_main.o
 $(OBJS)/read_aatsr.o: $(OBJS)/aatsr_corrections.o $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         read_aatsr_dimensions.F90 read_aatsr_l1b.F90
@@ -92,13 +102,3 @@ $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         deallocate_surface_structures.F90
 $(OBJS)/test_rttov.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/utils_for_main.o: $(OBJS)/preproc_constants.o
-$(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/correct_for_ice_snow.o \
-        $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
-        $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
-        $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \
-        $(OBJS)/read_modis.o $(OBJS)/read_seviri.o $(OBJS)/rttov_driver.o \
-        $(OBJS)/setup.o $(OBJS)/surface_emissivity.o \
-        $(OBJS)/surface_reflectance.o $(OBJS)/surface_structures.o \
-        $(OBJS)/utils_for_main.o
