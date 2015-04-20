@@ -78,12 +78,13 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
                 root=root, xsize=xs, ysize=ys, nx=nx, ny=ny, $
                 font_size=font_s, scale=scale, label=label, $
                 frames=frames, keep_ps=keep_ps, ice=ice, $
-                short=short, wat=wat, abs_ref=abs_ref
+                short=short, wat=wat, abs_ref=abs_ref, flip=flip, $
+                norm=norm, single=single
    ON_ERROR, KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; process inputs
-   if ~KEYWORD_SET(false) && ~KEYWORD_SET(diff) then $
+   if ~KEYWORD_SET(false) && ~KEYWORD_SET(diff) && ~KEYWORD_SET(single) then $
       MESSAGE,'Please set FALSE or DIFF to indicate the desired plots.'
    if ~KEYWORD_SET(fdr) then fdr=GETENV('TESTOUT')
    revision=STRING(rev,format='(i0)')
@@ -97,7 +98,7 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
       folder=STRMID(root[0],0,STRPOS(root[0],'/',/reverse_search))
    endif else begin
       FIND_ORAC, fdr, inst, rev, folder, root, nroot, label=label
-   endelse
+  endelse
 
    ;; plot ORAC retrieval
    tag='.false'
@@ -139,9 +140,27 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
                              xsize=xs, ysize=ys, nx=nx, ny=ny, scale=scale)
       plot_set.tag = root[i]+tag
 
+      ;; plot requested single channel images
+      if KEYWORD_SET(single) then for j=0,N_ELEMENTS(single[*])-1 do begin
+         chs=PARSE_ORAC_CHANNELS(inst, single[j], str_num, abs_ref=abs_ref)
+         set=PLOT_SETTINGS('.ABS.')
+         set.title=chs[0]
+
+         ;; open data fields
+         data=NCDF_OBTAIN(fid, chs[0], fill_p)
+ 
+         ;; determine plotting filter (all points not missing)
+         filt = data ne fill_p
+         if KEYWORD_SET(qc_filt) then filt = filt AND ~(qcf AND qc_filt)
+
+         WRAP_MAPPOINTS, data, lat, lon, $
+                         debug=stop, short=short, $
+                         set, plot_set, filt, line, nl, 0.1
+      endfor
+
       ;; plot requested false colour images
       if KEYWORD_SET(false) then for j=0,N_ELEMENTS(false[0,*])-1 do begin
-         chs=PARSE_ORAC_CHANNELS(inst, false[*,0], str_num, abs_ref=abs_ref)
+         chs=PARSE_ORAC_CHANNELS(inst, false[*,j], str_num, abs_ref=abs_ref)
          set=PLOT_SETTINGS('.FALSE.')
          set.title+=': '+str_num[0]+','+str_num[1]+','+str_num[2]
 
@@ -149,6 +168,29 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
          red=NCDF_OBTAIN(fid, chs[0], fill_r)
          grn=NCDF_OBTAIN(fid, chs[1], fill_g)
          blu=NCDF_OBTAIN(fid, chs[2], fill_b)
+
+         ;; normalise data if desired (i.e. thermal)
+         if KEYWORD_SET(norm) then begin
+            if norm[0] then begin
+               mn=MIN(red, max=mx)
+               red = (red-mn)/(mx-mn)
+            endif
+            if norm[1] then begin
+               mn=MIN(grn, max=mx)
+               grn = (grn-mn)/(mx-mn)
+            endif
+            if norm[2] then begin
+               mn=MIN(blu, max=mx)
+               blu = (blu-mn)/(mx-mn)
+            endif
+         endif
+
+         ;; flip data if desired
+         if KEYWORD_SET(flip) then begin
+            if flip[0] then red = MAX(red)-red
+            if flip[1] then grn = MAX(grn)-grn
+            if flip[2] then blu = MAX(blu)-blu
+         endif
 
          ;; determine plotting filter (all points not missing)
          filt = red ne fill_r AND grn ne fill_g AND blu ne fill_b
@@ -160,9 +202,9 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
                          set, plot_set, filt, line, nl, 0.1
       endfor
 
-      ;; plot requested false colour images
+      ;; plot requested channel difference images
       if KEYWORD_SET(diff) then for j=0,N_ELEMENTS(diff[0,*])-1 do begin
-         chs=PARSE_ORAC_CHANNELS(inst, diff[*,0], str_num, abs_ref=abs_ref)
+         chs=PARSE_ORAC_CHANNELS(inst, diff[*,j], str_num, abs_ref=abs_ref)
          set=PLOT_SETTINGS('.DIFF.')
          set.title=FMT(str_num[0]+'-'+str_num[1]+' difference')
 

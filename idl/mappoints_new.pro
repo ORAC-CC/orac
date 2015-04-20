@@ -134,6 +134,8 @@
 ;   15 Oct 2014 - ACP: Alter colourbar behaviour to make sense. Add WHITE_BACK 
 ;      keyword.
 ;   19 Dec 2014 - ACP: Slight tweak to MYCOLOURS.
+;   09 Feb 2015 - ACP: Bug fix to points below range.
+;   06 Mar 2015 - AJAS: Bug fix for UNITS keyword and TITLE when /WHITE_BACK set
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -153,7 +155,8 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    position=pos,xmargin=xmar,ymargin=ymar,btickformat=btickf, $
                    plotpoints=plotpoints, plotpsym=plotpsym, debug=debug, $
                    stop=stp, silent=silent, label=label, bposition=bpos, $
-                   central_azimuth=azi, plot_colour=colour, white_back=white
+                   central_azimuth=azi, plot_colour=colour, white_back=white, $
+                   output_limit=limit
 
    ON_ERROR, KEYWORD_SET(debug) || KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT HIDDEN, LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
@@ -249,9 +252,11 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       if KEYWORD_SET(cartesian) then centre=[0.,.5*(lim[1]+lim[3])] $
       else centre=.5*[lim[0]+lim[2], lim[1]+lim[3]]
    endif
+   ;; AJAS Added color keyword so that the white background gets a black title.
    MAP_SET,limit=limit,advance=advance,xmar=xmar,ymar=ymar,/noborder, $
            title=tit,charsize=charsize,isotropic=isotropic,position=pos, $
-           noerase=noerase,central=azi,centre[0],centre[1]
+           noerase=noerase,central=azi,centre[0],centre[1], $
+           COLOR= white_back ? 0 : (falsecolour ? 16777215 : 255)
    pos=[!x.window[0],!y.window[0],!x.window[1],!y.window[1]]
 
    ;; check if plot has scalable pixels and determine plot grid size
@@ -439,8 +444,8 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          bot_colour=colours+1
          top_colour=colours+2
       endelse
-      q=WHERE(index lt 1,nq) & if nq gt 0 then index[q]=bot_colour
       q=WHERE(index gt nlevels,nq) & if nq gt 0 then index[q]=top_colour
+      q=WHERE(index lt 1,nq) & if nq gt 0 then index[q]=bot_colour
 
       ;; plot points
       for j=0l,nok-1 do $
@@ -535,9 +540,10 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          AXIS,charsize=charsize,color=colour,yaxis=0,ylog=log,ystyle=1, $
                  yrange=levels[[0,nlevels-1]],yticklen=.2,ytitle=units, $
                  yticks=(nlevels-1) < keyticks,ytickf=btickf
+         ;; AJAS removed YTITLE=units from the following AXIS command.
          AXIS,charsize=charsize,color=colour,yaxis=1,ylog=log,ystyle=1, $
                  yrange=levels[[0,nlevels-1]],yticklen=.2, $
-                 ytickname=REPLICATE(' ',10),ytitle=units, $
+                 ytickname=REPLICATE(' ',10), $
                  yticks=(nlevels-1) < keyticks
       endelse
       PLOTS,pointx,pointy1,/device,color=colour

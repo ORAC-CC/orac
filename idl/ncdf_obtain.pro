@@ -57,8 +57,10 @@ FUNCTION NCDF_OBTAIN, fid, name, fill
 
    ;; read data array from NCDF file and apply necessary scalling
    vid=NCDF_VARID(fid,name)
+   if vid lt 0 then RETURN, -1
    NCDF_VARGET,fid,vid,data
    vq=NCDF_VARINQ(fid,vid)
+   nfill=0
 
    for aid=0,vq.natts-1 do begin
       nm=NCDF_ATTNAME(fid,vid,aid)

@@ -93,7 +93,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                font_size=font_s, scale=scale, label=label, relative=rel, $
                frames=frames, keep_ps=keep_ps, ice=ice, secondary=secondary, $
                diff_only=diff_only, short=short, wat=wat, suffix=suff, $
-               full=full, clear=clear, add=add
+               full=full, clear=clear, add=add, fields=fields
    ON_ERROR, KEYWORD_SET(stop) ? 0:2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -128,7 +128,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
       ;; plot ORAC retrieval
       tag='.orac'
       if ~KEYWORD_SET(suff) then $
-         suff = (KEYWORD_SET(secondary) ? (['.primary.nc','.secondary.nc']) : $
+         suff = (KEYWORD_SET(secondary) ? (['.primary.nc',((KEYWORD_SET(wat) || KEYWORD_SET(ice)) ? '':'WAT')+'.secondary.nc']) : $
                  (['.primary.nc']))
       if KEYWORD_SET(wat) then begin
          tag='WAT'+tag
@@ -197,6 +197,10 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
 
          ;; loop over variables
          set=PLOT_SETTINGS(suff[j], inst)
+         if KEYWORD_SET(fields) then begin
+            fie=fields[*,j]
+            set=set[fie[WHERE(fie ne -1)]]
+         endif
          for k=0,N_ELEMENTS(set)-1 do begin
             ;; read values
             data=NCDF_OBTAIN(fid, set[k].name, fill)

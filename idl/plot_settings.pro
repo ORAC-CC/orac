@@ -593,11 +593,12 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].full=1
          out[i].title=FMT('Illumination flag')
          out[i].btf=''
-         out[i].blabels[0:11]=['Day','Twilight','Night','Daynore','Day -VIS1', $
-                               'Day -VIS2','Day -IR1','Day -IR2','Day -IR3', $
-                               'Night -IR1','Night -IR2','Night -IR3']
-         out[i].range=[1,12]
-         out[i].nlevels=12
+         out[i].blabels[0:2]=['Day','Twilight','Night']
+;         out[i].blabels[0:11]=['Day','Twilight','Night','Daynore','Day -VIS1', $
+;                               'Day -VIS2','Day -IR1','Day -IR2','Day -IR3', $
+;                               'Night -IR1','Night -IR2','Night -IR3']
+         out[i].range=[1,3]
+         out[i].nlevels=3
          ++i
 
 ;         out[i].name='satellite_zenith_view_no1'
@@ -682,39 +683,42 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].name='reflectance_residual_in_channel_no_'
          out[i].mode=1
          out[i].abs=1
+         out[i].btf='(f0.2)'
          out[i].title=FMT('Ref residual Ch 1','%')
          ++i
 
          out[i].name='reflectance_residual_in_channel_no_'
          out[i].mode=1
          out[i].abs=1
+         out[i].btf='(f0.2)'
          out[i].title=FMT('Ref residual Ch 2','%')
          ++i
 
          out[i].name='reflectance_residual_in_channel_no_'
          out[i].mode=1
          out[i].abs=1
+         out[i].btf='(f0.2)'
          out[i].title=FMT('Ref residual Ch 3','%')
          ++i
 
          out[i].name='brightness_temperature_residual_in_channel_no_'
          out[i].mode=1
          out[i].abs=1
-         out[i].btf='(i3)'
+         out[i].btf='(f0.2)'
          out[i].title=FMT('BT residual Ch 4','K')
          ++i
 
          out[i].name='brightness_temperature_residual_in_channel_no_'
          out[i].mode=1
          out[i].abs=1
-         out[i].btf='(i3)'
+         out[i].btf='(f0.2)'
          out[i].title=FMT('BT residual Ch 5','K')
          ++i
 
          out[i].name='brightness_temperature_residual_in_channel_no_'
          out[i].mode=1
          out[i].abs=1
-         out[i].btf='(i3)'
+         out[i].btf='(f0.2)'
          out[i].title=FMT('BT residual Ch 6','K')
          ++i
 
@@ -849,6 +853,11 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].name='difference'
          out[i].range=[0,3]
          out[i].mode=10
+      end
+      'ABS': begin
+         out[i].name='single channel'
+         out[i].range=[0,1]
+         out[i].mode=1
       end
       else: out[i].name=' '
    endcase

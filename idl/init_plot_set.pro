@@ -60,7 +60,7 @@
 ;-
 FUNCTION INIT_PLOT_SET, frames, lim, cent, label, font_s=font_s, $
                         xsize=xs, ysize=ys, nx=nx, ny=ny, scale=scale, $
-                        left=left, bottom=bott
+                        left=left, bottom=bott, horz=horz, vert=vert
    ON_ERROR, 2
    COMPILE_OPT LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -76,6 +76,8 @@ FUNCTION INIT_PLOT_SET, frames, lim, cent, label, font_s=font_s, $
    endif
    if ~KEYWORD_SET(left) then left=7.0
    if ~KEYWORD_SET(bott) then bott=1.5
+   if ~KEYWORD_SET(horz) then horz=9.0
+   if ~KEYWORD_SET(vert) then vert=5.0
 
    ;; form plot settings structure
    plot_set = {tag:'', label:label, sheet:-1, font_s:font_s, xs:xs, ys:ys,  $
@@ -92,8 +94,8 @@ FUNCTION INIT_PLOT_SET, frames, lim, cent, label, font_s=font_s, $
    if FILE_TEST(test_file,/regular) then FILE_DELETE,test_file
 
    ;; determine plot grid in normalised coordinates
-   sx=9.0*plot_set.cs           ; horizontal padding around plot
-   sy=5.0*plot_set.cs           ; vertical padding around plot
+   sx=horz*plot_set.cs           ; horizontal padding around plot
+   sy=vert*plot_set.cs           ; vertical padding around plot
    tx=(plot_set.xs - sx*plot_set.nx) / plot_set.nx ; width of a plot
    ty=(plot_set.ys - sy*plot_set.ny) / plot_set.ny ; height of a plot
    plot_set.x0=(left*plot_set.cs + $

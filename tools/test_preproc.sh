@@ -73,6 +73,7 @@ uuid_tag=0
 exec_time=`exec date +%Y%m%d%H%M%S`
 
 #start the preprocessing and pass the variables to the binary on the command line
+driver_file_base=$out_folder/preproc_driver_
 sec=`date +"%s"`
 com=()
 for j in ${!sensor[*]}; do
@@ -80,44 +81,86 @@ for j in ${!sensor[*]}; do
 
     folder=$out_folder/'V'$revision/${label[$j]}
     if [ ! -d $folder ]; then mkdir -p $folder; fi
+
+    # write driver file
+    driver_file=$driver_file_base${label[$j]}.txt
+    driver="${sensor[$j]} 
+${path_to_l1b[$j]} 
+${path_to_geo[$j]} 
+${path_to_usgs} 
+${ggam_folder} 
+${coeffs_folder} 
+${emiss_atlas_folder} 
+${ice_folder} 
+${albedo_folder} 
+${brdf_folder} 
+${emiss_folder} 
+${dellon} 
+${dellat} 
+${folder} 
+${startx[$j]} 
+${endx[$j]} 
+${starty[$j]} 
+${endy[$j]} 
+${ncdf_version} 
+${cf_convention} 
+${processing_inst} 
+${l2processor} 
+${revision} 
+${contact_email} 
+${contact_website} 
+${file_version} 
+${reference} 
+${hist} 
+${summary} 
+${keywords} 
+${comment} 
+${label[$j]} 
+${license} 
+${uuid_tag} 
+${exec_time} 
+${calib_folder} 
+${badc_flag} 
+${ggas_folder} 
+${gpam_folder} 
+${chunkproc} 
+${daynight[$j]} 
+${verbose} 
+${ncdf_chunk} 
+${full_path} 
+${brdf_flag}
+${RTTOV_version}
+${ECMWF_version}
+${SVN_version}"
+    echo "$driver" 1> $driver_file
+
+    # make header for log file
     log_file=$folder/${label[$j]}'_PREPROC_V'$revision'_'`date +"%y%m%d_%H%M"`.log
-    echo 'UUID' $uuid_tag 1> $log_file
-    echo '' 1>> $log_file
     echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" 1>> $log_file
     echo '' 1>> $log_file
-    echo 'Do this:' 1>> $log_file
-
-   # command line arguments change every so often
-    if [[ $revision -ge 2729 ]]; then
-        arg=( "${sensor[$j]}" "${path_to_l1b[$j]}" "${path_to_geo[$j]}" "${path_to_usgs}" "${ggam_folder}" "${coeffs_folder}" "${emiss_atlas_folder}" "${ice_folder}" "${albedo_folder}" "${brdf_folder}" "${emiss_folder}" "${dellon}" "${dellat}" "${folder}" "${startx[$j]}" "${endx[$j]}" "${starty[$j]}" "${endy[$j]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$j]}" "${license}" "${uuid_tag}" "${exec_time}" "${calib_folder}" "${badc_flag}" "${ggas_folder}" "${gpam_folder}" "${chunkproc}" "${daynight[$j]}" "${verbose}" "${ncdf_chunk}" "${full_path}" "${brdf_flag}" )
-    elif [[ $revision -ge 2284 ]]; then
-        arg=( "${sensor[$j]}" "${path_to_l1b[$j]}" "${path_to_geo[$j]}" "${ggam_folder}" "${coeffs_folder}" "${emiss_atlas_folder}" "${ice_folder}" "${albedo_folder}" "${emiss_folder}" "${dellon}" "${dellat}" "${folder}" "${startx[$j]}" "${endx[$j]}" "${starty[$j]}" "${endy[$j]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$j]}" "${license}" "${uuid_tag}" "${exec_time}" "${calib_folder}" "${badc_flag}" "${ggas_folder}" "${gpam_folder}" "${chunkproc}" "${daynight[$j]}" "${verbose}" "${ncdf_chunk}" "${full_path}" "${brdf_flag}" )
-    elif [[ $revision -ge 2208 ]]; then
-        arg=( "${sensor[$j]}" "${path_to_l1b[$j]}" "${path_to_geo[$j]}" "${ggam_folder}" "${coeffs_folder}" "${emiss_atlas_folder}" "${ice_folder}" "${albedo_folder}" "${emiss_folder}" "${dellon}" "${dellat}" "${folder}" "${startx[$j]}" "${endx[$j]}" "${starty[$j]}" "${endy[$j]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$j]}" "${license}" "${uuid_tag}" "${exec_time}" "${calib_folder}" "${badc_flag}" "${ggas_folder}" "${gpam_folder}" "${chunkproc}" "${daynight[$j]}" "${verbose}" "${ncdf_chunk}" "${full_path}" )
-    elif [[ $revision -ge 2133 ]]; then
-        arg=( "${sensor[$j]}" "${path_to_l1b[$j]}" "${path_to_geo[$j]}" "${ggam_folder}" "${coeffs_folder}" "${emiss_atlas_folder}" "${ice_folder}" "${albedo_folder}" "${emiss_folder}" "${gridflag}" "${dellon}" "${dellat}" "${folder}" "${startx[$j]}" "${endx[$j]}" "${starty[$j]}" "${endy[$j]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$j]}" "${license}" "${uuid_tag}" "${exec_time}" "${calib_folder}" "${badc_flag}" "${ggas_folder}" "${gpam_folder}" "${chunkproc}" "${daynight[$j]}" "${verbose}" "${ncdf_chunk}" "${full_path}" )
-    elif [[ $revision -ge 1958 ]]; then
-        arg=( "${sensor[$j]}" "${path_to_l1b[$j]}" "${path_to_geo[$j]}" "${ggam_folder}" "${coeffs_folder}" "${emiss_atlas_folder}" "${ice_folder}" "${albedo_folder}" "${emiss_folder}" "${gridflag}" "${dellon}" "${dellat}" "${folder}" "${startx[$j]}" "${endx[$j]}" "${starty[$j]}" "${endy[$j]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$j]}" "${license}" "${uuid_tag}" "${exec_time}" "${calib_folder}" "${badc_flag}" "${ggas_folder}" "${gpam_folder}" "${chunkproc}" "${daynight[$j]}" "${verbose}" "${ncdf_chunk}" )
-    elif [[ $revision -ge 1654 ]]; then
-        arg=( "${sensor[$j]}" "${path_to_l1b[$j]}" "${path_to_geo[$j]}" "${ggam_folder}" "${coeffs_folder}" "${emiss_atlas_folder}" "${ice_folder}" "${albedo_folder}" "${emiss_folder}" "${gridflag}" "${dellon}" "${dellat}" "${folder}" "${startx[$j]}" "${endx[$j]}" "${starty[$j]}" "${endy[$j]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$j]}" "${license}" "${uuid_tag}" "${exec_time}" "${calib_folder}" "${badc_flag}" "${ggas_folder}" "${gpam_folder}" "${chunkproc}" "${daynight[$j]}" "${verbose}" )
-    else
-        arg=( "${sensor[$j]}" "${path_to_l1b[$j]}" "${path_to_geo[$j]}" "${ggam_folder}" "${coeffs_folder}" "${emiss_atlas_folder}" "${ice_folder}" "${albedo_folder}" "${emiss_folder}" "${gridflag}" "${dellon}" "${dellat}" "${folder}" 0 "${startx[$j]}" "${endx[$j]}" "${starty[$j]}" "${endy[$j]}" "${ncdf_version}" "${cf_convention}" "${processing_inst}" "${l2processor}" "${revision}" "${contact_email}" "${contact_website}" "${file_version}" "${reference}" "${hist}" "${summary}" "${keywords}" "${comment}" "${label[$j]}" "${license}" "${uuid_tag}" "${exec_time}" "${calib_folder}" "${badc_flag}" "${ggas_folder}" "${gpam_folder}" "${chunkproc}" "${daynight[$j]}" )
-    fi
-
-    echo $preproc_folder/orac_preproc.x "${arg[@]}" 1>> $log_file
+    echo '-----DRIVER FILE-----' 1>> $log_file
+    echo "$driver" 1>> $log_file
+    echo '---------------------' 1>> $log_file
+    echo '' 1>> $log_file
+    echo '-----Do this-----' 1>> $log_file
+    echo "${preproc_folder}/orac_preproc.x" $driver_file 1>> $log_file
+    echo '-----------------' 1>> $log_file
     echo '' 1>> $log_file
 
+
     # Non-parallel version:
-#    $preproc_folder/orac_preproc.x "${arg[@]}" >> $log_file 2>&1
+#    $preproc_folder/orac_preproc.x $driver_file >> $log_file 2>&1
 #    echo "Processed ${label[$j]}"
 
     # parallel version
-    com="$com$preproc_folder/orac_preproc.x ${arg[@]} >> $log_file 2>&1 && "\
+    com="$com$preproc_folder/orac_preproc.x $driver_file >> $log_file 2>&1 && "\
 "echo 'Processed ${label[$j]}'"$'\n'
 # the second line prints 'Processed' on completition
 done
 echo "$com" | xargs -P $n_procs -n 1 -I COMMAND sh -c COMMAND
 echo 'Processing took '$((`date +"%s"`-$sec))' s'
+
+rm -f $driver_file_base*
 
 #------------------------------------------------------------------------------
 # CHECK RESULTS

@@ -53,7 +53,7 @@
 ; MODIFICATION HISTORY:
 ;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
 ;-
-PRO PLOT_POSITION, plot_set, pos, bpos, debug=debug
+PRO PLOT_POSITION, plot_set, pos, bpos, not_map=not_map, debug=debug
    ON_ERROR, KEYWORD_SET(debug) ? 0 : 2
    COMPILE_OPT HIDDEN, LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
@@ -72,8 +72,13 @@ PRO PLOT_POSITION, plot_set, pos, bpos, debug=debug
    ;; determine plot position
    pos=[plot_set.x0[plot_set.gridi], plot_set.y0[plot_set.gridj], $
         plot_set.x1[plot_set.gridi], plot_set.y1[plot_set.gridj]]
-   bpos=[pos[0]*!d.x_size-2.2*!d.y_ch_size,pos[1]*!d.y_size, $
-         pos[0]*!d.x_size-1.7*!d.y_ch_size,pos[3]*!d.y_size]
+   if KEYWORD_SET(not_map) then begin
+      bpos=[pos[0]*!d.x_size+2.0*!d.y_ch_size,pos[1]*!d.y_size-4.0*!d.y_ch_size,$
+            pos[2]*!d.x_size-2.0*!d.y_ch_size,pos[1]*!d.y_size-4.5*!d.y_ch_size]
+   endif else begin
+      bpos=[pos[0]*!d.x_size-2.2*!d.y_ch_size,pos[1]*!d.y_size, $
+            pos[0]*!d.x_size-1.7*!d.y_ch_size,pos[3]*!d.y_size]
+   endelse
 
    ;; iterate plot position
    if plot_set.gridi ge (plot_set.nx-1) then begin
