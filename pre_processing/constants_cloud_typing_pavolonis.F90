@@ -46,6 +46,7 @@
 ! History:
 !  23rd Oct 2014, CS: original version
 !  1st  Dec 2014, OS: added PROB_OPAQUE_ICE_TYPE
+!  22nd Apr 2015, OS: added new ANN cloud mask thresholds
 !
 ! Calling Sequece:
 !   use CONSTANTS_CLOUD_TYPING_PAVOLONIS
@@ -66,8 +67,17 @@ module CONSTANTS_CLOUD_TYPING_PAVOLONIS
      INTEGER(kind=sint) :: CLEAR = 0
 
      !--- ann_cloud_mask
-     REAL(kind=sreal)   :: COT_THRES_SEA = 0.2
-     REAL(kind=sreal)   :: COT_THRES_LAND = 0.3
+     REAL(kind=sreal)   :: COT_THRES_SEA = 0.05       !obsolete
+     REAL(kind=sreal)   :: COT_THRES_SEA_ICE = 0.5    !obsolete
+     REAL(kind=sreal)   :: COT_THRES_LAND = 0.3       !obsolete
+     REAL(kind=sreal)   :: COT_THRES_DAY_SEA_ICE = 0.4 
+     REAL(kind=sreal)   :: COT_THRES_DAY_LAND_ICE = 0.35
+     REAL(kind=sreal)   :: COT_THRES_DAY_SEA = 0.1
+     REAL(kind=sreal)   :: COT_THRES_DAY_LAND = 0.3
+     REAL(kind=sreal)   :: COT_THRES_NIGHT_SEA_ICE = 0.4
+     REAL(kind=sreal)   :: COT_THRES_NIGHT_LAND_ICE = 0.35
+     REAL(kind=sreal)   :: COT_THRES_NIGHT_SEA = 0.2
+     REAL(kind=sreal)   :: COT_THRES_NIGHT_LAND = 0.3
 
      !--- cldtype OUTPUT
      INTEGER(kind=sint) :: CLEAR_TYPE = 0
