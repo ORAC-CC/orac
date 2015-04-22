@@ -28,6 +28,7 @@
 !     5th Mar 2015, Oliver Sus: added values to nisemask scale, offset, vmin,
 !       vmax; set cth_vmin to -0.01
 !    19th Mar 2015, Oliver Sus: cth_vmin set to 0
+!    22nd April 2015, Oliver Sus: cth_vmin set to -1000 m, i.e. -1 km
 !
 ! Bugs:
 !    None known.
@@ -154,7 +155,7 @@ module output_routines
 
       real(kind=sreal)              :: cth_scale        = 0.01
       real(kind=sreal)              :: cth_offset       = 0.0
-      integer(kind=sint)            :: cth_vmin         = 0
+      integer(kind=sint)            :: cth_vmin         = -1000
       integer(kind=sint)            :: cth_vmax         = 2000
       real(kind=sreal)              :: cth_error_scale  = 0.01
       real(kind=sreal)              :: cth_error_offset = 0.0
