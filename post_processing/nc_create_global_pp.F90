@@ -30,6 +30,7 @@
 !2014/06/04 MJ changes routine names to "*_pp" to avoid confusion when building libraries.
 !2014/12/2 CP added in source and new global attributes and big tidy up
 !2015/02/07 CP changed to common constants
+!2015/04/22 OS implemented NETCDF4 output
 !
 ! $Id$
 !
@@ -97,7 +98,7 @@ SUBROUTINE nc_create_global_l2_pp(path, ncid, nx, ny, dims_var, wo,type,global_a
   ! Create new file
   
   
-  ierr = NF90_CREATE(path, NF90_CLOBBER, ncid)
+  ierr = NF90_CREATE(path, IOR(NF90_NETCDF4,NF90_CLASSIC_MODEL), ncid)
 
 
   IF (ierr.NE.NF90_NOERR)  then
