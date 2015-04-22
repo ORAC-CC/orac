@@ -80,6 +80,7 @@
   !                phase-dependent variables
   !2015/02/07 CP massive tidy up including of common constants
   !2015/03/19 OS COT maximum value set to 100, CWP scaled accordingly + minor editing
+  !2015/04/22 OS only apply Istomina retyping when cloud mask says cloud 
   !
   ! Bugs:
   !    None known.
@@ -441,15 +442,6 @@
 
             endif
 
-            ! set COT maximum value to 100; if COT is > 100, rescale COT and CWP
-            cot_max = 100. ! should be set in driver file or module
-            if ( l2_input_2dice_primary%cot(i,j) .gt. cot_max ) then
-               cot_scale = cot_max / l2_input_2dice_primary%cot(i,j) 
-               l2_input_2dice_primary%cot(i,j) = l2_input_2dice_primary%cot(i,j) * cot_scale
-               l2_input_2dice_primary%cwp(i,j) = l2_input_2dice_primary%cwp(i,j) * cot_scale
-            endif
-
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! DAY cloud mask post neural net
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -579,9 +571,9 @@
 
             ! if (nise .eq. 1 .and. cc_total) TO BE IMPLEMENTED BY OS
             call snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary&
-                &,snow_ice_flag,inst,i,j)
+                 &,snow_ice_flag,inst,i,j)
 
-            if (snow_ice_flag .eq. 1) then
+            if ( snow_ice_flag .eq. 1 .and. l2_input_2dice_primary%cc_total(i,j) == 1 ) then
                ! this pixel is actually clear not cloud
                l2_input_2dice_primary%cc_total(i,j)=0.0
             endif
