@@ -25,6 +25,7 @@
 !2014/11/20 OS: added calendar attribute to nc_defdata_double_pp
 !  (only used for time variable)
 !2014/12/03 CP added in common_constants should eventually remove vartypes_pp
+!2015/04/23 OS: added deflate_level and shuffle to NETCDF4 variables
 !
 ! $Id$
 !
@@ -97,7 +98,8 @@ SUBROUTINE nc_defdata_float_pp(ncid,dims,var_name,vid,var_lname,var_sname,std_fl
   ierr = NF90_REDEF(ncid)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error redef '
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_FLOAT, dims, vid)
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_FLOAT, dims, vid, &
+     & deflate_level=compress_level_float,shuffle=shuffle_float)
   if (ierr.NE.NF90_NOERR) write(*,*) 'err def var float'
 
 
@@ -202,7 +204,8 @@ SUBROUTINE nc_defdata_float_no_att_pp(ncid,dims,var_name,vid,var_lname,var_sname
   ierr = NF90_REDEF(ncid)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error redef '
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_FLOAT, dims, vid)
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_FLOAT, dims, vid, &
+     & deflate_level=compress_level_float,shuffle=shuffle_float)
 
   if (ierr.NE.NF90_NOERR) write(*,*) 'err def var float'
 
@@ -300,8 +303,9 @@ SUBROUTINE nc_defdata_double_pp(ncid,dims,var_name,vid,var_lname,var_sname, &
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error redef '
 
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_DOUBLE, dims, vid)
- ! write(*,*) ncid, var_name, dims, vid
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_DOUBLE, dims, vid, &
+     & deflate_level=compress_level_double,shuffle=shuffle_double)
+! write(*,*) ncid, var_name, dims, vid
   if (ierr.NE.NF90_NOERR) write(*,*) 'err def var float'
 
   ierr = NF90_PUT_ATT(ncid, vid, 'long_name', var_lname)
@@ -417,8 +421,9 @@ SUBROUTINE nc_defdata_short_pp(ncid,dims,var_name,vid,var_lname,var_sname, &
 
 
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_SHORT, dims, vid)
- 
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_SHORT, dims, vid, &
+     & deflate_level=compress_level_stint,shuffle=shuffle_stint)
+
   if (ierr.NE.NF90_NOERR)  write(*,*) 'err def var short',ierr
   
   ierr = NF90_PUT_ATT(ncid, vid, 'long_name', var_lname)
@@ -527,8 +532,10 @@ SUBROUTINE nc_defdata_short_no_units_pp(ncid,dims,var_name,vid,var_lname,var_sna
   ierr = NF90_REDEF(ncid)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error redef '
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_SHORT, dims, vid)
- ! write(*,*) 'xyz',ncid, var_name, dims, vid
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_SHORT, dims, vid, &
+     & deflate_level=compress_level_stint,shuffle=shuffle_stint)
+
+  ! write(*,*) 'xyz',ncid, var_name, dims, vid
   if (ierr.NE.NF90_NOERR)  write(*,*) 'err def var short'
   
   ierr = NF90_PUT_ATT(ncid, vid, 'long_name', var_lname)
@@ -633,8 +640,10 @@ SUBROUTINE nc_defdata_long_pp(ncid,dims,var_name,vid,var_lname,var_sname, &
   ierr = NF90_REDEF(ncid)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error redef '
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_INT, dims, vid)
-!  write(*,*) ncid, var_name, dims, vid
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_INT, dims, vid, &
+     & deflate_level=compress_level_lint,shuffle=shuffle_lint)
+
+  !  write(*,*) ncid, var_name, dims, vid
   if (ierr.NE.NF90_NOERR) write(*,*) 'err def var long'
   
 
@@ -743,8 +752,10 @@ SUBROUTINE nc_defdata_byte_pp(ncid,dims,var_name,vid,var_lname,var_sname,std_fla
   ierr = NF90_REDEF(ncid)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error redef '
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_BYTE, dims, vid)
-!  write(*,*) 'xxx',ncid, var_name, dims, vid
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_BYTE, dims, vid, &
+     & deflate_level=compress_level_byte,shuffle=shuffle_byte)
+
+  !  write(*,*) 'xxx',ncid, var_name, dims, vid
   if (ierr.NE.NF90_NOERR) write(*,*) 'err def var short'
   
 
@@ -853,7 +864,9 @@ SUBROUTINE nc_defdata_byte_flag_value_pp(ncid,dims,var_name,vid,var_lname,var_sn
   ierr = NF90_REDEF(ncid)
   IF (ierr.NE.NF90_NOERR) write(*,*) 'error redef '
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_BYTE, dims, vid)
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_BYTE, dims, vid, &
+     & deflate_level=compress_level_byte,shuffle=shuffle_byte)
+
 !  write(*,*) 'yyy',ncid, var_name, dims, vid
   if (ierr.NE.NF90_NOERR) write(*,*) 'err def var short'
   
@@ -966,7 +979,9 @@ SUBROUTINE nc_defdata_short_flag_value_pp(ncid,dims,var_name,vid,var_lname,var_s
   ierr = NF90_REDEF(ncid)
   IF (ierr.NE.NF90_NOERR)  write(*,*) 'error redef '
 
-  ierr = NF90_DEF_VAR(ncid, var_name, NF90_SHORT, dims, vid)
+  ierr = NF90_DEF_VAR(ncid, var_name, NF90_SHORT, dims, vid, &
+     & deflate_level=compress_level_stint_flag,shuffle=shuffle_stint_flag)
+
 !  write(*,*) 'www',ncid, var_name, dims, vid
   if (ierr.NE.NF90_NOERR)  write(*,*) 'err def var short'
   
