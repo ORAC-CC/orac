@@ -26,6 +26,7 @@
 ! 2014/12/03 CP: removed variables duplicated in common_constants
 ! 2015/02/05 OS: some cleanup; changed nint to lint
 ! 2015/02/07 CP: removed all variables common to common_constants
+! 2015/04/23 OS: added variables related to NETCDF4 compression
 
 ! $Id$
 !
@@ -71,5 +72,23 @@ use common_constants
   real(kind=sreal), parameter :: min_range=12.0
 
   real(kind=sreal), parameter :: ctp_high=440.0, ctp_middle=680.0
+
+  ! NetCDF 4 compression level
+  integer(kind=lint), parameter :: compress_level_float=9
+  integer(kind=lint), parameter :: compress_level_double=9
+  integer(kind=lint), parameter :: compress_level_lint=9
+  integer(kind=lint), parameter :: compress_level_nint=9
+  integer(kind=lint), parameter :: compress_level_stint=9
+  integer(kind=lint), parameter :: compress_level_byte=9
+  integer(kind=lint), parameter :: compress_level_stint_flag=9
+
+  ! turn on shuffling to improve compression
+  logical, parameter :: shuffle_float=.TRUE.
+  logical, parameter :: shuffle_double=.TRUE.
+  logical, parameter :: shuffle_lint=.TRUE.
+  logical, parameter :: shuffle_nint=.TRUE.
+  logical, parameter :: shuffle_stint=.TRUE.
+  logical, parameter :: shuffle_byte=.TRUE.
+  logical, parameter :: shuffle_stint_flag=.TRUE.
 
 end module vartypes_pp
