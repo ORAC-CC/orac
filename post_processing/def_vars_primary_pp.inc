@@ -35,6 +35,7 @@
   ! 2014/12/03 CP: added cloud albedo
   ! 2014/12/17 CP: removed unknown form mask naming
   ! 2015/02/05 CP: changed time attribute and common constants
+  ! 2015/04/23 OS: CCT vmin set to -100
   !
   ! $Id$
   !
@@ -255,7 +256,7 @@ endif
 
   spixel_scan_out%cct_scale=0.01
   spixel_scan_out%cct_offset=0.00
-  spixel_scan_out%cct_vmin=0!*spixel_scan_out%lon_scale
+  spixel_scan_out%cct_vmin=-100!*spixel_scan_out%lon_scale
   spixel_scan_out%cct_vmax=100!*spixel_scan_out%lon_scale
   !      write(*,*) ncid_primary
   CALL nc_defdata_short_pp(ncid_primary, dims_var, 'cc_total', spixel_scan_out%vidcct, 'cloud fraction', &
@@ -356,7 +357,7 @@ endif
 
   spixel_scan_out%cth_scale=0.01
   spixel_scan_out%cth_offset=0.00
-  spixel_scan_out%cth_vmin=0!*spixel_scan_out%lon_scale
+  spixel_scan_out%cth_vmin=-1000 !*spixel_scan_out%lon_scale
   spixel_scan_out%cth_vmax=2000!*spixel_scan_out%lon_scale
   !      write(*,*) ncid_primary
   !& 'altitude_at_cloud_top', 'kilometer',&
