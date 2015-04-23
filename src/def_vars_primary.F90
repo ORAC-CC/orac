@@ -49,6 +49,7 @@
 !    MSI file.
 ! 2014/12/31, GM: Remove useless error control especially since nc_def_var_*
 !    routines handle errors to exit.
+! 2015/02/05, GM: Cp added usgs flag meanings
 !
 ! $Id$
 !
@@ -740,7 +741,19 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            valid_max     = output_data%lusflag_vmax, &
            flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, &
               & 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, 20b, 21b, 22b, 23b, 24b', &
-           flag_meanings = 'see usgs.gov')
+           flag_meanings ='1:Urban and Built-Up Land, 2:Dryland Cropland and Pasture, &
+	     & 3:Irrigated, Cropland and Pasture, 4:Mixed Dryland/Irrigated Cropland and Pasture, &
+	      & 5:Cropland/Grassland Mosaic, 6:Cropland/Woodland Mosaic, 7:Grassland, &
+	      & 8:Shrubland, 9:Mixed Shrubland/Grassland, 10:Savanna, &
+	      & 11:Deciduous Broadleaf Forest, 12:Deciduous Needleleaf Forest,&
+	       & 13:Evergreen Broadleaf Forest, 14:Evergreen Needleleaf Forest, &
+	        & 15:Mixed Forest, 16:Water Bodies, 17:Herbaceous Wetland,&
+	         & 18:Wooded Wetland, 19:Barren or Sparsely Vegetated, &
+		 & 20:Herbaceous Tundra, 21:Wooded Tundra, 22:Mixed Tundra, &
+		 & 23:Bare Ground Tundra, 24:Snow or Ice, 99:Interrupted Areas,&
+	  & 100:Missing Data' )
+
+
 
    !----------------------------------------------------------------------------
    ! DEM
