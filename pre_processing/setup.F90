@@ -66,9 +66,12 @@ contains
 !    run time.
 ! 2015/03/10, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
 !    and 7 for sea surface reflectance.
-! 2015/04/11, GM: Fixed a bug in the setting of the LW RTTOV channels
-!    for SEVIRI.
-! 2015/04/29, CP: changed AATSR platform name to Envisat
+! 2015/04/11, GM: Fixed a bug in the setting of the LW RTTOV channels for
+!    SEVIRI.
+! 2015/04/29, CP: Changed AATSR platform name to Envisat
+! 2015/04/30, GM: Temporarily index channels in all_map_ids_abs_to_snow_and_ice
+!    that are not supported in the snow and ice correction to nearby supported
+!    channels.
 !
 ! $Id$
 !
@@ -127,7 +130,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
       (/ 2,    3,    4,    6,    8,    0,    0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
-      (/ 0,    1,    2,    3,    4,    0,    0 /)
+      (/ 1,    1,    2,    3,    4,    0,    0 /)
 
 
    ! Only this below needs to be set to change the desired default channels. All
@@ -478,8 +481,8 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
          0,         0,         0,         0,         0,         0 /)
 
    integer, parameter :: all_map_ids_abs_to_snow_and_ice(all_nchannels_total)  = &
-      (/ 1,         2,         0,         0,         0,         3, &
-         0,         0,         0,         0,         0,         0, &
+      (/ 1,         2,         1,         1,         2,         3, &
+         3,         0,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0, &
          0,         4,         0,         0,         0,         0, &
          0,         0,         0,         0,         0,         0, &
