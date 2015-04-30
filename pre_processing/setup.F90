@@ -68,6 +68,7 @@ contains
 !    and 7 for sea surface reflectance.
 ! 2015/04/11, GM: Fixed a bug in the setting of the LW RTTOV channels
 !    for SEVIRI.
+! 2015/04/29, CP: changed AATSR platform name to Envisat
 !
 ! $Id$
 !
@@ -154,7 +155,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! which aatsr are we processing?
    index1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
-   platform='ENV'
+   platform='Envisat'
 
    ! Get year, month, day, hour and minute as strings
    cyear=trim(adjustl(l1b_path_file(index1-45:index1-42)))

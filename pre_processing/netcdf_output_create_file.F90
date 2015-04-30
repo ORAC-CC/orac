@@ -1462,7 +1462,7 @@ subroutine netcdf_put_common_attributes(ncid,global_atts,source_atts,title, &
 
    global_atts2%Product_Name = 'Product_Name!!!'
 
-   global_atts2%Product_Date = trim(cyear)//trim(cmonth)//trim(cday)// &
+   global_atts2%Date_Created = trim(cyear)//trim(cmonth)//trim(cday)// &
                                trim(chour)//trim(cminute)
 
    PLATFORM_UPPER_CASE=platform

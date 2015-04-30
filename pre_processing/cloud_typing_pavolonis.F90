@@ -44,7 +44,8 @@
 !                          fix missing degree-to-radians factor for coszen, 
 !                          changed coszen from cos(sunZA) to cos(satZA)
 !       22nd Apr 2015,SST: introduce solar correction for reflectance channels
-!                          ch1 and ch3!    
+!                          ch1 and ch3!   
+!       29th Apr 2015,CP: changed from Env to Envisat 
 !
 ! Bugs:
 !    None known
@@ -135,7 +136,7 @@ contains
   !    INTEGER(kind=sint) :: OPAQUE_ICE_TYPE = 6
   !    INTEGER(kind=sint) :: CIRRUS_TYPE = 7
   !    INTEGER(kind=sint) :: OVERLAP_TYPE = 8
- !    INTEGER(kind=sint) :: PROB_OPAQUE = 9
+  !    INTEGER(kind=sint) :: PROB_OPAQUE = 9
   !
   !
   ! INPUTS:
@@ -702,9 +703,10 @@ contains
 
                 cycle
 
-             endif
+             endif ! end avhrr channel flag
 
-          endif
+          endif ! end avhrr
+
 
 
           ! calculate ch3b emissivity and reflectance
@@ -720,7 +722,7 @@ contains
           ref_ch3b = ( rad_ch3b - rad_ch3b_emis ) / &
                ( solcon_ch3b * c_sun * mu0 - rad_ch3b_emis )
 
-          ! calculate true reflectances for avhrr, modis and ??? aatsr??
+          ! calculate true reflectances for avhrr, modis and ??? aatsr
           ref_ch1  = imager_measurements%DATA(i,j,ch1) / mu0
           ref_ch3a = imager_measurements%DATA(i,j,ch3) / mu0
      
@@ -1636,7 +1638,7 @@ contains
        index = 12
     case ("AQUA")
        index = 13
-    case ("ENV")
+    case ("Envisat")
        index = 14
     case ("MSG2")
        index = 15
