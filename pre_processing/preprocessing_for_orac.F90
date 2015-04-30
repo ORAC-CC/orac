@@ -390,7 +390,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
-      if (nargs .lt. 48) then
+      if (nargs .lt. 47) then
          write(*,*) 'ERROR: not enough command line arguments'
          stop error_stop_code
       endif
@@ -399,12 +399,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call get_command_argument(2,l1b_path_file)
       call get_command_argument(3,geo_path_file)
       call get_command_argument(4,USGS_path_file)
+      write(*,*)'j'
       call get_command_argument(5,ecmwf_path)
       call get_command_argument(6,rttov_coef_path)
       call get_command_argument(7,rttov_emiss_path)
       call get_command_argument(8,nise_ice_snow_path)
       call get_command_argument(9,modis_albedo_path)
       call get_command_argument(10,modis_brdf_path)
+      write(*,*)'h'
       call get_command_argument(11,cimss_emiss_path)
       call get_command_argument(12,cdellon)
       call get_command_argument(13,cdellat)
@@ -413,44 +415,57 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call get_command_argument(16,cendx)
       call get_command_argument(17,cstarty)
       call get_command_argument(18,cendy)
+      write(*,*)'i',cendx,cstarty,cendy
       call get_command_argument(19,global_atts%NetCDF_Version)
+      write(*,*)'netcdf',global_atts%NetCDF_Version
       call get_command_argument(20,global_atts%Conventions)
+      write(*,*)'conventions',global_atts%Conventions
       call get_command_argument(21,global_atts%institution)
+     write(*,*)'a1a',global_atts%institution
       call get_command_argument(22,global_atts%L2_Processor)
-      call get_command_argument(23,global_atts%L2_Processor_Version)
-      call get_command_argument(24,global_atts%Contact_Email)
-      call get_command_argument(25,global_atts%Contact_Website)
-      call get_command_argument(26,global_atts%file_version)
-      call get_command_argument(27,global_atts%references)
-      call get_command_argument(28,global_atts%history)
-      call get_command_argument(29,global_atts%Summary)
-      call get_command_argument(30,global_atts%Keywords)
-      call get_command_argument(31,global_atts%comment)
-      call get_command_argument(32,global_atts%Project)
-      call get_command_argument(33,global_atts%License)
-      call get_command_argument(34,global_atts%UUID)
-      call get_command_argument(35,global_atts%Production_Time)
-      call get_command_argument(36,aatsr_calib_path_file)
-      call get_command_argument(37,cecmwf_flag)
-      call get_command_argument(38,ecmwf_path2)
-      call get_command_argument(39,ecmwf_path3)
-      call get_command_argument(40,cchunkproc)
-      call get_command_argument(41,cday_night)
-      call get_command_argument(42,cverbose)
-      call get_command_argument(43,cdummy_arg)
-      call get_command_argument(44,cassume_full_paths)
-      call get_command_argument(45,cinclude_full_brdf)
-      call get_command_argument(46,global_atts%rttov_version)
-      call get_command_argument(47,global_atts%ecmwf_version)
-      call get_command_argument(48,global_atts%svn_version)
-
-      do i = 49, nargs
+      write(*,*)'a1',global_atts%L2_Processor
+!      call get_command_argument(23,global_atts%L2_Processor_Version)
+!      write(*,*)'a',global_atts%L2_Processor_Version
+      call get_command_argument(23,global_atts%Creator_Email)
+       write(*,*)'b',global_atts%Creator_Email
+      call get_command_argument(24,global_atts%Creator_url)
+      call get_command_argument(25,global_atts%file_version)
+      call get_command_argument(26,global_atts%references)
+      call get_command_argument(27,global_atts%history)
+      call get_command_argument(28,global_atts%Summary)
+       write(*,*) 'c1',global_atts%Summary
+      call get_command_argument(29,global_atts%Keywords)	
+      write(*,*) 'c2',global_atts%Keywords
+      call get_command_argument(30,global_atts%comment)
+      write(*,*) 'c',global_atts%comment
+      call get_command_argument(31,global_atts%Project)
+      call get_command_argument(32,global_atts%License)
+      call get_command_argument(33,global_atts%UUID)
+      call get_command_argument(34,global_atts%Production_Time)
+      call get_command_argument(35,aatsr_calib_path_file)
+      call get_command_argument(36,cecmwf_flag)
+      call get_command_argument(37,ecmwf_path2)
+      call get_command_argument(38,ecmwf_path3)
+      write(*,*)'d'
+      call get_command_argument(39,cchunkproc)
+      call get_command_argument(40,cday_night)
+      call get_command_argument(41,cverbose)
+      call get_command_argument(42,cdummy_arg)
+      call get_command_argument(43,cassume_full_paths)
+      call get_command_argument(44,cinclude_full_brdf)
+      write(*,*)'e',cinclude_full_brdf
+      call get_command_argument(45,global_atts%rttov_version)
+      call get_command_argument(46,global_atts%ecmwf_version)
+      call get_command_argument(47,global_atts%svn_version)
+      write(*,*)'f',global_atts%svn_version
+      do i = 48, nargs
+  write(*,*)'g1'
          call get_command_argument(i, line)
          call parse_line(line, value, label)
          call clean_driver_label(label)
          call parse_optional(label, value, n_channels, channel_ids)
       end do
-
+      write(*,*)'g'
    else
 
       if (nargs .eq. 1) then
@@ -485,9 +500,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call parse_required(11, global_atts%Conventions,          'Conventions')
       call parse_required(11, global_atts%Institution,          'Institution')
       call parse_required(11, global_atts%L2_Processor,         'L2_Processor')
-      call parse_required(11, global_atts%L2_Processor_Version, 'L2_Processor_Version')
-      call parse_required(11, global_atts%Contact_Email,        'Contact_Email')
-      call parse_required(11, global_atts%Contact_Website,      'Contact_Website')
+!      call parse_required(11, global_atts%L2_Processor_Version, 'L2_Processor_Version')
+      call parse_required(11, global_atts%Creator_Email,        'Creator_Email')
+      call parse_required(11, global_atts%Creator_URL,      'Creator_URL')
       call parse_required(11, global_atts%file_version,         'file_version')
       call parse_required(11, global_atts%References,           'References')
       call parse_required(11, global_atts%History,              'History')
