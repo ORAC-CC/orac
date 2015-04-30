@@ -9,7 +9,7 @@
 !    NC_DIM_LENGTH - Return the length of a dimension in a NetCDF file.
 !
 ! History:
-! 2014/02/10, AP: Original version, combining the original files:
+! 2014/02/10, AP: Original voersion, combining the original files:
 !    nc_read_file.F90, nc_open.F90
 ! 2014/09/01, GM: Add nc_write_array and associated routines. For now for 2d
 !    only.
@@ -26,7 +26,7 @@
 ! 2014/12/31, GM: Removed ierr output argument from nc_def_var_*() routines as
 !    it severed no purpose since errors are handled to program exit within the
 !    routines themselves.
-!
+! 2015/03/20 CP changed to creator url and website
 ! $Id$
 !-------------------------------------------------------------------------------
 
@@ -1255,11 +1255,11 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Product_Date', &
-        trim(global_atts%Product_Date))
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Date_created', &
+        trim(global_atts%Date_created))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
-          ', name: Product_Date'
+          ', name: Date_created'
       stop error_stop_code
    endif
 
@@ -1313,19 +1313,19 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
       endif
    endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Email', &
-        trim(global_atts%Contact_Email))
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Creator_Email', &
+        trim(global_atts%Creator_Email))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
-          ', name: Contact_Email'
+          ', name: Creator_Email'
       stop error_stop_code
    endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Contact_Website', &
-        trim(global_atts%Contact_Website))
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Creator_url', &
+        trim(global_atts%Creator_url))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
-          ', name: Contact_Website'
+          ', name: Creator_url'
       stop error_stop_code
    endif
 
@@ -1592,11 +1592,11 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    endif
 
-   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Product_Date', &
-        global_atts%Product_Date)
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Date_created', &
+        global_atts%Date_created)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nc_error(ierr)), &
-          ', name: Product_Date'
+          ', name: Date_created'
       stop error_stop_code
    endif
 
@@ -1651,19 +1651,19 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
 !     endif
 !  endif
 
-   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Contact_Email', &
-        global_atts%Contact_Email)
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Creator_Email', &
+        global_atts%Creator_Email)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nc_error(ierr)), &
-          ', name: Contact_Email'
+          ', name: Creator_Email'
       stop error_stop_code
    endif
 
-   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Contact_Website', &
-        global_atts%Contact_Website)
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Creator_url', &
+        global_atts%Creator_url)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nc_error(ierr)), &
-          ', name: Contact_Website'
+          ', name: Creator_url'
       stop error_stop_code
    endif
 
