@@ -1255,11 +1255,11 @@ subroutine nc_put_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    endif
 
-   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Date_created', &
-        trim(global_atts%Date_created))
+   ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Date_Created', &
+        trim(global_atts%Date_Created))
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
-          ', name: Date_created'
+          ', name: Date_Created'
       stop error_stop_code
    endif
 
@@ -1592,11 +1592,11 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
       stop error_stop_code
    endif
 
-   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Date_created', &
-        global_atts%Date_created)
+   ierr = nf90_get_att(ncid, NF90_GLOBAL, 'Date_Created', &
+        global_atts%Date_Created)
    if (ierr.ne.NF90_NOERR) then
       write(*,*) 'ERROR: nf90_get_att(), ', trim(nc_error(ierr)), &
-          ', name: Date_created'
+          ', name: Date_Created'
       stop error_stop_code
    endif
 
