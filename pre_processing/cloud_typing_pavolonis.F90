@@ -46,6 +46,8 @@
 !       22nd Apr 2015,SST: introduce solar correction for reflectance channels
 !                          ch1 and ch3!   
 !       29th Apr 2015,CP: changed from Env to Envisat 
+!       19th May 2015,GM: Fixed several race conditions introduced from recent
+!                         commits occurring when using OpenMP.
 !
 ! Bugs:
 !    None known
@@ -308,7 +310,7 @@ contains
     !---- CC4CL requirements and adaptions for Pavolonis alg.
 
     integer(kind=sint) :: ch3a_on_avhrr_flag
-    integer(kind=sint) :: ch7_on_atsr_flag,ch6_on_atsr_flag	
+    integer(kind=sint) :: ch6_on_atsr_flag,ch7_on_atsr_flag	
     real(kind=sreal)   :: glint_angle, coszen
     real(kind=sreal)   :: BTD_Ch3b_Ch4
     real(kind=sreal)   :: BTD_Ch4_Ch5
@@ -497,8 +499,10 @@ contains
     !$OMP PRIVATE(i) &
     !$OMP PRIVATE(j) &
     !$OMP PRIVATE(ch3a_on_avhrr_flag) &
+    !$OMP PRIVATE(ch6_on_atsr_flag) &
     !$OMP PRIVATE(ch7_on_atsr_flag) &
     !$OMP PRIVATE(glint_angle) &
+    !$OMP PRIVATE(coszen) &
     !$OMP PRIVATE(BTD_Ch4_Ch5) &
     !$OMP PRIVATE(BTD_Ch3b_Ch4) &
     !$OMP PRIVATE(day) &
@@ -510,6 +514,8 @@ contains
     !$OMP PRIVATE(esd) &
     !$OMP PRIVATE(c_sun) &
     !$OMP PRIVATE(ref_ch3b) &
+    !$OMP PRIVATE(ref_ch1) &
+    !$OMP PRIVATE(ref_ch3a) &
     !$OMP PRIVATE(nir_ref) &
     !$OMP PRIVATE(index1) &
     !$OMP PRIVATE(index2) &
@@ -706,7 +712,6 @@ contains
              endif ! end avhrr channel flag
 
           endif ! end avhrr
-
 
 
           ! calculate ch3b emissivity and reflectance
