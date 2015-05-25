@@ -40,6 +40,8 @@
 !       Changed zeroing to missing rather than 0
 !    21th May 2014, Greg McGarragh:
 !       Cleaned up the code.
+!    25th May 2015, Greg McGarragh:
+!       Got rid of flags Diagl and removed obvious comments.
 !
 ! Bugs:
 !    None known.
@@ -63,41 +65,18 @@ subroutine Zero_Diag(Ctrl, Diag, status)
 
    status = 0
 
-   ! Set all requested diagnostic values to zero.
-   ! 1) Quality control flag:
-
-   if (Ctrl%Diagl(DiFlagQC) > 0) Diag%QCFlag = 0
-
-   ! 2), 3) and 4) Iterations, phase changes and costs
-
-   if (Ctrl%Diagl(DiFlagIter) > 0) Diag%Iterations = 0
-   if (Ctrl%Diagl(DiFlagPhCh) > 0) Diag%PhaseChanges = 0
-   if (Ctrl%Diagl(DiFlagCost) > 0) then
-      Diag%Jm = 0
-      Diag%Ja = 0
-   end if
-
-   ! 5) or 7) State expected error from measurements.
-   ! Flags not checked since Invert_Marquardt sets St regardless.
-
-   Diag%St = 0
-
-   ! 6) or 8) State expected error from model parameter noise
-   ! Flags not checked since Invert_Marquardt sets St regardless.
-
-   Diag%Ss = 0
-
-   ! 9) and 10) Measurement and a priori fit
-
-   if (Ctrl%Diagl(DiFlagYFit) > 0) Diag%YmFit = MissingXn
-   if (Ctrl%Diagl(DiFlagXFit) > 0) Diag%APFit = MissingXn
-
-   ! 11) and 12) A priori and first guess values. No need to store in Diag as
-   ! these are available in SPixel.
-
-   ! 13) and 14) A priori and measurement errors (roots of Sy and Sx)
-   ! Sx available from SPixel, just set YError.
-
-   if (Ctrl%Diagl(DiFlagSy) > 0) Diag%YError = 0
+   Diag%QCFlag       = 0
+   Diag%Iterations   = 0
+   Diag%PhaseChanges = 0
+   Diag%Jm           = 0
+   Diag%Ja           = 0
+   Diag%St           = 0
+   Diag%Ss           = 0
+   Diag%Y0           = MissingXn
+   Diag%YmFit        = MissingXn
+   Diag%YError       = 0
+   Diag%APFit        = MissingXn
+   Diag%AK           = 0
+   Diag%cloud_albedo = sreal_fill_value
 
 end subroutine Zero_Diag

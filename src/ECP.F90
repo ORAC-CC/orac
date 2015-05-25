@@ -184,6 +184,7 @@
 !    2014/01/30, AP: Read surface level of RTTOV files. Allow warm start
 !       coordinates to be specified in the driver file. Remove SegSize.
 !    2015/02/04, OS: drifile is passed as call argument for WRAPPER
+!    2015/05/25, GM: Some cleanup involving Diag.
 !
 ! Bugs:
 !    None known.
@@ -345,31 +346,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Read dimensions of preprocessing swath files first:
    call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
       Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NInstViews, verbose)
-
-if (.false.) then
-   ! Open the log file specified in Ctrl
-   call find_lun(log_lun)
-   open(unit=log_lun, file=Ctrl%FID%Log, status='replace', iostat=ios)
-   if (ios /= 0) then
-      write(*,*) 'ERROR: Error opening log file: ', Ctrl%FID%Log
-      stop error_stop_code
-   end if
-   call Date_and_Time(date=date, time=time)
-   time_str = date // ' ' // time(1:2) // ':' // time(3:4) // ':' // time(5:6)
-   write(log_lun, *)' ORAC '
-   write(log_lun, *)' Run ID: ', Ctrl%Run_ID
-   write(log_lun, *)' Start time: ', time_str
-   close(unit=log_lun)
-
-   ! Open the diagnostic file specified in Ctrl
-   call find_lun(diag_lun)
-   open(unit=diag_lun, file=Ctrl%FID%Diag, status='replace', &
-        form='Unformatted', iostat=ios)
-   if (ios /= 0) then
-      write(*,*) 'ERROR: Error opening diagnostics file: ', Ctrl%FID%Diag
-      stop error_stop_code
-   end if
-end if
 #ifdef BKP
    ! Clear the breakpoint file (if breakpoints required)
    if (Ctrl%Bkpl > 0) then
@@ -585,11 +561,8 @@ end if
       do i = ixstart,ixstop,xstep
          SPixel%Loc%X0 = i
 
-         Diag%Y0    = MissingXn
-         Diag%YmFit = MissingXn
-         Diag%AK    = sreal_fill_value
+         call Zero_Diag(Ctrl, Diag, status)
 
-!        TotPix = TotPix+1
          TotPix_line(j) = TotPix_line(j)+1
 
          ! Set up the super-pixel data values.
@@ -603,7 +576,6 @@ end if
             ! diag struct.
 
             if (btest(SPixel%QC, SPixNoProc)) then
-!              TotMissed = TotMissed+1
                Totmissed_line(j) = Totmissed_line(j)+1
 
                SPixel%Xn        = MissingXn
@@ -618,11 +590,7 @@ end if
                RTM_Pc%dHc_dPc   = MissingXn
                RTM_Pc%Tc        = MissingXn
                RTM_Pc%dTc_dPc   = MissingXn
-
-               call Zero_Diag(Ctrl, Diag, status)
             else
-               Diag%AK = 0
-
                ! No indication that the SPixel should not be processed, do the
                ! inversion.
                Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
@@ -638,22 +606,16 @@ end if
                if (status == 0) then
                   if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
 
-!                    TotConv = TotConv+1
                      TotConv_line(j) = TotConv_line(j)+1
-!                    AvIter  = AvIter + Diag%Iterations
                      AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
                      if (Diag%PhaseChanges >= 0) then
-!                       AvPhCh = AvPhCh + Diag%PhaseChanges
                         AvPhCh_line(j) = AvPhCh_line(j) + Diag%PhaseChanges
                      else
-!                       AvPhCh = AvPhCh + Ctrl%InvPar%MaxPhase
                         AvPhCh_line(j) = AvPhCh_line(j) + Ctrl%InvPar%MaxPhase
                      end if
-!                    AvJ = AvJ + Diag%Jm + Diag%Ja
                      AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
                   end if
                   if (btest(Diag%QCFlag,MaxStateVar+2)) then
-!                    TotMaxJ = TotMaxJ+1
                      TotMaxJ_line(j) = TotMaxJ_line(j)+1
                   end if
                else
@@ -669,8 +631,6 @@ end if
                   RTM_Pc%dHc_dPc   = MissingSn
                   RTM_Pc%Tc        = MissingXn
                   RTM_Pc%dTc_dPc   = MissingSn
-
-                  call Zero_Diag(Ctrl, Diag, status)
                end if
             end if ! btest if closes
 

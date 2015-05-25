@@ -94,6 +94,8 @@
 !    2015/03/10, GM: Added Ctrl%RS%use_full_brdf as a driver option.
 !    2015/03/11, GM: Added Ctrl%ReChans as a driver option.
 !    2015/03/11, GM: Added an error check for unrecognised instruments.
+!    2015/05/25, GM: Get rid of filename Diag and flags Diagl. Neither was being
+!       used and have been rotting.
 !
 ! Bugs:
 !    NViews should be changed for dual view
@@ -332,13 +334,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
    Ctrl%FID%Log          = trim(outname)//'.log'
-   Ctrl%FID%Diag         = trim(outname)//'.diag'
    Ctrl%FID%BkP          = trim(outname)//'bkp'
    if (verbose) then
       write(*,*) 'Ctrl%FID%L2_primary: ', trim(Ctrl%FID%L2_primary)
       write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
       write(*,*) 'Ctrl%FID%Log: ',trim(Ctrl%FID%Log)
-      write(*,*) 'Ctrl%FID%Diag: ',trim(Ctrl%FID%Diag)
       write(*,*) 'Ctrl%FID%BkP: ',trim(Ctrl%FID%BkP)
    end if
 
@@ -346,24 +346,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! option Ctrl%Bkpl
    Ctrl%Bkpl=3
 
-   ! Set diagnostic flags
-   Ctrl%Diagl(DiFlagQC)   = 1
-   Ctrl%Diagl(DiFlagIter) = 1
-   Ctrl%Diagl(DiFlagPhCh) = 1
-   Ctrl%Diagl(DiFlagCost) = 1
-   Ctrl%Diagl(DiFlagSt1)  = 1
-   Ctrl%Diagl(DiFlagSs1)  = 1
-   Ctrl%Diagl(DiFlagSt2)  = 0
-   Ctrl%Diagl(DiFlagSs2 ) = 0
-   Ctrl%Diagl(DiFlagYFit) = 1
-   Ctrl%Diagl(DiFlagXFit) = 1
-   Ctrl%Diagl(DiFlagAP)   = 1
-   Ctrl%Diagl(DiFlagFG)   = 1
-   Ctrl%Diagl(DiFlagSx)   = 0
-   Ctrl%Diagl(DiFlagSy)   = 0
 
    Ctrl%RTMIntflag = RTMIntMethLinear
    Ctrl%LUTIntflag = LUTIntMethLinear
+
 
    Ctrl%MaxSatZen  = 90 ! max satellite zenith angle
    Ctrl%MaxSolZen  = 80 ! max solar zenith angle > 90 = night image
@@ -805,14 +791,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
       case('CTRL%FID%LOG')
          if (parse_string(line, Ctrl%FID%Log)          /= 0) call h_p_e(label)
-      case('CTRL%FID%DIAG')
-         if (parse_string(line, Ctrl%FID%Diag)         /= 0) call h_p_e(label)
       case('CTRL%FID%BKP')
          if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
       case('CTRL%BKPL')
          if (parse_string(line, Ctrl%Bkpl)             /= 0) call h_p_e(label)
-      case('CTRL%DIAGL')
-         if (parse_string(line, Ctrl%Diagl)            /= 0) call h_p_e(label)
       case('CTRL%RTMINTFLAG')
          if (parse_string(line, Ctrl%RTMIntflag)       /= 0) call h_p_e(label)
       case('CTRL%LUTINTFLAG')

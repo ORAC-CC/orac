@@ -111,6 +111,8 @@
 !    2015/02/04, Greg McGarragh: Add sabotage_inputs flag and retrieval channel
 !       requirements arrays.
 !    2015/02/04, Greg McGarragh: Add ReChans array.
+!    2015/05/25, Greg McGarragh: Get rid of filename Diag and flags Diagl.
+!       Neither was being used and have been rotting.
 !
 ! Bugs:
 !   None known.
@@ -139,7 +141,6 @@ module CTRL_def
       character(FilenameLen) :: Loc                ! Location (latitudes/longs)
       character(FilenameLen) :: uv                 ! scan lines u/v
       character(FilenameLen) :: Alb	           ! Surface albedo, emissivity
-      character(FilenameLen) :: Diag	           ! ECP o/p diagnostics
       character(FilenameLen) :: BkP	           ! ECP Break-Point file
       character(FilenameLen) :: Log	           ! ECP log file
       character(FilenameLen) :: L2_primary         ! Primary output file
@@ -281,7 +282,6 @@ module CTRL_def
       character(FilenameLen) :: Run_ID
       type (FID_t)           :: FID
       integer                :: Bkpl	           ! Break-point level
-      integer                :: Diagl(MaxDiagFlags)
       integer		     :: LUTIntflag         ! LUT Interpolation flag
                                                    ! 0 = linear interp
                                                    ! 1 = bicubic
