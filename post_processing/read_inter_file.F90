@@ -394,7 +394,7 @@ write(*,*) 'read_inter_file global_atts%Conventions', global_atts%Conventions
 
 !   temp_string=trim('year!!!')//trim('month!!!')//trim('day!!!')
 
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Product_date", global_atts%Product_Date) == &
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Product_date", global_atts%Date_Created) == &
         NF90_NOERR) then
    endif
 
@@ -426,12 +426,12 @@ write(*,*) 'read_inter_file global_atts%Conventions', global_atts%Conventions
 
 
 
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Contact_Email", global_atts%contact_email) == &
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Contact_Email", global_atts%Creator_Email) == &
         NF90_NOERR) then
    endif
 
 
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Contact_Website", global_atts%contact_website) == &
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Contact_Website", global_atts%Creator_url) == &
         NF90_NOERR) then
    endif
 
