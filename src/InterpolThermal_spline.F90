@@ -89,7 +89,7 @@
 !       Use SPixel index arrays rather than ThF,ThL.
 !    21st Jan 2015, Adam Povey:
 !       Finishing the previous commit.
-!
+!     7/5/2015 CP removes the  the stop IntTransErr!
 ! Bugs:
 !   None known.
 !
@@ -166,11 +166,11 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
-      write(*, *) 'ERROR: Interpol_Thermal(): Interpolation failure, SPixel ' // &
+      write(*, *) 'ERROR: Interpol_Thermal(): Interpolation failure spline, SPixel ' // &
          'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
-         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
+         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc ,SPixel%RTM%LW%P
 !     status = IntTransErr
-      stop IntTransErr
+!      stop IntTransErr
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards
