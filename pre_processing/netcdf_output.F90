@@ -19,6 +19,7 @@
 ! 2015/01/15, AP: Eliminate channel_abs_ids.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 !    Remove uscan and vscan as unnecessary.
+! 2015/06/24, OS: added vid and include of netcdf_output_check.F90
 !
 ! $Id$
 !
@@ -81,7 +82,7 @@ module netcdf_output
       integer :: vid_rho_0v_data, vid_rho_0d_data, vid_rho_dv_data, vid_rho_dd_data
 
       ! clf file
-      integer :: vid_cflag, vid_cldtype, vid_cldmask, vid_cccot_pre
+      integer :: vid_cflag, vid_cldtype, vid_cldmask, vid_cccot_pre, vid_cldmask_unc
 
       ! config file:
       integer :: vid_msi_instr_ch_numbers_config, &
@@ -128,6 +129,7 @@ contains
 include 'netcdf_output_create.F90'
 include 'netcdf_output_create_file.F90'
 include 'netcdf_output_close.F90'
+include 'netcdf_output_check.F90'
 include 'netcdf_output_write_swath.F90'
 
 end module netcdf_output
