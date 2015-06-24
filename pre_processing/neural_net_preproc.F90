@@ -23,6 +23,14 @@
 !    13th Mar 2015, SteSta + OS: glint angle correction of neural net output; removed bug that called
 !         neural net even though solzen is negative; added new cloud masks and threshold tests; 
 !         use surface temperature instead of skin temperature when the latter is negative
+!     3rd June 2015, SteSta: Compensates missing channel2 reflectances for MODIS
+!         in high reflective clouds (when channel 1 has high reflectance and
+!         channel 2 has fillvalue), forcing the cloud mask to be clear
+!     3rd June 2015 SteSta: double checks sunglint area, sometimes still
+!         misinterpreted as cloudy , checks in sunglint at day over sea if
+!         reflectances in ch1 and ch2 is high and also ch3b has values gt 300
+!         Kelvin 
+!    24th June 2015 SteSta: added cloud mask uncertainty
 !
 ! Bugs:
 !    None known
@@ -39,8 +47,8 @@ contains
   !------------------------------------------------------------------------
   subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
        & solzen, satzen, dem, niseflag, lsflag, &
-       & lusflag, sfctype, cccot_pre, cldflag, lat, skint, ch3a_on_avhrr_flag, &
-       & i, j, glint_angle, verbose)
+       & lusflag, sfctype, cccot_pre, cldflag, cld_uncertainty, lat, skint, &
+       & ch3a_on_avhrr_flag, i, j, glint_angle, sensor_name, verbose)
     !------------------------------------------------------------------------
 
     use constants_cloud_typing_pavolonis
@@ -61,6 +69,7 @@ contains
     ! 3 = night
 
     ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
+    character(len=sensor_length),   intent(in)    :: sensor_name
     integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
     integer(kind=sint), intent(in) :: sfctype, ch3a_on_avhrr_flag
     integer(kind=lint), intent(in) :: dem
@@ -72,10 +81,11 @@ contains
     ! OUTPUT to cloud_type subroutine (module cloud_typing_pavolonis.F90)
     integer(kind=byte), intent(out) :: cldflag
     real(kind=sreal),   intent(out) :: cccot_pre
+    real(kind=sreal),   intent(out) :: cld_uncertainty
 
     ! LOCAL variables
-    real(kind=sreal)   :: ch1, ch2, ch3b, ch4, ch5    
-    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b
+    real(kind=sreal)   :: ch1, ch2, ch3b, ch4, ch5 , threshold_used
+    real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b, norm_diff_cc_th
     integer(kind=sint) :: glint_mask
     logical            :: call_neural_net
 
@@ -88,13 +98,17 @@ contains
     if ( channel1 .eq. sreal_fill_value ) then
        ch1 = channel1
     else
-       ch1 = channel1 * 100.
+       ch1 = min(106.,channel1 * 100.) ! Dont allow reflectance to be higher than trained
     endif
 
     if ( channel2 .eq. sreal_fill_value ) then
-       ch2 = channel2
+       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS') .and. ch1 .gt. 50. ) then
+          ch2 = min(104., ch1 * 1.03)
+       else 
+          ch2 = channel2
+       endif
     else
-       ch2 = channel2 * 100.
+       ch2 = min(104., channel2 * 100.) ! Dont allow reflectance to be higher than trained
     endif
 
     ch3b = channel3b
@@ -259,15 +273,11 @@ contains
        output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
        ! --- correct for sunglint - test phase for AVHRR
-!       output = output + min( 0., ( 1. - cos( glint_angle * d2r ) / cos( 50. * d2r ) ) ) * 0.3
-       !the following uses a parabel equation and is almost the same as above with:
-       !max_reduce = 1./6. (at 0° glint)
-       !zero_point =   50. (turning point in degrees where reduction is set to zero.)
-       !power      =    2. (in-/decrease reduction between 0° and zero_point)
-       !output = output + min( 0., (max_reduce * ( (glint_angle / zero_point. )**power -1.) ) )
-       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
-       !output = output + min( 0., (1./6. * ( (glint_angle / 50. )**3. -1.) ) )
-
+       ! This probably needs to be done in future because the sunglint correction does not
+       ! really work for AATSR ; but at the moment wait for the results
+!       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
+           output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
+!       endif
        ! --- ensure that CCCOT is within 0 - 1 range
        cccot_pre = max( min( output, 1.0 ), 0.0)
 
@@ -290,13 +300,15 @@ contains
           if (illum_nn .eq. 1 ) then 
              ! SNOW ICE 
              if ( niseflag .eq. sym%YES ) then
+                threshold_used = sym%COT_THRES_DAY_SEA_ICE
                 if ( cccot_pre .gt. sym%COT_THRES_DAY_SEA_ICE ) then
                    cldflag = sym%CLOUDY
                 else
                    cldflag = sym%CLEAR
                 endif
              else ! SNOW-ICE FREE
-                if ( cccot_pre .gt. sym%COT_THRES_DAY_SEA ) then
+                 threshold_used = sym%COT_THRES_DAY_SEA
+                 if ( cccot_pre .gt. sym%COT_THRES_DAY_SEA ) then
                    cldflag = sym%CLOUDY
                 else
                    cldflag = sym%CLEAR
@@ -305,13 +317,15 @@ contains
           elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
              ! SNOW ICE
              if ( niseflag .eq. sym%YES ) then
+                threshold_used = sym%COT_THRES_NIGHT_SEA_ICE                 
                 if ( cccot_pre .gt. sym%COT_THRES_NIGHT_SEA_ICE ) then
                    cldflag = sym%CLOUDY
                 else
                    cldflag = sym%CLEAR
                 endif
              else ! SNOW ICE FREE
-                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_SEA ) then
+                 threshold_used = sym%COT_THRES_NIGHT_SEA
+                 if ( cccot_pre .gt. sym%COT_THRES_NIGHT_SEA ) then
                    cldflag = sym%CLOUDY
                 else
                    cldflag = sym%CLEAR
@@ -324,12 +338,14 @@ contains
           if (illum_nn .eq. 1 ) then 
              ! SNOW ICE 
              if ( niseflag .eq. sym%YES ) then
+                threshold_used = sym%COT_THRES_DAY_LAND_ICE
                 if ( cccot_pre .gt. sym%COT_THRES_DAY_LAND_ICE ) then
                    cldflag = sym%CLOUDY
                 else
                    cldflag = sym%CLEAR
                 endif
              else ! SNOW ICE FREE
+                threshold_used = sym%COT_THRES_DAY_LAND
                 if ( cccot_pre .gt. sym%COT_THRES_DAY_LAND ) then
                    cldflag = sym%CLOUDY
                 else
@@ -339,12 +355,14 @@ contains
           elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
              ! SNOW ICE
              if ( niseflag .eq. sym%YES ) then
+                threshold_used = sym%COT_THRES_NIGHT_LAND_ICE
                 if ( cccot_pre .gt. sym%COT_THRES_NIGHT_LAND_ICE ) then
                    cldflag = sym%CLOUDY
                 else
                    cldflag = sym%CLEAR
                 endif
              else ! SNOW ICE FREE
+                threshold_used = sym%COT_THRES_NIGHT_LAND
                 if ( cccot_pre .gt. sym%COT_THRES_NIGHT_LAND ) then
                    cldflag = sym%CLOUDY
                 else
@@ -359,13 +377,28 @@ contains
 !          endif
        endif
 
+       ! calculate Uncertainty with pre calculated calipso scores 
+       ! depending on normalized difference between cccot_pre and used threshold
+       if ( cldflag .eq. sym%CLEAR ) then
+           norm_diff_cc_th = ( cccot_pre - threshold_used ) / threshold_used
+           cld_uncertainty = ( sym%CLEAR_UNC_MAX - sym%CLEAR_UNC_MIN ) * norm_diff_cc_th + sym%CLEAR_UNC_MAX
+       elseif ( cldflag .eq. sym%CLOUDY ) then
+           norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
+           cld_uncertainty = ( sym%CLOUDY_UNC_MAX - sym%CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + sym%CLOUDY_UNC_MIN
+       else 
+           cld_uncertainty = sreal_fill_value
+       endif 
+
        ! here we go. 
        ! What are we doing if at least 1 input parameter is not in trained range
        ! , e.g. fillvalue ?
        ! For now 7 cases are defined to deal with it, choose best one later
        ! noob equals 1 if one or more input parameter is not within trained range 
        if (noob .eq. 1_lint) then
-
+          ! give penalty; increase uncertainty because at least 1 ANN input parameter 
+          ! was not within trained range
+          cld_uncertainty = cld_uncertainty * 1.05 
+ 
           ! Case 1) trust the ann and ... 
           !just do nothing
           ! Case 2) set it to clear
@@ -390,18 +423,23 @@ contains
           ! Case 6) trust ann, set cldflag to fillvalue only if all channels are
           !  below 0. (=fillvalue)
           if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
-               & .and. ch5 .lt. 0) cldflag = byte_fill_value
-          ! Case 7) if ch3b saturates over Antarctica and NN by default masks all pixels as cloudy
-          ! set to fill value because no information available
-          !        if (lat .lt. -65. .AND. lat .gt. -90. .AND. lsflag .eq. 1 .AND. &
-          !             & niseflag .eq. 1 .AND. illum_nn .eq. 3 .and. ch3b .lt. 0) &
-          !             & cldflag = byte_fill_value ! for cold land surfaces (Antarctica)
+               & .and. ch5 .lt. 0) then
+               cldflag = byte_fill_value
+               cld_uncertainty = sreal_fill_value
+          endif
           ! end of noob if-loop
+       endif
+
+       ! double check sunglint
+       if ( ( glint_mask .eq. sym%YES ) .and. ( cldflag .eq. sym%CLOUDY ) .and. & 
+            ( illum_nn .eq. 1 ) .and. ( lsflag .eq. 0_byte ) ) then
+          if ( ( ( ch1 .gt. 50. ) .or. ( ch2 .gt. 50. ) ) .and. ( ch3b .gt. 300.) ) cldflag = sym%CLEAR
        endif
 
     else
 
        cldflag = byte_fill_value
+       cld_uncertainty = sreal_fill_value
 
     endif
 
