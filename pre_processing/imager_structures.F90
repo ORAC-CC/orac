@@ -26,6 +26,7 @@
 !    imager_flags%lusflag
 ! 2014/12/01, OS: added variable emis_ch3b to Pavolonis imager structure
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2015/07/02, OS: added cldmask_uncertainty
 !
 ! $Id$
 !
@@ -93,6 +94,7 @@ module imager_structures
       integer(kind=byte), dimension(:,:), pointer :: cldtype
       integer(kind=byte), dimension(:,:), pointer :: cldmask
       real(kind=sreal),   dimension(:,:), pointer :: cccot_pre
+      real(kind=sreal),   dimension(:,:), pointer :: cldmask_uncertainty
       integer(kind=byte), dimension(:,:), pointer :: cirrus_quality
       real(kind=sreal),   dimension(:,:), pointer :: emis_ch3b
 
