@@ -225,6 +225,8 @@
 !                optional arguments/fields and better error handling.
 ! 2015/02/24: GM Added command line/driver file options to specify the number of
 !                channels and the channel IDs to process.
+! 2015/07/02: OS Added check for output netcdf files (wrapper only) + 
+!                uncommented parse of L2_Processor_Version
 !
 ! $Id$
 !
@@ -304,9 +306,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: verbose
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
-
+   logical                          :: corrupt
    logical                          :: check
    integer                          :: nargs
+   integer                          :: check_output
 
    integer                          :: i
    character(path_length)           :: line, label, value
@@ -483,7 +486,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call parse_required(11, global_atts%Conventions,          'Conventions')
       call parse_required(11, global_atts%Institution,          'Institution')
       call parse_required(11, global_atts%L2_Processor,         'L2_Processor')
-!     call parse_required(11, global_atts%L2_Processor_Version, 'L2_Processor_Version')
+      call parse_required(11, global_atts%L2_Processor_Version, 'L2_Processor_Version')
       call parse_required(11, global_atts%Creator_Email,        'Creator_Email')
       call parse_required(11, global_atts%Creator_URL,          'Creator_URL')
       call parse_required(11, global_atts%file_version,         'file_version')
@@ -511,8 +514,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call parse_required(11, global_atts%SVN_Version,          'SVN_Version')
 
       do while (parse_driver(11, value, label) == 0)
-         call clean_driver_label(label)
-         call parse_optional(label, value, n_channels, channel_ids)
+        call clean_driver_label(label)
+        call parse_optional(label, value, n_channels, channel_ids)
       end do
 
       close(11)
@@ -794,7 +797,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
       case(3)
          call read_ecmwf_wind_dwd(ecmwf_path_file,ecmwf)
-         if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
+         if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim,ecmwf%kdim
       end select
       if (verbose) then
          write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
@@ -926,6 +929,49 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,netcdf_info,&
            channel_info,year,month,day,verbose)
 
+#ifdef WRAPPER
+
+      corrupt = .false.
+
+      ! repeat write attempt in case output files are corrupt
+      ! implementation necessary for DWD processing chain running on ECMWF,
+      ! where writing to network file system seems to cause random errors in
+      ! netcdf output files that are not captured during creation
+      do check_output=1,100
+
+         ! write netcdf output files
+         if (verbose) write(*,*)  'Write netcdf output files'
+         call netcdf_output_write_swath(imager_flags,imager_angles, &
+              imager_geolocation,imager_measurements,imager_time, &
+              imager_pavolonis,netcdf_info,channel_info,surface,include_full_brdf)
+
+         ! close output netcdf files
+         if (verbose) write(*,*)'Close netcdf output files'
+         call netcdf_output_close(netcdf_info)
+
+         ! check whether output files are corrupt
+         if (verbose) write(*,*)'Check whether output files are corrupt'
+         call netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
+              cf_file,lsf_file,geo_file,loc_file,alb_file,corrupt,verbose)
+
+         ! exit loop if output files are not corrupt, else try writing again
+         if (.not. corrupt) then
+            write(*,*) 'No output file is corrupt at attempt ', check_output
+            exit
+         else
+            write(*,*) 'A preprocessing output file is corrupt - rewriting attempt no. ', check_output
+            ! recreate output files if previous attempt produced corrupt files
+            call netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
+                 config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
+                 platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &
+                 cminute,preproc_dims,imager_angles,imager_geolocation,netcdf_info, &
+                 channel_info,include_full_brdf,verbose)
+         endif
+
+      end do
+
+#else
+
       ! write netcdf output files
       if (verbose) write(*,*)  'Write netcdf output files'
       call netcdf_output_write_swath(imager_flags,imager_angles, &
@@ -935,6 +981,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'
       call netcdf_output_close(netcdf_info)
+      
+#endif
 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*)  'Deallocate chunk specific structures'
