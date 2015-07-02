@@ -118,6 +118,7 @@
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 ! 2015/02/19, GM: Added SEVIRI support.
+! 2015/04/30, MSt: Added correct setting of coef_file name for NOAAs before NOAA-10
 !
 ! $Id$
 !
@@ -245,7 +246,11 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       coef_file = 'rtcoef_envisat_1_atsr.dat'
    case('AVHRR')
       if (index(platform,'noaa') >= 1) then
-         coef_file = 'rtcoef_noaa_'//platform(5:6)//'_avhrr.dat'
+         if(platform(5:5) == '1') then
+            coef_file = 'rtcoef_noaa_'//platform(5:6)//'_avhrr.dat'
+          else
+            coef_file = 'rtcoef_noaa_'//platform(5:5)//'_avhrr.dat'
+          end if
       else if (index(platform,'metop') >= 1) then
          coef_file = 'rtcoef_metop_'//platform(6:7)//'_avhrr.dat'
       else
