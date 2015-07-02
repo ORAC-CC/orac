@@ -32,6 +32,7 @@
 !                 imager_flags%LUSFLAG
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2015/07/02, OS: added allocation of cldmask_uncertainty
 !
 ! $Id$
 !
@@ -136,6 +137,11 @@ subroutine allocate_imager_structures(imager_geolocation,imager_angles, &
         imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
    imager_pavolonis%cldmask=byte_fill_value
+
+   allocate(imager_pavolonis%cldmask_uncertainty( &
+        imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   imager_pavolonis%cldmask_uncertainty=sreal_fill_value
 
    allocate(imager_pavolonis%sunglint_mask( &
         imager_geolocation%startx:imager_geolocation%endx, &
