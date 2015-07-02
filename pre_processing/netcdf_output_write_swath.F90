@@ -42,6 +42,7 @@
 !  cccot_pre, lusflag, dem, nisemask
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2015/07/02, OS: added writing of cldmask_uncertainty
 !
 ! $Id$
 !
@@ -243,7 +244,7 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
    end if
 
 
-   ! clf file (cflag, cldtype, cldmask, cccot_pre)
+   ! clf file (cflag, cldtype, cldmask, cldmask_uncertainty, cccot_pre)
 
    call nc_write_array( &
            netcdf_info%ncid_clf, &
@@ -266,6 +267,14 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
            'cldmask', &
            netcdf_info%vid_cldmask, &
            imager_pavolonis%cldmask(imager_geolocation%startx:,:), &
+           1, 1, n_x, &
+           1, 1, imager_geolocation%ny)
+
+   call nc_write_array( &
+           netcdf_info%ncid_clf, &
+           'cldmask_uncertainty', &
+           netcdf_info%vid_cldmask_unc, &
+           imager_pavolonis%cldmask_uncertainty(imager_geolocation%startx:,:), &
            1, 1, n_x, &
            1, 1, imager_geolocation%ny)
 
