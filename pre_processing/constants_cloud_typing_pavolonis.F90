@@ -47,6 +47,7 @@
 !  23rd Oct 2014, CS: original version
 !  1st  Dec 2014, OS: added PROB_OPAQUE_ICE_TYPE
 !  22nd Apr 2015, OS: added new ANN cloud mask thresholds
+!   2nd Jul 2015, OS: added uncertianty constants variables
 !
 ! Calling Sequece:
 !   use CONSTANTS_CLOUD_TYPING_PAVOLONIS
@@ -65,6 +66,12 @@ module CONSTANTS_CLOUD_TYPING_PAVOLONIS
      !--- cldmask OUTPUT
      INTEGER(kind=sint) :: CLOUDY = 1
      INTEGER(kind=sint) :: CLEAR = 0
+
+     !--- constants used to determine cldmask uncertainty
+     REAL(kind=sreal)   :: CLEAR_UNC_MIN = 11.925 !24.364
+     REAL(kind=sreal)   :: CLEAR_UNC_MAX = 49.200 !60.066
+     REAL(kind=sreal)   :: CLOUDY_UNC_MIN = 1.862 !1.533
+     REAL(kind=sreal)   :: CLOUDY_UNC_MAX = 55.995 !43.620
 
      !--- ann_cloud_mask
      REAL(kind=sreal)   :: COT_THRES_SEA = 0.05       !obsolete
