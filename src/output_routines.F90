@@ -29,6 +29,7 @@
 !       vmax; set cth_vmin to -0.01
 !    19th Mar 2015, Oliver Sus: cth_vmin set to 0
 !    22nd April 2015, Oliver Sus: cth_vmin set to -1000 m, i.e. -1 km
+!     3rd July 2015, Oliver Sus: Added cldmask_error variables
 !
 ! Bugs:
 !    None known.
@@ -69,7 +70,7 @@ module output_routines
       integer                       :: vid_qcflag
       integer                       :: vid_illum
       integer                       :: vid_cldtype
-      integer                       :: vid_cldmask
+      integer                       :: vid_cldmask,vid_cldmaskerror
       integer                       :: vid_cccot_pre
       integer                       :: vid_lusflag
       integer                       :: vid_dem
@@ -137,7 +138,7 @@ module output_routines
       real                          :: cct_error_scale  = 0.01
       real                          :: cct_error_offset = 0.0
       integer(kind=sint)            :: cct_error_vmin   = 0
-      integer(kind=sint)            :: cct_error_vmax   = 100
+      integer(kind=sint)            :: cct_error_vmax   = 10000
 
 !     real(kind=sreal)              :: albedo_scale,albedo_offset
 !     integer(kind=sint)            :: albedo_vmin,albedo_vmax
@@ -309,6 +310,8 @@ module output_routines
       integer(kind=byte), dimension(:,:),   pointer :: cldtype
 
       integer(kind=byte), dimension(:,:),   pointer :: cldmask
+
+      real(kind=sreal),   dimension(:,:),   pointer :: cldmask_error
 
       real(kind=sreal),   dimension(:,:),   pointer :: cccot_pre
 
