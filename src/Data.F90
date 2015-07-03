@@ -45,6 +45,7 @@
 !    2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !    2015/02/04, GM: Changes related to the new missing channel, illumination,
 !       and channel selection code.
+!    2015/07/03, OS: Added cloudmask_error
 !
 ! Bugs:
 !    None known.
@@ -86,6 +87,7 @@ module Data_def
       real(4), pointer            :: CloudFlags(:,:)
       integer(kind=byte), pointer :: cldtype(:,:)
       integer(kind=byte), pointer :: cloudmask(:,:)
+      real(kind=sreal),   pointer :: cloudmask_error(:,:)
       real(kind=sreal),   pointer :: cccot_pre(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
