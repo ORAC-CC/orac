@@ -37,6 +37,7 @@
 ! 2015/03/11, GM: Fixed an indexing bug in writing the cloud albedo.
 ! 2015/03/19, OS: CTH now .ge. 0
 ! 2015/03/19, OS: undid previous change in file; CTH is allowed to be negative again
+! 2015/07/03, OS: Added cloudmask_error data
 !
 ! $Id$
 !
@@ -194,6 +195,8 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    else
       temp_real = sqrt(SPixel%Sn(IFr,IFr))
    end if
+
+   temp_real=MSI_Data%cloudmask_error(SPixel%Loc%X0, SPixel%Loc%Y0)
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
            output_data%cct_error_scale, output_data%cct_error_offset, &
