@@ -87,6 +87,7 @@
 !          rather than the  MSI file.
 !    13th Jan 2015, Adam Povey: Remove First:Last channel indexing.
 !    19th Jan 2015, Greg McGarragh: Use make_sad_chan_num().
+!    30th Apr 2015, Martin Stengel: correct the chan_file definition for NOAA-7 and NOAA-9
 !
 ! Bugs:
 !    None known.
@@ -141,6 +142,16 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
       chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // &
          '_' // trim(chan_num) // '.sad'
+
+      !check if NOAA-7 or NOAA-9; then reset chan_file
+      !this could be a little bit more generic in the future
+      if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA7') &
+         chan_file = trim(Ctrl%SAD_Dir) // 'AVHRR-NOAA07' &
+         & // '_' // trim(chan_num) // '.sad'
+      if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA9') &
+         chan_file = trim(Ctrl%SAD_Dir) // 'AVHRR-NOAA09' &
+         & // '_' // trim(chan_num) // '.sad'
+
       write(*,*) 'chan_file read in: ',trim(adjustl(chan_file))
 
       ! Check if file exists
