@@ -72,6 +72,8 @@
 !     4th Feb 2015, Martin Stengel & Oliver Sus:
 !       Process only cloudy pixels and one phase; flags to be outsourced; 
 !       hard-wired cloud type values to be replaced by Pavolonis constants
+!     3rd Jul 2015, OS:
+!       Added cldmask_uncertainty
 !
 ! Bugs:
 !    None known.
@@ -94,20 +96,22 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer :: ncid
+   integer :: ncid, ierr
 
    ! Open cloud flag file
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
-   call nc_open(ncid, Ctrl%Fid%CF)
+   call nc_open(ncid, Ctrl%Fid%CF, ierr)
 
    allocate(MSI_Data%CloudFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cloudmask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cloudmask_error(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
    call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, verbose)
    call nc_read_array(ncid, "cldmask", MSI_Data%cloudmask, verbose)
+   call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cloudmask_error, verbose)
    call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, verbose)
 
    ! Pavolonis cloud type values:
