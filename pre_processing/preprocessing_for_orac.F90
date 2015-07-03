@@ -227,6 +227,7 @@
 !                channels and the channel IDs to process.
 ! 2015/07/02: OS Added check for output netcdf files (wrapper only) + 
 !                uncommented parse of L2_Processor_Version
+! 2015/07/03: OS Removed parsing of L2_Processor_Version
 !
 ! $Id$
 !
@@ -420,7 +421,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call get_command_argument(20,global_atts%Conventions)
       call get_command_argument(21,global_atts%institution)
       call get_command_argument(22,global_atts%L2_Processor)
-!     call get_command_argument(23,global_atts%L2_Processor_Version)
       call get_command_argument(23,global_atts%Creator_Email)
       call get_command_argument(24,global_atts%Creator_url)
       call get_command_argument(25,global_atts%file_version)
@@ -486,7 +486,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call parse_required(11, global_atts%Conventions,          'Conventions')
       call parse_required(11, global_atts%Institution,          'Institution')
       call parse_required(11, global_atts%L2_Processor,         'L2_Processor')
-      call parse_required(11, global_atts%L2_Processor_Version, 'L2_Processor_Version')
       call parse_required(11, global_atts%Creator_Email,        'Creator_Email')
       call parse_required(11, global_atts%Creator_URL,          'Creator_URL')
       call parse_required(11, global_atts%file_version,         'file_version')
