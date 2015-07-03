@@ -691,6 +691,7 @@ end subroutine Read_LUT_Xd_both
 ! History:
 !    10th Oct 2014, Greg McGarragh:
 !       Original version.
+!    30th Apr 2015 Martin Stengel: correct definition of LUT_file for NOAA-7 and NOAA-9
 !
 ! Bugs:
 !    None known.
@@ -711,6 +712,18 @@ subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
    LUT_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // '_' // &
               trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
               // trim(chan_num) // '.sad'
+
+   !set correct LUF filename for NOAA-7 and NOAA-9
+   !could be a little bit more generic in the future
+   if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA7') &
+     LUT_file = trim(Ctrl%SAD_Dir) // '/' // 'AVHRR-NOAA07' // '_' // &
+              trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
+              // trim(chan_num) // '.sad'
+   if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA9') &
+     LUT_file = trim(Ctrl%SAD_Dir) // '/' // 'AVHRR-NOAA09' // '_' // &
+              trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
+              // trim(chan_num) // '.sad'
+
 
 end subroutine create_lut_filename
 
