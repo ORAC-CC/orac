@@ -17,6 +17,7 @@
 !    19th Dec 2015, Greg McGarragh: Added nullifications for recently added
 !       variables.
 !    30th Jan 2015, Adam Povey: Remove uscan and vscan as unnecessary.
+!     3rd Jul 2015, Oliver Sus: Added cloudmask_error
 !
 ! Bugs:
 !    None known.
@@ -48,6 +49,7 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
 
    nullify(MSI_Data%cldtype)
    nullify(MSI_Data%cloudmask)
+   nullify(MSI_Data%cloudmask_error)
    nullify(MSI_Data%cccot_pre)
 
    nullify(MSI_Data%Geometry%Sol)
