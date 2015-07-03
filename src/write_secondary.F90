@@ -29,6 +29,7 @@
 ! 2014/12/19, Adam Povey: YSolar and YThermal now contain the index of
 !     solar/thermal channels with respect to the channels actually processed,
 !     rather than the MSI file.
+! 2015/07/03, Oliver Sus: bug fix in writing stemp_ap
 !
 ! $Id$
 !
@@ -86,7 +87,7 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
 
    call nc_write_array(ncid,'stemp_fg',output_data%vid_stemp_fg,&
            output_data%stemp_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'stemp_ap',output_data%vid_stemp_fg,&
+   call nc_write_array(ncid,'stemp_ap',output_data%vid_stemp_ap,&
            output_data%stemp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    do i=1,Ctrl%Ind%NSolar
