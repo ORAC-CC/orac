@@ -74,23 +74,28 @@ contains
 !
 ! History:
 ! 2014/02/10, AP: Original version, replacing nc_open.F90.
+! 2015/07/03, OS: Added ierr return argument.
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine nc_open(ncid, fname)
+subroutine nc_open(ncid, fname, ierr)
    implicit none
 
    integer,          intent(out) :: ncid
    character(len=*), intent(in)  :: fname
-
    integer                       :: ierr
+
 
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_open(): Error opening file ',trim(fname)
       print*,trim(nc_error(ierr))
+#ifndef WRAPPER
       stop error_stop_code
+#else
+      ierr = error_stop_code
+#endif
    end if
 
 end subroutine nc_open
