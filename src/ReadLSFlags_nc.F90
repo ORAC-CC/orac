@@ -67,6 +67,7 @@
 !       added variables lusflags, dem, and nisemask
 !    30th Jan 2015, Adam Povey:
 !       Remove NSegs, SegSize arguments. Replace YSeg0 with Y0.
+!     3rd Jul 2015, Oliver Sus: added error status variable to nc_open call
 !
 ! Bugs:
 !    None known.
@@ -89,11 +90,11 @@ subroutine Read_LSFlags_nc(Ctrl, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer :: ncid
+   integer :: ncid, ierr
 
    ! Open LSF file
    if (verbose) write(*,*) 'Land/sea flag file: ', trim(Ctrl%Fid%LS)
-   call nc_open(ncid, Ctrl%Fid%LS)
+   call nc_open(ncid, Ctrl%Fid%LS, ierr)
 
    allocate(MSI_Data%LSFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%lusflags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))

@@ -42,6 +42,7 @@
 !    2014/08/02, GM: Cleaned up the code.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !    2014/01/30, AP: Remove NSegs, SegSize arguments.
+!    2015/07/03, OS: added error status variable to nc_open call
 !
 ! Bugs:
 !    None known.
@@ -64,11 +65,11 @@ subroutine Read_Geometry_nc(Ctrl, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer :: ncid
+   integer :: ncid, ierr
 
    ! Open geometry file
    if (verbose) write(*,*) 'Geometry file: ', trim(Ctrl%Fid%Geo)
-   call nc_open(ncid, Ctrl%Fid%Geo)
+   call nc_open(ncid, Ctrl%Fid%Geo, ierr)
 
    allocate(MSI_Data%Geometry%Sol(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))
    allocate(MSI_Data%Geometry%Sat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NViews))

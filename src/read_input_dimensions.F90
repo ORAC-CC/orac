@@ -17,6 +17,7 @@
 ! 2014/10/07, AP: Removed read of layer dimensions.
 ! 2014/12/19, AP: Number of channels read in ReadDriver. Removed from here.
 ! 2014/01/30, AP: Remove NLayer as redundant.
+! 2015/07/03, OS: added error status variable to nc_open call
 !
 ! $Id$
 !
@@ -37,11 +38,11 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    integer(kind=lint),         intent(out) :: xdim,ydim,vdim
    logical,                    intent(in)  :: verbose
 
-   integer                                 :: ncid
+   integer                                 :: ncid, ierr
 
 
    ! Open msi file
-   call nc_open(ncid,fname_msi)
+   call nc_open(ncid,fname_msi,ierr)
 
    xdim = nc_dim_length(ncid, 'nx_msi', verbose)
    ydim = nc_dim_length(ncid, 'ny_msi', verbose)
@@ -55,7 +56,7 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    end if
 
    ! Open geo file
-   call nc_open(ncid,fname_geo)
+   call nc_open(ncid,fname_geo,ierr)
 
    !xdim = nc_dim_length(ncid, 'nx_geo', verbose)
    !ydim = nc_dim_length(ncid, 'ny_geo', verbose)
@@ -84,10 +85,10 @@ subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
                                              channeldim
    logical,                   intent(in)  :: verbose
 
-   integer                                :: ncid
+   integer                                :: ncid, ierr
 
    ! Open file
-   call nc_open(ncid,fname)
+   call nc_open(ncid,fname,ierr)
 
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
@@ -117,10 +118,10 @@ subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim, &
                                               channeldim
    logical,                    intent(in)  :: verbose
 
-   integer                                 :: ncid
+   integer                                 :: ncid, ierr
 
    ! Open file
-   call nc_open(ncid,fname)
+   call nc_open(ncid,fname,ierr)
 
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)

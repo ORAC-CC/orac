@@ -59,6 +59,7 @@
 !       channels with respect to the channels actually processed, rather than the
 !       MSI file.
 !    2014/01/30, AP: Remove NSegs, SegSize arguments.
+!    2015/07/03, OS: added error status variable to nc_open call
 !
 ! Bugs:
 !    None known.
@@ -81,13 +82,13 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer                     :: ncid, i, j
+   integer                     :: ncid, i, j, ierr
    integer(kind=lint)          :: cdim
    integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers, subs
 
    ! Open ALB file
    if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Alb)
-   call nc_open(ncid, Ctrl%Fid%Alb)
+   call nc_open(ncid, Ctrl%Fid%Alb, ierr)
 
    ! Read instrument channel indices from file
    cdim = nc_dim_length(ncid, 'nc_alb', verbose)

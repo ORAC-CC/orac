@@ -16,6 +16,7 @@
 ! 2012/12/01, GM: Use the code in the common library to read the global
 !    attributes.
 ! 2014/12/19, AP: Eliminated conf structure. Flags now simply variables.
+! 2015/07/03, OS: added error status variable to nc_open call
 !
 ! $Id$
 !
@@ -42,10 +43,10 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    type(source_attributes_s),          intent(inout) :: source_atts
    logical,                            intent(in)    :: verbose
 
-   integer :: ncid
+   integer :: ncid, ierr
 
    ! Open config file for reading
-   call nc_open(ncid, Ctrl%FID%Config)
+   call nc_open(ncid, Ctrl%FID%Config, ierr)
 
    if (Ctrl%Ind%Navail /= nc_dim_length(ncid, 'nc_conf', verbose)) then
       write(*,*) 'ERROR: read_config_file(): Driver incompatible with preprocessor files.'

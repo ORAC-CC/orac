@@ -39,6 +39,7 @@
 !    2014/08/02, GM: Cleaned up the code.
 !    2014/08/15, AP: Switching to preprocessor NCDF routines.
 !    2014/01/30, AP: Remove NSegs, SegSize arguments.
+!    2015/07/03, OS: added error status variable to nc_open call
 !
 ! Bugs:
 !    None known.
@@ -60,11 +61,11 @@ subroutine Read_Location_nc(Ctrl, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer :: ncid
+   integer :: ncid, ierr
 
    ! Open location file
    if (verbose) write(*,*) 'Location file: ', trim(Ctrl%Fid%Loc)
-   call nc_open(ncid, Ctrl%Fid%Loc)
+   call nc_open(ncid, Ctrl%Fid%Loc, ierr)
 
    allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))

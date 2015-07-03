@@ -98,6 +98,7 @@
 !       arrays in RTM instead.
 !    2015/03/11, GM: Do not read wavelength dependent fields if NThermal is
 !       equal to 0.
+!    2015/07/03, OS: added error status variable to nc_open call
 !
 ! Bugs:
 !    None known.
@@ -127,7 +128,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    ! become real(8). The parameter arrays read in via buf, and the lat/lons
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
-   integer                  :: ncid, chan_found, i, j
+   integer                  :: ncid, chan_found, i, j, ierr
    real(sreal), allocatable :: dummy1d(:)
    character(Instnamelen)   :: platform, sensor, instname
    integer, allocatable     :: index(:), ChanID(:)
@@ -139,7 +140,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    !----------------------------------------------------------------------------
 
    ! Open PRTM file
-   call nc_open(ncid, Ctrl%FID%PRTM)
+   call nc_open(ncid, Ctrl%FID%PRTM, ierr)
 
    ! Allocate arrays
    allocate(RTM%LW%lat(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
@@ -181,7 +182,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    !----------------------------------------------------------------------------
 
    ! Open LwRTM data file
-   call nc_open(ncid, Ctrl%FID%LWRTM)
+   call nc_open(ncid, Ctrl%FID%LWRTM, ierr)
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&

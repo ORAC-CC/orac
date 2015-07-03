@@ -86,6 +86,7 @@
 !       MSI file.
 !    2015/03/11, GM: Do not read wavelength dependent fields if NSolar is
 !       equal to 0.
+!    2015/07/03, OS: added error status variable to nc_open call
 !
 ! Bugs:
 !    None known.
@@ -115,7 +116,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
    ! become real(8). The parameter arrays read in via buf, and the lat/lons
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
-   integer                  :: ncid, chan_found, i, j
+   integer                  :: ncid, chan_found, i, j, ierr
    character(Instnamelen)   :: platform, sensor, instname
    integer, allocatable     :: index(:), ChanID(:)
 !  real(4), allocatable     :: WvNumber(:)
@@ -126,7 +127,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
    !----------------------------------------------------------------------------
 
    ! Open RTM data file
-   call nc_open(ncid, Ctrl%Fid%SWRTM)
+   call nc_open(ncid, Ctrl%Fid%SWRTM, ierr)
 
    ! Ensure instrument info matches the sensor being processed
    if (nf90_get_att(ncid, NF90_GLOBAL, "Sensor", sensor) /= NF90_NOERR .or.&
