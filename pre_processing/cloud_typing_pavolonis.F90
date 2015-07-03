@@ -48,6 +48,8 @@
 !       29th Apr 2015,CP: changed from Env to Envisat 
 !       19th May 2015,GM: Fixed several race conditions introduced from recent
 !                         commits occurring when using OpenMP.
+!        3rd Jul 2015,OS: Added cldmask_uncertainty; added coefficients to calculate
+!                         NOAA19 Ch3.7 reflectance + slight update for other platforms
 !
 ! Bugs:
 !    None known
@@ -373,6 +375,7 @@ contains
     ! imager_pavolonis%SFCTYPE ... surface type - NISE corrected LUS
     ! imager_pavolonis%CLDTYPE ... cloud type based on pavolonis
     ! imager_pavolonis%CLDMASK ... cloud mask based on L1c thresholding
+    ! imager_pavolonis%CLDMASK_UNCERTAINTY ... cloud mask uncertainty
     ! imager_pavolonis%CCCOT   ... cloud cover COTs
     !
     !---------------------------------------------------------------------
@@ -638,11 +641,13 @@ contains
                imager_pavolonis%SFCTYPE(i,j), &
                imager_pavolonis%CCCOT_pre(i,j), &
                imager_pavolonis%CLDMASK(i,j) , &
+               imager_pavolonis%CLDMASK_UNCERTAINTY(i,j) , &
                imager_geolocation%LATITUDE(i,j) , &
                skint(i,j) , &
                ch3a_on_avhrr_flag, &
                i, j, &
                glint_angle, &
+               sensor, &
                verbose )
 
           !-- First Pavolonis test: clear or cloudy
@@ -1613,7 +1618,7 @@ contains
     integer(kind=byte) :: index ! index of row containing platform-specific coefficients
     real(kind=sreal),parameter :: Planck_C1 = 1.19104E-5 ! 2hc^2 in mW m-2 sr-1 (cm-1)-4
     real(kind=sreal),parameter :: Planck_C2 = 1.43877 ! hc/k  in K (cm-1)-1
-    real(kind=sreal), dimension(4,16) :: coefficients ! coefficients containing variables
+    real(kind=sreal), dimension(4,17) :: coefficients ! coefficients containing variables
 
     ! select approproate row of coefficient values
     select case (input_platform)
@@ -1635,20 +1640,22 @@ contains
        index = 8
     case ("noaa18")
        index = 9
-    case ("metop02")
+    case ("noaa19")
        index = 10
-    case ("metopa")
+    case ("metop02")
        index = 11
-    case ("TERRA")
+    case ("metopa")
        index = 12
-    case ("AQUA")
+    case ("TERRA")
        index = 13
-    case ("Envisat")
+    case ("AQUA")
        index = 14
-    case ("MSG2")
+    case ("Envisat")
        index = 15
-    case ("default")
+    case ("MSG2")
        index = 16
+    case ("default")
+       index = 17
     case default
        write(*,*) "Error: Platform name does not match local string in function PlanckInv"
        write(*,*) "Input platform name = ", input_platform 
@@ -1666,23 +1673,24 @@ contains
     ! b = T1
     coefficients = reshape( (/ &
     !        v          a         b     solcon
-         2684.525,  0.997083,  1.94221, 5.061, & !noaa07
-         2690.040,  0.997110,  1.87670, 5.081, & !noaa09
-         2682.467,  0.997208,  1.77725, 5.055, & !noaa11
-         2651.751,  0.997000,  1.89743, 4.949, & !noaa12
-         2658.173,  0.996753,  1.98000, 4.974, & !noaa14
-         2697.637,  0.998389,  1.65054, 5.088, & !noaa15
-         2681.254,  0.998271,  1.67455, 5.033, & !noaa16
-         2669.141,  0.997335,  1.69552, 5.008, & !noaa17
-         2660.644,  0.997145,  1.71713, 4.981, & !noaa18
-         2687.039,  0.996570,  2.05822, 5.076, & !metop02
-         2687.039,  0.996570,  2.05822, 5.076, & !metopa
+         2684.523,  0.997083,  1.94314, 5.061, & !noaa07
+         2690.045,  0.997111,  1.87782, 5.081, & !noaa09
+         2680.050,  0.996657,  1.73316, 5.077, & !noaa11
+         2651.771,  0.996999,  1.89956, 4.948, & !noaa12
+         2654.250,  0.996176,  1.87812, 4.973, & !noaa14
+         2695.974,  0.998015,  1.62126, 5.088, & !noaa15
+         2681.254,  0.998271,  1.67456, 5.033, & !noaa16
+         2669.141,  0.997335,  1.69576, 5.008, & !noaa17
+         2660.647,  0.997145,  1.71735, 4.981, & !noaa18
+         2670.242,  0.997411,  1.68202, 5.010, & !noaa19
+         2687.039,  0.996570,  2.05823, 5.077, & !metop02
+         2687.039,  0.996570,  2.05823, 5.077, & !metopa
          2641.775,  0.999341,  0.47705, 4.804, & !terra
          2647.409,  0.999336,  0.48184, 4.822, & !aqua
          2675.166,  0.996344,  1.72695, 5.030, & !env (aatsr)
-         2670.000,  0.998000,  1.75000, 5.000, & !msg2
+         2568.832,  0.995400,  3.43800, 4.660, & !msg2
          2670.000,  0.998000,  1.75000, 5.000  & !default
-         /), (/ 4, 16 /) )
+         /), (/ 4, 17 /) )
 
     PlanckInv(1) = Planck_C1 * coefficients( 1 , index )**3 / &
          ( exp( Planck_C2 * coefficients( 1 , index ) / &
