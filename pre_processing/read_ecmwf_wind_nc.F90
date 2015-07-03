@@ -22,6 +22,7 @@
 ! 2014/05/07, AP: First version.
 ! 2014/07/24, GM: Nullify pointers to safely use the associated intrinsic.
 ! 2014/11/21, GM: Nullify recently added ecmwf%skin_temp.
+! 2015/07/03, OS: added error status variable to nc_open call
 !
 ! $Id$
 !
@@ -135,9 +136,10 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
    integer                         :: fid,i,ndim,nvar,size
    character(len=var_length)       :: name
    logical                         :: verbose = .false.
+   integer                         :: ierr
 
    ! open file
-   call nc_open(fid,ecmwf_path)
+   call nc_open(fid,ecmwf_path,ierr)
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid,ndim,nvar) .ne. 0) &

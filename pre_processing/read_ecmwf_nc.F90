@@ -62,6 +62,7 @@
 ! 2014/02/04, MS+OS: Implemented nearest neighbour interpolation of ECMWF data;
 !   only activated when WRAPPER flag is set; preliminary approach which will
 !   be made obsolete when ECMWF data will be retrieved on preproc grid resolution
+! 2015/07/03, OS: added error status variable to nc_open call
 !
 ! $Id$
 !
@@ -108,6 +109,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    integer(lint) :: pointer_x(preproc_dims%min_lon:preproc_dims%max_lon)
    integer(lint) :: pointer_y(preproc_dims%min_lat:preproc_dims%max_lat)
    real(sreal) :: diff_lon(ecmwf%xdim),diff_lat(ecmwf%ydim)
+   integer :: ierr
 
    n=ecmwf%xdim*ecmwf%ydim
 
@@ -141,7 +143,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    nj = ceiling((area(1)+90.)/grid(2)) - floor((area(3)+90.)/grid(2)) + 1
 
    ! open file
-   call nc_open(fid,ecmwf_path)
+   call nc_open(fid,ecmwf_path,ierr)
    if (nf90_inquire(fid,ndim,nvar,natt) .ne. 0) &
         stop 'ERROR: read_ecmwf_nc(): NF INQ failed.'
 
