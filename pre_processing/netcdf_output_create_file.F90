@@ -89,6 +89,7 @@
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 !    Remove uscan and vscan as unnecessary.
+! 2015/07/03, OS: added cldmask_uncertainty
 !
 ! $Id$
 !
@@ -823,6 +824,17 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               deflate_level = deflate_level_byte, &
               shuffle = shuffle_byte, &
               fill_value = byte_fill_value)
+
+      ! define cldmask variable
+      call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_clf, &
+              dimids_2d, &
+              'cldmask_uncertainty', &
+              netcdf_info%vid_cldmask_unc, &
+              verbose, &
+              deflate_level = deflate_level_sreal, &
+              shuffle = shuffle_sreal, &
+              fill_value = sreal_fill_value)
 
       ! define cccot_pre variable
       call nc_def_var_float_packed_float( &
