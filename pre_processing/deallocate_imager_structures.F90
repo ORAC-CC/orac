@@ -26,6 +26,7 @@
 !                 imager_geolocation%usgs_dem, imager_flags%lusflag
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b 
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2015/07/03, OS: Added cldmask_uncertainty
 !
 ! $Id$
 !
@@ -64,6 +65,7 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_pavolonis%cldtype)
    deallocate(imager_pavolonis%sfctype)
    deallocate(imager_pavolonis%cldmask)
+   deallocate(imager_pavolonis%cldmask_uncertainty)
    deallocate(imager_pavolonis%cccot_pre)
    deallocate(imager_pavolonis%cirrus_quality)
    deallocate(imager_pavolonis%emis_ch3b)
