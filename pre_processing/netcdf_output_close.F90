@@ -18,6 +18,7 @@
 !   relevant dimensional information.
 ! 2014/02/06, AP: removing unnecessary NCDF routines
 ! 2015/02/04, GM: Terminate on error like all the other NetCDF calls.
+! 2015/07/03, OS: Corrected error message for clf.nc file
 !
 ! $Id$
 !
@@ -40,7 +41,7 @@ subroutine netcdf_output_close(netcdf_info)
    endif
 
    if (nf90_close(netcdf_info%ncid_clf) .ne. NF90_NOERR) then
-      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".alb.nc"'
+      write (*,*) 'ERROR: netcdf_create_config(): nf90_close(): ".clf.nc"'
       stop error_stop_code
    endif
 
