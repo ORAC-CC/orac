@@ -29,6 +29,8 @@
 !   for water within if condition iphase = 2 (never true for water)
 ! 2014/12/02 CP: reads in global and source attributes from file
 ! 2015/01/26 CP: add in ml from IR only option changed to common constants
+! 2015/07/06 OS: changed some nf90_attributes to their naming convention in
+!   common/orac_ncdf.F90; changed cct to cc_total
 !
 !
 !
@@ -217,7 +219,7 @@ SUBROUTINE read_inter_file_ice(iphase,fname,l2_input_2dice_primary,xdim,ydim,glo
 
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
        &          'cc_total_uncertainty',l2var_dummy,dummy_unit,wo)            
-  l2_input_2dice_primary%cct_uncertainty=l2var_dummy
+  l2_input_2dice_primary%cc_total_uncertainty=l2var_dummy
 
   !cot
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -394,7 +396,7 @@ write(*,*) 'read_inter_file global_atts%Conventions', global_atts%Conventions
 
 !   temp_string=trim('year!!!')//trim('month!!!')//trim('day!!!')
 
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Product_date", global_atts%Date_Created) == &
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Date_Created", global_atts%Date_Created) == &
         NF90_NOERR) then
    endif
 
@@ -426,12 +428,13 @@ write(*,*) 'read_inter_file global_atts%Conventions', global_atts%Conventions
 
 
 
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Contact_Email", global_atts%Creator_Email) == &
+
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Creator_Email", global_atts%Creator_Email) == &
         NF90_NOERR) then
    endif
 
 
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Contact_Website", global_atts%Creator_url) == &
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Creator_url", global_atts%Creator_url) == &
         NF90_NOERR) then
    endif
 
@@ -611,7 +614,7 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
   
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
        &          'cc_total_uncertainty',l2var_dummy,dummy_unit,wo)            
-  l2_input_2dwat_primary%cct_uncertainty=l2var_dummy
+  l2_input_2dwat_primary%cc_total_uncertainty=l2var_dummy
   
   !cot
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -806,7 +809,7 @@ SUBROUTINE read_inter_file_mli(iphase,fname,l2_input_2dmli_primary,xdim,ydim,glo
   
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
        &          'cc_total_uncertainty',l2var_dummy,dummy_unit,wo)            
-  l2_input_2dmli_primary%cct_uncertainty=l2var_dummy
+  l2_input_2dmli_primary%cc_total_uncertainty=l2var_dummy
   
   !cot
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
