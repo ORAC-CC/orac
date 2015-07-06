@@ -118,7 +118,10 @@
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 ! 2015/02/19, GM: Added SEVIRI support.
-! 2015/04/30, MSt: Added correct setting of coef_file name for NOAAs before NOAA-10
+! 2015/04/30, MSt: Added correct setting of coef_file name for NOAAs before
+!    NOAA-10
+! 2015/07/02, GM: Added code to remove the Rayleigh component from the RTTOV 11
+!    computed transmittances.
 !
 ! $Id$
 !
@@ -231,7 +234,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Useful aliases
    integer,                 parameter   :: ALLOC=1, DEALLOC=0
 
-   
+   real                                 :: p_0, sec_vza, lambda, tau_ray_0, &
+                                           tau_ray_p
+
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering rttov_driver()'
 
    if (verbose) write(*,*) 'coef_path: ', trim(coef_path)
@@ -344,7 +349,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    deallocate(dummy_lint_1dveca)
    deallocate(dummy_lint_1dvecb)
-   deallocate(dummy_sreal_1dveca)
+!  deallocate(dummy_sreal_1dveca)
 
    
    ! Allocate input profile structures (coefs struct not required as addclouds
@@ -573,6 +578,36 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                write_rttov = .false.
             end if
 
+            ! Remove the Rayleigh component from the RTTOV tranmittances.
+            ! (Private comunication from Philip Watts.)
+            if (.false.) then
+!           if (i_coef == 2) then
+               p_0 = 1013.
+
+               sec_vza = 1. / cos(profiles(count)%zenangle * d2r)
+
+               do i_ = 1, nchan
+                  ! Rayleigh optical thickness for the atmosphere down to 1013
+                  ! hPa (Hansen and Travis, 1974)
+                  lambda = dummy_sreal_1dveca(i_)
+                  tau_ray_0 = .008569 * lambda**(-4) * &
+                     (1. + .0113 * lambda**(-2) + .00013 * lambda**(-4))
+
+                  do j_ = 1, nlevels
+                     ! Pressure and path dependent Rayleigh optical thickness
+                     tau_ray_p = tau_ray_0 * profiles(count)%p(j_) / p_0 * sec_vza
+
+                     ! Corrected level transmittances
+                     transmission%tau_levels(j_, i_) = &
+                        transmission%tau_levels(j_, i_) / exp(-tau_ray_p)
+                  enddo
+
+                  ! Corrected total transmittances
+                  transmission%tau_total(i_) = &
+                     transmission%tau_total(i_) / exp(-tau_ray_p)
+               enddo
+            endif
+
             ! Reformat and write output to NCDF files
             if (i_coef == 1) then
                call write_ir_rttov(netcdf_info, preproc_dims, &
@@ -604,6 +639,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       deallocate(calcemis)
    end do
 
+   deallocate(dummy_sreal_1dveca)
    
    call rttov_alloc_prof(stat, nprof, profiles, nlevels, opts, DEALLOC)
    deallocate(profiles)
