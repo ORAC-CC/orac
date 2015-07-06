@@ -81,6 +81,10 @@
   !2015/02/07 CP massive tidy up including of common constants
   !2015/03/19 OS COT maximum value set to 100, CWP scaled accordingly + minor editing
   !2015/04/22 OS only apply Istomina retyping when cloud mask says cloud 
+  !2015/07/06 OS added flags "one_phase_only" and "cloudy_only" as 
+  !                file input; reclassify phase if CTT does not match
+  !                phase temperature range (i.e. no ice if CTT>273.15K);
+  !                removed some debugging statements and further clean up
   !
   ! Bugs:
   !    None known.
@@ -160,6 +164,7 @@
 
       real :: minre(2),maxre(2),minod(2),maxod(2),maxcost=1000000.,costfactor=1.5, &
            cot_thres,cot_thres1,cot_thres2
+      logical :: one_phase_only, cloudy_only
 
       integer(kind=byte), parameter :: IPhaseClU = 0     ! clear/unknoiwn
       integer(kind=byte), parameter :: IPhaseWat = 1     ! Water
@@ -229,7 +234,7 @@
       !!call OMP_set_num_threads(nompthreads)
       !write(*,*) 'Along-track loop of postprocessing running on: ', nompthreads, 'threads'
 
-      wo=1 ! be more verbose on output if = 1 (to be replaced with verbose keyword)
+      wo=0 ! be more verbose on output if = 1 (to be replaced with verbose keyword)
       mli_flag=0
 
       noob=0_lint
@@ -289,6 +294,10 @@
       write(*,*) 'prin =',L2_primary_outputpath_and_file
       read(11,*) L2_secondary_outputpath_and_file
       write(*,*) 'sec =',L2_secondary_outputpath_and_file
+      read(11,*) one_phase_only
+      write(*,*) 'one_phase_only =',one_phase_only
+      read(11,*) cloudy_only
+      write(*,*) 'cloudy_only =',cloudy_only
       read(11,*) cot_thres
       write(*,*) 'cot_thres =',cot_thres
       read(11,*) cot_thres1
@@ -377,13 +386,10 @@
       do j=iystart,iystop
          do i=ixstart,ixstop
 
-
-
             !default: ICE wins, meaning only ice structure is overwritten 
             !and used in the end for the output
             l2_input_2dice_primary%phase(i,j)=iphaseice
             l2_input_2dice_primary%phase_post(i,j) = iphaseice  
-
 
             !Information of Pavolonis cloud type
             !C,N,F,W,S,M,I,Ci,O
@@ -396,17 +402,28 @@
             !6? opaque ice clouds/deep convection,
             !7? nonopaque high ice clouds (e.g. cirrus),
             !8? cloud overlap 4 (e.g. multiple cloud layers), and
-            !9? probably opaque ice clouds (e.g. neither 1.6 ìm nor 3.7 ìm channel is available during night for
-            !AVHRR; 12 ìm channel is missing during night for AATSR).
-
-
 
             ! here apply Pavolonis phase information to select retrieval phase variables 
-	    ! select water type overwrite ice
-            if( l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
-                 l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
+            ! select water type overwrite ice
+            if ( .not. one_phase_only ) then
+               if( l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
+                    l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
 
-               phaseflag(i,j) = 1_byte
+                  phaseflag(i,j) = 1_byte 
+                  if ( ( (l2_input_2dwat_primary%ctt(i,j) .lt. 233.16) .and. &
+                       (l2_input_2dwat_primary%ctt(i,j) .ne. sreal_fill_value) ) .and. &
+                       ( (l2_input_2dice_primary%ctt(i,j) .lt. 273.16 ) .and. &
+                       (l2_input_2dice_primary%ctt(i,j) .ne. sreal_fill_value) ) ) phaseflag(i,j) = 2_byte
+
+               else
+
+                  phaseflag(i,j) = 2_byte
+                  if ( (l2_input_2dice_primary%ctt(i,j) .ge. 273.16 ) .and. (l2_input_2dwat_primary%ctt(i,j) .ge. 233.16 ) )  phaseflag(i,j) = 1_byte
+
+               endif
+            endif
+
+            if (phaseflag(i,j) .eq. 1_byte) then
 
                l2_input_2dice_primary%cot(i,j)=l2_input_2dwat_primary%cot(i,j)
                l2_input_2dice_primary%ref(i,j)=l2_input_2dwat_primary%ref(i,j)
@@ -419,7 +436,7 @@
                l2_input_2dice_primary%ctt_uncertainty(i,j)&
                     &=l2_input_2dwat_primary%ctt_uncertainty(i,j)
                l2_input_2dice_primary%cwp(i,j)=l2_input_2dwat_primary%cwp(i,j)
-	       l2_input_2dice_primary%cloud_albedo(i,j,:)=l2_input_2dwat_primary%cloud_albedo(i,j,:)	
+               l2_input_2dice_primary%cloud_albedo(i,j,:)=l2_input_2dwat_primary%cloud_albedo(i,j,:)
                l2_input_2dice_primary%cot_uncertainty(i,j)&
                     &=l2_input_2dwat_primary%cot_uncertainty(i,j)
                l2_input_2dice_primary%ref_uncertainty(i,j)&
@@ -442,145 +459,10 @@
 
             endif
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            ! DAY cloud mask post neural net
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !compute difference between surface temperature and ctt
-
-            if(l2_input_2dice_primary%stemp(i,j) .ge. filter_micro .and. &
-                 l2_input_2dice_primary%ctt(i,j) .ge. filter_micro) then
-               tempdiff=(l2_input_2dice_primary%stemp(i,j)-l2_input_2dice_primary%ctt(i,j))
-            else
-               tempdiff=dreal_fill_value
-            endif
-
-            if(l2_input_2dice_primary%illum(i,j) .eq. 1_byte .or.&
-                 l2_input_2dice_primary%illum(i,j) .eq. 4_byte .or. &
-                 l2_input_2dice_primary%illum(i,j) .eq. 5_byte .or.&
-                 l2_input_2dice_primary%illum(i,j) .eq. 6_byte .or. &
-                 l2_input_2dice_primary%illum(i,j) .eq. 7_byte .or.&
-                 l2_input_2dice_primary%illum(i,j) .eq. 8_byte .or. &
-                 l2_input_2dice_primary%illum(i,j) .eq. 9_byte ) then
-
-               !write(*,*) 'Processing NN_CM for DAY' 
-               nneurons=nneurons_ex1 !set number of neurons
-               ninput=ninput_ex1 !set number of "criteria" aka input for the neural network
-               noutput=1 !this may be obsolete
-               allocate(minmax_train(ninput,2))
-               minmax_train=minmax_train_ex1 !ranges variables within training was performed
-               allocate(inv(ninput+1,nneurons))
-               inv=inv_ex1 !"weights" for input
-               allocate(outv(nneurons+1))
-               outv=outv_ex1 !"weights" for output
-               allocate(input(ninput+1)) !input aka "criteria"
-               input(1)=l2_input_2dice_primary%ctp(i,j)
-               input(2)=l2_input_2dice_primary%ctt(i,j)
-               input(3)=l2_input_2dice_primary%cot(i,j)
-               input(4)=l2_input_2dice_primary%stemp(i,j)
-               input(5)=tempdiff
-               dummyreal=real(l2_input_2dice_primary%lsflag(i,j),kind=sreal)
-               input(6)=dummyreal
-               allocate(scales(ninput,2))
-               scales=scales_ex1 !parameters to scale input?
-               oscales=oscales_ex1 !parameters to scale output?
-               temperature=temperature_ex1 
-               cutoff=cutoff_ex1
-               bias_i=bias_i_ex1 
-               bias_h=bias_h_ex1 
-            else
-               ! NIGHT cloud mask
-               !write(*,*) 'Processing NN_CM for NIGHT/TWILIGHT'
-               nneurons=nneurons_ex2 !set number of neurons
-               ninput=ninput_ex2 !set number of "criteria" aka input for the neural network
-               noutput=1 !this may be obsolete
-               allocate(minmax_train(ninput,2))
-               minmax_train=minmax_train_ex2 !ranges variables within training was performed
-               allocate(inv(ninput+1,nneurons))
-               inv=inv_ex2 !"weights" for input
-               allocate(outv(nneurons+1))
-               outv=outv_ex2 !"weights" for output
-               allocate(input(ninput+1)) !input aka "criteria"
-               input(1)=l2_input_2dice_primary%ctp(i,j)
-               input(2)=l2_input_2dice_primary%ctt(i,j)
-               input(3)=l2_input_2dice_primary%stemp(i,j)
-               input(4)=tempdiff
-               input(5)=real(l2_input_2dice_primary%lsflag(i,j),kind=sreal)
-               allocate(scales(ninput,2))
-               scales=scales_ex2 !parameters to scale input?
-               oscales=oscales_ex2 !parameters to scale output?
-               temperature=temperature_ex2 !"temperature"
-               cutoff=cutoff_ex2
-               bias_i=bias_i_ex2 !"bias"
-               bias_h=bias_h_ex2 !"bias"
-            endif
-
-            !the subroutine which carries out neural network computation
-            call neural_net(nneurons,ninput,noutput,minmax_train,inv,outv,input, &
-                 scales,oscales,cutoff,bias_i,bias_h,temperature,output,noob)
-            !store output (0,1) in structure for future evaluation and output to netcdf
-            l2_input_2dice_primary%cccot(i,j)=output
-
-            ! deallocate variables
-            deallocate(minmax_train)
-            deallocate(inv)
-            deallocate(outv)
-            deallocate(input)
-            deallocate(scales)
-
-            !now use nn output together with threshold to map to cloudmask
-            !sea
-
-            if(l2_input_2dice_primary%lsflag(i,j) .eq. 0_byte) then
-               if(l2_input_2dice_primary%cccot(i,j) .gt. cot_thres1) then
-                  l2_input_2dice_primary%cc_total(i,j)=1.0
-               else
-                  l2_input_2dice_primary%cc_total(i,j)=0.0
-               endif
-               !land
-            elseif(l2_input_2dice_primary%lsflag(i,j) .eq. 1_byte) then
-               if(l2_input_2dice_primary%cccot(i,j) .gt. cot_thres2) then
-                  l2_input_2dice_primary%cc_total(i,j)=1.0
-               else
-                  l2_input_2dice_primary%cc_total(i,j)=0.0
-               endif
-            endif
-
-
-            !
-            !use pre processing neural net as the default cloud mask
-            !!NDCCCOT_PRE(i,j) is the neural net result not a mask
-            !
-
             l2_input_2dice_primary%cc_total(i,j)= l2_input_2dice_primary%cldmask(i,j)
+            !            l2_input_2dice_primary%cc_total_uncertainty(i,j)= l2_input_2dice_primary%cldmask_uncertainty(i,j)
 
-            ! What are we doing if at least 1 input parameter is not within trained
-            ! range, e.g. is a fillvalue ?
-            ! For now 5 cases are defined to deal with it, choose best one later
-            ! noob equals 1 if one or more input parameter is not within trained range      
-            if (noob .eq. 1_lint) then
-               !  below 0. (=fillvalue)
-               if (l2_input_2dice_primary%ctp(i,j) .lt. 0 &
-                    .and. l2_input_2dice_primary%stemp(i,j) .lt. 0 ) &
-                    l2_input_2dice_primary%cc_total(i,j) = lint_fill_value
-            endif
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !now apply clear snow ice identificationon top of exist cloud mask
-            !This mask only removes cloud does not add in cloud
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            ! if (nise .eq. 1 .and. cc_total) TO BE IMPLEMENTED BY OS
-            call snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary&
-                 &,snow_ice_flag,inst,i,j)
-
-            if ( snow_ice_flag .eq. 1 .and. l2_input_2dice_primary%cc_total(i,j) == 1 ) then
-               ! this pixel is actually clear not cloud
-               l2_input_2dice_primary%cc_total(i,j)=0.0
-            endif
-
-            !sstapelb changed to log10precision 
             !if tau too high, set to max value not to fill value
-
             if(l2_input_2dice_primary%cot(i,j) .ge. dither) then
                if(l2_input_2dice_primary%cot_uncertainty(i,j) .le. log10precision) then
                   newcot=-999.0
@@ -589,8 +471,6 @@
                     & log10huge_value) then
                   newcot=320.0
                else
-                  !newcot=10.0**(l2_input_2dice_primary%cot_uncertainty(i,j))
-                  !*log(10.0)*l2_input_2dice_primary%cot(i,j)
                   newcot=10.0**(l2_input_2dice_primary%cot_uncertainty(i,j))&
                        &*l2_input_2dice_primary%cot(i,j)
                endif
@@ -613,8 +493,6 @@
       enddo
 
 
-      noob_total=noob_total+noob
-
       !deallocate the water structure
       iphase=1
 
@@ -626,13 +504,13 @@
       call nc_create_global_l2_pp(trim(adjustl(L2_primary_outputpath_and_file)),&
            & ncid_primary,  ixstop-ixstart+1, iystop-iystart+1, dims_var, &
 	   wo,1,global_atts,source_atts,status)
-      write(*,*) 'nn'
+
       !allocate the structure which hold the output in its final form
       call alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,nviews,spixel_scan_out)
 
       !define scales,ranges etc.
 #include "def_vars_primary_pp.inc"
-      write(*,*) 'oo'
+
       !put results in final output arrays with final datatypes
       do j=iystart,iystop
          do i=ixstart,ixstop
@@ -643,16 +521,15 @@
       !deallocate primary file ice input
       iphase=2
       call unset_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary)
-      write(*,*) 'pp'
+
       !now write everything in one big chunk of data to disk
 #include "write_primary_pp.inc"
-      write(*,*) 'qq'
+
       !deallocate output structure
       call dealloc_spixel_scan_out_pp(spixel_scan_out)
-      write(*,*) 'rr'
+
       !close output file
       call nc_close_pp(ncid_primary,trim(adjustl(L2_primary_outputpath_and_file)),wo)
-      write(*,*) 'ss'
 
       deallocate(phaseflag)
 
