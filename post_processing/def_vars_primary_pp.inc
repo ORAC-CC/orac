@@ -36,6 +36,7 @@
   ! 2014/12/17 CP: removed unknown form mask naming
   ! 2015/02/05 CP: changed time attribute and common constants
   ! 2015/04/23 OS: CCT vmin set to -100
+  ! 2015/04/23 OS: CCT vmax set to 10000
   !
   ! $Id$
   !
@@ -552,7 +553,7 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
   spixel_scan_out%cct_error_scale=0.01
   spixel_scan_out%cct_error_offset=0.00
   spixel_scan_out%cct_error_vmin=0!*spixel_scan_out%lon_scale
-  spixel_scan_out%cct_error_vmax=100!*spixel_scan_out%lon_scale
+  spixel_scan_out%cct_error_vmax=10000!*spixel_scan_out%lon_scale
   !      write(*,*) ncid_primary
   !& 'cloud_area_fraction uncertainty', '',&
   CALL nc_defdata_short_pp(ncid_primary, dims_var, 'cc_total_uncertainty', spixel_scan_out%vidccterror,&

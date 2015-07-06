@@ -20,6 +20,7 @@
 !2011/12/22: Matthias Jerg produces draft code which opens netcdf file.
 !2012/07/06 MJ extensively overhauls and restructures the code
 !2014/06/04 MJ changes routine names to "*_pp" to avoid confusion when building libraries.
+!2015/07/06 OS stop signal now only raised if not in wrapper mode
 !
 ! $Id$
 !
@@ -50,7 +51,9 @@ SUBROUTINE nc_open_pp(ncid,fname,ierr,wo)
   !write(*,*) ncid
    IF (ierr.NE.NF90_NOERR) THEN
       write(*,*) 'path and file:', fname
+#ifndef WRAPPER
       stop 'error open input file'
+#endif
    ENDIF
 
    IF (wo.EQ.1) THEN

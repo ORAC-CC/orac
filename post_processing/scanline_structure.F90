@@ -9,6 +9,7 @@
 ! 2014/11/26 CP: added Pavolonis cloud_albedo
 ! 2015/02/05 OS: deactivated use of vartypes_pp to force consistency with
 !                common_constants
+! 2015/07/06 OS: added vidcldmaskerror
 
 !---------------------------------------------------------------------
 
@@ -35,7 +36,7 @@ module scanline_structure
      integer :: vidcostja,vidcostjm, vidqcflag, vidillum
 
      integer :: vidradiance1
-     integer :: vidcldtype,vidcldmask,vidlusflag,viddem,vidnisemask
+     integer :: vidcldtype,vidcldmask,vidcldmaskerror,vidlusflag,viddem,vidnisemask
 
      real(kind=dreal) :: time_scale,time_offset,time_vmin,time_vmax,time_fv
      real :: lat_scale,lat_offset,lat_vmin,lat_vmax
