@@ -25,7 +25,8 @@
 ! 2014/05/27, Greg McGarragh: Some cleanup.
 ! 2014/10/24, Oliver Sus: added deallocation of cldtype, cldmask, cccot_pre,
 !    lusflag, dem, nisemask
-! 2012/12/01, Caroline Poulsen: added in cloud albedo
+! 2014/12/01, Caroline Poulsen: added in cloud albedo
+! 2015/07/01, Caroline Poulsen: added in corrected cth
 !
 ! $Id$
 !
@@ -76,7 +77,9 @@ subroutine dealloc_output_data_primary(output_data)
    deallocate(output_data%ctt)
    deallocate(output_data%ctt_error)
    deallocate(output_data%cth)
+   deallocate(output_data%cth_corrected)	
    deallocate(output_data%cth_error)
+   deallocate(output_data%cth_corrected_error)
    deallocate(output_data%cwp)
    deallocate(output_data%cwp_error)
 

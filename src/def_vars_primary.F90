@@ -43,14 +43,14 @@
 !    cldmask, cccot_pre, lusflag, DEM, and nisemask
 ! 2014/11/25, AP: Move scaling/offset definitions to output_routines.
 ! 2014/12/01, OS: added flag 9 = prob_opaque_ice to Pavolonis cloud type
-! 2010/11/12, CP: added cloud albedo
+! 2014/11/12, CP: added cloud albedo
 ! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !    channels with respect to the channels actually processed, rather than the
 !    MSI file.
 ! 2014/12/31, GM: Remove useless error control especially since nc_def_var_*
 !    routines handle errors to exit.
 ! 2015/02/05, GM: Cp added usgs flag meanings
-!
+! 2015/07/01, CP: added corrected cth
 ! $Id$
 !
 ! Bugs:
@@ -411,7 +411,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            output_data%vid_cth, &
            verbose, &
            long_name     = 'cloud top height', &
-           standard_name = 'cloud_top_altitide', &
+           standard_name = 'cloud_top_altitude', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cth_scale, &
            add_offset    = output_data%cth_offset, &
@@ -429,13 +429,54 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            output_data%vid_ctherror, &
            verbose, &
            long_name     = 'cloud top height uncertainty', &
-           standard_name = 'cloud_top_altitide uncertainty', &
+           standard_name = 'cloud_top_altitude uncertainty', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cth_error_scale, &
            add_offset    = output_data%cth_error_offset, &
            valid_min     = output_data%cth_error_vmin, &
            valid_max     = output_data%cth_error_vmax, &
            units         = 'kilometer')
+
+
+
+
+   !----------------------------------------------------------------------------
+   ! cth_corrected
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cth_corrected', &
+           output_data%vid_cth_corrected, &
+           verbose, &
+           long_name     = 'corrected cloud top height', &
+           standard_name = 'corrected cloud_top_altitude', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cth_scale, &
+           add_offset    = output_data%cth_offset, &
+           valid_min     = output_data%cth_vmin, &
+           valid_max     = output_data%cth_vmax, &
+           units         = 'kilometer')
+
+   !----------------------------------------------------------------------------
+   ! cth_corrected_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cth_corrected_uncertainty', &
+           output_data%vid_cth_correctederror, &
+           verbose, &
+           long_name     = 'corrected cloud top height uncertainty', &
+           standard_name = 'corrected cloud_top_altitude uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cth_error_scale, &
+           add_offset    = output_data%cth_error_offset, &
+           valid_min     = output_data%cth_error_vmin, &
+           valid_max     = output_data%cth_error_vmax, &
+           units         = 'kilometer')
+
+
 
    !----------------------------------------------------------------------------
    ! ctt

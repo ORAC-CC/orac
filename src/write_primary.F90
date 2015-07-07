@@ -33,7 +33,9 @@
 ! 2014/12/19, Adam Povey: YSolar and YThermal now contain the index of
 !     solar/thermal channels with respect to the channels actually processed,
 !     rather than the MSI file.
+! 2015/07/04, Caroline Poulsen: added cloud in corrected cloud top height
 !
+
 ! $Id$
 !
 ! Bugs:
@@ -124,6 +126,12 @@ subroutine write_primary(Ctrl, ncid, ixstart, ixstop, iystart, iystop, &
            output_data%cth(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cth_uncertainty',output_data%vid_ctherror,&
            output_data%cth_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+
+   call nc_write_array(ncid,'cth_corrected',output_data%vid_cth_corrected,&
+           output_data%cth_corrected(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cth_corrected_uncertainty',output_data%vid_cth_correctederror,&
+           output_data%cth_corrected_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ctt',output_data%vid_ctt,&
            output_data%ctt(ixstart:,iystart:),1,1,n_x,1,1,n_y)

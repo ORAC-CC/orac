@@ -30,6 +30,7 @@
 !    19th Mar 2015, Oliver Sus: cth_vmin set to 0
 !    22nd April 2015, Oliver Sus: cth_vmin set to -1000 m, i.e. -1 km
 !     3rd July 2015, Oliver Sus: Added cldmask_error variables
+!     4th July 2015, CP: Added corrected cth
 !
 ! Bugs:
 !    None known.
@@ -55,6 +56,7 @@ module output_routines
       integer                       :: vid_cct, vid_ccterror
       integer                       :: vid_stemp, vid_stemperror
       integer                       :: vid_cth, vid_ctherror
+      integer                       :: vid_cth_corrected, vid_cth_correctederror
       integer                       :: vid_ctt, vid_ctterror
       integer                       :: vid_cwp, vid_cwperror
       integer                       :: vid_convergence
@@ -287,6 +289,9 @@ module output_routines
 
       integer(kind=sint), dimension(:,:),   pointer :: cth
       integer(kind=sint), dimension(:,:),   pointer :: cth_error
+
+      integer(kind=sint), dimension(:,:),   pointer :: cth_corrected
+      integer(kind=sint), dimension(:,:),   pointer :: cth_corrected_error
 
       integer(kind=sint), dimension(:,:),   pointer :: cwp
       integer(kind=sint), dimension(:,:),   pointer :: cwp_error
