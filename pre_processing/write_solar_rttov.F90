@@ -32,8 +32,8 @@
 ! 2014/09/11, AP: First version.
 ! 2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
 ! 2014/11/28, GM: A previous fix to the correction of transmittance for mass
-!    path (amf) in rttov_driver() was incorrect. The relevant code then got
-!    moved into here.  The correct fix has now been implemented.
+!    path (amf_recip) in rttov_driver() was incorrect. The relevant code then
+!    got moved into here.  The correct fix has now been implemented.
 !
 ! $Id$
 !
@@ -67,13 +67,13 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
    type(radiance2_type),       intent(in) :: radiance2
    logical,                    intent(in) :: write_flag
 
-   integer                                 :: jch
-   real(sreal)                             :: amf
-   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_tac, dummy_tbc
+   integer                                :: jch
+   real(sreal)                            :: amf_recip
+   real(sreal), dimension(nchan,nlev,1,1) :: dummy_tac, dummy_tbc
 
    if (write_flag) then
-      ! Equivalent to effective_2way_za
-      amf = cos(satza*d2r)
+      ! The reciprocal of the air mass factor
+      amf_recip = cos(satza*d2r)
 
       ! Calculate required above/below cloud transmittances
       do jch=1,nchan
@@ -81,15 +81,15 @@ subroutine write_solar_rttov(netcdf_info, preproc_dims, coefs, idim, jdim, &
          ! (see p.113 of RTTOV v 11 Users Guide)
          if (coefs%coef%ss_val_chn(jch) == 2) then
             ! Transmission from level to TOA
-            dummy_tac(jch,:,1,1) = transmission%tausun_levels_path1(:,jch)**amf
+            dummy_tac(jch,:,1,1) = transmission%tausun_levels_path1(:,jch)**amf_recip
             ! Transmission from surface to level
-            dummy_tbc(jch,:,1,1) = transmission%tausun_total_path1(jch)**amf &
+            dummy_tbc(jch,:,1,1) = transmission%tausun_total_path1(jch)**amf_recip &
                  / dummy_tac(jch,:,1,1)
          else
             ! Transmission from level to TOA
-            dummy_tac(jch,:,1,1) = transmission%tau_levels(:,jch)**amf
+            dummy_tac(jch,:,1,1) = transmission%tau_levels(:,jch)**amf_recip
             ! Transmission from surface to level
-            dummy_tbc(jch,:,1,1) = transmission%tau_total(jch)**amf &
+            dummy_tbc(jch,:,1,1) = transmission%tau_total(jch)**amf_recip &
                  / dummy_tac(jch,:,1,1)
          end if
       end do

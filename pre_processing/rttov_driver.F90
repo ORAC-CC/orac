@@ -580,8 +580,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
             ! Remove the Rayleigh component from the RTTOV tranmittances.
             ! (Private comunication from Philip Watts.)
-            if (.false.) then
-!           if (i_coef == 2) then
+            if (i_coef == 2) then
                p_0 = 1013.
 
                sec_vza = 1. / cos(profiles(count)%zenangle * d2r)
