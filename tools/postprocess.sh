@@ -43,9 +43,9 @@ for inst in ${label[*]}; do
     unset files fi
     while IFS= read -r -d $'\0' tmp; do
         # take only the part of the filename before _ORACV (differentiate chunks)
-        files[fi++]="${tmp%*_ORACV*}"
+        files[fi++]="${tmp%*_ORAC_*}"
     done < <(find $fdr \
-        -name "$inst_*ORACV${revision}_*_${file_version}WAT.primary.nc" \
+        -name "$inst-*_ORAC_*_${file_version}WAT.primary.nc" \
         -printf "%f\0")
     if (( "${#files}" == 0 )); then
         echo 'No files found. Check revision number.'
@@ -71,6 +71,8 @@ for inst in ${label[*]}; do
         echo "'$ice_sec'" 1>> $driver
         echo "'$out_prim'" 1>> $driver
         echo "'$out_sec'" 1>> $driver
+        echo "false" 1>> $driver                  # Process one phase only
+        echo "false" 1>> $driver                  # Process cloudy only
         echo "0.1  0.1       " >> $driver         # minre water/ice
         echo "30.  200.      " >> $driver         # maxre water/ice
         echo "0.1   0.1      " >> $driver         # minod water/ice

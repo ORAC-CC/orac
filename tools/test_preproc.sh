@@ -106,7 +106,6 @@ ${ncdf_version}
 ${cf_convention} 
 ${processing_inst} 
 ${l2processor} 
-${revision} 
 ${contact_email} 
 ${contact_website} 
 ${file_version} 

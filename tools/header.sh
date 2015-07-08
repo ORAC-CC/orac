@@ -102,7 +102,7 @@
 # DEFINE LOCAL FOLDERS
 #------------------------------------------------------------------------------
 # path to ORAC repository
-orac_repos=/home/jupiter/eodg2/povey/orac/trunk
+orac_repos=/network/home/aopp/povey/orac/trunk
 
 # path to ORAC data repository
 data_repos=/local/home/povey/povey/data
@@ -397,6 +397,7 @@ while [[ $# > 0 ]]; do
                     do_all=0
                     ;;
                 ALL)
+                    do_all=1
                     ;;
             esac
             ;;
@@ -448,6 +449,8 @@ if (( $ld_set )); then
     LD_LIBRARY_PATH=${SZLIB}:${LD_LIBRARY_PATH}
     LD_LIBRARY_PATH=${EOSLIB}:${LD_LIBRARY_PATH}
     export LD_LIBRARY_PATH
+
+    RTTOV_version=11.2
 fi
 
 #------------------------------------------------------------------------------
@@ -595,3 +598,6 @@ fi
 if (( $v21 )); then
     file_version='V2.1'
 fi
+
+ECMWF_version=1.90
+SVN_version=`svn --version | grep 'svn, version'`

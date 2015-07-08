@@ -69,7 +69,7 @@ for j in ${!sensor[*]}; do
     while IFS= read -r -d $'\0' tmp; do
         files[i++]="$tmp"
     done < <(find $folder \
-        -name "${label[$j]}_*ORACV${revision}_*_${file_version}.alb.nc" \
+        -name "${label[$j]}-*_ORAC_*_${file_version}.alb.nc" \
         -printf "%f\0")
     if (( "${#files}" == 0 )); then
         echo 'No files found. Check revision number.'
@@ -89,7 +89,9 @@ for j in ${!sensor[*]}; do
 ${sensor[$j]}${platform[$j]}
 6
 $channels
-$phase"
+$phase
+Ctrl%process_cloudy_only=false
+Ctrl%process_one_phase_only=false"
         echo "$driver" 1> $driver_file
 
         # make header for log file
