@@ -3,27 +3,27 @@
 ;   MAPPOINTS_NEW
 ;
 ; PURPOSE:
-;   Plots an array of values, with corresponding lat/lon values, onto a map  
+;   Plots an array of values, with corresponding lat/lon values, onto a map
 ;   (intentionally emulating the syntax of MAPPOINTS, upon which this routine is
-;   based). Makes use of  the Z buffer to produce the plot image, such that the 
-;   IDL MAP routines may be used to do all of the heavy lifting, whilst  
+;   based). Makes use of  the Z buffer to produce the plot image, such that the
+;   IDL MAP routines may be used to do all of the heavy lifting, whilst
 ;   minimising memory and processing overheads compared to MAPPOINTS.
 ;
 ; CATEGORY:
 ;   Plotting routine
 ;
 ; CALLING SEQUENCE:
-;   MAPPOINTS_NEW, pts, lat, lon, [limit=array | centre=array], 
-;                  falsecolour={1 | 2 | 3}, fcnorm=array, nlevels=value, 
-;                  [levels=array | range=range], /log, filter=array, 
+;   MAPPOINTS_NEW, pts, lat, lon, [limit=array | centre=array],
+;                  falsecolour={1 | 2 | 3}, fcnorm=array, nlevels=value,
+;                  [levels=array | range=range], /log, filter=array,
 ;                  mycolours=array, psym=value, symsize=value, /squares, /back,
-;                  /diffcolourbar, /diffcolourgrey, /nogrey, /rywdiff, 
-;                  /d2colourbar, /red, /green, colourtable=value, /mercator, 
-;                  /stereo, /hammer, /cartesian_projection, /nocolourbar, 
-;                  /isotropic, /nobox, /hires, /coast, /countries, /usa, 
-;                  /rivers, /nocontinents, /nogrid, dpcm=value, units=string, 
-;                  title=string, colourbar_labels=array, charsize=value, 
-;                  keyticks=value, position=array, plotpoints=array, 
+;                  /diffcolourbar, /diffcolourgrey, /nogrey, /rywdiff,
+;                  /d2colourbar, /red, /green, colourtable=value, /mercator,
+;                  /stereo, /hammer, /cartesian_projection, /nocolourbar,
+;                  /isotropic, /nobox, /hires, /coast, /countries, /usa,
+;                  /rivers, /nocontinents, /nogrid, dpcm=value, units=string,
+;                  title=string, colourbar_labels=array, charsize=value,
+;                  keyticks=value, position=array, plotpoints=array,
 ;                  plotpsym=value, plotposition=variable, btickformat=string,
 ;                  bposition=array
 ;
@@ -33,75 +33,75 @@
 ;   lon       = an array of longitudes for each point in pts.
 ;
 ; OPTIONAL INPUTS:
-;   limit     = [min_lat,min_lon,max_lat,max_lon], the range of the plotting 
+;   limit     = [min_lat,min_lon,max_lat,max_lon], the range of the plotting
 ;                  window.
-;   centre    = [lat,lon], the coordinates of the centre of the plotting 
+;   centre    = [lat,lon], the coordinates of the centre of the plotting
 ;               window. Is ignored if LIMIT is set.
-;   falsecolour = produce a false-colour RGB image, with its value indicating 
-;               the dimension over which the image is interleaved 
+;   falsecolour = produce a false-colour RGB image, with its value indicating
+;               the dimension over which the image is interleaved
 ;               (1 => 3*nx*ny, 2 => nx*3*ny, 3 => nx*ny*3).
-;   fcnorm    = [min_colour,max_colour], for a FALSECOLOUR image this sets the 
+;   fcnorm    = [min_colour,max_colour], for a FALSECOLOUR image this sets the
 ;               lower and upper limits by which the input is scalled.
 ;   nlevels   = the number of colour levels to be used in the plot.
 ;   range     = the range of the colour levels.
-;   levels    = the values of the colour levels. Takes precedence over NLEVELS 
+;   levels    = the values of the colour levels. Takes precedence over NLEVELS
 ;               and RANGE.
-;   filter    = an array of binary flags for each point in pts determining if 
+;   filter    = an array of binary flags for each point in pts determining if
 ;               it should be plotted.
 ;   mycolours = a prescribed colour table, passed to TVLCT.
 ;   psym      = the plotting symbol to be used. Default is 3, a dot.
-;   symsize   = the size of the plotting symbol. If set while PSYM isn't, the 
+;   symsize   = the size of the plotting symbol. If set while PSYM isn't, the
 ;               plotting symbol is set to a circle.
 ;   colourtable = index of a colour table to be loaded with LOADCT.
-;   dpcm      = when plotting to a postscript, this sets the number of pixels 
-;               per centimetre . Default is 59.1, equivalent to 150 ppi print 
+;   dpcm      = when plotting to a postscript, this sets the number of pixels
+;               per centimetre . Default is 59.1, equivalent to 150 ppi print
 ;               resolution.
 ;   units     = label left of the colourbar.
 ;   title     = label above the plot.
-;   colourbar_labels = to be used when plotting flags, being equally spaced 
-;               values that correspond to some text description. This specifies 
-;               the labels for the levels of the colourbar. I also recommend 
+;   colourbar_labels = to be used when plotting flags, being equally spaced
+;               values that correspond to some text description. This specifies
+;               the labels for the levels of the colourbar. I also recommend
 ;               setting LEVELS.
-;   keyticks  = the number of ticks on the colourbar - 1 (i.e. the YTICKS 
+;   keyticks  = the number of ticks on the colourbar - 1 (i.e. the YTICKS
 ;               keyword).
 ;   charsize  = character size for all plots. Default is 1.
-;   position  = [x_min,y_min,x_max,y_max], position for plotting window in 
+;   position  = [x_min,y_min,x_max,y_max], position for plotting window in
 ;               normalised coordinates.
-;   plotpoints = [*,2], an array of X-Y coordinates to be plotted over the 
-;               image. DEPRECIATED as one can now overplot directly onto the 
+;   plotpoints = [*,2], an array of X-Y coordinates to be plotted over the
+;               image. DEPRECIATED as one can now overplot directly onto the
 ;               image.
 ;   plotpsym  = plot symbol with which PLOTPOINTS should be plotted.
-;   x|ymargin = [left|bottom,right|top], the margins of the plot in character 
+;   x|ymargin = [left|bottom,right|top], the margins of the plot in character
 ;               units.
 ;   btickformat = YTICKFORMAT for the colourbar.
 ;   label     = on the plotting grid, label every nth parallel.
 ;   bposition = [x_min,y_min,x_max,y_max], position for colourbar in device
 ;               coordinates.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   LOG       = use a logarithmic rather than linear colour scale.
-;   SQUARES   = if SYMSIZE has been set, plot hollow squares rather than 
+;   SQUARES   = if SYMSIZE has been set, plot hollow squares rather than
 ;               circles.
 ;   BACK      = inverts the order of the colour table.
-;   DIFFCOLOURBAR, DIFFCOLOURGREY, NOGREY, RYWDIFF, D2COLOURBAR, OMI = selects 
+;   DIFFCOLOURBAR, DIFFCOLOURGREY, NOGREY, RYWDIFF, D2COLOURBAR, OMI = selects
 ;               a colour table from EODG routines.
 ;   RED, GREEN = if NOGREY is set, produces a green and/or red colour table.
-;   MERCATOR, STEREO, HAMMER, CARTESIAN_PROJECTION = selects map projection. 
+;   MERCATOR, STEREO, HAMMER, CARTESIAN_PROJECTION = selects map projection.
 ;               Default is CARTESIAN.
-;   HIRES, COAST, COUNTRIES, USA, RIVERS = specifies which features should be 
+;   HIRES, COAST, COUNTRIES, USA, RIVERS = specifies which features should be
 ;               plotted over the image.
-;   NOCONTINENTS = disables overplotted features. Overrules HIRES, COAST, 
+;   NOCONTINENTS = disables overplotted features. Overrules HIRES, COAST,
 ;               COUNTRIES, USA, RIVERS.
 ;   NOCOLOURBAR = disables the colourbar.
 ;   ISOTROPIC = force lat and lon to take equal distances.
 ;   NOBOX     = writes lat/lon key inside plot, rather than at the edges.
 ;   NOGRID    = in addition to NOBOX, do not plot lat/lon grid lines.
-;   NOERASE   = don't clear plot window before plotting. Needed for multiplots 
+;   NOERASE   = don't clear plot window before plotting. Needed for multiplots
 ;               without !P.MULTI.
 ;   DATELINE  = centre map around the International Date Line rather than the
 ;               Greenwich Meridian.
 ;   WHITE_BACK = force the background to be white (and lines to be black).
-;	
+;
 ; OUTPUTS:
 ;   plotposition = [x_min,y_min,x_max,y_max], the position of the plot window.
 ;
@@ -110,13 +110,13 @@
 ;   Uses COLOUR_WHTEDIFF, COLOUR_PS, COLOUR_CBW from EODG libraries.
 ;
 ; MODIFICATION HISTORY:
-;   Written by ACPovey (povey@atm.ox.ac.uk) 
-;   16 Jul 2013 - ACP: Replaces previous MAPPOINTS. A wrapper has been made 
+;   Written by ACPovey (povey@atm.ox.ac.uk)
+;   16 Jul 2013 - ACP: Replaces previous MAPPOINTS. A wrapper has been made
 ;      to permit calls to the original with the keyword OLD.
-;   27 Jul 2013 - AJAS; Corrected bug with AXIS, yaxis=1 for colourbar_labels 
+;   27 Jul 2013 - AJAS; Corrected bug with AXIS, yaxis=1 for colourbar_labels
 ;      keyword.
 ;   26 Sep 2013 - AJAS: Corrected bug with /CARTESIAN keyword.
-;   11 Nov 2013 - ACP: Added CENTRE functionality for /CARTESIAN. Doesn't plot 
+;   11 Nov 2013 - ACP: Added CENTRE functionality for /CARTESIAN. Doesn't plot
 ;       NaN.
 ;   03 Dec 2013 - ACP: Standardised indentation and line length.
 ;   16 Jan 2014 - ACP: FALSECOLOUR bug fixes.
@@ -129,13 +129,14 @@
 ;   28 Jul 2014 - ACP: Fixed bug in with FALSECOLOUR that allocated the wrong
 ;      background colour.
 ;   06 Aug 2014 - G Thomas: Made falsecolour keyword functional
-;   13 Oct 2014 - ACP: CARTESIAN now forces the central latitude to be zero so 
+;   13 Oct 2014 - ACP: CARTESIAN now forces the central latitude to be zero so
 ;      ensure the expected x-y grid is plotted.
-;   15 Oct 2014 - ACP: Alter colourbar behaviour to make sense. Add WHITE_BACK 
+;   15 Oct 2014 - ACP: Alter colourbar behaviour to make sense. Add WHITE_BACK
 ;      keyword.
 ;   19 Dec 2014 - ACP: Slight tweak to MYCOLOURS.
 ;   09 Feb 2015 - ACP: Bug fix to points below range.
 ;   06 Mar 2015 - AJAS: Bug fix for UNITS keyword and TITLE when /WHITE_BACK set
+;   29 Jun 2015 - ACP: Changed top/bot colour for greyscale colourbar.
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -167,7 +168,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       MESSAGE,/cont,'Latitude and longitude arrays must be specified and '+$
               'have the same number of elements as the first argument. '+$
               'Returning without plotting.'
-      RETURN          ; this sort of non-fatal error message will be used a lot
+      RETURN           ; this sort of non-fatal error message will be used a lot
    endif
    if KEYWORD_SET(range) AND KEYWORD_SET(levels) then $
       MESSAGE,/cont,'LEVELS and RANGE should not be set simultaneously!'
@@ -190,10 +191,10 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
    if prev_plot eq 'Z' then begin
       MESSAGE,'Currently in Z buffer. Please pick a physical plotting device.'
       RETURN
-   endif 
+   endif
    if falsecolour && (prev_plot eq 'X') then DEVICE,true_color=24
    ;; this was originally done by the EODG colour routines
-   if prev_plot eq 'PS' then DEVICE,bits_per_pixel=8 
+   if prev_plot eq 'PS' then DEVICE,bits_per_pixel=8
    if KEYWORD_SET(cartesian) then begin
       mercator=0
       stereo=0
@@ -223,7 +224,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          ok=WHERE(lat ge limit[0] AND lat le limit[2] AND $
                   ((lon ge lon1 AND lon le 180d0) OR $
                    (lon ge -180d0 AND lon le lon2)) AND FINITE(pts),nok)
-      endelse 
+      endelse
    endif else begin
       if N_ELEMENTS(filter) eq n then begin
          ok=WHERE(lat ge limit[0] AND lat le limit[2] AND lon ge limit[1] AND $
@@ -231,13 +232,13 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       endif else begin
          ok=WHERE(lat ge limit[0] AND lat le limit[2] AND lon ge limit[1] AND $
                   lon le limit[3] AND FINITE(pts),nok)
-      endelse 
-   endelse 
+      endelse
+   endelse
    if nok eq 0 then begin
       MESSAGE,/cont,'No points within given lat/lon limits. Returning '+ $
               'without plotting.'
       RETURN
-   endif 
+   endif
 
    ;;--------------------------------------------------------------------------
    ;; select background colour
@@ -245,8 +246,8 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
    background_save = !p.background
    background = white_back ? (falsecolour ? 16777215 : 255) : 0
    !p.background = background
-   
-   ;; set map grid in current plotting area and read its position with 
+
+   ;; set map grid in current plotting area and read its position with
    ;; other properties
    if ~KEYWORD_SET(centre) then begin
       if KEYWORD_SET(cartesian) then centre=[0.,.5*(lim[1]+lim[3])] $
@@ -340,7 +341,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
             green=BYTSCL((pts[*,*,1])[ok],min=fcnorm[0],max=fcnorm[1],/nan)
             blue=BYTSCL((pts[*,*,2])[ok],min=fcnorm[0],max=fcnorm[1],/nan)
          end
-      endcase                 ; no ELSE as already dealt with at top of program
+      endcase                  ; no ELSE as already dealt with at top of program
 
       ;; process colours
       if prev_plot eq 'PS' then TVLCT,BINDGEN(256),BINDGEN(256),BINDGEN(256)
@@ -349,7 +350,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       ;; plot points
       for j=0l,nok-1 do $
          PLOTS,lon[ok[j]],lat[ok[j]],psym=psym,symsize=symsize,color=fcolour[j]
-   endif else begin ; ~falsecolour ------------------------------------------
+   endif else begin    ; ~falsecolour ------------------------------------------
       ;; deal with LEVELS and assign initial colour index for each valid point
       if ~KEYWORD_SET(range) then if KEYWORD_SET(log) $
       then range=DOUBLE([MIN(pts[ok[WHERE(pts[ok] gt 0.)]],max=maxr,/nan),maxr]) $
@@ -360,19 +361,19 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
             MESSAGE,/cont,'LEVELS and NLEVELS should not be set simultaneously.'
          nlevels=N_ELEMENTS(levels)
          index=INTARR(nok)
-         
+
          ;; deal with potentially non-uniform levels given by user
-         q=WHERE(pts[ok] lt levels[0],nq) 
+         q=WHERE(pts[ok] lt levels[0],nq)
          if nq gt 0 then index[q]=0 ; below first level
          for i=1l,nlevels-1 do begin
-            q=WHERE(pts[ok] ge levels[i-1] AND pts[ok] lt levels[i],nq) 
+            q=WHERE(pts[ok] ge levels[i-1] AND pts[ok] lt levels[i],nq)
             if nq gt 0 then index[q]=i
-         endfor 
-         q=WHERE(pts[ok] ge levels[nlevels-1],nq) 
+         endfor
+         q=WHERE(pts[ok] ge levels[nlevels-1],nq)
          if nq gt 0 then index[q]=nlevels ; above top level
       endif else begin
          if ~KEYWORD_SET(nlevels) then $
-            nlevels = KEYWORD_SET(mycolours) ? N_ELEMENTS(mycolours)/3 : 16 
+            nlevels = KEYWORD_SET(mycolours) ? N_ELEMENTS(mycolours)/3 : 16
          if KEYWORD_SET(log) then begin
             levels=10d0^(ALOG10(range[0])+ALOG10(range[1]/range[0])/ $
                          (nlevels-1d0)*DINDGEN(nlevels))
@@ -381,10 +382,10 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          endif else begin
             levels=range[0]+(range[1]-range[0])/(nlevels-1d0)*DINDGEN(nlevels)
             index=1+(nlevels-1d0)/(range[1]-range[0])*(pts[ok]-range[0])
-         endelse 
+         endelse
       endelse
       if TOTAL(~FINITE(levels)) gt 0 then MESSAGE, 'Bad levels. Check range.'
-      
+
       ;; deal with colour table
       colours=nlevels
       if KEYWORD_SET(mycolours) then begin
@@ -396,12 +397,16 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
             TVLCT, tempcol
          endif else MESSAGE,'MYCOLOURS must be an [nlevels,3] byte array.'
       endif else if N_ELEMENTS(colourtable) eq 1 then begin
-         LOADCT,/silent,colourtable,ncolors=colours,rgb_table=rgb_,/bottom
-         ;; force first indices to be black/white
-         rgb=BYTARR(colours+2,3)
-         rgb[0,*] = 0
-         rgb[1:colours,*] = rgb_
-         rgb[colours+1,*] = 255
+         if colourtable eq 0 then begin
+            LOADCT,/silent,colourtable,ncolors=colours+2,rgb_table=rgb,/bottom
+         endif else begin
+            LOADCT,/silent,colourtable,ncolors=colours,rgb_table=rgb_,/bottom
+            ;; force first indices to be black/white
+            rgb=BYTARR(colours+2,3)
+            rgb[0,*] = 0
+            rgb[1:colours,*] = rgb_
+            rgb[colours+1,*] = 255
+         endelse
 
          if KEYWORD_SET(back) $
          then TVLCT,REVERSE(rgb[*,0]),REVERSE(rgb[*,1]),REVERSE(rgb[*,2]) $
@@ -428,18 +433,19 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
          bot_colour=1
          top_colour=colours
       endif else if KEYWORD_SET(omi) || N_ELEMENTS(colourtable) eq 1 then begin
-         ;; invent two greys for bottom/top colours
-         TVLCT,r,g,b,/get
-         r[colours+1]=85
-         g[colours+1]=85
-         b[colours+1]=85
-         r[colours+2]=170
-         g[colours+2]=170
-         b[colours+2]=170
-         TVLCT,r,g,b
+         if N_ELEMENTS(colourtable) eq 1 && colourtable eq 0 then begin
+            bot_colour=0
+            top_colour=colours
+         endif else begin
+            ;; invent two greys for bottom/top colours (ACP: Rather poor soln)
+            TVLCT,rgb,/get
+            rgb[colours+1,*]=85
+            rgb[colours+2,*]=170
+            TVLCT,rgb
 
-         bot_colour=colours+2
-         top_colour=colours+1
+            bot_colour=colours+2
+            top_colour=colours+1
+         endelse
       endif else begin
          bot_colour=colours+1
          top_colour=colours+2
@@ -450,7 +456,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       ;; plot points
       for j=0l,nok-1 do $
          PLOTS,lon[ok[j]],lat[ok[j]],psym=psym,symsize=symsize,color=index[j]
-   endelse 
+   endelse
    TVLCT, my_ct, /get
    image=TVRD(true=falsecolour)
 
@@ -463,7 +469,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
    ;; draw image
    if falsecolour then begin
       DEVICE,get_decomposed=decomp & DEVICE,/decomposed
-   endif 
+   endif
    if !d.flags AND 1 $
    then TV,image,pos[0],pos[1],xsize=(pos[2]-pos[0]), $
            ysize=(pos[3]-pos[1]),/norm,true=falsecolour ? 3:0 $
@@ -478,7 +484,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
    if ~KEYWORD_SET(nogrid) then $
       MAP_GRID,box=~KEYWORD_SET(nobox),label=label,/nogrid, $
                charsize=charsize,color=colour
-   if KEYWORD_SET(nogrid) || KEYWORD_SET(nobox) then $ 
+   if KEYWORD_SET(nogrid) || KEYWORD_SET(nobox) then $
       ;; draw box as I skipped it earlier
       PLOTS,[pos[0],pos[2],pos[2],pos[0],pos[0]], $
             [pos[1],pos[1],pos[3],pos[3],pos[1]],color=colour,/normal
@@ -528,7 +534,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
               ytickname=REPLICATE(' ',N_ELEMENTS(colourbar_labels)), $
               ytitle=units,yticks=N_ELEMENTS(colourbar_labels)-1,ytickv=mid_lev
       endif else begin
-         ;; if less than keyticks levels, label them exactly. 
+         ;; if less than keyticks levels, label them exactly.
          ;; Otherwise, label axis normally.
          if ~KEYWORD_SET(keyticks) then keyticks=6
          CONTOUR,levels##[1,1],[0,1],levels,c_colors=INDGEN(nlevels)+1, $
@@ -538,13 +544,13 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                  yticklen=.2,ytitle=units,yticks=(nlevels-1) < keyticks
          if KEYWORD_SET(colour) then TVLCT, save_ct else LOADCT,0,/silent
          AXIS,charsize=charsize,color=colour,yaxis=0,ylog=log,ystyle=1, $
-                 yrange=levels[[0,nlevels-1]],yticklen=.2,ytitle=units, $
-                 yticks=(nlevels-1) < keyticks,ytickf=btickf
+              yrange=levels[[0,nlevels-1]],yticklen=.2,ytitle=units, $
+              yticks=(nlevels-1) < keyticks,ytickf=btickf
          ;; AJAS removed YTITLE=units from the following AXIS command.
          AXIS,charsize=charsize,color=colour,yaxis=1,ylog=log,ystyle=1, $
-                 yrange=levels[[0,nlevels-1]],yticklen=.2, $
-                 ytickname=REPLICATE(' ',10), $
-                 yticks=(nlevels-1) < keyticks
+              yrange=levels[[0,nlevels-1]],yticklen=.2, $
+              ytickname=REPLICATE(' ',10), $
+              yticks=(nlevels-1) < keyticks
       endelse
       PLOTS,pointx,pointy1,/device,color=colour
       PLOTS,pointx,pointy2,/device,color=colour
@@ -552,7 +558,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       ;; reset plotting window
       !p=psave & !x=xsave & !y=ysave
       !p.background = background_save
-   endif 
+   endif
 
    TVLCT, save_ct
    if KEYWORD_SET(stp) then STOP
