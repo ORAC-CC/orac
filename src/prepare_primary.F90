@@ -36,7 +36,8 @@
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/03/11, GM: Fixed an indexing bug in writing the cloud albedo.
 ! 2015/03/19, OS: CTH now .ge. 0
-! 2015/03/19, OS: undid previous change in file; CTH is allowed to be negative again
+! 2015/03/19, OS: undid previous change in file; CTH is allowed to be negative
+!    again
 ! 2015/07/03, OS: Added cloudmask_error data
 ! 2015/07/04, CP: Added corrected cth
 !
@@ -68,7 +69,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
 
    integer            :: k, kk
    integer(kind=sint) :: temp_short_ctp_error
-   real(kind=sreal)   :: temp_real, temp_real_ctp_error, temp_real_cot
+   real(kind=sreal)   :: temp_real, temp_real_cot, temp_real_ctp_error
    real(kind=sreal)   :: dummyreal
 
 
@@ -110,11 +111,9 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    if (SPixel%Sn(ITau,ITau) .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-! CErr(OK) = CVAL(ok) * alog(10) * CErr(OK) from load_grape
-!write(*,*)'tau error',sqrt(SPixel%Sn(ITau,ITau)), temp_real_cot
-!      temp_real = temp_real_cot*alog(10)*sqrt(SPixel%Sn(ITau,ITau)) 
-       temp_real = sqrt(SPixel%Sn(ITau,ITau))
-
+      temp_real = sqrt(SPixel%Sn(ITau,ITau))
+      ! CErr(OK) = CVAL(ok) * alog(10) * CErr(OK) from load_grape
+!     temp_real = temp_real_cot*alog(10)*sqrt(SPixel%Sn(ITau,ITau)) 
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot_error(i,j), &
@@ -251,8 +250,22 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            output_data%cth_vmin, output_data%cth_vmax, &
            output_data%cth_vmax)
 
-
-
+   ! If ctp_error is good compute cth_error
+   if (temp_real_ctp_error .eq. sreal_fill_value) then
+      output_data%cth_error(i,j)=sint_fill_value
+   else if (temp_short_ctp_error .lt. output_data%ctp_error_vmin) then
+      output_data%cth_error(i,j)=sint_fill_value
+   else if (temp_short_ctp_error .gt. output_data%ctp_error_vmax) then
+      output_data%cth_error(i,j)=output_data%cth_error_vmax
+   else
+      temp_real=abs(RTM_Pc%dHc_dPc/10./1000.)*temp_real_ctp_error
+      call prepare_short_packed_float( &
+           temp_real, output_data%cth_error(i,j), &
+           output_data%cth_error_scale, output_data%cth_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cth_error_vmin, output_data%cth_error_vmax, &
+           output_data%cth_error_vmax)
+   end if
 
    !----------------------------------------------------------------------------
    ! cth_corrected, cth_corrected_error
@@ -260,8 +273,9 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    if (RTM_Pc%Hc .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-!Greg value needs adding in here
-!      temp_real = RTM_Pc%Hc/10./1000. ! now it's in km
+      temp_real = sreal_fill_value
+      ! Placeholder
+!     temp_real = RTM_Pc%Hc/10./1000. ! now it's in km
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cth_corrected(i,j), &
@@ -269,11 +283,6 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
            sreal_fill_value, sint_fill_value, &
            output_data%cth_vmin, output_data%cth_vmax, &
            output_data%cth_vmax)
-
-
-
-
-
 
    ! If ctp_error is good compute cth_corrected_error
    if (temp_real_ctp_error .eq. sreal_fill_value) then
@@ -283,7 +292,9 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    else if (temp_short_ctp_error .gt. output_data%ctp_error_vmax) then
       output_data%cth_corrected_error(i,j)=output_data%cth_error_vmax
    else
-      temp_real=abs(RTM_Pc%dHc_dPc/10./1000.)*temp_real_ctp_error
+      temp_real=sreal_fill_value
+      ! Placeholder
+!     temp_real=abs(RTM_Pc%dHc_dPc/10./1000.)*temp_real_ctp_error
       call prepare_short_packed_float( &
            temp_real, output_data%cth_corrected_error(i,j), &
            output_data%cth_error_scale, output_data%cth_error_offset, &

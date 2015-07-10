@@ -29,8 +29,8 @@
 ! 2014/05/27, Greg McGarragh: Some cleanup.
 ! 2014/10/24, Oliver Sus: added allocation of cldtype, cldmask, cccot_pre,
 !    lusflag, dem, nisemask
-! 2014/12/01, CP added in cloud albedo
-! 2015/07/01, CP added in corrected cloud top height
+! 2014/12/01, CP Added in cloud albedo
+! 2015/07/01, CP Added corrected cth
 !
 ! $Id$
 !
@@ -134,8 +134,6 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
    output_data%cth(ixstart:ixstop,iystart:iystop)=sint_fill_value
    allocate(output_data%cth_error(ixstart:ixstop,iystart:iystop))
    output_data%cth_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
-
-
 
    allocate(output_data%cth_corrected(ixstart:ixstop,iystart:iystop))
    output_data%cth_corrected(ixstart:ixstop,iystart:iystop)=sint_fill_value

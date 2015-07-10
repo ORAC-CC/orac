@@ -49,8 +49,9 @@
 !    MSI file.
 ! 2014/12/31, GM: Remove useless error control especially since nc_def_var_*
 !    routines handle errors to exit.
-! 2015/02/05, GM: Cp added usgs flag meanings
-! 2015/07/01, CP: added corrected cth
+! 2015/02/05, CP: Added usgs flag meanings.
+! 2015/07/01, CP: Added corrected cth
+!
 ! $Id$
 !
 ! Bugs:
@@ -437,9 +438,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            valid_max     = output_data%cth_error_vmax, &
            units         = 'kilometer')
 
-
-
-
    !----------------------------------------------------------------------------
    ! cth_corrected
    !----------------------------------------------------------------------------
@@ -475,8 +473,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            valid_min     = output_data%cth_error_vmin, &
            valid_max     = output_data%cth_error_vmax, &
            units         = 'kilometer')
-
-
 
    !----------------------------------------------------------------------------
    ! ctt
@@ -692,11 +688,8 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            'illum', &
            output_data%vid_illum, &
            verbose, &
-           flag_values='1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, 12b', &
-           flag_meanings='Day, Twilight, Night, Daynore, DayMissingSingleVisFirst, ' // &
-               'DayMissingSingleVisSecond, DayMissingSingleIRFirst, DayMissingSingleIRSecond, ' // &
-               'DayMissingSingleIRThird, NightMissingSingleIRFirst, NightMissingSingleIRSecond, ' // &
-               'NightMissingSingleIRThird', &
+           flag_values   ='1b, 2b, 3b', &
+           flag_meanings ='Day, Twilight, Night', &
            long_name     = 'illumination flag', &
            standard_name = 'illumination_flag', &
            fill_value    = byte_fill_value, &
@@ -794,8 +787,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
 		 & 23:Bare Ground Tundra, 24:Snow or Ice, 99:Interrupted Areas,&
 	  & 100:Missing Data' )
 
-
-
    !----------------------------------------------------------------------------
    ! DEM
    !----------------------------------------------------------------------------
@@ -833,7 +824,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            flag_meanings = 'snow/ice free, snow/ice')
 
    !----------------------------------------------------------------------------
-   ! cloud a albedo_in_channel_no_*
+   ! cloud_albedo_in_channel_no_*
    !----------------------------------------------------------------------------
    do i=1,Ctrl%Ind%NSolar
 
