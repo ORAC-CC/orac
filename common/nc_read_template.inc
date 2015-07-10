@@ -1,0 +1,185 @@
+subroutine NC_READ_NAME_1D(ncid, name, val, verbose, dim, ind)
+   implicit none
+
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
+
+   integer                   :: ierr, vid, i
+   integer, dimension(1)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fv, sf, of, vl
+   NC_READ_TYPE(kind=NC_READ_KIND), pointer :: arr(:)
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fill=NC_READ_FILL_VALUE
+
+   start = 1
+   counter = size(val,1)
+   stride = 1
+
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         arr => val(i:i)
+
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
+
+end subroutine NC_READ_NAME_1D
+
+
+subroutine NC_READ_NAME_2D(ncid, name, val, verbose, dim, ind)
+   implicit none
+
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
+
+   integer                   :: ierr, vid, i
+   integer, dimension(2)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fv, sf, of, vl
+   NC_READ_TYPE(kind=NC_READ_KIND), pointer :: arr(:,:)
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fill=NC_READ_FILL_VALUE
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   stride = 1
+
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:)
+         case(2)
+            arr => val(:,i:i)
+         end select
+
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
+
+end subroutine NC_READ_NAME_2D
+
+
+subroutine NC_READ_NAME_3D(ncid, name, val, verbose, dim, ind)
+   implicit none
+
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
+
+   integer                   :: ierr, vid, i
+   integer, dimension(3)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fv, sf, of, vl
+   NC_READ_TYPE(kind=NC_READ_KIND), pointer :: arr(:,:,:)
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fill=NC_READ_FILL_VALUE
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   stride = 1
+
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:)
+         case(2)
+            arr => val(:,i:i,:)
+         case(3)
+            arr => val(:,:,i:i)
+         end select
+
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
+
+end subroutine NC_READ_NAME_3D
+
+
+subroutine NC_READ_NAME_4D(ncid, name, val, verbose, dim, ind)
+   implicit none
+
+   integer,           intent(in)    :: ncid
+   character(len=*),  intent(in)    :: name
+   NC_READ_TYPE(kind=NC_READ_KIND), target, intent(inout) :: val(:,:,:,:)
+   logical,           intent(in)    :: verbose
+   integer, optional, intent(in)    :: dim, ind(:)
+
+   integer                   :: ierr, vid, i
+   integer, dimension(4)     :: start, counter, stride
+   character(len=unitlength) :: unit
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fv, sf, of, vl
+   NC_READ_TYPE(kind=NC_READ_KIND), pointer :: arr(:,:,:,:)
+   NC_READ_TYPE(kind=NC_READ_KIND)          :: fill=NC_READ_FILL_VALUE
+
+   start = 1
+   counter(1) = size(val,1)
+   counter(2) = size(val,2)
+   counter(3) = size(val,3)
+   counter(4) = size(val,4)
+   stride = 1
+
+   include 'nc_open_field.inc'
+
+   if (present(dim)) then
+      ! only read some channels from the array
+      counter(dim) = 1
+      do i=1,size(ind)
+         select case (dim)
+         case(1)
+            arr => val(i:i,:,:,:)
+         case(2)
+            arr => val(:,i:i,:,:)
+         case(3)
+            arr => val(:,:,i:i,:)
+         case(4)
+            arr => val(:,:,:,i:i)
+         end select
+
+         start(dim) = ind(i)
+         include 'nc_read_field.inc'
+      end do
+   else
+      ! read everything
+      arr => val
+      include 'nc_read_field.inc'
+   end if
+
+end subroutine NC_READ_NAME_4D
