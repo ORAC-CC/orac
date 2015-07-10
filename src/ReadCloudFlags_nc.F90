@@ -74,6 +74,7 @@
 !       hard-wired cloud type values to be replaced by Pavolonis constants
 !     3rd Jul 2015, OS:
 !       Added cldmask_uncertainty
+!    10th Jul 2015, OS: removed ierr argument to nc_open call
 !
 ! Bugs:
 !    None known.
@@ -96,11 +97,11 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose
 
-   integer :: ncid, ierr
+   integer :: ncid
 
    ! Open cloud flag file
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
-   call nc_open(ncid, Ctrl%Fid%CF, ierr)
+   call nc_open(ncid, Ctrl%Fid%CF)
 
    allocate(MSI_Data%CloudFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))

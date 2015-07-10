@@ -18,6 +18,7 @@
 ! 2014/12/19, AP: Number of channels read in ReadDriver. Removed from here.
 ! 2014/01/30, AP: Remove NLayer as redundant.
 ! 2015/07/03, OS: added error status variable to nc_open call
+! 2015/07/10, OS: undo previous commit
 !
 ! $Id$
 !
@@ -38,11 +39,11 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    integer(kind=lint),         intent(out) :: xdim,ydim,vdim
    logical,                    intent(in)  :: verbose
 
-   integer                                 :: ncid, ierr
+   integer                                 :: ncid
 
 
    ! Open msi file
-   call nc_open(ncid,fname_msi,ierr)
+   call nc_open(ncid,fname_msi)
 
    xdim = nc_dim_length(ncid, 'nx_msi', verbose)
    ydim = nc_dim_length(ncid, 'ny_msi', verbose)
@@ -56,7 +57,7 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
    end if
 
    ! Open geo file
-   call nc_open(ncid,fname_geo,ierr)
+   call nc_open(ncid,fname_geo)
 
    !xdim = nc_dim_length(ncid, 'nx_geo', verbose)
    !ydim = nc_dim_length(ncid, 'ny_geo', verbose)
@@ -85,10 +86,10 @@ subroutine read_input_dimensions_lwrtm(fname,xdim,ydim,levdim, &
                                              channeldim
    logical,                   intent(in)  :: verbose
 
-   integer                                :: ncid, ierr
+   integer                                :: ncid
 
    ! Open file
-   call nc_open(ncid,fname,ierr)
+   call nc_open(ncid,fname)
 
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)
@@ -118,10 +119,10 @@ subroutine read_input_dimensions_swrtm(fname,xdim,ydim,levdim, &
                                               channeldim
    logical,                    intent(in)  :: verbose
 
-   integer                                 :: ncid, ierr
+   integer                                 :: ncid
 
    ! Open file
-   call nc_open(ncid,fname,ierr)
+   call nc_open(ncid,fname)
 
    xdim = nc_dim_length(ncid, 'nlon_rtm', verbose)
    ydim = nc_dim_length(ncid, 'nlat_rtm', verbose)

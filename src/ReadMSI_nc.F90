@@ -98,6 +98,7 @@
 !       and channel selection code.  In particular, setting of out-of-range
 !       measurements to MissingXn is now done here.
 !    2015/07/03, OS: added error status variable to nc_open call
+!    2015/07/10, OS: undo previous commit
 !
 ! Bugs:
 !    None known.
@@ -124,7 +125,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    ! Local variables
 
-   integer            :: i,j,k, ierr
+   integer            :: i,j,k
    integer            :: day, month
 
    ! NetCDF related
@@ -134,7 +135,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    ! Open MSI file
    if (verbose) write(*,*) 'Imagery file: ', trim(Ctrl%Fid%MSI)
-   call nc_open(ncid, Ctrl%Fid%MSI, ierr)
+   call nc_open(ncid, Ctrl%Fid%MSI)
 
    ! Read product date and time from netcdf global attributes
    if (nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date) == &
