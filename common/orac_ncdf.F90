@@ -27,6 +27,8 @@
 !    it severed no purpose since errors are handled to program exit within the
 !    routines themselves.
 ! 2015/03/20 CP changed to creator url and website
+! 2015/07/10, OS: added optional error_status return argument
+
 ! $Id$
 !-------------------------------------------------------------------------------
 
@@ -79,13 +81,13 @@ contains
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine nc_open(ncid, fname, ierr)
+subroutine nc_open(ncid, fname, error_status)
    implicit none
 
    integer,          intent(out) :: ncid
    character(len=*), intent(in)  :: fname
+   integer, intent(out),optional :: error_status
    integer                       :: ierr
-
 
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
@@ -94,7 +96,7 @@ subroutine nc_open(ncid, fname, ierr)
 #ifndef WRAPPER
       stop error_stop_code
 #else
-      ierr = error_stop_code
+      if ( present( error_status ) ) error_status = error_stop_code
 #endif
    end if
 
