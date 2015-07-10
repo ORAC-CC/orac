@@ -85,6 +85,7 @@
   !                file input; reclassify phase if CTT does not match
   !                phase temperature range (i.e. no ice if CTT>273.15K);
   !                removed some debugging statements and further clean up
+  !2015/07/10 OS fixed bug related to using flag one_phase_only
   !
   ! Bugs:
   !    None known.
@@ -405,22 +406,22 @@
 
             ! here apply Pavolonis phase information to select retrieval phase variables 
             ! select water type overwrite ice
-            if ( .not. one_phase_only ) then
-               if( l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
-                    l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
+            if( l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
+                 l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
 
-                  phaseflag(i,j) = 1_byte 
-                  if ( ( (l2_input_2dwat_primary%ctt(i,j) .lt. 233.16) .and. &
-                       (l2_input_2dwat_primary%ctt(i,j) .ne. sreal_fill_value) ) .and. &
-                       ( (l2_input_2dice_primary%ctt(i,j) .lt. 273.16 ) .and. &
-                       (l2_input_2dice_primary%ctt(i,j) .ne. sreal_fill_value) ) ) phaseflag(i,j) = 2_byte
+               phaseflag(i,j) = 1_byte 
+               if ( ( .not. one_phase_only ) .and. & ! only reclassify if both phases were processed
+                    ( ( (l2_input_2dwat_primary%ctt(i,j) .lt. 233.16) .and. &
+                    ( l2_input_2dwat_primary%ctt(i,j) .ne. sreal_fill_value) ) .and. &
+                    ( (l2_input_2dice_primary%ctt(i,j) .lt. 273.16 ) .and. &
+                    (l2_input_2dice_primary%ctt(i,j) .ne. sreal_fill_value) ) ) ) phaseflag(i,j) = 2_byte
 
-               else
+            else
 
-                  phaseflag(i,j) = 2_byte
-                  if ( (l2_input_2dice_primary%ctt(i,j) .ge. 273.16 ) .and. (l2_input_2dwat_primary%ctt(i,j) .ge. 233.16 ) )  phaseflag(i,j) = 1_byte
+               phaseflag(i,j) = 2_byte
+               if ( ( .not. one_phase_only ) .and. & ! only reclassify if both phases were processed
+                    ( ( l2_input_2dice_primary%ctt(i,j) .ge. 273.16 ) .and. ( l2_input_2dwat_primary%ctt(i,j) .ge. 233.16 ) ) ) phaseflag(i,j) = 1_byte
 
-               endif
             endif
 
             if (phaseflag(i,j) .eq. 1_byte) then
