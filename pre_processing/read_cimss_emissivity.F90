@@ -72,6 +72,7 @@ contains
 ! 15/10/2014, GM: Changes related to supporting an arbitrary set of LW channels.
 ! 04/03/2015, GM: Changes related to supporting channels in arbitrary order.
 ! 03/07/2015, OS: added error status variable to nc_open call
+! 10/07/2015, OS: undo previous commit
 !
 ! $Id$
 !
@@ -111,8 +112,6 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    integer            :: xdim, ydim, zdim
    integer            :: nDim, nVar, nAtt
    integer            :: uDimID, ForNM
-   integer            :: ierr
-!  integer(kind=1)    :: gen_loc=1
 
    type cache_element
       real, pointer, dimension(:,:) :: a
@@ -132,7 +131,7 @@ function read_cimss_emissivity(path_to_file, emis, wavelengths, verbose, flag, &
    n_wavelengths = size(wavelengths)
 
    ! Open NetCDF file
-   call nc_open(fid, path_to_file, ierr)
+   call nc_open(fid, path_to_file)
 
    ! Extract information about the file
    stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)

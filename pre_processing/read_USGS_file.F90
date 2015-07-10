@@ -34,6 +34,7 @@ contains
 ! History:
 ! 2014/09/23, OS: writes code to read data from USGS file.
 ! 2015/07/03, OS: added error status variable to nc_open call
+! 2015/07/10, OS: undo previous commit
 !
 ! Bugs:
 ! None known.
@@ -56,12 +57,10 @@ contains
     ! Local variables
     integer :: fid, usgs_lat_id, usgs_lon_id
     integer :: nDim, nVar, nAtt, uDimID, ForNM
-    integer :: ierr
-
 
     if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering read_USGS_file()'
 
-    call nc_open(fid, path_to_USGS_file, ierr)
+    call nc_open(fid, path_to_USGS_file)
     ! Extract information about the file
     stat = nf90_inquire(fid, nDim, nVar, nAtt, uDimID, ForNM)
 
