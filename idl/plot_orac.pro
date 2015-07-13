@@ -116,6 +116,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
    endif else begin
       FIND_ORAC, fdr, inst, rev, folder, root, nroot, label=label, $
                  old=old, comp=comp, oldfolder, oldroot
+      if inst eq 'CLOUD' then inst='AATSR'
    endelse
 
    if KEYWORD_SET(preproc) then begin

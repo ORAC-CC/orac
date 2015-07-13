@@ -98,6 +98,7 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
       folder=STRMID(root[0],0,STRPOS(root[0],'/',/reverse_search))
    endif else begin
       FIND_ORAC, fdr, inst, rev, folder, root, nroot, label=label
+      if inst eq 'CLOUD' then inst='AATSR'
   endelse
 
    ;; plot ORAC retrieval

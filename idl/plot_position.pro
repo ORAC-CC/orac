@@ -53,12 +53,12 @@
 ; MODIFICATION HISTORY:
 ;   15 Jul 2014 - ACP: Initial version (povey@atm.ox.ac.uk).
 ;-
-PRO PLOT_POSITION, plot_set, pos, bpos, not_map=not_map, debug=debug
+PRO PLOT_POSITION, plot_set, pos, bpos, not_map=not_map, no_setup=nos, debug=debug
    ON_ERROR, KEYWORD_SET(debug) ? 0 : 2
    COMPILE_OPT HIDDEN, LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
 
    ;; if at end of page, start new sheet
-   if ~(plot_set.gridi OR plot_set.gridj) then begin
+   if ~(plot_set.gridi OR plot_set.gridj OR KEYWORD_SET(nos)) then begin
       DEVICE,/close
       ++plot_set.sheet
       filen=plot_set.tag+'.N'+STRING(plot_set.sheet,format='(i02)')+'.eps'
