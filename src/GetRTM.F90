@@ -1,53 +1,44 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_RTM
+! Name: GetRTM.F90
 !
 ! Purpose:
-!    Controls the interpolation of short and long wave RTM data to the current
-!    super pixel coordinates.
+! Controls the interpolation of short and long wave RTM data to the current
+! super pixel coordinates.
 !
-! Arguments:
-!    Name     Type         In/Out/Both Description
-!    Ctrl     struct       In          Control structure
-!    SAD_Chan struct array In          Channel description structures
-!    SPixel   struct       Both        Super-pixel structure
-!    RTM      alloc struct Both        RTM structure
-!    status   integer      Out         Error status
-!
-! Algorithm:
+! Description and Algorithm details:
 !    Check that the image data lies within the bounds of the LW RTM data
 !    (SW RTM data has global coverage, so no need to check).
 !    Call Get_LwRTM and Get_SwRTM subroutines if no errors have been found.
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name     Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct       In          Control structure
+! SAD_Chan struct array In          Channel description structures
+! RTM      alloc struct Both        RTM structure
+! SPixel   struct       Both        Super-pixel structure
+! status   integer      Out         Error status
 !
 ! History:
-!    11th Jan 2001, Kevin M. Smith: Original version
-!     8th Mar 2001, Andy Smith:
-!       New argument SAD_Chan required for use in Get_LW_RTM.
-!       Added intent to arguments and changed argument order (inputs first)
-!       Get_LW/SW_RTM argument order changed.
-!    30th Mar 2001, Andy Smith:
-!       Replaced all lat and lon tests that use maxval or minval of the lat or
-!       lon arrays with a simple check vs. the new RTM grid values MaxLat,
-!       MaxLon etc since in practice these tests are done many times on the same
-!       data (this routine is called once per super-pixel).
-!    15th Jun 2001, Andy Smith:
-!       Changed error message string assignments/writes.
-!       Long message strings were wrapped over two lines with only one set of
-!       quotes around the whole string (including the line continuation marker).
-!       Original code works on DEC but not Linux.
-!    22nd Sep xxxx, Somebody:
-!       Remove get GetLwRTM and GetSwRTM and replace with GetLwSwRTM
-!    30th Jul 2014, Greg McGarragh:
-!       Cleaned up the code.
-!
-! Bugs:
-!    None known.
+! 2001/01/11, KM: Original version
+! 2001/03/08, AS: New argument SAD_Chan required for use in Get_LW_RTM. Added
+!    intent to arguments and changed argument order (inputs first)
+!    Get_LW/SW_RTM argument order changed.
+! 2001/03/30, AS: Replaced all lat and lon tests that use maxval or minval of
+!    the lat or lon arrays with a simple check vs. the new RTM grid values
+!    MaxLat, MaxLon etc since in practice these tests are done many times on
+!    the same data (this routine is called once per super-pixel).
+! 2001/06/15, AS: Changed error message string assignments/writes. Long message
+!    strings were wrapped over two lines with only one set of quotes around the
+!    whole string (including the line continuation marker). Original code works
+!    on DEC but not Linux.
+! 2011/09/22, CP: Remove get GetLwRTM and GetSwRTM and replace with GetLwSwRTM
+! 2014/07/30, GM: Cleaned up the code.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !------------------------------------------------------------------------------
 
 subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)

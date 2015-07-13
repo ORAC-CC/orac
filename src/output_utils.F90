@@ -1,29 +1,46 @@
 !-------------------------------------------------------------------------------
-! Name: nc_create.F90
+! Name: output_utils.F90
 !
 ! Purpose:
-! A netcdf output file is opened/created for writing.
-!
-! Description and Algorithm details:
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-! Local variables:
-! Name Type Description
+! I/O routines stored within output_routines module.
 !
 ! History:
-! 2011/12/19, Matthias Jerg: Creates initial file.
-! 2012/11/16, Caroline Poulsen: Added calibration file version.
-! 2014/08/04, Greg McGarragh: Cleaned up the code.
-! 2014/08/31, Greg McGarragh: Make the global attribute list consistent with
-!    CF-1.4.
-! 2014/09/01, Greg McGarragh: Make use of the general shared routine
+! 2011/12/19, MJ: Creates initial file.
+! 2012/11/16, CP: Added calibration file version.
+! 2014/08/04, GM: Cleaned up the code.
+! 2014/08/31, GM: Make the global attribute list consistent with CF-1.4.
+! 2014/09/01, GM: Make use of the general shared routine
 !    nc_put_common_attributes().
 ! 2014/12/01, CP: Added remove global attributes read out directly now in
 !    read_config file
 !
 ! $Id: nc_create.F90 2355 2014-09-09 23:16:38Z gmcgarragh $
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------
+! Name: nc_create
+!
+! Purpose:
+! A netcdf output file is opened/created for writing.
+!
+! Description and Algorithm details:
+! Create file, add dimensions, add attributes.
+!
+! Arguments:
+! Name        Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! path        string In          Filename to create
+! ncid        int    Out         ID of created file
+! nx          int    In          Across-track dimension
+! ny          int    In          Along-track dimension
+! dims_var    int    Out         IDs of dimensions created
+! inst_name   string In          Description of satellite imager
+! type        int    In          1: Primary; 2: Secondary file
+! global_atts struct Both        Global attributes to include
+! source_atts struct Both        Discovery metadata
 !
 ! Bugs:
 ! None known.

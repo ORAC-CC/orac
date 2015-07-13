@@ -1,12 +1,19 @@
 !-------------------------------------------------------------------------------
-! Name: interpolate2ctp
+! Name: interpolate_to_ctp.F90
 !
 ! Purpose:
+! Determine cloud top pressure and height from retrieval. SUPERCEEDED by Int_CTP
 !
 ! Description and Algorithm details:
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name   Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! SPixel struct Both        Retrieval pixel structure
+! Ctrl   struct In          Control structure
+! BT_o   real   Out         
+! BP_o   real   Out        
+! DBP_o  real   Out        
 !
 ! History:
 ! 2013/11/22, MJ: Writes routine which return ctp FG including uncertainty
@@ -80,7 +87,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    ! up
    do i=1,SPixel%RTM%LW%Np-1
       ! this catches when the tropopause is extrapolated
-      if (i .ge.  SPixel%RTM%LW%Np-1) then
+      if (i .ge. SPixel%RTM%LW%Np-1) then
          mon_k_trop=SPixel%RTM%LW%Np-1
          exit
       end if
@@ -123,7 +130,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       ! accordingly, if BT_o < minval(invert_temp), kspot is set to 59,
       ! because IF condition in locate_int is never TRUE and iteration will
       ! stop at top temperature level
-      if ( BT_o .gt. invert_temp(mon_k_trop) ) kspot = 0
+      if (BT_o .gt. invert_temp(mon_k_trop)) kspot = 0
 
       if (kspot .ne. 0) then
          do i=1,mon_k_trop
@@ -139,20 +146,20 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    ! profile (or at least this monotonous stretch of it which is investigated).
 
    ! If kspot is too low (unlikely)
-   if ( kspot .eq. 0) then
+   if (kspot .eq. 0) then
       ! I think this is being set incorrectly over polar regions resulting in
       ! bad retrievals over snow
 
       ! If no interpolation possible set BP_o and DBP_o to hardcoded values to
       ! recover:
-      if ( BT_o .gt. invert_t(1)) then
+      if (BT_o .gt. invert_t(1)) then
          ! most likely at the surface
          BP_o=invert_p(1)
       else
          BP_o=Ctrl%X0(3)
       end if
 
-      if ( BP_o .lt. 20.0) then
+      if (BP_o .lt. 20.0) then
          ! too warm - more likely surface
          BP_o=invert_p(1)
       end if

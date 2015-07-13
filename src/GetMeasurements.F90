@@ -1,115 +1,100 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_Measurements
+! Name: GetMeasurements.F90
 !
 ! Purpose:
-!    Gets the 'average' measurements for the current super-pixel, plus the error
-!    covariance.
+! Gets the 'average' measurements for the current super-pixel, plus the error
+! covariance.
+!
+! Description and Algorithm details:
+! Determine which averaging method is required
+!    'All'
+!       Average measurements at the four corners of the super-pixel
+!    'Cloudy'
+!       Average all cloudy pixels as defined by SPixel%CloudFlags
+!    'Central'
+!       Take measurements from the 'central' pixel as defined by
+!       SPixel%Loc%Xc and Yc
+! Average measurements output to SPixel%Ym
+!
+! Allocate super-pixel error covariance Sy to correct number of channels
+! if (Homogeneity noise requested)
+!    for each channel, add the NeHomog noise from SAD_Chan to the appropriate
+!     diagonal value in Sy
+!     - in daytime the noise value is taken from the Solar sub-structure for
+!       "pure" solar channels, the thermal sub-struct for thermal channels
+!       and the sum of the two for mixed channels
+!     - otherwise, only thermal noise is used
+! if (Co-registration noise requested)
+!    for each channel, add the NeCoreg noise from SAD_Chan to the appropriate
+!    diagonal value in Sy
+!    - same day/twi/night conditions apply as for NeHomog
 !
 ! Arguments:
-!    Name     Type    In/Out/Both Description
-!    Ctrl     struct  In          Control structure
-!    SAD_Chan struct  In          Array of structs containing channel
-!                                 characteristics.
-!    SPixel   struct  Both        Super-pixel structure
-!    MSI_Data struct  In          Data structure. Contains the multi-spectral
-!                                 image measurements, location values, geometry
-!                                 etc for the current image segment, from which
-!                                 the current SPixel values will be extracted.
-!    status   integer Out         Error status
-!
-! Algorithm:
-!    Determine which averaging method is required
-!       'All'
-!          Average measurements at the four corners of the super-pixel
-!       'Cloudy'
-!          Average all cloudy pixels as defined by SPixel%CloudFlags
-!       'Central'
-!          Take measurements from the 'central' pixel as defined by
-!          SPixel%Loc%Xc and Yc
-!    Average measurements output to SPixel%Ym
-!
-!    Allocate super-pixel error covariance Sy to correct number of channels
-!    if (Homogeneity noise requested)
-!       for each channel, add the NeHomog noise from SAD_Chan to the appropriate
-!        diagonal value in Sy
-!        - in daytime the noise value is taken from the Solar sub-structure for
-!          "pure" solar channels, the thermal sub-struct for thermal channels
-!          and the sum of the two for mixed channels
-!        - otherwise, only thermal noise is used
-!    if (Co-registration noise requested)
-!       for each channel, add the NeCoreg noise from SAD_Chan to the appropriate
-!       diagonal value in Sy
-!       - same day/twi/night conditions apply as for NeHomog
+! Name     Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct  In          Control structure
+! SAD_Chan struct  In          Array of structs containing channel
+!                              characteristics.
+! SPixel   struct  Both        Super-pixel structure
+! MSI_Data struct  In          Data structure. Contains the multi-spectral
+!                              image measurements, location values, geometry
+!                              etc for the current image segment, from which
+!                              the current SPixel values will be extracted.
+! status   integer Out         Error status
 !
 ! History:
-!    29th Nov 2000, Kevin M. Smith: Original version
-!     4th Dec 2000, Kevin M. Smith: corrections to 'average all' method
-!    19th Dec 2000, Kevin M. Smith: Replaced Data_MSI array with Data structure
-!     8th Jan 2001, Kevin M. Smith: Included quality control mask
-!    11th Jan 2001, Kevin M. Smith: Added check for allowed solar zenith angles
-!    18th Jan 2001, Kevin M. Smith: Changed Sol_zen to Solzen in SPixel structure
-!    16th Mar 2001, Andy Smith:
-!       Using named constants for averaging method and SPixel index values to
-!       select thermal channels.
-!       Removed warning set if solar zenith angle > Max in Ctrl file (only
-!       indicates non-daytime data).
-!       Removed check on Ctrl%Resoln%Ameth: now done once only in ReadDriver.
-!     3rd Apr 2001, Andy Smith:
-!       Replaced loop over channels for AMethCentral case with a whole-array
-!       assignment. Should be more efficient.
-!    17th May 2001, Andy Smith:
-!       Added setting of the SPixel%Sy measurement error covariance values.
-!       New argument SAD_Chan required for noise information.
-!    11th Jun 2001, Andy Smith:
-!       Change to setting of Sy for mixed channels.
-!    25th Jun 2001, Andy Smith:
-!       Header comments updated following recent changes to functionality.
-!     7th Aug 2001, Andy Smith:
-!       Updates for image segmentation. Selection of values from the MSI Data
-!       structure arrays now need to use a y value that refers to the image
-!       segment currently held in memory rather than the whole image area.
-!       X co-ords are unchanged since the segment is the full image width.
-!       Renamed structure Data to MSI_Data since Data is a reserved word (hasn't
-!       caused any problems so far but it might).
-!    14th Aug 2001, Andy Smith:
-!       Change to Sy setting. When homog and coreg noise are added for purely
-!       solar channels, the values in the SAD_Chan arrays (which are percentages)
-!       must be multiplied by the measurement values to convert them to the
-!       reflectance errors. Thermal channel values are already stored as BT
-!       error.
-!    21st Sep 2001, Andy Smith:
-!       Memory leak fix. Now deallocates SPixel%Ym and Sy before each allocation.
-!       It is assumed that an initial allocation was made (in ECP main) otherwise
-!       the first deallocate will fail.
+! 2000/11/29, KS: Original version
+! 2000/12/04, KS: corrections to 'average all' method
+! 2000/12/19, KS: Replaced Data_MSI array with Data structure
+! 2001/01/08, KS: Included quality control mask
+! 2001/01/11, KS: Added check for allowed solar zenith angles
+! 2001/01/18, KS: Changed Sol_zen to Solzen in SPixel structure
+! 2001/03/16, AS: Using named constants for averaging method and SPixel index
+!    values to select thermal channels. Removed warning set if solar zenith
+!    angle > Max in Ctrl file (only indicates non-daytime data). Removed check
+!    on Ctrl%Resoln%Ameth: now done once only in ReadDriver.
+! 2001/04/03, AS: Replaced loop over channels for AMethCentral case with a
+!    whole-array assignment. Should be more efficient.
+! 2001/05/17, AS: Added setting of the SPixel%Sy measurement error covariance
+!    values. New argument SAD_Chan required for noise information.
+! 2001/06/11, AS: Change to setting of Sy for mixed channels.
+! 2001/06/25, AS: Header comments updated following recent changes to
+!    functionality.
+! 2001/08/07, AS: Updates for image segmentation. Selection of values from the
+!    MSI Data structure arrays now need to use a y value that refers to the
+!    image segment currently held in memory rather than the whole image area. X
+!    co-ords are unchanged since the segment is the full image width. Renamed
+!    structure Data to MSI_Data since Data is a reserved word (hasn't caused any
+!    problems so far but it might).
+! 2001/08/14, AS: Change to Sy setting. When homog and coreg noise are added for
+!    purely solar channels, the values in the SAD_Chan arrays (which are
+!    percentages) must be multiplied by the measurement values to convert them
+!    to the reflectance errors. Thermal channel values are already stored as BT
+!    error.
+! 2001/09/21, AS: Memory leak fix. Now deallocates SPixel%Ym and Sy before each
+!    allocation. It is assumed that an initial allocation was made (in ECP main)
+!    otherwise the first deallocate will fail.
 !    **************** ECV work starts here *************************************
-!    23rd Feb 2011, Andy Smith:
-!       Cloud flags converted to real to match current ORAC data.
-!    30th Mar 2011, Andy Smith:
-!       Removal of super-pixel averaging. Process single pixels at X0, Y0,
-!       removed other SPixel indices Xc, Yc, Xn, Yn etc.
-!    21st Apr 2011, Andy Smith:
-!       Extension to handle multiple instrument views. New SPixel array View_Idx,
-!       holds the view index values for active channels in this pixel.
-!    15th Jun 2012, C. Poulsen:
-!       Added illum array
-!    21th May 2014, Greg McGarragh:
-!       Cleaned up the code.
-!     8th Jul 2012, C. Poulsen:
-!       Changed ilumination logic.
-!     1st Aug 2014, Greg McGarragh:
-!       The above change requires use of SPixel%spixel_y_to_ctrl_y_index(:) to
-!       properly index the right channels from MSI_Data%MSI(:,:,:) and cleanup.
-!    13th Jan 2015, Adam Povey:
-!       Remove ThermalFirst,ThermalLast.
-!    30th Jan 2015, Adam Povey:
-!       Replace YSeg0 with Y0 as superpixeling removed.
-!
-! Bugs:
-!    None known.
+! 2011/02/23, AS: Cloud flags converted to real to match current ORAC data.
+! 2011/03/30, AS: Removal of super-pixel averaging. Process single pixels at
+!    X0, Y0, removed other SPixel indices Xc, Yc, Xn, Yn etc.
+! 2011/04/21, AS: Extension to handle multiple instrument views. New SPixel
+!    array View_Idx, holds the view index values for active channels in this
+!    pixel.
+! 2012/06/15, CP:
+!    Added illum array
+! 2014/05/21, GM: Cleaned up the code.
+! 2012/07/08, CP: Changed ilumination logic.
+! 2014/08/01, GM: The above change requires use of 
+!    SPixel%spixel_y_to_ctrl_y_index(:) to properly index the right channels 
+!    from MSI_Data%MSI(:,:,:) and cleanup.
+! 2015/01/13, AP: Remove ThermalFirst,ThermalLast.
+! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)

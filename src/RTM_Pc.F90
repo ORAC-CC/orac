@@ -1,56 +1,33 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    RTM_Pc
+! Name: RTM_Pc.F90
 !
 ! Purpose:
-!    Defines the RTM_Pc structure. This structure holds radiance and long and
-!    short wave transmittance terms used in the forward model subroutines.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
+! Defines the RTM_Pc_def module. This structure holds radiance and long and
+! short wave transmittance terms used in the forward model subroutines.
 !
 ! History:
-!     2nd Feb 2001, Kevin M. Smith: original version
-!     8th Feb 2001, Andy Smith:
-!       All arrays made allocatable.
-!    16th Feb 2001, Andy Smith:
-!       d_Tac_d_Pc, d_Tbc_d_Pc added to LW struct.
-!    20th Feb 2001, Andy Smith:
-!       Renaming variables to remove excess underscores.
-!     7th Mar 2001, Andy Smith:
-!       Added dTac_dPc, dTbc_dPc to the top-level struct. The LW and SW values
-!       must be combined into these arrays for later use. Further comments under
-!       Algorithm in AllocRTMPc.f90.
-!    11th May 2001, Andy Smith:
-!       Added Tc parameter (temperature at Pc).
+! 2001/02/02, KS: original version
+! 2001/02/08, AS: All arrays made allocatable.
+! 2001/02/16, AS: d_Tac_d_Pc, d_Tbc_d_Pc added to LW struct.
+! 2001/02/20, AS: Renaming variables to remove excess underscores.
+! 2001/03/07, AS: Added dTac_dPc, dTbc_dPc to the top-level struct. The LW and 
+!    SW values must be combined into these arrays for later use. Further 
+!    comments under Algorithm in AllocRTMPc.f90.
+! 2001/05/11, AS: Added Tc parameter (temperature at Pc).
 !    **************** ECV work starts here *************************************
-!    21st Feb 2011, Andy Smith:
-!       Re-introducing changes made in late 2001/2002.
-!    13th Dec 2002, Caroline Poulsen:
-!       Added Hc parameter.
-!    23rd Dec 2002, Andy Smith:
-!       Added dHc_dPc parameter. Rate of change of geopotential ht w.r.t
-!       pressure. Allows us to calculate an error on Hc for output.
-!    2013/01/17, Matthias Jerg:
-!       Adds dTc_dPc: rate of change of temperature
-!       w.r.t pressure. Allows us to calculate an error on Tc for output.
-!    27th May 2014, Greg McGarragh:
-!       Some cleanup.
-!     7th Jan 2015, Adam Povey:
-!       Eliminate write to RTM_Pc%Tac, Tbc.
-!
-! Bugs:
-!    None known.
+! 2011/02/21, AS: Re-introducing changes made in late 2001/2002.
+! 2002/12/13, CP: Added Hc parameter.
+! 2002/12/23, AS: Added dHc_dPc parameter. Rate of change of geopotential ht 
+!    w.r.t pressure. Allows us to calculate an error on Hc for output.
+! 2013/01/17, MJ: Adds dTc_dPc: rate of change of temperature w.r.t pressure. 
+!    Allows us to calculate an error on Tc for output.
+! 2014/05/27, GM: Some cleanup.
+! 2015/01/07, AP: Eliminate write to RTM_Pc%Tac, Tbc.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module RTM_Pc_def

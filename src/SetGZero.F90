@@ -1,76 +1,63 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Set_GZero
+! Name: SetGZero.F90
 !
 ! Purpose:
-!    Sets up the "zero'th point" grid information used in interpolating
-!    the SAD_LUT CRP arrays.
+! Sets up the "zero'th point" grid information used in interpolating
+! the SAD_LUT CRP arrays.
+!
+! Description and Algorithm details:
+! Use the grid info in SAD_LUT and the current Tau, Re and Geom values to
+! find the "zero'th" point for interpolation (see IntLUTTauRe comments).
+! Populate GZero struct with zero'th point data, i.e.
+!  - index of closest (lower) point in LUT data grid, in Tau, Re, SatZen etc
+!    (i.e. the zero'th point) - ensure that 0'th point index is between 1 and
+!    npoints-1
+!  - index of next-nearest points (set to nearest point if we're at the edge
+!    of the LUT).
+!  - Denominator for calculating finite difference gradients. Will either be
+!    equal to LUT grid spacing (at edges if LUT), or twice this.
+!  - fractional grid step from 0'th point to supplied Tau, Re, Sat zen etc
+!  - 1 minus fractional step from above
 !
 ! Arguments:
-!    Name    Type   In/Out/Both Description
-!    Tau     real   In          Current value of optical depth
-!    Re      real   In          Current value of effective radius
-!    Geom    struct In          Sub-structure of SPixel, contains the sat zen,
-!                               sun zen and rel azi values.
-!    SAD_LUT struct In          Static Application Data structure  containing
-!                               the arrays of Look-Up Tables to be interpolated
-!                               and the grids on which they are stored.
-!    GZero   Struct Out         Holds "0'th point" information relating to the
-!                               grid on which the SAD_LUT CRP arrays are based.
-!    status  int    Out         Standard status code set by ECP routines
-!
-! Algorithm:
-!    Use the grid info in SAD_LUT and the current Tau, Re and Geom values to
-!    find the "zero'th" point for interpolation (see IntLUTTauRe comments).
-!    Populate GZero struct with zero'th point data, i.e.
-!     - index of closest (lower) point in LUT data grid, in Tau, Re, SatZen etc
-!       (i.e. the zero'th point) - ensure that 0'th point index is between 1 and
-!       npoints-1
-!     - index of next-nearest points (set to nearest point if we're at the edge
-!       of the LUT).
-!     - Denominator for calculating finite difference gradients. Will either be
-!       equal to LUT grid spacing (at edges if LUT), or twice this.
-!     - fractional grid step from 0'th point to supplied Tau, Re, Sat zen etc
-!     - 1 minus fractional step from above
-!
-! Local variables:
-!    Name Type Description
+! Name    Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Tau     real   In          Current value of optical depth
+! Re      real   In          Current value of effective radius
+! Ctrl    struct In          Control structure
+! SAD_LUT struct In          Static Application Data structure  containing
+!                            the arrays of Look-Up Tables to be interpolated
+!                            and the grids on which they are stored.
+! GZero   Struct Out         Holds "0'th point" information relating to the
+!                            grid on which the SAD_LUT CRP arrays are based.
+! status  int    Out         Standard status code set by ECP routines
 !
 ! History:
-!    23rd Jan 2001, Andy Smith : original version
-!    31st May 2007, Andy Sayer:
-!       Consolidation of code for dual-view BRDF retrieval. This means added
-!       calculation of new geometry variables for second view (copied existing
-!       code, adding "_2" suffix).
-!    20th March 2008, Gareth Thomas:
-!       Changes for spline interpolation: Added mT0, mT1, mR0, mR1 calculations
-!       - gradients at iT0, iT1, iR0 and iR1 LUT points.
-!     5th Sep 2011, Chris Arnold:
-!       'locate' routine is now used for domain searching
-!     5th Sep 2011, Chris Arnold:
-!       next nearest neighbour indices iTm1,iTp1,iRm1,iRp1  now evaluated
-!    13th Dec 2012, Caroline Poulsen:
-!        added in allocation of isaz0 parameter
-!    15th Dec 2012, Caroline Poulsen:
-!       remove deallocation test from this routine and instead deallocate at the
-!       end of FM.F90 this solved g95
-!    xxxx  xxx 2013, MJ:
-!       changes loop boundaries and parameter list contents memory problem
-!     3rd Dec 2013, MJ:
-!       makes LUTs more flexible wrt channel and properties
-!    16th Jan 2014, Greg McGarragh:
-!      Fixed indexing operations on uninitialized (garbage) values introducing
-!      use of SPixel%spixel_y_to_ctrl_y_index and the SAD_LUT%table_use* arrays.
-!    23rd Jan 2014, Greg McGarragh:
-!       Cleaned up code.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!
-! Bugs:
-!    None known.
+! 2001/01/23, AS: original version
+! 2007/05/31, AY: Consolidation of code for dual-view BRDF retrieval. This 
+!    means added calculation of new geometry variables for second view (copied 
+!    existing code, adding "_2" suffix).
+! 2008/03/21, GT: Changes for spline interpolation: Added mT0, mT1, mR0, mR1 
+!    calculations - gradients at iT0, iT1, iR0 and iR1 LUT points.
+! 2001/09/05, CA: 'locate' routine is now used for domain searching
+! 2011/09/05, CA: next nearest neighbour indices iTm1,iTp1,iRm1,iRp1 now 
+!    evaluated
+! 2012/12/13, CP: added in allocation of isaz0 parameter
+! 2012/09/15, CP: remove deallocation test from this routine and instead 
+!    deallocate at the end of FM.F90 this solved g95
+! 2013/05/08, MJ: changes loop boundaries and parameter list contents memory 
+!    problem
+! 2013/12/03, MJ: makes LUTs more flexible wrt channel and properties
+! 2014/01/16, GM: Fixed indexing operations on uninitialized (garbage) values 
+!    introducing use of SPixel%spixel_y_to_ctrl_y_index and the 
+!    SAD_LUT%table_use* arrays.
+! 2014/01/23, GM: Cleaned up code.
+! 2014/09/09, GM: Changes related to new BRDF support.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)

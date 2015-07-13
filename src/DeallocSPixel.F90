@@ -1,63 +1,43 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Dealloc_SPixel
+! Name: DeallocSPixel.F90
 !
 ! Purpose:
-!    Deallocates the SPixel arrays to ensure that memory is freed once it is no
-!    longer required.
+! Deallocates the SPixel arrays to ensure that memory is freed once it is no
+! longer required.
+!
+! Description and Algorithm details:
+! 1) Deallocates each of the arrays that is allocated by Alloc_SPixel.
 !
 ! Arguments:
-!    Name   Type         In/Out/Both Description
-!    Ctrl   struct       In          Control structure
-!    SPixel alloc struct Both        SPixel structure
-!    status int          Out         Error status
-!
-! Algorithm:
-!    Deallocates each of the arrays that is allocated by Alloc_SPixel.
-!    At present, no check is made on deallocation status. What action should be
-!    taken if dealloc stat is non-zero? Checking and reporting an error on ever
-!    deallocation would make a very long routine.
-!
-! Local variables:
-!    Name Type Description
+! Name   Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl   struct       In          Control structure
+! SPixel alloc struct Both        SPixel structure
 !
 ! History:
-!    22nd Oct 2001, Andy Smith: Original version
+! 2001/10/22, AS: Original version
 !    **************** ECV work starts here *************************************
-!    21st Feb 2011, Andy Smith:
-!       Re-applying changes from late 2001/2002.
-!    12th Dec 2011, Caroline Poulsen:
-!       Added geopotential height
-!    30th Mar 2011, Andy Smith:
-!       Removal of super-pixelling, i.e. no averaging of flags etc needed.
-!       Any super-pixelling required will now be done in pre-processing.
-!       Resolution for the retrieval will be fixed at 1 pixel.
-!       No need to deallocate cloud or surface flags and mask.
-!    22nd Sep 2011, Caroline Poulsen:
-!       Remove sw%p as now the same aslw%p
-!    13th Dec 2011, Caroline Poulsen:
-!       Deallocated SPixel%Geom arrays SPixel%SWRTM%P SPixel%ViewIdx
-!    16th Jan 2014, Greg McGarragh:
-!       Added deallocation of SPixel%spixel_y_to_ctrl_y_index.
-!    27th May 2014, Greg McGarragh:
-!       Some cleanup.
-!     1st Aug 2014, Greg McGarragh:
-!       Added more SPixel to Ctrl map indexes.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!    12th Jan 2015, Adam Povey:
-!       Added YSolar,YThermal.
-!    20th Jan 2015, Greg McGarragh:
-!       Added deallocation of spixel_y_mixed_to_spixel_y_solar and 
-!       spixel_y_mixed_to_spixel_y_thermal.
-!    30th Jan 2015, Adam Povey:
-!       Remove redundant fields.
-!
-! Bugs:
-!   None known.
+! 2011/02/21, AS: Re-applying changes from late 2001/2002.
+! 2011/12/12, CP: Added geopotential height
+! 2011/03/11, AS: Removal of super-pixelling, i.e. no averaging of flags etc 
+!    needed. Any super-pixelling required will now be done in pre-processing. 
+!    Resolution for the retrieval will be fixed at 1 pixel. No need to 
+!    deallocate cloud or surface flags and mask.
+! 2011/09/22, CP: Remove sw%p as now the same aslw%p
+! 2011/12/12, CP: Deallocated SPixel%Geom arrays SPixel%SWRTM%P SPixel%ViewIdx
+! 2014/01/16, GM: Added deallocation of SPixel%spixel_y_to_ctrl_y_index.
+! 2014/05/27, GM: Some cleanup.
+! 2014/08/01, GM: Added more SPixel to Ctrl map indexes.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2015/01/12, AP: Added YSolar,YThermal.
+! 2015/01/20, GM: Added deallocation of spixel_y_mixed_to_spixel_y_solar and 
+!    spixel_y_mixed_to_spixel_y_thermal.
+! 2015/01/30, AP: Remove redundant fields.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Dealloc_SPixel(Ctrl, SPixel)
@@ -70,16 +50,6 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
 
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-
-   ! Declare local variables
-
-   ! Quality control mask
-
-!  deallocate(SPixel%Mask)
-
-   ! Get_CloudFlags arrays
-
-!  deallocate(SPixel%Cloud%Flags)
 
    ! Get_RTM arrays
 

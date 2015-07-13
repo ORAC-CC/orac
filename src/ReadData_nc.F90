@@ -1,42 +1,41 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Read_Data_nc
+! Name: ReadData_nc.F90
 !
 ! Purpose:
-!    Controls the reading of Multi Spectral Image (ALB) values from ATSR-type
-!    files into the DATA_ALB array.
+! Controls the reading of Multi Spectral Image (ALB) values from ATSR-type
+! files into the DATA_ALB array.
+!
+! Description and Algorithm details:
+! Open everything in order, using dedicated routines for each.
 !
 ! Arguments:
-!    Name     Type         In/Out/Both Description
-!    Ctrl     struct       Both        Control structure (date is read in here).
-!    MSI_Data struct       Both        Data structure: the ALB data part of this
-!                                      struct is populated by this routine, and
-!                                      is overwritten on successive calls.
-!    SAD_Chan struct array Both        Instrument channel parameters. Updated by
-!                                      this routine: solar constant is
-!                                      modified from annual average to value for
-!                                      the day of the ALB data.
-!    verbose  logical      In          Verbose print-out flag
-!
-! Algorithm:
-!    Open everything in order, using dedicated routines for each.
+! Name     Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct       Both        Control structure (date is read in here).
+! MSI_Data struct       Both        Data structure: the ALB data part of this
+!                                   struct is populated by this routine, and
+!                                   is overwritten on successive calls.
+! SAD_Chan struct array Both        Instrument channel parameters. Updated by
+!                                   this routine: solar constant is
+!                                   modified from annual average to value for
+!                                   the day of the ALB data.
+! verbose  logical      In          Verbose print-out flag
 !
 ! History:
-!    ????/??/??, Matthias Jerg: Original version.
-!    2013/02/26, CP: added in header and remove hardwiring of MSI_Data%ALB=3
-!    2014/04/20, GM: Cleaned up the code.
-!    2014/08/18, AP: Commented out reading of scanline data as it is not
-!       actually used.
-!    2014/04/20, GM: Added call to Nullify_Data() as some pointers may not be
-!       associated.
-!    2015/02/04, GM: Changes related to the new missing channel, illumination,
-!       and channel selection code.
-!
-! Bugs:
-!   None known.
+! 2012/08/16, MJ: Original version.
+! 2013/02/26, CP: added in header and remove hardwiring of MSI_Data%ALB=3
+! 2014/04/20, GM: Cleaned up the code.
+! 2014/08/18, AP: Commented out reading of scanline data as it is not
+!    actually used.
+! 2014/04/20, GM: Added call to Nullify_Data() as some pointers may not be
+!    associated.
+! 2015/02/04, GM: Changes related to the new missing channel, illumination,
+!    and channel selection code.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)

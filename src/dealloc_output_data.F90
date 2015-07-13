@@ -2,31 +2,23 @@
 ! Name: dealloc_output_data.F90
 !
 ! Purpose:
-! The file contains a collection of three subroutines which deallocates the
-! array parts of the output variable types.
-!
-! Description and Algorithm details:
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-! Local variables:
-! Name Type Description
+! The file contains a collection of subroutines which deallocates the
+! array parts of the output variable types, stored within module output_routines.
 !
 ! History:
-! 2011/12/19, Matthias Jerg: creates initial file.
-! 2012/01/05, Caroline Poulsen: added in channel information
-! 2012/01/06, Caroline Poulsen: added in cwp
-! 2012/01/15, Caroline Poulsen: added in chan definitions
-! 2012/01/28, Caroline Poulsen: added in albedo
-! 2012/08/21, Matthias Jerg: adds time variable
-! 2013/12/16, Greg McGarragh: Add deallocation of output_data%ctt_error,
+! 2011/12/19, MJ: Creates initial file.
+! 2012/01/05, CP: Added in channel information
+! 2012/01/06, CP: Added in cwp
+! 2012/01/15, CP: Added in chan definitions
+! 2012/01/28, CP: Added in albedo
+! 2012/08/21, MJ: Adds time variable
+! 2013/12/16, GM: Add deallocation of output_data%ctt_error,
 !    output_data%cth_error, and output_data_sec%ds and a bit cleanup.
-! 2014/05/27, Greg McGarragh: Some cleanup.
-! 2014/10/24, Oliver Sus: added deallocation of cldtype, cldmask, cccot_pre,
+! 2014/05/27, GM: Some cleanup.
+! 2014/10/24, OS: Added deallocation of cldtype, cldmask, cccot_pre,
 !    lusflag, dem, nisemask
-! 2014/12/01, Caroline Poulsen: added in cloud albedo
-! 2015/07/01, Caroline Poulsen: added in corrected cth
+! 2014/12/01, CP: Added in cloud albedo
+! 2015/07/01, CP: Added in corrected cth
 !
 ! $Id$
 !
@@ -34,6 +26,23 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
+!-------------------------------------------------------------------------------
+! Name: dealloc_output_data_primary
+!
+! Purpose:
+! Deallocate storage for primary output file.
+!
+! Description and Algorithm details:
+! 1) Deallocate all arrays.
+!
+! Arguments:
+! Name        Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! output_data struct Both        Contents of secondard output file.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine dealloc_output_data_primary(output_data)
 
    use ECP_Constants
@@ -108,15 +117,33 @@ subroutine dealloc_output_data_primary(output_data)
 end subroutine dealloc_output_data_primary
 
 
-subroutine dealloc_output_data_secondary(output_data,lcovar)
+!-------------------------------------------------------------------------------
+! Name: dealloc_output_data_secondary
+!
+! Purpose:
+! Deallocate storage for secondary output file.
+!
+! Description and Algorithm details:
+! 1) Deallocate all arrays.
+!
+! Arguments:
+! Name        Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! output_data struct Both        Contents of secondard output file.
+! lcovar      logic  In          Flag indicating presence of covariance matrices
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+ssubroutine dealloc_output_data_secondary(output_data,lcovar)
 
    use ECP_Constants
 
    implicit none
 
-   logical :: lcovar
+   logical,                     intent(in)    :: lcovar
 
-   type(output_data_secondary) :: output_data
+   type(output_data_secondary), intent(inout) :: output_data
 
    deallocate(output_data%vid_albedo)
    deallocate(output_data%vid_channels)

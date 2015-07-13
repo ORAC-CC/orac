@@ -2,14 +2,20 @@
 ! Name: read_input_dimensions.F90
 !
 ! Purpose:
+! Determine dimensions of data before allocating arrays.
 !
 ! Description and Algorithm details:
+! Use nc_dim_length a few times.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Local variables:
-! Name Type Description
+! Name      Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! fname_msi string  In          Path for MSI (imager data) file
+! fname_geo string  In          Path for GEO (geolocation) file
+! xdim      int     Out         Across-track dimension
+! ydim      int     Out         Along-track dimension
+! vdim      int     Out         Number of available views
+! verbose   logical In          If set, print results to screen
 !
 ! History:
 ! 2014/08/02, GM: Cleaned up the code.

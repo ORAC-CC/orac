@@ -1,37 +1,30 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Set_Unit
+! Name: SetUnit.F90
 !
 ! Purpose:
-!    Create a unit matrix of the appropriate size, as defined by the number of
-!    active state variables SPixel%Nx.
+! Create a unit matrix of the appropriate size, as defined by the number of
+! active state variables SPixel%Nx.
+!
+! Description and Algorithm details:
+! Zero array, then write unity to the diagonal.
 !
 ! Arguments:
-!    Name   Type   In/Out/Both Description
-!    SPixel struct In          Current super-pixel info.
-!    Unit   real   Out         Unit matrix
-!    status int    Out         Error status
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Name   Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! SPixel struct In          Current super-pixel info.
+! Unit   real   Out         Unit matrix
 !
 ! History:
-!    29th Jan 2001, Kevin M. Smith: Original version
-!    10th May 2001, Andy Smith:
-!       Changed from allocatable array to automatically sized.
-!       Size value now comes from SPixel rather than Ctrl.
-!    21th May 2014, Greg McGarragh:
-!       Cleaned up the code.
-!    24th Jul 2014, Adam Povey:
-!       Removed unused status variable.
-!
-! Bugs:
-!    None known.
+! 2001/01/29, KS: Original version
+! 2001/05/10, AS: Changed from allocatable array to automatically sized.
+!    Size value now comes from SPixel rather than Ctrl.
+! 2014/05/21, GM: Cleaned up the code.
+! 2014/07/24, AP: Removed unused status variable.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Set_Unit(SPixel, Unit)
@@ -51,7 +44,7 @@ subroutine Set_Unit(SPixel, Unit)
 
    ! Initialise all elements to be zero
 
-   Unit(:,:) = 0.0
+   Unit = 0.0
 
    ! Set diagonals to unity
 

@@ -1,65 +1,64 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Int_LUT_TauSatReOnSol
+! Name: IntLUTTauSatReOnSol.F90
 !
 ! Purpose:
-!    Interpolates values from a LUT array with dimensions (channel, Tau, SolZen,
-!    Re) to give the value of the LUT array at a single value of Tau, SatZen, Re
-!    across all channels.
+! Interpolates values from a LUT array with dimensions (channel, Tau, SolZen,
+! Re) to give the value of the LUT array at a single value of Tau, SatZen, Re
+! across all channels.
 !
-! Description:
-!    The subroutine is passed an array of data in 4 dimensions, plus info
-!    relating to the Tau, Re and SolZen grids corresponding to the LUT array
-!    points (the third dimension in the LUT array is the channel number, which
-!    is not interpolated).
+! Description and Algorithm details:
+! The subroutine is passed an array of data in 4 dimensions, plus info
+! relating to the Tau, Re and SolZen grids corresponding to the LUT array
+! points (the third dimension in the LUT array is the channel number, which
+! is not interpolated).
 !
-!    The subroutine calculates the value of the LUT at the current (Tau, SatZen,
-!    Re) plus the gradients in Tau and Re.
+! The subroutine calculates the value of the LUT at the current (Tau, SatZen,
+! Re) plus the gradients in Tau and Re.
+!
+! See IntLUTTauSatRe. This routine is an exact copy with all values relating
+! to SolZen replaced by the equivalents for SatZenSolZen (e.g. GZero%Sa1). A
+! single, more general routine could have been used but this may have been
+! less easy to follow.
 !
 ! Arguments:
-!    Name   Type       In/Out/Both Description
-!    F      real array In          Function to be interpolated, i.e. array of
-!                                  LUT values with dimensions (channels, Tau,
-!                                  SolZen, Re).
-!    Grid   struct     In          LUT Grid data: see SADLUT.F90
-!                                  Includes the grid values in Tau, Re, SolZen,
-!                                  no. of values and step size
-!    Gzero  struct     In          Structure containing "zero'th" point indices,
-!                                  i.e. LUT grid array indices for the nearest
-!                                  neighbour point, plus dT, dR, dS values:
-!                                  fraction of grid step from zero'th point to
-!                                  the Tau, SolZen, Re value we want.
-!    Ctrl   struct     In          Control structure: Needed for numbers of
-!                                  channels and their indices
-!    Ind    struct     In          The index structure from the SPixel array
-!    FInt   real array Both        The interpolated values of F for all required
-!                                  channels.
-!    FGrads real array Both        Interpolated gradient values in Tau and Re
-!                                  for all channels.
-!    status int        Out         Standard status code set by ECP routines
-!
-! Algorithm:
-!    See IntLUTTauSatRe. This routine is an exact copy with all values relating
-!    to SolZen replaced by the equivalents for SatZenSolZen (e.g. GZero%Sa1). A
-!    single, more general routine could have been used but this may have been
-!    less easy to follow.
-!
-! Local variables:
-!    Name Type Description
+! Name   Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! F      real array In          Function to be interpolated, i.e. array of
+!                               LUT values with dimensions (channels, Tau,
+!                               SolZen, Re).
+! NChans int         In          Number of channels in F
+! Grid   struct     In          LUT Grid data: see SADLUT.F90
+!                               Includes the grid values in Tau, Re, SolZen,
+!                               no. of values and step size
+! Gzero  struct     In          Structure containing "zero'th" point indices,
+!                               i.e. LUT grid array indices for the nearest
+!                               neighbour point, plus dT, dR, dS values:
+!                               fraction of grid step from zero'th point to
+!                               the Tau, SolZen, Re value we want.
+! Ctrl   struct     In          Control structure: Needed for numbers of
+!                               channels and their indices
+! FInt   real array Both        The interpolated values of F for all required
+!                               channels.
+! FGrads real array Both        Interpolated gradient values in Tau and Re
+!                               for all channels.
+! iCRP   int        In           Index of cloud property to interpolate
+! chan_to_ctrl_index             Indices of input chs within Ctrl arrays
+!        int array  In
+! chan_to_spixel_index           Indices of input chs within SPixel arrays
+!        int array  In
+! status int        Out         Standard status code set by ECP routines
 !
 ! History:
-!    22nd May 2014, Greg McGarragh: Adapted from IntLUTTauSatRe.F90.
-!    16th Oct 2014, Greg McGarragh:
-!       Moved a large amount of code that was common to all IntLUT* subroutines
-!       into Int_LUT_Common()
-!    13th Jan 2015, Adam Povey:
-!       Switch to array-based channel indexing rather than using offsets.
-!
-! Bugs:
-!    None known.
+! 2014/05/22, GM: Adapted from IntLUTTauSatRe.F90.
+! 2014/10/16, GM: Moved a large amount of code that was common to all IntLUT*
+!    subroutines into Int_LUT_Common()
+! 2015/01/13, AP: Switch to array-based channel indexing rather than using
+!    offsets.
 !
 ! $Id: IntLUTTauSatRe.F90 2160 2014-05-22 16:53:08Z gmcgarragh $
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Int_LUT_TauSatReOnSol(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &

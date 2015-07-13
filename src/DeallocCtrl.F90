@@ -1,38 +1,32 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Dealloc_Ctrl
+! Name: DeallocCtrl.F90
 !
 ! Purpose:
-!    Deallocate the Ctrl at end of ECP execution.
+! Deallocate the Ctrl at end of ECP execution.
+!
+! Description and Algorithm details:
+! Deallocates all arrays in the Ctrl structure
 !
 ! Arguments:
-!    Name   Type         In/Out/Both Description
-!    Ctrl   struct       In          Control structure
-!    RTM    alloc struct In          RTM structure
-!    status int          Out         Error status
-!
-! Algorithm:
-!    Deallocates all arrays in the Ctrl structure
-!
-! Local variables:
-!    Name Type Description
+! Name   Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl   struct       In          Control structure
 !
 ! History:
-!    13th Dec 2011, Caroline Poulsen: Original version
-!    20th Dec 2011, Caroline Poulsen: Changed Ctrl to be inout (from in)
-!    12th Jan 2014, Greg McGarragh: Added some missing deallocates.
-!    27th May 2014, Greg McGarragh: Some cleanup.
-!    19th Dec 2014, Adam Povey: Removing ysolar_msi, ythermal_msi.
-!    12th Jan 2015, Adam Povey: Adding Ch_Is, YMixed.
-!     4th Feb 2015, Greg McGarragh: Add sabotage_inputs flag and retrieval
-!       channel requirements arrays.
-!     4th Feb 2015, Greg McGarragh: Add ReChans array.
-!
-! Bugs:
-!    None known.
+! 2011/12/13, CP: Original version
+! 2011/12/20, CP: Changed Ctrl to be inout (from in)
+! 2014/01/12, GM: Added some missing deallocates.
+! 2014/05/27, GM: Some cleanup.
+! 2014/12/19, AP: Removing ysolar_msi, ythermal_msi.
+! 2015/01/12, AP: Adding Ch_Is, YMixed.
+! 2015/02/04, GM: Add sabotage_inputs flag and retrieval channel requirements
+!    arrays.
+! 2015/02/04, GM: Add ReChans array.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Dealloc_Ctrl(Ctrl)

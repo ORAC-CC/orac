@@ -1,101 +1,73 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    FM_Thermal
+! Name: FMThermal.F90
 !
-! Description:
-!    Radiance forward model (thermal channels) for a defined pixel and pressure
-!    level.
+! Purpose:
+! Radiance forward model (thermal channels) for a defined pixel and pressure
+! level.
+!
+! Description and Algorithm details:
+! Update clear radiances at each RTM pressure level (Ts = Ts_0 + delta_Ts).
+! Set up long-wave cloud properties.
+! Update the below cloud upward radiance (this can be done at Pc only to save
+!    time)
+! Calculate overcast and part-cloudy radiances.
+! Calculate part-cloudy radiance gradients w.r.t. each of the state variables.
+! Convert the radiances and radiance gradients to brightness temperatures.
 !
 ! Arguments:
-!    Name     Type	 In/Out/Both  Description
-!    Ctrl     struct	 In	      Control structure
-!    SAD_LUT  struct	 In	      SAD look up table
-!    SAD_Chan array of structs
-!                        In           SAD channel structures: only the
-!             			      thermal channel part of the array is
-!             			      passed in.
-!    SPixel   struct	 Both         Super-pixel structure
-!    RTM_Pc   struct	 In	      Contains transmittances, radiances
-!             			      and their derivatives
-!    X        real array In	      State vector
-!    CRP      real array Both         Cloud LW radiative properties (no. of
-!                                     channels by no of cloud radiative
-!                                     properties - note not all CRPs are
-!                                     interpolated here: only Td, Rd and Em).
-!                                     This array could be made smaller (3 in 2nd
-!                                     dimension) but this should not affect
-!                                     speed and SetCRPThermal would also have to
-!                                     be changed. Note also only the thermal
-!                                     channels should be passed into this
-!                                     routine, although the full array used
-!                                     higher up the call tree contains all
-!                                     channels.
-!    d_CRP    real array Both         LW CRP gradients in Tau, Re
-!    BT       real array Out	      Part cloudy brightness temperatures
-!    d_BT     real array Out	      Gradients in part cloudy brightness temps.
-!    R        real array Out	      Part cloudy radiance calculated at Pc
-!    d_R      real array Out	      Part cloudy radiance gradients calculated
-!                                     at Pc.
-!    status   int	 Out	      Error status
-!
-! Algorithm:
-!   Update clear radiances at each RTM pressure level (Ts = Ts_0 + delta_Ts).
-!   Set up long-wave cloud properties.
-!   Update the below cloud upward radiance (this can be done at Pc only to save
-!      time)
-!   Calculate overcast and part-cloudy radiances.
-!   Calculate part-cloudy radiance gradients w.r.t. each of the state variables.
-!   Convert the radiances and radiance gradients to brightness temperatures.
-!
-! Local variables:
-!    Name Type Description
+! Name     Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct In          Control structure
+! SAD_LUT  struct In          SAD look up table
+! SPixel   struct Both        Super-pixel structure
+! SAD_Chan array of structs   SAD channel structures: only the
+!                 In          thermal channel part of the array is passed in.
+! RTM_Pc   struct In          Contains transmittances, radiances
+!                             and their derivatives
+! X        real array In      State vector
+! GZero
+! BT       real array Out     Part cloudy brightness temperatures
+! d_BT     real array Out     Gradients in part cloudy brightness temps.
+! R        real array Out     Part cloudy radiance calculated at Pc
+! d_R      real array Out     Part cloudy radiance gradients calculated at Pc.
+! status   int	 Out	      Error status
 !
 ! History:
-!    16th November, 2000, Kevin M. Smith : original version
-!    21st November, 2000, KMS : corrections
-!    24th November, 2000, KMS : brought calculation of d_T up from R2T
-!    19th Jan 2001, Andy Smith:
-!       Use FM_Routines_def: contains interface definition for SetCRPThermal
-!     9th Feb 2001, Andy Smith:
-!       Updating to match recent changes in arguments and change in call
-!       sequence. Using constants to select parts of BT and d_BT arrays
-!       referring to different state variables.
-!    20th Feb 2001, Andy Smith:
-!       CRP, d_CRP are required as arguments. Passed to solar routine later to
-!       populate the remaining channels.
-!     1st Mar 2001, Andy Smith:
-!       delta_Ts made local.
-!     8th Mar 2001, Andy Smith:
-!       dB_dTs argument removed. Now part of SPixel.
-!    15th Mar 2001, Andy Smith:
-!       Added ThF and ThL indices for RTM_Pc%LW arrays. Required because these
-!       arrays are allocated to match the no. of thermal channels requested, but
-!       in twilight not all of the requested thermal channels may be used.
-!    22nd Mar 2001, Andy Smith:
-!       Replaced pressure level index in RTM Tac value in clear radiance
-!       calculation. Was Np, now 1.
-!    20th Jul 2001, Andy Smith:
-!       Fixed setting of ThL. Last thermal channel should always be the one
-!       specified in Ctrl, not SPixel, since the RTM_Pc and RTM arrays are of
-!       fixed size for the whole run, i.e are not re-allocated to match the no.
-!       of thermal channels used in each SPixel, and it is the lower numbered
-!       thermal channels that are not used in certain conditions.
-!    20th Dec 2014, Greg McGarragh:
-!       Cleaned up code.
-!    24th Dec 2014, Greg McGarragh:
-!       Some intent changes.
-!     9th Jan 2015, Adam Povey:
-!       Replacing ThF:ThL with SPixel index array. Eliminate RTM_Pc%Tac, Tbc.
-!    12th Jan 2015, Adam Povey:
-!       Remove CRP arguments.
-!    21th Jan 2015, Greg McGarragh:
-!       Fixed some cases were the required 'Thermal' subscripts were missing.
-!
-! Bugs:
-!   None known.
+! 2000/11/16, KS: original version
+! 2000/11/21, KS: corrections
+! 2000/11/24, KS: brought calculation of d_T up from R2T
+! 2001/01/19, AS: Use FM_Routines_def: contains interface definition for
+!    SetCRPThermal
+! 2001/02/09, AS: Updating to match recent changes in arguments and change in
+!    call sequence. Using constants to select parts of BT and d_BT arrays
+!    referring to different state variables.
+! 2001/02/20, AS: CRP, d_CRP are required as arguments. Passed to solar routine
+!    later to populate the remaining channels.
+! 2001/03/01, AS: delta_Ts made local.
+! 2001/03/08, AS: dB_dTs argument removed. Now part of SPixel.
+! 2001/03/15, AS: Added ThF and ThL indices for RTM_Pc%LW arrays. Required
+!    because these arrays are allocated to match the no. of thermal channels
+!    requested, but in twilight not all of the requested thermal channels may
+!    be used.
+! 2001/03/22, AS: Replaced pressure level index in RTM Tac value in clear
+!    radiance calculation. Was Np, now 1.
+! 2001/07/20, AS: Fixed setting of ThL. Last thermal channel should always be
+!    the one specified in Ctrl, not SPixel, since the RTM_Pc and RTM arrays are
+!    of fixed size for the whole run, i.e are not re-allocated to match the no.
+!    of thermal channels used in each SPixel, and it is the lower numbered
+!    thermal channels that are not used in certain conditions.
+! 2014/12/20, GM: Cleaned up code.
+! 2014/12/24, GM: Some intent changes.
+! 2015/01/09, AP: Replacing ThF:ThL with SPixel index array. Eliminate
+!    RTM_Pc%Tac, Tbc.
+! 2015/01/12, AP: Remove CRP arguments.
+! 2015/01/21, GM: Fixed some cases were the required 'Thermal' subscripts were
+!    missing.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &

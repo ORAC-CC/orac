@@ -1,145 +1,132 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    FM
+! Name: FM.F90
 !
-! Description:
-!    Main forward model routine.
-!    Calls subroutines Interpol_Thermal and Interpol_Solar to interpolate the
-!    RTM quantities in SPixel%RTM onto the cloud pressure level. The thermal and
-!    shortwave forward model calculations take place in subroutines FM_Thermal
-!    and FM_Solar. The latter is only called during daytime conditions. At
-!    twilight and nighttime only FM_Thermal is run. At twilight only the pure
-!    thermal channels are used. At night all thermal channels are used. Daytime
-!    retrievals can use all available channels. In this last case pure thermal
-!    and pure solar channels are separated from the mixed channels during the
-!    calculation of the measurement vector Y. For the mixed channels, Y is
-!    calculated by summing contributions from reflectances (converted to
-!    radiances using solar constants f0) and radiances. R2T is used to convert
-!    the resulting total radiances to brightness temperatures. The gradients
-!    dY_dX are treated in a similar way, using dT_dR from the previous call to
-!    R2T. The results from the FMs are then combined into one measurement vector
-!    and array of gradients.
+! Purpose:
+! Main forward model routine.
+! Calls subroutines Interpol_Thermal and Interpol_Solar to interpolate the
+! RTM quantities in SPixel%RTM onto the cloud pressure level. The thermal and
+! shortwave forward model calculations take place in subroutines FM_Thermal
+! and FM_Solar. The latter is only called during daytime conditions. At
+! twilight and nighttime only FM_Thermal is run. At twilight only the pure
+! thermal channels are used. At night all thermal channels are used. Daytime
+! retrievals can use all available channels. In this last case pure thermal
+! and pure solar channels are separated from the mixed channels during the
+! calculation of the measurement vector Y. For the mixed channels, Y is
+! calculated by summing contributions from reflectances (converted to
+! radiances using solar constants f0) and radiances. R2T is used to convert
+! the resulting total radiances to brightness temperatures. The gradients
+! dY_dX are treated in a similar way, using dT_dR from the previous call to
+! R2T. The results from the FMs are then combined into one measurement vector
+! and array of gradients.
 !
-! Arguments:
-!    Name     Type         In/Out/Both Description
-!    Ctrl     struct       In          Control structure
-!    SPixel   alloc struct In          Super pixel structure
-!    SAD_Chan struct arr   In          Array of SAD_Chan structures
-!    SAD_LUT  struct arr   In          Array of SAD_LUT structures
-!    RTM_Pc   struct       Both        Array to hold RTM data interpolated to
-!                                      current Pc value. Passed in because it
-!                                      contains allocated arrays. Populated and
-!                                      used locally
-!    X        real arr     In          State vector
-!    Y        real arr     Out         Calculated measurement vector
-!    dY_dX    real arr     Out         Gradient in Y wrt state parameters and Rs
-!    status   int          Out         Error status
-!
-! Algorithm:
-!    Update state vector X.
-!    Interpolate LW RTM data onto cloud pressure level. (all LW channels,
+! Description and Algorithm details:
+! 1) Update state vector X.
+! 2) Interpolate LW RTM data onto cloud pressure level. (all LW channels,
 !       including those with thermal and solar components)
-!    Set zeroth point grid info. For SAD_LUT CRP interpolation (call Set_GZero).
-!    Run thermal forward model (all channels with thermal component).
-!    If daytime:
+! 3) Set zeroth point grid info. For SAD_LUT CRP interpolation (call Set_GZero).
+! 4) Run thermal forward model (all channels with thermal component).
+! 5) If daytime:
 !       Interpolate SW RTM data onto cloud pressure level ("purely" solar
 !          channels only, no mixed channels).
 !       Run the shortwave forward model (all channels with solar component).
 !       Combine the thermal and shortwave calculated radiances and reflectance
 !       vectors and write to measurement vector Y (similarly for gradients
 !       dY_dX). (Mixed channels are summed in BT via a call to R2T).
-!    If twilight:
+! 6) If twilight:
 !       Only write radiances from the purely thermal channels to Y (similarly
 !       for dY_dX).
-!    If nighttime:
+! 7) If nighttime:
 !       Write all thermal channels (including mixed channels) to Y and dY_dX.
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name     Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct       In          Control structure
+! SPixel   alloc struct In          Super pixel structure
+! SAD_Chan struct arr   In          Array of SAD_Chan structures
+! SAD_LUT  struct arr   In          Array of SAD_LUT structures
+! RTM_Pc   struct       Both        Array to hold RTM data interpolated to
+!                                   current Pc value. Passed in because it
+!                                   contains allocated arrays. Populated and
+!                                   used locally
+! X        real arr     In          State vector
+! Y        real arr     Out         Calculated measurement vector
+! dY_dX    real arr     Out         Gradient in Y wrt state parameters and Rs
+! status   int          Out         Error status
 !
 ! History:
-!     2nd Feb, 2001, Kevin M. Smith : original version (draft)
-!     2nd Mar 2001, Andy Smith:
-!       Updates to draft.
-!     7th Mar 2001, Andy Smith:
-!       New arrays in RTM_Pc for overall dTac_dPc and dTbc_dPc.
-!       Adding breakpoint outputs.
-!     8th Mar 2001, Andy Smith:
-!       dB_dTs no longer required as an argument to FM_Thermal.
-!    15th Mar 2001, Andy Smith:
-!       Added ThF and ThL indices for RTM_Pc%LW arrays. Required because these
-!       arrays are allocated to match the no. of thermal channels requested, but
-!       in twilight not all of the requested thermal channels may be used.
-!       Moved InterpolSolar call into the "daytime" section. Not required in
-!       twilight or nighttime conditions.
-!       Breakpoint SAD_Chan%Desc indexing changed: failed for night-time
-!       conditions (needs checking)
-!       Using SPixel%Ind%ThermalLast as the end of the channel range for
-!       RTM_Pc%Tac and Tbc, instead of Ctrl%Ind%Ny.
-!       Changed declaration of SAD_Chan to size Ctrl%Ind%Ny, not SPixel%Ind%Ny.
-!       (Allows use of SPixel%Ind%ThermalFirst etc to select out channel ranges).
-!       Changed declaration of CRP, dCRP to size Ctrl%Ind%Ny, not SPixel%Ind%Ny.
-!    11th Apr 2001, Andy Smith:
-!       f0 argument no longer required. Now part of SPixel.
-!     4th May 2011, Andy Smith:
-!       Extension to multiple instrument views. Values depending on viewing
-!       geometry are now arrays (no of views).
-!       Added SetGZero argument for no of channels, needed for array sizing.
-!       In test for daytime/night conditions, add array index to Solzen. Assume
-!       that the same illumination applies to all instrument views in a given
-!       pixel, so we only need to test one element of the array.
-!    19th May 2011, Andy Smith:
-!       Multiple instrument views, part 2.
-!       In twilight and night conditions the last element of dY_dX for each
-!       channel can be NaN or some large value. Try initializing. It is not
-!       clear why this has arisen now, but uninitialized values can be dangerous
-!       anyway.
-!    5th Sep 2011, Chris Arnold:
-!       Now calls either linear *or* cubic-spline based RTM interpolation
-!       schemes depending on RTMIntflag
-!   13th Dec 2011, C Poulsen: Deallocated GZero array at end of routine
-!   24th Jan 2012, C Poulsen: Changed array input into FM_Thermal and FM_Solar
-!      to avoid no contiguous arrays.
-!   15th Jun 2012, C Poulsen: Changed the way day was defined to use illum value
-!   20120814, MJ: Removes bug in GZero allocation that made ORAC crash.
-!   20120817, MJ: Fixed bug uninitialized variables which cause NaN crash.
-!   20121024, CP: Notice a lot of this routine was modified without commenting
-!      here!
-!   20121024, CP: Removed hardwiring of variable indices as this caused a
-!      segmentation fault as there were in fact 3 solar channels
-!   20120920, CP: Assigned Y to explicit sizeY(1:SPixel%Ind%Ny) =
-!      BT(1:SPixel%Ind%Ny)
-!   2013XXXX, MJ: Makes some changes to merge code versions
-!   20131125, MJ: Dynamically sets upper limit for CTP to highest pressure in
-!      profile to avoid extrapolation problems.
-!   20131206, MJ: Add deallocation statements to fix memory leaks.
-!   20140115, GM: Ctrl%Invpar%XULim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np), from
-!      20131125 should be SPixel%XULim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np) but
-!      it would also be clearer to move it just out of FM() to just after
-!      Set_Limits() is called which is what was done here.
-!   20140117, MJ: Comments out usage of  some temp_* variables as they appear to
-!      be unnecessary.
-!   20140119, GM: Cleaned up code.
-!   20140522, GM: Use allocate and deallocate subroutines for GZero.
-!   20140528, GM: The sharing of CRP results for mixed channels from FMThermal
-!      with FMSolar was causing problems that were hard to debug and gained
-!      little in performance.  Now the Solar and Thermal forward model calls are
-!      independent so that contents of CRP and d_CRP do not need to be passed
-!      from the thermal call to the solar call.
-!   20140715, CP: Changed illumination logic.
-!   20141201, CP: Added in cloud albedo.
-!   20150107, AP: Eliminate write to RTM_Pc%Tac, Tbc. Now within models.
-!   20150112, CP: Bugfix to cloud albedo.
-!   20150112, AP: Replacing First:Last channel indexing with generic, array-based
-!      indexing.
-!   20150121, AP: Finishing the previous commit.
-!   20150130, GM: Fixed a bug in the recent channel indexing changes.
-!
-! Bugs:
-!   None known.
+! 2001/02/02, KS: original version (draft)
+! 2001/03/02, AS: Updates to draft.
+! 2001/03/07, AS: New arrays in RTM_Pc for overall dTac_dPc and dTbc_dPc.
+!    Adding breakpoint outputs.
+! 2001/03/08, AS: dB_dTs no longer required as an argument to FM_Thermal.
+! 2001/03/15, AS: Added ThF and ThL indices for RTM_Pc%LW arrays. Required
+!    because these arrays are allocated to match the no. of thermal channels 
+!    requested, but in twilight not all of the requested thermal channels may be
+!    used. Moved InterpolSolar call into the "daytime" section. Not required in 
+!    twilight or nighttime conditions. Breakpoint SAD_Chan%Desc indexing changed:
+!    failed for night-time conditions (needs checking) Using 
+!    SPixel%Ind%ThermalLast as the end of the channel range for RTM_Pc%Tac and 
+!    Tbc, instead of Ctrl%Ind%Ny. Changed declaration of SAD_Chan to size 
+!    Ctrl%Ind%Ny, not SPixel%Ind%Ny. (Allows use of SPixel%Ind%ThermalFirst etc
+!    to select out channel ranges). Changed declaration of CRP, dCRP to size 
+!    Ctrl%Ind%Ny, not SPixel%Ind%Ny.
+! 2001/04/11, AS: f0 argument no longer required. Now part of SPixel.
+! 2011/05/04, AS: Extension to multiple instrument views. Values depending on 
+!    requested, but in twilight not all of the requested thermal channels may be
+!    viewing  geometry are now arrays (no of views). Added SetGZero argument for
+!    no of channels, needed for array sizing. In test for daytime/night 
+!    conditions, add array index to Solzen. Assume that the same illumination 
+!    applies to all instrument views in a given pixel, so we only need to test 
+!    one element of the array.
+! 2011/05/19, AS: Multiple instrument views, part 2. In twilight and night 
+!    conditions the last element of dY_dX for each channel can be NaN or some 
+!    large value. Try initializing. It is not  clear why this has arisen now, 
+!    but uninitialized values can be dangerous anyway.
+! 2011/09/05, CA: Now calls either linear *or* cubic-spline based RTM 
+!    interpolation  schemes depending on RTMIntflag
+! 2011/12/13, CP: Deallocated GZero array at end of routine
+! 2012/01/14, CP: Changed array input into FM_Thermal and FM_Solar
+!    to avoid no contiguous arrays.
+! 2012/06/15, CP: Changed the way day was defined to use illum value
+! 2012/08/14, MJ: Removes bug in GZero allocation that made ORAC crash.
+! 2012/08/17, MJ: Fixed bug uninitialized variables which cause NaN crash.
+! 2012/10/24, CP: Notice a lot of this routine was modified without commenting
+!    here!
+! 2012/10/24, CP: Removed hardwiring of variable indices as this caused a
+!    segmentation fault as there were in fact 3 solar channels
+! 2012/09/20, CP: Assigned Y to explicit sizeY(1:SPixel%Ind%Ny) =
+!    BT(1:SPixel%Ind%Ny)
+! 2013/05/08, MJ: Makes some changes to merge code versions
+! 2013/11/25, MJ: Dynamically sets upper limit for CTP to highest pressure in
+!    profile to avoid extrapolation problems.
+! 2013/12/06, MJ: Add deallocation statements to fix memory leaks.
+! 2014/01/15, GM: Ctrl%Invpar%XULim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np), from
+!    20131125 should be SPixel%XULim(3)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np) but
+!    it would also be clearer to move it just out of FM() to just after
+!    Set_Limits() is called which is what was done here.
+! 2014/01/17, MJ: Comments out usage of  some temp_* variables as they appear to
+!    be unnecessary.
+! 2014/01/19, GM: Cleaned up code.
+! 2014/05/22, GM: Use allocate and deallocate subroutines for GZero.
+! 2014/05/28, GM: The sharing of CRP results for mixed channels from FMThermal
+!    with FMSolar was causing problems that were hard to debug and gained
+!    little in performance.  Now the Solar and Thermal forward model calls are
+!    independent so that contents of CRP and d_CRP do not need to be passed
+!    from the thermal call to the solar call.
+! 2014/07/15, CP: Changed illumination logic.
+! 2014/12/01, CP: Added in cloud albedo.
+! 2015/01/07, AP: Eliminate write to RTM_Pc%Tac, Tbc. Now within models.
+! 2015/01/12, CP: Bugfix to cloud albedo.
+! 2015/01/12, AP: Replacing First:Last channel indexing with generic, array-based
+!    indexing.
+! 2015/01/21, AP: Finishing the previous commit.
+! 2015/01/30, GM: Fixed a bug in the recent channel indexing changes.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &

@@ -1,27 +1,22 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    sigtrap
+! Name: sigtrap.F90
 !
 ! Purpose:
-!    ECMWF signal trapping part
+! ECMWF signal trapping part
+!
+! Description and Algorithm details:
+! Use signal_trap function to fetch error code.
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! N/A
 !
 ! History:
-!    13th Jul 2012, Matthias Jerg: Original version
-!
-! Bugs:
-!   None known.
+! 2012/07/13, MJ: Original version
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 integer*4 core_dump_flag,ireturn,signals(1),signal_trap

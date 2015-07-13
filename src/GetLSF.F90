@@ -1,34 +1,33 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_LSF
+! Name: GetLSF.F90
 !
 ! Purpose:
-!    Sets the land sea flag if no visible channels are present
+! Sets the land sea flag if no visible channels are present
+!
+! Description and Algorithm details:
 !
 ! Arguments:
-!    Name     Type         In/Out/Both Description
-!    Ctrl     struct       In          Control structure
-!    SAD_Chan struct       In          SAD channel structure
-!    SPixel   alloc struct Both        Super-pixel structure
-!    MSI_Data struct       In          Data structure. Contains the multi-
-!                                      spectral image measurements, location
-!                                      values, geometry etc for the current
-!                                      image segment, from which the current
-!                                      SPixel values will be extracted.
-!    status   integer      Out         Error status
-!
-! Algorithm:
+! Name     Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct       In          Control structure
+! SAD_Chan struct       In          SAD channel structure
+! SPixel   alloc struct Both        Super-pixel structure
+! MSI_Data struct       In          Data structure. Contains the multi-
+!                                   spectral image measurements, location
+!                                   values, geometry etc for the current
+!                                   image segment, from which the current
+!                                   SPixel values will be extracted.
+! status   integer      Out         Error status
 !
 ! History:
-!    08/02/2012, Caroline Poulsen: Original version
-!    30/07/2014, Greg McGarragh: Cleaned up the code.
-!    30/01/2015, Adam Povey: Replace YSeg0 with Y0 as superpixeling removed.
-!
-! Bugs:
-!   None known.
+! 2012/02/08, CP: Original version
+! 2014/07/30, GM: Cleaned up the code.
+! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)

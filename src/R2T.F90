@@ -1,49 +1,41 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    R2T
+! Name: R2T.F90
 !
 ! Purpose:
-!    Converts radiances to brightness temperatures.
+! Converts radiances to brightness temperatures.
+!
+! Description and Algorithm details:
+! Calculate temperatures from radiances
+! Calculate change in temperature w.r.t. radiance (for each channel)
 !
 ! Arguments:
-!    Name     Type       In/Out/Both Description
-!    NChan    int        In          Number of required channels
-!    SAD_Chan struct     In          SAD channel structure
-!    R        real array In          Radiances
-!    T        real array Out         Temperatures
-!    d_T_d_R  real array Out         Gradients in temperature w.r.t. radiance
-!    status   int        Out         Error status
-!
-! Algorithm:
-!    Calculate temperatures from radiances
-!    Calculate change in temperature w.r.t. radiance (for each channel)
-!
-! Local variables:
-!    Name Type Description
+! Name     Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! NChan    int        In          Number of required channels
+! SAD_Chan struct     In          SAD channel structure
+! R        real array In          Radiances
+! T        real array Out         Temperatures
+! d_T_d_R  real array Out         Gradients in temperature w.r.t. radiance
+! status   int        Out         Error status
 !
 ! History:
-!    22nd Nov 2000, Kevin M. Smith: Original version
-!    24th Nov 2000, Kevin M. Smith:
-!       Modified to be more general and pass back d_T_d_R instead of d_BT.
-!       Removed log10 error checking
-!     5th Feb 2001, Kevin M. Smith:
-!       Removed Ctrl from argument list.
-!       Added NChan (number of required channels). This was done to enable R2T
-!       to be called from FM for the mixed channel calculations.
-!    27th Feb 2001, Andy Smith:
-!       Bug fix: Following previous change, SAD_Chan needs an array index when
-!       used: SAD_Chan(:)%X, not SAD_Chan%X
-!    25th Nov 2013, Matthias Jerg:
-!       Fixed division by zero in log by simple workaround. Should possibly
-!       avoided altogether.
-!     4th Aug 2014, Greg McGarragh: Cleaned up the code.
-!    24th Oct 2014, Oliver Sus: Avoid division by zero.
-!
-! Bugs:
-!   None known.
+! 2000/11/22, KS: Original version
+! 2000/11/24, KS: Modified to be more general and pass back d_T_d_R instead of 
+!    d_BT. Removed log10 error checking
+! 2001/02/05, KS: Removed Ctrl from argument list. Added NChan (number of 
+!    required channels). This was done to enable R2T to be called from FM for 
+!    the mixed channel calculations.
+! 2001/02/27, AS: Bug fix: Following previous change, SAD_Chan needs an array 
+!    index when used: SAD_Chan(:)%X, not SAD_Chan%X
+! 2013/11/25, MJ: Fixed division by zero in log by simple workaround. Should 
+!    possibly avoided altogether.
+! 2014/08/04, GM: Cleaned up the code.
+! 2014/10/24, OS: Avoid division by zero.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)

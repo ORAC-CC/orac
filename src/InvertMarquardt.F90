@@ -1,216 +1,195 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Invert_Marquardt
+! Name: InvertMarquardt.F90
 !
-! Description:
-!    Find the "best" fitting state vector for a set of measurements in the ECP.
+! Purpose:
+! Find the "best" fitting state vector for a set of measurements in the ECP.
 !
-!    Uses a Marquardt descent algorithm to find a state vector that gives a good
-!    match to the measurements (Y values across all selected channels) for a
-!    particular image super-pixel.
+! Description and Algorithm details:
+! Uses a Marquardt descent algorithm to find a state vector that gives a good
+! match to the measurements (Y values across all selected channels) for a
+! particular image super-pixel.
 !
-!    The best fit is identified by minimising the "cost".
-
-!    The full cost function J is defined as:
-!      J(x) = (y(x) - ym) * inverse(Sy) * transpose(y(x) - ym) +
-!               (x - xb)  * inverse(Sx) * transpose(x - xb) +
-!               (bt - b)  * inverse(Sb) * transpose(bt - b)
+! The best fit is identified by minimising the "cost".
 !
-!    J is minimised with respect to x, hence the third component (the model
-!    parameter vector b) is omitted from this routine.
+! The full cost function J is defined as:
+!   J(x) = (y(x) - ym) * inverse(Sy) * transpose(y(x) - ym) +
+!            (x - xb)  * inverse(Sx) * transpose(x - xb) +
+!            (bt - b)  * inverse(Sb) * transpose(bt - b)
+! J is minimised with respect to x, hence the third component (the model
+! parameter vector b) is omitted from this routine.
+!
+! The state vector X is set to some initial (first guess) values X0, and the
+! forward model FM is run to calculate Y(X0).  Y(X0) is compared with the
+! measured Y to give the initial "cost", J0
+!
+! Set Xn = X0
+!
+! until (convergence) or (number of phase changes > max allowed):
+!    calculate 1st and 2nd derivatives of J
+!    set starting Marquardt parameters (starts with heaviest weighting on
+!       steepest descent)
+!    calculate step dX
+!
+!    for a number of iterations (up to a maximum or until convergence is
+!    reached)
+!       set new X = Xn + dX
+!       Check bounds: if any variable in X reaches a limit it is fixed at
+!          that limit
+!       if the change in X constitutes a phase change, i.e. Re crosses some
+!          limit, drop out of the iteration loop
+!
+!       call FM to give Y(X), K(X)
+!
+!       calculate J(X)
+!       if (J(X) < J0)    (i.e. "good" step)
+!          set Xn = X     (i.e. old Xn + dX)
+!          Convergence? if (J - J0) < (limit from Ctrl struct)
+!             convergence: drop out of both loops
+!          else
+!             decrease steepest descent
+!             calculate new 1st and 2nd derivatives of J
+!             save current J as J0 for checking next iteration
+!       else ("bad" step, don't keep X)
+!          increase weighting on steepest descent for next iteration
+!
+!       set new dX for next iteration
+!    end of iteration loop
+!
+!    if (phase change occurred) ! phase change removed Mar 2011
+!       Set limits for new phase
+!       call FM to give Y in new state
+!       re-calculate starting cost J0
+!
+! (end of "until" loop above)
+!
+! Error analysis:
+!    Calculate the two terms contributing to the overall retrieval error Sn:
+!       Sn = St + Ss
+!       St is the inverse Hessian (d2J_dX2) for the active state variables
+!       Ss is the state expected error from model parameter noise (inactive
+!          state variables and surface reflectance Rs - no other parameters
+!          available at present).  Ss depends whether there are inactive
+!          state variables for the SPixel and whether Equivalent Model
+!          Parameter Noise from Rs is selected.
+!
+! Set diagnostics for output
+!
+! Note, for output, costs are divided by Ny for the SPixel. Hence convergence
+! criteria on delta_J are multiplied up by Ny for the inversion.  Otherwise,
+! if cost was divide by Ny at each iteration this would add more processing
+! per step and would need to be taken into account in the derivatives of J as
+! well as J. Costs in Breakpoint output are also divided by Ny during
+! inversion; gives consistency with the final outputs for ease of comparison
+! and the impact on performance should not be a problem since breakpoints
+! will only be used during debugging.
+!
+! Note on error handling: checking is done after each subroutine call. Errors
+! in the inversion should be treated as fatal for the super-pixel rather than
+! the program as a whole. Local variable stat is used instead of status for
+! flagging such errors. Status is used to flag serious errors such as
+! breakpoint file open failure.
+!
+! N.B. the value returned by routines called from this routine is held in
+! stat rather than status. It is assumed that these routines only flag
+! inversion type errors: this is not a very good assumption (file open errors
+! etc could occur in these routines, these errors will be logged but the
+! program won't exit as a result of them).
+!
+! If a non-zero status occurs during an inversion, the Diag%QC flag is set to
+! indicate non-convergence. In order to do this the convergence logical is
+! set false, retrieved state and errors are set to missing and Set_Diag is
+! called regardless of whether errors have occurred.
 !
 ! Arguments:
-!    Name     Type    In/Out/Both Description
-!    Ctrl     struct  In          Control structure, contains Marquardt
-!                                 parameters, scaling factors etc.
-!    SPixel   struct  Both        Super pixel data. Contains current
-!                                 measurements, active state variables, first
-!                                 guess and a priori info.
-!    SAD_Chan array   In          Measurement channel characteristics
-!             of structs
-!    SAD_LUT  struct  In          Cloud radiative property look up tables.
-!    RTM_Pc   struct  In          Radiative transfer model data interpolated to
-!                                 the current cloud pressure Pc.
-!    status   integer Both        ECP status/error flag.
-!
-! Algorithm:
-!    The state vector X is set to some initial (first guess) values X0, and the
-!    forward model FM is run to calculate Y(X0).  Y(X0) is compared with the
-!    measured Y to give the initial "cost", J0
-!
-!    Set Xn = X0
-!
-!    until (convergence) or (number of phase changes > max allowed):
-!       calculate 1st and 2nd derivatives of J
-!       set starting Marquardt parameters (starts with heaviest weighting on
-!          steepest descent)
-!       calculate step dX
-!
-!       for a number of iterations (up to a maximum or until convergence is
-!       reached)
-!          set new X = Xn + dX
-!          Check bounds: if any variable in X reaches a limit it is fixed at
-!             that limit
-!          if the change in X constitutes a phase change, i.e. Re crosses some
-!             limit, drop out of the iteration loop
-!
-!          call FM to give Y(X), K(X)
-!
-!          calculate J(X)
-!          if (J(X) < J0)    (i.e. "good" step)
-!             set Xn = X     (i.e. old Xn + dX)
-!             Convergence? if (J - J0) < (limit from Ctrl struct)
-!                convergence: drop out of both loops
-!             else
-!                decrease steepest descent
-!                calculate new 1st and 2nd derivatives of J
-!                save current J as J0 for checking next iteration
-!          else ("bad" step, don't keep X)
-!             increase weighting on steepest descent for next iteration
-!
-!          set new dX for next iteration
-!       end of iteration loop
-!
-!       if (phase change occurred) ! phase change removed Mar 2011
-!          Set limits for new phase
-!          call FM to give Y in new state
-!          re-calculate starting cost J0
-!
-!    (end of "until" loop above)
-!
-!    Error analysis:
-!       Calculate the two terms contributing to the overall retrieval error Sn:
-!          Sn = St + Ss
-!          St is the inverse Hessian (d2J_dX2) for the active state variables
-!          Ss is the state expected error from model parameter noise (inactive
-!             state variables and surface reflectance Rs - no other parameters
-!             available at present).  Ss depends whether there are inactive
-!             state variables for the SPixel and whether Equivalent Model
-!             Parameter Noise from Rs is selected.
-!
-!    Set diagnostics for output
-!
-!    Note, for output, costs are divided by Ny for the SPixel. Hence convergence
-!    criteria on delta_J are multiplied up by Ny for the inversion.  Otherwise,
-!    if cost was divide by Ny at each iteration this would add more processing
-!    per step and would need to be taken into account in the derivatives of J as
-!    well as J. Costs in Breakpoint output are also divided by Ny during
-!    inversion; gives consistency with the final outputs for ease of comparison
-!    and the impact on performance should not be a problem since breakpoints
-!    will only be used during debugging.
-!
-!    Note on error handling: checking is done after each subroutine call. Errors
-!    in the inversion should be treated as fatal for the super-pixel rather than
-!    the program as a whole. Local variable stat is used instead of status for
-!    flagging such errors. Status is used to flag serious errors such as
-!    breakpoint file open failure.
-!
-!    N.B. the value returned by routines called from this routine is held in
-!    stat rather than status. It is assumed that these routines only flag
-!    inversion type errors: this is not a very good assumption (file open errors
-!    etc could occur in these routines, these errors will be logged but the
-!    program won't exit as a result of them).
-!
-!    If a non-zero status occurs during an inversion, the Diag%QC flag is set to
-!    indicate non-convergence. In order to do this the convergence logical is
-!    set false, retrieved state and errors are set to missing and Set_Diag is
-!    called regardless of whether errors have occurred.
-!
-! Local variables:
-!    Name Type Description
-!    Do we really need a list here that is the same as the "Local variable
-!    declarations" section below, descriptions and all, and is subject to rot
-!    unlike the declaration section below.
+! Name     Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct  In          Control structure, contains Marquardt
+!                              parameters, scaling factors etc.
+! SPixel   struct  Both        Super pixel data. Contains current
+!                              measurements, active state variables, first
+!                              guess and a priori info.
+! SAD_Chan array   In          Measurement channel characteristics
+!          of structs
+! SAD_LUT  struct  In          Cloud radiative property look up tables.
+! RTM_Pc   struct  In          Radiative transfer model data interpolated to
+!                              the current cloud pressure Pc.
+! Diag     struct  In          Diagonstic structure
+! status   integer Both        ECP status/error flag.
 !
 ! History:
-!     5th Apr 2001, Andy Smith: original version
-!    12th Jun 2001, Andy Smith:
-!       First complete version. Compiles but not fully debugged.
-!    29th Jun 2001, Andy Smith:
-!       Passes simple tests. Added breakpoint outputs. Found a problem with
-!       handling of phase changes (checking into RCS before attempting fix).
-!    29th Jun 2001, Andy Smith:
-!       Phase change section updated. Added Diag structure as output.
-!       Added error analysis (in Diag setting).
-!    12th Oct 2001, Andy Smith:
-!       Costs are now divided by SPixel%Ny for output. Allows better comparison
-!       between SPixels (since Ny may vary). Since costs are not divided during
-!       calculation for each iteration, the convergence criteria are multiplied
-!       by Ny to compensate. Notes added in code and Algorithm section.
-!       Also added brief description of error analysis to Algorithm section.
+! 2001/04/05, AS: original version
+! 2001/06/12, AS: First complete version. Compiles but not fully debugged.
+! 2001/06/29, AS: Passes simple tests. Added breakpoint outputs. Found a problem
+!    with handling of phase changes (checking into RCS before attempting fix).
+! 2001/06/29, AS: Phase change section updated. Added Diag structure as output.
+!    Added error analysis (in Diag setting).
+! 2001/10/12, AS: Costs are now divided by SPixel%Ny for output. Allows better 
+!    comparison between SPixels (since Ny may vary). Since costs are not divided
+!    during calculation for each iteration, the convergence criteria are 
+!    multiplied by Ny to compensate. Notes added in code and Algorithm section.
+!    Also added brief description of error analysis to Algorithm section.
 !    **************** ECV work starts here *************************************
-!    22nd Feb 2011, Andy Smith:
-!       Re-applying changes made in late 2001/2002.
-!     5th Dec 2001, Andy Smith:
-!       Introduced error checking throughout. See comments above for details of
-!       the scheme implemented.
-!    21st Dec 2001, Andy Smith:
-!       Changing use of iteration counter so that only "good" steps are counted
-!       as "iterations" (experimentally). The number of steps is still checked
-!       against the Max allowed no. of iterations at present.
-!       (Subsequently removed, so ignored for 2011 update).
-!    24th Feb 2011, Andy Smith:
-!       stat now initialised (was done in ORAC code somewhere along the way).
-!    17th Mar 2011, Andy Smith:
-!       Removal of phase change. Code commented out for now, prior to eventual
-!       removal.
-!       SAD_LUT dimension reduced to 1, since only 1 cloud class in use.
-!    22nd Mar 2011, Andy Smith:
-!       Removal of phase change, phase 2. SAD_CloudClass now has 1 dimension
-!       rather than N cloud classes, SAD_LUT also 1 since only 1 phase/cloud
-!       class is used for the whole retrieval.
-!     6th Apr 2011, Andy Smith:
-!       Removal of redundant selection methods SAD and SDAD for limits checking.
-!       SADCloudClass argument to Set_Limits no longer required.
-!       SADCloudClass argument to this function InvertMarquardt also redundant.
-!       Mopping up from removal of phase change. Removed setting of SPixel%FGPhase
-!       as it is redundant.
-!     8th Jun 2011, Andy Smith:
-!       Removed logging of errors from Invert_Cholesky and related functions, to
-!       prevent text file output slowing down execution (use ifdef DEBUG).
-!
-!     8th Aug 2011, Caroline Poulsen: remove ref to cloud class
-!     3rd Oct 2011, Caroline Poulsen: fixed debug syntax error
-!    18th Oct 2011, Caroline Poulsen: added lat/lon info to bkp output
-!    13th Dec 2011, Caroline Poulsen: change format statement to make g95
-!       compatible
-!    19th Jan 2012, Caroline Poulsen: stored first guess measurement
-!    19th Jan 2012, Caroline Poulsen: add variable  minusdJ_dX=-dJ_dX
-!    19th Jan 2012, Caroline Poulsen: changed calls to Invert_cholesky
-!    24th feb 2012, Caroline Poulsen: changed error_matrix call to
-!       Invert_cholesky
-!    10th Aug 2012, Caroline Poulsen: defined measurement arrays more explicitly
-!       other wise crashed for night measurements
-!    14th Sep 2012, Caroline Poulsen: bug fix defined Diag%ss to size of nx
-!       elements (was ny) initialised Y
-!     2nd Oct 2012, Caroline Poulsen: initialised variables bug fix defined
-!       Diag%ss changed how SPixel%sn calculated
-!     8th May 2013, Caroline Poulsen: set Diag%Y0
-!    15th Jan 2014, Greg McGarragh: Changed Invert_Cholesky() argument Diag%St
-!       to Diag%St(1:SPixel%Nx, 1:SPixel%Nx) when inverting d2J_dX2 to get
-!       Diag%St. Using just Diag%St results in use of garbage when there are
-!       inactive state variables.
-!    15th Jan 2014, Greg McGarragh: Corrected the dimensions of the assignment
-!       for the calculation of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny)
-!       to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
-!    15th Jan 2014, Greg McGarragh: Set values of J, Jm, and Ja to MissingSn
-!       in the case of failed retrievals as is done with the other values in Diag.
-!    15th Jan 2014, Greg McGarragh: Moved dynamic setting of the upper limit
-!       for CTP to the highest pressure in the profile from FM() to this routine.
-!    17th Jan 2014, Greg McGarragh: Cleaned up code.
-!    2014/01/29, MJ: Fixed case where alpha can get out of bounds.
-!    2014/02/27, CP: Added declaration of J.
-!    2014/04/02, CP: Fixed bug where temp was not reassigned.
-!    2014/04/02, MJ: Fixed bug where Diag%ss was not initialized.
-!    2014/07/24, AP: Removed unused status variable.
-!    2014/07/24, CP: Added in cloud albedo
-!    2015/01/09, AP: Patch memory leak with cloud_albedo.
-!
-! Bugs:
-!    None known.
+! 2011/02/22, AS: Re-applying changes made in late 2001/2002.
+! 2001/12/05, AS: Introduced error checking throughout. See comments above for 
+!    details of the scheme implemented.
+! 2011/12/21, AS: Changing use of iteration counter so that only "good" steps 
+!    are counted as "iterations" (experimentally). The number of steps is still 
+!    checked against the Max allowed no. of iterations at present. (Subsequently
+!    removed, so ignored for 2011 update).
+! 2011/02/24, AS: stat now initialised (was done in ORAC code somewhere along
+!    the way).
+! 2011/03/17, AS: Removal of phase change. Code commented out for now, prior to
+!    eventual removal. SAD_LUT dimension reduced to 1, since only 1 cloud class
+!    in use.
+! 2011/03/22, AS: Removal of phase change, phase 2. SAD_CloudClass now has 1 
+!    dimension rather than N cloud classes, SAD_LUT also 1 since only 1 
+!    phase/cloud class is used for the whole retrieval.
+! 2011/04/06, AS: Removal of redundant selection methods SAD and SDAD for limits
+!    checking. SADCloudClass argument to Set_Limits no longer required.
+!    SADCloudClass argument to this function InvertMarquardt also redundant. 
+!    Mopping up from removal of phase change. Removed setting of SPixel%FGPhase
+!    as it is redundant.
+! 2011/06/08, AS: Removed logging of errors from Invert_Cholesky and related
+!    functions, to prevent text file output slowing down execution (use
+!    ifdef DEBUG).
+! 2011/08/08, CP: remove ref to cloud class
+! 2011/10/03, CP: fixed debug syntax error
+! 2011/10/18, CP: added lat/lon info to bkp output
+! 2011/12/13, CP: change format statement to make g95 compatible
+! 2012/01/19, CP: stored first guess measurement. add variable minusdJ_dX=-dJ_dX.
+!    changed calls to Invert_cholesky
+! 2012/02/24, CP: changed error_matrix call to Invert_cholesky
+! 2012/08/10, CP: defined measurement arrays more explicitly
+!    other wise crashed for night measurements
+! 2012/09/14, CP: bug fix defined Diag%ss to size of nx elements (was ny) 
+!    initialised Y
+! 2012/10/02, CP: initialised variables bug fix defined Diag%ss changed how
+!    SPixel%sn calculated
+! 2013/05/08, CP: set Diag%Y0
+! 2014/01/15, GM: Changed Invert_Cholesky() argument Diag%St
+!    to Diag%St(1:SPixel%Nx, 1:SPixel%Nx) when inverting d2J_dX2 to get
+!    Diag%St. Using just Diag%St results in use of garbage when there are
+!    inactive state variables.
+! 2014/01/15, GM: Corrected the dimensions of the assignment
+!    for the calculation of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny)
+!    to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
+! 2014/01/15, GM: Set values of J, Jm, and Ja to MissingSn in the case 
+!    of failed retrievals as is done with the other values in Diag.
+! 2014/01/15, GM: Moved dynamic setting of the upper limit
+!    for CTP to the highest pressure in the profile from FM() to this routine.
+! 2014/01/17, GM: Cleaned up code.
+! 2014/01/29, MJ: Fixed case where alpha can get out of bounds.
+! 2014/02/27, CP: Added declaration of J.
+! 2014/04/02, CP: Fixed bug where temp was not reassigned.
+! 2014/04/02, MJ: Fixed bug where Diag%ss was not initialized.
+! 2014/07/24, AP: Removed unused status variable.
+! 2014/07/24, CP: Added in cloud albedo
+! 2015/01/09, AP: Patch memory leak with cloud_albedo.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, status)

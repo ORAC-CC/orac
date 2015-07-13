@@ -1,50 +1,29 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    GZero
+! Name: GZero.F90
 !
-! Description:
-!    Defines a structure used to hold information about the nearest neighbour
-!    grid point array indices when interpolating Look-Up Tables in the ECP.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
+! Purpose:
+! Defines GZero_def module used to hold information about the nearest neighbour
+! grid point array indices when interpolating Look-Up Tables in the ECP.
 !
 ! History:
-!     4th Oct 2000, Andy Smith : original version
-!    16th Nov 2000, Andy Smith :
-!       Added dX and X1 values as these are used by several routines for each
-!       value of Tau, Re etc and it's easier to calculate them once only.
-!     1st Dec 2000, Andy Smith :
-!       Renamed Sun Zen values to Sol Zen (iSuZ to iSoZ etc)
-!     4th May 2011, Andy Smith:
-!       Extension to multiple instrument views. Values depending on viewing
-!       geometry are now arrays (no of views).
-!     5th Sep 2011, Chris Arnold:
-!       Included next-nearest neighbours in Tau/Re for new interpolation
-!       routines
-!     3rd Dec 2013, MJ:
-!       Makes LUTs more flexible wrt channel and properties.
-!    20th Dec 2014, Greg McGarragh:
-!       Cleaned up code.
-!    22nd May 2014, Greg McGarragh:
-!       Add allocate and deallocate subroutines.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!    19th Jan 2015, Greg McGarragh:
-!       Put SetGZero.F90 into this module.
-!
-! Bugs:
-!    None known.
+! 2000/10/04, AS: original version
+! 2000/11/16, AS: Added dX and X1 values as these are used by several routines
+!    for each value of Tau, Re etc and it's easier to calculate them once only.
+! 2000/12/01, AS: Renamed Sun Zen values to Sol Zen (iSuZ to iSoZ etc)
+! 2011/05/04, AS: Extension to multiple instrument views. Values depending on
+!    viewing geometry are now arrays (no of views).
+! 2011/09/05, CA: Included next-nearest neighbours in Tau/Re for new
+!    interpolation routines
+! 2013/12/03, MJ: Makes LUTs more flexible wrt channel and properties.
+! 2014/12/20, GM: Cleaned up code.
+! 2014/05/22, GM: Add allocate and deallocate subroutines.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2015/01/19, GM: Put SetGZero.F90 into this module.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module GZero_def

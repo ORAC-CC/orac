@@ -1,32 +1,17 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Int_Routines_def
+! Name: IntRoutines.F90
 !
 ! Purpose:
-!
-! Description:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Module of interpolation routines.
 !
 ! History:
-!    23rd May 2014, Greg McGarragh: Original version.
-!    19th Jan 2015, Greg McGarragh:
-!       Put polint.F90 into this module.
-!
-! Bugs:
-!    None known.
+! 2014/05/23, GM: Original version.
+! 2015/01/19, GM: Put polint.F90 into this module.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !---------------------------------------------------------------------
 
 module Int_Routines_def
@@ -45,31 +30,29 @@ include 'polint.F90'
 
 
 !---------------------------------------------------------------------
-! Name:
-!    find_in_array
+! Name: find_in_array
 !
 ! Purpose:
-!    Returns the index of an input array at which a given value can be found.
-!    Useful for converting array subscripts from one basis to another.
+! Returns the index of an input array at which a given value can be found.
+! Useful for converting array subscripts from one basis to another.
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!    arr  int  In          Array to be searched
-!    val  int  In          Value to be found in array
-!
-! Return value:
-!    The index of arr which first equals val. If none is found, 0 is returned.
+! Name          Type In/Out/Both Description
+! ------------------------------------------------------------------------------
+! arr           int  In          Array to be searched
+! val           int  In          Value to be found in array
+! find_in_array int  Out         The index of arr which first equals val.
+!                                If none is found, 0 is returned.
 !
 ! Algorithm:
-!    Done by brute force following
-!    www.shocksolution.com/2011/03/finding-value-in-unordered-fortran-array/
+! Done by brute force following
+! www.shocksolution.com/2011/03/finding-value-in-unordered-fortran-array/
 !
 ! History:
-!    12 Jan 2015, AP: Original version.
+! 2015/01/12, AP: Original version.
 !
 ! Bugs
-!    None known.
-!
+! None known.
 !---------------------------------------------------------------------
 function find_in_array(arr, val) result(i)
    implicit none

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name:
+! Name: testInterp.F90
 !
 ! Purpose:
 !
@@ -8,15 +8,12 @@
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-! Local variables:
-! Name Type Description
-!
 ! History:
 !
 ! $Id$
 !
 ! Bugs:
-!
+! None known.
 !-------------------------------------------------------------------------------
 
 program testInterp

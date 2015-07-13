@@ -1,54 +1,44 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Set_Limits
+! Name: SetLimits.F90
 !
-! Description:
-!    Sets up arrays of upper and lower limits on the state vector for bounds
-!    checking in Invert_Marquardt.
+! Purpose:
+! Sets up arrays of upper and lower limits on the state vector for bounds
+! checking in Invert_Marquardt.
+!
+! Description and Algorithm details:
+! For surface temperature Ts, set the limits using the a priori and errors
+! - the allowed range is the AP +/- 3 * the AP error
+! This keeps the value within 3 standard deviations and prevents Ts from
+! going into a non-linear part of the Planck function curve, which can lead
+! to negative radiance values in FM calculations.
+!
+! MDAD and AUX methods are not supported in this implementation.
 !
 ! Arguments:
-!    Name   Type   In/Out/Both Description
-!    Ctrl   struct In          ECP control structure (source of limit values
-!                              in the Ctrl case).
-!    SPixel struct Both        Super-pixel structure (contains the limits arrays
-!                              to be set, plus phase and current cloud class)
-!    status int    Out         ECP program status value.
-!
-! Algorithm:
-!    Set the SPixel upper and lower limit arrays using limits from Ctrl
-!
-!    For surface temperature Ts, set the limits using the a priori and errors
-!    - the allowed range is the AP +/- 3 * the AP error
-!    This keeps the value within 3 standard deviations and prevents Ts from
-!    going into a non-linear part of the Planck function curve, which can lead
-!    to negative radiance values in FM calculations.
-!
-!    MDAD and AUX methods are not supported in this implementation.
-!
-! Local variables:
-!    Name Type Description
+! Name   Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl   struct In          ECP control structure (source of limit values
+!                           in the Ctrl case).
+! SPixel struct Both        Super-pixel structure (contains the limits arrays
+!                           to be set, plus phase and current cloud class)
+! status int    Out         ECP program status value.
 !
 ! History:
-!    25th Apr 2001, Andy Smith : Original version
-!    24th Jul 2001, Andy Smith :
-!       Ts limits are now set dynamically using the a priori information.
-!    16th Aug 2001, Andy Smith:
-!       Bug fix in Ts limit setting: now SUBTRACTS delta_Ts to get lower limit
-!       and ADDs to get the upper limit, rather than vice versa.
-!    22nd Mar 2011, Andy Smith:
-!       Removal of phase change, phase 2. SAD_CloudClass now has 1 dimension
-!       rather than N cloud classes.
-!     5th Apr 2011, Andy Smith:
-!       Removed selection methods SAD and SDAD.
-!       SAD_CloudClass argument no longer required.
-!    21th May 2014, Greg McGarragh:
-!       Cleaned up the code.
-!
-! Bugs:
-!    None known.
+! 2001/04/25, AS: Original version
+! 2001/06/24, AS: Ts limits are now set dynamically using the a priori 
+!    information.
+! 2001/08/16, AS: Bug fix in Ts limit setting: now SUBTRACTS delta_Ts to get 
+!    lower limit and ADDs to get the upper limit, rather than vice versa.
+! 2011/03/22, AS: Removal of phase change, phase 2. SAD_CloudClass now has 1 
+!    dimension rather than N cloud classes.
+! 2011/04/05, AS: Removed selection methods SAD and SDAD. SAD_CloudClass 
+!    argument no longer required.
+! 2014/05/21, GM: Cleaned up the code.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Set_Limits(Ctrl, SPixel, status)

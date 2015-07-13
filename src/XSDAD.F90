@@ -1,45 +1,37 @@
-! Name:
-!    X_SDAD
+!-------------------------------------------------------------------------------
+! Name: XSDAD.F90
 !
-! Description:
-!    Sets up parts of the state vector, X, depending on the current state.
+! Purpose:
+! Sets up parts of the state vector, X, depending on the current state.
+!
+! Description and Algorithm details:
+! Sets the state variable value for the variable specified by index to the
+! value from the previous retrieval (held in Spixel%Xn)
+! If required, sets the error covariance value SPixel%Sx to the final value
+! from the previous retrieval (held in Spixel%Sn)
 !
 ! Arguments:
-!    Name       Type          In/Out    Description
-!    SPixel     alloc struct  In        Super pixel structure
-!    index      int           In        The required state parameter index
-!    SetErr     logical       In        State parameter error flag
-!    X          real          Out       The state parameter
-!    Err        Real          Out       (A priori) error in state parameter
-!    status     int           out       Indicates success/failure of subroutine.
-!
-! Algorithm:
-!    Sets the state variable value for the variable specified by index to the
-!    value from the previous retrieval (held in Spixel%Xn)
-!    If required, sets the error covariance value SPixel%Sx to the final value
-!    from the previous retrieval (held in Spixel%Sn)
-!
-! Local variables:
-!    Name       Type    Description
-!    message    string  Error message string
-!    NPix       real    Number of pixels between current location and last
-!                       "good" inversion.
+! Name       Type          In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl       struct        In          Control structure
+! SPixel     struct        Both        Super pixel structure
+! index      int           In          The required state parameter index
+! SetErr     logical       In          State parameter error flag
+! X          real          Out         The state parameter
+! Err        Real          Out         (A priori) error in state parameter
+! status     int           Out         Indicates success/failure of subroutine.
 !
 ! History:
-!    9 Feb 2000, Kevin Smith : Original version
-!    4th Jun 2001, Andy Smith:
-!       Updated to match changes in routines above.
-!    7th Jun 2001, Andy Smith:
-!       Sets status 0 to avoid compilation warnings.
-!    6th July 2001, Andy Smith:
-!       Added check on "distance" from last saved state.
-!
-! Bugs:
-!    None known.
+! 2000/02/09, KS: Original version
+! 2001/06/04, AS: Updated to match changes in routines above.
+! 2001/06/07, AS: Sets status 0 to avoid compilation warnings.
+! 2001/07/06, AS: Added check on "distance" from last saved state.
 !
 ! $Id$
 !
-!---------------------------------------------------------------------
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
 subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
 

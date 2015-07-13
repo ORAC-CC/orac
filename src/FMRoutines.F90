@@ -1,49 +1,28 @@
-! ------------------------------------------------------------------------------
-! Name:
-!    FM_Routines_def
+!-------------------------------------------------------------------------------
+! Name: FMRoutines.F90
 !
-! Description:
-!    This module contains a set of interface definitions for ECP subroutines.
-!    Not all subroutines are included. These interface definitions are required
-!    in order that passed-length arrays can be used as subroutine arguments.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Purpose:
+! This module contains a set of interface definitions for ECP subroutines.
+! Not all subroutines are included. These interface definitions are required
+! in order that passed-length arrays can be used as subroutine arguments.
 !
 ! History:
-!    19th Jan 2001, Andy Smith : original version
-!    23rd Jan 2001, Andy Smith :
-!       SetCRPSolar/Thermal interfaces updated to cope with new routine
-!       SetGZero.
-!    16th Feb 2001, Andy Smith :
-!       New argument SPixel for SetCRPSolar.
-!    20th Feb 2001, Andy Smith:
-!       SetCRPSolar SPixel argument replaced by Ind (sub-struct of SPixel).
-!       Same change applied to SetCRPThermal.
-!    27th Feb 2001, Andy Smith:
-!       Set_CRP_Thermal no longer requires argument First.
-!    20th Dec 2013, Greg McGarragh:
-!       Cleaned up code.
-!    24th Dec 2013, Greg McGarragh:
-!       Some intent changes.
-!    16th Dec 2014, Greg McGarragh:
-!       Added LUT name mapping: IR_0v = IRBd, etc.
-!     9th Jan 2015, Caroline Poulsen:
-!       Added LUT name mapping: IR_0d = IRFBd.
-!
-! Bugs:
-!    None known.
+! 2001/01/19, AS: original version
+! 2001/01/23, AS: SetCRPSolar/Thermal interfaces updated to cope with new routine
+!    SetGZero.
+! 2001/02/16, AS: New argument SPixel for SetCRPSolar.
+! 2001/02/20, AS: SetCRPSolar SPixel argument replaced by Ind (sub-struct of 
+!    SPixel). Same change applied to SetCRPThermal.
+! 2001/02/27, AS: Set_CRP_Thermal no longer requires argument First.
+! 2013/12/20, GM: Cleaned up code.
+! 2013/12/24, GM: Some intent changes.
+! 2014/12/16, GM: Added LUT name mapping: IR_0v = IRBd, etc.
+! 2015/01/09, CP: Added LUT name mapping: IR_0d = IRFBd.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module FM_Routines_def

@@ -1,45 +1,44 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    blmodification.F90
+! Name: blmodification.F90
 !
 ! Purpose:
-!    Modifies temperature profile if a boundary layer inversion is found.
+! Modifies temperature profile if a boundary layer inversion is found.
+! SUPERCEEDED by Int_Ctp
 !
-! Description:
-!    From OCA ATBD
+! Description and Algorithm details:
+! From OCA ATBD
+! 1) Loop from bottom of atmosphere up searching for a level that has lower
+!    temperature than those around it whilst having pressure greater than
+!    a specified limit.
+! 2) If one is found, estimate the BL lapse rate from the two levels beneath
+!    the inversion.
+! 3) Overwrite the temperature profile within the inversion by extrapolting
+!    from the level beneath it.
 !
 ! Arguments:
-!    Name   Type   In/Out/Both Description
-!    SPixel struct Both Summarises the details of the pixel to be processed.
-!
-! Algorithm:
-!    1) Loop from bottom of atmosphere up searching for a level that has lower
-!       temperature than those around it whilst having pressure greater than
-!       a specified limit.
-!    2) If one is found, estimate the BL lapse rate from the two levels beneath
-!       the inversion.
-!    3) Overwrite the temperature profile within the inversion by extrapolting
-!       from the level beneath it.
+! Name   Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! SPixel struct Both Summarises the details of the pixel to be processed.
 !
 ! History:
-!    11/11/2014, C. Poulsen: First version
-!    19/12/2014, C. Poulsen:  changed depth of boundary layer inversion from
-!       1  -->2 as this seems to give better results. This is now consistent
-!       with OCA(EUMETSAT) code.
-!    30/01/2015, A. Povey: Tidying.
-!    03/02/2015, G. McGarragh: Bug fix: If BLindexbottom was found to be
-!       SPixel%RTM%LW%Np-1 then the estimate of the BL lapse rate went out of
-!       array bounds. In addition, we want to avoid the bottom level which is
-!       the surface skin temperature. The fix: changed the maximum BLindexbottom
-!       from SPixel%RTM%LW%Np-1 to SPixel%RTM%LW%Np-3.
-!    05/02/2015, O. Sus: Removed some superfluous commata after write statements
-!
-! Bugs:
-!    Could use humidity subsidence inversion in the future
+! 2014/11/11, CP: First version
+! 2013/12/19, CP: changed depth of boundary layer inversion from
+!    1-->2 as this seems to give better results. This is now consistent
+!    with OCA(EUMETSAT) code.
+! 2015/01/30, AP: Tidying.
+! 2015/02/03, GM: Bug fix: If BLindexbottom was found to be
+!    SPixel%RTM%LW%Np-1 then the estimate of the BL lapse rate went out of
+!    array bounds. In addition, we want to avoid the bottom level which is
+!    the surface skin temperature. The fix: changed the maximum BLindexbottom
+!    from SPixel%RTM%LW%Np-1 to SPixel%RTM%LW%Np-3.
+! 2015/02/05, OS: Removed some superfluous commata after write statements
 !
 ! $Id: Blmodification.F90 1963 2014-02-03 11:38:08Z acpovey $
 !
+! Bugs:
+! Could use humidity subsidence inversion in the future
 !-------------------------------------------------------------------------------
+
 subroutine Blmodification(SPixel)
 
    use SPixel_def

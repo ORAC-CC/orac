@@ -2,35 +2,26 @@
 ! Name: alloc_output_data.F90
 !
 ! Purpose:
-! The file contains a collection of three subroutines which allocate the array
-! parts of the output variable types.
-!
-! Description and Algorithm details:
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-! Local variables:
-! Name Type Description
+! The file contains a collection of two subroutines which allocate the array
+! parts of the output variable types, stored within module output_routines.
 !
 ! History:
-! 2011/12/19, Matthias Jerg: creates initial file.
-! 2012/01/05, Caroline Poulsen: added in channel information
-! 2012/01/06, Caroline Poulsen: added in cwp
-! 2012/01/15, Caroline Poulsen: added in chan definitions
-! 2012/01/28, Caroline Poulsen: added in albedo
-! 2012/07/08, Caroline Poulsen: fixed memory access error
-! 2013/01/17, Matthias Jerg: Adds code to accommodate uncertainties of ctt and
-!    cth.
-! 2013/01/23, Caroline Poulsen: Changed illum from byte to int
+! 2011/12/19, MJ: creates initial file.
+! 2012/01/05, CP: added in channel information
+! 2012/01/06, CP: added in cwp
+! 2012/01/15, CP: added in chan definitions
+! 2012/01/28, CP: added in albedo
+! 2012/07/08, CP: fixed memory access error
+! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth.
+! 2013/01/23, CP: Changed illum from byte to int
 ! 2013/10/02, CP/GT: Added allocation statement for DOFS
-! 2014/01/01, Greg McGarragh: Fixed the range in NY for initializations. Plus,
+! 2014/01/01, GM: Fixed the range in NY for initializations. Plus,
 !    no need for explicit indexing in these cases anyway.
-! 2014/05/27, Greg McGarragh: Some cleanup.
-! 2014/10/24, Oliver Sus: added allocation of cldtype, cldmask, cccot_pre,
+! 2014/05/27, GM: Some cleanup.
+! 2014/10/24, OS: added allocation of cldtype, cldmask, cccot_pre,
 !    lusflag, dem, nisemask
-! 2014/12/01, CP Added in cloud albedo
-! 2015/07/01, CP Added corrected cth
+! 2014/12/01, CP: Added in cloud albedo
+! 2015/07/01, CP: Added corrected cth
 !
 ! $Id$
 !
@@ -38,6 +29,29 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
+!-------------------------------------------------------------------------------
+! Name: alloc_output_data_primary
+!
+! Purpose:
+! Allocate storage for primary output file.
+!
+! Description and Algorithm details:
+! 1) Allocate all arrays, writing fill values to them.
+!
+! Arguments:
+! Name        Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! ixstart     int    In   First index of across-track (first) dimension
+! ixstop      int    In   Last index of across-track (first) dimension
+! iystart     int    In   First index of along-track (second) dimension
+! iystop      int    In   Last index of along-track (second) dimension
+! NViews      int    In   Number of viewing angles
+! ny          int    In   Total number of along-track points
+! output_data struct Both Structure of arrays to be allocated
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
                                      output_data)
 
@@ -194,6 +208,30 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
 end subroutine alloc_output_data_primary
 
 
+!-------------------------------------------------------------------------------
+! Name: alloc_output_data_secondary
+!
+! Purpose:
+! Allocate storage for primary output file.
+!
+! Description and Algorithm details:
+! 1) Allocate all arrays, writing fill values to them.
+!
+! Arguments:
+! Name        Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! ixstart     int    In   First index of across-track (first) dimension
+! ixstop      int    In   Last index of across-track (first) dimension
+! iystart     int    In   First index of along-track (second) dimension
+! iystop      int    In   Last index of along-track (second) dimension
+! ny          int    In   Total number of along-track points
+! nx          int    In   Total number of across-track points
+! lcovar      logic  Both Switch to allocate covariance matricies
+! output_data struct Both Structure of arrays to be allocated
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine alloc_output_data_secondary(ixstart,ixstop,iystart,iystop,Ny,Nx, &
                                        lcovar,output_data)
 
@@ -207,7 +245,7 @@ subroutine alloc_output_data_secondary(ixstart,ixstop,iystart,iystop,Ny,Nx, &
    integer,                     intent(in)    :: iystop
    integer,                     intent(in)    :: Ny
    integer,                     intent(in)    :: Nx
-   logical,                     intent(inout) :: lcovar
+   logical,                     intent(in)    :: lcovar
    type(output_data_secondary), intent(inout) :: output_data
 
 

@@ -1,30 +1,16 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    read_utils
+! Name: read_utils.F90
 !
 ! Purpose:
-!
-! Description:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Module wrapping some read routines.
 !
 ! History:
-!    19th Jan 2015, Greg McGarragh: Original version.
-!
-! Bugs:
-!    None known.
+! 2015/01/19, GM: Original version.
 !
 ! $Id: read_utils.F90 2856 2015-01-12 18:50:33Z acpovey $
 !
+! Bugs:
+! None known.
 !---------------------------------------------------------------------
 
 module read_utils

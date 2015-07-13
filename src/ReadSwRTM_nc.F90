@@ -1,99 +1,81 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Read_SwRTM_nc
+! Name: ReadSwRTM_nc.F90
 !
 ! Purpose:
-!    Reads the shortwave Radiative Transfer Model (atmospheric) file and loads
-!    appropriate data arrays.
+! Reads the shortwave Radiative Transfer Model (atmospheric) file and loads
+! appropriate data arrays.
 !
-! Arguments:
-!    Name   Type         In/Out/Both Description
-!    Ctrl   struct       Both        Control structure
-!    RTM    alloc struct Out         RTM structure
-!    verbose logical      In          Print out progress information
-!
-! Algorithm:
+! Description and Algorithm details:
 ! 1) Open the SWRTM file.
 ! 2) Read the instrument name and ensure it matches that expected.
 ! 3) Read the available channel numbers.
 ! 4) Read the necessary solar channel information.
 ! 5) Close the SWRTM file.
 !
-! History:
-!     5th Dec 2000, Kevin M. Smith:
-!       Original version
-!    15th Jan 2001, Kevin M. Smith:
-!       Changed Ctrl%Ind%Y to Ctrl%Ind%Y_Id
-!    17th Jan 2001, Kevin M. Smith:
-!       Corrected indexing of RTM%SW%Lat and Lon from 1-D to 2-D array
-!    25th Jan 2001, Kevin M. Smith:
-!       Corrected calculation of LatN and LonN in RTM%SW%Grid.
-!    21st Feb 2001, Andy Smith:
-!       Added Tbc to SW structure. Previously missing from model data.
-!     1st Mar 2001, Andy Smith:
-!       Removed allocation of R_Clear in SW RTM struct. R_Clear not available
-!       from RTM data file.
-!    30th Mar 2001, Andy Smith:
-!       Added setting of new grid variables MaxLat, MinLat, MaxLon, MinLon.
-!       Avoids repeated re-calculation in GetRTM.
-!    22nd Jun 2001, Andy Smith:
-!       Updated header comments and added argument intent.
-!    24th Oct 2001, Andy Smith:
-!       Added deallocation of local allocatable arrays.
-!       Removed change of sign on longitude values. Data should be supplied on a
-!       grid with west -ve.
-!    *** ECV work starts here ***
-!     7th Feb 2011, Andy Smith:
-!       Re-applying changes made in 2002.
-!       Converted to unformatted read:
-!       - Variables x, y, buf and bufe are declared as real(4) in order to match
-!         the number of bytes used for reals in the RTM files (previously 8).
-!       - Allocation of buffer array "buf" changed from 7 parameters to 5, since
-!         whole array writes to binary file mean that the level and channel
-!         indices are no longer present.
-!       - Array dimensions in buf swapped round to make access more efficient.
-!         Channel is now the first index, then pressure level, and parameter last.
-!       Error checking improved: iostat values checked.
-!       Added tests for allocation status before deallocation of local
-!       allocatable arrays (may not be allocated if errors detected before
-!       allocation).
-!       Date changed to character length 8 (YYYYMMDD) instead of 10.
-!    19th Sep 2002, Caroline Poulsen, bug found, changed the deltalat and
-!       deltalon
-!    12th Dec 2002, Caroline Poulsen now read geopotential height from profile
-!       file)
-!    15th Feb 2011, Andy Smith:
-!       Character string "dummy" length changed from 10 to 8, otherwise read
-!       error occurs on prtm file.
-!    22nd Sep 2011, Caroline Poulsen: modified the lwrtm code to read in the
-!       shortwave rtm which is now scene dependant and not fixed for each
-!       latitude band.
-!    20th Jan 2012:
-!       General tidy up
-!    2012/08/23, MJ: Uses initial file as template for netcdf read.
-!    2012/08/28, CP: Defined nchan and changed indicing of y_id
-!    2012/11/03, MJ: Changed loop over SW channels
-!    2013/01/01, MJ: Irones out some bugs wrt old binary file implementation.
-!    2014/04/18, GM: Made reading of NetCDF input more efficient by avoiding
-!       inefficient access patterns and redundancy and cleaned up the code.
-!    2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
-!    2014/07/23, AP: Commented out unused code for future deletion.
-!    2014/08/15, AP: Switching to preprocessor NCDF routines.
-!    2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
-!    2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
-!    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
-!       channels with respect to the channels actually processed, rather than the
-!       MSI file.
-!    2015/03/11, GM: Do not read wavelength dependent fields if NSolar is
-!       equal to 0.
-!    2015/07/03, OS: added error status variable to nc_open call
-!    2015/07/10, OS: undo previous commit
+! Arguments:
+! Name    Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl    struct       Both        Control structure
+! RTM     alloc struct Out         RTM structure
+! verbose logical     In          Print out progress information
 !
-! Bugs:
-!    None known.
+! History:
+! 2000/12/05, KS: Original version
+! 2001/01/15, KS: Changed Ctrl%Ind%Y to Ctrl%Ind%Y_Id
+! 2001/01/17, KS: Corrected indexing of RTM%SW%Lat and Lon from 1-D to 2-D array
+! 2001/01/25, KS: Corrected calculation of LatN and LonN in RTM%SW%Grid.
+! 2001/02/21, AS: Added Tbc to SW structure. Previously missing from model data.
+! 2001/03/01, AS: Removed allocation of R_Clear in SW RTM struct. R_Clear not 
+!    availablefrom RTM data file.
+! 2001/03/30, AS: Added setting of new grid variables MaxLat, MinLat, MaxLon, 
+!    MinLon. Avoids repeated re-calculation in GetRTM.
+! 2001/06/22, AS: Updated header comments and added argument intent.
+! 2001/10/24, AS: Added deallocation of local allocatable arrays. Removed change
+!    of sign on longitude values. Data should be supplied on a grid with west -ve
+!    **************** ECV work starts here *************************************
+! 2011/02/07, AS: Re-applying changes made in 2002.
+!    Converted to unformatted read:
+!    - Variables x, y, buf and bufe are declared as real(4) in order to match
+!      the number of bytes used for reals in the RTM files (previously 8).
+!    - Allocation of buffer array "buf" changed from 7 parameters to 5, since
+!      whole array writes to binary file mean that the level and channel
+!      indices are no longer present.
+!    - Array dimensions in buf swapped round to make access more efficient.
+!      Channel is now the first index, then pressure level, and parameter last.
+!    Error checking improved: iostat values checked. Added tests for allocation 
+!    status before deallocation of local allocatable arrays (may not be allocated
+!    if errors detected before allocation). Date changed to character length 8 
+!    (YYYYMMDD) instead of 10.
+! 2002/09/19, CP: bug found, changed the deltalat and deltalon
+! 2002/12/12, CP: now read geopotential height from profile file)
+! 2011/02/15, AS: Character string "dummy" length changed from 10 to 8, 
+!    otherwise read error occurs on prtm file.
+! 2011/09/22, CP: modified the lwrtm code to read in the shortwave rtm which is 
+!    now scene dependant and not fixed for each latitude band.
+! 2012/01/20, ??: General tidy up
+! 2012/08/23, MJ: Uses initial file as template for netcdf read.
+! 2012/08/28, CP: Defined nchan and changed indicing of y_id
+! 2012/11/03, MJ: Changed loop over SW channels
+! 2013/01/01, MJ: Irones out some bugs wrt old binary file implementation.
+! 2014/04/18, GM: Made reading of NetCDF input more efficient by avoiding
+!    inefficient access patterns and redundancy and cleaned up the code.
+! 2014/05/28, GM: Removed unused read of attribute 'Product_Date'.
+! 2014/07/23, AP: Commented out unused code for future deletion.
+! 2014/08/15, AP: Switching to preprocessor NCDF routines.
+! 2014/09/18, AP: Update to RTTOV11 output arrays in the correct shape.
+! 2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, rather than the
+!    MSI file.
+! 2015/03/11, GM: Do not read wavelength dependent fields if NSolar is
+!    equal to 0.
+! 2015/07/03, OS: added error status variable to nc_open call
+! 2015/07/10, OS: undo previous commit
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)

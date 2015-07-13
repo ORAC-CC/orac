@@ -1,73 +1,54 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_Rs
+! Name: GetRs.F90
 !
 ! Purpose:
-!    Calculates the super pixel mean surface reflectivities (and covariances)
-!    for the solar channels according to the specified averaging method
-!    Ctrl%Resoln%Ameth
+! Calculates the super pixel mean surface reflectivities (and covariances)
+! for the solar channels according to the specified averaging method
+! Ctrl%Resoln%Ameth
+!
+! Description and Algorithm details:
 !
 ! Arguments:
-!    Name      Type         In/Out/Both Description
-!    Ctrl      struct       In          Control structure
-!    SPixel    alloc struct Both        Super pixel structure
-!    SPixel_b  real array   In          Super pixel array of b (using super
-!                                       pixel surface flags)
-!    SPixel_Sb real array   In          Super pixel array of Sb (using super
-!                                       pixel surface flags)
-!    status    integer      Out         Error status
-!
-! Algorithm:
-!    Average method:
-!       'All'     - average super pixel surface reflectance array values (and
-!                   covariances) over all good pixels,
-!       'Cloudy'  - average over good cloudy pixels,
-!       'Central' - take values from the central pixel, if it is good.
-!
-! Local variables:
-!    Name Type Description
+! Name       Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl       struct       In          Control structure
+! SPixel     alloc struct Both        Super pixel structure
+! SPixel_b   real array   In          Super pixel array of b
+! SPixel_Sb  real array   In          Super pixel array of Sb
+! SPixel_b2  real array   In          Super pixel array of b for BRDF
+! SPixel_Sb2 real array   In          Super pixel array of Sb for BRDF
+! status     integer      Out         Error status
 !
 ! History:
-!     4th Dec 2000, Kevin M. Smith: Original version
-!    16th Jan 2001, Kevin M. Smith:
-!       Re-drafted
-!    18th Jan 2001, Kevin M. Smith:
-!       Modified to take array of reflectances etc from SPixel%Surface
-!       Changed name from Get_Surface_Rs to Get_Rs
-!    16th Mar 2001, Andy Smith:
-!       Removed checking for invalid averaging method.
-!       Using named constants for averaging method.
-!    15th Jun 2001, Andy Smith:
-!       Changed error message string assignments/writes.
-!       Long message strings were wrapped over two lines with only one set of
-!       quotes around the whole string (including the line continuation marker).
-!       Original code works on DEC but not Linux.
+! 2000/12/04, KS: Original version
+! 2001/01/16, KS: Re-drafted
+! 2001/01/18, KS: Modified to take array of reflectances etc from SPixel%Surface
+!    Changed name from Get_Surface_Rs to Get_Rs
+! 2001/03/16, AS: Removed checking for invalid averaging method. Using named
+!    constants for averaging method.
+! 2001/06/15, AS: Changed error message string assignments/writes. Long message
+!    strings were wrapped over two lines with only one set of  quotes around the
+!    whole string (including the line continuation marker). Original code works
+!    on DEC but not Linux.
 !    **************** ECV work starts here *************************************
-!    23rd Feb 2011, Andy Smith:
-!       Cloud flags converted to real to match current ORAC data.
-!    30th Mar 2011, Andy Smith:
-!       Removal of super-pixel averaging.
-!       Process single pixels at X0, Y0,
-!       Removed other SPixel indices Xc, Yc, Xn, Yn etc.
-!       Removed selection of averaging method.
-!       SPixel_B and SPixel_Sb re-dimensioned to remove SPixel size.
-!    20th Jan 2012, Someone:
-!       General tidyup remove data varaible
-!    28th May 2014, McGarragh:
-!       Some cleanup.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!    21st Jan 2015, Adam Povey:
-!       Corrected array dimensions.
-!
-! Bugs:
-!    None known.
+! 2011/02/23, AS: Cloud flags converted to real to match current ORAC data.
+! 2011/03/30, AS: Removal of super-pixel averaging. Process single pixels at X0,
+!    Y0, Removed other SPixel indices Xc, Yc, Xn, Yn etc. Removed selection of 
+!    averaging method. SPixel_B and SPixel_Sb re-dimensioned to remove SPixel
+!    size.
+! 2012/01/23, CP: General tidyup remove data variable
+! 2014/05/28, GM: Some cleanup.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2015/01/21, AP: Corrected array dimensions.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, status)
+subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, &
+                  status)
 
    use CTRL_def
    use Data_def

@@ -5,37 +5,37 @@
 ! Actual writing of the primary output data to the netcdf file is carried out.
 !
 ! Description and Algorithm details:
+! Call nc_write_array many times.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Return value:
-! Name Type Description
-!
-! Local variables:
-! Name Type Description
+! Name        Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct  In          Control parameters for the retrieval
+! ncid        integer In          File ID for open output file
+! ixstart     integer In          Starting index on first dimension of output
+! ixstop      integer In          Ending index on first dimension of output
+! iystart     integer In          Starting index on second dimension of output
+! iystop      integer In          Ending index on second dimension of output
+! output_data struct  Both        Data to be written to output
 !
 ! History:
-! 2011/12/19, Matthias Jerg: Creates initial version
-! 2012/01/06, Caroline Poulsen: Added in CWP
-! 2012/06/18, Caroline Poulsen: Changed cost to a float
-! 2012/11/03, Matthias Jerg: Bug fix in writing of qc flag and illum
-! 2013/01/17, Matthias Jerg: Adds code to accommodate uncertainties of ctt and
-!    cth
-! 2014/06/13, Greg McGarragh: Put the code into a subroutine.
-! 2014/06/13, Greg McGarragh: Cleaned up the code.
-! 2014/09/01, Greg McGarragh: Start using the common/orac_ncdf.F90 write_array
-!    interface.
-! 2014/09/17, Greg McGarragh: Bug fix, forgot to offset y dimension of output.
-! 2014/10/24, Oliver Sus: added variables cldtype, cloudmask, cccot_pre, lusflags,
+! 2011/12/19, MJ: Creates initial version
+! 2012/01/06, CP: Added in CWP
+! 2012/06/18, CP: Changed cost to a float
+! 2012/11/03, MJ: Bug fix in writing of qc flag and illum
+! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
+! 2014/06/13, GM: Put the code into a subroutine.
+! 2014/06/13, GM: Cleaned up the code.
+! 2014/09/01, GM: Start using the common/orac_ncdf.F90 write_array interface.
+! 2014/09/17, GM: Bug fix, forgot to offset y dimension of output.
+! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
 !    dem, and nisemask
-! 2014/12/01, Caroline Poulsen: added cloud albedo
-! 2014/12/19, Adam Povey: YSolar and YThermal now contain the index of
-!     solar/thermal channels with respect to the channels actually processed,
-!     rather than the MSI file.
-! 2015/07/04, Caroline Poulsen: Added corrected cth
+! 2014/12/01, CP: added cloud albedo
+! 2014/12/19, AP: YSolar and YThermal now contain the index of
+!    solar/thermal channels with respect to the channels actually processed,
+!    rather than the MSI file.
+! 2015/07/04, CP: Added corrected cth
 !
-
 ! $Id$
 !
 ! Bugs:

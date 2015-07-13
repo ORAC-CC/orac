@@ -1,41 +1,37 @@
 !-------------------------------------------------------------------------------
-! Tridag.F90
+! Name: Tridag.F90
 !
 ! Purpose:
+! Called by Spline.F90
 !
-! Description:
-!    Given input vectors a,b,c,r solves the tridiagonal equations shown for
-!    output vector u
+! Description and Algorithm details:
+! Given input vectors a,b,c,r solves the tridiagonal equations shown for
+! output vector u
 !
-!    |b(  1) c(  1)    0    ..              |   |u(  1)|   |n(  1)|
-!    |a(  2) b(  2) c(  2)  ..              |   |u(  2)|   |n(  2)|
-!    |   ..     ..     ..   ..   ..     ..  | . |  ..  | = |  ..  |
-!    |                      .. b(N-1) c(N-1)|   |u(N-1)|   |n(N-1)|
-!    |                      .. a(  N) b(  N)|   |u(  N)|   |n(  N)|
+! |b(  1) c(  1)    0    ..              |   |u(  1)|   |n(  1)|
+! |a(  2) b(  2) c(  2)  ..              |   |u(  2)|   |n(  2)|
+! |   ..     ..     ..   ..   ..     ..  | . |  ..  | = |  ..  |
+! |                      .. b(N-1) c(N-1)|   |u(N-1)|   |n(N-1)|
+! |                      .. a(  N) b(  N)|   |u(  N)|   |n(  N)|
 !
-!    Called by spline.f90
-!
-! Calls:
+! From Numerical Recipes in Fortran 90 [Press, Flannery]
 !
 ! Arguments:
-!    Name  Type       in/Out/Both Description
-!    a     real array in          Vectors a,b,c form a tridiagonal set
-!    b     real array in
-!    c     real array in
-!    r     real array in
-!    u     real array Out	  The solution
+! Name  Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! a     real array in          Vectors a,b,c form a tridiagonal set
+! b     real array in
+! c     real array in
+! r     real array in
+! u     real array Out	       The solution
 !
-! Algorithm
-!    From Numerical Recipes in Fortran 90 [Press, Flannery]
-!
-! History
-!    31st April 2011 - Adapted for ORAC F90 by C. Arnold
-!
-! Bugs
-!    None known.
+! History:
+! 2011/04/31, CA: Adapted for ORAC F90
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine tridag_ser(a,b,c,r,u)

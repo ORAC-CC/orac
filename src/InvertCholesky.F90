@@ -1,41 +1,37 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Invert_Cholesky
+! Name: InvertCholesky.F90
 !
 ! Purpose:
-!    Given a positive definite matrix A of dimension n * n, returns its inverse
-!    in D. This function makes approximately n^3 / 2 multiplications.
+! Given a positive definite matrix A of dimension n * n, returns its inverse
+! in D. This function makes approximately n^3 / 2 multiplications.
 !
-! Algorithm:
-!    This function encapsulates a series of routines which derive and operate on
-!    the Cholesky decomposition L of A. First calculates the Cholesky
-!    decomposition L, then its inverse L^-1, then calculates the full inverse
-!    S^-1 = (L^-1)^T.L^-1 for the upper triangle only, as the inverse will also
-!    be symmetric, then copies across the symmetric values from the upper to the
-!    lower triangle.
+! Description and Algorithm details:
+! This function encapsulates a series of routines which derive and operate on
+! the Cholesky decomposition L of A. First calculates the Cholesky
+! decomposition L, then its inverse L^-1, then calculates the full inverse
+! S^-1 = (L^-1)^T.L^-1 for the upper triangle only, as the inverse will also
+! be symmetric, then copies across the symmetric values from the upper to the
+! lower triangle.
 !
 ! Arguments:
-!    Name   Type        In/Out/Both Description
-!    A      float array In          Positive definite matrix to be inverted
-!    D      float array Out         Inverse of positive definite matrix
-!    n      integer     In          Dimensions of A, D, p; loop limit
-!    Status integer     Out         Status flag: 0 = Success, 1 = Not positive
-!                                   definite
-!
-! Local variables:
-!    Name Type Description
+! Name   Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! A      float array In          Positive definite matrix to be inverted
+! D      float array Out         Inverse of positive definite matrix
+! n      integer     In          Dimensions of A, D, p; loop limit
+! Status integer     Out         Status flag: 0 = Success, 1 = Not positive
+!                                definite
 !
 ! History:
-!    27th Apr 2001, Tim Nightingale: Original version.
-!    17th May 2001, Tim Nightingale: Add Decompose_Cholesky to subroutine as
-!       decomposition is only used once.
-!     5th Jul 2001, Tim Nightingale: Return if decomposition fails.
-!
-! Bugs:
-!   None known.
+! 2001/04/27, TN: Original version.
+! 2001/05/17, TN: Add Decompose_Cholesky to subroutine as
+!    decomposition is only used once.
+! 2001/06/05, TN: Return if decomposition fails.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Invert_Cholesky(A, D, n, Status)

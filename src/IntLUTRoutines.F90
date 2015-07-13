@@ -1,60 +1,34 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Int_LUT_Routines_def
+! Name: IntLUTRoutines.F90
 !
 ! Purpose:
-!    Module with ECP LUT Interpolation routines
-!
-! Description:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Module with ECP LUT Interpolation routines
 !
 ! History:
-!    10th Nov 2000, Andy Smith : Original version
-!    16th Nov 2000, Andy Smith :
-!       Adding more Int routines: Int_LUT_TauReSun.
-!     1st Dec 2000, Andy Smith :
-!       Replaced "sun" in routine names with Sol
-!    11th Jan 2001, Andy Smith :
-!       Chans argument removed from all routines. Redundant since interpolation
-!       is done over the entire passed array.
-!     5th Sep 2011, Chris Arnold:
-!       Added interfaces for spline/locate routines and updated interfaces for
-!       Int_LUT routines
-!     7th Feb 2012, Chris Arnold:
-!       Ctrl struct now passed to interpolation routines IntLUT*.f90
-!     3rd Dec 2013, MJ:
-!       Makes LUTs more flexible wrt channel and properties.
-!    16th Jan 2014, Greg McGarragh:
-!       Added i_chan_to_ctrl_offset and i_chan_to_spixel_offset to subroutine
-!       Int_LUT_TauSatRe.
-!    20th Dec 2014, Greg McGarragh:
-!       Cleaned up code.
-!    24th Dec 2014, Greg McGarragh:
-!       Some intent changes.
-!    23th May 2014, Greg McGarragh:
-!       No need for handmade explicit interfaces. Just need to include the
-!       subroutines in the module and the interfaces are automatically generated.
-!     9th Sep 2014, Greg McGarragh:
-!       Added IntLUTTauSatReOnSol.F90 for new BRDF support.
-!    16th Oct 2014, Greg McGarragh:
-!       Moved a large amount of code that was common to all IntLUT* subroutines
-!       into Int_LUT_Common()
-!
-! Bugs:
-!    None known.
+! 2000/11/10, AS: Original version
+! 2000/11/16, AS: Adding more Int routines: Int_LUT_TauReSun.
+! 2000/12/01, AS: Replaced "sun" in routine names with Sol
+! 2001/01/11, AS: Chans argument removed from all routines. Redundant since
+!    interpolation is done over the entire passed array.
+! 2011/09/05, CA: Added interfaces for spline/locate routines and updated
+!    interfaces for Int_LUT routines
+! 2012/02/07, CA: Ctrl struct now passed to interpolation routines IntLUT*.f90
+! 2013/12/03, MJ: Makes LUTs more flexible wrt channel and properties.
+! 2014/01/16, GM: Added i_chan_to_ctrl_offset and i_chan_to_spixel_offset to
+!    subroutine Int_LUT_TauSatRe.
+! 2014/12/20, GM: Cleaned up code.
+! 2014/12/24, GM: Some intent changes.
+! 2014/05/23, GM: No need for handmade explicit interfaces. Just need to
+!    include the subroutines in the module and the interfaces are automatically
+!    generated.
+! 2014/09/09, GM: Added IntLUTTauSatReOnSol.F90 for new BRDF support.
+! 2014/10/16, GM: Moved a large amount of code that was common to all IntLUT*
+!    subroutines into Int_LUT_Common()
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !---------------------------------------------------------------------
 
 module Int_LUT_Routines_def
@@ -82,26 +56,24 @@ include 'IntLUTTauSolRe.F90'
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    Int_LUT_Common
+! Name: Int_LUT_Common
 !
 ! Purpose:
+! Perform gradient calculations common to all IntLUT* routines.
+!
+! Description and Algorithm details:
 !
 ! Arguments:
 !    Name Type In/Out/Both Description
 !
-! Algorithm:
-!
 ! History:
-!    16th Oct 2014, Greg McGarragh:
-!       Removed the multiple instances of this code in the IntLUT* routines and
-!       created this one shared subroutine.
-!    13th Jan 2015, Adam Povey:
-!       Switch to array-based channel indexing rather than using offsets.
+! 2014/10/16, GM: Removed the multiple instances of this code in the IntLUT* 
+!    routines and created this one shared subroutine.
+! 2015/01/13, AP: Switch to array-based channel indexing rather than using 
+!    offsets.
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &

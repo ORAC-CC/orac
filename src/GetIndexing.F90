@@ -1,56 +1,51 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_Indexing
+! Name: GetIndexing.F90
 !
 ! Purpose:
+! Determine which set of channels to use in retrieval.
+!
+! Description and Algorithm details:
+! Find missing channels and channels not used due to illumination conditions.
+!
+! Each of the three categories: "tau" (optical thickness), "r_e" (effective
+! radius), ir (cloud-top pressure, cloud fraction and surface temperature)
+! have a set of channels that meet a channel requirement.  Find which of
+! these channels are available in each category.  Note: This does not prevent
+! other unrequired channels from being used.
+!
+! Loop through the required active state variables, either Ctrl%Ind%X_Dy,
+! Ctrl%Ind%X_Tw or Ctrl%Ind%X_Ni, depending on illumination and if the
+! channel requirement is met in its category, add it to the list of active
+! state variables.
+!
+! Setup the rest of the SPixel indexes.
+!
+! The intention is for this algorithm to be written in a way that allows
+! additional state variables to be added and additional categories.
 !
 ! Arguments:
-!    Name     Type    In/Out/Both Description
-!    Ctrl     struct  In          Control structure
-!    SAD_Chan struct  In          Array of SAD channel structures
-!    SPixel   struct  Both        Super-pixel structure
-!    MSI_Data struct  In          Data structure. Contains the multi-spectral
-!                                 image measurements, location values, geometry
-!                                 etc for the current image segment, from which
-!                                 the current SPixel values will be extracted.
-!    status   integer Out         Error status
-!
-! Algorithm:
-!    Find missing channels and channels not used due to illumination conditions.
-!
-!    Each of the three categories: "tau" (optical thickness), "r_e" (effective
-!    radius), ir (cloud-top pressure, cloud fraction and surface temperature)
-!    have a set of channels that meet a channel requirement.  Find which of
-!    these channels are available in each category.  Note: This does not prevent
-!    other unrequired channels from being used.
-!
-!    Loop through the required active state variables, either Ctrl%Ind%X_Dy,
-!    Ctrl%Ind%X_Tw or Ctrl%Ind%X_Ni, depending on illumination and if the
-!    channel requirement is met in its category, add it to the list of active
-!    state variables.
-!
-!    Setup the rest of the SPixel indexes.
-!
-!    The intention is for this algorithm to be written in a way that allows
-!    additional state variables to be added and additional categories.
-!
-! Local variables:
-!    Name Type Description
+! Name     Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct  In          Control structure
+! SAD_Chan struct  In          Array of SAD channel structures
+! SPixel   struct  Both        Super-pixel structure
+! MSI_Data struct  In          Data structure. Contains the multi-spectral
+!                              image measurements, location values, geometry
+!                              etc for the current image segment, from which
+!                              the current SPixel values will be extracted.
+! status   integer Out         Error status
 !
 ! History:
-!     4th Feb 2015, Greg McGarragh:
-!       Original version.
-!     4th Feb 2015, Greg McGarragh:
-!       Add support to use CTRL%ReChans.  See description in Ctrl.F90 and
-!       default values set in ReadDriver.F90.
-!    11th Mar 2015, Greg McGarragh:
-!       Remove check for missing r_e channels. It is valid not to have any.
-!
-! Bugs:
-!    Assumes a single view for now.
+! 2015/02/04, GM: Original version.
+! 2015/02/04, GM: Add support to use CTRL%ReChans.  See description in Ctrl.F90
+!    and default values set in ReadDriver.F90.
+! 2015/03/11, GM: Remove check for missing r_e channels. It is valid not to
+!    have any.
 !
 ! $Id$
 !
+! Bugs:
+! Assumes a single view for now.
 !-------------------------------------------------------------------------------
 
 #define LEGACY_MODE .false.

@@ -3,26 +3,27 @@
 !
 ! Purpose:
 ! Define primary output variables for netcdf. Variable type, scale, offset,
-! fill value and /or range are defined and applied to the variable definition.
+! fill value and/or range are defined and applied to the variable definition.
 ! Variable names are also defined.
 !
 ! Description and Algorithm details:
+! 1) For each variable, use nc_def_var routine to define variable.
+! 2) Loop over views to define view geometry variables.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Return value:
-! Name Type Description
-!
-! Local variables:
-! Name Type Description
+! Name        Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct In          Retrieval control parameters
+! ncid        int    In          ID for open NCDF file to define
+! dims_var    int(2) In          ID #s for lat and lon dimensions
+! output_data struct Both        Structure of data for primary output file
 !
 ! History:
-! 2011/12/19, Matthias Jerg: Creates initial version
-! 2012/01/06, Caroline Poulsen: Added cwp
-! 2012/01/15, Caroline Poulsen: Changed scale and range for cot
-! 2012/06/15, Caroline Poulsen: Changed cost scaling factor
-! 2012/09/20, Caroline Poulsen: Changed scaling factors
+! 2011/12/19, MJ: Creates initial version
+! 2012/01/06, CP: Added cwp
+! 2012/01/15, CP: Changed scale and range for cot
+! 2012/06/15, CP: Changed cost scaling factor
+! 2012/09/20, CP: Changed scaling factors
 ! 2012/11/03, MJ: Changed range specifications of ctp and stemp
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
 ! 2013/xx/xx, MJ: Various changes to avoid cut-offs other fixes.

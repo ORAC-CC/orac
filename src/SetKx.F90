@@ -1,50 +1,41 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Set_Kx
+! Name: SetKx.F90
 !
 ! Purpose:
-!    Set up the gradient matrices Kx and Kbj from the forward model return.
+! Set up the gradient matrices Kx and Kbj from the forward model return.
+!
+! Description and Algorithm details:
+! Set Kx = dY_dX for corresponding channel / scale factor for state variable
+! If Ctrl flag indicates user wants to use EqMPN for Rs:
+!    Set diagonal terms of Kbj = Rs part of dY_dX for corresponding channel
 !
 ! Arguments:
-!    Name   Type     In/Out/Both Description
-!    Ctrl   struct   In          Control structure
-!    SPixel struct   In          Super-pixel structure (required for array
-!                                sizing)
-!    dY_dX  real arr In          Gradients from forward model
-!    Kx     real arr Out         Scaled FM gradients (w.r.t state variables)
-!    Kbj    real arr Out         Scaled FM gradients w.r.t. model parameters
-!                                (only Rs at present).
-!    status integer  Out         Error status
-!
-! Algorithm:
-!    Set Kx = dY_dX for corresponding channel / scale factor for state variable
-!    If Ctrl flag indicates user wants to use EqMPN for Rs:
-!       Set diagonal terms of Kbj = Rs part of dY_dX for corresponding channel
-!
-! Local variables:
-!    Name Type Description
+! Name   Type     In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl   struct   In          Control structure
+! SPixel struct   In          Super-pixel structure (required for array
+!                             sizing)
+! dY_dX  real arr In          Gradients from forward model
+! Kx     real arr Out         Scaled FM gradients (w.r.t state variables)
+! Kbj    real arr Out         Scaled FM gradients w.r.t. model parameters
+!                             (only Rs at present).
+! status integer  Out         Error status
 !
 ! History:
-!    30th Jan 2001, Kevin M. Smith: Original version
-!    27th Apr 2001, Andy Smith:
-!       Now uses SPixel instead of Ctrl for active state variable indices and
-!       channels.
-!     6th Jun 2001, Andy Smith:
-!       Implicit none statement was wrongly placed.
-!    20th Jan 2012, Caroline Poulsen:
-!       Bug fix changed dy_dx array changed spixe%nx to maxstatevar definition
-!     1st Jan 2012, MJ:
-!       Changes Kx assignment
-!    21th May 2014, Greg McGarragh:
-!       Cleaned up the code.
-!    15th Jan 2015, Adam Povey:
-!       Facilitate channel indexing in arbitrary order.
-!
-! Bugs:
-!   None known.
+! 2001/01/30, KS: Original version
+! 2001/04/27, AS: Now uses SPixel instead of Ctrl for active state variable 
+!    indices and channels.
+! 2001/06/06, AS: Implicit none statement was wrongly placed.
+! 2012/01/20, CP: Bug fix changed dy_dx array changed spixe%nx to maxstatevar 
+!    definition
+! 2012/01/01, MJ: Changes Kx assignment
+! 2014/05/21, GM: Cleaned up the code.
+! 2015/01/15, AP: Facilitate channel indexing in arbitrary order.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)

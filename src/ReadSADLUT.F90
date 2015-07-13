@@ -1,50 +1,36 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    ReadSADLUT
+! Name: ReadSADLUT.F90
 !
 ! Purpose:
-!
-! Local variables:
-!    Name Type Description
+! Module of various routines used to read ORAC Look-Up Tables,
+! supporting the subroutine Read_SAD_LUT() defined at the end.
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
-!    18th Mar 2015, Oliver Sus:
-!       Needed to add "/" for LUT file path
+! 2014/10/10, GM: Original version.
+! 2015/03/18, OS: Needed to add "/" for LUT file path
 !
 ! $Id$
+!
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
-
 !-------------------------------------------------------------------------------
-! Below are subroutines supporting the subroutine Read_SAD_LUT() defined at the
-! end.
-!-------------------------------------------------------------------------------
-
-
-!-------------------------------------------------------------------------------
-! Name:
-!    grid_dimension_read
+! Name: grid_dimension_read
 !
 ! Purpose:
-!    Read a single grid dimension.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read a single grid dimension.
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
                                i_chan, i_lut, nTau, dTau, MinTau, MaxTau, Tau)
@@ -90,27 +76,81 @@ end subroutine grid_dimension_read
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    grid_dimension_copy
+! Name: grid_dimension_read
 !
 ! Purpose:
-!    Read a single grid dimension.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read a single grid dimension.
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
+! None known.
+!-------------------------------------------------------------------------------
+subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
+                               i_chan, i_lut, nTau, dTau, MinTau, MaxTau, Tau)
+
+   implicit none
+
+   ! Argument declarations
+   character(*), intent(in)    :: filename
+   character(*), intent(in)    :: n_name
+   character(*), intent(in)    :: d_name
+   character(*), intent(in)    :: v_name
+   integer,      intent(in)    :: lun
+   integer,      intent(in)    :: i_chan
+   integer,      intent(in)    :: i_lut
+   integer,      intent(inout) :: nTau(:,:)
+   real,         intent(inout) :: dTau(:,:)
+   real,         intent(inout) :: MaxTau(:,:)
+   real,         intent(inout) :: MinTau(:,:)
+   real,         intent(inout) :: Tau(:,:,:)
+
+   ! Local variables
+   integer :: i
+   integer :: iostat
+
+   read(lun, *, iostat=iostat) nTau(i_chan, i_lut), dTau(i_chan, i_lut)
+   if (iostat .ne. 0) then
+      write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(n_name), &
+         ' and ', trim(d_name), ' from SAD LUT file: ', trim(filename)
+      stop LUTFileReadErr
+   end if
+
+   read(lun, *, iostat=iostat) (Tau(i_chan, i, i_lut), i=1, nTau(i_chan, i_lut))
+   if (iostat .ne. 0) then
+      write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(v_name), &
+                                ' from SAD LUT file: ', trim(filename)
+      stop LUTFileReadErr
+   end if
+
+   MinTau(i_chan,i_lut)  = Tau(i_chan, 1, i_lut)
+   MaxTau(i_chan,i_lut)  = Tau(i_chan, nTau(i_chan, i_lut), i_lut)
+
+end subroutine grid_dimension_read
+
+
+!-------------------------------------------------------------------------------
+! Name: grid_dimension_copy
 !
+! Purpose:
+! Read a single grid dimension.
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2014/10/10, GM: Original version
+!
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 subroutine grid_dimension_copy(i_chan, i_lut1, i_lut2, nTau, dTau, MinTau, &
                                MaxTau, Tau)
@@ -139,27 +179,21 @@ end subroutine grid_dimension_copy
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    read_grid_dimensions
+! Name: read_grid_dimensions
 !
 ! Purpose:
-!    Read all required grid dimensions
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read all required grid dimensions
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine read_grid_dimensions(filename, lun, i_chan, SAD_LUT, has_sol_zen, &
                                 has_sat_zen, has_rel_azi, i_lut, i_lut2)
@@ -257,27 +291,21 @@ end subroutine read_grid_dimensions
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    read_values_2d
+! Name: read_values_2d
 !
 ! Purpose:
-!    Read 2d LUT values
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read 2d LUT values
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine read_values_2d(filename, v_name, lun, i_chan, i_lut, &
                           n_i, n_j, values)
@@ -344,27 +372,21 @@ end subroutine read_values_3d
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    read_values_5d
+! Name: read_values_5d
 !
 ! Purpose:
-!    Read 5d LUT values
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read 5d LUT values
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine read_values_5d(filename, v_name, lun, i_chan, i_lut, &
                           n_i, n_j, n_k, n_l, n_m, values)
@@ -402,27 +424,21 @@ end subroutine read_values_5d
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    Read_LUT_Xd_sat
+! Name: Read_LUT_Xd_sat
 !
 ! Purpose:
-!    Read an LUT that has a variable satellite zenith angle
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read an LUT that has a variable satellite zenith angle
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine Read_LUT_Xd_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                            values, i_lut2, name2, values2)
@@ -492,27 +508,21 @@ end subroutine Read_LUT_Xd_sat
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    Read_LUT_Xd_sol
+! Name: Read_LUT_Xd_sol
 !
 ! Purpose:
-!    Read an LUT that has a variable solar zenith angle
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read an LUT that has a variable solar zenith angle
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine Read_LUT_Xd_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                            values, i_lut2, name2, values2)
@@ -583,27 +593,22 @@ end subroutine Read_LUT_Xd_sol
 
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_LUT_Xd_both
+! Read_LUT_Xd_both
 !
 ! Purpose:
-!    Read an LUT that has a variable solar and satellite zenith angle, in which
-!    case relative azimuth angle also matters.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Read an LUT that has a variable solar and satellite zenith angle, in which
+! case relative azimuth angle also matters.
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine Read_LUT_Xd_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                             values, i_lut2, name2, values2)
@@ -674,28 +679,21 @@ end subroutine Read_LUT_Xd_both
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    create_lut_filename
+! Name: create_lut_filename
 !
 ! Purpose:
-!    Create an LUT filename given the lut name and string channel number.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Create an LUT filename given the lut name and string channel number.
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name Type In/Out/Both Description
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh:
-!       Original version.
-!    30th Apr 2015 Martin Stengel: correct definition of LUT_file for NOAA-7 and NOAA-9
+! 2014/10/10, GM: Original version
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
 
@@ -727,87 +725,67 @@ subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
 
 end subroutine create_lut_filename
 
-
 !-------------------------------------------------------------------------------
 ! Name:
-!    Read_SAD_LUT
+! Read_SAD_LUT
 !
 ! Purpose:
-!    Reads the required SAD LUTs.
-!
-! Arguments:
-!    Name     Type   In/Out/Both Description
-!    Ctrl     struct In          Control structure
-!    SAD_Chan struct out         SAD_Chan structure filled from a read using
-!                                Read_SAD_Chan()
-!    SAD_LUT  struct out         Structure to hold the values from the LUT
-!                                files.
+! Reads the required SAD LUTs.
 !
 ! Algorithm:
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name     Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct In          Control structure
+! SAD_Chan struct out         SAD_Chan structure filled from a read using
+!                             Read_SAD_Chan()
+! SAD_LUT  struct out         Structure to hold the values from the LUT
+!                             files.
 !
 ! History:
-!    13th Oct 2000, Andy Smith: Original version
-!    23rd Nov 2000, Andy Smith:
-!       Channel file names updated: using 'Ch' instead of 'CH'
-!     9th Jan 2001, Andy Smith:
-!       Emissivity files available. Read_LUT_EM call un-commented.
-!       Added breakpoint output.
-!       Ctrl%Ind%Y renamed Y_Id
-!    12th Jan 2001, Andy Smith:
-!       Arrays of LUT values (RBd etc) made allocatable. Allocate sizes here.
-!    18th Jan 2001, Andy Smith:
-!       Bug fix in array allocation. Rfd, TFd arrays must always be allocated
-!       even if the choice of channels means they're unused, because they are
-!       read from the same files as Rd, Td by the same routines.
-!     9th Feb 2001, Andy Smith:
-!       Using pre-defined constants (ECPConstants.f90) for breakpoint levels.
-!     1st Mar 2001, Andy Smith:
-!       LUT array values are now divided by 100 since values in files are
-!       percentages and we require fractions later on.
-!       (Temporary fix until files are re-written?)
-!     7th Jun 2001, Andy Smith:
-!       Debug log message removed from routine Read_LUT_Rbd
-!    **************** ECV work starts here *************************************
-!    22nd Mar 2011, Andy Smith:
-!       Remove phase change, phase 2 only 1 cloud class per run.
-!       SAD_LUT is also now reduced from dimension N cloud classes to 1.
-!     6th Apr 2011, Andy Smith:
-!       Removed two redundant breakpoint outputs now that only 1 cloud class.
-!    3rd May 2011, Andy Smith:
-!       Extension to multiple instrument views. Wavelength array is now allocated.
-!       Added wavelength to breakpoint outputs to allow checking when >1 view
-!       selected.
-!    3rd May 2011, Caroline Poulsen: removed allocation of LUTs into individual
-!      routine so ntau,nrensatzen etc could be read and used directly from LUT
-!      files and are not replicated else where
-!    16th Jan 2014, Greg McGarragh:
-!       Added allocation of SAD_LUT%table_use* arrays.
-!    23th Jan 2014, Greg McGarragh:
-!       Cleaned up code.
-!     4th Feb 2014, Matthias Jerg:
-!       Implements code for AVHRR to assign channel numbers for LUT names.
-!    20th Sep 2014, Greg McGarragh:
-!       Use a subroutine to create the LUT filenames.
-!    10th Oct 2014, Greg McGarragh:
-!       Use the new LUT read code.
-!    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
-!       solar/thermal channels with respect to the channels actually processed,
-!       rather than the MSI file.
-!    29th Dec 2014, Greg McGarragh:
-!       Fixed a bug in the channel indexing changes above.
-!      9th Jan 2015 Caroline Poulsen:
-!        Added Rfbd.
-!    19th Jan 2015, Greg McGarragh:
-!        Use make_sad_chan_num().
+! 2000/10/13, AS: Original version
+! 2000/11/23, AS: Channel file names updated: using 'Ch' instead of 'CH'
+! 2001/01/09, AS: Emissivity files available. Read_LUT_EM call un-commented.
+!    Added breakpoint output. Ctrl%Ind%Y renamed Y_Id
+! 2001/01/12, AS: Arrays of LUT values (RBd etc) made allocatable. Allocate 
+!    sizes here.
+! 2001/01/18, AS: Bug fix in array allocation. Rfd, TFd arrays must always be 
+!    allocated even if the choice of channels means they're unused, because they
+!    are read from the same files as Rd, Td by the same routines.
+! 2001/02/09, AS: Using pre-defined constants (ECPConstants.f90) for breakpoint 
+!    levels.
+! 2001/03/01, AS: LUT array values are now divided by 100 since values in files 
+!    are percentages and we require fractions later on.
+!    (Temporary fix until files are re-written?)
+! 2001/06/07, AS: Debug log message removed from routine Read_LUT_Rbd
+! **************** ECV work starts here *************************************
+! 2011/03/22, AS: Remove phase change, phase 2 only 1 cloud class per run.
+!    SAD_LUT is also now reduced from dimension N cloud classes to 1.
+! 2011/04/06, AS: Removed two redundant breakpoint outputs now that only 1 
+!    cloud class.
+! 2011/05/03, AS: Extension to multiple instrument views. Wavelength array is 
+!    now allocated. Added wavelength to breakpoint outputs to allow checking 
+!    when >1 view selected.
+! 2011/05/03, CP: removed allocation of LUTs into individual
+!    routine so ntau,nrensatzen etc could be read and used directly from LUT
+!    files and are not replicated else where
+! 2014/01/16, GM: Added allocation of SAD_LUT%table_use* arrays.
+! 2014/01/23, GM: Cleaned up code.
+! 2014/02/04, MJ: Implements code for AVHRR to assign channel numbers for LUT 
+!    names.
+! 2014/09/20, GM: Use a subroutine to create the LUT filenames.
+! 2014/10/10, GM: Use the new LUT read code.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of
+!    solar/thermal channels with respect to the channels actually processed,
+!    rather than the MSI file.
+! 2014/12/29, GM: Fixed a bug in the channel indexing changes above.
+! 2015/01/09, CP: Added Rfbd.
+! 2015/01/19, GM: Use make_sad_chan_num().
 !
 ! Bugs:
-!   None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
-
 subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
    use CTRL_def

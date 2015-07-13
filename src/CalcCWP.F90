@@ -1,35 +1,34 @@
 !-------------------------------------------------------------------------------
-! Name:
-!   Calc_CWP
+! Name: CalcCWP.F90
 !
-! Description:
-!    This routine calculates the Cloud water path and the associated error on
-!    the Cloud waterPath
+! Purpose:
+! This routine calculates the Cloud water path and the associated error on
+! the Cloud waterPath
+!
+! Description and Algorithm details:
+! 1) Evaluate (4/3) * COT * Ref * density / extinction_coefficient.
+! 2) Evalute derivatives of that for Jacobian.
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!    Ctrl       struct  ECP control structure read from driver file
-!    SPixel     struct  Structure for the pixel currently being retrieved.
-!    status     int     Status of Write_log routine.
-!
-! Algorithm:
-!
+! Name       Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl       struct  In   ECP control structure read from driver file
+! SPixel     struct  Both Structure for the pixel currently being retrieved.
 !
 ! History:
-!     8th Nov 2011, Caroline Poulsen: original version adapted from idl version
-!    28th Nov 2011, Caroline Poulsen: remove log write statement
-!    2013/11/14, MJ: makes branch for ICE explicit
-!    2013/11/14, GM: Some code cleanup
-!    2014/06/11, CP: removes automatic crash if ice wat class not specified so
-!      can cope with aerosol class
-!    2014/07/23, AP: added value for al10e2.
-!    2014/12/19, AP: Renaming CloudClass field in Ctrl.
-!
-! Bugs:
-!   None known.
+! 2011/11/08, CP: original version adapted from idl version
+! 2011/11/28, CP: remove log write statement
+! 2013/11/14, MJ: makes branch for ICE explicit
+! 2013/11/14, GM: Some code cleanup
+! 2014/06/11, CP: removes automatic crash if ice wat class not specified so
+!    can cope with aerosol class
+! 2014/07/23, AP: added value for al10e2.
+! 2014/12/19, AP: Renaming CloudClass field in Ctrl.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Calc_CWP(Ctrl, SPixel)

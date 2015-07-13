@@ -1,33 +1,28 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Find_Lun
+! Name: FindLUN.F90
 !
 ! Purpose:
-!    Subroutine to find a free logical unit number for file handling
+! Subroutine to find a free logical unit number for file handling
 !
-! Description:
-!    Uses the inquire function to find a free logical unit number in the range
-!    20 to 100.
+! Description and Algorithm details:
+! Uses the inquire function to find a free logical unit number in the range
+! 20 to 100.
+!
+! for i=20, 200 (until  free unit is found)
+!    inquire whether unit number exists and is in use
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!    lun  int  Out         Free unit number
-!
-! Algorithm:
-!    for i=20, 200 (until  free unit is found)
-!       inquire whether unit number exists and is in use
-!
-! Local variables:
-!    Name Type Description
+! Name Type In/Out/Both Description
+! ------------------------------------------------------------------------------
+! lun  int  Out         Free unit number
 !
 ! History:
-!    17th Aug 2000, Andy Smith : Original version
-!
-! Bugs:
-!    None known.
+! 2000/08/17, AS: Original version
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Find_Lun(lun)

@@ -1,30 +1,31 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    sabotage_input_data
+! Name: sabotage_inputs.F90
 !
 ! Purpose:
-!    Start from the beginning of the scene and deliberately alter pixels so that
-!    all possible combinations of day, twilight, night, and missing channels has
-!    been achieved [2^(3 + Ctrl%Ind%Ny) pixels)].  Pixels with any missing
-!    channels are skipped.
+! Purposefully remove data from inputs to sample all possible input cases.
+!
+! Description and Algorithm details:
+! Start from the beginning of the scene and deliberately alter pixels so that
+! all possible combinations of day, twilight, night, and missing channels has
+! been achieved [2^(3 + Ctrl%Ind%Ny) pixels)].  Pixels with any missing
+! channels are skipped.
 !
 ! Arguments:
-!    Name     Type         In/Out/Both Description
-!    Ctrl     struct        Both       Control structure (date is read in here).
-!    MSI_Data struct        Both       Data structure: the MSI data part of this
-!                                      struct is populated by this routine, and
-!                                      is overwritten on successive calls.
-!    verbose  logical       In         Verbose print-out flag
-!
-! Algorithm:
+! Name     Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct       Both        Control structure (date is read in here).
+! MSI_Data struct       Both        Data structure: the MSI data part of this
+!                                   struct is populated by this routine, and
+!                                   is overwritten on successive calls.
+! verbose  logical      In         Verbose print-out flag
 !
 ! History:
-!     4th Feb 2015, Greg McGarragh:
-!       Original version.
+! 2015/02/04, GM: Original version.
+!
+! $Id$
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine sabotage_inputs(Ctrl, MSI_Data, verbose)

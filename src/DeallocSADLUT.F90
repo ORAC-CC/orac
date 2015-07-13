@@ -1,29 +1,48 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    DeAlloc_SAD_LUT
+! Name: DeallocSADLUT.F90
 !
 ! Purpose:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Two routines for deallocating structures related to LUT gridding in
+! SAD_LUT module.
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh: Original version
-!     9th Jan 2015, Caroline Poulsen: Added Rfbd.
-
-! Bugs:
-!    None known.
+! 2001/10/24, AS: Original version
+!    **************** ECV work starts here *************************************
+! 2011/03/22, AS: Remove phase change, phase 2. SAD_CloudClass no longer 
+!    allocated to N cloud classes, only 1 cloud class per run. SAD_LUT is also 
+!    now reduced from dimension N cloud classes to 1.
+! 2011/06/11, CP: Deallocated new LUT variables
+! 2011/12/13, CP: Deallocated new LUT wavelenght variables
+! 2014/01/12, GM: Added some missing deallocates.
+! 2014/01/16, GM: Added deallocation of SAD_LUT%table_used_for_channel.
+! 2014/05/27, GM: Some cleanup.
+! 2014/10/10, GM: Separate out Grid deallocations to be
+!    consistent with allocation routine. Original version of Dealloc_LUT_Grid
+! 2015/01/09, CP: Added Rfbd.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
-
+!-------------------------------------------------------------------------------
+! Name: Dealloc_LUT_Grid
+!
+! Purpose:
+! Deallocate the LUT_Grid arrays at end of ECP execution.
+!
+! Algorithm:
+! 1) Deallocate all arrays.
+!
+! Arguments:
+! Name     Type   In/Out/Both Description
+!-------------------------------------------------------------------------------
+! LUT_Grid struct Both        Structure of LUT grid parameters
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine Dealloc_LUT_Grid(LUT_Grid)
 
    implicit none
@@ -62,49 +81,22 @@ end subroutine Dealloc_LUT_Grid
 
 
 !-------------------------------------------------------------------------------
-! Name:
-!    Dealloc_SAD_LUT
+! Name: Dealloc_SAD_LUT
 !
 ! Purpose:
-!    Deallocate the SAD_LUT internal arrays at end of ECP execution.
-!
-! Arguments:
-!    Name    Type           In/Out/Both  Description
-!    Ctrl    struct         In           Control structure
-!    SAD_LUT array of alloc structs      Array of SAD_LUT_t structs
-!                           In
-!    status  int            Out          Error status
+! Deallocate the SAD_LUT internal arrays at end of ECP execution.
 !
 ! Algorithm:
-!    Deallocates all arrays in each of the SAD_LUT structures
-!    No error handling is done at present. Since this routine is executed once
-!    at the end of execution it is unclear what action should be taken in case
-!    of error.
+! 1) Deallocates all arrays in each of the SAD_LUT structures
 !
-! Local variables:
-!    Name Type Description
-!
-! History:
-!    24th Oct 2001, Andy Smith: Original version
-!    **************** ECV work starts here *************************************
-!    22nd Mar 2011, Andy Smith:
-!       Remove phase change, phase 2. SAD_CloudClass no longer allocated to N
-!       cloud classes, only 1 cloud class per run.
-!       SAD_LUT is also now reduced from dimension N cloud classes to 1.
-!    11th Jun 2011, Caroline Poulsen: Deallocated new LUT variables
-!    13th Dec 2011, Caroline Poulsen: Deallocated new LUT wavelenght variables
-!    12th Jan 2014, Greg McGarragh: Added some missing deallocates.
-!    16th Jan 2014, Greg McGarragh: Added deallocation of
-!       SAD_LUT%table_used_for_channel.
-!    27th May 2014, Greg McGarragh: Some cleanup.
-!    10th Oct 2014, Greg McGarragh: Separate out Grid deallocations to be
-!       consistent with allocation routine.
-!
+! Arguments:
+! Name    Type           In/Out/Both  Description
+!-------------------------------------------------------------------------------
+! Ctrl    struct         In           Control structure
+! SAD_LUT array of alloc structs      Array of SAD_LUT_t structs
+!                         In
 ! Bugs:
-!    None known.
-!
-! $Id$
-!
+! None known.
 !-------------------------------------------------------------------------------
 subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 

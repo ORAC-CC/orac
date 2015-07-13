@@ -1,55 +1,39 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Dealloc_Data
+! Name: DeallocData.F90
 !
 ! Purpose:
-!    Deallocate the MSI_Data arrays at end of ECP execution.
+! Deallocate the MSI_Data arrays at end of ECP execution.
+!
+! Description and Algorithm details:
+! Deallocates all arrays in the MSI_Data structure
 !
 ! Arguments:
-!    Name      Type         In/Out/Both Description
-!    Ctrl      struct       In          Control structure
-!    MSI_Data  alloc struct In          MSI Data structure
-!    status    int          Out         Error status
-!
-! Algorithm:
-!    Deallocates all arrays in the MSI_Data structure
-!    No error handling is done at present. Since this routine is executed once
-!    at the end of execution it is unclear what action should be taken in case
-!    of error.
-!
-! Local variables:
-!    Name   Type   Description
+! Name      Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl      struct       In          Control structure
+! MSI_Data  alloc struct In          MSI Data structure
 !
 ! History:
-!    24th Oct 2001, Andy Smith: original version
+! 2001/10/24, AS: original version
 !    **************** ECV work starts here *************************************
-!    22nd Feb 2011, Andy Smith:
-!       Re-introducing changes made in late 2001/2002.
-!     1st Nov 2001, Andy Smith:
-!       Added test of allocation status before each array is deallocated.
-!       If an error occurs on reading one or more of the MSI Data arrays it's
-!       possible that not all arrays are associated (see Read_Sat_Data,
-!       Read_ATSR_MSI etc).
-!     5th Jun 2002, Caroline Poulsen:
-!        Deallocate ALB data
-!     8th Jul 2011, Caroline Poulsen:
-!        Deallocate scan data
-!    16th Dec 2013, Greg McGarragh:
-!       Add deallocation of MSI_Data%illum and a bit of cleanup.
-!    27th May 2014, Greg McGarragh:
-!       Some cleanup.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!    24th Oct 2014, Oliver Sus:
-!       added deallocation of CldType, CloudMask, CCCOT_pre, LUSFlags, DEM,
-!       nisemask
-!    30th Jan 2015, Adam Povey: Remove uscan and vscan as unnecessary.
-!
-! Bugs:
-!    None known.
+! 2011/02/22, AS: Re-introducing changes made in late 2001/2002.
+! 2011/11/01, AS: Added test of allocation status before each array is 
+!    deallocated. If an error occurs on reading one or more of the MSI Data 
+!    arrays it's possible that not all arrays are associated (see Read_Sat_Data,
+!    Read_ATSR_MSI etc).
+! 2012/06/05, CP: Deallocate ALB data
+! 2011/07/08, CP: Deallocate scan data
+! 2013/12/16, GM: Add deallocation of MSI_Data%illum and a bit of cleanup.
+! 2014/05/27, GM: Some cleanup.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2014/10/24, OS: added deallocation of CldType, CloudMask, CCCOT_pre, LUSFlags,
+!    DEM, nisemask
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Dealloc_Data(Ctrl, MSI_Data)

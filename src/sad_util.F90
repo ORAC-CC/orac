@@ -1,30 +1,16 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    sad_util
+! Name: sad_util.F90
 !
 ! Purpose:
-!
-! Description:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Module of routines used by the SAD reading routines.
 !
 ! History:
-!    19th Jan 2015, Greg McGarragh: Original version.
-!
-! Bugs:
-!    None known.
+! 2015/01/19, GM: Original version.
 !
 ! $Id: sad_util.F90 2856 2015-01-12 18:50:33Z acpovey $
 !
+! Bugs:
+! None known.
 !---------------------------------------------------------------------
 
 module sad_util
@@ -34,24 +20,28 @@ module sad_util
 contains
 
 !-------------------------------------------------------------------------------
-! Name:
-!    make_sad_chan_num
+! Name: make_sad_chan_num
 !
 ! Purpose:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
+! Returns a string label for a numbered channel.
 !
 ! Algorithm:
+! 1) If AVHRR: 1->Ch1, 2->Ch2, 3->Ch3a, 4->Ch3b, 5->Ch4, 6->Ch5
+! 2) Otherwise, X->Ch0X, YY->ChYY
+!
+! Arguments:
+! Name     Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct  In          Control structure defined in Ctrl_def
+! i_chan   integer In          Number of channel
+! chan_num string  Out         String equivalent of channel number
 !
 ! History:
-!    19th Jan 2015, Greg McGarragh: Original version.
+! 2015/01/19, GM: Original version.
 !
 ! Bugs:
-!    None known.
-!
+! None known.
 !-------------------------------------------------------------------------------
-
 subroutine make_sad_chan_num(Ctrl, i_chan, chan_num)
 
    use CTRL_def

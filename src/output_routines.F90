@@ -1,42 +1,29 @@
 !-------------------------------------------------------------------------------
-! Name:
+! Name: output_routines.F90
 !
 ! Purpose:
-!
-! Description:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Structure defintion for output_data and module for output routines.
 !
 ! History:
-!    13th Jun 2014, Greg McGarragh : Original version, output_data_*
-!       structures taken from SPixel module.
-!    16th Sep 2014, Greg McGarragh : Added output_utils.F90.
-!    24th Oct 2014, Oliver Sus: added variables cldtype, cloudmask,
-!       cccot_pre, lusflags, dem, and nisemask
-!    25th Nov 2014, Adam Povey: Move scaling/offset definitions here.
-!     1st Dec 2014, Oliver Sus: new cldtype_vmax = 9
-!     1st Dec 2014, Caroline Poulsen: added cloud albedo
-!     5th Mar 2015, Oliver Sus: added values to nisemask scale, offset, vmin,
-!       vmax; set cth_vmin to -0.01
-!    19th Mar 2015, Oliver Sus: cth_vmin set to 0
-!    22nd April 2015, Oliver Sus: cth_vmin set to -1000 m, i.e. -1 km
-!     3rd July 2015, Oliver Sus: Added cldmask_error variables
-!     4th July 2015, CP: Added corrected cth
-!
-! Bugs:
-!    None known.
+! 2014/06/13, GM: Original version, output_data_*
+!    structures taken from SPixel module.
+! 2014/09/16, GM: Added output_utils.F90.
+! 2014/10/24, OS: added variables cldtype, cloudmask,
+!    cccot_pre, lusflags, dem, and nisemask
+! 2014/11/25, AP: Move scaling/offset definitions here.
+! 2014/12/01, OS: new cldtype_vmax = 9
+! 2014/12/01, CP: added cloud albedo
+! 2015/03/05, OS: added values to nisemask scale, offset, vmin,
+!    vmax; set cth_vmin to -0.01
+! 2015/03/19, OS: cth_vmin set to 0
+! 2015/04/22, OS: cth_vmin set to -1000 m, i.e. -1 km
+! 2015/07/03, OS: Added cldmask_error variables
+! 2015/07/04, CP: Added corrected cth
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module output_routines

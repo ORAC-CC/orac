@@ -2,18 +2,23 @@
 ! Name: polint.F90
 !
 ! Purpose:
+! Interpolate a set of N points by fitting a polynomial of degree N-1.
 !
 ! Description and Algorithm details:
 ! From Numerical Recipes in Fortran 90 [Press, Flannery]
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
-!
-! Local variables:
-! Name Type Description
+! ------------------------------------------------------------------------------
+! xa   real In          Input independent variable
+! ya   real In          Input dependent variable
+! n    int  In          Length of those
+! x    real In          Points at which to interpolate
+! y    real Out         Interpolated values
+! dy   real Out         Error estimate on interpolated values
 !
 ! History:
-! 2011/02/03, Matthias Jerg: Adapted for L2 software
+! 2011/02/03, MJ: Adapted for L2 software
 !
 ! $Id$
 !

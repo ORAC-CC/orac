@@ -1,11 +1,29 @@
-subroutine hpsort(n,ra)
+!-------------------------------------------------------------------------------
+! Name: hpsort.F90
+!
+! Purpose:
+! Sorts an array into ascending numerical order.
+!
+! Description and Algorithm details:
 ! From Numerical Recipes in Fortran 90 [Press, Flannery]
-! sorts an array (ra) into ascending numerical order
 !
-! History
-!    2011/02/03 - Adapted for L3 software by M. Jerg
-!    2012/06/13 - Adapted for preprocessing software C Poulsen
+! Arguments:
+! Name Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! n    int        In          Length of input array
+! ra   real array Both        Array to sort.
 !
+! History:
+! 2011/02/03, MJ: Adapted for L3 software
+! 2012/06/13, CP: Adapted for preprocessing software
+!
+! $Id$
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+
+subroutine hpsort(n,ra)
 !  use vartypes
 !  use preproc_constants
 !  use preproc_structures

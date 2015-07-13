@@ -1,33 +1,29 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_Illum
+! Name: GetIllum.F90
 !
 ! Purpose:
+! Copy illumination condition into SPixel structure.
+!
+! Description and Algorithm details:
 !
 ! Arguments:
-!    Name     Type    In/Out/Both Description
-!    Ctrl     struct  In          Control structure
-!    SPixel   struct  Both        Super-pixel structure
-!    MSI_Data struct  In          Data structure. Contains the multi-spectral
-!                                 image measurements, location values, geometry
-!                                 etc for the current image segment, from which
-!                                 the current SPixel values will be extracted.
-!    status   integer Out         Error status
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Name     Type   In/Out/Both  Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct  In          Control structure
+! SPixel   struct  Both        Super-pixel structure
+! MSI_Data struct  In          Data structure. Contains the multi-spectral
+!                              image measurements, location values, geometry
+!                              etc for the current image segment, from which
+!                              the current SPixel values will be extracted.
+! status   integer Out         Error status
 !
 ! History:
-!     4th Feb 2015, Greg McGarragh:
-!       Original version.
-!
-! Bugs:
-!    None known.
+! 2015/02/04, GM: Original version.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Get_Illum(Ctrl, SPixel, MSI_Data, status)

@@ -3,20 +3,21 @@
 !
 ! Purpose:
 ! Find tropopause given temperature and height profile and remove by
-! extrapolating into stratosphere
+! extrapolating into stratosphere. SUPERCEEDED by Int_CTP.
 !
 ! Description and Algorithm details:
 !
 ! Arguments:
 ! Name   Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
 ! SPixel struct Both Summarises the details of the pixel to be processed.
 !
 ! History:
-! 2012/05/24, C. Poulsen: Original code, based on idl t_extrap_tp.pro
-! 2014/03/14, C. Poulsen: debugged and tested
-! 2014/08/04, G. McGarragh: A bit of cleanup.
-! 2014/08/20, O. Sus: removed superfluous commata after write statements
-! 2015/01/30, A. Povey: Tidying and merging with t_extrap_strat.
+! 2012/05/24, CP: Original code, based on idl t_extrap_tp.pro
+! 2014/03/14, CP: debugged and tested
+! 2014/08/04, GM: A bit of cleanup.
+! 2014/08/20, OS: removed superfluous commata after write statements
+! 2015/01/30, AP: Tidying and merging with t_extrap_strat.
 !
 ! $Id$
 !

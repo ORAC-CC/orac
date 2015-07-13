@@ -2,11 +2,22 @@
 ! Name: read_config_file.F90
 !
 ! Purpose:
+! Read contents of the configuration file, used to allocating data arrays.
 !
 ! Description and Algorithm details:
+! Use nc_read_array a few times.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name              Type      In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl              struct    In          Control structure
+! channel_ids_instr int array Both        ID number for channels input
+! channel_sw_flag   int array Both        Flags channels with shortwave component
+! channel_lw_flag   int array Both        Flags channels with longwave component
+! global_atts       struct    Both        Global attributes for output files
+! source_atts       struct    Both        Attributes for output files specifying
+!                                         input files
+! verbose           logical   In          If set, print results
 !
 ! History:
 ! 2013/11/14, MJ: Initial version

@@ -1,83 +1,65 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Interpol_Thermal
+! Name: InterpolThermal.F90
 !
 ! Purpose:
-!    Interpolates LW transmittances and radiances to the cloud pressure level.
+! Interpolates LW transmittances and radiances to the cloud pressure level.
+!
+! Description and Algorithm details:
 !
 ! Arguments:
-!    Name     Type        In/Out/Both Description
-!    Ctrl     struct      In          Control structure
-!    SPixel   struct      In          Super-pixel structure
-!    Pc       float       In          Cloud pressure (from state vector X)
-!    SAD_Chan float array In          Channel characteristics
-!    RTM_Pc   struct      Out         Contains Tac, Tbc (interpolated
-!                                     transmittances above and below cloud) and
-!                                     gradients wrt cloud pressure.
-!    status   int         Out         Standard status value not set here
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Name     Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct      In          Control structure
+! SPixel   struct      In          Super-pixel structure
+! Pc       float       In          Cloud pressure (from state vector X)
+! SAD_Chan float array In          Channel characteristics
+! RTM_Pc   struct      Out         Contains Tac, Tbc (interpolated
+!                                  transmittances above and below cloud) and
+!                                  gradients wrt cloud pressure.
+! status   int         Out         Standard status value not set here
 !
 ! History:
-!    21st Nov 2000, Kevin M. Smith: Original version
-!    14th Feb 2001, Kevin M. Smith: Corrected the position of the end of the
-!       first main if block.
-!    16th Feb 2001, Andy Smith:
-!       Using RTM_Pc struct to pass Tac, Tbc etc.
-!    20th Feb 2001, Andy Smith:
-!       Converting calculations from B to T, since B is not available from the
-!       SPixel RTM input. SAD_Chan is now required as an input argument.
-!    26th Feb 2001, Andy Smith:
-!       Changed test for P levels bounding Pc. Using
-!       (Pc >= p(j) and Pc <  p(j+1)) instead of
-!       (Pc >  p(j) and Pc <= p(j+1)) because P levels now go in order of
-!       increasing pressure. Previously, if Pc was equal to P(1) it was not
-!       matched (and if Pc < P(1) it's P index is set to 1!)
-!     1st Mar 2001, Andy Smith:
-!       Fixed dB_dT declaration. Was scalar, should have been array (NThermal).
-!    15th Mar 2001, Andy Smith:
-!       Added ThF and ThL indices for RTM_Pc%LW arrays. Required because these
-!       arrays are allocated to match the no. of thermal channels requested, but
-!       in twilight not all of the requested thermal channels may be used.
-!    11th May 2001, Andy Smith:
-!       Added setting of RTM_Pc%Tc.
-!    20th Jul 2001, Andy Smith:
-!       Fixed setting of ThL. Last thermal channel should always be the one
-!       specified in Ctrl, not SPixel, since the RTM_Pc and RTM arrays are of
-!       fixed size for the whole run, i.e are not re-allocated to match the no.
-!       of thermal channels used in each SPixel, and it is the lower numbered
-!       thermal channels that are not used in certain conditions.
-!       Added breakpoint outputs.
+! 2000/11/21, KM: Original version
+! 2001/02/14, KM: Corrected the position of the end of the first main if block.
+! 2001/02/16, AS: Using RTM_Pc struct to pass Tac, Tbc etc.
+! 2001/02/20, AS: Converting calculations from B to T, since B is not available
+!    from the SPixel RTM input. SAD_Chan is now required as an input argument.
+! 2001/02/26, AS: Changed test for P levels bounding Pc. Using (Pc >= p(j) and
+!    Pc <  p(j+1)) instead of (Pc >  p(j) and Pc <= p(j+1)) because P levels
+!    now go in order of increasing pressure. Previously, if Pc was equal to
+!    P(1) it was not matched (and if Pc < P(1) it's P index is set to 1!)
+! 2001/03/01, AS: Fixed dB_dT declaration. Was scalar, should have been array
+!    (NThermal).
+! 2001/03/15, AS: Added ThF and ThL indices for RTM_Pc%LW arrays. Required
+!    because these arrays are allocated to match the no. of thermal channels
+!    requested, but in twilight not all of the requested thermal channels may
+!    be used.
+! 2001/05/11, AS: Added setting of RTM_Pc%Tc.
+! 2001/07/20, AS: Fixed setting of ThL. Last thermal channel should always be
+!    the one specified in Ctrl, not SPixel, since the RTM_Pc and RTM arrays are
+!    of fixed size for the whole run, i.e are not re-allocated to match the no.
+!    of thermal channels used in each SPixel, and it is the lower numbered
+!    thermal channels that are not used in certain conditions. Added breakpoint
+!    outputs.
 !    **************** ECV work starts here *************************************
-!    21st Feb 2011, Andy Smith:
-!       Re-introducing changes made in late 2001/2002.
-!    12th Dec 2002, Caroline Poulsen:
-!       Added in GPH followed the example of temperature
-!    23rd Dec 2002, Andy Smith:
-!       Added height gradient dHc_dPC to RTM_Pc structure. Required later for
-!       ascribing an error value to the height.
-!     7th Feb 2012, C. Arnold:
-!       Added intent() to argument declarations
-!    17th Jan 2013, Matthias Jerg:
-!       Adds code to extract RTM_Pc%dHc_dPc and RTM_Pc%dTc_dPc
-!    15th Jan 2014, Greg McGarragh:
-!       Deal with the case when Pc is equal to the pressure of the last level.
-!    16th May 2014, Greg McGarragh:
-!       Cleaned up the code.
-!     5th Aug 2014, Greg McGarragh:
-!       Put Interpol_* common code into subroutine find_Pc().
-!     7th Jan 2015, Adam Povey:
-!       Use SPixel index arrays rather than ThF,ThL.
-!     7/5/2015 CP removes the  the stop IntTransErr!
-! Bugs:
-!   call find_Pc(Ctrl, SPixel%RTM%LW%Np, SPixel%RTM%LW%P, Pc, i, status)
-!   occasionally reutrns status 0 particually with ice retreivals
+! 2011/02/21, AS: Re-introducing changes made in late 2001/2002.
+! 2002/12/12, CP: Added in GPH followed the example of temperature
+! 2002/12/23, AS: Added height gradient dHc_dPC to RTM_Pc structure. Required
+!    later for ascribing an error value to the height.
+! 2012/02/07, CA: Added intent() to argument declarations
+! 2013/01/17, MJ: Adds code to extract RTM_Pc%dHc_dPc and RTM_Pc%dTc_dPc
+! 2014/01/15, GM: Deal with the case when Pc is equal to the pressure of the
+!    last level.
+! 2014/05/16, GM: Cleaned up the code.
+! 2014/08/05, GM: Put Interpol_* common code into subroutine find_Pc().
+! 2015/01/07, AP: Use SPixel index arrays rather than ThF,ThL.
+! 2015/05/07, CP: removes the stop IntTransErr
 !
 ! $Id$
 !
+! Bugs:
+! call find_Pc(Ctrl, SPixel%RTM%LW%Np, SPixel%RTM%LW%P, Pc, i, status)
+! occasionally returns status 0 particually with ice retreivals
 !-------------------------------------------------------------------------------
 
 subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)

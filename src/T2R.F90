@@ -1,43 +1,38 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    T2R
+! Name: T2R.F90
 !
 ! Purpose:
-!    Converts temperatures to radiances
+! Converts temperatures to radiances
+!
+! Description and Algorithm details:
+! Calculate radiances
+! Calculate change in radiances w.r.t. temperature (for each channel)
 !
 ! Arguments:
-!    Name     Type         In/Out/Both Description
-!    NChan    int          In          Number of required channels
-!    SAD_Chan array struct In          SAD channel structure
-!    T        real array   In          Temperatures
-!    R        real array   Out         Radiances
-!    d_R_d_T  real array   Out         Gradients in radiance. w.r.t. temperature
-!    status   int          Out         Error status
-!
-! Algorithm:
-!    Calculate radiances
-!    Calculate change in radiances w.r.t. temperature (for each channel)
-!
-! Local variables:
-!   Name Type Description
+! Name     Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! NChan    int          In          Number of required channels
+! SAD_Chan array struct In          SAD channel structure
+! T        real array   In          Temperatures
+! R        real array   Out         Radiances
+! d_R_d_T  real array   Out         Gradients in radiance. w.r.t. temperature
+! status   int          Out         Error status
 !
 ! History:
-!    24th November, 2000, Kevin M. Smith: original version
-!     5th February, 2001, Kevin M. Smith:
-!       Removed Ctrl from argument list. Added NChan (number of required
-!       channels). This was done to be consistent with changed to R2T.
-!    21st Feb 2001, Andy Smith: comments on arguments corrected
-!    28th Jan 2014, Matthias Jerg: Fixes some overflow: however, only symptoms
-!       are cured here not the actual reason for the overflow (unknown) nor is
-!       this condition reported as status.
-!     4th Feb 2014, Matthias Jerg: Fixes bug in above fix.
-!    24th Oct 2014, Oliver Sus: Some minor changes to deal with float under/overflow issues.
-!
-! Bugs:
-!   None known.
+! 2000/11/24, KS: original version
+! 2001/02/05, KS: Removed Ctrl from argument list. Added NChan (number of 
+!    required channels). This was done to be consistent with changed to R2T.
+! 2001/02/21, AS: comments on arguments corrected
+! 2014/01/28, MJ: Fixes some overflow: however, only symptoms are cured here not
+!    the actual reason for the overflow (unknown) nor is this condition 
+!    reported as status.
+! 2014/02/04, MJ: Fixes bug in above fix.
+! 2014/10/24, OS: Some minor changes to deal with float under/overflow issues.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)

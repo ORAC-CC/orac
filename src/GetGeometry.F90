@@ -1,99 +1,76 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_Geometry
+! Name: GetGeometry.F90
 !
 ! Purpose:
-!    Gets the 'average' observation geometry for the current super-pixel.
-!    Also calculates mean airmass factors for use in the forward model.
+! Gets the 'average' observation geometry for the current super-pixel.
+! Also calculates mean airmass factors for use in the forward model.
+!
+! Description and Algorithm details:
+! Assign the SPixel geometry values using the corresponding pixel from the
+! MSI_Data struct.
+! Determine the "illumination" (day, twi, night) based on solar zenith angle.
+! Ensure that illumination is consistent in all views for this pixel
+!   (if not, return an error code)
+! Assign the active solar, thermal channels and state variables depending on
+! illumination.
+! Calculate the airmass factors for the observation and viewing geometry
 !
 ! Arguments:
-!    Name     Type    In/Out/Both Description
-!    Ctrl     struct  In          Control structure
-!    SPixel   struct  Both        Super-pixel structure
-!    MSI_Data struct  In          Data structure. Contains the multi-spectral
-!                                 image measurements, location values, geometry
-!                                 etc for the current image segment, from which
-!                                 the current SPixel values will be extracted.
-!    status   integer Out         Error status
-!
-! Algorithm:
-!    Assign the SPixel geometry values using the corresponding pixel from the
-!    MSI_Data struct.
-!    Determine the "illumination" (day, twi, night) based on solar zenith angle.
-!    Ensure that illumination is consistent in all views for this pixel
-!      (if not, return an error code)
-!    Assign the active solar, thermal channels and state variables depending on
-!    illumination.
-!    Calculate the airmass factors for the observation and viewing geometry
+! Name     Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct  In          Control structure
+! SPixel   struct  Both        Super-pixel structure
+! MSI_Data struct  In          Data structure. Contains the multi-spectral
+!                              image measurements, location values, geometry
+!                              etc for the current image segment, from which
+!                              the current SPixel values will be extracted.
+! status   integer Out         Error status
 !
 ! History:
-!    27th Nov 2000, Kevin M. Smith: Original version
-!    30th Nov 2000, Kevin M. Smith:
-!       Added SPixel%NCloudy and SPixel%Ind%Xn and Yn
-!    19th Dec 2000, Kevin M. Smith:
-!       Replaced Data_Geometry_* arrays with Data structure
-!     8th Jan 2001, Kevin M. Smith:
-!       Included quality control mask
-!    26th Jan 2001, Kevin M. Smith:
-!       Added calculation of air mass factors
-!    14th Mar 2001, Andy Smith:
-!       Temporary change to setting of SPixel%Ind%Ny
-!    16th Mar 2001, Andy Smith:
-!       Using named constants for averaging methods.
-!       Removed check for invalid averaging method (now in ReadDriver)
-!    29th Mar 2001, Andy Smith:
-!       Removed out-of-date comment on channel setting
-!    27th Apr 2001, Andy Smith:
-!       Added allocation and setting of active state variable arrays for the
-!       current SPixel conditions.
-!     6th Jun 2001, Andy Smith:
-!       Added setting of new SPixel variables MDAD_LW, MDAD_SW and FG, AP arrays
-!    15th Jun 2001, Andy Smith:
-!       Changed error message string assignments/writes.
-!       Long message strings were wrapped over two lines with only one set of
-!       quotes around the whole string (including the line continuation marker).
-!       Original code works on DEC but not Linux.
-!     6th Jul 2001, Andy Smith:
-!       Ctrl%X_Dy/Ni/Tw arrays are no longer allocatable. Now need explicit
-!       indices supplied.
-!     7th Aug 2001, Andy Smith:
-!       Updates for image segmentation. Super-pixel y locations need to refer to
-!       the current data segment in the MSI data arrays rather than the whole
-!       image.
-!       Renamed structure Data to MSI_Data since Data is a reserved word (hasn't
-!       caused any problems so far but it might).
-!       Added argument intent.
-!    18th Sep 2001, Andy Smith:
-!       Removed Write_Log call when sat zenith angle > max Ctrl value. No log
-!       message necessary.
-!    21st Sep 2001, Andy Smith:
-!       Memory leak fix. Now deallocates SPixel%Ym and Sy before each allocation.
-!       It is assumed that an initial allocation was made (in ECP main) otherwise
-!       the first deallocate will fail.
+! 2000/11/27, KS: Original version
+! 2000/11/30, KS: Added SPixel%NCloudy and SPixel%Ind%Xn and Yn
+! 2000/12/19, KS: Replaced Data_Geometry_* arrays with Data structure
+! 2001/01/08, KS: Included quality control mask
+! 2001/01/26, KS: Added calculation of air mass factors
+! 2001/03/14, AS: Temporary change to setting of SPixel%Ind%Ny
+! 2001/03/16, AS: Using named constants for averaging methods.
+!    Removed check for invalid averaging method (now in ReadDriver)
+! 2001/03/29, AS: Removed out-of-date comment on channel setting
+! 2200/04/07, AS: Added allocation and setting of active state variable arrays 
+!    for the current SPixel conditions.
+! 2001/06/06, AS: Added setting of new SPixel variables MDAD_LW, MDAD_SW and
+!    FG, AP arrays
+! 2001/06/15, AS: Changed error message string assignments/writes. Long message
+!    strings were wrapped over two lines with only one set of quotes around the
+!    whole string (including the line continuation marker). Original code works
+!    on DEC but not Linux.
+! 2001/07/07, AS: Ctrl%X_Dy/Ni/Tw arrays are no longer allocatable. Now need
+!    explicit indices supplied.
+! 2001/08/07, AS: Updates for image segmentation. Super-pixel y locations need
+!    to refer to the current data segment in the MSI data arrays rather than the
+!    whole image. Renamed structure Data to MSI_Data since Data is a reserved
+!    word (hasn't caused any problems so far but it might). Added argument intent
+! 2001/09/18, AS: Removed Write_Log call when sat zenith angle > max Ctrl value.
+!    No log message necessary.
+! 2001/09/21, AS: Memory leak fix. Now deallocates SPixel%Ym and Sy before each
+!    allocation. It is assumed that an initial allocation was made (in ECP main)
+!    otherwise the first deallocate will fail.
 !    **************** ECV work starts here *************************************
-!    23rd Feb 2011, Andy Smith:
-!       Cloud flags converted to real to match current ORAC data.
-!    29th Mar 2011, Andy Smith:
-!       Removal of super-pixel averaging. Process single pixels.
-!    21st Apr 2011, Andy Smith:
-!       Extension to handle multiple instrument views. MSI Geometry values have
-!       extra dimension for view. SolZen are are now arrays of size NViews.
-!       When checking pixel illumination, ensure that all views have the same
-!       value (day, twilight, night).
-!    13th Dec 2011, C. Poulsen:
-!       Convert cosd to cos to make g95 compatible.
-!    xxxx xxx xxxx, C. Poulsen:
-!       Remove illumination calculation. Illum is now an array of values
-!    30th Jul 2014, Greg McGarragh:
-!       Cleaned up the code.
-!    30th Jan 2015, Adam Povey:
-!       Replace YSeg0 with Y0 as superpixeling removed.
-!
-! Bugs:
-!    None known.
+! 2011/02/23, AS: Cloud flags converted to real to match current ORAC data.
+! 2011/03/29, AS: Removal of super-pixel averaging. Process single pixels.
+! 2011/04/24, AS: Extension to handle multiple instrument views. MSI Geometry
+!    values have extra dimension for view. SolZen are are now arrays of size
+!    NViews. When checking pixel illumination, ensure that all views have the
+!    same value (day, twilight, night).
+! 2011/12/13, CP: Convert cosd to cos to make g95 compatible.
+! 2011/06/15, CP: Remove illumination calculation. Illum now an array of values
+! 2014/07/30, GM: Cleaned up the code.
+! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)

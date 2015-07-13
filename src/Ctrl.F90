@@ -1,124 +1,94 @@
 !-------------------------------------------------------------------------------
-! Name:
-!   Ctrl
+! Name: Ctrl.F90
 !
 ! Purpose:
-!    Module defining control structure (Ctrl) for the ECP
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
+! Module defining control structure (Ctrl) for the ECP
 !
 ! History:
-!    17th Aug 2000, Andy Smith: original version
-!    22nd Nov 2000, Andy Smith:
-!       Added Out_Dir, Ysolar and Ythermal.
-!       Added Run_ID - type may be wrong (we had to guess)
-!       Added maxsatzen and maxsunzen
-!       Added LimitsFlag to InvPar
-!    15th Dec 2000, Kevin Smith:
-!       Added Inst%Date and Inst%Time
-!       Added ThermalFirst, ThermalLast, SolarFirst, SolarLast
-!    10th Jan 2001, Andy Smith:
-!       Added comments to clarify meaning of (Ctrl%Ind%) Y, YSolar and YThermal.
-!       Ctrl%Ind%Y renamed Y_Id for the same reason.
-!       Added Threshold to SPixel
-!     5th Feb 2001, Kevin Smith:
-!       Added NMixed, number of mixed channels.
-!    12th Feb 2001, Kevin Smith:
-!       Added MDAD_LW and MDAD_SW, indices for channels to determine FG values
-!       of Pc, phase and Tau using the MDAD method.
-!    24th April 2001, Andy Smith:
-!       New variable for max number of phase changes in inversion
-!       (Ctrl%Invpar%MaxPhase).
-!       New arrays for specifying active state variables in day/twilight/night
-!       conditions (1 array of X and 1 array of Nx for each). Replaces the old
-!       X and Nx arrays, which were for all conditions.
-!    17th May 2001, Andy Smith:
-!       Added CloudType parameter and measurement covariance matrix Sy.
-!     6th June 2001, Andy Smith:
-!       FG and AP options arrays extended to two dimensions. 2nd dim allows
-!       different choices depending on the conditions (day/twilight/night).
-!    25th Jun 2001, Andy Smith:
-!       New variable Sunset for solar zenith angle that denotes sunset. (Was
-!       previously hard-coded).
-!     2nd July 2001, Andy Smith:
-!       Diagnostic level parameter Diagl changed to an array of flags.
-!       New parameters MaxJ and MaxS in new sub-structure QC (quality control)
-!       Also Max_SDAD, for limit on distance (in pixels) at which the last
-!       retrieved solution is valid for FG/AP setting.
-!     6th July 2001, Andy Smith:
-!       Removing pointer arrays to allow output of the whole struct in a single
-!       statement. Arrays affected: Ctrl%Ind%X_Dy/Tw/Ni, Ctrl%Sy.
-!    11th July 2001, Andy Smith:
-!       Fixes in CloudClass and Phaset structs. CloudClass arrays were fixed at
-!       size 2: replaced by MaxCloudClass constant. CloudClass data removed from
-!       Phaset struct: couldn't see any reason why it was there, must have been
-!       a typo.
-!       Moved Date and Time from the Inst struct to the main struct. Added
-!       Day of Year (DOY) required for setting solar constants in ReadChan.
-!     3rd Aug 2001, Andy Smith:
-!       Added Ctrl%Resoln%SegSize. Size of image segment.
-!       Updated Date from character length 8 to 11 (format dd-mmm-yyyy rather
-!       than yyyymmdd) and converted time from real to character length 12
-!       (hh:mm:ss.sss).
-!    23rd Aug 2001, Andy Smith:
-!       New parameter in Ind for number of instrument channels available (as
-!       opposed to selected by the user). Set by Read_Inst_Config.
+! 2000/08/17, AS: Original version
+! 2000/11/22, AS: Added Out_Dir, Ysolar and Ythermal. Added Run_ID - type may be
+!    wrong (we had to guess). Added maxsatzen and maxsunzen.
+!    Added LimitsFlag to InvPar
+! 2000/12/15, KS: Added Inst%Date and Inst%Time.
+!    Added ThermalFirst, ThermalLast, SolarFirst, SolarLast
+! 2001/01/10, AS: Added comments to clarify meaning of (Ctrl%Ind%) Y, YSolar and
+!    YThermal. Ctrl%Ind%Y renamed Y_Id for the same reason. 
+!    Added Threshold to SPixel
+! 2001/02/05, KS: Added NMixed, number of mixed channels.
+! 2001/02/12, KS: Added MDAD_LW and MDAD_SW, indices for channels to determine 
+!    FG values of Pc, phase and Tau using the MDAD method.
+! 2001/04/24, AS: New variable for max number of phase changes in inversion
+!    (Ctrl%Invpar%MaxPhase).
+!    New arrays for specifying active state variables in day/twilight/night
+!    conditions (1 array of X and 1 array of Nx for each). Replaces the old
+!    X and Nx arrays, which were for all conditions.
+! 2001/05/17, AS: Added CloudType parameter and measurement covariance matrix Sy.
+! 2001/06/06, AS: FG and AP options arrays extended to two dimensions. 2nd dim 
+!    allows different choices depending on the conditions (day/twilight/night).
+! 2001/06/25, AS: New variable Sunset for solar zenith angle that denotes 
+!    sunset. (Was previously hard-coded).
+! 2001/07/02, AS: Diagnostic level parameter Diagl changed to an array of flags.
+!    New parameters MaxJ and MaxS in new sub-structure QC (quality control)
+!    Also Max_SDAD, for limit on distance (in pixels) at which the last
+!    retrieved solution is valid for FG/AP setting.
+! 2001/07/06, AS: Removing pointer arrays to allow output of the whole struct in
+!    a single statement. Arrays affected: Ctrl%Ind%X_Dy/Tw/Ni, Ctrl%Sy.
+! 2001/07/11, AS: Fixes in CloudClass and Phaset structs. CloudClass arrays were
+!    fixed at size 2: replaced by MaxCloudClass constant. CloudClass data 
+!    removed from Phaset struct: couldn't see any reason why it was there, must 
+!    have been a typo. Moved Date and Time from the Inst struct to the main 
+!    struct. Added Day of Year (DOY) required for setting solar constants 
+!    in ReadChan.
+! 2001/08/03, AS: Added Ctrl%Resoln%SegSize. Size of image segment.
+!    Updated Date from character length 8 to 11 (format dd-mmm-yyyy rather
+!    than yyyymmdd) and converted time from real to character length 12
+!    (hh:mm:ss.sss).
+! 2001/08/23, AS: New parameter in Ind for number of instrument channels 
+!    available (as opposed to selected by the user). Set by Read_Inst_Config.
 !    **************** ECV work starts here *************************************
-!    21st Mar 2011, Andy Smith:
-!       Removal of phase change functionality. Only 1 cloud class is required
-!       now. Cloud class on phase change becomes redundant.
-!       State variables for first guess and a priori for ice and water phase
-!       become single state vars, limits for ice and water phase replaced by
-!       single set of limits.
-!       Cloud class selection method now redundant.
-!    31st Mar 2011, Andy Smith:
-!       Removal of phase change: re-size X0 and FG flags arrays since phase no
-!       longer needed.
-!     6th Apr 2011, Andy Smith:
-!       Removed selection methods SAD and SDAD.
-!       Limits flag removed from Ctrl struct as only 1 method remains supported.
-!    14th Apr 2011, Andy Smith:
-!       Extension to handle multiple views. Number of channels/measurements
-!       become allocatable since a specific channel ID can be used in several
-!       views. New index for nviews and set of view indices.
-!    12th May 2011, Andy Smith:
-!       Extension to handle multiple views. Number of surface reflectance values
-!       becomes allocatable: number of solar channels can be increased my having
-!       multiple views.
-!    18th May 2011, Andy Smith:
-!       Multiple views(2). Added new Ctrl value NInstViews, to store the number
-!       of possible viewing angles for the instrument.
-!     1st July 2011, Caroline Poulsen: added in extra output files.
-!    28th July 2011, Caroline Poulsen: added in scan line files files.
-!     5th Sep 2011, Chris Arnold: added LUT/RTM interpolation switches.
-!    25th Nov 2011, Caroline Poulsen add ChI channel indice variable.
-!    2011/12/13, Matthias Jerg: added netcdf filenames to type FID_t
-!    2012/05/23, C. Poulsen: removed threshold def
-!    2012/06/18, C. Poulsen: added illum
-!    2012/08/22, Matthias Jerg: adds Nyp
-!    2012/10/12, C. Poulsen: added defaultctrl%sx category!
-!    2014/01/15, Greg McGarragh: No need for Ctrl%DefaultSx any more.
-!    2014/01/25, Greg McGarragh: Cleaned up the code.
-!    2014/12/19, Adam Povey: Removing unneccessary fields.
-!    2015/01/13, Adam Povey: Adding Ch_Is, YMixed. Removing First:Last indexes.
-!    2015/01/30, Adam Povey: Remove Ws, Xstart, Ystart as depreciated.
-!       Remove Resoln structure as superpixeling only in preprocessing.
-!    2015/02/04, Greg McGarragh: Add sabotage_inputs flag and retrieval channel
-!       requirements arrays.
-!    2015/02/04, Greg McGarragh: Add ReChans array.
-!    2015/05/25, Greg McGarragh: Get rid of filename Diag and flags Diagl.
-!       Neither was being used and have been rotting.
-!
-! Bugs:
-!   None known.
+! 2011/03/21, AS: Removal of phase change functionality. Only 1 cloud class is 
+!    required now. Cloud class on phase change becomes redundant.
+!    State variables for first guess and a priori for ice and water phase
+!    become single state vars, limits for ice and water phase replaced by
+!    single set of limits. Cloud class selection method now redundant.
+! 2011/03/31, AS: Removal of phase change: re-size X0 and FG flags arrays since 
+!    phase no longer needed.
+! 2011/04/06, AS: Removed selection methods SAD and SDAD.
+!    Limits flag removed from Ctrl struct as only 1 method remains supported.
+! 2011/04/14, AS: Extension to handle multiple views. Number of channels/
+!    measurements become allocatable since a specific channel ID can be used in 
+!    several views. New index for nviews and set of view indices.
+! 2011/05/12, AS: Extension to handle multiple views. Number of surface 
+!    reflectance values becomes allocatable: number of solar channels can be 
+!    increased my having multiple views.
+! 2011/05/18, AS: Multiple views(2). Added new Ctrl value NInstViews, to store 
+!    the number of possible viewing angles for the instrument.
+! 2011/07/01, CP: added in extra output files.
+! 2011/07/28, CP: added in scan line files files.
+! 2011/09/05, CA:: added LUT/RTM interpolation switches.
+! 2011/11/25, CP: add ChI channel indice variable.
+! 2011/12/13, MJ: added netcdf filenames to type FID_t
+! 2012/05/23, CP: removed threshold def
+! 2012/06/18, CP: added illum
+! 2012/08/22, MJ: adds Nyp
+! 2012/10/12, CP: added defaultctrl%sx category!
+! 2014/01/15, GM: No need for Ctrl%DefaultSx any more.
+! 2014/01/25, GM: Cleaned up the code.
+! 2014/12/19, AP: Removing unneccessary fields.
+! 2015/01/13, AP: Adding Ch_Is, YMixed. Removing First:Last indexes.
+! 2015/01/30, AP: Remove Ws, Xstart, Ystart as depreciated.
+!    Remove Resoln structure as superpixeling only in preprocessing.
+! 2015/02/04, GM: Add sabotage_inputs flag and retrieval channel
+!    requirements arrays.
+! 2015/02/04, GM: Add ReChans array.
+! 2015/03/02, AP: Adding terms for aerosol retrieval.
+! 2015/05/25, GM: Get rid of filename Diag and flags Diagl.
+!    Neither was being used and have been rotting.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module CTRL_def

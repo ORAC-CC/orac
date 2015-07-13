@@ -1,45 +1,25 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    SAD_Chan
+! Name: SADChan.F90
 !
 ! Purpose:
-!    Module containing Static Application Data Channel structure
-!
-! Description:
-!    Defines a set of structures used to hold Static Application Data for
-!    measurement channels in the ECP and supporting routines.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
+! Module containing Static Application Data Channel structure, used to hold
+! Static Application Data for measurement channels in the ECP.
 !
 ! History:
-!     3rd Aug 2000, Andy Smith: Original version
-!    23rd Nov 2000, Andy Smith:
-!       Rs in Solar is now an array of 2 values rather than a single real.
-!    19th Jan 2001, Kevin Smith:
-!       Added SRs and CRs fields to the Solar type.
-!    29th Jan 2001, Kevin Smith:
-!       Removed SRs and CRs fields - now taken from Ctrl.
-!    11th Jul 2001, Andy Smith:
-!       Added f1 to solar struct. Allows for calculation of f0 based on the day
-!       of year rather than just using an annual mean value.
-!    23rd May 2014, Greg McGarragh:
-!       Cleaned up code.
-!     1st Aug 2014, Greg McGarragh:
-!       Added Find_MDAD_SW() and Find_MDAD_LW().
-!
-! Bugs:
-!    None known.
+! 2000/08/03, AS: Original version
+! 2000/11/23, AS: Rs in Solar is now an array of 2 values rather than a single 
+!    real.
+! 2001/01/19, KS:Added SRs and CRs fields to the Solar type.
+! 2001/01/29, KS: Removed SRs and CRs fields - now taken from Ctrl.
+! 2001/07/11, AS: Added f1 to solar struct. Allows for calculation of f0 based 
+!    on the day of year rather than just using an annual mean value.
+! 2014/05/23, GM: Cleaned up code.
+! 2014/08/01, GM: Added Find_MDAD_SW() and Find_MDAD_LW().
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module SAD_Chan_def
@@ -87,6 +67,35 @@ module SAD_Chan_def
    end type SAD_Chan_t
 
 contains
+
+!-------------------------------------------------------------------------------
+! Name: Find_MDAD_SW and Find_MDAD_LW
+!
+! Purpose:
+! Finds reference channels for the MDAD first-guess method.
+!
+! Description:
+! Algorithm:
+! 1) If SW, search each channel for that with wavenumber between 10000 and 20000
+!    cm-1 that is closest to 14925.
+! 2) If LW, search each channel for that with wavenumber greater than 2500 cm-1
+!    that is closest to 909.
+! 3) On fail, returns 0.
+!
+! Arguments:
+! Name      Type    In/Out/Both    Description
+! ------------------------------------------------------------------------------
+! Ny        integer In             Number of channels
+! SAD_Chan  array of structs (out) Channel description info.
+! index     array of ints (in)     Optional. Indices denoting a subset of the
+!                                  SAD_Chan array to be searched.
+!
+! History:
+! 2014/08/01, GM: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
 function Find_MDAD_SW(Ny, SAD_Chan, index) result(MDAD_SW)
 

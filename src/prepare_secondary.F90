@@ -6,27 +6,34 @@
 ! scale and offset where necessary.
 !
 ! Description and Algorithm details:
+! Call prepare_short_packed_float many times.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Return value:
-! Name Type Description
+! Name        Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct  In          Control structure
+! lcovar      logical In          If set, output covariance matrices
+! i           int     In          Across-track pixel to output
+! j           int     In          Along-track pixel to output
+! MSI_Data    struct  In          Imager data structure
+! SPixel      struct  In          Retrieval pixel structure
+! Diag        struct  In          Diagonstic structure
+! output_data struct  Both        Results structure
 !
 ! History:
-! 2011/12/19, Matthias Jerg: Creates initial version
-! 2012/01/05, Caroline Poulsen: Add in reflectances and brightness temperature
-! 2012/01/15, Caroline Poulsen: Changed how offset was applied
-! 2012/09/20, Caroline Poulsen: Remove scaling factor from albedo
-! 2012/09/20, Caroline Poulsen: Chanaged how svan value is set
-! 2013/05/29, Gareth Thomas: Added degrees of freedom for signal
-! 2014/01/30, Greg McGarragh: Fixed writing of the residuals and first guess in
+! 2011/12/19, MJ: Creates initial version
+! 2012/01/05, CP: Add in reflectances and brightness temperature
+! 2012/01/15, CP: Changed how offset was applied
+! 2012/09/20, CP: Remove scaling factor from albedo
+! 2012/09/20, CP: Chanaged how svan value is set
+! 2013/05/29, GT: Added degrees of freedom for signal
+! 2014/01/30, GM: Fixed writing of the residuals and first guess in
 !    the case of nighttime pixels.
-! 2014/06/13, Greg McGarragh: Put the code into a subroutine.
-! 2014/06/13, Greg McGarragh: Cleaned up the code.
-! 2014/08/31, Greg McGarragh: Update to use general routines in the current
+! 2014/06/13, GM: Put the code into a subroutine.
+! 2014/06/13, GM: Cleaned up the code.
+! 2014/08/31, GM: Update to use general routines in the current
 !    module.
-! 2014/01/30, Adam Povey: Replace YSeg0 with Y0 as superpixeling removed.
+! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !

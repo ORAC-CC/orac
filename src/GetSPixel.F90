@@ -1,232 +1,197 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_SPixel
+! Name: GetSPixel.F90
 !
 ! Purpose:
-!    Controls the extraction of the current super-pixel data from the
-!    'whole-image' data arrays.
-!    Also calculates the surface to TOA slant path transmittances.
+! Controls the extraction of the current super-pixel data from the
+! 'whole-image' data arrays.
+! Also calculates the surface to TOA slant path transmittances.
+!
+! Description and Algorithm details:
+! Check data in each of the Data structure arrays
+! Flag pixels containing bad data by setting zeros in the super pixel mask.
+! Flag reasons by setting bits in the quality control value SPixel%QC
+!    (non-zero QC is not fatal at this stage, either to the super-pixel or to
+!    the ECP)
+! For each case below, if the SPixel cannot be used, set QC flag bit
+! SPixNoProc: indicates the error is fatal for the SPixel, but not the ECP.
+! Call Get_Location
+! Call Get_Cloudflags
+! If averaging method 'central'
+!    Check that central pixel does not contain bad data (abort current super
+!    pixel if it does),
+! If averaging method 'all'
+!    Calculate number of good pixels in super pixel (if below threshold
+!    Ctrl%SPix%Threshold then abort current super pixel,
+! If averaging method 'cloudy'
+!    Calculate number of good pixels in super pixel (if there are no good
+!    cloudy pixels then abort current super pixel).
+! Call Get_Illum
+! Call Get_Geometry
+! Call Get_RTM
+! Call Get_Measurements
+! Call Get_Surface
+! Call Get_X to set a priori and First Guess
+! if there are solar channels in use for the SPixel:
+!    - Calculate the surface to TOA slant path transmittances for use in
+!      forward model (airmass factors  - SEC_o/v - taken from Get_Geometry).
+!    - Set solar constant values for the SPixel (same for all SPixels with
+!      solar channels in use? Move elsewhere?)
+!
+! Note on error handling: it is assumed that any error identified at this
+! stage is fatal only for the current super-pixel. Hence status can be used
+! to flag a problem in a super-pixel. The calling routine can set status=0
+! after checking.
 !
 ! Arguments:
-!    Name     Type         In/Out/Both Description
-!    Ctrl     struct       In   Control structure
-!    SAD_Chan struct       In   SAD channel structure
-!    MSI_Data struct       In   Data structure. Contains the multi-spectral
-!                               image measurements, location values, geometry
-!                               etc for the current image segment, from which
-!                               the current SPixel values will be extracted.
-!    RTM      alloc struct In   RTM structure
-!    SPixel   alloc struct Both Super-pixel structure
-!    status   integer      Out  Error status. Note most problems identified in
-!                               this routine do not lead to non-zero status
-!                               values as they affect the super-pixel data only.
-!                               Status is not currently passed to subordinate
-!                               routines (local stat is used instead). It is
-!                               assumed that no subordinate can identify a
-!                               serious error condition.
-!
-! Algorithm:
-!    Check data in each of the Data structure arrays
-!    Flag pixels containing bad data by setting zeros in the super pixel mask.
-!    Flag reasons by setting bits in the quality control value SPixel%QC
-!       (non-zero QC is not fatal at this stage, either to the super-pixel or to
-!       the ECP)
-!    For each case below, if the SPixel cannot be used, set QC flag bit
-!    SPixNoProc: indicates the error is fatal for the SPixel, but not the ECP.
-!    Call Get_Location
-!    Call Get_Cloudflags
-!    If averaging method 'central'
-!       Check that central pixel does not contain bad data (abort current super
-!       pixel if it does),
-!    If averaging method 'all'
-!       Calculate number of good pixels in super pixel (if below threshold
-!       Ctrl%SPix%Threshold then abort current super pixel,
-!    If averaging method 'cloudy'
-!       Calculate number of good pixels in super pixel (if there are no good
-!       cloudy pixels then abort current super pixel).
-!    Call Get_Illum
-!    Call Get_Geometry
-!    Call Get_RTM
-!    Call Get_Measurements
-!    Call Get_Surface
-!    Call Get_X to set a priori and First Guess
-!    if there are solar channels in use for the SPixel:
-!       - Calculate the surface to TOA slant path transmittances for use in
-!         forward model (airmass factors  - SEC_o/v - taken from Get_Geometry).
-!       - Set solar constant values for the SPixel (same for all SPixels with
-!         solar channels in use? Move elsewhere?)
-!
-!    Note on error handling: it is assumed that any error identified at this
-!    stage is fatal only for the current super-pixel. Hence status can be used
-!    to flag a problem in a super-pixel. The calling routine can set status=0
-!    after checking.
+! Name     Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct       In   Control structure
+! SAD_Chan struct       In   SAD channel structure
+! MSI_Data struct       In   Data structure. Contains the multi-spectral
+!                            image measurements, location values, geometry
+!                            etc for the current image segment, from which
+!                            the current SPixel values will be extracted.
+! RTM      alloc struct In   RTM structure
+! SPixel   alloc struct Both Super-pixel structure
+! status   integer      Out  Error status. Note most problems identified in
+!                            this routine do not lead to non-zero status
+!                            values as they affect the super-pixel data only.
+!                            Status is not currently passed to subordinate
+!                            routines (local stat is used instead). It is
+!                            assumed that no subordinate can identify a
+!                            serious error condition.
 !
 ! History:
-!    29th Nov 2000, Kevin M. Smith:
-!       Original version
-!    19th Dec 2000, Kevin M. Smith:
-!       Replaced Data_... arrays with Data structure.
-!    17th Jan 2001, Kevin M. Smith:
-!       Added error checking on land/sea flags.
-!    24th Jan 2001, Kevin M. Smith:
-!       Moved allocations to ECP main on integration.
-!       Moved calculation of central pixel coords to ECP.
-!    26th Jan 2001, Kevin M. Smith:
-!       Added calculations of solar and viewing slant path transmittances.
-!     6th Mar 2001, Andy Smith:
-!       Change to setting of Tsf_o,v values in SPixel%RTM. Tsf_o,v now appear in
-!       the overall RTM struct rather than the RTM%LW and SW structs.
-!       Added calculation of the Ref_clear values.
-!     7th Mar 2001, Andy Smith:
-!       Change in LW Tsf_o, v calculations.
-!       Additional breakpoint output
-!       GetRTM needs SAD_Chan as an argument.
-!       Changed order of arguments (inputs first).
-!    15th Mar 2001, Andy Smith:
-!       Added code to set the central pixel absolute coordinates (if required)
-!       and the top right-hand corner coordinates.
-!       Amended solar zenith angle check. Previously disallowed data where SolZen
-!       > 90 degrees. Do not check. SolZen may be treated differently in
-!       different data sets when > 90.
-!       Using pre-defined constant names for super-pixel averaging methods.
-!       Rs divided by Sec_o to take account of solar angle as soon as Rs is set
-!       by Get_Surface/Get_Rs. REF_Clear and dREF_Clear_dRs calculations updated.
-!     4th Apr 2001, Andy Smith:
-!       Removed brackets specifying array section from whole array assignments
-!       where the whole array is used, as experience elsewhere seems to show
-!       that "array = " works faster than "array(:) = ".
-!    17th May 2001,  Andy Smith:
-!       New argument SAD_Chan required by Get_Measurements.
-!     5th June 2001,  Andy Smith:
-!       Added call to Get_X to set a priori and first guess, plus new argument
-!       SAD_CloudClass required by Get_X.
-!    15th Jun 2001, Andy Smith:
-!       Changed error message string assignments/writes.
-!       Long message strings were wrapped over two lines with only one set of
-!       quotes around the whole string (including the line continuation marker).
-!       Original code works on DEC but not Linux.
-!    10th Jul 2001, Andy Smith:
-!       Attempt to rationalise error handling and SPixel checking. Status was
-!       used to flag conditions that were fatal for the SPixel. SPixel%QC was
-!       used to flag out of range values etc but these were not considered fatal.
-!       Changing to use SPixel%QC for all flagging. As a result some
-!       QC settings now indicate conditions are fatal for the SPixel. This will
-!       simplify the main ECP loop where it checks whether a particular SPixel
-!       should be processed and leaves status for flagging of "real" errors.
-!       (Note most subordinates flag data problems via status, but no
-!       subordinate currently detects any error that is fatal for the program).
-!       Replaced Kevin's BITS routine for setting bit flags with the intrinsic
-!       ibset.
-!     3rd August 2001, Andy Smith:
-!       Bug fix: ibset arguments were the wrong way round!
-!       Updates for image segmentation. Selection of values from the MSI Data
-!       structure arrays now need to use a y value that refers to the image
-!       segment currently held in memory rather than the whole image area.
-!       X co-ords are unchanged since the segment is the full image width.
-!       Renamed structure Data to MSI_Data since Data is a reserved word (hasn't
-!       caused any problems so far but it might).
-!       Moved setting of SPixel Xc, Yc. Required before GetCloudFlags call if
-!       averaging method is central.
-!    18th Sept 2001, Andy Smith:
-!       Removed Write_Log call when there are no cloudy pixels in the
-!       super-pixel. Could lead to lots of unnecessary log output.
+! 2000/11/29, KS: Original version
+! 2000/12/19, KS: Replaced Data_... arrays with Data structure.
+! 2001/01/17, KS: Added error checking on land/sea flags.
+! 2001/01/24, KS: Moved allocations to ECP main on integration. Moved
+!    calculation of central pixel coords to ECP.
+! 2001/01/26, KS: Added calculations of solar and viewing slant path
+!    transmittances.
+! 2001/03/06, AS: Change to setting of Tsf_o,v values in SPixel%RTM. Tsf_o,v 
+!    now appear in the overall RTM struct rather than the RTM%LW and SW structs.
+!    Added calculation of the Ref_clear values.
+! 2001/03/07, AS: Change in LW Tsf_o, v calculations. Additional breakpoint
+!    output. GetRTM needs SAD_Chan as an argument. Changed order of arguments
+!    (inputs first).
+! 2001/03/15, AS: Added code to set the central pixel absolute coordinates (if
+!    required) and the top right-hand corner coordinates. Amended solar zenith
+!    angle check. Previously disallowed data where SolZen  > 90 degrees. Do not
+!    check. SolZen may be treated differently in different data sets when > 90.
+!    Using pre-defined constant names for super-pixel averaging methods. Rs
+!    divided by Sec_o to take account of solar angle as soon as Rs is set by 
+!    Get_Surface/Get_Rs. REF_Clear and dREF_Clear_dRs calculations updated.
+! 2001/04/04, AS: Removed brackets specifying array section from whole array
+!    assignments where the whole array is used, as experience elsewhere seems to
+!    show that "array = " works faster than "array(:) = ".
+! 2001/05/17, AS: New argument SAD_Chan required by Get_Measurements.
+! 2001/06/05, AS: Added call to Get_X to set a priori and first guess, plus new 
+!    argument SAD_CloudClass required by Get_X.
+! 2001/06/15, AS: Changed error message string assignments/writes. Long message
+!    strings were wrapped over two lines with only one set of quotes around the
+!    whole string (including the line continuation marker). Original code works
+!    on DEC but not Linux.
+! 2001/07/10, AS: Attempt to rationalise error handling and SPixel checking.
+!    Status was used to flag conditions that were fatal for the SPixel.
+!    SPixel%QC was used to flag out of range values etc but these were not
+!    considered fatal. Changing to use SPixel%QC for all flagging. As a result
+!    some QC settings now indicate conditions are fatal for the SPixel. This
+!    will  simplify the main ECP loop where it checks whether a particular
+!    SPixel should be processed and leaves status for flagging of "real" errors.
+!    (Note most subordinates flag data problems via status, but no  subordinate
+!    currently detects any error that is fatal for the program). Replaced
+!    Kevin's BITS routine for setting bit flags with the intrinsic ibset.
+! 2001/08/03, AS:  Bug fix: ibset arguments were the wrong way round! Updates for
+!    image segmentation. Selection of values from the MSI Data structure arrays
+!    now need to use a y value that refers to the image segment currently held in
+!    memory rather than the whole image area.  X co-ords are unchanged since the
+!    segment is the full image width. Renamed structure Data to MSI_Data since
+!    Data is a reserved word (hasn't caused any problems so far but it might).
+!    Moved setting of SPixel Xc, Yc. Required before GetCloudFlags call if
+!    averaging method is central.
+! 2001/09/18, AS: Removed Write_Log call when there are no cloudy pixels in the
+!    super-pixel. Could lead to lots of unnecessary log output.
 !    **************** ECV work starts here *************************************
-!    21st Feb 2011, Andy Smith:
-!       Re-applying changes from late 2001/2002.
-!       2nd Nov 2001, Andy Smith:
-!       Added zeroing of first-guess and a priori state vectors if SPixel
-!       QC flag indicates no processing. Otherwise these vectors retain the
-!       value from the previous pixel and are output into the diag file with the
-!       old values.
-!    28th Nov 2001, Andy Smith:
-!       Bug fix to range checking of MSI reflectances and brightness temps.
-!       Moved the check on "stat" and call to WriteLog inside the channel loop.
-!       Previously, a "bad" stat value in, say, channel 1, could be overwritten
-!       by a "good" value from a higher channel.
-!       Replaced constant values in range checks with named constants.
-!       Updated checking of cloud flags and errors in pixels required for the
-!       selected averaging method. Removed error logging for these situations:
-!       errors are already logged during limit checking.
-!     6th Dec 2001, Andy Smith:
-!       Bug fix to check on no. of "good" pixels vs. Ctrl%SPix%Threshold.
-!       Previously, the check was:
+! 2011/02/21, AS: Re-applying changes from late 2001/2002.
+! 2001/11/21, AS: Added zeroing of first-guess and a priori state vectors if
+!    SPixel QC flag indicates no processing. Otherwise these vectors retain the
+!    value from the previous pixel and are output into the diag file with the
+!    old values.
+! 2001/11/28, AS: Bug fix to range checking of MSI reflectances and brightness
+!    temps. Moved the check on "stat" and call to WriteLog inside the channel
+!    loop. Previously, a "bad" stat value in, say, channel 1, could be
+!    overwritten  by a "good" value from a higher channel. Replaced constant
+!    values in range checks with named constants. Updated checking of cloud
+!    flags and errors in pixels required for the  selected averaging method.
+!    Removed error logging for these situations: errors are already logged
+!    during limit checking.
+! 2001/12/06, AS: Bug fix to check on no. of "good" pixels vs.
+!    Ctrl%SPix%Threshold. Previously, the check was:
 !       if (real(SPixel%NAverage/Ctrl%SPix%NPixel) < Ctrl%SPix%Threshold)
-!       This takes the real value of the result of an integer divide and
-!       compares to the real Threshold fraction. The integer divide returns
-!       1 if NAverage = NPixel and 0 if NAverage < NPixel. Both values should be
-!       converted to real before division.
-!    14th Aug 2002, Caroline Poulsen:
-!       Fractional error is assigned according to the neighbouring pixels when
-!       resolution is 1.
-!    23rd Dec 2002, Andy Smith:
-!       Move the Get_Location call so that Lat-Lon information is available for
-!       all pixels in the image, rather than just the cloudy ones.
-!    23rd Feb 2011, Andy Smith:
-!       MSI_Data%CloudFlags now an array of floats, to match current ORAC data.
-!    16th Mar 2011, Andy Smith:
-!       Added some extra breakpoint outputs: lat, lon etc.
-!       Added MSI temp/reflectance value to message for out of range values
-!       (done in Feb 2011).
-!    22nd Mar 2011, Andy Smith:
-!       Removal of phase change. Only 1 cloud class required for each retrieval
-!       run. SADCloudClass array dimensions changed.
-!    24th Mar 2011, Andy Smith:
-!       Removal of super-pixelling, i.e. no averaging of flags etc needed.
-!       Any super-pixelling required will now be done in pre-processing.
-!       Resolution for the retrieval will be fixed at 1 pixel.
-!       Remove calculation of SPixel%Loc%Xc and Xn, simplify calls to
-!       subordinate functions - no need for range of pixel locations.
-!       Removed calculation of Fracnext (used in XMDAD to set error).
-!     7th Apr 2011, Andy Smith:
-!       Removal of selection methods SAD and SDAD. GetSurface argument list
-!       updated - SAD_Chan no longer needed.
-!    20th Apr 2011, Andy Smith:
-!       Extension to handle multiple instrument views. The viewing geometry
-!       becomes a set of arrays, e.g. 1 value of sat. zen angle per view.
-!       Extend checks on MSI_Data geometry values and all references to the
-!       SPixel%Geom sub-structure.
-!    20th May 2011, Andy Smith:
-!       Multiple instrument views (2). Modified breakpoints output to check for
-!       0 solar channels present.
-!     8th Jun 2011, Andy Smith:
-!       Reduced/removed logging to improve performance. Tests show that writing
-!       to the ASCII log file can extend total time to process an orbit from a
-!       few minutes to several hours.
-!       Enclosed in ifdef DEBUG than removed, for easier re-introduction.
-!       Removed reference to "super-pixel" from log messages.
-!     5th Aug 2011, Caroline Poulsen: Remove ref to cloudclass
-!    29th Sep 2011, Caroline Poulsen: Updated log output to be more informative
-!       and give the channel number of the missing data
-!    16th Feb 2012, Caroline Poulsen: Updated file to fix bug that produced
-!       errors when night views were processed.
-!    24th Jul 2013, Adam Povey: Fixed BKP code
-!    30th Apr 2014, Greg McGarragh: Cleaned up the code.
-!    17th Jun 2014, Caroline Poulsen: modified code so retrieval performed if a
-!       single ir channel is missing
-!    25th Jul 2014, Adam Povey: Tidying code with check_value subroutine.
-!       Fixing bug that meant SPixal wasn't necessarily set if pixel failed.
-!     1st Aug 2014, Greg McGarragh: Checks for missing data are already
-!       performed when the illumination condition is chosen and the result of
-!       the check is defined by the illumination condition so the checks in
-!       this subroutine have been disabled except to set QC.
-!     9th Sep 2014, Greg McGarragh: Changes related to new BRDF support.
-!    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
-!       solar/thermal channels with respect to the channels actually processed,
-!       rather than the MSI file.
-!    13th Jan 2015, Adam Povey: Switching to Ctrl%Ind%Ch_Is rather than any().
-!       Removing First:Last channel indexing.
-!    21st Jan 2015, Adam Povey: Moved allocated of SPixel%RTM%... here.
-!    30th Jan 2015, Adam Povey: Replace YSeg0 with Y0 as superpixeling removed.
-!     4th Feb 2015, Greg McGarragh: Changes related to the new missing channel,
-!       illumination, and channel selection code.
-!
-! Bugs:
-!    Risk: changes from 2001/2 re-applied in Feb 2011 may be "contaminated" by
-!    later changes made for development of aerosol retrieval etc, since the
-!    source of changes is a copy of the code from 2006 (last recorded mod).
+!    This takes the real value of the result of an integer divide and compares
+!    to the real Threshold fraction. The integer divide returns 1 if NAverage =
+!    NPixel and 0 if NAverage < NPixel. Both values should be converted to real
+!    before division.
+! 2002/08/14, CP: Fractional error is assigned according to the neighbouring
+!    pixels when resolution is 1.
+! 2002/12/23, AS: Move the Get_Location call so that Lat-Lon information is
+!    available for all pixels in the image, rather than just the cloudy ones.
+! 2011/02/23, AS: MSI_Data%CloudFlags now an array of floats, to match current
+!    ORAC data.
+! 2011/03/16, AS: Added some extra breakpoint outputs: lat, lon etc. Added MSI
+!    temp/reflectance value to message for out of range values (done in Feb 2011)
+! 2011/03/22, AS: Removal of phase change. Only 1 cloud class required for each
+!    retrieval run. SADCloudClass array dimensions changed.
+! 2011/03/24, AS: Removal of super-pixelling, i.e. no averaging of flags etc
+!    needed. Any super-pixelling required will now be done in pre-processing.
+!    Resolution for the retrieval will be fixed at 1 pixel. Remove calculation
+!    of SPixel%Loc%Xc and Xn, simplify calls to subordinate functions - no need
+!    for range of pixel locations. Removed calculation of Fracnext (used in
+!    XMDAD to set error).
+! 2011/04/07, AS: Removal of selection methods SAD and SDAD. GetSurface argument
+!    list updated - SAD_Chan no longer needed.
+! 2011/04/20, AS: Extension to handle multiple instrument views. The viewing
+!    geometry becomes a set of arrays, e.g. 1 value of sat. zen angle per view.
+!    Extend checks on MSI_Data geometry values and all references to the
+!    SPixel%Geom sub-structure.
+! 2011/05/20, AS: Multiple instrument views (2). Modified breakpoints output to
+!    check for 0 solar channels present.
+! 2011/06/08, AS: Reduced/removed logging to improve performance. Tests show
+!    that writing to the ASCII log file can extend total time to process an
+!    orbit from a few minutes to several hours. Enclosed in ifdef DEBUG than
+!    removed, for easier re-introduction. Removed reference to "super-pixel"
+!    from log messages.
+! 2011/08/05, CP: Remove ref to cloudclass
+! 2011/09/29, CP: Updated log output to be more informative and give the channel
+!    number of the missing data
+! 2012/02/16, CP: Updated file to fix bug that produced errors when night views
+!    were processed.
+! 2013/07/24, AP: Fixed BKP code
+! 2014/04/30, GM: Cleaned up the code.
+! 2014/06/17, CP: modified code so retrieval performed if a single ir channel
+!    is missing
+! 2014/07/25, AP: Tidying code with check_value subroutine. Fixing bug that
+!    meant SPixal wasn't necessarily set if pixel failed.
+! 2014/08/01, GM: Checks for missing data are already performed when the
+!    illumination condition is chosen and the result of the check is defined by
+!    the illumination condition so the checks in this subroutine have been
+!    disabled except to set QC.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, rather than the
+!    MSI file.
+! 2015/01/13, AP: Switching to Ctrl%Ind%Ch_Is rather than any(). Removing 
+!    First:Last channel indexing.
+! 2015/01/21, AP: Moved allocated of SPixel%RTM%... here.
+! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
+! 2015/02/04, GM: Changes related to the new missing channel, illumination, and 
+!    channel selection code.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
@@ -308,7 +273,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! condition is chosen. The result of the check is defined by the illumination
    ! condition allowing finer control. So the zeroing of SPixel%Mask has been
    ! disabled (located in check_value.inc).  Now, an invalid condition (which
-   ! includes cases with to much missing data) will result in a non-zero status
+   ! includes cases with too much missing data) will result in a non-zero status
    ! from Get_Illum() below. For now these loops are still here to set SPixel%QC.
 
    ! MSI - Reflectances (between 0 and 1)

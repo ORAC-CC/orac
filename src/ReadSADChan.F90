@@ -1,99 +1,78 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Read_SAD_Chan
+! Name: ReadSADChan.F90
 !
 ! Purpose:
-!    Reads Static Application Data files containing channel description for use
-!    by the ECP.
+! Reads Static Application Data files containing channel description for use
+! by the ECP.
 !
-! Description:
-!    Reads a set of Static Application Data files containing channel description
-!    info for a given instrument (defined by the Ctrl struct) into the SAD_Chan
-!    array of structs. Also sets SolarFirst/Last, ThermalFirst/Last in Ctrl%Ind
-!    structure
+! Description and Algorithm details:
+! Reads a set of Static Application Data files containing channel description
+! info for a given instrument (defined by the Ctrl struct) into the SAD_Chan
+! array of structs.
+!
+! Description and Algorithm details:
+! 1) For each channel described in the Ctrl struct
+!     - construct the channel description file name
+!     - open the file (report any error)
+!     - read the file contents into SAD_Chan()
+!     - if the thermal flag indicates thermal data present
+!          populate the SAD_Chan()%thermal struct
+!     - if the solar flag indicates solar data present
+!          populate the SAD_Chan()%solar struct
+!     - close the file
 !
 ! Arguments:
-!    Name      Type   In/Out/Both     Description
-!    Ctrl      struct In              Control structure defined in Ctrl_def
-!    SAD_Chan  array of structs (out) Channel description info.
-!
-! Algorithm:
-!    for each channel described in the Ctrl struct
-!       check for errors on last iteration of loop (drop out if any occurred)
-!       construct the channel description file name
-!       open the file (report any error)
-!       read the file contents into SAD_Chan()
-!       if the thermal flag indicates thermal data present
-!          populate the SAD_Chan()%thermal struct
-!       if the solar flag indicates solar data present
-!          populate the SAD_Chan()%solar struct
-!       close the file
-!
-! Local variables:
-!    Name Type Description
+! Name      Type   In/Out/Both     Description
+! ------------------------------------------------------------------------------
+! Ctrl      struct In              Control structure defined in Ctrl_def
+! SAD_Chan  array of structs (out) Channel description info.
 !
 ! History:
-!    23rd Aug 2000, Andy Smith: Original version
-!     9th Jan 2001, Andy Smith:
-!       Added setting of NSolar, YSolar, NThermal, YThermal in Ctrl%Ind.
-!       Ctrl%Ind%Y renamed Y_Id
-!    16th Jan 2001, Andy Smith:
-!       Added code to set ThermalFirst to SolarLast+1 if no thermal channels are
-!       selected.
-!    19th Jan 2001, Andy Smith: comments updated
-!    22nd Jan 2001, Andy Smith:
-!       Solar%Rs now converted from percentage to a fraction.
-!       Ctrl%Ind%YSolar, YThermal no longer set here (reverted to driver file).
-!       Ctrl%Ind%NSolar, NThermal now checked here rather than set here.
-!     5th Feb 2001, Kevin Smith: Added calculation of hidden Ctrl%Ind%NMixed.
-!    12th Feb 2001, Kevin Smith: Added calculation of hidden Ctrl%Ind%MDAD_LW
-!       and Ctrl%Ind%MDAD_SW, the indices of channels used in the MDAD method
-!       to determine FG Pc, phase and Tau.
-!    17th May 2001, Andy Smith:
-!       Added setting of measurement error covariance values Ctrl%Sy.
-!    22nd May 2001, Andy Smith:
-!       Change to Ctrl%Sy setting. Moved out of "if" blocks for the thermal /
-!       solar channels into it's own "if... else". Previously, for mixed
-!       channels the thermal value (from NEBT) could be overwritten by the
-!       solar.
-!     7th Jun 2001, Andy Smith:
-!       Ensured that MDAD_LW and SW are zeroed.
-!       Homog and coreg noise terms are squared after reading in. Solar values
-!       are also converted to fractions (chan file values are %).
-!    25th Jun 2001, Andy Smith:
-!       Removed old debug output.
-!    11th Jul 2001, Andy Smith:
-!       Added code to read Solar%F1 and convert from annual mean solar constant
-!       to a value for the day of year.
-!    14th Aug 2001, Andy Smith:
-!       Moved code to convert Solar constant value from here to Read_ATSR_MSI
-!       since the latter now reads the date from the MSI file header.
-!    20th Sep 2012, Somebody:
-!       Added channel index to y_id value.
-!    14th Nov 2013, MJ:
-!       Some cleanup and bugfixing: Fixed bug with selection of MDAD_SW/LW:
-!       changed diff to abs(diff)
-!     4th Feb 2014, MJ:
-!       Implements code for AVHRR to assign channel numbers for LUT names.
-!    23rd May 2014, Greg McGarragh:
-!       Cleaned up code.
-!     1st Jul 2014, Adam Povey:
-!       Added check to see if SAD file exists to clarify error message.
-!     1st Aug 2014, Greg McGarragh:
-!          Use refactored code into Find_MDAD_LW() and Find_MDAD_SW() to use
-!          here and elsewhere.
-!    19th Dec 2014, Adam Povey: YSolar and YThermal now contain the index of
-!          solar/thermalchannels with respect to the channels actually processed,
-!          rather than the  MSI file.
-!    13th Jan 2015, Adam Povey: Remove First:Last channel indexing.
-!    19th Jan 2015, Greg McGarragh: Use make_sad_chan_num().
-!    30th Apr 2015, Martin Stengel: correct the chan_file definition for NOAA-7 and NOAA-9
-!
-! Bugs:
-!    None known.
+! 2000/08/23, AS: Original version
+! 2001/01/09, AS: Added setting of NSolar, YSolar, NThermal, YThermal in 
+!    Ctrl%Ind. Ctrl%Ind%Y renamed Y_Id
+! 2001/01/16, AS: Added code to set ThermalFirst to SolarLast+1 if no thermal 
+!    channels are selected.
+! 2001/01/19, AS: comments updated
+! 2001/01/22, AS: Solar%Rs now converted from percentage to a fraction.
+!    Ctrl%Ind%YSolar, YThermal no longer set here (reverted to driver file).
+!    Ctrl%Ind%NSolar, NThermal now checked here rather than set here.
+! 2001/02/05, KS: Added calculation of hidden Ctrl%Ind%NMixed.
+! 2001/02/12, KS: Added calculation of hidden Ctrl%Ind%MDAD_LW and 
+!    Ctrl%Ind%MDAD_SW, the indices of channels used in the MDAD method to 
+!    determine FG Pc, phase and Tau.
+! 2001/05/17, AS: Added setting of measurement error covariance values Ctrl%Sy.
+! 2001/05/22, AS: Change to Ctrl%Sy setting. Moved out of "if" blocks for the 
+!    thermal / solar channels into it's own "if... else". Previously, for mixed 
+!    channels the thermal value (from NEBT) could be overwritten by the solar.
+! 2001/06/07, AS: Ensured that MDAD_LW and SW are zeroed. Homog and coreg noise 
+!    terms are squared after reading in. Solar values are also converted to 
+!    fractions (chan file values are %).
+! 2001/06/25, AS: Removed old debug output.
+! 2001/07/11, AS: Added code to read Solar%F1 and convert from annual mean solar 
+!    constant to a value for the day of year.
+! 2001/08/14, AS: Moved code to convert Solar constant value from here to 
+!    Read_ATSR_MSI since the latter now reads the date from the MSI file header.
+! 2012/09/20, ??: Added channel index to y_id value.
+! 2013/11/14, MJ: Some cleanup and bugfixing: Fixed bug with selection of 
+!    MDAD_SW/LW: changed diff to abs(diff)
+! 2014/02/04, MJ: Implements code for AVHRR to assign channel numbers for LUT 
+!    names.
+! 2014/05/23, GM: Cleaned up code.
+! 2014/07/01, AP:  Added check to see if SAD file exists to clarify error message
+! 2014/08/01, GM: Use refactored code into Find_MDAD_LW() and Find_MDAD_SW() to 
+!    use here and elsewhere.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/
+!    thermal channels with respect to the channels actually processed,
+!    rather than the  MSI file.
+! 2015/01/13, AP: Remove First:Last channel indexing.
+! 2015/01/19, GM: Use make_sad_chan_num().
+! 2015/04/30, MS: Correct the chan_file definition for NOAA-7 and NOAA-9
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
@@ -182,14 +161,13 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
          stop ChanFileDataErr
       end if
 
-      read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%WvN
-      read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%Flag
+      read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%WvN
+      read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%Flag
       write(*,*) 'Specs (wavenumber and t-flag):', SAD_Chan(i)%WvN, &
                  SAD_Chan(i)%Thermal%Flag
 
       if (SAD_Chan(i)%Thermal%Flag > 0) then
          NThermal = NThermal + 1
-
 
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%B1
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%B2
@@ -207,17 +185,17 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
                SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
          end do
 
-         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Thermal%NEBT
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%NEBT
          SAD_Chan(i)%Thermal%NEBT = SAD_Chan(i)%Thermal%NEBT ** 2
       end if
 
-      read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Flag
+      read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Flag
       write(*,*) 'Specs (s-flag): ',SAD_Chan(i)%Solar%Flag
 
       if (SAD_Chan(i)%Solar%Flag > 0) then
          NSolar = NSolar + 1
 
-         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%F0, &
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%F0, &
             SAD_Chan(i)%Solar%F1
          read(c_lun, *, err=999, iostat=ios) &
             (SAD_Chan(i)%Solar%NeHomog(j), j=1,MaxCloudType)
@@ -232,12 +210,12 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
                (SAD_Chan(i)%Solar%NeCoreg(j) / 100.0) ** 2
          end do
 
-         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%NedR
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%NedR
          SAD_Chan(i)%Solar%NedR = &
             (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2
 
          ! Convert Rs from a percentage to a fraction
-         read(c_lun, *, err=999, iostat=ios)SAD_Chan(i)%Solar%Rs
+         read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Rs
          SAD_Chan(i)%Solar%Rs = SAD_Chan(i)%Solar%Rs / 100.0
       end if
 

@@ -1,37 +1,34 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Solve_Cholesky
+! Name: SolveCholesky.F90
 !
 ! Purpose:
-!    Given a positive definite matrix A of dimension n * n, and a column vector
-!    b of dimension n, returns the solution x to A.x = b. This function makes
-!    approximately n^3 / 6 (+ n^2) multiplications.
+! Given a positive definite matrix A of dimension n * n, and a column vector
+! b of dimension n, returns the solution x to A.x = b. This function makes
+! approximately n^3 / 6 (+ n^2) multiplications.
 !
-! Algorithm:
-!    This function encapsulates two routines which derive and operate on the
-!    Cholesky decomposition L of A. First calculates the Cholesky decomposition
-!    L, then multiplies out the solution, x.
+! Description and Algorithm details:
+! This function encapsulates two routines which derive and operate on the
+! Cholesky decomposition L of A. First calculates the Cholesky decomposition
+! L, then multiplies out the solution, x.
 !
 ! Arguments:
-!    Name   Type        In/Out/Both Description
-!    A      float array In          Positive definite matrix A
-!    b      float array In          RHS vector to A.x = b
-!    x      float array Both        Solution vector to A.x = b
-!    n      integer     In          Dimensions of A; loop limit
-!    Status integer     Out         Status flag: 0 = Success, 1 = Not positive
-!                                   definite
-! Local variables:
-!    Name Type Description
+! Name   Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! A      float array In          Positive definite matrix A
+! b      float array In          RHS vector to A.x = b
+! x      float array Both        Solution vector to A.x = b
+! n      integer     In          Dimensions of A; loop limit
+! status integer     Out         Status flag: 0 = Success, 1 = Not positive
+!                                definite
 !
 ! History:
-!    18th May 2001, Tim Nightingale: Original version.
-!     5th Jul 2001, Tim Nightingale: Return if decomposition fails
-!
-! Bugs:
-!   None known.
+! 2001/05/18, TN: Original version.
+! 2001/06/05, TN: Return if decomposition fails
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Solve_Cholesky(A, b, x, n, Status)

@@ -1,115 +1,78 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    ECP_constants
+! Name: ECPConstants.F90
 !
 ! Purpose:
-!    Module defining constants used by the ECP code, e.g. maximum array sizes.
-!
-! Description:
-!    Contains a set of declarations and parameter statements for constant
-!    values.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Module defining constants used by the ECP code, e.g. maximum array sizes.
 !
 ! History:
-!     3rd Aug 2000, Andy Smith: Original version.
-!    23rd Nov 2000, Andy Smith:
-!       SADChanForm updated.
-!    24th Nov 2000, Andy Smith:
-!       Added MaxPLevels.
-!     1st Dec 2000, Andy Smith:
-!       Now using an environment variable for driver file name.
-!       Hard-coded path removed. New error code added.
-!       Renamed MaxNumSunZen MaxNumSolZen
-!    17th Jan 2001, Andy Smith:
-!       Added index for Em and increased MaxCRProps to allow for Em in CRPOut
-!       array in FM Solar and Thermal routines.
-!    24th Jan 2001, Andy Smith:
-!       Added index constants for the state vector array.
-!     9th Feb 2001, Andy Smith:
-!       Started using constants to denote breakpoint levels for individual
-!       subroutines.
-!    22nd May 2001, Andy Smith:
-!       Checked into RCS for safety. Continuing to make changes/additions in all
-!       areas.
-!    24th July 2001, Andy Smith:
-!       Checked in again. Many more changes.
-!    15th Aug 2001, Andy Smith:
-!       ECP main program working. More changes in all areas.
+! 2000/08/03, AS: Original version.
+! 2000/11/23, AS: SADChanForm updated.
+! 2000/11/23, AS: Added MaxPLevels.
+! 2000/12/01, AS: Now using an environment variable for driver file name. Hard-
+!    coded path removed. New error code added. Renamed MaxNumSunZen MaxNumSolZen
+! 2001/01/17, AS: Added index for Em and increased MaxCRProps to allow for Em in
+!    CRPOut array in FM Solar and Thermal routines.
+! 2001/01/24, AS: Added index constants for the state vector array.
+! 2001/02/09, AS: Started using constants to denote breakpoint levels for 
+!    individual subroutines.
+! 2001/05/22, AS: Checked into RCS for safety. Continuing to make changes/
+!    additions in all areas.
+! 2001/06/24, AS: Checked in again. Many more changes.
+! 2001/08/15, AS: ECP main program working. More changes in all areas.
 !    **************** ECV work starts here *************************************
-!     8th Feb 2011, Andy Smith:
-!       Re-introducing changes made in late 2001/2002.
-!    28th Nov 2001, Andy Smith:
-!       New constants for upper and lower limits used in checking in
-!       GetSPixel: flag values, lat, long, geometry, reflectances and brightness
-!       temps.
-!    (17th Jan 2001 - should read 2002?, Andy Smith:)
-!       New LwRTM error code. Re-numbered higher error codes to make room.
-!    23rd Feb 2011, Andy Smith:
-!       Added ECPLogReclen, fed up of irritating line breaks.
-!     9th Mar 2011, Andy Smith:
-!       New error codes for albedo files. Updated XMDAD error on a priori F.
-!     5th Apr 2011, Andy Smith:
-!       Removed selection methods SAD and SDAD. Codes SlmSAD, SelmSDAD removed,
-!       other Selm codes re-numbered.
-!       SelmMDAD renamed SelmMeas to improve clarity.
-!    14th Apr 2011, Andy Smith:
-!       Extension to handle multiple views.
-!       Extended FilenameLen to allow for long paths.
-!    14th Jun 2011, Caroline Poulsen: remove maximum sizes for LUT arrays
-!    28th Jul 2011, Caroline Poulsen: added in scanline file error values
-!     1st Aug 2011, Caroline Poulsen: new swrtm error values
-!     8th Aug 2011, Caroline Poulsen: changed format of LUTS
-!    22nd Sep 2011, Caroline Poulsen: changed getLeRTM to GetSWrtm
-!     4th Oct 2011, Chris Arnold: added LUT/RTM Intflag errors
-!     7th Oct 2011, Caroline Poulsen: added in variables to calculate CWP rho
-!       and qext
-!     4th Nov 2011, Caroline Poulsen: changed values of AUXErrTsSea/land
-!    25th Nov 2011, Caroline Poulsen: changed values maxnummeas
-!     8th Dec 2011, Matthias Jerg: added data type definitions for netcdf output
-!       and filenamelengths
-!    2012/01/30, Matthias Jerg: added ditherm3 as parameter.
-!    2012/06/15, Caroline Poulsen: added iluum error flags
-!    2012/06/22, Caroline Poulsen: added sacura option
-!    2012/10/01, Caroline Poulsen: added case where 1.6 of 3.7 channel is
-!       missing during the day
-!    2013/xx/xx, Matthias Jerg: changes lengths of filenames and some formatting,
-!       adds fill value for double precision.
-!    2013/11/19, Matthias Jerg: changes refmax to 1.5 from 1.2 and btmin to
-!       140.0 from 150.0
-!    2014/01/26, Greg McGarragh: Cleaned up code.
-!    2014/04/03, Matthias Jerg: adds some fill value definitions
-!    2014/05/22, Greg McGarragh: Added RTMIntMeth and LUTIntMeth constants.
-!    2014/07/24, Adam Povey: made FlagMin|Max type byte
-!    2014/08/01, Greg McGarragh: Rename illumination conditions for missing
-!       conditions.
-!    2014/08/15, Greg McGarragh: d2r is a derived constant. It should be
-!       computed which will be done at compile time since both operands are
-!       constants.
-!    2014/08/30, Greg McGarragh: Use common_constants and remove pi and d2r as
-!       they are in common_constants.
-!    2014/09/09, Greg McGarragh: Changes related to new BRDF support.
-!    2014/11/20, Oliver Sus: increased BTMax from 330 to 350 K, thus providing
-!       retrieval results for warm land surfaces (e.g. Sahara, Namib)
-!    2015/01/09, Caroline Poulsen: Added IRFBd for cloud albedo calculations.
-!    2015/01/12, Adam Povey: Added bit positions for Ctrl%Ind%Ch_Is.
-!    2015/03/11, Greg McGarragh: Increase MaxNumMeas and MaxNumSolar to 36 and
-!       20, respectively.
-!
-! Bugs:
-!    None known.
+! 2011/02/08, AS: Re-introducing changes made in late 2001/2002.
+! 2001/11/28, AS: New constants for upper and lower limits used in checking in
+!    GetSPixel: flag values, lat, long, geometry, reflectances and brightness
+!    temps.
+! 2002/01/17, AS: New LwRTM error code. Re-numbered higher error codes to 
+!    make room.
+! 2011/02/23, AS: Added ECPLogReclen, fed up of irritating line breaks.
+! 2011/03/09, AS: New error codes for albedo files. Updated XMDAD error on 
+!    a priori F.
+! 2011/04/05, AS: Removed selection methods SAD and SDAD. Codes SlmSAD, SelmSDAD
+!    removed, other Selm codes re-numbered. SelmMDAD renamed SelmMeas to 
+!    improve clarity.
+! 2011/04/14, AS: Extension to handle multiple views.
+!    Extended FilenameLen to allow for long paths.
+! 2011/06/14, CP: remove maximum sizes for LUT arrays
+! 2011/06/28, CP: added in scanline file error values
+! 2011/08/01, CP: new swrtm error values
+! 2011/08/08, CP: changed format of LUTS
+! 2011/09/22, CP: changed getLeRTM to GetSWrtm
+! 2011/10/04, CA: added LUT/RTM Intflag errors
+! 2011/10/07, CP: added in variables to calculate CWP rho and qext
+! 2011/11/04, CP: changed values of AUXErrTsSea/land
+! 2011/11/25, CP: changed values maxnummeas
+! 2011/12/08, MJ: added data type definitions for netcdf output
+!    and filenamelengths
+! 2012/01/30, MJ: added ditherm3 as parameter.
+! 2012/06/15, CP: added iluum error flags
+! 2012/06/22, CP: added sacura option
+! 2012/10/01, CP: added case where 1.6 of 3.7 channel is missing during the day
+! 2013/xx/xx, MJ: changes lengths of filenames and some formatting,
+!    adds fill value for double precision.
+! 2013/11/19, MJ: changes refmax to 1.5 from 1.2 and btmin to 140.0 from 150.0
+! 2014/01/26, GM: Cleaned up code.
+! 2014/04/03, MJ: adds some fill value definitions
+! 2014/05/22, GM: Added RTMIntMeth and LUTIntMeth constants.
+! 2014/07/24, AP: made FlagMin|Max type byte
+! 2014/08/01, GM: Rename illumination conditions for missing conditions.
+! 2014/08/15, GM: d2r is a derived constant. It should be computed which will be
+!    done at compile time since both operands are constants.
+! 2014/08/30, GM: Use common_constants and remove pi and d2r as
+!    they are in common_constants.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2014/11/20, OS: increased BTMax from 330 to 350 K, thus providing
+!    retrieval results for warm land surfaces (e.g. Sahara, Namib)
+! 2015/01/09, CP: Added IRFBd for cloud albedo calculations.
+! 2015/01/12, AP: Added bit positions for Ctrl%Ind%Ch_Is.
+! 2015/03/03, AP: Added terms for aerosol retrieval.
+! 2015/03/11, GM: Increase MaxNumMeas and MaxNumSolar to 36 and 20, respectively.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module ECP_constants

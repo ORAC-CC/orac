@@ -1,43 +1,38 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Decompose_Cholesky
+! Name: DecomposeCholesky.F90
 !
 ! Purpose:
-!    Given an n * n positive-definite symmetric matrix A, constructs its
-!    Cholesky decomposition L, such that A = L.L^T . The decomposition is
-!    calculated only from the upper triangle of A and is returned in the lower
-!    triangle of A. This subroutine makes approximately n^3 / 6 multiplications.
+! Given an n * n positive-definite symmetric matrix A, constructs its
+! Cholesky decomposition L, such that A = L.L^T . The decomposition is
+! calculated only from the upper triangle of A and is returned in the lower
+! triangle of A. This subroutine makes approximately n^3 / 6 multiplications.
 !
-! Arguments:
-!    Name   Type        In/Out/Both Description
-!    A      float array Both        Positive definite in (only upper triangle
-!                                   plus diagonal used), Cholesky decomposition
-!                                   out (lower triangle overwritten)
-!    n      integer     In          Dimensions of A; loop limit
-!    Status integer     Out         Status flag: 0 = Success, InvCholNotPosDef =
-!                                   not positive definite
-!
-! Algorithm:
+! Description and Algorithm details:
 !    See "Numerical Recipies in FORTRAN 77: The Art of Scientific Computing"
 !    (ISBN 0-521-43064-X), pages 89-91.
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name   Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! A      float array Both        Positive definite in (only upper triangle
+!                                plus diagonal used), Cholesky decomposition
+!                                out (lower triangle overwritten)
+! n      integer     In          Dimensions of A; loop limit
+! Status integer     Out         Status flag: 0 = Success, InvCholNotPosDef =
+!                                not positive definite
 !
 ! History:
-!    20th April, 2001, Tim Nightingale : Original version. Adapted from "choldc"
-!       in "Numerical Recipes in Fortran 90: The Art of Parallel Scientific
-!       Computing" (ISBN 0-521-57439-0), pages 1038-39. Error handling and types
-!       changed, diagonal p incorporated in A.
-!     6th July 2001, Andy Smith:
-!       Changed error code to "ECP style": uses a named constant from
-!       ECP_Constants module.
-!
-! Bugs:
-!    None known.
+! 2001/04/20, TN: Original version. Adapted from "choldc" in "Numerical Recipes 
+!    in Fortran 90: The Art of Parallel Scientific Computing" 
+!    (ISBN 0-521-57439-0), pages 1038-39. Error handling and types changed,
+!    diagonal p incorporated in A.
+! 2001/07/06, AS: Changed error code to "ECP style": uses a named constant from
+!    ECP_Constants module.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Decompose_Cholesky(A, n, Status)

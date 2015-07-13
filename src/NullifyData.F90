@@ -1,29 +1,29 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Nullify_Data
+! Name: NullifyData.F90
 !
 ! Purpose:
+! Nullify all pointers in Ctrl and MSI_Data structures.
+!
+! Description and Algorithm details:
+! Many calls to nullify.
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Name     Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct In          Control structure
+! MSI_Data struct Both        Imager data structure
 !
 ! History:
-!    10th Sep 2014, Greg McGarragh: Original version
-!    19th Dec 2015, Greg McGarragh: Added nullifications for recently added
-!       variables.
-!    30th Jan 2015, Adam Povey: Remove uscan and vscan as unnecessary.
-!     3rd Jul 2015, Oliver Sus: Added cloudmask_error
-!
-! Bugs:
-!    None known.
+! 2014/09/10, GM: Original version
+! 2015/12/19, GM: Added nullifications for recently added
+!    variables.
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2015/07/03, OS: Added cloudmask_error
 !
 ! $Id: NullifyData.F90 2356 2014-09-10 20:42:15Z gmcgarragh $
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Nullify_Data(Ctrl, MSI_Data)

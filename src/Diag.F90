@@ -1,42 +1,23 @@
 !-------------------------------------------------------------------------------
-! Name:
-!   Diag
+! Name: Diag.F90
 !
-! Description:
-!   Module defining retrieval diagnostic structure for the ECP. This structure
-!   holds information relating to a given retrieval done by Invert_Marquardt,
-!   such as the number of iterations taken, quality flag etc.
-!
-! Arguments:
-!   Name Type In/Out/Both Description
-!   N/A
-!
-! Algorithm:
-!   N/A
-!
-! Local variables:
-!   Name Type Description
-!   N/A
+! Purpose:
+! Module defining retrieval diagnostic structure for the ECP. This structure
+! holds information relating to a given retrieval done by Invert_Marquardt,
+! such as the number of iterations taken, quality flag etc.
 !
 ! History:
-!     2nd Jul 2001, Andy Smith: Original version
-!    18th Jul 2001, Andy Smith:
-!       Corrected error in QC flag comments.
-!    29th May 2013, Gareth Thomas:
-!       Added averaging kernel to structure
-!    21th May 2014, Greg McGarragh:
-!       Cleaned up the code.
-!     1st Dec 2014, Caroline Poulsen:
-!       Added cloud albedo.
-!    19th Jan 2015, Greg McGarragh:
-!       Put ZeroDiag.F90 and SetDiag.F90 into this module.
-
-!
-! Bugs:
-!   None known.
+! 2001/07/02, AS: Original version
+! 2001/07/18, AS: Corrected error in QC flag comments.
+! 2013/05/29, GT: Added averaging kernel to structure
+! 2014/05/21, GM: Cleaned up the code.
+! 2014/12/01, CP: Added cloud albedo.
+! 2015/01/19, GM: Put ZeroDiag.F90 and SetDiag.F90 into this module.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module Diag_def

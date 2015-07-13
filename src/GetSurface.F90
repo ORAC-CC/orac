@@ -1,145 +1,123 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Get_Surface
+! Name: GetSurface.F90
 !
 ! Purpose:
-!    Passes surface reflectances for the solar channels and current super-pixel
-!    array according to the method defined by Ctrl%Rs%Flag to Get_Rs.
-!    Get_Rs calculates the mean surface reflectance of the super pixel.
-!    Also calculates the covariances for the solar channels.
+! Passes surface reflectances for the solar channels and current super-pixel
+! array according to the method defined by Ctrl%Rs%Flag to Get_Rs.
+! Get_Rs calculates the mean surface reflectance of the super pixel.
+! Also calculates the covariances for the solar channels.
+!
+! Description and Algorithm details:
+! Depending on the method specified for setting surface reflectance
+! (Ctrl%Rs%Flag):
+! - Ctrl
+!      Ctrl: Get B values from Ctrl struct
+!             Set Sb using Ctrl values
+!      Calculate an overall B value for the super-pixel in each channel,
+!         using the land/sea flags to pick out whether each pixel in the
+!         super-pixel is land or sea and combining the results for the two
+!         surface types.
+!      Similarly, calculate on-diagonal covariance terms Sb
+!      Calculate off-diagonal Sb terms using the correlation between channels
+!         Ctrl%Surface%Cb
+!      Set SPixel values for total number of land and sea pixels
+!      Call Get_Rs to average reflectance values over the super-pixel
+!
+! - MDAD
+!      Not supported
+!
+! - AUX
+!      Use albedo value read from Aux file.
 !
 ! Arguments:
-!    Name      Type         In/Out/Both Description
-!    Ctrl      struct       In          Control structure
-!    SAD_Chan  struct       In          SAD channel structure
-!    SPixel    alloc struct Both        Super-pixel structure
-!    MSI_Data  struct       In          Data structure. Contains the multi-
-!                                       spectral image measurements, location
-!                                       values, geometry etc for the current
-!                                       image segment, from which the current
-!                                       SPixel values will be extracted.
-!    status    integer      Out         Error status
-!
-! Algorithm:
-!    Depending on the method specified for setting surface reflectance
-!    (Ctrl%Rs%Flag):
-!    - Ctrl
-!         Ctrl: Get B values from Ctrl struct
-!                Set Sb using Ctrl values
-!         Calculate an overall B value for the super-pixel in each channel,
-!            using the land/sea flags to pick out whether each pixel in the
-!            super-pixel is land or sea and combining the results for the two
-!            surface types.
-!         Similarly, calculate on-diagonal covariance terms Sb
-!         Calculate off-diagonal Sb terms using the correlation between channels
-!            Ctrl%Surface%Cb
-!         Set SPixel values for total number of land and sea pixels
-!         Call Get_Rs to average reflectance values over the super-pixel
-!
-!    - MDAD
-!         Not supported
-!
-!    - AUX
-!         Use albedo value read from Aux file.
+! Name      Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl      struct       In          Control structure
+! SPixel    alloc struct Both        Super-pixel structure
+! MSI_Data  struct       In          Data structure. Contains the multi-
+!                                    spectral image measurements, location
+!                                    values, geometry etc for the current
+!                                    image segment, from which the current
+!                                    SPixel values will be extracted.
+! status    integer      Out         Error status
 !
 ! History:
-!     1st December, 2000, Kevin M. Smith:
-!       Original version
-!     4th December, 2000, Kevin M. Smith:
-!       Included Get_Surface_Rs subroutine
-!    19th December, 2000, Kevin M. Smith:
-!       Replaced Data_LSFlags array with Data structure
-!    16th January,  2001, Kevin M. Smith:
-!       Re-drafted
-!    24th January,  2001, Kevin M. Smith:
-!       Moved allocations to ECP main on integration
-!     8th February, 2001, Kevin M. Smith:
-!       Corrected error in calculation of b
-!    16th Mar 2001, Andy Smith:
-!       Removed checking for invalid "GetSurface" method.
-!       Using named constants for selection method.
-!     3rd Apr 2001, Andy Smith:
-!       Replaced loop over channels for setting b in the Ctrl case with a whole
-!       array assignment. Similar for Sb in both Ctrl and SAD cases.
-!    25th Jun 2001, Andy Smith:
-!       Completed header comments.
-!     7th Aug 2001, Andy Smith:
-!       Updates for image segmentation. Selection of values from the MSI Data
-!       structure arrays now need to use a y value that refers to the image
-!       segment currently held in memory rather than the whole image area.
-!       X co-ords are unchanged since the segment is the full image width.
-!       Renamed structure Data to MSI_Data since Data is a reserved word (hasn't
-!       caused any problems so far but it might).
-!       Added argument intent.
-!    22nd Oct 2001, Andy Smith:
-!       Updated comments.
+! 2000/12/01, KS: Original version
+! 2000/12/04, KS: Included Get_Surface_Rs subroutine
+! 2000/12/19, KS: Replaced Data_LSFlags array with Data structure
+! 2001/01/16, KS: Re-drafted
+! 2001/01/24, KS: Moved allocations to ECP main on integration
+! 2001/02/08, KS: Corrected error in calculation of b
+! 2001/03/16, AS: Removed checking for invalid "GetSurface" method.
+!    Using named constants for selection method.
+! 2001/04/03, AS: Replaced loop over channels for setting b in the Ctrl case
+!    with a whole array assignment. Similar for Sb in both Ctrl and SAD cases.
+! 2001/06/25, AS: Completed header comments.
+! 2001/08/07, AS: Updates for image segmentation. Selection of values from the
+!    MSI Data  structure arrays now need to use a y value that refers to the
+!    image segment currently held in memory rather than the whole image area. X
+!    co-ords are unchanged since the segment is the full image width. Renamed
+!    structure Data to MSI_Data since Data is a reserved word (hasn't caused any
+!    problems so far but it might). Added argument intent.
+! 2001/10/22, AS: Updated comments.
 !    **************** ECV work starts here *************************************
-!    22nd Feb 2011, Andy Smith:
-!       Re-introducing changes made in late 2001/2002.
-!    29th May 2002, Caroline Poulsen
-!       Changed the routine to be able to read auxiliary albedo information)
-!    10th Mar 2011, Andy Smith: plus later albedo changes made by Oxford.
-!       Replaced Ctrl%Ind values in array size declarations by SPixel equivalents
-!       Updated loops for b, Sb setting to use SPixel ind as well - not done in
-!       ORAC code)
-!    30th Mar 2011, Andy Smith:
-!       Removal of super-pixel averaging. Process single pixels at X0, Y0,
-!       removed other SPixel indices Xc, Yc, Xn, Yn etc.
-!       SPixel_B and SPixel_Sb re-dimensioned to remove SPixel size.
-!     5th Apr 2011, Andy Smith:
-!       Removed selection methods SAD and SDAD. SelmMDAD renamed SelmMeas.
-!       SAD_Chan struct no longer needed here: argument list updated.
-!       Bug fix from super-pixel removal: calc of spixel_b was still using
-!       index j (pixel position with super-pixel) when indexing the MSI_Data
-!       ALB array.
-!    26th Apr 2011, Andy Smith:
-!       Extension to handle multiple instrument views. Commented out setting of
-!       unused variable solar_factor.
-!    19th May 2011, Andy Smith:
-!       Multiple views (2). Commented out setting of qc1, qc2 as these are not
-!       used and the assignment refers specifically to channels 5 and 6 of the
-!       albedo data - may change in future and may be specific to one instrument.
-!     8th Jun 2011, Andy Smith:
-!       Removed calls to Write_Log to improve performance (add ifdef DEBUG).
-!     8th Dec 2011, Caroline Poulsen:
-!       Changed y_id to chi.
-!    13th Dec 2011, Caroline Poulsen:
-!       Added byte 2 unsigned integer routine to make g95 compatible.
-!    27th Jan 2012, Chris Arnold
-!       Bugfix: added call to byte to uint routine for AUX method (ln 349)
-!    1st May 2012 Caroline Poulsen added in the solar factor remove
-!       Factor 1 for multiplication
-!    09/09/2013 CP changed indexing on albedo data set  have to be really
-!       Careful here as aatsr preprocessing reads out albedo for 55 channel.
-!    ??/??/???? CP removed albedo scaling factor as netcdf value doe not need
-!       scaling
-!    01/10/2013 GT Bug-fix: Changed Y_ID to ChI when indexing albedo data
-!       (from MSI_Data%ALB). Y_ID gives the Channel ID numbers, rather than
-!       their index numbers within the data arrays.
-!    2013/11/19, MJ: Changes channel indices to ysolar_msi as this gives the
-!       indices of the solar channels as stored in the MSI array.
-!    2014/04/19, GM: Remove incorrect use of b1_to_ui1() for implicit conversion.
-!    2014/04/20, GM: Cleaned up the code.
-!    2014/08/01, GM: Use of SPixel%spixel_*_y_to_ctrl_y_index(:) to properly
-!       index the right channels from the surface fields.
-!    2014/09/09, GM: Changes related to new BRDF support.
-!    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
-!       channels with respect to the channels actually processed, rather than the
-!       MSI file.
-!    2015/01/15, AP: Facilitate channel indexing in arbitrary order.
-!    2015/01/15, AP: The preprocessed MODIS albedo data was always rejected for
-!       Ch5 of AATSR. There is no reason to do so. This has been removed.
-!    2015/01/20, AP: Tidying redundant code.
-!    2015/01/21, AP: Move allocations of reflectance arrays here.
-!    2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
-!
-! Bugs:
-!    AS, Mar 2011. The Aux method albedo code includes specific handling for
-!    channel 5, which presumably assumes that we are processing ATSR data and
-!    makes this code harder to generalise to other instruments.
+! 2011/02/22, AS: Re-introducing changes made in late 2001/2002.
+! 2002/05/29, CP: Changed the routine to be able to read auxiliary albedo 
+!    information)
+! 2011/03/10, AS: plus later albedo changes made by Oxford.
+!    Replaced Ctrl%Ind values in array size declarations by SPixel equivalents
+!    Updated loops for b, Sb setting to use SPixel ind as well - not done in
+!    ORAC code)
+! 2011/03/30, AS: Removal of super-pixel averaging. Process single pixels at X0,
+!    Y0, removed other SPixel indices Xc, Yc, Xn, Yn etc. SPixel_B and SPixel_Sb
+!    re-dimensioned to remove SPixel size.
+! 2011/04/05, AS: Removed selection methods SAD and SDAD. SelmMDAD renamed
+!    SelmMeas. SAD_Chan struct no longer needed here: argument list updated.
+!    Bug fix from super-pixel removal: calc of spixel_b was still using index j
+!    (pixel position with super-pixel) when indexing the MSI_Data ALB array.
+! 2011/04/26, AS: Extension to handle multiple instrument views. Commented out
+!    setting of unused variable solar_factor.
+! 2011/05/19, AS: Multiple views (2). Commented out setting of qc1, qc2 as these
+!    are not used and the assignment refers specifically to channels 5 and 6 of
+!    the albedo data - may change in future and may be specific to one instrument
+! 2011/06/08, AS:  Removed calls to Write_Log to improve performance
+!    (add ifdef DEBUG).
+! 2011/12/08, CP: Changed y_id to chi.
+! 2011/12/13, CP: Added byte 2 unsigned integer routine to make g95 compatible.
+! 2012/01/27, CA: Bugfix: added call to byte to uint routine for AUX method
+!    (ln 349)
+! 2012/05/01, CP: added in the solar factor remove
+!    Factor 1 for multiplication
+! 2012/09/09, CP: changed indexing on albedo data set  have to be really
+!    Careful here as aatsr preprocessing reads out albedo for 55 channel.
+! 2012/09/21, CP: removed albedo scaling factor as netcdf value doe not need
+!    scaling
+! 2013/10/01, GT: Bug-fix: Changed Y_ID to ChI when indexing albedo data
+!    (from MSI_Data%ALB). Y_ID gives the Channel ID numbers, rather than
+!    their index numbers within the data arrays.
+! 2013/11/19, MJ: Changes channel indices to ysolar_msi as this gives the
+!    indices of the solar channels as stored in the MSI array.
+! 2014/04/19, GM: Remove incorrect use of b1_to_ui1() for implicit conversion.
+! 2014/04/20, GM: Cleaned up the code.
+! 2014/08/01, GM: Use of SPixel%spixel_*_y_to_ctrl_y_index(:) to properly
+!    index the right channels from the surface fields.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, rather than the
+!    MSI file.
+! 2015/01/15, AP: Facilitate channel indexing in arbitrary order.
+! 2015/01/15, AP: The preprocessed MODIS albedo data was always rejected for
+!    Ch5 of AATSR. There is no reason to do so. This has been removed.
+! 2015/01/20, AP: Tidying redundant code.
+! 2015/01/21, AP: Move allocations of reflectance arrays here.
+! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !
+! Bugs:
+! AS, Mar 2011. The Aux method albedo code includes specific handling for
+! channel 5, which presumably assumes that we are processing ATSR data and
+! makes this code harder to generalise to other instruments.
 !-------------------------------------------------------------------------------
 
 subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)

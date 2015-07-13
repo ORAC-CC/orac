@@ -1,112 +1,103 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Read_Driver
+! Name: ReadDriver.F90
 !
 ! Purpose:
-!     Stores values required by driver file. This code is intended to replace
-!     the idl write_idriver.pro
+! Stores values required by driver file. This code is intended to replace
+! the idl write_idriver.pro
 !
-! Description:
-!    Reads the values from the "driver" file used to set run-time options into
-!    the CTRL structure. Settings beyond the typical can be overriden in the
-!    driver using lines such as,
-!       Ctrl%Run_ID = ABCD
-!    The variable to change is identified before an = sign (with structure
-!    references expressed by % or .) and its value is after the = sign. #
-!    denotes a comment. Arrays should be delimited with commas, then semicolons
-!    though whitespace, then commas is acceptable.
+! Description and Algorithm details:
+! Reads the values from the "driver" file used to set run-time options into
+! the CTRL structure. Settings beyond the typical can be overriden in the
+! driver using lines such as,
+!    Ctrl%Run_ID = ABCD
+! The variable to change is identified before an = sign (with structure
+! references expressed by % or .) and its value is after the = sign. #
+! denotes a comment. Arrays should be delimited with commas, then semicolons
+! though whitespace, then commas is acceptable.
 !
 ! Arguments:
-!    Name    Type    In/Out/Both Description
-!    Ctrl    Ctrl_t  out         Control struct defined in CTRL_def
-!    message string  inout       Error message returned to calling routine
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Name        Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct  Out         Control struct defined in CTRL_def
+! global_atts struct  Both        Attributes for NCDF files
+! source_atts struct  Both        Description of file inputs for NCDF files
+! verbose     logic   Both        Controls output to stdout
 !
 ! History:
-!    15th May 2012, Caroline Poulsen: created original file to reapce ReadDriver
-!     8th Jul 2012, Caroline Poulsen: fixed memory leaks
-!    2012/07/13, MJ: implements option to read drifile path from command line
-!    2012/07/13, Caroline Poulsen: changed ref_solar_sea nd ref_solar_land to
-!       reals rather than integers.
-!    2012/07/26, MJ: makes some small changes, paths passed to ORAC via driver
-!       file must not have trailing forward slashes ("/"). Those are explicitly
-!       added in this routine where necessary.
-!    2012/07/29, Caroline Poulsen: fixed bug in twilight/night state variable
-!       numbering
-!    2012/08/10, Caroline Poulsen: modified state parameter indives for night
-!    2012/08/22, MJ: makes adaptions to read netcdf files
-!    2012/09/15, CP: removed double allocation of viewidx
-!    2012/10/01, CP: changed active variables at night to be ctp fraction and
-!       surface temperature, changed how first guess of CTP calculated at night
-!       i.e matching temperature profile changed a priori errors of state vecto
-!    2012/10/01, CP: added in default sx category as was not being reset after
-!       each pixel was processed
-!    2012/10/01, MJ: changed definition of AVHRR SW variables
-!    2012/11/22, CP: fixed bug in index_ir AATSR definition
-!    2013/03/18, CP: modified upper limits of ice and water effective radius
-!    2013/03/18, CP: added in more comments for clarity
-!    2013/06/27, MJ: implemented reading of path to driver file either from
-!       environment variable or passed from outside
-!    2013/10/02, CP: added comments for GT added aerosol classes for Bayesian
-!       cloud id
-!    2013/11/14, MJ: rewrote most parts referring to setting and reading channel
-!       indices. Added reading of config file different driver file necessary
-!       now.
-!    2013/11/14, MJ: changes lower and upper limits for ctp.
-!    2013/11/18, MJ: Several additional changes, introduces ysolar_msi and
-!       ythermal_msi
-!    2013/11/25, MJ: initialized previously uninitialised Ctrl%Run_ID
-!    2014/01/12, GM: Small fixes involving Ctrl%Ind%NAvail
-!    2014/01/15, GM: No need for Ctrl%defaultSx any more.
-!    2014/01/15, GM: Added the ability to read the driver file contents from
-!       standard input indicated by drifile .eq. '-'.
-!    2014/01/16, GM: Use Selm* constants to set FG and AP instead of numbers.
-!    2014/01/16, GM: Cleaned up code.
-!    2014/01/31, MJ: Adds code for default surface reflection for avhrr
-!       (=modis for the time being)
-!    2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
-!       variables
-!    2014/09/17, GM: Use the DiFlag* constants instead of integer values.
-!    2014/12/01, CP: added in global and source attribute read capability
-!    2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100,
-!       as otherwise ~30% of converged pixels are lost in l2tol3 processing
-!    2014/12/17, AP: Converted read statements to parse_driver statements.
-!       Permit optional overrides of default behaviour from driver.
-!    2014/12/19, AP: Tidying. Cleaning the management of channel indexing.
-!    2014/12/29, GM: Fixed a bug in the channel indexing changes above.
-!    2015/01/15, AP: Adding Ctrl%Ind%Ch_Is. Revised setting of Ctrl%RS%B.
-!    2015/01/19, GM: Added error handling for parsing the driver file.
-!    2015/01/20, GM: Bug fix: any() was being used on uninitialized data.
-!    2015/01/28, AP: Use consistent FG and AP. Turn off retrieval of phase.
-!       Increase a priori uncertainty on CTP to equal that of other variables.
-!    2015/01/30, AP: Allow warm start coordinates to be specified.
-!    2015/02/04, GM: Add sabotage_inputs flag and retrieval channel requirements
-!       arrays.
-!    2015/02/04, GM: Add initialization of ReChans array.
-!    2015/02/04, OS: drifile is passed as call argument for WRAPPER
-!    2015/02/24, GM: Some small fixes to driver file error handling.
-!    2015/03/10, GM: Added Ctrl%RS%use_full_brdf as a driver option.
-!    2015/03/11, GM: Added Ctrl%ReChans as a driver option.
-!    2015/03/11, GM: Added an error check for unrecognised instruments.
-!    2015/05/25, GM: Get rid of filename Diag and flags Diagl. Neither was being
-!       used and have been rotting.
-!
-! Bugs:
-!    NViews should be changed for dual view
-!    Not quite working for AVHRR
-!
-! IMPORTANT NOTE:
-!    If a new type of LUT i.e aerosol is added then new default values will have
-!    to be added to this routine
+! 2012/05/15, CP: created original file to reapce ReadDriver
+! 2012/06/08, CP: fixed memory leaks
+! 2012/07/13, MJ: implements option to read drifile path from command line
+! 2012/07/13, CP: changed ref_solar_sea nd ref_solar_land to
+!    reals rather than integers.
+! 2012/07/26, MJ: makes some small changes, paths passed to ORAC via driver
+!    file must not have trailing forward slashes ("/"). Those are explicitly
+!    added in this routine where necessary.
+! 2012/07/29, CP: fixed bug in twilight/night state variable numbering
+! 2012/08/10, CP: modified state parameter indives for night
+! 2012/08/22, MJ: makes adaptions to read netcdf files
+! 2012/09/15, CP: removed double allocation of viewidx
+! 2012/10/01, CP: changed active variables at night to be ctp fraction and
+!    surface temperature, changed how first guess of CTP calculated at night
+!    i.e matching temperature profile changed a priori errors of state vecto
+! 2012/10/01, CP: added in default sx category as was not being reset after
+!    each pixel was processed
+! 2012/10/01, MJ: changed definition of AVHRR SW variables
+! 2012/11/22, CP: fixed bug in index_ir AATSR definition
+! 2013/03/18, CP: modified upper limits of ice and water effective radius
+! 2013/03/18, CP: added in more comments for clarity
+! 2013/06/27, MJ: implemented reading of path to driver file either from
+!    environment variable or passed from outside
+! 2013/10/02, CP: added comments for GT added aerosol classes for Bayesian
+!    cloud id
+! 2013/11/14, MJ: rewrote most parts referring to setting and reading channel
+!    indices. Added reading of config file different driver file necessary now.
+! 2013/11/14, MJ: changes lower and upper limits for ctp.
+! 2013/11/18, MJ: Several additional changes, introduces ysolar_msi and
+!    ythermal_msi
+! 2013/11/25, MJ: initialized previously uninitialised Ctrl%Run_ID
+! 2014/01/12, GM: Small fixes involving Ctrl%Ind%NAvail
+! 2014/01/15, GM: No need for Ctrl%defaultSx any more.
+! 2014/01/15, GM: Added the ability to read the driver file contents from
+!    standard input indicated by drifile .eq. '-'.
+! 2014/01/16, GM: Use Selm* constants to set FG and AP instead of numbers.
+! 2014/01/16, GM: Cleaned up code.
+! 2014/01/31, MJ: Adds code for default surface reflection for avhrr
+!    (=modis for the time being)
+! 2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
+!    variables
+! 2014/09/17, GM: Use the DiFlag* constants instead of integer values.
+! 2014/12/01, CP: added in global and source attribute read capability
+! 2014/12/01, OS: increased maximum acceptable retrieval cost from 10 to 100,
+!    as otherwise ~30% of converged pixels are lost in l2tol3 processing
+! 2014/12/17, AP: Converted read statements to parse_driver statements.
+!    Permit optional overrides of default behaviour from driver.
+! 2014/12/19, AP: Tidying. Cleaning the management of channel indexing.
+! 2014/12/29, GM: Fixed a bug in the channel indexing changes above.
+! 2015/01/15, AP: Adding Ctrl%Ind%Ch_Is. Revised setting of Ctrl%RS%B.
+! 2015/01/19, GM: Added error handling for parsing the driver file.
+! 2015/01/20, GM: Bug fix: any() was being used on uninitialized data.
+! 2015/01/28, AP: Use consistent FG and AP. Turn off retrieval of phase.
+!    Increase a priori uncertainty on CTP to equal that of other variables.
+! 2015/01/30, AP: Allow warm start coordinates to be specified.
+! 2015/02/04, GM: Add sabotage_inputs flag and retrieval channel requirements
+!    arrays.
+! 2015/02/04, GM: Add initialization of ReChans array.
+! 2015/02/04, OS: drifile is passed as call argument for WRAPPER
+! 2015/02/24, GM: Some small fixes to driver file error handling.
+! 2015/03/10, GM: Added Ctrl%RS%use_full_brdf as a driver option.
+! 2015/03/11, GM: Added Ctrl%ReChans as a driver option.
+! 2015/03/11, GM: Added an error check for unrecognised instruments.
+! 2015/05/25, GM: Get rid of filename Diag and flags Diagl. Neither was being
+!    used and have been rotting.
 !
 ! $Id$
 !
+! Bugs:
+! NViews should be changed for dual view
+!
+! IMPORTANT NOTE:
+! If a new type of LUT i.e aerosol is added then new default values will have
+! to be added to this routine
 !-------------------------------------------------------------------------------
 module read_driver_m
 

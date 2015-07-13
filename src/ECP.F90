@@ -1,196 +1,175 @@
 !-------------------------------------------------------------------------------
-! Name:
-!   ECP
+! Name: ECP.F90
 !
-! Description:
-!   Main program for the Enhanced Cloud Processor prototype. Calls subordinate
-!   functions to read in data and process.
+! Purpose:
+! Main program for the Enhanced Cloud Processor prototype. Calls subordinate
+! functions to read in data and process.
 !
-!   License/Copyright
-!   Copyright 2011, RAL Space, Science and Technology Facilities Council and
-!   University of Oxford.
+! License/Copyright
+! Copyright 2011, RAL Space, Science and Technology Facilities Council and
+! University of Oxford.
 !
-!   This file and the associated documentation and source code files are part of
-!   ORAC.
+! This file and the associated documentation and source code files are part of
+! ORAC.
 !
-!   ORAC is free software: you can redistribute it and/or modify it under the
-!   terms of the GNU General Public License as published by the Free Software
-!   Foundation, either version 3 of the License, or (at your option) any later
-!   version.
+! ORAC is free software: you can redistribute it and/or modify it under the
+! terms of the GNU General Public License as published by the Free Software
+! Foundation, either version 3 of the License, or (at your option) any later
+! version.
 !
-!   ORAC is distributed in the hope that it will be useful, but WITHOUT ANY
-!   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-!   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-!   details.
+! ORAC is distributed in the hope that it will be useful, but WITHOUT ANY
+! WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+! FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+! details.
 !
-!   You should have received a copy of the GNU General Public License along with
-!   ORAC. If not, see http://www.gnu.org/licenses/
+! You should have received a copy of the GNU General Public License along with
+! ORAC. If not, see http://www.gnu.org/licenses/
+!
+! Description and Algorithm details:
+!  Data Preparation Section: reads in driver file and all SAD files but not
+!  the image data (which is read in segments)
+!  - read driver file
+!  - open log file
+!  - open breakpoint file if required
+!  - open output and diagnostic files
+!  - allocate SAD arrays and read in SAD files
+!  - read RTM data files
+!  - allocate super-pixel structure SPixel, and the RTM_Pc structure to hold
+!    RTM data interpolated to a given pressure level Pc.
+!
+!  Product generation section:
+!  - initialise super-pixel values (e.g. phase used for first guess state
+!    vector setting, saved state and error XnSav and SnSav used for first
+!    guess setting if method is SDAD).
+!  - modify user selected image area so that coordinates fall on exact
+!    super-pixel boundaries (and therefore exact image segment boundaries)
+!    and write log message if values are changed
+!  - read in image segments up to the user's selected starting point
+!  - main loop: for each row of super-pixels from user's starting y to end y:
+!    - convert the y location within the image to y loc within the segment
+!      (SPixel%Loc%Yseg0)
+!    - if (row number corresponds to a new segment)
+!      - read in the next segment from the MSI, cloud flags files etc
+!    - if (first row in the image)
+!      - write control structure to the output and diagnostic files
+!    - for each x location within the row (xstart to xstop in steps of the
+!      SPixel size)
+!      - get the current super-pixel values (measurements, cloud flags, geom
+!        etc)
+!      - check SPixel quality control flag: if flag indicates the SPixel
+!        should not be processed:
+!        - set output state vector and error arrays to indicate missing data
+!      - else (process the SPixel)
+!        - call Invert_Marquardt to calculate the current state vector
+!        - update overall statistics totals
+!        - write out the retrieved state vector and errors, plus diagnostics
+!    - end of x loop
+!  - end of y loop
+!  - write out overall statistics
+!  - close files
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    Data Preparation Section: reads in driver file and all SAD files but not
-!    the image data (which is read in segments)
-!    - read driver file
-!    - open log file
-!    - open breakpoint file if required
-!    - open output and diagnostic files
-!    - allocate SAD arrays and read in SAD files
-!    - read RTM data files
-!    - allocate super-pixel structure SPixel, and the RTM_Pc structure to hold
-!      RTM data interpolated to a given pressure level Pc.
-!
-!    Product generation section:
-!    - initialise super-pixel values (e.g. phase used for first guess state
-!      vector setting, saved state and error XnSav and SnSav used for first
-!      guess setting if method is SDAD).
-!    - modify user selected image area so that coordinates fall on exact
-!      super-pixel boundaries (and therefore exact image segment boundaries)
-!      and write log message if values are changed
-!    - read in image segments up to the user's selected starting point
-!    - main loop: for each row of super-pixels from user's starting y to end y:
-!      - convert the y location within the image to y loc within the segment
-!        (SPixel%Loc%Yseg0)
-!      - if (row number corresponds to a new segment)
-!        - read in the next segment from the MSI, cloud flags files etc
-!      - if (first row in the image)
-!        - write control structure to the output and diagnostic files
-!      - for each x location within the row (xstart to xstop in steps of the
-!        SPixel size)
-!        - get the current super-pixel values (measurements, cloud flags, geom
-!          etc)
-!        - check SPixel quality control flag: if flag indicates the SPixel
-!          should not be processed:
-!          - set output state vector and error arrays to indicate missing data
-!        - else (process the SPixel)
-!          - call Invert_Marquardt to calculate the current state vector
-!          - update overall statistics totals
-!          - write out the retrieved state vector and errors, plus diagnostics
-!      - end of x loop
-!    - end of y loop
-!    - write out overall statistics
-!    - close files
+! See Wiki.
 !
 ! History:
-!     2nd Aug 2000, Andy Smith: Original version (in development)
-!    11th Jul 2001, Andy Smith:
-!       Preparing main program for integration with other ECP routines.
-!    15th Aug 2001, Andy Smith:
-!       First fully working version of ECP. Includes image segmentation.
-!    15th Aug 2001, Andy Smith:
-!       Added status checks at start of main loop and after ReadSatData calls.
-!    23rd Aug 2001, Andy Smith:
-!       Added status check around overall statistics output.
-!    21st Sep 2001, Andy Smith:
-!       Added initial allocation of SPixel%Ym and Sy. These are deallocated
-!       each time Get_SPixel is called (in Get_Measurements). Also took the
-!       opportunity to put an "if" before part of the final stats output to
-!       avoid divide by zero errors, and replace tabs put in by the Nedit
-!       auto-indent feature with spaces.
-!    24th Sep 2001, Andy Smith:
-!       Moved initial allocation of SPixel%Ym, Sy, X and XI to AllocSPixel.
-!       Makes the main program more readable and avoids re-coding test
-!       harnesses.
-!    22nd Oct 2001, Andy Smith:
-!       Added calls to deallocate routines for SPixel, RTM_Pc, RTM and the
-!       MSI_Data structure. The alloc arrays in these structures *should* be
-!       released automatically at the end of execution. These routines
-!       deallocate explicitly in case the automatic dealloc isn't done.
-!    24th Oct 2001, Andy Smith:
-!       Removed conversion of solar channel reflectances from % to fraction.
-!       MSI files should now be written with fractional values.
-!       New logical variable to track alloc state of SAD_LUT internal arrays.
+! 2000/08/02, AS: Original version (in development)
+! 2001/07/11, AS: Preparing main program for integration with other ECP routines.
+! 2001/08/15, AS: First fully working version of ECP. Includes image segmentation
+!    Added status checks at start of main loop and after ReadSatData calls.
+! 2001/08/23, AS: Added status check around overall statistics output.
+! 2001/09/21, AS:  Added initial allocation of SPixel%Ym and Sy. These are 
+!    deallocated each time Get_SPixel is called (in Get_Measurements). Also took
+!    the opportunity to put an "if" before part of the final stats output to 
+!    avoid divide by zero errors, and replace tabs put in by the Nedit 
+!    auto-indent feature with spaces.
+! 2001/09/24, AS: Moved initial allocation of SPixel%Ym, Sy, X and XI to
+!    AllocSPixel.  Makes the main program more readable and avoids 
+!    re-coding test harnesses.
+! 2001/10/22, AS: Added calls to deallocate routines for SPixel, RTM_Pc, RTM and
+!    the MSI_Data structure. The alloc arrays in these structures *should* be 
+!    released automatically at the end of execution. These routines deallocate 
+!    explicitly in case the automatic dealloc isn't done.
+! 2001/10/23, AS: Removed conversion of solar channel reflectances from % to 
+!    fraction. MSI files should now be written with fractional values. New
+!    logical variable to track alloc state of SAD_LUT internal arrays.
 !    **************** ECV work starts here *************************************
-!     9th Mar 2011, Andy Smith:
-!       Re-applying changes from late 2001/2, MSI_luns now dimension 6 to allow
-!       for albedo data.
-!    22nd Mar 2011, Andy Smith:
-!       Removal of phase change. Only 1 cloud class required for each retrieval
-!       run. SADCloudClass and SAD_LUT array dimensions changed.
-!    23rd Mar 2011, Andy Smith:
-!       Added output of latitude and longitude to output file.
-!    30th Mar 2011, Andy Smith:
-!       Removal of super-pixel averaging. All super-pixelling will now be done
-!       in pre-processing. The SPixel structure used here now refers to a single
-!       pixel from the input files.
-!       Removed the modification of image (x,y) processing ranges to whole number
-!       of super-pixels. Remove use of Ctrl%Resoln%Space.
-!     8th Apr 2011, Andy Smith:
-!       Simplification of selection methods for first guess, a priori, limits etc.
-!       InvertMarquardt no longer requires SAD_CloudClass argument.
-!       Removed setting of SPixel%Phase: redundant following removal of phase
-!       change functionality.
-!    11th May 2011, Andy Smith:
-!       Extension to multiple viewing angles. Elements of the Ctrl struct are
-!       now pointers to arrays rather than fixed-size arrays, so Ctrl cannot be
-!       written in a single operation. Removed the writes of Ctrl to the diag
-!       and out file. It is planned to remove Ctrl from the out file anyway.
-!     8th Jun 2011, Caroline Poulsen:
-!       removed diagnostic structure
-!       added extra output file residual, quality indicators, a priori and first
-!       guess also input structure MSI_luns now dimension 7 to allow for
-!       scanline data.
-!     8th Jun 2011, Andy Smith:
-!       Tidied up log output. Use ORAC not ECP in log file. Trim run ID string.
-!       Added Write_Log call at end, to get finish time.
-!    22nd Sep 2011, Caroline Poulsen: remove sw%p as now the same as lw%p
-!     8th Oct 2011, Caroline Poulsen: added CWP to output
-!     8th Nov 2011, Caroline Poulsen: added y0 and sx to output
-!     8th Dec 2011, Matthias Jerg: added code to accommodate netcdfoutput
-!    13th Dec 2011, Caroline Poulsen: remove relenlog to be compatible with f95
-!    19th Dec 2011, Matthias Jerg: cleaned up netcdf output, introduced error
-!       reporting and added file headers.
-!     5th Jan 2012, Caroline Poulsen: removed binary output files
-!    15th Jan 2012, Caroline Poulsen: added missing for ymfit
-!    2012/03/27, MJ: changes netcdf write to 2D arrays
-!    2012/07/13, MJ: implements option to read drifile path from command line
-!    2012/08/14, MJ: irons out bug that made ORAC crash with gfortran
-!    2012/08/14, MJ: changes scaling of CWP output
-!    2012/08/22, MJ: includes time in MSI structure and writes it to primary
-!       netcdf file
-!    2012/08/22, MJ: makes adaptions to read netcdf files, start and end indices
-!       of area to be processed determined by preprocessing file contents and
-!       not hardwired any more.
-!    2012/08/27, MJ: better implements time variable in output.
-!    2012/11/01, MJ: implements OpenMP parallelization of along-track loop.
-!    2013/01/17, Matthias Jerg: Adds code to accommodate uncertainties of ctt
-!       and cth
-!    2013/12/05, MJ: initializes Diag%AK=sreal_fill_value
-!    2013/12/10, MJ: initializes ymfit and y0 with missingxn
-!    2014/01/12, Greg McGarragh: Added some missing deallocates.
-!    2014/01/28, Greg McGarragh: Cleaned up code.
-!    2014/01/29, Greg McGarragh: Some OpenMP fixes. Ctrl is actually shared.
-!       No need to make it private. Also many variables set to be 'privatefirst'
-!       should just be 'private', i.e. they do not need to enter the parallel
-!       loop initialised. Finally status_line was not needed. Status is private
-!       within the loop.
-!    2014/02/10, Matthias Jerg: Put the correct boundaries lat/lon for adaptive
-!       processing back in.
-!    2014/06/04, Matthias Jerg: Introduced "WRAPPER" for c-preprocessor and
-!       associated variables.
-!    2014/06/12, Greg McGarragh: OpenMP functions should be declared by the
-!       omp_lib module, not explicitly.
-!    2014/06/13, Greg McGarragh: Put NetCDF output related includes into
-!       subroutines.
-!    2014/06/15, Greg McGarragh: Set CTH and CTT values to missing in the case
-!       when a retrieval is not possible.
-!    2014/08/18, Adam Povey: Updating to preprocessor's NCDF routines.
-!    2014/12/01, CP: added new global and source attributes
-!    2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
-!       channels with respect to the channels actually processed, rather than the
-!       MSI file. Eliminate conf structure.
-!    2014/01/30, AP: Read surface level of RTTOV files. Allow warm start
-!       coordinates to be specified in the driver file. Remove SegSize.
-!    2015/02/04, OS: drifile is passed as call argument for WRAPPER
-!    2015/05/25, GM: Some cleanup involving Diag.
-!
-! Bugs:
-!    None known.
+! 2011/03/09, AS: Re-applying changes from late 2001/2, MSI_luns now dimension 
+!    6 to allow for albedo data.
+! 2011/03/22, AS: Removal of phase change. Only 1 cloud class required for each 
+!    retrieval run. SADCloudClass and SAD_LUT array dimensions changed.
+! 2011/03/23, AS: Added output of latitude and longitude to output file.
+! 2011/03/30, AS: Removal of super-pixel averaging. All super-pixelling will now
+!    be done in pre-processing. The SPixel structure used here now refers to a 
+!    single pixel from the input files. Removed the modification of image (x,y) 
+!    processing ranges to whole number of super-pixels. Remove use of 
+!    Ctrl%Resoln%Space.
+! 2011/04/08, AS: Simplification of selection methods for first guess, a priori,
+!    limits etc. InvertMarquardt no longer requires SAD_CloudClass argument. 
+!    Removed setting of SPixel%Phase: redundant following removal of phase 
+!    change functionality.
+! 2011/05/11, AS: Extension to multiple viewing angles. Elements of the Ctrl 
+!    struct are now pointers to arrays rather than fixed-size arrays, so Ctrl 
+!    cannot be written in a single operation. Removed the writes of Ctrl to the 
+!    diag and out file. It is planned to remove Ctrl from the out file anyway.
+! 2011/06/08, CP: Removed diagnostic structure. Added extra output file residual,
+!    quality indicators, a priori and first guess also input structure MSI_luns 
+!    now dimension 7 to allow for scanline data.
+! 2011/06/08, AS: Tidied up log output. Use ORAC not ECP in log file. Trim run 
+!    ID string. Added Write_Log call at end, to get finish time.
+! 2011/09/22, CP: remove sw%p as now the same as lw%p
+! 2011/10/08, CP: added CWP to output
+! 2011/11/08, CP: added y0 and sx to output
+! 2011/12/08, MJ: added code to accommodate netcdfoutput
+! 2011/12/12, CP: remove relenlog to be compatible with f95
+! 2011/12/19, MJ: cleaned up netcdf output, introduced error
+!    reporting and added file headers.
+! 2012/01/05, CP: removed binary output files
+! 2012/01/15, CP: added missing for ymfit
+! 2012/03/27, MJ: changes netcdf write to 2D arrays
+! 2012/07/13, MJ: implements option to read drifile path from command line
+! 2012/08/14, MJ: irons out bug that made ORAC crash with gfortran
+! 2012/08/14, MJ: changes scaling of CWP output
+! 2012/08/22, MJ: includes time in MSI structure and writes it to primary
+!    netcdf file
+! 2012/08/22, MJ: makes adaptions to read netcdf files, start and end indices
+!    of area to be processed determined by preprocessing file contents and
+!    not hardwired any more.
+! 2012/08/27, MJ: better implements time variable in output.
+! 2012/11/01, MJ: implements OpenMP parallelization of along-track loop.
+! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt & cth
+! 2013/12/05, MJ: initializes Diag%AK=sreal_fill_value
+! 2013/12/10, MJ: initializes ymfit and y0 with missingxn
+! 2014/01/12, GM: Added some missing deallocates.
+! 2014/01/28, GM: Cleaned up code.
+! 2014/01/29, GM: Some OpenMP fixes. Ctrl is actually shared.
+!    No need to make it private. Also many variables set to be 'privatefirst'
+!    should just be 'private', i.e. they do not need to enter the parallel
+!    loop initialised. Finally status_line was not needed. Status is private
+!    within the loop.
+! 2014/02/10, MJ: Put the correct boundaries lat/lon for adaptive
+!    processing back in.
+! 2014/06/04, MJ: Introduced "WRAPPER" for c-preprocessor and
+!    associated variables.
+! 2014/06/12, GM: OpenMP functions should be declared by the
+!    omp_lib module, not explicitly.
+! 2014/06/13, GM: Put NetCDF output related includes into
+!    subroutines.
+! 2014/06/15, GM: Set CTH and CTT values to missing in the case
+!    when a retrieval is not possible.
+! 2014/08/18, AP: Updating to preprocessor's NCDF routines.
+! 2014/12/01, CP: added new global and source attributes
+! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
+!    channels with respect to the channels actually processed, rather than the
+!    MSI file. Eliminate conf structure.
+! 2014/01/30, AP: Read surface level of RTTOV files. Allow warm start
+!    coordinates to be specified in the driver file. Remove SegSize.
+! 2015/02/04, OS: drifile is passed as call argument for WRAPPER
+! 2015/05/25, GM: Some cleanup involving Diag.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 #ifndef WRAPPER

@@ -1,95 +1,82 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Int_LUT_TauSatSolAziRe
+! Name: IntLUTTauSatSolAziRe.F90
 !
 ! Purpose:
-!    Interpolates values from a LUT array with dimensions (channel, Tau, SatZen,
-!    SunZen, RelAzi, Re) to give the value of the LUT array at a single value of
-!    Tau, SatZen, SunZen, RelAzi, Re across all channels.
+! Interpolates values from a LUT array with dimensions (channel, Tau, SatZen,
+! SunZen, RelAzi, Re) to give the value of the LUT array at a single value of
+! Tau, SatZen, SunZen, RelAzi, Re across all channels.
 !
-! Description:
-!    The subroutine is passed an array of data in 6 dimensions, plus info
-!    relating to the Tau, Re, SatZen etc grids corresponding to the LUT array
-!    points (the 6th dimension in the LUT array is the channel number, which is
-!    not interpolated).
+! Description and Algorithm details:
+! The subroutine is passed an array of data in 6 dimensions, plus info
+! relating to the Tau, Re, SatZen etc grids corresponding to the LUT array
+! points (the 6th dimension in the LUT array is the channel number, which is
+! not interpolated).
 !
-!    The subroutine calculates the value of the LUT at the current (Tau, SatZen,
-!    SunZen, RelAzi, Re) plus the gradients in Tau and Re.
+! The subroutine calculates the value of the LUT at the current (Tau, SatZen,
+! SunZen, RelAzi, Re) plus the gradients in Tau and Re.
+!
+! See IntLUTTauSolRe. This routine extends the linear interpolation from 1 to
+! 3 dimensions. Therefore there are more initial intermediate interpolations
+! required. The array G is used to store the values of the F array
+! interpolated to the correct viewing geometry.
 !
 ! Arguments:
-!    Name   Type        In/Out/Both Description
-!    F      real array  In          Function to be interpolated, i.e. array of
-!                                   LUT values with dimensions (channels, Tau,
-!                                   SatZen, Re).
-!    Grid   struct      In          LUT Grid data: see SADLUT.F90 Includes the
-!                                   grid values in Tau, Re, SatZen, no. of
-!                                   values and step size
-!    Gzero  struct      In          Structure containing "zero'th" point
-!                                   indices, i.e. LUT grid array indices for the
-!                                   nearest neighbour point, plus dT, dR, dS
-!                                   values: fraction of grid step from zero'th
-!                                   point to the Tau, SatZen, Re value we want.
-!    Ctrl   struct     In           Control structure: Needed for numbers of
-!    Ind    struct     In           The index structure from the SPixel array
-!    FInt   real array Both         The interpolated values of F for all
-!                                   required channels.
-!    FGrads real array Both         Interpolated gradient values in Tau and Re
-!                                   for all channels.
-!    status int        Out          Standard status code set by ECP routines
-!
-! Algorithm:
-!    See IntLUTTauSolRe. This routine extends the linear interpolation from 1 to
-!    3 dimensions. Therefore there are more initial intermediate interpolations
-!    required. The array G is used to store the values of the F array
-!    interpolated to the correct viewing geometry.
-!
-! Local variables:
-!    Name Type Description
+! Name   Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! F      real array  In          Function to be interpolated, i.e. array of
+!                                LUT values with dimensions (channels, Tau,
+!                                SatZen, Re).
+! NChans int         In          Number of channels in F
+! Grid   struct      In          LUT Grid data: see SADLUT.F90 Includes the
+!                                grid values in Tau, Re, SatZen, no. of
+!                                values and step size
+! Gzero  struct      In          Structure containing "zero'th" point
+!                                indices, i.e. LUT grid array indices for the
+!                                nearest neighbour point, plus dT, dR, dS
+!                                values: fraction of grid step from zero'th
+!                                point to the Tau, SatZen, Re value we want.
+! Ctrl   struct     In           Control structure: Needed for numbers of
+! FInt   real array Both         The interpolated values of F for all
+!                                required channels.
+! FGrads real array Both         Interpolated gradient values in Tau and Re
+!                                for all channels.
+! iCRP   int        In           Index of cloud property to interpolate
+! chan_to_ctrl_index             Indices of input chs within Ctrl arrays
+!        int array  In
+! chan_to_spixel_index           Indices of input chs within SPixel arrays
+!        int array  In
+! status int        Out          Standard status code set by ECP routines
 !
 ! History:
-!    17th Nov 2000, Andy Smith: Original version
-!     1st Dec 2000, Andy Smith:
-!        Renamed: "Sol" instead of "Sun".
-!        Variables using Sun or Su also renamed Sol/So
-!    11th Jan 2001, Andy Smith:
-!        Chans argument removed. Redundant.
-!    19th Jan 2001, Andy Smith:
-!        Comments updated.
-!    31st May 2007, Andy Sayer:
-!        The code now checks which channels are using which geometry, and
-!        interpolates/fills up the output arrays accordingly. See also
-!        IntRoutines.F90.
-!     5th Sep 2011, Chris Arnold:
-!        Added Bi-cubic interpolation in the Tau and Re plane, so that both
-!        function and gradient estimates are continuous in these dimensions.
-!        (Interpolation in angles is still done linearly.)
-!    20th Jan 2012, C. Poulsen:
-!       Created Yin variable to deal with contiguous array
-!     7th Feb 2012, Chris Arnold:
-!       Ctrl struct now passed to routine
-!     7th Feb 2012, Chris Arnold:
-!       Input structures Ctrl, GZero, Grid now have intent(in)
-!     8th Jul 2012, C. Poulsen:
-!       Fixed non contiguous arrays
-!     3rd Dec 2013, MJ:
-!       Makes LUTs more flexible wrt channel and properties.
-!    21st Jan 2014, Greg McGarragh:
-!       Cleaned up code.
-!    23st Jan 2014, Greg McGarragh:
-!       Performance improvements.  Primarily through elimination of unused
-!       memory references and computations especially when setting local
-!       variable G.
-!    16th Oct 2014, Greg McGarragh:
-!       Moved a large amount of code that was common to all IntLUT* subroutines
-!       into Int_LUT_Common()
-!    13th Jan 2015, Adam Povey:
-!       Switch to array-based channel indexing rather than using offsets.
-!
-! Bugs:
-!    None known.
+! 2000/11/17, AS: Original version
+! 2000/12/01, AS: Renamed: "Sol" instead of "Sun". Variables using Sun or Su
+!    also renamed Sol/So
+! 2001/01/11, AS: Chans argument removed. Redundant.
+! 2001/01/19, AS: Comments updated.
+! 2007/05/31, AY: The code now checks which channels are using which geometry,
+!    and interpolates/fills up the output arrays accordingly. See also
+!    IntRoutines.F90.
+! 2011/09/05, CA: Added Bi-cubic interpolation in the Tau and Re plane, so that
+!    both function and gradient estimates are continuous in these dimensions.
+!    (Interpolation in angles is still done linearly.)
+! 2012/01/20, CP: Created Yin variable to deal with contiguous array
+! 2012/02/07, CA: Ctrl struct now passed to routine
+! 2012/02/07, CA: Input structures Ctrl, GZero, Grid now have intent(in)
+! 2012/07/08, CP: Fixed non contiguous arrays
+! 2013/12/03, MJ: Makes LUTs more flexible wrt channel and properties.
+! 2014/01/21, GM: Cleaned up code.
+! 2014/01/23, GM: Performance improvements.  Primarily through elimination of
+!    unused memory references and computations especially when setting local
+!    variable G.
+! 2014/10/16, GM: Moved a large amount of code that was common to all IntLUT*
+!    subroutines into Int_LUT_Common()
+! 2015/01/13, AP:  Switch to array-based channel indexing rather than using
+!    offsets.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Int_LUT_TauSatSolAziRe(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, &

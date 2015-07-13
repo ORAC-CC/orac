@@ -1,51 +1,47 @@
 !-------------------------------------------------------------------------------
-! Bcucof.F90
+! Name: Bcucof.F90
 !
 ! Purpose:
-!    Calculates the coefficients for a bicubic interpolation
+! Calculates the coefficients for a bicubic interpolation
 !
-! Description:
-!    Given arrays y, y1, y2 and y12, each of length 4, containing the function,
-!    gradients and cross derivative at the four points of a rectangular grid
-!    cell (numbered counter clockwise from the lower left), and given d1 and d2,
-!    the length of the grid cell in the 1- and 2- directions, this routine
-!    returns the 4x4 table c that is used by the routine BCuInt_CA for bicubic
-!    interpolation.
+! Description and Algorithm details:
+! From Numerical Recipes in Fortran 90 [Press, Flannery]
 !
-! Calls:
+! Given arrays y, y1, y2 and y12, each of length 4, containing the function,
+! gradients and cross derivative at the four points of a rectangular grid
+! cell (numbered counter clockwise from the lower left), and given d1 and d2,
+! the length of the grid cell in the 1- and 2- directions, this routine
+! returns the 4x4 table c that is used by the routine BCuInt_CA for bicubic
+! interpolation.
 !
 ! Arguments:
-!    Name        Type    In/Out/Both    Description
-!    y           real array  In         Values of functions at each of
-!                                       the four vertices around the
-!                                       point to be interpolated to.
-!                                       Values should be listed in
-!                                       anti-clockwise order, starting
-!                                       at the bottom left.
-!    y1          real array  In         Derivatives wrt to the
-!                                       "x-coordinate" at the vertices.
-!    y2          real array  In         Derivatives wrt to the
-!                                       "y-coordinate" at the vertices.
-!    y12         real array  In         Second order cross-derivatives
-!                                       at the vertices.
-!    d1,d2       real        In         The spaces of the grid in the x
-!                                       and y dimensions, respectively.
+! Name        Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! y           real array  In         Values of functions at each of
+!                                    the four vertices around the
+!                                    point to be interpolated to.
+!                                    Values should be listed in
+!                                    anti-clockwise order, starting
+!                                    at the bottom left.
+! y1          real array  In         Derivatives wrt to the
+!                                    "x-coordinate" at the vertices.
+! y2          real array  In         Derivatives wrt to the
+!                                    "y-coordinate" at the vertices.
+! y12         real array  In         Second order cross-derivatives
+!                                    at the vertices.
+! d1,d2       real        In         The spaces of the grid in the x
+!                                    and y dimensions, respectively.
 !
-! Algorithm
-!    From Numerical Recipes in Fortran 90 [Press, Flannery]
-!
-! History
-!    22 April 2009 - Written by C. Arnold
-!    23 December 2014, Greg McGarragh:
-!       Performance improvements gained by unrolling the sparse matrix-vector
-!       multiplication and eliminating some un-needed memory copies plus some
-!       code cleanup.
-!
-! Bugs
-!    None known.
+! History:
+! 2009/04/22, CA: Original version
+! 2014/12/23, GM: Performance improvements gained by unrolling the sparse 
+!    matrix-vector multiplication and eliminating some un-needed memory copies 
+!    plus some code cleanup.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine bcucof(y,y1,y2,y12,d1,d2,c)

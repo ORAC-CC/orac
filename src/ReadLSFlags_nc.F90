@@ -1,80 +1,69 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Read_LSFlags_nc
+! Name: ReadLSFlags_nc.F90
 !
 ! Purpose:
-!    Controls the reading of cloud flags values from ATSR-type files into the
-!    Data_CloudFlags array.
+! Controls the reading of cloud flags values from ATSR-type files into the
+! Data_CloudFlags array.
+!
+! Description and Algorithm details:
+! if (MSI files are not yet open)
+!    Find a logical unit number to be used for the cloud flag file
+!    Open cloud flag file
+!    If open error
+!       Write error message to screen and log file
+!    else
+!      allocate MSI image segment array in Data_MSI struct.
+!
+! If (no error opening files)
+!     Read header (not used further)
+!     If read error
+!        Write error message to screen and log file
+!     Else
+!        Read byte array of size defined by Ctrl structure
+!        If read error
+!           Write error message to log file
+! Leave cloud flag file open for later reads
 !
 ! Arguments:
-!    Name     Type   In/Out/Both Description
-!    Ctrl     struct Both        Control structure
-!    MSI_Data struct Both        Data structure: contains the cloud flag array
-!                                to be populated with data from the file. This
-!                                is overwritten as successive segments of data
-!                                are read in.
-!
-! Algorithm:
-!    if (MSI files are not yet open)
-!       Find a logical unit number to be used for the cloud flag file
-!       Open cloud flag file
-!       If open error
-!          Write error message to screen and log file
-!       else
-!         allocate MSI image segment array in Data_MSI struct.
-!
-!    If (no error opening files)
-!        Read header (not used further)
-!        If read error
-!           Write error message to screen and log file
-!        Else
-!           Read byte array of size defined by Ctrl structure
-!           If read error
-!              Write error message to log file
-!    Leave cloud flag file open for later reads
+! Name     Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct Both        Control structure
+! MSI_Data struct Both        Data structure: contains the cloud flag array
+!                             to be populated with data from the file. This
+!                             is overwritten as successive segments of data
+!                             are read in.
+! verbose  logic  In          Prints log information to screen.
 !
 ! History:
-!     3rd Nov 2000, Kevin M. Smith: Original version
-!    23rd Nov 2000, Kevin M. Smith:
-!       Added status to argument list
-!     3rd Aug 2001, Andy Smith:
-!       Updates for handling image segmentation:
-!       - new arguments MSI_files_open, lun (since the file now stays open for
-!         repeated read operations)
-!       - file open depends on MSI_files_open flag
-!       Structure Data renamed MSI_Data since Data is a reserved word (hasn't
-!       caused any problems so far but it might).
-!       Added argument intent specifiers.
-!    10th Aug 2001, Andy Smith:
-!       Updated to handle image segments/super-pixels of any size. Requires
-!       handling of end of file during read on the last segment. On earlier
-!       segments EOF is reported as an error.
-!    22nd Aug 2001, Andy Smith:
-!       Bug fix: added status check before reading arrays in.
+! 2000/11/03, KS: Original version
+! 2000/11/23, KS: Added status to argument list
+! 2001/08/03, AS: Updates for handling image segmentation:
+!    - new arguments MSI_files_open, lun (since the file now stays open for
+!      repeated read operations)
+!    - file open depends on MSI_files_open flag
+!    Structure Data renamed MSI_Data since Data is a reserved word (hasn't
+!    caused any problems so far but it might).
+!    Added argument intent specifiers.
+! 2001/08/10, AS: Updated to handle image segments/super-pixels of any size.
+!    Requires handling of end of file during read on the last segment. On
+!    earlier segments EOF is reported as an error.
+! 2001/08/22, AS: Bug fix: added status check before reading arrays in.
 !    **************** ECV work starts here *************************************
-!    23rd Feb 2011, Andy Smith:
-!       Replaced call to ReadByteArray with ReadFPArray to cope with current
-!       preprocessed data files from ORAC.
-!    28th Jun 2011, Caroline Poulsen:
-!       Remove reference to ATSR
-!    22nd Aug 2012, Matthias Jerg:
-!       Uses original routine and implements reading of netcdf data.
-!     2nd Aug 2014, Greg McGarragh:
-!       Cleaned up the code.
-!    15th Aug 2014, Adam Povey:
-!       Switching to preprocessor NCDF routines.
-!    24th Oct 2014, Oliver Sus:
-!       added variables lusflags, dem, and nisemask
-!    30th Jan 2015, Adam Povey:
-!       Remove NSegs, SegSize arguments. Replace YSeg0 with Y0.
-!     3rd Jul 2015, Oliver Sus: added error status variable to nc_open call
-!    10th Jul 2015, Oliver Sus: undo previous commit
-!
-! Bugs:
-!    None known.
+! 2011/02/23, AS: Replaced call to ReadByteArray with ReadFPArray to cope with
+!    current preprocessed data files from ORAC.
+! 2011/06/28, CP: Remove reference to ATSR
+! 2012/08/22, MJ: Uses original routine and implements reading of netcdf data.
+! 2014/08/02, GM: Cleaned up the code.
+! 2014/08/15, AP: Switching to preprocessor NCDF routines.
+! 2014/10/24, OS: added variables lusflags, dem, and nisemask
+! 2015/01/30, AP: Remove NSegs, SegSize arguments. Replace YSeg0 with Y0.
+! 2015/07/03, OS: Added error status variable to nc_open call
+! 2015/07/10, OS: undo previous commit
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Read_LSFlags_nc(Ctrl, MSI_Data, verbose)

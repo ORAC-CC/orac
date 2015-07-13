@@ -1,96 +1,73 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Alloc_SPixel
+! Name: AllocSPixel.F90
 !
 ! Purpose:
-!    Allocate sizes of the SPixel arrays prior to entering the PGM loop.
-!    Also assign the number of pressure levels in the SPixel%RTM%LW and SW
-!    structures, as these are the same as in the RTM structure and do not
-!    change across the image.
+! Allocate sizes of the SPixel arrays prior to entering the PGM loop.
+! Also assign the number of pressure levels in the SPixel%RTM%LW and SW
+! structures, as these are the same as in the RTM structure and do not
+! change across the image.
 !
-! Arguments:
-!    Name   Type         In/Out/Both Description
-!    Ctrl   struct       In          Control structure
-!    RTM    alloc struct In          RTM structure
-!    SPixel alloc struct Both        SPixel structure
-!
-! Algorithm:
-!    Allocate the quality control mask and cloud flag arrays using the spatial
+! Description and Algorithm details:
+! 1) Allocate the quality control mask and cloud flag arrays using the spatial
 !    resolution specified in Ctrl.
-!    Allocate the LW RTM arrays in SPixel using the number of thermal channels
+! 2) Allocate the LW RTM arrays in SPixel using the number of thermal channels
 !    specified in Ctrl and the number of pressure levels from the RTM file.
-!    Allocate the SPixel SW RTM arrays using the number of PURELY solar channels
+! 3) Allocate the SPixel SW RTM arrays using the number of PURELY solar channels
 !    specified in Ctrl (i.e. Ny - NThermal) and the no. of pressure levels from
 !    the SW RTM file.
-!    Additional arrays for overall transmittances and reflectances are allocated
+! 4) Additional arrays for overall transmittances and reflectances are allocated
 !    using the number of solar (i.e. pure solar plus mixed solar/thermal)
 !    channels from Ctrl.
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name   Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl   struct In          Control structure
+! RTM    struct In          RTM structure
+! SPixel struct Both        SPixel structure
 !
 ! History:
-!    31th Jan 2001, Kevin M. Smith: Original version
-!    16th Feb 2001, Andy Smith:
-!       Changed SW allocations to use Ny-NThermal, not ThermalFirst-SolarFirst
-!       (for consistency with other routines).
-!    22nd Feb 2001, Andy Smith:
-!       Tsf parameters removed from LW RTM structure.
-!       Added allocation of new parameter Tbc in LW struct.
-!     6th Mar 2001, Andy Smith:
-!       Allocation of Tsf parameters changed. Tsf_o,v now appear in overall RTM
-!       struct. New arrays Rerf_Clear, dRef_clear_dRs added to RTM struct.
-!     7th Mar 2001, Andy Smith:
-!       New LW value dB_dTs.
-!    11th Apr 2001, Andy Smith:
-!       Added solar constant f0
-!    25th Jun 2001, Andy Smith:
-!       Completed header comments.
-!    24th Sept 2001, Andy Smith:
-!       Added initial allocation of SPixel%Ym, Sy, X and XI. These quantities
-!       are reallocated for each super-pixel (unlike the others here) but
-!       require an initial allocation (otherwise the first deallocation fails).
-!    22nd Oct 2001, Andy Smith:
-!       Added initialisation of SPixel%Ind%Ny since this is output to the
-!       diagnostic file for each SPixel and may be output un-initialised if the
-!       first few SPixels are omitted from processing due to no cloud or errors.
-!       Also NThermal and NSolar.
+! 2001/01/31, KS: Original version
+! 2001/02/16, AS: Changed SW allocations to use Ny-NThermal, not 
+!    ThermalFirst-SolarFirst (for consistency with other routines).
+! 2001/02/22, AS: Tsf parameters removed from LW RTM structure.
+!    Added allocation of new parameter Tbc in LW struct.
+! 2001/03/06, AS: Allocation of Tsf parameters changed. Tsf_o,v now appear in 
+!    overall RTM struct. New arrays Rerf_Clear, dRef_clear_dRs added to RTM struct
+! 2001/03/07, AS: New LW value dB_dTs.
+! 2001/04/11, AS: Added solar constant f0
+! 2001/06/25, AS: Completed header comments.
+! 2001/09/24, AS: Added initial allocation of SPixel%Ym, Sy, X and XI. These 
+!    quantities are reallocated for each super-pixel (unlike the others here) 
+!    but require an initial allocation (otherwise the first deallocation fails).
+! 2001/10/22, AS: Added initialisation of SPixel%Ind%Ny since this is output to 
+!    the diagnostic file for each SPixel and may be output un-initialised if the 
+!    first few SPixels are omitted from processing due to no cloud or errors. 
+!    Also NThermal and NSolar.
 !    **************** ECV work starts here *************************************
-!    21st Feb 2011, Andy Smith:
-!       Re-applying changes from late 2001/2002.
-!    13th December (2001?) Caroline Poulsen added geopotential height
-!    23rd Mar 2011, Andy Smith:
-!       Removal of super-pixel averaging. No need to allocate mask and cloud
-!       or surface flags to Ctrl%Resoln%Space. Assume 1 pixel processed at a
-!       time so only 1 flag needed.
-!    20th Apr 2011, Andy Smith:
-!       Extension to handle multiple instrument views. The viewing geometry
-!       becomes a set of arrays, e.g. 1 value of sat. zen angle per view. Now
-!       allocated to number of views.
-!    22nd Sept 2011 Caroline Poulsen
-!       Remove sw%p as now the same as lw%p changed to this
-!       allocate(SPixel%RTM%SW%P(RTM%LW%NP))
-!    15th June 2012, C. Poulsen:
-!       Changed illum definition
-!     3rd Nov 2012, Someone:
-!       Bug fix: changed way shortwave variables were allocated
-!       Remove YmSav variable
-!    16th Jan 2014, Greg McGarragh:
-!       Added allocation of SPixel%spixel_y_to_ctrl_y_index.
-!    27th May 2014, Greg McGarragh:
-!       Some cleanup.
-!     1st Aug 2014, Greg McGarragh:
-!       Added more SPixel to Ctrl map indexes.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!    30th Jan 2015, Adam Povey:
-!       Remove redundant fields.
-!
-! Bugs:
-!   None known.
+! 2011/02/21, AS: Re-applying changes from late 2001/2002.
+! 2001/12/13, CP: added geopotential height
+! 2011/03/23, AS: Removal of super-pixel averaging. No need to allocate mask and
+!    cloud  or surface flags to Ctrl%Resoln%Space. Assume 1 pixel processed at a
+!    time so only 1 flag needed.
+! 2011/04/20, AS: Extension to handle multiple instrument views. The viewing 
+!    geometry becomes a set of arrays, e.g. 1 value of sat. zen angle per view. 
+!    Now allocated to number of views.
+! 2011/09/22, CP: Remove sw%p as now the same as lw%p changed to this
+!    allocate(SPixel%RTM%SW%P(RTM%LW%NP))
+! 2012/06/15, CP: Changed illum definition
+! 2012/11/03, CP: Bug fix: changed way shortwave variables were allocated.
+!    Remove YmSav variable
+! 2014/01/16, GM: Added allocation of SPixel%spixel_y_to_ctrl_y_index.
+! 2014/05/27, GM: Some cleanup.
+! 2014/08/01, GM: Added more SPixel to Ctrl map indexes.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2015/01/30, AP: Remove redundant fields.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Alloc_SPixel(Ctrl, RTM, SPixel)

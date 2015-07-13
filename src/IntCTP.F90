@@ -1,9 +1,9 @@
 !-------------------------------------------------------------------------------
-! Name: Int_CTP
+! Name: IntCTP.F90
 !
 ! Purpose:
-!    Given a brighness temperature (presumably at 11um), find a first guess for
-!    CTP by interpolating that BT within the RTM temperature profile.
+! Given a brighness temperature (presumably at 11um), find a first guess for
+! CTP by interpolating that BT within the RTM temperature profile.
 !
 ! Description and Algorithm details:
 ! 1) Correct the temperature profile.
@@ -42,18 +42,19 @@
 ! 3) Check the value against the retrieval's upper and lower limits.
 !
 ! Arguments:
-!    Name   Type    In/Out/Both Description
-!    SPixel struct  In          Super pixel structure
-!    Ctrl   struct  In          Control structure
-!    BT     real    In          Brightness temperature to find in RTM profile
-!    CTP    real    Out         Interpolated cloud top pressure
-!    status int     Out         Indicates an out-of-bounds result
+! Name   Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! SPixel struct  In          Super pixel structure
+! Ctrl   struct  In          Control structure
+! BT     real    In          Brightness temperature to find in RTM profile
+! CTP    real    Out         Interpolated cloud top pressure
+! status int     Out         Indicates an out-of-bounds result
 !
 ! History:
 ! 2015/02/06, AP: Initial version, derived from interpolate_to_ctp. Moved the 
-!   functionality of blmodification and extrap_into_tropopause here as this is 
-!   the only thing that uses them. Locating within temperature profile now 
-!   dependant on the cloud phase (WAT bottom up, everything else top down).
+!    functionality of blmodification and extrap_into_tropopause here as this is 
+!    the only thing that uses them. Locating within temperature profile now 
+!    dependant on the cloud phase (WAT bottom up, everything else top down).
 !
 ! $Id$
 !

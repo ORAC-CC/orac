@@ -1,57 +1,41 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Data
+! Name: Data.F90
 !
 ! Purpose:
-!    Module defining auxiliary and image data structures/types.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
+! Module defining auxiliary and image data structures/types.
 !
 ! History:
-!    19th Dec 2000, Kevin M. Smith: Original version
+! 2000/12/19, KS: Original version
 !    **************** ECV work starts here *************************************
-!    22nd Feb 2011, Andy Smith:
-!       Re-applying changes made in late 2001/2002 detailed in comments below.
-!    27th May 2002, Caroline Poulsen:
-!       Added in albedo ALB.
-!    xxth Jul 2002, Caroline Poulsen:
-!       Changed the definition of alb to kind.
-!    23rd Feb 2011, Andy Smith:
-!       Changed CloudFlags to real(4) to match current ORAC data.
-!    14th Apr 2011, Andy Smith:
-!       Extension to handle multiple views. Geometry struct extended to take
-!       Sat, Sol and Azi data from >1 view (forward,, nadir etc).
-!    28th Jul 2011, Caroline Poulsen:
-!       Added in variable for scan line file
-!    15/06/2012, Caroline Poulsen: added in variable for illum
-!    10/08/2012, Caroline Poulsen: remove illum data type
-!    22/08/2012, MJ: includes time in MSI structure
-!    20/09/2012, CP: changed albedo to real 8
-!    XX/XX/2013, MJ: explicitly defines LSFLag byte array type
-!    27/05/2014, GM: Some cleanup.
-!    2014/09/09, GM: Changes related to new BRDF support.
-!    2014/09/17, GM: Added Nullify_Data()
-!    2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
-!       dem, and nisemask
-!    2015/01/18, GM: Put all related Read*() subroutines into this module.
-!    2015/01/30, AP: Remove uscan and vscan as unnecessary.
-!    2015/02/04, GM: Changes related to the new missing channel, illumination,
-!       and channel selection code.
-!    2015/07/03, OS: Added cloudmask_error
-!
-! Bugs:
-!    None known.
+! 2001/02/22, AS: Re-applying changes made in late 2001/2002 detailed in 
+!    comments below.
+! 2002/05/27, CP: Added in albedo ALB.
+! 2002/07/xx, CP: Changed the definition of alb to kind.
+! 2011/02/23, AS: Changed CloudFlags to real(4) to match current ORAC data.
+! 2011/04/14, AS: Extension to handle multiple views. Geometry struct extended 
+!    to take Sat, Sol and Azi data from >1 view (forward,, nadir etc).
+! 2011/07/28, CP: Added in variable for scan line file
+! 2012/06/15, CP: added in variable for illum
+! 2012/08/10, CP: remove illum data type
+! 2012/08/22, MJ: includes time in MSI structure
+! 2012/09/20, CP: changed albedo to real 8
+! 2013/XX/XX, MJ: explicitly defines LSFLag byte array type
+! 2014/05/27, GM: Some cleanup.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2014/09/17, GM: Added Nullify_Data()
+! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags,
+!    dem, and nisemask
+! 2015/01/18, GM: Put all related Read*() subroutines into this module.
+! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2015/02/04, GM: Changes related to the new missing channel, illumination,
+!    and channel selection code.
+! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
+! 2015/07/03, OS: Added cloudmask_error
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module Data_def

@@ -1,36 +1,31 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Dealloc_RTM_Pc
+! Name: DeallocRTMPc.F90
 !
 ! Purpose:
-!    Deallocate the RTM_Pc arrays at end of ECP execution.
+! Deallocate the RTM_Pc arrays at end of ECP execution.
 !
-! Arguments:
-!    Name   Type         In/Out/Both Description
-!    Ctrl   struct       In          Control structure
-!    RTM_Pc alloc struct In          RTM_Pc structure
-!    status int          Out         Error status
-!
-! Algorithm:
-!    Deallocates all arrays in the RTM_Pc structure
-!    If any solar channels were requested
+! Description and Algorithm details:
+! 1) Deallocates all arrays in the RTM_Pc structure
+! 2) If any solar channels were requested
 !      - Deallocates arrays in the SW sub-structure
-!    If any thermal channels were requested
+! 3) If any thermal channels were requested
 !      - Deallocates arrays in the LW sub-structure
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name   Type         In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl   struct       In          Control structure
+! RTM_Pc alloc struct In          RTM_Pc structure
 !
 ! History:
-!    22nd Oct 2001, Andy Smith: Original version
-!    27th May 2014, Greg McGarragh: Some cleanup.
-!     7th Jan 2015, Adam Povey: Eliminate write to RTM_Pc%Tac, Tbc.
-!
-! Bugs:
-!    None known.
+! 2001/10/22, AS: Original version
+! 2014/05/27, GM: Some cleanup.
+! 2015/01/07, AP: Eliminate write to RTM_Pc%Tac, Tbc.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Dealloc_RTM_Pc(Ctrl, RTM_Pc)

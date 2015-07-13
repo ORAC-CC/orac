@@ -1,58 +1,38 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    RTM
+! Name: RTM.F90
 !
 ! Purpose:
-!    Module defining radiative transfer model structure (RTM) for the ECP
-!
-! Arguments:
-!     Name Type In/Out/Both Description
-!     N/A
-!
-! Algorithm:
-!     N/A
+! Module defining radiative transfer model structure (RTM) for the ECP
 !
 ! History:
-!    15th Dec 2000, Kevin Smith: Original version
-!    11th Jan 2001, Kevin Smith: Added Grid substructures for use in Get_RTM
-!    26th Jan 2001, Andy Smith:
-!       Added comments to explain variable names.
-!    21st Feb 2001, Andy Smith:
-!       Added Tbc to LW struct. Previously missing from RTM model data file.
-!     1st Mar 2001, Andy Smith:
-!       Removed R_Clear from LW struct. Not available from RTM data file.
-!    30th Mar 2001, Andy Smith:
-!       Added MaxLat, MinLat, MaxLon, MinLon to Grid structure, so that these
-!       can be calculated once and stored (otherwise checked many times in
-!       GetRTM). These are different from Lat0, LatN etc as they make no
-!       assumption about the order in which lat/lon values are supplied
-!       (lowest to highest or vice-versa).
-!    22nd Jun 2001, Andy Smith:
-!       Improved commenting for Lw arrays.
+! 2000/12/15, KS: Original version
+! 2001/01/11, KS: Added Grid substructures for use in Get_RTM
+! 2001/01/26, AS: Added comments to explain variable names.
+! 2001/02/21, AS: Added Tbc to LW struct. Previously missing from RTM model 
+!    data file.
+! 2001/03/01, AS: Removed R_Clear from LW struct. Not available from RTM data 
+!    file.
+! 2001/03/30, AS: Added MaxLat, MinLat, MaxLon, MinLon to Grid structure, so 
+!    that these can be calculated once and stored (otherwise checked many times 
+!    in GetRTM). These are different from Lat0, LatN etc as they make no 
+!    assumption about the order in which lat/lon values are supplied (lowest to 
+!    highest or vice-versa).
+! 2001/06/22, AS: Improved commenting for Lw arrays.
 !    **************** ECV work starts here *************************************
-!     8th Feb 2011, Andy Smith:
-!       Re-introducing changes made in late 2001/2002.
-!    13th Dec 2001, Caroline Poulsen:
-!       Added in geopotential height.
-!    22th Sep 2011, Caroline Poulsen:
-!       Modified SWRTM to vary with lat/lon not just latitude, remove variables
-!       that are the same as LWRTM
-!     4th Sep 2012, Caroline Poulsen:
-!       Added skipt and sp variable.
-!    27th May 2014, Greg McGarragh:
-!       Some cleanup.
-!    13th Aug 2014, Adam Povey:
-!       Adding Wrap flag to save repeated calculation in GetLwSwRTM.
-!    19th Jan 2015, Greg McGarragh:
-!       Put ReadSwRTM_nc.F90 and ReadLwRTM_nc.F90 into this module.
-!    30th Jan 2015, Adam Povey:
-!       Eliminate redundant fields.
-!
-! Bugs:
-!    None known.
+! 2011/02/08, AS: Re-introducing changes made in late 2001/2002.
+! 2001/12/13, CP: Added in geopotential height.
+! 2011/09/22, CP: Modified SWRTM to vary with lat/lon not just latitude, remove 
+!    variables that are the same as LWRTM
+! 2012/09/04, CP: Added skipt and sp variable.
+! 2014/05/27, GM: Some cleanup.
+! 2014/08/13, AP:Adding Wrap flag to save repeated calculation in GetLwSwRTM.
+! 2015/01/19, GM: Put ReadSwRTM_nc.F90 and ReadLwRTM_nc.F90 into this module.
+! 2015/01/30, AP: Eliminate redundant fields.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module RTM_def

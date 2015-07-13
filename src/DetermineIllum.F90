@@ -1,33 +1,35 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Determine_Illum
+! Name: DetermineIllum.F90
 !
 ! Purpose:
+! Set the illumination condition for each pixel.
+!
+! Description and Algorithm details:
+! This considers only the solar zenith angle. The conditions are:
+!    Day:      solzen < MaxSolZen
+!    Twilight: MaxSolZen < solzen < Sunset
+!    Night:    Sunset < solzen
+! where MaxSolZen and Sunset are constants set in the Ctrl structure.
 !
 ! Arguments:
-!    Name     Type    In/Out/Both Description
-!    Ctrl     struct  In          Control structure
-!    MSI_Data struct  In          Data structure. Contains the multi-spectral
-!                                 image measurements, location values, geometry
-!                                 etc for the current image segment, from which
-!                                 the current SPixel values will be extracted.
-!    status   integer Out         Error status
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Name     Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct  In          Control structure
+! MSI_Data struct  In          Data structure. Contains the multi-spectral
+!                              image measurements, location values, geometry
+!                              etc for the current image segment, from which
+!                              the current SPixel values will be extracted.
+! verbose  logical In          Currently non-functional.
 !
 ! History:
-!     4th Feb 2015, Greg McGarragh:
-!       Original version.
-!
-! Bugs:
-!    None known.
+! 2015/02/04, GM: Original version.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
+
 subroutine Determine_Illum(Ctrl, MSI_Data, verbose)
 
    use CTRL_def

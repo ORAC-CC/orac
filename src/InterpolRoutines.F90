@@ -1,31 +1,18 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Int_Routines_def
+! Name: InterpolRoutines.F90
 !
 ! Purpose:
-!
-! Description:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
-!    N/A
+! Defines Interpol_Routines_def module, which wraps the various FM interpolation
+! routines.
 !
 ! History:
-!     5th Aug 2014, Greg McGarragh: Original version.
-!     5th Aug 2014, Greg McGarragh: Added subroutine find_Pc().
-!
-! Bugs:
-!    None known.
+! 2014/08/05, GM: Original version.
+! 2014/08/05, GM: Added subroutine find_Pc().
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !---------------------------------------------------------------------
 
 module Interpol_Routines_def
@@ -47,6 +34,30 @@ contains
 #include "InterpolThermal_spline.F90"
 
 
+!-------------------------------------------------------------------------------
+! Name: find_Pc
+!
+! Purpose:
+! Locate the pressure level that bounds a given value.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name   Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl   struct     In          Control structure
+! Np     int        In          Number of pressure levels
+! P      real array In          Pressure of those levels
+! Pc     real       In          Pressure level to search for
+! i_Pc   int        Out         Index of pressure level that bounds Pc
+! status int        Out         Set to 1 if bounding level not found
+!
+! History:
+! 2014/08/05, GM: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine find_Pc(Ctrl, Np, P, Pc, i_Pc, status)
 
    use CTRL_def

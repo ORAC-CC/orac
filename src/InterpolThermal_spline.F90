@@ -1,100 +1,77 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Interpol_Thermal_spline
+! Name: InterpolThermal_spline.F90
 !
 ! Purpose:
-!    Interpolates LW transmittances and radiances to the cloud pressure level.
+! Interpolates LW transmittances and radiances to the cloud pressure level.
+!
+! Description and Algorithm details:
 !
 ! Arguments:
-!    Name     Type        In/Out/Both Description
-!    Ctrl     struct      In          Control structure
-!    SPixel   struct      In          Super-pixel structure
-!    Pc       float       In          Cloud pressure (from state vector X)
-!    SAD_Chan float array In          Channel characteristics.
-!    RTM_Pc   struct      Out         Contains Tac, Tbc (interpolated
-!                                     transmittances above and below cloud) and
-!                                     gradients wrt cloud pressure.
-!    status   int         Out         Standard status value not set here
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Name     Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct      In          Control structure
+! SPixel   struct      In          Super-pixel structure
+! Pc       float       In          Cloud pressure (from state vector X)
+! SAD_Chan float array In          Channel characteristics.
+! RTM_Pc   struct      Out         Contains Tac, Tbc (interpolated
+!                                  transmittances above and below cloud) and
+!                                  gradients wrt cloud pressure.
+! status   int         Out         Standard status value not set here
 !
 ! History:
-!    21st November, 2000, Kevin M. Smith: Original version
-!    14th February, 2001, Kevin M. Smith:
-!       Corrected the position of the end of the first main if block.
-!    16th Feb 2001, Andy Smith:
-!       Using RTM_Pc struct to pass Tac, Tbc etc.
-!    20th Feb 2001, Andy Smith:
-!       Converting calculations from B to T, since B is not available from the
-!       SPixel RTM input. SAD_Chan is now required as an input argument.
-!    26th Feb 2001, Andy Smith:
-!       Changed test for P levels bounding Pc. Using
-!       (Pc >= p(j) and Pc < p(j+1)) instead of
-!       (Pc > p(j) and Pc <= p(j+1)) because P levels now go in order of
-!       increasing pressure. Previously, if Pc was equal to P(1) it was not
-!       matched (and if Pc < P(1) it's P index is set to 1!)
-!     1st March 2001, Andy Smith:
-!       Fixed dB_dT declaration. Was scalar, should have been array (NThermal).
-!    15th Mar 2001, Andy Smith:
-!       Added ThF and ThL indices for RTM_Pc%LW arrays. Required because these
-!       arrays are allocated to match the no. of thermal channels requested, but
-!       in twilight not all of the requested thermal channels may be used.
-!    11th May 2001, Andy Smith:
-!       Added setting of RTM_Pc%Tc.
-!    20th Jul 2001, Andy Smith:
-!       Fixed setting of ThL. Last thermal channel should always be the one
-!       specified in Ctrl, not SPixel, since the RTM_Pc and RTM arrays are of
-!       fixed size for the whole run, i.e are not re-allocated to match the no.
-!       of thermal channels used in each SPixel, and it is the lower numbered
-!       thermal channels that are not used in certain conditions.
-!       Added breakpoint outputs.
-!     7th Dec 2001, Andy Smith:
-!       Added more information to interpolation failure warning message.
-!       Changed first test to locate Pc in the RTM pressure levels, now uses
-!       >= rather than > in the test of Pc vs. SPixel...P(...Np). Previously,
-!       Pc = max RTM P level was flagged as an interpolation failure.
-!     12th Dec 2002, Caroline Poulsen:
-!       Added in GPH followed the example of temperature
-!     23rd Dec 2002, Andy Smith:
-!       Added height gradient dHc_dPC to RTM_Pc structure. Required later for
-!       ascribing an error value to the height.
-!     21st May 2003, Sam Dean:
-!       Added temperature gradient dTc_dPC to RTM_Pc structure for same reason
-!     5th Sep 2011, Chris Arnold:
-!       Added d2X_dP2 variables s/t a cubic spline interpolation can be used.
-!       The second derivatives of the tabulated RTM data are calculated using
-!       the routine 'spline'. These are used to calculate the interpolates/
-!       interpolated gradients using the cubic spline method described in
-!       'Numerical Recipes for fortran 90' [Press, Flannery, Teukolsky,
-!       Vetterling]
-!     5th Sep 2011, Chris Arnold:
-!       Added surf_pressure and surf_index variables - RTM data is only
-!       interpolated in range surf > TOA.
-!     2nd Nov 2011, Caroline Poulsen:
-!       Added 'spline' into debug output.
-!     6th Feb 2012, Chris Arnold:
-!       Removed surf_pressure/surf_index - bug fix to deal with compiler issues.
-!     7th Feb 2012, Chris Arnold:
-!       Added intent() to argument declarations.
-!    17th Jan 2013, Matthias Jerg:
-!       Adds code to extract RTM_Pc%dHc_dPc and RTM_Pc%dTc_dPc.
-!     5th Aug 2014, Greg McGarragh:
-!       Cleaned up the code.
-!     5th Aug 2014, Greg McGarragh:
-!       Put Interpol_* common code into subroutine find_Pc().
-!     7th Jan 2015, Adam Povey:
-!       Use SPixel index arrays rather than ThF,ThL.
-!    21st Jan 2015, Adam Povey:
-!       Finishing the previous commit.
-!     7/5/2015 CP removes the  the stop IntTransErr!
-! Bugs:
-!   None known.
+! 2000/11/21, KM: Original version
+! 2001/02/14, KM: Corrected the position of the end of the first main if block.
+! 2001/02/16, AS: Using RTM_Pc struct to pass Tac, Tbc etc.
+! 2001/02/20, AS: Converting calculations from B to T, since B is not available
+!    from the SPixel RTM input. SAD_Chan is now required as an input argument.
+! 2001/02/26, AS: Changed test for P levels bounding Pc. Using (Pc >= p(j) and
+!    Pc < p(j+1)) instead of (Pc > p(j) and Pc <= p(j+1)) because P levels now
+!    go in order of increasing pressure. Previously, if Pc was equal to P(1) it
+!    was not matched (and if Pc < P(1) it's P index is set to 1!)
+! 2001/03/01, AS: Fixed dB_dT declaration. Was scalar, should have been array
+!    (NThermal).
+! 2001/03/15, AS: Added ThF and ThL indices for RTM_Pc%LW arrays. Required
+!    because these arrays are allocated to match the no. of thermal channels
+!    requested, but in twilight not all of the requested thermal channels may
+!    be used.
+! 2001/05/11, AS: Added setting of RTM_Pc%Tc.
+! 2001/07/20, AS: Fixed setting of ThL. Last thermal channel should always be
+!    the one specified in Ctrl, not SPixel, since the RTM_Pc and RTM arrays are
+!    of fixed size for the whole run, i.e are not re-allocated to match the no.
+!    of thermal channels used in each SPixel, and it is the lower numbered
+!    thermal channels that are not used in certain conditions. Added breakpoint
+!    outputs.
+! 2001/12/07, AS: Added more information to interpolation failure warning
+!    message. Changed first test to locate Pc in the RTM pressure levels, now
+!    uses >= rather than > in the test of Pc vs. SPixel...P(...Np). Previously,
+!    Pc = max RTM P level was flagged as an interpolation failure.
+! 2002/12/12, CP: Added in GPH followed the example of temperature
+! 2002/12/23, AS: Added height gradient dHc_dPC to RTM_Pc structure. Required
+!    later for ascribing an error value to the height.
+! 2003/05/21, SD: Added temperature gradient dTc_dPC to RTM_Pc structure for
+!    same reason
+! 2011/09/05, CA: Added d2X_dP2 variables s/t a cubic spline interpolation can
+!    be used. The second derivatives of the tabulated RTM data are calculated
+!    using the routine 'spline'. These are used to calculate the interpolates/
+!    interpolated gradients using the cubic spline method described in
+!    'Numerical Recipes for fortran 90' [Press, Flannery, Teukolsky, Vetterling]
+! 2011/09/05, CA: Added surf_pressure and surf_index variables - RTM data is
+!    only interpolated in range surf > TOA.
+! 2011/11/02, CP: Added 'spline' into debug output.
+! 2012/02/06, CA: Removed surf_pressure/surf_index - bug fix to deal with
+!    compiler issues.
+! 2012/02/07, CA: Added intent() to argument declarations.
+! 2013/01/17, MJ: Adds code to extract RTM_Pc%dHc_dPc and RTM_Pc%dTc_dPc.
+! 2014/08/05, GM: Cleaned up the code.
+! 2014/08/05, GM: Put Interpol_* common code into subroutine find_Pc().
+! 2015/01/07, AP: Use SPixel index arrays rather than ThF,ThL.
+! 2015/01/21, AP: Finishing the previous commit.
+! 2015/05/07, CP: removes the stop IntTransErr
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)

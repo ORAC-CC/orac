@@ -1,28 +1,27 @@
-!---------------------------------------------------------------------
-! Locate.F90
+!-------------------------------------------------------------------------------
+! Name: Locate.F90
 !
 ! Purpose:
-!    Finds the location of the pair of values in the set xx that bound x
+! Finds the location of the pair of values in the set xx that bound x
 !
-! Description:
-!    This routine is the linear equivalent of bcuint.f90
-!
-! Calls:
+! Description and Algorithm details:
+! This routine is the linear equivalent of bcuint.f90 from Numerical Recipes in
+! Fortran 90
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!
-! Algorithm:
-!    From Numerical Recipes in Fortran 90
+! Name   Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! xx     real array In          Sorted array to search
+! x      real       In          Value to search for
+! locate int        Out         Index of array element that bounds x
 !
 ! History:
-!    22 April 2009 - Written by C. Arnold
-!
-! Bugs
-!    None known.
+! 2009/04/22, CA: Original version
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !---------------------------------------------------------------------
 
 function locate(xx,x)

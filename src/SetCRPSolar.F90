@@ -1,104 +1,83 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Set_CRP_Solar
+! Name: SetCRPSolar.F90
 !
-! Description:
-!    Interpolates Cloud Radiative Properties for the ECP solar channels.
+! Purpose:
+! Interpolates Cloud Radiative Properties for the ECP solar channels.
 !
-!    Takes the SAD LUT array of look up table values and interpolates the arrays
-!    of RBd, TB etc from the LUT grid to the current point in the multi-spectral
-!    image data.
+! Description and Algorithm details:
+! Takes the SAD LUT array of look up table values and interpolates the arrays
+! of RBd, TB etc from the LUT grid to the current point in the multi-spectral
+! image data.
+!
+! For each LUT array in SAD_LUT (i.e. TBd etc)
+!    Pass GZero and SAD_LUT info to the appropriate interpolation routine
+!       (depending on the array dimensions) and interpolate the Solar channels.
 !
 ! Arguments:
-!    Name    Type      In/Out/Both Description
-!
-!    Ctrl    struct    In          Standard ECP control structure
-!    Ind     struct    In          Sub-struct of SPixel, contains channel
-!                                  indices used in selecting Solar parts of the
-!                                  SAD_LUT arrays.
-!    SAD_LUT struct    In          Static Application Data structure containing
-!                                  the arrays of Look-Up Tables to be
-!                                  interpolated.
-!    GZero   Struct    In          Holds "0'th point" information relating to
-!                                  the grid on which the SAD_LUT CRP arrays are
-!                                  based.
-!    CRPOut  real(8)   Out         Array of interpolated values
-!    dCRPOut real(8,2) Out         Array of interpolated gradients in Tau, Re
-!    status  int       Out         Standard status code set by ECP routines
-!
-! Algorithm:
-!    For each LUT array in SAD_LUT (i.e. TBd etc)
-!       Pass GZero and SAD_LUT info to the appropriate interpolation routine
-!          (depending on the array dimensions) and interpolate the Solar
-!          channels.
-!
-! Local variables:
-!    Name Type Description
+! Name               Type      In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl               struct    In          Standard ECP control structure
+! Ind                struct    In          Sub-struct of SPixel, contains channel
+!                                          indices used in selecting Solar parts
+!                                          of the SAD_LUT arrays.
+! chan_to_ctrl_index int       In          Indices for each SAD channel, giving
+!                                          the index in the Ctrl arrays
+! SAD_LUT            struct    In          Static Application Data structure 
+!                                          containing the arrays of Look-Up 
+!                                          Tables to be interpolated.
+! GZero              Struct    In          Holds "0'th point" information 
+!                                          relating to  the grid on which the 
+!                                          SAD_LUT CRP arrays are based.
+! CRPOut             real(8)   Out         Array of interpolated values
+! dCRPOut            real(8,2) Out         Array of interpolated gradients in 
+!                                          Tau, Re
+! status             int       Out         Standard status code set by ECP 
+!                                          routines
 !
 ! History:
-!     2nd Nov 2000, Andy Smith : original version
-!    16th Nov 2000, Andy Smith :
-!       Extending to interpolate arrays in (Tau, Re, Solzen) (original just
-!       handled (Tau, Re) interpolation.
-!    24th Nov 2000, Andy Smith :
-!       Changed subroutine interface: SatZen, SunZe, RelAzi now passed in Geom
-!       structure (defined in SPixel module).
-!     1st Dec 2000, Andy Smith :
-!       Renamed routines containing sun or Solzen in their names. Using Sol or
-!       SolZen instead. Variables using Sun or Su also renamed Sol/So
-!    11th Jan 2001, Andy Smith :
-!       Ctrl%Ind%Y renamed Y_Id
-!    16th Jan 2001, Andy Smith :
-!       Header comments brought up to date.
-!       Change of array indices for LUT arrays that cover both solar and thermal
-!       channels.
-!    17th Jan 2001, Andy Smith :
-!       Interpolation of Rd removed. Not required in FM_Solar.
-!    23rd Jan 2001, Andy Smith :
-!       "Zero'th point" calculation moved out of this routine into a separate
-!       subroutine called before this one (info is common to both SetCRPSolar
-!       and Thermal). New argument GZero passed in, Tau, Re, Geom arguments no
-!       longer required as a result.
-!    16th Feb 2001, Andy Smith:
-!       Only "purely" solar channels are handled by FMSolar and it's
-!       subordinates. New argument SPixel: struct contains revised channel
-!       indices. Use these to determine which channels to interpolate.
-!    19th Feb 2001, Andy Smith:
-!       Error in previous update. Ranges of channels interpolated were correct
-!       previously, although the index values should be picked up from SPixel.
-!    20th Feb 2001, Andy Smith:
-!       Use of SPixel argument changed: only the Ind part of SPixel is used
-!       hence only this sub-struct is passed. Simplifies array indexing.
-!     6th May 2011, Andy Smith:
-!       Extension to multiple instrument views. Re-worked debug output to new
-!       viewing geometry arrays.
-!     5th Sep 2011, Chris Arnold:
-!       Status now passed to interpolation routines IntLUT*.f90
-!     7th Feb 2012, Chris Arnold:
-!       Ctrl struct now passed to interpolation routines IntLUT*.f90
-!     3rd Dec 2013, MJ:
-!       Makes LUTs more flexible wrt channel and properties.
-!    16th Jan 2014, Greg McGarragh:
-!       Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset arguments
-!       to Int_LUT_TauSatRe().
-!    20th Jan 2014, Greg McGarragh:
-!       Cleaned up code.
-!    24th Jan 2014, Greg McGarragh:
-!       Some intent changes.
-!    28th May 2014, Greg McGarragh:
-!       Do not assume that Set_CRP_Solar() took care of the mixed channels.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!     1st Dec 2014, Caroline Poulsen:
-!       Added in interpolation for cloud albedo
-!    13th Jan 2015, Adam Povey:
-!       Switch to array-based channel indexing rather than using offsets.
-!
-! Bugs:
-!    None known.
+! 2000/11/02, AS: original version
+! 2000/11/16, AS: Extending to interpolate arrays in (Tau, Re, Solzen) (original
+!    just handled (Tau, Re) interpolation.
+! 2000/11/24, AS: Changed subroutine interface: SatZen, SunZe, RelAzi now passed
+!    in Geom structure (defined in SPixel module).
+! 2000/12/01, AS: Renamed routines containing sun or Solzen in their names. 
+!    Using Sol or SolZen instead. Variables using Sun or Su also renamed Sol/So
+! 2001/01/11, AS: Ctrl%Ind%Y renamed Y_Id
+! 2001/01/16, AS: Header comments brought up to date. Change of array indices 
+!    for LUT arrays that cover both solar and thermal channels.
+! 2001/01/17, AS: Interpolation of Rd removed. Not required in FM_Solar.
+! 2001/01/23, AS: "Zero'th point" calculation moved out of this routine into a 
+!    separate subroutine called before this one (info is common to both 
+!    SetCRPSolar and Thermal). New argument GZero passed in, Tau, Re, Geom 
+!    arguments no longer required as a result.
+! 2001/02/16, AS: Only "purely" solar channels are handled by FMSolar and it's 
+!    subordinates. New argument SPixel: struct contains revised channel indices.
+!    Use these to determine which channels to interpolate.
+! 2001/02/19, AS: Error in previous update. Ranges of channels interpolated were
+!    correct previously, although the index values should be picked up 
+!    from SPixel.
+! 2001/02/20, AS: Use of SPixel argument changed: only the Ind part of SPixel is
+!    used hence only this sub-struct is passed. Simplifies array indexing.
+! 2011/05/06, AS: Extension to multiple instrument views. Re-worked debug output
+!    to new viewing geometry arrays.
+! 2011/09/05, CA: Status now passed to interpolation routines IntLUT*.f90
+! 2012/02/07, CA: Ctrl struct now passed to interpolation routines IntLUT*.f90
+! 2013/12/03, MJ: Makes LUTs more flexible wrt channel and properties.
+! 2014/01/16, GM: Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset 
+!    arguments to Int_LUT_TauSatRe().
+! 2014/01/20, GM: Cleaned up code.
+! 2014/01/24, GM: Some intent changes.
+! 2014/05/28, GM: Do not assume that Set_CRP_Solar() took care of the mixed 
+!    channels.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2014/12/01, CP: Added in interpolation for cloud albedo
+! 2015/01/13, AP: Switch to array-based channel indexing rather than using 
+!    offsets.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &

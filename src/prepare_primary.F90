@@ -6,18 +6,25 @@
 ! scale and offset where necessary.
 !
 ! Description and Algorithm details:
+! Call prepare_short_packed_float many times.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Return value:
-! Name Type Description
+! Name        Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct  In          Control structure
+! convergence int     In          Indicates if retrieval has converged
+! i           int     In          Across-track pixel to output
+! j           int     In          Along-track pixel to output
+! MSI_Data    struct  In          Imager data structure
+! SPixel      struct  In          Retrieval pixel structure
+! Diag        struct  In          Diagonstic structure
+! output_data struct  Both        Results structure
 !
 ! History:
-! 2011/12/19, Matthias Jerg: Creates initial version
-! 2012/01/06, Matthias Jerg: Added in cwp
-! 2012/01/16, Caroline Poulsen: Bug fix, changed how offset applied
-! 2012/06/16, Caroline Poulsen: Change illum arry size
+! 2011/12/19, MJ: Creates initial version
+! 2012/01/06, MJ: Added in cwp
+! 2012/01/16, CP: Bug fix, changed how offset applied
+! 2012/06/16, CP: Change illum arry size
 ! 2012/07/17, MJ: Fixes bug in CWP write.
 ! 2012/08/10, CP: Fixed bug in illum read 2d array instead of 3d
 ! 2012/11/03, MST: Converted height to km

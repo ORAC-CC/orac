@@ -5,31 +5,35 @@
 ! Actual writing of the secondary output data to the netcdf file is carried out.
 !
 ! Description and Algorithm details:
+! Call nc_write_array many time.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Return value:
-! Name Type Description
-!
-! Local variables:
-! Name Type Description
+! Name        Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct  In          Control parameters for the retrieval
+! lcovar      logical In          Include covariance matrices in output
+! SPixel      struct  In          Details of retrieved pixel
+! ncid        integer In          File ID for open output file
+! ixstart     integer In          Starting index on first dimension of output
+! ixstop      integer In          Ending index on first dimension of output
+! iystart     integer In          Starting index on second dimension of output
+! iystop      integer In          Ending index on second dimension of output
+! output_data struct  Both        Data to be written to output
 !
 ! History:
-! 2011/12/19, Matthias Jerg: Creates initial output for main output variables.
-! 2012/01/05, Caroline Poulsen: Add in reflectances and brightness temperature
-! 2012/01/05, Caroline Poulsen: Add in albedo
-! 2013/01/24, Caroline Poulsen: Changed how input_dummy is set input_dummy now
+! 2011/12/19, MJ: Creates initial output for main output variables.
+! 2012/01/05, CP: Add in reflectances and brightness temperature
+! 2012/01/05, CP: Add in albedo
+! 2013/01/24, CP: Changed how input_dummy is set input_dummy now
 !    has name matching channel number
-! 2014/06/13, Greg McGarragh: Put the code into a subroutine.
-! 2014/06/13, Greg McGarragh: Cleaned up the code.
-! 2014/09/01, Greg McGarragh: Start using the common/orac_ncdf.F90 write_array
+! 2014/06/13, GM: Put the code into a subroutine.
+! 2014/06/13, GM: Cleaned up the code.
+! 2014/09/01, GM: Start using the common/orac_ncdf.F90 write_array
 !    interface.
-! 2014/09/17, Greg McGarragh: Bug fix, forgot to offset y dimension of output.
-! 2014/12/19, Adam Povey: YSolar and YThermal now contain the index of
-!     solar/thermal channels with respect to the channels actually processed,
-!     rather than the MSI file.
-! 2015/07/03, Oliver Sus: bug fix in writing stemp_ap
+! 2014/09/17, GM: Bug fix, forgot to offset y dimension of output.
+! 2014/12/19, AP: YSolar and YThermal now contain the index of
+!    solar/thermal channels with respect to the channels actually processed,
+!    rather than the MSI file.
 !
 ! $Id$
 !

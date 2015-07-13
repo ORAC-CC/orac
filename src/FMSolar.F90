@@ -1,35 +1,11 @@
 !-------------------------------------------------------------------------------
-! Name:
-!   FM_Solar
+! Name: FMSolar.F90
 !
-! Description:
-!   Reflectance forward model (solar channels) for a defined pixel and
-!   pressure level.
+! Purpose:
+! Reflectance forward model (solar channels) for a defined pixel and
+! pressure level.
 !
-! Arguments:
-!   Name    Type        In/Out/Both Description
-!   Ctrl    struct      In          Control structure
-!   SAD_LUT struct      In          SAD look up table
-!   SPixel  struct      In          Super-pixel structure
-!   RTM_Pc  struct      In          Contains transmittances, radiances and their
-!                                   derivatives
-!   X       real array  In          State vector
-!   GZero   struct      In          "Zero'th point" grid info for SAD_LUT CRP
-!                                   array interpolation.
-!   CRP     float array In          Interpolated cloud radiative properties
-!                                   (calculated by SetCRPSolar, but an input
-!                                   argument because CRP for Td for the mixed
-!                                   channels is set by SetCRPThermal. Only the
-!                                   solar channels should be passed by the
-!                                   calling routine).
-!   d_CRP   float array In          Grads. of interpolated cloud rad. properties
-!                                   (see comment for CRP).
-!   REF     float array Out         TOA reflectances for part cloudy conditions
-!   d_REF   float array Out         Derivatives d[ref]/d[tau,Re,pc,f,Ts,Rs]t
-!   status  int         Out         Status from Set_CRP_Solar/breakpoint file
-!                                   open
-!
-! Algorithm:
+! Description and Algorithm details:
 !   Note: FMThermal must have been called prior to this routine, to populate
 !      CRP(ThermalFirst:SolarLast, ITd), i.e. for the part-thermal channels.
 !   Get radiance functions.
@@ -38,93 +14,89 @@
 !      cloudy conditions.
 !   Calculate derivatives of reflectance w.r.t. all other variables.
 !
-! Local variables:
-!    Name Type Description
+! Arguments:
+! Name    Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl    struct      In          Control structure
+! SAD_LUT struct      In          SAD look up table
+! SPixel  struct      In          Super-pixel structure
+! RTM_Pc  struct      In          Contains transmittances, radiances and their
+!                                 derivatives
+! X       real array  In          State vector
+! GZero   struct      In          "Zero'th point" grid info for SAD_LUT CRP
+!                                 array interpolation.
+! CRP     float array In          Interpolated cloud radiative properties
+!                                 (calculated by SetCRPSolar, but an input
+!                                 argument because CRP for Td for the mixed
+!                                 channels is set by SetCRPThermal. Only the
+!                                 solar channels should be passed by the
+!                                 calling routine).
+! d_CRP   float array In          Grads. of interpolated cloud rad. properties
+!                                 (see comment for CRP).
+! REF     float array Out         TOA reflectances for part cloudy conditions
+! d_REF   float array Out         Derivatives d[ref]/d[tau,Re,pc,f,Ts,Rs]t
+! status  int         Out         Status from Set_CRP_Solar/breakpoint file
+!                                 open
 !
 ! History:
-!     7th November, 2000, Kevin M. Smith : original version
-!    21st November, 2000: added X structure (state vector)
-!    17th Jan 2001, Andy Smith:
-!       Changed indexing of CRP arrays to use constants to reference the
-!       different LUT values (IRBd etc)
-!       Using FM_Routines_def: contains interface definition for SetCRPSolar.
-!    23rd Jan 2001, Andy Smith:
-!       Added GZero argument, interface to SetCRPSolar changed.
-!       Updated CRP, d_CRP and Ref, d_Ref array indexing to use constants to
-!       pick out the values depending on Tau, Re etc.
-!     2nd Feb 2001, Andy Smith:
-!       Transmittance values Tac etc made arguments, Interpol_Solar is now
-!       called before this function rather than from this function.
-!     7th Feb 2001, Andy Smith:
-!       Picks up Tac values etc from RTM_Pc structure.
-!     9th Feb 2001, Andy Smith:
-!       First fully completed and (informally) tested version.
-!    15th Feb 2001, Andy Smith:
-!       Array sizes changed: Ctrl%Ind%NSolar to SPixel%Ind%NSolar
-!       Indices changed where whole dimension is used, replaced
-!       array(1: SPixel%Ind%NSolar) with array(:).
-!    16th Feb 2001, Andy Smith:
-!       Array sizes changed again: only the purely solar channels are required.
-!       Use Ny-NThermal instead of NSolar. Calculate a local
-!       NSolar variable (with the same value) for indexing SPixel%Rs.
-!       SetCRPSolar now requires SPixel as an argument.
-!    19th Feb 2001, Andy Smith:
-!       Error in previous revision. Arrays must hold all solar channels, not
-!       just purely solar.
-!       CRP, d_CRP required as arguments (partially populated by FMThermal).
-!       SetCRPSolar now takes SPixel%Ind as an argument instead of SPixel.
-!     2nd Mar 2001, Andy Smith:
-!       Updates to cope with transmittances etc as fractions instead of
-!       percentages.
-!     6th Mar 2001, Andy Smith:
-!       Calculation of Ref_clear and dRef_clear_dRs moved to Get_SPixel.
-!       (Values are now part of SPixel%RTM).
-!     7th Mar 2001, Andy Smith:
-!       Tac, Tbc etc now picked up from the overall RTM_Pc struct rather than
-!       the SW sub-structure, so that all solar channels are selected, and not
-!       just the purely solar.
-!    13th Mar 2001, Andy Smith:
-!       Changed some of the "compound" variables: S, TBTD etc can go to 0 and
-!       are used in division operations. New variable Sp (S prime, replaces S /
-!       TBTD).
-!    22nd Mar 2001, Andy Smith:
-!       Corrected equations for d_Ref wrt Tau and Re
-!    23rd Mar 2001, Andy Smith:
-!       Updated calculation of dRef wrt Rs to include divide by SPixel%Geom%SEC_o
-!       since SPixel Rs values now include this factor.
-!    15th Oct 2001, Andy Smith:
-!       Gradient w.r.t Rs fixed. Previously only the second term was divided by
-!       sec_o, whereas the whole expression should have been divided. Also the
-!       bracketing was incorrect: instead of a "f" term and a "1-f" term,
-!       everything was multiplied by f. (For "f" read "X(IFr)" in the code).
-!     5th May 2011, Andy Smith:
-!       Extension to multiple viewing angles. Some whole-array assignments
-!       replaced by loops over channels, where appropriate viewing geometry must
-!       be selected.
-!       Added some breakpoint outputs.
-!    20th Jan 2012, C Poulsen:
-!       Fixed bug with rtm_pc%tbc array allocation.
-!    20th Dec 2014, Greg McGarragh:
-!       Cleaned up code.
-!    24th Dec 2014, Greg McGarragh:
-!       Some intent changes.
-!     9th Sep 2014, Greg McGarragh:
-!       Changes related to new BRDF support.
-!    11th Dec 2014, Greg McGarragh:
-!       Some small mathmatical bug fixes in the BRDF derivative equations,
-!       mathematical refactoring to reduce computation, and some cleanup.
-!     9th Jan 2015, Adam Povey:
-!       Eliminate write to RTM_Pc%Tac, Tbc.
-!    15th Jan 2015, Adam Povey:
-!       Facilitate channel indexing in arbitrary order.
-!    21st Jan 2015, Adam Povey:
-!       Finishing the last commit.
-!
-! Bugs:
-!   None known.
+! 2000/11/07, KS: original version
+! 2000/11/21, KS: added X structure (state vector)
+! 2001/01/17, AS: Changed indexing of CRP arrays to use constants to reference
+!    the different LUT values (IRBd etc) Using FM_Routines_def: contains
+!    interface definition for SetCRPSolar.
+! 2001/01/23, AS: Added GZero argument, interface to SetCRPSolar changed.
+!    Updated CRP, d_CRP and Ref, d_Ref array indexing to use constants to pick
+!    out the values depending on Tau, Re etc.
+! 2001/02/02, AS: Transmittance values Tac etc made arguments, Interpol_Solar
+!    is now called before this function rather than from this function.
+! 2001/02/07, AS: Picks up Tac values etc from RTM_Pc structure.
+! 2001/02/09, AS: First fully completed and (informally) tested version.
+! 2001/02/15, AS: Array sizes changed: Ctrl%Ind%NSolar to SPixel%Ind%NSolar
+!    Indices changed where whole dimension is used, replaced array(1:
+!    SPixel%Ind%NSolar) with array(:).
+! 2001/02/16, AS: Array sizes changed again: only the purely solar channels are
+!    required. Use Ny-NThermal instead of NSolar. Calculate a local NSolar
+!    variable (with the same value) for indexing SPixel%Rs. SetCRPSolar now
+!    requires SPixel as an argument.
+! 2001/02/19, AS: Error in previous revision. Arrays must hold all solar
+!    channels, not just purely solar. CRP, d_CRP required as arguments
+!    (partially populated by FMThermal). SetCRPSolar now takes SPixel%Ind as an
+!    argument instead of SPixel.
+! 2001/03/02, AS: Updates to cope with transmittances etc as fractions instead
+!    of percentages.
+! 2001/03/06, AS: Calculation of Ref_clear and dRef_clear_dRs moved to
+!    Get_SPixel. (Values are now part of SPixel%RTM).
+! 2001/03/07, AS: Tac, Tbc etc now picked up from the overall RTM_Pc struct
+!    rather than the SW sub-structure, so that all solar channels are selected,
+!    and not just the purely solar.
+! 2001/03/13, AS: Changed some of the "compound" variables: S, TBTD etc can go
+!    to 0 and are used in division operations. New variable Sp (S prime,
+!    replaces S / TBTD).
+! 2001/03/22, AS: Corrected equations for d_Ref wrt Tau and Re
+! 2001/03/23, AS: Updated calculation of dRef wrt Rs to include divide by
+!    SPixel%Geom%SEC_o since SPixel Rs values now include this factor.
+! 2001/10/15, AS: Gradient w.r.t Rs fixed. Previously only the second term was
+!    divided by sec_o, whereas the whole expression should have been divided.
+!    Also the bracketing was incorrect: instead of a "f" term and a "1-f" term,
+!    everything was multiplied by f. (For "f" read "X(IFr)" in the code).
+! 2011/05/05, AS: Extension to multiple viewing angles. Some whole-array
+!    assignments replaced by loops over channels, where appropriate viewing
+!    geometry must be selected. Added some breakpoint outputs.
+! 2012/01/20, CP: Fixed bug with rtm_pc%tbc array allocation.
+! 2014/12/20, GM: Cleaned up code.
+! 2014/12/24, GM: Some intent changes.
+! 2014/09/09, GM: Changes related to new BRDF support.
+! 2014/12/11, GM: Some small mathmatical bug fixes in the BRDF derivative
+!    equations, mathematical refactoring to reduce computation, and some
+!    cleanup.
+! 2015/01/09, AP: Eliminate write to RTM_Pc%Tac, Tbc.
+! 2015/01/15, AP: Facilitate channel indexing in arbitrary order.
+! 2015/01/21, AP: Finishing the last commit.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine derivative_wrt_crp_parameter(SPixel, i_param, CRP, d_CRP, f, Tac_0v, &

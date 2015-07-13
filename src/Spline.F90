@@ -1,34 +1,33 @@
 !-------------------------------------------------------------------------------
-! Spline.F90
+! Name: Spline.F90
 !
 ! Purpose:
+! Assist cubic spline interpolation.
 !
-! Description:
-!    Given a tabulated function (x_i,y_i) returns the second derivative of the
-!    function d2y/dx2 at the values (x_i)
+! Description and Algorithm details:
+! Given a tabulated function (x_i,y_i) returns the second derivative of the
+! function d2y/dx2 at the values (x_i)
 !
-!    These derivatives are used  by the ORAC interpolation routines to perform
-!    cubic spline interpolation of eg RTM data
+! These derivatives are used  by the ORAC interpolation routines to perform
+! cubic spline interpolation of eg RTM data
 !
-! Calls:
+! Algorithm:
+! From Numerical Recipes in Fortran 90 [Press, Flannery]
 !
 ! Arguments:
-!    Name Type in/Out/Both Description
-!    x    real in          abscissa values of function
-!    y    real in          value of function at abscissa points
-!    y2	  real out         dx2/dy2 at abscissa points
+! Name Type In/Out/Both Description
+! ------------------------------------------------------------------------------
+! x    real in          abscissa values of function
+! y    real in          value of function at abscissa points
+! y2   real out         dx2/dy2 at abscissa points
 !
-! Algorithm
-!    From Numerical Recipes in Fortran 90 [Press, Flannery]
-!
-! History
-!    31st 29th August 2011 - Adapted for ORAC F90 by C. Arnold
-!
-! Bugs
-!    None known.
+! History:
+! 2011/08/29, CA: Adapted for ORAC F90
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine spline(x,y,y2)

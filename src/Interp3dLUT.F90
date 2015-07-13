@@ -1,33 +1,39 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Interp3dLUT
+! Name: Interp3dLUT.F90
 !
 ! Purpose:
-!    Interpolates values from a 3-d LUT array.
+! Interpolates values from a 3-d LUT array.
 !
-! Description:
-!    The subroutine is passed an array of data in 3 dimensions, plus the x and y
-!    grids corresponding to the LUT array points (the third dimension in the LUT
-!    array is wavelength, which is not interpolated), plus the co-ordinates of a
-!    point in the "real" data array. The subroutine calculates the value of the
-!    LUT at the real data point, plus the gradients in x and y.
+! Description and Algorithm details:
+! The subroutine is passed an array of data in 3 dimensions, plus the x and y
+! grids corresponding to the LUT array points (the third dimension in the LUT
+! array is wavelength, which is not interpolated), plus the co-ordinates of a
+! point in the "real" data array. The subroutine calculates the value of the
+! LUT at the real data point, plus the gradients in x and y.
 !
 ! Arguments:
-!    Name Type In/Out/Both Description
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Name Type        In/Out/Both Description
+! ------------------------------------------------------------------------------
+! chan  int        In          Channel number (1st index of array F)
+! F     real array Both        The 2-d (ignoring chan) array to be interpolated
+! xGrid real array Both         x-values for F
+! yGrid real array Both         y-values for F
+! delx  real       In           Grid step in x
+! dely  real       In           Grid step in y
+! CurX  real       In           The "current" x value, i.e. the point where we 
+!                               want to find the interpolated value.
+! CurY  real       In           The "current" y value
+! FInt  real       Out          Interpolated value of F at CurX, CurY
+! dFdx  real       Out          Gradients of F wrt x at CurX, CurY
+! dFdy  real       Out          Gradients of F wrt y at CurX, CurY
 !
 ! History:
-!    26th Oct 2000, Andy Smith: Original version
-!
-! Bugs:
-!    None known.
+! 2000/10/26, AS: Original version
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !---------------------------------------------------------------------
 
 subroutine Interp3dLUT(chan, F, xGrid, yGrid, delx, dely, CurX, CurY, FInt, &

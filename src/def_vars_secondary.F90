@@ -7,27 +7,29 @@
 ! Variable names are also defined.
 !
 ! Description and Algorithm details:
+! 1) For each variable, use nc_def_var routine to define variable.
+! 2) Loop over views to define measurement channel variables.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
-!
-! Return value:
-! Name Type Description
-!
-! Local variables:
-! Name Type Description
+! Name        Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct In          Retrieval control parameters
+! lcovar      logic  In          
+! ncid        int    In          ID for open NCDF file to define
+! dims_var    int(2) In          ID #s for lat and lon dimensions
+! output_data struct Both        Structure of data for primary output file
 !
 ! History:
-! 2011/12/19, Matthias Jerg: Creates initial version
-! 2012/01/05, C. Poulsen: Add channel info
-! 2012/01/15, C. Poulsen: Modified scales and offsets for residuals
-! 2012/02/28, C. Poulsen: Bug fix to attributes of scanline_v
-! 2012/02/28, C. Poulsen: Added in albedo
-! 2012/02/28, C. Poulsen: Indexedy_id array correctly
-! 2013/01/25, C. Poulsen: Modified how channels are labelled now reads form the
+! 2011/12/19, MJ: Creates initial version
+! 2012/01/05, CP: Add channel info
+! 2012/01/15, CP: Modified scales and offsets for residuals
+! 2012/02/28, CP: Bug fix to attributes of scanline_v
+! 2012/02/28, CP: Added in albedo
+! 2012/02/28, CP: Indexedy_id array correctly
+! 2013/01/25, CP: Modified how channels are labelled now reads form the
 !    input file the channel names.
-! 2013/05/29, G. Thomas: Added degrees of freedom for signal
-! 2013/07/24, A. Povey: Fixed bug in writing output_data%vid_y0
+! 2013/05/29, GT: Added degrees of freedom for signal
+! 2013/07/24, AP: Fixed bug in writing output_data%vid_y0
 ! 2013/12/05, MJ: Fixes bug with writing of albedo and radiance and bt output.
 ! 2013/12/09, MJ: Slightly adapts range of reflectances.
 ! 2014/06/13, GM: Put the code into a subroutine.

@@ -1,28 +1,37 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    Alloc_SAD_LUT
+! Name: AllocSADLUT.F90
 !
 ! Purpose:
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!
-! Algorithm:
-!
-! Local variables:
-!    Name Type Description
+! Two routines to allocate the structures to hold LUT data within SAD_LUT module
 !
 ! History:
-!    10th Oct 2014, Greg McGarragh: Original version
-!     9th Jan 2015, Caroline Poulsen: Added Rfbd.
-
-! Bugs:
-!    None known.
+! 2014/10/10, GM: Original version
+! 2015/01/09, CP: Added Rfbd.
 !
 ! $Id: AllocSADLUT.F90 2293 2014-08-13 08:56:10Z gmcgarragh $
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
+!-------------------------------------------------------------------------------
+! Name: Alloc_LUT_Grid
+!
+! Purpose:
+! Allocate arrays to hold LUT grid information.
+!
+! Description and Algorithm details:
+! 1) Allocate all arrays in structure
+!
+! Arguments:
+! Name     Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct In          Control structure
+! LUT_Grid struct Out         RTM_Pc structure
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine Alloc_LUT_Grid(Ctrl, LUT_Grid)
 
    use Ctrl_def
@@ -73,6 +82,25 @@ subroutine Alloc_LUT_Grid(Ctrl, LUT_Grid)
 end subroutine Alloc_LUT_Grid
 
 
+!-------------------------------------------------------------------------------
+! Name: Alloc_SAD_LUT
+!
+! Purpose:
+! Allocate arrays to hold contents of LUTs
+!
+! Description and Algorithm details:
+! 1) Allocate all common arrays in structure.
+! 2) Allocate solar and/or thermal channel structures as required.
+!
+! Arguments:
+! Name     Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl     struct In          Control structure
+! SAD_LUT  struct Both        Look-up table structure
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
 
    use Ctrl_def

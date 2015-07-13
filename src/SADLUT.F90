@@ -1,40 +1,26 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    SAD_LUT_def
+! Name: SADLUT.F90
 !
 ! Purpose:
-!    Module defining the Static Application Data Look-Up Table structure and
-!    supporting routines.
-!
-! Arguments:
-!    Name Type In/Out/Both Description
-!    N/A
-!
-! Algorithm:
-!    N/A
-!
-! Local variables:
-!    Name Type Description
+! Module defining the Static Application Data Look-Up Table structure and
+! supporting routines.
 !
 ! History:
-!     4th Oct 2000, Andy Smith : original version
-!     1st Dec 2000, Andy Smith:
-!       Renamed Solzen variables to Solzen
-!    12th Jan 2001, Andy Smith:
-!       Changing main LUT arrays (RBd etc) to allocatable.
-!    11th June 2011, Caroline Poulsen: removed references to maximum values and
-!       changed some variables to pointers values
-!    12th Dec 2013, MJ: makes LUTs more flexible wrt channel and properties
-!    12th Jan 2014, Greg McGarragh: Increase nmaxre to 23 for the ice LUTs.
-!    16th Jan 2014, Greg McGarragh: Added SAD_LUT%table_use* arrays.
-!    23rd Jan 2014, Greg McGarragh: Cleaned up the code.
-!     9th Jan 2015, Caroline Poulsen: Added Rfbd.
-!
-! Bugs:
-!    None known.
+! 2000/10/04, AS: original version
+! 2000/12/01, AS: Renamed Solzen variables to Solzen
+! 2001/01/12, AS: Changing main LUT arrays (RBd etc) to allocatable.
+! 2011/06/11, CP: removed references to maximum values and
+!    changed some variables to pointers values
+! 2013/12/12, MJ: makes LUTs more flexible wrt channel and properties
+! 2014/01/12, GM: Increase nmaxre to 23 for the ice LUTs.
+! 2014/01/16, GM: Added SAD_LUT%table_use* arrays.
+! 2014/01/23, GM: Cleaned up the code.
+! 2015/01/09, CP: Added Rfbd.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module SAD_LUT_def

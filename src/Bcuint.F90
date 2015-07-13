@@ -1,66 +1,60 @@
 !-------------------------------------------------------------------------------
-! Bcuint.F90
+! Name: Bcuint.F90
 !
 ! Purpose:
-!    Performs a bicubic interpolation on the interval ((0,0),(0,1), (1,1),(1,0))
+! Performs a bicubic interpolation on the interval ((0,0),(0,1), (1,1),(1,0))
 !
-! Description:
-!    Bicubic Interpolation within a grid square. Input quantities are y, y1, y2,
-!    y12, x1l, x1u, x2l, x2u, x1, x2 as described below.  The interpolated
-!    function value is returned as ansy and the interpolated gradient values as
-!    ansy1 and ansy2.
+! Description and Algorithm details:
+! From Numerical Recipes in Fortran 90 [Press, Flannery]. Uses BcuCof.F90
 !
-! Calls:
-!    BCuCof.F90
+! Bicubic Interpolation within a grid square. Input quantities are y, y1, y2,
+! y12, x1l, x1u, x2l, x2u, x1, x2 as described below.  The interpolated
+! function value is returned as ansy and the interpolated gradient values as
+! ansy1 and ansy2.
 !
 ! Arguments:
-!    Name        Type    In/Out/Both    Description
-!    y           real array  In         Values of functions at each of
-!                                       the four vertices around the
-!                                       point to be interpolated to.
-!                                       Values should be listed in
-!                                       anti-clockwise order, starting
-!                                       at the bottom left.
-!    y1          real array  In         Derivatives wrt to the
-!                                       "x-coordinate" at the vertices.
-!    y2          real array  In         Derivatives wrt to the
-!                                       "y-coordinate" at the vertices.
-!    y12         real array  In         Second order cross-derivatives
-!                                       at the vertices.
-!    x1l	 real	     In		The lower coordinates of the grid
-!					square in the 1- direction
-!    x1u	 real	     In		The upper coordinates of the grid
-!					square in the 1- direction
-!    x2l	 real	     In		The lower coordinates of the grid
-!					square in the 2- direction
-!    x2u	 real	     In		The upper coordinates of the grid
-!					square in the 2- direction
-!    x1		 real	     In		Coordinate of interpolation point
-!					in the 1- direction
-!    x2		 real	     In		Coordinate of interpolation point
-!					in the 2- direction
-!    ansy        real        Out        The interpolated value of the
-!                                       function at t,u
-!    ansy1       real        Out        The interpolated gradient wrt
-!                                       to x of the function at t,u
-!    ansy2       real        Out        The interpolated gradient wrt
-!                                       to y of the function at t,u
+! Name        Type       In/Out/Both Description
+! ------------------------------------------------------------------------------
+! y           real array  In         Values of functions at each of
+!                                    the four vertices around the
+!                                    point to be interpolated to.
+!                                    Values should be listed in
+!                                    anti-clockwise order, starting
+!                                    at the bottom left.
+! y1          real array  In         Derivatives wrt to the
+!                                    "x-coordinate" at the vertices.
+! y2          real array  In         Derivatives wrt to the
+!                                    "y-coordinate" at the vertices.
+! y12         real array  In         Second order cross-derivatives
+!                                    at the vertices.
+! x1l         real        In         The lower coordinates of the grid
+!                                    square in the 1- direction
+! x1u         real        In         The upper coordinates of the grid
+!                                    square in the 1- direction
+! x2l         real        In         The lower coordinates of the grid
+!                                    square in the 2- direction
+! x2u         real        In         The upper coordinates of the grid
+!                                    square in the 2- direction
+! x1          real        In         Coordinate of interpolation point
+!                                    in the 1- direction
+! x2          real        In         Coordinate of interpolation point
+!                                    in the 2- direction
+! ansy        real        Out        The interpolated value of the
+!                                    function at t,u
+! ansy1       real        Out        The interpolated gradient wrt
+!                                    to x of the function at t,u
+! ansy2       real        Out        The interpolated gradient wrt
+!                                    to y of the function at t,u
 !
-! Algorithm
-!    From Numerical Recipes in Fortran 90 [Press, Flannery]
-!    Uses BcuCof.F90
-!
-! History
-!    22nd April 2009 - Written by C. Arnold
-!    23 December 2014, Greg McGarragh:
-!       Transpose the use of local variable c for compatibility with changes
-!       made in bcucof() plus some code cleanup.
-!
-! Bugs
-!    None known.
+! History:
+! 2009/04/22, CA: Original version
+! 2014/12/23, GM: Transpose the use of local variable c for compatibility with 
+!    changes made in bcucof() plus some code cleanup.
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 subroutine bcuint(y,y1,y2,y12,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
