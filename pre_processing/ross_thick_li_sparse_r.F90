@@ -2,7 +2,7 @@
 ! Name: ross_thick_li_sparse_r.F90
 !
 ! Purpose:
-! The routines in this file calculate land BRDF parameters using the Ross-Thick
+! Module contining routines to calculate land BRDF parameters using the Ross-Thick
 ! Li-Sparse-Reciprocal bidirectional reflectance kernel but the structure is set
 ! so that other kernels may be added.
 !

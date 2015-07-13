@@ -8,13 +8,15 @@
 !
 ! Arguments:
 ! Name              Type   In/Out/Both Description
-!------------------------------------------------------------------------------
+! ------------------------------------------------------------------------------
 ! path_to_USGS_file string in          Full path to USGS file
 !
 ! History:
 ! 2014/09/23, OS: writes code to read data from USGS file.
 ! 2014/12/01, CP: Added source attributes.
 ! 2014/12/31, GM: Parallelized the main loop with OpenMP.
+!
+! $Id$
 !
 ! Bugs:
 ! None known.

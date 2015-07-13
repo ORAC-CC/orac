@@ -4,10 +4,11 @@
 ! Purpose:
 ! Open and read MODIS MCD43C3 16-day gridded surface albedo files
 !
-! Description and algorithm details:
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name         Type            In/Out/Both Description
+! ------------------------------------------------------------------------------
 ! path_to_file character       in          File name (and path) to read
 ! mcd          type(mcd43c1)   out         MCD output structure
 ! nbands       integer         in          Number of bands to read
@@ -24,7 +25,7 @@
 ! History:
 ! 2014/08/10, GM: First version.
 ! 2014/08/12, AP: Moved channel dimension to end of array for efficiency.
-!   Lat/lon grid now defined with start & division rather than array.
+!    Lat/lon grid now defined with start & division rather than array.
 !
 ! $Id$
 !

@@ -2,13 +2,7 @@
 ! Name: read_avhrr.F90
 !
 ! Purpose:
-! Container for AVHRR read routines.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module for AVHRR read routines.
 !
 ! History:
 ! 2014/05/23, GM: First version.

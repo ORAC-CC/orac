@@ -20,14 +20,14 @@
 ! 2012/01/19, MJ: produces draft code
 ! 2012/05/30, GT: Added deallocation of preproc_surf%emissivity
 ! 2012/06/26, CP: Added allocation swrtm information. added definitions of
-!   nchan_sw and nchan_lw. included channel_info structure!
+!    nchan_sw and nchan_lw. included channel_info structure!
 ! 2012/07/29, CP: deallocated levels and layers variable
 ! 2012/07/30, CP: added in solazi
 ! 2012/08/01, MJ: adds geopotential height coordinates
 ! 2012/11/14, CP: adds surface pressure
 ! 2013/11/08, GM: Added missing deallocate statements.
 ! 2014/01/24, MJ: removed channel_info structure as it is not necessary and was
-!                 used in the call.
+!    used in the call.
 ! 2014/05/01, GM: Add some deallocations that were being done outside.
 ! 2014/05/01, GM: Cleaned up the code.
 ! 2014/05/07, AP: Removed unnecessary fields from preproc_dims.

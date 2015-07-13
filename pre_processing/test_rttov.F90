@@ -4,6 +4,8 @@
 ! Purpose:
 ! Create environment within all RTTOV related code is contained.
 !
+! Description and Algorithm details:
+!
 ! Arguments:
 ! Name         Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
@@ -12,12 +14,12 @@
 !
 ! History:
 ! 2012/03/27, MJ: provides initial implementation based on the example program
-!   example_fw of Annex X of the RTTOV V10.2 user guide V1.3.
+!    example_fw of Annex X of the RTTOV V10.2 user guide V1.3.
 ! 2012/05/23, MJ: fixes bug with AVHRR setup.
 ! 2012/06/20, CP: removed emissivity. implemented new calls to call_rtm_ir and
-!   call_rtm_solar
+!    call_rtm_solar
 ! 2012/07/29, CP: improved readability added in algorithm description, added in
-!   month variable required for emissivity
+!    month variable required for emissivity
 ! 2014/02/10, AP: variable renaming
 ! 2014/07/10, AP: Removed test_flag argument
 !

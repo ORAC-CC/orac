@@ -23,7 +23,7 @@
 ! History:
 ! 2011/12/15, MJ: produces draft code which opens and reads MODIS ls flag
 ! 2013/09/06, AP: tidying, fixed bug where uninitialised array temp was used,
-!   added where statement (if desired)
+!    added where statement (if desired)
 !
 ! $Id$
 !

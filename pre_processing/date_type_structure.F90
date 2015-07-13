@@ -2,16 +2,10 @@
 ! Name: date_type_structure.F90
 !
 ! Purpose:
-! Definition of date structures used by calendar.F90
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Definition of module for date structures used by calendar.F90
 !
 ! History:
-!     /  /  ,   : First version.
+! 2012/05/24, MJ: First version.
 !
 ! $Id$
 !

@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: effective_2wat_za.F90
+! Name: effective_2way_za.F90
 !
 ! Purpose:
 ! Return the single-path zenith angle which has the same air-mass as the given

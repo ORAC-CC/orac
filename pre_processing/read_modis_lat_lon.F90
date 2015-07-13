@@ -22,9 +22,9 @@
 !
 ! History:
 ! 2011/12/13, MJ: produces draft code which reads latitude and longitude modis
-!   geolocation data
+!    geolocation data
 ! 2013/09/06, AP: tidying, added code for WHERE statement (if desired), use
-!   sreal_fill_value rather than file's value
+!    sreal_fill_value rather than file's value
 !
 ! $Id$
 !

@@ -1,9 +1,3 @@
-module preparation_m
-
-   implicit none
-
-contains
-
 !-------------------------------------------------------------------------------
 ! Name: preparation.F90
 !
@@ -61,10 +55,10 @@ contains
 ! 2012/07/29, CP: removed old comments
 ! 2012/08/06, CP: added in badc flag
 ! 2012/12/06, CP: added in option to break aatsr orbit into chunks for faster
-!   processing added imager_structure to input and tidied up the file
+!    processing added imager_structure to input and tidied up the file
 ! 2012/12/06, CP: changed how ecmwf paths are defined because of looping chunks
 ! 2012/12/14, CP: changed how file is named if the orbit is broken into
-!   granules then the file name is given a latitude range
+!    granules then the file name is given a latitude range
 ! 2012/03/05, CP: small change to work for gfortran
 ! 2013/09/02, AP: Removed startyi, endye.
 ! 2013/10/21, AP: Removed redundant arguments. Tidying.
@@ -79,6 +73,12 @@ contains
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+module preparation_m
+
+   implicit none
+
+contains
 
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &

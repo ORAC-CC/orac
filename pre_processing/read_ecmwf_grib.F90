@@ -5,6 +5,7 @@
 ! Read ECMWF data from a GRIB file, having interpolated it onto the
 ! preprocessing grid. Replaces read_ecmwf.F90.
 !
+! Description and Algorithm details:
 ! The ECMWF EMOS library is used to perform the interpolation from the native
 ! grid of the input file to the desired preprocessor grid. That library can
 ! only produce regular or semi-regular grids and they must contain -180W and
@@ -23,7 +24,6 @@
 ! include the header information required to identify the field. By copying
 ! the interpolated field to a scratch file retains that.
 !
-! Description and Algorithm details:
 ! 1) Open file. Create scratch file.
 ! 2) Set output grid to limits and spacing of preprocessing grid.
 ! 3) Loop over fields in GRIB file.

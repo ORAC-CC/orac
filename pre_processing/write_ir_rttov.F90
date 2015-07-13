@@ -24,7 +24,6 @@
 ! write_flag     logic  in   T: Write values; F: Write fill-values
 !
 ! History:
-!
 ! 2014/09/11, AP: First version.
 ! 2014/09/28, GM: Updated to conform with a new arrangement of dimensions.
 !

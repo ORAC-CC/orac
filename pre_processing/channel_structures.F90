@@ -2,15 +2,10 @@
 ! Name: channel_structures.F90
 !
 ! Purpose:
-! Define variables types which hold the channel information
-!
-! Description and Algorithm details:
+! Module to define variables types which hold the channel information
 ! PUT EVERYTHING IN HERE NECESSARY FOR CHANNEL INFORMATION!!
 ! PLEASE COMMENT SUFFICIENTLY TO CLEARLY EXPLAIN THE ROLE OF THE
 ! INDIVIDUAL INFORMATION!!
-!
-! Arguments:
-! None
 !
 ! History:
 ! 2012/06/01, MJ: writes initial version.

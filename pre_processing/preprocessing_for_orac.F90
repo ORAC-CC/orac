@@ -2,13 +2,13 @@
 ! Name: preprocessing_for_orac.F90
 !
 ! Purpose:
-!   Read in data from the variety of files that contain all the information
-!   necessary to run the ORAC algorithm, remove any unnecessary details (such as
-!   restricting the data to a particular area of the swath), and write out the
-!   remainder to a series of NetCDF files. This operates on individual granules
-!   and/or orbit segments of MODIS, AVHRR, and AATSR to allow for brute force/
-!   poor man's parallelization by running multiple instances of ORAC
-!   simultaneously, each ingesting separate files.
+! Read in data from the variety of files that contain all the information
+! necessary to run the ORAC algorithm, remove any unnecessary details (such as
+! restricting the data to a particular area of the swath), and write out the
+! remainder to a series of NetCDF files. This operates on individual granules
+! and/or orbit segments of MODIS, AVHRR, and AATSR to allow for brute force/
+! poor man's parallelization by running multiple instances of ORAC
+! simultaneously, each ingesting separate files.
 !
 ! Description and Algorithm details:
 ! 1) Read input parameters from command line (or driver file)
@@ -82,152 +82,152 @@
 ! verbose          logic  in F: minimise information printed to screen; T: don't
 !
 ! History:
-! 2011/12/09: MJ produces draft code which comprises the main program and the
-!                top level subroutines.
-! 2011/12/22: MJ includes read routines for MODIS L1B and geolocation HDF4
-!                files.
-! 2012/01/13: MJ includes read routines for ERA Interim GRIB files.
-! 2012/02/01: MJ includes read routines for HDF5 AVHRR L1b and geolocation
-!                files.
-! 2012/02/14: MJ implements filenames and attributes for netcdf output.
-! 2012/02/21: MJ adds code to produce preprocessing grid for RTTOV
-!                implementation.
-! 2012/02/22: MJ restructures ECMWF reading to prepare RTTOV implementation.
-!                Variable naming is corrected as well.
-! 2012/02/24: MJ implements code to acquire ECMWF fields on preprocessing grid,
-!                to grid imager data to preprocessing grid.
-! 2012/03/13: MJ fixes AVHRR read bug.
-! 2012/03/26: MJ implements 3D pressure array code.
-! 2012/03/26: MJ fixes bug in nearest neighbour assignment.
-! 2012/03/27: MJ changes all file suffixes from *.f90 to *.F90 for ease of use
-!                of the C preprocessor.
-! 2012/05/15: MJ includes code to read AVHRR land/sea mask.
-! 2012/05/15: CP includes path to albedo/snow files/emissivity
-! 2012/07/15: CP add in AATSR reading including calibration file
-! 2012/05/15: MJ removes slight bug in passing of parameters from surrounding
-!                shell script.
-! 2012/07/23: MJ adds capability to read from command line OR driver file.
-! 2012/07/29: CP tidied up code and merged in MJ changes and  skips over
-!                external emissivity read, improved readability, removed albedo
-!                and icepaths from file these are now called in the running
-!                script added in top level description
-! 2012/07/29: CP added in year month day for ice file
-! 2012/08/02: MJ implements writing of RTTOV output to netcdf file.
-! 2012/08/06: CP modified code to accept BADC style ecmwf files
-! 2012/08/07: CP modified code write albedo to netcdf file
-! 2012/08/08: CP added in emissivity file selection
-! 2012/08/13: CP modified reading of badc ecmwf files
-! 2012/08/14: MJ some modifications to make code compile at DWD
-! 2012/08/15: MJ initializes badc flag and rearranges reading
-! 2012/08/16: GT Fixed up indentation of command-line argument reading for
-!                clarity
-! 2012/08/16: GT Bug-fix: Added "aatsr_calib_file" to the argument list for
-!                read_imager
-!                Added trim() to write statements of file paths
-! 2012/08/20: MJ fixes several bugs with AATSR dimension read
-! 2012/08/20: MJ changed read_mcd43c3 from function to subroutine in order to
-!                iron out bugs
-! 2012/08/22: MJ implements flexible x and y dimensions start and end indices in
-!                surface part
-! 2012/08/28: CP small mods
-! 2012/09/04: GT Corrected calls to setup_aatsr and read_aatsr_dimensions
-! 2012/09/13: GT Added write statements for some of the input variables to
-!                aid in fixing problems with command arguments
-! 2012/11/14: CP modified how netcdf ecmwf files on pressure levels are read
-!                clean up of code
-! 2012/11/29: CP big tidy up of code formatting writes etc
-! 2012/12/06: CP added in option to break aatsr orbit into chunks for faster
-!                processing
-! 2012/12/06: CP changed how ecmwf paths are defined because of looping chunks!
-! 2012/12/16: CP added an extra ecmwf path so ecmwf can be read form separate
-!                directories
-! 2013/02/26: CP changed how day_night aatsr flag was read in
-! 2013/02/25: GT Added preproc_geoloc to the arguments for
-!                get_surface_emissivity, un-commented the call to
-!                get_surface_emissivity (which now works).
-! 2013/03/06: GT Tidied up formatting of file header.
-! 2013/03/06: GT Bug fix: default along_track_offset set to 0 rather than 1 and
-!                definition of imager_geolocation%endy for whole orbits/granules
-!                altered accordingly.
-! 2013/03/07: CP changed badc file read options not all files are netcdf
-! 2013/03/19: GT Bug fix: When reading BADC ECMWF data (NetCDF files), the ggam
-!                files were being treated as surface, rather than profile, files
-! 2013/04/08: CP/GT fixed bug where channel_info was not passed through
-!                routine to correct for ice and snow.
-! 2013/05/21: MJ merges local DWD version with official version.
-! 2013/06/03: CP changed function find_min_max_preproc
-! 2013/07/24: AP a few bug fixes in the chunking code
-! 2013/09/02: AP removed various redundant variables and if statements. Removed
-!                startyi, endye.
-! 2013/09/03: GT Finished changes required to get AATSR night-time data
-!                reading working correctly
-! 2013/09/06: AP altering READ routines to take start,n as inputs rather than
-!                start,end. Removed channel_flag from and added verbose to
-!                command line arguments.
-! 2013/10/08: AP altered read_aatsr_dimensions for new call.
-! 2013/10/30: AP Continued tidying. Altered call for find_min_max_preproc.
-! 2013/11/05: GT Changed type cast of cverbose to verbose variable to use
-!                '(I6)', as '(L6)' was causing a buffer overrun.
-! 2013/11/06: MJ adds config file to preprocessing output which holds all
-!                relevant dimensional information.
-! 2013/11/08: GM Added missing call to deallocate_surface_structures().
-! 2014/01/24: MJ fixed type mismatch in deallocation of surface structures and
-!                of variable nc.
-! 2014/01/27: GM Made '1', 't', 'true', 'T', 'True', '0', 'f', 'false', 'F', and
-!                'False' all valid values for the preprocessor verbose option.
-! 2014/02/02: GM Added NetCDF chunking on/off option.
-! 2014/02/03: AP Ensured all arguments that are logical flags are treated
-!                identically
-! 2014/02/05: MJ corrected data type of chunkproc from character to logical
-! 2014/02/10: AP changes to ECMWF routines
-! 2014/02/05: MJ adds verbose to argument list of rttov related routines to mute
-!                rttov
-! 2014/03/11: MJ adds writing out of some flags to gain more information.
-! 2014/04/02: GM Get the NetCDF version from the library itself.  Left the
-!                obsolete input argument in place for now but it is over
-!                written.
-! 2014/04/21: GM Added logical option assume_full_path.
-! 2014/05/01: GM Cleaned up the code.
-! 2014/05/01: GM Move some allocations/deallocations to the proper subroutine.
-! 2014/06/04: MJ introduced "WRAPPER" for c-preprocessor and associated
-!                variables
-! 2014/06/25: GM Rewrote along track chunking code fixing a bug where the second
-!                segment in AATSR night processing was not being processed when
-!                chunking was off.
-! 2014/07/01: AP Update to ECMWF code.
-! 2014/08/10: GM Changes related to new BRDF support.
-! 2014/09/11: AP Remove one level from preproc_prtm grid as it wasn't written
-!                to or necessary.
-! 2014/10/23: OS added reading of USGS land use/DEM file; implemented
-!                Pavolonis cloud typing algorithm; built in new neural network
-!                cloud mask in preprocessing, based on radiances and auxiliary
-!                data; implemented CRAY fortran-based alternative for scratch
-!                file I/O of ERA-Interim data
-! 2014/11/04: OS ecmwf structure is now passed as argument to Pavolonis/NN cloud
-!                mask
-! 2014/11/21: GM Remove the no longer used cgrid_flag from driver file input.
-!                Was previously removed from command line input.
-! 2014/11/21: GM Add modis_brdf_path to command line input which was previously
-!                added to driver file input.
-! 2014/12/01: OS Platform and DOY now passed as arguments to cloud_type call
-! 2014/12/04: OS Wrapper job ID is new call argument and is passed to SR
-!                read_ecmwf_grib
-! 2014/12/01: CP Add new global and source attributes
-! 2014/12/16: GM Fix writing of attributes introduced in the change above by
-!                reordering some subroutine calls and putting subroutine
-!                netcdf_create_config() back into netcdf_output_create().
-! 2014/02/04: OS Added calls to new SR reading ERA-Interim data from NetCDF
-!                (WRAPPER only); added call to snow/ice correction based on ERA-
-!                Interim data
-! 2015/02/19: GM Added SEVIRI support.
-! 2015/02/24: GM Improved command line and driver file support using the parsing
-!                module in the common library including support for comments and
-!                optional arguments/fields and better error handling.
-! 2015/02/24: GM Added command line/driver file options to specify the number of
-!                channels and the channel IDs to process.
-! 2015/07/02: OS Added check for output netcdf files (wrapper only) + 
-!                uncommented parse of L2_Processor_Version
-! 2015/07/03: OS Removed parsing of L2_Processor_Version
+! 2011/12/09, MJ: produces draft code which comprises the main program and the
+!    top level subroutines.
+! 2011/12/22, MJ: includes read routines for MODIS L1B and geolocation HDF4
+!    files.
+! 2012/01/13, MJ: includes read routines for ERA Interim GRIB files.
+! 2012/02/01, MJ: includes read routines for HDF5 AVHRR L1b and geolocation
+!    files.
+! 2012/02/14, MJ: implements filenames and attributes for netcdf output.
+! 2012/02/21, MJ: adds code to produce preprocessing grid for RTTOV
+!    implementation.
+! 2012/02/22, MJ: restructures ECMWF reading to prepare RTTOV implementation.
+!    Variable naming is corrected as well.
+! 2012/02/24, MJ: implements code to acquire ECMWF fields on preprocessing grid,
+!    to grid imager data to preprocessing grid.
+! 2012/03/13, MJ: fixes AVHRR read bug.
+! 2012/03/26, MJ: implements 3D pressure array code.
+! 2012/03/26, MJ: fixes bug in nearest neighbour assignment.
+! 2012/03/27, MJ: changes all file suffixes from *.f90 to *.F90 for ease of use
+!    of the C preprocessor.
+! 2012/05/15, MJ: includes code to read AVHRR land/sea mask.
+! 2012/05/15, CP: includes path to albedo/snow files/emissivity
+! 2012/07/15, CP: add in AATSR reading including calibration file
+! 2012/05/15, MJ: removes slight bug in passing of parameters from surrounding
+!    shell script.
+! 2012/07/23, MJ: adds capability to read from command line OR driver file.
+! 2012/07/29, CP: tidied up code and merged in MJ changes and  skips over
+!    external emissivity read, improved readability, removed albedo
+!    and icepaths from file these are now called in the running
+!    script added in top level description
+! 2012/07/29, CP: added in year month day for ice file
+! 2012/08/02, MJ: implements writing of RTTOV output to netcdf file.
+! 2012/08/06, CP: modified code to accept BADC style ecmwf files
+! 2012/08/07, CP: modified code write albedo to netcdf file
+! 2012/08/08, CP: added in emissivity file selection
+! 2012/08/13, CP: modified reading of badc ecmwf files
+! 2012/08/14, MJ: some modifications to make code compile at DWD
+! 2012/08/15, MJ: initializes badc flag and rearranges reading
+! 2012/08/16, GT: Fixed up indentation of command-line argument reading for
+!    clarity
+! 2012/08/16, GT: Bug-fix: Added "aatsr_calib_file" to the argument list for
+!    read_imager
+!    Added trim() to write statements of file paths
+! 2012/08/20, MJ: fixes several bugs with AATSR dimension read
+! 2012/08/20, MJ: changed read_mcd43c3 from function to subroutine in order to
+!    iron out bugs
+! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices in
+!    surface part
+! 2012/08/28, CP: small mods
+! 2012/09/04, GT: Corrected calls to setup_aatsr and read_aatsr_dimensions
+! 2012/09/13, GT: Added write statements for some of the input variables to
+!    aid in fixing problems with command arguments
+! 2012/11/14, CP: modified how netcdf ecmwf files on pressure levels are read
+!    clean up of code
+! 2012/11/29, CP: big tidy up of code formatting writes etc
+! 2012/12/06, CP: added in option to break aatsr orbit into chunks for faster
+!    processing
+! 2012/12/06, CP: changed how ecmwf paths are defined because of looping chunks!
+! 2012/12/16, CP: added an extra ecmwf path so ecmwf can be read form separate
+!    directories
+! 2013/02/26, CP: changed how day_night aatsr flag was read in
+! 2013/02/25, GT: Added preproc_geoloc to the arguments for
+!    get_surface_emissivity, un-commented the call to
+!    get_surface_emissivity (which now works).
+! 2013/03/06, GT: Tidied up formatting of file header.
+! 2013/03/06, GT: Bug fix: default along_track_offset set to 0 rather than 1 and
+!    definition of imager_geolocation%endy for whole orbits/granules
+!    altered accordingly.
+! 2013/03/07, CP: changed badc file read options not all files are netcdf
+! 2013/03/19, GT: Bug fix: When reading BADC ECMWF data (NetCDF files), the ggam
+!    files were being treated as surface, rather than profile, files
+! 2013/04/08, CP:/GT fixed bug where channel_info was not passed through
+!    routine to correct for ice and snow.
+! 2013/05/21, MJ: merges local DWD version with official version.
+! 2013/06/03, CP: changed function find_min_max_preproc
+! 2013/07/24, AP: a few bug fixes in the chunking code
+! 2013/09/02, AP: removed various redundant variables and if statements. Removed
+!    startyi, endye.
+! 2013/09/03, GT: Finished changes required to get AATSR night-time data
+!    reading working correctly
+! 2013/09/06, AP: altering READ routines to take start,n as inputs rather than
+!    start,end. Removed channel_flag from and added verbose to
+!    command line arguments.
+! 2013/10/08, AP: altered read_aatsr_dimensions for new call.
+! 2013/10/30, AP: Continued tidying. Altered call for find_min_max_preproc.
+! 2013/11/05, GT: Changed type cast of cverbose to verbose variable to use
+!    '(I6)', as '(L6)' was causing a buffer overrun.
+! 2013/11/06, MJ: adds config file to preprocessing output which holds all
+!    relevant dimensional information.
+! 2013/11/08, GM: Added missing call to deallocate_surface_structures().
+! 2014/01/24, MJ: fixed type mismatch in deallocation of surface structures and
+!    of variable nc.
+! 2014/01/27, GM: Made '1', 't', 'true', 'T', 'True', '0', 'f', 'false', 'F', and
+!    'False' all valid values for the preprocessor verbose option.
+! 2014/02/02, GM: Added NetCDF chunking on/off option.
+! 2014/02/03, AP: Ensured all arguments that are logical flags are treated
+!    identically
+! 2014/02/05, MJ: corrected data type of chunkproc from character to logical
+! 2014/02/10, AP: changes to ECMWF routines
+! 2014/02/05, MJ: adds verbose to argument list of rttov related routines to mute
+!    rttov
+! 2014/03/11, MJ: adds writing out of some flags to gain more information.
+! 2014/04/02, GM: Get the NetCDF version from the library itself.  Left the
+!    obsolete input argument in place for now but it is over
+!    written.
+! 2014/04/21, GM: Added logical option assume_full_path.
+! 2014/05/01, GM: Cleaned up the code.
+! 2014/05/01, GM: Move some allocations/deallocations to the proper subroutine.
+! 2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
+!    variables
+! 2014/06/25, GM: Rewrote along track chunking code fixing a bug where the second
+!    segment in AATSR night processing was not being processed when
+!    chunking was off.
+! 2014/07/01, AP: Update to ECMWF code.
+! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/09/11, AP: Remove one level from preproc_prtm grid as it wasn't written
+!    to or necessary.
+! 2014/10/23, OS: added reading of USGS land use/DEM file; implemented
+!    Pavolonis cloud typing algorithm; built in new neural network
+!    cloud mask in preprocessing, based on radiances and auxiliary
+!    data; implemented CRAY fortran-based alternative for scratch
+!    file I/O of ERA-Interim data
+! 2014/11/04, OS: ecmwf structure is now passed as argument to Pavolonis/NN cloud
+!    mask
+! 2014/11/21, GM: Remove the no longer used cgrid_flag from driver file input.
+!    Was previously removed from command line input.
+! 2014/11/21, GM: Add modis_brdf_path to command line input which was previously
+!    added to driver file input.
+! 2014/12/01, OS: Platform and DOY now passed as arguments to cloud_type call
+! 2014/12/04, OS: Wrapper job ID is new call argument and is passed to SR
+!    read_ecmwf_grib
+! 2014/12/01, CP: Add new global and source attributes
+! 2014/12/16, GM: Fix writing of attributes introduced in the change above by
+!    reordering some subroutine calls and putting subroutine
+!    netcdf_create_config() back into netcdf_output_create().
+! 2014/02/04, OS: Added calls to new SR reading ERA-Interim data from NetCDF
+!    (WRAPPER only); added call to snow/ice correction based on ERA-
+!    Interim data
+! 2015/02/19, GM: Added SEVIRI support.
+! 2015/02/24, GM: Improved command line and driver file support using the parsing
+!    module in the common library including support for comments and
+!    optional arguments/fields and better error handling.
+! 2015/02/24, GM: Added command line/driver file options to specify the number of
+!    channels and the channel IDs to process.
+! 2015/07/02, OS: Added check for output netcdf files (wrapper only) + 
+!    uncommented parse of L2_Processor_Version
+! 2015/07/03, OS: Removed parsing of L2_Processor_Version
 !
 ! $Id$
 !

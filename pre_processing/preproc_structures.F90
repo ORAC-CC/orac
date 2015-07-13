@@ -2,13 +2,7 @@
 ! Name: preproc_structures.F90
 !
 ! Purpose:
-! Define variables types which hold the preprocessing output information.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module defining variables types which hold the preprocessing output information
 !
 ! History:
 ! 2012/01/17, MJ: produces initial version of code

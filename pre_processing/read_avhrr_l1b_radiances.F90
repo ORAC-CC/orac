@@ -28,7 +28,7 @@
 ! 2012/07/04, CP: removed iangle dependence of %data array
 ! 2012/07/05, CP: changed nmax channels to channel_info%nchannels_total
 ! 2013/09/06, AP: tidying, changed channel identification to use 'channel'
-!   attribute within the file
+!    attribute within the file
 ! 2014/07/23, AP: don't apply 0.01 scale factor to missing values.
 ! 2015/01/15, AP: Permit arbitrary ordering of the channels.
 !

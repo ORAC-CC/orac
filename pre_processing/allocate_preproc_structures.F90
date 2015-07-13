@@ -21,9 +21,8 @@
 ! History:
 ! 2012/01/13, MJ: produces draft code for allocating the preprocessing types
 ! 2012/05/30, GT: Added allocation of preproc_surf%emissivity
-! 2012/06/26, CP: Added allocation swrtm information
-!                 added definitions of nchan_sw and nchan_lw
-!                 included channel_info structure
+! 2012/06/26, CP: Added allocation swrtm information added definitions of 
+!    nchan_sw and nchan_lw included channel_info structure
 ! 2012/06/27, CP: Fixed small bug in allocation of swrtm structure
 ! 2012/07/04, CP: removed nviews from rtm array
 ! 2012/07/17, CP: adds in players variable
@@ -35,14 +34,14 @@
 ! 2012/11/14, CP: added surface pressure
 ! 2012/11/14, CP: changedkdim_pre to pressure levels
 ! 2013/10/16, CP: changed definition of preproc_lwrtm%players and
-!                 preproc_lwrtm%plevels
+!    preproc_lwrtm%plevels
 ! 2013/10/23, AP: Tidying. Removed unused arguments. Removed print statements.
 ! 2013/10/16, CP: readded def of kdim_pre changed definition of
-!                 preproc_lwrtm%phi_lay and preproc_lwrtm%phi_lev
+!    preproc_lwrtm%phi_lay and preproc_lwrtm%phi_lev
 ! 2013/10/16, CP: removed kdim_pre and removed ecmwf_dims form subroutine call,
-!                 hanged array definition of players and plev
+!    hanged array definition of players and plev
 ! 2013/11/08, GM: Removed double allocations (allocated twice in a row) of
-!                 preproc_prtm%temperature through preproc_prtm%ozone.
+!    preproc_prtm%temperature through preproc_prtm%ozone.
 ! 2014/02/10, AP: Simplifying variable names
 ! 2014/05/01, GM: Add some allocations that were being done outside.
 ! 2014/05/01, GM: Cleaned up the code.

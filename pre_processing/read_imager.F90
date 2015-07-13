@@ -1,9 +1,3 @@
-module read_imager_m
-
-implicit none
-
-contains
-
 !-------------------------------------------------------------------------------
 ! Name: read_imager.F90
 !
@@ -37,12 +31,12 @@ contains
 ! 2011/12/12, MJ: produces draft code which opens and reads MODIS L1b file.
 ! 2012/01/24, MJ: includes code to read AVHRR L1b file.
 ! 2012/06/22, GT: Added code to read AATSR L1b file.
-! 2012/08/28,   : Set imager_flags%cflag = 1 for MODIS, AVHHR, and AATSR as we
-!   don't have proper masks.
+! 2012/08/28, ??: Set imager_flags%cflag = 1 for MODIS, AVHHR, and AATSR as we
+!    don't have proper masks.
 ! 2012/09/04, GT: Corrected AATSR sensor name
 ! 2013/09/06, AP: tidying
 ! 2014/12/01, OS: removed call to read_avhrr_land_sea_mask, which was obsolete
-!   as land/sea information is now read in SR read_USGS_file
+!    as land/sea information is now read in SR read_USGS_file
 ! 2015/02/19, GM: Added SEVIRI support.
 !
 ! $Id$
@@ -50,6 +44,12 @@ contains
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+module read_imager_m
+
+implicit none
+
+contains
 
 subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
      path_to_aatsr_drift_table, imager_geolocation,imager_angles,imager_flags, &

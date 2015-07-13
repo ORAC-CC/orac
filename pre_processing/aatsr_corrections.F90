@@ -7,7 +7,7 @@
 ! Note that all of the routines contained in this file are heavily based
 ! on Dave Smith's own drift correction IDL code.
 !
-! Description and algorithm details
+! Description and Algorithm details:
 ! 1) Determine the date of this measurement from the string start_date.
 ! 2) Determine how the measurement was processed from the string vc1_file.
 ! 3) Determine if an exponential or thin film correction was applied to the
@@ -32,10 +32,10 @@
 ! History:
 ! 2013/10/07, AP: Original
 ! 2013/10/11, GM: Fixed format specification for the read of seconds from the
-!   string sdate in aatsr_corrections.F90: aatsr_corrections().
+!    string sdate in aatsr_corrections.F90: aatsr_corrections().
 ! 2013/10/11, GM: Changed the comparison lut%julday.eq.Tn to
-!   lut%julday(1:lut%n).eq.Tn so that the comparison does go past the length of
-!   the lut (lut%n) to the static size of lut%julday.
+!    lut%julday(1:lut%n).eq.Tn so that the comparison does go past the length of
+!    the lut (lut%n) to the static size of lut%julday.
 ! 2014/01/27, MJ: data type corrections
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 !

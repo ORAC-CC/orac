@@ -2,13 +2,7 @@
 ! Name: surface_reflectance.F90
 !
 ! Purpose:
-! Container for surface reflectance subroutines.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module for surface reflectance subroutines.
 !
 ! History:
 ! 2014/05/23, GM: First version.

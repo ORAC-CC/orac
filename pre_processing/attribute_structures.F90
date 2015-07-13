@@ -2,13 +2,7 @@
 ! Name: attribute_structures.F90
 !
 ! Purpose:
-! Define variables types which hold the attribute input data.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module to define variables types which hold the attribute input data.
 !
 ! History:
 ! 2012/02/13, MJ: creates initial structure.

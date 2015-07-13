@@ -22,7 +22,7 @@
 ! 2012/05/02, GT: implicit none statement moved to correct location
 ! 2012/05/02, GT: implicit none statement moved to correct location
 ! 2012/10/25, CP: added extra level so surface information can b stored in the
-!   same profile
+!    same profile
 ! 2013/10/23, AP: Tidying. Removed ecmwf_prtm argument.
 !
 ! $Id$

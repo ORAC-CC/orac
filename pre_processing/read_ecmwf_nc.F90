@@ -24,10 +24,10 @@
 ! verbose        logic  in   T: Print min/max of each field; F: Don't.
 !
 ! History:
-! 2012/08/06,   : Initial version ecmwf code
+! 2012/08/06, ??: Initial version ecmwf code
 ! 2012/08/06, CP: modified to write data into preprocessing structures
 ! 2012/08/07, CP: added in reading of surface data pressure level data, added in
-!   ozone profile and geopotential height,
+!    ozone profile and geopotential height,
 ! 2012/08/13, CP: totally rewrote program to cope with multiple netcdf file read
 ! 2012/11/13, CP: added in surface pressure and pressure
 ! 2012/11/29, CP: added ecmwf_2d definitions for u10 and v10
@@ -35,33 +35,33 @@
 ! 2013/03/05, CP: small change to work in gfortran
 ! 2013/03/06, CP: tidy up and rearrange badc files
 ! 2013/03/07, CP: tidied up allocations and changed code to read in q and 03 form
-!   a netcdf file because grib code did not work for badc style grb files also
-!   added computation of geopot because was previously dome in grib read
+!    a netcdf file because grib code did not work for badc style grb files also
+!    added computation of geopot because was previously dome in grib read
 ! 2013/03/18, GT: Altered the allocation of temporary arrays to hold the various
-!   ECMWF variable to avoid the compiler complaining of possible use of
-!   unallocated arrays.
+!    ECMWF variable to avoid the compiler complaining of possible use of
+!    unallocated arrays.
 ! 2013/03/19, GT: Fixed the reading of the gpam file (containing specific
-!   humidity and O3 data). Moved the rearranging of the ECMWF arrays into the
-!   same if statements as the reading commands, and changed the generation of
-!   the pressure profile array so that it is created on the rearranged grid.
-!   Removed quite a few debugging print statements
+!    humidity and O3 data). Moved the rearranging of the ECMWF arrays into the
+!    same if statements as the reading commands, and changed the generation of
+!    the pressure profile array so that it is created on the rearranged grid.
+!    Removed quite a few debugging print statements
 ! 2013/03/20, GT: Fixed a bug introduced in yesterday's changes (10 m wind
-!   components were not being written to ECMWF structures)
-! 2013/10/29,   : Changed array allocation of phi_lay and phi_lev
+!    components were not being written to ECMWF structures)
+! 2013/10/29, ??: Changed array allocation of phi_lay and phi_lev
 ! 2014/02/10, AP: Extreme tidying. Made all allocatable arrays definite size.
-!   Removed check of file dimensions. Made a,bvector global. Added nearest
-!   neighbour functionality. Made geopotential calculation external. Removed
-!   surface flag.
+!    Removed check of file dimensions. Made a,bvector global. Added nearest
+!    neighbour functionality. Made geopotential calculation external. Removed
+!    surface flag.
 ! 2014/05/08, AP: Complete rewrite, vastly tidying the original and updating to
-!   the new ecmwf structure.
+!    the new ecmwf structure.
 ! 2014/12/30, GM: Allocate old_data and new_data on the heap explicitly rather
-!   than declaring them automatic. In this case, as automatic, gfortran, and
-!   maybe other compilers, were allocating the arrays on the stack overflowing
-!   the stack when running with OpenMP. These arrays are big enough that they
-!   should be explicitly allocated on the heap anyway.
+!    than declaring them automatic. In this case, as automatic, gfortran, and
+!    maybe other compilers, were allocating the arrays on the stack overflowing
+!    the stack when running with OpenMP. These arrays are big enough that they
+!    should be explicitly allocated on the heap anyway.
 ! 2014/02/04, MS+OS: Implemented nearest neighbour interpolation of ECMWF data;
-!   only activated when WRAPPER flag is set; preliminary approach which will
-!   be made obsolete when ECMWF data will be retrieved on preproc grid resolution
+!    only activated when WRAPPER flag is set; preliminary approach which will
+!    be made obsolete when ECMWF data will be retrieved on preproc grid resolution
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 !

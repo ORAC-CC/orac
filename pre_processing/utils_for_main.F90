@@ -1,13 +1,17 @@
 !-------------------------------------------------------------------------------
-! Name: utils_for_main
+! Name: utils_for_main.F90
 !
 ! Purpose:
+! Module for parsing routines.
 !
 ! History:
-! 2015/02/24, Name: Pulled these out of preprocessing_for_orac.F90 to get them
+! 2015/02/24, GM: Pulled these out of preprocessing_for_orac.F90 to get them
 !    module produced interfaces.
 !
 ! $Id$
+!
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module utils_for_main

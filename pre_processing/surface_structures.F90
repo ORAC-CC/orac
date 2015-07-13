@@ -2,14 +2,8 @@
 ! Name: surface_structures.F90
 !
 ! Purpose:
-! Define variables types which hold the surface reflectance and emissivity data
-! on the instrument data-grid.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module defining variables types which hold the surface reflectance and 
+! emissivity data on the instrument data-grid.
 !
 ! History:
 ! 2012/02/13, GT: First version.

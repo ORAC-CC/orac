@@ -1,41 +1,28 @@
-! Name: neural_net_constants.f90
-!
+!-------------------------------------------------------------------------------
+! Name: neural_net_constants.F90
 !
 ! Purpose:
-! File contains the neutral net constants
-! 
+! Module containing the neutral net constants
 !
-! Description and Algorithm details:
-!
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-!
-! Local variables:
-! Name Type Description
-!
-!
-! History:
-! 23rd Oct 2014, SteSta: Original version
-!  4th Nov 2014, SteSta + OS: added constants for new cloud mask, which is now
-!         also available for twilight and additionally uses ECMWF skin 
-!         temperature and flags for snow/ice and land/sea 
-! 22nd Apr 2015, SteSta: added cloud masks 6-11
-!
-! Examplars
+! Examples:
 !	ex1 and ex2 used for prototype 
 !	ex3,ex4,ex5 used for FBL1 trained with GAC NOAA18 
 !	ex6,ex7,ex8 used for FBL2 trained with PYGAC NOAA18 ( w. NISE sea-ice, etc)
 !	ex9,ex10,ex11 used for FBL3 trained with PYGAC NOAA18 (w. ECMWF sea-ice, etc)
 !
+! History:
+! 2014/10/23, SS: Original version
+! 2014/11/04, SS+OS: added constants for new cloud mask, which is now
+!    also available for twilight and additionally uses ECMWF skin 
+!    temperature and flags for snow/ice and land/sea 
+! 2015/08/22, SS: added cloud masks 6-11
+!
 ! $Id$
 !
 ! Bugs:
-!
-!none known
-!--------------------------------------------------
-!--------------------------------------------------
+! None known.
+!-------------------------------------------------------------------------------
+
 module neural_net_constants
 
   use  common_constants

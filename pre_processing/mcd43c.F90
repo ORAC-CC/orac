@@ -8,17 +8,17 @@
 ! Description and Algorithm details:
 ! 1) Deallocate all fields of the structure.
 !
-! Arguments deallocate_mcd43c :
+! Arguments:
 ! Name Type      In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! mcd  type(mcd) Both        The mcd structure to be deallocated
 !
 ! History:
-! 11 Apr 2012, GT: Original
-! 11 Jun 2014, AP: Remove unique fill value
-! 10 Aug 2014, GM: Changes related to new BRDF support.
-! 11 Aug 2014, AP: Lat/lon grid now defined with start and division rather than
-!   array.
+! 2012/04/11, GT: Original
+! 2014/07/11, AP: Remove unique fill value
+! 2014/08/10, GM: Changes related to new BRDF support.
+! 2014/08/11, AP: Lat/lon grid now defined with start and division rather than
+!    array.
 !
 ! $Id$
 !

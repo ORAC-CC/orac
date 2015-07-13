@@ -2,11 +2,7 @@
 ! Name: nr.F90
 !
 ! Purpose:
-! Container for Numerical Recipes routines.
-!
-! Description and Algorithm details:
-!
-! Arguments:
+! Module for Numerical Recipes routines.
 !
 ! History:
 ! 2014/08/10, GM: First version.

@@ -1,39 +1,40 @@
 !-------------------------------------------------------------------------------
-! Name:
-!    neural_net_preproc.F90
+! Name: neural_net_preproc.F90
 !
 ! Purpose:
-!    Neural network based cloud mask, applied in preprocessing. Input data
-!     are satellite radiances and auxiliary data.
+! Module for neural network based cloud mask, applied in preprocessing. Input
+! data are satellite radiances and auxiliary data.
 !
 ! History:
-!    23th Oct 2014, SteSta + OS: Original version.
-!     4th Nov 2014, SteSta + OS: implemented new cloud mask version, which is now
-!         also available for twilight and additionally uses ECMWF skin 
-!         temperature and flags for snow/ice and land/sea 
-!    20th Nov 2014, SteSta + OS: implemented new temporal fill values for all
-!         channels, which was necessary because with these cloud mask classifies pixels
-!         with missing Ch3b data (accidentally) correctly as cloud
-!    20th Nov 2014, SteSta + OS: removed previous implementation; instead, for missing
-!         Ch3b nighttime pixels, twilight cloud mask is applied
-!     3rd Dec 2014, SteSta + OS: SATZEN is used for correcting viewing angle effect
-!         in NN output for AVHRR - still testing
-!     4th Feb 2015, SteSta + OS: now using sym%NO to set twilight flag when ch3b missing at night;
-!         now using twilight cloud mask for 80 < solzen < 90
-!    13th Mar 2015, SteSta + OS: glint angle correction of neural net output; removed bug that called
-!         neural net even though solzen is negative; added new cloud masks and threshold tests; 
-!         use surface temperature instead of skin temperature when the latter is negative
-!     3rd June 2015, SteSta: Compensates missing channel2 reflectances for MODIS
-!         in high reflective clouds (when channel 1 has high reflectance and
-!         channel 2 has fillvalue), forcing the cloud mask to be clear
-!     3rd June 2015 SteSta: double checks sunglint area, sometimes still
-!         misinterpreted as cloudy , checks in sunglint at day over sea if
-!         reflectances in ch1 and ch2 is high and also ch3b has values gt 300
-!         Kelvin 
-!    24th June 2015 SteSta: added cloud mask uncertainty
+! 2014/10/23, SS+OS: Original version.
+! 2014/11/04, SS+OS: implemented new cloud mask version, which is now also
+!    available for twilight and additionally uses ECMWF skin temperature and
+!    flags for snow/ice and land/sea
+! 2014/11/20, SS+OS: implemented new temporal fill values for all channels, which
+!    was necessary because with these cloud mask classifies pixels with missing
+!    Ch3b data (accidentally) correctly as cloud
+! 2014/11/20, SS+OS: removed previous implementation; instead, for missing Ch3b
+!    nighttime pixels, twilight cloud mask is applied
+! 2014/12/03, SS+OS: SATZEN is used for correcting viewing angle effect in NN
+!    output for AVHRR - still testing
+! 2015/02/04, SS+OS: now using sym%NO to set twilight flag when ch3b missing at
+!    night; now using twilight cloud mask for 80 < solzen < 90
+! 2015/03/13, SS: glint angle correction of neural net output; removed bug that
+!    called neural net even though solzen is negative; added new cloud masks
+!    and threshold tests; use surface temperature instead of skin temperature
+!    when the latter is negative
+! 2015/06/03, SS: Compensates missing channel2 reflectances for MODIS in high
+!    reflective clouds (when channel 1 has high reflectance and channel 2 has
+!    fillvalue), forcing the cloud mask to be clear
+! 2015/06/03, SS: double checks sunglint area, sometimes still misinterpreted
+!    as cloudy , checks in sunglint at day over sea if reflectances in ch1 and
+!    ch2 is high and also ch3b has values gt 300 Kelvin
+! 2015/06/24, SS: added cloud mask uncertainty
+!
+! $Id$
 !
 ! Bugs:
-!    None known
+! None known.
 !-------------------------------------------------------------------------------
 
 !=========================================================================

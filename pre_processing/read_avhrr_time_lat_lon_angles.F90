@@ -22,8 +22,9 @@
 !
 ! History:
 ! 2012/01/24, MJ: writes code to read geolocation and geometry information for
-!   AVHRR.
-! 2013/09/06, AP: tidying, removed array initialisations as read routines cover it
+!    AVHRR.
+! 2013/09/06, AP: tidying, removed array initialisations as read routines
+!    cover it
 ! 2015/04/22, OS: bug fix in calculating relative azimuth angle
 !
 ! $Id$

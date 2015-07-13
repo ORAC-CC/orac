@@ -1,59 +1,56 @@
-! NAME: cloud_typing_pavolonis.f90 (src)
-!       CLOUD_TYPING_PAVOLONIS (module)
+!-------------------------------------------------------------------------------
+! Name: cloud_typing_pavolonis.F90
 !
 ! Purpose:
-!       Algorithm to determine cloud type as a function of satellite
-!       radiances and land surface cover.
+! Module holding algorithm to determine cloud type as a function of satellite
+! radiances and land surface cover.
 !
-! History: 
-!       23rd Oct 2014, CS: Original version.
-!        4th Nov 2014, OS: ecmwf structure containing skin temperature now passed
-!                          as argument; bilinear interpolation of skin
-!                          temperature on orbit grid; added snow/ice and skin
-!                          temperature to NN cloud mask call arguments
-!       20th Nov 2014, OS: BTD_Ch4_Ch3b is now calculated within NN cloud mask;
-!                          flag ch3a_on_avhrr_flag is passed as an argument to
-!                          NN call
-!        1st Dec 2014, OS: cloud type now set to PROB_OPAQUE_ICE_TYPE for 
-!                          twilight/night extra-polar regions if Ch3b is missing;
-!                          significant bug fix: wrong ch3b emissivity and
-!                          reflectance were used in old code,  which are now
-!                          correctly calculated and applied
-!        3rd Dec 2014, OS: use default coefficients for AATSR until these will
-!                          be calculated and implemented here; skip pixel if
-!                          input SOLZEN is negative; pass SATZEN as argument to
-!                          NN cloud mask
-!        3rd Dec 2014, GM: Added Planck coefficients for AATSR derived from
-!                          SADChan Planck coefficients.
-!        3rd Dec 2014, OS: changed nrows of coefficients and reshape command to
-!                          include new AATSR coefficients
-!        1st Dec 2014, CP: added check for missing AATSR 12 um channel
-!       10th Dec 2014, GM: Fixed the last change above.
-!       31st Dec 2014, GM: Parallelized the cloud typing loop with OpenMP.
-!       14th Jan 2015, AP: Channel indexing now selected at the start of the
-!                          routine rather than hardcoded.
-!        5th Feb 2015, CP: added check for missing warm AATSR 11 um channel
-!        5th Feb 2015, CP: fixed bug that removed changed made 1st of December
-!       19th Feb 2015, GM: Added SEVIRI support.
-!       16th Apr 2015,SST: correct NIR thresholds for 3.7 µm channel -> 
-!                          divide by 100  
-!       16th Apr 2015,OS+SST: removed setting prob_opaque_ice if both NIR
-!                          channels are missing and replaced it with IR-only
-!                          Test.
-!       20th Apr 2015,SST: fixes and changes in cirrus/overlap spatial filter 
-!                          fix missing degree-to-radians factor for coszen, 
-!                          changed coszen from cos(sunZA) to cos(satZA)
-!       22nd Apr 2015,SST: introduce solar correction for reflectance channels
-!                          ch1 and ch3!   
-!       29th Apr 2015,CP: changed from Env to Envisat 
-!       19th May 2015,GM: Fixed several race conditions introduced from recent
-!                         commits occurring when using OpenMP.
-!        3rd Jul 2015,OS: Added cldmask_uncertainty; added coefficients to calculate
-!                         NOAA19 Ch3.7 reflectance + slight update for other platforms
+! History:
+! 2014/10/23, CS: Original version.
+! 2014/11/04, OS: ecmwf structure containing skin temperature now passed as
+!    argument; bilinear interpolation of skin temperature on orbit grid; added
+!    snow/ice and skin temperature to NN cloud mask call arguments
+! 2014/11/20, OS: BTD_Ch4_Ch3b is now calculated within NN cloud mask; flag
+!    ch3a_on_avhrr_flag is passed as an argument to NN call
+! 2014/12/01, OS: cloud type now set to PROB_OPAQUE_ICE_TYPE for twilight/night
+!    extra-polar regions if Ch3b is missing; significant bug fix: wrong ch3b
+!    emissivity and reflectance were used in old code,  which are now correctly
+!    calculated and applied
+! 2014/12/03, OS: use default coefficients for AATSR until these will be
+!    calculated and implemented here; skip pixel if input SOLZEN is negative;
+!    pass SATZEN as argument to NN cloud mask
+! 2014/12/03, GM: Added Planck coefficients for AATSR derived from SADChan
+!    Planck coefficients.
+! 2014/12/03, OS: changed nrows of coefficients and reshape command to include
+!    new AATSR coefficients
+! 2014/12/01, CP: added check for missing AATSR 12 um channel
+! 2014/12/10, GM: Fixed the last change above.
+! 2014/12/31, GM: Parallelized the cloud typing loop with OpenMP.
+! 2015/01/14, AP: Channel indexing now selected at the start of the routine
+!    rather than hardcoded.
+! 2015/02/05, CP: added check for missing warm AATSR 11 um channel
+! 2015/02/05, CP: fixed bug that removed changed made 1st of December
+! 2015/02/19, GM: Added SEVIRI support.
+! 2015/04/16, SS: correct NIR thresholds for 3.7 µm channel -> divide by 100
+! 2015/04/16, OS+SS: removed setting prob_opaque_ice if both NIR channels are
+!    missing and replaced it with IR-only Test.
+! 2015/04/20, SS: fixes and changes in cirrus/overlap spatial filter fix
+!    missing degree-to-radians factor for coszen, changed coszen from
+!    cos(sunZA) to cos(satZA)
+! 2015/04/22, SS: introduce solar correction for reflectance channels ch1 and
+!    ch3
+! 2015/04/29, CP: changed from Env to Envisat
+! 2015/05/19, GM: Fixed several race conditions introduced from recent commits
+!    occurring when using OpenMP.
+! 2015/07/03, OS: Added cldmask_uncertainty; added coefficients to calculate
+!    NOAA19 Ch3.7 reflectance + slight update for other platforms
+!
+! $Id$
 !
 ! Bugs:
-!    None known
-!
+! None known.
+!-----------------------------------------------------------------------
+
 ! Subroutines included in module: 
 !	CLOUD_TYPE
 !	CLOUD_RETYPE
@@ -65,11 +62,9 @@
 !   NEURAL_NET_PREPROC
 !   CONSTANTS_CLOUD_TYPING_PAVOLONIS
 !
-!-----------------------------------------------------------------------
 !
 !
 !-----------------------------------------------------------------------
-!$Id$
 !-----------------------------------------------------------------------
 !
 ! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE 

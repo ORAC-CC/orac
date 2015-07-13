@@ -1,9 +1,3 @@
-module correct_for_ice_snow_m
-
-implicit none
-
-contains
-
 !-------------------------------------------------------------------------------
 ! Name: correct_for_ice_snow.F90
 !
@@ -11,7 +5,7 @@ contains
 ! Opens sea/snow cover data (NSIDC NISE data at present) and applies a
 ! correction to the surface albedo.
 !
-! Description and algorithm details
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name           Type   In/Out/Both Description
@@ -32,75 +26,81 @@ contains
 ! verbose        logic  in   T: print status information; F: don't
 !
 ! History:
-! 30/04/2012, GT: Finished first version
-! 15/05/2012, MJ: replaced
+! 2012/04/30, GT: Finished first version
+! 2012/05/15, MJ: replaced
 !       if (count(imager_geolocation%latitude .gt. 0)) north=1
 !       if (count(imager_geolocation%latitude .le. 0)) south=1
 !    with
 !       if (any(imager_geolocation%latitude .gt. 0)) north=1
 !       if (any(imager_geolocation%latitude .le. 0)) south=1
 !    as sun compiler complained about it being not a logical expression in the
-!   if statement.
-! 26/06/2012, CP: added channel structure removed preproc_dims variables
-! 04/07/2012, GT: Added (1) array index to pixel_snow and pixel_ice in
-!   expressions. They are one element arrays (for compatibility with
-!   interpol_bilinear) not scalars.
-! 10/07/2012, GT: Moved reflectance correction in apply_ice_correction inside
-!   the channel do loop to correct indexing problem
-! 12/07/2012, GT: Bux fix to previous bug fix.
-! 30/07/2012, CP: added in year month day input
+!    if statement.
+! 2012/06/26, CP: added channel structure removed preproc_dims variables
+! 2012/07/04, GT: Added (1) array index to pixel_snow and pixel_ice in
+!    expressions. They are one element arrays (for compatibility with
+!    interpol_bilinear) not scalars.
+! 2012/07/10, GT: Moved reflectance correction in apply_ice_correction inside
+!    the channel do loop to correct indexing problem
+! 2012/07/12, GT: Bux fix to previous bug fix.
+! 2012/07/30, CP: added in year month day input
 ! 2012/08/03, MJ: removes trailing "/" from path and explicitly
-!   includes it in this subroutine.
+!    includes it in this subroutine.
 ! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices
 ! 2012/09/14, GT: Changed conversion of fraction index numbers to integers from
-!   int(x) to nint(x) (i.e. rounding), based on EASE grid documentation, and
-!   added 1, so that indices run from 1-721, rather than 0-720.
-! 16/11/2012, CP: modified how nise_path_file called no
-!   longer need year in path name
-! 14/12/2012, CP: changed howy loop was set changed starty to startyi to loop
-!   over a granule
-! 25/02/2012, CP: changed name of ice file because it is different for 2020
+!    int(x) to nint(x) (i.e. rounding), based on EASE grid documentation, and
+!    added 1, so that indices run from 1-721, rather than 0-720.
+! 2012/11/16, CP: modified how nise_path_file called no
+!    longer need year in path name
+! 2012/12/14, CP: changed howy loop was set changed starty to startyi to loop
+!    over a granule
+! 2012/02/25, CP: changed name of ice file because it is different for 2020
 ! 2013/03/07, GT; Reverted change made by CP on 2012/11/16, and added code to
-!   check that the MODIS file exists and is readable.
+!    check that the MODIS file exists and is readable.
 ! 2013/04/08, GT/CP: fixed bug in which no snow and albedo information was being
-!   read out because channel_info structure was not being passed though the
-!   routine
+!    read out because channel_info structure was not being passed though the
+!    routine
 ! 2013/05/13, GT: Fixed bugs with the calculation of nise grid coordinates
 ! 2013/05/14, GT: Fixed bugs with the calculation of nise grid in southern
-!   hemisphere
+!    hemisphere
 ! 2013/05/17, GT: Added code do deal with missing data along coast lines
 !    and at the poles themselves.
 ! 2013/05/20, CP: visual inspection of scenes showed that ice had an albedo
-!   closer to that of snow than of bare ice so albedo was modified accordingly,
-!   could be modified in the future
+!    closer to that of snow than of bare ice so albedo was modified accordingly,
+!    could be modified in the future
 ! 2013/05/23, GT: Small bug fix to coast line-check (was causing snow to be
-!   flagged along coastlines without any snow).
+!    flagged along coastlines without any snow).
 ! 2013/09/02, AP: Removed startyi, endye.
 ! 2013/10/02, CP: added fmonth so correct ice snow emissivity files are read
-!   in 2009/2010
+!    in 2009/2010
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/26, MJ: Added "FAILED" to error output.
 ! 2014/06/20, GM: Handle case when imager_geolocation%latitude or
-!   imager_geolocation%longitude is equal to fill_value.
+!    imager_geolocation%longitude is equal to fill_value.
 ! 2014/07/01, AP: New apply_ice_correction algorithm that attempts to avoid
-!   returning albedo > 1
+!    returning albedo > 1
 ! 2014/08/05, AP: Explicit bilinear interpolation, rather than function call.
-!   Removing old code.
+!    Removing old code.
 ! 2014/09/17, CS: nise_mask added in surface_structures.F90, i.e.
-!   surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90 for correcting
-!   the land use map (currently USGS)
+!    surface%NISE_MASK(i,j) needed in cloud_typing_pavolonis.F90 for correcting
+!    the land use map (currently USGS)
 ! 2014/12/01, CP: Added source attributes.
 ! 2014/12/16, GM: Added support for 2011 to 2014.
 ! 2015/02/04, MS+OS: Implemented correction for ice/snow based on ERA-Interim
-!   data in SR correct_for_ice_snow_ecmwf
+!    data in SR correct_for_ice_snow_ecmwf
 ! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
 ! 2015/04/10, GM: Fixed the use of snow/ice albedo for the BRDF parameters.
-
+!
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+module correct_for_ice_snow_m
+
+implicit none
+
+contains
 
 subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
       surface,cyear,cmonth,cday,channel_info,assume_full_path,include_full_brdf, &

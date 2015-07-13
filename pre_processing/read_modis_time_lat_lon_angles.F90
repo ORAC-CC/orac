@@ -23,13 +23,13 @@
 ! History:
 ! 2011/12/12, MJ: produces draft code which opens and reads MODIS geo hdf files
 ! 2012/04/24, GT: Added a line assigning the solar azimuth angle
-!   to imager structure (needed by surface reflectance routines)
+!    to imager structure (needed by surface reflectance routines)
 ! 2013/05/21, GT: Removed 180.0 degree correction to relative
-!   azimuth to match the convention used in ORAC lookup table code and surface
-!   reflectance calculation.
+!    azimuth to match the convention used in ORAC lookup table code and surface
+!    reflectance calculation.
 ! 2013/05/21, GT: On further investigation, reintroduced the 180 degree
-!   correction to relative azimuth. This means that
-!   forward scattering = 0 relative azimuth.
+!    correction to relative azimuth. This means that
+!    forward scattering = 0 relative azimuth.
 ! 2013/09/11, AP: tidying, added n_along_track, removed modis2oraclsflag
 ! 2015/04/22, OS: bug fix in calculating relative azimuth angle
 !

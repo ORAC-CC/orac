@@ -21,14 +21,14 @@
 ! History:
 ! 2012/02/24, MJ: produces initial code version.
 ! 2012/04/19, GT: Bug fix - relazi was being referenced by idim
-!   in both dimensions (rather idim for x and jdim for y)
+!    in both dimensions (rather idim for x and jdim for y)
 ! 2012/07/30, CP: added in solazi
 ! 2012/08/24, MJ: separated filtering in lw and sw to avoid issues on night side
-!   of orbits
+!    of orbits
 ! 2012/12/14, CP: changed how y loop was set changed starty to startyi to loop
-!   over a granule
+!    over a granule
 ! 2013/05/16, MJ: changed filtering of angles wrt fill value: multi-view is
-!   accounted for.
+!    accounted for.
 ! 2014/05/07, AP: Move contents of make_preproc_grid here. Update structures.
 ! 2015/21/01, OS: bug fix in setting lon_i/lat_i min/max limits
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.

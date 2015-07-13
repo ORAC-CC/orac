@@ -2,13 +2,7 @@
 ! Name: surface_emissivity.F90
 !
 ! Purpose:
-! Container for surface emissivity routines.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module for surface emissivity routines.
 !
 ! History:
 ! 2014/05/23, GM: First version.

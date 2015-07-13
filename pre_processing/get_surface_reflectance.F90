@@ -6,7 +6,7 @@
 ! spectral albedo over the land and the cox_munk ocean surface reflectance model
 ! over the sea.
 !
-! Description and algorithm details:
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name            Type    In/Out/Both Description
@@ -28,26 +28,26 @@
 ! source_atts     struct  both        Source attributes
 !
 ! History:
-! 30/04/2012, GT: Finished first version
-! 30/05/2012, GT: Bug fixes:
+! 2012/04/30, GT: Finished first version
+! 2012/05/30, GT: Bug fixes:
 !    - Changed limit on do loops for populating tmp_WSA and wsalnd from
 !      imager_measurements%nchannels to preproc_dims%nchan_sw
 !    - Reversed index order of nested do loops to make efficient use of
 !      column-major indexing
 !    - lndcount and seacount reset to 1 before populating surface%albedo output
 !      array.
-! 26/06/2012, CP: Bug fixes
+! 2012/06/26, CP: Bug fixes
 !    - Changed indexing
 !    - Defined preproc_dims%channels this is hardwired so should really be
 !      changed along with band info
 !    - Changed count conditions may have to change back after channel info
 !      correctly implemented.
 !    - Changed code to use channel structure information
-! 27/06/2012, GT: Changed from bilinear interpolation of MODIS land
+! 2012/06/27, GT: Changed from bilinear interpolation of MODIS land
 !    surface albedo to nearest neighbour, hopefully with a resulting significant
 !    speed improvement
-! 27/06/2012, CP: changed modbands from 1,2,6 to 1,2,3
-! 02/07/2012, GT: Bug fix. Fill grid was attempting to use the imager
+! 2012/06/27, CP: changed modbands from 1,2,6 to 1,2,3
+! 2012/07/02, GT: Bug fix. Fill grid was attempting to use the imager
 !    grid to mask the MCD grid. The code now generates a mask for fill_grid
 !    based on the lat-lon limits of the imager_geolocation arrays.
 ! 2012/07/04, CP: removed nview dependence
@@ -70,11 +70,11 @@
 ! 2012/08/20, MJ: Changed read_mcd43c3 from function to subroutine in order to
 !    iron out bugs
 ! 2012/08/22, MJ: Implements flexible x and y dimensions start and end indices
-! 14/12/2012, CP: Changed howy loop was set changed starty to startyi to loop
+! 2012/12/14, CP: Changed howy loop was set changed starty to startyi to loop
 !    over a granule!
-! 06/03/2013, CP: fixed bug in imager_angles that was picked up when comiling in
+! 2013/03/06, CP: fixed bug in imager_angles that was picked up when comiling in
 !    gfortran: This bug had no effect on results.
-! 15/03/2013, GT: Reinstated bilinear interpolation, as new version is nearly as
+! 2013/03/15, GT: Reinstated bilinear interpolation, as new version is nearly as
 !    fast as nearest neighbour.
 !    Fixed longitude bug in interpolation ECMWF wind fields (ECMWF longitude
 !    runs from 0-360 degrees)
@@ -93,15 +93,15 @@
 ! 2014/08/13, GM: Fixed bug where the length of array arguments is larger than
 !    the amount of valid data within which affects routines that get the length
 !    to be processed from the size() intrinsic.
-! 15/10/2014, GM: Changes related to supporting an arbitrary set of SW channels.
+! 2014/10/15, GM: Changes related to supporting an arbitrary set of SW channels.
 !    Still limited by availability from the land and ocean reflectance sources.
-! 23/10/2014, OS: added support for reading full BRDF file path
-! 02/12/2014, GM: Fixed handling of night.  Values that are not dependent on
+! 2014/10/23, OS: added support for reading full BRDF file path
+! 2014/12/02, GM: Fixed handling of night.  Values that are not dependent on
 !    solar zenith angle (albedo, rho_dv, and rho_dd) are computed at night.
 !    Values that are (rho_0v and rho_0d) are not computed and set to fill.
-! 01/12/2014, CP: Added source attributes.
-! 14/01/2015, AP: Allow the code to accept channels in arbitrary order.
-! 03/10/2015, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
+! 2014/12/01, CP: Added source attributes.
+! 2015/01/14, AP: Allow the code to accept channels in arbitrary order.
+! 2015/10/03, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
 !    and 7 for sea surface reflectance.
 !
 ! $Id$

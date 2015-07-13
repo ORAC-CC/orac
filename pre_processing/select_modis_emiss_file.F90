@@ -4,7 +4,7 @@
 ! Purpose:
 ! Select the matching emissivity file.
 !
-! Description and algorithm details:
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
@@ -17,16 +17,16 @@
 ! History:
 ! 2012/08/06, CP: Original version
 ! 2012/08/16, GT: Extensive rewrite. The code now checks if we're looking at
-!   data for a leap year, and sets the day-of-year numbers (which are for the
-!   first of each month) accordingly. Date arrays are also no-longer dynamic.
-!   Also changed the way the appropriate day-of-year number is selected, so that
-!   it is always the closest smaller number to the actual date.
+!    data for a leap year, and sets the day-of-year numbers (which are for the
+!    first of each month) accordingly. Date arrays are also no-longer dynamic.
+!    Also changed the way the appropriate day-of-year number is selected, so that
+!    it is always the closest smaller number to the actual date.
 ! 2012/08/20, MJ: fixes bug (variable type from int to logical) in
-!   inquire statement reads files downloaded from
-!   http://cimss.ssec.wisc.edu/iremis/download.php
+!    inquire statement reads files downloaded from
+!    http://cimss.ssec.wisc.edu/iremis/download.php
 ! 2013/06/27, MJ: Implements file independent checking for leap year
 ! 2013/11/01, GM: Fixed leap year check to include all cases.  This
-!   code is now 2100 ready:)
+!    code is now 2100 ready:)
 ! 2013/11/01, GM: Cleaned up code.
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/26, MJ: Fixed error with data type of year for mod-operation.
@@ -35,6 +35,8 @@
 !
 ! $Id$
 !
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
      cimss_emis_path_file)

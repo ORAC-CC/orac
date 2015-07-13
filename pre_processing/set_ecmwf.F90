@@ -33,11 +33,11 @@
 ! 2012/01/16, MJ; writes initial code version.
 ! 2012/01/19, MJ: fixed a potential bug in the file determination.
 ! 2012/08/06, CP: modified to include 3 new ecmwf pths to read data from the
-!   BADC added in badc flag
+!    BADC added in badc flag
 ! 2012/08/13, CP: modified badc paths
 ! 2012/11/14, CP: modified badc paths to include year/month/day changed gpam ggap
 ! 2012/12/06, CP: changed how ecmwf paths are defined because of looping chunks
-!   and tidied up file
+!    and tidied up file
 ! 2013/03/06, CP: changed ggam from grb to netcdf file
 ! 2013/06/11, CP: set default ecmwf paths
 ! 2013/10/21, AP: removed redundant arguments. Tidying.

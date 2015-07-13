@@ -15,7 +15,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known
+! None known.
 !-------------------------------------------------------------------------------
 
 integer*4 core_dump_flag,ireturn,signals(1),signal_trap

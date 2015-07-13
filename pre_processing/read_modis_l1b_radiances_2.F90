@@ -29,21 +29,21 @@
 ! History:
 ! 2011/12/??, MJ: First version
 ! 2013/03/22, GT: Added code to assign the band index number dynamically using
-!   information contained in the M*D02 file itself.
+!    information contained in the M*D02 file itself.
 ! 2013/09/12, AP: Tidying, added where statement
 ! 2013/10/15, MJ: Changes reading of band names for MODIS.
 ! 2013/10/22, AP: When a field in the spectrally subsetted files contained only
-!   one channel, the band_names field ended in NULL characters which Fortran
-!   could not manage. Those have been removed.
+!    one channel, the band_names field ended in NULL characters which Fortran
+!    could not manage. Those have been removed.
 ! 2013/11/05, GM: Moved the verbose statement that prints band_names from just
-!   before Adam's removing of NULL characters to just after as some text
-!   operations can be affected by them.
+!    before Adam's removing of NULL characters to just after as some text
+!    operations can be affected by them.
 ! 2014/01/12, GM: Fixed it so that the right scales and offsets are used.
 ! 2014/01/12, GM: Cleaned up the code.
 ! 2014/07/23, AP: More efficient array writing
 ! 2014/10/15, GM: Fixes related to supporting an arbitrary set of channels.
 ! 2014/10/23, OS: Removes superfluous commata in write statements causing
-!  CRAY-ftn compiler to exit
+!    CRAY-ftn compiler to exit
 !
 ! $Id$
 !

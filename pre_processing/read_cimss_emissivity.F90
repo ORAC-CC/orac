@@ -1,3 +1,59 @@
+!-------------------------------------------------------------------------------
+! Name: read_cimss_emissivity.F90
+!
+! Purpose:
+! Reads land surface emissivity from the CIMSS database (produced by Eva
+! Borbas and Suzanne Seemann in Wisconsin)
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name            Type     In/Out/Both Description
+! ------------------------------------------------------------------------------
+! path_to_file    char         In      Full path to data file
+! emis           struct        Out     The Emis data structure, defined in
+!                                      the emis_def module, which on return
+!                                      will contain the read data.
+! bands          integer       In      Index numbers of bands to read, wrt
+!                                      to the numbering used by CIMSS
+! flag           integer       In      OPTIONAL argument. If > 0, the "flag"
+!                                      data will be read from the file
+! wavenumber     integer       In      OPTIONAL argument. If > 0, the band
+!                                      wavenumbers will be read from the file
+! loc             char         In      OPTIONAL argument. If this is set to a
+!                                      non-null string, it is assumed to define
+!                                      the path to the lat-lon grid data file
+!                                      for the CIMSS data (otherwise the code
+!                                      generates its own grid).
+! stat           integer       Out     (Return value) Status for the routine
+!
+! History:
+! 2012/05/31, GT: First version
+! 2012/07/02, GT: Bug fix: Added if statements to check if the optional
+!    arguments have been supplied before testing their values
+! 2012/08/08, CP: initialised variables
+! 2013/02/25, GT: Added an error check after opening the file. An
+!    error will result in the code stopping.
+! 2013/10/16, GM: Changed the name of the fill value for the CIMSS emissivity
+!    product to the correct name: 'FillValue' to 'fill_value'.
+! 2013/11/05, GM: It turns out some files use 'FillValue' and others
+!    use 'fill_value'.  So now we handle both cases.
+! 2014/05/12, AP: Uses orac_ncdf to avoid duplication of NCDF routines. Made
+!    into a module.
+! 2014/08/04, AP: Put bands as last index of emissivity array. Replaced lat|lon
+!    fields with grid definitions to be compatible with new interpolation
+!    routine.
+! 2014/10/15, GM: Changes related to supporting an arbitrary set of LW channels.
+! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
+! 2015/07/03, OS: added error status variable to nc_open call
+! 10/07/2015, OS: undo previous commit
+!
+! $Id$
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+
 module cimss_emissivity
 
    use preproc_constants, only : sreal_fill_value
@@ -21,64 +77,6 @@ module cimss_emissivity
    end type emis_s
 
 contains
-
-! Name: read_cimss_emissivity.F90
-!
-! Purpose:
-! Reads land surface emissivity from the CIMSS database (produced by Eva
-! Borbas and Suzanne Seemann in Wisconsin)
-!
-! Description and algorithm details
-!
-! Arguments:
-! Name            Type     In/Out/Both Description
-! ------------------------------------------------------------------------------
-! path_to_file    char         In      Full path to data file
-! emis           struct        Out     The Emis data structure, defined in
-!                                      the emis_def module, which on return
-!                                      will contain the read data.
-! bands          integer       In      Index numbers of bands to read, wrt
-!                                      to the numbering used by CIMSS
-! flag           integer       In      OPTIONAL argument. If > 0, the "flag"
-!                                      data will be read from the file
-! wavenumber     integer       In      OPTIONAL argument. If > 0, the band
-!                                      wavenumbers will be read from the file
-! loc             char         In      OPTIONAL argument. If this is set to a
-!                                      non-null string, it is assumed to define
-!                                      the path to the lat-lon grid data file
-!                                      for the CIMSS data (otherwise the code
-!                                      generates its own grid).
-!
-! Return value:
-! Name Type    Description
-! stat integer Status value for the routine
-!
-! History:
-! 31/05/2012, GT: First version
-! 02/07/2012, GT: Bug fix: Added if statements to check if the optional
-!   arguments have been supplied before testing their values
-! 08/08/2012, CP: initialised variables
-! 25/02/2013, GT: Added an error check after opening the file. An
-!   error will result in the code stopping.
-! 16/10/2013, GM: Changed the name of the fill value for the CIMSS emissivity
-!   product to the correct name: 'FillValue' to 'fill_value'.
-! 05/11/2013, GM: It turns out some files use 'FillValue' and others
-!   use 'fill_value'.  So now we handle both cases.
-! 12/05/2014, AP: Uses orac_ncdf to avoid duplication of NCDF routines. Made
-!   into a module.
-! 04/08/2014, AP: Put bands as last index of emissivity array. Replaced lat|lon
-!   fields with grid definitions to be compatible with new interpolation
-!   routine.
-! 15/10/2014, GM: Changes related to supporting an arbitrary set of LW channels.
-! 04/03/2015, GM: Changes related to supporting channels in arbitrary order.
-! 03/07/2015, OS: added error status variable to nc_open call
-! 10/07/2015, OS: undo previous commit
-!
-! $Id$
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
 
 ! Used to emulate legacy behavoir for 3.7, 11, and 12 um.
 #define USE_NEAREST_CHANNEL .false.

@@ -1,9 +1,3 @@
-module setup_instrument
-
-   implicit none
-
-contains
-
 !-------------------------------------------------------------------------------
 ! Name: setup.F90
 !
@@ -78,6 +72,12 @@ contains
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+module setup_instrument
+
+   implicit none
+
+contains
 
 subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
    doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &

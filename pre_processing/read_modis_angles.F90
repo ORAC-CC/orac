@@ -25,8 +25,8 @@
 ! History:
 ! 2011/12/14, MJ: produces draft code which reads modis angles
 ! 2013/09/06, AP: tidying, switched to using MODIS file's fill value to be
-!   consistent with read_modis_lat_lon.F90, use sreal_fill_value rather than
-!   file's own value
+!    consistent with read_modis_lat_lon.F90, use sreal_fill_value rather than
+!    file's own value
 !
 ! $Id$
 !

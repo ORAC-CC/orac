@@ -2,13 +2,7 @@
 ! Name: preproc_constants.F90
 !
 ! Purpose:
-! Define here data types, string lengths, constants etc.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module defining data types, string lengths, constants etc.
 !
 ! History:
 ! 2011/12/09, MJ: produces draft code with basic data types and lengths

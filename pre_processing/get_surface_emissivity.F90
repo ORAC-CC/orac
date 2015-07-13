@@ -6,7 +6,7 @@
 ! IR emissivity data (University of Wisconsin), and uses it to populate both the
 ! instrument grid (surface structure) and pre-processing grid (preproc_surf)
 !
-! Description and algorithm details:
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name               Type    In/Out/Both Description
@@ -28,46 +28,46 @@
 ! preproc_surf       struct  both Preproc surface properties structure
 !
 ! History:
-! 30/05/2012, GT: Finished first version
-! 31/05/2012, MJ: fixes
-!   sum(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelat(i+1))) / &
-!   real(size(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelat(i+1))))
-!   with:
-!   sum(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelati(i+1))) / &
-!   real(size(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelati(i+1))))
-!   to make code compile with sun compiler.
-! 26/06/2012, CP: updated preproc_dims with channel_info structure variables
-! 08/08/2012, CP: changed format of emis array to be consistent with msi order
-! 08/08/2012, CP: fixed bug channel_info was not in arguments
-! 08/08/2012, CP: changed bilinear to nearest neighbour interpolation, also
-!   switched lats and lons around in interpolation subroutine initialised
-!   allocate arrays
-! 25/02/2013, GT: preproc_geoloc arrays are now used directly in averaging the
-!   emissivity onto the preproc (rtm) grid. As a consequence, preproc_gelolc
-!   added to the argument list
-! 06/03/2013, GT: Small tidy up of code.
-! 15/03/2013, GT: Reinstated bilinear interpolation, as new version is nearly as
-!   fast as nearest neighbour. Fixed a bug with indexing of surface%emissivity
-! 16/10/2013, GM: get_surface_emissivity() was using preproc_dims%dellat for the
-!   longitude center to edge transformation.  Changed it to use
-!   preproc_dims%dellon and reordered the statements a bit.
-! 16/10/2013, GM: Fixed indexing bug in get_surface_emissivity() when finding
-!   index numbers in the emissivity lat-lon grid that correspond to each of the
-!   grid cells in the preproc grid.
-! 05/11/2013, GM: Removed my commented out original fixes for those of Matthias
-!   and otherwise fixed a small memory leak and cleaned up the code.
-! 10/02/2014, AP: Variable renaming
-! 21/04/2014, GM: Added logical option assume_full_path.
-! 20/06/2014, GM: Handle case when imager_geolocation%latitude or
-!   imager_geolocation%longitude is equal to fill_value.
-! 01/07/2014, AP: Tidying. Update to new structures.
-! 05/08/2014, AP: New bilinear interpolation routine. Changed how grid is
-!   described from emissivity file.
-! 19/08/2014, AP: Comment out reading of unused emissivity fields. They will be
-!   used eventually; hence why the code remains.
-! 15/10/2014, GM: Changes related to supporting an arbitrary set of LW channels.
-! 01/12/2014, CP: Added source attributes.
-! 13/01/2015, AP: Alter channel indexing to allow channels in arbitrary order.
+! 2012/05/30, GT: Finished first version
+! 2012/05/31, MJ: fixes
+!    sum(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelat(i+1))) / &
+!    real(size(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelat(i+1))))
+!    with:
+!    sum(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelati(i+1))) / &
+!    real(size(emis%emissivity(k,preloni(j):preloni(j+1),prelati(i):prelati(i+1))))
+!    to make code compile with sun compiler.
+! 2012/06/26, CP: updated preproc_dims with channel_info structure variables
+! 2012/08/08, CP: changed format of emis array to be consistent with msi order
+! 2012/08/08, CP: fixed bug channel_info was not in arguments
+! 2012/08/08, CP: changed bilinear to nearest neighbour interpolation, also
+!    switched lats and lons around in interpolation subroutine initialised
+!    allocate arrays
+! 2012/02/25, GT: preproc_geoloc arrays are now used directly in averaging the
+!    emissivity onto the preproc (rtm) grid. As a consequence, preproc_gelolc
+!    added to the argument list
+! 2013/03/06, GT: Small tidy up of code.
+! 2013/03/15, GT: Reinstated bilinear interpolation, as new version is nearly as
+!    fast as nearest neighbour. Fixed a bug with indexing of surface%emissivity
+! 2013/10/16, GM: get_surface_emissivity() was using preproc_dims%dellat for the
+!    longitude center to edge transformation.  Changed it to use
+!    preproc_dims%dellon and reordered the statements a bit.
+! 2013/10/16, GM: Fixed indexing bug in get_surface_emissivity() when finding
+!    index numbers in the emissivity lat-lon grid that correspond to each of the
+!    grid cells in the preproc grid.
+! 2013/11/05, GM: Removed my commented out original fixes for those of Matthias
+!    and otherwise fixed a small memory leak and cleaned up the code.
+! 2014/02/10, AP: Variable renaming
+! 2014/04/21, GM: Added logical option assume_full_path.
+! 2014/06/20, GM: Handle case when imager_geolocation%latitude or
+!    imager_geolocation%longitude is equal to fill_value.
+! 2014/07/01, AP: Tidying. Update to new structures.
+! 2014/08/05, AP: New bilinear interpolation routine. Changed how grid is
+!    described from emissivity file.
+! 2014/08/19, AP: Comment out reading of unused emissivity fields. They will be
+!    used eventually; hence why the code remains.
+! 2014/10/15, GM: Changes related to supporting an arbitrary set of LW channels.
+! 2014/12/01, CP: Added source attributes.
+! 2015/01/13, AP: Alter channel indexing to allow channels in arbitrary order.
 !
 ! $Id$
 !

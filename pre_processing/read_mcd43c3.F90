@@ -4,7 +4,7 @@
 ! Purpose:
 ! Open and read MODIS MCD43C3 16-day gridded surface albedo files
 !
-! Description and algorithm details:
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name         Type     In/Out/Both Description
@@ -23,18 +23,18 @@
 !                                   returned as 0.
 !
 ! History:
-! 11 Apr 2012, GT: Original
-! 23 Apr 2012, GT: Replaced where statements for dealing with fill values in
-!   input data (as they seem to cause seg-faults with ifort) with do if loops
-! 26 Jun 2012, CP: commented out gdprojinfo as causes unknown crash.
-! 16 Aug 2012, GT: Commented out check on projection type, as
-!   Carolines previous change means the variable is not defined.
-! 20 Aug 2012, MJ: changed read_mcd43c3 from function to subroutine in order to
-!   iron out bugs and some slight change
-! 24 Jan 2014, MJ: corrects length of "path_to_file"
-! 11 Jun 2014, AP: use standard fill value rather than unique one
-! 05 Aug 2014, AP: Moved channel dimension to end of array for efficiency.
-!   Lat/lon grid now defined with start & division rather than array.
+! 2012/04/11, GT: Original
+! 2012/04/23, GT: Replaced where statements for dealing with fill values in
+!    input data (as they seem to cause seg-faults with ifort) with do if loops
+! 2012/06/26, CP: commented out gdprojinfo as causes unknown crash.
+! 2012/08/16, GT: Commented out check on projection type, as Carolines previous
+!    change means the variable is not defined.
+! 2012/08/20, MJ: changed read_mcd43c3 from function to subroutine in order to
+!    iron out bugs and some slight change
+! 2014/01/24, MJ: corrects length of "path_to_file"
+! 2014/06/11, AP: use standard fill value rather than unique one
+! 2014/08/05, AP: Moved channel dimension to end of array for efficiency.
+!    Lat/lon grid now defined with start & division rather than array.
 !
 ! $Id$
 !

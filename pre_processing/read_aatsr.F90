@@ -2,13 +2,7 @@
 ! Name: read_aatsr.F90
 !
 ! Purpose:
-! Container for AATSR read routines.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module for AATSR read routines.
 !
 ! History:
 ! 2014/05/23, GM: First version.

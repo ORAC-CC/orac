@@ -32,36 +32,36 @@
 ! 2012/06/22, GT: First version
 ! 2012/07/29, CP: added header and changed filename to lower case
 ! 2012/08/01, GT: Bug fix: solzen, satzen, solazi and relazi were
-!   all being stored in imager_angles%solzen!
+!    all being stored in imager_angles%solzen!
 ! 2012/08/20, MJ: fixes several programming errors
 ! 2012/08/21, GT: Further syntax fixes
 ! 2012/08/28, GT: Changed C calls to use iso_c_binding. Temporarily commented out
-!   calibration correction code until it can be updated.
+!    calibration correction code until it can be updated.
 ! 2012/09/12, GT: Changed size of arrays that took output of C data
 ! 2012/09/12, GT: changed day array structure write
 ! 2012/09/12, GT: assigned time to imager_time structure
 ! 2012/09/13, GT: Reactivated calibration correction code.
 ! 2012/09/14, GT: Bug fix in indexing of nday array. Bug fix to
-!   read_aatsr_beam_ctof90 interface: fixed length strings are not supported by
-!   iso_c_binding and must be defined as
+!    read_aatsr_beam_ctof90 interface: fixed length strings are not supported by
+!    iso_c_binding and must be defined as
 !      character(kind=c_char), intent(inout) :: var(*)
-!   not
+!    not
 !      character(kind=c_char,len=X), intent(inout) :: var
 ! 2012/11/29, CP: changed type and initialise channels_short
 ! 2013/09/02, AP: Removed startyi, endye.
 ! 2013/09/10, AP: tidying
 ! 2013/10/07, AP: Complete rewrite. Rather than allocate arrays for the C
-!   function to read into, this now passes a set of pointers. This relies on
-!   imager_measurements%data being real(sreal) as that exactly corresponds to
-!   c_float. The drift corrections have also been altered: aatsr_corrections now
-!   simply returns a few constants rather than passing arrays around.
+!    function to read into, this now passes a set of pointers. This relies on
+!    imager_measurements%data being real(sreal) as that exactly corresponds to
+!    c_float. The drift corrections have also been altered: aatsr_corrections now
+!    simply returns a few constants rather than passing arrays around.
 ! 2013/10/10, MJ: fixed small bug
 ! 2013/10/17, GM: Hoist loop invariant call to aatsr_read_drift_table() out
-!   of loop.
+!    of loop.
 ! 2014/01/27, MJ: data type corrections
 ! 2014/04/25, GM: Use the "is_lut_drift_corrected" flag from read_aatsr_orbit()
-!   to determine if the LUT based drift correction has already been applied to
-!   the data as in the 3rd reprocessing (V2.1) data.
+!    to determine if the LUT based drift correction has already been applied to
+!    the data as in the 3rd reprocessing (V2.1) data.
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 !

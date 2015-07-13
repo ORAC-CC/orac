@@ -2,11 +2,15 @@
 ! Name: read_seviri.F90
 !
 ! Purpose:
+! Module for SEVIRI I/O routines.
 !
 ! History:
 ! 2015/02/15, GM: First version.
 !
 ! $Id$
+!
+! Bugs:
+! None known.
 !-------------------------------------------------------------------------------
 
 module read_seviri

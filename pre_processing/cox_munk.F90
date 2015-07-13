@@ -2,7 +2,7 @@
 ! Name: cox_munk.F90
 !
 ! Purpose:
-! The routines in this file calculate ocean BRDF parameters, including
+! Module of routines in this file calculate ocean BRDF parameters, including
 ! white-caps, surface glint and under-light. At present Chlorophyll-A and CDOM
 ! concentrations are not taken into account - something for the future.
 !
@@ -55,51 +55,50 @@
 ! computes rho_0v, rho_0d, rho_dv, and, rho_dd for any number of points.
 !
 ! History:
-! 16 Apr 2012, Gareth Thomas: Adapted from the cox_munk.pro and zeisse_ba.pro
-!    IDL functions.
-! 24 Apr 2012, Gareth Thomas: Added estimates for coefficients (refractive
-!    index, absorption coefficient etc) at 3.7 um.
-! 30 Jul 2012, C. Poulsen: Initialised all allocated variables.
-! 30 Aug 2012, Gareth Thomas: Made some corrections to underlight calculations
-! 30 Aug 2012, Gareth Thomas: Changed call to zeisse_ba function so that theta
-!    is passed in Radians as is expected by the function.
-! 14 Mar 2013, Gareth Thomas: Altered calculation of wind direction to be
-!    asin(v10/ws). Under the assumption that v10 is north pointing and u10 is
-!    east pointing, this should give angle of wind from North.
-! 20 Mar 2013, Gareth Thomas: The above (14/03) change is clearly wrong. Fixed
-!    (i.e. wd=acos(v10/ws)). Also put wd onto the -180 to 180 degree interval
-!    (rather than 0 to 360) as this is what the satellites use.
-! 21 May 2013, Gareth Thomas: Altered the relative azimuth used in within
-!    this routine to be the reverse (i.e. 180-azi) to that used elsewhere. ORAC
-!    (and RT in general) assumes that forward scatter equates to azi=0, while
-!    the Cox and Munk expressions treat backscatter as azi=0.
-! 30 Oct 2013, Matthias Jerg: Corrects data types for variable initializations
-!    and implements quick fix to avoid division by 0
-! 28 Jan 2014, Matthias Jerg: Fixes division by 0
-! 17 Jun 2014, Greg McGarragh: Fixed a subtle indexing bug that would only show
-!    up if the 0.65um channel was *not* being used.
-! 12 Jun 2014, Adam Povey: Tidying and fixing div by 0 coding bugs.
-! 27 Jul 2014, Greg McGarragh: Bug fix: rsolaz was being used uninitialized. Now
-!    it is appropriately set to zero.
-! 27 Jul 2014, Greg McGarragh: Bug fix: w was not initialized for computation
-!    of the coefficients of Fresnel's equation.
-! 10 Aug 2014, Greg McGarragh: An extensive refactoring for speed and memory
-!    efficiency adding subroutines cox_munk2(), cox_munk3(), cox_munk4(), and
-!    the higher level routine cox_munk_rho_0v_0d_dv_and_dd().
-! 13 Aug 2014, Greg McGarragh: Improve performance in calculating rho_0d and
-!    rho_dv with a dynamically created look-up-table (LUT). This is initial.
-!    Performance can probably be increased further using a higher dimension
-!    LUT while performance for calculating rho_dd can be improved using a
-!    similar technique.
-! 31 Dec 2014, Greg McGarragh: Parallelized the main loops in the interface
-!    subroutine with OpenMP.
-! 06 Jan 2015, Greg McGarragh: Fixed a couple of bugs in the OpenMP
-!    parallelization that come out when compiling with ifort.
-! 15 Jan 2015, Adam Povey: Bug fix. Passing channel index into cox_munk3 wasn't
+! 2012/04/16, GT: Adapted from the cox_munk.pro and zeisse_ba.pro IDL functions.
+! 2012/04/24, GT: Added estimates for coefficients (refractive index,
+!    absorption coefficient etc) at 3.7 um.
+! 2012/07/30, CP: Initialised all allocated variables.
+! 2012/08/30, GT: Made some corrections to underlight calculations
+! 2012/08/30, GT: Changed call to zeisse_ba function so that theta is passed in
+!    Radians as is expected by the function.
+! 2013/03/14, GT: Altered calculation of wind direction to be asin(v10/ws).
+!    Under the assumption that v10 is north pointing and u10 is east pointing,
+!    this should give angle of wind from North.
+! 2013/03/20, GT: The above (14/03) change is clearly wrong. Fixed (i.e.
+!    wd=acos(v10/ws)). Also put wd onto the -180 to 180 degree interval (rather
+!    than 0 to 360) as this is what the satellites use.
+! 2013/05/21, GT: Altered the relative azimuth used in within this routine to
+!    be the reverse (i.e. 180-azi) to that used elsewhere. ORAC (and RT in
+!    general) assumes that forward scatter equates to azi=0, while the Cox and
+!    Munk expressions treat backscatter as azi=0.
+! 2013/10/30, MJ: Corrects data types for variable initializations and
+!    implements quick fix to avoid division by 0
+! 2014/01/28, MJ: Fixes division by 0
+! 2014/06/17, GM: Fixed a subtle indexing bug that would only show up if the
+!    0.65um channel was *not* being used.
+! 2014/06/12, AP: Tidying and fixing div by 0 coding bugs.
+! 2014/07/27, GM: Bug fix: rsolaz was being used uninitialized. Now it is
+!    appropriately set to zero.
+! 2014/07/27, GM: Bug fix: w was not initialized for computation of the
+!    coefficients of Fresnel's equation.
+! 2014/08/10, GM: An extensive refactoring for speed and memory efficiency
+!    adding subroutines cox_munk2(), cox_munk3(), cox_munk4(), and the higher
+!    level routine cox_munk_rho_0v_0d_dv_and_dd().
+! 2014/08/13, GM: Improve performance in calculating rho_0d and rho_dv with a
+!    dynamically created look-up-table (LUT). This is initial. Performance can
+!    probably be increased further using a higher dimension LUT while
+!    performance for calculating rho_dd can be improved using a similar
+!    technique.
+! 2014/12/31, GM: Parallelized the main loops in the interface subroutine with
+!    OpenMP.
+! 2015/01/06, GM: Fixed a couple of bugs in the OpenMP parallelization that
+!    come out when compiling with ifort.
+! 2015/01/15, AP: Bug fix. Passing channel index into cox_munk3 wasn't
 !    compatible with arbitrary channel ordering.
-! 10 Mar 2015, Greg McGarragh: Added support for 4.69, 0.55, 1.24, and 2.13 um.
-!    Now AATSR channel 1 and MODIS channels 3, 4, 5, and 7 will work. Also,
-!    corrected some of the wavelength dependent constants.
+! 2015/03/10, GM: Added support for 4.69, 0.55, 1.24, and 2.13 um. Now AATSR
+!    channel 1 and MODIS channels 3, 4, 5, and 7 will work. Also, corrected
+!    some of the wavelength dependent constants.
 !
 ! $Id$
 !

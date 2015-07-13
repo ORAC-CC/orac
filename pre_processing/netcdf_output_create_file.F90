@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: netcdf_output_create.F90
+! Name: netcdf_output_create_file.F90
 !
 ! Purpose:
 ! Define the fields and attributes of the NetCDF files output by the
@@ -83,8 +83,8 @@
 ! 2014/09/28, GM: Make the rest of the error messaging consistent with the new
 !    format.
 ! 2014/10/23, OS: Added various variables due to implementation of USGS data,
-!  Pavolonies cloud typing, and NN cloud mask: cldtype, cldmask, cccot_pre,
-!   lusflag, dem, nisemask
+!    Pavolonies cloud typing, and NN cloud mask: cldtype, cldmask, cccot_pre,
+!    lusflag, dem, nisemask
 ! 2014/12/01, CP: Added in source attributes.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.

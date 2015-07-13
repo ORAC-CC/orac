@@ -44,67 +44,66 @@
 !
 ! History:
 ! 2012/03/27, MJ: provides initial implementation based on the
-!   example program example_fw of  Annex X of the RTTOV V10.2 user guide V1.3.
+!    example program example_fw of  Annex X of the RTTOV V10.2 user guide V1.3.
 ! 2012/05/23, MJ: fixes bug with AVHRR setup.
 ! 2012/06/20, CP: removed emissivity, implemented new calls to
-!   call_rtm_ir and call_rtm_solar
+!    call_rtm_ir and call_rtm_solar
 ! 2012/07/29, CP: improved readability added in algorithm description, added in
-!   month variable required for emissivity
+!    month variable required for emissivity
 ! 2012/08/02, MJ: implements writing of RTTOV output to netcdf file.
 ! 2012/08/06, CP: added in solazi angle
 ! 2012/08/10, CP: modified how RTTOV_direct is called
 ! 2012/08/24, MJ: rearranged filtering and calling of rtm
 ! 2012/08/24, MJ: implemented writing of fill values in RTTOV output if not a
-!   good preproc pixel
+!    good preproc pixel
 ! 2012/08/28, MJ: initialized emissivity_out properly
 ! 2012/08/28, CP: general tidy up of code formatting.
-!   fixed bug where prtm lat and longitude were switched around.
+!    fixed bug where prtm lat and longitude were switched around.
 ! 2012/08/29, CP: fix bug that gave unrealistic values of profile longitudes
-!   readded lw and sw to filter_array, commented out printouts
-!   used profile error status to skip RTTOV calculations if appropriate
+!    readded lw and sw to filter_array, commented out printouts
+!    used profile error status to skip RTTOV calculations if appropriate
 ! 2012/08/31, CP: changed position of emissivity calculation to speed up code
 ! 2012/09/13, CP: changed AATSR coefficient file naming
 ! 2012/09/13, CP: changed criteria for processing of coefficients and tidied up
-!   file
+!    file
 ! 2012/10/04, CP: fixed bug and wrote skin temp and surface pressure to output
-!   prtm file
+!    prtm file
 ! 2012/10/24, CP: added extra level to profile in define_preproc_grid so had to
-!   change code to read surface info into profile
+!    change code to read surface info into profile
 ! 2012/11/14, CP: converted output to levels from layers
 ! 2012/11/14, CP: read in surface pressure from badc netcdf files for AATSR
-!   instrument cleaned up code
+!    instrument cleaned up code
 ! 2012/11/14, CP: atsr ir coefficients are in reverse order a temporary code
-!                 fudge has been introduced to read the coefficient files
-!                 correctly
+!    fudge has been introduced to read the coefficient files correctly
 ! 2013/03/08, GT: Changed the (dummy) values of surface/2m Q, O3, as well as
-!   CTP to profiles(1)%nlayers profile value as profiles(1)%nlevels is past the
-!   end program the arrays. Added check on pressure profile against the RTTOV
-!   "pmax" parameter to prevent RTTOV throwing an error. Pressures greater than
-!   pmax are set to pmax in the RTTOV profile structure.
+!    CTP to profiles(1)%nlayers profile value as profiles(1)%nlevels is past the
+!    end program the arrays. Added check on pressure profile against the RTTOV
+!    "pmax" parameter to prevent RTTOV throwing an error. Pressures greater than
+!    pmax are set to pmax in the RTTOV profile structure.
 ! 2013/03/14, CP: added in land sea mask
 ! 2013/03/19, GT: Tidied up some debugging write statements
 ! 2013/07/25, MJ: tidies up some preprocessor statements
 ! 2013/10/14, CP: bug fix changed number of lay/level in rttov_alloc_rad and in
-!                 the assignment of profiles and preproc_lwrtm%plevels to
-!                 preproc_lwrtm%players
+!    the assignment of profiles and preproc_lwrtm%plevels to
+!    preproc_lwrtm%players
 ! 2013/10/29, CP: removed redundant variables nlevs and nlayers
 ! 2013/10/31, MJ: added another bugfix for levels/layers
 ! 2013/11/08, GM: added missing call to rttov_alloc_auxrad() in deallocate mode
 ! 2013/12/11, GM: Significant code clean up.
 ! 2014/01/15, GM: Removed some unnecessary RTTOV error handling calls.
 ! 2014/02/04, MJ: implements if to set verbosity of RTTOV based on "verbose"
-!   variable
+!    variable
 ! 2014/02/10, AP: variable renaming
 ! 2014/06/13, GM: Mass-path removal from solar wavelength RTTOV calculated
-!   transmittances should should not include the solar beam path as the RTTOV
-!   calculated transmittances are only from a particular level to TOA in the
-!   satellite viewing path. As such, the sza input to effective_2way_za() has
-!   been set to zero.
+!    transmittances should should not include the solar beam path as the RTTOV
+!    calculated transmittances are only from a particular level to TOA in the
+!    satellite viewing path. As such, the sza input to effective_2way_za() has
+!    been set to zero.
 ! 2014/07/01, AP: More variable renaming. Altered treatment of surface pressure.
 ! 2014/08/01, AP: Remove unused counter fields.
 ! 2014/09/02, GM: start_Xd, counter_Xd, and stride_Xd from the netcdf_info
-!   structure to be local variables here. There was no reason for them to be in
-!   that structure.
+!    structure to be local variables here. There was no reason for them to be in
+!    that structure.
 ! 2014/09/02, GM: Use the nc_write_array interface from the orac_ncdf module
 !    in the common library.
 ! 2014/09/10, AP: Upgrade to RTTOV11.2, involving complete overhaul of code.

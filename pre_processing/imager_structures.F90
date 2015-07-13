@@ -2,14 +2,8 @@
 ! Name: imager_structures.F90
 !
 ! Purpose:
-! Define variables types which hold the imager input data. should be common to
-! all imagers.
-!
-! Description and Algorithm details:
-! None
-!
-! Arguments:
-! None
+! Module defining variables types which hold the imager input data. Should be 
+! common to all imagers.
 !
 ! History:
 ! 2011/12/19, MJ: writes sample code for MODIS L1b data.

@@ -6,7 +6,7 @@
 ! the National Snow and Ice Data Centre.
 ! See http://nsidc.org/data/nise1.html for more information
 !
-! Description and algorithm details
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name         Type     In/Out/Both Description
@@ -16,13 +16,11 @@
 ! north        integer      in      If not zero, data for Northern
 !                                   Hemisphere will be read
 ! south        integer      in      If not zero, data for Southern
+! stat         integer      out     (Return value) Status value returned by the
+!                                   various hdf-eos API routines. If an error
+!                                   occurs, it will be returned with the value 
+!                                   -1, otherwise returned as 0.
 !
-! Return value:
-! Name  Type       Description
-! stat  integer*4  Status value returned by the various hdf-eos API
-!                  routines. If an error occurs, it will be returned
-!                  with the value -1, otherwise returned as 0.
-!                                   Hemisphere will be read
 ! History:
 ! 2012/04/26, GT: Original
 ! 2013/02/25, GT: Added explicit type casts where copying data into data%extent.

@@ -21,7 +21,7 @@
 ! 2013/03/19, GT: Commented debugging write statements
 ! 2013/11/01, GM: Cleaned up code and removed the use of several auxiliary arrays
 ! 2013/11/05, GT: Bug fix. Moved declaration of dim1 & dim2 to before they
-!   are used in the definition of var.
+!    are used in the definition of var.
 ! 2014/05/07, AP: Restructuring for smaller ECMWF structure.
 ! 2014/11/04, OS: added skin temperature
 !

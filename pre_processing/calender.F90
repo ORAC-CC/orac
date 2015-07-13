@@ -1,33 +1,25 @@
-module calender
-
-contains
-
 !-------------------------------------------------------------------------------
 ! Name: calender.F90
 !
 ! Purpose:
-! This file contains a number of subroutines and functions
+! This module contains a number of subroutines and functions
 ! for time/calender computations which are necessary at various
 ! steps in the code.
-!
-! Description and Algorithm details:
-! See headers below
-!
-! Arguments:
-! Name Type In/Out/Both Description
-! ------------------------------------------------------------------------------
-! See headers below
 !
 ! History:
 ! 2012/06/15, MJ: collects routines and adapts them for ORAC use.
 ! 2012/09/11, CP: downloaded code from
-!   http://caps.gsfc.nasa.gov/simpson/software/greg2doy_f90.txt
+!    http://caps.gsfc.nasa.gov/simpson/software/greg2doy_f90.txt
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+module calender
+
+contains
 
 
 !*******************************************************

@@ -22,8 +22,8 @@
 ! 2012/02/03, CP: deallocated solazi
 ! 2012/12/13, CP: deallocated uscan and vscan
 ! 2013/11/08, GM: added missing deallocate statements.
-! 2014/09/17: CS: added deallocation statements for image_pavolonis,                        
-!                 imager_geolocation%usgs_dem, imager_flags%lusflag
+! 2014/09/17, CS: added deallocation statements for image_pavolonis,
+!    imager_geolocation%usgs_dem, imager_flags%lusflag
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b 
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cldmask_uncertainty

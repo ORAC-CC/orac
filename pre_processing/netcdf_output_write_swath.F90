@@ -39,7 +39,7 @@
 !    in the common library.
 ! 2014/09/09, AP: Remove procflag as that's controlled by ORAC driver file.
 ! 2014/10/23, OS: added new variables to be written to output: cldtype, cldmask,
-!  cccot_pre, lusflag, dem, nisemask
+!    cccot_pre, lusflag, dem, nisemask
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added writing of cldmask_uncertainty

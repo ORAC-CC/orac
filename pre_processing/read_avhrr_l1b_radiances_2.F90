@@ -28,7 +28,7 @@
 ! History:
 ! 2012/02/01, MJ: adds code to read AVHRR HDF5 sensor information.
 ! 2013/09/06, AP: tidying, removed channel_type argument, added read of channel
-!   attribute within file for identification
+!    attribute within file for identification
 ! 2014/07/23, AP: more efficient array writing
 !
 ! $Id$

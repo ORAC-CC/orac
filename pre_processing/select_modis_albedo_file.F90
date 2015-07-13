@@ -6,7 +6,7 @@
 ! spectral albedo over the land the cox_munk ocean surface reflectance model
 ! over the sea.
 !
-! Description and algorithm details:
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name                 Type       In/Out/Both Description
@@ -17,6 +17,7 @@
 !                                             MCD43C3.A* files
 ! modis_surf_path_file character  out         Path the the required MCD43C3.A*
 !                                             file
+!
 ! History:
 ! 2012/08/06, CP: Original version
 ! 2012/08/16, GT: Removed unused variable "mcd_date".
@@ -40,6 +41,7 @@
 ! this code cleaner.
 ! The code should be modified so it selects files from year either side.
 !-------------------------------------------------------------------------------
+
 subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf, &
                                     modis_surf_path_file)
 

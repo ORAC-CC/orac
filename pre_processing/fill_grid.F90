@@ -6,7 +6,7 @@
 ! in a 2D grid. Based on the IDL routine of the same name by Don
 ! Grainger (U. of Oxford)
 !
-! Description and algorithm details
+! Description and Algorithm details:
 !
 ! Arguments:
 ! Name         Type     In/Out/Both Description

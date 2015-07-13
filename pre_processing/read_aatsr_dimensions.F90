@@ -35,7 +35,7 @@
 ! 2012/08/21, GT: Tidied up unused variables
 ! 2012/08/27, GT: Changed C call to use ISO C binding
 ! 2013/08/14, GT: Added half_orbit optional input parameter used for dealing
-!   with night time data.
+!    with night time data.
 ! 2013/09/06, AP: tidying
 ! 2013/10/08, AP: altered call to C routine
 ! 2013/01/24, MJ: removed "optionality" of some arguments

@@ -22,14 +22,13 @@
 ! 2011/12/19, MJ: produces draft code for MODIS L1b data
 ! 2012/02/03, MJ: adds uncertainty to measurements
 ! 2012/04/24, GT: Added solar azimuth angle to the imager_angles structure
-!   (needed by surface reflectance routines)
+!    (needed by surface reflectance routines)
 ! 2012/07/04, CP: removed nviews from data
 ! 2012/12/13, CP: changed ydimension to imager_geolocation%ny
 ! 2013/09/11, AP: Removed startyi, endye.
 ! 2014/09/17, CS: Added
-!                 imager_pavolonis%CLDTYPE/CLDMASK/CCCOT/SFCTYPE/SUNGLINT_MASK,
-!                 imager_geolocation%USGS_DEM, and
-!                 imager_flags%LUSFLAG
+!    imager_pavolonis%CLDTYPE/CLDMASK/CCCOT/SFCTYPE/SUNGLINT_MASK,
+!    imager_geolocation%USGS_DEM, and imager_flags%LUSFLAG
 ! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/02, OS: added allocation of cldmask_uncertainty

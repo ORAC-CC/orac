@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: netcdf_output_open.F90
+! Name: netcdf_output_create.F90
 !
 ! Purpose:
 ! Open netcdf output files
