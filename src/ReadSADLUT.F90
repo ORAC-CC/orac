@@ -76,66 +76,6 @@ end subroutine grid_dimension_read
 
 
 !-------------------------------------------------------------------------------
-! Name: grid_dimension_read
-!
-! Purpose:
-! Read a single grid dimension.
-!
-! Algorithm:
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-! History:
-! 2014/10/10, GM: Original version
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-subroutine grid_dimension_read(filename, n_name, d_name, v_name, lun, &
-                               i_chan, i_lut, nTau, dTau, MinTau, MaxTau, Tau)
-
-   implicit none
-
-   ! Argument declarations
-   character(*), intent(in)    :: filename
-   character(*), intent(in)    :: n_name
-   character(*), intent(in)    :: d_name
-   character(*), intent(in)    :: v_name
-   integer,      intent(in)    :: lun
-   integer,      intent(in)    :: i_chan
-   integer,      intent(in)    :: i_lut
-   integer,      intent(inout) :: nTau(:,:)
-   real,         intent(inout) :: dTau(:,:)
-   real,         intent(inout) :: MaxTau(:,:)
-   real,         intent(inout) :: MinTau(:,:)
-   real,         intent(inout) :: Tau(:,:,:)
-
-   ! Local variables
-   integer :: i
-   integer :: iostat
-
-   read(lun, *, iostat=iostat) nTau(i_chan, i_lut), dTau(i_chan, i_lut)
-   if (iostat .ne. 0) then
-      write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(n_name), &
-         ' and ', trim(d_name), ' from SAD LUT file: ', trim(filename)
-      stop LUTFileReadErr
-   end if
-
-   read(lun, *, iostat=iostat) (Tau(i_chan, i, i_lut), i=1, nTau(i_chan, i_lut))
-   if (iostat .ne. 0) then
-      write(*,*) 'ERROR: grid_dimension_read(): Error reading ', trim(v_name), &
-                                ' from SAD LUT file: ', trim(filename)
-      stop LUTFileReadErr
-   end if
-
-   MinTau(i_chan,i_lut)  = Tau(i_chan, 1, i_lut)
-   MaxTau(i_chan,i_lut)  = Tau(i_chan, nTau(i_chan, i_lut), i_lut)
-
-end subroutine grid_dimension_read
-
-
-!-------------------------------------------------------------------------------
 ! Name: grid_dimension_copy
 !
 ! Purpose:

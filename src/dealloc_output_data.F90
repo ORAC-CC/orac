@@ -135,7 +135,7 @@ end subroutine dealloc_output_data_primary
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-ssubroutine dealloc_output_data_secondary(output_data,lcovar)
+subroutine dealloc_output_data_secondary(output_data,lcovar)
 
    use ECP_Constants
 
