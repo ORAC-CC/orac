@@ -173,7 +173,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
 
   !     write(*,*)  'eq5_value  ',eq5_value,eq6_value  ,l2_input_2dice_primary%cth(i,j)  ,l2_input_2dice_primary%illum(i,j)  ,    l2_input_2d_secondary%albedo_IN_CHANNEL_NO_2(i,j),l2_input_2d_secondary%albedo_IN_CHANNEL_NO_3(i,j),ch3,ch5
 
-  if (ch1alb .gt. alb1_thres .and. ch2alb .gt. alb2_thres) then
+
 
      !
      !calculate Istomina equations
@@ -188,6 +188,8 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
 
      eq6_value=abs((ch3-ch5)/ch3)
 
+
+!write(*,*) '-eq5_value',snow_ice_flag,eq5_value,eq5_thres,eq6_value,eq6_thres,l2_input_2dice_primary%cth(i,j),cth_thres_sea ,cth_thres_land
      !
      !check what illumination eg. day/night
      !
@@ -202,6 +204,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
         ! day Istomina eq. 8 day only currently not used.
 
         eq8_value=(ch2-ch1)/ch2
+
 
 
         if ((eq5_value .lt. eq5_thres) .and. (eq6_value .lt. eq6_thres)) then
@@ -228,6 +231,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
 
 
            endif ! land/sea
+!write(*,*) 'eq5_value',snow_ice_flag,eq5_value,eq5_thres,eq6_value,eq6_thres,l2_input_2dice_primary%cth(i,j),cth_thres_sea ,cth_thres_land
 
         endif!istomina tests
 
@@ -313,8 +317,8 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary,snow_ice_f
         endif
 
      endif
+!write(*,*)'snow_flag',snow_ice_flag
 
-  endif ! albedo
 
 
   !!this test does not require albedo test curently removed because it does not work at night
