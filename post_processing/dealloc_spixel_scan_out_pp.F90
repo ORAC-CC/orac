@@ -32,6 +32,7 @@
 !  (currently deactivated), and nisemask
 ! 2014/11/20 OS: added deallocation of pavolonis phase
 ! 2014/11/26 OS: added deallocation of cloud_albedo
+! 2015/07/05 CP: added deallocation of corrected cloud top height
 !
 ! $Id$
 !
@@ -69,18 +70,24 @@ subroutine dealloc_spixel_scan_out_pp(spixel_scan_out)
   deallocate(spixel_scan_out%cot_error)
   deallocate(spixel_scan_out%ref)
   deallocate(spixel_scan_out%ref_error)
-  deallocate(spixel_scan_out%ctp)
-  deallocate(spixel_scan_out%ctp_error)
   deallocate(spixel_scan_out%cct)
   deallocate(spixel_scan_out%cct_error)
   deallocate(spixel_scan_out%cccot)
   deallocate(spixel_scan_out%cccot_pre)
   deallocate(spixel_scan_out%stemp)
   deallocate(spixel_scan_out%stemp_error)
+  deallocate(spixel_scan_out%ctp)
+  deallocate(spixel_scan_out%ctp_error)
   deallocate(spixel_scan_out%ctt)
   deallocate(spixel_scan_out%ctt_error)
   deallocate(spixel_scan_out%cth)
   deallocate(spixel_scan_out%cth_error)
+
+  deallocate(spixel_scan_out%cth_corrected)
+  deallocate(spixel_scan_out%cth_corrected_error)
+
+
+
   deallocate(spixel_scan_out%cwp)
   deallocate(spixel_scan_out%cloud_albedo)	
   deallocate(spixel_scan_out%cwp_error)
