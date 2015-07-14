@@ -29,10 +29,10 @@
 !   for water within if condition iphase = 2 (never true for water)
 ! 2014/12/02 CP: reads in global and source attributes from file
 ! 2015/01/26 CP: add in ml from IR only option changed to common constants
+! 2015/02/07 CP: changed to common constants and tidied up string reading of instrument
 ! 2015/07/06 OS: changed some nf90_attributes to their naming convention in
 !   common/orac_ncdf.F90; changed cct to cc_total
-!
-!
+!! 2015/07/04 CP: added corrected_cloud height
 !
 ! $Id$
 !
@@ -201,6 +201,16 @@ SUBROUTINE read_inter_file_ice(iphase,fname,l2_input_2dice_primary,xdim,ydim,glo
        &          'cth_uncertainty',l2var_dummy,dummy_unit,wo)            
   l2_input_2dice_primary%cth_uncertainty=l2var_dummy
 
+
+  !cth_corrected
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth_corrected',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dice_primary%cth_corrected=l2var_dummy
+
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth_corrected_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dice_primary%cth_corrected_uncertainty=l2var_dummy
+
   !ctp
   !write(*,*) 'read ctp'
   !pause
@@ -211,6 +221,8 @@ SUBROUTINE read_inter_file_ice(iphase,fname,l2_input_2dice_primary,xdim,ydim,glo
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
        &          'ctp_uncertainty',l2var_dummy,dummy_unit,wo)            
   l2_input_2dice_primary%ctp_uncertainty=l2var_dummy
+
+
 
   !cct
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -429,9 +441,11 @@ write(*,*) 'read_inter_file global_atts%Conventions', global_atts%Conventions
 
 
 
+
    if (nf90_get_att(ncid, NF90_GLOBAL, "Creator_Email", global_atts%Creator_Email) == &
         NF90_NOERR) then
    endif
+
 
 
    if (nf90_get_att(ncid, NF90_GLOBAL, "Creator_url", global_atts%Creator_url) == &
@@ -597,6 +611,16 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
        &          'cth_uncertainty',l2var_dummy,dummy_unit,wo)            
   l2_input_2dwat_primary%cth_uncertainty=l2var_dummy
   
+
+  !cth_corrected
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth_corrected',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dwat_primary%cth_corrected=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth_corrected_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dwat_primary%cth_corrected_uncertainty=l2var_dummy
+  
   !ctp
 
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -606,6 +630,11 @@ SUBROUTINE read_inter_file_water(iphase,fname,l2_input_2dwat_primary,xdim,ydim,g
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
        &          'ctp_uncertainty',l2var_dummy,dummy_unit,wo)            
   l2_input_2dwat_primary%ctp_uncertainty=l2var_dummy
+
+
+
+
+
   
   !cct
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -792,6 +821,17 @@ SUBROUTINE read_inter_file_mli(iphase,fname,l2_input_2dmli_primary,xdim,ydim,glo
        &          'cth_uncertainty',l2var_dummy,dummy_unit,wo)            
   l2_input_2dmli_primary%cth_uncertainty=l2var_dummy
   
+
+  !cth_corrected
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth_corrected',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cth_corrected=l2var_dummy
+  
+  call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+       &          'cth_corrected_uncertainty',l2var_dummy,dummy_unit,wo)            
+  l2_input_2dmli_primary%cth_corrected_uncertainty=l2var_dummy
+  
+
   !ctp
 
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
@@ -802,6 +842,11 @@ SUBROUTINE read_inter_file_mli(iphase,fname,l2_input_2dmli_primary,xdim,ydim,glo
        &          'ctp_uncertainty',l2var_dummy,dummy_unit,wo)            
   l2_input_2dmli_primary%ctp_uncertainty=l2var_dummy
   
+
+
+
+
+
   !cct
   call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
        &          'cc_total',l2var_dummy,dummy_unit,wo)            
