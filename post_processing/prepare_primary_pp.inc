@@ -32,7 +32,7 @@
   !  through Pavolonis cloud types
   !  2014/11/20 CP: added cloud albedo
   !  2015/02/07 CP: changed to common constants
-  !
+  !  2015/07/04 CP: added corrected cth
   ! $Id$
   !
   ! Bugs:
@@ -350,10 +350,11 @@ enddo
   !-------------------------------------
   !NO REAL STATE VARIABLES=>NO COVARIANCE FROM HERE
   !-------------------------------------
+
   !-------------------------------------
   !CTH
   !-------------------------------------
-  !		    write(*,*) RTM_Pc%Hc
+  !		    write(*,*) 'cth',i,j,l2_input_2dice_primary%cth(i,j)
   dummyreal=(l2_input_2dice_primary%cth(i,j)-spixel_scan_out%cth_offset)/spixel_scan_out%cth_scale
   !		    write(*,*) 'dummyreal',dummyreal
   !		    write(*,*) 'bfore if'
@@ -366,7 +367,7 @@ enddo
      spixel_scan_out%cth(i,j)=spixel_scan_out%int_fill_value
   endif
 
-  !               write(*,*) 'write ctt'
+  !               write(*,*) 'write cth'
   dummyreal=(l2_input_2dice_primary%cth_uncertainty(i,j)-spixel_scan_out%cth_error_offset)/spixel_scan_out%cth_error_scale
   !		    write(*,*) 'dummyreal',dummyreal
   !		    write(*,*) 'bfore if'
@@ -378,6 +379,43 @@ enddo
   elseif(dummyreal .lt. real(spixel_scan_out%cth_error_vmin)) then
      spixel_scan_out%cth_error(i,j)=spixel_scan_out%int_fill_value
   endif
+
+
+
+
+  !-------------------------------------
+  !CTH_CORRECTED
+  !-------------------------------------
+  !		    write(*,*) 'cth_corrected',i,j,l2_input_2dice_primary%cth_corrected(i,j)
+  dummyreal=(l2_input_2dice_primary%cth_corrected(i,j)-spixel_scan_out%cth_offset)/spixel_scan_out%cth_scale
+  !		    write(*,*) 'dummyreal',dummyreal
+  !		    write(*,*) 'bfore if'
+  if( dummyreal .ge. real(spixel_scan_out%cth_vmin) .and. &
+       & dummyreal .le. real(spixel_scan_out%cth_vmax)) then
+     spixel_scan_out%cth_corrected(i,j)=int(dummyreal, kind=sint)
+  elseif(dummyreal .gt. real(spixel_scan_out%cth_vmax)) then
+     spixel_scan_out%cth_corrected(i,j)=spixel_scan_out%cth_vmax
+  elseif(dummyreal .lt. real(spixel_scan_out%cth_vmin)) then
+     spixel_scan_out%cth_corrected(i,j)=spixel_scan_out%int_fill_value
+  endif
+
+  !               write(*,*) 'write cth_corrected'
+  dummyreal=(l2_input_2dice_primary%cth_corrected_uncertainty(i,j)-spixel_scan_out%cth_error_offset)/spixel_scan_out%cth_error_scale
+  !		    write(*,*) 'dummyreal',dummyreal
+  !		    write(*,*) 'bfore if'
+  if( dummyreal .ge. real(spixel_scan_out%cth_error_vmin) .and. &
+       & dummyreal .le. real(spixel_scan_out%cth_error_vmax)) then
+     spixel_scan_out%cth_corrected_error(i,j)=int(dummyreal, kind=sint)
+  elseif(dummyreal .gt. real(spixel_scan_out%cth_error_vmax)) then
+     spixel_scan_out%cth_corrected_error(i,j)=spixel_scan_out%cth_error_vmax
+  elseif(dummyreal .lt. real(spixel_scan_out%cth_error_vmin)) then
+     spixel_scan_out%cth_corrected_error(i,j)=spixel_scan_out%int_fill_value
+  endif
+
+
+
+
+
 
 
   !-------------------------------------
@@ -427,7 +465,11 @@ enddo
   elseif ( l2_input_2dice_primary%cldtype(i,j) .gt. 5 ) then
      spixel_scan_out%phase_pavolonis(i,j) = 2 ! phase = ice
   elseif ( l2_input_2dice_primary%cldtype(i,j) .eq. 0 ) then
-     spixel_scan_out%phase_pavolonis(i,j) = 0 ! phase = ice     
+     spixel_scan_out%phase_pavolonis(i,j) = 0 ! phase = clear     
+  elseif ( l2_input_2dice_primary%cldtype(i,j) .eq. 7 ) then
+     spixel_scan_out%phase_pavolonis(i,j) = 3 ! phase = mli     
+  elseif ( l2_input_2dice_primary%cldtype(i,j) .eq. 8 ) then
+     spixel_scan_out%phase_pavolonis(i,j) = 3 ! phase = mli     
   else
      spixel_scan_out%phase_pavolonis(i,j) = spixel_scan_out%byte_fill_value ! for all
      ! other values (should not occur)
