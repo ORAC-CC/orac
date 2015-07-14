@@ -23,7 +23,7 @@
 ! 15/1/2012 Caroline Poulsen changed how offset was applied
 !2012/07/09 MJ overhauls routine.
 ! 2014/09/20 CP changed channel numbering
-
+!2015/02/07 CP: changed to common constants and tidied up string reading of instrument
 ! $Id$
 !
 ! Bugs:
@@ -43,7 +43,14 @@ write(*,*)' prepare_rt may be instrument dependant this is for AATSR',Ny
       resin=l2_input_2d%reflectance_residual_in_channel_no_3(j,i)
       
    else if (iinput .eq. 3) then
-      resin=l2_input_2d%reflectance_residual_in_channel_no_5(j,i)
+
+
+   if  (ch_3a_3b_available(1) .eq. 1) then
+          resin=l2_input_2d%reflectance_residual_in_channel_no_4(j,i)
+   endif else begin
+  	  resin=l2_input_2d%brightness_temperature_residual_in_channel_no_5(j,i)
+   endelse
+
    else if (iinput .eq. 4) then
       resin=l2_input_2d%brightness_temperature_residual_in_channel_no_6(j,i)
    else if (iinput .eq. 5) then
