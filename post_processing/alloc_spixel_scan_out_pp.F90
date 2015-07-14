@@ -32,6 +32,7 @@
 ! 2014/11/26 Cp: added allocation of cloud_albedo
 ! 2015/02/05 OS: changed nint to lint
 ! 2015/02/07 CP: changed to common constants
+! 2015/07/05 CP: added in corrected cloud top height
 
 ! $Id$
 !
@@ -101,11 +102,6 @@ subroutine alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,NViews,spixel
   allocate(spixel_scan_out%ref_error(ixstart:ixstop,iystart:iystop))
   spixel_scan_out%ref_error(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
 
-  allocate(spixel_scan_out%ctp(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%ctp(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
-  allocate(spixel_scan_out%ctp_error(ixstart:ixstop,iystart:iystop))
-  spixel_scan_out%ctp_error(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
-
   allocate(spixel_scan_out%cct(ixstart:ixstop,iystart:iystop))
   spixel_scan_out%cct(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
   allocate(spixel_scan_out%cct_error(ixstart:ixstop,iystart:iystop))
@@ -121,6 +117,13 @@ subroutine alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,NViews,spixel
   allocate(spixel_scan_out%stemp_error(ixstart:ixstop,iystart:iystop))
   spixel_scan_out%stemp_error(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
 
+
+  allocate(spixel_scan_out%ctp(ixstart:ixstop,iystart:iystop))
+  spixel_scan_out%ctp(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
+  allocate(spixel_scan_out%ctp_error(ixstart:ixstop,iystart:iystop))
+  spixel_scan_out%ctp_error(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
+
+
   allocate(spixel_scan_out%ctt(ixstart:ixstop,iystart:iystop))
   spixel_scan_out%ctt(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
   allocate(spixel_scan_out%ctt_error(ixstart:ixstop,iystart:iystop))
@@ -130,6 +133,15 @@ subroutine alloc_spixel_scan_out_pp( ixstart,ixstop,iystart,iystop,NViews,spixel
   spixel_scan_out%cth(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
   allocate(spixel_scan_out%cth_error(ixstart:ixstop,iystart:iystop))
   spixel_scan_out%cth_error(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
+
+
+
+
+  allocate(spixel_scan_out%cth_corrected(ixstart:ixstop,iystart:iystop))
+  spixel_scan_out%cth_corrected(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
+  allocate(spixel_scan_out%cth_corrected_error(ixstart:ixstop,iystart:iystop))
+  spixel_scan_out%cth_corrected_error(ixstart:ixstop,iystart:iystop)=spixel_scan_out%int_fill_value
+
 
 
   allocate(spixel_scan_out%cwp(ixstart:ixstop,iystart:iystop))

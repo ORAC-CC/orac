@@ -39,7 +39,7 @@
 
 !--------------------------------------------------
 !--------------------------------------------------
-SUBROUTINE read_refl_and_bt(iphase,fname,chan_id,l2_input_2d_refl_bt,xdim,ydim,wo,ierr)
+SUBROUTINE read_refl_and_bt(iphase,fname,chan_id,l2_input_2d_refl_bt,xdim,ydim,ch_3a_3b_available,wo,ierr)
    !--------------------------------------------------
    use netcdf
 
@@ -54,7 +54,7 @@ SUBROUTINE read_refl_and_bt(iphase,fname,chan_id,l2_input_2d_refl_bt,xdim,ydim,w
    character(len=varlength) :: fname,name
    integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
    character(len=varlength), allocatable :: dname(:)
-
+   integer,dimension(2)      :: ch_3a_3b_available
 
    character (len=varlength), allocatable, dimension(:) ::  available_names(:)
    INTEGER (kind=lint),INTENT(OUT) ::  xdim,ydim
@@ -132,7 +132,7 @@ END SUBROUTINE read_refl_and_bt
 !--------------------------------------------------
 !--------------------------------------------------
 subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, &
-     wo, ierr)
+     ch_3a_3b_available,wo, ierr)
 
    use netcdf
    use vartypes_pp
@@ -150,7 +150,7 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
    
    integer                   :: ncid, varid
    integer                   :: i
-   integer,dimension(2)      :: ch_3a_3b_available
+   integer,dimension(2) ,intent(out)      :: ch_3a_3b_available
    character(len=var_length) :: varname
    character(len=unitlength) :: dummy_unit
 
@@ -223,6 +223,27 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
          dummy_unit,wo)
 
    case('AATSR')
+
+  ! Check whether ch1.6 or ch3.7 data are available for AATSR
+   do i=1, 2
+      ch_3a_3b_available(1) = 0
+      ch_3a_3b_available(2) = 1
+      write(*,*)'ch_3a_3b_available',ch_3a_3b_available(:)
+      if (ch_3a_3b_available(1)==1) then
+         varname = 'reflectance_in_channel_no_4'
+      else 
+         varname = 'brightness_temperature_in_channel_no_5'
+      endif
+
+      write(*,*)'varname',varname,ncid
+
+      if (nf90_inq_varid(ncid,varname,varid) .ne. NF90_NOERR) &
+           ch_3a_3b_available(:) = 0
+
+   enddo
+
+write(*,*)'a1'
+
       ! Read albedo values (commented out until needed)
     call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
          'albedo_in_channel_no_2', &
@@ -232,7 +253,7 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
          l2_input_2d_secondary%albedo_in_channel_no_3,dummy_unit,wo)
 
 !	 write(*,*) 'read sec albedo2',l2_input_2d_secondary%albedo_in_channel_no_2(:,:)
-
+write(*,*)'a2'
 
 !    call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
 !         'albedo_in_channel_no_4', &
@@ -246,11 +267,24 @@ subroutine read_inter_sec_file(cinst, fname, l2_input_2d_secondary, xdim, ydim, 
            'reflectance_in_channel_no_3', &
            l2_input_2d_secondary%reflectance_in_channel_no_3,dummy_unit,wo)
 
+write(*,*)'a2'
+    if (ch_3a_3b_available(1)==0) then
+       call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+          'reflectance_in_channel_no_4', &
+          l2_input_2d_secondary%reflectance_in_channel_no_4,dummy_unit,wo)
+    endif
+
+write(*,*)'a3'
       ! Read brightness temperatures
-      call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
-           'brightness_temperature_in_channel_no_5', &
-           l2_input_2d_secondary%brightness_temperature_in_channel_no_5, &
-           dummy_unit,wo)
+    if (ch_3a_3b_available(2)==1) then
+       call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
+          'brightness_temperature_in_channel_no_5', &
+          l2_input_2d_secondary%brightness_temperature_in_channel_no_5, &
+          dummy_unit,wo)
+    endif
+
+write(*,*)'a5'
+
       call nc_read_array_2d_short_orac_pp(ncid,xdim,ydim, &
            'brightness_temperature_in_channel_no_6', &
            l2_input_2d_secondary%brightness_temperature_in_channel_no_6, &

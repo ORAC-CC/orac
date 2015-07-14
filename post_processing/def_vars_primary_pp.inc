@@ -35,6 +35,9 @@
   ! 2014/12/03 CP: added cloud albedo
   ! 2014/12/17 CP: removed unknown form mask naming
   ! 2015/02/05 CP: changed time attribute and common constants
+  ! 2015/07/04 CP: added corrected cth
+  ! 2015/02/05 CP: add usgs meanings
+  ! 2015/04/20 CP: fixed up time attributes
   ! 2015/04/23 OS: CCT vmin set to -100
   ! 2015/04/23 OS: CCT vmax set to 10000
   !
@@ -59,18 +62,18 @@
   !spixel_scan_out%time_fv=-2.0E+9
   spixel_scan_out%time_fv=-32767.0
  
-if (cinst .eq. 'MODIS') then
-  time_str='days elapsed since  12:00 UTC on Jan 1 4713 BC'
+if (inst .eq. 'MODIS') then
+  time_str='Julian date, days elapsed since  12:00 UTC on Jan 1 4713 BC'
 endif
 
 
-if (cinst .eq. 'AVHRR') then
-  time_str='days elapsed since  12:00 UTC on Jan 1 4713 BC'
+if (inst .eq. 'AVHRR') then
+  time_str='Julian date, days elapsed since  12:00 UTC on Jan 1 4713 BC'
 endif
 
-if (cinst .eq. 'AATSR') then
+if (inst .eq. 'AATSR') then
 
-  time_str='days elapsed since  12:00 UTC on Jan 1 2000'
+  time_str='Julian date, days elapsed since  12:00 UTC on Jan 1 4713 BC'
 
 endif
 
@@ -78,7 +81,7 @@ endif
 
   CALL nc_defdata_double_pp(ncid_primary, dims_var, 'time', spixel_scan_out%vidtime,&
        & 'time', 'time', &
-       & time_str &
+       & 'Julian date, days elapsed since  12:00 UTC on Jan 1 4713 BC' &
        & ,spixel_scan_out%time_fv,spixel_scan_out%time_scale,spixel_scan_out%time_offset&
        & ,spixel_scan_out%time_vmin,spixel_scan_out%time_vmax, wo, ierr, 'standard') 
   !	   ierr=1
@@ -393,6 +396,54 @@ endif
 
 
 
+  !===============================
+  !CTH_CORRECTED
+  !===============================
+
+  !      write(*,*) 'setting up cth_corrected'
+
+  spixel_scan_out%cth_scale=0.01
+  spixel_scan_out%cth_offset=0.00
+  spixel_scan_out%cth_vmin=-1000 !*spixel_scan_out%lon_scale
+  spixel_scan_out%cth_vmax=2000!*spixel_scan_out%lon_scale
+  !      write(*,*) ncid_primary
+  !& 'altitude_at_cloud_top', 'kilometer',&
+  CALL nc_defdata_short_pp(ncid_primary, dims_var, 'cth_corrected', spixel_scan_out%vidcth_corrected, 'cloud top height', &
+       & 'height_at_cloud_top', 'kilometer',&
+       & spixel_scan_out%int_fill_value, &
+       & spixel_scan_out%cth_scale,spixel_scan_out%cth_offset, &
+       & spixel_scan_out%cth_vmin,spixel_scan_out%cth_vmax, wo,ierr)
+  if(ierr .ne. 0 ) status=PrimaryFileDefinitionErr
+
+  !===============================
+  !DELCTH_CORRECTED
+  !===============================
+
+  !      write(*,*) 'setting up cth_corrected'
+
+  spixel_scan_out%cth_error_scale=0.01
+  spixel_scan_out%cth_error_offset=0.00
+  spixel_scan_out%cth_error_vmin=0!*spixel_scan_out%lon_scale
+  spixel_scan_out%cth_error_vmax=2000!*spixel_scan_out%lon_scale
+  !      write(*,*) ncid_primary
+  !& 'altitude_at_cloud_top', 'kilometer',&
+  CALL nc_defdata_short_pp(ncid_primary, dims_var, 'cth_corrected_uncertainty',&
+       & spixel_scan_out%vidcth_correctederror, 'cloud top height uncertainty', &
+       & 'height_at_cloud_top uncertainty', 'kilometer',&
+       & spixel_scan_out%int_fill_value, &
+       & spixel_scan_out%cth_error_scale,spixel_scan_out%cth_error_offset, &
+       & spixel_scan_out%cth_error_vmin,spixel_scan_out%cth_error_vmax, wo,ierr)
+  if(ierr .ne. 0 ) status=PrimaryFileDefinitionErr
+
+
+
+
+
+
+
+
+
+
 
   !===============================
   !CTT
@@ -647,14 +698,15 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
   spixel_scan_out%phase_scale=1
   spixel_scan_out%phase_offset=0
   spixel_scan_out%phase_vmin=0!*spixel_scan_out%lon_scale
-  spixel_scan_out%phase_vmax=2!*spixel_scan_out%lon_scale
-  nflags=3
+  spixel_scan_out%phase_vmax=3!*spixel_scan_out%lon_scale
+  nflags=4
   allocate(flag_vals(nflags))
   flag_vals(1)=0_byte
   flag_vals(2)=1_byte
   flag_vals(3)=2_byte
+  flag_vals(4)=3_byte
   CALL nc_defdata_byte_flag_value_pp(ncid_primary, dims_var, 'phase', spixel_scan_out%vidphase, 'cloud phase flag', &
-       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,3,1, 'clear liquid ice',&
+       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,4,1, 'clear liquid ice mli',&
        & spixel_scan_out%byte_fill_value, &
        & spixel_scan_out%phase_scale,spixel_scan_out%phase_offset, &
        & spixel_scan_out%phase_vmin,spixel_scan_out%phase_vmax, wo,ierr)
@@ -668,13 +720,14 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
   spixel_scan_out%phase_pavolonis_offset=0
   spixel_scan_out%phase_pavolonis_vmin=0!*spixel_scan_out%lon_scale
   spixel_scan_out%phase_pavolonis_vmax=2!*spixel_scan_out%lon_scale
-  nflags=3
+  nflags=4
   allocate(flag_vals(nflags))
   flag_vals(1)=0_byte
   flag_vals(2)=1_byte
   flag_vals(3)=2_byte
+  flag_vals(4)=3_byte
   CALL nc_defdata_byte_flag_value_pp(ncid_primary, dims_var, 'phase_pavolonis', spixel_scan_out%vidphase_pavolonis, 'cloud phase flag Pavolonis', &
-       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,3,1, 'clear liquid ice',&
+       & 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', flag_vals,4,1, 'clear liquid ice mli',&
        & spixel_scan_out%byte_fill_value, &
        & spixel_scan_out%phase_pavolonis_scale,spixel_scan_out%phase_pavolonis_offset, &
        & spixel_scan_out%phase_pavolonis_vmin,spixel_scan_out%phase_pavolonis_vmax, wo,ierr)
@@ -768,8 +821,19 @@ write(*,*)' def var primaryglobal_atts%sensor',  global_atts%sensor
   spixel_scan_out%lusflag_vmax=24
   CALL nc_defdata_byte_flag_value_pp(ncid_primary, dims_var, 'lusflag',&
        & spixel_scan_out%vidlusflag, 'land use mask', 'land_use_mask', &
-       & '1b to 24b', &
-       & 2,1, 'see usgs.org',spixel_scan_out%byte_fill_value, &
+       & '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, &
+              & 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, 20b, 21b, 22b, 23b, 24b', &
+       & 2,1, '1:Urban and Built-Up Land, 2:Dryland Cropland and Pasture, &
+	     & 3:Irrigated, Cropland and Pasture, 4:Mixed Dryland/Irrigated Cropland and Pasture, &
+	      & 5:Cropland/Grassland Mosaic, 6:Cropland/Woodland Mosaic, 7:Grassland, &
+	      & 8:Shrubland, 9:Mixed Shrubland/Grassland, 10:Savanna, &
+	      & 11:Deciduous Broadleaf Forest, 12:Deciduous Needleleaf Forest,&
+	       & 13:Evergreen Broadleaf Forest, 14:Evergreen Needleleaf Forest, &
+	        & 15:Mixed Forest, 16:Water Bodies, 17:Herbaceous Wetland,&
+	         & 18:Wooded Wetland, 19:Barren or Sparsely Vegetated, &
+		 & 20:Herbaceous Tundra, 21:Wooded Tundra, 22:Mixed Tundra, &
+		 & 23:Bare Ground Tundra, 24:Snow or Ice, 99:Interrupted Areas,&
+	  & 100:Missing Data',spixel_scan_out%byte_fill_value, &
        & spixel_scan_out%lusflag_scale,spixel_scan_out%lusflag_offset, &
        & spixel_scan_out%lusflag_vmin,spixel_scan_out%lusflag_vmax, wo,ierr)
   if(ierr .ne. 0 ) status=PrimaryFileDefinitionErr

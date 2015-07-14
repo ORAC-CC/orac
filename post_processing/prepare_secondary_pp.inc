@@ -2,7 +2,7 @@
 !Original version Matthias Jerg
 ! 5/1/2012 Caroline Poulsen add in reflectances and brightness temperature
 ! 15/1/2012 Caroline Poulsen changed how offset was applied
-
+!2015/02/07 CP: changed to common constants and tidied up string reading of instrument
 
                 spixel_scan_out_sec%scanline_u(i)=int(l2_input_2d%scanline_u(j,i))
                 spixel_scan_out_sec%scanline_v(i)=int(l2_input_2d%scanline_v(j,i))
@@ -84,16 +84,22 @@
 !
                do iinput=1,Ny
                   if (iinput .eq. 1) then
-                     resin=l2_input_2d%reflectance_residual_in_channel_no_1(j,i)
-                  else if (iinput .eq. 2) then
                      resin=l2_input_2d%reflectance_residual_in_channel_no_2(j,i)
+                  else if (iinput .eq. 2) then
+                     resin=l2_input_2d%reflectance_residual_in_channel_no_3(j,i)
                      
                   else if (iinput .eq. 3) then
-                     resin=l2_input_2d%reflectance_residual_in_channel_no_3(j,i)
+
+ if  (ch_3a_3b_available(1) .eq. 0) then
+          resin=l2_input_2d%reflectance_residual_in_channel_no_4(j,i)
+   endif else begin
+  	  resin=l2_input_2d%brightness_temperature_residual_in_channel_no_5(j,i)
+   endelse
+
                   else if (iinput .eq. 4) then
-                     resin=l2_input_2d%brightness_temperature_residual_in_channel_no_4(j,i)
+                     resin=l2_input_2d%brightness_temperature_residual_in_channel_no_6(j,i)
                   else if (iinput .eq. 5) then
-                     resin=l2_input_2d%brightness_temperature_residual_in_channel_no_5(j,i)
+                     resin=l2_input_2d%brightness_temperature_residual_in_channel_no_7(j,i)
                   endif
                
 	   if(resin .gt. 1.0E-12) then

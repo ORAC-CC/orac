@@ -6,11 +6,11 @@
 ! 2013/03/12 CP changed 32767 to 999
 ! 2014/10/24 OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM, and nisemask
 ! 2014/11/20 OS: added Pavolonis cloud phase related variables
-! 2014/11/26 CP: added Pavolonis cloud_albedo
+! 2014/11/26 CP: added  cloud_albedo
 ! 2015/02/05 OS: deactivated use of vartypes_pp to force consistency with
 !                common_constants
 ! 2015/07/06 OS: added vidcldmaskerror
-
+! 2015/07/04 CP: added corrected cloud top height
 !---------------------------------------------------------------------
 
 module scanline_structure
@@ -26,9 +26,10 @@ module scanline_structure
 
      integer,dimension(:), pointer :: vidsat_zen,vidsol_zen,vidrel_azi,vidcloud_albedo
 
-     integer :: vidcot,vidref, vidctp,vidcct,vidstemp, vidcth,vidcccot,vidcccot_pre
-     integer :: vidctt, vidcwp
-     integer :: vidcoterror,vidreferror, vidctperror,vidccterror,vidctherror,vidctterror
+     integer :: vidcot,vidref, vidctp,vidcct,vidstemp, vidcth,vidcth_corrected,vidcccot,vidcccot_pre
+     integer :: vidctt, vidcwp 
+     integer :: vidcoterror,vidreferror, vidctperror,vidctpraderr,vidccterror
+     integer :: vidctherror,vidctterror,vidcth_correctederror,vidcttraderror
      integer :: vidstemperror,vidcwperror
 
      integer :: vidconvergence,vidniter, vidlsflag,vidphase,vidphase_pavolonis
@@ -68,6 +69,7 @@ module scanline_structure
      real :: ctp_error_scale,ctp_error_offset
      integer(kind=sint) :: ctp_error_vmin,ctp_error_vmax
 
+
      real :: cccot_scale,cccot_offset
      integer(kind=sint) :: cccot_vmin,cccot_vmax
 
@@ -95,11 +97,14 @@ module scanline_structure
      real :: cth_error_scale,cth_error_offset
      integer(kind=sint) :: cth_error_vmin,cth_error_vmax
 
+
      real :: ctt_scale, ctt_offset
      integer(kind=sint) ::  ctt_vmin, ctt_vmax
 
      real :: ctt_error_scale,ctt_error_offset
      integer(kind=sint) :: ctt_error_vmin,ctt_error_vmax
+
+
 
      real :: cloud_albedo_scale,cloud_albedo_offset
      integer(kind=sint) :: cloud_albedo_vmin,cloud_albedo_vmax
@@ -172,6 +177,11 @@ module scanline_structure
      integer(kind=sint), dimension(:,:), pointer :: ctt,ctt_error
      integer(kind=sint), dimension(:,:), pointer :: cth,cth_error
      integer(kind=sint), dimension(:,:), pointer :: cwp,cwp_error
+!corrected height
+
+     integer(kind=sint), dimension(:,:), pointer :: cth_corrected,cth_corrected_error
+
+
      integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo	
 
      integer(kind=byte), dimension(:,:), pointer :: convergence

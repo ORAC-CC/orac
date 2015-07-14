@@ -28,6 +28,9 @@
   !  (currently deactivated), and nisemask
   ! 2014/11/20 OS: added Pavolonis cloud phase variable
   ! 2014/11/25 CP added in cloud albedo 
+  ! 2015/04/25 CP fixed time  fror AATSR change to from 4713 BC
+  !!2015/02/07 CP: changed to common constants and tidied up string reading of instrument
+  ! 2015/07/03 CP added in corrected cth
   !
   ! $Id$
   !
@@ -36,6 +39,16 @@
   !none known
   
   
+if (inst .eq. 'AATSR') then
+
+  time_str='Julian date, days elapsed since  12:00 UTC on Jan 1 4713 BC'
+!convert from days elapsed since  12:00 UTC on Jan 1 2000 to  days elapsed since!  12:00 UTC on Jan 1 4713 BC
+   spixel_scan_out%time(:,:)=spixel_scan_out%time(:,:)+2451545.00
+endif
+
+
+
+
   
   CALL nc_write_L2_double_pp(ncid_primary,'time',spixel_scan_out%vidtime,&
        spixel_scan_out%time(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
@@ -76,11 +89,6 @@
   CALL nc_write_L2_short_pp(ncid_primary,'ref_uncertainty',spixel_scan_out%vidreferror,&
        spixel_scan_out%ref_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
-  CALL nc_write_L2_short_pp(ncid_primary,'ctp',spixel_scan_out%vidctp,&
-       spixel_scan_out%ctp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-  CALL nc_write_L2_short_pp(ncid_primary,'ctp_uncertainty',spixel_scan_out%vidctperror,&
-       spixel_scan_out%ctp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
-
 
   CALL nc_write_L2_short_pp(ncid_primary,'cc_total',spixel_scan_out%vidcct,&
        spixel_scan_out%cct(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
@@ -100,15 +108,36 @@
   CALL nc_write_L2_short_pp(ncid_primary,'stemp_uncertainty',spixel_scan_out%vidstemperror,&
        spixel_scan_out%stemp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
+  CALL nc_write_L2_short_pp(ncid_primary,'ctp',spixel_scan_out%vidctp,&
+       spixel_scan_out%ctp(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+  CALL nc_write_L2_short_pp(ncid_primary,'ctp_uncertainty',spixel_scan_out%vidctperror,&
+       spixel_scan_out%ctp_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+
+
+
   CALL nc_write_L2_short_pp(ncid_primary,'cth',spixel_scan_out%vidcth,&
        spixel_scan_out%cth(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
   CALL nc_write_L2_short_pp(ncid_primary,'cth_uncertainty',spixel_scan_out%vidctherror,&
        spixel_scan_out%cth_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
 
+
+  CALL nc_write_L2_short_pp(ncid_primary,'cth_corrected',spixel_scan_out%vidcth_corrected,&
+       spixel_scan_out%cth_corrected(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+  CALL nc_write_L2_short_pp(ncid_primary,'cth_corrected_uncertainty',spixel_scan_out%vidcth_correctederror,&
+       spixel_scan_out%cth_corrected_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+
   CALL nc_write_L2_short_pp(ncid_primary,'ctt',spixel_scan_out%vidctt,&
        spixel_scan_out%ctt(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
   CALL nc_write_L2_short_pp(ncid_primary,'ctt_uncertainty',spixel_scan_out%vidctterror,&
        spixel_scan_out%ctt_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+
+
+!radiative height
+!  CALL nc_write_L2_short_pp(ncid_primary,'ctp_rad',spixel_scan_out%vidctprad,&
+!       spixel_scan_out%ctp_rad(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+!  CALL nc_write_L2_short_pp(ncid_primary,'ctp_rad_uncertainty',spixel_scan_out%vidctpraderror,&
+!       spixel_scan_out%ctp_rad_error(:,:),ixstart,ixstop,iystart,iystop,wo,ierr)
+
 
 
   CALL nc_write_L2_short_pp(ncid_primary,'cwp',spixel_scan_out%vidcwp,&

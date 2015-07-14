@@ -30,6 +30,7 @@
 ! 2015/02/05 OS deactivated use of vartypes_pp to force consistency with
 !            common_constants; changed nint to lint; added variable
 !            phase_post
+! 2015/04/29 CP adds in 1.6um AATSR capability
 
 ! $Id$
 !
@@ -51,10 +52,13 @@ module structures_pp
      real(kind=sreal), dimension(:,:), pointer :: rel_azimuth_view_no1
      real(kind=sreal), dimension(:,:), pointer :: lon, lat
      real(kind=sreal), dimension(:,:), pointer ::  ctt, cth, ctp, cct
+     real(kind=sreal), dimension(:,:), pointer ::   cth_corrected
      real(kind=sreal), dimension(:,:), pointer ::  stemp,stemp_uncertainty
      real(kind=sreal), dimension(:,:), pointer ::  costja,costjm
      real(kind=sreal), dimension(:,:), pointer ::  ctp_uncertainty,&
-          & cct_uncertainty,ctt_uncertainty,cth_uncertainty
+          & cct_uncertainty,ctt_uncertainty,cth_uncertainty,cth_corrected_uncertainty
+
+
      real(kind=sreal), dimension(:,:), pointer ::  cot, ref, cty, cwp&
           &,cc_total,cc_total_uncertainty,cccot,cccot_pre
      real(kind=sreal), dimension(:,:,:), pointer ::  cloud_albedo
@@ -104,7 +108,7 @@ module structures_pp
      real(kind=sreal), dimension(:,:), pointer ::albedo_in_channel_no_1,albedo_in_channel_no_2
      real(kind=sreal), dimension(:,:), pointer ::albedo_in_channel_no_3
      real(kind=sreal), dimension(:,:), pointer ::reflectance_residual_in_channel_no_1,reflectance_residual_in_channel_no_2
-     real(kind=sreal), dimension(:,:), pointer ::reflectance_residual_in_channel_no_3
+     real(kind=sreal), dimension(:,:), pointer ::reflectance_residual_in_channel_no_3,reflectance_residual_in_channel_no_4
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_residual_in_channel_no_4
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_residual_in_channel_no_5
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_residual_in_channel_no_6
@@ -113,13 +117,13 @@ module structures_pp
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_residual_in_channel_no_31
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_residual_in_channel_no_32
      real(kind=sreal), dimension(:,:), pointer ::reflectance_in_channel_no_1,reflectance_in_channel_no_2
-     real(kind=sreal), dimension(:,:), pointer ::reflectance_in_channel_no_3
+     real(kind=sreal), dimension(:,:), pointer ::reflectance_in_channel_no_3,reflectance_in_channel_no_4
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_in_channel_no_5,brightness_temperature_in_channel_no_7
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_in_channel_no_4,brightness_temperature_in_channel_no_6
      real(kind=sreal), dimension(:,:), pointer ::brightness_temperature_in_channel_no_20,brightness_temperature_in_channel_no_31,brightness_temperature_in_channel_no_32
 
      real(kind=sreal), dimension(:,:), pointer ::firstguess_reflectance_in_channel_no_1,firstguess_reflectance_in_channel_no_2
-     real(kind=sreal), dimension(:,:), pointer :: firstguess_reflectance_in_channel_no_3
+     real(kind=sreal), dimension(:,:), pointer :: firstguess_reflectance_in_channel_no_3,firstguess_reflectance_in_channel_no_4
      real(kind=sreal), dimension(:,:), pointer ::firstguess_brightness_temperature_in_channel_no_4
      real(kind=sreal), dimension(:,:), pointer ::firstguess_brightness_temperature_in_channel_no_5
     real(kind=sreal), dimension(:,:), pointer ::firstguess_brightness_temperature_in_channel_no_6
