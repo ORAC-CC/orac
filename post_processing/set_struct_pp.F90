@@ -35,7 +35,8 @@
 ! 2014/11/20 OS: some minor editing
 ! 2014/11/26 CP: added cloud_albedo
 ! 2015/01/26 CP: added multi layer cloud IR only
-
+!2015/02/07 CP: changed to common constants and tidied up string reading of instrument
+! 2014/11/26 CP: added corrected cloud top height
 ! $Id$
 !
 ! Bugs:
@@ -127,11 +128,6 @@ subroutine set_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary,xdim
 
   !from here things are different between water and ice
 
-  allocate(l2_input_2dice_primary%ctt(xdim1km,ydim1km))
-  l2_input_2dice_primary%ctt=sreal_fill_value
-
-  allocate(l2_input_2dice_primary%ctt_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%ctt_uncertainty=sreal_fill_value
 
   allocate(l2_input_2dice_primary%cc_total_uncertainty(xdim1km,ydim1km))
   l2_input_2dice_primary%cc_total_uncertainty=sreal_fill_value
@@ -142,6 +138,13 @@ subroutine set_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary,xdim
   allocate(l2_input_2dice_primary%stemp_uncertainty(xdim1km,ydim1km))
   l2_input_2dice_primary%stemp_uncertainty=sreal_fill_value
   
+
+  allocate(l2_input_2dice_primary%ctt(xdim1km,ydim1km))
+  l2_input_2dice_primary%ctt=sreal_fill_value
+
+  allocate(l2_input_2dice_primary%ctt_uncertainty(xdim1km,ydim1km))
+  l2_input_2dice_primary%ctt_uncertainty=sreal_fill_value
+
   allocate(l2_input_2dice_primary%cth(xdim1km,ydim1km))
   l2_input_2dice_primary%cth=sreal_fill_value
   
@@ -153,6 +156,17 @@ subroutine set_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary,xdim
   
   allocate(l2_input_2dice_primary%ctp_uncertainty(xdim1km,ydim1km))
   l2_input_2dice_primary%ctp_uncertainty=sreal_fill_value
+
+
+
+
+
+  allocate(l2_input_2dice_primary%cth_corrected(xdim1km,ydim1km))
+  l2_input_2dice_primary%cth_corrected=sreal_fill_value
+  
+  allocate(l2_input_2dice_primary%cth_corrected_uncertainty(xdim1km,ydim1km))
+  l2_input_2dice_primary%cth_corrected_uncertainty=sreal_fill_value
+  
   
   allocate(l2_input_2dice_primary%cct(xdim1km,ydim1km))
   l2_input_2dice_primary%cct=sreal_fill_value
@@ -223,8 +237,6 @@ subroutine set_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary,xdim
   !from here things are different between water and ice
   
 
-  allocate(l2_input_2dwat_primary%ctt(xdim1km,ydim1km))
-  l2_input_2dwat_primary%ctt=sreal_fill_value
 
   allocate(l2_input_2dwat_primary%cc_total(xdim1km,ydim1km))
   l2_input_2dwat_primary%cc_total=sreal_fill_value
@@ -239,10 +251,14 @@ subroutine set_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary,xdim
   allocate(l2_input_2dwat_primary%stemp(xdim1km,ydim1km))
   l2_input_2dwat_primary%stemp=sreal_fill_value
   
+  allocate(l2_input_2dwat_primary%ctt(xdim1km,ydim1km))
+  l2_input_2dwat_primary%ctt=sreal_fill_value
   
   allocate(l2_input_2dwat_primary%ctt_uncertainty(xdim1km,ydim1km))
   l2_input_2dwat_primary%ctt_uncertainty=sreal_fill_value
   
+
+
   allocate(l2_input_2dwat_primary%cth(xdim1km,ydim1km))
   l2_input_2dwat_primary%cth=sreal_fill_value
   
@@ -255,6 +271,17 @@ subroutine set_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary,xdim
   allocate(l2_input_2dwat_primary%ctp_uncertainty(xdim1km,ydim1km))
   l2_input_2dwat_primary%ctp_uncertainty=sreal_fill_value
   
+  
+
+
+  allocate(l2_input_2dwat_primary%cth_corrected(xdim1km,ydim1km))
+  l2_input_2dwat_primary%cth_corrected=sreal_fill_value
+  
+  allocate(l2_input_2dwat_primary%cth_corrected_uncertainty(xdim1km,ydim1km))
+  l2_input_2dwat_primary%cth_corrected_uncertainty=sreal_fill_value
+  
+
+
   allocate(l2_input_2dwat_primary%cct(xdim1km,ydim1km))
   l2_input_2dwat_primary%cct=sreal_fill_value
   
@@ -336,8 +363,7 @@ subroutine set_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary,xdim
   !from here things are different between mlier and ice
   
 
-  allocate(l2_input_2dmli_primary%ctt(xdim1km,ydim1km))
-  l2_input_2dmli_primary%ctt=sreal_fill_value
+
 
   allocate(l2_input_2dmli_primary%cc_total(xdim1km,ydim1km))
   l2_input_2dmli_primary%cc_total=sreal_fill_value
@@ -352,6 +378,9 @@ subroutine set_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary,xdim
   allocate(l2_input_2dmli_primary%stemp(xdim1km,ydim1km))
   l2_input_2dmli_primary%stemp=sreal_fill_value
   
+
+  allocate(l2_input_2dmli_primary%ctt(xdim1km,ydim1km))
+  l2_input_2dmli_primary%ctt=sreal_fill_value
   
   allocate(l2_input_2dmli_primary%ctt_uncertainty(xdim1km,ydim1km))
   l2_input_2dmli_primary%ctt_uncertainty=sreal_fill_value
@@ -367,6 +396,20 @@ subroutine set_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary,xdim
   
   allocate(l2_input_2dmli_primary%ctp_uncertainty(xdim1km,ydim1km))
   l2_input_2dmli_primary%ctp_uncertainty=sreal_fill_value
+
+
+
+
+
+!radiative height
+  
+  allocate(l2_input_2dmli_primary%cth_corrected(xdim1km,ydim1km))
+  l2_input_2dmli_primary%cth_corrected=sreal_fill_value
+  
+  allocate(l2_input_2dmli_primary%cth_corrected_uncertainty(xdim1km,ydim1km))
+  l2_input_2dmli_primary%cth_corrected_uncertainty=sreal_fill_value
+  
+
   
   allocate(l2_input_2dmli_primary%cct(xdim1km,ydim1km))
   l2_input_2dmli_primary%cct=sreal_fill_value
@@ -562,6 +605,10 @@ subroutine set_l2_input_struct_2d_secondary(l2_input_2d_secondary,xdim1km,ydim1k
   allocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_3(xdim1km,ydim1km))
   l2_input_2d_secondary%reflectance_residual_in_channel_no_3=sreal_fill_value
 
+
+  allocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_4(xdim1km,ydim1km))
+  l2_input_2d_secondary%reflectance_residual_in_channel_no_4=sreal_fill_value
+
   allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_4(xdim1km,ydim1km))
   l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_4=sreal_fill_value
 
@@ -588,6 +635,12 @@ subroutine set_l2_input_struct_2d_secondary(l2_input_2d_secondary,xdim1km,ydim1k
 
   allocate(l2_input_2d_secondary%reflectance_in_channel_no_2(xdim1km,ydim1km))
   l2_input_2d_secondary%reflectance_in_channel_no_2=sreal_fill_value
+
+
+  allocate(l2_input_2d_secondary%reflectance_in_channel_no_4(xdim1km,ydim1km))
+  l2_input_2d_secondary%reflectance_in_channel_no_4=sreal_fill_value
+
+
 
   allocate(l2_input_2d_secondary%reflectance_in_channel_no_3(xdim1km,ydim1km))
   l2_input_2d_secondary%reflectance_in_channel_no_3=sreal_fill_value
@@ -629,6 +682,10 @@ subroutine set_l2_input_struct_2d_secondary(l2_input_2d_secondary,xdim1km,ydim1k
 
   allocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_3(xdim1km,ydim1km))
   l2_input_2d_secondary%firstguess_reflectance_in_channel_no_3=sreal_fill_value
+
+  allocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_4(xdim1km,ydim1km))
+  l2_input_2d_secondary%firstguess_reflectance_in_channel_no_4=sreal_fill_value
+
 
   allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_4(xdim1km,ydim1km))
   l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_4=sreal_fill_value
@@ -713,6 +770,12 @@ subroutine unset_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary)
   deallocate(l2_input_2dice_primary%ctt)
   deallocate(l2_input_2dice_primary%ctt_uncertainty)
 
+
+
+  deallocate(l2_input_2dice_primary%cth_corrected)
+  deallocate(l2_input_2dice_primary%cth_corrected_uncertainty)
+
+
   deallocate(l2_input_2dice_primary%cc_total_uncertainty)
 
   deallocate(l2_input_2dice_primary%stemp)
@@ -757,12 +820,21 @@ subroutine unset_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary)
 
   type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary
   
+
   deallocate(l2_input_2dwat_primary%ctp)
   deallocate(l2_input_2dwat_primary%ctp_uncertainty)
   deallocate(l2_input_2dwat_primary%cth)
   deallocate(l2_input_2dwat_primary%cth_uncertainty)
   deallocate(l2_input_2dwat_primary%ctt)
   deallocate(l2_input_2dwat_primary%ctt_uncertainty)
+
+
+!corrected height
+
+  deallocate(l2_input_2dwat_primary%cth_corrected)
+  deallocate(l2_input_2dwat_primary%cth_corrected_uncertainty)
+
+
   deallocate(l2_input_2dwat_primary%cc_total)
   deallocate(l2_input_2dwat_primary%cc_total_uncertainty)
   
@@ -814,6 +886,13 @@ subroutine unset_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary)
   deallocate(l2_input_2dmli_primary%cth_uncertainty)
   deallocate(l2_input_2dmli_primary%ctt)
   deallocate(l2_input_2dmli_primary%ctt_uncertainty)
+
+  
+  deallocate(l2_input_2dmli_primary%cth_corrected)
+  deallocate(l2_input_2dmli_primary%cth_corrected_uncertainty)
+
+
+
   deallocate(l2_input_2dmli_primary%cc_total)
   deallocate(l2_input_2dmli_primary%cc_total_uncertainty)
   
@@ -873,11 +952,13 @@ subroutine unset_l2_input_struct_2d_secondary(l2_input_2d_secondary)
   deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_1)
   deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_2)
   deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_3)
+  deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_4)
   deallocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_4)
   deallocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_5)
   deallocate(l2_input_2d_secondary%reflectance_in_channel_no_1)
   deallocate(l2_input_2d_secondary%reflectance_in_channel_no_2)
   deallocate(l2_input_2d_secondary%reflectance_in_channel_no_3)
+  deallocate(l2_input_2d_secondary%reflectance_in_channel_no_4)
   deallocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_4)
   deallocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_5)
   deallocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_6)
@@ -885,6 +966,8 @@ subroutine unset_l2_input_struct_2d_secondary(l2_input_2d_secondary)
   deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_1)
   deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_2)
   deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_3)
+  deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_4)
+
   deallocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_4)
   deallocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_5)
   deallocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_6)
