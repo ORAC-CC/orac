@@ -257,9 +257,9 @@ subroutine interp_field_2d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)         :: datin(:,:,:,:)
-   real(sreal),         intent(inout)      :: datout(:,:)
-   type(interpol_s),    intent(in)         :: interp
+   real(sreal), target, intent(in)    :: datin(:,:,:,:)
+   real(sreal),         intent(inout) :: datout(:,:)
+   type(interpol_s),    intent(in)    :: interp
 
    logical                              :: miss(4)
    real(sreal)                          :: coef(3)
@@ -311,9 +311,9 @@ subroutine interp_field2_2d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)         :: datin(:,:,:,:)
-   real(sreal),         intent(inout)      :: datout(:,:)
-   type(interpol_s),    intent(in)         :: interp
+   real(sreal), target, intent(in)    :: datin(:,:,:,:)
+   real(sreal),         intent(inout) :: datout(:,:)
+   type(interpol_s),    intent(in)    :: interp
 
    logical                              :: miss(4)
    real(sreal)                          :: coef(3)

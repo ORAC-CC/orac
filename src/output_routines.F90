@@ -412,8 +412,6 @@ contains
 include 'alloc_output_data.F90'
 include 'dealloc_output_data.F90'
 
-include 'output_utils.F90'
-
 include 'def_vars_primary.F90'
 include 'def_vars_secondary.F90'
 

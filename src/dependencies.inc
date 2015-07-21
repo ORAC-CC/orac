@@ -37,8 +37,8 @@ $(OBJS)/Inversion.o: $(OBJS)/Cholesky.o $(OBJS)/Ctrl.o $(OBJS)/Diag.o \
 $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o \
         alloc_output_data.F90 dealloc_output_data.F90 def_vars_primary.F90 \
-        def_vars_secondary.F90 output_utils.F90 prepare_primary.F90 \
-        prepare_secondary.F90 write_primary.F90 write_secondary.F90
+        def_vars_secondary.F90 prepare_primary.F90 prepare_secondary.F90 \
+        write_primary.F90 write_secondary.F90
 $(OBJS)/planck.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o R2T.F90 T2R.F90
 $(OBJS)/read_utils.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o read_config_file.F90 \
         read_input_dimensions.F90

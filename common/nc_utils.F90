@@ -1,18 +1,18 @@
 !-------------------------------------------------------------------------------
-! Name: output_utils.F90
+! Name: nc_create.F90
 !
 ! Purpose:
-! I/O routines stored within output_routines module.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! Local variables:
+! Name Type Description
 !
 ! History:
-! 2011/12/19, MJ: Creates initial file.
-! 2012/11/16, CP: Added calibration file version.
-! 2014/08/04, GM: Cleaned up the code.
-! 2014/08/31, GM: Make the global attribute list consistent with CF-1.4.
-! 2014/09/01, GM: Make use of the general shared routine
-!    nc_put_common_attributes().
-! 2014/12/01, CP: Added remove global attributes read out directly now in
-!    read_config file
+! 2015/07/16, GM: Original version.
 !
 ! $Id: nc_create.F90 2355 2014-09-09 23:16:38Z gmcgarragh $
 !
@@ -20,34 +20,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-!-------------------------------------------------------------------------------
-! Name: nc_create
-!
-! Purpose:
-! A netcdf output file is opened/created for writing.
-!
-! Description and Algorithm details:
-! Create file, add dimensions, add attributes.
-!
-! Arguments:
-! Name        Type   In/Out/Both Description
-! ------------------------------------------------------------------------------
-! path        string In          Filename to create
-! ncid        int    Out         ID of created file
-! nx          int    In          Across-track dimension
-! ny          int    In          Along-track dimension
-! dims_var    int    Out         IDs of dimensions created
-! inst_name   string In          Description of satellite imager
-! type        int    In          1: Primary; 2: Secondary file
-! global_atts struct Both        Global attributes to include
-! source_atts struct Both        Discovery metadata
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-
-subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
-     global_atts, source_atts)
+subroutine nc_create(path, ncid, nx, ny, dims_var, type, global_atts, source_atts)
 
    use netcdf
 
@@ -55,14 +28,11 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    use global_attributes
    use source_attributes
 
-   use orac_ncdf
-
    implicit none
 
    ! Input
    character(len=*),          intent(in)    :: path
    integer,                   intent(in)    :: nx, ny
-   character(len=*),          intent(in)    :: inst_name
    integer,                   intent(in)    :: type
 
    ! Output
@@ -73,28 +43,29 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    type(source_attributes_s), intent(inout) :: source_atts
 
    ! Local
-   integer :: ierr, xdim, ydim
+   integer :: ierr
 
 
    !----------------------------------------------------------------------------
    ! Create new file
    !----------------------------------------------------------------------------
-   ierr = nf90_create(path, NF90_CLOBBER, ncid)
+   ierr = nf90_create(path, IOR(IOR(NF90_NETCDF4, NF90_CLASSIC_MODEL), &
+                      NF90_CLOBBER), ncid)
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_create(): filename = ', trim(path)
       stop error_stop_code
    end if
 
-   ! Define the 3 dimensions: time / lat / lon
-   ierr = nf90_def_dim(ncid, 'across_track', nx, xdim)
+   ! Define the 2 dimensions: lat / lon
+   ierr = nf90_def_dim(ncid, 'across_track', nx, dims_var(1))
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_def_dim(): dim_name = across_track, xdim = ', xdim
+      write(*,*) 'ERROR: nf90_def_dim(): dim_name = across_track, xdim = ', dims_var(1)
       stop error_stop_code
    end if
 
-   ierr = nf90_def_dim(ncid, 'along_track', ny, ydim)
+   ierr = nf90_def_dim(ncid, 'along_track', ny, dims_var(2))
    if (ierr .ne. NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_def_dim(): dim_name = along_track,  ydim = ', ydim
+      write(*,*) 'ERROR: nf90_def_dim(): dim_name = along_track,  ydim = ', dims_var(2)
       stop error_stop_code
    end if
 
@@ -105,9 +76,9 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
    ! Global attributes for the 'Description of file contents' as defined by
    ! CF-1.4, section 2.6.2.
    if (type .eq. 1) then
-      global_atts%title = 'ESA CCI Cloud Retrieval Products L2 Primary File'
+      global_atts%title = 'ESA Cloud CCI Retrieval Products L2 Primary File'
    else if (type .eq. 2) then
-      global_atts%title = 'ESA CCI Cloud Retrieval Products L2 Secondary File'
+      global_atts%title = 'ESA Cloud CCI Retrieval Products L2 Secondary File'
    else
       write(*,*) 'ERROR: nf90_create(): invalid file type: ', type
       stop error_stop_code
@@ -125,10 +96,6 @@ subroutine nc_create(path, ncid, nx, ny, dims_var, inst_name, type, &
       stop error_stop_code
    end if
 
-
-   dims_var(1) = xdim
-   dims_var(2) = ydim
-
 end subroutine nc_create
 
 
@@ -136,8 +103,6 @@ subroutine prepare_short_packed_float(value_in, value_out, &
                                       scale_factor, add_offset, &
                                       fill_value_in, fill_value_out, &
                                       valid_min, valid_max, bound_max_value)
-
-   use ECP_Constants
 
    implicit none
 
@@ -174,8 +139,6 @@ subroutine prepare_float_packed_float(value_in, value_out, &
                                       scale_factor, add_offset, &
                                       fill_value_in, fill_value_out, &
                                       valid_min, valid_max, bound_max_value)
-
-   use ECP_Constants
 
    implicit none
 

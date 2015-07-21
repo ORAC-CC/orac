@@ -9,7 +9,7 @@
 !    NC_DIM_LENGTH - Return the length of a dimension in a NetCDF file.
 !
 ! History:
-! 2014/02/10, AP: Original voersion, combining the original files:
+! 2014/02/10, AP: Original version, combining the original files:
 !    nc_read_file.F90, nc_open.F90
 ! 2014/09/01, GM: Add nc_write_array and associated routines. For now for 2d
 !    only.
@@ -27,9 +27,9 @@
 !    it severed no purpose since errors are handled to program exit within the
 !    routines themselves.
 ! 2015/03/20, CP: changed to creator url and website
-!
 ! 2015/07/10, OS: added optional error_status return argument
-
+! 2015/07/16, GM: Added support to read packed data to nc_read routines.
+!
 ! $Id$
 !-------------------------------------------------------------------------------
 
@@ -42,11 +42,11 @@ module orac_ncdf
 
    interface nc_read_array
       module procedure &
-         read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d, &
-         read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
-         read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
+         read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d, &
          read_sint_1d,  read_sint_2d,  read_sint_3d,  read_sint_4d, &
-         read_byte_1d,  read_byte_2d,  read_byte_3d,  read_byte_4d
+         read_lint_1d,  read_lint_2d,  read_lint_3d,  read_lint_4d, &
+         read_sreal_1d, read_sreal_2d, read_sreal_3d, read_sreal_4d, &
+         read_dreal_1d, read_dreal_2d, read_dreal_3d, read_dreal_4d
    end interface nc_read_array
 
    interface nc_write_array
@@ -57,6 +57,12 @@ module orac_ncdf
          write_sreal_1d, write_sreal_2d, write_sreal_3d, write_sreal_4d, &
          write_dreal_1d, write_dreal_2d, write_dreal_3d, write_dreal_4d
    end interface nc_write_array
+
+   interface nc_read_packed_array
+      module procedure &
+         read_packed_sreal_1d, read_packed_sreal_2d, read_packed_sreal_3d, &
+         read_packed_sreal_4d
+   end interface nc_read_packed_array
 
 contains
 
@@ -155,6 +161,110 @@ function nc_dim_length(ncid, name, verbose) result(len)
 end function nc_dim_length
 
 !-------------------------------------------------------------------------------
+! Name: nc_def_var
+!
+! Purpose:
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name           Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2014/08/31, GM: Original version
+! 2014/09/16, GM: Used poor man's C-preprocessor based templates for the
+!    nc_def_var_* routines and made several arguments optional.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+
+#define NC_DEF_VAR_NAME nc_def_var_byte_packed_byte
+#define NC_DEF_VAR_TYPE_PACKED integer
+#define NC_DEF_VAR_KIND_PACKED byte
+#define NC_DEF_VAR_TYPE_UNPACKED integer
+#define NC_DEF_VAR_KIND_UNPACKED byte
+#define NC_DEF_VAR_NF90_TYPE NF90_BYTE
+#include "nc_def_var_template.inc"
+#undef NC_DEF_VAR_NAME
+#undef NC_DEF_VAR_TYPE_PACKED
+#undef NC_DEF_VAR_KIND_PACKED
+#undef NC_DEF_VAR_TYPE_UNPACKED
+#undef NC_DEF_VAR_KIND_UNPACKED
+#undef NC_DEF_VAR_NF90_TYPE
+
+#define NC_DEF_VAR_NAME nc_def_var_short_packed_float
+#define NC_DEF_VAR_TYPE_PACKED integer
+#define NC_DEF_VAR_KIND_PACKED sint
+#define NC_DEF_VAR_TYPE_UNPACKED real
+#define NC_DEF_VAR_KIND_UNPACKED sreal
+#define NC_DEF_VAR_NF90_TYPE NF90_SHORT
+#include "nc_def_var_template.inc"
+#undef NC_DEF_VAR_NAME
+#undef NC_DEF_VAR_TYPE_PACKED
+#undef NC_DEF_VAR_KIND_PACKED
+#undef NC_DEF_VAR_TYPE_UNPACKED
+#undef NC_DEF_VAR_KIND_UNPACKED
+#undef NC_DEF_VAR_NF90_TYPE
+
+#define NC_DEF_VAR_NAME nc_def_var_short_packed_short
+#define NC_DEF_VAR_TYPE_PACKED integer
+#define NC_DEF_VAR_KIND_PACKED sint
+#define NC_DEF_VAR_TYPE_UNPACKED integer
+#define NC_DEF_VAR_KIND_UNPACKED sint
+#define NC_DEF_VAR_NF90_TYPE NF90_SHORT
+#include "nc_def_var_template.inc"
+#undef NC_DEF_VAR_NAME
+#undef NC_DEF_VAR_TYPE_PACKED
+#undef NC_DEF_VAR_KIND_PACKED
+#undef NC_DEF_VAR_TYPE_UNPACKED
+#undef NC_DEF_VAR_KIND_UNPACKED
+#undef NC_DEF_VAR_NF90_TYPE
+
+#define NC_DEF_VAR_NAME nc_def_var_long_packed_long
+#define NC_DEF_VAR_TYPE_PACKED integer
+#define NC_DEF_VAR_KIND_PACKED lint
+#define NC_DEF_VAR_TYPE_UNPACKED integer
+#define NC_DEF_VAR_KIND_UNPACKED lint
+#define NC_DEF_VAR_NF90_TYPE NF90_INT
+#include "nc_def_var_template.inc"
+#undef NC_DEF_VAR_NAME
+#undef NC_DEF_VAR_TYPE_PACKED
+#undef NC_DEF_VAR_KIND_PACKED
+#undef NC_DEF_VAR_TYPE_UNPACKED
+#undef NC_DEF_VAR_KIND_UNPACKED
+#undef NC_DEF_VAR_NF90_TYPE
+
+#define NC_DEF_VAR_NAME nc_def_var_float_packed_float
+#define NC_DEF_VAR_TYPE_PACKED real
+#define NC_DEF_VAR_KIND_PACKED sreal
+#define NC_DEF_VAR_TYPE_UNPACKED real
+#define NC_DEF_VAR_KIND_UNPACKED sreal
+#define NC_DEF_VAR_NF90_TYPE NF90_FLOAT
+#include "nc_def_var_template.inc"
+#undef NC_DEF_VAR_NAME
+#undef NC_DEF_VAR_TYPE_PACKED
+#undef NC_DEF_VAR_KIND_PACKED
+#undef NC_DEF_VAR_TYPE_UNPACKED
+#undef NC_DEF_VAR_KIND_UNPACKED
+#undef NC_DEF_VAR_NF90_TYPE
+
+#define NC_DEF_VAR_NAME nc_def_var_double_packed_double
+#define NC_DEF_VAR_TYPE_PACKED real
+#define NC_DEF_VAR_KIND_PACKED dreal
+#define NC_DEF_VAR_TYPE_UNPACKED real
+#define NC_DEF_VAR_KIND_UNPACKED dreal
+#define NC_DEF_VAR_NF90_TYPE NF90_DOUBLE
+#include "nc_def_var_template.inc"
+#undef NC_DEF_VAR_NAME
+#undef NC_DEF_VAR_TYPE_PACKED
+#undef NC_DEF_VAR_KIND_PACKED
+#undef NC_DEF_VAR_TYPE_UNPACKED
+#undef NC_DEF_VAR_KIND_UNPACKED
+#undef NC_DEF_VAR_NF90_TYPE
+
+!-------------------------------------------------------------------------------
 ! Name: nc_read_array
 !
 ! Purpose:
@@ -195,6 +305,7 @@ end function nc_dim_length
 ! 2014/08/15, AP: Adding partial read procedure. Homogenizing use of verbose.
 ! 2014/09/03, GM: Added vl to handle valid_<limit> temporary auxiliary values.
 ! 2015/07/09, GM: Used poor man's C-preprocessor based templates.
+! 2015/07/16, GM: Added support to read packed data.
 !
 ! Bugs:
 ! None known.
@@ -250,19 +361,31 @@ end function nc_dim_length
 
 #define NC_READ_TYPE real
 #define NC_READ_KIND sreal
+#define NC_RD_P_TYPE real
+#define NC_RD_P_KIND sreal
 #define NC_READ_FILL_VALUE sreal_fill_value
 #define NC_READ_NAME_1D read_sreal_1d
 #define NC_READ_NAME_2D read_sreal_2d
 #define NC_READ_NAME_3D read_sreal_3d
 #define NC_READ_NAME_4D read_sreal_4d
+#define NC_READ_PACKED_NAME_1D read_packed_sreal_1d
+#define NC_READ_PACKED_NAME_2D read_packed_sreal_2d
+#define NC_READ_PACKED_NAME_3D read_packed_sreal_3d
+#define NC_READ_PACKED_NAME_4D read_packed_sreal_4d
 #include "nc_read_template.inc"
 #undef NC_READ_TYPE
 #undef NC_READ_KIND
+#undef NC_RD_P_TYPE
+#undef NC_RD_P_KIND
 #undef NC_READ_FILL_VALUE
 #undef NC_READ_NAME_1D
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D
 #undef NC_READ_NAME_4D
+#undef NC_READ_PACKED_NAME_1D
+#undef NC_READ_PACKED_NAME_2D
+#undef NC_READ_PACKED_NAME_3D
+#undef NC_READ_PACKED_NAME_4D
 
 #define NC_READ_TYPE real
 #define NC_READ_KIND dreal
@@ -279,6 +402,99 @@ end function nc_dim_length
 #undef NC_READ_NAME_2D
 #undef NC_READ_NAME_3D
 #undef NC_READ_NAME_4D
+
+!-------------------------------------------------------------------------------
+! Name: nc_write_array
+!
+! Purpose:
+! A module procedure for writing arrays of various sizes and types to a
+! NetCDF file. It currently supports writing arrays of 1 to 4 dimensions of
+! type 1, 2, or 4 byte integer and 4 or 8 byte real.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name    Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2014/09/01, GM: Original version.
+! 2014/09/02, GM: Added 1d, 3d, and 4d nc_write_array capability.
+! 2014/09/08, GM: Used poor man's C-preprocessor based templates.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+
+#define NC_WRITE_TYPE integer
+#define NC_WRITE_KIND byte
+#define NC_WRITE_NAME_1D write_byte_1d
+#define NC_WRITE_NAME_2D write_byte_2d
+#define NC_WRITE_NAME_3D write_byte_3d
+#define NC_WRITE_NAME_4D write_byte_4d
+#include "nc_write_template.inc"
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
+
+#define NC_WRITE_TYPE integer
+#define NC_WRITE_KIND sint
+#define NC_WRITE_NAME_1D write_sint_1d
+#define NC_WRITE_NAME_2D write_sint_2d
+#define NC_WRITE_NAME_3D write_sint_3d
+#define NC_WRITE_NAME_4D write_sint_4d
+#include "nc_write_template.inc"
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
+
+#define NC_WRITE_TYPE integer
+#define NC_WRITE_KIND lint
+#define NC_WRITE_NAME_1D write_lint_1d
+#define NC_WRITE_NAME_2D write_lint_2d
+#define NC_WRITE_NAME_3D write_lint_3d
+#define NC_WRITE_NAME_4D write_lint_4d
+#include "nc_write_template.inc"
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
+
+#define NC_WRITE_TYPE real
+#define NC_WRITE_KIND sreal
+#define NC_WRITE_NAME_1D write_sreal_1d
+#define NC_WRITE_NAME_2D write_sreal_2d
+#define NC_WRITE_NAME_3D write_sreal_3d
+#define NC_WRITE_NAME_4D write_sreal_4d
+#include "nc_write_template.inc"
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
+
+#define NC_WRITE_TYPE real
+#define NC_WRITE_KIND dreal
+#define NC_WRITE_NAME_1D write_dreal_1d
+#define NC_WRITE_NAME_2D write_dreal_2d
+#define NC_WRITE_NAME_3D write_dreal_3d
+#define NC_WRITE_NAME_4D write_dreal_4d
+#include "nc_write_template.inc"
+#undef NC_WRITE_TYPE
+#undef NC_WRITE_KIND
+#undef NC_WRITE_NAME_1D
+#undef NC_WRITE_NAME_2D
+#undef NC_WRITE_NAME_3D
+#undef NC_WRITE_NAME_4D
 
 !-------------------------------------------------------------------------------
 ! Name: nc_put_common_attributes
@@ -960,204 +1176,6 @@ subroutine nc_get_common_attributes(ncid, global_atts, source_atts)
 end subroutine nc_get_common_attributes
 
 !-------------------------------------------------------------------------------
-! Name: nc_def_var
-!
-! Purpose:
-!
-! Description and Algorithm details:
-!
-! Arguments:
-! Name           Type    In/Out/Both Description
-! ------------------------------------------------------------------------------
-!
-! History:
-! 2014/08/31, GM: Original version
-! 2014/09/16, GM: Used poor man's C-preprocessor based templates for the
-!    nc_def_var_* routines and made several arguments optional.
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-
-#define NC_DEF_VAR_NAME nc_def_var_byte_packed_byte
-#define NC_DEF_VAR_TYPE_PACKED integer
-#define NC_DEF_VAR_KIND_PACKED byte
-#define NC_DEF_VAR_TYPE_UNPACKED integer
-#define NC_DEF_VAR_KIND_UNPACKED byte
-#define NC_DEF_VAR_NF90_TYPE NF90_BYTE
-#include "nc_def_var_template.inc"
-#undef NC_DEF_VAR_NAME
-#undef NC_DEF_VAR_TYPE_PACKED
-#undef NC_DEF_VAR_KIND_PACKED
-#undef NC_DEF_VAR_TYPE_UNPACKED
-#undef NC_DEF_VAR_KIND_UNPACKED
-#undef NC_DEF_VAR_NF90_TYPE
-
-#define NC_DEF_VAR_NAME nc_def_var_short_packed_float
-#define NC_DEF_VAR_TYPE_PACKED integer
-#define NC_DEF_VAR_KIND_PACKED sint
-#define NC_DEF_VAR_TYPE_UNPACKED real
-#define NC_DEF_VAR_KIND_UNPACKED sreal
-#define NC_DEF_VAR_NF90_TYPE NF90_SHORT
-#include "nc_def_var_template.inc"
-#undef NC_DEF_VAR_NAME
-#undef NC_DEF_VAR_TYPE_PACKED
-#undef NC_DEF_VAR_KIND_PACKED
-#undef NC_DEF_VAR_TYPE_UNPACKED
-#undef NC_DEF_VAR_KIND_UNPACKED
-#undef NC_DEF_VAR_NF90_TYPE
-
-#define NC_DEF_VAR_NAME nc_def_var_short_packed_short
-#define NC_DEF_VAR_TYPE_PACKED integer
-#define NC_DEF_VAR_KIND_PACKED sint
-#define NC_DEF_VAR_TYPE_UNPACKED integer
-#define NC_DEF_VAR_KIND_UNPACKED sint
-#define NC_DEF_VAR_NF90_TYPE NF90_SHORT
-#include "nc_def_var_template.inc"
-#undef NC_DEF_VAR_NAME
-#undef NC_DEF_VAR_TYPE_PACKED
-#undef NC_DEF_VAR_KIND_PACKED
-#undef NC_DEF_VAR_TYPE_UNPACKED
-#undef NC_DEF_VAR_KIND_UNPACKED
-#undef NC_DEF_VAR_NF90_TYPE
-
-#define NC_DEF_VAR_NAME nc_def_var_long_packed_long
-#define NC_DEF_VAR_TYPE_PACKED integer
-#define NC_DEF_VAR_KIND_PACKED lint
-#define NC_DEF_VAR_TYPE_UNPACKED integer
-#define NC_DEF_VAR_KIND_UNPACKED lint
-#define NC_DEF_VAR_NF90_TYPE NF90_INT
-#include "nc_def_var_template.inc"
-#undef NC_DEF_VAR_NAME
-#undef NC_DEF_VAR_TYPE_PACKED
-#undef NC_DEF_VAR_KIND_PACKED
-#undef NC_DEF_VAR_TYPE_UNPACKED
-#undef NC_DEF_VAR_KIND_UNPACKED
-#undef NC_DEF_VAR_NF90_TYPE
-
-#define NC_DEF_VAR_NAME nc_def_var_float_packed_float
-#define NC_DEF_VAR_TYPE_PACKED real
-#define NC_DEF_VAR_KIND_PACKED sreal
-#define NC_DEF_VAR_TYPE_UNPACKED real
-#define NC_DEF_VAR_KIND_UNPACKED sreal
-#define NC_DEF_VAR_NF90_TYPE NF90_FLOAT
-#include "nc_def_var_template.inc"
-#undef NC_DEF_VAR_NAME
-#undef NC_DEF_VAR_TYPE_PACKED
-#undef NC_DEF_VAR_KIND_PACKED
-#undef NC_DEF_VAR_TYPE_UNPACKED
-#undef NC_DEF_VAR_KIND_UNPACKED
-#undef NC_DEF_VAR_NF90_TYPE
-
-#define NC_DEF_VAR_NAME nc_def_var_double_packed_double
-#define NC_DEF_VAR_TYPE_PACKED real
-#define NC_DEF_VAR_KIND_PACKED dreal
-#define NC_DEF_VAR_TYPE_UNPACKED real
-#define NC_DEF_VAR_KIND_UNPACKED dreal
-#define NC_DEF_VAR_NF90_TYPE NF90_DOUBLE
-#include "nc_def_var_template.inc"
-#undef NC_DEF_VAR_NAME
-#undef NC_DEF_VAR_TYPE_PACKED
-#undef NC_DEF_VAR_KIND_PACKED
-#undef NC_DEF_VAR_TYPE_UNPACKED
-#undef NC_DEF_VAR_KIND_UNPACKED
-#undef NC_DEF_VAR_NF90_TYPE
-
-!-------------------------------------------------------------------------------
-! Name: nc_write_array
-!
-! Purpose:
-! A module procedure for writing arrays of various sizes and types to a
-! NetCDF file. It currently supports writing arrays of 1 to 4 dimensions of
-! type 1, 2, or 4 byte integer and 4 or 8 byte real.
-!
-! Description and Algorithm details:
-!
-! Arguments:
-! Name    Type    In/Out/Both Description
-! ------------------------------------------------------------------------------
-!
-! History:
-! 2014/09/01, GM: Original version.
-! 2014/09/02, GM: Added 1d, 3d, and 4d nc_write_array capability.
-! 2014/09/08, GM: Used poor man's C-preprocessor based templates.
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-
-#define NC_WRITE_TYPE integer
-#define NC_WRITE_KIND byte
-#define NC_WRITE_NAME_1D write_byte_1d
-#define NC_WRITE_NAME_2D write_byte_2d
-#define NC_WRITE_NAME_3D write_byte_3d
-#define NC_WRITE_NAME_4D write_byte_4d
-#include "nc_write_template.inc"
-#undef NC_WRITE_TYPE
-#undef NC_WRITE_KIND
-#undef NC_WRITE_NAME_1D
-#undef NC_WRITE_NAME_2D
-#undef NC_WRITE_NAME_3D
-#undef NC_WRITE_NAME_4D
-
-#define NC_WRITE_TYPE integer
-#define NC_WRITE_KIND sint
-#define NC_WRITE_NAME_1D write_sint_1d
-#define NC_WRITE_NAME_2D write_sint_2d
-#define NC_WRITE_NAME_3D write_sint_3d
-#define NC_WRITE_NAME_4D write_sint_4d
-#include "nc_write_template.inc"
-#undef NC_WRITE_TYPE
-#undef NC_WRITE_KIND
-#undef NC_WRITE_NAME_1D
-#undef NC_WRITE_NAME_2D
-#undef NC_WRITE_NAME_3D
-#undef NC_WRITE_NAME_4D
-
-#define NC_WRITE_TYPE integer
-#define NC_WRITE_KIND lint
-#define NC_WRITE_NAME_1D write_lint_1d
-#define NC_WRITE_NAME_2D write_lint_2d
-#define NC_WRITE_NAME_3D write_lint_3d
-#define NC_WRITE_NAME_4D write_lint_4d
-#include "nc_write_template.inc"
-#undef NC_WRITE_TYPE
-#undef NC_WRITE_KIND
-#undef NC_WRITE_NAME_1D
-#undef NC_WRITE_NAME_2D
-#undef NC_WRITE_NAME_3D
-#undef NC_WRITE_NAME_4D
-
-#define NC_WRITE_TYPE real
-#define NC_WRITE_KIND sreal
-#define NC_WRITE_NAME_1D write_sreal_1d
-#define NC_WRITE_NAME_2D write_sreal_2d
-#define NC_WRITE_NAME_3D write_sreal_3d
-#define NC_WRITE_NAME_4D write_sreal_4d
-#include "nc_write_template.inc"
-#undef NC_WRITE_TYPE
-#undef NC_WRITE_KIND
-#undef NC_WRITE_NAME_1D
-#undef NC_WRITE_NAME_2D
-#undef NC_WRITE_NAME_3D
-#undef NC_WRITE_NAME_4D
-
-#define NC_WRITE_TYPE real
-#define NC_WRITE_KIND dreal
-#define NC_WRITE_NAME_1D write_dreal_1d
-#define NC_WRITE_NAME_2D write_dreal_2d
-#define NC_WRITE_NAME_3D write_dreal_3d
-#define NC_WRITE_NAME_4D write_dreal_4d
-#include "nc_write_template.inc"
-#undef NC_WRITE_TYPE
-#undef NC_WRITE_KIND
-#undef NC_WRITE_NAME_1D
-#undef NC_WRITE_NAME_2D
-#undef NC_WRITE_NAME_3D
-#undef NC_WRITE_NAME_4D
-
-
-!-------------------------------------------------------------------------------
 ! Name: nc_error
 !
 ! Purpose:
@@ -1257,5 +1275,9 @@ function nc_error(ierr) result(out)
    end select
 
 end function nc_error
+
+
+include 'nc_utils.F90'
+
 
 end module orac_ncdf

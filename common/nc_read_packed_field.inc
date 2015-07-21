@@ -15,9 +15,8 @@
 !   verbose and error printing formats. Split into open field/read field.
 ! 2014/09/03, GM: Fixed bug: fv should not be used as a loop local auxillary
 !   variable.
-! 2015/07/16, GM: Modifications to properly read packed data and check ranges.
 !
-! $Id$
+! $Id: nc_read_field.inc 2726 2014-10-15 14:51:55Z gmcgarragh $
 !
 ! Bugs:
 ! None known.
@@ -26,24 +25,21 @@
    if (verbose) print*,'Reading variable: ',trim(name)
 
    ! read data
-   ierr = nf90_get_var(ncid, vid, arr, start, counter, stride)
+   ierr = nf90_get_var(ncid, vid, arr_packed, start, counter, stride)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_read_file(): Could not read variable ',trim(name)
       print*,trim(nc_error(ierr))
       stop error_stop_code
    endif
 
-   ! replace file's fill value and out of range values with our own and apply
-   ! scale factor/offset
+   ! replace file's fill value with our own and apply scale factor/offset
    if (fv_flag) &
-      where (arr.eq.fv) arr = fill
+      where (arr_packed.eq.fv) arr = fill
    if (vr_flag) then
-      where (arr.ne.fill .and. arr.lt.vmin) arr = fill
-      where (arr.ne.fill .and. arr.gt.vmax) arr = fill
+      where (arr_packed.lt.vmin) arr = fill
+      where (arr_packed.gt.vmax) arr = fill
    endif
-   if (sf .ne. 1.0 .or. of .ne. 0.0) then
-      where (arr.ne.fill) arr = sf*arr + of
-   end if
+   where (arr_packed.ne.fv) arr = sf*arr_packed + of
 
    ! additional information for print out
    if (verbose) then
