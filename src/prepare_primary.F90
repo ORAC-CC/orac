@@ -60,6 +60,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    use CTRL_def
    use Data_def
    use Diag_def
+   use orac_ncdf
    use RTM_Pc_def
    use SPixel_def
 

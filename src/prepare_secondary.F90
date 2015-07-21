@@ -46,6 +46,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
 
    use CTRL_def
    use Data_def
+   use orac_ncdf
    use Diag_def
    use SPixel_def
 

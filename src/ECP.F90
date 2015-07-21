@@ -186,7 +186,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use ECP_Constants
    use Inversion
    use omp_lib
-   use orac_ncdf, only: nf90_close, NF90_NOERR
+   use orac_ncdf
    use output_routines
    use read_driver_m
    use Read_SAD_def
@@ -438,14 +438,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Open the netcdf output files
    write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
-   call nc_create(Ctrl%FID%L2_primary, ncid_primary, &
-      ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 1, &
-      global_atts, source_atts)
+   call nc_create(Ctrl%FID%L2_primary, ncid_primary, ixstop-ixstart+1, &
+      iystop-iystart+1, dims_var, 1, global_atts, source_atts)
 
    write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
-   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, &
-     ixstop-ixstart+1, iystop-iystart+1, dims_var, Ctrl%Inst%Name, 2, &
-     global_atts, source_atts)
+   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, ixstop-ixstart+1, &
+     iystop-iystart+1, dims_var, 2, global_atts, source_atts)
 
    ! Allocate output arrays
    call alloc_output_data_primary(ixstart,ixstop,iystart,iystop, &
