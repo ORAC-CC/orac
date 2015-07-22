@@ -89,6 +89,8 @@
 ! 2015/03/11, GM: Added an error check for unrecognised instruments.
 ! 2015/05/25, GM: Get rid of filename Diag and flags Diagl. Neither was being
 !    used and have been rotting.
+! 2015/07/22, AP: Use parse_user_text for arguments which set variables that
+!    are set using ECP_Constants parameters within the code.
 !
 ! $Id$
 !
@@ -114,7 +116,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    use CTRL_def
    use ECP_constants
    use global_attributes
-   use parsing
+   use parse_user
    use read_utils
    use source_attributes
 
@@ -785,11 +787,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('CTRL%FID%BKP')
          if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
       case('CTRL%BKPL')
-         if (parse_string(line, Ctrl%Bkpl)             /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Bkpl)          /= 0) call h_p_e(label)
       case('CTRL%RTMINTFLAG')
-         if (parse_string(line, Ctrl%RTMIntflag)       /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%RTMIntflag)    /= 0) call h_p_e(label)
       case('CTRL%LUTINTFLAG')
-         if (parse_string(line, Ctrl%LUTIntflag)       /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%LUTIntflag)    /= 0) call h_p_e(label)
       case('CTRL%MAXSATZEN')
          if (parse_string(line, Ctrl%MaxSatZen)        /= 0) call h_p_e(label)
       case('CTRL%MAXSOLZEN')
@@ -799,15 +801,18 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('CTRL%IND%NX_DY')
          if (parse_string(line, Ctrl%Ind%NX_DY)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_DY')
-         if (parse_string(line, Ctrl%Ind%X_DY)         /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Ind%X_DY, Ctrl%Ind%NX_DY) /= 0) &
+                                                       call h_p_e(label)
       case('CTRL%IND%NX_TW')
          if (parse_string(line, Ctrl%Ind%NX_TW)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_TW')
-         if (parse_string(line, Ctrl%Ind%X_TW)         /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Ind%X_TW, Ctrl%Ind%NX_TW) /= 0) &
+                                                       call h_p_e(label)
       case('CTRL%IND%NX_NI')
          if (parse_string(line, Ctrl%Ind%NX_NI)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_NI')
-         if (parse_string(line, Ctrl%Ind%X_NI)         /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Ind%X_NI, Ctrl%Ind%NX_NI)/= 0) &
+                                                       call h_p_e(label)
       case('CTRL%IND%NVIEWS')
          if (parse_string(line, Ctrl%Ind%NViews)       /= 0) call h_p_e(label)
       case('CTRL%IND%VIEWIDX')
@@ -827,9 +832,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%process_one_phase_only) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%AP')
-         if (parse_string(line, Ctrl%AP)               /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%AP)            /= 0) call h_p_e(label)
       case('CTRL%FG')
-         if (parse_string(line, Ctrl%FG)               /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%FG)            /= 0) call h_p_e(label)
       case('CTRL%XB')
          if (parse_string(line, Ctrl%XB)               /= 0) call h_p_e(label)
       case('CTRL%X0')

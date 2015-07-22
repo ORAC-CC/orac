@@ -8,6 +8,7 @@
 !
 ! History:
 ! 2014/12/17, AP: Original version.
+! 2015/07/22, AP: Moved 0D functions into parse_string2.inc.
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -170,6 +171,9 @@ end subroutine parse_line
 !   e) The final section of string is put into the final element of the out
 !      array.
 !
+! Note- Two include files are used as the main processor needs to generate it's
+!       own versions of the 1 and 2D functions for parse_user_text().
+!
 ! Arguments:
 ! Name  Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
@@ -180,72 +184,77 @@ end subroutine parse_line
 ! 2014/12/17, AP: Original version.
 ! 2015/01/19, GM: Better error handling and no setting of output to fill_value
 !    on error.
+! 2015/07/22, AP: Added optional argument specifying the length of an array to
+!    be used when an array is not completely set by a driver file (i.e. when the
+!    array will eventually contain blank elements).
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 #define PARSE_STRING_TYPE integer
 #define PARSE_STRING_KIND byte
+#define PARSE_STRING_NAME_0D parse_string_0d_byte
 #define PARSE_STRING_NAME_1D parse_string_1d_byte
 #define PARSE_STRING_NAME_2D parse_string_2d_byte
 #include "parse_string.inc"
+#include "parse_string2.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
+#undef PARSE_STRING_NAME_0D
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE integer
 #define PARSE_STRING_KIND sint
+#define PARSE_STRING_NAME_0D parse_string_0d_sint
 #define PARSE_STRING_NAME_1D parse_string_1d_sint
 #define PARSE_STRING_NAME_2D parse_string_2d_sint
 #include "parse_string.inc"
+#include "parse_string2.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
+#undef PARSE_STRING_NAME_0D
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE integer
 #define PARSE_STRING_KIND lint
+#define PARSE_STRING_NAME_0D parse_string_0d_lint
 #define PARSE_STRING_NAME_1D parse_string_1d_lint
 #define PARSE_STRING_NAME_2D parse_string_2d_lint
 #include "parse_string.inc"
+#include "parse_string2.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
+#undef PARSE_STRING_NAME_0D
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE real
 #define PARSE_STRING_KIND sreal
+#define PARSE_STRING_NAME_0D parse_string_0d_sreal
 #define PARSE_STRING_NAME_1D parse_string_1d_sreal
 #define PARSE_STRING_NAME_2D parse_string_2d_sreal
 #include "parse_string.inc"
+#include "parse_string2.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
+#undef PARSE_STRING_NAME_0D
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
 
 #define PARSE_STRING_TYPE real
 #define PARSE_STRING_KIND dreal
+#define PARSE_STRING_NAME_0D parse_string_0d_dreal
 #define PARSE_STRING_NAME_1D parse_string_1d_dreal
 #define PARSE_STRING_NAME_2D parse_string_2d_dreal
 #include "parse_string.inc"
+#include "parse_string2.inc"
 #undef PARSE_STRING_TYPE
 #undef PARSE_STRING_KIND
+#undef PARSE_STRING_NAME_0D
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
-
-integer function parse_string_0d_byte(in, out) result(status)
-   implicit none
-
-   character(len=*), intent(in)  :: in
-   integer(byte),    intent(out) :: out
-   integer                       :: ios
-
-   status = 0
-
-   read(in, *, iostat=ios) out
-   if (ios /= 0) status = PARSE_ERR_CONV
-end function parse_string_0d_byte
 
 integer function parse_string_0d_logical(in, out) result(status)
    implicit none
@@ -259,58 +268,6 @@ integer function parse_string_0d_logical(in, out) result(status)
    read(in, *, iostat=ios) out
    if (ios /= 0) status = PARSE_ERR_CONV
 end function parse_string_0d_logical
-
-integer function parse_string_0d_sint(in, out) result(status)
-   implicit none
-
-   character(len=*), intent(in)  :: in
-   integer(sint),    intent(out) :: out
-   integer                       :: ios
-
-   status = 0
-
-   read(in, *, iostat=ios) out
-   if (ios /= 0) status = PARSE_ERR_CONV
-end function parse_string_0d_sint
-
-integer function parse_string_0d_lint(in, out) result(status)
-   implicit none
-
-   character(len=*), intent(in)  :: in
-   integer(lint),    intent(out) :: out
-   integer                       :: ios
-
-   status = 0
-
-   read(in, *, iostat=ios) out
-   if (ios /= 0) status = PARSE_ERR_CONV
-end function parse_string_0d_lint
-
-integer function parse_string_0d_sreal(in, out) result(status)
-   implicit none
-
-   character(len=*), intent(in)  :: in
-   real(sreal),      intent(out) :: out
-   integer                       :: ios
-
-   status = 0
-
-   read(in, *, iostat=ios) out
-   if (ios /= 0) status = PARSE_ERR_CONV
-end function parse_string_0d_sreal
-
-integer function parse_string_0d_dreal(in, out) result(status)
-   implicit none
-
-   character(len=*), intent(in)  :: in
-   real(dreal),      intent(out) :: out
-   integer                       :: ios
-
-   status = 0
-
-   read(in, *, iostat=ios) out
-   if (ios /= 0) status = PARSE_ERR_CONV
-end function parse_string_0d_dreal
 
 integer function parse_string_0d_strg(in, out) result(status)
    implicit none

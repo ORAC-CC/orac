@@ -4,5 +4,5 @@ $(OBJS)/orac_ncdf.o: $(OBJS)/common_constants.o $(OBJS)/global_attributes.o \
         $(OBJS)/source_attributes.o nc_def_var_template.inc nc_open_field.inc \
         nc_read_field.inc nc_read_packed_field.inc nc_read_template.inc \
         nc_utils.F90 nc_write_template.inc
-$(OBJS)/parsing.o: $(OBJS)/common_constants.o parse_string.inc
+$(OBJS)/parsing.o: $(OBJS)/common_constants.o parse_string.inc parse_string2.inc
 $(OBJS)/source_attributes.o: $(OBJS)/common_constants.o
