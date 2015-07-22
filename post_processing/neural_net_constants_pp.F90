@@ -21,7 +21,7 @@
 ! original version dwd
 ! 2014/09/20 CP  changes range of stemp-ctt from 0--> -1.5 as often the surface temperature from ECMWF is not accurate enough.
 ! 2014/11/20 OS  undid previous commit because minimum values are also used for scaling
-! 2015/02/05 OS  deactivated use of vartypes_pp to force consistency with
+! 2015/02/05 OS  deactivated use of postproc_constants to force consistency with
 !                common_constants; changed nint to lint
 
 ! $Id$
@@ -32,9 +32,9 @@
 !none known
 
 
-module neural_net_constants_postproc
+module neural_net_constants_pp
 
-  ! use  vartypes_pp
+  ! use  postproc_constants
   use common_constants
 
   implicit none
@@ -870,18 +870,4 @@ module neural_net_constants_postproc
        & 1.030218811E+02, &
        & -4.384435730E+02 /
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-end module neural_net_constants_postproc
+end module neural_net_constants_pp

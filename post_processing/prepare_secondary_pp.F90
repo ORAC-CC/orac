@@ -22,18 +22,18 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
+subroutine prepare_secondary_pp(i, j, indexing, input_data, output_data)
 
+   use input_routines
    use orac_ncdf
-   use scanline_structure
-   use structures_pp
+   use output_routines
 
    implicit none
 
-   integer,                                intent(in)    :: i, j
-   type(counts_and_indexes),               intent(in)    :: indexing
-   type(l2_input_struct_2d_secondary),     intent(in)    :: l2_input_2d
-   type(spixel_scanline_secondary_output), intent(inout) :: output_data
+   integer,                        intent(in)    :: i, j
+   type(counts_and_indexes),       intent(in)    :: indexing
+   type(input_data_secondary),     intent(in)    :: input_data
+   type(output_data_secondary_pp), intent(inout) :: output_data
 
    logical     :: lcovar = .false.
    integer     :: k
@@ -46,7 +46,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
-   dummyreal=l2_input_2d%cot_ap(i,j)
+   dummyreal=input_data%cot_ap(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_ap(i,j), &
            output_data%cot_ap_scale, output_data%cot_ap_offset, &
@@ -54,7 +54,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
            output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
            output_data%cot_ap_vmax)
 
-   dummyreal=l2_input_2d%cot_fg(i,j)
+   dummyreal=input_data%cot_fg(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_fg(i,j), &
            output_data%cot_fg_scale, output_data%cot_fg_offset, &
@@ -65,7 +65,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    !----------------------------------------------------------------------------
    ! ref_ap, ref_fg
    !----------------------------------------------------------------------------
-   dummyreal=l2_input_2d%ref_ap(i,j)
+   dummyreal=input_data%ref_ap(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%ref_ap(i,j), &
            output_data%ref_ap_scale, output_data%ref_ap_offset, &
@@ -73,7 +73,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
            output_data%ref_ap_vmin, output_data%ref_ap_vmax, &
            output_data%ref_ap_vmax)
 
-   dummyreal=l2_input_2d%ref_fg(i,j)
+   dummyreal=input_data%ref_fg(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%ref_fg(i,j), &
            output_data%ref_fg_scale, output_data%ref_fg_offset, &
@@ -84,7 +84,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    !----------------------------------------------------------------------------
    ! ctp_ap, ctp_fg
    !----------------------------------------------------------------------------
-   dummyreal=l2_input_2d%ctp_ap(i,j)
+   dummyreal=input_data%ctp_ap(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%ctp_ap(i,j), &
            output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
@@ -92,7 +92,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
            output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
            output_data%ctp_ap_vmax)
 
-   dummyreal=l2_input_2d%ctp_fg(i,j)
+   dummyreal=input_data%ctp_fg(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%ctp_fg(i,j), &
            output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
@@ -103,7 +103,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    !----------------------------------------------------------------------------
    ! stemp_ap, stemp_fg
    !----------------------------------------------------------------------------
-   dummyreal=l2_input_2d%stemp_ap(i,j)
+   dummyreal=input_data%stemp_ap(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%stemp_ap(i,j), &
            output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
@@ -111,7 +111,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
            output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
            output_data%stemp_ap_vmax)
 
-   dummyreal=l2_input_2d%stemp_fg(i,j)
+   dummyreal=input_data%stemp_fg(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%stemp_fg(i,j), &
            output_data%stemp_fg_scale, output_data%stemp_fg_offset, &
@@ -123,7 +123,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    ! albedo
    !----------------------------------------------------------------------------
    do k=1,indexing%NSolar
-      dummyreal=l2_input_2d%albedo(i,j,k)
+      dummyreal=input_data%albedo(i,j,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%albedo(i,j,k), &
            output_data%albedo_scale(k), output_data%albedo_offset(k), &
@@ -136,7 +136,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    ! channels
    !----------------------------------------------------------------------------
    do k=1,indexing%Ny
-      dummyreal=l2_input_2d%channels(i,j,k)
+      dummyreal=input_data%channels(i,j,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%channels(i,j,k), &
            output_data%channels_scale(k), output_data%channels_offset(k), &
@@ -149,7 +149,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    ! y0
    !----------------------------------------------------------------------------
    do k=1,indexing%Ny
-      dummyreal=l2_input_2d%y0(i,j,k)
+      dummyreal=input_data%y0(i,j,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%y0(i,j,k), &
            output_data%y0_scale(k), output_data%y0_offset(k), &
@@ -162,7 +162,7 @@ subroutine prepare_secondary_pp(i, j, indexing, l2_input_2d, output_data)
    ! residuals
    !----------------------------------------------------------------------------
    do k=1,indexing%Ny
-      dummyreal=l2_input_2d%residuals(i,j,k)
+      dummyreal=input_data%residuals(i,j,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%residuals(i,j,k), &
            output_data%residuals_scale(k), output_data%residuals_offset(k), &

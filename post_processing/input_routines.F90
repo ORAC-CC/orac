@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: structures_pp.F90
+! Name: input_data.F90
 !
 ! Purpose: F90 Module file which declares user defined variable type structures.
 !
@@ -19,7 +19,7 @@
 ! 2014/10/24, OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM,
 !    and nisemask
 ! 2014/12/02, CP: adds in cloud_albedo
-! 2015/02/05, OS: deactivated use of vartypes_pp to force consistency with
+! 2015/02/05, OS: deactivated use of postproc_constants to force consistency with
 !    common_constants; changed nint to lint; added variable phase_post
 ! 2015/07/16, GM: Major cleanup.
 !
@@ -29,7 +29,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module structures_pp
+module input_routines
 
    use common_constants
 
@@ -37,6 +37,7 @@ module structures_pp
 
    integer, parameter :: ThermalBit = 1
    integer, parameter :: SolarBit   = 0
+
 
    type counts_and_indexes
       integer          :: NViews
@@ -48,7 +49,8 @@ module structures_pp
       integer          :: Nx
    end type counts_and_indexes
 
-   type l2_input_struct_2d_primary
+
+   type input_data_primary
 
       real(kind=dreal),    dimension(:,:),   pointer :: time
       real(kind=sreal),    dimension(:,:),   pointer :: lat, lon
@@ -84,10 +86,10 @@ module structures_pp
       integer(kind=sint),  dimension(:,:),   pointer :: dem
       integer(kind=byte),  dimension(:,:),   pointer :: nisemask
 
-   end type l2_input_struct_2d_primary
+   end type input_data_primary
 
 
-   type l2_input_struct_2d_secondary
+   type input_data_secondary
 
 !     integer(kind=lint), dimension(:,:), pointer :: scanline_u
 !     integer(kind=lint), dimension(:,:), pointer :: scanline_v
@@ -102,6 +104,6 @@ module structures_pp
       real(kind=sreal), dimension(:,:,:), pointer :: y0
       real(kind=sreal), dimension(:,:,:), pointer :: residuals
 
-   end type l2_input_struct_2d_secondary
+   end type input_data_secondary
 
-end module structures_pp
+end module input_routines

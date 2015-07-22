@@ -16,7 +16,7 @@
 !    and nisemask
 ! 2014/11/20, OS: added Pavolonis cloud phase related variables
 ! 2014/11/26, CP: added Pavolonis cloud_albedo
-! 2015/02/05, OS: deactivated use of vartypes_pp to force consistency with
+! 2015/02/05, OS: deactivated use of postproc_constants to force consistency with
 !    common_constants
 ! 2015/07/06, OS: added vidcldmaskerror
 ! 2015/07/16, GM: Major cleanup.
@@ -27,13 +27,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module scanline_structure
+module output_routines
 
    use common_constants
 
    implicit none
 
-   type spixel_scanline_primary_output
+   type output_data_primary_pp
 
       ! Variable IDs for data fields in primary output file
       integer                       :: vid_time
@@ -329,10 +329,10 @@ module scanline_structure
 
       integer(kind=byte), dimension(:,:),   pointer :: nisemask
 
-   end type spixel_scanline_primary_output
+   end type output_data_primary_pp
 
 
-   type spixel_scanline_secondary_output
+   type output_data_secondary_pp
       integer                          :: vid_scanline_u
       integer                          :: vid_scanline_v
 
@@ -418,6 +418,7 @@ module scanline_structure
       integer(kind=sint), dimension(:,:),     pointer :: ds
 
       real(kind=sreal),   dimension(:,:,:,:), pointer :: covariance
-   end type spixel_scanline_secondary_output
 
-end module Scanline_structure
+   end type output_data_secondary_pp
+
+end module output_routines

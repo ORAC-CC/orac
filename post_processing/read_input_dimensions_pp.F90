@@ -13,7 +13,7 @@
 ! History:
 ! 2014/06/04, MJ: changes routine names to "*_pp" to avoid confusion when
 !    building libraries.
-! 2014/12/03, CP: added in common_constants should eventually remove vartypes_pp
+! 2014/12/03, CP: added in common_constants should eventually remove postproc_constants
 ! 2015/02/05, OS: changed nint to lint
 ! 2015/02/05, CP: updated constants file
 ! 2015/07/10, GM: Major cleanup and made use of the NetCDF interface in the
@@ -23,13 +23,12 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_dimensions(fname,xdim,ydim,verbose)
+subroutine read_input_dimensions_pp(fname,xdim,ydim,verbose)
 
    use common_constants
    use netcdf
-   use structures_pp
-   use vartypes_pp
    use orac_ncdf
+   use postproc_constants
 
    implicit none
 
@@ -51,4 +50,4 @@ subroutine read_input_dimensions(fname,xdim,ydim,verbose)
       stop error_stop_code
    end if
 
-end subroutine read_input_dimensions
+end subroutine read_input_dimensions_pp

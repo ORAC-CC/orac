@@ -69,7 +69,7 @@
 !    neural_net_constants_postproc; some editing; replaced hard-coded NN values
 !    with variables
 ! 2015/02/05, OS: changed nint to lint; further replacements of variables
-!    defined in vartypes_pp with those defined in common_constants; added
+!    defined in postproc_constants with those defined in common_constants; added
 !    phase_post; Pavolonis phase is now used as basis for
 ! 2015/02/06, CP: added in case of ML IR only retrieval
 ! 2015/02/06, CP: tidied up phase selection removed obsolete stuff
@@ -99,13 +99,13 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    use common_constants
    use global_attributes
+   use input_routines
    use netcdf
-   use neural_net_constants_postproc
+   use neural_net_constants_pp
    use orac_ncdf
-   use scanline_structure
+   use output_routines
    use source_attributes
-   use structures_pp
-   use vartypes_pp
+   use postproc_constants
 
    implicit none
 
@@ -124,17 +124,17 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 #ifdef WRAPPER
    integer :: mytask,ntasks,lower_bound,upper_bound
 #endif
-   integer(kind=byte)        :: mli_flag = 0
+   integer(kind=byte)         :: mli_flag = 0
 
-   logical                   :: one_phase_only, cloudy_only
-   real                      :: cot_thres, cot_thres1, cot_thres2
-   integer                   :: proc_flag(5)
-   character(len=var_length) :: inst
+   logical                    :: one_phase_only, cloudy_only
+   real                       :: cot_thres, cot_thres1, cot_thres2
+   integer                    :: proc_flag(5)
+   character(len=var_length)  :: inst
 
    character(len=path_length) :: path_and_file, &
-                                 fnamewat_prim, fnameice_prim, &
-                                 fnamewat_sec,fnameice_sec, &
-                                 fnamemli_sec,fnamemli_prim
+                                 fname_wat_prim, fname_ice_prim, &
+                                 fname_wat_sec,fname_ice_sec, &
+                                 fname_mli_sec,fname_mli_prim
 
    character(len=path_length) :: L2_primary_outputpath_and_file, &
                                  L2_secondary_outputpath_and_file
@@ -142,29 +142,29 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    type(global_attributes_s)  :: global_atts
    type(source_attributes_s)  :: source_atts
 
-   integer :: ncid_primary, ncid_secondary, dims_var(2), varid
-   character(len=32)         :: input_num
-   character(len=var_length) :: varname
+   integer                    :: ncid_primary, ncid_secondary, dims_var(2), varid
+   character(len=32)          :: input_num
+   character(len=var_length)  :: varname
 
-   type(l2_input_struct_2d_primary)       :: l2_input_2dwat_primary, &
-                                             l2_input_2dice_primary, &
-                                             l2_input_2dmli_primary
-   type(l2_input_struct_2d_secondary)     :: l2_input_2dwat_secondary, &
-                                             l2_input_2dice_secondary
-   type(spixel_scanline_primary_output)   :: spixel_scan_out
-   type(spixel_scanline_secondary_output) :: spixel_scan_out_sec
+   type(input_data_primary)       :: input_data_wat_primary, &
+                                     input_data_ice_primary, &
+                                     input_data_mli_primary
+   type(input_data_secondary)     :: input_data_wat_secondary, &
+                                     input_data_ice_secondary
+   type(output_data_primary_pp)   :: output_primary
+   type(output_data_secondary_pp) :: output_secondary
 
-   type(counts_and_indexes)               :: indexing
+   type(counts_and_indexes)       :: indexing
 
-   integer (kind=lint) :: xdim,ydim
-   integer(kind=lint)  :: ixstart,ixstop,iystart,iystop
+   integer(kind=lint) :: xdim,ydim
+   integer(kind=lint) :: ixstart,ixstop,iystart,iystop
 
-   integer(kind=byte)  :: lsec_flag,lstrict
+   integer(kind=byte) :: lsec_flag,lstrict
 
    integer(kind=byte), allocatable, dimension(:,:) :: phaseflag
 
-   real(kind=sreal)    :: newcot
-   real(kind=sreal)    :: precision,huge_value,log10huge_value,log10precision
+   real(kind=sreal)   :: newcot
+   real(kind=sreal)   :: precision,huge_value,log10huge_value,log10precision
 
 
    precision=tiny(1.0_sreal)
@@ -194,22 +194,22 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    ! read from an external file
    open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
 
-   read(11,*) fnamewat_prim
-   write(*,*) 'primary water input = ', trim(fnamewat_prim)
-   read(11,*) fnameice_prim
-   write(*,*) 'primary ice input = ', trim(fnameice_prim)
+   read(11,*) fname_wat_prim
+   write(*,*) 'primary water input = ', trim(fname_wat_prim)
+   read(11,*) fname_ice_prim
+   write(*,*) 'primary ice input = ', trim(fname_ice_prim)
    if ( mli_flag .eq. 1) then
-      read(11,*) fnamemli_prim
-      write(*,*) 'primary mli input = ', trim(fnamemli_prim)
+      read(11,*) fname_mli_prim
+      write(*,*) 'primary mli input = ', trim(fname_mli_prim)
    end if
 
-   read(11,*) fnamewat_sec
-   write(*,*) 'secondary water input = ', trim(fnamewat_sec)
-   read(11,*) fnameice_sec
-   write(*,*) 'secondary ice input = ', trim(fnameice_sec)
+   read(11,*) fname_wat_sec
+   write(*,*) 'secondary water input = ', trim(fname_wat_sec)
+   read(11,*) fname_ice_sec
+   write(*,*) 'secondary ice input = ', trim(fname_ice_sec)
    if ( mli_flag .eq. 1) then
-      read(11,*) fnamemli_sec
-      write(*,*) 'secondary mli input = ', trim(fnamemli_sec)
+      read(11,*) fname_mli_sec
+      write(*,*) 'secondary mli input = ', trim(fname_mli_sec)
    end if
 
    read(11,*) L2_primary_outputpath_and_file
@@ -244,8 +244,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    indexing%NViews = 1
 
-   write(*,*) 'Opening ive secondary input file: ', trim(fnameice_sec)
-   call nc_open(ncid_secondary,fnameice_sec)
+   write(*,*) 'Opening ive secondary input file: ', trim(fname_ice_sec)
+   call nc_open(ncid_secondary,fname_ice_sec)
 
    indexing%Ny = 0
    indexing%NSolar = 0
@@ -286,42 +286,40 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    ! read ice and water intermediate files and put into a structure
 
    write(*,*) 'Reading input dimensions'
-   call read_input_dimensions(fnameice_prim,xdim,ydim,verbose)
+   call read_input_dimensions_pp(fname_ice_prim,xdim,ydim,verbose)
 
    write(*,*) '***** ICE *****'
    write(*,*) 'read ice primary'
-   call set_l2_input_struct_2d_primary_all(l2_input_2dice_primary,xdim,ydim, &
-      indexing)
-   call read_inter_file_all(fnameice_prim,l2_input_2dice_primary,xdim,ydim, &
+   call alloc_input_data_primary_all(input_data_ice_primary,xdim,ydim,indexing)
+   call read_primary_file_all(fname_ice_prim,input_data_ice_primary,xdim,ydim, &
       indexing,global_atts,source_atts,verbose)
    if (L2_secondary_outputpath_and_file .ne. '') then
       write(*,*) 'read ice secondary'
-      call set_l2_input_struct_2d_secondary_all(l2_input_2dice_secondary,xdim,ydim, &
+      call alloc_input_data_secondary_all(input_data_ice_secondary,xdim,ydim, &
          indexing)
-      call read_inter_sec_file_all(fnameice_sec,l2_input_2dice_secondary,xdim,ydim, &
-         indexing,verbose)
+      call read_secondary_file_all(fname_ice_sec,input_data_ice_secondary,xdim, &
+         ydim,indexing,verbose)
    endif
 
    write(*,*) '***** WAT *****'
    write(*,*) 'read wat primary'
-   call set_l2_input_struct_2d_primary_class(l2_input_2dwat_primary,xdim,ydim, &
-      indexing)
-   call read_inter_file_class(fnamewat_prim,l2_input_2dwat_primary,xdim,ydim, &
+   call alloc_input_data_primary_class(input_data_wat_primary,xdim,ydim,indexing)
+   call read_primary_file_class(fname_wat_prim,input_data_wat_primary,xdim,ydim, &
       indexing,global_atts,source_atts,verbose)
    if (L2_secondary_outputpath_and_file .ne. '') then
       write(*,*) 'read wat secondary'
-      call set_l2_input_struct_2d_secondary_class(l2_input_2dwat_secondary,xdim,ydim, &
+      call alloc_input_data_secondary_class(input_data_wat_secondary,xdim,ydim, &
          indexing)
-      call read_inter_sec_file_class(fnamewat_sec,l2_input_2dwat_secondary,xdim,ydim, &
-         indexing,verbose)
+      call read_secondary_file_class(fname_wat_sec,input_data_wat_secondary,xdim, &
+         ydim,indexing,verbose)
    endif
 
    mli_flag=0
    if (mli_flag .gt. 0) then
       write(*,*) '***** MLI *****'
       write(*,*) 'read mli primary'
-      call set_l2_input_struct_2d_primary_class(l2_input_2dmli_primary,xdim,ydim)
-      call read_inter_file_class(fnamemli_prim,l2_input_2dmli_primary,xdim,ydim, &
+      call alloc_input_data_primary_class(input_data_mli_primary,xdim,ydim)
+      call read_primary_file_class(fname_mli_prim,input_data_mli_primary,xdim,ydim, &
          global_atts,source_atts,verbose)
    end if
 
@@ -345,8 +343,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
          !default: ICE wins, meaning only ice structure is overwritten
          !and used in the end for the output
-         l2_input_2dice_primary%phase(i,j)=iphaseice
-         l2_input_2dice_primary%phase_post(i,j) = iphaseice
+         input_data_ice_primary%phase(i,j)=iphaseice
+         input_data_ice_primary%phase_post(i,j) = iphaseice
          !Information of Pavolonis cloud type
          !C,N,F,W,S,M,I,Ci,O
          !Liquid cloud phase comprises the following categories:
@@ -361,143 +359,143 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
          ! here apply Pavolonis phase information to select retrieval phase variables
          ! select water type overwrite ice
-         if (l2_input_2dice_primary%cldtype(i,j) .gt. 1 .and. &
-             l2_input_2dice_primary%cldtype(i,j) .lt. 5 ) then
+         if (input_data_ice_primary%cldtype(i,j) .gt. 1 .and. &
+             input_data_ice_primary%cldtype(i,j) .lt. 5 ) then
 
             phaseflag(i,j) = 1_byte
             if ((.not. one_phase_only) .and. & ! only reclassify if both phases were processed
-               (((l2_input_2dwat_primary%ctt(i,j) .lt. 233.16) .and. &
-                 (l2_input_2dwat_primary%ctt(i,j) .ne. sreal_fill_value)) .and. &
-                ((l2_input_2dice_primary%ctt(i,j) .lt. 273.16 ) .and. &
-                 (l2_input_2dice_primary%ctt(i,j) .ne. sreal_fill_value)))) &
+               (((input_data_wat_primary%ctt(i,j) .lt. 233.16) .and. &
+                 (input_data_wat_primary%ctt(i,j) .ne. sreal_fill_value)) .and. &
+                ((input_data_ice_primary%ctt(i,j) .lt. 273.16 ) .and. &
+                 (input_data_ice_primary%ctt(i,j) .ne. sreal_fill_value)))) &
                phaseflag(i,j) = 2_byte
             else
                phaseflag(i,j) = 2_byte
                if ((.not. one_phase_only ) .and. & ! only reclassify if both phases were processed
-                   ((l2_input_2dice_primary%ctt(i,j) .ge. 273.16) .and. &
-                    (l2_input_2dwat_primary%ctt(i,j) .ge. 233.16))) &
+                   ((input_data_ice_primary%ctt(i,j) .ge. 273.16) .and. &
+                    (input_data_wat_primary%ctt(i,j) .ge. 233.16))) &
                phaseflag(i,j) = 1_byte
             end if
 
             if (phaseflag(i,j) .eq. 1_byte) then
 
                ! primary file
-               l2_input_2dice_primary%cot(i,j) = &
-                     l2_input_2dwat_primary%cot(i,j)
-               l2_input_2dice_primary%ref(i,j) = &
-                     l2_input_2dwat_primary%ref(i,j)
-               l2_input_2dice_primary%ctp(i,j) = &
-                     l2_input_2dwat_primary%ctp(i,j)
-               l2_input_2dice_primary%stemp(i,j) = &
-                     l2_input_2dwat_primary%stemp(i,j)
-               l2_input_2dice_primary%cth(i,j) = &
-                     l2_input_2dwat_primary%cth(i,j)
-               l2_input_2dice_primary%cth_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%cth_uncertainty(i,j)
-               l2_input_2dice_primary%ctt(i,j) = &
-                     l2_input_2dwat_primary%ctt(i,j)
-               l2_input_2dice_primary%ctt_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%ctt_uncertainty(i,j)
-               l2_input_2dice_primary%cwp(i,j) = &
-                     l2_input_2dwat_primary%cwp(i,j)
-               l2_input_2dice_primary%cloud_albedo(i,j,:) = &
-                     l2_input_2dwat_primary%cloud_albedo(i,j,:)
+               input_data_ice_primary%cot(i,j) = &
+                     input_data_wat_primary%cot(i,j)
+               input_data_ice_primary%ref(i,j) = &
+                     input_data_wat_primary%ref(i,j)
+               input_data_ice_primary%ctp(i,j) = &
+                     input_data_wat_primary%ctp(i,j)
+               input_data_ice_primary%stemp(i,j) = &
+                     input_data_wat_primary%stemp(i,j)
+               input_data_ice_primary%cth(i,j) = &
+                     input_data_wat_primary%cth(i,j)
+               input_data_ice_primary%cth_uncertainty(i,j) = &
+                     input_data_wat_primary%cth_uncertainty(i,j)
+               input_data_ice_primary%ctt(i,j) = &
+                     input_data_wat_primary%ctt(i,j)
+               input_data_ice_primary%ctt_uncertainty(i,j) = &
+                     input_data_wat_primary%ctt_uncertainty(i,j)
+               input_data_ice_primary%cwp(i,j) = &
+                     input_data_wat_primary%cwp(i,j)
+               input_data_ice_primary%cloud_albedo(i,j,:) = &
+                     input_data_wat_primary%cloud_albedo(i,j,:)
 
-               l2_input_2dice_primary%cot_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%cot_uncertainty(i,j)
-               l2_input_2dice_primary%ref_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%ref_uncertainty(i,j)
-               l2_input_2dice_primary%ctp_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%ctp_uncertainty(i,j)
-               l2_input_2dice_primary%cc_total_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%cc_total_uncertainty(i,j)
-               l2_input_2dice_primary%stemp_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%stemp_uncertainty(i,j)
-               l2_input_2dice_primary%cwp_uncertainty(i,j) = &
-                     l2_input_2dwat_primary%cwp_uncertainty(i,j)
+               input_data_ice_primary%cot_uncertainty(i,j) = &
+                     input_data_wat_primary%cot_uncertainty(i,j)
+               input_data_ice_primary%ref_uncertainty(i,j) = &
+                     input_data_wat_primary%ref_uncertainty(i,j)
+               input_data_ice_primary%ctp_uncertainty(i,j) = &
+                     input_data_wat_primary%ctp_uncertainty(i,j)
+               input_data_ice_primary%cc_total_uncertainty(i,j) = &
+                     input_data_wat_primary%cc_total_uncertainty(i,j)
+               input_data_ice_primary%stemp_uncertainty(i,j) = &
+                     input_data_wat_primary%stemp_uncertainty(i,j)
+               input_data_ice_primary%cwp_uncertainty(i,j) = &
+                     input_data_wat_primary%cwp_uncertainty(i,j)
 
-               l2_input_2dice_primary%convergence(i,j) = &
-                     l2_input_2dwat_primary%convergence(i,j)
+               input_data_ice_primary%convergence(i,j) = &
+                     input_data_wat_primary%convergence(i,j)
 
-               l2_input_2dice_primary%niter(i,j) = &
-                     l2_input_2dwat_primary%niter(i,j)
+               input_data_ice_primary%niter(i,j) = &
+                     input_data_wat_primary%niter(i,j)
 
-               l2_input_2dice_primary%phase(i,j) = &
+               input_data_ice_primary%phase(i,j) = &
                      iphasewat
 
-               l2_input_2dice_primary%costja(i,j) = &
-                     l2_input_2dwat_primary%costja(i,j)
-               l2_input_2dice_primary%costjm(i,j) = &
-                     l2_input_2dwat_primary%costjm(i,j)
+               input_data_ice_primary%costja(i,j) = &
+                     input_data_wat_primary%costja(i,j)
+               input_data_ice_primary%costjm(i,j) = &
+                     input_data_wat_primary%costjm(i,j)
 
-               l2_input_2dice_primary%qcflag(i,j) = &
-                     l2_input_2dwat_primary%qcflag(i,j)
+               input_data_ice_primary%qcflag(i,j) = &
+                     input_data_wat_primary%qcflag(i,j)
 
                ! secondary file
                if (L2_secondary_outputpath_and_file .ne. '') then
-                  l2_input_2dice_secondary%ctp_ap(i,j) = &
-                        l2_input_2dwat_secondary%ctp_ap(i,j)
-                  l2_input_2dice_secondary%ctp_fg(i,j) = &
-                        l2_input_2dwat_secondary%ctp_fg(i,j)
-                  l2_input_2dice_secondary%ref_ap(i,j) = &
-                        l2_input_2dwat_secondary%ref_ap(i,j)
-                  l2_input_2dice_secondary%ref_fg(i,j) = &
-                        l2_input_2dwat_secondary%ref_fg(i,j)
-                  l2_input_2dice_secondary%cot_ap(i,j) = &
-                        l2_input_2dwat_secondary%cot_ap(i,j)
-                  l2_input_2dice_secondary%cot_fg(i,j) = &
-                        l2_input_2dwat_secondary%cot_fg(i,j)
-                  l2_input_2dice_secondary%stemp_ap(i,j) = &
-                        l2_input_2dwat_secondary%stemp_ap(i,j)
-                  l2_input_2dice_secondary%stemp_fg(i,j) = &
-                        l2_input_2dwat_secondary%stemp_fg(i,j)
+                  input_data_ice_secondary%ctp_ap(i,j) = &
+                        input_data_wat_secondary%ctp_ap(i,j)
+                  input_data_ice_secondary%ctp_fg(i,j) = &
+                        input_data_wat_secondary%ctp_fg(i,j)
+                  input_data_ice_secondary%ref_ap(i,j) = &
+                        input_data_wat_secondary%ref_ap(i,j)
+                  input_data_ice_secondary%ref_fg(i,j) = &
+                        input_data_wat_secondary%ref_fg(i,j)
+                  input_data_ice_secondary%cot_ap(i,j) = &
+                        input_data_wat_secondary%cot_ap(i,j)
+                  input_data_ice_secondary%cot_fg(i,j) = &
+                        input_data_wat_secondary%cot_fg(i,j)
+                  input_data_ice_secondary%stemp_ap(i,j) = &
+                        input_data_wat_secondary%stemp_ap(i,j)
+                  input_data_ice_secondary%stemp_fg(i,j) = &
+                        input_data_wat_secondary%stemp_fg(i,j)
 
-                  l2_input_2dice_secondary%y0(i,j,:) = &
-                        l2_input_2dwat_secondary%y0(i,j,:)
+                  input_data_ice_secondary%y0(i,j,:) = &
+                        input_data_wat_secondary%y0(i,j,:)
 
-                  l2_input_2dice_secondary%residuals(i,j,:) = &
-                        l2_input_2dwat_secondary%residuals(i,j,:)
+                  input_data_ice_secondary%residuals(i,j,:) = &
+                        input_data_wat_secondary%residuals(i,j,:)
                end if
             end if
 
-            l2_input_2dice_primary%cc_total(i,j) = &
-               l2_input_2dice_primary%cldmask(i,j)
-!           l2_input_2dice_primary%cc_total_uncertainty(i,j) = &
-!              l2_input_2dice_primary%cldmask_uncertainty(i,j)
+            input_data_ice_primary%cc_total(i,j) = &
+               input_data_ice_primary%cldmask(i,j)
+!           input_data_ice_primary%cc_total_uncertainty(i,j) = &
+!              input_data_ice_primary%cldmask_uncertainty(i,j)
 
             ! if tau too high, set to max value not to fill value
-            if (l2_input_2dice_primary%cot(i,j) .ge. dither) then
-               if (l2_input_2dice_primary%cot_uncertainty(i,j) .le. &
+            if (input_data_ice_primary%cot(i,j) .ge. dither) then
+               if (input_data_ice_primary%cot_uncertainty(i,j) .le. &
                    log10precision) then
                   newcot=-999.0
-               else if(l2_input_2dice_primary%cot_uncertainty(i,j) &
-                  +log(l2_input_2dice_primary%cot(i,j)) .gt. &
+               else if(input_data_ice_primary%cot_uncertainty(i,j) &
+                  +log(input_data_ice_primary%cot(i,j)) .gt. &
                   log10huge_value) then
                   newcot=320.0
                else
-                  newcot=10.0**(l2_input_2dice_primary%cot_uncertainty(i,j)) &
-                     *l2_input_2dice_primary%cot(i,j)
+                  newcot=10.0**(input_data_ice_primary%cot_uncertainty(i,j)) &
+                     *input_data_ice_primary%cot(i,j)
                end if
             else
                newcot=-999.0
             end if
-            l2_input_2dice_primary%cot_uncertainty(i,j)=newcot
+            input_data_ice_primary%cot_uncertainty(i,j)=newcot
 
             ! Don't set fill values and leave final masking of products to user
             ! obsolete: if cloud free, set primary retrieval parameters to fill value
-            if(l2_input_2dice_primary%cc_total(i,j) .eq. 0.0) then
+            if(input_data_ice_primary%cc_total(i,j) .eq. 0.0) then
                ! set phase to clear/unknown
-               l2_input_2dice_primary%phase(i,j)=IPhaseClU
-               l2_input_2dice_primary%phase_post(i,j)=IPhaseClU
+               input_data_ice_primary%phase(i,j)=IPhaseClU
+               input_data_ice_primary%phase_post(i,j)=IPhaseClU
             end if
          end do
       end do
 
       ! deallocate the water structure
 
-      call unset_l2_input_struct_2d_primary_class(l2_input_2dwat_primary)
+      call dealloc_input_data_primary_class(input_data_wat_primary)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call unset_l2_input_struct_2d_secondary_class(l2_input_2dwat_secondary)
+         call dealloc_input_data_secondary_class(input_data_wat_secondary)
       endif
 
       ! now write things out
@@ -511,51 +509,51 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
       ! allocate the structures which hold the output in its final form
-      call alloc_spixel_scan_out_pp(ixstart, ixstop, iystart, iystop, indexing, &
-         spixel_scan_out)
+      call alloc_output_data_primary_pp(ixstart, ixstop, iystart, iystop, &
+         indexing, output_primary)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call alloc_spixel_scan_out_sec_pp(ixstart, ixstop, iystart, iystop, indexing, &
-            spixel_scan_out_sec)
+         call alloc_output_data_secondary_pp(ixstart, ixstop, iystart, iystop, &
+            indexing, output_secondary)
       end if
 
       ! define variables
          call def_vars_primary_pp(ncid_primary, indexing, dims_var,  &
-            spixel_scan_out, global_atts, verbose)
+            output_primary, global_atts, verbose)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call def_vars_secondary_pp(ncid_secondary, indexing, dims_var, &
-            spixel_scan_out_sec, global_atts, verbose)
+            output_secondary, global_atts, verbose)
       end if
 
       ! put results in final output arrays with final datatypes
       do j=iystart,iystop
          do i=ixstart,ixstop
-            call prepare_primary_pp(i, j, indexing, l2_input_2dice_primary, &
-               spixel_scan_out)
+            call prepare_primary_pp(i, j, indexing, input_data_ice_primary, &
+               output_primary)
             if (L2_secondary_outputpath_and_file .ne. '') then
-               call prepare_secondary_pp(i, j, indexing, l2_input_2dice_secondary, &
-                  spixel_scan_out_sec)
+               call prepare_secondary_pp(i, j, indexing, input_data_ice_secondary, &
+                  output_secondary)
             end if
          end do
       end do
 
       ! deallocate primary file ice input
-      call unset_l2_input_struct_2d_primary_all(l2_input_2dice_primary)
+      call dealloc_input_data_primary_all(input_data_ice_primary)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call unset_l2_input_struct_2d_secondary_all(l2_input_2dice_secondary)
+         call dealloc_input_data_secondary_all(input_data_ice_secondary)
       endif
 
       ! now write everything in one big chunk of data to disk
       call write_primary_pp(ncid_primary, ixstart, ixstop, iystart, iystop, &
-         indexing, spixel_scan_out, global_atts)
+         indexing, output_primary, global_atts)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call write_secondary_pp(ncid_secondary, ixstart, ixstop, iystart, iystop, &
-            indexing, spixel_scan_out_sec, global_atts)
+            indexing, output_secondary, global_atts)
       end if
 
       ! deallocate output structure
-      call dealloc_spixel_scan_out_pp(spixel_scan_out)
+      call dealloc_output_data_primary_pp(output_primary)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call dealloc_spixel_scan_out_sec_pp(spixel_scan_out_sec)
+         call dealloc_output_data_secondary_pp(output_secondary)
       end if
 
 

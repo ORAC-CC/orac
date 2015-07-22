@@ -8,7 +8,7 @@
 !
 ! History:
 !    20th Nov 2914, SteSta + OS: implemented bounds check (noob)
-!    2014/12/03 CP added in common_constants should eventually remove vartypes_pp
+!    2014/12/03 CP added in common_constants should eventually remove postproc_constants
 !    2015/02/05 OS changed nint to lint
 
 ! Bugs:
@@ -18,8 +18,8 @@
 subroutine neural_net(nneurons,ninput,noutput,minmax_train,inv,outv,input,scales,oscales,&
      & cutoff,bias_i,bias_h,temperature,output,noob)
 
-  use vartypes_pp
   use common_constants
+  use postproc_constants
 
   !use neural_net_constants
 
@@ -110,7 +110,7 @@ subroutine sigmoide_function(temperature,cutoff,input,sigmoide)
   !this functions evaluates the sigmoidal function
   !temperature and cutoff are constants coming from outside
 
-  use vartypes_pp
+  use postproc_constants
   use common_constants
 
   implicit none

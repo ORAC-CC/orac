@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: vartypes_pp.F90
+! Name: postproc_constants.F90
 !
 ! Purpose: F90 Module file which declares variable types and some parameters.
 !
@@ -26,9 +26,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module vartypes_pp
+module postproc_constants
 
-use common_constants
+   use common_constants
 
    implicit none
 
@@ -66,4 +66,4 @@ use common_constants
    logical, parameter :: shuffle_byte=.TRUE.
    logical, parameter :: shuffle_stint_flag=.TRUE.
 
-end module vartypes_pp
+end module postproc_constants

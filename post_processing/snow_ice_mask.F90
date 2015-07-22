@@ -36,7 +36,7 @@
 !   24/10/2014, Oliver Sus: shortened overly long line
 !   20/11/2014, Oliver Sus: deactivated use of module neural_net_constants
 !   2014/12/03, CP: added in common_constants should eventually remove
-!      vartypes_pp
+!      postproc_constants
 !   2015/01/12, CP: added in more comments to make it clearer.
 !   2015/01/19, CP: added in some more stringent cloud clearing
 !   2015/02/09, CP: applied mask during night updated to work for AVHRR and
@@ -56,22 +56,21 @@
 !   .67,.87,1.6,3.7,11,12- heritage channels only used at the moment
 !-------------------------------------------------------------------------------
 
-subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
+subroutine snow_ice_mask(input_primary,input_secondary, &
                          snow_ice_flag,cinst,i,j)
 
    use common_constants
+   use input_routines
    use netcdf
-   use scanline_structure
-   use structures_pp
-   use vartypes_pp
+   use postproc_constants
 
    implicit none
 
-   type(l2_input_struct_2d_primary),   intent(in)  :: l2_input_2dice_primary
-   type(l2_input_struct_2d_secondary), intent(in)  :: l2_input_2d_secondary
-   integer,                            intent(out) :: snow_ice_flag
-   character(len=var_length),          intent(in)  :: cinst
-   integer,                            intent(in)  :: i,j
+   type(input_data_primary),   intent(in)  :: input_primary
+   type(input_data_secondary), intent(in)  :: input_secondary
+   integer,                    intent(out) :: snow_ice_flag
+   character(len=var_length),  intent(in)  :: cinst
+   integer,                    intent(in)  :: i,j
 
    real(kind=sreal) :: ch1,ch2,ch3,ch4,ch5,ch6,ch7,ch1alb,ch2alb
    real(kind=sreal) :: eq5,eq6,eq7,eq8
@@ -117,29 +116,29 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
 
    ! instrument specific
    if (cinst .eq. 'AATSR') then
-      ch1alb=l2_input_2d_secondary%albedo_IN_CHANNEL_NO_2(i,j)
-      ch2alb=l2_input_2d_secondary%albedo_IN_CHANNEL_NO_3(i,j)
-      ch1=l2_input_2d_secondary%reflectance_in_channel_no_2(i,j)
-      ch2=l2_input_2d_secondary%reflectance_in_channel_no_3(i,j)
-      ch3=l2_input_2d_secondary%brightness_temperature_in_channel_no_5(i,j)
-      ch4=l2_input_2d_secondary%brightness_temperature_in_channel_no_6(i,j)
-      ch5=l2_input_2d_secondary%brightness_temperature_in_channel_no_7(i,j)
+      ch1alb=input_secondary%albedo_IN_CHANNEL_NO_2(i,j)
+      ch2alb=input_secondary%albedo_IN_CHANNEL_NO_3(i,j)
+      ch1=input_secondary%reflectance_in_channel_no_2(i,j)
+      ch2=input_secondary%reflectance_in_channel_no_3(i,j)
+      ch3=input_secondary%brightness_temperature_in_channel_no_5(i,j)
+      ch4=input_secondary%brightness_temperature_in_channel_no_6(i,j)
+      ch5=input_secondary%brightness_temperature_in_channel_no_7(i,j)
    else if (cinst .eq. 'MODIS') then
-      ch1alb=l2_input_2d_secondary%albedo_IN_CHANNEL_NO_1(i,j)
-      ch2alb=l2_input_2d_secondary%albedo_IN_CHANNEL_NO_2(i,j)
-      ch1=l2_input_2d_secondary%reflectance_in_channel_no_1(i,j)
-      ch2=l2_input_2d_secondary%reflectance_in_channel_no_2(i,j)
-      ch3=l2_input_2d_secondary%brightness_temperature_in_channel_no_20(i,j)
-      ch4=l2_input_2d_secondary%brightness_temperature_in_channel_no_31(i,j)
-      ch5=l2_input_2d_secondary%brightness_temperature_in_channel_no_32(i,j)
+      ch1alb=input_secondary%albedo_IN_CHANNEL_NO_1(i,j)
+      ch2alb=input_secondary%albedo_IN_CHANNEL_NO_2(i,j)
+      ch1=input_secondary%reflectance_in_channel_no_1(i,j)
+      ch2=input_secondary%reflectance_in_channel_no_2(i,j)
+      ch3=input_secondary%brightness_temperature_in_channel_no_20(i,j)
+      ch4=input_secondary%brightness_temperature_in_channel_no_31(i,j)
+      ch5=input_secondary%brightness_temperature_in_channel_no_32(i,j)
    else if (cinst .eq. 'AVHRR') then
-      ch1alb=l2_input_2d_secondary%albedo_IN_CHANNEL_NO_1(i,j)
-      ch2alb=l2_input_2d_secondary%albedo_IN_CHANNEL_NO_2(i,j)
-      ch1=l2_input_2d_secondary%reflectance_in_channel_no_1(i,j)
-      ch2=l2_input_2d_secondary%reflectance_in_channel_no_2(i,j)
-      ch3=l2_input_2d_secondary%brightness_temperature_in_channel_no_4(i,j)
-      ch4=l2_input_2d_secondary%brightness_temperature_in_channel_no_5(i,j)
-      ch5=l2_input_2d_secondary%brightness_temperature_in_channel_no_6(i,j)
+      ch1alb=input_secondary%albedo_IN_CHANNEL_NO_1(i,j)
+      ch2alb=input_secondary%albedo_IN_CHANNEL_NO_2(i,j)
+      ch1=input_secondary%reflectance_in_channel_no_1(i,j)
+      ch2=input_secondary%reflectance_in_channel_no_2(i,j)
+      ch3=input_secondary%brightness_temperature_in_channel_no_4(i,j)
+      ch4=input_secondary%brightness_temperature_in_channel_no_5(i,j)
+      ch5=input_secondary%brightness_temperature_in_channel_no_6(i,j)
    end if
 
    ! set up the channels for each instrument
@@ -164,13 +163,13 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
       eq6_value=abs((ch3-ch5)/ch3)
 
       ! check what illumination eg. day/night
-      if(l2_input_2dice_primary%illum(i,j) .eq. 1_byte .or.&
-           & l2_input_2dice_primary%illum(i,j) .eq. 4_byte .or. &
-           & l2_input_2dice_primary%illum(i,j) .eq. 5_byte .or.&
-           & l2_input_2dice_primary%illum(i,j) .eq. 6_byte .or. &
-           & l2_input_2dice_primary%illum(i,j) .eq. 7_byte .or.&
-           & l2_input_2dice_primary%illum(i,j) .eq. 8_byte .or. &
-           & l2_input_2dice_primary%illum(i,j) .eq. 9_byte  ) then
+      if(input_primary%illum(i,j) .eq. 1_byte .or.&
+           & input_primary%illum(i,j) .eq. 4_byte .or. &
+           & input_primary%illum(i,j) .eq. 5_byte .or.&
+           & input_primary%illum(i,j) .eq. 6_byte .or. &
+           & input_primary%illum(i,j) .eq. 7_byte .or.&
+           & input_primary%illum(i,j) .eq. 8_byte .or. &
+           & input_primary%illum(i,j) .eq. 9_byte  ) then
 
          ! day Istomina eq. 8 day only currently not used.
          eq8_value=(ch2-ch1)/ch2
@@ -179,24 +178,24 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
             ! apply CTH thresholds different over sea than over land
 
             ! over sea
-            if (l2_input_2dice_primary%lsflag(i,j) .eq. 0_byte) then
+            if (input_primary%lsflag(i,j) .eq. 0_byte) then
 
-               if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_sea) then
+               if (input_primary%cth(i,j) .lt. cth_thres_sea) then
                   snow_ice_flag=1
                end if!cth
             else
                ! over land
-               if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_land) then
+               if (input_primary%cth(i,j) .lt. cth_thres_land) then
                   snow_ice_flag=1
                end if !cth
             end if ! land/sea
          end if ! istomina tests
 
          ! possibility to add some more tests based on optical depth/ height/effective radius
-         !        if (l2_input_2dice_primary%lsflag(i,j) .eq. 0_byte) then
+         !        if (input_primary%lsflag(i,j) .eq. 0_byte) then
  	! sea
-         !           if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_opd_sea) then
-         !              if (l2_input_2dice_primary%cot(i,j) .gt. opd_thres .and. l2_input_2dice_primary%ref(i,j) .gt. re_min .and. l2_input_2dice_primary%ref(i,j) .lt. re_max ) then
+         !           if (input_primary%cth(i,j) .lt. cth_thres_opd_sea) then
+         !              if (input_primary%cot(i,j) .gt. opd_thres .and. input_primary%ref(i,j) .gt. re_min .and. input_primary%ref(i,j) .lt. re_max ) then
 
          !                 snow_ice_flag=1
 
@@ -206,8 +205,8 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
 
          !        else
          ! land
-         !           if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_opd_land) then
-         !              if (l2_input_2dice_primary%cot(i,j) .gt. opd_thres .and. l2_input_2dice_primary%ref(i,j) .gt. re_min .and. l2_input_2dice_primary%ref(i,j) .lt. re_max ) then
+         !           if (input_primary%cth(i,j) .lt. cth_thres_opd_land) then
+         !              if (input_primary%cot(i,j) .gt. opd_thres .and. input_primary%ref(i,j) .gt. re_min .and. input_primary%ref(i,j) .lt. re_max ) then
          !                 snow_ice_flag=1
 
          !              end if
@@ -219,14 +218,14 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
          if ((eq5_value .lt. eq5_thres) .and. (eq6_value .lt. eq6_thres)) then
 
             !over sea
-            if (l2_input_2dice_primary%lsflag(i,j) .eq. 0_byte) then
-               if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_sea) then
+            if (input_primary%lsflag(i,j) .eq. 0_byte) then
+               if (input_primary%cth(i,j) .lt. cth_thres_sea) then
                   snow_ice_flag=1
                end if
             else
                !over land
                ! apply CTH thresholds different over sea than over land
-               if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_land) then
+               if (input_primary%cth(i,j) .lt. cth_thres_land) then
                   snow_ice_flag=1
                end if !cth
             end if ! land/sea
@@ -241,8 +240,8 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
 
       ! this test used to reduce too much iwp over greenland/poles
       if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
-         if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_sea) then
-            if (l2_input_2dice_primary%ref(i,j) .gt. re_min .and. l2_input_2dice_primary%cot(i,j) .gt. opd_thres) then
+         if (input_primary%cth(i,j) .lt. cth_thres_sea) then
+            if (input_primary%ref(i,j) .gt. re_min .and. input_primary%cot(i,j) .gt. opd_thres) then
                snow_ice_flag=1
             end if
          end if
@@ -250,7 +249,7 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
 
       ! this test used to reduce too much iwp over greenland
       if ((eq5_value .lt. eq5_thres_iwp) .and. (eq6_value .lt. eq6_thres_iwp)) then
-         if (l2_input_2dice_primary%cot(i,j) .gt. opd_max) then
+         if (input_primary%cot(i,j) .gt. opd_max) then
             snow_ice_flag=1
          end if
       end if
@@ -264,8 +263,8 @@ subroutine snow_ice_mask(l2_input_2dice_primary,l2_input_2d_secondary, &
    ! test could have implications globally particually for thin cloud put too low
 
 !   if ((eq5_value .lt. eq5_thres_strict) .and. (eq6_value .lt. eq6_thres_strict)) then
-!      if (l2_input_2dice_primary%cth(i,j) .lt. cth_thres_land) then
-!         if  (l2_input_2dice_primary%ref(i,j) .gt. re_min) then
+!      if (input_primary%cth(i,j) .lt. cth_thres_land) then
+!         if  (input_primary%ref(i,j) .gt. re_min) then
 !            snow_ice_flag=1
 !         end if
 !      end if
