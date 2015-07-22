@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: prepare_primary.F90
+! Name: prepare_primary_pp.F90
 !
 ! Purpose:
 ! Map internal representation of variables to output representation by applying
@@ -39,7 +39,6 @@ subroutine prepare_primary_pp(i, j, indexing, input_data, output_data)
 
    use input_routines
    use orac_ncdf
-   use output_routines
 
    implicit none
 

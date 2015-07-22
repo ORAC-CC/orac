@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: input_data.F90
+! Name: input_routines.F90
 !
 ! Purpose: F90 Module file which declares user defined variable type structures.
 !
@@ -105,5 +105,15 @@ module input_routines
       real(kind=sreal), dimension(:,:,:), pointer :: residuals
 
    end type input_data_secondary
+
+contains
+
+#include "alloc_input_data.F90"
+#include "dealloc_input_data.F90"
+
+#include "read_input_dimensions_pp.F90"
+
+#include "read_primary_file.F90"
+#include "read_secondary_file.F90"
 
 end module input_routines

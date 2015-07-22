@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: set_struct_pp.F90
+! Name: dealloc_input_data.F90
 !
 ! Purpose:
 ! File contains several subroutines to allocate and initialize structures and
@@ -39,7 +39,6 @@
 
 subroutine dealloc_input_data_primary_common(input_data)
 
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -78,7 +77,6 @@ end subroutine dealloc_input_data_primary_common
 
 subroutine dealloc_input_data_primary_all(input_data)
 
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -114,7 +112,6 @@ end subroutine dealloc_input_data_primary_all
 
 subroutine dealloc_input_data_primary_class(input_data)
 
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -128,7 +125,6 @@ end subroutine dealloc_input_data_primary_class
 
 subroutine dealloc_input_data_common(input_data)
 
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -153,7 +149,6 @@ end subroutine dealloc_input_data_common
 
 subroutine dealloc_input_data_secondary_all(input_data)
 
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -174,7 +169,6 @@ end subroutine dealloc_input_data_secondary_all
 
 subroutine dealloc_input_data_secondary_class(input_data)
 
-   use input_routines
    use postproc_constants
 
    implicit none

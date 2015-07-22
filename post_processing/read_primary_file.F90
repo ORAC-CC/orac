@@ -38,7 +38,6 @@ subroutine read_primary_file_common(ncid,input_data,xdim,ydim,indexing, &
                                     global_atts,verbose)
 
    use global_attributes
-   use input_routines
    use netcdf
    use orac_ncdf
    use postproc_constants
@@ -105,7 +104,6 @@ subroutine read_primary_file_all(fname,input_data,xdim,ydim,indexing, &
                                  global_atts,source_atts,verbose)
 
    use global_attributes
-   use input_routines
    use netcdf
    use orac_ncdf
    use source_attributes
@@ -172,7 +170,6 @@ subroutine read_primary_file_class(fname,input_data,xdim,ydim,indexing, &
                                    global_atts,verbose)
 
    use global_attributes
-   use input_routines
    use netcdf
    use orac_ncdf
    use postproc_constants

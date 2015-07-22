@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_refl_and_bt.F90
+! Name: read_secondary_file.F90
 !
 ! Purpose:
 ! The file contains a collection of subroutines which define netcdf output for
@@ -37,7 +37,6 @@ subroutine read_secondary_file_common(ncid, input_data, xdim, ydim, &
                                       indexing, verbose)
 
    use common_constants
-   use input_routines
    use netcdf
    use orac_ncdf
    use postproc_constants
@@ -96,7 +95,6 @@ subroutine read_secondary_file_all(fname, input_data, xdim, ydim, &
                                    indexing, verbose)
 
    use common_constants
-   use input_routines
    use netcdf
    use orac_ncdf
    use postproc_constants
@@ -155,7 +153,6 @@ subroutine read_secondary_file_class(fname, input_data, xdim, ydim, &
                                      indexing, verbose)
 
    use common_constants
-   use input_routines
    use netcdf
    use orac_ncdf
    use postproc_constants

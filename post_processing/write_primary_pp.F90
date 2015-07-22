@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: write_primary.F90
+! Name: write_primary_pp.F90
 !
 ! Purpose:
 ! Actual writing of the primary output data to the netcdf file is carried out.
@@ -35,7 +35,6 @@ subroutine write_primary_pp(ncid, ixstart, ixstop, iystart, iystop, indexing, &
    use global_attributes
    use input_routines
    use orac_ncdf
-   use output_routines
    use postproc_constants
 
    implicit none

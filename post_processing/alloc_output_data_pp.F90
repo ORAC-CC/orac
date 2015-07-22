@@ -39,7 +39,6 @@ subroutine alloc_output_data_primary_pp(ixstart,ixstop,iystart,iystop,indexing, 
 
    use common_constants
    use input_routines
-   use output_routines
    use postproc_constants
 
    implicit none
@@ -179,7 +178,6 @@ subroutine alloc_output_data_secondary_pp(ixstart,ixstop,iystart,iystop,indexing
 
    use common_constants
    use input_routines
-   use output_routines
    use postproc_constants
 
    implicit none

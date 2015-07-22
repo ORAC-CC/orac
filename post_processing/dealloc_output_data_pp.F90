@@ -36,7 +36,6 @@
 subroutine dealloc_output_data_primary_pp(output_data)
 
    use common_constants
-   use output_routines
    use postproc_constants
 
    implicit none
@@ -96,7 +95,6 @@ end subroutine dealloc_output_data_primary_pp
 subroutine dealloc_output_data_secondary_pp(output_data)
 
    use common_constants
-   use output_routines
    use postproc_constants
 
    implicit none

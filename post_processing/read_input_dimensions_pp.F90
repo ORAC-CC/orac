@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_input_dimensions.F90
+! Name: read_input_dimensions_pp.F90
 !
 ! Purpose:
 ! The file contains a collection of subroutines which define netcdf output for

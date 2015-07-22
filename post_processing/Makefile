@@ -15,24 +15,11 @@ include $(ORAC_ARCH)
 ORAC_COMMON = ../common
 
 # Define object files to be linked.
-POSTPROC_OBJ_F90 =  $(OBJS)/alloc_input_data.o \
-                    $(OBJS)/dealloc_input_data.o \
-                    $(OBJS)/alloc_output_data_pp.o \
-                    $(OBJS)/dealloc_output_data_pp.o  \
-                    $(OBJS)/def_vars_primary_pp.o \
-                    $(OBJS)/def_vars_secondary_pp.o \
-                    $(OBJS)/input_routines.o \
+POSTPROC_OBJ_F90 =  $(OBJS)/input_routines.o \
                     $(OBJS)/neural_net.o \
                     $(OBJS)/neural_net_constants_pp.o \
                     $(OBJS)/output_routines_pp.o  \
-                    $(OBJS)/write_primary_pp.o \
-                    $(OBJS)/prepare_primary_pp.o \
-                    $(OBJS)/prepare_secondary_pp.o \
-                    $(OBJS)/read_input_dimensions_pp.o \
-                    $(OBJS)/read_primary_file.o \
-                    $(OBJS)/read_secondary_file.o \
-                    $(OBJS)/postproc_constants.o \
-                    $(OBJS)/write_secondary_pp.o
+                    $(OBJS)/postproc_constants.o
 
 POSTPROC_OBJ_MAIN = $(OBJS)/post_process_level2.o
 

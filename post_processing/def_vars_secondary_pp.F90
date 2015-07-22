@@ -30,7 +30,6 @@ subroutine def_vars_secondary_pp(ncid, indexing, dims_var, output_data, &
    use input_routines
    use netcdf
    use orac_ncdf
-   use output_routines
    use postproc_constants
 
    implicit none

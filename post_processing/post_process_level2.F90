@@ -101,7 +101,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use global_attributes
    use input_routines
    use netcdf
-   use neural_net_constants_pp
    use orac_ncdf
    use output_routines
    use source_attributes
@@ -305,7 +304,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'read wat primary'
    call alloc_input_data_primary_class(input_data_wat_primary,xdim,ydim,indexing)
    call read_primary_file_class(fname_wat_prim,input_data_wat_primary,xdim,ydim, &
-      indexing,global_atts,source_atts,verbose)
+      indexing,global_atts,verbose)
    if (L2_secondary_outputpath_and_file .ne. '') then
       write(*,*) 'read wat secondary'
       call alloc_input_data_secondary_class(input_data_wat_secondary,xdim,ydim, &
@@ -318,9 +317,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    if (mli_flag .gt. 0) then
       write(*,*) '***** MLI *****'
       write(*,*) 'read mli primary'
-      call alloc_input_data_primary_class(input_data_mli_primary,xdim,ydim)
+      call alloc_input_data_primary_class(input_data_mli_primary,xdim,ydim,indexing)
       call read_primary_file_class(fname_mli_prim,input_data_mli_primary,xdim,ydim, &
-         global_atts,source_atts,verbose)
+         indexing,global_atts,verbose)
    end if
 
    ! set the loop bounds

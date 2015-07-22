@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: set_struct_pp.F90
+! Name: alloc_input_data.F90
 !
 ! Purpose:
 ! File contains several subroutines to allocate and initialize structures and
@@ -40,7 +40,6 @@
 subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
 
    use common_constants
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -122,7 +121,6 @@ end subroutine alloc_input_data_primary_common
 subroutine alloc_input_data_primary_all(input_data,xdim1km,ydim1km,indexing)
 
    use common_constants
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -182,7 +180,6 @@ end subroutine alloc_input_data_primary_all
 subroutine alloc_input_data_primary_class(input_data,xdim1km,ydim1km,indexing)
 
    use common_constants
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -199,7 +196,6 @@ end subroutine alloc_input_data_primary_class
 subroutine alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing)
 
    use common_constants
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -240,7 +236,6 @@ end subroutine alloc_input_data_secondary_common
 subroutine alloc_input_data_secondary_all(input_data,xdim1km,ydim1km,indexing)
 
    use common_constants
-   use input_routines
    use postproc_constants
 
    implicit none
@@ -263,7 +258,6 @@ end subroutine alloc_input_data_secondary_all
 subroutine alloc_input_data_secondary_class(input_data,xdim1km,ydim1km,indexing)
 
    use common_constants
-   use input_routines
    use postproc_constants
 
    implicit none

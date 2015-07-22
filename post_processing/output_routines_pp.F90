@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: scanline_structure
+! Name: output_routines.F90
 !
 ! Purpose:
 !
@@ -420,5 +420,19 @@ module output_routines
       real(kind=sreal),   dimension(:,:,:,:), pointer :: covariance
 
    end type output_data_secondary_pp
+
+contains
+
+#include "alloc_output_data_pp.F90"
+#include "dealloc_output_data_pp.F90"
+
+#include "def_vars_primary_pp.F90"
+#include "def_vars_secondary_pp.F90"
+
+#include "prepare_primary_pp.F90"
+#include "prepare_secondary_pp.F90"
+
+#include "write_primary_pp.F90"
+#include "write_secondary_pp.F90"
 
 end module output_routines

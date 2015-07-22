@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: write_secondary.F90
+! Name: write_secondary_pp.F90
 !
 ! Purpose:
 ! Actual writing of the secondary output data to the netcdf file is carried out.
@@ -26,7 +26,6 @@ subroutine write_secondary_pp(ncid, ixstart, ixstop, iystart, iystop, indexing, 
    use global_attributes
    use input_routines
    use orac_ncdf
-   use output_routines
    use postproc_constants
 
    implicit none
