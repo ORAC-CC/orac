@@ -1,60 +1,54 @@
-!2014/06/04 MJ changes routine names to "*_pp" to avoid confusion when building libraries.
-!2014/12/03 CP added in common_constants should eventually remove vartypes_pp
-!2015/02/05 OS changed nint to lint
-!2015/02/05 CP updated constants file
-!--------------------------------------------------
-!--------------------------------------------------
-SUBROUTINE read_input_dimensions(fname,xdim,ydim,wo)
-!--------------------------------------------------
-  use netcdf
+!-------------------------------------------------------------------------------
+! Name: read_input_dimensions.F90
+!
+! Purpose:
+! The file contains a collection of subroutines which define netcdf output for
+! different attribute/variable type combinations.
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2014/06/04, MJ: changes routine names to "*_pp" to avoid confusion when
+!    building libraries.
+! 2014/12/03, CP: added in common_constants should eventually remove vartypes_pp
+! 2015/02/05, OS: changed nint to lint
+! 2015/02/05, CP: updated constants file
+! 2015/07/10, GM: Major cleanup and made use of the NetCDF interface in the
+!    common library.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
-  use vartypes_pp
-  use common_constants  
-  use structures_pp
+subroutine read_input_dimensions(fname,xdim,ydim,verbose)
 
-  implicit none
- INTEGER,INTENT(IN) :: wo
-  integer :: ivar,idim,ndim,nvar,nattr,dummyint,iphase
-  integer :: ncid,ierr,ny=5,nx=5
-  character(len=path_length) :: fname,name
-  integer (kind=lint), allocatable :: dimids(:), varids(:), attrids(:), dimlength(:)
-  character(len=varlength), allocatable :: dname(:)
-  
-  character (len=varlength), allocatable, dimension(:) ::  available_names(:)
-  INTEGER(kind=lint),INTENT(OUT) ::  xdim,ydim
+   use common_constants
+   use netcdf
+   use structures_pp
+   use vartypes_pp
+   use orac_ncdf
 
-  call nc_open_pp(ncid,fname,ierr,wo)
-  call nc_info_pp(ncid,ndim,nvar,nattr,wo)
-  
-  
-  allocate(dimids(ndim))
-  dimids=0
-  allocate(dname(ndim))
-  dname=''
-  allocate(dimlength(ndim))
-  dimlength=0
-  allocate(varids(nvar))
-  varids=0
-  allocate(attrids(nattr))
-  attrids=0
+   implicit none
 
+   character(len=path_length), intent(in)  :: fname
+   integer(kind=lint),         intent(out) :: xdim,ydim
+   logical,                    intent(in)  :: verbose
 
-  allocate(available_names(nvar))
-  available_names=''
- 
-  name='across_track'
-  call nc_dim_id_pp(ncid,trim(adjustl(name)),dimids(1),wo)
-  call nc_dim_length_pp(ncid,name,dimids(1),dummyint,wo)
-  dimlength(1)=dummyint
-  xdim=int(dimlength(1),kind=lint)
-  
-  name='along_track'
-  call nc_dim_id_pp(ncid,trim(adjustl(name)),dimids(2),wo)
-  call nc_dim_length_pp(ncid,name,dimids(2),dummyint,wo)
-  dimlength(2)=dummyint
-  ydim=int(dimlength(2),kind=lint)
+   integer :: ncid
 
-  !close  input file
-  ierr=nf90_close(ncid)
+   ! Open file
+   call nc_open(ncid,fname)
 
-end SUBROUTINE read_input_dimensions
+   xdim = nc_dim_length(ncid, 'across_track', verbose)
+   ydim = nc_dim_length(ncid, 'along_track',  verbose)
+
+   ! Close msi file
+   if (nf90_close(ncid) .ne. NF90_NOERR) then
+      write(*,*) 'ERROR: read_input_dimensions(): Error closing file: ', fname
+      stop error_stop_code
+   end if
+
+end subroutine read_input_dimensions

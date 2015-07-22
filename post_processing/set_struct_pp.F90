@@ -1,1004 +1,436 @@
-! Name: set_struct_pp.f90
+!-------------------------------------------------------------------------------
+! Name: set_struct_pp.F90
 !
-!
-! Purpose: File contains several subroutines to allocate and initialize structures and user defined variable types.
-! 
-! 
+! Purpose:
+! File contains several subroutines to allocate and initialize structures and
+! user defined variable types.
 !
 ! Description and Algorithm details:
-!
 !
 ! Arguments:
 ! Name Type In/Out/Both Description
 !
-!
-! Local variables:
-! Name Type Description
-!
-!
 ! History:
-! 2012/02/03 Matthias Jerg cleans out prototype code to prepare repository upload.
-! 15/02/2012 Modified by C Poulsen to do level 2 post processing
-! 7/3/2012  Martin Stengel added missing stemp_ap
-! 7/3/2012  C Poulsen cleaned up
-! 2012/03/18 Caroline Poulsen modified to add cloud flag
-! 2012/06/20 Caroline Poulsen added albedo
-! 2012/07/04 Matthias Jerg fixed several data type bugs
-! 2012/07/06 MJ extensively overhauls and restructures the code
-! 2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
-! 2014/09/20 change phase from 2 to 1, changed arguments of
-!  set_l2_input_struct_2d_secondary added in channels  
-! 2014/09/29 CP added in MODIS variable names 
-! 2014/10/24 OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
-!  (currently deactivated), and nisemask; commented out (de)allocation of variables
-!  for water within if condition iphase = 2 (never true for water)
-! 2014/11/20 OS: some minor editing
-! 2014/11/26 CP: added cloud_albedo
-! 2015/01/26 CP: added multi layer cloud IR only
-!2015/02/07 CP: changed to common constants and tidied up string reading of instrument
-! 2014/11/26 CP: added corrected cloud top height
+! 2012/02/03, MJ: cleans out prototype code to prepare repository upload.
+! 15/02/2012, CP: to do level 2 post processing
+! 07/03/2012, MS: added missing stemp_ap
+! 07/03/2012, CP: cleaned up
+! 2012/03/18, CP: modified to add cloud flag
+! 2012/06/20, CP: added albedo
+! 2012/07/04, MJ fixed several data type bugs
+! 2012/07/06, MJ extensively overhauls and restructures the code
+! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
+! 2014/09/20, change phase from 2 to 1, changed arguments of
+!    set_l2_input_struct_2d_secondary added in channels
+! 2014/09/29, CP: added in MODIS variable names
+! 2014/10/24, OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
+!    (currently deactivated), and nisemask; commented out (de)allocation of
+!    variables for water within if condition iphase = 2 (never true for water)
+! 2014/11/20, OS: some minor editing
+! 2014/11/26, CP: added cloud_albedo
+! 2015/01/26, CP: added multi layer cloud IR only
+! 2015/07/16, GM: Major cleanup.
+!
 ! $Id$
 !
 ! Bugs:
-!
-!none known
-
-!-------------------------------------------
-!-------------------------------------------
-subroutine set_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary,xdim1km,ydim1km)
-!-------------------------------------------
-!-------------------------------------------
-
-  use vartypes_pp
-  use common_constants
-
-  use structures_pp
-
-  implicit none
-
-  integer :: iphase,nchan
-
-  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
-  
-  type(l2_input_struct_2d_primary) :: l2_input_2dice_primary
-  
-  !those do not differ between ice and water, therefore only allocate in ice
-  if(iphase .eq. 2) then
-
-     allocate(l2_input_2dice_primary%time(xdim1km,ydim1km))
-     l2_input_2dice_primary%time=dreal_fill_value
-     
-     allocate(l2_input_2dice_primary%lon(xdim1km,ydim1km))
-     l2_input_2dice_primary%lon=sreal_fill_value
-     
-     allocate(l2_input_2dice_primary%lat(xdim1km,ydim1km))
-     l2_input_2dice_primary%lat=sreal_fill_value
-
-     allocate(l2_input_2dice_primary%satellite_zenith_view_no1(xdim1km,ydim1km))
-     l2_input_2dice_primary%satellite_zenith_view_no1=sreal_fill_value
-     
-     
-     allocate(l2_input_2dice_primary%solar_zenith_view_no1(xdim1km,ydim1km))
-     l2_input_2dice_primary%solar_zenith_view_no1=sreal_fill_value
-     
-     allocate(l2_input_2dice_primary%rel_azimuth_view_no1(xdim1km,ydim1km))
-     l2_input_2dice_primary%rel_azimuth_view_no1=sreal_fill_value
-     
-     allocate(l2_input_2dice_primary%cty(xdim1km,ydim1km))
-     l2_input_2dice_primary%cty=sreal_fill_value
-     
-
-     allocate(l2_input_2dice_primary%phase(xdim1km,ydim1km))
-     l2_input_2dice_primary%phase=byte_fill_value
-
-     allocate(l2_input_2dice_primary%phase_post(xdim1km,ydim1km))
-     l2_input_2dice_primary%phase_post=byte_fill_value     
-
-     allocate(l2_input_2dice_primary%lsflag(xdim1km,ydim1km))
-     l2_input_2dice_primary%lsflag=byte_fill_value
-
-     allocate(l2_input_2dice_primary%cc_total(xdim1km,ydim1km))
-     l2_input_2dice_primary%cc_total=sreal_fill_value
-
-     allocate(l2_input_2dice_primary%cccot(xdim1km,ydim1km))
-     l2_input_2dice_primary%cccot=sreal_fill_value
-
-     allocate(l2_input_2dice_primary%cccot_pre(xdim1km,ydim1km))
-     l2_input_2dice_primary%cccot_pre=sreal_fill_value
-     
-     allocate(l2_input_2dice_primary%cldtype(xdim1km,ydim1km))
-     l2_input_2dice_primary%cldtype=byte_fill_value
-     
-     allocate(l2_input_2dice_primary%illum(xdim1km,ydim1km))
-     l2_input_2dice_primary%illum=byte_fill_value
-     
-     allocate(l2_input_2dice_primary%cldmask(xdim1km,ydim1km))
-     l2_input_2dice_primary%cldmask=byte_fill_value
-
-     allocate(l2_input_2dice_primary%lusflag(xdim1km,ydim1km))
-     l2_input_2dice_primary%lusflag=byte_fill_value
-
-     !allocate(l2_input_2dice_primary%dem(xdim1km,ydim1km))
-     !l2_input_2dice_primary%dem=sint_fill_value
-
-     allocate(l2_input_2dice_primary%nisemask(xdim1km,ydim1km))
-     l2_input_2dice_primary%nisemask=byte_fill_value
-     
-  endif
-
-  !from here things are different between water and ice
-
-
-  allocate(l2_input_2dice_primary%cc_total_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%cc_total_uncertainty=sreal_fill_value
-
-  allocate(l2_input_2dice_primary%stemp(xdim1km,ydim1km))
-  l2_input_2dice_primary%stemp=sreal_fill_value
-
-  allocate(l2_input_2dice_primary%stemp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%stemp_uncertainty=sreal_fill_value
-  
-
-  allocate(l2_input_2dice_primary%ctt(xdim1km,ydim1km))
-  l2_input_2dice_primary%ctt=sreal_fill_value
-
-  allocate(l2_input_2dice_primary%ctt_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%ctt_uncertainty=sreal_fill_value
-
-  allocate(l2_input_2dice_primary%cth(xdim1km,ydim1km))
-  l2_input_2dice_primary%cth=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%cth_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%cth_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%ctp(xdim1km,ydim1km))
-  l2_input_2dice_primary%ctp=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%ctp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%ctp_uncertainty=sreal_fill_value
-
-
-
-
-
-  allocate(l2_input_2dice_primary%cth_corrected(xdim1km,ydim1km))
-  l2_input_2dice_primary%cth_corrected=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%cth_corrected_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%cth_corrected_uncertainty=sreal_fill_value
-  
-  
-  allocate(l2_input_2dice_primary%cct(xdim1km,ydim1km))
-  l2_input_2dice_primary%cct=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%cct_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%cct_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%cot(xdim1km,ydim1km))
-  l2_input_2dice_primary%cot=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%cot_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%cot_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%ref(xdim1km,ydim1km))
-  l2_input_2dice_primary%ref=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%ref_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%ref_uncertainty=sreal_fill_value
-
-  nchan=2
-  allocate(l2_input_2dice_primary%cloud_albedo(xdim1km,ydim1km,nchan))
-  l2_input_2dice_primary%cloud_albedo=sreal_fill_value
-
-  allocate(l2_input_2dice_primary%cwp(xdim1km,ydim1km))
-  l2_input_2dice_primary%cwp=sreal_fill_value
-
-  allocate(l2_input_2dice_primary%cwp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dice_primary%cwp_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%costja(xdim1km,ydim1km))
-  l2_input_2dice_primary%costja=sreal_fill_value
-  
-  allocate(l2_input_2dice_primary%costjm(xdim1km,ydim1km))
-  l2_input_2dice_primary%costjm=sreal_fill_value
-    
-  allocate(l2_input_2dice_primary%niter(xdim1km,ydim1km))
-  l2_input_2dice_primary%niter=byte_fill_value
-
-  allocate(l2_input_2dice_primary%convergence(xdim1km,ydim1km))
-  l2_input_2dice_primary%convergence=byte_fill_value
-  
-  allocate(l2_input_2dice_primary%qcflag(xdim1km,ydim1km))
-  l2_input_2dice_primary%qcflag=sint_fill_value
-
-end subroutine set_l2_input_struct_2d_primary_ice
-
-
-
-!-------------------------------------------
-!-------------------------------------------
-subroutine set_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary,xdim1km,ydim1km)
-!-------------------------------------------
-!-------------------------------------------
-
-  use vartypes_pp
-  use common_constants
-  use structures_pp
-
-  implicit none
-
-  integer :: iphase,nchan
-
-  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
-  
-  type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary
-
-
-  !from here things are different between water and ice
-  
-
-
-  allocate(l2_input_2dwat_primary%cc_total(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cc_total=sreal_fill_value
-
-  allocate(l2_input_2dwat_primary%cc_total_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cc_total_uncertainty=sreal_fill_value
-
-
-  allocate(l2_input_2dwat_primary%stemp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%stemp_uncertainty=sreal_fill_value
-
-  allocate(l2_input_2dwat_primary%stemp(xdim1km,ydim1km))
-  l2_input_2dwat_primary%stemp=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%ctt(xdim1km,ydim1km))
-  l2_input_2dwat_primary%ctt=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%ctt_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%ctt_uncertainty=sreal_fill_value
-  
-
-
-  allocate(l2_input_2dwat_primary%cth(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cth=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%cth_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cth_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%ctp(xdim1km,ydim1km))
-  l2_input_2dwat_primary%ctp=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%ctp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%ctp_uncertainty=sreal_fill_value
-  
-  
-
-
-  allocate(l2_input_2dwat_primary%cth_corrected(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cth_corrected=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%cth_corrected_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cth_corrected_uncertainty=sreal_fill_value
-  
-
-
-  allocate(l2_input_2dwat_primary%cct(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cct=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%cct_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cct_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%cot(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cot=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%cot_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cot_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%ref(xdim1km,ydim1km))
-  l2_input_2dwat_primary%ref=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%ref_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%ref_uncertainty=sreal_fill_value
-
-  nchan=2
-  allocate(l2_input_2dwat_primary%cloud_albedo(xdim1km,ydim1km,nchan))
-  l2_input_2dwat_primary%cloud_albedo=sreal_fill_value
-
-
-
-  allocate(l2_input_2dwat_primary%cwp(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cwp=sreal_fill_value
-
-
-  allocate(l2_input_2dwat_primary%cwp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dwat_primary%cwp_uncertainty=sreal_fill_value
-  
-
-  allocate(l2_input_2dwat_primary%costja(xdim1km,ydim1km))
-  l2_input_2dwat_primary%costja=sreal_fill_value
-  
-  allocate(l2_input_2dwat_primary%costjm(xdim1km,ydim1km))
-  l2_input_2dwat_primary%costjm=sreal_fill_value
-  
-  
-  allocate(l2_input_2dwat_primary%niter(xdim1km,ydim1km))
-  l2_input_2dwat_primary%niter=byte_fill_value
-
-  allocate(l2_input_2dwat_primary%convergence(xdim1km,ydim1km))
-  l2_input_2dwat_primary%convergence=byte_fill_value
-  
-  allocate(l2_input_2dwat_primary%qcflag(xdim1km,ydim1km))
-  l2_input_2dwat_primary%qcflag=sint_fill_value
-  
-  
-  !allocate(l2_input_2dwat_primary%vname(nl2vars_1km))
-  !l2_input_2dwat_primary%vname=''  
-  
-  !allocate(l2_input_2dwat_primary%ename(nl2vars_errors_1km))
-  !l2_input_2dwat_primary%ename=''  
-
-end subroutine set_l2_input_struct_2d_primary_wat
-
-
-
-!-------------------------------------------
-!-------------------------------------------
-subroutine set_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary,xdim1km,ydim1km)
-!-------------------------------------------
-!-------------------------------------------
-
-  use vartypes_pp
-  use common_constants
-  use structures_pp
-
-  implicit none
-
-  integer :: iphase,nchan
-
-  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
-  
-  type(l2_input_struct_2d_primary) :: l2_input_2dmli_primary
-
-
-  !from here things are different between mlier and ice
-  
-
-
-
-  allocate(l2_input_2dmli_primary%cc_total(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cc_total=sreal_fill_value
-
-  allocate(l2_input_2dmli_primary%cc_total_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cc_total_uncertainty=sreal_fill_value
-
-
-  allocate(l2_input_2dmli_primary%stemp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%stemp_uncertainty=sreal_fill_value
-
-  allocate(l2_input_2dmli_primary%stemp(xdim1km,ydim1km))
-  l2_input_2dmli_primary%stemp=sreal_fill_value
-  
-
-  allocate(l2_input_2dmli_primary%ctt(xdim1km,ydim1km))
-  l2_input_2dmli_primary%ctt=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%ctt_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%ctt_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%cth(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cth=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%cth_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cth_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%ctp(xdim1km,ydim1km))
-  l2_input_2dmli_primary%ctp=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%ctp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%ctp_uncertainty=sreal_fill_value
-
-
-
-
-
-!radiative height
-  
-  allocate(l2_input_2dmli_primary%cth_corrected(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cth_corrected=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%cth_corrected_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cth_corrected_uncertainty=sreal_fill_value
-  
-
-  
-  allocate(l2_input_2dmli_primary%cct(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cct=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%cct_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cct_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%cot(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cot=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%cot_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cot_uncertainty=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%ref(xdim1km,ydim1km))
-  l2_input_2dmli_primary%ref=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%ref_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%ref_uncertainty=sreal_fill_value
-
-  nchan=2
-  allocate(l2_input_2dmli_primary%cloud_albedo(xdim1km,ydim1km,nchan))
-  l2_input_2dmli_primary%cloud_albedo=sreal_fill_value
-
-
-
-  allocate(l2_input_2dmli_primary%cwp(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cwp=sreal_fill_value
-
-
-  allocate(l2_input_2dmli_primary%cwp_uncertainty(xdim1km,ydim1km))
-  l2_input_2dmli_primary%cwp_uncertainty=sreal_fill_value
-  
-
-  allocate(l2_input_2dmli_primary%costja(xdim1km,ydim1km))
-  l2_input_2dmli_primary%costja=sreal_fill_value
-  
-  allocate(l2_input_2dmli_primary%costjm(xdim1km,ydim1km))
-  l2_input_2dmli_primary%costjm=sreal_fill_value
-  
-  
-  allocate(l2_input_2dmli_primary%niter(xdim1km,ydim1km))
-  l2_input_2dmli_primary%niter=byte_fill_value
+! None known.
+!-------------------------------------------------------------------------------
 
-  allocate(l2_input_2dmli_primary%convergence(xdim1km,ydim1km))
-  l2_input_2dmli_primary%convergence=byte_fill_value
-  
-  allocate(l2_input_2dmli_primary%qcflag(xdim1km,ydim1km))
-  l2_input_2dmli_primary%qcflag=sint_fill_value
-  
-  
-  !allocate(l2_input_2dmli_primary%vname(nl2vars_1km))
-  !l2_input_2dmli_primary%vname=''  
-  
-  !allocate(l2_input_2dmli_primary%ename(nl2vars_errors_1km))
-  !l2_input_2dmli_primary%ename=''  
+subroutine set_l2_input_struct_2d_primary_common(l2_input_2d_primary, &
+                                                 xdim1km,ydim1km,indexing)
 
-end subroutine set_l2_input_struct_2d_primary_mli
+   use common_constants
+   use structures_pp
+   use vartypes_pp
 
+   implicit none
 
+   type(l2_input_struct_2d_primary), intent(inout) :: l2_input_2d_primary
+   integer(kind=lint),               intent(in)    :: xdim1km,ydim1km
+   type(counts_and_indexes),         intent(in)    :: indexing
 
+   allocate(l2_input_2d_primary%cot(xdim1km,ydim1km))
+   l2_input_2d_primary%cot=sreal_fill_value
+   allocate(l2_input_2d_primary%cot_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%cot_uncertainty=sreal_fill_value
 
-!-------------------------------------------
-!-------------------------------------------
-subroutine set_l2_refl_and_bt(l2_input_2d_refl_bt,xdim1km,ydim1km)
-!-------------------------------------------
-!-------------------------------------------
+   allocate(l2_input_2d_primary%ref(xdim1km,ydim1km))
+   l2_input_2d_primary%ref=sreal_fill_value
+   allocate(l2_input_2d_primary%ref_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%ref_uncertainty=sreal_fill_value
+
+   allocate(l2_input_2d_primary%ctp(xdim1km,ydim1km))
+   l2_input_2d_primary%ctp=sreal_fill_value
+   allocate(l2_input_2d_primary%ctp_uncertainty(xdim1km,ydim1km))
+
+   l2_input_2d_primary%ctp_uncertainty=sreal_fill_value
+   allocate(l2_input_2d_primary%cct(xdim1km,ydim1km))
+   l2_input_2d_primary%cct=sreal_fill_value
+   allocate(l2_input_2d_primary%cct_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%cct_uncertainty=sreal_fill_value
+
+   allocate(l2_input_2d_primary%cc_total(xdim1km,ydim1km))
+   l2_input_2d_primary%cc_total=sreal_fill_value
+   allocate(l2_input_2d_primary%cc_total_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%cc_total_uncertainty=sreal_fill_value
+
+   allocate(l2_input_2d_primary%stemp_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%stemp_uncertainty=sreal_fill_value
+   allocate(l2_input_2d_primary%stemp(xdim1km,ydim1km))
+   l2_input_2d_primary%stemp=sreal_fill_value
+
+   allocate(l2_input_2d_primary%cth(xdim1km,ydim1km))
+   l2_input_2d_primary%cth=sreal_fill_value
+   allocate(l2_input_2d_primary%cth_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%cth_uncertainty=sreal_fill_value
 
-  use vartypes_pp
-  use common_constants
-  use structures_pp
+   allocate(l2_input_2d_primary%cth_corrected(xdim1km,ydim1km))
+   l2_input_2d_primary%cth_corrected=sreal_fill_value
+   allocate(l2_input_2d_primary%cth_corrected_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%cth_corrected_uncertainty=sreal_fill_value
 
-  implicit none
+   allocate(l2_input_2d_primary%ctt(xdim1km,ydim1km))
+   l2_input_2d_primary%ctt=sreal_fill_value
+   allocate(l2_input_2d_primary%ctt_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%ctt_uncertainty=sreal_fill_value
 
-  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
-  
-  type(l2_input_struct_2d_refl_bt) :: l2_input_2d_refl_bt
-  
-  allocate(l2_input_2d_refl_bt%albedo(xdim1km,ydim1km,l2_input_2d_refl_bt%nchannels_sw))
-  l2_input_2d_refl_bt%albedo=sreal_fill_value
-  
-  allocate(l2_input_2d_refl_bt%reflectance_residual(xdim1km,ydim1km,l2_input_2d_refl_bt%nchannels_sw))
-  l2_input_2d_refl_bt%reflectance_residual=sreal_fill_value
+   allocate(l2_input_2d_primary%cwp(xdim1km,ydim1km))
+   l2_input_2d_primary%cwp=sreal_fill_value
+   allocate(l2_input_2d_primary%cwp_uncertainty(xdim1km,ydim1km))
+   l2_input_2d_primary%cwp_uncertainty=sreal_fill_value
 
-  allocate(l2_input_2d_refl_bt%brightness_temperature_residual(xdim1km,ydim1km,l2_input_2d_refl_bt%nchannels_lw))
-  l2_input_2d_refl_bt%brightness_temperature_residual=sreal_fill_value
+   allocate(l2_input_2d_primary%cloud_albedo(xdim1km,ydim1km,indexing%NSolar))
+   l2_input_2d_primary%cloud_albedo=sreal_fill_value
 
-  allocate(l2_input_2d_refl_bt%reflectance(xdim1km,ydim1km,l2_input_2d_refl_bt%nchannels_sw))
-  l2_input_2d_refl_bt%reflectance=sreal_fill_value
+   allocate(l2_input_2d_primary%convergence(xdim1km,ydim1km))
+   l2_input_2d_primary%convergence=byte_fill_value
 
-  allocate(l2_input_2d_refl_bt%brightness_temperature(xdim1km,ydim1km,l2_input_2d_refl_bt%nchannels_lw))
-  l2_input_2d_refl_bt%brightness_temperature=sreal_fill_value
+   allocate(l2_input_2d_primary%niter(xdim1km,ydim1km))
+   l2_input_2d_primary%niter=byte_fill_value
 
-end subroutine set_l2_refl_and_bt
+   allocate(l2_input_2d_primary%costja(xdim1km,ydim1km))
+   l2_input_2d_primary%costja=sreal_fill_value
+   allocate(l2_input_2d_primary%costjm(xdim1km,ydim1km))
+   l2_input_2d_primary%costjm=sreal_fill_value
 
+   allocate(l2_input_2d_primary%qcflag(xdim1km,ydim1km))
+   l2_input_2d_primary%qcflag=sint_fill_value
 
+end subroutine set_l2_input_struct_2d_primary_common
 
-!-------------------------------------------
-!-------------------------------------------
-subroutine unset_l2_refl_and_bt(l2_input_2d_refl_bt)
-!-------------------------------------------
-!-------------------------------------------
 
-  use vartypes_pp
-  use common_constants
-  use structures_pp
+subroutine set_l2_input_struct_2d_primary_all(l2_input_2d_primary, &
+                                              xdim1km,ydim1km,indexing)
 
-  implicit none
+   use common_constants
+   use structures_pp
+   use vartypes_pp
 
-  type(l2_input_struct_2d_refl_bt) :: l2_input_2d_refl_bt
-  
+   implicit none
 
-  deallocate(l2_input_2d_refl_bt%albedo)
-  deallocate(l2_input_2d_refl_bt%reflectance_residual)
-  deallocate(l2_input_2d_refl_bt%brightness_temperature_residual)
-  deallocate(l2_input_2d_refl_bt%reflectance)
-  deallocate(l2_input_2d_refl_bt%brightness_temperature)
+   type(l2_input_struct_2d_primary), intent(inout) :: l2_input_2d_primary
+   integer(kind=lint),               intent(in)    :: xdim1km,ydim1km
+   type(counts_and_indexes),         intent(in)    :: indexing
 
-end subroutine unset_l2_refl_and_bt
+   call set_l2_input_struct_2d_primary_common(l2_input_2d_primary,xdim1km, &
+      ydim1km,indexing)
 
+   allocate(l2_input_2d_primary%time(xdim1km,ydim1km))
+   l2_input_2d_primary%time=dreal_fill_value
 
+   allocate(l2_input_2d_primary%lat(xdim1km,ydim1km))
+   l2_input_2d_primary%lat=sreal_fill_value
+   allocate(l2_input_2d_primary%lon(xdim1km,ydim1km))
+   l2_input_2d_primary%lon=sreal_fill_value
 
+   allocate(l2_input_2d_primary%solar_zenith_view_no1(xdim1km,ydim1km))
+   l2_input_2d_primary%solar_zenith_view_no1=sreal_fill_value
+   allocate(l2_input_2d_primary%satellite_zenith_view_no1(xdim1km,ydim1km))
+   l2_input_2d_primary%satellite_zenith_view_no1=sreal_fill_value
+   allocate(l2_input_2d_primary%rel_azimuth_view_no1(xdim1km,ydim1km))
+   l2_input_2d_primary%rel_azimuth_view_no1=sreal_fill_value
 
+   allocate(l2_input_2d_primary%phase(xdim1km,ydim1km))
+   l2_input_2d_primary%phase=byte_fill_value
+   allocate(l2_input_2d_primary%phase_post(xdim1km,ydim1km))
+   l2_input_2d_primary%phase_post=byte_fill_value
 
-!----------------------------------------------------------
-!----------------------------------------------------------
-subroutine set_l2_input_struct_2d_secondary(l2_input_2d_secondary,xdim1km,ydim1km,nl2vars_1km, &
-     nl2vars_errors_1km,n_val_plus_error,n_oe_features)
-  !----------------------------------------------------------
-  !----------------------------------------------------------
+   allocate(l2_input_2d_primary%lsflag(xdim1km,ydim1km))
+   l2_input_2d_primary%lsflag=byte_fill_value
+   allocate(l2_input_2d_primary%illum(xdim1km,ydim1km))
+   l2_input_2d_primary%illum=byte_fill_value
 
-  use vartypes_pp
-  use common_constants
-  use structures_pp
+   allocate(l2_input_2d_primary%cccot(xdim1km,ydim1km))
+   l2_input_2d_primary%cccot=sreal_fill_value
+   allocate(l2_input_2d_primary%cccot_pre(xdim1km,ydim1km))
+   l2_input_2d_primary%cccot_pre=sreal_fill_value
 
-  implicit none
+   allocate(l2_input_2d_primary%cldtype(xdim1km,ydim1km))
+   l2_input_2d_primary%cldtype=byte_fill_value
+   allocate(l2_input_2d_primary%cldmask(xdim1km,ydim1km))
+   l2_input_2d_primary%cldmask=byte_fill_value
+   allocate(l2_input_2d_primary%lusflag(xdim1km,ydim1km))
+   l2_input_2d_primary%lusflag=byte_fill_value
 
-  integer(kind=lint) ,INTENT(IN) :: xdim1km,ydim1km
+   !allocate(l2_input_2d_primary%dem(xdim1km,ydim1km))
+   !l2_input_2d_primary%dem=sint_fill_value
 
-  integer(kind=lint),INTENT(IN)  :: nl2vars_1km,nl2vars_errors_1km,n_val_plus_error, n_oe_features
+   allocate(l2_input_2d_primary%nisemask(xdim1km,ydim1km))
+   l2_input_2d_primary%nisemask=byte_fill_value
 
-  !  integer(kind=lint) :: nl2vars_1km,nl2vars_errors_1km,n_val_plus_error, n_oe_features
+end subroutine set_l2_input_struct_2d_primary_all
 
-  type(l2_input_struct_2d_secondary) :: l2_input_2d_secondary
 
+subroutine set_l2_input_struct_2d_primary_class(l2_input_2d_primary, &
+                                                xdim1km,ydim1km,indexing)
 
-  !
-  !  now do secondary file
-  !
-  allocate(l2_input_2d_secondary%cot_ap(xdim1km,ydim1km))
-  l2_input_2d_secondary%cot_ap=sreal_fill_value
+   use common_constants
+   use structures_pp
+   use vartypes_pp
 
+   implicit none
 
-  allocate(l2_input_2d_secondary%cot_fg(xdim1km,ydim1km))
-  l2_input_2d_secondary%cot_fg=sreal_fill_value
+   type(l2_input_struct_2d_primary), intent(inout) :: l2_input_2d_primary
+   integer(kind=lint),               intent(in)    :: xdim1km,ydim1km
+   type(counts_and_indexes),         intent(in)    :: indexing
 
+   call set_l2_input_struct_2d_primary_common(l2_input_2d_primary,xdim1km, &
+      ydim1km,indexing)
 
-  allocate(l2_input_2d_secondary%ref_ap(xdim1km,ydim1km))
-  l2_input_2d_secondary%ref_ap=sreal_fill_value
+end subroutine set_l2_input_struct_2d_primary_class
 
 
+subroutine set_l2_input_struct_2d_secondary_common(l2_input_2d_secondary, &
+                                                   xdim1km,ydim1km,indexing)
 
-  allocate(l2_input_2d_secondary%ref_fg(xdim1km,ydim1km))
-  l2_input_2d_secondary%ref_fg=sreal_fill_value
+   use common_constants
+   use structures_pp
+   use vartypes_pp
 
+   implicit none
 
+   type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
+   integer(kind=lint),                 intent(in)    :: xdim1km,ydim1km
+   type(counts_and_indexes),           intent(in)    :: indexing
 
-  allocate(l2_input_2d_secondary%ctp_ap(xdim1km,ydim1km))
-  l2_input_2d_secondary%ctp_ap=sreal_fill_value
+   allocate(l2_input_2d_secondary%cot_ap(xdim1km,ydim1km))
+   l2_input_2d_secondary%cot_ap=sreal_fill_value
+   allocate(l2_input_2d_secondary%cot_fg(xdim1km,ydim1km))
+   l2_input_2d_secondary%cot_fg=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%ctp_fg(xdim1km,ydim1km))
-  l2_input_2d_secondary%ctp_fg=sreal_fill_value
+   allocate(l2_input_2d_secondary%ref_ap(xdim1km,ydim1km))
+   l2_input_2d_secondary%ref_ap=sreal_fill_value
+   allocate(l2_input_2d_secondary%ref_fg(xdim1km,ydim1km))
+   l2_input_2d_secondary%ref_fg=sreal_fill_value
 
+   allocate(l2_input_2d_secondary%ctp_ap(xdim1km,ydim1km))
+   l2_input_2d_secondary%ctp_ap=sreal_fill_value
+   allocate(l2_input_2d_secondary%ctp_fg(xdim1km,ydim1km))
+   l2_input_2d_secondary%ctp_fg=sreal_fill_value
 
+   allocate(l2_input_2d_secondary%stemp_fg(xdim1km,ydim1km))
+   l2_input_2d_secondary%stemp_fg=sreal_fill_value
+   allocate(l2_input_2d_secondary%stemp_ap(xdim1km,ydim1km))
+   l2_input_2d_secondary%stemp_ap=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%albedo_in_channel_no_1(xdim1km,ydim1km))
-  l2_input_2d_secondary%albedo_in_channel_no_1=sreal_fill_value
+   allocate(l2_input_2d_secondary%y0(xdim1km,ydim1km,indexing%Ny))
+   l2_input_2d_secondary%y0=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%albedo_in_channel_no_2(xdim1km,ydim1km))
-  l2_input_2d_secondary%albedo_in_channel_no_2=sreal_fill_value
+   allocate(l2_input_2d_secondary%residuals(xdim1km,ydim1km,indexing%Ny))
+   l2_input_2d_secondary%residuals=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%albedo_in_channel_no_3(xdim1km,ydim1km))
-  l2_input_2d_secondary%albedo_in_channel_no_3=sreal_fill_value
+end subroutine set_l2_input_struct_2d_secondary_common
 
 
+subroutine set_l2_input_struct_2d_secondary_all(l2_input_2d_secondary, &
+                                                xdim1km,ydim1km,indexing)
 
+   use common_constants
+   use structures_pp
+   use vartypes_pp
 
-  allocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_1(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_residual_in_channel_no_1=sreal_fill_value
+   implicit none
 
-  allocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_2(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_residual_in_channel_no_2=sreal_fill_value
+   type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
+   integer(kind=lint),                 intent(in)    :: xdim1km,ydim1km
+   type(counts_and_indexes),           intent(in)    :: indexing
 
-  allocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_3(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_residual_in_channel_no_3=sreal_fill_value
+   call set_l2_input_struct_2d_secondary_common(l2_input_2d_secondary, &
+                                                xdim1km,ydim1km,indexing)
 
+   allocate(l2_input_2d_secondary%albedo(xdim1km,ydim1km,indexing%NSolar))
+   l2_input_2d_secondary%albedo=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_4(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_residual_in_channel_no_4=sreal_fill_value
+   allocate(l2_input_2d_secondary%channels(xdim1km,ydim1km,indexing%Ny))
+   l2_input_2d_secondary%channels=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_4(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_4=sreal_fill_value
+end subroutine set_l2_input_struct_2d_secondary_all
 
-  allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_5(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_5=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_6(xdim1km,ydim1km))              
-  l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_6=sreal_fill_value
+subroutine set_l2_input_struct_2d_secondary_class(l2_input_2d_secondary, &
+                                                  xdim1km,ydim1km,indexing)
 
-  allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_7(xdim1km,ydim1km))              
-  l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_7=sreal_fill_value
+   use common_constants
+   use structures_pp
+   use vartypes_pp
 
-  allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_20(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_20=sreal_fill_value  
+   implicit none
 
-  allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_31(xdim1km,ydim1km))             
-  l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_31=sreal_fill_value
+   type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
+   integer(kind=lint),                 intent(in)    :: xdim1km,ydim1km
+   type(counts_and_indexes),           intent(in)    :: indexing
 
-  allocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_32(xdim1km,ydim1km))             
-  l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_32=sreal_fill_value
+   call set_l2_input_struct_2d_secondary_common(l2_input_2d_secondary, &
+                                                xdim1km,ydim1km,indexing)
 
-  allocate(l2_input_2d_secondary%reflectance_in_channel_no_1(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_in_channel_no_1=sreal_fill_value
+end subroutine set_l2_input_struct_2d_secondary_class
 
-  allocate(l2_input_2d_secondary%reflectance_in_channel_no_2(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_in_channel_no_2=sreal_fill_value
 
+subroutine unset_l2_input_struct_2d_primary_common(l2_input_2d_primary)
 
-  allocate(l2_input_2d_secondary%reflectance_in_channel_no_4(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_in_channel_no_4=sreal_fill_value
+   use structures_pp
+   use vartypes_pp
 
+   implicit none
 
+   type(l2_input_struct_2d_primary), intent(inout) :: l2_input_2d_primary
 
-  allocate(l2_input_2d_secondary%reflectance_in_channel_no_3(xdim1km,ydim1km))
-  l2_input_2d_secondary%reflectance_in_channel_no_3=sreal_fill_value
+   deallocate(l2_input_2d_primary%cot)
+   deallocate(l2_input_2d_primary%cot_uncertainty)
+   deallocate(l2_input_2d_primary%ref)
+   deallocate(l2_input_2d_primary%ref_uncertainty)
+   deallocate(l2_input_2d_primary%ctp)
+   deallocate(l2_input_2d_primary%ctp_uncertainty)
+   deallocate(l2_input_2d_primary%cct)
+   deallocate(l2_input_2d_primary%cct_uncertainty)
+   deallocate(l2_input_2d_primary%cc_total)
+   deallocate(l2_input_2d_primary%cc_total_uncertainty)
+   deallocate(l2_input_2d_primary%stemp)
+   deallocate(l2_input_2d_primary%stemp_uncertainty)
+   deallocate(l2_input_2d_primary%cth)
+   deallocate(l2_input_2d_primary%cth_uncertainty)
+   deallocate(l2_input_2d_primary%cth_corrected)
+   deallocate(l2_input_2d_primary%cth_corrected_uncertainty)
+   deallocate(l2_input_2d_primary%ctt)
+   deallocate(l2_input_2d_primary%ctt_uncertainty)
+   deallocate(l2_input_2d_primary%cwp)
+   deallocate(l2_input_2d_primary%cwp_uncertainty)
+   deallocate(l2_input_2d_primary%cloud_albedo)
+   deallocate(l2_input_2d_primary%convergence)
+   deallocate(l2_input_2d_primary%niter)
+   deallocate(l2_input_2d_primary%costja)
+   deallocate(l2_input_2d_primary%costjm)
+   deallocate(l2_input_2d_primary%qcflag)
 
-  allocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_4(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_in_channel_no_4=sreal_fill_value
+end subroutine unset_l2_input_struct_2d_primary_common
 
-  allocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_5(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_in_channel_no_5=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_6(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_in_channel_no_6=sreal_fill_value  
+subroutine unset_l2_input_struct_2d_primary_all(l2_input_2d_primary)
 
-  allocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_7(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_in_channel_no_7=sreal_fill_value
+   use structures_pp
+   use vartypes_pp
 
-  allocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_20(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_in_channel_no_20=sreal_fill_value          
+   implicit none
 
-  allocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_31(xdim1km,ydim1km)) 
-  l2_input_2d_secondary%brightness_temperature_in_channel_no_31=sreal_fill_value
+   type(l2_input_struct_2d_primary), intent(inout) :: l2_input_2d_primary
 
-  allocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_32(xdim1km,ydim1km))
-  l2_input_2d_secondary%brightness_temperature_in_channel_no_32=sreal_fill_value
+   call unset_l2_input_struct_2d_primary_common(l2_input_2d_primary)
 
-  write(*,*) 'sec filed'     
+   deallocate(l2_input_2d_primary%time)
+   deallocate(l2_input_2d_primary%lat)
+   deallocate(l2_input_2d_primary%lon)
+   deallocate(l2_input_2d_primary%solar_zenith_view_no1)
+   deallocate(l2_input_2d_primary%satellite_zenith_view_no1)
+   deallocate(l2_input_2d_primary%rel_azimuth_view_no1)
 
-  allocate(l2_input_2d_secondary%stemp_fg(xdim1km,ydim1km))
-  l2_input_2d_secondary%stemp_fg=sreal_fill_value
+   deallocate(l2_input_2d_primary%phase)
+   deallocate(l2_input_2d_primary%phase_post)
 
-  allocate(l2_input_2d_secondary%stemp_ap(xdim1km,ydim1km))
-  l2_input_2d_secondary%stemp_ap=sreal_fill_value
+   deallocate(l2_input_2d_primary%lsflag)
+   deallocate(l2_input_2d_primary%cldtype)
+   deallocate(l2_input_2d_primary%illum)
 
-  allocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_1(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_reflectance_in_channel_no_1=sreal_fill_value
+   deallocate(l2_input_2d_primary%cccot)
+   deallocate(l2_input_2d_primary%cccot_pre)
 
-  allocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_2(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_reflectance_in_channel_no_2=sreal_fill_value
+   deallocate(l2_input_2d_primary%cldmask)
+   deallocate(l2_input_2d_primary%lusflag)
+!  deallocate(l2_input_2d_primary%dem)
+   deallocate(l2_input_2d_primary%nisemask)
 
-  allocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_3(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_reflectance_in_channel_no_3=sreal_fill_value
+end subroutine unset_l2_input_struct_2d_primary_all
 
-  allocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_4(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_reflectance_in_channel_no_4=sreal_fill_value
 
+subroutine unset_l2_input_struct_2d_primary_class(l2_input_2d_primary)
 
-  allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_4(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_4=sreal_fill_value
+   use structures_pp
+   use vartypes_pp
 
-  allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_5(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_5=sreal_fill_value
+   implicit none
 
-  allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_6(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_6=sreal_fill_value
+   type(l2_input_struct_2d_primary), intent(inout) :: l2_input_2d_primary
 
-  allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_7(xdim1km,ydim1km))             
-  l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_7=sreal_fill_value
+   call unset_l2_input_struct_2d_primary_common(l2_input_2d_primary)
 
-  allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_20(xdim1km,ydim1km))           
-  l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_20=sreal_fill_value
+end subroutine unset_l2_input_struct_2d_primary_class
 
-  allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_31(xdim1km,ydim1km))
-  l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_31=sreal_fill_value
 
-  allocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_32(xdim1km,ydim1km))            
-  l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_32=sreal_fill_value 
+subroutine unset_l2_input_struct_2d_common(l2_input_2d_secondary)
 
-  write(*,*) 'sec filee'            
+   use structures_pp
+   use vartypes_pp
 
+   implicit none
 
-end subroutine set_l2_input_struct_2d_secondary
+   type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
 
+   deallocate(l2_input_2d_secondary%ctp_ap)
+   deallocate(l2_input_2d_secondary%ctp_fg)
+   deallocate(l2_input_2d_secondary%ref_ap)
+   deallocate(l2_input_2d_secondary%ref_fg)
+   deallocate(l2_input_2d_secondary%cot_ap)
+   deallocate(l2_input_2d_secondary%cot_fg)
+   deallocate(l2_input_2d_secondary%stemp_ap)
+   deallocate(l2_input_2d_secondary%stemp_fg)
 
+   deallocate(l2_input_2d_secondary%y0)
 
-!-------------------------------------------
-!-------------------------------------------
-subroutine unset_l2_input_struct_2d_primary_ice(iphase,l2_input_2dice_primary)
-  !-------------------------------------------
-  !-------------------------------------------
+   deallocate(l2_input_2d_secondary%residuals)
 
-  use vartypes_pp
-  use common_constants
-  use structures_pp
+end subroutine unset_l2_input_struct_2d_common
 
-  implicit none
 
-  integer :: iphase
+subroutine unset_l2_input_struct_2d_secondary_all(l2_input_2d_secondary)
 
-  type(l2_input_struct_2d_primary) :: l2_input_2dice_primary
+   use structures_pp
+   use vartypes_pp
 
-  if(iphase .eq. 2 ) then
-     deallocate(l2_input_2dice_primary%time)
-     deallocate(l2_input_2dice_primary%lon)
-     deallocate(l2_input_2dice_primary%lat)
-     deallocate(l2_input_2dice_primary%phase)
-     deallocate(l2_input_2dice_primary%phase_post)
-     !deallocate(l2_input_2dice_primary%pchange)
+   implicit none
 
-     deallocate(l2_input_2dice_primary%satellite_zenith_view_no1)
-     deallocate(l2_input_2dice_primary%solar_zenith_view_no1)
-     deallocate(l2_input_2dice_primary%rel_azimuth_view_no1)
+   type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
 
-     deallocate(l2_input_2dice_primary%lsflag)
-     deallocate(l2_input_2dice_primary%cldtype)
-     deallocate(l2_input_2dice_primary%illum)
+   call unset_l2_input_struct_2d_common(l2_input_2d_secondary)
 
-     deallocate(l2_input_2dice_primary%cc_total)
-     deallocate(l2_input_2dice_primary%cccot)
-     deallocate(l2_input_2dice_primary%cccot_pre)
-     !deallocate(l2_input_2dice_primary%scanline_u)
-     !deallocate(l2_input_2dice_primary%scanline_v)
+!  deallocate(l2_input_2d_primary%scanline_u)
+!  deallocate(l2_input_2d_primary%scanline_v)
 
-     deallocate(l2_input_2dice_primary%cty)
+   deallocate(l2_input_2d_secondary%albedo)
 
-     deallocate(l2_input_2dice_primary%cldmask)
-     deallocate(l2_input_2dice_primary%lusflag)
-     !deallocate(l2_input_2dice_primary%dem)
-     deallocate(l2_input_2dice_primary%nisemask)
+   deallocate(l2_input_2d_secondary%channels)
 
-  endif
+end subroutine unset_l2_input_struct_2d_secondary_all
 
 
-  deallocate(l2_input_2dice_primary%ctp)
-  deallocate(l2_input_2dice_primary%ctp_uncertainty)
-  deallocate(l2_input_2dice_primary%cth)
-  deallocate(l2_input_2dice_primary%cth_uncertainty)
-  deallocate(l2_input_2dice_primary%ctt)
-  deallocate(l2_input_2dice_primary%ctt_uncertainty)
+subroutine unset_l2_input_struct_2d_secondary_class(l2_input_2d_secondary)
 
+   use structures_pp
+   use vartypes_pp
 
+   implicit none
 
-  deallocate(l2_input_2dice_primary%cth_corrected)
-  deallocate(l2_input_2dice_primary%cth_corrected_uncertainty)
+   type(l2_input_struct_2d_secondary), intent(inout) :: l2_input_2d_secondary
 
+   call unset_l2_input_struct_2d_common(l2_input_2d_secondary)
 
-  deallocate(l2_input_2dice_primary%cc_total_uncertainty)
-
-  deallocate(l2_input_2dice_primary%stemp)
-  deallocate(l2_input_2dice_primary%stemp_uncertainty)
-  deallocate(l2_input_2dice_primary%cct)
-  deallocate(l2_input_2dice_primary%cct_uncertainty)
-  deallocate(l2_input_2dice_primary%cot)
-  deallocate(l2_input_2dice_primary%cot_uncertainty)
-  deallocate(l2_input_2dice_primary%ref)
-  deallocate(l2_input_2dice_primary%ref_uncertainty)
-  deallocate(l2_input_2dice_primary%cwp)
-  deallocate(l2_input_2dice_primary%cloud_albedo)
-  deallocate(l2_input_2dice_primary%cwp_uncertainty)
-  deallocate(l2_input_2dice_primary%costja)
-  deallocate(l2_input_2dice_primary%costjm)
-  deallocate(l2_input_2dice_primary%convergence)
-
-  deallocate(l2_input_2dice_primary%niter)
-
-  deallocate(l2_input_2dice_primary%qcflag)
-  !deallocate(l2_input_2dice_primary%vname)
-  !deallocate(l2_input_2dice_primary%ename)
-
-end subroutine unset_l2_input_struct_2d_primary_ice
-
-
-
-
-!-------------------------------------------
-!-------------------------------------------
-subroutine unset_l2_input_struct_2d_primary_wat(iphase,l2_input_2dwat_primary)
-!-------------------------------------------
-!-------------------------------------------
-  
-  use vartypes_pp
-    use common_constants
-  use structures_pp
-  
-  implicit none
-  
-  integer :: iphase
-
-  type(l2_input_struct_2d_primary) :: l2_input_2dwat_primary
-  
-
-  deallocate(l2_input_2dwat_primary%ctp)
-  deallocate(l2_input_2dwat_primary%ctp_uncertainty)
-  deallocate(l2_input_2dwat_primary%cth)
-  deallocate(l2_input_2dwat_primary%cth_uncertainty)
-  deallocate(l2_input_2dwat_primary%ctt)
-  deallocate(l2_input_2dwat_primary%ctt_uncertainty)
-
-
-!corrected height
-
-  deallocate(l2_input_2dwat_primary%cth_corrected)
-  deallocate(l2_input_2dwat_primary%cth_corrected_uncertainty)
-
-
-  deallocate(l2_input_2dwat_primary%cc_total)
-  deallocate(l2_input_2dwat_primary%cc_total_uncertainty)
-  
-  deallocate(l2_input_2dwat_primary%stemp)
-  deallocate(l2_input_2dwat_primary%stemp_uncertainty)
-  deallocate(l2_input_2dwat_primary%cct)
-  deallocate(l2_input_2dwat_primary%cct_uncertainty)
-  deallocate(l2_input_2dwat_primary%cot)
-  deallocate(l2_input_2dwat_primary%cot_uncertainty)
-  deallocate(l2_input_2dwat_primary%ref)
-  deallocate(l2_input_2dwat_primary%ref_uncertainty)
-  deallocate(l2_input_2dwat_primary%cloud_albedo)
-  deallocate(l2_input_2dwat_primary%cwp)
-  deallocate(l2_input_2dwat_primary%cwp_uncertainty)
-  deallocate(l2_input_2dwat_primary%costja)
-  deallocate(l2_input_2dwat_primary%costjm)
-  deallocate(l2_input_2dwat_primary%convergence)
-  
-  deallocate(l2_input_2dwat_primary%niter)
-
-  deallocate(l2_input_2dwat_primary%qcflag)
-  !deallocate(l2_input_2dwat_primary%vname)
-  !deallocate(l2_input_2dwat_primary%ename)
-
-end subroutine unset_l2_input_struct_2d_primary_wat
-
-
-
-
-!-------------------------------------------
-!-------------------------------------------
-subroutine unset_l2_input_struct_2d_primary_mli(iphase,l2_input_2dmli_primary)
-!-------------------------------------------
-!-------------------------------------------
-  
-  use vartypes_pp
-    use common_constants
-  use structures_pp
-  
-  implicit none
-  
-  integer :: iphase
-
-  type(l2_input_struct_2d_primary) :: l2_input_2dmli_primary
-  
-  deallocate(l2_input_2dmli_primary%ctp)
-  deallocate(l2_input_2dmli_primary%ctp_uncertainty)
-  deallocate(l2_input_2dmli_primary%cth)
-  deallocate(l2_input_2dmli_primary%cth_uncertainty)
-  deallocate(l2_input_2dmli_primary%ctt)
-  deallocate(l2_input_2dmli_primary%ctt_uncertainty)
-
-  
-  deallocate(l2_input_2dmli_primary%cth_corrected)
-  deallocate(l2_input_2dmli_primary%cth_corrected_uncertainty)
-
-
-
-  deallocate(l2_input_2dmli_primary%cc_total)
-  deallocate(l2_input_2dmli_primary%cc_total_uncertainty)
-  
-  deallocate(l2_input_2dmli_primary%stemp)
-  deallocate(l2_input_2dmli_primary%stemp_uncertainty)
-  deallocate(l2_input_2dmli_primary%cct)
-  deallocate(l2_input_2dmli_primary%cct_uncertainty)
-  deallocate(l2_input_2dmli_primary%cot)
-  deallocate(l2_input_2dmli_primary%cot_uncertainty)
-  deallocate(l2_input_2dmli_primary%ref)
-  deallocate(l2_input_2dmli_primary%ref_uncertainty)
-  deallocate(l2_input_2dmli_primary%cloud_albedo)
-  deallocate(l2_input_2dmli_primary%cwp)
-  deallocate(l2_input_2dmli_primary%cwp_uncertainty)
-  deallocate(l2_input_2dmli_primary%costja)
-  deallocate(l2_input_2dmli_primary%costjm)
-  deallocate(l2_input_2dmli_primary%convergence)
-  
-  deallocate(l2_input_2dmli_primary%niter)
-
-  deallocate(l2_input_2dmli_primary%qcflag)
-  !deallocate(l2_input_2dmli_primary%vname)
-  !deallocate(l2_input_2dmli_primary%ename)
-
-end subroutine unset_l2_input_struct_2d_primary_mli
-
-!-------------------------------------------
-!-------------------------------------------
-subroutine unset_l2_input_struct_2d_secondary(l2_input_2d_secondary)
-!-------------------------------------------
-!-------------------------------------------
-  
-  use vartypes_pp
-    use common_constants
-  use structures_pp
-  
-  implicit none
-  
-  type(l2_input_struct_2d_secondary) :: l2_input_2d_secondary
-
-!
-!secondary variables
-!
-
-  deallocate(l2_input_2d_secondary%ctp_ap)
-  deallocate(l2_input_2d_secondary%ctp_fg)
-  deallocate(l2_input_2d_secondary%ref_ap)
-  deallocate(l2_input_2d_secondary%ref_fg)
-  deallocate(l2_input_2d_secondary%cot_ap)
-  deallocate(l2_input_2d_secondary%cot_fg)
-  deallocate(l2_input_2d_secondary%stemp_ap)
-  deallocate(l2_input_2d_secondary%stemp_fg)
-  deallocate(l2_input_2d_secondary%albedo_in_channel_no_1)
-  deallocate(l2_input_2d_secondary%albedo_in_channel_no_2)
-  deallocate(l2_input_2d_secondary%albedo_in_channel_no_3)
-  
-  deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_1)
-  deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_2)
-  deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_3)
-  deallocate(l2_input_2d_secondary%reflectance_residual_in_channel_no_4)
-  deallocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_4)
-  deallocate(l2_input_2d_secondary%brightness_temperature_residual_in_channel_no_5)
-  deallocate(l2_input_2d_secondary%reflectance_in_channel_no_1)
-  deallocate(l2_input_2d_secondary%reflectance_in_channel_no_2)
-  deallocate(l2_input_2d_secondary%reflectance_in_channel_no_3)
-  deallocate(l2_input_2d_secondary%reflectance_in_channel_no_4)
-  deallocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_4)
-  deallocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_5)
-  deallocate(l2_input_2d_secondary%brightness_temperature_in_channel_no_6)
-  
-  deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_1)
-  deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_2)
-  deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_3)
-  deallocate(l2_input_2d_secondary%firstguess_reflectance_in_channel_no_4)
-
-  deallocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_4)
-  deallocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_5)
-  deallocate(l2_input_2d_secondary%firstguess_brightness_temperature_in_channel_no_6)
-  
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_11)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_12)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_13)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_14)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_15)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_21)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_22)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_23)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_24)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_25)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_31)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_32)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_33)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_34)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_35)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_41)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_42)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_43)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_44)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_45)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_51)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_52)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_53)
-  !deallocate(l2_input_2d_secondary%covariance_matrix_element_54)
-!deallocate(l2_input_2d_secondary%covariance_matrix_element_55)
-  
-end subroutine unset_l2_input_struct_2d_secondary
-
-
-
+end subroutine unset_l2_input_struct_2d_secondary_class

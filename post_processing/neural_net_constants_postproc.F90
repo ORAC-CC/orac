@@ -1,4 +1,4 @@
-! Name: neural_net_constants_postproc.F90
+! Name: neural_net_constants_postproc
 !
 !
 ! Purpose:

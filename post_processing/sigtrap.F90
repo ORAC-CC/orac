@@ -1,5 +1,5 @@
 ! Name:
-!   sigtrap
+!   sigtrap.F90
 !
 ! Description:
 !  ECMWF signal trapping part
@@ -55,4 +55,4 @@ elseif(ireturn .eq. 0) then
    write(*,*) 'fpe trapping is not set'
 else
    write(*,*) 'fpe trapping mode=',ireturn
-endif
+end if

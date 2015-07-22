@@ -1,36 +1,37 @@
-#Makefile for postprocessing
-#Pre 2012/08/24  CP and MJ provide initial version
-#2012/08/24  MJ creates adds "includes" for better configurability
-#2014/10/09  AP homogenise with other Makefile layouts
-#2/12/2014  CP added link to common libraries still need alot of tidying though.
+# Makefile for postprocessing
+#
+# Pre 2012/08/24, CP and MJ: Provide initial version
+# 2012/08/24, MJ: creates adds "includes" for better configurability
+# 2014/10/09, AP: homogenise with other Makefile layouts
+# 2014/02/12, CP: added link to common libraries still need alot of tidying
+#    though.
 
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
 include $(ORAC_LIB)
 include $(ORAC_ARCH)
-ORAC_COMMON   = ../common
 
-POSTPROC_OBJ_F90 =  $(OBJS)/vartypes_pp.o \
-		    $(OBJS)/structures_pp.o \
-                    $(OBJS)/set_struct_pp.o \
-                    $(OBJS)/nc_write_L2.o \
-                    $(OBJS)/nc_open.o \
-                    $(OBJS)/nc_dim_info.o \
-                    $(OBJS)/nc_read_file.o \
-                    $(OBJS)/nc_close.o \
-                    $(OBJS)/scanline_structure.o  \
-                    $(OBJS)/alloc_spixel_scan_out_pp.o \
+ORAC_COMMON = ../common
+
+# Define object files to be linked.
+POSTPROC_OBJ_F90 =  $(OBJS)/alloc_spixel_scan_out_pp.o \
                     $(OBJS)/dealloc_spixel_scan_out_pp.o  \
-                    $(OBJS)/nc_create_global_pp.o \
-                    $(OBJS)/nc_defdata.o \
+                    $(OBJS)/def_vars_primary_pp.o \
+                    $(OBJS)/def_vars_secondary_pp.o \
+                    $(OBJS)/neural_net.o \
+                    $(OBJS)/neural_net_constants_postproc.o \
+                    $(OBJS)/prepare_primary_pp.o \
+                    $(OBJS)/prepare_secondary_pp.o \
+                    $(OBJS)/read_input_dimensions.o \
                     $(OBJS)/read_inter_file.o \
                     $(OBJS)/read_inter_sec_file.o \
-                    $(OBJS)/alloc_spixel_scan_out_rt_pp.o \
-                    $(OBJS)/read_input_dimensions.o \
-                    $(OBJS)/neural_net_constants_postproc.o \
-                    $(OBJS)/neural_net.o \
-                    $(OBJS)/snow_ice_mask.o
+                    $(OBJS)/scanline_structure.o  \
+                    $(OBJS)/set_struct_pp.o \
+                    $(OBJS)/structures_pp.o \
+                    $(OBJS)/vartypes_pp.o \
+                    $(OBJS)/write_primary_pp.o \
+                    $(OBJS)/write_secondary_pp.o
 
 POSTPROC_OBJ_MAIN = $(OBJS)/post_process_level2.o
 
@@ -46,9 +47,10 @@ $(OBJS)/%.o: %.f $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS)  $<
 
 
-# Main program build
+# Main target list
 all: post_process_level2
 
+# Main program build
 post_process_level2: $(POSTPROC_OBJ_MAIN) libpostproc.a  $(ORAC_COMMON)/liborac_common.a Makefile
 	$(F90) -o post_process_level2 $(LFLAGS) $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
@@ -60,8 +62,8 @@ libpostproc.a: $(POSTPROC_OBJ_F90) Makefile
 depend:
 	@../tools/make_depend.pl $(POSTPROC_OBJ_F90) $(POSTPROC_OBJ_MAIN) > dependencies.inc
 
-clean tidy: 
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a post_process_level
+clean tidy:
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a post_process_level2
 
 # Fortran 90 dependencies
 include dependencies.inc

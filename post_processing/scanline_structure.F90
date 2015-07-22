@@ -1,460 +1,423 @@
-! Name:
-!    scanline_structure
+!-------------------------------------------------------------------------------
+! Name: scanline_structure
 !
-! 2012/07/06 MJ extensively overhauls and restructures the code
-! 2013/01/17 Matthias Jerg: Adds code to accommodate uncertainties of ctt and cth
-! 2013/03/12 CP changed 32767 to 999
-! 2014/10/24 OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM, and nisemask
-! 2014/11/20 OS: added Pavolonis cloud phase related variables
-! 2014/11/26 CP: added  cloud_albedo
-! 2015/02/05 OS: deactivated use of vartypes_pp to force consistency with
-!                common_constants
-! 2015/07/06 OS: added vidcldmaskerror
-! 2015/07/04 CP: added corrected cloud top height
-!---------------------------------------------------------------------
+! Purpose:
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2012/07/06, MJ: extensively overhauls and restructures the code
+! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
+! 2013/03/12, CP: changed 32767 to 999
+! 2014/10/24, OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM,
+!    and nisemask
+! 2014/11/20, OS: added Pavolonis cloud phase related variables
+! 2014/11/26, CP: added Pavolonis cloud_albedo
+! 2015/02/05, OS: deactivated use of vartypes_pp to force consistency with
+!    common_constants
+! 2015/07/06, OS: added vidcldmaskerror
+! 2015/07/16, GM: Major cleanup.
+!
+! $Id$
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 
 module scanline_structure
 
+   use common_constants
+
+   implicit none
+
+   type spixel_scanline_primary_output
+
+      ! Variable IDs for data fields in primary output file
+      integer                       :: vid_time
+      integer                       :: vid_lat, vid_lon
+      integer,dimension(:), pointer :: vid_sol_zen, vid_sat_zen, vid_rel_azi
+      integer                       :: vid_cot, vid_cot_error
+      integer                       :: vid_ref, vid_ref_error
+      integer                       :: vid_ctp, vid_ctp_error
+      integer                       :: vid_cct, vid_cct_error
+      integer                       :: vid_stemp, vid_stemp_error
+      integer                       :: vid_cth, vid_cth_error
+      integer                       :: vid_cth_corrected, vid_cth_corrected_error
+      integer                       :: vid_ctt, vid_ctt_error
+      integer                       :: vid_cwp, vid_cwp_error
+      integer,dimension(:), pointer :: vid_cloud_albedo
+      integer                       :: vid_convergence
+      integer                       :: vid_niter
+      integer                       :: vid_phase
+      integer                       :: vid_phase_pavolonis
+      integer                       :: vid_costja
+      integer                       :: vid_costjm
+      integer                       :: vid_lsflag
+      integer                       :: vid_qcflag
+      integer                       :: vid_illum
+      integer                       :: vid_cldtype
+      integer                       :: vid_cldmask,vid_cldmaskerror
+      integer                       :: vid_cccot
+      integer                       :: vid_cccot_pre
+      integer                       :: vid_lusflag
+      integer                       :: vid_dem
+      integer                       :: vid_nisemask
+
+      ! Scale, offset, valid min/max for output fields
+      real(kind=dreal)              :: time_scale  = 1.0
+      real(kind=dreal)              :: time_offset = 0.0
+      real(kind=dreal)              :: time_vmin   = 0.0
+      real(kind=dreal)              :: time_vmax   = 1.0e10
+
+      real(kind=sreal)              :: lat_scale  = 1.0
+      real(kind=sreal)              :: lat_offset = 0.0
+      real(kind=sreal)              :: lat_vmin   = -90.0
+      real(kind=sreal)              :: lat_vmax   = 90.0
+      real(kind=sreal)              :: lon_scale  = 1.0
+      real(kind=sreal)              :: lon_offset = 0.0
+      real(kind=sreal)              :: lon_vmin   = -180.0
+      real(kind=sreal)              :: lon_vmax   = 180.0
+
+      real(kind=sreal)              :: sol_scale  = 1.0
+      real(kind=sreal)              :: sol_offset = 0.0
+      real(kind=sreal)              :: sol_vmin   = -180.0
+      real(kind=sreal)              :: sol_vmax   = 180.0
+      real(kind=sreal)              :: sat_scale  = 1.0
+      real(kind=sreal)              :: sat_offset = 0.0
+      real(kind=sreal)              :: sat_vmin   = -180.0
+      real(kind=sreal)              :: sat_vmax   = 180.0
+      real(kind=sreal)              :: azi_scale  = 1.0
+      real(kind=sreal)              :: azi_offset = 0.0
+      real(kind=sreal)              :: azi_vmin   = -180.0
+      real(kind=sreal)              :: azi_vmax   = 180.0
+
+      real(kind=sreal)              :: cot_scale        = 0.01
+      real(kind=sreal)              :: cot_offset       = 0.0
+      integer(kind=sint)            :: cot_vmin         = 0
+      integer(kind=sint)            :: cot_vmax         = 32000
+      real(kind=sreal)              :: cot_error_scale  = 0.01
+      real(kind=sreal)              :: cot_error_offset = 0.0
+      integer(kind=sint)            :: cot_error_vmin   = 0
+      integer(kind=sint)            :: cot_error_vmax   = 32000
+
+      real(kind=sreal)              :: ref_scale        = 0.01
+      real(kind=sreal)              :: ref_offset       = 0.0
+      integer(kind=sint)            :: ref_vmin         = 0
+      integer(kind=sint)            :: ref_vmax         = 20000
+      real(kind=sreal)              :: ref_error_scale  = 0.01
+      real(kind=sreal)              :: ref_error_offset = 0.0
+      integer(kind=sint)            :: ref_error_vmin   = 0
+      integer(kind=sint)            :: ref_error_vmax   = 20000
+
+      real(kind=sreal)              :: ctp_scale        = 0.1
+      real(kind=sreal)              :: ctp_offset       = 0.0
+      integer(kind=sint)            :: ctp_vmin         = 0
+      integer(kind=sint)            :: ctp_vmax         = 12000
+      real(kind=sreal)              :: ctp_error_scale  = 0.1
+      real(kind=sreal)              :: ctp_error_offset = 0.0
+      integer(kind=sint)            :: ctp_error_vmin   = 0
+      integer(kind=sint)            :: ctp_error_vmax   = 12000
+
+      real(kind=sreal)              :: cct_scale        = 0.01
+      real(kind=sreal)              :: cct_offset       = 0.0
+      integer(kind=sint)            :: cct_vmin         = 0
+      integer(kind=sint)            :: cct_vmax         = 100
+      real                          :: cct_error_scale  = 0.01
+      real                          :: cct_error_offset = 0.0
+      integer(kind=sint)            :: cct_error_vmin   = 0
+      integer(kind=sint)            :: cct_error_vmax   = 10000
+
+!     real(kind=sreal)              :: albedo_scale,albedo_offset
+!     integer(kind=sint)            :: albedo_vmin,albedo_vmax
+!     real(kind=sreal)              :: albedo_error_scale,albedo_error_offset
+!     integer(kind=sint)            :: albedo_error_vmin,albedo_error_vmax
+
+      real(kind=sreal)              :: stemp_scale        = 0.01
+      real(kind=sreal)              :: stemp_offset       = 0.0 ! 100.0 in the pain processor
+      integer(kind=sint)            :: stemp_vmin         = 0
+      integer(kind=sint)            :: stemp_vmax         = 32000
+      real(kind=sreal)              :: stemp_error_scale  = 0.01
+      real(kind=sreal)              :: stemp_error_offset = 0.0
+      integer(kind=sint)            :: stemp_error_vmin   = 0
+      integer(kind=sint)            :: stemp_error_vmax   = 32000
+
+      real(kind=sreal)              :: cth_scale        = 0.01
+      real(kind=sreal)              :: cth_offset       = 0.0
+      integer(kind=sint)            :: cth_vmin         = -1000
+      integer(kind=sint)            :: cth_vmax         = 2000
+      real(kind=sreal)              :: cth_error_scale  = 0.01
+      real(kind=sreal)              :: cth_error_offset = 0.0
+      integer(kind=sint)            :: cth_error_vmin   = 0
+      integer(kind=sint)            :: cth_error_vmax   = 2000
+
+      real(kind=sreal)              :: ctt_scale        = 0.01
+      real(kind=sreal)              :: ctt_offset       = 0.0 ! 100.0 in the pain processor
+      integer(kind=sint)            :: ctt_vmin         = 0
+      integer(kind=sint)            :: ctt_vmax         = 32000
+      real                          :: ctt_error_scale  = 0.01
+      real                          :: ctt_error_offset = 0.0
+      integer(kind=sint)            :: ctt_error_vmin   = 0
+      integer(kind=sint)            :: ctt_error_vmax   = 32000
+
+      real(kind=sreal)              :: cwp_scale        = 1.0
+      real(kind=sreal)              :: cwp_offset       = 0.0
+      integer(kind=sint)            :: cwp_vmin         = 0
+      integer(kind=sint)            :: cwp_vmax         = 32000
+      real                          :: cwp_error_scale  = 1.0
+      real                          :: cwp_error_offset = 0.0
+      integer(kind=sint)            :: cwp_error_vmin   = 0
+      integer(kind=sint)            :: cwp_error_vmax   = 32000
+
+      integer(kind=byte)            :: convergence_scale  = 1
+      integer(kind=byte)            :: convergence_offset = 0
+      integer(kind=byte)            :: convergence_vmin   = 0
+      integer(kind=byte)            :: convergence_vmax   = 1
+
+      integer(kind=byte)            :: niter_scale  = 1
+      integer(kind=byte)            :: niter_offset = 0
+      integer(kind=byte)            :: niter_vmin   = 0
+      integer(kind=byte)            :: niter_vmax   = 100
+
+      integer(kind=byte)            :: phase_scale  = 1
+      integer(kind=byte)            :: phase_offset = 0
+      integer(kind=byte)            :: phase_vmin   = 0
+      integer(kind=byte)            :: phase_vmax   = 2
+
+      integer(kind=byte)            :: phase_pavolonis_scale, phase_pavolonis_offset
+      integer(kind=byte)            :: phase_pavolonis_vmin, phase_pavolonis_vmax
+
+      real(kind=sreal)              :: costja_scale  = 1.0
+      real(kind=sreal)              :: costja_offset = 0.0
+      real(kind=sreal)              :: costja_vmin   = 0.0
+      real(kind=sreal)              :: costja_vmax   = 100000.0
+
+      real(kind=sreal)              :: costjm_scale  = 1.0
+      real(kind=sreal)              :: costjm_offset = 0.0
+      real(kind=sreal)              :: costjm_vmin   = 0.0
+      real(kind=sreal)              :: costjm_vmax   = 100000.0
+
+      integer(kind=byte)            :: lsflag_scale  = 1
+      integer(kind=byte)            :: lsflag_offset = 0
+      integer(kind=byte)            :: lsflag_vmin   = 0
+      integer(kind=byte)            :: lsflag_vmax   = 6
+
+      integer(kind=sint)            :: qcflag_scale  = 1
+      integer(kind=sint)            :: qcflag_offset = 0
+      integer(kind=sint)            :: qcflag_vmin   = 0
+      integer(kind=sint)            :: qcflag_vmax   = 254
+
+      integer(kind=byte)            :: illum_scale  = 1
+      integer(kind=byte)            :: illum_offset = 0
+      integer(kind=byte)            :: illum_vmin   = 1
+      integer(kind=byte)            :: illum_vmax   = 12
+
+      integer(kind=byte)            :: cldtype_scale  = 1
+      integer(kind=byte)            :: cldtype_offset = 0
+      integer(kind=byte)            :: cldtype_vmin   = 0
+      integer(kind=byte)            :: cldtype_vmax   = 9
+
+      integer(kind=byte)            :: cldmask_scale  = 1
+      integer(kind=byte)            :: cldmask_offset = 0
+      integer(kind=byte)            :: cldmask_vmin   = 0
+      integer(kind=byte)            :: cldmask_vmax   = 1
 
-  use common_constants
+      ! Different from the main processor
+      real(kind=sreal)              :: cccot_scale    = 0.001
+      real(kind=sreal)              :: cccot_offset   = 0.0
+      integer(kind=sint)            :: cccot_vmin     = -1000.0
+      integer(kind=sint)            :: cccot_vmax     = 2000.0
 
-  implicit none
+      real(kind=sreal)              :: cccot_pre_scale  = 0.001
+      real(kind=sreal)              :: cccot_pre_offset = 0.0
+      integer(kind=sint)            :: cccot_pre_vmin   = -1000.0
+      integer(kind=sint)            :: cccot_pre_vmax   = 2000.0
 
-  type spixel_scanline_primary_output
+      integer(kind=byte)            :: lusflag_scale  = 1
+      integer(kind=byte)            :: lusflag_offset = 0
+      integer(kind=byte)            :: lusflag_vmin   = 1
+      integer(kind=byte)            :: lusflag_vmax   = 24
 
-     integer :: vidlat, vidlon,vidtime
+      integer(kind=sint)            :: dem_scale  = 1
+      integer(kind=sint)            :: dem_offset = 0
+      integer(kind=sint)            :: dem_vmin   = 0
+      integer(kind=sint)            :: dem_vmax   = 10000
 
-     integer,dimension(:), pointer :: vidsat_zen,vidsol_zen,vidrel_azi,vidcloud_albedo
+      integer(kind=byte)            :: nisemask_scale  = 1
+      integer(kind=byte)            :: nisemask_offset = 0
+      integer(kind=byte)            :: nisemask_vmin   = 0
+      integer(kind=byte)            :: nisemask_vmax   = 1
 
-     integer :: vidcot,vidref, vidctp,vidcct,vidstemp, vidcth,vidcth_corrected,vidcccot,vidcccot_pre
-     integer :: vidctt, vidcwp 
-     integer :: vidcoterror,vidreferror, vidctperror,vidctpraderr,vidccterror
-     integer :: vidctherror,vidctterror,vidcth_correctederror,vidcttraderror
-     integer :: vidstemperror,vidcwperror
+      real(kind=sreal)              :: cloud_albedo_scale
+      real(kind=sreal)              :: cloud_albedo_offset
+      integer(kind=sint)            :: cloud_albedo_vmin
+      integer(kind=sint)            :: cloud_albedo_vmax
 
-     integer :: vidconvergence,vidniter, vidlsflag,vidphase,vidphase_pavolonis
+      ! Arrays to store output fields
+      real(kind=dreal),   dimension(:,:),   pointer :: time
 
-     integer :: vidcostja,vidcostjm, vidqcflag, vidillum
+      real(kind=sreal),   dimension(:,:),   pointer :: lat
+      real(kind=sreal),   dimension(:,:),   pointer :: lon
 
-     integer :: vidradiance1
-     integer :: vidcldtype,vidcldmask,vidcldmaskerror,vidlusflag,viddem,vidnisemask
+      real(kind=sreal),   dimension(:,:),   pointer :: sol_zen
+      real(kind=sreal),   dimension(:,:),   pointer :: sat_zen
+      real(kind=sreal),   dimension(:,:),   pointer :: rel_azi
 
-     real(kind=dreal) :: time_scale,time_offset,time_vmin,time_vmax,time_fv
-     real :: lat_scale,lat_offset,lat_vmin,lat_vmax
-     real :: lon_scale,lon_offset,lon_vmin,lon_vmax
-     real :: real_fill_value_lat_lon=-999.0
-     integer(kind=sint) :: int_fill_value=-999
-     integer(kind=byte) :: byte_fill_value=-127
-     real(kind=sreal) :: real_fill_value=-999.0
+      integer(kind=sint), dimension(:,:),   pointer :: cot
+      integer(kind=sint), dimension(:,:),   pointer :: cot_error
 
-     real :: sat_scale,sat_offset,sat_vmin,sat_vmax
-     real :: sol_scale,sol_offset,sol_vmin,sol_vmax
-     real :: azi_scale,azi_offset,azi_vmin,azi_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: ref
+      integer(kind=sint), dimension(:,:),   pointer :: ref_error
 
-     real :: cot_scale,cot_offset
-     integer(kind=sint) :: cot_vmin,cot_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: ctp
+      integer(kind=sint), dimension(:,:),   pointer :: ctp_error
 
-     real :: cot_error_scale,cot_error_offset
-     integer(kind=sint) :: cot_error_vmin,cot_error_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: cct
+      integer(kind=sint), dimension(:,:),   pointer :: cct_error
 
-     real :: ref_scale,ref_offset
-     integer(kind=sint) :: ref_vmin,ref_vmax
+!     integer(kind=sint), dimension(:,:),   pointer :: albedo
+!     integer(kind=sint), dimension(:,:),   pointer :: albedo_error
 
-     real :: ref_error_scale,ref_error_offset
-     integer(kind=sint) :: ref_error_vmin,ref_error_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: stemp
+      integer(kind=sint), dimension(:,:),   pointer :: stemp_error
 
-     real :: ctp_scale,ctp_offset
-     integer(kind=sint) :: ctp_vmin,ctp_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: ctt
+      integer(kind=sint), dimension(:,:),   pointer :: ctt_error
 
-     real :: ctp_error_scale,ctp_error_offset
-     integer(kind=sint) :: ctp_error_vmin,ctp_error_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: cth
+      integer(kind=sint), dimension(:,:),   pointer :: cth_error
 
+      integer(kind=sint), dimension(:,:),   pointer :: cth_corrected
+      integer(kind=sint), dimension(:,:),   pointer :: cth_corrected_error
 
-     real :: cccot_scale,cccot_offset
-     integer(kind=sint) :: cccot_vmin,cccot_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: cwp
+      integer(kind=sint), dimension(:,:),   pointer :: cwp_error
 
-     real :: cccot_pre_scale,cccot_pre_offset
-     integer(kind=sint) :: cccot_pre_vmin,cccot_pre_vmax
+      integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo
 
-     real :: cct_scale,cct_offset
-     integer(kind=sint) :: cct_vmin,cct_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: convergence
 
-     real :: cct_error_scale,cct_error_offset
-     integer(kind=sint) :: cct_error_vmin,cct_error_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: niter
 
-     real :: stemp_scale, stemp_offset
-     integer(kind=sint) ::  stemp_vmin, stemp_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: phase
+      integer(kind=byte), dimension(:,:),   pointer :: phase_pavolonis
 
-     real :: stemp_error_scale, stemp_error_offset
-     integer(kind=sint) ::  stemp_error_vmin, stemp_error_vmax
+      real(kind=sreal),   dimension(:,:),   pointer :: costja
 
-     real :: albedo_scale, albedo_offset
-     integer(kind=sint) ::  albedo_vmin, albedo_vmax
+      real(kind=sreal),   dimension(:,:),   pointer :: costjm
 
-     real :: cth_scale, cth_offset
-     integer(kind=sint) ::  cth_vmin, cth_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: lsflag
 
-     real :: cth_error_scale,cth_error_offset
-     integer(kind=sint) :: cth_error_vmin,cth_error_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: qcflag
 
+      integer(kind=byte), dimension(:,:),   pointer :: illum
 
-     real :: ctt_scale, ctt_offset
-     integer(kind=sint) ::  ctt_vmin, ctt_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: cldtype
 
-     real :: ctt_error_scale,ctt_error_offset
-     integer(kind=sint) :: ctt_error_vmin,ctt_error_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: cldmask
 
+      real(kind=sreal),   dimension(:,:),   pointer :: cldmask_error
 
+      integer(kind=sint), dimension(:,:),   pointer :: cccot
+      integer(kind=sint), dimension(:,:),   pointer :: cccot_pre
 
-     real :: cloud_albedo_scale,cloud_albedo_offset
-     integer(kind=sint) :: cloud_albedo_vmin,cloud_albedo_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: lusflag
 
-     real :: cwp_scale,cwp_offset
-     integer(kind=sint) :: cwp_vmin,cwp_vmax
+      integer(kind=sint), dimension(:,:),   pointer :: dem
 
-     real :: cwp_error_scale,cwp_error_offset
-     integer(kind=sint) :: cwp_error_vmin,cwp_error_vmax
+      integer(kind=byte), dimension(:,:),   pointer :: nisemask
 
-     real(kind=sreal) :: costja_scale, costja_offset
-     real(kind=sreal) ::  costja_vmin, costja_vmax
+   end type spixel_scanline_primary_output
 
-     real(kind=sreal) :: costjm_scale, costjm_offset
-     real(kind=sreal) ::  costjm_vmin, costjm_vmax
 
-     integer(kind=byte) :: con_scale, con_offset, con_vmin, con_vmax
-     integer(kind=byte) :: ls_scale, ls_offset, ls_vmin, ls_vmax
+   type spixel_scanline_secondary_output
+      integer                          :: vid_scanline_u
+      integer                          :: vid_scanline_v
 
-     integer(kind=byte) :: niter_scale, niter_offset, niter_vmin, niter_vmax
-     integer(kind=byte) :: phase_scale, phase_offset, phase_vmin, phase_vmax
-     integer(kind=byte) :: phase_pavolonis_scale, phase_pavolonis_offset, phase_pavolonis_vmin, phase_pavolonis_vmax
+      integer                          :: vid_cot_ap,vid_cot_fg
+      integer                          :: vid_ref_ap,vid_ref_fg
+      integer                          :: vid_ctp_ap,vid_ctp_fg
+      integer                          :: vid_stemp_ap,vid_stemp_fg
 
-     integer(kind=byte) :: illum_scale, illum_offset, illum_vmin, illum_vmax
+      integer, dimension(:),   pointer :: vid_albedo
 
-     integer(kind=sint) :: qc_scale,qc_offset,qc_vmin,qc_vmax
+      integer, dimension(:),   pointer :: vid_channels
 
-     integer(kind=byte) :: cldtype_scale, cldtype_offset, cldtype_vmin,&
-          & cldtype_vmax
+      integer, dimension(:),   pointer :: vid_y0
 
-     integer(kind=byte) :: cldmask_scale, cldmask_offset, cldmask_vmin,&
-          & cldmask_vmax
+      integer, dimension(:),   pointer :: vid_residuals
 
-     integer(kind=byte) :: lusflag_scale, lusflag_offset, lusflag_vmin,&
-          & lusflag_vmax
+      integer                          :: vid_ds
 
-     integer(kind=byte) :: lsflag_scale, lsflag_offset, lsflag_vmin,&
-          & lsflag_vmax
+      integer, dimension(:,:), pointer :: vid_covariance
 
-     integer(kind=sint) :: dem_scale, dem_offset, dem_vmin, dem_vmax
 
-     integer(kind=byte) :: nisemask_scale, nisemask_offset, nisemask_vmin,&
-          & nisemask_vmax
+      integer(kind=lint)               :: scanline_u_scale,scanline_u_offset
+      integer(kind=lint)               :: scanline_u_vmin,scanline_u_vmax
 
+      integer(kind=lint)               :: scanline_v_scale,scanline_v_offset
+      integer(kind=lint)               :: scanline_v_vmin,scanline_v_vmax
 
-     real(kind=dreal),  dimension(:,:), pointer :: time
+      real(kind=sreal)                 :: cot_ap_scale,cot_ap_offset
+      integer(kind=sint)               :: cot_ap_vmin,cot_ap_vmax
 
-     real,  dimension(:,:), pointer :: lon
-     real,  dimension(:,:), pointer :: lat
+      real(kind=sreal)                 :: cot_fg_scale,cot_fg_offset
+      integer(kind=sint)               :: cot_fg_vmin,cot_fg_vmax
 
-     real,  dimension(:,:), pointer :: sat_zen
-     real,  dimension(:,:), pointer :: sol_zen
-     real,  dimension(:,:), pointer :: rel_azi
+      real(kind=sreal)                 :: ref_ap_scale,ref_ap_offset
+      integer(kind=sint)               :: ref_ap_vmin,ref_ap_vmax
 
-     !     integer(kind=byte), dimension(:), pointer :: cloudflag
+      real(kind=sreal)                 :: ref_fg_scale,ref_fg_offset
+      integer(kind=sint)               :: ref_fg_vmin,ref_fg_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: cct,cct_error
+      real(kind=sreal)                 :: ctp_ap_scale,ctp_ap_offset
+      integer(kind=sint)               :: ctp_ap_vmin,ctp_ap_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: cccot, cccot_pre
+      real(kind=sreal)                 :: ctp_fg_scale,ctp_fg_offset
+      integer(kind=sint)               :: ctp_fg_vmin,ctp_fg_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: cot,cot_error
-     integer(kind=sint), dimension(:,:), pointer :: ref,ref_error
+      real(kind=sreal)                 :: stemp_ap_offset,stemp_ap_scale
+      integer(kind=sint)               :: stemp_ap_vmin,stemp_ap_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: ctp,ctp_error
+      real(kind=sreal)                 :: stemp_fg_offset,stemp_fg_scale
+      integer(kind=sint)               :: stemp_fg_vmin,stemp_fg_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: stemp,stemp_error
+      real(kind=sreal),   dimension(:), pointer :: albedo_scale,albedo_offset
+      integer(kind=sint), dimension(:), pointer :: albedo_vmin,albedo_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: albedo
+      real(kind=sreal),   dimension(:), pointer :: channels_scale,channels_offset
+      integer(kind=sint), dimension(:), pointer :: channels_vmin,channels_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: ctt,ctt_error
-     integer(kind=sint), dimension(:,:), pointer :: cth,cth_error
-     integer(kind=sint), dimension(:,:), pointer :: cwp,cwp_error
-!corrected height
+      real(kind=sreal),   dimension(:), pointer :: y0_scale,y0_offset
+      integer(kind=sint), dimension(:), pointer :: y0_vmin,y0_vmax
 
-     integer(kind=sint), dimension(:,:), pointer :: cth_corrected,cth_corrected_error
+      real(kind=sreal),   dimension(:), pointer :: residuals_scale,residuals_offset
+      integer(kind=sint), dimension(:), pointer :: residuals_vmin,residuals_vmax
 
+      real(kind=sreal)                          :: ds_offset, ds_scale
+      integer(kind=sint)                        :: ds_vmin, ds_vmax
 
-     integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo	
+      real(kind=sreal)                          :: covariance_offset, covariance_scale
+      integer(kind=sint)                        :: covariance_vmin, covariance_vmax
 
-     integer(kind=byte), dimension(:,:), pointer :: convergence
 
-     integer(kind=byte), dimension(:,:), pointer :: niter
-     integer(kind=byte), dimension(:,:), pointer :: phase
-     integer(kind=byte), dimension(:,:), pointer :: phase_pavolonis
+      integer(kind=lint), dimension(:,:),     pointer :: scanline_u, scanline_v
 
-     real(kind=sreal), dimension(:,:), pointer :: costja
-     real(kind=sreal), dimension(:,:), pointer :: costjm
+      integer(kind=sint), dimension(:,:),     pointer :: cot_ap,cot_fg
+      integer(kind=sint), dimension(:,:),     pointer :: ref_ap,ref_fg
+      integer(kind=sint), dimension(:,:),     pointer :: ctp_ap,ctp_fg
+      integer(kind=sint), dimension(:,:),     pointer :: stemp_ap,stemp_fg
 
-     integer(kind=byte), dimension(:,:), pointer :: lsflag,lusflag
+      integer(kind=sint), dimension(:,:,:),   pointer :: albedo
+      integer(kind=sint), dimension(:,:,:),   pointer :: channels
+      integer(kind=sint), dimension(:,:,:),   pointer :: y0
+      integer(kind=sint), dimension(:,:,:),   pointer :: residuals
 
-     integer(kind=sint),  dimension(:,:), pointer :: qcflag
-
-     integer(kind=byte), dimension(:,:), pointer :: illum
-
-     integer(kind=byte), dimension(:,:), pointer :: cldtype, cldmask,&
-          & nisemask
-
-     integer(kind=sint), dimension(:,:), pointer :: dem
-
-  end type spixel_scanline_primary_output
-
-
-  type spixel_scanline_output_rt
-
-     integer, dimension(:),pointer :: vidres
-     integer, dimension(:),pointer :: vidchans	
-
-     integer :: lint_fill_value=-999
-     integer(kind=lint) :: int_fill_value=-999
-     integer(kind=byte) :: byte_fill_value=-127
-
-     real, dimension(:), pointer :: res_scale,res_offset
-     real, dimension(:), pointer :: chans_scale,chans_offset	
-     integer(kind=sint), dimension(:), pointer :: res_vmin,res_vmax
-     integer(kind=sint), dimension(:), pointer :: chans_vmin,chans_vmax
-
-     integer(kind=sint), dimension(:,:,:), pointer :: residuals
-     integer(kind=sint), dimension(:,:,:), pointer :: channels
-
-
-  end type spixel_scanline_output_rt
-
-
-  !MJOBS
-!!$
-!!$!  Define a type for the Short Wave RTM parameters
-!!$
-!!$     
-!!$    type spixel_scanline_primary_output
-!!$
-!!$        integer :: vidlat, vidlon,vidtime
-!!$
-!!$       integer :: vidsat_zen,vidsol_zen,vidrel_azi
-!!$
-!!$       integer :: vidcot,vidref, vidctp,vidcct,vidstemp, vidcth
-!!$       integer :: vidctt, vidcwp
-!!$       integer :: vidcoterror,vidreferror, vidctperror,vidccterror
-!!$       integer :: vidstemperror,vidcwperror
-!!$
-!!$       integer :: vidconvergence,vidniter, vidlsflag,vidpchange, vidcloudflag
-!!$
-!!$       integer :: vidcostja,vidcostjm, vidqcflag, vidillum
-!!$
-!!$       integer :: vidradiance1
-!!$
-!!$       real(kind=dreal) :: time_scale,time_offset,time_vmin,time_vmax,time_fv
-!!$       real :: lat_scale,lat_offset,lat_vmin,lat_vmax
-!!$       real :: lon_scale,lon_offset,lon_vmin,lon_vmax
-!!$       real :: real_fill_value_lat_lon=-999.0
-!!$       integer(kind=lint) :: int_fill_value=-999
-!!$       integer(kind=byte) :: byte_fill_value=-127
-!!$
-!!$       real :: sat_scale,sat_offset,sat_vmin,sat_vmax
-!!$       real :: sol_scale,sol_offset,sol_vmin,sol_vmax
-!!$       real :: azi_scale,azi_offset,azi_vmin,azi_vmax
-!!$
-!!$       real :: cot_scale,cot_offset
-!!$       integer(kind=sint) :: cot_vmin,cot_vmax
-!!$       
-!!$       real :: cot_error_scale,cot_error_offset
-!!$       integer(kind=sint) :: cot_error_vmin,cot_error_vmax
-!!$
-!!$       real :: ref_scale,ref_offset
-!!$       integer(kind=sint) :: ref_vmin,ref_vmax
-!!$
-!!$       real :: ref_error_scale,ref_error_offset
-!!$       integer(kind=sint) :: ref_error_vmin,ref_error_vmax
-!!$
-!!$       real :: ctp_scale,ctp_offset
-!!$       integer(kind=sint) :: ctp_vmin,ctp_vmax
-!!$
-!!$       real :: ctp_error_scale,ctp_error_offset
-!!$       integer(kind=sint) :: ctp_error_vmin,ctp_error_vmax
-!!$
-!!$       real :: cct_scale,cct_offset
-!!$       integer(kind=sint) :: cct_vmin,cct_vmax
-!!$
-!!$       real :: cct_error_scale,cct_error_offset
-!!$       integer(kind=sint) :: cct_error_vmin,cct_error_vmax
-!!$
-!!$       real :: stemp_scale, stemp_offset
-!!$       integer(kind=sint) ::  stemp_vmin, stemp_vmax
-!!$
-!!$       real :: stemp_error_scale, stemp_error_offset
-!!$       integer(kind=sint) ::  stemp_error_vmin, stemp_error_vmax
-!!$
-!!$       real :: albedo_scale, albedo_offset
-!!$       integer(kind=sint) ::  albedo_vmin, albedo_vmax
-!!$
-!!$       
-!!$       real :: cth_scale, cth_offset
-!!$       integer(kind=sint) ::  cth_vmin, cth_vmax
-!!$
-!!$       real :: ctt_scale, ctt_offset
-!!$       integer(kind=sint) ::  ctt_vmin, ctt_vmax
-!!$
-!!$       real :: cwp_scale,cwp_offset
-!!$       integer(kind=sint) :: cwp_vmin,cwp_vmax
-!!$
-!!$       real :: cwp_error_scale,cwp_error_offset
-!!$       integer(kind=sint) :: cwp_error_vmin,cwp_error_vmax
-!!$
-!!$       real :: costja_scale, costja_offset
-!!$       integer(kind=sint) ::  costja_vmin, costja_vmax
-!!$
-!!$       real :: costjm_scale, costjm_offset
-!!$       integer(kind=sint) ::  costjm_vmin, costjm_vmax
-!!$
-!!$       integer(kind=byte) :: con_scale, con_offset, con_vmin, con_vmax
-!!$       integer(kind=byte) :: ls_scale, ls_offset, ls_vmin, ls_vmax
-!!$       integer(kind=byte) :: cloud_scale, cloud_offset, cloud_vmin, cloud_vmax
-!!$
-!!$       integer(kind=byte) :: niter_scale, niter_offset, niter_vmin, niter_vmax
-!!$       integer(kind=byte) :: pchange_scale, pchange_offset, pchange_vmin, pchange_vmax
-!!$
-!!$       integer(kind=byte) :: illum_scale, illum_offset, illum_vmin, illum_vmax
-!!$
-!!$       integer(kind=sint) :: qc_scale,qc_offset,qc_vmin,qc_vmax
-!!$
-!!$       real(kind=dreal),  dimension(:), pointer :: time
-!!$
-!!$       real,  dimension(:), pointer :: lon
-!!$       real,  dimension(:), pointer :: lat
-!!$
-!!$       real,  dimension(:), pointer :: sat_zen
-!!$       real,  dimension(:), pointer :: sol_zen
-!!$       real,  dimension(:), pointer :: rel_azi
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: cct,cct_error
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: cot,cot_error
-!!$       integer(kind=sint), dimension(:), pointer :: ref,ref_error
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: ctp,ctp_error
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: stemp,stemp_error
-!!$
-!!$       integer(kind=sint), dimension(:,:), pointer :: albedo
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: ctt
-!!$       integer(kind=sint), dimension(:), pointer :: cth
-!!$     integer(kind=sint), dimension(:), pointer :: cwp,cwp_error
-!!$
-!!$       integer(kind=byte), dimension(:), pointer :: convergence
-!!$
-!!$       integer(kind=byte), dimension(:), pointer :: niter
-!!$       integer(kind=byte), dimension(:), pointer :: pchange
-!!$       integer(kind=byte), dimension(:), pointer :: phase
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: costja
-!!$       integer(kind=sint), dimension(:), pointer :: costjm
-!!$
-!!$       integer(kind=byte), dimension(:), pointer :: lsflag
-!!$       integer(kind=byte), dimension(:), pointer :: cloudflag
-!!$
-!!$       integer(kind=sint),  dimension(:), pointer :: qcflag
-!!$
-!!$       integer(kind=byte), dimension(:), pointer :: illum
-!!$
-!!$    end type spixel_scanline_primary_output
-!!$
-!!$    type spixel_scanline_secondary_output
-!!$
-!!$       integer :: vidscanline_u, vidscanline_v
-!!$
-!!$       integer :: vidcotap,vidcotfg
-!!$       integer :: vidrefap,vidreffg
-!!$       integer :: vidctpap,vidctpfg
-!!$      integer :: vidstempfg
-!!$
-!!$       integer, dimension(:,:), pointer :: vidcovar
-!!$
-!!$       integer, dimension(:),pointer :: vidres
-!!$       integer, dimension(:),pointer :: vidchans	
-!!$       integer, dimension(:),pointer :: vidy0
-!!$
-!!$       integer :: lint_fill_value=-999
-!!$       integer(kind=lint) :: int_fill_value=-999
-!!$       integer(kind=byte) :: byte_fill_value=-127
-!!$
-!!$       real :: scanline_u_scale,scanline_u_offset
-!!$       real :: scanline_v_scale,scanline_v_offset
-!!$       integer :: scanline_u_vmin,scanline_u_vmax
-!!$       integer :: scanline_v_vmin,scanline_v_vmax
-!!$      
-!!$       integer, dimension(:), pointer :: scanline_u, scanline_v
-!!$
-!!$
-!!$       real :: cot_ap_scale,cot_ap_offset
-!!$       real :: cot_fg_scale,cot_fg_offset
-!!$       integer(kind=sint) :: cot_ap_vmin,cot_ap_vmax
-!!$       integer(kind=sint) :: cot_fg_vmin,cot_fg_vmax
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: cot_ap,cot_fg
-!!$
-!!$       real :: ref_ap_scale,ref_ap_offset
-!!$       real :: ref_fg_scale,ref_fg_offset
-!!$       integer(kind=sint) :: ref_ap_vmin,ref_ap_vmax
-!!$       integer(kind=sint) :: ref_fg_vmin,ref_fg_vmax
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: ref_ap,ref_fg
-!!$
-!!$
-!!$       real :: ctp_ap_scale,ctp_ap_offset
-!!$       real :: ctp_fg_scale,ctp_fg_offset
-!!$       integer(kind=sint) :: ctp_ap_vmin,ctp_ap_vmax
-!!$       integer(kind=sint) :: ctp_fg_vmin,ctp_fg_vmax
-!!$
-!!$       integer(kind=sint), dimension(:), pointer :: ctp_ap,ctp_fg
-!!$
-!!$
-!!$       real :: stemp_fg_offset,stemp_fg_scale
-!!$             integer(kind=sint) :: stemp_fg_vmin,stemp_fg_vmax
-!!$          integer(kind=sint), dimension(:), pointer :: stemp_fg,stemp_ap
-!!$
-!!$       real, dimension(:), pointer :: res_scale,res_offset
-!!$       real, dimension(:), pointer :: chans_scale,chans_offset	
-!!$       integer(kind=sint), dimension(:), pointer :: res_vmin,res_vmax
-!!$       integer(kind=sint), dimension(:), pointer :: chans_vmin,chans_vmax
-!!$
-!!$
-!!$      real, dimension(:), pointer :: y0_scale,y0_offset	
-!!$        integer(kind=sint), dimension(:), pointer :: y0_vmin,y0_vmax
-!!$
-!!$
-!!$       integer(kind=sint), dimension(:,:), pointer :: residuals
-!!$       integer(kind=sint), dimension(:,:), pointer :: y0
-!!$      integer(kind=sint), dimension(:,:), pointer :: channels
-!!$
-!!$       real(kind=sreal), dimension(:,:,:), pointer :: covariance
-!!$
-!!$    end type spixel_scanline_secondary_output
-!!$
-!!$
-!!$    type spixel_scanline_input
-!!$
-!!$       integer, dimension(:),pointer :: vidinput,viderror
-!!$
-!!$       integer(kind=lint) :: int_fill_value=-999
-!!$
-!!$       real, dimension(:), pointer :: input_scale,input_offset
-!!$       integer(kind=sint), dimension(:), pointer :: input_vmin,input_vmax
-!!$
-!!$       real, dimension(:), pointer :: error_scale,error_offset
-!!$       integer(kind=sint), dimension(:), pointer :: error_vmin,error_vmax
-!!$
-!!$       integer(kind=sint), dimension(:,:), pointer :: input,error
-!!$       
-!!$    end type spixel_scanline_input
-!!$
+      integer(kind=sint), dimension(:,:),     pointer :: ds
+
+      real(kind=sreal),   dimension(:,:,:,:), pointer :: covariance
+   end type spixel_scanline_secondary_output
 
 end module Scanline_structure
-   
