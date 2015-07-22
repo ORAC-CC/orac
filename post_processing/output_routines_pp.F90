@@ -18,7 +18,7 @@
 ! 2014/11/26, CP: added Pavolonis cloud_albedo
 ! 2015/02/05, OS: deactivated use of postproc_constants to force consistency with
 !    common_constants
-! 2015/07/06, OS: added vidcldmaskerror
+! 2015/07/06, OS: added vid_cldmaskerror
 ! 2015/07/16, GM: Major cleanup.
 !
 ! $Id$

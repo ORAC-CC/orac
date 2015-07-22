@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! The file contains a collection of subroutines which define netcdf output for different attribute/variable type combinations.
-! Subroutines names are selfdescriptive.
+! Subroutines names are self descriptive.
 ! 
 !
 ! Description and Algorithm details:

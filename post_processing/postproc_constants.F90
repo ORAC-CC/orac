@@ -10,7 +10,7 @@
 !
 ! History:
 ! 2012/02/03, MJ: cleans out prototype code to prepare repository upload.
-! 2012/03/06, CP: modied to produce post processed files
+! 2012/03/06, CP: modified to produce post processed files
 ! 2012/07/06, MJ: extensively overhauls and restructures the code
 ! 2014/04/01, MJ: fixes some problems/cleanup with illumination
 ! 2014/11/10, OS: very minor edit

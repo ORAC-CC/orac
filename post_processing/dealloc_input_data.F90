@@ -31,7 +31,7 @@
 ! 2015/01/26, CP: added multi layer cloud IR only
 ! 2015/07/16, GM: Major cleanup.
 !
-! $Id: alloc_input_data.F90 -1   $
+! $Id$
 !
 ! Bugs:
 ! None known.

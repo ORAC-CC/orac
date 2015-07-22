@@ -35,7 +35,7 @@
 !
 ! History:
 !     13th Jul 2012, Matthias Jerg : Original version
-!!
+!
 ! Bugs:
 !   None known
 !
