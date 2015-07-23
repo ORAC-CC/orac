@@ -90,6 +90,7 @@
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 !    Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: added cldmask_uncertainty
+! 2015/07/23, GM: Added specific humidity and ozone PRTM fields.
 !
 ! $Id$
 !
@@ -500,6 +501,28 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               dimids_3d, &
               'hprofile_rtm', &
               netcdf_info%vid_hprofile_lev_pw, &
+              verbose, &
+              deflate_level = deflate_level_sreal, &
+              shuffle = shuffle_sreal, &
+              fill_value = sreal_fill_value)
+
+      ! define qprofile_rtm
+      call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_prtm, &
+              dimids_3d, &
+              'qprofile_rtm', &
+              netcdf_info%vid_qprofile_lev_pw, &
+              verbose, &
+              deflate_level = deflate_level_sreal, &
+              shuffle = shuffle_sreal, &
+              fill_value = sreal_fill_value)
+
+      ! define o3profile_rtm
+      call nc_def_var_float_packed_float( &
+              netcdf_info%ncid_prtm, &
+              dimids_3d, &
+              'o3profile_rtm', &
+              netcdf_info%vid_o3profile_lev_pw, &
               verbose, &
               deflate_level = deflate_level_sreal, &
               shuffle = shuffle_sreal, &

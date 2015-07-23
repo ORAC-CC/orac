@@ -121,6 +121,7 @@
 !    NOAA-10
 ! 2015/07/02, GM: Added code to remove the Rayleigh component from the RTTOV 11
 !    computed transmittances.
+! 2015/07/23, GM: Added specific humidity and ozone profile output.
 !
 ! $Id$
 !
@@ -452,6 +453,14 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
               netcdf_info%vid_hprofile_lev_pw, &
               reshape(preproc_prtm%phi_lev(idim, jdim,:), &
               (/nlevels,1,1/)), 1, 1, nlevels, 1, i_, 1, 1, j_, 1)
+         call nc_write_array(netcdf_info%ncid_prtm, 'qprofile_rtm', &
+              netcdf_info%vid_qprofile_lev_pw, &
+              reshape(profiles(count)%q, (/nlevels,1,1/)), &
+              1, 1, nlevels, 1, i_, 1, 1, j_, 1)
+         call nc_write_array(netcdf_info%ncid_prtm, 'o3profile_rtm', &
+              netcdf_info%vid_o3profile_lev_pw, &
+              reshape(profiles(count)%o3, (/nlevels,1,1/)), &
+              1, 1, nlevels, 1, i_, 1, 1, j_, 1)
       end do
    end do
 

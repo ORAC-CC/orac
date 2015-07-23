@@ -14,6 +14,7 @@
 ! 2015/01/30, AP: Eliminate skint, sp, and lsf field for PRTM.
 !    Remove uscan and vscan as unnecessary.
 ! 2015/06/24, OS: added vid and include of netcdf_output_check.F90
+! 2015/07/23, GM: Added specific humidity and ozone vids.
 !
 ! $Id$
 !
@@ -109,7 +110,8 @@ module netcdf_output
       ! prtm file:
       integer :: vid_lon_pw, vid_lat_pw
       integer :: vid_satzen_pw, vid_solzen_pw
-      integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw
+      integer :: vid_pprofile_lev_pw, vid_tprofile_lev_pw, vid_hprofile_lev_pw, &
+                 vid_qprofile_lev_pw, vid_o3profile_lev_pw
 
       ! swrtm file:
       integer :: vid_sw_channel_abs_ids, vid_sw_channel_instr_ids, vid_sw_channel_wvl
