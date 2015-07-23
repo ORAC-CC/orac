@@ -55,7 +55,9 @@ subroutine write_primary_pp(ncid, ixstart, ixstop, iystart, iystop, indexing, &
    n_y = iystop - iystart + 1
 
 
-   output_data%time = output_data%time + 2451758.0
+   if (global_atts%sensor .eq. 'AATSR') then
+      output_data%time = output_data%time + 2451758.0
+   endif
 
    call nc_write_array(ncid,'time',output_data%vid_time,&
            output_data%time(ixstart:,iystart:),1,1,n_x,1,1,n_y)
