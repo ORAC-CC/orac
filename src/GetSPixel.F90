@@ -187,6 +187,7 @@
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and 
 !    channel selection code.
+! 2015/06/02, AP: Remove Ctrl argument from check_value.
 !
 ! $Id$
 !
@@ -242,32 +243,32 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! Check Cloud flags (0 or 1)
    call check_value(MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        CloudMax, CloudMin, SPixel, 'cloud flag', SPixCloudFl, Ctrl)
+        CloudMax, CloudMin, SPixel, 'cloud flag', SPixCloudFl)
 
    ! Land/Sea flags (0 or 1)
    call check_value(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        FlagMax, FlagMin, SPixel, 'land/sea flag', SPixLandFl, Ctrl)
+        FlagMax, FlagMin, SPixel, 'land/sea flag', SPixLandFl)
 
    !  Make this work if pixel is in daylight
    !  Geometry - Solar zenith (between 0o and 90o)
    !call check_value(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0), &
-   !     90.0, 0.0, SPixel, 'solar zenith angle', SPixSolZen, Ctrl)
+   !     90.0, 0.0, SPixel, 'solar zenith angle', SPixSolZen)
 
    ! Geometry - Satellite zenith (between 0o and 90o)
    call check_value(MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0, :), &
-        SatZenMax, SatZenMin, SPixel, 'satellite zenith angl', SPixSatZen, Ctrl)
+        SatZenMax, SatZenMin, SPixel, 'satellite zenith angl', SPixSatZen)
 
    ! Geometry - Azimuth (between 0o and 180o)
    call check_value(MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0, :), &
-        RelAziMax, RelAziMin, SPixel, 'azimuth angle', SPixRelAzi, Ctrl)
+        RelAziMax, RelAziMin, SPixel, 'azimuth angle', SPixRelAzi)
 
    ! Location - Latitude (between -90o and 90o)
    call check_value(MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        LatMax, LatMin, SPixel, 'location latitude', SPixLat, Ctrl)
+        LatMax, LatMin, SPixel, 'location latitude', SPixLat)
 
    ! Location - Longitude (between -180o and 180o)
    call check_value(MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        LonMax, LonMin, SPixel, 'location longitude', SPixLon, Ctrl)
+        LonMax, LonMin, SPixel, 'location longitude', SPixLon)
 
    ! These checks for missing data are already performed when the illumination
    ! condition is chosen. The result of the check is defined by the illumination
@@ -283,7 +284,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          if (.not. btest(Ctrl%Ind%Ch_Is(Ctrl%Ind%YSolar(i)), ThermalBit)) &
             call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, &
                              Ctrl%Ind%YSolar(i)), RefMax, RefMin, SPixel, &
-                             'MSI reflectance', SPixRef, Ctrl)
+                             'MSI reflectance', SPixRef)
       end do
    end if
 
@@ -293,8 +294,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, &
                                 Ctrl%Ind%YThermal(i))
    end do
-   call check_value(thermal, BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp, &
-        Ctrl)
+   call check_value(thermal, BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp)
    deallocate(thermal)
 
    ! End of range checking. From here on any non-zero stat value is fatal for
