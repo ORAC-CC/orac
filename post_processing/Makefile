@@ -5,6 +5,8 @@
 # 2014/10/09, AP: homogenise with other Makefile layouts
 # 2014/02/12, CP: added link to common libraries still need alot of tidying
 #    though.
+# 2015/07/16, GM: Many files removed from the object file list due to a major
+#    cleanup of the code.
 
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
@@ -16,8 +18,6 @@ ORAC_COMMON = ../common
 
 # Define object files to be linked.
 POSTPROC_OBJ_F90 =  $(OBJS)/input_routines.o \
-                    $(OBJS)/neural_net.o \
-                    $(OBJS)/neural_net_constants_pp.o \
                     $(OBJS)/output_routines_pp.o  \
                     $(OBJS)/postproc_constants.o
 
