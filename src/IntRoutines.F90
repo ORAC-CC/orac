@@ -7,6 +7,7 @@
 ! History:
 ! 2014/05/23, GM: Original version.
 ! 2015/01/19, GM: Put polint.F90 into this module.
+! 2015/07/22, AP: Made find_in_array a module procedure.
 !
 ! $Id$
 !
@@ -15,18 +16,24 @@
 !---------------------------------------------------------------------
 
 module Int_Routines_def
+   use common_constants, only: sint, lint, sreal, dreal
 
    implicit none
 
+   interface find_in_array
+      module procedure &
+           find_in_array_sint, find_in_array_lint, &
+           find_in_array_sreal, find_in_array_dreal
+   end interface find_in_array
 contains
 
-include 'Bcuint.F90'
-include 'Bcucof.F90'
-include 'Linint.F90'
-include 'Locate.F90'
-include 'Spline.F90'
-include 'Tridag.F90'
-include 'polint.F90'
+#include 'Bcuint.F90'
+#include 'Bcucof.F90'
+#include 'Linint.F90'
+#include 'Locate.F90'
+#include 'Spline.F90'
+#include 'Tridag.F90'
+#include 'polint.F90'
 
 
 !---------------------------------------------------------------------
@@ -50,22 +57,41 @@ include 'polint.F90'
 !
 ! History:
 ! 2015/01/12, AP: Original version.
+! 2015/07/22, AP: Generalised to module function across all data types.
 !
 ! Bugs
 ! None known.
 !---------------------------------------------------------------------
-function find_in_array(arr, val) result(i)
-   implicit none
-   integer, intent(in) :: arr(:) ! Array to be searched
-   integer, intent(in) :: val    ! Value to find in that array
-   integer :: n, i
-   n = size(arr)
-   do i=1,n
-      if (arr(i) == val) return
-   end do
-   ! Failed to locate value
-   i=0
-   return
-end function find_in_array
+#define FIND_IN_ARRAY_NAME find_in_array_sint
+#define FIND_IN_ARRAY_TYPE integer
+#define FIND_IN_ARRAY_KIND sint
+#include "find_in_array.inc"
+#undef FIND_IN_ARRAY_NAME
+#undef FIND_IN_ARRAY_TYPE
+#undef FIND_IN_ARRAY_KIND
+
+#define FIND_IN_ARRAY_NAME find_in_array_lint
+#define FIND_IN_ARRAY_TYPE integer
+#define FIND_IN_ARRAY_KIND lint
+#include "find_in_array.inc"
+#undef FIND_IN_ARRAY_NAME
+#undef FIND_IN_ARRAY_TYPE
+#undef FIND_IN_ARRAY_KIND
+
+#define FIND_IN_ARRAY_NAME find_in_array_sreal
+#define FIND_IN_ARRAY_TYPE real
+#define FIND_IN_ARRAY_KIND sreal
+#include "find_in_array.inc"
+#undef FIND_IN_ARRAY_NAME
+#undef FIND_IN_ARRAY_TYPE
+#undef FIND_IN_ARRAY_KIND
+
+#define FIND_IN_ARRAY_NAME find_in_array_dreal
+#define FIND_IN_ARRAY_TYPE real
+#define FIND_IN_ARRAY_KIND dreal
+#include "find_in_array.inc"
+#undef FIND_IN_ARRAY_NAME
+#undef FIND_IN_ARRAY_TYPE
+#undef FIND_IN_ARRAY_KIND
 
 end module Int_Routines_def
