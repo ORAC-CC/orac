@@ -184,6 +184,6 @@ function Find_MDAD_LW(Ny, SAD_Chan, index) result(MDAD_LW)
 end function Find_MDAD_LW
 
 
-#include 'ReadSADChan.F90'
+#include "ReadSADChan.F90"
 
 end module SAD_Chan_def

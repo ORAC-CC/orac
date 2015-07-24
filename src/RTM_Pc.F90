@@ -74,7 +74,7 @@ module RTM_Pc_def
 
 contains
 
-#include 'AllocRTMPc.F90'
-#include 'DeallocRTMPc.F90'
+#include "AllocRTMPc.F90"
+#include "DeallocRTMPc.F90"
 
 end module RTM_Pc_def

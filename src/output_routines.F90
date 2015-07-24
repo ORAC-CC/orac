@@ -409,16 +409,16 @@ module output_routines
 
 contains
 
-#include 'alloc_output_data.F90'
-#include 'dealloc_output_data.F90'
+#include "alloc_output_data.F90"
+#include "dealloc_output_data.F90"
 
-#include 'def_vars_primary.F90'
-#include 'def_vars_secondary.F90'
+#include "def_vars_primary.F90"
+#include "def_vars_secondary.F90"
 
-#include 'prepare_primary.F90'
-#include 'prepare_secondary.F90'
+#include "prepare_primary.F90"
+#include "prepare_secondary.F90"
 
-#include 'write_primary.F90'
-#include 'write_secondary.F90'
+#include "write_primary.F90"
+#include "write_secondary.F90"
 
 end module output_routines
