@@ -63,7 +63,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Define arguments
 
    type(CTRL_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    type(Data_t),     intent(in)    :: MSI_Data
    integer,          intent(out)   :: status

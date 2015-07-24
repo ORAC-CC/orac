@@ -37,6 +37,7 @@
 
 subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
+   use common_constants, only : dreal
    use SAD_Chan_def
 
    implicit none
@@ -44,21 +45,21 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
    ! Define arguments
 
    integer,          intent(in)    :: NChan
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(NChan)
-   real(4),          intent(inout) :: T(NChan)
-   real(4),          intent(out)   :: R(NChan)
-   real(4),          intent(out)   :: d_R_d_T(NChan)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   real,             intent(inout) :: T(:)
+   real,             intent(out)   :: R(:)
+   real,             intent(out)   :: d_R_d_T(:)
    integer,          intent(out)   :: status
 
    ! Define local variables
 
-   real(8) :: BB(NChan)
-   real(8) :: C(NChan)
-   real(8) :: T_eff(NChan)
-   real(4) :: huge_value, log_huge_value
-   real(8) :: dummy_nominator(NChan)
-   real(8) :: dummy_denominator(NChan)
-   real(8) :: dummy_result(NChan)
+   real(dreal) :: BB(NChan)
+   real(dreal) :: C(NChan)
+   real(dreal) :: T_eff(NChan)
+   real        :: huge_value, log_huge_value
+   real(dreal) :: dummy_nominator(NChan)
+   real(dreal) :: dummy_denominator(NChan)
+   real(dreal) :: dummy_result(NChan)
 
    ! Set status to zero
 

@@ -38,8 +38,8 @@ subroutine Invert_Cholesky(A, D, n, Status)
 
    implicit none
 
-   real, dimension(n,n), intent(in)  :: A
-   real, dimension(n,n), intent(out) :: D
+   real, dimension(:,:), intent(in)  :: A
+   real, dimension(:,:), intent(out) :: D
    integer,              intent(in)  :: n
    integer,              intent(out) :: Status
 

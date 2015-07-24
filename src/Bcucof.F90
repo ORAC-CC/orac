@@ -50,7 +50,7 @@ subroutine bcucof(y,y1,y2,y12,d1,d2,c)
 
    ! Define arguments
 
-   real, dimension(4),  intent(in)  :: y,y1,y2,y12
+   real, dimension(:),  intent(in)  :: y,y1,y2,y12
    real,                intent(in)  :: d1,d2
    real, dimension(16), intent(out) :: c
 

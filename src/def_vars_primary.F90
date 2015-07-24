@@ -71,7 +71,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
 
    type(CTRL_t),              intent(in)    :: Ctrl
    integer,                   intent(in)    :: ncid
-   integer,                   intent(in)    :: dims_var(2)
+   integer,                   intent(in)    :: dims_var(:)
    type(output_data_primary), intent(inout) :: output_data
 
    character(len=32)  :: input_num

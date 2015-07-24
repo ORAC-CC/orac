@@ -87,11 +87,9 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
 			        	          ! measurements and a priori)
    integer,        intent(in)    :: iter	  ! Inversion iteration counter
    integer,        intent(in)    :: NPhaseChanges ! Phase change counter
-   real,           intent(in)    :: Y(SPixel%Ind%Ny)
-                                                  ! Calculated "measurements" at
+   real,           intent(in)    :: Y(:)          ! Calculated "measurements" at
                                                   ! final state.
-   real,           intent(in)    :: Sy(SPixel%Ind%Ny, SPixel%Ind%Ny)
-                                                  ! Error covariance in
+   real,           intent(in)    :: Sy(:,:)       ! Error covariance in
                                                   ! measurements
    type(Diag_t),   intent(inout) :: Diag          ! Diagnostic structure
    integer,        intent(out)   :: status

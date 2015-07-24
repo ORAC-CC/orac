@@ -90,7 +90,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    type(CTRL_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(in)    :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%NThermal)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    real,             intent(in)    :: Pc
    integer,          intent(out)   :: status

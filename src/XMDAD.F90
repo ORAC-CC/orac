@@ -115,7 +115,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    ! Declare arguments
 
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(in)    :: index
    logical,          intent(in)    :: SetErr

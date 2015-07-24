@@ -53,7 +53,7 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Declare arguments
 
    type(Ctrl_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(RTM_t),      intent(in)    :: RTM
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(out)   :: status

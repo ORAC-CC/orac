@@ -110,7 +110,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Define arguments
 
    type(CTRL_t),     intent(in)    :: Ctrl
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    type(Data_t),     intent(in)    :: MSI_Data
    integer,          intent(out)   :: status
@@ -176,7 +176,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i:i), Rad, dR_dT, status)
+                  call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
                      SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
@@ -213,7 +213,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
                   ! Convert NedR to brightness temperature and add to Sy
                   ! Also add in the thermal contribution to Sy
-                  call T2R(1, SAD_Chan(ii), SPixel%Ym(i:i), Rad, dR_dT, status)
+                  call T2R(1, SAD_Chan(ii:ii), SPixel%Ym(i:i), Rad, dR_dT, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
                      SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &

@@ -89,14 +89,14 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    type(CTRL_t),     intent(in)    :: Ctrl
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
    type(SPixel_t),   intent(in)    :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%NThermal)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
-   real,             intent(in)    :: X(MaxStateVar)
+   real,             intent(in)    :: X(:)
    type(GZero_t),    intent(in)    :: GZero
-   real,             intent(out)   :: BT(SPixel%Ind%NThermal)
-   real,             intent(out)   :: d_BT(SPixel%Ind%NThermal, MaxStateVar)
-   real,             intent(out)   :: R(SPixel%Ind%NThermal)
-   real,             intent(out)   :: d_R(SPixel%Ind%NThermal, MaxStateVar)
+   real,             intent(out)   :: BT(:)
+   real,             intent(out)   :: d_BT(:,:)
+   real,             intent(out)   :: R(:)
+   real,             intent(out)   :: d_R(:,:)
    integer,          intent(out)   :: status
 
    ! Define local variables

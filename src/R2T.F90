@@ -40,7 +40,8 @@
 
 subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
 
-   use ECP_constants
+   use ECP_constants,    only : ditherm6
+   use common_constants, only : dreal
    use SAD_Chan_def
 
    implicit none
@@ -48,19 +49,18 @@ subroutine R2T(NChan, SAD_Chan, R, T, d_T_d_R, status)
    ! Define arguments
 
    integer,          intent(in)    :: NChan
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(NChan)
-   real(4),          intent(inout) :: R(NChan)
-   real(4),          intent(out)   :: T(NChan)
-   real(4),          intent(out)   :: d_T_d_R(NChan)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   real,             intent(inout) :: R(:)
+   real,             intent(out)   :: T(:)
+   real,             intent(out)   :: d_T_d_R(:)
    integer,          intent(out)   :: status
 
    ! Define local variables
 
-   integer :: i
-   real(4) :: C(NChan)
-   real(8) :: T_eff(NChan)
-   real(4) :: tiny_value
-   real(4) :: huge_value
+   integer     :: i
+   real        :: C(NChan)
+   real(dreal) :: T_eff(NChan)
+   real        :: tiny_value, huge_value
 
    ! Set error status to zero
 

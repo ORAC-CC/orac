@@ -77,7 +77,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    type(CTRL_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(in)    :: SPixel
    real,             intent(in)    :: Pc
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(SPixel%Ind%NThermal)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(RTM_Pc_t) ,  intent(inout) :: RTM_Pc
    integer,          intent(out)   :: status
 

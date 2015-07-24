@@ -54,8 +54,8 @@ subroutine Set_Sy(Ctrl, SPixel, Kbj, Sy, status)
 
    type(Ctrl_t),   intent(in)  :: Ctrl
    type(SPixel_t), intent(in)  :: SPixel
-   real,           intent(in)  :: Kbj(SPixel%Ind%Ny, SPixel%Ind%NSolar)
-   real,           intent(out) :: Sy(SPixel%Ind%Ny, SPixel%Ind%Ny)
+   real,           intent(in)  :: Kbj(:,:)
+   real,           intent(out) :: Sy(:,:)
    integer,        intent(out) :: status
 
    ! Declare local variables

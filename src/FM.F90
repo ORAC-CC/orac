@@ -148,13 +148,13 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(in)    :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
-   real,             intent(in)    :: X(MaxStateVar)
-   real,             intent(out)   :: Y(SPixel%Ind%Ny)
-   real,             intent(out)   :: dY_dX(SPixel%Ind%Ny,(MaxStateVar+1))
-   real,             intent(out)   :: cloud_albedo(SPixel%Ind%NSolar)
+   real,             intent(in)    :: X(:)
+   real,             intent(out)   :: Y(:)
+   real,             intent(out)   :: dY_dX(:,:)
+   real,             intent(out)   :: cloud_albedo(:)
    integer,          intent(out)   :: status
 
    ! Declare local variables

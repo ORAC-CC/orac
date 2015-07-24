@@ -210,7 +210,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    type(Diag_t),     intent(out)   :: Diag

@@ -59,7 +59,7 @@
 ! $Id$
 !
 ! Bugs:
-! None known.
+! Doesn't return an estimate of the uncertainty.
 !-------------------------------------------------------------------------------
 
 subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)

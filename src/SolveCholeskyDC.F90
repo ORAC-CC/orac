@@ -38,10 +38,10 @@ subroutine Solve_Cholesky_DC(A, b, x, n)
 
    implicit none
 
-   real, dimension(n,n), intent(in) :: A
-   real, dimension(n),   intent(in) :: b
-   real, dimension(n),   intent(inout) :: x
-   integer,              intent(in) :: n
+   real, dimension(:,:), intent(in)    :: A
+   real, dimension(:),   intent(in)    :: b
+   real, dimension(:),   intent(inout) :: x
+   integer,              intent(in)    :: n
 
    integer :: i
 

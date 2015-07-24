@@ -41,7 +41,7 @@ subroutine Decompose_Cholesky(A, n, Status)
 
    implicit none
 
-   real, dimension(n,n), intent(inout) :: A
+   real, dimension(:,:), intent(inout) :: A
    integer,              intent(in)    :: n
    integer,              intent(out)   :: Status
 

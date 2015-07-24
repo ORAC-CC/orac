@@ -59,10 +59,10 @@ subroutine Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, &
 
    type(CTRL_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
-   real,           intent(in)    :: SPixel_b (SPixel%Ind%NSolar)
-   real,           intent(in)    :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
-   real,           intent(in)    :: SPixel_b2 (SPixel%Ind%NSolar, MaxRho_XX)
-   real,           intent(in)    :: SPixel_Sb2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX)
+   real,           intent(in)    :: SPixel_b  (:)
+   real,           intent(in)    :: SPixel_Sb (:,:)
+   real,           intent(in)    :: SPixel_b2 (:,:)
+   real,           intent(in)    :: SPixel_Sb2(:,:,:)
    integer,        intent(out)   :: status
 
    ! Define local variables

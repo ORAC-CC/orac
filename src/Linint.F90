@@ -53,7 +53,7 @@ subroutine linint(y,x1l,x1u,x2l,x2u,x1,x2,ansy,ansy1,ansy2)
 
    ! Define arguments
 
-   real, dimension(4), intent(in)  :: y
+   real, dimension(:), intent(in)  :: y
    real,               intent(in)  :: x1l,x1u,x2l,x2u,x1,x2
    real,               intent(out) :: ansy,ansy1,ansy2
 

@@ -106,7 +106,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    type(CTRL_t),     intent(inout) :: Ctrl
    type(Data_t),     intent(inout) :: MSI_Data
-   type(SAD_Chan_t), intent(inout) :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
    logical,          intent(in)    :: verbose
 
    ! Local variables

@@ -68,7 +68,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    type(CTRL_t),                intent(in)    :: Ctrl
    logical,                     intent(in)    :: lcovar
    integer,                     intent(in)    :: ncid
-   integer,                     intent(in)    :: dims_var(2)
+   integer,                     intent(in)    :: dims_var(:)
    type(output_data_secondary), intent(inout) :: output_data
 
    character(len=32)  :: input_num

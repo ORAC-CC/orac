@@ -36,9 +36,9 @@ subroutine Solve_Cholesky(A, b, x, n, Status)
    implicit none
 
    integer,              intent(in)    :: n
-   real, dimension(n,n), intent(in)    :: A
-   real, dimension(n),   intent(in)    :: b
-   real, dimension(n),   intent(inout) :: x
+   real, dimension(:,:), intent(in)    :: A
+   real, dimension(:),   intent(in)    :: b
+   real, dimension(:),   intent(inout) :: x
    integer,              intent(out)   :: Status
 
    real, dimension(n,n) :: D

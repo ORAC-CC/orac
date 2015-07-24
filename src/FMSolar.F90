@@ -108,16 +108,16 @@ subroutine derivative_wrt_crp_parameter(SPixel, i_param, CRP, d_CRP, f, Tac_0v, 
 
    type(SPixel_t), intent(in)  :: SPixel
    integer,        intent(in)  :: i_param
-   real,           intent(in)  :: CRP(SPixel%Ind%NSolar,MaxCRProps)
-   real,           intent(in)  :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
+   real,           intent(in)  :: CRP(:,:)
+   real,           intent(in)  :: d_CRP(:,:,:)
    real,           intent(in)  :: f
-   real,           intent(in)  :: Tac_0v(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc2(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Sp(SPixel%Ind%NSolar)
-   real,           intent(in)  :: T_all(SPixel%Ind%NSolar)
-   real,           intent(in)  :: S(SPixel%Ind%NSolar)
-   real,           intent(in)  :: S_dnom(SPixel%Ind%NSolar)
-   real,           intent(out) :: d_REF(SPixel%Ind%NSolar,MaxCRProps)
+   real,           intent(in)  :: Tac_0v(:)
+   real,           intent(in)  :: Tbc2(:)
+   real,           intent(in)  :: Sp(:)
+   real,           intent(in)  :: T_all(:)
+   real,           intent(in)  :: S(:)
+   real,           intent(in)  :: S_dnom(:)
+   real,           intent(out) :: d_REF(:,:)
 
    d_REF(:,i_param) = f * Tac_0v * &
       (d_CRP(:,IRBd,i_param) + &
@@ -142,22 +142,22 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
    type(SPixel_t), intent(in)  :: SPixel
    integer,        intent(in)  :: i_param
    integer,        intent(in)  :: i_equation_form
-   real,           intent(in)  :: CRP(SPixel%Ind%NSolar,MaxCRProps)
-   real,           intent(in)  :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
+   real,           intent(in)  :: CRP(:,:)
+   real,           intent(in)  :: d_CRP(:,:,:)
    real,           intent(in)  :: f
-   real,           intent(in)  :: Tac_0v(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc_0(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc_v(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc_d(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc_0v(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc_0d(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc_dv(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Tbc_dd(SPixel%Ind%NSolar)
-   real,           intent(in)  :: Rs2(SPixel%Ind%NSolar,MaxRho_XX)
+   real,           intent(in)  :: Tac_0v(:)
+   real,           intent(in)  :: Tbc_0(:)
+   real,           intent(in)  :: Tbc_v(:)
+   real,           intent(in)  :: Tbc_d(:)
+   real,           intent(in)  :: Tbc_0v(:)
+   real,           intent(in)  :: Tbc_0d(:)
+   real,           intent(in)  :: Tbc_dv(:)
+   real,           intent(in)  :: Tbc_dd(:)
+   real,           intent(in)  :: Rs2(:,:)
    real,           intent(out) :: d_REF(SPixel%Ind%NSolar)
-   real,           intent(in)  :: a(SPixel%Ind%NSolar)
-   real,           intent(in)  :: b(SPixel%Ind%NSolar)
-   real,           intent(in)  :: c(SPixel%Ind%NSolar)
+   real,           intent(in)  :: a(:)
+   real,           intent(in)  :: b(:)
+   real,           intent(in)  :: c(:)
 
    real :: d_l(SPixel%Ind%NSolar)
    real :: REF_over_l(SPixel%Ind%NSolar)
@@ -225,12 +225,12 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    type(SAD_LUT_t), intent(in)    :: SAD_LUT
    type(SPixel_t),  intent(in)    :: SPixel
    type(RTM_Pc_t),  intent(inout) :: RTM_Pc
-   real,            intent(in)    :: X(MaxStateVar)
+   real,            intent(in)    :: X(:)
    type(GZero_t),   intent(in)    :: GZero
-   real,            intent(inout) :: CRP(SPixel%Ind%NSolar,MaxCRProps)
-   real,            intent(inout) :: d_CRP(SPixel%Ind%NSolar,MaxCRProps,2)
-   real,            intent(out)   :: REF(SPixel%Ind%NSolar)
-   real,            intent(out)   :: d_REF(SPixel%Ind%NSolar, MaxStateVar+1)
+   real,            intent(inout) :: CRP(:,:)
+   real,            intent(inout) :: d_CRP(:,:,:)
+   real,            intent(out)   :: REF(:)
+   real,            intent(out)   :: d_REF(:,:)
    integer,         intent(out)   :: status
 
    ! Define local variables
