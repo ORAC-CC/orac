@@ -27,13 +27,13 @@ module Int_Routines_def
    end interface find_in_array
 contains
 
-#include 'Bcuint.F90'
-#include 'Bcucof.F90'
-#include 'Linint.F90'
-#include 'Locate.F90'
-#include 'Spline.F90'
-#include 'Tridag.F90'
-#include 'polint.F90'
+#include "Bcuint.F90"
+#include "Bcucof.F90"
+#include "Linint.F90"
+#include "Locate.F90"
+#include "Spline.F90"
+#include "Tridag.F90"
+#include "polint.F90"
 
 
 !---------------------------------------------------------------------
