@@ -40,6 +40,7 @@
 
 module Data_def
 
+   use common_constants, only : sreal, dreal
    use ECP_Constants
 
    private
@@ -52,23 +53,23 @@ module Data_def
              Read_Data_nc
 
    type Geometry_t
-      real(4), pointer :: Sol(:,:,:)
-      real(4), pointer :: Sat(:,:,:)
-      real(4), pointer :: Azi(:,:,:)
+      real(sreal), pointer :: Sol(:,:,:)
+      real(sreal), pointer :: Sat(:,:,:)
+      real(sreal), pointer :: Azi(:,:,:)
    end type Geometry_t
 
    type Location_t
-      real(4), pointer :: Lat(:,:)
-      real(4), pointer :: Lon(:,:)
+      real(sreal), pointer :: Lat(:,:)
+      real(sreal), pointer :: Lon(:,:)
    end type Location_t
 
    type Data_t
-      real(4), pointer            :: ALB(:,:,:)
-      real(4), pointer            :: rho_0v(:,:,:)
-      real(4), pointer            :: rho_0d(:,:,:)
-      real(4), pointer            :: rho_dv(:,:,:)
-      real(4), pointer            :: rho_dd(:,:,:)
-      real(4), pointer            :: CloudFlags(:,:)
+      real(sreal),        pointer :: ALB(:,:,:)
+      real(sreal),        pointer :: rho_0v(:,:,:)
+      real(sreal),        pointer :: rho_0d(:,:,:)
+      real(sreal),        pointer :: rho_dv(:,:,:)
+      real(sreal),        pointer :: rho_dd(:,:,:)
+      real(sreal),        pointer :: CloudFlags(:,:)
       integer(kind=byte), pointer :: cldtype(:,:)
       integer(kind=byte), pointer :: cloudmask(:,:)
       real(kind=sreal),   pointer :: cloudmask_error(:,:)

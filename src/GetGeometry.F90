@@ -66,6 +66,7 @@
 ! 2011/06/15, CP: Remove illumination calculation. Illum now an array of values
 ! 2014/07/30, GM: Cleaned up the code.
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
+! 2015/07/14, AP: Replace loop with any() statement.
 !
 ! $Id$
 !
@@ -104,15 +105,13 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    ! Set status non-zero if satellite zenith angle is outside the allowed range
    ! specified in Ctrl. (Use absolute y location in the error message rather
    ! than segment value).
-   do view = 1,Ctrl%Ind%NViews
-      if (SPixel%Geom%SatZen(view) > Ctrl%MaxSatZen) then
-         status = SPixelGeomSat
-!        write(unit=message, fmt=*) &
-!           'Get_Geometry: Satellite zenith angle exceeds maximum allowed ' &
-!           // 'in super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
-!        call Write_log(Ctrl, trim(message), status)
-      end if
-   end do
+   if (any(SPixel%Geom%SatZen > Ctrl%MaxSatZen)) then
+      status = SPixelGeomSat
+!     write(unit=message, fmt=*) &
+!        'Get_Geometry: Satellite zenith angle exceeds maximum allowed ' &
+!        // 'in super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
+!     call Write_log(Ctrl, trim(message), status)
+   end if
 
    ! Calculate the mean air mass factors.
 

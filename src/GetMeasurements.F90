@@ -180,7 +180,8 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(ii)%Thermal%NeHomog(Ctrl%CloudType) + &
                      SAD_Chan(ii)%Solar%NeHomog(Ctrl%CloudType) * &
-                     (SAD_Chan(ii)%Solar%f0 / dR_dT(1)) ** 2
+                     SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
+                     (dR_dT(1)*dR_dT(1))
 
                else
                   ! Pure solar channel, just add the solar NedR contribution
@@ -217,7 +218,8 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &
                      SAD_Chan(ii)%Thermal%NeCoreg(Ctrl%CloudType) + &
                      SAD_Chan(ii)%Solar%NeCoreg(Ctrl%CloudType) * &
-                     (SAD_Chan(ii)%Solar%f0 / dR_dT(1)) ** 2
+                      SAD_Chan(ii)%Solar%f0*SAD_Chan(ii)%Solar%f0 / &
+                      (dR_dT(1)*dR_dT(1))
 
                else ! Pure solar channel, just add the solar NedR contribution
                   SPixel%Sy(i,i) = SPixel%Sy(i,i) + &

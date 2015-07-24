@@ -40,7 +40,7 @@ subroutine tridag_ser(a,b,c,r,u)
 
    ! Define arguments
 
-   real, dimension(:), intent(in) :: a,b,c,r
+   real, dimension(:), intent(in)  :: a,b,c,r
    real, dimension(:), intent(out) :: u
 
    ! Define local variables

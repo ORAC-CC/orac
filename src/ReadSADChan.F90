@@ -68,6 +68,7 @@
 ! 2015/01/13, AP: Remove First:Last channel indexing.
 ! 2015/01/19, GM: Use make_sad_chan_num().
 ! 2015/04/30, MS: Correct the chan_file definition for NOAA-7 and NOAA-9
+! 2015/07/14, AP: Replacing **2 with multiplication.
 !
 ! $Id$
 !
@@ -95,14 +96,12 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
    integer                :: c_lun            ! Unit number for channel desc file
    integer                :: i, j             ! Loop counters
    integer                :: ios              ! I/O status from file open/read
-   integer                :: ThermalFirstSet  ! ThermalFirst setting flag
    character(FilenameLen) :: filename         ! File name as read from chan desc file
    integer                :: NSolar, NThermal ! Local values used to check
                                               ! whether selected channels match
 					      ! totals indicated in driver file.
    logical                :: file_exists
 
-   ThermalFirstSet = 0 ! ThermalFirst not set
    NThermal        = 0
    NSolar          = 0
    Ctrl%Sy         = 0.
@@ -180,13 +179,14 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
          do j=1,MaxCloudType
 	    SAD_Chan(i)%Thermal%NeHomog(j) = &
-               SAD_Chan(i)%Thermal%NeHomog(j) ** 2
+               SAD_Chan(i)%Thermal%NeHomog(j) * SAD_Chan(i)%Thermal%NeHomog(j)
             SAD_Chan(i)%Thermal%NeCoreg(j) = &
-               SAD_Chan(i)%Thermal%NeCoreg(j) ** 2
+               SAD_Chan(i)%Thermal%NeCoreg(j) * SAD_Chan(i)%Thermal%NeCoreg(j)
          end do
 
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%NEBT
-         SAD_Chan(i)%Thermal%NEBT = SAD_Chan(i)%Thermal%NEBT ** 2
+         SAD_Chan(i)%Thermal%NEBT = SAD_Chan(i)%Thermal%NEBT * &
+                                    SAD_Chan(i)%Thermal%NEBT
       end if
 
       read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Flag
@@ -203,16 +203,18 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
             (SAD_Chan(i)%Solar%NeCoreg(j), j=1,MaxCloudType)
 
          do j=1,MaxCloudType
-            SAD_Chan(i)%Solar%NeHomog(j) = &
-               (SAD_Chan(i)%Solar%NeHomog(j) / 100.0) ** 2
+            SAD_Chan(i)%Solar%NeHomog(j) = 1e-4 * &
+               SAD_Chan(i)%Solar%NeHomog(j) * SAD_Chan(i)%Solar%NeHomog(j)
 
-            SAD_Chan(i)%Solar%NeCoreg(j) = &
-               (SAD_Chan(i)%Solar%NeCoreg(j) / 100.0) ** 2
+            SAD_Chan(i)%Solar%NeCoreg(j) = 1e-4 * &
+               SAD_Chan(i)%Solar%NeCoreg(j) * SAD_Chan(i)%Solar%NeCoreg(j)
          end do
 
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%NedR
-         SAD_Chan(i)%Solar%NedR = &
-            (SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0) ** 2
+         SAD_Chan(i)%Solar%NedR = SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0
+         SAD_Chan(i)%Solar%NedR = SAD_Chan(i)%Solar%NedR * SAD_Chan(i)%Solar%NedR
+         ! ACP: Aerosol code has SAD_Chan(i)%Solar%NedR = &
+         !         SAD_Chan(i)%Solar%NedR / (Ctrl%Ind%XRes*Ctrl%Ind%YRes)
 
          ! Convert Rs from a percentage to a fraction
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Rs

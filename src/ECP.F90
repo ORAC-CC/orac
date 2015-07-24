@@ -518,7 +518,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    SPixel%XnSav = Ctrl%Xb
    SPixel%SnSav = 0
    do m=1,MaxStateVar
-      SPixel%SnSav(m,m) = Ctrl%Sx(m) ** 2
+      SPixel%SnSav(m,m) = Ctrl%Sx(m) * Ctrl%Sx(m)
    end do
    SPixel%Loc%LastX0 = 1
    SPixel%Loc%LastX0 = 1

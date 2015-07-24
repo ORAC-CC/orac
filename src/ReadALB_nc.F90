@@ -81,7 +81,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    logical,      intent(in)    :: verbose
 
    integer                     :: ncid, i, j
-   integer(kind=lint)          :: cdim
+   integer(kind=lint)          :: NAlb
    integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers, subs
 
    ! Open ALB file
@@ -89,14 +89,14 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    call nc_open(ncid, Ctrl%Fid%Alb)
 
    ! Read instrument channel indices from file
-   cdim = nc_dim_length(ncid, 'nc_alb', verbose)
-   allocate(alb_instr_ch_numbers(cdim))
+   NAlb = nc_dim_length(ncid, 'nc_alb', verbose)
+   allocate(alb_instr_ch_numbers(NAlb))
    call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, verbose)
 
    ! Find the subscripts Ctrl%Ind%ysolar within alb_abs_ch_numbers
    allocate(subs(Ctrl%Ind%NSolar))
    do i=1,Ctrl%Ind%NSolar
-      do j=1,cdim
+      do j=1,NAlb
          if (alb_instr_ch_numbers(j) == Ctrl%Ind%ICh(Ctrl%Ind%YSolar(i))) then
             subs(i) = j
             exit
