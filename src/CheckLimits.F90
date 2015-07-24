@@ -37,6 +37,7 @@
 !    now simply be bound by the defined upper and lower limits. Phase_change 
 !    argument kept for now to avoid updating function interface.
 ! 2014/05/21, GM: Cleaned up the code.
+! 2015/07/16, AP: Removed redundant arguments.
 !
 ! $Id$
 !
@@ -44,7 +45,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Check_Limits(Ctrl, X, SPixel, RTM_Pc, phase_change, status)
+subroutine Check_Limits(X, SPixel, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -55,11 +56,8 @@ subroutine Check_Limits(Ctrl, X, SPixel, RTM_Pc, phase_change, status)
 
    ! Argument declarations
 
-   type(Ctrl_t),   intent(in)    :: Ctrl
-   real,           intent(inout) :: X(MaxStateVar)
+   real,           intent(inout) :: X(:)
    type(SPixel_t), intent(inout) :: SPixel
-   type(RTM_Pc_t), intent(in)    :: RTM_Pc
-   logical,        intent(inout) :: phase_change
    integer,        intent(out)   :: status
 
    ! Local variable declarations
@@ -68,14 +66,12 @@ subroutine Check_Limits(Ctrl, X, SPixel, RTM_Pc, phase_change, status)
 
    status = 0
 
-   phase_change = .false.
-
-   do i=1,SPixel%Nx
-      if (X(SPixel%X(i)) > SPixel%XULim(SPixel%X(i))) &
+   do i = 1, SPixel%Nx
+      if (X(SPixel%X(i)) > SPixel%XULim(SPixel%X(i))) then
           X(SPixel%X(i)) = SPixel%XULim(SPixel%X(i))
-
-      if (X(SPixel%X(i)) < SPixel%XLLim(SPixel%X(i))) &
+       else if (X(SPixel%X(i)) < SPixel%XLLim(SPixel%X(i))) then
           X(SPixel%X(i)) = SPixel%XLLim(SPixel%X(i))
+       end if
    end do
 
 end subroutine Check_Limits
