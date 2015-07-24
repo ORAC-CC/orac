@@ -139,7 +139,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! associated it is assumed that all available r_e channels should be used.
    if (SPixel%Illum(1) .eq. IDay .and. associated(Ctrl%ReChans)) then
       i_r_e_chan = 0
-      do i_chan = 1, Ctrl%Ind%Ny
+      do i_chan = 1, size(Ctrl%ReChans)
          ii_chan = find_in_array(Ctrl%r_e_chans, Ctrl%ReChans(i_chan))
          if (ii_chan .gt. 0) then
             ii_chan = find_in_array(Ctrl%Ind%Y_ID, Ctrl%ReChans(i_chan))
