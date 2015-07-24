@@ -357,8 +357,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
         RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, verbose)
 
-   call Read_LwRTM_nc(Ctrl, RTM, verbose)
-   call Read_SwRTM_nc(Ctrl, RTM, verbose)
+   call Read_PRTM_nc( Ctrl, RTM, verbose)
+   call Read_LwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NThermal > 0 ?
+   call Read_SwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NSolar > 0 ?
 
 
    !----------------------------------------------------------------------------

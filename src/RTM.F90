@@ -28,6 +28,7 @@
 ! 2014/08/13, AP:Adding Wrap flag to save repeated calculation in GetLwSwRTM.
 ! 2015/01/19, GM: Put ReadSwRTM_nc.F90 and ReadLwRTM_nc.F90 into this module.
 ! 2015/01/30, AP: Eliminate redundant fields.
+! 2015/04/27, AP: Moved PRTM code into its own routine.
 !
 ! $Id$
 !
@@ -102,6 +103,7 @@ module RTM_def
 contains
 
 #include "DeallocRTM.F90"
+#include "ReadPRTM_nc.F90"
 #include "ReadSwRTM_nc.F90"
 #include "ReadLwRTM_nc.F90"
 

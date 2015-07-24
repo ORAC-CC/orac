@@ -118,52 +118,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 !  real(4), allocatable     :: WvNumber(:)
 
 
-   !----------------------------------------------------------------------------
-   ! PRTM (meteorology) file
-   !----------------------------------------------------------------------------
-
-   ! Open PRTM file
-   call nc_open(ncid, Ctrl%FID%PRTM)
-
-   ! Allocate arrays
-   allocate(RTM%LW%lat(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-   allocate(RTM%LW%lon(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-
-   allocate(RTM%LW%P(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-   allocate(RTM%LW%T(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-   allocate(RTM%LW%H(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-
-   ! Read data into arrays
-   allocate(dummy1d(RTM%LW%Grid%NLon))
-   call nc_read_array(ncid, "lon_rtm", dummy1d, verbose)
-   do i=1,RTM%LW%Grid%NLon
-      RTM%LW%lon(i,:) = dummy1d(i)
-   end do
-   deallocate(dummy1d)
-
-   allocate(dummy1d(RTM%LW%Grid%NLat))
-   call nc_read_array(ncid, "lat_rtm", dummy1d, verbose)
-   do i=1,RTM%LW%Grid%NLat
-      RTM%LW%lat(:,i) = dummy1d(i)
-   end do
-   deallocate(dummy1d)
-
-   call nc_read_array(ncid, "pprofile_rtm", RTM%LW%P, verbose)
-   call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, verbose)
-   call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, verbose)
-
-   ! Close PRTM input file
-   if (nf90_close(ncid) /= NF90_NOERR) then
-      write(*,*) 'ERROR: Read_LwRTM_nc(): Error closing PRTM file: ', &
-                 Ctrl%FID%PRTM
-      stop error_stop_code
-   end if
-
-
-   !----------------------------------------------------------------------------
-   ! LwRTM file
-   !----------------------------------------------------------------------------
-
    ! Open LwRTM data file
    call nc_open(ncid, Ctrl%FID%LWRTM)
 
