@@ -44,12 +44,12 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
 
    ! Define arguments
 
-   integer,          intent(in)    :: NChan
-   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
-   real,             intent(inout) :: T(:)
-   real,             intent(out)   :: R(:)
-   real,             intent(out)   :: d_R_d_T(:)
-   integer,          intent(out)   :: status
+   integer,          intent(in)  :: NChan
+   type(SAD_Chan_t), intent(in)  :: SAD_Chan(:)
+   real,             intent(in)  :: T(:)
+   real,             intent(out) :: R(:)
+   real,             intent(out) :: d_R_d_T(:)
+   integer,          intent(out) :: status
 
    ! Define local variables
 
