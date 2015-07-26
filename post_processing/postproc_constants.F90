@@ -21,6 +21,7 @@
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
 !    just one.
+! 2015/07/26, GM: Removed unused constants.
 !
 ! $Id$
 !
@@ -33,20 +34,6 @@ module postproc_constants
    use common_constants
 
    implicit none
-
-   integer, parameter :: PrimaryFileOpenErr=1400
-   integer, parameter :: SecondaryFileOpenErr=1401
-   integer, parameter :: PrimaryFileDefinitionErr=1402
-   integer, parameter :: SecondaryFileDefinitionErr=1403
-   integer, parameter :: PrimaryFileWriteErr=1404
-   integer, parameter :: SecondaryFileWriteErr=1405
-   integer, parameter :: PrimaryFileCloseErr=1406
-   integer, parameter :: SecondaryFileCloseErr=1407
-   integer, parameter :: paramlength=150
-   integer, parameter :: varlength=150
-   integer, parameter :: inlength=2
-   integer, parameter :: uuid_length=36
-   integer, parameter :: MaxStateVar=5 ! Max. number of state variables
 
    real(kind=sreal), parameter :: dither=1.0E-5
 
