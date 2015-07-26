@@ -19,6 +19,8 @@
 ! 2015/02/07, CP: removed all variables common to common_constants
 ! 2015/04/23, OS: added variables related to NETCDF4 compression
 ! 2015/07/16, GM: Major cleanup.
+! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
+!    just one.
 !
 ! $Id$
 !
@@ -48,22 +50,10 @@ module postproc_constants
 
    real(kind=sreal), parameter :: dither=1.0E-5
 
-   ! NetCDF 4 compression level
-   integer, parameter :: compress_level_float=9
-   integer, parameter :: compress_level_double=9
-   integer, parameter :: compress_level_lint=9
-   integer, parameter :: compress_level_nint=9
-   integer, parameter :: compress_level_stint=9
-   integer, parameter :: compress_level_byte=9
-   integer, parameter :: compress_level_stint_flag=9
+   ! NetCDF deflate level
+   integer, parameter :: deflate_level=9
 
-   ! Turn on shuffling to improve compression
-   logical, parameter :: shuffle_float=.TRUE.
-   logical, parameter :: shuffle_double=.TRUE.
-   logical, parameter :: shuffle_lint=.TRUE.
-   logical, parameter :: shuffle_nint=.TRUE.
-   logical, parameter :: shuffle_stint=.TRUE.
-   logical, parameter :: shuffle_byte=.TRUE.
-   logical, parameter :: shuffle_stint_flag=.TRUE.
+   ! Shuffling to improve compression
+   logical, parameter :: shuffle_flag=.TRUE.
 
 end module postproc_constants

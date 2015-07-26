@@ -231,8 +231,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'emiss_lw', &
               netcdf_info%vid_emiss_lw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
 
@@ -249,8 +249,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'tac_lw', &
               netcdf_info%vid_tac_lw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define tbc_lw
@@ -260,8 +260,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'tbc_lw', &
               netcdf_info%vid_tbc_lw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define rbc_up_lw
@@ -271,8 +271,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'rbc_up_lw', &
               netcdf_info%vid_rbc_up_lw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define rac_up_lw
@@ -282,8 +282,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'rac_up_lw', &
               netcdf_info%vid_rac_up_lw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define rac_down_lw
@@ -293,8 +293,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'rac_down_lw', &
               netcdf_info%vid_rac_down_lw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
 
@@ -386,8 +386,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'tac_sw', &
               netcdf_info%vid_tac_sw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define tbc_sw
@@ -397,8 +397,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'tbc_sw', &
               netcdf_info%vid_tbc_sw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
    !-------------------------------------------------------------------------
@@ -451,8 +451,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'lon_rtm', &
               netcdf_info%vid_lon_pw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define lat_rtm
@@ -463,8 +463,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'lat_rtm', &
               netcdf_info%vid_lat_pw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
 
@@ -480,8 +480,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'pprofile_rtm', &
               netcdf_info%vid_pprofile_lev_pw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define tprofile_rtm
@@ -491,8 +491,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'tprofile_rtm', &
               netcdf_info%vid_tprofile_lev_pw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define hprofile_rtm
@@ -502,8 +502,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'hprofile_rtm', &
               netcdf_info%vid_hprofile_lev_pw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define qprofile_rtm
@@ -513,8 +513,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'qprofile_rtm', &
               netcdf_info%vid_qprofile_lev_pw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define o3profile_rtm
@@ -524,8 +524,8 @@ subroutine netcdf_create_rtm(global_atts,source_atts,cyear,cmonth,cday,chour, &
               'o3profile_rtm', &
               netcdf_info%vid_o3profile_lev_pw, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
    end if
 
@@ -712,8 +712,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'alb_data', &
               netcdf_info%vid_alb_data, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
 
@@ -728,8 +728,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'emis_data', &
               netcdf_info%vid_emis_data, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
 
@@ -744,8 +744,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  'rho_0v_data', &
                  netcdf_info%vid_rho_0v_data, &
                  verbose, &
-                 deflate_level = deflate_level_sreal, &
-                 shuffle = shuffle_sreal, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
 
          call nc_def_var_float_packed_float( &
@@ -754,8 +754,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  'rho_0d_data', &
                  netcdf_info%vid_rho_0d_data, &
                  verbose, &
-                 deflate_level = deflate_level_sreal, &
-                 shuffle = shuffle_sreal, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
 
          call nc_def_var_float_packed_float( &
@@ -764,8 +764,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  'rho_dv_data', &
                  netcdf_info%vid_rho_dv_data, &
                  verbose, &
-                 deflate_level = deflate_level_sreal, &
-                 shuffle = shuffle_sreal, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
 
          call nc_def_var_float_packed_float( &
@@ -774,8 +774,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
                  'rho_dd_data', &
                  netcdf_info%vid_rho_dd_data, &
                  verbose, &
-                 deflate_level = deflate_level_sreal, &
-                 shuffle = shuffle_sreal, &
+                 deflate_level = deflate_level, &
+                 shuffle = shuffle_flag, &
                  fill_value = sreal_fill_value)
       end if
 
@@ -822,8 +822,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'cflag', &
               netcdf_info%vid_cflag, &
               verbose, &
-              deflate_level = deflate_level_byte, &
-              shuffle = shuffle_byte, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
 
       ! define cldtype variable
@@ -833,8 +833,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'cldtype', &
               netcdf_info%vid_cldtype, &
               verbose, &
-              deflate_level = deflate_level_byte, &
-              shuffle = shuffle_byte, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
 
       ! define cldmask variable
@@ -844,8 +844,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'cldmask', &
               netcdf_info%vid_cldmask, &
               verbose, &
-              deflate_level = deflate_level_byte, &
-              shuffle = shuffle_byte, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
 
       ! define cldmask variable
@@ -855,8 +855,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'cldmask_uncertainty', &
               netcdf_info%vid_cldmask_unc, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define cccot_pre variable
@@ -866,8 +866,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'cccot_pre', &
               netcdf_info%vid_cccot_pre, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
    ! open geo file
@@ -920,8 +920,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'solzen', &
               netcdf_info%vid_solzen, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define satzen
@@ -931,8 +931,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'satzen', &
               netcdf_info%vid_satzen, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define solaz
@@ -942,8 +942,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'solaz', &
               netcdf_info%vid_solaz, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define relazi
@@ -953,8 +953,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'relazi', &
               netcdf_info%vid_relazi, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
 
@@ -1000,8 +1000,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'lat', &
               netcdf_info%vid_lat, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
       ! define lon
@@ -1011,8 +1011,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'lon', &
               netcdf_info%vid_lon, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
 
 
@@ -1057,8 +1057,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'lsflag', &
               netcdf_info%vid_lsflag, &
               verbose, &
-              deflate_level = deflate_level_byte, &
-              shuffle = shuffle_byte, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
 
       ! define lusflag variable
@@ -1068,8 +1068,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'lusflag', &
               netcdf_info%vid_lusflag, &
               verbose, &
-              deflate_level = deflate_level_byte, &
-              shuffle = shuffle_byte, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
 
       ! define dem variable
@@ -1088,8 +1088,8 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               'nisemask', &
               netcdf_info%vid_nisemask, &
               verbose, &
-              deflate_level = deflate_level_byte, &
-              shuffle = shuffle_byte, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
 
    ! open msi file
@@ -1186,8 +1186,8 @@ endif
               'time_data', &
               netcdf_info%vid_time, &
               verbose, &
-              deflate_level = deflate_level_dreal, &
-              shuffle = shuffle_dreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = dreal_fill_value)
 
 
@@ -1202,8 +1202,8 @@ endif
               'msi_data', &
               netcdf_info%vid_msi_data, &
               verbose, &
-              deflate_level = deflate_level_sreal, &
-              shuffle = shuffle_sreal, &
+              deflate_level = deflate_level, &
+              shuffle = shuffle_flag, &
               fill_value = sreal_fill_value)
    endif
 

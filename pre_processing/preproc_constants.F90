@@ -20,6 +20,8 @@
 !    and shuffle_* names consistent with their ORAC type names.
 ! 2014/09/16, GM: Rename the deflate_level_* and shuffle_* parameters to be
 !    consistent with ORAC kinds.
+! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
+!    just one.
 !
 ! $Id$
 !
@@ -34,39 +36,28 @@ module preproc_constants
    implicit none
 
 
-   real(kind=sreal),    parameter :: dither=1.0E-3
-   real(kind=sreal),    parameter :: dither_more=1.0E-7
+   real(kind=sreal),   parameter :: dither=1.0E-3
+   real(kind=sreal),   parameter :: dither_more=1.0E-7
 
 
    ! Physical constants
-   real(kind=sreal),    parameter :: pa2hpa=0.01
+   real(kind=sreal),   parameter :: pa2hpa=0.01
 
    ! Specific gas constants of dry air and water vapor
-   real(kind=sreal),    parameter :: r_dry_air=287.05
-   real(kind=sreal),    parameter :: r_water_vap=461.51
+   real(kind=sreal),   parameter :: r_dry_air=287.05
+   real(kind=sreal),   parameter :: r_water_vap=461.51
 
 
-   real(kind=sreal),    parameter :: maxsza_day=80.0
-   real(kind=sreal),    parameter :: maxsza_twi=110.0
+   real(kind=sreal),   parameter :: maxsza_day=80.0
+   real(kind=sreal),   parameter :: maxsza_twi=110.0
 
 
-   ! Some netcdf4 related parameters
+   ! Some NetCDF related parameters
 
-   ! Compression levels for variables of different type (0:none,9:maximum)
-   integer(kind=lint),  parameter :: deflate_level_byte=0
-   integer(kind=lint),  parameter :: deflate_level_sint=0
-   integer(kind=lint),  parameter :: deflate_level_lint=0
-   integer(kind=lint),  parameter :: deflate_level_sreal=0
-   integer(kind=lint),  parameter :: deflate_level_dreal=0
+   ! NetCDF deflate level
+   integer(kind=lint), parameter :: deflate_level=0
 
-   integer(kind=lint),  parameter :: max_chunk_latlon=10000
-   integer(kind=lint),  parameter :: max_chunk_lat=20
-
-   ! Turn on shuffling to improve compression
-   logical,             parameter :: shuffle_byte=.FALSE.
-   logical,             parameter :: shuffle_sint=.FALSE.
-   logical,             parameter :: shuffle_lint=.FALSE.
-   logical,             parameter :: shuffle_sreal=.FALSE.
-   logical,             parameter :: shuffle_dreal=.FALSE.
+   ! Shuffling to improve compression
+   logical,            parameter :: shuffle_flag=.FALSE.
 
 end module preproc_constants
