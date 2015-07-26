@@ -1,7 +1,0 @@
-#sun
-NCDFLIB=/cmsaf/cmsaf-cld4/mjerg/libs/netcdf_sunstudio/lib
-NCDFINCLUDE=/cmsaf/cmsaf-cld4/mjerg/libs/netcdf_sunstudio/include
-
-#Set up libraries and includes
-LIBS=-L$(NCDFLIB) -lnetcdf 
-INC=-I./  -I$(NCDFINCLUDE) -M./ -M$(NCDFINCLUDE)
