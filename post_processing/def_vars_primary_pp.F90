@@ -37,6 +37,8 @@
 ! 2015/04/23, OS: CCT vmax set to 10000
 ! 2015/07/04, CP: added corrected cth
 ! 2015/07/16, GM: Major cleanup.
+! 2015/07/26, GM: Added deflate_level and shuffle_flag arguments to
+!    nc_def_var_*.
 !
 ! $Id$
 !
@@ -101,7 +103,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%time_offset, &
            valid_min     = output_data%time_vmin, &
            valid_max     = output_data%time_vmax, &
-           units         = trim(input_dummy))
+           units         = trim(input_dummy), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! lat
@@ -119,7 +123,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%lat_offset, &
            valid_min     = output_data%lat_vmin, &
            valid_max     = output_data%lat_vmax, &
-           units         = 'degrees_north')
+           units         = 'degrees_north', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! lon
@@ -137,7 +143,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%lon_offset, &
            valid_min     = output_data%lon_vmin, &
            valid_max     = output_data%lon_vmax, &
-           units         = 'degrees_east')
+           units         = 'degrees_east', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! Loop over view angles
@@ -166,7 +174,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
               add_offset    = output_data%sol_offset, &
               valid_min     = output_data%sol_vmin, &
               valid_max     = output_data%sol_vmax, &
-              units         = 'degrees')
+              units         = 'degrees', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
 
       !-------------------------------------------------------------------------
       ! satellite_zenith_view_no*
@@ -188,7 +198,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
               add_offset    = output_data%sat_offset, &
               valid_min     = output_data%sat_vmin, &
               valid_max     = output_data%sat_vmax, &
-              units         = 'degrees')
+              units         = 'degrees', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
 
       !-------------------------------------------------------------------------
       ! rel_azimuth_view_no*
@@ -210,7 +222,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
               add_offset    = output_data%azi_offset, &
               valid_min     = output_data%azi_vmin, &
               valid_max     = output_data%azi_vmax, &
-              units         = 'degrees')
+              units         = 'degrees', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
 
       end do
 
@@ -229,7 +243,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%cot_scale, &
            add_offset    = output_data%cot_offset, &
            valid_min     = output_data%cot_vmin, &
-           valid_max     = output_data%cot_vmax)
+           valid_max     = output_data%cot_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cot_uncertainty
@@ -246,7 +262,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%cot_error_scale, &
            add_offset    = output_data%cot_error_offset, &
            valid_min     = output_data%cot_error_vmin, &
-           valid_max     = output_data%cot_error_vmax)
+           valid_max     = output_data%cot_error_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ref
@@ -264,7 +282,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%ref_offset, &
            valid_min     = output_data%ref_vmin, &
            valid_max     = output_data%ref_vmax, &
-           units         = 'micrometer')
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ref_uncertainty
@@ -282,7 +302,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%ref_error_offset, &
            valid_min     = output_data%ref_error_vmin, &
            valid_max     = output_data%ref_error_vmax, &
-           units         = 'micrometer')
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ctp
@@ -300,7 +322,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%ctp_offset, &
            valid_min     = output_data%ctp_vmin, &
            valid_max     = output_data%ctp_vmax, &
-           units         = 'hPa')
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ctp_uncertainty
@@ -318,7 +342,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%ctp_error_offset, &
            valid_min     = output_data%ctp_error_vmin, &
            valid_max     = output_data%ctp_error_vmax, &
-           units         = 'hPa')
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cc_total
@@ -335,7 +361,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%cct_scale, &
            add_offset    = output_data%cct_offset, &
            valid_min     = output_data%cct_vmin, &
-           valid_max     = output_data%cct_vmax)
+           valid_max     = output_data%cct_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cc_total_uncertainty
@@ -352,7 +380,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%cct_error_scale, &
            add_offset    = output_data%cct_error_offset, &
            valid_min     = output_data%cct_error_vmin, &
-           valid_max     = output_data%cct_error_vmax)
+           valid_max     = output_data%cct_error_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! stemp
@@ -370,7 +400,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%stemp_offset, &
            valid_min     = output_data%stemp_vmin, &
            valid_max     = output_data%stemp_vmax, &
-           units         = 'kelvin')
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! stemp_uncertainty
@@ -388,7 +420,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%stemp_error_offset, &
            valid_min     = output_data%stemp_vmin, &
            valid_max     = output_data%stemp_error_vmax, &
-           units         = 'kelvin')
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cth
@@ -406,7 +440,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%cth_offset, &
            valid_min     = output_data%cth_vmin, &
            valid_max     = output_data%cth_vmax, &
-           units         = 'kilometer')
+           units         = 'kilometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cth_uncertainty
@@ -424,7 +460,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%cth_error_offset, &
            valid_min     = output_data%cth_error_vmin, &
            valid_max     = output_data%cth_error_vmax, &
-           units         = 'kilometer')
+           units         = 'kilometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cth_corrected
@@ -442,7 +480,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%cth_offset, &
            valid_min     = output_data%cth_vmin, &
            valid_max     = output_data%cth_vmax, &
-           units         = 'kilometer')
+           units         = 'kilometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cth_corrected_uncertainty
@@ -460,7 +500,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%cth_error_offset, &
            valid_min     = output_data%cth_error_vmin, &
            valid_max     = output_data%cth_error_vmax, &
-           units         = 'kilometer')
+           units         = 'kilometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ctt
@@ -478,7 +520,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%ctt_offset, &
            valid_min     = output_data%ctt_vmin, &
            valid_max     = output_data%ctt_vmax, &
-           units         = 'kelvin')
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ctt_uncertainty
@@ -496,7 +540,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%ctt_error_offset, &
            valid_min     = output_data%ctt_error_vmin, &
            valid_max     = output_data%ctt_error_vmax, &
-           units         = 'kelvin')
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cwp
@@ -514,7 +560,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%cwp_offset, &
            valid_min     = output_data%cwp_vmin, &
            valid_max     = output_data%cwp_vmax, &
-           units         = 'g/m2')
+           units         = 'g/m2', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cwp_uncertainty
@@ -532,7 +580,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%cwp_error_offset, &
            valid_min     = output_data%cwp_error_vmin, &
            valid_max     = output_data%cwp_error_vmax, &
-           units         = 'g/m2')
+           units         = 'g/m2', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! convergence
@@ -551,7 +601,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            valid_min     = output_data%convergence_vmin, &
            valid_max     = output_data%convergence_vmax, &
            flag_values   = '0b, 1b', &
-           flag_meanings = 'yes, no')
+           flag_meanings = 'yes, no', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! niter
@@ -568,7 +620,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%niter_scale, &
            add_offset    = output_data%niter_offset, &
            valid_min     = output_data%niter_vmin, &
-           valid_max     = output_data%niter_vmax)
+           valid_max     = output_data%niter_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! phase
@@ -587,7 +641,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            valid_min     = output_data%phase_vmin, &
            valid_max     = output_data%phase_vmax, &
            flag_values   = '0b, 1b, 2b', &
-           flag_meanings = 'clear/unknown, liquid, ice')
+           flag_meanings = 'clear/unknown, liquid, ice', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! phase
@@ -606,7 +662,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            valid_min     = output_data%phase_pavolonis_vmin, &
            valid_max     = output_data%phase_pavolonis_vmax, &
            flag_values   = '0b, 1b, 2b', &
-           flag_meanings = 'clear/unknown, liquid, ice')
+           flag_meanings = 'clear/unknown, liquid, ice', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! costja
@@ -623,7 +681,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%costja_scale, &
            add_offset    = output_data%costja_offset, &
            valid_min     = output_data%costja_vmin, &
-           valid_max     = output_data%costja_vmax)
+           valid_max     = output_data%costja_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! costjm
@@ -640,7 +700,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%costjm_scale, &
            add_offset    = output_data%costjm_offset, &
            valid_min     = output_data%costjm_vmin, &
-           valid_max     = output_data%costjm_vmax)
+           valid_max     = output_data%costjm_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! lsflag
@@ -659,7 +721,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            valid_min     = output_data%lsflag_vmin, &
            valid_max     = output_data%lsflag_vmax, &
            flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b', &
-           flag_meanings = 'sea, land, sunglint, snow, ice, snow_and_ice')
+           flag_meanings = 'sea, land, sunglint, snow, ice, snow_and_ice', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! qcflag
@@ -682,7 +746,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-           flag_meanings = trim(adjustl(input_dummy2)))
+           flag_meanings = trim(adjustl(input_dummy2)), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! illum
@@ -701,8 +767,10 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%illum_scale, &
            add_offset    = output_data%illum_offset, &
            valid_min     = output_data%illum_vmin, &
-           valid_max     = output_data%illum_vmax &
-           )
+           valid_max     = output_data%illum_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
    !----------------------------------------------------------------------------
    ! cloud type (ie. Pavolonis phase)
    !----------------------------------------------------------------------------
@@ -724,7 +792,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            valid_min     = output_data%cldtype_vmin, &
            valid_max     = output_data%cldtype_vmax, &
            flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b', &
-           flag_meanings = trim(adjustl(input_dummy2)))
+           flag_meanings = trim(adjustl(input_dummy2)), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cloud mask
@@ -743,7 +813,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            valid_min     = output_data%cldmask_vmin, &
            valid_max     = output_data%cldmask_vmax, &
            flag_values   = '0b, 1b', &
-           flag_meanings = 'clear, cloudy')
+           flag_meanings = 'clear, cloudy', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! CCCOT_pre (cloud optical thickness)
@@ -760,7 +832,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%cccot_pre_scale, &
            add_offset    = output_data%cccot_pre_offset, &
            valid_min     = output_data%cccot_pre_vmin, &
-           valid_max     = output_data%cccot_pre_vmax)
+           valid_max     = output_data%cccot_pre_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! CCCOT (cloud optical thickness)
@@ -777,7 +851,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            scale_factor  = output_data%cccot_scale, &
            add_offset    = output_data%cccot_offset, &
            valid_min     = output_data%cccot_vmin, &
-           valid_max     = output_data%cccot_vmax)
+           valid_max     = output_data%cccot_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! lusflag
@@ -821,7 +897,9 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
                           &23:Bare Ground Tundra, &
                           &24:Snow or Ice, &
                           &99:Interrupted Areas, &
-	                  &100:Missing Data')
+	                  &100:Missing Data', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! DEM
@@ -839,7 +917,9 @@ if (.false.) then
            scale_factor  = output_data%dem_scale, &
            add_offset    = output_data%dem_offset, &
            valid_min     = output_data%dem_vmin, &
-           valid_max     = output_data%dem_vmax)
+           valid_max     = output_data%dem_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 end if
    !----------------------------------------------------------------------------
    ! nise mask
@@ -858,7 +938,9 @@ end if
            valid_min     = output_data%nisemask_vmin, &
            valid_max     = output_data%nisemask_vmax, &
            flag_values   = '0b, 1b', &
-           flag_meanings = 'snow/ice free, snow/ice')
+           flag_meanings = 'snow/ice free, snow/ice', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cloud_albedo_in_channel_no_*
@@ -886,7 +968,9 @@ end if
            scale_factor  = output_data%cloud_albedo_scale, &
            add_offset    = output_data%cloud_albedo_offset, &
            valid_min     = output_data%cloud_albedo_vmin, &
-           valid_max     = output_data%cloud_albedo_vmax)
+           valid_max     = output_data%cloud_albedo_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
    end do
 
 
