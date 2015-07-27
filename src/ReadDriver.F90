@@ -326,12 +326,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    outname=trim(scratch_dir)//'/'//trim(input_filename)//trim(Ctrl%CloudClass)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
-   Ctrl%FID%Log          = trim(outname)//'.log'
    Ctrl%FID%BkP          = trim(outname)//'bkp'
    if (verbose) then
       write(*,*) 'Ctrl%FID%L2_primary: ', trim(Ctrl%FID%L2_primary)
       write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
-      write(*,*) 'Ctrl%FID%Log: ',trim(Ctrl%FID%Log)
       write(*,*) 'Ctrl%FID%BkP: ',trim(Ctrl%FID%BkP)
    end if
 
@@ -631,8 +629,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    Ctrl%EqMPN%Rs         = 1          ! Flag to use EqMPN from Rs errors
    Ctrl%EqMPN%TH         = 0          ! Flag to use EqMPN from T/H(z) errors
-   Ctrl%EqMPN%Homog      = 1          ! Flag to use EqMPN from homog errors
-   Ctrl%EqMPN%Coreg      = 1          ! Flag to use EqMPN from coReg errors
+   Ctrl%EqMPN%Homog      = .true.     ! Flag to use EqMPN from homog errors
+   Ctrl%EqMPN%Coreg      = .true.     ! Flag to use EqMPN from coReg errors
 
 
    ! Set Ctrl%Invpar
@@ -782,8 +780,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%FID%L2_primary)   /= 0) call h_p_e(label)
       case('CTRL%FID%L2_SECONDARY')
          if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
-      case('CTRL%FID%LOG')
-         if (parse_string(line, Ctrl%FID%Log)          /= 0) call h_p_e(label)
       case('CTRL%FID%BKP')
          if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
       case('CTRL%BKPL')

@@ -84,6 +84,8 @@
 ! 2015/03/02, AP: Adding terms for aerosol retrieval.
 ! 2015/05/25, GM: Get rid of filename Diag and flags Diagl.
 !    Neither was being used and have been rotting.
+! 2015/07/27, AP: Convert Homog/Coreg into logicals. Remove Ind%Log and
+!    NInstViews.
 !
 ! $Id$
 !
@@ -112,7 +114,6 @@ module CTRL_def
       character(FilenameLen) :: uv                 ! scan lines u/v
       character(FilenameLen) :: Alb	           ! Surface albedo, emissivity
       character(FilenameLen) :: BkP	           ! ECP Break-Point file
-      character(FilenameLen) :: Log	           ! ECP log file
       character(FilenameLen) :: L2_primary         ! Primary output file
       character(FilenameLen) :: L2_secondary       ! Secondary output file
    end type FID_t
@@ -146,11 +147,8 @@ module CTRL_def
                                                    ! such as thermal, solar
 
       ! View indexing variables
-      integer                :: NInstViews         ! No. of instrument views
-                                                   ! available
       integer                :: NViews             ! Number of instrument views
-                                                   ! (forward,
-                                                   ! nadir etc) selected
+                                                   ! available
       integer, pointer       :: ViewIdx(:)         ! Array of view values, 1 per
                                                    ! channel
 
@@ -216,8 +214,8 @@ module CTRL_def
    type EqMPN_t
       integer                :: Rs                 ! Flag to use EqMPN from Rs errors
       integer                :: TH                 ! Flag to use Eqmpn from T/H(z) errors
-      integer                :: Homog              ! Flag to use Eqmpn from homog errors
-      integer                :: CoReg              ! Flag to use Eqmpn from coReg errors
+      logical                :: Homog              ! Flag to use Eqmpn from homog errors
+      logical                :: CoReg              ! Flag to use Eqmpn from coReg errors
    end type EqMPN_t
 
    ! Inversion parameters
@@ -303,6 +301,6 @@ module CTRL_def
 
 contains
 
-include 'DeallocCtrl.F90'
+#include "DeallocCtrl.F90"
 
 end module CTRL_def
