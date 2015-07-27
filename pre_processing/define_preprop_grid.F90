@@ -24,6 +24,8 @@
 ! 2012/10/25, CP: added extra level so surface information can b stored in the
 !    same profile
 ! 2013/10/23, AP: Tidying. Removed ecmwf_prtm argument.
+! 2015/07/27, AP: lat, lon and mask should be dynamically allocated not
+!    automatic.
 !
 ! $Id$
 !
@@ -43,11 +45,16 @@ subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
    type(preproc_dims_s),       intent(inout) :: preproc_dims
    logical,                    intent(in)    :: verbose
 
-   real(sreal), dimension(imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny)             :: lat, lon
-   logical, dimension(imager_geolocation%startx:imager_geolocation%endx, &
-        1:imager_geolocation%ny)             :: mask
-   integer                                   :: xmax, ymax
+   real(sreal), allocatable, dimension(:,:) :: lat, lon
+   logical,     allocatable, dimension(:,:) :: mask
+   integer                                  :: xmax, ymax
+
+   allocate(lat(imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   allocate(lon(imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
+   allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
+        1:imager_geolocation%ny))
 
    ! determine which preproc grid points each pixels falls in (start at 1)
    lat = (imager_geolocation%latitude + preproc_dims%lat_offset)* &
@@ -87,5 +94,9 @@ subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
       print*, 'preproc_dims%min_lon: ', preproc_dims%min_lon
       print*, 'preproc_dims%max_lon: ', preproc_dims%max_lon
    end if
+
+   deallocate(lat)
+   deallocate(lon)
+   deallocate(mask)
 
 end subroutine define_preprop_grid
