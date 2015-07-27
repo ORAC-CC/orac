@@ -14,7 +14,7 @@
 ! Name        Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! Ctrl        struct In          Retrieval control parameters
-! lcovar      logic  In          
+! lcovar      logic  In
 ! ncid        int    In          ID for open NCDF file to define
 ! dims_var    int(2) In          ID #s for lat and lon dimensions
 ! output_data struct Both        Structure of data for primary output file
@@ -48,6 +48,8 @@
 !    routines handle errors to exit.
 ! 2015/01/12, AP: Bug fix in my previous commit.
 ! 2015/01/12, AP: Switching to Ctrl%Ind%Ch_Is rather than any() logic.
+! 2015/07/26, GM: Added deflate_level and shuffle_flag arguments to
+!    nc_def_var_*.
 !
 ! $Id$
 !
@@ -107,7 +109,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            scale_factor  = output_data%scanline_u_scale, &
            add_offset    = output_data%scanline_u_offset, &
            valid_min     = output_data%scanline_u_vmin, &
-           valid_max     = output_data%scanline_u_vmax)
+           valid_max     = output_data%scanline_u_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! scanline_v
@@ -129,7 +133,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            scale_factor  = output_data%scanline_v_scale, &
            add_offset    = output_data%scanline_v_offset, &
            valid_min     = output_data%scanline_v_vmin, &
-           valid_max     = output_data%scanline_v_vmax)
+           valid_max     = output_data%scanline_v_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cot_ap
@@ -151,7 +157,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            scale_factor  = output_data%cot_ap_scale, &
            add_offset    = output_data%cot_ap_offset, &
            valid_min     = output_data%cot_ap_vmin, &
-           valid_max     = output_data%cot_ap_vmax)
+           valid_max     = output_data%cot_ap_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cot_fg
@@ -173,7 +181,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            scale_factor  = output_data%cot_fg_scale, &
            add_offset    = output_data%cot_fg_offset, &
            valid_min     = output_data%cot_fg_vmin, &
-           valid_max     = output_data%cot_fg_vmax)
+           valid_max     = output_data%cot_fg_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ref_ap
@@ -196,7 +206,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            add_offset    = output_data%ref_ap_offset, &
            valid_min     = output_data%ref_ap_vmin, &
            valid_max     = output_data%ref_ap_vmax, &
-           units         = 'micrometer')
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ref_fg
@@ -219,7 +231,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            add_offset    = output_data%ref_fg_offset, &
            valid_min     = output_data%ref_fg_vmin, &
            valid_max     = output_data%ref_fg_vmax, &
-           units         = 'micrometer')
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ctp_ap
@@ -242,7 +256,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            add_offset    = output_data%ctp_ap_offset, &
            valid_min     = output_data%ctp_ap_vmin, &
            valid_max     = output_data%ctp_ap_vmax, &
-           units         = 'hPa')
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! ctp_fg
@@ -265,7 +281,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            add_offset    = output_data%ctp_fg_offset, &
            valid_min     = output_data%ctp_fg_vmin, &
            valid_max     = output_data%ctp_fg_vmax, &
-           units         = 'hPa')
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! stemp_ap
@@ -288,7 +306,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            add_offset    = output_data%stemp_ap_offset, &
            valid_min     = output_data%stemp_ap_vmin, &
            valid_max     = output_data%stemp_ap_vmax, &
-           units         = 'kelvin')
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! stemp_fg
@@ -311,7 +331,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            add_offset    = output_data%stemp_fg_offset, &
            valid_min     = output_data%stemp_fg_vmin, &
            valid_max     = output_data%stemp_fg_vmax, &
-           units         = 'kelvin')
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! albedo_in_channel_no_*
@@ -340,7 +362,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            scale_factor  = output_data%albedo_scale(i), &
            add_offset    = output_data%albedo_offset(i), &
            valid_min     = output_data%albedo_vmin(i), &
-           valid_max     = output_data%albedo_vmax(i))
+           valid_max     = output_data%albedo_vmax(i), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
    end do
 
    !----------------------------------------------------------------------------
@@ -371,7 +395,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
               scale_factor  = output_data%channels_scale(i), &
               add_offset    = output_data%channels_offset(i), &
               valid_min     = output_data%channels_vmin(i), &
-              valid_max     = output_data%channels_vmax(i))
+              valid_max     = output_data%channels_vmax(i), &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
       else
          output_data%channels_scale(i)=0.01
          output_data%channels_offset(i)=100.0
@@ -394,7 +420,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
               add_offset    = output_data%channels_offset(i), &
               valid_min     = output_data%channels_vmin(i), &
               valid_max     = output_data%channels_vmax(i), &
-              units         = 'kelvin')
+              units         = 'kelvin', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
       end if
 
    end do
@@ -427,7 +455,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
               scale_factor  = output_data%y0_scale(i), &
               add_offset    = output_data%y0_offset(i), &
               valid_min     = output_data%y0_vmin(i), &
-              valid_max     = output_data%y0_vmax(i))
+              valid_max     = output_data%y0_vmax(i), &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
       else
          output_data%y0_scale(i)=0.01
          output_data%y0_offset(i)=100.0
@@ -450,7 +480,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
               add_offset    = output_data%y0_offset(i), &
               valid_min     = output_data%y0_vmin(i), &
               valid_max     = output_data%y0_vmax(i), &
-              units         = 'kelvin')
+              units         = 'kelvin', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
       end if
 
    end do
@@ -483,7 +515,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
               scale_factor  = output_data%residuals_scale(i), &
               add_offset    = output_data%residuals_offset(i), &
               valid_min     = output_data%residuals_vmin(i), &
-              valid_max     = output_data%residuals_vmax(i))
+              valid_max     = output_data%residuals_vmax(i), &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
       else
          output_data%residuals_scale(i)=0.01
          output_data%residuals_offset(i)=100.0
@@ -506,7 +540,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
               add_offset    = output_data%residuals_offset(i), &
               valid_min     = output_data%residuals_vmin(i), &
               valid_max     = output_data%residuals_vmax(i), &
-              units         = 'kelvin')
+              units         = 'kelvin', &
+              deflate_level = deflate_level, &
+              shuffle       = shuffle_flag)
       end if
 
    end do
@@ -531,7 +567,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
            scale_factor  = output_data%ds_scale, &
            add_offset    = output_data%ds_offset, &
            valid_min     = output_data%ds_vmin, &
-           valid_max     = output_data%ds_vmax)
+           valid_max     = output_data%ds_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! covariance_matrix_element_*

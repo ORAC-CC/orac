@@ -68,6 +68,7 @@
 ! 2015/01/12, AP: Added bit positions for Ctrl%Ind%Ch_Is.
 ! 2015/03/03, AP: Added terms for aerosol retrieval.
 ! 2015/03/11, GM: Increase MaxNumMeas and MaxNumSolar to 36 and 20, respectively.
+! 2015/07/26, GM: Added deflate_level and shuffle_flag.
 !
 ! $Id$
 !
@@ -441,5 +442,11 @@ module ECP_constants
    integer, parameter :: SecondaryFileWriteErr      = 1405
    integer, parameter :: PrimaryFileCloseErr        = 1406
    integer, parameter :: SecondaryFileCloseErr      = 1407
+
+   ! NetCDF deflate level
+   integer, parameter :: deflate_level = 0
+
+   ! Shuffling to improve compression
+   logical, parameter :: shuffle_flag  = .False.
 
 end module ECP_constants
