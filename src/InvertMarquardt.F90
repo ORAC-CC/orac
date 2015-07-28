@@ -185,6 +185,8 @@
 ! 2014/07/24, AP: Removed unused status variable.
 ! 2014/07/24, CP: Added in cloud albedo
 ! 2015/01/09, AP: Patch memory leak with cloud_albedo.
+! 2015/07/28, AP: Add multiple of unit matrix with add_unit function. Put
+!    calculation of Hessian into it's own routine.
 !
 ! $Id$
 !
@@ -248,9 +250,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    real    :: J, Jm, Ja           ! Cost at a given state (plus contributions to
                                   ! cost from measurements and a priori)
    real    :: J0                  ! Cost at first guess state
-   real    :: unit(SPixel%Nx, SPixel%Nx)
-                                  ! Unit matrix (size matches no of active state
-                                  ! variables).
    real    :: Ccj_Ny              ! Product of Cost convergence criteria and
                                   ! number of active channels.
    logical :: convergence         ! Indicates whether convergence has occurred
@@ -399,7 +398,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
             write(bkp_lun,'(2x,a,5(f9.3,1x))')  'X0:           ',SPixel%X0
             write(bkp_lun,'(2x,a,5(f9.3,1x))')  'Xb:           ',SPixel%Xb
             write(bkp_lun,*)
-            Diag%Y0(1:SPixel%Ind%Ny)=Y
 
             if (Ctrl%Bkpl >= BkpL_InvertMarquardt_4) then
                ! SPixel%Sx output takes account of the active state variables.
@@ -426,10 +424,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    ! Set Xn = X0 for 1st iteration
    SPixel%Xn = SPixel%X0
-
-   ! Set up unit matrix (size matches number of active state variables) for
-   ! Marquardt calculations.
-   call Set_Unit(SPixel, unit)
 
    ! Adjust cost convergence criteria for the number of active channels in the
    ! super-pixel, since final costs will be divided by Ny for output.
@@ -468,7 +462,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       ! Set Marquardt parameters (initial weighting favours steepest descent)
       ! Unit matrix and inverse function required.
 
-      ! Average leading diagonal of Hessian d2J_dX2 in order to set alpha.  Then
+   ! Set Marquardt parameter (initial weighting favours steepest descent) with
+   ! average of leading diagonal of Hessian d2J_dX2.
+   alpha = average_hessian(SPixel%Nx, d2J_dX2, Ctrl%Invpar%MqStart)
       ! use alpha and d2J_dX2 to set delta_X. Solve_Cholesky is used to find
       ! delta_X. The equation from the ATBD is
       !
@@ -479,13 +475,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       ! J2_plusA * delta_X = -dJ_dX,
       !
       ! which we can solve for delta_X using Solve_Cholesky.
-      Av_Hess = 0.0
-      do m=1,SPixel%Nx
-         Av_Hess = Av_Hess + d2J_dX2(m,m)
-      end do
-      Av_Hess  = Av_Hess / SPixel%Nx
-      alpha    = Ctrl%Invpar%MqStart * Av_Hess
-      J2plus_A = d2J_dX2 + (alpha * unit)
+      call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
       minusdJ_dX=-dJ_dX
 
       call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
@@ -638,7 +628,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                ! Calculate values required to set the new step delta_X based on
                ! derivatives of J (delta_X itself is set after this "if")
                dJ_dX      = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
-               J2plus_A   = d2J_dX2 + (alpha * unit)
+               call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
                minusdJ_dX = -dJ_dX
                call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
             end if
@@ -651,7 +641,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
             if (alpha .lt. huge_value) then
                alpha = alpha * Ctrl%InvPar%MqStep
             end if
-            J2plus_A = d2J_dX2 + (alpha * unit)
+            call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
             minusdJ_dX=-dJ_dX
             call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
          end if
@@ -898,3 +888,43 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 #endif
 
 end subroutine Invert_Marquardt
+
+
+subroutine add_unit(n, a, b, c)
+
+   implicit none
+
+   integer, intent(in)    :: n
+   real,    intent(in)    :: a(:,:)
+   real,    intent(in)    :: b
+   real,    intent(inout) :: c(:,:)
+   integer                :: i
+
+   c = a
+   do i = 1, n
+      c(i,i) = c(i,i) + b
+   end do
+
+end subroutine add_unit
+
+
+function average_hessian(n, Hessian, scale) result(alpha)
+
+   implicit none
+   
+   integer, intent(in) :: n
+   real,    intent(in) :: Hessian(:,:)
+   real,    intent(in) :: scale
+   real                :: alpha
+
+   real    :: Av_Hess
+   integer :: i
+   
+   Av_Hess = 0.0
+   do i = 1, n
+      Av_Hess = Av_Hess + Hessian(i,i)
+   end do
+   Av_Hess = Av_Hess / n
+   alpha   = scale * Av_Hess
+   
+end function average_hessian
