@@ -184,6 +184,7 @@
 ! 2014/04/02, MJ: Fixed bug where Diag%ss was not initialized.
 ! 2014/07/24, AP: Removed unused status variable.
 ! 2014/07/24, CP: Added in cloud albedo
+! 2014/11/20, AP: Multiply X|Ydiff by -1, making minusJ_dX redundant.
 ! 2015/01/09, AP: Patch memory leak with cloud_albedo.
 ! 2015/07/28, AP: Add multiple of unit matrix with add_unit function. Put
 !    calculation of Hessian into it's own routine.
@@ -267,7 +268,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    real    :: J2plus_A(SPixel%Nx, SPixel%Nx)
                                   ! Temporary array to hold sum of d2J_dX2 and
                                   ! alpha * unit.
-   real    :: minusdJ_dX(SPixel%Nx)
    real    :: delta_X(SPixel%Nx)
                                   ! Step to be applied to state variables
    real    :: Xplus_dX(MaxStateVar)
@@ -283,8 +283,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                                   ! Product of Dy and Kb.
    real    :: Sb(SPixel%NxI+SPixel%Ind%NSolar, SPixel%NxI+SPixel%Ind%NSolar)
                                   ! "Model parameter" error covariance.
-   real    :: temp(SPixel%Nx, SPixel%Nx)
-                                  ! work around "array temporary" warning
+   real    :: St_temp(SPixel%Nx, SPixel%Nx)
+                                  ! Array temporary for Diag%St
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
    integer :: ios                 ! I/O status for breakpoint file
@@ -361,11 +361,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    ! Xb is assumed to be full-length and un-scaled.
    ydiff=0.0
    if (stat == 0) then
-      Xdiff = (SPixel%X0(SPixel%X) - SPixel%Xb(SPixel%X)) &
+      Xdiff = (SPixel%Xb(SPixel%X) - SPixel%X0(SPixel%X)) &
               * Ctrl%Invpar%XScale(SPixel%X)
 
-      Ydiff(1:SPixel%Ind%Ny) = Y(1:SPixel%Ind%Ny) - SPixel%Ym(1:SPixel%Ind%Ny)
-      Diag%YmFit(1:SPixel%Ind%NY)= Ydiff
+      Ydiff(1:SPixel%Ind%Ny) = SPixel%Ym(1:SPixel%Ind%Ny) - Y(1:SPixel%Ind%Ny)
+      Diag%YmFit(1:SPixel%Ind%NY) = -Ydiff
 
       Ja = dot_product(Xdiff, matmul(SxInv, Xdiff))
       Jm = dot_product(Ydiff, matmul(SyInv, Ydiff))
@@ -476,9 +476,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
       !
       ! which we can solve for delta_X using Solve_Cholesky.
       call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
-      minusdJ_dX=-dJ_dX
 
-      call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
+      call Solve_Cholesky(J2plus_A, dJ_dX, delta_X, SPixel%Nx, stat)
 #ifdef DEBUG
       if (stat /= 0) &
          write(*, *) 'ERROR: Invert_Marquardt(): Error in Solve_Cholesky'
@@ -586,11 +585,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 #endif
             else
                ! Calculate new cost, J.
-               Xdiff = (Xplus_dX(SPixel%X) - SPixel%Xb(SPixel%X)) &
+               Xdiff = (SPixel%Xb(SPixel%X) - Xplus_dX(SPixel%X)) &
                        * Ctrl%Invpar%XScale(SPixel%X)
 
-               Ydiff = Y - SPixel%Ym
-               Diag%YmFit(1:SPixel%Ind%NY)= Ydiff
+               Ydiff = SPixel%Ym - Y
+               Diag%YmFit(1:SPixel%Ind%NY) = -Ydiff
 
                Ja = dot_product(Xdiff, matmul(SxInv, Xdiff))
                Jm = dot_product(Ydiff, matmul(SyInv, Ydiff))
@@ -629,8 +628,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                ! derivatives of J (delta_X itself is set after this "if")
                dJ_dX      = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
                call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
-               minusdJ_dX = -dJ_dX
-               call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
+               call Solve_Cholesky(J2plus_A, dJ_dX, delta_X, SPixel%Nx, stat)
             end if
          else
             ! No improvement in cost
@@ -642,8 +640,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
                alpha = alpha * Ctrl%InvPar%MqStep
             end if
             call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
-            minusdJ_dX=-dJ_dX
-            call Solve_Cholesky(J2plus_A, minusdJ_dX, delta_X, SPixel%Nx, stat)
+            call Solve_Cholesky(J2plus_A, dJ_dX, delta_X, SPixel%Nx, stat)
          end if
 
          if (convergence) exit ! Drops out of the iteration do loop
@@ -739,9 +736,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    if (stat == 0) then
       ! State expected error from measurements=Diag%St(1:SPixel%Nx, 1:SPixel%Nx))
-      temp = Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
-      call Invert_Cholesky(d2J_dX2, temp, SPixel%Nx, stat)
-      Diag%St(1:SPixel%Nx, 1:SPixel%Nx) = temp
+      call Invert_Cholesky(d2J_dX2, St_temp, SPixel%Nx, stat)
+      Diag%St(1:SPixel%Nx, 1:SPixel%Nx) = St_temp
 #ifdef DEBUG
       if (stat /= 0) &
          write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
