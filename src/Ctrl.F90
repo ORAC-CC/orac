@@ -227,6 +227,7 @@ module CTRL_def
       real                   :: XScale(MaxStateVar)! Scaling parameters (Tau,Re,Pc,F,Ts)
       real                   :: XLLim(MaxStateVar) ! Lower limit on state
       real                   :: XULim(MaxStateVar) ! Upper limit on state
+      logical                :: ConvTest           ! Apply false convergence test
    end type Invpar_t
 
    ! Quality control parameters (apply to inversion)

@@ -674,6 +674,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%XULim(IPc) = 1200.0
    Ctrl%Invpar%XULim(IFr) = 1.0
    Ctrl%Invpar%XULim(ITs) = 320.0
+   Ctrl%Invpar%ConvTest   = .false.
 
 
    ! Set Ctrl%QC
@@ -866,6 +867,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%Invpar%XLLim)     /= 0) call h_p_e(label)
       case('CTRL%INVPAR%XULIM')
          if (parse_string(line, Ctrl%Invpar%XULim)     /= 0) call h_p_e(label)
+      case('CTRL%INVPAR%CONVTEST')
+         if (parse_string(line, Ctrl%Invpar%ConvTest)  /= 0) call h_p_e(label)
       case('CTRL%QC%MAXJ')
          if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
       case('CTRL%QC%MAXS')

@@ -163,6 +163,7 @@
 ! 2015/07/28, AP: Replace if status blocks with GO TO 99 to terminate processing.
 !    Reorganise main iteration loop to minimise code repetition.
 ! 2015/07/29, AP: Remove mentions of phase changes. Clean algorithm description.
+!    Add RAL's false convergence test (as it's used by the aerosol retrieval).
 !
 ! $Id$
 !
@@ -467,7 +468,26 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       delta_J = J-J0
       ! ************* END EVALUATE FORWARD MODEL *************
 
-      if (J <= J0) then
+      ! Update Levenberg-Marquadt constant (alpha) based on cost
+      if (alpha == 0.) then
+         ! Impliment Caroline and Richard's method of dealing with false
+         ! convergences:
+         ! (i)  If Marquadt converged, do another pure Gauss-Newton step.
+         ! (ii) If that changes the cost by less than one, we've converged.
+         !      Otherwise, re-initialise the Marquadt parameter and continue.
+         if (abs(delta_J) < 1) then ! ACP: ccj_ny?
+            ! If Newton step improved the cost, use it's solution.
+            SPixel%Xn = Xplus_dX
+            KxT_SyI   = matmul(transpose(Kx), SyInv)
+            d2J_dX2   = matmul(KxT_SyI, Kx) + SxInv
+
+            convergence = .true.
+            exit
+         else
+            ! Otherwise, reset Levenberg constant and continue iterating
+            alpha = average_hessian(SPixel%Nx, d2J_dX2, Ctrl%Invpar%MqStart)
+         end if
+      else if (J <= J0) then
          ! Improvement in cost. Store current solution
          SPixel%Xn = Xplus_dX
 
@@ -477,7 +497,13 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
          ! Check for convergence.
          if (abs(delta_J) <= Ccj_Ny) then
-            convergence = .true.
+            if (Ctrl%InvPar%ConvTest) then
+               ! Use CP/RS convergence test and perform Gauss-Newton iteration
+               alpha = 0.
+            else
+               ! Retrieval converged. Exit loop
+               convergence = .true. !ACP: step size check?
+             end if
          else
             ! Not converged so decrease steepest descent part for next iteration
             alpha = alpha / Ctrl%InvPar%MqStep
