@@ -213,18 +213,9 @@ module ECP_constants
    integer, parameter :: IPhaseIce        = 2       ! Ice
 
    ! Illumination conditions (day/twilight/night) for arrays Ctrl%FG and AP
-   integer, parameter :: IDay                        = 1
-   integer, parameter :: ITwi                        = 2
-   integer, parameter :: INight                      = 3
-   integer, parameter :: IDaynore                    = 4
-   integer, parameter :: IDayMissingSingleVisFirst   = 5
-   integer, parameter :: IDayMissingSingleVisSecond  = 6
-   integer, parameter :: IDayMissingSingleIRFirst    = 7
-   integer, parameter :: IDayMissingSingleIRSecond   = 8
-   integer, parameter :: IDayMissingSingleIRThird    = 9
-   integer, parameter :: INightMissingSingleIRFirst  = 10
-   integer, parameter :: INightMissingSingleIRSecond = 11
-   integer, parameter :: INightMissingSingleIRThird  = 12
+   integer, parameter :: IDay             = 1
+   integer, parameter :: ITwi             = 2
+   integer, parameter :: INight           = 3
 
    ! Constant values used for selection method
    integer, parameter :: SelmCtrl         = 1
