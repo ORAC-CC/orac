@@ -21,7 +21,7 @@ $(OBJS)/GZero.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
 $(OBJS)/interpolate_to_ctp.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/IntRoutines.o $(OBJS)/SPixel.o
 $(OBJS)/IntRoutines.o: $(OBJS)/ECPConstants.o Bcucof.F90 Bcuint.F90 Linint.F90 \
-        Locate.F90 Spline.F90 Tridag.F90 polint.F90
+        Locate.F90 Spline.F90 Tridag.F90 find_in_array.inc polint.F90
 $(OBJS)/InterpolRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/IntRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
         $(OBJS)/SPixel.o $(OBJS)/planck.o InterpolSolar.F90 \
@@ -48,7 +48,7 @@ $(OBJS)/ReadDriver.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/parse_user.o
 $(OBJS)/ReadSAD.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o \
         $(OBJS)/SADLUT.o
 $(OBJS)/RTM.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o DeallocRTM.F90 \
-        ReadLwRTM_nc.F90 ReadSwRTM_nc.F90
+        ReadLwRTM_nc.F90 ReadPRTM_nc.F90 ReadSwRTM_nc.F90
 $(OBJS)/RTM_Pc.o: $(OBJS)/Ctrl.o AllocRTMPc.F90 DeallocRTMPc.F90
 $(OBJS)/SADChan.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/sad_util.o \
         ReadSADChan.F90
