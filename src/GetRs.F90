@@ -4,7 +4,7 @@
 ! Purpose:
 ! Calculates the super pixel mean surface reflectivities (and covariances)
 ! for the solar channels according to the specified averaging method
-! Ctrl%Resoln%Ameth
+! Ctrl%Resoln%Ameth. REDUNDANT as no superpixelling.
 !
 ! Description and Algorithm details:
 !

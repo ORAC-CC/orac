@@ -58,9 +58,9 @@ $(OBJS)/sad_util.o: $(OBJS)/Ctrl.o
 $(OBJS)/SPixel.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/ECPConstants.o \
         $(OBJS)/IntRoutines.o $(OBJS)/RTM.o $(OBJS)/SADChan.o $(OBJS)/planck.o \
         AllocSPixel.F90 DeallocSPixel.F90 GetGeometry.F90 GetIllum.F90 \
-        GetIndexing.F90 GetLSF.F90 GetLwSwRTM.F90 GetMeasurements.F90 GetRTM.F90 \
-        GetRs.F90 GetSPixel.F90 GetSurface.F90 GetX.F90 IntCTP.F90 XMDAD.F90 \
-        XSDAD.F90 check_value.inc
+        GetIndexing.F90 GetLwSwRTM.F90 GetMeasurements.F90 GetRTM.F90 \
+        GetSPixel.F90 GetSurface.F90 GetX.F90 IntCTP.F90 XMDAD.F90 XSDAD.F90 \
+        check_value.inc
 $(OBJS)/ECP.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/Inversion.o $(OBJS)/RTM.o \
         $(OBJS)/RTM_Pc.o $(OBJS)/ReadDriver.o $(OBJS)/ReadSAD.o \

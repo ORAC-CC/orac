@@ -111,7 +111,6 @@ module SPixel_def
              SPixel_RTM_t, &
              SPixel_Geom_t, &
              Loc_t, &
-             Cloud_t, &
              Surface_t, &
              SPixel_Ind_t, &
              SPixel_t, &
@@ -190,19 +189,8 @@ module SPixel_def
    end type Loc_t
 
 
-   type Cloud_t
-!      integer             :: NCloudy      ! Number of cloudy pixels in super pixel
-      real                :: Fraction     ! Cloud fraction for super pixel
-      real                :: Flags        ! Cloud flags
-   end type Cloud_t
-
-
    type Surface_t
-      integer             :: NLand        ! Number of land surface pixels in super pixel
-      integer             :: NSea         ! Number of sea surface pixels in super pixel
-      integer(kind=byte)  :: Land         ! Super-pixel land surface flag
-      integer(kind=byte)  :: Sea          ! Super-pixel sea surface flag
-      integer(kind=byte)  :: Flags        ! Surface flags
+      logical             :: Land         ! Flag pixels containing land surface
    end type Surface_t
 
 
@@ -231,7 +219,6 @@ module SPixel_def
       type(SPixel_Geom_t) :: Geom         ! Super-pixel geometry values
       type(Loc_t)         :: Loc          ! Super-pixel location info
       integer(byte)       :: Type         ! Particle type in pixel
-      type(Cloud_t)       :: Cloud        ! Super-pixel cloud flag info
       type(Surface_t)     :: Surface      ! Super-pixel surface flag info
       type(SPixel_Ind_t)  :: Ind          ! Numbers and indices of channels
       integer, pointer    :: Illum(:)     ! Illumination flag (day,twi, night)
@@ -284,10 +271,6 @@ module SPixel_def
       integer             :: QC           ! Quality control indicator
       real                :: CWP          ! Cloud water path
       real                :: CWP_Error    ! Cloud water path error
-      integer             :: Mask         ! Averaging mask
-      integer             :: NMask        ! Number of 'good' pixels in mask
-      integer             :: NAverage     ! Number of pixels used to calculate
-                                          ! super-pixel averages
       real, pointer       :: Rs(:)        ! Super pixel surface reflectance
       real, pointer       :: SRs(:,:)     ! Super pixel surface reflectance
                                           ! covariances
@@ -324,11 +307,9 @@ contains
 #include "GetGeometry.F90"
 #include "GetIllum.F90"
 #include "GetIndexing.F90"
-#include "GetLSF.F90"
 #include "GetLwSwRTM.F90"
 #include "GetMeasurements.F90"
 #include "GetRTM.F90"
-#include "GetRs.F90"
 #include "GetSurface.F90"
 #include "XMDAD.F90"
 #include "XSDAD.F90"

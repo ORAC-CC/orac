@@ -2,7 +2,8 @@
 ! Name: GetLSF.F90
 !
 ! Purpose:
-! Sets the land sea flag if no visible channels are present
+! Sets the land sea flag if no visible channels are present.
+! REDUNDANT due to GetSurface.
 !
 ! Description and Algorithm details:
 !

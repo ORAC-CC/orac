@@ -17,7 +17,6 @@
 !-------------------------------------------------------------------------------
 
    ! flag pixel as bad and specify reason in quality control flag
-!  SPixel%Mask = 0
    SPixel%QC = ibset(SPixel%QC, flag_bit)
 
 #ifdef DEBUG

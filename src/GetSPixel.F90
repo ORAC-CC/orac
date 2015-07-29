@@ -188,6 +188,8 @@
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
 ! 2015/06/02, AP: Remove Ctrl argument from check_value.
+! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove status
+!    and Get_LSF.
 !
 ! $Id$
 !
@@ -231,9 +233,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! Set status to zero
    stat   = 0
    status = 0
-
-   ! Initialise Mask
-   SPixel%Mask = 1
 
    ! Initialise quality control flag
    SPixel%QC = 0
@@ -301,118 +300,104 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! the super-pixel. Set the QC flag bits both for the individual error
    ! condition and to indicate no processing for the SPixel.
 
-   ! Calculate NMask: the tests above have been setting 0's in the super-pixel
-   ! mask where the data for a given pixel fails each check.
-
-   SPixel%NMask = SPixel%Mask
    SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0)
    SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0)
    SPixel%Type    = MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0)
 
-   ! If all Mask flags are 0 there are no good pixels in the current SPixel, do
-   ! not process and set QC flag.
 
-   if (SPixel%NMask == 0) then
-      SPixel%QC = ibset(SPixel%QC, SPixAll)
-      stat = SPixelInvalid ! pixel is invalid
+   if (.not. any(Ctrl%Types_to_process == SPixel%Type)) then
+      ! Incorrect particle type in SPixel. Don't process.
+
+      SPixel%QC = ibset(SPixel%QC, SPixBadType)
+      stat = SPixelCloudFrac
 #ifdef DEBUG
-      write(*, *) 'WARNING: Get_SPixel(): NMask zero in pixel at: ', &
-                  SPixel%Loc%X0, SPixel%Loc%Y0
+      write(*, *) 'WARNING: Get_SPixel(): Zero cloud fraction in super ' // &
+                  'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-
    else
-      SPixel%Cloud%Flags = 1
-      SPixel%Cloud%Fraction = SPixel%Cloud%Flags
+      ! Call 'Get_' subroutines. Use of stat here assumes that no subordinate
+      ! routine returns a non-zero status value unless it is to flag a
+      ! super-pixel data problem.
+      if (stat == 0) then
+         call Get_Illum(Ctrl, SPixel, MSI_Data, stat)
+         if (stat /= 0) then
+!           write(*,*) 'WARNING: Get_Illum()', stat
+            SPixel%QC = ibset(SPixel%QC, SPixIllum)
+         end if
+      end if
 
-      if (.not. any(Ctrl%Types_to_process == SPixel%Type)) then
-         ! Incorrect particle type in SPixel. Don't process.
+      if (stat == 0) then
+         call Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
+         if (stat /= 0) then
+!           write(*,*) 'WARNING: Get_Indexing()', stat
+            SPixel%QC = ibset(SPixel%QC, SPixIllum)
+         end if
+      end if
 
-         SPixel%QC = ibset(SPixel%QC, SPixBadType)
-         stat = SPixelCloudFrac
+      if (stat == 0) then
+         call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
+         if (stat /= 0) then
+!           write(*,*)  'WARNING: Get_Geometry()', stat
+            SPixel%QC = ibset(SPixel%QC, SPixGeom)
+         end if
+      end if
+
+      ! ACP: RTM unnecessary for aerosol  (at the moment)
+      if (stat == 0) then
+         call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
+         if (stat /= 0) then
+!           write(*,*)  'WARNING: Get_RTM()', stat
+            SPixel%QC = ibset(SPixel%QC, SPixRTM)
+         end if
+      end if
+
+      if (stat == 0) then
+         call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
+         if (stat /= 0) then
+!           write(*,*)  'WARNING: Get_Measurements()', stat
+            SPixel%QC = ibset(SPixel%QC, SPixMeas)
+         end if
+      end if
+
+      ! Sort out land/sea flag
+      select case (MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0))
+      case(1)
+         SPixel%Surface%Land = .true.
+      case(0)
+         SPixel%Surface%Land = .false.
+      case default
 #ifdef DEBUG
-         write(*, *) 'WARNING: Get_SPixel(): Zero cloud fraction in super ' // &
-                     'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
+         write(*, *) 'WARNING: Get_Surface(): pixel contains mixed surface types'
 #endif
-      else
-         ! Call 'Get_' subroutines. Use of stat here assumes that no subordinate
-         ! routine returns a non-zero status value unless it is to flag a
-         ! super-pixel data problem.
-         if (stat == 0) then
-            call Get_Illum(Ctrl, SPixel, MSI_Data, stat)
-            if (stat /= 0) then
-!              write(*,*) 'WARNING: Get_Illum()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixIllum)
-            end if
+         status = SPixelInvalid
+      end select
+
+      ! Get surface parameters and reduce reflectance by solar angle effect.
+      if (stat == 0 .and. SPixel%Ind%NSolar /= 0) then
+         call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
+         if (stat /= 0) then
+!           write(*,*)  'WARNING: Get_Surface()', stat
+            SPixel%QC = ibset(SPixel%QC, SPixSurf)
+         else
+            do i=1,SPixel%Ind%NSolar
+               SPixel%Rs(i) = SPixel%Rs(i) &
+                    / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+
+                if (Ctrl%RS%use_full_brdf) then
+                   SPixel%Rs2(i,:) = SPixel%Rs2(i,:) &
+                     / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+                end if
+            end do
          end if
+      end if
 
-         if (stat == 0) then
-            call Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
-            if (stat /= 0) then
-!              write(*,*) 'WARNING: Get_Indexing()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixIllum)
-            end if
+      if (stat == 0) then
+         call Get_X(Ctrl, SAD_Chan, SPixel, stat)
+         if (stat /= 0) then
+!           write(*,*)  'WARNING: Get_X()', stat
+            SPixel%QC = ibset(SPixel%QC, SPixFGAP)
          end if
-
-         if (stat == 0) then
-            call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
-            if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_Geometry()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixGeom)
-            end if
-         end if
-
-         if (stat == 0 .and. SPixel%Ind%NSolar == 0) then
-            call Get_LSF(Ctrl, SPixel, MSI_Data, stat)
-            if (stat /= 0) then
-!              write(*,*) 'WARNING: Get_LSF()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixLSF)
-            end if
-         end if
-
-         if (stat == 0) then
-            call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
-            if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_RTM()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixRTM)
-            end if
-         end if
-
-         if (stat == 0) then
-            call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
-            if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_Measurements()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixMeas)
-            end if
-         end if
-
-         ! Get surface parameters and reduce reflectance by solar angle effect.
-         if (stat == 0 .and. SPixel%Ind%NSolar /= 0) then
-            call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
-            if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_Surface()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixSurf)
-            else
-               do i=1,SPixel%Ind%NSolar
-                  SPixel%Rs(i) = SPixel%Rs(i) &
-                       / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-
-                   if (Ctrl%RS%use_full_brdf) then
-                      SPixel%Rs2(i,:) = SPixel%Rs2(i,:) &
-                        / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-                   end if
-               end do
-            end if
-         end if
-
-         if (stat == 0) then
-            call Get_X(Ctrl, SAD_Chan, SPixel, stat)
-            if (stat /= 0) then
-!              write(*,*)  'WARNING: Get_X()', stat
-               SPixel%QC = ibset(SPixel%QC, SPixFGAP)
-            end if
-         end if
-
-      end if ! End of "if stat" after cloud fraction check
+      end if
 
       if (stat == 0 .and. SPixel%Ind%NSolar > 0) then
          ! Set the solar constant for the solar channels used in this SPixel.
@@ -467,21 +452,18 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          SPixel%RTM%REF_clear = SPixel%Rs * SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
 
          ! Gradient of REF_clear w.r.t. surface albedo
-
          SPixel%RTM%dREF_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
       end if ! End of stat check before solar channel actions
-   end if ! End of "NMask 0" check
+   end if ! End of pixel Type check
 
    ! If stat indicates a "super-pixel fatal" condition set the quality
    ! control flag bit to indicate no processing.
-
    if (stat /= 0) SPixel%QC = ibset(SPixel%QC, SPixNoProc)
 
 
    ! If the super-pixel will not be processed, zero the first guess and a priori
    ! state vectors for output into the diag file. Check the QC flag rather than
    ! stat in case future changes mean QC could be set to SPixNoProc earlier on.
-
    if (btest(SPixel%QC, SPixNoProc)) then
       SPixel%X0 = MissingXn
       SPixel%Xb = MissingXn
@@ -506,7 +488,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
       write(bkp_lun,'(a,2(i4,1x))')' Location: ',SPixel%Loc%X0,SPixel%Loc%Y0
       write(bkp_lun,'(a,2(f7.1,1x))')' Lat, lon: ',SPixel%Loc%Lat,SPixel%Loc%Lon
-      write(bkp_lun,'(a,i2)')' Land flag ',SPixel%Surface%Flags
+      write(bkp_lun,'(a,L1)')' Land flag ',SPixel%Surface%Land
       do view=1,SPixel%Ind%NViews
          write(bkp_lun,'(a,i3,3(a,f7.1))')' View ', view,' sat zen ',SPixel%Geom%SatZen(view),&
               '  sol zen ',SPixel%Geom%SolZen(view), ' rel azi ',SPixel%Geom%RelAzi(view)

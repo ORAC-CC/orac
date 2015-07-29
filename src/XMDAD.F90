@@ -95,6 +95,8 @@
 ! 2015/01/12, AP: Replace use of ThermalFirst.
 ! 2015/01/22, AP: Bug fix in the last commit.
 ! 2015/02/06, AP: Switch to Int_CTP rather than interpolate2ctp.
+! 2105/07/27, AP: Removed consideration of cloud fraction. Now always returns values for
+!    for an overcast pixel (consistent with the output of the preprocessor).
 !
 ! $Id$
 !
@@ -147,12 +149,10 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
 
       if ((SPixel%Illum(1) == IDay) .and. &
           SPixel%Ind%MDAD_SW > 0) then
-         ! Calculate overcast reflectance.
+         ! Calculate overcast reflectance (assuming fully cloudy pixel).
          ! Uses channel nearest 0.67 microns, index Ctrl%Ind%MDAD_SW.
-         Ref_o = (SPixel%Ym(SPixel%Ind%MDAD_SW) - &
-                  (SPixel%Rs(SPixel%Ind%MDAD_SW) * &
-                   (1.0-SPixel%Cloud%Fraction))) / &
-                 SPixel%Cloud%Fraction
+         Ref_o = SPixel%Ym(SPixel%Ind%MDAD_SW) - &
+                 SPixel%Rs(SPixel%Ind%MDAD_SW)
 
          ! Convert albedo (range 0 - 1) into index (range 1 to 10)
          ! Use the first SEC_o value, assuming that all values are quite close
@@ -193,8 +193,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
          ! Calculate overcast radiance from observed radiance and cloud
          ! fraction. Note MDAD_LW must be offset for use with R_Clear since
          ! R_Clear stores thermal channels only.
-         Rad_o = (Rad(1) - SPixel%RTM%LW%R_clear(MDAD_LW_to_ctrl_ythermal) * &
-                 (1.0 - SPixel%Cloud%Fraction)) / SPixel%Cloud%Fraction
+         Rad_o = Rad(1) - SPixel%RTM%LW%R_clear(MDAD_LW_to_ctrl_ythermal)
 
          ! Exclude negative Rad_o (can arise due to approximation in the RTM)
          if (Rad_o(1) >= 0.0) then
@@ -230,8 +229,8 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
       end if
 
    case (iFr) ! Cloud fraction, f
-      ! Value is taken straight from the SPixel structure.
-      X = SPixel%Cloud%Fraction
+      ! Always overcast
+      X = 1
       if (SetErr) Err = MDADErrF1
    end select
 

@@ -89,14 +89,6 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    ! Allocate sizes of SPixel sub-structure arrays
 
-   ! Quality control mask
-
-!  allocate(SPixel%Mask(Ctrl%Resoln%Space, Ctrl%Resoln%Space))
-
-   ! Get_CloudFlags arrays
-
-!  allocate(SPixel%Cloud%Flags(Ctrl%Resoln%Space, Ctrl%Resoln%Space))
-
    ! Get_RTM arrays
 
    ! Short wave RTM parameters

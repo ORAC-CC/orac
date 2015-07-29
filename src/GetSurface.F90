@@ -111,6 +111,7 @@
 ! 2015/01/20, AP: Tidying redundant code.
 ! 2015/01/21, AP: Move allocations of reflectance arrays here.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
+! 2015/07/27, AP: Remove SPixel%Mask and Get_Rs. Consolidate setting LSFlag.
 !
 ! $Id$
 !
@@ -139,8 +140,8 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
    real           :: b( Ctrl%Ind%NSolar, 2)
    real           :: Sb(Ctrl%Ind%NSolar, 2)
-   real           :: SPixel_b( SPixel%Ind%NSolar)
-   real           :: SPixel_Sb(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
+   real           :: SPixel_b(  SPixel%Ind%NSolar)
+   real           :: SPixel_Sb( SPixel%Ind%NSolar, SPixel%Ind%NSolar)
    real           :: SPixel_b2( SPixel%Ind%NSolar, MaxRho_XX)
    real           :: SPixel_Sb2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX)
    integer        :: i, ii, ic, j, jj, iflag
@@ -149,10 +150,6 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
 
    ! Initialise output
    status               = 0
-   SPixel%Surface%Land  = 0
-   SPixel%Surface%Sea   = 0
-   SPixel%Surface%NLand = 0
-   SPixel%Surface%NSea  = 0
    SPixel_b             = 0.0
    SPixel_Sb            = 0.0
    SPixel_b2            = 0.0
@@ -185,7 +182,6 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       ! assignment only needs to be done once for each run rather than once per
       !      super-pixel.
 
-      SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
 
       ! Loop over channels to assign b, Sb. Cb is taken straight from Ctrl%Rs%Cb
       ! in both methods.
@@ -194,44 +190,36 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       ! calculation of the covariance requires element i+1 to NSolar (which
       ! would not have been calculated).
 
-      Sb = Ctrl%Rs%Sb
+      Sb = Ctrl%Rs%Sb ! Note this is a single value filling an array
       b  = Ctrl%Rs%b
 
-      ! sea flags set to 0 in SPixel%Surface%Flags, land flags set to 1
-      iflag = SPixel%Surface%Flags + 1
+      if (SPixel%Surface%Land) then
+         iflag = 2
+      else
+         iflag = 1
+      end if
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
          ! Calculate b
-         SPixel_b(i) = float(SPixel%Mask) * b(ii,iflag)
-
+         SPixel_b(i) = Ctrl%Rs%b(ii,iflag)
 
          ! Calculate Sb
 
          ! On diagonals
-         SPixel_Sb(i,i) = float(SPixel%Mask) * &
-			  b(ii,iflag) * b(ii,iflag) * Sb(ii,iflag) * Sb(ii,iflag)
+         SPixel_Sb(i,i) = b(ii,iflag) * b(ii,iflag) * Sb(ii,iflag) * Sb(ii,iflag)
 
          ! Off diagonals (loop over half of the matrix, and swap indices for
          ! other half, sea then land)
          do j = i+1, SPixel%Ind%NSolar
             jj = SPixel%spixel_y_solar_to_ctrl_y_solar_index(j)
 
-	    SPixel_Sb(i,j) = float(SPixel%Mask) * Ctrl%Rs%Cb * &
-	                     b(ii,iflag) * b(jj,iflag) * Sb(ii,iflag) * Sb(jj,iflag)
+	    SPixel_Sb(i,j) = Ctrl%Rs%Cb * b(ii,iflag) * b(jj,iflag) * &
+                             Sb(ii,iflag) * Sb(jj,iflag)
 
 	    SPixel_Sb(j,i) = SPixel_Sb(i,j)
          end do
       end do
-
-      SPixel%Surface%NLand = SPixel%Surface%Flags
-      SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
-
-      if (SPixel%Surface%NLand > 0) SPixel%Surface%Land = 1
-      if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
-
-      ! Call Get_Rs to calculate super pixel averages
-      call Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, status)
 
    ! Meas method (not supported in ECP delivery)
    else if (Ctrl%Rs%Flag == SelmMeas) then
@@ -239,18 +227,17 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    ! AUX method: use Albedo data to set Rs
    else if (Ctrl%Rs%Flag == SelmAux) then
 
-      SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
-
-      Sb = Ctrl%Rs%Sb
+      Sb = Ctrl%Rs%Sb ! Note this is a single value filling an array
 
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
          ic = SPixel%spixel_y_solar_to_ctrl_y_index(i)
 
-         solar_factor = 1. / cos(SPixel%Geom%solzen(1) * (Pi / 180.0))
+         ! ACP: No idea why this is here. CP added it in R595. Not in aerosol.
+         solar_factor = 1. / cos(SPixel%Geom%solzen(1) * d2r)
 
          SPixel_b(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, ii) / &
-              solar_factor
+                       solar_factor
 
          if (Ctrl%RS%use_full_brdf) then
             SPixel_b2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &
@@ -268,7 +255,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
          !
          ! N.B. assumes either all channel albedos are present, or none are.
 
-         if (SPixel%Surface%Flags == 0) then ! sea
+         if (.not. SPixel%Surface%Land) then
             if (SPixel_b(i) .ge. 1.0) then
 #ifdef DEBUG
                write(*, *) 'WARNING: Get_Surface(): Sunglint region predicted ' // &
@@ -296,38 +283,31 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       end do
 
       ! Calculate Sb
-      iflag = SPixel%Surface%Flags + 1
+      if (SPixel%Surface%Land) then
+         iflag = 2
+      else
+         iflag = 1
+      end if
       if (status == 0) then
-         SPixel%Surface%NLand = SPixel%Surface%Flags
-         SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
-
-         if (SPixel%Surface%NLand > 0) SPixel%Surface%Land = 1
-         if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
-
          do i = 1, SPixel%Ind%NSolar
             ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
             ! On diagonals
-            SPixel_Sb(i,i) = float(SPixel%Mask) * &
-                             SPixel_b(i) * SPixel_b(i) * Sb(ii,iflag) * Sb(ii,iflag)
+            SPixel_Sb(i,i) = SPixel_b(i) * SPixel_b(i) * &
+                             Sb(ii,iflag) * Sb(ii,iflag)
 
             if (Ctrl%RS%use_full_brdf) &
                SPixel_Sb2(i,i,:) = SPixel_Sb(i,i)
 
-            ! Calculate SPixel_b
-
-            SPixel_b(i) = SPixel_b(i) * float(SPixel%Mask)
-
-            if (Ctrl%RS%use_full_brdf) &
-               SPixel_b2(i,:) = SPixel_b2(i,:) * float(SPixel%Mask)
+            ! Calculate SPixel_Sb
 
             ! Off diagonals (loop over half of the matrix, and swap indices for
             ! other half)
             do j = i+1, SPixel%Ind%NSolar
                jj = SPixel%spixel_y_solar_to_ctrl_y_solar_index(j)
 
-               SPixel_Sb(i,j) = float(SPixel%Mask) * Ctrl%Rs%Cb * &
-                                SPixel_b(i) * SPixel_b(j) * Sb(ii,iflag) * Sb(jj,iflag)
+               SPixel_Sb(i,j) = Ctrl%Rs%Cb * SPixel_b(i) * SPixel_b(j) * &
+                                Sb(ii,iflag) * Sb(jj,iflag)
 
                if (Ctrl%RS%use_full_brdf) &
                   SPixel_Sb2(i,j,:) = SPixel_Sb(i,j)
@@ -338,23 +318,17 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
                   SPixel_Sb2(j,i,:) = SPixel_Sb2(i,j,:)
             end do
          end do
-
-!        SPixel%Surface%NLand = SPixel%Surface%Flags
-!        SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
-
-!        if (SPixel%Surface%NLand > 0) SPixel%Surface%Land = 1
-!        if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
-
-         ! Call Get_Rs to calculate super pixel averages
-         call Get_Rs(Ctrl, SPixel, SPixel_b, SPixel_Sb, SPixel_b2, SPixel_Sb2, status)
       end if
    end if
 
-   if (SPixel%Surface%Land + SPixel%Surface%Sea > 1) then
-#ifdef DEBUG
-      write(*, *) 'WARNING: Get_Surface(): pixel contains mixed surface types'
-#endif
-      status = -1
+   if (status == 0) then
+      SPixel%Rs  = SPixel_b
+      SPixel%SRs = SPixel_Sb
+
+      if (Ctrl%RS%use_full_brdf) then
+         SPixel%Rs2  = SPixel_b2
+         SPixel%SRs2 = SPixel_Sb2
+      end if
    end if
 
 end subroutine Get_Surface
