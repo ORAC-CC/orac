@@ -24,79 +24,53 @@
 !
 ! Set Xn = X0
 !
-! until (convergence) or (number of phase changes > max allowed):
-!    calculate 1st and 2nd derivatives of J
-!    set starting Marquardt parameters (starts with heaviest weighting on
-!       steepest descent)
-!    calculate step dX
+! calculate 1st and 2nd derivatives of J
+! set starting Marquardt parameters (starts with heaviest weighting on
+!    steepest descent)
 !
-!    for a number of iterations (up to a maximum or until convergence is
-!    reached)
-!       set new X = Xn + dX
-!       Check bounds: if any variable in X reaches a limit it is fixed at
-!          that limit
-!       if the change in X constitutes a phase change, i.e. Re crosses some
-!          limit, drop out of the iteration loop
+! for a number of iterations (up to a maximum or until convergence is
+! reached)
+!    calculate step delta_X
+!    set new X = Xn + delta_X
+!    Check bounds: if any variable in X reaches a limit it is fixed at
+!       that limit
 !
-!       call FM to give Y(X), K(X)
+!    call FM to give Y(X), K(X)
 !
-!       calculate J(X)
-!       if (J(X) < J0)    (i.e. "good" step)
-!          set Xn = X     (i.e. old Xn + dX)
-!          Convergence? if (J - J0) < (limit from Ctrl struct)
-!             convergence: drop out of both loops
-!          else
-!             decrease steepest descent
-!             calculate new 1st and 2nd derivatives of J
-!             save current J as J0 for checking next iteration
-!       else ("bad" step, don't keep X)
-!          increase weighting on steepest descent for next iteration
+!    calculate J(X)
+!    if (J(X) < J0)    (i.e. "good" step)
+!       set Xn = X     (i.e. old Xn + dX)
+!       calculate new 2nd derivative of J
+!       if (J - J0) < (limit from Ctrl struct)
+!          convergence: drop out of loop
+!       else
+!          decrease steepest descent
+!          calculate new 1st derivatives of J
+!          save current J as J0 for checking next iteration
+!    else ("bad" step, don't keep X)
+!       increase weighting on steepest descent for next iteration
+! end of iteration loop
 !
-!       set new dX for next iteration
-!    end of iteration loop
-!
-!    if (phase change occurred) ! phase change removed Mar 2011
-!       Set limits for new phase
-!       call FM to give Y in new state
-!       re-calculate starting cost J0
-!
-! (end of "until" loop above)
-!
-! Error analysis:
-!    Calculate the two terms contributing to the overall retrieval error Sn:
-!       Sn = St + Ss
-!       St is the inverse Hessian (d2J_dX2) for the active state variables
-!       Ss is the state expected error from model parameter noise (inactive
-!          state variables and surface reflectance Rs - no other parameters
-!          available at present).  Ss depends whether there are inactive
-!          state variables for the SPixel and whether Equivalent Model
-!          Parameter Noise from Rs is selected.
+! Calculate the two terms contributing to the overall retrieval error Sn:
+!    Sn = St + Ss
+!    St is the inverse Hessian (d2J_dX2) for the active state variables
+!    Ss is the state expected error from model parameter noise (inactive
+!       state variables and surface reflectance Rs - no other parameters
+!       available at present).  Ss depends whether there are inactive
+!       state variables for the SPixel and whether Equivalent Model
+!       Parameter Noise from Rs is selected.
 !
 ! Set diagnostics for output
 !
 ! Note, for output, costs are divided by Ny for the SPixel. Hence convergence
 ! criteria on delta_J are multiplied up by Ny for the inversion.  Otherwise,
-! if cost was divide by Ny at each iteration this would add more processing
+! if cost was divided by Ny at each iteration this would add more processing
 ! per step and would need to be taken into account in the derivatives of J as
-! well as J. Costs in Breakpoint output are also divided by Ny during
-! inversion; gives consistency with the final outputs for ease of comparison
-! and the impact on performance should not be a problem since breakpoints
-! will only be used during debugging.
+! well as J.
 !
-! Note on error handling: checking is done after each subroutine call. Errors
-! in the inversion should be treated as fatal for the super-pixel rather than
-! the program as a whole.
-!
-! N.B. the value returned by routines called from this routine is held in
-! stat rather than status. It is assumed that these routines only flag
-! inversion type errors: this is not a very good assumption (file open errors
-! etc could occur in these routines, these errors will be logged but the
-! program won't exit as a result of them).
-!
+! Errors in calculations terminate processing this pixel, managed by ECP.
 ! If a non-zero status occurs during an inversion, the Diag%QC flag is set to
-! indicate non-convergence. In order to do this the convergence logical is
-! set false, retrieved state and errors are set to missing and Set_Diag is
-! called regardless of whether errors have occurred.
+! indicate non-convergence and uncertainty outputs are set to fill values.
 !
 ! Arguments:
 ! Name     Type    In/Out/Both Description
@@ -188,6 +162,7 @@
 !    calculation of Hessian into it's own routine.
 ! 2015/07/28, AP: Replace if status blocks with GO TO 99 to terminate processing.
 !    Reorganise main iteration loop to minimise code repetition.
+! 2015/07/29, AP: Remove mentions of phase changes. Clean algorithm description.
 !
 ! $Id$
 !
@@ -253,8 +228,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: Ccj_Ny              ! Product of Cost convergence criteria and
                                   ! number of active channels.
    logical :: convergence         ! Indicates whether convergence has occurred
-   logical :: phase_change        ! Indicates phase change has occurred
-   integer :: NPhaseChanges       ! Phase change counter
    integer :: iter                ! Inversion iteration counter
    real    :: KxT_SyI(SPixel%Nx, SPixel%Ind%Ny)
                                   ! Product of the transpose of Kx with SyInv
@@ -418,8 +391,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Initialise loop control variables
    convergence   = .false.
-   phase_change  = .false.
-   NPhaseChanges = 0
    iter = 1
 
    ! Calculate matrix operators
@@ -457,8 +428,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       Xplus_dX(SPixel%XI) = SPixel%Xn(SPixel%XI)
 
       ! Check bounds for active state variables - does delta_X take any state
-      ! variable outside it's range? (If so, freeze it at the boundary). Also
-      ! check for possible phase change.
+      ! variable outside it's range? (If so, freeze it at the boundary).
       call Check_Limits(Xplus_dX, SPixel, stat)
       if (stat /= 0) GO TO 99 ! Terminate processing this pixel
 
@@ -691,8 +661,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Set_Diag also checks whether the solution state was good enough to use in
    ! SDAD first guess and a priori setting, and if so saves Xn and Sn in SPixel
    ! (XnSav and SnSav).
-   call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
-                 NPhaseChanges, Y, Sy, Diag)
+   call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
 
    ! Write final solution and close breakpoint output file
 #ifdef BKP

@@ -2,11 +2,9 @@
 ! Name: CheckLimits.F90
 !
 ! Purpose:
-! Checks upper and lower limits on all active state variables and sets the
-! phase change flag. Each active variable is checked to ensure that it's
-! current value has not gone outside the bounds for the phase (stored in the
-! SPixel Ulim and LLim arrays). Re (if active) and possibly Tc are checked
-! for indications of a phase change.
+! Checks upper and lower limits on all active state variables. Each active
+! variable is checked to ensure that it's current value has not gone outside the
+! bounds for the phase (stored in the SPixel Ulim and LLim arrays)..
 !
 ! Description and Algorithm details:
 ! For each state variable, check bounds:
@@ -16,14 +14,11 @@
 ! Arguments:
 ! Name         Type       In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl         struct     In          ECP control structure read from driver file
 ! X            real array Both        Contains the currently active state
 !                                     variables
 ! SPixel       struct     Both        Super-pixel structure (contains the
 !                                     current active state variable info,
 !                                     plus current phase)
-! RTM_Pc       struct     Out         RTM_Pc structure
-! phase_change logical    Both        Result of the phase change test
 ! status       integer    Out         ECP program status value.
 !
 ! History:

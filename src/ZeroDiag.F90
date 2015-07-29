@@ -59,7 +59,6 @@ subroutine Zero_Diag(Ctrl, Diag, status)
 
    Diag%QCFlag       = 0
    Diag%Iterations   = 0
-   Diag%PhaseChanges = 0
    Diag%Jm           = 0
    Diag%Ja           = 0
    Diag%St           = 0

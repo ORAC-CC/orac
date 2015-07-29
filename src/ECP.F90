@@ -238,8 +238,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer             :: TotMaxJ  = 0   ! Number of inversions with cost > MaxQC
    integer             :: AvIter   = 0   ! Average no. of iterations per successful
                                          ! retrieval
-   integer             :: AvPhCh   = 0   ! Average no. of phase changes per successful
-                                         ! retrieval
    real                :: AvJ      = 0.0 ! Average cost per successful retrieval
 
    ! netcdf related variables:
@@ -264,7 +262,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Some more variables for OpenMP implementation
    integer, allocatable, dimension(:) :: totpix_line,totmissed_line,totconv_line, &
                                          totmaxj_line
-   integer, allocatable, dimension(:) :: aviter_line,avphch_line
+   integer, allocatable, dimension(:) :: aviter_line
    real,    allocatable, dimension(:) :: avj_line
 
 #ifdef USE_TIMING
@@ -472,8 +470,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    totmaxj_line=0
    allocate(aviter_line(iystart:iystop))
    aviter_line=0
-   allocate(avphch_line(iystart:iystop))
-   avphch_line=0
    allocate(avj_line(iystart:iystop))
    avj_line=0.0
 
@@ -582,11 +578,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                   if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
                      TotConv_line(j) = TotConv_line(j)+1
                      AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
-                     if (Diag%PhaseChanges >= 0) then
-                        AvPhCh_line(j) = AvPhCh_line(j) + Diag%PhaseChanges
-                     else
-                        AvPhCh_line(j) = AvPhCh_line(j) + Ctrl%InvPar%MaxPhase
-                     end if
                      AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
                   end if
                   if (btest(Diag%QCFlag,MaxStateVar+2)) then
@@ -658,7 +649,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    Totmissed = sum(totmissed_line)
    Totconv   = sum(totconv_line)
    aviter    = sum(aviter_line)
-   avphch    = sum(avphch_line)
    avj       = sum(avj_line)
    totmaxj   = sum(totmaxj_line)
 
@@ -668,8 +658,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    if (TotConv > 0) then
       write(*,*)' Avge no. of iter per conv.            ',&
          float(AvIter)/float(TotConv)
-      write(*,*)' Avge no. of phase ch per conv.        ',&
-         float(AvPhCh)/float(TotConv)
       write(*,*)' Avge cost per conv                    ',&
          AvJ / float(TotConv)
       write(*,*)' No. of retrieval costs > max          ',TotMaxJ
@@ -682,7 +670,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    deallocate(totconv_line)
    deallocate(totmaxj_line)
    deallocate(aviter_line)
-   deallocate(avphch_line)
    deallocate(avj_line)
 
 

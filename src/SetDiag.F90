@@ -33,7 +33,6 @@
 ! J, Jm, Ja     real       In           Costs (total, measurement and a priori)
 !                                       from latest inversion iteration.
 ! iter          integer    In           Inversion iteration counter
-! NPhaseChanges integer    In           Number of phase changes during inversion
 ! Y             real array In           Calculated "measurements" from last
 !                                       iteration of inversion.
 ! Sy            real array In           Error covariance in Y.
@@ -59,6 +58,7 @@
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/05/25, GM: Got rid of flags Diagl and removed obvious comments.
 ! 2015/07/28, AP: Remove status argument (as routine cannot feasibly fail).
+! 2015/07/29, AP: Remove NPhaseChanges argument.
 !
 ! $Id$
 !
@@ -66,8 +66,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
-                    NPhaseChanges, Y, Sy, Diag)
+subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
 
    use Ctrl_def
    use ECP_Constants
@@ -85,7 +84,6 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
                                 	          ! contributions to cost from
 			        	          ! measurements and a priori)
    integer,        intent(in)    :: iter	  ! Inversion iteration counter
-   integer,        intent(in)    :: NPhaseChanges ! Phase change counter
    real,           intent(in)    :: Y(:)          ! Calculated "measurements" at
                                                   ! final state.
    real,           intent(in)    :: Sy(:,:)       ! Error covariance in
@@ -116,12 +114,6 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
    end do
 
    Diag%Iterations = iter
-
-   if (.not. convergence .and. NPhaseChanges == Ctrl%Invpar%MaxPhase) then
-      Diag%PhaseChanges = -1
-   else
-      Diag%PhaseChanges = NPhaseChanges
-   end if
 
    Diag%Jm = Jm
    Diag%Ja = Ja

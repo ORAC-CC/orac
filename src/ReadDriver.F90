@@ -638,7 +638,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%MqStart   = 0.001      ! Marquardt: starting parameter
    Ctrl%Invpar%MqStep    = 10.0       ! step parameter
    Ctrl%Invpar%MaxIter   = 40         ! Maximum # of iterations
-   Ctrl%Invpar%MaxPhase  = 3          ! Maximum # of phase changes
    Ctrl%Invpar%Ccj       = 0.05       ! Cost convergence criteria
 
    Ctrl%Invpar%XScale(ITau) = 10.0    ! Scaling parameters (Tau,Re,Pc,F,Ts)
@@ -859,8 +858,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%Invpar%MqStep)    /= 0) call h_p_e(label)
       case('CTRL%INVPAR%MAXITER')
          if (parse_string(line, Ctrl%Invpar%MaxIter)   /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%MAXPHASE')
-         if (parse_string(line, Ctrl%Invpar%MaxPhase)  /= 0) call h_p_e(label)
       case('CTRL%INVPAR%CCJ')
          if (parse_string(line, Ctrl%Invpar%Ccj)       /= 0) call h_p_e(label)
       case('CTRL%INVPAR%XSCALE')

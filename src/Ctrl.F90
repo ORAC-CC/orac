@@ -223,7 +223,6 @@ module CTRL_def
       real                   :: MqStart            ! Marquardt starting parameter
       real                   :: MqStep             ! Marquardt step parameter
       integer                :: MaxIter            ! Maximum number of iterations
-      integer                :: MaxPhase           ! Maximum number oif phase changes
       real                   :: Ccj                ! Cost convergence criteria
       real                   :: XScale(MaxStateVar)! Scaling parameters (Tau,Re,Pc,F,Ts)
       real                   :: XLLim(MaxStateVar) ! Lower limit on state

@@ -38,7 +38,6 @@ module Diag_def
 				    !   cost too great
       integer       :: Iterations   ! Number of iterations taken by inversion
                                     ! scheme to reach convergence
-      integer       :: PhaseChanges ! Number of phase changes during inversion
       real          :: Jm           ! Cost at solution due to measurements
       real          :: Ja           ! Cost at solution due to a priori
       real          :: St(MaxStateVar,MaxStateVar)
