@@ -137,6 +137,9 @@
 ;   09 Feb 2015 - ACP: Bug fix to points below range.
 ;   06 Mar 2015 - AJAS: Bug fix for UNITS keyword and TITLE when /WHITE_BACK set
 ;   29 Jun 2015 - ACP: Changed top/bot colour for greyscale colourbar.
+;   14 Jul 2015 - CH: Added CB_TOP_COLOUR and CB_BOT_COLOUR keywords to allow the
+;      colours at the top and bottom of the colour bar to be specified by the user.
+;      Corrected the centring of the map for regions that cross the dateline.
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -157,7 +160,8 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    plotpoints=plotpoints, plotpsym=plotpsym, debug=debug, $
                    stop=stp, silent=silent, label=label, bposition=bpos, $
                    central_azimuth=azi, plot_colour=colour, white_back=white, $
-                   output_limit=limit
+                   output_limit=limit, CB_TOP_COLOUR=cb_top_colour, $
+                   CB_BOT_COLOUR=cb_bot_colour
 
    ON_ERROR, KEYWORD_SET(debug) || KEYWORD_SET(stp) ? 0 : 2
    COMPILE_OPT HIDDEN, LOGICAL_PREDICATE, STRICTARR, STRICTARRSUBS
@@ -250,8 +254,11 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
    ;; set map grid in current plotting area and read its position with
    ;; other properties
    if ~KEYWORD_SET(centre) then begin
-      if KEYWORD_SET(cartesian) then centre=[0.,.5*(lim[1]+lim[3])] $
-      else centre=.5*[lim[0]+lim[2], lim[1]+lim[3]]
+      if KEYWORD_SET(cartesian) then BEGIN
+         IF (lim[1] ge lim[3]) THEN $ ;implies region crossed dateline
+            centre = [0.,0.5*((-180-(180-lim[1]))+lim[3])] $
+         ELSE centre=[0.,.5*(lim[1]+lim[3])]
+         ENDIF else centre=.5*[lim[0]+lim[2], lim[1]+lim[3]]
    endif
    ;; AJAS Added color keyword so that the white background gets a black title.
    MAP_SET,limit=limit,advance=advance,xmar=xmar,ymar=ymar,/noborder, $
@@ -426,7 +433,25 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       else COLOUR_CBW,colours,2 ; the second argument is GREYS
 
       ;; assign colour values for points outside of designated range
-      if KEYWORD_SET(mycolours) || KEYWORD_SET(nogrey) || $
+      IF (KEYWORD_SET(cb_top_colour) OR KEYWORD_SET(cb_bot_colour)) THEN BEGIN
+         TVLCT,r,g,b,/GET
+         
+         IF KEYWORD_SET(cb_top_colour) THEN BEGIN
+            r[colours+1] = cb_top_colour[0]
+            g[colours+1] = cb_top_colour[1]
+            b[colours+1] = cb_top_colour[2]
+         ENDIF
+         IF KEYWORD_SET(cb_bot_colour) THEN BEGIN
+            r[colours+2] = cb_bot_colour[0]
+            g[colours+2] = cb_bot_colour[1]
+            b[colours+2] = cb_bot_colour[2]
+         ENDIF
+         
+         TVLCT,r,g,b
+         
+         IF KEYWORD_SET(cb_top_colour) THEN top_colour=colours+1
+         IF KEYWORD_SET(cb_bot_colour) THEN bot_colour=colours+2
+      ENDIF ELSE if KEYWORD_SET(mycolours) || KEYWORD_SET(nogrey) || $
          KEYWORD_SET(diffcolourbar) || KEYWORD_SET(diffcolourgrey) || $
          KEYWORD_SET(rywdiff) || KEYWORD_SET(d2colourbar) || $
          KEYWORD_SET(diffcolourgrey) then begin

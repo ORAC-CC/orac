@@ -16,7 +16,7 @@ PRO WRAP, a, l, o
 END
 
 ;; Settings for script
-f='~/orac/trunk/pre_processing/read_mcd43c3.F90' ; File to process
+;f='~/orac/trunk/pre_processing/read_mcd43c3.F90' ; File to process
 st_rd_th=1 ; 1=dates printed like "1st" or "15th", 0=dates printed like "1" or "15"
 
 ;; Open file and setup
@@ -84,7 +84,7 @@ while not EOF(id) do begin
       endif else begin
          len = '1'
          if com-num gt expected_len-1 then $
-            date = STRMID(date,0,expected_len-4)+STRMID(date,4,5,/rev)
+            date = STRMID(date,0,expected_len-6)+STRMID(date,4,5,/rev)
       endelse
  
       ;; Read date string 

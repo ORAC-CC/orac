@@ -190,6 +190,7 @@ do_DAYAVHRR=0
 do_NITAVHRR=0
 do_DAYMYD=0
 do_NITMYD=0
+do_CLOUD=0
 do_compare=1
 skip_proc=0
 new=1
@@ -201,6 +202,7 @@ badc_flag=1
 verbose=true
 brdf_flag=true
 channels='1 1 1 1 1 1'
+sabotage=0
 
 # perl command used at end of script. specifies which lines of log file
 # are printed
@@ -321,6 +323,9 @@ while [[ $# > 0 ]]; do
             shift
             revision="$1"
             ;;
+        -sabotage)
+            sabotage=1
+            ;;
         -short)
             short=1
             ;;
@@ -369,6 +374,10 @@ while [[ $# > 0 ]]; do
                 AVHRR)
                     do_DAYAVHRR=1
                     do_NITAVHRR=1
+                    do_all=0
+                    ;;
+                CLOUD)
+                    do_CLOUD=1
                     do_all=0
                     ;;
                 DAYMYD)
@@ -577,6 +586,23 @@ if (( $short && ($do_all || $do_NITAVHRR) )); then
     let i+=1
 fi
 
+#---- 2008/06/20 AATSR section with BL inversion cloud ----#
+if (( $do_CLOUD )); then
+    sensor[$i]=AATSR
+    platform[$i]=
+    label[$i]=CLOUD
+    path_to_l1b[$i]=/home/minuit/imager/data/aatsr/2008/06/20/ATS_TOA_1PUUPA20080620_052525_000065272069_00348_32967_6206.N1
+    path_to_geo[$i]=${path_to_l1b[$i]}
+    startx[$i]=1
+    endx[$i]=512
+    starty[$i]=24000
+    endy[$i]=26000
+    daynight[$i]=1
+
+    frame[$i]=1
+    let i+=1
+fi
+
 # add distinction for short mode to labels
 if (( $short )); then for i in ${!label[*]}; do
    label[i]=${label[i]}S
@@ -589,8 +615,13 @@ if (( $skip_proc )); then
     unset sensor
 fi
 
+desc=''
 if (( $drop)); then 
     desc=D`echo $channels | sed -e 's/[ \t]//g'`
+fi
+
+if (( $sabotage)); then 
+    desc=T
 fi
 
 # Denote AATSR V2.1 files with at the end of the filename.

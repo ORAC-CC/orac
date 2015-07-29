@@ -57,12 +57,8 @@ for j in ${!sensor[*]}; do
         continue
     fi
     # If dropping channels, put output in separate folder.
-    if (( $drop )); then
-        output_folder=$folder$desc
-        if [ ! -d $output_folder ]; then mkdir -p $output_folder; fi
-    else
-        output_folder=$folder
-    fi
+    output_folder=$folder$desc
+    if [ ! -d $output_folder ]; then mkdir -p $output_folder; fi
 
     # find root file names
     unset files i
@@ -91,7 +87,12 @@ ${sensor[$j]}${platform[$j]}
 $channels
 $phase
 Ctrl%process_cloudy_only=false
-Ctrl%process_one_phase_only=false"
+Ctrl%NTypes_to_process=10
+Ctrl%Types_to_process=0,1,2,3,4,5,6,7,8,9"
+        if (( $sabotage )); then 
+            driver=$driver"
+Ctrl%sabotage_inputs=true"
+        fi
         echo "$driver" 1> $driver_file
 
         # make header for log file
@@ -141,5 +142,5 @@ fi
 # call IDL routine to compare this output to the previous version
 if (( $do_compare && ("$?" == 0) )); then
     $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav -args $out_folder \
-        $revision 'main' ${#label[@]} ${label[@]} $thresh
+        $revision 'main' ${#label[@]} ${label[@]}$desc $thresh
 fi
