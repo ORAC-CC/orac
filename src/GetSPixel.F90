@@ -69,7 +69,7 @@
 !    calculation of central pixel coords to ECP.
 ! 2001/01/26, KS: Added calculations of solar and viewing slant path
 !    transmittances.
-! 2001/03/06, AS: Change to setting of Tsf_o,v values in SPixel%RTM. Tsf_o,v 
+! 2001/03/06, AS: Change to setting of Tsf_o,v values in SPixel%RTM. Tsf_o,v
 !    now appear in the overall RTM struct rather than the RTM%LW and SW structs.
 !    Added calculation of the Ref_clear values.
 ! 2001/03/07, AS: Change in LW Tsf_o, v calculations. Additional breakpoint
@@ -80,13 +80,13 @@
 !    angle check. Previously disallowed data where SolZen  > 90 degrees. Do not
 !    check. SolZen may be treated differently in different data sets when > 90.
 !    Using pre-defined constant names for super-pixel averaging methods. Rs
-!    divided by Sec_o to take account of solar angle as soon as Rs is set by 
+!    divided by Sec_o to take account of solar angle as soon as Rs is set by
 !    Get_Surface/Get_Rs. REF_Clear and dREF_Clear_dRs calculations updated.
 ! 2001/04/04, AS: Removed brackets specifying array section from whole array
 !    assignments where the whole array is used, as experience elsewhere seems to
 !    show that "array = " works faster than "array(:) = ".
 ! 2001/05/17, AS: New argument SAD_Chan required by Get_Measurements.
-! 2001/06/05, AS: Added call to Get_X to set a priori and first guess, plus new 
+! 2001/06/05, AS: Added call to Get_X to set a priori and first guess, plus new
 !    argument SAD_CloudClass required by Get_X.
 ! 2001/06/15, AS: Changed error message string assignments/writes. Long message
 !    strings were wrapped over two lines with only one set of quotes around the
@@ -181,11 +181,11 @@
 ! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
 !    channels with respect to the channels actually processed, rather than the
 !    MSI file.
-! 2015/01/13, AP: Switching to Ctrl%Ind%Ch_Is rather than any(). Removing 
+! 2015/01/13, AP: Switching to Ctrl%Ind%Ch_Is rather than any(). Removing
 !    First:Last channel indexing.
 ! 2015/01/21, AP: Moved allocated of SPixel%RTM%... here.
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
-! 2015/02/04, GM: Changes related to the new missing channel, illumination, and 
+! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
 ! 2015/06/02, AP: Remove Ctrl argument from check_value.
 !
@@ -242,8 +242,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! a retrieval. The SPixel Mask is set to flag problems in particular pixels.
 
    ! Check Cloud flags (0 or 1)
-   call check_value(MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        CloudMax, CloudMin, SPixel, 'cloud flag', SPixCloudFl)
+   call check_value(MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0), &
+        TypeMax, TypeMin, SPixel, 'cloud flag', SPixTypeFl)
 
    ! Land/Sea flags (0 or 1)
    call check_value(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0), &
@@ -307,6 +307,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    SPixel%NMask = SPixel%Mask
    SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0)
    SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0)
+   SPixel%Type    = MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0)
 
    ! If all Mask flags are 0 there are no good pixels in the current SPixel, do
    ! not process and set QC flag.
@@ -320,19 +321,13 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 #endif
 
    else
-      ! Get cloud flags before checking for cloudy method
-
-      ! Removal of Super-pixel averaging: replace call to GetCloudFlags with a
-      ! simple assignment. "Flags" is now 1 single flag.
-
-      SPixel%Cloud%Flags = MSI_Data%CloudFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
+      SPixel%Cloud%Flags = 1
       SPixel%Cloud%Fraction = SPixel%Cloud%Flags
 
+      if (.not. any(Ctrl%Types_to_process == SPixel%Type)) then
+         ! Incorrect particle type in SPixel. Don't process.
 
-      if (SPixel%Cloud%Fraction == 0) then
-         ! No cloud in SPixel. Don't process.
-
-         SPixel%QC = ibset(SPixel%QC, SPixNoCloud)
+         SPixel%QC = ibset(SPixel%QC, SPixBadType)
          stat = SPixelCloudFrac
 #ifdef DEBUG
          write(*, *) 'WARNING: Get_SPixel(): Zero cloud fraction in super ' // &

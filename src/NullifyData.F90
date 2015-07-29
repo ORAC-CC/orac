@@ -45,7 +45,7 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
       nullify(MSI_Data%rho_dd)
    end if
 
-   nullify(MSI_Data%CloudFlags)
+   nullify(MSI_Data%Type)
 
    nullify(MSI_Data%cldtype)
    nullify(MSI_Data%cloudmask)

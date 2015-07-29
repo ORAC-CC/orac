@@ -265,7 +265,10 @@ module CTRL_def
       type (Inst_t)          :: Inst
       type (Ind_t)           :: Ind
       logical                :: process_cloudy_only
-      logical                :: process_one_phase_only
+      integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
+                                                   ! type codes for pixels to
+                                                   ! run the retrieval
+      integer                :: NTypes_to_process  ! Number of valid values in above
       character(3)           :: LUTClass           ! Name of LUT to use
       integer                :: CloudType          ! Cloud type flag, distinct from
                                                    ! cloud class, used to define

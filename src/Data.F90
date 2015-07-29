@@ -31,6 +31,7 @@
 !    and channel selection code.
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
 ! 2015/07/03, OS: Added cloudmask_error
+! 2015/07/27, AP: Replace CloudFlag with Type.
 !
 ! $Id$
 !
@@ -69,20 +70,20 @@ module Data_def
       real(sreal),        pointer :: rho_0d(:,:,:)
       real(sreal),        pointer :: rho_dv(:,:,:)
       real(sreal),        pointer :: rho_dd(:,:,:)
-      real(sreal),        pointer :: CloudFlags(:,:)
-      integer(kind=byte), pointer :: cldtype(:,:)
-      integer(kind=byte), pointer :: cloudmask(:,:)
-      real(kind=sreal),   pointer :: cloudmask_error(:,:)
-      real(kind=sreal),   pointer :: cccot_pre(:,:)
+      integer(byte),      pointer :: Type(:,:)
+      integer(byte),      pointer :: cldtype(:,:)
+      integer(byte),      pointer :: cloudmask(:,:)
+      real(sreal),        pointer :: cloudmask_error(:,:)
+      real(sreal),        pointer :: cccot_pre(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
-      integer(kind=byte), pointer :: LSFlags(:,:)
-      integer(kind=byte), pointer :: lusflags(:,:)
-      integer(kind=sint), pointer :: dem(:,:)
-      integer(kind=byte), pointer :: nisemask(:,:)
-      real(8),            pointer :: time(:,:)
-      real(4),            pointer :: MSI(:,:,:)
-      integer, pointer            :: illum(:,:,:)
+      integer(byte),      pointer :: LSFlags(:,:)
+      integer(byte),      pointer :: lusflags(:,:)
+      integer(sint),      pointer :: dem(:,:)
+      integer(byte),      pointer :: nisemask(:,:)
+      real(dreal),        pointer :: time(:,:)
+      real(sreal),        pointer :: MSI(:,:,:)
+      integer,            pointer :: illum(:,:,:)
    end type Data_t
 
 contains

@@ -89,48 +89,26 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
    if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
    call nc_open(ncid, Ctrl%Fid%CF)
 
-   allocate(MSI_Data%CloudFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%Type(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cloudmask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cloudmask_error(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
+!   call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, verbose)
    call nc_read_array(ncid, "cldmask", MSI_Data%cloudmask, verbose)
    call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cloudmask_error, verbose)
    call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, verbose)
 
-   ! Pavolonis cloud type values:
-
-   ! CLEAR_TYPE = 0
-   ! PROB_CLEAR_TYPE = 1 !currently not used
-   ! FOG_TYPE = 2
-   ! WATER_TYPE = 3
-   ! SUPERCOOLED_TYPE = 4
-   ! OPAQUE_ICE_TYPE = 6
-   ! CIRRUS_TYPE = 7
-   ! OVERLAP_TYPE = 8
+   ! Merge various particle type flags (once aerosol is in)
+   MSI_Data%Type = MSI_Data%cldtype
 
    if (Ctrl%process_cloudy_only) then
-   ! set clear-sky pixels to 0 to avoid their processing
+      ! Invalidate clear-sky pixels to 0 to avoid their processing
       where (MSI_Data%CloudMask .eq. 0)
-         MSI_Data%CloudFlags = 0
+         MSI_Data%Type = byte_fill_value
       endwhere
-      if (Ctrl%process_one_phase_only) then
-      ! set ice pixels to 0
-         if (trim(Ctrl%CloudClass) .eq. 'WAT') then
-            where (MSI_Data%CldType .ge. 6 .and. MSI_Data%CldType .le. 8)
-               MSI_Data%CloudFlags = 0
-            endwhere
-         endif
-      ! set liquid pixels to 0
-         if (trim(Ctrl%CloudClass) .eq. 'ICE') then
-            where (MSI_Data%CldType .ge. 2 .and. MSI_Data%CldType .le. 4)
-               MSI_Data%CloudFlags = 0
-            endwhere
-         endif
-      endif
    endif
 
    ! Close cloud flag file

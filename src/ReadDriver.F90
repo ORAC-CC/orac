@@ -115,6 +115,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    use, intrinsic :: iso_fortran_env, only : input_unit
 
+   use constants_cloud_typing_pavolonis
    use CTRL_def
    use ECP_constants
    use global_attributes
@@ -391,7 +392,37 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
 
    Ctrl%process_cloudy_only    = .true.
-   Ctrl%process_one_phase_only = .true.
+   ! Set cloud types to process depending on requested LUT
+   Ctrl%Types_to_process = byte_fill_value
+   select case (trim(Ctrl%LUTClass))
+   case('WAT') ! ACP: Explicitly excludes CLEAR and PROB_CLEAR, didn't originally
+      Ctrl%NTypes_to_process   = 5
+      Ctrl%Types_to_process(1) = FOG_TYPE
+      Ctrl%Types_to_process(2) = WATER_TYPE
+      Ctrl%Types_to_process(3) = SUPERCOOLED_TYPE
+      Ctrl%Types_to_process(4) = MIXED_TYPE
+      Ctrl%Types_to_process(5) = PROB_OPAQUE_ICE_TYPE
+   case('ICE')
+      Ctrl%NTypes_to_process   = 5
+      Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
+      Ctrl%Types_to_process(2) = CIRRUS_TYPE
+      Ctrl%Types_to_process(3) = OVERLAP_TYPE
+      Ctrl%Types_to_process(4) = MIXED_TYPE
+      Ctrl%Types_to_process(5) = PROB_OPAQUE_ICE_TYPE
+   case default
+      ! Accept everything
+      Ctrl%NTypes_to_process   = 10
+      Ctrl%Types_to_process(1) = CLEAR_TYPE
+      Ctrl%Types_to_process(2) = PROB_CLEAR_TYPE
+      Ctrl%Types_to_process(3) = FOG_TYPE
+      Ctrl%Types_to_process(4) = WATER_TYPE
+      Ctrl%Types_to_process(5) = SUPERCOOLED_TYPE
+      Ctrl%Types_to_process(6) = MIXED_TYPE
+      Ctrl%Types_to_process(7) = OPAQUE_ICE_TYPE
+      Ctrl%Types_to_process(8) = CIRRUS_TYPE
+      Ctrl%Types_to_process(9) = OVERLAP_TYPE
+      Ctrl%Types_to_process(10)= PROB_OPAQUE_ICE_TYPE
+   end select
 
    Ctrl%CloudType = 1 ! use this to select which coreg/homog errors to use
 
@@ -807,8 +838,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('CTRL%PROCESS_CLOUDY_ONLY')
          if (parse_string(line, Ctrl%process_cloudy_only) &
                                                        /= 0) call h_p_e(label)
-      case('CTRL%PROCESS_ONE_PHASE_ONLY')
-         if (parse_string(line, Ctrl%process_one_phase_only) &
+      case('CTRL%NTYPES_TO_PROCESS')
+         if (parse_string(line, Ctrl%NTypes_to_process)/= 0) call h_p_e(label)
+      case('CTRL%TYPES_TO_PROCESS')
+         if (parse_string(line, Ctrl%Types_to_process, Ctrl%NTypes_to_process) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%AP')
          if (parse_user_text(line, Ctrl%AP)            /= 0) call h_p_e(label)

@@ -80,6 +80,7 @@ contains
 !
 ! History:
 ! 2015/07/22, AP: Original version.
+! 2015/07/27, AP: Added Pavolonis cloud typing outputs.
 !
 ! Bugs:
 ! None known.

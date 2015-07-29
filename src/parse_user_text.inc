@@ -1,4 +1,5 @@
 integer function PARSE_STRING_NAME_0D(in, out) result(status)
+   use constants_cloud_typing_pavolonis
    use ECP_Constants
 
    implicit none
@@ -103,6 +104,27 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
             out = Bkpl_Read_LUT_1
          case('BKPL_READ_LUT_2')
             out = Bkpl_Read_LUT_2
+         ! Pavolonis cloud typing outputs
+         case('CLEAR_TYPE','CLEAR')
+            out = CLEAR_TYPE
+         case('PROB_CLEAR_TYPE','PROB_CLEAR')
+            out = PROB_CLEAR_TYPE
+         case('FOG_TYPE','FOG')
+            out = FOG_TYPE
+         case('WATER_TYPE','WATER')
+            out = WATER_TYPE
+         case('SUPERCOOLED_TYPE','SUPERCOOLED')
+            out = SUPERCOOLED_TYPE
+         case('MIXED_TYPE','MIXED')
+            out = MIXED_TYPE
+         case('OPAQUE_ICE_TYPE','OPAQUE_ICE')
+            out = OPAQUE_ICE_TYPE
+         case('CIRRUS_TYPE','CIRRUS')
+            out = CIRRUS_TYPE
+         case('OVERLAP_TYPE','OVERLAP')
+            out = OVERLAP_TYPE
+         case('PROB_OPAQUE_ICE_TYPE','PROB_OPAQUE_ICE')
+            out = PROB_OPAQUE_ICE_TYPE
          case default
             status = PARSE_ERR_CONV
          end select

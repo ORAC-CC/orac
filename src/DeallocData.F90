@@ -55,7 +55,7 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
       if (associated(MSI_Data%rho_dd))    deallocate(MSI_Data%rho_dd)
    end if
 
-   if (associated(MSI_Data%CloudFlags))   deallocate(MSI_Data%CloudFlags)
+   if (associated(MSI_Data%Type))         deallocate(MSI_Data%Type)
    if (associated(MSI_Data%cldtype))      deallocate(MSI_Data%cldtype)
    if (associated(MSI_Data%cloudmask))    deallocate(MSI_Data%cloudmask)
    if (associated(MSI_Data%cccot_pre))    deallocate(MSI_Data%cccot_pre)

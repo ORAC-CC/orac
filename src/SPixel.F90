@@ -15,58 +15,58 @@
 !
 ! History:
 ! 2000/11/24, AS: Original version
-! 2000/12/01, AS: Removed underscores from Geom_t variable names and changed 
+! 2000/12/01, AS: Removed underscores from Geom_t variable names and changed
 !    Sunzen to Solzen.
 ! 2000/12/20, AS: Changed to an allocatable structure
-! 2001/01/29, KS: Added transmittance at surface (Tsf), air mas factors SEC_o 
-!    and SEC_v, and transmittance along a slant path Tsf_o and Tsf_v. 
+! 2001/01/29, KS: Added transmittance at surface (Tsf), air mas factors SEC_o
+!    and SEC_v, and transmittance along a slant path Tsf_o and Tsf_v.
 !    Added Xb, X0 and Xn state vectors.
 ! 2001/02/15, KS: Added Ind substructure (numbers and indicies of channels)
-!    Note: These have the same definitions as the corresponding Ctrl variables, 
-!    however they have been modified to account for the geometry (i.e. day, 
+!    Note: These have the same definitions as the corresponding Ctrl variables,
+!    however they have been modified to account for the geometry (i.e. day,
 !    twilight, night). These get calculated in Get_Geometry.
 ! 2001/02/21, AS: Added Tbc to LW structure. Previously missing from model data.
 !    Removed Tsf parameters from the LW structure.
-! 2001/03/06, AS: Change in use of Tsf parameters. RTM%SW and LW now both 
+! 2001/03/06, AS: Change in use of Tsf parameters. RTM%SW and LW now both
 !    contain Tsf, for appropriate channels. RTM overall struct contains Tsf_o and
 !    Tsf_v, for all solar channels (mixed channel values supplied from the LW RTM
 !    data). New quantities Ref_Clear and dRef_Clear_dRS added to RTM struct.
 ! 2001/03/07, AS: New LW value dB_dTs.
-! 2001/04/11, AS: Changes arising from development of Invert_Marquardt. Added 
-!    solar constant f0. Not strictly a SPixel value as it is the same for all 
-!    SPixels in the image, although there may be pixels for which it does not 
-!    apply (night, twilight). Also using named constant for arrays of size 
-!    MaxStateVar. Corrected Sx to 2-d, was previously 1-d. Removed SPixel%Xn 
-!    array (current state vector for inversion). Added index of cloud class for 
+! 2001/04/11, AS: Changes arising from development of Invert_Marquardt. Added
+!    solar constant f0. Not strictly a SPixel value as it is the same for all
+!    SPixels in the image, although there may be pixels for which it does not
+!    apply (night, twilight). Also using named constant for arrays of size
+!    MaxStateVar. Corrected Sx to 2-d, was previously 1-d. Removed SPixel%Xn
+!    array (current state vector for inversion). Added index of cloud class for
 !    first guess state vector: FGCloudClass, also First Guess phase FGPhase, and
-!    current phase and cloud class  SPixel%Phase and SPixel%Class. New arrays 
+!    current phase and cloud class  SPixel%Phase and SPixel%Class. New arrays
 !    for current upper and lower limits on state variables, XLLim and XULim.
 ! 2001/05/17, AS: Added measurement error covariance Sy.
 ! 2001/06/05, AS: Added Xn and Sn to main SPixel structure. New arrays for FG and
 !    AP selection options. New indices MDAD_LW/SW and illumination flag Illum.
-! 2001/07/04, AS: Comments updated.  LastX0 and LastY0 added to Loc structure. 
-!    Used to record the location of the last successfully retrieved solution 
-!    SPixel%XnSav, so that validity of that solution at a given location can be 
-!    checked. XnSav and SnSav introduced. These hold the last "good" state 
+! 2001/07/04, AS: Comments updated.  LastX0 and LastY0 added to Loc structure.
+!    Used to record the location of the last successfully retrieved solution
+!    SPixel%XnSav, so that validity of that solution at a given location can be
+!    checked. XnSav and SnSav introduced. These hold the last "good" state
 !    vector while Xn and Sn hold the most recent.
 ! 2001/08/03, AS: Updated Loc structure to include YSeg0, YSegC, YSegn, for
 !    referencing pixels within a data segment as opposed to the whole image.
 !    **************** ECV work starts here *************************************
 ! 2001/02/23, AS: Re-applying some changes from 2001/2.
-! 2002/08/14, CP: Add in a new variable that tells you about the cloud 
+! 2002/08/14, CP: Add in a new variable that tells you about the cloud
 !    characteristics around the pixel of concern
 ! 2002/12/13, CP: Add in the geopotential height )
-! 2011/02/23, AS: Cloud flags converted to real, rather than byte, to match 
+! 2011/02/23, AS: Cloud flags converted to real, rather than byte, to match
 !    current ORAC data.
 ! 2011/03/23, AS: Removal of super-pixel averaging. No need to allocate mask and
-!    cloud or surface flags to Ctrl%Resoln%Space. Assume 1 pixel processed at a 
-!    time so only 1 flag needed. Removed Fracnext (was used to set a priori / 
-!    first guess error on fraction). Removed redundant struct members YSegc, 
+!    cloud or surface flags to Ctrl%Resoln%Space. Assume 1 pixel processed at a
+!    time so only 1 flag needed. Removed Fracnext (was used to set a priori /
+!    first guess error on fraction). Removed redundant struct members YSegc,
 !    YSegn. Re-size FG array, phase removed (follow-up from phase change removal)
-! 2011/04/08, AS: Phase change removal. On checking code in GetX and 
+! 2011/04/08, AS: Phase change removal. On checking code in GetX and
 !    InvertMarquardt, SPixel%Phase, Class and FGPhase are no longer required.
-! 2011/04/20, AS:  Extension to handle multiple instrument views. The viewing 
-!    geometry becomes a set of arrays, e.g. 1 value of sat. zen angle per view. 
+! 2011/04/20, AS:  Extension to handle multiple instrument views. The viewing
+!    geometry becomes a set of arrays, e.g. 1 value of sat. zen angle per view.
 !    New to Ind struct: Nviews and View_Idx.
 ! 2012/10/07, CP: Added in CWP variable and CWP error
 ! 2012/12/08, MJ: Added data types and structures for netcdf output.
@@ -84,10 +84,10 @@
 ! 2015/01/13, AP: Adding YThermal, YSolar. Removing First:Last indexes
 ! 2015/01/18, GM: Put all related Get*() subroutines and
 !    check_value() subroutines into this module.
-! 2015/01/19, GM: Put XAUX.F90, XMDAD.F90, and XSDAD.F90 
+! 2015/01/19, GM: Put XAUX.F90, XMDAD.F90, and XSDAD.F90
 !    into this module.
 ! 2015/01/30, AP: Remove redundant fields.
-! 2015/02/04, GM: Changes related to the new missing channel, illumination, and 
+! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
 ! 2015/03/02, AP: Remove Ctrl argument from
 !    check_value routines.
@@ -230,6 +230,7 @@ module SPixel_def
                                           ! parameters
       type(SPixel_Geom_t) :: Geom         ! Super-pixel geometry values
       type(Loc_t)         :: Loc          ! Super-pixel location info
+      integer(byte)       :: Type         ! Particle type in pixel
       type(Cloud_t)       :: Cloud        ! Super-pixel cloud flag info
       type(Surface_t)     :: Surface      ! Super-pixel surface flag info
       type(SPixel_Ind_t)  :: Ind          ! Numbers and indices of channels
@@ -241,9 +242,9 @@ module SPixel_def
       integer             :: AP(MaxStateVar)
                                           ! Methods for setting a priori state
                                           ! vector, matched to SPixel conditions.
-      real, pointer       :: Ym(:)        ! Measurements (** Allocated in
+      real,    pointer    :: Ym(:)        ! Measurements (** Allocated in
                                           ! Get_Measurements **)
-      real, pointer       :: Sy(:,:)      ! Measurement error covariance
+      real,    pointer    :: Sy(:,:)      ! Measurement error covariance
                                           ! (alloc in Get_Measurements).
       integer, pointer    :: ViewIdx(:)   ! View index for each active measurement
       integer             :: Nx           ! Number of active state variables
@@ -282,7 +283,7 @@ module SPixel_def
                                           ! Error values for XnSav.
       integer             :: QC           ! Quality control indicator
       real                :: CWP          ! Cloud water path
-      real                :: CWP_ERROR    ! Cloud water path error
+      real                :: CWP_Error    ! Cloud water path error
       integer             :: Mask         ! Averaging mask
       integer             :: NMask        ! Number of 'good' pixels in mask
       integer             :: NAverage     ! Number of pixels used to calculate
@@ -293,7 +294,7 @@ module SPixel_def
       real, pointer       :: Rs2(:,:)     ! Super pixel surface reflectance
       real, pointer       :: SRs2(:,:,:)  ! Super pixel surface reflectance
                                           ! covariances
-      real, pointer       :: f0(:)        ! Solar constant
+      real,    pointer    :: f0(:)        ! Solar constant
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
                                           ! Map SPixel measurement index space to
                                           !     CRTL   measurement index space
