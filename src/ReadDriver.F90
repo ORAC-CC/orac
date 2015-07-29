@@ -91,6 +91,7 @@
 !    used and have been rotting.
 ! 2015/07/22, AP: Use parse_user_text for arguments which set variables that
 !    are set using ECP_Constants parameters within the code.
+! 2015/07/29, GM: Removed unused ash CloudClasses.
 !
 ! $Id$
 !
@@ -486,30 +487,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%X0(IPc) = 1000.
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
-   case('MAR')
-      Ctrl%XB(ITau) = 0.1
-      Ctrl%XB(IRe) = 1.8
-      Ctrl%XB(IPc) = 1000.
-      Ctrl%XB(IFr) = 1.
-      Ctrl%XB(ITs) = 300.
-
-      Ctrl%X0(ITau) = 0.1
-      Ctrl%X0(IRe) = 1.8
-      Ctrl%X0(IPc) = 1000.
-      Ctrl%X0(IFr) = 1.
-      Ctrl%X0(ITs) = 300.
-   case('DES')
-      Ctrl%XB(ITau) = 0.0
-      Ctrl%XB(IRe) = 1.4
-      Ctrl%XB(IPc) = 1000.
-      Ctrl%XB(IFr) = 1.
-      Ctrl%XB(ITs) = 300.
-
-      Ctrl%X0(ITau) = 0.0
-      Ctrl%X0(IRe) = 1.4
-      Ctrl%X0(IPc) = 1000.
-      Ctrl%X0(IFr) = 1.
-      Ctrl%X0(ITs) = 300.
    case default
       write(*,*) 'ERROR: ReadDriver(): Unsupported cloud/aerosol class: ', &
                  trim(Ctrl%CloudClass)
@@ -518,9 +495,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
 
    ! Set default a priori error covariance
-   if ((trim(Ctrl%CloudClass) .eq. 'EYJ' ) .or. &
-       (trim(Ctrl%CloudClass) .eq. 'MAR' ) .or. &
-       (trim(Ctrl%CloudClass) .eq. 'DES' ) ) then
+   if ((trim(Ctrl%CloudClass) .eq. 'EYJ')) then
       Ctrl%Sx(ITau) = 1.0e+01 ! optical depth
       Ctrl%Sx(IRe) = 1.0e-01 ! effective radii
       Ctrl%Sx(IPc) = 1.0e+08 ! ctp
@@ -646,11 +621,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%XScale(IFr) = 1000.0
    Ctrl%Invpar%XScale(ITs) = 1.0
 
+   ! Lower limit on state
    Ctrl%Invpar%XLLim(ITau)  = -3.0
-
-   if ((trim(Ctrl%CloudClass) .eq. 'EYJ' ) .or. &
-       (trim(Ctrl%CloudClass) .eq. 'MAR' ) .or. &
-       (trim(Ctrl%CloudClass) .eq. 'DES' ) ) then
+   if ((trim(Ctrl%CloudClass) .eq. 'EYJ') then
       Ctrl%Invpar%XLLim(IRe) = 0.01
    else
       Ctrl%Invpar%XLLim(IRe) = 0.1
@@ -659,18 +632,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%XLLim(IFr)  = 1.0
    Ctrl%Invpar%XLLim(ITs)  = 250.0
 
-   ! Upper limit on state Ctrl.Invpar.XULim
+   ! Upper limit on state
    Ctrl%Invpar%XULim(ITau) = 2.408
    if (trim(Ctrl%CloudClass) .eq. 'WAT') then
       Ctrl%Invpar%XULim(IRe) = 35.0
    else if (trim(Ctrl%CloudClass) .eq. 'ICE') then
       Ctrl%Invpar%XULim(IRe) = 100.0
-   else if ((trim(Ctrl%CloudClass) .eq. 'EYJ' ) .or. &
-            (trim(Ctrl%CloudClass) .eq. 'MAR' ) .or. &
-            (trim(Ctrl%CloudClass) .eq. 'DES' ) ) then
+   else if ((trim(Ctrl%CloudClass) .eq. 'EYJ')) then
       Ctrl%Invpar%XULim(IRe) = 20.0
    end if
-
    Ctrl%Invpar%XULim(IPc) = 1200.0
    Ctrl%Invpar%XULim(IFr) = 1.0
    Ctrl%Invpar%XULim(ITs) = 320.0
