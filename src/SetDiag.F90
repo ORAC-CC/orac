@@ -40,8 +40,6 @@
 ! Diag          struct     Both         Structure containing diagnostic values to
 !                                       be set. Error arrays St and Ss are
 !                                       already set by Invert_Marquardt.
-! status        int        Out          Standard error/status value. Not
-!                                       currently set.
 !
 ! History:
 ! 2001/07/05, AS: Original version
@@ -60,6 +58,7 @@
 ! 2012/08/10, CP: Added in measurement array indices
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/05/25, GM: Got rid of flags Diagl and removed obvious comments.
+! 2015/07/28, AP: Remove status argument (as routine cannot feasibly fail).
 !
 ! $Id$
 !
@@ -68,7 +67,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
-                    NPhaseChanges, Y, Sy, Diag, status)
+                    NPhaseChanges, Y, Sy, Diag)
 
    use Ctrl_def
    use ECP_Constants
@@ -92,14 +91,11 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
    real,           intent(in)    :: Sy(:,:)       ! Error covariance in
                                                   ! measurements
    type(Diag_t),   intent(inout) :: Diag          ! Diagnostic structure
-   integer,        intent(out)   :: status
 
    ! Local variables
 
    integer :: m
 
-
-   status = 0
 
    if (convergence) then
       if (J > Ctrl%QC%MaxJ) then

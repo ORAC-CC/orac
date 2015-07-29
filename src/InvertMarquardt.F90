@@ -85,9 +85,7 @@
 !
 ! Note on error handling: checking is done after each subroutine call. Errors
 ! in the inversion should be treated as fatal for the super-pixel rather than
-! the program as a whole. Local variable stat is used instead of status for
-! flagging such errors. Status is used to flag serious errors such as
-! breakpoint file open failure.
+! the program as a whole.
 !
 ! N.B. the value returned by routines called from this routine is held in
 ! stat rather than status. It is assumed that these routines only flag
@@ -188,6 +186,8 @@
 ! 2015/01/09, AP: Patch memory leak with cloud_albedo.
 ! 2015/07/28, AP: Add multiple of unit matrix with add_unit function. Put
 !    calculation of Hessian into it's own routine.
+! 2015/07/28, AP: Replace if status blocks with GO TO 99 to terminate processing.
+!    Reorganise main iteration loop to minimise code repetition.
 !
 ! $Id$
 !
@@ -195,7 +195,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, status)
+subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    use Cholesky
    use Ctrl_def
@@ -217,13 +217,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
    type(RTM_Pc_t),   intent(inout) :: RTM_Pc
    type(Diag_t),     intent(out)   :: Diag
-   integer,          intent(out)   :: status
+   integer,          intent(out)   :: stat
 
    ! Local variable declarations
 
    integer :: m, l                ! counter for short/implied do loops
                                   ! (can't use J: it's the cost function)
-   integer :: stat                ! Local error status flag
    real    :: Y(SPixel%Ind%Ny)    ! TOA reflectances, radiances etc for partly-
                                   ! cloudy conditions. Returned by FM
    real    :: dY_dX(SPixel%Ind%Ny,MaxStateVar+1)
@@ -292,7 +291,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    ! Initialise
    stat      = 0
-   status    = 0
 
    Y         = 0.
    dY_dX     = 0.
@@ -309,68 +307,60 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
 
    ! Set state variable limits for initial phase
    call Set_Limits(Ctrl, SPixel, stat)
+   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
 
    ! Dynamically set upper limit of cloud top pressure to lowest profile
    ! pressure of current pixel.
    SPixel%XULim(iPc)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
 
-   ! Calculate measurements at first-guess state vector X0 (SPixel%X0. X0
-   ! should be provided un-scaled. Only used in the FM call and Xdiff(?)
-   ! AS Mar 2011 assume only 1 cloud class in use so SAD_LUT dimension is 1
-   if (stat == 0) &
-      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, &
-              cloud_albedo, stat)
+   ! Invert a priori covariance matrix
+   error_matrix = SPixel%Sx(SPixel%X, SPixel%X)
+   call Invert_Cholesky(error_matrix, SxInv, SPixel%Nx, stat)
+   if (stat /= 0) then
+#ifdef DEBUG
+      write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
+#endif
+      GO TO 99 ! Terminate processing this pixel
+   end if
 
-   Diag%Y0(1:SPixel%Ind%Ny)=Y
+   ! ************ START EVALUATING FORWARD MODEL ************
+   ! Evaluate forward model for the first guess and initialise the various
+   ! arrays. X should be unscaled when passed into FM.
+   call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, &
+           cloud_albedo, stat)
+   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+
+   ! Store measurement first guess
+   Diag%Y0(1:SPixel%Ind%Ny) = Y
 
    ! Convert dY_dX to Kx and Kbj.
-   if (stat == 0) &
-      call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
+   call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
+   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
 
-   ! Set covariance matrix Sy and calculate the inverses SyInv and SxInv,
-   ! required for initial cost calculation. (Sx is already stored in SPixel).
-   ! Always call Set_Kx before Set_Sy. Needs Kbj.
-   if (stat == 0) &
-      call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
+   ! Set covariance matrix Sy. Always call Set_Kx before Set_Sy. Needs Kbj.
+   call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
+   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
 
    ! Calculate SyInv and SxInv
-   if (stat == 0) &
-      call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
+   call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
+   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
 
-   if (stat == 0) then
-      error_matrix=SPixel%Sx(SPixel%X, SPixel%X)
-
-      call Invert_Cholesky(error_matrix, SxInv, SPixel%Nx, stat)
-#ifdef DEBUG
-      if (stat /= 0) &
-         write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
-#endif
-   end if
-
-   ! Calculate cost at X0. Requires inverse of Sx and Sy.
-   !
-   ! Calculate Xdiff, the difference between the current state vector X and
+   ! Xdiff, the difference between the current state vector X and
    ! the a priori state vector SPixel%Xb for the active state variables.
-   !
+   ! Requires scaling to produce a properly balanced matrix
+   Xdiff = (SPixel%Xb(SPixel%X) - SPixel%X0(SPixel%X)) &
+           * Ctrl%Invpar%XScale(SPixel%X)
+
    ! Calculate Ydiff, the difference between the measurements and calculated
-   ! values for X. Xdiff requires scaling since X is in "natural" units for use
-   ! by FM.
-   !
-   ! Ja is 0 if X0 is the a priori (not generally true).
-   !
-   ! Xb is assumed to be full-length and un-scaled.
-   ydiff=0.0
-   if (stat == 0) then
-      Xdiff = (SPixel%Xb(SPixel%X) - SPixel%X0(SPixel%X)) &
-              * Ctrl%Invpar%XScale(SPixel%X)
+   ! values for X. 
+   Ydiff = SPixel%Ym - Y
+   Diag%YmFit(1:SPixel%Ind%Ny) = -Ydiff
 
-      Ydiff(1:SPixel%Ind%Ny) = SPixel%Ym(1:SPixel%Ind%Ny) - Y(1:SPixel%Ind%Ny)
-      Diag%YmFit(1:SPixel%Ind%NY) = -Ydiff
-
-      Ja = dot_product(Xdiff, matmul(SxInv, Xdiff))
-      Jm = dot_product(Ydiff, matmul(SyInv, Ydiff))
-      J0 = Jm + Ja
-   end if
+   ! Calculate cost at X0.
+   Ja = dot_product(Xdiff, matmul(SxInv, Xdiff))
+   Jm = dot_product(Ydiff, matmul(SyInv, Ydiff))
+   J0 = Jm + Ja
+   ! ************* END EVALUATING FORWARD MODEL *************
 
    ! Initial breakpoint output (Open breakpoint file if required). Note the
    ! breakpoint file must be closed before any call to a routine that will try
@@ -419,9 +409,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    end if
 #endif
 
-   ! Derivatives of J0 are calculated inside the do loop (same code used for
-   ! phase change)
-
    ! Set Xn = X0 for 1st iteration
    SPixel%Xn = SPixel%X0
 
@@ -433,230 +420,112 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    convergence   = .false.
    phase_change  = .false.
    NPhaseChanges = 0
-
    iter = 1
 
-   do ! On phase change, re-start from here
-
-      if (status /= 0 .or. stat /= 0) exit
-
-      ! Calculate derivatives of starting cost (required for setting Marquardt
-      ! parameters). Needs Kx, the scaled version of dY_dX.
-
-      ! Calculate product of transpose(Kx) and inverse of Sy (used twice below).
-      KxT_SyI = matmul(transpose(Kx), SyInv)
-
-      ! The ATBD shows the 2nd term of dJ_dX (or J') as SxInv * Xdiff. The code
-      ! here can either have matmul(SxInv, Xdiff), which is effectively SxInv *
-      ! transpose(Xdiff), or matmul(Xdiff, SxInv). It looks impossible to
-      ! reproduce the calculation in the ATBD.
-      !
-      ! Although it's generally true that matrix product AB != BA, if A is 1-d
-      ! and B is square and symmetric, AB = transpose(BA) and as far as Fortran
-      ! is concerned the transpose of a 1-d array is no different from the
-      ! original array (at least when adding).
-      dJ_dX   = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
-
-      d2J_dX2 = matmul(KxT_SyI, Kx) + SxInv
-
-      ! Set Marquardt parameters (initial weighting favours steepest descent)
-      ! Unit matrix and inverse function required.
+   ! Calculate matrix operators
+   ! [matmul(SxInv, Xdiff) is effectively SxInv * transpose(Xdiff)]
+   KxT_SyI = matmul(transpose(Kx), SyInv)
+   dJ_dX   = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
+   d2J_dX2 = matmul(KxT_SyI, Kx) + SxInv
 
    ! Set Marquardt parameter (initial weighting favours steepest descent) with
    ! average of leading diagonal of Hessian d2J_dX2.
    alpha = average_hessian(SPixel%Nx, d2J_dX2, Ctrl%Invpar%MqStart)
-      ! use alpha and d2J_dX2 to set delta_X. Solve_Cholesky is used to find
+
+   ! ************* START MAIN ITERATION LOOP ************* 
+   do
+      ! Use alpha and d2J_dX2 to set delta_X. Solve_Cholesky is used to find
       ! delta_X. The equation from the ATBD is
-      !
-      ! dX = -(J'' + alphaI)^-1 * J' or delta_X = - (inv(J2plus_A) * dJ_dX).
-      !
+      !    dX = -(J'' + alphaI)^-1 * J' or delta_X = - (inv(J2plus_A) * dJ_dX).
       ! Multiplying through by J2_plusA we get:
-      !
-      ! J2_plusA * delta_X = -dJ_dX,
-      !
+      !    J2_plusA * delta_X = -dJ_dX,
       ! which we can solve for delta_X using Solve_Cholesky.
       call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
-
       call Solve_Cholesky(J2plus_A, dJ_dX, delta_X, SPixel%Nx, stat)
+      if (stat /= 0) then
 #ifdef DEBUG
-      if (stat /= 0) &
          write(*, *) 'ERROR: Invert_Marquardt(): Error in Solve_Cholesky'
 #endif
+         GO TO 99 ! Terminate processing this pixel
+      end if
       ! De-scale delta_X so that the X passed to FM can be kept un-scaled
       delta_X = delta_X / Ctrl%Invpar%XScale(SPixel%X)
 
-      Diag%Y0(1:SPixel%Ind%Ny) = Y(1:SPixel%Ind%Ny)
+      ! Apply step delta_x to the active state variables. Assumes Xn and
+      ! delta_X are both unscaled.
+      Xplus_dX(SPixel%X)  = SPixel%Xn(SPixel%X) + delta_X
+      Xplus_dX(SPixel%XI) = SPixel%Xn(SPixel%XI)
 
-      ! Write starting parameter breakpoints and close breakpoint file so that
-      ! FM can write to it.
-#ifdef BKP
-      if (Ctrl%Bkpl >= BkpL_InvertMarquardt_2) then
-         open(unit=bkp_lun,      &
-              file=Ctrl%FID%Bkp, &
-              status='old',      &
-              position='append', &
-              iostat=ios)
-         if (ios /= 0) then
-            write(*,*) 'ERROR: Invert_Marquardt(): Error opening breakpoint file'
-            stop BkpFileOpenErr
-         else
-            write(bkp_lun,'(a)')'Invert_Marquardt:'
-            write(bkp_lun,'(2x,a,11(f9.3,1x))') 'Y:            ',Y
+      ! Check bounds for active state variables - does delta_X take any state
+      ! variable outside it's range? (If so, freeze it at the boundary). Also
+      ! check for possible phase change.
+      call Check_Limits(Xplus_dX, SPixel, stat)
+      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
 
-            if (Ctrl%Bkpl >= BkpL_InvertMarquardt_3) then
-               write(bkp_lun,'(/,2x,a)')'Sy:'
-               do m=1,SPixel%Ind%Ny
-                  write(bkp_lun,'(2x,11(e11.3,1x))')Sy(m,:)
-               end do
-
-               write(bkp_lun,'(/,2x,a)') &
-                     'Kx (columns are channels, rows active state variables)'
-               do m=1,SPixel%Nx
-                  write(bkp_lun,'(2x,11(e11.4,1x))') KX(:,m)
-               end do
-
-               if (Ctrl%Bkpl >= BkpL_InvertMarquardt_4) then
-                  write(bkp_lun,'(/,2x,a,5(e11.3,1x))')  'Xdiff:        ', &
-                        Xdiff / Ctrl%Invpar%XScale(SPixel%X)
-
-                  write(bkp_lun,'(2x,a,11(e11.3,1x))')   'Ydiff:        ',Ydiff
-               end if
-
-               write(bkp_lun,'(/,2x,a)') 'dJ_dX:        '
-               write(bkp_lun,'(2x,5(e11.4,1x))')dJ_dX
-
-               write(bkp_lun,'(/,2x,a)')'d2J_dX2:'
-               do m=1,SPixel%Nx
-                  write(bkp_lun,'(2x,5(e11.4,1x))') d2J_dX2(m,:)
-               end do
-               write(bkp_lun,*)
-               write(bkp_lun,'(2x,a,e11.3)')   'alpha:        ', alpha
-            end if
-
-            write(bkp_lun,'(2x,a,3(f9.3,1x))')  'Jm, Ja, J0 /Ny', &
-                  Jm/SPixel%Ind%Ny, Ja/SPixel%Ind%Ny, J0/SPixel%Ind%Ny
-            write(bkp_lun,'(2x,a,5(f9.3,1x))')  'delta_X:      ',delta_X
-
-            close(unit=bkp_lun)
-         end if
+      ! ************ START EVALUATE FORWARD MODEL ************
+      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
+              dY_dX, cloud_albedo, stat)
+      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+      if (SPixel%Ind%NSolar > 0) then
+         Diag%cloud_albedo(1:SPixel%Ind%NSolar) = cloud_albedo
+      else
+         Diag%cloud_albedo = 0
       end if
-#endif
 
-      ! Main iteration loop
-      !
-      ! The iteration counter is not re-set on phase change. A phase change
-      ! counter is also used to avoid danger of oscillation between phases.
-      do
-
-         ! N.B. Jumps out of the loop if convergence or phase change occurs, or
-         ! if Max no. of iterations is reached, or if status not zero
-         if (status /= 0 .or. stat /= 0) exit
-
-         ! Apply step delta_x to the active state variables. Assumes Xn and
-         ! delta_X are both unscaled.
-         Xplus_dX(SPixel%X)  = SPixel%Xn(SPixel%X) + delta_X
-
-         Xplus_dX(SPixel%XI) = SPixel%Xn(SPixel%XI)
-
-         ! Check bounds for active state variables - does delta_X take any state
-         ! variable outside it's range? (If so, freeze it at the boundary). Also
-         ! check for possible phase change.
-         call Check_Limits(Xplus_dX, SPixel, stat)
-
-         ! Calculate Y for Xn + delta_X. Xplus_dX is currently un-scaled.
-         if (stat == 0) &
-            call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
-                    dY_dX, cloud_albedo, stat)
-         if (SPixel%Ind%NSolar > 0) then
-            Diag%cloud_albedo(1:SPixel%Ind%NSolar) = &
-                 cloud_albedo(1:SPixel%Ind%NSolar)
-         else
-            Diag%cloud_albedo = 0
-         end if
-
-         ! Set new Kx, Kbj, Sy and SyInv
-         if (stat == 0) call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
-         if (stat == 0) call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
-         if (stat == 0) then
-            call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
-            if (stat /= 0) then
+      ! Set new Kx, Kbj, Sy and SyInv
+      call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
+      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+      call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
+      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+      call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
+      if (stat /= 0) then
 #ifdef DEBUG
-               write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
+         write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
-            else
-               ! Calculate new cost, J.
-               Xdiff = (SPixel%Xb(SPixel%X) - Xplus_dX(SPixel%X)) &
-                       * Ctrl%Invpar%XScale(SPixel%X)
+         GO TO 99 ! Terminate processing this pixel
+      end if
 
-               Ydiff = SPixel%Ym - Y
-               Diag%YmFit(1:SPixel%Ind%NY) = -Ydiff
+      ! Calculate new cost, J.
+      Xdiff = (SPixel%Xb(SPixel%X) - Xplus_dX(SPixel%X)) &
+              * Ctrl%Invpar%XScale(SPixel%X)
+      Ydiff = SPixel%Ym - Y
+      Diag%YmFit(1:SPixel%Ind%NY) = -Ydiff
 
-               Ja = dot_product(Xdiff, matmul(SxInv, Xdiff))
-               Jm = dot_product(Ydiff, matmul(SyInv, Ydiff))
-               J  = Jm + Ja
+      Ja = dot_product(Xdiff, matmul(SxInv, Xdiff))
+      Jm = dot_product(Ydiff, matmul(SyInv, Ydiff))
+      J  = Jm + Ja
+      delta_J = J-J0
+      ! ************* END EVALUATE FORWARD MODEL *************
 
-               ! Check J vs previous value. Lower value means progress:
-               ! "accept" the step delta_X and reset the Marquardt values.
+      if (J <= J0) then
+         ! Improvement in cost. Store current solution
+         SPixel%Xn = Xplus_dX
 
-               delta_J = J-J0
-            end if
-         end if
+         ! Recalculate matrix operators
+         KxT_SyI = matmul(transpose(Kx), SyInv)
+         d2J_dX2 = matmul(KxT_SyI, Kx) + SxInv
 
-         if (stat == 0 .and. J <= J0) then
-            ! Improvement in cost. Add delta_X to Xn
-            SPixel%Xn = Xplus_dX
-
-            ! Calculate the Hessian (J'') as this is required for error analysis
-            ! if convergence is reached or for setting new delta_X.
-            KxT_SyI   = matmul(transpose(Kx), SyInv)
-            d2J_dX2   = matmul(KxT_SyI, Kx) + SxInv
-
-            ! Check for convergence.
-            ! Set SPixel%Xn: value is the solution X
-            ! Save the pixel location if convergence occurs, for SDAD first
-            ! guess/a priori setting.
-            if (abs(delta_J) <= Ccj_Ny) then
-               convergence = .true.
-            else
-               ! Decrease steepest descent part for next iteration
-               alpha = alpha / Ctrl%InvPar%MqStep
-
-               ! Save new J as J0 for checking next time round
-               J0 = J
-
-               ! Calculate values required to set the new step delta_X based on
-               ! derivatives of J (delta_X itself is set after this "if")
-               dJ_dX      = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
-               call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
-               call Solve_Cholesky(J2plus_A, dJ_dX, delta_X, SPixel%Nx, stat)
-            end if
+         ! Check for convergence.
+         if (abs(delta_J) <= Ccj_Ny) then
+            convergence = .true.
          else
-            ! No improvement in cost
+            ! Not converged so decrease steepest descent part for next iteration
+            alpha = alpha / Ctrl%InvPar%MqStep
 
-            ! Increase steepest descent part for next iteration and set values
-            ! required for setting new deltaX using old cost derivatives.
-            ! "if" inserted to catch (academic?) case of overflow if alpha gets huge.
-            if (alpha .lt. huge_value) then
-               alpha = alpha * Ctrl%InvPar%MqStep
-            end if
-            call add_unit(SPixel%Nx, d2J_dX2, alpha, J2plus_A)
-            call Solve_Cholesky(J2plus_A, dJ_dX, delta_X, SPixel%Nx, stat)
+            J0 = J
+            dJ_dX   = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
          end if
+      else
+         ! No improvement in cost. Reject solution
 
-         if (convergence) exit ! Drops out of the iteration do loop
+         ! Increase steepest descent part for next iteration.
+         ! "if" inserted to catch (academic?) case of overflow if alpha gets huge
+         if (alpha .lt. huge_value) alpha = alpha * Ctrl%InvPar%MqStep
+      end if
 
-         ! Warn of errors in Solve_Cholesky (assumes no routine that can
-         ! overwrite status has been called since).
-#ifdef DEBUG
-         if (stat /= 0) &
-            write(*, *) 'ERROR: Invert_Marquardt(): Error in Solve_Cholesky'
-#endif
-         ! Set and de-scale the new delta_X
-         if (stat == 0) delta_X = delta_X / Ctrl%Invpar%XScale(SPixel%X)
-
-         ! Main iteration loop breakpoint outputs. The file is opened and closed
-         ! each time since (a) FM might also write to it and (b) the loop may
-         ! exit early if convergence is reached, leaving the file state uncertain.
+      ! Main iteration loop breakpoint outputs. The file is opened and closed
+      ! each time since (a) FM might also write to it and (b) the loop may
+      ! exit early if convergence is reached, leaving the file state uncertain.
 #ifdef BKP
          if (Ctrl%Bkpl >= Bkpl_InvertMarquardt_1) then
             call Find_Lun(bkp_lun)
@@ -709,39 +578,22 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
             close(unit=bkp_lun)
          end if
 #endif
-         ! Check whether the maximum iteration has been passed.
-         if (iter == Ctrl%Invpar%MaxIter) exit
 
-         ! Increment iteration counter.
-         iter = iter + 1
-      end do ! End of "main iteration" loop
+      ! Check whether the maximum iterations has been passed.
+      if (iter == Ctrl%Invpar%MaxIter .or. convergence) exit
+      iter = iter + 1
+   end do !  ************* END MAIN ITERATION LOOP *************
 
-      ! Check for convergence
-      if (convergence) exit
-
-      ! Check for too many iterations
-      if (iter == Ctrl%Invpar%MaxIter) exit
-
-   end do ! End of "phase change" do loop
-
-
-   ! End of Marquardt inversion.
 
    ! Error analysis:
-   ! Error values are required for setting SPixel%Sn (used for SDAD FG/AP
-   ! setting) and for setting diagnostics St and Ss and QCFlag (if Diag flags
-   ! set). St is the inverse Hessian (d2J_dX2) for the active state variables
-   ! d2J_dX2 is already sized to match the number of active variables.
-
-
-   if (stat == 0) then
-      ! State expected error from measurements=Diag%St(1:SPixel%Nx, 1:SPixel%Nx))
-      call Invert_Cholesky(d2J_dX2, St_temp, SPixel%Nx, stat)
-      Diag%St(1:SPixel%Nx, 1:SPixel%Nx) = St_temp
+   ! State expected error from measurements (inverse of Hessian)
+   call Invert_Cholesky(d2J_dX2, St_temp, SPixel%Nx, stat)
+   Diag%St(1:SPixel%Nx, 1:SPixel%Nx) = St_temp
+   if (stat /= 0) then
 #ifdef DEBUG
-      if (stat /= 0) &
-         write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
+      write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
+      GO TO 99 ! Terminate processing this pixel
    end if
 
    ! Ss is the state expected error from model parameter noise (inactive state
@@ -757,96 +609,92 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, statu
    ! use active/inactive sections. Initialise the whole array to 0 so that
    ! the terms for correlation between the Rs/XI terms are 0.
 
-   if (stat == 0) then
-      if (SPixel%NxI > 0 .or. Ctrl%Eqmpn%Rs == 0) then
-         Dy = matmul(Diag%St(1:SPixel%Nx,1:SPixel%Nx), KxT_SyI)
+   if (SPixel%NxI > 0 .or. Ctrl%EqMPN%Rs == 0) then
+      Dy = matmul(St_temp, KxT_SyI) ! The gain matrix
 
-         ! Kx isn't actually set for inactive vars so we use a scaled dY_dX).
-         do m=1,SPixel%NxI
-            Kb(:,m) = dY_dX(:,SPixel%XI(m)) / Ctrl%Invpar%XScale(SPixel%XI(m))
-         end do
-
-         Sb(1:SPixel%NxI,1:SPixel%NxI) = SPixel%Sx(SPixel%XI,SPixel%XI)
-
-         if (Ctrl%Eqmpn%Rs == 0 .and. SPixel%Ind%NSolar > 0) then
-            ! Add Rs terms to Kb and Sb. Use the full Dy_Kb.
-            Kb(:, SPixel%NxI+1:SPixel%NxI+SPixel%Ind%NSolar) = Kbj
-
-            Dy_Kb   = matmul(Dy, Kb)
-
-            Sb(SPixel%NxI+1:, SPixel%NxI+1:) = SPixel%SRs
-
-            Diag%Ss = matmul(Dy_Kb, matmul(Sb, transpose(Dy_Kb)) )
-         else
-            ! No Rs terms: don't use all of Dy_Kb this is a thermal only
-            ! retrieval
-            Dy_Kb(:,1:SPixel%NxI) = matmul(Dy, Kb(:,1:SPixel%NxI))
-            Diag%Ss(1:SPixel%Nx,1:SPixel%Nx) = matmul(Dy_Kb(:,1:SPixel%NxI), &
-               matmul(Sb(1:SPixel%NxI,1:SPixel%NxI), transpose(Dy_Kb(:,1:SPixel%NxI))) )
-         end if
-      else
-         ! There are no inactive state vars and Eqmpn has been used for Rs, i.e.
-         ! no info to set Ss. Needs some values.
-         Diag%Ss = 0
-      end if
-
-      ! Assign St+Ss to the parts of SPixel%Sn where state vars are active. For
-      ! inactive variables, Sn is set to the a priori error (squared). De-scale
-      ! (by XScale squared, i.e. the product of the XScale factors for the two
-      ! state variables contributing to each element).
-      SPixel%Sn = 0.0
-      if (SPixel%Nx > 0 .and. SPixel%NxI == 0 ) then
-         SPixel%Sn(SPixel%X, SPixel%X) = &
-            Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
-      end if
-
-      if (SPixel%NxI > 0) then
-         SPixel%Sn(SPixel%XI, SPixel%XI) = SPixel%Sx(SPixel%XI, SPixel%XI)
-
-         SPixel%Sn(SPixel%X, SPixel%X)   = Diag%St(1:SPixel%Nx, 1:SPixel%Nx) + &
-                                           Diag%Ss(1:SPixel%Nx, 1:SPixel%Nx)
-      end if
-
-      do m = 1, MaxStateVar
-         do l = 1, MaxStateVar
-            SPixel%Sn(l,m) = SPixel%Sn(l,m) / &
-                 (Ctrl%Invpar%XScale(l) * Ctrl%Invpar%XScale(m))
-         end do
-         if (SPixel%Sn(m,m) < 0) then
-            write(*, fmt='(a,i1,a,i1,a,e11.4,a,2(i4,1x))') &
-                 'WARNING: Invert_Marquardt(): Negative error value in Sn(', m, &
-                 ',', m, '), value: ', SPixel%Sn(m,m), ' location x,y ', &
-                 SPixel%Loc%X0, SPixel%Loc%Y0
-            SPixel%Sn(m,m) = 0.0
-         end if
+      ! Kx isn't actually set for inactive vars so we use a scaled dY_dX.
+      do m=1,SPixel%NxI
+         Kb(:,m) = dY_dX(:,SPixel%XI(m)) / Ctrl%Invpar%XScale(SPixel%XI(m))
       end do
-   else     ! stat is non-zero, inversion failed
+
+      Sb(1:SPixel%NxI,1:SPixel%NxI) = SPixel%Sx(SPixel%XI,SPixel%XI)
+
+      if (Ctrl%Eqmpn%Rs == 0 .and. SPixel%Ind%NSolar > 0) then
+         ! NON-FUNCTIONAL as Kbj not set in these conditions. Repaired soon.
+         ! Add Rs terms to Kb and Sb. Use the full Dy_Kb.
+         Kb(:, SPixel%NxI+1:SPixel%NxI+SPixel%Ind%NSolar) = Kbj
+
+         Dy_Kb   = matmul(Dy, Kb)
+
+         Sb(SPixel%NxI+1:, SPixel%NxI+1:) = SPixel%SRs
+
+         Diag%Ss = matmul(Dy_Kb, matmul(Sb, transpose(Dy_Kb)) )
+      else
+         ! No Rs terms: don't use all of Dy_Kb this is a thermal only retrieval
+         Dy_Kb(:,1:SPixel%NxI) = matmul(Dy, Kb(:,1:SPixel%NxI))
+         Diag%Ss(1:SPixel%Nx,1:SPixel%Nx) = matmul(Dy_Kb(:,1:SPixel%NxI), &
+              matmul(Sb(1:SPixel%NxI,1:SPixel%NxI), transpose(Dy_Kb(:,1:SPixel%NxI))) )
+      end if
+   else
+      ! There are no inactive state vars and Eqmpn has been used for Rs, i.e.
+      ! no info to set Ss. Needs some values.
+      Diag%Ss = 0
+   end if
+
+   ! Assign St+Ss to the parts of SPixel%Sn where state vars are active. For
+   ! inactive variables, Sn is set to the a priori error (squared). De-scale
+   ! (by XScale squared, i.e. the product of the XScale factors for the two
+   ! state variables contributing to each element).
+   SPixel%Sn = 0.0
+   if (SPixel%Nx > 0 .and. SPixel%NxI == 0) then
+      SPixel%Sn(SPixel%X, SPixel%X) = Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
+   end if
+
+   if (SPixel%NxI > 0) then
+      SPixel%Sn(SPixel%XI, SPixel%XI) = SPixel%Sx(SPixel%XI, SPixel%XI)
+
+      SPixel%Sn(SPixel%X, SPixel%X)   = Diag%St(1:SPixel%Nx, 1:SPixel%Nx) + &
+                                        Diag%Ss(1:SPixel%Nx, 1:SPixel%Nx)
+   end if
+
+   do m = 1, MaxStateVar
+      do l = 1, MaxStateVar
+         SPixel%Sn(l,m) = SPixel%Sn(l,m) / &
+                          (Ctrl%Invpar%XScale(l) * Ctrl%Invpar%XScale(m))
+      end do
+      if (SPixel%Sn(m,m) < 0) then
+         write(*, fmt='(a,i1,a,i1,a,e11.4,a,2(i4,1x))') &
+              'WARNING: Invert_Marquardt(): Negative error value in Sn(', m, &
+              ',', m, '), value: ', SPixel%Sn(m,m), ' location x,y ', &
+              SPixel%Loc%X0, SPixel%Loc%Y0
+         SPixel%Sn(m,m) = 0.0
+      end if
+   end do
+
+   ! Costs are divided by number of active instrument channels before output.
+   J  = J  / SPixel%Ind%Ny
+   Jm = Jm / SPixel%Ind%Ny
+   Ja = Ja / SPixel%Ind%Ny
+
+
+   ! Void the outputs for failed superpixels
+99 if (stat /= 0) then
       convergence = .false.
       Diag%St     = MissingSn
       Diag%Ss     = MissingSn
       SPixel%Sn   = MissingSn
-   end if   ! End of stat check before Ss setting.
-
-   ! Set remaining diagnostic values. Set_Diag also checks whether the solution
-   ! state was good enough to use in SDAD first guess and a priori setting, and
-   ! if so saves Xn and Sn in SPixel (XnSav and SnSav). Costs are divided by
-   ! number of active instrument channels before output.
-
-   if (stat == 0) then
-      J  = J  / SPixel%Ind%Ny
-      Jm = Jm / SPixel%Ind%Ny
-      Ja = Ja / SPixel%Ind%Ny
-   else
-      J  = MissingSn
-      Jm = MissingSn
-      Ja = MissingSn
+      J           = MissingSn
+      Jm          = MissingSn
+      Ja          = MissingSn
    end if
 
+   ! Set_Diag also checks whether the solution state was good enough to use in
+   ! SDAD first guess and a priori setting, and if so saves Xn and Sn in SPixel
+   ! (XnSav and SnSav).
    call Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, &
-        NPhaseChanges, Y, Sy, Diag, stat)
+                 NPhaseChanges, Y, Sy, Diag)
 
    ! Write final solution and close breakpoint output file
-
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_InvertMarquardt_1) then
       call Find_Lun(bkp_lun)

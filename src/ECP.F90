@@ -216,7 +216,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    integer             :: i, j, jj, m
    integer             :: ios        ! I/O status value from file operations
-   integer             :: status = 0 ! Status value returned from subroutines
+   integer             :: status     ! Status value returned from subroutines
    logical             :: verbose    ! Verbose print-out flag
    integer             :: log_lun    ! Logical Unit Number for log file
    integer             :: diag_lun   ! Logical unit number for diagnostics file
@@ -573,17 +573,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                ! inversion.
                Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
                                      RTM_Pc, Diag, status)
-
-               ! Calculate the Cloud water path CWP
                if (status == 0) then
+                  ! Calculate the Cloud water path CWP
                   call Calc_CWP(Ctrl, SPixel)
-               end if
-
-               ! Set values required for overall statistics 1st bit test on QC
-               ! flag determines whether convergence occurred.
-               if (status == 0) then
+            
+                  ! Set values required for overall statistics 1st bit test on QC
+                  ! flag determines whether convergence occurred.
                   if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
-
                      TotConv_line(j) = TotConv_line(j)+1
                      AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
                      if (Diag%PhaseChanges >= 0) then
@@ -597,6 +593,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                      TotMaxJ_line(j) = TotMaxJ_line(j)+1
                   end if
                else
+                  ! Retrieval suffered fatal error
                   SPixel%Xn        = MissingXn
                   SPixel%Sn        = MissingSn
                   SPixel%CWP       = MissingXn
