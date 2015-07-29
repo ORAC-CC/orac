@@ -92,6 +92,7 @@
 ! 2015/07/22, AP: Use parse_user_text for arguments which set variables that
 !    are set using ECP_Constants parameters within the code.
 ! 2015/07/29, GM: Removed unused ash CloudClasses.
+! 2015/07/29, GM: Added missing initializations of Ctrl%RS%B for MODIS.
 !
 ! $Id$
 !
@@ -567,7 +568,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          case(2)
             Ctrl%RS%B(i,1) = 0.01
             Ctrl%RS%B(i,2) = 0.01
+         case(3)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case(4)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case(5)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
          case(6)
+            Ctrl%RS%B(i,1) = 0.01
+            Ctrl%RS%B(i,2) = 0.01
+         case(7)
             Ctrl%RS%B(i,1) = 0.01
             Ctrl%RS%B(i,2) = 0.01
          case default
@@ -623,7 +636,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Lower limit on state
    Ctrl%Invpar%XLLim(ITau)  = -3.0
-   if ((trim(Ctrl%CloudClass) .eq. 'EYJ') then
+   if (trim(Ctrl%CloudClass) .eq. 'EYJ') then
       Ctrl%Invpar%XLLim(IRe) = 0.01
    else
       Ctrl%Invpar%XLLim(IRe) = 0.1
@@ -638,7 +651,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%Invpar%XULim(IRe) = 35.0
    else if (trim(Ctrl%CloudClass) .eq. 'ICE') then
       Ctrl%Invpar%XULim(IRe) = 100.0
-   else if ((trim(Ctrl%CloudClass) .eq. 'EYJ')) then
+   else if (trim(Ctrl%CloudClass) .eq. 'EYJ') then
       Ctrl%Invpar%XULim(IRe) = 20.0
    end if
    Ctrl%Invpar%XULim(IPc) = 1200.0
