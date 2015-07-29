@@ -13,7 +13,7 @@
 ! 2001/01/17, AS: Added index for Em and increased MaxCRProps to allow for Em in
 !    CRPOut array in FM Solar and Thermal routines.
 ! 2001/01/24, AS: Added index constants for the state vector array.
-! 2001/02/09, AS: Started using constants to denote breakpoint levels for 
+! 2001/02/09, AS: Started using constants to denote breakpoint levels for
 !    individual subroutines.
 ! 2001/05/22, AS: Checked into RCS for safety. Continuing to make changes/
 !    additions in all areas.
@@ -24,13 +24,13 @@
 ! 2001/11/28, AS: New constants for upper and lower limits used in checking in
 !    GetSPixel: flag values, lat, long, geometry, reflectances and brightness
 !    temps.
-! 2002/01/17, AS: New LwRTM error code. Re-numbered higher error codes to 
+! 2002/01/17, AS: New LwRTM error code. Re-numbered higher error codes to
 !    make room.
 ! 2011/02/23, AS: Added ECPLogReclen, fed up of irritating line breaks.
-! 2011/03/09, AS: New error codes for albedo files. Updated XMDAD error on 
+! 2011/03/09, AS: New error codes for albedo files. Updated XMDAD error on
 !    a priori F.
 ! 2011/04/05, AS: Removed selection methods SAD and SDAD. Codes SlmSAD, SelmSDAD
-!    removed, other Selm codes re-numbered. SelmMDAD renamed SelmMeas to 
+!    removed, other Selm codes re-numbered. SelmMDAD renamed SelmMeas to
 !    improve clarity.
 ! 2011/04/14, AS: Extension to handle multiple views.
 !    Extended FilenameLen to allow for long paths.
@@ -69,6 +69,9 @@
 ! 2015/03/03, AP: Added terms for aerosol retrieval.
 ! 2015/03/11, GM: Increase MaxNumMeas and MaxNumSolar to 36 and 20, respectively.
 ! 2015/07/26, GM: Added deflate_level and shuffle_flag.
+! 2015/07/27, AP: Removed unused variables ECPLogReclen, MaxDiagFlags,
+!    MaxCloudClass, AMeth..., DiFlag..., CCFileName. Added MaxNumViews, MaxTypes.
+!    Renamed CloudFlag terms to Type.
 !
 ! $Id$
 !
@@ -83,19 +86,20 @@ module ECP_constants
    implicit none
 
    ! Maximum string lengths
-   integer, parameter :: ECPLogReclen     = 256     ! Record length in ECP log file,
-                                                    ! to avoid annoying line breaks.
    integer, parameter :: FilenameLen      = 2048    ! Max. length of filenames
    integer, parameter :: InstNameLen      = 16      ! Max. length of instrument name
 
    ! Maximum array lengths
-   integer, parameter :: MaxDiagFlags     = 14      ! Max no. of flags in diagnostic flag
    integer, parameter :: MaxNumMeas       = 36      ! Max no. of measurement channels
-   integer, parameter :: MaxNumSolar      = 20      ! Max no. of solar channels(ATSR -specific)
-   integer, parameter :: MaxCloudClass    = 3       ! Max no. of cloud classes
+   integer, parameter :: MaxNumViews      = 2       ! Max no. of measurement views
+   integer, parameter :: MaxNumSolar      = 20      ! Max no. of solar channels
    integer, parameter :: MaxCloudType     = 5       ! Max. no of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max. no. of pressure levels (in SPixel RTM arrays)
    integer, parameter :: MaxStateVar      = 5       ! Max. number of state variables processed
+   integer, parameter :: MaxCRProps       = 11      ! Max no. of properties in SAD_LUT arrays
+   integer, parameter :: MaxRho_XX        = 4       ! Max no. of BRDF parameters
+   integer, parameter :: MaxTypes         = 10      ! Number of possible cloud/aerosol types
+
 
    ! Tolerance values
    real, parameter    :: ditherm3         = 1.0E-3  ! Some small value
@@ -104,10 +108,10 @@ module ECP_constants
 
 
    ! Parameters for range checking of data values (used in Get_SPixel)
-   integer(byte), parameter :: FlagMin    = 0       ! Checking for flag values (land/sea or cloud flags)                                    !
-   integer(byte), parameter :: FlagMax    = 1       ! Max. and min. values used in range
-   real, parameter    :: CloudMin         = 0.0
-   real, parameter    :: CloudMax         = 1.0     ! Max. and min. values used in range checking for cloud flag values
+   integer(byte), parameter :: FlagMin    = 0       ! Land/sea flag
+   integer(byte), parameter :: FlagMax    = 1
+   integer(byte), parameter :: TypeMin    = 0       ! Cloud/aerosol type flag
+   integer(byte), parameter :: TypeMax    = 9
    real, parameter    :: SatZenMin        = 0.0     ! Satellite zenith angle
    real, parameter    :: SatZenMax        = 90.0
    real, parameter    :: RelAziMin        = 0.0     ! Relative azimuth angle
@@ -148,11 +152,6 @@ module ECP_constants
    integer, parameter, dimension(12) :: days_in_month = &
       (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /) ! For conversion from month, day to day number within year.
 
-   ! Codes for super-pixel averaging methods
-   integer, parameter :: AMethAll         = 0       ! All pixels in super-pixel included
-   integer, parameter :: AMethCloudy      = 1       ! Cloudy pixels only
-   integer, parameter :: AMethCentral     = 2       ! Central pixel only
-
    ! Codes for RTM interpolation (to Pc) methods
    integer, parameter :: RTMIntMethLinear = 0
    integer, parameter :: RTMIntMethSpline = 1
@@ -161,12 +160,8 @@ module ECP_constants
    integer, parameter :: LUTIntMethLinear  = 0
    integer, parameter :: LUTIntMethBicubic = 1
 
-   ! The following max sizes apply to the SAD_LUT arrays
-   integer, parameter :: MaxCRProps       = 11
-
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
-
    integer, parameter :: IRBd             = 1       ! Index of RBd data in array
    integer, parameter :: IRFBd            = 2       !  "    "  RFBd "   "   "
    integer, parameter :: IRd              = 3       !  "    "  Rd   "   "   "
@@ -179,12 +174,9 @@ module ECP_constants
    integer, parameter :: ITFd             = 10      !  "    "  TFd  "   "   "
    integer, parameter :: IEm              = 11      !  "    "  Em   "   "   "
 
-   ! The following max sizes apply to the brdf arrays
-   integer, parameter :: MaxRho_XX        = 4
-
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
-   ! functions Set_CRP_Solar and Set_CRP_Thermal).
-
+   ! functions Set_CRP_Solar and Set_CRP_Thermal). These are also used to index
+   ! IRs in FM_Solar for cloud retrievals (so ensure they don't exceed NIRs).
    integer, parameter :: IRho_0V          = 1       ! Index of rho_0v data in array
    integer, parameter :: IRho_0D          = 2       !  "    "  rho_0d  "   "   "
    integer, parameter :: IRho_DV          = 3       !  "    "  rho_dv  "   "   "
@@ -231,7 +223,7 @@ module ECP_constants
 
    ! Non-fatal values: indicate problems not necessarily affecting the whole
    ! super-pixel.
-   integer, parameter :: SPixCloudFl      = 0       ! 1 or more cloud flags out of range
+   integer, parameter :: SPixTypeFl       = 0       ! 1 or more cloud flags out of range
    integer, parameter :: SPixLandFl       = 1       !   "   "   land sea flags " " "
    integer, parameter :: SPixSolZen       = 2       !   "   "   solar zenith angles " " "
    integer, parameter :: SPixSatZen       = 3       !   "   "   Sat zenith angles " " "
@@ -243,7 +235,7 @@ module ECP_constants
 
    ! Fatal values: whole SPixel affected
    integer, parameter :: SPixAll          = 9       ! All pixels in SPixel out of range (because of 1 or more of the above)
-   integer, parameter :: SPixNoCloud      = 10      ! All cloud flags 0.
+   integer, parameter :: SPixBadType      = 10      ! Inappropriate particle type
    integer, parameter :: SPixNoAvge       = 11      ! Can't get SPixel cloud average
    integer, parameter :: SPixIllum        = 12      ! Problem from Get_Illum routine
    integer, parameter :: SPixIndexing     = 13      ! Problem from Get_Indexing
@@ -256,30 +248,7 @@ module ECP_constants
    integer, parameter :: SPixFGAP         = 20      ! Problem from Get_X (First Guess/A Priori setting)
    integer, parameter :: SPixNoProc       = 31      ! Do not process super-pixel. Earlier flags indicate why not.
 
-   ! Indices of diagnostic flags in array Ctrl%Diagl
-   ! See structure definition for Diag to get full meaning of diagnostic params.
-   integer, parameter :: DiFlagQC         = 1
-   integer, parameter :: DiFlagIter       = 2
-   integer, parameter :: DiFlagPhCh       = 3
-   integer, parameter :: DiFlagCost       = 4
-   integer, parameter :: DiFlagSt1        = 5
-   integer, parameter :: DiFlagSs1        = 6
-   integer, parameter :: DiFlagSt2        = 7
-   integer, parameter :: DiFlagSs2        = 8
-   integer, parameter :: DiFlagYFit       = 9
-   integer, parameter :: DiFlagXFit       = 10
-   integer, parameter :: DiFlagAP         = 11
-   integer, parameter :: DiFlagFG         = 12
-   integer, parameter :: DiFlagSx         = 13
-   integer, parameter :: DiFlagSy         = 14
-
    ! Config file names:
-
-   ! Instrument configuration
-   character(len=*), parameter :: ICFileName   = 'ECP_inst_config.sad'
-
-   ! Cloud Class config file
-   character(len=*), parameter :: CCFileName   = 'ECP_CloudClass_config.sad'
 
    ! General format statements
    character(len=*), parameter :: FNForm       = '(a2048)' ! Format for I/O of filenames
@@ -315,7 +284,7 @@ module ECP_constants
    integer, parameter :: LimitMethInvalid           = 1005
    integer, parameter :: SegSizeInvalid             = 1006 ! Image segment size
    integer, parameter :: DriverFileIncompat         = 1007
-   integer, parameter :: BadCloudClass              = 1008
+   integer, parameter :: BadLUTClass                = 1008
    integer, parameter :: ICFileOpenErr              = 1010
    integer, parameter :: ICFileReadErr              = 1011
    integer, parameter :: InstIDInvalid              = 1012
