@@ -36,9 +36,7 @@ include $(ORAC_ARCH)
 ORAC_COMMON = ../common
 
 
-# Define object files to be linked. N.B. files containing module definitions
-# should be listed before main program units and subroutines that use those
-# modules so that the modules are known to the compiler.
+# Define object files to be linked.
 PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/bright_m.o \
                   $(OBJS)/build_preproc_fields.o \

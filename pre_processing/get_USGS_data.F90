@@ -76,7 +76,7 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
   do i=imager_geolocation%startx,imager_geolocation%endx
      do j=1,imager_geolocation%ny
 
-        if (imager_geolocation%latitude (i,j) .eq. sreal_fill_value .or. &
+        if (imager_geolocation%latitude(i,j) .eq. sreal_fill_value .or. &
              imager_geolocation%longitude(i,j) .eq. sreal_fill_value) &
              cycle
 

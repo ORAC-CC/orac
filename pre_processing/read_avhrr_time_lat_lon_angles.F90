@@ -1,3 +1,4 @@
+
 !-------------------------------------------------------------------------------
 ! Name: read_avhrr_time_lat_lon_angles.F90
 !
@@ -141,7 +142,7 @@ subroutine read_avhrr_time_lat_lon_angles(path_to_geo_file,imager_geolocation,&
          imager_angles%relazi(:,:,1) = 180. - imager_angles%relazi(:,:,1)
       endwhere 
  
-!       where ( temp2 .lt. 0 )
+!      where ( temp2 .lt. 0 )
 !         temp2 = temp2 + 180 
 !      elsewhere
 !         temp2 = temp2 - 180       

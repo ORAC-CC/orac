@@ -55,10 +55,10 @@
 ! 2012/07/29, CP: removed old comments
 ! 2012/08/06, CP: added in badc flag
 ! 2012/12/06, CP: added in option to break aatsr orbit into chunks for faster
-!    processing added imager_structure to input and tidied up the file
+!   processing added imager_structure to input and tidied up the file
 ! 2012/12/06, CP: changed how ecmwf paths are defined because of looping chunks
 ! 2012/12/14, CP: changed how file is named if the orbit is broken into
-!    granules then the file name is given a latitude range
+!   granules then the file name is given a latitude range
 ! 2012/03/05, CP: small change to work for gfortran
 ! 2013/09/02, AP: Removed startyi, endye.
 ! 2013/10/21, AP: Removed redundant arguments. Tidying.
@@ -66,7 +66,7 @@
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/01, GM: Reordered data/time arguments into a logical order.
 ! 2014/05/02, AP: Made badc into ecmwf_flag.
-! 2014/05/02, CP : changed AATSR file naming
+! 2014/05/02, CP: Changed AATSR file naming
 !
 ! $Id$
 !
@@ -133,7 +133,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
    if (verbose) write(*,*) 'i_chunk: ',          i_chunk
 
-   !determine ecmwf path/filename
+   ! determine ecmwf path/filename
    call set_ecmwf(cyear,cmonth,cday,chour, &
                   ecmwf_path,     ecmwf_path2,     ecmwf_path3, &
                   ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
@@ -153,7 +153,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
       endr=imager_geolocation%latitude(imager_geolocation%endx, &
            imager_geolocation%ny)
 
-      !convert latitudes into strings
+      ! convert latitudes into strings
       write(chunkc,'( g12.3 )') i_chunk
       write(startc,'( g12.3 )') startr
       write(endc,  '( g12.3 )') endr
@@ -164,22 +164,22 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
       range_name=''
    end if
    if (verbose) write(*,*) 'chunk range_name: ', trim(range_name)
-!ESACCI-L2-CLOUD-CLD-${sensor}_${product_string}_${platform}_*${YYYY}${MM}${DD}${HH}${II}_${version2}.*.nc
-   !put basic filename together
-   file_base=trim(adjustl(global_atts%project))//'-L2-CLOUD-CLD-'// &
-             trim(adjustl(sensor))//'_'//  &
-             trim(adjustl(global_atts%l2_processor))
-   file_base=trim(adjustl(file_base))//'_'//trim(adjustl(platform))
-!             '_'//trim(adjustl(global_atts%production_time))
 
-   file_base=trim(adjustl(file_base))//'_'//trim(adjustl(cyear))// &
-             trim(adjustl(cmonth))//trim(adjustl(cday))
+   ! ESACCI-L2-CLOUD-CLD-${sensor}_${product_string}_${platform}_*${YYYY}${MM}${DD}${HH}${II}_${version2}.*.nc
 
-   file_base=trim(adjustl(file_base))//trim(adjustl(chour))// &
-             trim(adjustl(cminute))//'_'//trim(adjustl(global_atts%file_version))
+   ! put basic filename together
+   file_base=trim(adjustl(global_atts%project))// &
+             '-L2-CLOUD-CLD-'// &
+             trim(adjustl(sensor))//'_'// &
+             trim(adjustl(global_atts%l2_processor))//'_'// &
+             trim(adjustl(platform))//'_'// &
+             trim(adjustl(cyear))//trim(adjustl(cmonth))//trim(adjustl(cday))// &
+             trim(adjustl(chour))//trim(adjustl(cminute))//'_'// &
+             trim(adjustl(global_atts%file_version))
+
    if (verbose) write(*,*) 'output file_base: ', trim(file_base)
 
-   !get preproc filenames
+   ! get preproc filenames
    lwrtm_file=trim(adjustl(file_base))//'.lwrtm.nc'
    swrtm_file=trim(adjustl(file_base))//'.swrtm.nc'
    prtm_file=trim(adjustl(file_base))//'.prtm.nc'

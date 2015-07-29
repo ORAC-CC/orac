@@ -56,11 +56,11 @@ subroutine write_ir_rttov(netcdf_info, preproc_dims, idim, jdim, nchan, nlev, &
    type(radiance2_type),       intent(in) :: radiance2
    logical,                    intent(in) :: write_flag
 
-   integer                                 :: jch
-   real(sreal), dimension(nchan,1,1)       :: dummy_emis
-   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_tac, dummy_tbc
-   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_rbc_up
-   real(sreal), dimension(nchan,nlev,1,1)  :: dummy_rac_up, dummy_rac_down
+   integer                                :: jch
+   real(sreal), dimension(nchan,1,1)      :: dummy_emis
+   real(sreal), dimension(nchan,nlev,1,1) :: dummy_tac, dummy_tbc
+   real(sreal), dimension(nchan,nlev,1,1) :: dummy_rbc_up
+   real(sreal), dimension(nchan,nlev,1,1) :: dummy_rac_up, dummy_rac_down
 
    if (write_flag) then
       ! Calculate required above/below cloud radiances and transmittances

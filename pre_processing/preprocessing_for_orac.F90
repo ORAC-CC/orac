@@ -225,7 +225,7 @@
 !    optional arguments/fields and better error handling.
 ! 2015/02/24, GM: Added command line/driver file options to specify the number of
 !    channels and the channel IDs to process.
-! 2015/07/02, OS: Added check for output netcdf files (wrapper only) + 
+! 2015/07/02, OS: Added check for output netcdf files (wrapper only) +
 !    uncommented parse of L2_Processor_Version
 ! 2015/07/03, OS: Removed parsing of L2_Processor_Version
 !
@@ -519,6 +519,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       close(11)
    end if
+
+   ! Set this since it was removed from the command line but not removed from
+   ! the global attributes.
+   global_atts%L2_Processor_Version = '1.0'
 
    ! Parse appropriate type from input strings
    if (parse_string(cdellon, preproc_dims%dellon) /= 0) &
@@ -980,7 +984,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! close output netcdf files
       if (verbose) write(*,*)'Close netcdf output files'
       call netcdf_output_close(netcdf_info)
-      
+
 #endif
 
       ! deallocate the array parts of the structures
