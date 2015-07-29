@@ -46,8 +46,8 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
 
    use CTRL_def
    use Data_def
-   use orac_ncdf
    use Diag_def
+   use orac_ncdf
    use SPixel_def
 
    implicit none
@@ -175,7 +175,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! y0
    !----------------------------------------------------------------------------
-   do k=1,SPixel%Ind%NY
+   do k=1,SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       dummyreal=Diag%Y0(k)
@@ -190,7 +190,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! residuals
    !----------------------------------------------------------------------------
-   do k=1,SPixel%Ind%NY
+   do k=1,SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
       dummyreal=Diag%YmFit(k)

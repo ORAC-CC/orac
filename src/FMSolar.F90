@@ -391,7 +391,7 @@ if (.not. Ctrl%RS%use_full_brdf) then
       d_REF(i,IRs) = &
          (X(IFr) * Tac_0v(i) * &
              (Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc_dd(i) / S_dnom(i))) + &
-             (SPixel%RTM%dREF_clear_dRs(i) * (1.0-X(IFr))))/ &
+             (SPixel%RTM%dREF_clear_dRs(i) * (1.0-X(IFr)))) / &
          SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
    end do
 

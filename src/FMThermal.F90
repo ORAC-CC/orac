@@ -147,7 +147,6 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
              RTM_Pc%LW%Tac(Thermal) + RTM_Pc%LW%Rac_up(Thermal)
 
    ! Calculate part cloudy radiances (a linear combination of R_clear and R_over)
-
    R = (X(IFr) * R_over) + ((1.0 - X(IFr)) * R_clear)
 
    ! Calculate product X%frac*Tac (for efficiency)
@@ -167,10 +166,10 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
 
    ! Gradient w.r.t. cloud pressure, Pc
    d_R(:,IPc) = X(IFr) * (RTM_Pc%LW%dTac_dPc(Thermal) * &
-                             (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd) + &
-                              RTM_Pc%LW%B(Thermal)       * CRP(:,IEm) + &
-                              RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) + &
-                             RTM_Pc%LW%dRac_up_dPc(Thermal)) &
+                          (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd) + &
+                           RTM_Pc%LW%B(Thermal)       * CRP(:,IEm) + &
+                           RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) + &
+                          RTM_Pc%LW%dRac_up_dPc(Thermal)) &
               + fTac * (RTM_Pc%LW%dRbc_up_dPc(Thermal)  * CRP(:,ITd) + &
                         RTM_Pc%LW%dB_dPc(Thermal)       * CRP(:,IEm) + &
                         RTM_Pc%LW%dRac_dwn_dPc(Thermal) * CRP(:,IRd))

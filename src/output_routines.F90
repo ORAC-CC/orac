@@ -46,15 +46,12 @@ module output_routines
       integer                       :: vid_cth_corrected, vid_cth_correctederror
       integer                       :: vid_ctt, vid_ctterror
       integer                       :: vid_cwp, vid_cwperror
+      integer,dimension(:), pointer :: vid_cloud_albedo
       integer                       :: vid_convergence
       integer                       :: vid_niter
       integer                       :: vid_phase
-
-      integer,dimension(:), pointer :: vid_cloud_albedo
-
       integer                       :: vid_costja
       integer                       :: vid_costjm
-
       integer                       :: vid_lsflag
       integer                       :: vid_qcflag
       integer                       :: vid_illum
@@ -240,10 +237,12 @@ module output_routines
       integer(kind=byte)            :: nisemask_vmin   = 0
       integer(kind=byte)            :: nisemask_vmax   = 1
 
-      real(kind=sreal),   dimension(:),     pointer :: cloud_albedo_scale,cloud_albedo_offset
-      integer(kind=sint), dimension(:),     pointer :: cloud_albedo_vmin,cloud_albedo_vmax
+      real(kind=sreal),   dimension(:), pointer :: cloud_albedo_scale
+      real(kind=sreal),   dimension(:), pointer :: cloud_albedo_offset
+      integer(kind=sint), dimension(:), pointer :: cloud_albedo_vmin
+      integer(kind=sint), dimension(:), pointer :: cloud_albedo_vmax
 
-
+      ! Arrays to store output fields
       real(kind=dreal),   dimension(:,:),   pointer :: time
 
       real(kind=sreal),   dimension(:,:),   pointer :: lat
@@ -283,6 +282,8 @@ module output_routines
       integer(kind=sint), dimension(:,:),   pointer :: cwp
       integer(kind=sint), dimension(:,:),   pointer :: cwp_error
 
+      integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo
+
       integer(kind=byte), dimension(:,:),   pointer :: convergence
 
       integer(kind=byte), dimension(:,:),   pointer :: niter
@@ -312,8 +313,6 @@ module output_routines
       integer(kind=sint), dimension(:,:),   pointer :: dem
 
       integer(kind=byte), dimension(:,:),   pointer :: nisemask
-
-      integer(kind=sint), dimension(:,:,:),  pointer :: cloud_albedo
 
    end type output_data_primary
 

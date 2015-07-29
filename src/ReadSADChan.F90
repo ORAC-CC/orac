@@ -121,8 +121,8 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // &
          '_' // trim(chan_num) // '.sad'
 
-      !check if NOAA-7 or NOAA-9; then reset chan_file
-      !this could be a little bit more generic in the future
+      ! Check if NOAA-7 or NOAA-9; then reset chan_file. This could be a little
+      ! bit more generic in the future.
       if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA7') &
          chan_file = trim(Ctrl%SAD_Dir) // 'AVHRR-NOAA07' &
          & // '_' // trim(chan_num) // '.sad'

@@ -69,7 +69,7 @@ module RTM_Pc_def
       real              :: Tc              ! Temperature at Pc
       real              :: Hc              ! geopotentail height at Pc
       real              :: dHc_dPc         ! Rate of change of Hc w.r.t Pc
-      real              :: dTc_dPc         ! Rate of change of Hc w.r.t Pc
+      real              :: dTc_dPc         ! Rate of change of Tc w.r.t Pc
    end type RTM_Pc_t
 
 contains

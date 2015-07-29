@@ -45,14 +45,14 @@ subroutine Calc_CWP(Ctrl, SPixel)
    type(SPixel_t), intent(inout) :: SPixel
 
    ! Local variable declarations
-   real    :: rho             ! liquid or water density
-   real    :: fac             ! CWP factor
-   real    :: s_cot_cre       ! co-variance cot, effective radius (from
-                              ! log10 cot, effective radius)
-   real    :: s_cot           ! variance in cot from variance in log10cot
-   real    :: tenpcot         ! 10^cot convert from log value to linear value
-   real    :: al10e = .434294 ! i.e  log10(exp(1.))
-   real    :: al10e2 =.188612 ! =al10e*al10e
+   real :: rho             ! liquid or water density
+   real :: fac             ! CWP factor
+   real :: s_cot_cre       ! co-variance cot, effective radius (from log10 cot,
+                           ! effective radius)
+   real :: s_cot           ! variance in cot from variance in log10cot
+   real :: tenpcot         ! 10^cot convert from log value to linear value
+   real :: al10e = .434294 ! i.e  log10(exp(1.))
+   real :: al10e2 =.188612 ! =al10e*al10e
 
 
    if (trim(Ctrl%CloudClass) == 'WAT') then

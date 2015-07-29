@@ -55,7 +55,6 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
    SPixel%Surface%NLand = 0
    SPixel%Surface%NSea  = 0
 
-
    SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
    SPixel%Surface%NLand = SPixel%Surface%Flags
    SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
@@ -64,11 +63,8 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
    if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
 #ifdef DEBUG
    if (SPixel%Surface%Land + SPixel%Surface%Sea > 1) then
-      ! Write warning to log file that the surface pixel contains mixed surface
-      ! types
       write(*,*) 'WARNING: Get_LSF() pixel contains mixed surface types'
       status = -1
    end if
 #endif
-
 end subroutine Get_LSF
