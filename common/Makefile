@@ -16,17 +16,18 @@ include $(ORAC_LIB)
 # Define object files to be linked. N.B. files containing module definitions
 # should be listed before main program units and subroutines that use those
 # modules so that the modules are known to the compiler.
-PREPROC_OBJ_F90=$(OBJS)/common_constants.o \
-                $(OBJS)/global_attributes.o \
-                $(OBJS)/interpol.o \
-                $(OBJS)/orac_ncdf.o \
-                $(OBJS)/parsing.o \
-                $(OBJS)/source_attributes.o
+COMMON_OBJ_F90=$(OBJS)/common_constants.o \
+               $(OBJS)/constants_cloud_typing_pavolonis.o \
+               $(OBJS)/global_attributes.o \
+               $(OBJS)/interpol.o \
+               $(OBJS)/orac_ncdf.o \
+               $(OBJS)/parsing.o \
+               $(OBJS)/source_attributes.o
 
 
-PREPROC_OBJ_C=
+COMMON_OBJ_C=
 
-PREPROC_OBJ  =  $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
+COMMON_OBJ  =  $(COMMON_OBJ_F90) $(COMMON_OBJ_C)
 
 
 # Compilation rules
@@ -45,12 +46,12 @@ $(OBJS)/%.o: %.c
 
 
 # Main program build
-liborac_common.a: $(PREPROC_OBJ) Makefile
+liborac_common.a: $(COMMON_OBJ) Makefile
 	ar -rs liborac_common.a $(OBJS)/*.o
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../tools/make_depend.pl $(PREPROC_OBJ_F90) > dependencies.inc
+	@../tools/make_depend.pl $(COMMON_OBJ_F90) > dependencies.inc
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x

@@ -135,10 +135,11 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
             ! takes no account of relative proportions of land/sea in the
             ! current SPixel.
             SPixel%Xb(i)   = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-            if (SPixel%Surface%Sea == 1)  &
-               SPixel%Sx(i,i) = (AUXErrTsSea * Ctrl%Invpar%XScale(i)) ** 2
-            if (SPixel%Surface%Land == 1) &
+            if (SPixel%Surface%Land)  then
                SPixel%Sx(i,i) = (AUXErrTsLand * Ctrl%Invpar%XScale(i)) ** 2
+            else
+               SPixel%Sx(i,i) = (AUXErrTsSea * Ctrl%Invpar%XScale(i)) ** 2
+            end if
          end if
       end select
 

@@ -440,14 +440,14 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
       do i=1,channel_info%nchannels_sw
          pixel_ref(i) = snow_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
       enddo
-      nise_mask_flag = sym%YES
+      nise_mask_flag = YES
    else if (pixel_ice(1).eq.1.) then
       ! completely icy
       applied_flag = .true.
       do i=1,channel_info%nchannels_sw
          pixel_ref(i) = ice_albedo (channel_info%map_ids_abs_to_snow_and_ice(i))
       enddo
-      nise_mask_flag = sym%YES
+      nise_mask_flag = YES
    else if (pixel_ice(1).gt.0.) then
       ! somewhat icy
       applied_flag = .true.
@@ -457,12 +457,12 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
               ice_albedo(channel_info%map_ids_abs_to_snow_and_ice(i))
       end do
       if (pixel_ice(1) .ge. 0.15) then
-         nise_mask_flag = sym%YES
+         nise_mask_flag = YES
       else
-         nise_mask_flag = sym%NO
+         nise_mask_flag = NO
       end if
    else
-      nise_mask_flag = sym%NO
+      nise_mask_flag = NO
    end if
 
 end subroutine apply_ice_correction
@@ -535,9 +535,9 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
 
          if(preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .or. &
              preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) then
-           surface%nise_mask(i,j)=sym%YES
+           surface%nise_mask(i,j)=YES
          else
-           surface%nise_mask(i,j)=sym%NO
+           surface%nise_mask(i,j)=NO
          endif
 
          flag = .false.

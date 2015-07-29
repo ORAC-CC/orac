@@ -91,9 +91,9 @@ contains
     logical            :: call_neural_net
 
     if ( glint_angle .lt. 40.0 .and. glint_angle .ne. sreal_fill_value ) then
-       glint_mask = sym%YES
+       glint_mask = YES
     else
-       glint_mask = sym%NO
+       glint_mask = NO
     endif
 
     if ( channel1 .eq. sreal_fill_value ) then
@@ -128,7 +128,7 @@ contains
     elseif (solzen  .gt. 90)  then       
        illum_nn = 3
        ! use twilight net if ch3b is missing at night/twilight:
-       if ( ch3a_on_avhrr_flag .ne. sym%NO ) illum_nn = 2
+       if ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 2
     else
        illum_nn = 0
        ! if solzen is negative, do not call neural net
@@ -300,36 +300,36 @@ contains
           ! Day 
           if (illum_nn .eq. 1 ) then 
              ! SNOW ICE 
-             if ( niseflag .eq. sym%YES ) then
-                threshold_used = sym%COT_THRES_DAY_SEA_ICE
-                if ( cccot_pre .gt. sym%COT_THRES_DAY_SEA_ICE ) then
-                   cldflag = sym%CLOUDY
+             if ( niseflag .eq. YES ) then
+                threshold_used = COT_THRES_DAY_SEA_ICE
+                if ( cccot_pre .gt. COT_THRES_DAY_SEA_ICE ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              else ! SNOW-ICE FREE
-                 threshold_used = sym%COT_THRES_DAY_SEA
-                 if ( cccot_pre .gt. sym%COT_THRES_DAY_SEA ) then
-                   cldflag = sym%CLOUDY
+                 threshold_used = COT_THRES_DAY_SEA
+                 if ( cccot_pre .gt. COT_THRES_DAY_SEA ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              endif
           elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
              ! SNOW ICE
-             if ( niseflag .eq. sym%YES ) then
-                threshold_used = sym%COT_THRES_NIGHT_SEA_ICE                 
-                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_SEA_ICE ) then
-                   cldflag = sym%CLOUDY
+             if ( niseflag .eq. YES ) then
+                threshold_used = COT_THRES_NIGHT_SEA_ICE                 
+                if ( cccot_pre .gt. COT_THRES_NIGHT_SEA_ICE ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              else ! SNOW ICE FREE
-                 threshold_used = sym%COT_THRES_NIGHT_SEA
-                 if ( cccot_pre .gt. sym%COT_THRES_NIGHT_SEA ) then
-                   cldflag = sym%CLOUDY
+                 threshold_used = COT_THRES_NIGHT_SEA
+                 if ( cccot_pre .gt. COT_THRES_NIGHT_SEA ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              endif
           endif
@@ -338,54 +338,54 @@ contains
           ! Day 
           if (illum_nn .eq. 1 ) then 
              ! SNOW ICE 
-             if ( niseflag .eq. sym%YES ) then
-                threshold_used = sym%COT_THRES_DAY_LAND_ICE
-                if ( cccot_pre .gt. sym%COT_THRES_DAY_LAND_ICE ) then
-                   cldflag = sym%CLOUDY
+             if ( niseflag .eq. YES ) then
+                threshold_used = COT_THRES_DAY_LAND_ICE
+                if ( cccot_pre .gt. COT_THRES_DAY_LAND_ICE ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              else ! SNOW ICE FREE
-                threshold_used = sym%COT_THRES_DAY_LAND
-                if ( cccot_pre .gt. sym%COT_THRES_DAY_LAND ) then
-                   cldflag = sym%CLOUDY
+                threshold_used = COT_THRES_DAY_LAND
+                if ( cccot_pre .gt. COT_THRES_DAY_LAND ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              endif
           elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
              ! SNOW ICE
-             if ( niseflag .eq. sym%YES ) then
-                threshold_used = sym%COT_THRES_NIGHT_LAND_ICE
-                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_LAND_ICE ) then
-                   cldflag = sym%CLOUDY
+             if ( niseflag .eq. YES ) then
+                threshold_used = COT_THRES_NIGHT_LAND_ICE
+                if ( cccot_pre .gt. COT_THRES_NIGHT_LAND_ICE ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              else ! SNOW ICE FREE
-                threshold_used = sym%COT_THRES_NIGHT_LAND
-                if ( cccot_pre .gt. sym%COT_THRES_NIGHT_LAND ) then
-                   cldflag = sym%CLOUDY
+                threshold_used = COT_THRES_NIGHT_LAND
+                if ( cccot_pre .gt. COT_THRES_NIGHT_LAND ) then
+                   cldflag = CLOUDY
                 else
-                   cldflag = sym%CLEAR
+                   cldflag = CLEAR
                 endif
              endif
           endif
-!          if( cccot_pre .gt. sym%COT_THRES_LAND ) then
-!             cldflag = sym%CLOUDY
+!          if( cccot_pre .gt. COT_THRES_LAND ) then
+!             cldflag = CLOUDY
 !          else
-!             cldflag = sym%CLEAR
+!             cldflag = CLEAR
 !          endif
        endif
 
        ! calculate Uncertainty with pre calculated calipso scores 
        ! depending on normalized difference between cccot_pre and used threshold
-       if ( cldflag .eq. sym%CLEAR ) then
+       if ( cldflag .eq. CLEAR ) then
            norm_diff_cc_th = ( cccot_pre - threshold_used ) / threshold_used
-           cld_uncertainty = ( sym%CLEAR_UNC_MAX - sym%CLEAR_UNC_MIN ) * norm_diff_cc_th + sym%CLEAR_UNC_MAX
-       elseif ( cldflag .eq. sym%CLOUDY ) then
+           cld_uncertainty = ( CLEAR_UNC_MAX - CLEAR_UNC_MIN ) * norm_diff_cc_th + CLEAR_UNC_MAX
+       elseif ( cldflag .eq. CLOUDY ) then
            norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
-           cld_uncertainty = ( sym%CLOUDY_UNC_MAX - sym%CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + sym%CLOUDY_UNC_MIN
+           cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
        else 
            cld_uncertainty = sreal_fill_value
        endif 
@@ -404,10 +404,10 @@ contains
           !just do nothing
           ! Case 2) set it to clear
           !imager_pavolonis%CCCOT_pre(i,j)= sreal_fill_value
-          !imager_pavolonis%CLDMASK(i,j)=sym%CLEAR
+          !imager_pavolonis%CLDMASK(i,j)=CLEAR
           ! Case 3) set it to cloudy
           !imager_pavolonis%CCCOT_pre(i,j)= 1.0
-          !imager_pavolonis%CLDMASK(i,j)=sym%CLOUDY
+          !imager_pavolonis%CLDMASK(i,j)=CLOUDY
           ! Case 4) set it to fillvalue
           !imager_pavolonis%CCCOT_pre(i,j)=sreal_fill_value
           !imager_pavolonis%CLDMASK(i,j)=sint_fill_value
@@ -416,7 +416,7 @@ contains
           !if ( (solzen > 80) .and. (ch3b .lt. 0) .and. &
           !   & (ch4 .gt. 100) .and. (ch4 .lt. 230) ) then
           !  cccot_pre   = 1.0
-          !  cldflag = sym%CLOUDY
+          !  cldflag = CLOUDY
           !else
           !  cccot_pre   = sreal_fill_value
           !  cldflag = sint_fill_value
@@ -432,9 +432,9 @@ contains
        endif
 
        ! double check sunglint
-       if ( ( glint_mask .eq. sym%YES ) .and. ( cldflag .eq. sym%CLOUDY ) .and. & 
+       if ( ( glint_mask .eq. YES ) .and. ( cldflag .eq. CLOUDY ) .and. & 
             ( illum_nn .eq. 1 ) .and. ( lsflag .eq. 0_byte ) ) then
-          if ( ( ( ch1 .gt. 50. ) .or. ( ch2 .gt. 50. ) ) .and. ( ch3b .gt. 300.) ) cldflag = sym%CLEAR
+          if ( ( ( ch1 .gt. 50. ) .or. ( ch2 .gt. 50. ) ) .and. ( ch3b .gt. 300.) ) cldflag = CLEAR
        endif
 
     else
