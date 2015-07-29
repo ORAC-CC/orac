@@ -364,7 +364,7 @@ end subroutine read_values_5d
 
 
 !-------------------------------------------------------------------------------
-! Name: Read_LUT_Xd_sat
+! Name: Read_LUT_sat
 !
 ! Purpose:
 ! Read an LUT that has a variable satellite zenith angle
@@ -380,8 +380,8 @@ end subroutine read_values_5d
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Read_LUT_Xd_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
-                           values, i_lut2, name2, values2)
+subroutine Read_LUT_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
+                        values, i_lut2, name2, values2)
 
    use Ctrl_def
    use ECP_Constants
@@ -407,11 +407,11 @@ subroutine Read_LUT_Xd_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    call Find_LUN(lun)
    open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: Read_LUT_Xd_sat(): Error opening file: ', trim(LUT_file)
+      write(*,*) 'ERROR: Read_LUT_sat(): Error opening file: ', trim(LUT_file)
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut)  = .true.
+   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
 
    SAD_LUT%table_uses_solzen(i_lut) = .false.
    SAD_LUT%table_uses_relazi(i_lut) = .false.
@@ -433,7 +433,7 @@ subroutine Read_LUT_Xd_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
                              .false., i_lut, i_lut2)
 
    ! Read in the i_lut array
-   call read_values_3d(LUT_file, name,  lun, i_chan, i_lut, &
+   call read_values_3d(LUT_file, name, lun, i_chan, i_lut, &
            SAD_LUT%Grid%nTau, SAD_LUT%Grid%nSatzen, SAD_LUT%Grid%nRe, values)
 
    if (present(i_lut2)) then
@@ -444,11 +444,11 @@ subroutine Read_LUT_Xd_sat(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
 
    close(unit = lun)
 
-end subroutine Read_LUT_Xd_sat
+end subroutine Read_LUT_sat
 
 
 !-------------------------------------------------------------------------------
-! Name: Read_LUT_Xd_sol
+! Name: Read_LUT_sol
 !
 ! Purpose:
 ! Read an LUT that has a variable solar zenith angle
@@ -464,8 +464,8 @@ end subroutine Read_LUT_Xd_sat
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Read_LUT_Xd_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
-                           values, i_lut2, name2, values2)
+subroutine Read_LUT_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
+                        values, i_lut2, name2, values2)
 
    use Ctrl_def
    use ECP_Constants
@@ -491,11 +491,11 @@ subroutine Read_LUT_Xd_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    call Find_LUN(lun)
    open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: Read_LUT_Xd_sol(): Error opening file: ', trim(LUT_file)
+      write(*,*) 'ERROR: Read_LUT_sol(): Error opening file: ', trim(LUT_file)
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut)  = .true.
+   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
 
    SAD_LUT%table_uses_solzen(i_lut) = .true.
    SAD_LUT%table_uses_relazi(i_lut) = .false.
@@ -528,12 +528,11 @@ subroutine Read_LUT_Xd_sol(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
 
    close(unit = lun)
 
-end subroutine Read_LUT_Xd_sol
+end subroutine Read_LUT_sol
 
 
 !-------------------------------------------------------------------------------
-! Name:
-! Read_LUT_Xd_both
+! Name: Read_LUT_both
 !
 ! Purpose:
 ! Read an LUT that has a variable solar and satellite zenith angle, in which
@@ -550,8 +549,8 @@ end subroutine Read_LUT_Xd_sol
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine Read_LUT_Xd_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
-                            values, i_lut2, name2, values2)
+subroutine Read_LUT_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
+                         values, i_lut2, name2, values2)
 
    use Ctrl_def
    use ECP_Constants
@@ -577,11 +576,11 @@ subroutine Read_LUT_Xd_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
    call Find_LUN(lun)
    open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
    if (iostat .ne. 0) then
-      write(*,*) 'ERROR: Read_LUT_Xd_both(): Error opening file: ', trim(LUT_file)
+      write(*,*) 'ERROR: Read_LUT_both(): Error opening file: ', trim(LUT_file)
       stop LUTFileOpenErr
    end if
 
-   SAD_LUT%table_used_for_channel(i_chan, i_lut)  = .true.
+   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
 
    SAD_LUT%table_uses_solzen(i_lut) = .true.
    SAD_LUT%table_uses_relazi(i_lut) = .true.
@@ -615,7 +614,7 @@ subroutine Read_LUT_Xd_both(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, &
 
    close(unit = lun)
 
-end subroutine Read_LUT_Xd_both
+end subroutine Read_LUT_both
 
 
 !-------------------------------------------------------------------------------
@@ -666,8 +665,7 @@ subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
 end subroutine create_lut_filename
 
 !-------------------------------------------------------------------------------
-! Name:
-! Read_SAD_LUT
+! Name: Read_SAD_LUT
 !
 ! Purpose:
 ! Reads the required SAD LUTs.
@@ -790,47 +788,46 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       ! Read the Rd and Rfd LUTs from the Rd file for all channels (solar and
       ! thermal)
       call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
-      call Read_LUT_Xd_sat(Ctrl, LUT_file, i, SAD_LUT, IRd, "Rd", SAD_LUT%Rd, &
-                           i_lut2 = IRfd, name2 = "Rfd", values2 = SAD_LUT%Rfd)
+      call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IRd, "Rd", SAD_LUT%Rd, &
+                        i_lut2 = IRfd, name2 = "Rfd", values2 = SAD_LUT%Rfd)
 
       ! Read the Td and Tfd LUTs from the Td file for all channels (solar and
       ! thermal)
       call create_lut_filename(Ctrl, 'TD', chan_num, LUT_File)
-      call Read_LUT_Xd_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
-                           i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
+      call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
+                        i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
 
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then
          ! Read the Rbd LUT from the Rbd files
          call create_lut_filename(Ctrl, 'RBD', chan_num, LUT_File)
-         call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
-                               SAD_LUT%Rbd)
+         call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
+                            SAD_LUT%Rbd)
 
          ! Read the Rd file into the Rfbd table.  This is a temporary solution
          ! until the Rfbd table becomes available in the Rbd file.  Rd is close
          ! but not the same as Rfbd.
          call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
-         call Read_LUT_Xd_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", &
-                               SAD_LUT%Rfbd)
+         call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", &
+                           SAD_LUT%Rfbd)
 
          ! Read the Tb file LUT from the Tb files
          call create_lut_filename(Ctrl, 'TB', chan_num, LUT_File)
-         call Read_LUT_Xd_sol(Ctrl, LUT_file, i, SAD_LUT, ITb, "Tb", &
-                              SAD_LUT%Tb)
+         call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, ITb, "Tb", &
+                           SAD_LUT%Tb)
 
          ! Read the Tbd and Tfbd LUTs from the Tbd files
          call create_lut_filename(Ctrl, 'TBD', chan_num, LUT_File)
-         call Read_LUT_Xd_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
-                               SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
-                               values2 = SAD_LUT%Tfbd)
+         call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
+                            SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
+                            values2 = SAD_LUT%Tfbd)
       end if
 
       ! Read thermal channel LUTs
       if (SAD_Chan(i)%Thermal%Flag > 0) then
-
          ! Read the Em file
          call create_lut_filename(Ctrl, 'EM', chan_num, LUT_File)
-         call Read_LUT_Xd_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
+         call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
       end if
    end do
 
