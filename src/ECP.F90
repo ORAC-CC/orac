@@ -77,44 +77,44 @@
 ! 2001/08/15, AS: First fully working version of ECP. Includes image segmentation
 !    Added status checks at start of main loop and after ReadSatData calls.
 ! 2001/08/23, AS: Added status check around overall statistics output.
-! 2001/09/21, AS:  Added initial allocation of SPixel%Ym and Sy. These are 
+! 2001/09/21, AS:  Added initial allocation of SPixel%Ym and Sy. These are
 !    deallocated each time Get_SPixel is called (in Get_Measurements). Also took
-!    the opportunity to put an "if" before part of the final stats output to 
-!    avoid divide by zero errors, and replace tabs put in by the Nedit 
+!    the opportunity to put an "if" before part of the final stats output to
+!    avoid divide by zero errors, and replace tabs put in by the Nedit
 !    auto-indent feature with spaces.
 ! 2001/09/24, AS: Moved initial allocation of SPixel%Ym, Sy, X and XI to
-!    AllocSPixel.  Makes the main program more readable and avoids 
+!    AllocSPixel.  Makes the main program more readable and avoids
 !    re-coding test harnesses.
 ! 2001/10/22, AS: Added calls to deallocate routines for SPixel, RTM_Pc, RTM and
-!    the MSI_Data structure. The alloc arrays in these structures *should* be 
-!    released automatically at the end of execution. These routines deallocate 
+!    the MSI_Data structure. The alloc arrays in these structures *should* be
+!    released automatically at the end of execution. These routines deallocate
 !    explicitly in case the automatic dealloc isn't done.
-! 2001/10/23, AS: Removed conversion of solar channel reflectances from % to 
+! 2001/10/23, AS: Removed conversion of solar channel reflectances from % to
 !    fraction. MSI files should now be written with fractional values. New
 !    logical variable to track alloc state of SAD_LUT internal arrays.
 !    **************** ECV work starts here *************************************
-! 2011/03/09, AS: Re-applying changes from late 2001/2, MSI_luns now dimension 
+! 2011/03/09, AS: Re-applying changes from late 2001/2, MSI_luns now dimension
 !    6 to allow for albedo data.
-! 2011/03/22, AS: Removal of phase change. Only 1 cloud class required for each 
+! 2011/03/22, AS: Removal of phase change. Only 1 cloud class required for each
 !    retrieval run. SADCloudClass and SAD_LUT array dimensions changed.
 ! 2011/03/23, AS: Added output of latitude and longitude to output file.
 ! 2011/03/30, AS: Removal of super-pixel averaging. All super-pixelling will now
-!    be done in pre-processing. The SPixel structure used here now refers to a 
-!    single pixel from the input files. Removed the modification of image (x,y) 
-!    processing ranges to whole number of super-pixels. Remove use of 
+!    be done in pre-processing. The SPixel structure used here now refers to a
+!    single pixel from the input files. Removed the modification of image (x,y)
+!    processing ranges to whole number of super-pixels. Remove use of
 !    Ctrl%Resoln%Space.
 ! 2011/04/08, AS: Simplification of selection methods for first guess, a priori,
-!    limits etc. InvertMarquardt no longer requires SAD_CloudClass argument. 
-!    Removed setting of SPixel%Phase: redundant following removal of phase 
+!    limits etc. InvertMarquardt no longer requires SAD_CloudClass argument.
+!    Removed setting of SPixel%Phase: redundant following removal of phase
 !    change functionality.
-! 2011/05/11, AS: Extension to multiple viewing angles. Elements of the Ctrl 
-!    struct are now pointers to arrays rather than fixed-size arrays, so Ctrl 
-!    cannot be written in a single operation. Removed the writes of Ctrl to the 
+! 2011/05/11, AS: Extension to multiple viewing angles. Elements of the Ctrl
+!    struct are now pointers to arrays rather than fixed-size arrays, so Ctrl
+!    cannot be written in a single operation. Removed the writes of Ctrl to the
 !    diag and out file. It is planned to remove Ctrl from the out file anyway.
 ! 2011/06/08, CP: Removed diagnostic structure. Added extra output file residual,
-!    quality indicators, a priori and first guess also input structure MSI_luns 
+!    quality indicators, a priori and first guess also input structure MSI_luns
 !    now dimension 7 to allow for scanline data.
-! 2011/06/08, AS: Tidied up log output. Use ORAC not ECP in log file. Trim run 
+! 2011/06/08, AS: Tidied up log output. Use ORAC not ECP in log file. Trim run
 !    ID string. Added Write_Log call at end, to get finish time.
 ! 2011/09/22, CP: remove sw%p as now the same as lw%p
 ! 2011/10/08, CP: added CWP to output
@@ -196,7 +196,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use SAD_Chan_def
    use SAD_LUT_def
    use SPixel_def
-   use global_attributes 
+   use global_attributes
    use source_attributes
 
    ! Local variable declarations
@@ -499,7 +499,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    thread_num = omp_get_thread_num()
    write(*,*) 'Thread ', thread_num+1, 'is active'
 #endif
-      
+
    !  Allocate sizes of SPixel sub-structure arrays
    call Alloc_RTM_Pc(Ctrl, RTM_Pc)
    call Alloc_SPixel(Ctrl, RTM, SPixel)
@@ -545,10 +545,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          end if
 
          if (status == 0) then
-
-            ! If the super-pixel cannot be processed, zero the outputs and
-            ! diag struct.
-
+            ! If the super-pixel cannot be processed, zero the outputs
             if (btest(SPixel%QC, SPixNoProc)) then
                Totmissed_line(j) = Totmissed_line(j)+1
 
@@ -572,7 +569,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                if (status == 0) then
                   ! Calculate the Cloud water path CWP
                   call Calc_CWP(Ctrl, SPixel)
-            
+
                   ! Set values required for overall statistics 1st bit test on QC
                   ! flag determines whether convergence occurred.
                   if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
