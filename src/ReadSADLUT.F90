@@ -647,18 +647,18 @@ subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
    character(*), intent(out) :: LUT_file
 
    LUT_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // '_' // &
-              trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
+              trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' &
               // trim(chan_num) // '.sad'
 
    !set correct LUF filename for NOAA-7 and NOAA-9
    !could be a little bit more generic in the future
    if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA7') &
      LUT_file = trim(Ctrl%SAD_Dir) // '/' // 'AVHRR-NOAA07' // '_' // &
-              trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
+              trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' &
               // trim(chan_num) // '.sad'
    if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA9') &
      LUT_file = trim(Ctrl%SAD_Dir) // '/' // 'AVHRR-NOAA09' // '_' // &
-              trim(Ctrl%CloudClass) // '_' // trim(lut_name) // '_' &
+              trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' &
               // trim(chan_num) // '.sad'
 
 
@@ -834,7 +834,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_Read_LUT_1) then
       ! Write out SAD_LUT Name and Wavelength
-      write(bkp_lun, *)'Name in cloud class struct: ', Ctrl%CloudClass
+      write(bkp_lun, *)'Name in cloud class struct: ', Ctrl%LUTClass
    end if
 
    if (Ctrl%Bkpl >= BkpL_Read_LUT_2) then

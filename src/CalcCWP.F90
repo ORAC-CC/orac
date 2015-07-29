@@ -55,10 +55,10 @@ subroutine Calc_CWP(Ctrl, SPixel)
    real :: al10e2 =.188612 ! =al10e*al10e
 
 
-   if (trim(Ctrl%CloudClass) == 'WAT') then
+   if (trim(Ctrl%LUTClass) == 'WAT') then
       rho=rhowat
       fac=(4./3.)*rho/qextwat
-   else if (trim(Ctrl%CloudClass) == 'ICE') then
+   else if (trim(Ctrl%LUTClass) == 'ICE') then
       rho=rhoice
       fac=(4./3.)*rho/qextice
    else
@@ -68,25 +68,21 @@ subroutine Calc_CWP(Ctrl, SPixel)
       return
    end if
 
-   ! Do not calculate for aerosol class
-   if (trim(Ctrl%CloudClass) == 'WAT' .or. trim(Ctrl%CloudClass) == 'ICE') then
+   tenpcot=10.**(SPixel%Xn(iTau))
 
-      tenpcot=10.**(SPixel%Xn(iTau))
+   SPixel%cwp=fac* tenpcot*SPixel%Xn(iRe)
 
-      SPixel%cwp=fac* tenpcot*SPixel%Xn(iRe)
+   ! covariance
+   s_cot_cre=(SPixel%Sn(iTau,iRe)*tenpcot)/al10e
 
-      ! covariance
-      s_cot_cre=(SPixel%Sn(iTau,iRe)*tenpcot)/al10e
+   ! error on optical depth
+   s_cot=(SPixel%Sn(iTau,iTau)*tenpcot*tenpcot)/al10e2
 
-      ! error on optical depth
-      s_cot=(SPixel%Sn(iTau,iTau)*tenpcot*tenpcot)/al10e2
+   ! based on
+   ! SPixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
 
-      ! based on
-      ! SPixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
-
-      SPixel%cwp_error=SPixel%Xn(iRe)*SPixel%Xn(iRe)*s_cot+ &
-                       tenpcot*tenpcot*SPixel%Sn(iRe,iRe)+ &
-                       2.* tenpcot*SPixel%Xn(iRe)*s_cot_cre
- end if
+   SPixel%cwp_error=SPixel%Xn(iRe)*SPixel%Xn(iRe)*s_cot+ &
+                    tenpcot*tenpcot*SPixel%Sn(iRe,iRe)+ &
+                    2.* tenpcot*SPixel%Xn(iRe)*s_cot_cre
 
 end subroutine Calc_CWP

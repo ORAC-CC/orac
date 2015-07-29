@@ -12,10 +12,10 @@
 ! 2000/12/15, KS: Added Inst%Date and Inst%Time.
 !    Added ThermalFirst, ThermalLast, SolarFirst, SolarLast
 ! 2001/01/10, AS: Added comments to clarify meaning of (Ctrl%Ind%) Y, YSolar and
-!    YThermal. Ctrl%Ind%Y renamed Y_Id for the same reason. 
+!    YThermal. Ctrl%Ind%Y renamed Y_Id for the same reason.
 !    Added Threshold to SPixel
 ! 2001/02/05, KS: Added NMixed, number of mixed channels.
-! 2001/02/12, KS: Added MDAD_LW and MDAD_SW, indices for channels to determine 
+! 2001/02/12, KS: Added MDAD_LW and MDAD_SW, indices for channels to determine
 !    FG values of Pc, phase and Tau using the MDAD method.
 ! 2001/04/24, AS: New variable for max number of phase changes in inversion
 !    (Ctrl%Invpar%MaxPhase).
@@ -23,9 +23,9 @@
 !    conditions (1 array of X and 1 array of Nx for each). Replaces the old
 !    X and Nx arrays, which were for all conditions.
 ! 2001/05/17, AS: Added CloudType parameter and measurement covariance matrix Sy.
-! 2001/06/06, AS: FG and AP options arrays extended to two dimensions. 2nd dim 
+! 2001/06/06, AS: FG and AP options arrays extended to two dimensions. 2nd dim
 !    allows different choices depending on the conditions (day/twilight/night).
-! 2001/06/25, AS: New variable Sunset for solar zenith angle that denotes 
+! 2001/06/25, AS: New variable Sunset for solar zenith angle that denotes
 !    sunset. (Was previously hard-coded).
 ! 2001/07/02, AS: Diagnostic level parameter Diagl changed to an array of flags.
 !    New parameters MaxJ and MaxS in new sub-structure QC (quality control)
@@ -34,34 +34,34 @@
 ! 2001/07/06, AS: Removing pointer arrays to allow output of the whole struct in
 !    a single statement. Arrays affected: Ctrl%Ind%X_Dy/Tw/Ni, Ctrl%Sy.
 ! 2001/07/11, AS: Fixes in CloudClass and Phaset structs. CloudClass arrays were
-!    fixed at size 2: replaced by MaxCloudClass constant. CloudClass data 
-!    removed from Phaset struct: couldn't see any reason why it was there, must 
-!    have been a typo. Moved Date and Time from the Inst struct to the main 
-!    struct. Added Day of Year (DOY) required for setting solar constants 
+!    fixed at size 2: replaced by MaxCloudClass constant. CloudClass data
+!    removed from Phaset struct: couldn't see any reason why it was there, must
+!    have been a typo. Moved Date and Time from the Inst struct to the main
+!    struct. Added Day of Year (DOY) required for setting solar constants
 !    in ReadChan.
 ! 2001/08/03, AS: Added Ctrl%Resoln%SegSize. Size of image segment.
 !    Updated Date from character length 8 to 11 (format dd-mmm-yyyy rather
 !    than yyyymmdd) and converted time from real to character length 12
 !    (hh:mm:ss.sss).
-! 2001/08/23, AS: New parameter in Ind for number of instrument channels 
+! 2001/08/23, AS: New parameter in Ind for number of instrument channels
 !    available (as opposed to selected by the user). Set by Read_Inst_Config.
 !    **************** ECV work starts here *************************************
-! 2011/03/21, AS: Removal of phase change functionality. Only 1 cloud class is 
+! 2011/03/21, AS: Removal of phase change functionality. Only 1 cloud class is
 !    required now. Cloud class on phase change becomes redundant.
 !    State variables for first guess and a priori for ice and water phase
 !    become single state vars, limits for ice and water phase replaced by
 !    single set of limits. Cloud class selection method now redundant.
-! 2011/03/31, AS: Removal of phase change: re-size X0 and FG flags arrays since 
+! 2011/03/31, AS: Removal of phase change: re-size X0 and FG flags arrays since
 !    phase no longer needed.
 ! 2011/04/06, AS: Removed selection methods SAD and SDAD.
 !    Limits flag removed from Ctrl struct as only 1 method remains supported.
 ! 2011/04/14, AS: Extension to handle multiple views. Number of channels/
-!    measurements become allocatable since a specific channel ID can be used in 
+!    measurements become allocatable since a specific channel ID can be used in
 !    several views. New index for nviews and set of view indices.
-! 2011/05/12, AS: Extension to handle multiple views. Number of surface 
-!    reflectance values becomes allocatable: number of solar channels can be 
+! 2011/05/12, AS: Extension to handle multiple views. Number of surface
+!    reflectance values becomes allocatable: number of solar channels can be
 !    increased my having multiple views.
-! 2011/05/18, AS: Multiple views(2). Added new Ctrl value NInstViews, to store 
+! 2011/05/18, AS: Multiple views(2). Added new Ctrl value NInstViews, to store
 !    the number of possible viewing angles for the instrument.
 ! 2011/07/01, CP: added in extra output files.
 ! 2011/07/28, CP: added in scan line files files.
@@ -85,7 +85,7 @@
 ! 2015/05/25, GM: Get rid of filename Diag and flags Diagl.
 !    Neither was being used and have been rotting.
 ! 2015/07/27, AP: Convert Homog/Coreg into logicals. Remove Ind%Log and
-!    NInstViews.
+!    NInstViews. Replace process_one_phase_only with Types_to_process.
 !
 ! $Id$
 !
@@ -266,7 +266,7 @@ module CTRL_def
       type (Ind_t)           :: Ind
       logical                :: process_cloudy_only
       logical                :: process_one_phase_only
-      character(3)           :: CloudClass         ! Name of LUT to use
+      character(3)           :: LUTClass           ! Name of LUT to use
       integer                :: CloudType          ! Cloud type flag, distinct from
                                                    ! cloud class, used to define
                                                    ! the homog/coreg noise.

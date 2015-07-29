@@ -315,9 +315,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Read in cloud class (aka phase of no aerosols processed)
    if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%CloudClass) /= 0) &
-      call h_p_e('Ctrl%CloudClass')
-   if (verbose) write(*,*)'Ctrl%CloudClass: ',trim(Ctrl%CloudClass)
+       parse_string(line, Ctrl%LUTClass) /= 0) &
+      call h_p_e('Ctrl%LUTClass')
+   if (verbose) write(*,*)'Ctrl%LUTClass: ',trim(Ctrl%LUTClass)
 
 
    !----------------------------------------------------------------------------
@@ -325,7 +325,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    !----------------------------------------------------------------------------
    Ctrl%Run_ID = 'none'
 
-   outname=trim(scratch_dir)//'/'//trim(input_filename)//trim(Ctrl%CloudClass)
+   outname=trim(scratch_dir)//'/'//trim(input_filename)//trim(Ctrl%LUTClass)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
    Ctrl%FID%BkP          = trim(outname)//'bkp'
@@ -451,7 +451,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Set default a priori and first guess values. Quite often these values have a
    ! very high uncertainty
-   select case (trim(Ctrl%CloudClass))
+   select case (trim(Ctrl%LUTClass))
    case('WAT')
       Ctrl%XB(ITau) = 0.8
       Ctrl%XB(IRe) = 12.
@@ -490,13 +490,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%X0(ITs) = 300.
    case default
       write(*,*) 'ERROR: ReadDriver(): Unsupported cloud/aerosol class: ', &
-                 trim(Ctrl%CloudClass)
-      stop BadCloudClass
+                 trim(Ctrl%LUTClass)
+      stop BadLUTClass
    end select
 
 
    ! Set default a priori error covariance
-   if ((trim(Ctrl%CloudClass) .eq. 'EYJ')) then
+   if (trim(Ctrl%LUTClass) .eq. 'EYJ') then
       Ctrl%Sx(ITau) = 1.0e+01 ! optical depth
       Ctrl%Sx(IRe) = 1.0e-01 ! effective radii
       Ctrl%Sx(IPc) = 1.0e+08 ! ctp
@@ -636,7 +636,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Lower limit on state
    Ctrl%Invpar%XLLim(ITau)  = -3.0
-   if (trim(Ctrl%CloudClass) .eq. 'EYJ') then
+   if (trim(Ctrl%LUTClass) .eq. 'EYJ') then
       Ctrl%Invpar%XLLim(IRe) = 0.01
    else
       Ctrl%Invpar%XLLim(IRe) = 0.1
@@ -647,11 +647,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Upper limit on state
    Ctrl%Invpar%XULim(ITau) = 2.408
-   if (trim(Ctrl%CloudClass) .eq. 'WAT') then
+   if (trim(Ctrl%LUTClass) .eq. 'WAT') then
       Ctrl%Invpar%XULim(IRe) = 35.0
-   else if (trim(Ctrl%CloudClass) .eq. 'ICE') then
+   else if (trim(Ctrl%LUTClass) .eq. 'ICE') then
       Ctrl%Invpar%XULim(IRe) = 100.0
-   else if (trim(Ctrl%CloudClass) .eq. 'EYJ') then
+   else if (trim(Ctrl%LUTClass) .eq. 'EYJ') then
       Ctrl%Invpar%XULim(IRe) = 20.0
    end if
    Ctrl%Invpar%XULim(IPc) = 1200.0
@@ -780,18 +780,18 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('CTRL%IND%NX_DY')
          if (parse_string(line, Ctrl%Ind%NX_DY)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_DY')
-         if (parse_user_text(line, Ctrl%Ind%X_DY, Ctrl%Ind%NX_DY) /= 0) &
-                                                       call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Ind%X_DY, Ctrl%Ind%NX_DY) &
+                                                       /= 0) call h_p_e(label)
       case('CTRL%IND%NX_TW')
          if (parse_string(line, Ctrl%Ind%NX_TW)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_TW')
-         if (parse_user_text(line, Ctrl%Ind%X_TW, Ctrl%Ind%NX_TW) /= 0) &
-                                                       call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Ind%X_TW, Ctrl%Ind%NX_TW) &
+                                                       /= 0) call h_p_e(label)
       case('CTRL%IND%NX_NI')
          if (parse_string(line, Ctrl%Ind%NX_NI)        /= 0) call h_p_e(label)
       case('CTRL%IND%X_NI')
-         if (parse_user_text(line, Ctrl%Ind%X_NI, Ctrl%Ind%NX_NI)/= 0) &
-                                                       call h_p_e(label)
+         if (parse_user_text(line, Ctrl%Ind%X_NI, Ctrl%Ind%NX_NI)&
+                                                       /= 0) call h_p_e(label)
       case('CTRL%IND%NVIEWS')
          if (parse_string(line, Ctrl%Ind%NViews)       /= 0) call h_p_e(label)
       case('CTRL%IND%VIEWIDX')
@@ -964,8 +964,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Check validity of surface reflectance flag
    select case (Ctrl%RS%Flag)
-   case (SelmCtrl, SelmAux)
-      continue
+   case (SelmCtrl)
+      if (Ctrl%RS%use_full_brdf) then
+         write(*,*) 'ERROR: Read_Driver(): Setting surface reflectance by '//  &
+              'Ctrl method assumes a Lambertian surface and cannot be used '// &
+              'alongside the full BRDF.'
+         stop GetSurfaceMeth
+      end if
+   case (SelmAux)
    case (SelmMeas)
       write(*,*) 'ERROR: Read_Driver(): surface reflectance method not supported'
       stop GetSurfaceMeth
