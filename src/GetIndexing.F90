@@ -93,7 +93,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
       if (i_view > 1) then
          if (SPixel%illum(i_view - 1) /= SPixel%illum(i_view)) then
-            status = SPixelIllum
+            status = SPixelIndexing
             return
          end if
       end if
@@ -127,7 +127,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          end if
       end do
    else
-      status = SPixelIllum
+      status = SPixelIndexing
       return
    end if
 
@@ -412,7 +412,7 @@ if (LEGACY_MODE) then
       else if ((n_bad_r_e_chans .eq. 0 .and. n_bad_tau_chans .eq. 0) .and. &
                n_bad_ir_chans .eq. 1) then
          if (.not. is_not_used_or_missing(Ctrl%Ind%Ny)) then
-            status = SPixelIllum
+            status = SPixelIndexing
             return
          end if
 
@@ -427,7 +427,7 @@ if (LEGACY_MODE) then
             end if
          end do
       else
-         status = SPixelIllum
+         status = SPixelIndexing
          return
       end if
 
@@ -435,7 +435,7 @@ if (LEGACY_MODE) then
 
    else if (SPixel%Illum(1) .eq. INight) then
       if (n_bad_ir_chans .eq. 1) then
-         status = SPixelIllum
+         status = SPixelIndexing
          return
       end if
    end if
@@ -520,7 +520,7 @@ end if
 
    ! If nothing is retrievable set the error status and return
    if (ii_x .lt. min_x) then
-      status = SPixelIllum
+      status = SPixelIndexing
       return
    end if
 

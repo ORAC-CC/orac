@@ -90,7 +90,7 @@
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
 ! 2015/03/02, AP: Remove Ctrl argument from
-!    check_value routines.
+!    check_value routines. Remove check_value.
 !
 ! $Id$
 !
@@ -275,7 +275,6 @@ module SPixel_def
                                           ! inversion that converged.
       real                :: SnSav(MaxStateVar, MaxStateVar)
                                           ! Error values for XnSav.
-      integer             :: QC           ! Quality control indicator
       real                :: CWP          ! Cloud water path
       real                :: CWP_Error    ! Cloud water path error
       real,    pointer    :: f0(:)        ! Solar constant
@@ -290,15 +289,6 @@ module SPixel_def
       integer, pointer    :: spixel_y_mixed_to_spixel_y_thermal(:)
    end type SPixel_t
 
-
-   interface check_value
-      module procedure check_value_float0, &
-           check_value_float1, check_value_float1_l, &
-           check_value_float2, check_value_float2_l, &
-           check_value_byte0, &
-           check_value_byte1, check_value_byte1_l, &
-           check_value_byte2, check_value_byte2_l
-   end interface check_value
 
 contains
 
@@ -318,195 +308,5 @@ contains
 #include "GetSPixel.F90"
 #include "IntCTP.F90"
 
-
-!-------------------------------------------------------------------------------
-! Name: check_value
-!
-! Purpose:
-! Flag values outside their prescribed range. Accepts scalars and arrays up to
-! two dimensions of type float or byte (though there is no reason this range
-! couldn't be extended).
-!
-! Description and Algorithm details:
-! 1) If the value is outside its range, set the appropriate bit of the QC flag.
-! 2) If in DEBUG mode, write a warning to stdout.
-!
-! Arguments:
-! Name        Type   In/Out/Both Description
-! ------------------------------------------------------------------------------
-! val         real   In   Value(s) to be considered.
-! max         real   In   Minimum acceptable value.
-! min         real   In   Maximum acceptable value
-! SPixel      struct Both Super-pixel structure containing QC flag.
-! name        string In   Identifying string to print.
-! flag_bit    int    In   Bit of QC to set in event of out-of-range value.
-! limit       real   In   (Optional) Rather than require all elements of val
-!                         fall within the min-max, require no more than LIMIT
-!                         elements fall outside than range.
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-
-subroutine check_value_float0(val, max, min, SPixel, name, flag_bit)
-   implicit none
-
-   real,           intent(in)    :: val
-   real,           intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-
-   if (val > max .or. val < min) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_float0
-
-subroutine check_value_float1(val, max, min, SPixel, name, flag_bit)
-   implicit none
-
-   real,           intent(in)    :: val(:)
-   real,           intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-
-   if (any(val > max .or. val < min)) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_float1
-
-subroutine check_value_float1_l(val, max, min, SPixel, name, flag_bit, limit)
-   implicit none
-
-   real,           intent(in)    :: val(:)
-   real,           intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-   integer,        intent(in)    :: limit
-
-   if (count(val > max .or. val < min) > limit) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_float1_l
-
-subroutine check_value_float2(val, max, min, SPixel, name, flag_bit)
-   implicit none
-
-   real,           intent(in)    :: val(:,:)
-   real,           intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-
-   if (any(val > max .or. val < min)) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_float2
-
-subroutine check_value_float2_l(val, max, min, SPixel, name, flag_bit, limit)
-   implicit none
-
-   real,           intent(in)    :: val(:,:)
-   real,           intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-   integer,        intent(in)    :: limit
-
-   if (count(val > max .or. val < min) > limit) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_float2_l
-
-!-----------------------------------------------------------------------------
-
-subroutine check_value_byte0(val, max, min, SPixel, name, flag_bit)
-   use ECP_constants, only: byte
-   implicit none
-
-   integer(byte),  intent(in)    :: val
-   integer(byte),  intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-
-   if (val > max .or. val < min) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_byte0
-
-subroutine check_value_byte1(val, max, min, SPixel, name, flag_bit)
-   use ECP_constants, only: byte
-   implicit none
-
-   integer(byte),  intent(in)    :: val(:)
-   integer(byte),  intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-
-   if (any(val > max .or. val < min)) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_byte1
-
-subroutine check_value_byte1_l(val, max, min, SPixel, name, flag_bit, limit)
-   use ECP_constants, only: byte
-   implicit none
-
-   integer(byte),  intent(in)    :: val(:)
-   integer(byte),  intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-   integer,        intent(in)    :: limit
-
-   if (count(val > max .or. val < min) > limit) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_byte1_l
-
-subroutine check_value_byte2(val, max, min, SPixel, name, flag_bit)
-   use ECP_constants, only: byte
-   implicit none
-
-   integer(byte),  intent(in)    :: val(:,:)
-   integer(byte),  intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-
-   if (any(val > max .or. val < min)) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_byte2
-
-subroutine check_value_byte2_l(val, max, min, SPixel, name, flag_bit, limit)
-   use ECP_constants, only: byte
-   implicit none
-
-   integer(byte),  intent(in)    :: val(:,:)
-   integer(byte),  intent(in)    :: max, min
-   type(SPixel_t), intent(inout) :: SPixel
-   character(*),   intent(in)    :: name
-   integer,        intent(in)    :: flag_bit
-   integer,        intent(in)    :: limit
-
-   if (count(val > max .or. val < min) > limit) then
-#include "check_value.inc"
-   end if
-
-end subroutine check_value_byte2_l
 
 end module SPixel_def

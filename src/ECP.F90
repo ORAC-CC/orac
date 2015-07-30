@@ -528,90 +528,64 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       ! Set the location of the pixel within the image (Y0)
       SPixel%Loc%Y0 = j
 
-      ! The X loop is unbounded. This allows for the changing X limits required
-      ! on warm start: for the first row of SPixels processed the X range is
-      ! Ctrl%Ind%Xstart to ixstop; for the remainder it is X0 to ixstop (in
-      ! both cases the limits used are modified to whole numbers of SPixels).
       do i = ixstart,ixstop,xstep
          SPixel%Loc%X0 = i
 
-         call Zero_Diag(Ctrl, Diag, status)
+         call Zero_Diag(Ctrl, Diag)
 
          TotPix_line(j) = TotPix_line(j)+1
 
          ! Set up the super-pixel data values.
+         call Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
+
+         ! Nothing wrong so do the inversion.
+         if (status == 0) &
+            call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
+                                  RTM_Pc, Diag, status)
+
          if (status == 0) then
-            call Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
+            ! Calculate the Cloud water path CWP
+            call Calc_CWP(Ctrl, SPixel)
+
+            ! Set values required for overall statistics 1st bit test on QC
+            ! flag determines whether convergence occurred.
+            if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
+               TotConv_line(j) = TotConv_line(j)+1
+               AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
+               AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
+            end if
+            if (btest(Diag%QCFlag,MaxStateVar+2)) then
+               TotMaxJ_line(j) = TotMaxJ_line(j)+1
+            end if
+         else
+            ! Retrieval suffered fatal error
+            SPixel%Xn        = MissingXn
+            SPixel%Sn        = MissingSn
+            SPixel%CWP       = MissingXn
+            SPixel%CWP_error = MissingSn
+
+            ! These are not filled as they are FM related products but
+            ! they are actually output so we fill them here for lack of
+            ! better place.
+            RTM_Pc%Hc        = MissingXn
+            RTM_Pc%dHc_dPc   = MissingSn
+            RTM_Pc%Tc        = MissingXn
+            RTM_Pc%dTc_dPc   = MissingSn
          end if
 
-         if (status == 0) then
-            ! If the super-pixel cannot be processed, zero the outputs
-            if (btest(SPixel%QC, SPixNoProc)) then
-               Totmissed_line(j) = Totmissed_line(j)+1
-
-               SPixel%Xn        = MissingXn
-               SPixel%Sn        = MissingSn
-               SPixel%CWP       = MissingXn
-               SPixel%CWP_error = MissingSn
-
-               ! These are not filled as they are FM related products but
-               ! they are actually output so we fill them here for lack of
-               ! better place.
-               RTM_Pc%Hc        = MissingXn
-               RTM_Pc%dHc_dPc   = MissingXn
-               RTM_Pc%Tc        = MissingXn
-               RTM_Pc%dTc_dPc   = MissingXn
-            else
-               ! No indication that the SPixel should not be processed, do the
-               ! inversion.
-               Call Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, &
-                                     RTM_Pc, Diag, status)
-               if (status == 0) then
-                  ! Calculate the Cloud water path CWP
-                  call Calc_CWP(Ctrl, SPixel)
-
-                  ! Set values required for overall statistics 1st bit test on QC
-                  ! flag determines whether convergence occurred.
-                  if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
-                     TotConv_line(j) = TotConv_line(j)+1
-                     AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
-                     AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
-                  end if
-                  if (btest(Diag%QCFlag,MaxStateVar+2)) then
-                     TotMaxJ_line(j) = TotMaxJ_line(j)+1
-                  end if
-               else
-                  ! Retrieval suffered fatal error
-                  SPixel%Xn        = MissingXn
-                  SPixel%Sn        = MissingSn
-                  SPixel%CWP       = MissingXn
-                  SPixel%CWP_error = MissingSn
-
-                  ! These are not filled as they are FM related products but
-                  ! they are actually output so we fill them here for lack of
-                  ! better place.
-                  RTM_Pc%Hc        = MissingXn
-                  RTM_Pc%dHc_dPc   = MissingSn
-                  RTM_Pc%Tc        = MissingXn
-                  RTM_Pc%dTc_dPc   = MissingSn
-               end if
-            end if ! btest if closes
-
-            ! Write the outputs
-
+         ! Convergence flag
+         if (btest(Diag%QCFlag,MaxStateVar+1)) then
             conv = 1
-            if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
-               conv = 0
-            end if
+         else
+            conv = 0
+         end if
 
-            ! Copy output to spixel_scan_out structures
-            call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
-                                 Diag, output_data_1)
+         ! Copy output to spixel_scan_out structures
+         call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
+                              Diag, output_data_1)
 
-            call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
-                                   output_data_2)
-
-         end if ! End of status check after Get_SPixel
+         call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
+                                output_data_2)
 
       end do ! End of super-pixel X loop
 

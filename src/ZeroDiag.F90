@@ -26,8 +26,6 @@
 ! Diag   struct  Both        Structure containing diagnostic values to be
 !                            set. Error arrays St and Ss are already set by
 !                            Invert_Marquardt.
-! status integer Out         Standard error/status value. Not currently set
-!                            (no error conditions identified).
 !
 ! History:
 ! 2001/07/10, AS: Original version
@@ -35,6 +33,7 @@
 ! 2012/01/12, CP: Changed zeroing to missing rather than 0
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/05/25, GM: Got rid of flags Diagl and removed obvious comments.
+! 2015/07/28, AP: Removed status argument.
 !
 ! $Id$
 !
@@ -42,7 +41,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Zero_Diag(Ctrl, Diag, status)
+subroutine Zero_Diag(Ctrl, Diag)
 
    use Ctrl_def
    use ECP_Constants
@@ -53,9 +52,6 @@ subroutine Zero_Diag(Ctrl, Diag, status)
 
    type(Ctrl_t), intent(in)    :: Ctrl
    type(Diag_t), intent(inout) :: Diag
-   integer,      intent(out)   :: status
-
-   status = 0
 
    Diag%QCFlag       = 0
    Diag%Iterations   = 0

@@ -53,13 +53,7 @@
 !                            the current SPixel values will be extracted.
 ! RTM      alloc struct In   RTM structure
 ! SPixel   alloc struct Both Super-pixel structure
-! status   integer      Out  Error status. Note most problems identified in
-!                            this routine do not lead to non-zero status
-!                            values as they affect the super-pixel data only.
-!                            Status is not currently passed to subordinate
-!                            routines (local stat is used instead). It is
-!                            assumed that no subordinate can identify a
-!                            serious error condition.
+! status   integer      Out  Error status.
 !
 ! History:
 ! 2000/11/29, KS: Original version
@@ -188,8 +182,8 @@
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
 ! 2015/06/02, AP: Remove Ctrl argument from check_value.
-! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove status
-!    and Get_LSF.
+! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove Get_LSF
+!    and SPixel%QC. Replace status checks with GO TO 99 in the event of failure.
 !
 ! $Id$
 !
@@ -222,7 +216,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    integer           :: i
    integer           :: ictrl, ispix, itherm, isolar
    real              :: minsolzen
-   integer           :: stat
    real, allocatable :: thermal(:)
 #ifdef BKP
    integer :: bkp_lun   ! Unit number for breakpoint file
@@ -230,75 +223,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    integer :: StartChan ! First valid channel for pixel, used in breakpoints.
 #endif
 
-   ! Set status to zero
-   stat   = 0
-   status = 0
-
-   ! Initialise quality control flag
-   SPixel%QC = 0
-
-   ! Check for pixel values out of range. QC is set as information to accompany
-   ! a retrieval. The SPixel Mask is set to flag problems in particular pixels.
-
-   ! Check Cloud flags (0 or 1)
-   call check_value(MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        TypeMax, TypeMin, SPixel, 'cloud flag', SPixTypeFl)
-
-   ! Land/Sea flags (0 or 1)
-   call check_value(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        FlagMax, FlagMin, SPixel, 'land/sea flag', SPixLandFl)
-
-   !  Make this work if pixel is in daylight
-   !  Geometry - Solar zenith (between 0o and 90o)
-   !call check_value(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0), &
-   !     90.0, 0.0, SPixel, 'solar zenith angle', SPixSolZen)
-
-   ! Geometry - Satellite zenith (between 0o and 90o)
-   call check_value(MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0, :), &
-        SatZenMax, SatZenMin, SPixel, 'satellite zenith angl', SPixSatZen)
-
-   ! Geometry - Azimuth (between 0o and 180o)
-   call check_value(MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0, :), &
-        RelAziMax, RelAziMin, SPixel, 'azimuth angle', SPixRelAzi)
-
-   ! Location - Latitude (between -90o and 90o)
-   call check_value(MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        LatMax, LatMin, SPixel, 'location latitude', SPixLat)
-
-   ! Location - Longitude (between -180o and 180o)
-   call check_value(MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0), &
-        LonMax, LonMin, SPixel, 'location longitude', SPixLon)
-
-   ! These checks for missing data are already performed when the illumination
-   ! condition is chosen. The result of the check is defined by the illumination
-   ! condition allowing finer control. So the zeroing of SPixel%Mask has been
-   ! disabled (located in check_value.inc).  Now, an invalid condition (which
-   ! includes cases with too much missing data) will result in a non-zero status
-   ! from Get_Illum() below. For now these loops are still here to set SPixel%QC.
-
-   ! MSI - Reflectances (between 0 and 1)
-   minsolzen=minval(MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0, :))
-   if (minsolzen < Ctrl%MaxSolzen) then
-      do i = 1,Ctrl%Ind%NSolar
-         if (.not. btest(Ctrl%Ind%Ch_Is(Ctrl%Ind%YSolar(i)), ThermalBit)) &
-            call check_value(MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, &
-                             Ctrl%Ind%YSolar(i)), RefMax, RefMin, SPixel, &
-                             'MSI reflectance', SPixRef)
-      end do
-   end if
-
-   ! MSI - Temperatures (between 150.0K and 330.0K)
-   allocate(thermal(Ctrl%Ind%NThermal))
-   do i = 1,Ctrl%Ind%NThermal
-      thermal(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, &
-                                Ctrl%Ind%YThermal(i))
-   end do
-   call check_value(thermal, BTMax, BTMin, SPixel, 'MSI temperature', SPixTemp)
-   deallocate(thermal)
-
-   ! End of range checking. From here on any non-zero stat value is fatal for
-   ! the super-pixel. Set the QC flag bits both for the individual error
-   ! condition and to indicate no processing for the SPixel.
+   status   = 0
 
    SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0)
    SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0)
@@ -308,160 +233,122 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    if (.not. any(Ctrl%Types_to_process(1:Ctrl%NTypes_to_process) == &
                  SPixel%Type)) then
       ! Incorrect particle type in SPixel. Don't process.
-
-      SPixel%QC = ibset(SPixel%QC, SPixBadType)
-      stat = SPixelCloudFrac
+      status = SPixelType
 #ifdef DEBUG
-      write(*, *) 'WARNING: Get_SPixel(): Zero cloud fraction in super ' // &
+      write(*, *) 'WARNING: Get_SPixel(): Incorrect particle type in  ' // &
                   'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-   else
-      ! Call 'Get_' subroutines. Use of stat here assumes that no subordinate
-      ! routine returns a non-zero status value unless it is to flag a
-      ! super-pixel data problem.
-      if (stat == 0) then
-         call Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
-         if (stat /= 0) then
-!           write(*,*) 'WARNING: Get_Indexing()', stat
-            SPixel%QC = ibset(SPixel%QC, SPixIllum)
-         end if
-      end if
+      GO TO 99 ! Skip further data reading
+   end if
 
-      if (stat == 0) then
-         call Get_Geometry(Ctrl, SPixel, MSI_Data, stat)
-         if (stat /= 0) then
-!           write(*,*)  'WARNING: Get_Geometry()', stat
-            SPixel%QC = ibset(SPixel%QC, SPixGeom)
-         end if
-      end if
+   ! Call 'Get_' subroutines. Non-zero stat flags fatal error for superpixel
+   call Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
+   if (status /= 0) GO TO 99 ! Skip further data reading
 
-      ! ACP: RTM unnecessary for aerosol  (at the moment)
-      if (stat == 0) then
-         call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, stat)
-         if (stat /= 0) then
-!           write(*,*)  'WARNING: Get_RTM()', stat
-            SPixel%QC = ibset(SPixel%QC, SPixRTM)
-         end if
-      end if
+   call Get_Geometry(Ctrl, SPixel, MSI_Data, status)
+   if (status /= 0) GO TO 99 ! Skip further data reading
 
-      if (stat == 0) then
-         call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
-         if (stat /= 0) then
-!           write(*,*)  'WARNING: Get_Measurements()', stat
-            SPixel%QC = ibset(SPixel%QC, SPixMeas)
-         end if
-      end if
+   ! ACP: RTM unnecessary for aerosol  (at the moment)
+   call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
+   if (status /= 0) GO TO 99 ! Skip further data reading
 
-      ! Sort out land/sea flag
-      select case (MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0))
-      case(1)
-         SPixel%Surface%Land = .true.
-      case(0)
-         SPixel%Surface%Land = .false.
-      case default
+   call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
+   if (status /= 0) GO TO 99 ! Skip further data reading
+
+   ! Sort out land/sea flag
+   select case (MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0))
+   case(1)
+      SPixel%Surface%Land = .true.
+   case(0)
+      SPixel%Surface%Land = .false.
+   case default
 #ifdef DEBUG
-         write(*, *) 'WARNING: Get_Surface(): pixel contains mixed surface types'
+      write(*, *) 'WARNING: Get_Surface(): pixel contains mixed surface types'
 #endif
-         status = SPixelInvalid
-      end select
+      status = SPixelInvalid
+      GO TO 99 ! Skip further data reading
+   end select
 
-      ! Get surface parameters and reduce reflectance by solar angle effect.
-      if (stat == 0 .and. SPixel%Ind%NSolar /= 0) then
-         call Get_Surface(Ctrl, SPixel, MSI_Data, stat)
-         if (stat /= 0) then
-!           write(*,*)  'WARNING: Get_Surface()', stat
-            SPixel%QC = ibset(SPixel%QC, SPixSurf)
+   ! Get surface parameters and reduce reflectance by solar angle effect.
+   if (SPixel%Ind%NSolar > 0) then
+      call Get_Surface(Ctrl, SPixel, MSI_Data, status)
+      if (status /= 0) GO TO 99 ! Skip further data reading
+
+      do i=1,SPixel%Ind%NSolar
+         SPixel%Surface%Rs(i) = SPixel%Surface%Rs(i) &
+              / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+
+         if (Ctrl%RS%use_full_brdf) then
+            SPixel%Surface%Rs2(i,:) = SPixel%Surface%Rs2(i,:) &
+                 / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+         end if
+      end do
+
+      ! Set the solar constant for the solar channels used in this SPixel.
+      deallocate(SPixel%f0)
+      allocate(SPixel%f0(SPixel%Ind%NSolar))
+      do i = 1, SPixel%Ind%NSolar
+         SPixel%f0(i) = &
+              SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Solar%f0
+      end do
+
+      ! Calculate transmittances along the slant paths (solar and viewing)
+      ! Pick up the "purely solar" channel values from the SW RTM, and the
+      ! mixed channels from the LW RTM.
+      deallocate(SPixel%RTM%Tsf_o)
+      allocate(SPixel%RTM%Tsf_o         (SPixel%Ind%NSolar))
+      deallocate(SPixel%RTM%Tsf_v)
+      allocate(SPixel%RTM%Tsf_v         (SPixel%Ind%NSolar))
+      deallocate(SPixel%RTM%Ref_clear)
+      allocate(SPixel%RTM%Ref_clear     (SPixel%Ind%NSolar))
+      deallocate(SPixel%RTM%dRef_clear_dRs)
+      allocate(SPixel%RTM%dRef_clear_dRs(SPixel%Ind%NSolar))
+
+      do i = 1, SPixel%Ind%NSolar
+         ictrl  = SPixel%spixel_y_solar_to_ctrl_y_index(i)
+         ispix  = SPixel%Ind%YSolar(i)
+         isolar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+
+         if (btest(Ctrl%Ind%Ch_Is(ictrl), ThermalBit)) then
+            itherm = find_in_array(Ctrl%Ind%YThermal, ictrl)
+
+            ! The Tsf_o, v calculations differ for mixed channels
+            ! because the Tac value used to set Tsf is given at the view
+            ! angle, rather than the nadir as in the SW channels RTM.
+            SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(itherm) &
+                 ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix)) / &
+                     SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix)))
+
+            SPixel%RTM%Tsf_v(i) = SPixel%RTM%LW%Tsf(itherm)
          else
-            do i=1,SPixel%Ind%NSolar
-               SPixel%Surface%Rs(i) = SPixel%Surface%Rs(i) &
-                    / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+            ! Purely solar channel
+            SPixel%RTM%Tsf_o(i) = SPixel%RTM%SW%Tsf(isolar) &
+                 ** SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix))
 
-                if (Ctrl%RS%use_full_brdf) then
-                   SPixel%Surface%Rs2(i,:) = SPixel%Surface%Rs2(i,:) &
-                     / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-                end if
-            end do
+            SPixel%RTM%Tsf_v(i) = SPixel%RTM%SW%Tsf(isolar) &
+                 ** SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix))
          end if
-      end if
+      end do
 
-      if (stat == 0) then
-         call Get_X(Ctrl, SAD_Chan, SPixel, stat)
-         if (stat /= 0) then
-!           write(*,*)  'WARNING: Get_X()', stat
-            SPixel%QC = ibset(SPixel%QC, SPixFGAP)
-         end if
-      end if
+      ! Calculate top of atmosphere reflectance for clear conditions
+      ! (all arrays are sized NSolar).
+      SPixel%RTM%REF_clear = SPixel%Surface%Rs * SPixel%RTM%Tsf_o * &
+                             SPixel%RTM%Tsf_v
 
-      if (stat == 0 .and. SPixel%Ind%NSolar > 0) then
-         ! Set the solar constant for the solar channels used in this SPixel.
-         deallocate(SPixel%f0)
-         allocate(SPixel%f0(SPixel%Ind%NSolar))
-         do i=1,SPixel%Ind%NSolar
-            SPixel%f0(i) = &
-                 SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Solar%f0
-         end do
+      ! Gradient of REF_clear w.r.t. surface albedo
+      SPixel%RTM%dREF_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
+   end if ! End of NSolar > 0
 
-         ! Calculate transmittances along the slant paths (solar and viewing)
-         ! Pick up the "purely solar" channel values from the SW RTM, and the
-         ! mixed channels from the LW RTM.
-         deallocate(SPixel%RTM%Tsf_o)
-         allocate(SPixel%RTM%Tsf_o         (SPixel%Ind%NSolar))
-         deallocate(SPixel%RTM%Tsf_v)
-         allocate(SPixel%RTM%Tsf_v         (SPixel%Ind%NSolar))
-         deallocate(SPixel%RTM%Ref_clear)
-         allocate(SPixel%RTM%Ref_clear     (SPixel%Ind%NSolar))
-         deallocate(SPixel%RTM%dRef_clear_dRs)
-         allocate(SPixel%RTM%dRef_clear_dRs(SPixel%Ind%NSolar))
+   call Get_X(Ctrl, SAD_Chan, SPixel, status)
+!  if (status /= 0) GO TO 99 ! Skip further data reading
 
-         do i=1, SPixel%Ind%NSolar
-            ictrl = SPixel%spixel_y_solar_to_ctrl_y_index(i)
-            ispix = SPixel%Ind%YSolar(i)
-            isolar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
-
-            if (btest(Ctrl%Ind%Ch_Is(ictrl), ThermalBit)) then
-               itherm = find_in_array(Ctrl%Ind%YThermal, ictrl)
-
-               ! The Tsf_o, v calculations differ for mixed channels
-               ! because the Tac value used to set Tsf is given at the view
-               ! angle, rather than the nadir as in the SW channels RTM.
-               SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(itherm) &
-                    ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix)) / &
-                        SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix)))
-
-               SPixel%RTM%Tsf_v(i) = SPixel%RTM%LW%Tsf(itherm)
-            else
-               ! Purely solar channel
-               SPixel%RTM%Tsf_o(i) = SPixel%RTM%SW%Tsf(isolar) &
-                    ** SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix))
-
-               SPixel%RTM%Tsf_v(i) = SPixel%RTM%SW%Tsf(isolar) &
-                    ** SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix))
-            end if
-         end do
-
-         ! Calculate top of atmosphere reflectance for clear conditions
-         ! (all arrays are sized NSolar).
-
-         SPixel%RTM%REF_clear = SPixel%Surface%Rs * SPixel%RTM%Tsf_o * &
-                                SPixel%RTM%Tsf_v
-
-         ! Gradient of REF_clear w.r.t. surface albedo
-         SPixel%RTM%dREF_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
-      end if ! End of stat check before solar channel actions
-   end if ! End of pixel Type check
 
    ! If stat indicates a "super-pixel fatal" condition set the quality
    ! control flag bit to indicate no processing.
-   if (stat /= 0) SPixel%QC = ibset(SPixel%QC, SPixNoProc)
-
-
-   ! If the super-pixel will not be processed, zero the first guess and a priori
-   ! state vectors for output into the diag file. Check the QC flag rather than
-   ! stat in case future changes mean QC could be set to SPixNoProc earlier on.
-   if (btest(SPixel%QC, SPixNoProc)) then
-      SPixel%X0 = MissingXn
-      SPixel%Xb = MissingXn
+99 if (status /= 0) then
+!     write(*,*) 'WARNING: Get_SPixel()', status
    end if
+
 
    ! Open breakpoint file if required, and write out reflectances and gradients.
    ! Definitely not functional.

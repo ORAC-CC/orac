@@ -218,37 +218,6 @@ module ECP_constants
    integer, parameter :: SolarBit         = 0
    integer, parameter :: ThermalBit       = 1
 
-   ! Super-pixel quality control flag: bit numbers for flagging problems with
-   ! different super-pixel data
-
-   ! Non-fatal values: indicate problems not necessarily affecting the whole
-   ! super-pixel.
-   integer, parameter :: SPixTypeFl       = 0       ! 1 or more cloud flags out of range
-   integer, parameter :: SPixLandFl       = 1       !   "   "   land sea flags " " "
-   integer, parameter :: SPixSolZen       = 2       !   "   "   solar zenith angles " " "
-   integer, parameter :: SPixSatZen       = 3       !   "   "   Sat zenith angles " " "
-   integer, parameter :: SPixRelAzi       = 4       !   "   "   Relative azimuth " " "
-   integer, parameter :: SPixLat          = 5       !   "   "   Latitudes  " " "
-   integer, parameter :: SPixLon          = 6       !   "   "   Longitudes " " "
-   integer, parameter :: SPixRef          = 7       !   "   "   Reflectances " " "
-   integer, parameter :: SPixTemp         = 8       !   "   "   Temperatures " " "
-
-   ! Fatal values: whole SPixel affected
-   integer, parameter :: SPixAll          = 9       ! All pixels in SPixel out of range (because of 1 or more of the above)
-   integer, parameter :: SPixBadType      = 10      ! Inappropriate particle type
-   integer, parameter :: SPixNoAvge       = 11      ! Can't get SPixel cloud average
-   integer, parameter :: SPixIllum        = 12      ! Problem from Get_Illum routine
-   integer, parameter :: SPixIndexing     = 13      ! Problem from Get_Indexing
-   integer, parameter :: SPixGeom         = 14      ! Problem from Get_Geometry routine
-   integer, parameter :: SPixLSF          = 15      ! Problem from Get_LSF routine
-   integer, parameter :: SPixLoc          = 16      ! Problem from Get_Location routine
-   integer, parameter :: SPixRTM          = 17      ! Problem from Get_RTM routine
-   integer, parameter :: SPixMeas         = 18      ! Problem from Get_Measurements
-   integer, parameter :: SPixSurf         = 19      ! Problem from Get_Surface
-   integer, parameter :: SPixFGAP         = 20      ! Problem from Get_X (First Guess/A Priori setting)
-   integer, parameter :: SPixNoProc       = 31      ! Do not process super-pixel. Earlier flags indicate why not.
-
-   ! Config file names:
 
    ! General format statements
    character(len=*), parameter :: FNForm       = '(a2048)' ! Format for I/O of filenames
@@ -348,12 +317,12 @@ module ECP_constants
    integer, parameter :: SwRTMProfNLonErr           = 1138
    integer, parameter :: SwRTMProfErr               = 1139
    integer, parameter :: SwRTMProfReadErr           = 1129
-   integer, parameter :: SPixelCentPix              = 1140
-   integer, parameter :: SPixelAllPix               = 1141
+   integer, parameter :: SPixelIndexing             = 1140
+   integer, parameter :: SPixelMixed                = 1141
    integer, parameter :: SPixelCloudPix             = 1142
    integer, parameter :: SPixelAmeth                = 1143
    integer, parameter :: SPixelInvalid              = 1144
-   integer, parameter :: SPixelCloudFrac            = 1145
+   integer, parameter :: SPixelType                 = 1145
    integer, parameter :: SPixelGeomSol              = 1150
    integer, parameter :: SPixelGeomSat              = 1151
    integer, parameter :: SPixelGeomRel              = 1152
