@@ -222,7 +222,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    integer           :: i
    integer           :: ictrl, ispix, itherm, isolar
    real              :: minsolzen
-   integer           :: stat ! Local status value
+   integer           :: stat
    real, allocatable :: thermal(:)
 #ifdef BKP
    integer :: bkp_lun   ! Unit number for breakpoint file
@@ -381,11 +381,11 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
             SPixel%QC = ibset(SPixel%QC, SPixSurf)
          else
             do i=1,SPixel%Ind%NSolar
-               SPixel%Rs(i) = SPixel%Rs(i) &
+               SPixel%Surface%Rs(i) = SPixel%Surface%Rs(i) &
                     / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
 
                 if (Ctrl%RS%use_full_brdf) then
-                   SPixel%Rs2(i,:) = SPixel%Rs2(i,:) &
+                   SPixel%Surface%Rs2(i,:) = SPixel%Surface%Rs2(i,:) &
                      / SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
                 end if
             end do
@@ -450,7 +450,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          ! Calculate top of atmosphere reflectance for clear conditions
          ! (all arrays are sized NSolar).
 
-         SPixel%RTM%REF_clear = SPixel%Rs * SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
+         SPixel%RTM%REF_clear = SPixel%Surface%Rs * SPixel%RTM%Tsf_o * &
+                                SPixel%RTM%Tsf_v
 
          ! Gradient of REF_clear w.r.t. surface albedo
          SPixel%RTM%dREF_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
@@ -535,7 +536,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          write(bkp_lun,'(/a)') 'Purely solar channels Tsf and Rs'
          do i=1, (SPixel%Ind%Ny-SPixel%Ind%NThermal)
             write(bkp_lun,'(2a,2(a,f9.6))') 'Channel: ', SAD_Chan(i)%Desc, &
-                 ' Tsf:   ', SPixel%RTM%SW%Tsf(i), ' Rs:    ', SPixel%Rs(i)
+                 ' Tsf:   ', SPixel%RTM%SW%Tsf(i), ' Rs:    ', SPixel%Surface%Rs(i)
          end do
       end if
 
@@ -545,7 +546,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
             write(bkp_lun,'(2a,2(a,f9.6))') 'Channel: ', &
                  SAD_Chan(i)%Desc, ' Tsf:   ', &
                  SPixel%RTM%LW%Tsf(i-(SPixel%Ind%Ny-SPixel%Ind%NThermal)), &
-                 ' Rs:    ', SPixel%Rs(i)
+                 ' Rs:    ', SPixel%Surface%Rs(i)
          end do
       end if
 

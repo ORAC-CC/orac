@@ -19,9 +19,9 @@
 !    **************** ECV work starts here *************************************
 ! 2011/02/21, AS: Re-applying changes from late 2001/2002.
 ! 2011/12/12, CP: Added geopotential height
-! 2011/03/11, AS: Removal of super-pixelling, i.e. no averaging of flags etc 
-!    needed. Any super-pixelling required will now be done in pre-processing. 
-!    Resolution for the retrieval will be fixed at 1 pixel. No need to 
+! 2011/03/11, AS: Removal of super-pixelling, i.e. no averaging of flags etc
+!    needed. Any super-pixelling required will now be done in pre-processing.
+!    Resolution for the retrieval will be fixed at 1 pixel. No need to
 !    deallocate cloud or surface flags and mask.
 ! 2011/09/22, CP: Remove sw%p as now the same aslw%p
 ! 2011/12/12, CP: Deallocated SPixel%Geom arrays SPixel%SWRTM%P SPixel%ViewIdx
@@ -30,7 +30,7 @@
 ! 2014/08/01, GM: Added more SPixel to Ctrl map indexes.
 ! 2014/09/09, GM: Changes related to new BRDF support.
 ! 2015/01/12, AP: Added YSolar,YThermal.
-! 2015/01/20, GM: Added deallocation of spixel_y_mixed_to_spixel_y_solar and 
+! 2015/01/20, GM: Added deallocation of spixel_y_mixed_to_spixel_y_solar and
 !    spixel_y_mixed_to_spixel_y_thermal.
 ! 2015/01/30, AP: Remove redundant fields.
 !
@@ -92,11 +92,11 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
 
    ! Get_Surface arrays
 
-   deallocate(SPixel%Rs)
-   deallocate(SPixel%SRs)
+   deallocate(SPixel%Surface%Rs)
+   deallocate(SPixel%Surface%SRs)
    if (Ctrl%RS%use_full_brdf) then
-      deallocate(SPixel%Rs2)
-      deallocate(SPixel%SRs2)
+      deallocate(SPixel%Surface%Rs2)
+      deallocate(SPixel%Surface%SRs2)
    end if
 
    !  Solar constant

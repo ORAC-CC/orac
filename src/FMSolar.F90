@@ -121,11 +121,11 @@ subroutine derivative_wrt_crp_parameter(SPixel, i_param, CRP, d_CRP, f, Tac_0v, 
 
    d_REF(:,i_param) = f * Tac_0v * &
       (d_CRP(:,IRBd,i_param) + &
-      Sp * SPixel%Rs * &
+      Sp * SPixel%Surface%Rs * &
       (T_all * d_CRP(:,ITd,i_param) + &
       CRP(:,ITd) * (d_CRP(:,ITB,i_param) + d_CRP(:,ITFBd,i_param)) &
       ) + &
-      S * SPixel%Rs * Tbc2 * d_CRP(:,IRFd,i_param) / S_dnom)
+      S * SPixel%Surface%Rs * Tbc2 * d_CRP(:,IRFd,i_param) / S_dnom)
 
 end subroutine derivative_wrt_crp_parameter
 
@@ -164,40 +164,40 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
 
    if (i_equation_form .eq. 1) then
       d_l = d_CRP(:,IR_0v,i_param) + &
-            (d_CRP(:,IT_00,i_param) * (SPixel%Rs2(:,IRho_0V) - &
-               SPixel%Rs2(:,IRho_DD)) * CRP(:,IT_dv) + CRP(:,IT_00) * &
-               (SPixel%Rs2(:,IRho_0V) - SPixel%Rs2(:,IRho_DD)) * &
+            (d_CRP(:,IT_00,i_param) * (Rs2(:,IRho_0V) - &
+               Rs2(:,IRho_DD)) * CRP(:,IT_dv) + CRP(:,IT_00) * &
+               (Rs2(:,IRho_0V) - Rs2(:,IRho_DD)) * &
                d_CRP(:,IT_dv,i_param)) * Tbc_0d + &
-            ((d_CRP(:,IT_00,i_param) * SPixel%Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * SPixel%Rs2(:,IRho_DD) * Tbc_d) * c + b * &
+            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + b * &
                d_CRP(:,IT_dv,i_param) * Tbc_d)  / a + &
-            b * (c)  * SPixel%Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / a**2
+            b * c  * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)
    else if (i_equation_form .eq. 2) then
       d_l = d_CRP(:,IR_0v,i_param) + &
-            (d_CRP(:,IT_00,i_param) * (SPixel%Rs2(:,IRho_0V) - &
-               SPixel%Rs2(:,IRho_0D)) * CRP(:,IT_vv) + CRP(:,IT_00) * &
-               (SPixel%Rs2(:,IRho_0V) - SPixel%Rs2(:,IRho_0D)) * &
+            (d_CRP(:,IT_00,i_param) * (Rs2(:,IRho_0V) - &
+               Rs2(:,IRho_0D)) * CRP(:,IT_vv) + CRP(:,IT_00) * &
+               (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
                d_CRP(:,IT_vv,i_param)) * Tbc_0v + &
-            ((d_CRP(:,IT_00,i_param) * SPixel%Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * SPixel%Rs2(:,IRho_DD) * Tbc_d) * c + &
+            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
                b * (d_CRP(:,IT_vv,i_param) * Tbc_v + d_CRP(:,IT_dv,i_param) * &
                Tbc_d)) / a + &
-            b * (c) * SPixel%Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / a**2
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)
    else
       d_l = d_CRP(:,IR_0v,i_param) + &
-            (d_CRP(:,IT_00,i_param) * SPixel%Rs2(:,IRho_0V) * CRP(:,IT_vv) + &
-               CRP(:,IT_00) * SPixel%Rs2(:,IRho_0V) * d_CRP(:,IT_vv,i_param)) * &
+            (d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0V) * CRP(:,IT_vv) + &
+               CRP(:,IT_00) * Rs2(:,IRho_0V) * d_CRP(:,IT_vv,i_param)) * &
                Tbc_0v + &
-            (d_CRP(:,IT_0d,i_param) * SPixel%Rs2(:,IRho_DV) * CRP(:,IT_vv) + &
-               CRP(:,IT_0d) * SPixel%Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param)) * &
+            (d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DV) * CRP(:,IT_vv) + &
+               CRP(:,IT_0d) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param)) * &
                Tbc_dv + &
-            ((d_CRP(:,IT_00,i_param) * SPixel%Rs2(:,IRho_0D) * Tbc_0 + &
-               d_CRP(:,IT_0d,i_param) * SPixel%Rs2(:,IRho_DD) * Tbc_d) * c + &
+            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
                b * (d_CRP(:,IT_dv,i_param) * Tbc_d + d_CRP(:,IR_dd,i_param) * &
-               SPixel%Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dd * Tbc_v + &
-               CRP(:,IR_dd) * SPixel%Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param) * &
+               Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dd * Tbc_v + &
+               CRP(:,IR_dd) * Rs2(:,IRho_DV) * d_CRP(:,IT_vv,i_param) * &
                Tbc_dd * Tbc_v)) / a + &
-            b * (c) * SPixel%Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / a**2
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)
    end if
 
    REF_over_l = Tac_0v * d_l
@@ -232,6 +232,8 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    real,            intent(out)   :: REF(:)
    real,            intent(out)   :: d_REF(:,:)
    integer,         intent(out)   :: status
+   ! Referencing of different properties stored in CRP and d_CRP: the last index
+   ! of the CRP array refers to the property. Hence ITB is the index of TB, etc.
 
    ! Define local variables
    integer, parameter :: i_equation_form = 1
@@ -290,9 +292,6 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    Solar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(:SPixel%Ind%NSolar)
 
    ! Interpolate cloud radiative property LUT data to the current Tau, Re values.
-   ! Note that Set_CRP_Solar interpolates values for all solar channels, except
-   ! in the case of Td. This is interpolated by SetCRPThermal, which is called
-   ! by FMThermal prior to this routine.
    call Set_CRP_Solar(Ctrl, SPixel%Ind, SPixel%spixel_y_solar_to_ctrl_y_index, &
         GZero, SAD_LUT, CRP, d_CRP, status)
 
@@ -328,10 +327,6 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    Tbc_dd = Tbc_d * Tbc_d
 
 
-   ! Referencing of different properties stored in CRP and d_CRP: the last index
-   ! of the CRP array refers to the property. Hence ITB is the index of TB, etc.
-
-
    !----------------------------------------------------------------------------
    ! The old albedo only implementation
    !----------------------------------------------------------------------------
@@ -342,9 +337,9 @@ if (.not. Ctrl%RS%use_full_brdf) then
    ! Sum of direct and diffuse beam transmissions
    T_all = (CRP(:,ITB) + CRP(:,ITFBd))
 
-   S_dnom = 1.0 - (SPixel%Rs * CRP(:,IRFd) * Tbc_dd)
+   S_dnom = 1.0 - (SPixel%Surface%Rs * CRP(:,IRFd) * Tbc_dd)
 
-   S = (T_all * SPixel%Rs * CRP(:,ITd) * Tbc_dd) / S_dnom
+   S = (T_all * SPixel%Surface%Rs * CRP(:,ITd) * Tbc_dd) / S_dnom
 
    ! Calculate overcast reflectance
    REF_over = Tac_0v * (CRP(:,IRBd) + S)
@@ -377,7 +372,7 @@ if (.not. Ctrl%RS%use_full_brdf) then
               * REF_over(i) / RTM_Pc%SW%Tac(Solar(i))) + &
          (2.0 * RTM_Pc%SW%dTbc_dPc(Solar(i)) * Tac_0v(i) * S(i) * &
                 RTM_Pc%SW%Tbc(Solar(i)) * &
-                (1.0/Tbc_dd(i) + CRP(i,IRFd) * SPixel%Rs(i) / S_dnom(i)))
+                (1.0/Tbc_dd(i) + CRP(i,IRFd) * SPixel%Surface%Rs(i) / S_dnom(i)))
    end do
 
    ! Derivative w.r.t. cloud fraction, f
@@ -403,37 +398,37 @@ else
    ! Calculate auxillary quantitities used for the reflectance and its
    ! derivatives
 
-   a = 1. - SPixel%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd
+   a = 1. - SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd
 
-   b = CRP(:,IT_00) * SPixel%Rs2(:,IRho_0D) * Tbc_0 + CRP(:,IT_0d) * &
-          SPixel%Rs2(:,IRho_DD) * Tbc_d
+   b = CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0 + CRP(:,IT_0d) * &
+          SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d
 
    ! Calculate overcast reflectance
-   if (i_equation_form .eq. 1) then
+   if (i_equation_form .eq. 1) then ! Traditional ORAC forward model
       c = CRP(:,IT_dv) * Tbc_d
 
       d = CRP(:,IR_0v) + &
-          CRP(:,IT_00) * (SPixel%Rs2(:,IRho_0V) - SPixel%Rs2(:,IRho_DD)) * &
+          CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_DD)) * &
              CRP(:,IT_dv) * Tbc_0d + &
           b * c / a
 
       REF_over = Tac_0v * d
-   else if (i_equation_form .eq. 2) then
+   else if (i_equation_form .eq. 2) then ! GM's (wrong) derivation
       c = CRP(:,IT_vv) * Tbc_v + CRP(:,IT_dv) * Tbc_d
 
       d = CRP(:,IR_0v) + &
-          CRP(:,IT_00) * (SPixel%Rs2(:,IRho_0V) - SPixel%Rs2(:,IRho_0D)) * &
+          CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
              CRP(:,IT_vv) * Tbc_0v + &
           b * c / a
 
       REF_over = Tac_0v * d
-   else
-      c = CRP(:,IT_dv) * Tbc_d + CRP(:,IR_dd) * SPixel%Rs2(:,IRho_DV) * &
+   else ! GT's reciprocity-obeying forward model
+      c = CRP(:,IT_dv) * Tbc_d + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
              CRP(:,IT_vv) * Tbc_dd * Tbc_v
 
       d = CRP(:,IR_0v) + &
-          CRP(:,IT_00) * SPixel%Rs2(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v + &
-          CRP(:,IT_0d) * SPixel%Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv + &
+          CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v + &
+          CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv + &
           b * c / a
 
       REF_over = Tac_0v * d
@@ -448,15 +443,15 @@ else
    ! Derivative w.r.t. cloud optical depth, Tau
    call derivative_wrt_crp_parameter_brdf(SPixel, ITau, i_equation_form, CRP, &
       d_CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, &
-      Tbc_dd, SPixel%Rs2, d_REF(:,ITau), a, b, c)
+      Tbc_dd, SPixel%Surface%Rs2, d_REF(:,ITau), a, b, c)
 
    ! Derivative w.r.t. effective radius, r_e
    call derivative_wrt_crp_parameter_brdf(SPixel, IRe,  i_equation_form, CRP, &
       d_CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, &
-      Tbc_dd, SPixel%Rs2, d_REF(:,IRe), a, b, c)
+      Tbc_dd, SPixel%Surface%Rs2, d_REF(:,IRe), a, b, c)
 
    ! Calculate the derivatives of the above cloud (ac) beam transmittances
-   do i=1, SPixel%Ind%NSolar
+   do i = 1, SPixel%Ind%NSolar
       ! Above cloud at solar zenith angle:
       Tac_0_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
          SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
@@ -474,7 +469,7 @@ else
    Tac_0v_l = Tac_0_l * Tac_v + Tac_0 * Tac_v_l
 
    ! Calculate the derivatives of the below cloud (bc) beam transmittances
-   do i=1, SPixel%Ind%NSolar
+   do i = 1, SPixel%Ind%NSolar
       ! At solar zenith angle:
       Tbc_0_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
          SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
@@ -495,30 +490,30 @@ else
 
    ! Derivative w.r.t. cloud-top pressure, P_c
    if (i_equation_form .eq. 1) then
-      d_l = CRP(:,IT_00) * (SPixel%Rs2(:,IRho_0V) - SPixel%Rs2(:,IRho_DD)) * &
+      d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_DD)) * &
                CRP(:,IT_dv) * (Tbc_0_l * Tbc_d + Tbc_0 * Tbc_d_l) + &
-            ((CRP(:,IT_00) * SPixel%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-               SPixel%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
+            ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+               SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
                CRP(:,IT_dv) * Tbc_d_l)) / a + &
-            b * c * SPixel%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / a**2
+            b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
    else if (i_equation_form .eq. 2) then
-      d_l = CRP(:,IT_00) * (SPixel%Rs2(:,IRho_0V) - SPixel%Rs2(:,IRho_0D)) * &
+      d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
                CRP(:,IT_vv) * (Tbc_0_l * Tbc_v + Tbc_0 * Tbc_v_l) + &
-            ((CRP(:,IT_00) * SPixel%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-               SPixel%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_vv) * &
+            ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+               SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_vv) * &
                Tbc_v_l + CRP(:,IT_dv) * Tbc_d_l)) / a + &
-            b * c * SPixel%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / a**2
+            b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
    else
-      d_l = CRP(:,IT_00) * SPixel%Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
+      d_l = CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
                Tbc_v + Tbc_0 * Tbc_v_l) + &
-            CRP(:,IT_0d) * SPixel%Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
+            CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
                Tbc_v + Tbc_d * Tbc_v_l) + &
-            ((CRP(:,IT_00) * SPixel%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-               SPixel%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
-               Tbc_d_l + CRP(:,IR_dd) * SPixel%Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
-               Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * SPixel%Rs2(:,IRho_DV) * &
+            ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+               SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
+               Tbc_d_l + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
+               Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
                CRP(:,IT_vv) * Tbc_dd * Tbc_v_l)) / a + &
-            b * c * SPixel%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / a**2
+            b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
    end if
 
    REF_over_l = Tac_0v_l * d + Tac_0v * d_l
@@ -526,7 +521,7 @@ else
    d_REF(:,IPc) = X(IFr) * REF_over_l
 
    ! Derivative w.r.t. cloud fraction, f
-   d_REF(:,IFr) = (REF_over - SPixel%RTM%REF_clear)
+   d_REF(:,IFr) = REF_over - SPixel%RTM%REF_clear
 
    ! Derivative w.r.t. surface temperature, T_s
    d_REF(:,ITs) = 0.0 ! Constant and zero

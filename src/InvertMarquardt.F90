@@ -95,17 +95,17 @@
 !    with handling of phase changes (checking into RCS before attempting fix).
 ! 2001/06/29, AS: Phase change section updated. Added Diag structure as output.
 !    Added error analysis (in Diag setting).
-! 2001/10/12, AS: Costs are now divided by SPixel%Ny for output. Allows better 
+! 2001/10/12, AS: Costs are now divided by SPixel%Ny for output. Allows better
 !    comparison between SPixels (since Ny may vary). Since costs are not divided
-!    during calculation for each iteration, the convergence criteria are 
+!    during calculation for each iteration, the convergence criteria are
 !    multiplied by Ny to compensate. Notes added in code and Algorithm section.
 !    Also added brief description of error analysis to Algorithm section.
 !    **************** ECV work starts here *************************************
 ! 2011/02/22, AS: Re-applying changes made in late 2001/2002.
-! 2001/12/05, AS: Introduced error checking throughout. See comments above for 
+! 2001/12/05, AS: Introduced error checking throughout. See comments above for
 !    details of the scheme implemented.
-! 2011/12/21, AS: Changing use of iteration counter so that only "good" steps 
-!    are counted as "iterations" (experimentally). The number of steps is still 
+! 2011/12/21, AS: Changing use of iteration counter so that only "good" steps
+!    are counted as "iterations" (experimentally). The number of steps is still
 !    checked against the Max allowed no. of iterations at present. (Subsequently
 !    removed, so ignored for 2011 update).
 ! 2011/02/24, AS: stat now initialised (was done in ORAC code somewhere along
@@ -113,12 +113,12 @@
 ! 2011/03/17, AS: Removal of phase change. Code commented out for now, prior to
 !    eventual removal. SAD_LUT dimension reduced to 1, since only 1 cloud class
 !    in use.
-! 2011/03/22, AS: Removal of phase change, phase 2. SAD_CloudClass now has 1 
-!    dimension rather than N cloud classes, SAD_LUT also 1 since only 1 
+! 2011/03/22, AS: Removal of phase change, phase 2. SAD_CloudClass now has 1
+!    dimension rather than N cloud classes, SAD_LUT also 1 since only 1
 !    phase/cloud class is used for the whole retrieval.
 ! 2011/04/06, AS: Removal of redundant selection methods SAD and SDAD for limits
 !    checking. SADCloudClass argument to Set_Limits no longer required.
-!    SADCloudClass argument to this function InvertMarquardt also redundant. 
+!    SADCloudClass argument to this function InvertMarquardt also redundant.
 !    Mopping up from removal of phase change. Removed setting of SPixel%FGPhase
 !    as it is redundant.
 ! 2011/06/08, AS: Removed logging of errors from Invert_Cholesky and related
@@ -133,7 +133,7 @@
 ! 2012/02/24, CP: changed error_matrix call to Invert_cholesky
 ! 2012/08/10, CP: defined measurement arrays more explicitly
 !    other wise crashed for night measurements
-! 2012/09/14, CP: bug fix defined Diag%ss to size of nx elements (was ny) 
+! 2012/09/14, CP: bug fix defined Diag%ss to size of nx elements (was ny)
 !    initialised Y
 ! 2012/10/02, CP: initialised variables bug fix defined Diag%ss changed how
 !    SPixel%sn calculated
@@ -145,7 +145,7 @@
 ! 2014/01/15, GM: Corrected the dimensions of the assignment
 !    for the calculation of Diag%Ss from Diag%Ss(1:SPixel%Ind%Ny,1:SPixel%Ind%Ny)
 !    to Diag%Ss(1:SPixel%Nx,1:SPixel%Nx).
-! 2014/01/15, GM: Set values of J, Jm, and Ja to MissingSn in the case 
+! 2014/01/15, GM: Set values of J, Jm, and Ja to MissingSn in the case
 !    of failed retrievals as is done with the other values in Diag.
 ! 2014/01/15, GM: Moved dynamic setting of the upper limit
 !    for CTP to the highest pressure in the profile from FM() to this routine.
@@ -326,7 +326,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
            * Ctrl%Invpar%XScale(SPixel%X)
 
    ! Calculate Ydiff, the difference between the measurements and calculated
-   ! values for X. 
+   ! values for X.
    Ydiff = SPixel%Ym - Y
    Diag%YmFit(1:SPixel%Ind%Ny) = -Ydiff
 
@@ -404,7 +404,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! average of leading diagonal of Hessian d2J_dX2.
    alpha = average_hessian(SPixel%Nx, d2J_dX2, Ctrl%Invpar%MqStart)
 
-   ! ************* START MAIN ITERATION LOOP ************* 
+   ! ************* START MAIN ITERATION LOOP *************
    do
       ! Use alpha and d2J_dX2 to set delta_X. Solve_Cholesky is used to find
       ! delta_X. The equation from the ATBD is
@@ -622,7 +622,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
          Dy_Kb   = matmul(Dy, Kb)
 
-         Sb(SPixel%NxI+1:, SPixel%NxI+1:) = SPixel%SRs
+         Sb(SPixel%NxI+1:, SPixel%NxI+1:) = SPixel%Surface%SRs
 
          Diag%Ss = matmul(Dy_Kb, matmul(Sb, transpose(Dy_Kb)) )
       else
@@ -750,7 +750,7 @@ end subroutine add_unit
 function average_hessian(n, Hessian, scale) result(alpha)
 
    implicit none
-   
+
    integer, intent(in) :: n
    real,    intent(in) :: Hessian(:,:)
    real,    intent(in) :: scale
@@ -758,12 +758,12 @@ function average_hessian(n, Hessian, scale) result(alpha)
 
    real    :: Av_Hess
    integer :: i
-   
+
    Av_Hess = 0.0
    do i = 1, n
       Av_Hess = Av_Hess + Hessian(i,i)
    end do
    Av_Hess = Av_Hess / n
    alpha   = scale * Av_Hess
-   
+
 end function average_hessian

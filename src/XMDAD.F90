@@ -63,10 +63,10 @@
 !    for the SPixel can determine whether or not a given variable can be set by
 !    this method.
 ! 2001/07/05, AS: Bug fix in indexing of R_clear with MDAD_LW.
-! 2001/06/16, AS: Added more error checking. Checks values of Rad_o used in 
+! 2001/06/16, AS: Added more error checking. Checks values of Rad_o used in
 !    Phase and Pc calculations don't go negative. Using named constants for
 !    error values.
-! 2001/10/26, AS: Fix to Tau calculation. Reflectances are now expressed as 
+! 2001/10/26, AS: Fix to Tau calculation. Reflectances are now expressed as
 !    fractions rather than percentages. Calculation of iFGOP updated to match.
 !    **************** ECV work starts here *************************************
 ! 2011/03/11, AS:  Re-applying changes made in late 2001/2.
@@ -77,7 +77,7 @@
 ! 2011/03/21, AS: Removing functionality to change phase during the retrieval.
 !    Commented out handling of iPhase. Phase will be fixed at the Ctrl value.
 ! 2011/03/30, AS: Removed commented-out code for handling phase, following
-!    removal of  phase change functionality. Removal of super-pixel averaging. 
+!    removal of  phase change functionality. Removal of super-pixel averaging.
 !    Removed use of Ctrl%Resoln%Space in cloud fraction setting.
 ! 2011/04/26, AS: Extension to handle multiple instrument views. The viewing
 !    geometry becomes a set of arrays, e.g. 1 value of sat. zen angle per view.
@@ -95,8 +95,8 @@
 ! 2015/01/12, AP: Replace use of ThermalFirst.
 ! 2015/01/22, AP: Bug fix in the last commit.
 ! 2015/02/06, AP: Switch to Int_CTP rather than interpolate2ctp.
-! 2105/07/27, AP: Removed consideration of cloud fraction. Now always returns values for
-!    for an overcast pixel (consistent with the output of the preprocessor).
+! 2105/07/27, AP: Removed consideration of cloud fraction. Now always returns
+!     values for an overcast pixel (consistent with the preprocessor).
 !
 ! $Id$
 !
@@ -152,7 +152,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
          ! Calculate overcast reflectance (assuming fully cloudy pixel).
          ! Uses channel nearest 0.67 microns, index Ctrl%Ind%MDAD_SW.
          Ref_o = SPixel%Ym(SPixel%Ind%MDAD_SW) - &
-                 SPixel%Rs(SPixel%Ind%MDAD_SW)
+                 SPixel%Surface%Rs(SPixel%Ind%MDAD_SW)
 
          ! Convert albedo (range 0 - 1) into index (range 1 to 10)
          ! Use the first SEC_o value, assuming that all values are quite close

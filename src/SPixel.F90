@@ -191,6 +191,13 @@ module SPixel_def
 
    type Surface_t
       logical             :: Land         ! Flag pixels containing land surface
+      logical             :: Sea          ! Flag pixels containing sea surface
+      real, pointer       :: Rs(:)        ! Super pixel surface reflectance
+      real, pointer       :: SRs(:,:)     ! Super pixel surface reflectance
+                                          ! covariances
+      real, pointer       :: Rs2(:,:)     ! Super pixel surface reflectance
+      real, pointer       :: SRs2(:,:,:)  ! Super pixel surface reflectance
+                                          ! covariances
    end type Surface_t
 
 
@@ -271,12 +278,6 @@ module SPixel_def
       integer             :: QC           ! Quality control indicator
       real                :: CWP          ! Cloud water path
       real                :: CWP_Error    ! Cloud water path error
-      real, pointer       :: Rs(:)        ! Super pixel surface reflectance
-      real, pointer       :: SRs(:,:)     ! Super pixel surface reflectance
-                                          ! covariances
-      real, pointer       :: Rs2(:,:)     ! Super pixel surface reflectance
-      real, pointer       :: SRs2(:,:,:)  ! Super pixel surface reflectance
-                                          ! covariances
       real,    pointer    :: f0(:)        ! Solar constant
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
                                           ! Map SPixel measurement index space to

@@ -28,21 +28,21 @@
 !
 ! History:
 ! 2001/01/31, KS: Original version
-! 2001/02/16, AS: Changed SW allocations to use Ny-NThermal, not 
+! 2001/02/16, AS: Changed SW allocations to use Ny-NThermal, not
 !    ThermalFirst-SolarFirst (for consistency with other routines).
 ! 2001/02/22, AS: Tsf parameters removed from LW RTM structure.
 !    Added allocation of new parameter Tbc in LW struct.
-! 2001/03/06, AS: Allocation of Tsf parameters changed. Tsf_o,v now appear in 
+! 2001/03/06, AS: Allocation of Tsf parameters changed. Tsf_o,v now appear in
 !    overall RTM struct. New arrays Rerf_Clear, dRef_clear_dRs added to RTM struct
 ! 2001/03/07, AS: New LW value dB_dTs.
 ! 2001/04/11, AS: Added solar constant f0
 ! 2001/06/25, AS: Completed header comments.
-! 2001/09/24, AS: Added initial allocation of SPixel%Ym, Sy, X and XI. These 
-!    quantities are reallocated for each super-pixel (unlike the others here) 
+! 2001/09/24, AS: Added initial allocation of SPixel%Ym, Sy, X and XI. These
+!    quantities are reallocated for each super-pixel (unlike the others here)
 !    but require an initial allocation (otherwise the first deallocation fails).
-! 2001/10/22, AS: Added initialisation of SPixel%Ind%Ny since this is output to 
-!    the diagnostic file for each SPixel and may be output un-initialised if the 
-!    first few SPixels are omitted from processing due to no cloud or errors. 
+! 2001/10/22, AS: Added initialisation of SPixel%Ind%Ny since this is output to
+!    the diagnostic file for each SPixel and may be output un-initialised if the
+!    first few SPixels are omitted from processing due to no cloud or errors.
 !    Also NThermal and NSolar.
 !    **************** ECV work starts here *************************************
 ! 2011/02/21, AS: Re-applying changes from late 2001/2002.
@@ -50,8 +50,8 @@
 ! 2011/03/23, AS: Removal of super-pixel averaging. No need to allocate mask and
 !    cloud  or surface flags to Ctrl%Resoln%Space. Assume 1 pixel processed at a
 !    time so only 1 flag needed.
-! 2011/04/20, AS: Extension to handle multiple instrument views. The viewing 
-!    geometry becomes a set of arrays, e.g. 1 value of sat. zen angle per view. 
+! 2011/04/20, AS: Extension to handle multiple instrument views. The viewing
+!    geometry becomes a set of arrays, e.g. 1 value of sat. zen angle per view.
 !    Now allocated to number of views.
 ! 2011/09/22, CP: Remove sw%p as now the same as lw%p changed to this
 !    allocate(SPixel%RTM%SW%P(RTM%LW%NP))
@@ -135,11 +135,11 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    ! Get_Surface arrays (Reallocated in GetSurface)
 
-   allocate(SPixel%Rs                (Ctrl%Ind%NSolar))
-   allocate(SPixel%SRs               (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
+   allocate(SPixel%Surface%Rs        (Ctrl%Ind%NSolar))
+   allocate(SPixel%Surface%SRs       (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
    if (Ctrl%RS%use_full_brdf) then
-      allocate(SPixel%Rs2            (Ctrl%Ind%NSolar, MaxRho_XX))
-      allocate(SPixel%SRs2           (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
+      allocate(SPixel%Surface%Rs2    (Ctrl%Ind%NSolar, MaxRho_XX))
+      allocate(SPixel%Surface%SRs2   (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
    end if
 
    !  Solar constant (Reallocated in GetSPixel)

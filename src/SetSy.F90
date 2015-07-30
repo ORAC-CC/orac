@@ -31,7 +31,7 @@
 !
 ! History:
 ! 2001/05/16, AS: Original version
-! 2001/06/06, AS: Implicit none statement was wrongly placed. Ctrl argument 
+! 2001/06/06, AS: Implicit none statement was wrongly placed. Ctrl argument
 !    added.
 ! 2001/07/05, AS: Added test for NSolar > 0 before adding Kbj terms.
 ! 2014/05/21, GM: Cleaned up the code.
@@ -87,7 +87,7 @@ subroutine Set_Sy(Ctrl, SPixel, Kbj, Sy, status)
       ! Kbj is size (Ny * NSolar), SPixel%Rs is NSolar square. Hence the result
       ! is Ny square and conformable with Sy.
 
-      Syb = matmul(Kbj, matmul(SPixel%SRs, transpose(Kbj)))
+      Syb = matmul(Kbj, matmul(SPixel%Surface%SRs, transpose(Kbj)))
 
       ! Add Syb to Sy
 

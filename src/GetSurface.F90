@@ -62,7 +62,7 @@
 ! 2001/10/22, AS: Updated comments.
 !    **************** ECV work starts here *************************************
 ! 2011/02/22, AS: Re-introducing changes made in late 2001/2002.
-! 2002/05/29, CP: Changed the routine to be able to read auxiliary albedo 
+! 2002/05/29, CP: Changed the routine to be able to read auxiliary albedo
 !    information)
 ! 2011/03/10, AS: plus later albedo changes made by Oxford.
 !    Replaced Ctrl%Ind values in array size declarations by SPixel equivalents
@@ -156,15 +156,15 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    SPixel_Sb2           = 0.0
 
    ! Reallocate surface reflectances to appropriate length
-   deallocate(SPixel%Rs)
-   allocate(SPixel%Rs(SPixel%Ind%NSolar))
-   deallocate(SPixel%SRs)
-   allocate(SPixel%SRs(SPixel%Ind%NSolar, SPixel%Ind%NSolar))
+   deallocate(SPixel%Surface%Rs)
+   allocate(SPixel%Surface%Rs(SPixel%Ind%NSolar))
+   deallocate(SPixel%Surface%SRs)
+   allocate(SPixel%Surface%SRs(SPixel%Ind%NSolar, SPixel%Ind%NSolar))
    if (Ctrl%RS%use_full_brdf) then
-      deallocate(SPixel%Rs2)
-      allocate(SPixel%Rs2(SPixel%Ind%NSolar, MaxRho_XX))
-      deallocate(SPixel%SRs2)
-      allocate(SPixel%SRs2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX))
+      deallocate(SPixel%Surface%Rs2)
+      allocate(SPixel%Surface%Rs2(SPixel%Ind%NSolar, MaxRho_XX))
+      deallocate(SPixel%Surface%SRs2)
+      allocate(SPixel%Surface%SRs2(SPixel%Ind%NSolar, SPixel%Ind%NSolar, MaxRho_XX))
    end if
 
    ! Get the surface reflectances etc for the super pixel array according to
@@ -322,12 +322,12 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    end if
 
    if (status == 0) then
-      SPixel%Rs  = SPixel_b
-      SPixel%SRs = SPixel_Sb
+      SPixel%Surface%Rs  = SPixel_b
+      SPixel%Surface%SRs = SPixel_Sb
 
       if (Ctrl%RS%use_full_brdf) then
-         SPixel%Rs2  = SPixel_b2
-         SPixel%SRs2 = SPixel_Sb2
+         SPixel%Surface%Rs2  = SPixel_b2
+         SPixel%Surface%SRs2 = SPixel_Sb2
       end if
    end if
 
