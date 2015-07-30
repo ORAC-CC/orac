@@ -305,7 +305,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    SPixel%Type    = MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0)
 
 
-   if (.not. any(Ctrl%Types_to_process == SPixel%Type)) then
+   if (.not. any(Ctrl%Types_to_process(1:Ctrl%NTypes_to_process) == &
+                 SPixel%Type)) then
       ! Incorrect particle type in SPixel. Don't process.
 
       SPixel%QC = ibset(SPixel%QC, SPixBadType)
