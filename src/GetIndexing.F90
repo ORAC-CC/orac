@@ -92,6 +92,8 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! If the views have different illumination conditions then skip this pixel
    do i_view = 1, Ctrl%Ind%NViews
+      SPixel%illum(i_view) = MSI_Data%illum(SPixel%Loc%X0, SPixel%Loc%Y0, i_view)
+
       if (i_view > 1) then
          if (SPixel%illum(i_view - 1) /= SPixel%illum(i_view)) then
             status = SPixelIllum

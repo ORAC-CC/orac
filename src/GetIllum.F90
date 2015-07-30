@@ -2,7 +2,7 @@
 ! Name: GetIllum.F90
 !
 ! Purpose:
-! Copy illumination condition into SPixel structure.
+! Copy illumination condition into SPixel structure. REDUNDANT to GetIndexing.
 !
 ! Description and Algorithm details:
 !

@@ -320,14 +320,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       ! routine returns a non-zero status value unless it is to flag a
       ! super-pixel data problem.
       if (stat == 0) then
-         call Get_Illum(Ctrl, SPixel, MSI_Data, stat)
-         if (stat /= 0) then
-!           write(*,*) 'WARNING: Get_Illum()', stat
-            SPixel%QC = ibset(SPixel%QC, SPixIllum)
-         end if
-      end if
-
-      if (stat == 0) then
          call Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, stat)
          if (stat /= 0) then
 !           write(*,*) 'WARNING: Get_Indexing()', stat

@@ -306,7 +306,6 @@ contains
 #include "DeallocSPixel.F90"
 
 #include "GetGeometry.F90"
-#include "GetIllum.F90"
 #include "GetIndexing.F90"
 #include "GetLwSwRTM.F90"
 #include "GetMeasurements.F90"
