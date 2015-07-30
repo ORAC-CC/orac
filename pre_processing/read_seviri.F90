@@ -6,6 +6,7 @@
 !
 ! History:
 ! 2015/02/15, GM: First version.
+! 2015/07/30, GM: Fixed relative azimuth angle.
 !
 ! $Id$
 !
@@ -225,6 +226,16 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
 
    deallocate(band_ids)
    deallocate(band_units)
+
+   where(imager_angles%solazi(startx:,:,1) .ne. sreal_fill_value .and. &
+         imager_angles%relazi(startx:,:,1) .ne. sreal_fill_value)
+      imager_angles%relazi(:,:,1) = abs(imager_angles%relazi(startx:,:,1) - &
+                                        imager_angles%solazi(startx:,:,1))
+
+      where (imager_angles%relazi(:,:,1) .gt. 180.)
+         imager_angles%relazi(:,:,1) = 360. - imager_angles%relazi(:,:,1)
+      endwhere
+   endwhere
 #else
    write(*,*) 'ERROR: the ORAC pre-processor has not been compiled with ' // &
               'SEVIRI support. Recompile with -DINCLUDE_SEVIRI_SUPPORT.'
