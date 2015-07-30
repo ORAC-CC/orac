@@ -686,31 +686,31 @@ end subroutine create_lut_filename
 ! 2000/11/23, AS: Channel file names updated: using 'Ch' instead of 'CH'
 ! 2001/01/09, AS: Emissivity files available. Read_LUT_EM call un-commented.
 !    Added breakpoint output. Ctrl%Ind%Y renamed Y_Id
-! 2001/01/12, AS: Arrays of LUT values (RBd etc) made allocatable. Allocate 
+! 2001/01/12, AS: Arrays of LUT values (RBd etc) made allocatable. Allocate
 !    sizes here.
-! 2001/01/18, AS: Bug fix in array allocation. Rfd, TFd arrays must always be 
+! 2001/01/18, AS: Bug fix in array allocation. Rfd, TFd arrays must always be
 !    allocated even if the choice of channels means they're unused, because they
 !    are read from the same files as Rd, Td by the same routines.
-! 2001/02/09, AS: Using pre-defined constants (ECPConstants.f90) for breakpoint 
+! 2001/02/09, AS: Using pre-defined constants (ECPConstants.f90) for breakpoint
 !    levels.
-! 2001/03/01, AS: LUT array values are now divided by 100 since values in files 
+! 2001/03/01, AS: LUT array values are now divided by 100 since values in files
 !    are percentages and we require fractions later on.
 !    (Temporary fix until files are re-written?)
 ! 2001/06/07, AS: Debug log message removed from routine Read_LUT_Rbd
 ! **************** ECV work starts here *************************************
 ! 2011/03/22, AS: Remove phase change, phase 2 only 1 cloud class per run.
 !    SAD_LUT is also now reduced from dimension N cloud classes to 1.
-! 2011/04/06, AS: Removed two redundant breakpoint outputs now that only 1 
+! 2011/04/06, AS: Removed two redundant breakpoint outputs now that only 1
 !    cloud class.
-! 2011/05/03, AS: Extension to multiple instrument views. Wavelength array is 
-!    now allocated. Added wavelength to breakpoint outputs to allow checking 
+! 2011/05/03, AS: Extension to multiple instrument views. Wavelength array is
+!    now allocated. Added wavelength to breakpoint outputs to allow checking
 !    when >1 view selected.
 ! 2011/05/03, CP: removed allocation of LUTs into individual
 !    routine so ntau,nrensatzen etc could be read and used directly from LUT
 !    files and are not replicated else where
 ! 2014/01/16, GM: Added allocation of SAD_LUT%table_use* arrays.
 ! 2014/01/23, GM: Cleaned up code.
-! 2014/02/04, MJ: Implements code for AVHRR to assign channel numbers for LUT 
+! 2014/02/04, MJ: Implements code for AVHRR to assign channel numbers for LUT
 !    names.
 ! 2014/09/20, GM: Use a subroutine to create the LUT filenames.
 ! 2014/10/10, GM: Use the new LUT read code.

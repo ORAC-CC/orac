@@ -29,38 +29,38 @@
 !
 ! History:
 ! 2000/08/23, AS: Original version
-! 2001/01/09, AS: Added setting of NSolar, YSolar, NThermal, YThermal in 
+! 2001/01/09, AS: Added setting of NSolar, YSolar, NThermal, YThermal in
 !    Ctrl%Ind. Ctrl%Ind%Y renamed Y_Id
-! 2001/01/16, AS: Added code to set ThermalFirst to SolarLast+1 if no thermal 
+! 2001/01/16, AS: Added code to set ThermalFirst to SolarLast+1 if no thermal
 !    channels are selected.
 ! 2001/01/19, AS: comments updated
 ! 2001/01/22, AS: Solar%Rs now converted from percentage to a fraction.
 !    Ctrl%Ind%YSolar, YThermal no longer set here (reverted to driver file).
 !    Ctrl%Ind%NSolar, NThermal now checked here rather than set here.
 ! 2001/02/05, KS: Added calculation of hidden Ctrl%Ind%NMixed.
-! 2001/02/12, KS: Added calculation of hidden Ctrl%Ind%MDAD_LW and 
-!    Ctrl%Ind%MDAD_SW, the indices of channels used in the MDAD method to 
+! 2001/02/12, KS: Added calculation of hidden Ctrl%Ind%MDAD_LW and
+!    Ctrl%Ind%MDAD_SW, the indices of channels used in the MDAD method to
 !    determine FG Pc, phase and Tau.
 ! 2001/05/17, AS: Added setting of measurement error covariance values Ctrl%Sy.
-! 2001/05/22, AS: Change to Ctrl%Sy setting. Moved out of "if" blocks for the 
-!    thermal / solar channels into it's own "if... else". Previously, for mixed 
+! 2001/05/22, AS: Change to Ctrl%Sy setting. Moved out of "if" blocks for the
+!    thermal / solar channels into it's own "if... else". Previously, for mixed
 !    channels the thermal value (from NEBT) could be overwritten by the solar.
-! 2001/06/07, AS: Ensured that MDAD_LW and SW are zeroed. Homog and coreg noise 
-!    terms are squared after reading in. Solar values are also converted to 
+! 2001/06/07, AS: Ensured that MDAD_LW and SW are zeroed. Homog and coreg noise
+!    terms are squared after reading in. Solar values are also converted to
 !    fractions (chan file values are %).
 ! 2001/06/25, AS: Removed old debug output.
-! 2001/07/11, AS: Added code to read Solar%F1 and convert from annual mean solar 
+! 2001/07/11, AS: Added code to read Solar%F1 and convert from annual mean solar
 !    constant to a value for the day of year.
-! 2001/08/14, AS: Moved code to convert Solar constant value from here to 
+! 2001/08/14, AS: Moved code to convert Solar constant value from here to
 !    Read_ATSR_MSI since the latter now reads the date from the MSI file header.
 ! 2012/09/20, ??: Added channel index to y_id value.
-! 2013/11/14, MJ: Some cleanup and bugfixing: Fixed bug with selection of 
+! 2013/11/14, MJ: Some cleanup and bugfixing: Fixed bug with selection of
 !    MDAD_SW/LW: changed diff to abs(diff)
-! 2014/02/04, MJ: Implements code for AVHRR to assign channel numbers for LUT 
+! 2014/02/04, MJ: Implements code for AVHRR to assign channel numbers for LUT
 !    names.
 ! 2014/05/23, GM: Cleaned up code.
 ! 2014/07/01, AP:  Added check to see if SAD file exists to clarify error message
-! 2014/08/01, GM: Use refactored code into Find_MDAD_LW() and Find_MDAD_SW() to 
+! 2014/08/01, GM: Use refactored code into Find_MDAD_LW() and Find_MDAD_SW() to
 !    use here and elsewhere.
 ! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/
 !    thermal channels with respect to the channels actually processed,

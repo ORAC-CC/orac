@@ -517,7 +517,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       SPixel%SnSav(m,m) = Ctrl%Sx(m) * Ctrl%Sx(m)
    end do
    SPixel%Loc%LastX0 = 1
-   SPixel%Loc%LastX0 = 1
+   SPixel%Loc%LastY0 = 1
 
    ! Start OMP parallel loop for along track direction.
    !$OMP DO SCHEDULE(GUIDED)

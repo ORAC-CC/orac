@@ -42,16 +42,16 @@
 !
 ! History:
 ! 2001/07/05, AS: Original version
-! 2001/07/06, AS: Sets SPixel values if solution state is good enough to save 
+! 2001/07/06, AS: Sets SPixel values if solution state is good enough to save
 !    for SDAD setting.
-! 2001/07/09, AS: Converted QCFlag setting to use F90 bit setting intrinsic 
+! 2001/07/09, AS: Converted QCFlag setting to use F90 bit setting intrinsic
 !    functions.
 !    **************** ECV work starts here *************************************
 ! 2011/02/22, AS: Re-applying changes made in late 2001/2002.
-! 2001/12/06, AS: Change to bit setting for QC flag: new definitions. If no 
+! 2001/12/06, AS: Change to bit setting for QC flag: new definitions. If no
 !    convergence, only bit (MaxStateVar+1) is set. If cost exceeds max, only bit
-!    (MaxStateVar+2 is set). Previously all "state variable" bits were set as 
-!    well. State variable bits are now set independently of the other two bits. 
+!    (MaxStateVar+2 is set). Previously all "state variable" bits were set as
+!    well. State variable bits are now set independently of the other two bits.
 !    Moved setting of SPixel%SnSav to this routine.
 ! 2011/11/18, CP: Commented out Diag%y0 so it could be written to the output file
 ! 2012/08/10, CP: Added in measurement array indices

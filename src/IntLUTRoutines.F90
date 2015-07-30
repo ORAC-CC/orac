@@ -67,9 +67,9 @@ contains
 !    Name Type In/Out/Both Description
 !
 ! History:
-! 2014/10/16, GM: Removed the multiple instances of this code in the IntLUT* 
+! 2014/10/16, GM: Removed the multiple instances of this code in the IntLUT*
 !    routines and created this one shared subroutine.
-! 2015/01/13, AP: Switch to array-based channel indexing rather than using 
+! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.
 !
 ! Bugs:

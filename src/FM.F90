@@ -61,29 +61,29 @@
 !    Adding breakpoint outputs.
 ! 2001/03/08, AS: dB_dTs no longer required as an argument to FM_Thermal.
 ! 2001/03/15, AS: Added ThF and ThL indices for RTM_Pc%LW arrays. Required
-!    because these arrays are allocated to match the no. of thermal channels 
+!    because these arrays are allocated to match the no. of thermal channels
 !    requested, but in twilight not all of the requested thermal channels may be
-!    used. Moved InterpolSolar call into the "daytime" section. Not required in 
+!    used. Moved InterpolSolar call into the "daytime" section. Not required in
 !    twilight or nighttime conditions. Breakpoint SAD_Chan%Desc indexing changed:
-!    failed for night-time conditions (needs checking) Using 
-!    SPixel%Ind%ThermalLast as the end of the channel range for RTM_Pc%Tac and 
-!    Tbc, instead of Ctrl%Ind%Ny. Changed declaration of SAD_Chan to size 
+!    failed for night-time conditions (needs checking) Using
+!    SPixel%Ind%ThermalLast as the end of the channel range for RTM_Pc%Tac and
+!    Tbc, instead of Ctrl%Ind%Ny. Changed declaration of SAD_Chan to size
 !    Ctrl%Ind%Ny, not SPixel%Ind%Ny. (Allows use of SPixel%Ind%ThermalFirst etc
-!    to select out channel ranges). Changed declaration of CRP, dCRP to size 
+!    to select out channel ranges). Changed declaration of CRP, dCRP to size
 !    Ctrl%Ind%Ny, not SPixel%Ind%Ny.
 ! 2001/04/11, AS: f0 argument no longer required. Now part of SPixel.
-! 2011/05/04, AS: Extension to multiple instrument views. Values depending on 
+! 2011/05/04, AS: Extension to multiple instrument views. Values depending on
 !    requested, but in twilight not all of the requested thermal channels may be
 !    viewing  geometry are now arrays (no of views). Added SetGZero argument for
-!    no of channels, needed for array sizing. In test for daytime/night 
-!    conditions, add array index to Solzen. Assume that the same illumination 
-!    applies to all instrument views in a given pixel, so we only need to test 
+!    no of channels, needed for array sizing. In test for daytime/night
+!    conditions, add array index to Solzen. Assume that the same illumination
+!    applies to all instrument views in a given pixel, so we only need to test
 !    one element of the array.
-! 2011/05/19, AS: Multiple instrument views, part 2. In twilight and night 
-!    conditions the last element of dY_dX for each channel can be NaN or some 
-!    large value. Try initializing. It is not  clear why this has arisen now, 
+! 2011/05/19, AS: Multiple instrument views, part 2. In twilight and night
+!    conditions the last element of dY_dX for each channel can be NaN or some
+!    large value. Try initializing. It is not  clear why this has arisen now,
 !    but uninitialized values can be dangerous anyway.
-! 2011/09/05, CA: Now calls either linear *or* cubic-spline based RTM 
+! 2011/09/05, CA: Now calls either linear *or* cubic-spline based RTM
 !    interpolation  schemes depending on RTMIntflag
 ! 2011/12/13, CP: Deallocated GZero array at end of routine
 ! 2012/01/14, CP: Changed array input into FM_Thermal and FM_Solar

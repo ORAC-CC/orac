@@ -26,9 +26,9 @@
 ! 2001/01/17, KS: Corrected indexing of RTM%LW%Lat and Lon from 1-D to 2-D array
 ! 2001/01/25, KS: Corrected calculation of LatN and LonN in RTM%LW%Grid.
 ! 2001/02/21, AS: Added Tbc to LW structure. Previously missing from model data.
-! 2001/03/01, AS: Removed allocation of R_Clear in LW RTM struct. R_Clear not 
+! 2001/03/01, AS: Removed allocation of R_Clear in LW RTM struct. R_Clear not
 !    available from RTM data file.
-! 2001/03/30, AS: Added setting of new grid variables MaxLat, MinLat, MaxLon, 
+! 2001/03/30, AS: Added setting of new grid variables MaxLat, MinLat, MaxLon,
 !    MinLon. Avoids repeated re-calculation in GetRTM.
 ! 2001/06/22, AS: Updated header comments and added argument intent.
 ! 2001/10/24, AS: Added deallocation of local allocatable arrays. Removed change
@@ -52,7 +52,7 @@
 !    Date changed to character length 8 (YYYYMMDD) instead of 10.
 ! 2002/09/19, CP: Bug found, changed the deltalat and deltalon
 ! 2002/12/12, CP: Now read geopotential height from profile file)
-! 2011/02/15, AS: Character string "dummy" length changed from 10 to 8, 
+! 2011/02/15, AS: Character string "dummy" length changed from 10 to 8,
 !    otherwise read error occurs on prtm file.
 ! 2011/11/07, CP: Tidied up comments but no actual code change
 ! 2012/01/20, CP: changed reading of buf prtm array

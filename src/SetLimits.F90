@@ -25,13 +25,13 @@
 !
 ! History:
 ! 2001/04/25, AS: Original version
-! 2001/06/24, AS: Ts limits are now set dynamically using the a priori 
+! 2001/06/24, AS: Ts limits are now set dynamically using the a priori
 !    information.
-! 2001/08/16, AS: Bug fix in Ts limit setting: now SUBTRACTS delta_Ts to get 
+! 2001/08/16, AS: Bug fix in Ts limit setting: now SUBTRACTS delta_Ts to get
 !    lower limit and ADDs to get the upper limit, rather than vice versa.
-! 2011/03/22, AS: Removal of phase change, phase 2. SAD_CloudClass now has 1 
+! 2011/03/22, AS: Removal of phase change, phase 2. SAD_CloudClass now has 1
 !    dimension rather than N cloud classes.
-! 2011/04/05, AS: Removed selection methods SAD and SDAD. SAD_CloudClass 
+! 2011/04/05, AS: Removed selection methods SAD and SDAD. SAD_CloudClass
 !    argument no longer required.
 ! 2014/05/21, GM: Cleaned up the code.
 !

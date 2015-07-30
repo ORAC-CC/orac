@@ -24,7 +24,7 @@
 ! 2000/11/23, AS: Fixed debugging output statements: only executed if status is 0
 ! 2001/06/25, AS: Tidied up. Header comments completed. Removed debug code.
 !    **************** ECV work starts here *************************************
-! 2011/03/22, AS: Removal of phase change. Only 1 cloud class required for each 
+! 2011/03/22, AS: Removal of phase change. Only 1 cloud class required for each
 !    retrieval run. SADCloudClass and SAD_LUT array dimensions changed.
 ! 2011/08/05, CP: Removed routine that read the cloudclass config file removed
 !    from function name.

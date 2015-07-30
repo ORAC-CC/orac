@@ -51,12 +51,12 @@
 !    Added argument intent specifiers.
 ! 2001/08/10, AS: Updated to handle image segments/super-pixels of any size.
 !    Requires  handling of end of file during read on the last segment. On
-!    earlier segments EOF is reported as an error. Added code to read the file 
-!    header, extract date and convert the solar constant mean values in SAD_Chan 
+!    earlier segments EOF is reported as an error. Added code to read the file
+!    header, extract date and convert the solar constant mean values in SAD_Chan
 !    to values for the current month and day. (New argument SAD_Chan). Intent for
 !    Ctrl changed to inout.
 ! 2001/08/22, AS: Bug fix: added status check before ReadFPArray call.
-! 2001/08/23, AS: Additional argument to ReadFPArray: Ctrl%Ind%NChans, no of 
+! 2001/08/23, AS: Additional argument to ReadFPArray: Ctrl%Ind%NChans, no of
 !    instrument channels available, specifies size of input array of channel data
 !    (as opposed to Ctrl%Ind%Ny which specifies the size of the output array).
 ! 2011/05/18, AS:
@@ -66,7 +66,7 @@
 !    Array of selected channel identifiers Y_Id must be modified before
 !    passing to ReadFPArray, as it contains repeated Channel IDs if more than
 !    one view is selected. Use Y_Id and ViewIdx to populate ChanIdx array.
-! 2011/06/28, CP: Remove reference to ATSR,  Changed  Ctrl.Ind.Nchans to  
+! 2011/06/28, CP: Remove reference to ATSR,  Changed  Ctrl.Ind.Nchans to
 !    Ctrl.Ind.Ny to remove dependence! on config file
 ! 2011/11/25, CP: Add ChI(replace y_id) channel indice variable.
 ! 2011/12/02, CP: Changed Ninstviews to nviews

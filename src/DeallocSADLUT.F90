@@ -8,8 +8,8 @@
 ! History:
 ! 2001/10/24, AS: Original version
 !    **************** ECV work starts here *************************************
-! 2011/03/22, AS: Remove phase change, phase 2. SAD_CloudClass no longer 
-!    allocated to N cloud classes, only 1 cloud class per run. SAD_LUT is also 
+! 2011/03/22, AS: Remove phase change, phase 2. SAD_CloudClass no longer
+!    allocated to N cloud classes, only 1 cloud class per run. SAD_LUT is also
 !    now reduced from dimension N cloud classes to 1.
 ! 2011/06/11, CP: Deallocated new LUT variables
 ! 2011/12/13, CP: Deallocated new LUT wavelenght variables

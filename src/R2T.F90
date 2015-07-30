@@ -20,14 +20,14 @@
 !
 ! History:
 ! 2000/11/22, KS: Original version
-! 2000/11/24, KS: Modified to be more general and pass back d_T_d_R instead of 
+! 2000/11/24, KS: Modified to be more general and pass back d_T_d_R instead of
 !    d_BT. Removed log10 error checking
-! 2001/02/05, KS: Removed Ctrl from argument list. Added NChan (number of 
-!    required channels). This was done to enable R2T to be called from FM for 
+! 2001/02/05, KS: Removed Ctrl from argument list. Added NChan (number of
+!    required channels). This was done to enable R2T to be called from FM for
 !    the mixed channel calculations.
-! 2001/02/27, AS: Bug fix: Following previous change, SAD_Chan needs an array 
+! 2001/02/27, AS: Bug fix: Following previous change, SAD_Chan needs an array
 !    index when used: SAD_Chan(:)%X, not SAD_Chan%X
-! 2013/11/25, MJ: Fixed division by zero in log by simple workaround. Should 
+! 2013/11/25, MJ: Fixed division by zero in log by simple workaround. Should
 !    possibly avoided altogether.
 ! 2014/08/04, GM: Cleaned up the code.
 ! 2014/10/24, OS: Avoid division by zero.

@@ -40,13 +40,13 @@
 ! 2001/06/08, AS: Changed structure of first guess phase setting to take account
 !    of cases when XMDAD setting is requested but unsuccessful.
 !    Added scaling of Sx.
-! 2001/06/11, AS: XScale must be squared where used with Sx since Sx contains 
+! 2001/06/11, AS: XScale must be squared where used with Sx since Sx contains
 !    the square of the errors in X.
 ! 2001/07/06, AS: Update to comments. Added status check on SDAD a priori setting
-! 2001/07/17, AS:  Using named constants for Ts errors when set by AUX method. 
+! 2001/07/17, AS:  Using named constants for Ts errors when set by AUX method.
 !    Errors now squared.
 !    **************** ECV work starts here *************************************
-! 2011/03/21, AS:  Removal of functionality to change phase during retrieval. 
+! 2011/03/21, AS:  Removal of functionality to change phase during retrieval.
 !    Phase will be initialised to the Ctrl value in the main function. Since
 !    phase is now fixed for the retrieval only 1 cloud class is used, hence the
 !    first guess cloud class is the 1 available class.
@@ -70,8 +70,8 @@
 ! 2014/01/15, GM: Fixed setting of SPixel%Sx for inactive state variables so
 !    that Ctrl%Sx is not modified.
 ! 2014/08/01, GM: Cleaned up the code.
-! 2015/01/27, AP: Switched first guess auxilliary surface temperature from 
-!    lowest T level to skint to be consistent with a priori. As rttov_driver.F90 
+! 2015/01/27, AP: Switched first guess auxilliary surface temperature from
+!    lowest T level to skint to be consistent with a priori. As rttov_driver.F90
 !    sets these to be the same, it makes little difference other than tidiness.
 !
 ! $Id$

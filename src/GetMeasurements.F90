@@ -85,8 +85,8 @@
 !    Added illum array
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2012/07/08, CP: Changed ilumination logic.
-! 2014/08/01, GM: The above change requires use of 
-!    SPixel%spixel_y_to_ctrl_y_index(:) to properly index the right channels 
+! 2014/08/01, GM: The above change requires use of
+!    SPixel%spixel_y_to_ctrl_y_index(:) to properly index the right channels
 !    from MSI_Data%MSI(:,:,:) and cleanup.
 ! 2015/01/13, AP: Remove ThermalFirst,ThermalLast.
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.

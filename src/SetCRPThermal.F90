@@ -35,23 +35,23 @@
 !
 ! History:
 ! 2001/01/16, AS: original version
-! 2001/01/23, AS:  "Zero'th point" calculation moved out of this routine into a 
-!    separate subroutine called before this one (info is common to both 
-!    SetCRPSolar and Thermal). New argument GZero passed in, Tau, Re, Geom 
+! 2001/01/23, AS:  "Zero'th point" calculation moved out of this routine into a
+!    separate subroutine called before this one (info is common to both
+!    SetCRPSolar and Thermal). New argument GZero passed in, Tau, Re, Geom
 !    arguments no longer required as a result.
-! 2001/02/20, AS: New argument Ind. Part of SPixel structure containing updated 
+! 2001/02/20, AS: New argument Ind. Part of SPixel structure containing updated
 !    channel indices. Used to index channels within the SAD_LUT arrays.
-! 2001/02/27, AS: Argument First no longer required following the change above. 
-!    CRP, dCRP array indexing changed since only the required channels will be 
+! 2001/02/27, AS: Argument First no longer required following the change above.
+!    CRP, dCRP array indexing changed since only the required channels will be
 !    passed by the calling routine.
 ! 2011/09/05, CA: Status now passed to interpolation routines IntLUT*.f90
 ! 2012/02/07, CA: Ctrl struct now passed to interpolation routines IntLUT*.f90
 ! 2013/12/03, MJ: Makes LUTs more flexible wrt channel and properties.
-! 2014/01/16, GM: Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset 
+! 2014/01/16, GM: Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset
 !    arguments to Int_LUT_TauSatRe().
 ! 2014/01/20, GM: Cleaned up code.
 ! 2014/01/24, GM: Some intent changes.
-! 2015/01/13, AP: Switch to array-based channel indexing rather than using 
+! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.
 !
 ! $Id$

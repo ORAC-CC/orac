@@ -34,8 +34,8 @@
 !
 ! History:
 ! 2009/04/22, CA: Original version
-! 2014/12/23, GM: Performance improvements gained by unrolling the sparse 
-!    matrix-vector multiplication and eliminating some un-needed memory copies 
+! 2014/12/23, GM: Performance improvements gained by unrolling the sparse
+!    matrix-vector multiplication and eliminating some un-needed memory copies
 !    plus some code cleanup.
 !
 ! $Id$

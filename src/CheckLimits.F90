@@ -23,13 +23,13 @@
 !
 ! History:
 ! 2001/04/26, AS: Original version
-! 2001/06/29, AS: Added "quick exit" on detection of phase change. If phase 
-!    change occurs new limits will be set by Invert_Marquardt and the state 
-!    vector will be checked again. Hence there's no point checking the remaining 
+! 2001/06/29, AS: Added "quick exit" on detection of phase change. If phase
+!    change occurs new limits will be set by Invert_Marquardt and the state
+!    vector will be checked again. Hence there's no point checking the remaining
 !    state variables with the current phase limits.
 !    **************** ECV work starts here *************************************
-! 2011/03/21, AS: Removed phase change functionality. Each state variable will 
-!    now simply be bound by the defined upper and lower limits. Phase_change 
+! 2011/03/21, AS: Removed phase change functionality. Each state variable will
+!    now simply be bound by the defined upper and lower limits. Phase_change
 !    argument kept for now to avoid updating function interface.
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/07/16, AP: Removed redundant arguments.

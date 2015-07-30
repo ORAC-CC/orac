@@ -48,7 +48,7 @@
 !
 ! History:
 ! 2009/04/22, CA: Original version
-! 2014/12/23, GM: Transpose the use of local variable c for compatibility with 
+! 2014/12/23, GM: Transpose the use of local variable c for compatibility with
 !    changes made in bcucof() plus some code cleanup.
 !
 ! $Id$

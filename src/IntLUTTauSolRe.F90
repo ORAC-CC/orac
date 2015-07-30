@@ -28,7 +28,7 @@
 ! F      real array In          Function to be interpolated, i.e. array of
 !                               LUT values with dimensions (channels, Tau,
 !                               SolZen, Re).
-! NChans int         In          Number of channels in F
+! NChans int        In          Number of channels in F
 ! Grid   struct     In          LUT Grid data: see SADLUT.F90
 !                               Includes the grid values in Tau, Re,
 !                               SolZen, no. of values and step size
@@ -44,10 +44,10 @@
 !                               channels.
 ! FGrads real array Both        Interpolated gradient values in Tau and Re
 !                               for all channels.
-! iCRP   int        In           Index of cloud property to interpolate
-! chan_to_ctrl_index             Indices of input chs within Ctrl arrays
+! iCRP   int        In          Index of cloud property to interpolate
+! chan_to_ctrl_index            Indices of input chs within Ctrl arrays
 !        int array  In
-! chan_to_spixel_index           Indices of input chs within SPixel arrays
+! chan_to_spixel_index          Indices of input chs within SPixel arrays
 !        int array  In
 ! status int        Out         Standard status code set by ECP routines
 !

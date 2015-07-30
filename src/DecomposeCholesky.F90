@@ -22,8 +22,8 @@
 !                                not positive definite
 !
 ! History:
-! 2001/04/20, TN: Original version. Adapted from "choldc" in "Numerical Recipes 
-!    in Fortran 90: The Art of Parallel Scientific Computing" 
+! 2001/04/20, TN: Original version. Adapted from "choldc" in "Numerical Recipes
+!    in Fortran 90: The Art of Parallel Scientific Computing"
 !    (ISBN 0-521-57439-0), pages 1038-39. Error handling and types changed,
 !    diagonal p incorporated in A.
 ! 2001/07/06, AS: Changed error code to "ECP style": uses a named constant from

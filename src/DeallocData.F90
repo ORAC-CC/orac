@@ -17,8 +17,8 @@
 ! 2001/10/24, AS: original version
 !    **************** ECV work starts here *************************************
 ! 2011/02/22, AS: Re-introducing changes made in late 2001/2002.
-! 2011/11/01, AS: Added test of allocation status before each array is 
-!    deallocated. If an error occurs on reading one or more of the MSI Data 
+! 2011/11/01, AS: Added test of allocation status before each array is
+!    deallocated. If an error occurs on reading one or more of the MSI Data
 !    arrays it's possible that not all arrays are associated (see Read_Sat_Data,
 !    Read_ATSR_MSI etc).
 ! 2012/06/05, CP: Deallocate ALB data

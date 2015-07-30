@@ -8,20 +8,20 @@
 ! 2000/12/15, KS: Original version
 ! 2001/01/11, KS: Added Grid substructures for use in Get_RTM
 ! 2001/01/26, AS: Added comments to explain variable names.
-! 2001/02/21, AS: Added Tbc to LW struct. Previously missing from RTM model 
+! 2001/02/21, AS: Added Tbc to LW struct. Previously missing from RTM model
 !    data file.
-! 2001/03/01, AS: Removed R_Clear from LW struct. Not available from RTM data 
+! 2001/03/01, AS: Removed R_Clear from LW struct. Not available from RTM data
 !    file.
-! 2001/03/30, AS: Added MaxLat, MinLat, MaxLon, MinLon to Grid structure, so 
-!    that these can be calculated once and stored (otherwise checked many times 
-!    in GetRTM). These are different from Lat0, LatN etc as they make no 
-!    assumption about the order in which lat/lon values are supplied (lowest to 
+! 2001/03/30, AS: Added MaxLat, MinLat, MaxLon, MinLon to Grid structure, so
+!    that these can be calculated once and stored (otherwise checked many times
+!    in GetRTM). These are different from Lat0, LatN etc as they make no
+!    assumption about the order in which lat/lon values are supplied (lowest to
 !    highest or vice-versa).
 ! 2001/06/22, AS: Improved commenting for Lw arrays.
 !    **************** ECV work starts here *************************************
 ! 2011/02/08, AS: Re-introducing changes made in late 2001/2002.
 ! 2001/12/13, CP: Added in geopotential height.
-! 2011/09/22, CP: Modified SWRTM to vary with lat/lon not just latitude, remove 
+! 2011/09/22, CP: Modified SWRTM to vary with lat/lon not just latitude, remove
 !    variables that are the same as LWRTM
 ! 2012/09/04, CP: Added skipt and sp variable.
 ! 2014/05/27, GM: Some cleanup.

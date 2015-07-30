@@ -36,7 +36,7 @@
 ! 2001/03/16, AS: Using named constants for averaging methods.
 !    Removed check for invalid averaging method (now in ReadDriver)
 ! 2001/03/29, AS: Removed out-of-date comment on channel setting
-! 2200/04/07, AS: Added allocation and setting of active state variable arrays 
+! 2200/04/07, AS: Added allocation and setting of active state variable arrays
 !    for the current SPixel conditions.
 ! 2001/06/06, AS: Added setting of new SPixel variables MDAD_LW, MDAD_SW and
 !    FG, AP arrays
@@ -110,7 +110,6 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
 !     write(unit=message, fmt=*) &
 !        'Get_Geometry: Satellite zenith angle exceeds maximum allowed ' &
 !        // 'in super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
-!     call Write_log(Ctrl, trim(message), status)
    end if
 
    ! Calculate the mean air mass factors.

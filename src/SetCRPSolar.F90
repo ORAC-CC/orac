@@ -22,16 +22,16 @@
 !                                          of the SAD_LUT arrays.
 ! chan_to_ctrl_index int       In          Indices for each SAD channel, giving
 !                                          the index in the Ctrl arrays
-! SAD_LUT            struct    In          Static Application Data structure 
-!                                          containing the arrays of Look-Up 
+! SAD_LUT            struct    In          Static Application Data structure
+!                                          containing the arrays of Look-Up
 !                                          Tables to be interpolated.
-! GZero              Struct    In          Holds "0'th point" information 
-!                                          relating to  the grid on which the 
+! GZero              Struct    In          Holds "0'th point" information
+!                                          relating to  the grid on which the
 !                                          SAD_LUT CRP arrays are based.
 ! CRPOut             real(8)   Out         Array of interpolated values
-! dCRPOut            real(8,2) Out         Array of interpolated gradients in 
+! dCRPOut            real(8,2) Out         Array of interpolated gradients in
 !                                          Tau, Re
-! status             int       Out         Standard status code set by ECP 
+! status             int       Out         Standard status code set by ECP
 !                                          routines
 !
 ! History:
@@ -40,21 +40,21 @@
 !    just handled (Tau, Re) interpolation.
 ! 2000/11/24, AS: Changed subroutine interface: SatZen, SunZe, RelAzi now passed
 !    in Geom structure (defined in SPixel module).
-! 2000/12/01, AS: Renamed routines containing sun or Solzen in their names. 
+! 2000/12/01, AS: Renamed routines containing sun or Solzen in their names.
 !    Using Sol or SolZen instead. Variables using Sun or Su also renamed Sol/So
 ! 2001/01/11, AS: Ctrl%Ind%Y renamed Y_Id
-! 2001/01/16, AS: Header comments brought up to date. Change of array indices 
+! 2001/01/16, AS: Header comments brought up to date. Change of array indices
 !    for LUT arrays that cover both solar and thermal channels.
 ! 2001/01/17, AS: Interpolation of Rd removed. Not required in FM_Solar.
-! 2001/01/23, AS: "Zero'th point" calculation moved out of this routine into a 
-!    separate subroutine called before this one (info is common to both 
-!    SetCRPSolar and Thermal). New argument GZero passed in, Tau, Re, Geom 
+! 2001/01/23, AS: "Zero'th point" calculation moved out of this routine into a
+!    separate subroutine called before this one (info is common to both
+!    SetCRPSolar and Thermal). New argument GZero passed in, Tau, Re, Geom
 !    arguments no longer required as a result.
-! 2001/02/16, AS: Only "purely" solar channels are handled by FMSolar and it's 
+! 2001/02/16, AS: Only "purely" solar channels are handled by FMSolar and it's
 !    subordinates. New argument SPixel: struct contains revised channel indices.
 !    Use these to determine which channels to interpolate.
 ! 2001/02/19, AS: Error in previous update. Ranges of channels interpolated were
-!    correct previously, although the index values should be picked up 
+!    correct previously, although the index values should be picked up
 !    from SPixel.
 ! 2001/02/20, AS: Use of SPixel argument changed: only the Ind part of SPixel is
 !    used hence only this sub-struct is passed. Simplifies array indexing.
@@ -63,15 +63,15 @@
 ! 2011/09/05, CA: Status now passed to interpolation routines IntLUT*.f90
 ! 2012/02/07, CA: Ctrl struct now passed to interpolation routines IntLUT*.f90
 ! 2013/12/03, MJ: Makes LUTs more flexible wrt channel and properties.
-! 2014/01/16, GM: Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset 
+! 2014/01/16, GM: Made use of i_chan_to_ctrl_offset and i_chan_to_spixel_offset
 !    arguments to Int_LUT_TauSatRe().
 ! 2014/01/20, GM: Cleaned up code.
 ! 2014/01/24, GM: Some intent changes.
-! 2014/05/28, GM: Do not assume that Set_CRP_Solar() took care of the mixed 
+! 2014/05/28, GM: Do not assume that Set_CRP_Solar() took care of the mixed
 !    channels.
 ! 2014/09/09, GM: Changes related to new BRDF support.
 ! 2014/12/01, CP: Added in interpolation for cloud albedo
-! 2015/01/13, AP: Switch to array-based channel indexing rather than using 
+! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.
 !
 ! $Id$

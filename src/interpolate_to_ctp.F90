@@ -11,9 +11,9 @@
 ! ------------------------------------------------------------------------------
 ! SPixel struct Both        Retrieval pixel structure
 ! Ctrl   struct In          Control structure
-! BT_o   real   Out         
-! BP_o   real   Out        
-! DBP_o  real   Out        
+! BT_o   real   Out
+! BP_o   real   Out
+! DBP_o  real   Out
 !
 ! History:
 ! 2013/11/22, MJ: Writes routine which return ctp FG including uncertainty
@@ -125,7 +125,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       kspot = locate(invert_temp(1:mon_k_trop),BT_o)
 
       ! if observed BT (BT_o) is larger than all values in RTM-derived
-      ! profile stretch, set kspot to 0; otherwise, the approach above would 
+      ! profile stretch, set kspot to 0; otherwise, the approach above would
       ! set kspot to 59 and finally choose a very low BP_o
       ! accordingly, if BT_o < minval(invert_temp), kspot is set to 59,
       ! because IF condition in locate_int is never TRUE and iteration will

@@ -25,9 +25,9 @@
 ! 2001/01/17, KS: Corrected indexing of RTM%SW%Lat and Lon from 1-D to 2-D array
 ! 2001/01/25, KS: Corrected calculation of LatN and LonN in RTM%SW%Grid.
 ! 2001/02/21, AS: Added Tbc to SW structure. Previously missing from model data.
-! 2001/03/01, AS: Removed allocation of R_Clear in SW RTM struct. R_Clear not 
+! 2001/03/01, AS: Removed allocation of R_Clear in SW RTM struct. R_Clear not
 !    availablefrom RTM data file.
-! 2001/03/30, AS: Added setting of new grid variables MaxLat, MinLat, MaxLon, 
+! 2001/03/30, AS: Added setting of new grid variables MaxLat, MinLat, MaxLon,
 !    MinLon. Avoids repeated re-calculation in GetRTM.
 ! 2001/06/22, AS: Updated header comments and added argument intent.
 ! 2001/10/24, AS: Added deallocation of local allocatable arrays. Removed change
@@ -42,15 +42,15 @@
 !      indices are no longer present.
 !    - Array dimensions in buf swapped round to make access more efficient.
 !      Channel is now the first index, then pressure level, and parameter last.
-!    Error checking improved: iostat values checked. Added tests for allocation 
+!    Error checking improved: iostat values checked. Added tests for allocation
 !    status before deallocation of local allocatable arrays (may not be allocated
-!    if errors detected before allocation). Date changed to character length 8 
+!    if errors detected before allocation). Date changed to character length 8
 !    (YYYYMMDD) instead of 10.
 ! 2002/09/19, CP: bug found, changed the deltalat and deltalon
 ! 2002/12/12, CP: now read geopotential height from profile file)
-! 2011/02/15, AS: Character string "dummy" length changed from 10 to 8, 
+! 2011/02/15, AS: Character string "dummy" length changed from 10 to 8,
 !    otherwise read error occurs on prtm file.
-! 2011/09/22, CP: modified the lwrtm code to read in the shortwave rtm which is 
+! 2011/09/22, CP: modified the lwrtm code to read in the shortwave rtm which is
 !    now scene dependant and not fixed for each latitude band.
 ! 2012/01/20, ??: General tidy up
 ! 2012/08/23, MJ: Uses initial file as template for netcdf read.

@@ -41,7 +41,7 @@
 !    - new arguments MSI_files_open, lun (since the file now stays open for
 !      repeated read operations)
 !    - file open depends on MSI_files_open flag
-!    Structure Data renamed MSI_Data since Data is a reserved word (hasn't 
+!    Structure Data renamed MSI_Data since Data is a reserved word (hasn't
 !    caused any problems so far but it might). Added argument intent specifiers.
 ! 2001/08/10, AS: Updated to handle image segments/super-pixels of any size.
 !    Requires handling of end of file during read on the last segment. On

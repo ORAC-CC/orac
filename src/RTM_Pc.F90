@@ -10,16 +10,16 @@
 ! 2001/02/08, AS: All arrays made allocatable.
 ! 2001/02/16, AS: d_Tac_d_Pc, d_Tbc_d_Pc added to LW struct.
 ! 2001/02/20, AS: Renaming variables to remove excess underscores.
-! 2001/03/07, AS: Added dTac_dPc, dTbc_dPc to the top-level struct. The LW and 
-!    SW values must be combined into these arrays for later use. Further 
+! 2001/03/07, AS: Added dTac_dPc, dTbc_dPc to the top-level struct. The LW and
+!    SW values must be combined into these arrays for later use. Further
 !    comments under Algorithm in AllocRTMPc.f90.
 ! 2001/05/11, AS: Added Tc parameter (temperature at Pc).
 !    **************** ECV work starts here *************************************
 ! 2011/02/21, AS: Re-introducing changes made in late 2001/2002.
 ! 2002/12/13, CP: Added Hc parameter.
-! 2002/12/23, AS: Added dHc_dPc parameter. Rate of change of geopotential ht 
+! 2002/12/23, AS: Added dHc_dPc parameter. Rate of change of geopotential ht
 !    w.r.t pressure. Allows us to calculate an error on Hc for output.
-! 2013/01/17, MJ: Adds dTc_dPc: rate of change of temperature w.r.t pressure. 
+! 2013/01/17, MJ: Adds dTc_dPc: rate of change of temperature w.r.t pressure.
 !    Allows us to calculate an error on Tc for output.
 ! 2014/05/27, GM: Some cleanup.
 ! 2015/01/07, AP: Eliminate write to RTM_Pc%Tac, Tbc.

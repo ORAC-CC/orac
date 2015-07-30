@@ -7,12 +7,12 @@
 ! History:
 ! 2000/12/19, KS: Original version
 !    **************** ECV work starts here *************************************
-! 2001/02/22, AS: Re-applying changes made in late 2001/2002 detailed in 
+! 2001/02/22, AS: Re-applying changes made in late 2001/2002 detailed in
 !    comments below.
 ! 2002/05/27, CP: Added in albedo ALB.
 ! 2002/07/xx, CP: Changed the definition of alb to kind.
 ! 2011/02/23, AS: Changed CloudFlags to real(4) to match current ORAC data.
-! 2011/04/14, AS: Extension to handle multiple views. Geometry struct extended 
+! 2011/04/14, AS: Extension to handle multiple views. Geometry struct extended
 !    to take Sat, Sol and Azi data from >1 view (forward,, nadir etc).
 ! 2011/07/28, CP: Added in variable for scan line file
 ! 2012/06/15, CP: added in variable for illum

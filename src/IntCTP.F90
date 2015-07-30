@@ -51,9 +51,9 @@
 ! status int     Out         Indicates an out-of-bounds result
 !
 ! History:
-! 2015/02/06, AP: Initial version, derived from interpolate_to_ctp. Moved the 
-!    functionality of blmodification and extrap_into_tropopause here as this is 
-!    the only thing that uses them. Locating within temperature profile now 
+! 2015/02/06, AP: Initial version, derived from interpolate_to_ctp. Moved the
+!    functionality of blmodification and extrap_into_tropopause here as this is
+!    the only thing that uses them. Locating within temperature profile now
 !    dependant on the cloud phase (WAT bottom up, everything else top down).
 !
 ! $Id$
@@ -69,9 +69,9 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    use Int_Routines_def
    use planck
    use SAD_Chan_def
-   
+
    implicit none
-   
+
    type(SPixel_t), intent(inout)  :: SPixel           ! Contains RTM profiles
    type(Ctrl_t),   intent(in)  :: Ctrl             ! Contains control information
    real,           intent(in)  :: BT               ! Brightness temp to interpol
@@ -81,7 +81,7 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    real,    parameter :: min_tropopause = 30.0     ! Heighest p allowed for trop
    real,    parameter :: max_tropopause = 500.0    ! Lowest p allowed for trop
    integer, parameter :: depth          = 2        ! # layers added to inversions
-   
+
    integer                             :: nz       ! Number of vertical levels
    integer                             :: k, l     ! Indexing variables
    integer, dimension(1)               :: k_tmax   ! Index of max temperature
@@ -93,14 +93,14 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    real, dimension(SPixel%RTM%LW%Np-1) :: p        ! Pressure profile
    real, dimension(SPixel%RTM%LW%Np-1) :: h        ! Approx height profile
    real                                :: gradient ! For extrapolation
-   
+
 
    status = 0
-   
+
    ! When reading the following, remember that 1 is TOA and nz is the surface.
    ! Hence, t(k) < t(k-1) reads as "Is the temperature here less than the
    ! temperature in the level vertically above this level?"
-   
+
    ! Short variable names
    nz = SPixel%RTM%LW%Np-1
    t  = SPixel%RTM%LW%T(1:nz)
@@ -108,7 +108,7 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    ! Estimate vertical height with the geopotential divided by gravity
    h  = (0.001 / g_wmo) * SPixel%RTM%LW%H(1:nz)
 
-   
+
    !----------------------- CORRECT TEMPERATURE PROFILE ------------------------
 
    ! Search for temperature inversions within the troposphere, starting
@@ -163,7 +163,7 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
          end do
 
          ! We also require that the lapse rate remain this low in the 2km above
-         ! the tropopause         
+         ! the tropopause
          if ((t(k) - t(l)) / (h(l) - h(k)) < 2.) exit
       end if
 
@@ -176,7 +176,7 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    gradient = (t(k+1) - t(k+2)) / (p(k+1) - p(k+2))
    t(1:k) = t(k+1) + gradient * (p(1:k) - p(k+1))
 
-   
+
    !----------------- INTERPOLATE BT ONTO TEMPERATURE PROFILE ------------------
 
    ! Identify the range of temperature in the profile
@@ -211,7 +211,7 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
                 (BT <= t(k_int) .and. BT < t(k_int+step)))
          k_int = k_int + step
       end do
-      
+
       ! Interpolate
       CTP = p(k_int) + (BT - t(k_int)) * (p(k_int+step) - p(k_int)) / &
                        (t(k_int+step) - t(k_int))

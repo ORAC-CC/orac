@@ -34,22 +34,22 @@
 !
 ! History:
 ! 2001/01/23, AS: original version
-! 2007/05/31, AY: Consolidation of code for dual-view BRDF retrieval. This 
-!    means added calculation of new geometry variables for second view (copied 
+! 2007/05/31, AY: Consolidation of code for dual-view BRDF retrieval. This
+!    means added calculation of new geometry variables for second view (copied
 !    existing code, adding "_2" suffix).
-! 2008/03/21, GT: Changes for spline interpolation: Added mT0, mT1, mR0, mR1 
+! 2008/03/21, GT: Changes for spline interpolation: Added mT0, mT1, mR0, mR1
 !    calculations - gradients at iT0, iT1, iR0 and iR1 LUT points.
 ! 2001/09/05, CA: 'locate' routine is now used for domain searching
-! 2011/09/05, CA: next nearest neighbour indices iTm1,iTp1,iRm1,iRp1 now 
+! 2011/09/05, CA: next nearest neighbour indices iTm1,iTp1,iRm1,iRp1 now
 !    evaluated
 ! 2012/12/13, CP: added in allocation of isaz0 parameter
-! 2012/09/15, CP: remove deallocation test from this routine and instead 
+! 2012/09/15, CP: remove deallocation test from this routine and instead
 !    deallocate at the end of FM.F90 this solved g95
-! 2013/05/08, MJ: changes loop boundaries and parameter list contents memory 
+! 2013/05/08, MJ: changes loop boundaries and parameter list contents memory
 !    problem
 ! 2013/12/03, MJ: makes LUTs more flexible wrt channel and properties
-! 2014/01/16, GM: Fixed indexing operations on uninitialized (garbage) values 
-!    introducing use of SPixel%spixel_y_to_ctrl_y_index and the 
+! 2014/01/16, GM: Fixed indexing operations on uninitialized (garbage) values
+!    introducing use of SPixel%spixel_y_to_ctrl_y_index and the
 !    SAD_LUT%table_use* arrays.
 ! 2014/01/23, GM: Cleaned up code.
 ! 2014/09/09, GM: Changes related to new BRDF support.

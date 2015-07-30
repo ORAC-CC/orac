@@ -121,7 +121,7 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    else
       temp_real = sqrt(SPixel%Sn(ITau,ITau))
       ! CErr(OK) = CVAL(ok) * alog(10) * CErr(OK) from load_grape
-!     temp_real = temp_real_cot*alog(10)*sqrt(SPixel%Sn(ITau,ITau)) 
+!     temp_real = temp_real_cot*alog(10)*sqrt(SPixel%Sn(ITau,ITau))
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot_error(i,j), &

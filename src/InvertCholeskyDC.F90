@@ -7,8 +7,8 @@
 ! decomposition. This subroutine makes approximately n^3 / 6 multiplications.
 !
 ! Description and Algorithm details:
-! Substantial rework of code example in "Numerical Recipies in FORTRAN 77: The 
-! Art of Scientific Computing" (ISBN 0-521-43064-X), page 91. Loop ordering 
+! Substantial rework of code example in "Numerical Recipies in FORTRAN 77: The
+! Art of Scientific Computing" (ISBN 0-521-43064-X), page 91. Loop ordering
 ! changed, inner loop  parallelised, diagonal p incorporated in A.
 !
 ! Arguments:

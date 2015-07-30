@@ -23,10 +23,10 @@
 !
 ! History:
 ! 2001/01/30, KS: Original version
-! 2001/04/27, AS: Now uses SPixel instead of Ctrl for active state variable 
+! 2001/04/27, AS: Now uses SPixel instead of Ctrl for active state variable
 !    indices and channels.
 ! 2001/06/06, AS: Implicit none statement was wrongly placed.
-! 2012/01/20, CP: Bug fix changed dy_dx array changed spixe%nx to maxstatevar 
+! 2012/01/20, CP: Bug fix changed dy_dx array changed spixe%nx to maxstatevar
 !    definition
 ! 2012/01/01, MJ: Changes Kx assignment
 ! 2014/05/21, GM: Cleaned up the code.

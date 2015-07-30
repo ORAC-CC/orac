@@ -20,11 +20,11 @@
 !
 ! History:
 ! 2000/11/24, KS: original version
-! 2001/02/05, KS: Removed Ctrl from argument list. Added NChan (number of 
+! 2001/02/05, KS: Removed Ctrl from argument list. Added NChan (number of
 !    required channels). This was done to be consistent with changed to R2T.
 ! 2001/02/21, AS: comments on arguments corrected
 ! 2014/01/28, MJ: Fixes some overflow: however, only symptoms are cured here not
-!    the actual reason for the overflow (unknown) nor is this condition 
+!    the actual reason for the overflow (unknown) nor is this condition
 !    reported as status.
 ! 2014/02/04, MJ: Fixes bug in above fix.
 ! 2014/10/24, OS: Some minor changes to deal with float under/overflow issues.

@@ -20,7 +20,7 @@
 ! yGrid real array Both         y-values for F
 ! delx  real       In           Grid step in x
 ! dely  real       In           Grid step in y
-! CurX  real       In           The "current" x value, i.e. the point where we 
+! CurX  real       In           The "current" x value, i.e. the point where we
 !                               want to find the interpolated value.
 ! CurY  real       In           The "current" y value
 ! FInt  real       Out          Interpolated value of F at CurX, CurY
