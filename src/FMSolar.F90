@@ -301,7 +301,8 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
       ! At sensor viewing angle:
       Tbc_v(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
            SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-      ! At sensor viewing angle:
+
+      ! Calculate below cloud (bc) diffuse transmittances
       Tbc_d(i) = RTM_Pc%SW%Tbc(Solar(i)) ! ** (1. / cos(66. * d2r))
    end do
 
@@ -461,8 +462,9 @@ else
          SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
          RTM_Pc%SW%Tbc(Solar(i)) ** &
             (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-      ! At sensor viewing angle:
-      Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) ! * (1. / cos(66. * d2r)) * RTM_Pc%SW%Tbc(i) ** (1. / cos(66. * d2r) - 1.)
+      ! Diffuse
+      Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) ! &
+!        * (1. / cos(66. * d2r)) * RTM_Pc%SW%Tbc(i) ** (1. / cos(66. * d2r) - 1.)
    end do
 
    ! Calculate the derivative of the diffuse transmittance from cloud to
