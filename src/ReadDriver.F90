@@ -93,6 +93,7 @@
 !    are set using ECP_Constants parameters within the code.
 ! 2015/07/29, GM: Removed unused ash CloudClasses.
 ! 2015/07/29, GM: Added missing initializations of Ctrl%RS%B for MODIS.
+! 2015/07/31, GM: Changed a priori values and uncertainties for EYJ.
 !
 ! $Id$
 !
@@ -508,19 +509,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
    case('EYJ')
-      Ctrl%XB(ITau) = 0.8
-      Ctrl%XB(IRe) = 0.5
-      Ctrl%XB(IPc) = 1000.
+      Ctrl%XB(ITau) = 0.18
+      Ctrl%XB(IRe) = 0.7
+      Ctrl%XB(IPc) = 600.
       Ctrl%XB(IFr) = 1.
       Ctrl%XB(ITs) = 300.
 
-      Ctrl%X0(ITau) = 0.8
-      Ctrl%X0(IRe) = 0.5
-      Ctrl%X0(IPc) = 1000.
+      Ctrl%X0(ITau) = 0.18
+      Ctrl%X0(IRe) = 0.7
+      Ctrl%X0(IPc) = 600.
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
    case default
-      write(*,*) 'ERROR: ReadDriver(): Unsupported cloud/aerosol class: ', &
+      write(*,*) 'ERROR: ReadDriver(): Unsupported LUT class: ', &
                  trim(Ctrl%LUTClass)
       stop BadLUTClass
    end select
@@ -528,8 +529,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Set default a priori error covariance
    if (trim(Ctrl%LUTClass) .eq. 'EYJ') then
-      Ctrl%Sx(ITau) = 1.0e+01 ! optical depth
-      Ctrl%Sx(IRe) = 1.0e-01 ! effective radii
+      Ctrl%Sx(ITau) = 1.0e+08 ! optical depth
+      Ctrl%Sx(IRe) = 1.0e+08 ! effective radii
       Ctrl%Sx(IPc) = 1.0e+08 ! ctp
       Ctrl%Sx(IFr) = 1.0e+08 ! fraction
       Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
@@ -900,9 +901,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    end do
 
 
-   ! --------------------------------------------------------------------------
+   ! ---------------------------------------------------------------------------
    ! Things that had to be moved to after the optional lines
-   ! -------------------------------------------------------------------------
+   ! ---------------------------------------------------------------------------
 
    ! Sort out inactive elements of day/night/twilight arrays
    Ctrl%Ind%NxI_Dy = MaxStateVar - Ctrl%Ind%Nx_Dy
