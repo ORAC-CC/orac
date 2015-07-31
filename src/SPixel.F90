@@ -191,7 +191,6 @@ module SPixel_def
 
    type Surface_t
       logical             :: Land         ! Flag pixels containing land surface
-      logical             :: Sea          ! Flag pixels containing sea surface
       real, pointer       :: Rs(:)        ! Super pixel surface reflectance
       real, pointer       :: SRs(:,:)     ! Super pixel surface reflectance
                                           ! covariances
