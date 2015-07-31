@@ -279,13 +279,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    huge_value = huge(1.0)/Ctrl%InvPar%MqStep
 
-   ! Set state variable limits for initial phase
+   ! Set state variable limits
    call Set_Limits(Ctrl, SPixel, stat)
    if (stat /= 0) GO TO 99 ! Terminate processing this pixel
-
-   ! Dynamically set upper limit of cloud top pressure to lowest profile
-   ! pressure of current pixel.
-   SPixel%XULim(iPc)=SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
 
    ! Invert a priori covariance matrix
    error_matrix = SPixel%Sx(SPixel%X, SPixel%X)

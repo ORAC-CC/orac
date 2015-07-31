@@ -82,4 +82,8 @@ subroutine Set_Limits(Ctrl, SPixel, status)
       end if
    end do
 
+   ! Dynamically set upper limit of cloud top pressure to lowest profile
+   ! pressure of current pixel.
+   SPixel%XULim(iPc) = SPixel%RTM%LW%p(SPixel%RTM%LW%Np)
+
 end subroutine Set_Limits
