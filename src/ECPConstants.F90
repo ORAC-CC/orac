@@ -68,6 +68,7 @@
 ! 2015/01/12, AP: Added bit positions for Ctrl%Ind%Ch_Is.
 ! 2015/03/03, AP: Added terms for aerosol retrieval.
 ! 2015/03/11, GM: Increase MaxNumMeas and MaxNumSolar to 36 and 20, respectively.
+! 2015/07/14, AP: Add aerosol terms.
 ! 2015/07/26, GM: Added deflate_level and shuffle_flag.
 ! 2015/07/27, AP: Removed unused variables ECPLogReclen, MaxDiagFlags,
 !    MaxCloudClass, AMeth..., DiFlag..., CCFileName. Added MaxNumViews, MaxTypes.
@@ -155,6 +156,7 @@ module ECP_constants
    ! Codes for RTM interpolation (to Pc) methods
    integer, parameter :: RTMIntMethLinear = 0
    integer, parameter :: RTMIntMethSpline = 1
+   integer, parameter :: RTMIntMethNone   = 2
 
    ! Codes for FM LUT interpolation methods
    integer, parameter :: LUTIntMethLinear  = 0
@@ -357,7 +359,6 @@ module ECP_constants
    integer, parameter :: ScanFileCloseErr           = 1280
    integer, parameter :: LUTIntflagErr              = 1284
    integer, parameter :: RTMIntflagErr              = 1285
-   integer, parameter :: SPixelIllum                = 1290
    integer, parameter :: CWP_Calcerror              = 1300
    integer, parameter :: IllumFileOpenErr           = 1310
    integer, parameter :: IllumFileReadHeadErr       = 1311

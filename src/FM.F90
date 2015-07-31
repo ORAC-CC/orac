@@ -189,10 +189,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
    ! Call Set_GZero (results used in both FM_Thermal and FM_Solar).
    call Allocate_GZero(GZero, SPixel)
-
-   if (status == 0) then
-      call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT, GZero, status)
-   end if
+   call Set_GZero(X(iTau), X(iRe), Ctrl, SPixel, SAD_LUT, GZero, status)
 
    ! Evaluate long and short wave transmittance values (depending on whether it
    ! is daytime, twilight or nighttime).
@@ -204,18 +201,20 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       ! Call routine to interpolate RTM data to the cloud pressure level.
       ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
-      if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
+      select case (Ctrl%RTMIntflag)
+      case (RTMIntMethLinear)
          call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
               SAD_therm, RTM_Pc, status)
-      else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
+      case (RTMIntMethSpline)
          call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
               SAD_therm, RTM_Pc, status)
-      else
+      case (RTMIntMethNone)
+      case default
          write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
               Ctrl%LUTIntflag
          status = RTMIntflagErr
          return
-      end if
+      end select
 
       ! Call thermal forward model (required for day, twilight and night)
       call FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_therm, &
@@ -234,16 +233,18 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    if (SPixel%Ind%NSolar > 0 .and. status == 0) then
       ! Call routine to interpolate RTM data to the cloud pressure level.
       ! Interpol_Solar populates the SW part of RTM_Pc.
-      if (Ctrl%RTMIntflag .eq. RTMIntMethLinear) then
+      select case (Ctrl%RTMIntflag)
+      case (RTMIntMethLinear)
          call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc, status)
-      else if (Ctrl%RTMIntflag .eq. RTMIntMethSpline) then
+      case (RTMIntMethSpline)
          call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
-      else
+      case (RTMIntMethNone)
+      case default
          write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
               Ctrl%LUTIntflag
          status = RTMIntflagErr
          return
-      end if
+      end select
 
       ! Call short wave forward model. Note that solar channels only are
       ! passed (including mixed channels).

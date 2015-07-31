@@ -47,7 +47,7 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
          l = len_trim(in)
          label = in(1:l)
          call clean_driver_label(label)
-         
+
          select case (label)
          ! State vector indices
          case('ITAU')
@@ -67,13 +67,13 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
             out = SelmMeas
          case('SELMAUX')
             out = SelmAux
-         ! RTM interpolation methods   
+         ! RTM interpolation methods
          case('RTMINTMETHLINEAR')
             out = RTMIntMethLinear
          case('RTMINTMETHSPLINE')
             out = RTMIntMethSpline
-!         case('RTMINTMETHNONE')
-!            out = RTMIntMethNone
+         case('RTMINTMETHNONE')
+            out = RTMIntMethNone
          ! LUT interpolaton method selection
          case('LUTINTMETHLINEAR')
             out = LUTIntMethLinear
