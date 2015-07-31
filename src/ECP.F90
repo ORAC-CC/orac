@@ -559,6 +559,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             end if
          else
             ! Retrieval suffered fatal error
+            SPixel%X0        = MissingXn
+            SPixel%Xb        = MissingXn
             SPixel%Xn        = MissingXn
             SPixel%Sn        = MissingSn
             SPixel%CWP       = MissingXn

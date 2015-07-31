@@ -73,6 +73,7 @@
 ! 2015/01/27, AP: Switched first guess auxilliary surface temperature from
 !    lowest T level to skint to be consistent with a priori. As rttov_driver.F90
 !    sets these to be the same, it makes little difference other than tidiness.
+! 2015/06/02, AP: Moved repeated code into subroutine.
 !
 ! $Id$
 !
@@ -97,67 +98,22 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
    ! Local variables
 
-   logical :: SetErr ! Tells X_MDAD/X_SDAD that an error value should be set
-   integer :: i      ! Loop counter
-   real    :: X      ! State variable value returned by X_MDAD
-   real    :: Err    ! Error value returned by X_MDAD
+   integer :: i       ! Loop counters
+   real    :: X       ! State variable value returned by X_MDAD
+   real    :: Err     ! Error value returned by X_MDAD
 
    status = 0
-
-   SetErr = .false.
 
    ! Set a priori and associated error covariance, then set first guess.
    ! Having set both, check for internal consistency vs the cloud class limits.
    ! Loop over all variables, checking the method for each. One loop is used for
    ! both AP and FG setting. This is intended to minimise the number of
-   ! operations in incrementing the counter, but the setting of SetErr may
-   ! offset this saving.
+   ! operations in incrementing the counter.
 
    ! Set a priori
-   SPixel%Sx = 0
+   SPixel%Sx = 0.
    do i = 1, MaxStateVar
-      if (status /= 0) exit
-
-      SetErr = .true. ! Error values are required for a priori
-
-      select case (SPixel%AP(i))
-
-      case (SelmMeas) ! Measurement dependent. Not supported for all variables.
-         call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
-         if (status == 0) then
-            SPixel%Xb(i)   = X
-            SPixel%Sx(i,i) = (Err * Ctrl%Invpar%XScale(i)) ** 2
-         end if
-
-      case (SelmAUX) ! AUX method not supported for most vars.
-         if (i == ITs) then
-            ! Error setting could be much more sophisticated. The current scheme
-            ! takes no account of relative proportions of land/sea in the
-            ! current SPixel.
-            SPixel%Xb(i)   = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-            if (SPixel%Surface%Land)  then
-               SPixel%Sx(i,i) = (AUXErrTsLand * Ctrl%Invpar%XScale(i)) ** 2
-            else
-               SPixel%Sx(i,i) = (AUXErrTsSea * Ctrl%Invpar%XScale(i)) ** 2
-            end if
-         end if
-      end select
-
-      ! Ctrl method, used if method is Ctrl or other methods failed.
-      ! Ctrl%Sx is squared after reading in.
-      if (SPixel%AP(i) == SelmCtrl .or. status /= 0) then
-         SPixel%Xb(i) = Ctrl%Xb(i)
-
-         if (any(SPixel%X .eq. i)) then
-            SPixel%Sx(i,i) = (Ctrl%Sx(i) * Ctrl%Invpar%XScale(i)) ** 2
-         else
-            ! Assume that the inactive state variables are well known do not try
-            ! to retrieve
-            SPixel%Sx(i,i) = (1.0e-5     * Ctrl%Invpar%XScale(i)) ** 2
-         end if
-
-         status = 0
-      end if
+      call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, SPixel%Xb(i), status, SPixel%Sx(i,i))
 
       ! Having set a priori for the variable, set first guess. If the FG method
       ! is the same as the AP, just copy the AP value. The first "if" is
@@ -167,36 +123,10 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
       ! Set first guess
       if (SPixel%FG(i) == SPixel%AP(i)) then
-
          SPixel%X0(i) = SPixel%Xb(i)
       else
-         if (status /= 0) exit
-
-         SetErr = .false. ! Error values are not required for first guess
-
-         select case (SPixel%FG(i))
-
-         case (SelmMeas)  ! MDAD method. Not supported for all variables.
-            call X_MDAD(Ctrl, SAD_Chan, SPixel, i, SetErr, X, Err, status)
-            SPixel%X0(i) = X
-            if (status == XMDADBounds) then
-!              write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'
-               status = 0
-            else if (status /= 0) then
-!               write(*,*) 'ERROR: X_MDAD(): Failed with status:',status
-            end if
-
-         case (SelmAUX)   ! AUX method not supported for most vars.
-            if (i == ITs) &
-               SPixel%X0(i) = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
-         end select
-
-         ! Ctrl method, used if method is Ctrl or other methods failed.
-         if (SPixel%FG(i) == SelmCtrl .or. status /= 0) then
-            SPixel%X0(i) = Ctrl%X0(i)
-            status = 0
-         end if
-
+         call Get_State(SPixel%FG(i), i, Ctrl, SPixel, SAD_Chan, SPixel%X0(i), &
+                        status)
       end if
 
       ! Check for internal consistency with the cloud class limits. Set the a
@@ -216,3 +146,78 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    end do
 
 end subroutine Get_X
+
+
+subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, X, status, Err)
+
+   use CTRL_def
+   use ECP_Constants
+   use SAD_Chan_def
+
+   implicit none
+
+   ! Declare arguments
+   integer,          intent(in)    :: mode
+   integer,          intent(in)    :: i
+   type(Ctrl_t),     intent(in)    :: Ctrl
+   type(SPixel_t),   intent(inout) :: SPixel
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   real,             intent(out)   :: X
+   integer,          intent(out)   :: status
+   real,   optional, intent(out)   :: Err
+
+   ! Local variables
+   real :: Scale2
+
+   Scale2 = Ctrl%Invpar%XScale(i) * Ctrl%Invpar%XScale(i)
+
+   select case (mode)
+   case (SelmMeas) ! Draw state from measurement vector
+      call X_MDAD(Ctrl, SAD_Chan, SPixel, i, X, status, Err)
+      if (status == XMDADBounds) then ! ACP: Check cause of this
+!        write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'
+         status = 0
+      else if (status /= 0) then
+!        write(*,*) 'ERROR: X_MDAD(): Failed with status:',status
+      end if
+      if (status == 0 .and. present(Err)) Err = Err * Err * Scale2
+
+   ! ACP: case (SelmSAD) is available in the aerosol code and used for
+   ! tau and ref. This will be done via Ctrl%XB/X0 instead.
+
+   case (SelmAUX) ! Draw from auxilliary input information
+      if (i == ITs) then ! Surface temperature
+         ! Error setting could be much more sophisticated. The current scheme
+         ! takes no account of relative proportions of land/sea in the
+         ! current SPixel.
+         X = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+         if (present(Err)) then
+            if (SPixel%Surface%Land) then
+               Err = AUXErrTsLand * AUXErrTsLand * Scale2
+            else
+               Err = AUXErrTsSea * AUXErrTsSea * Scale2
+            end if
+         end if
+      end if
+   end select
+
+   ! Draw from Ctrl structure (e.g. driver file). Used if method other
+   ! methods failed. Ctrl%Sx is squared after reading in.
+   if (mode == SelmCtrl .or. status /= 0) then
+      ! Use a priori value from Ctrl structure
+      X = Ctrl%Xb(i)
+
+      if (present(Err)) then
+         if (any(SPixel%X == i)) then
+            Err = Ctrl%Sx(i) * Ctrl%Sx(i) * Scale2
+         else
+            ! Assume that the inactive state variables are well known do not try
+            ! to retrieve
+            Err = 1.0e-10 * Scale2 ! 1e-5 ** 2
+         end if
+      end if
+
+      status = 0
+   end if
+
+end subroutine Get_State

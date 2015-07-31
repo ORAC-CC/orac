@@ -49,7 +49,6 @@
 ! SAD_Chan struct  In          Structure summarising channel information
 ! SPixel   struct  Both        Super pixel structure
 ! index    int     In          The required state parameter index
-! SetErr   logical In          State parameter error flag
 ! X        real    Out         The state parameter
 ! Err      real    Out         (A priori) error in state parameter
 ! status   int     Out         Indicates success/failure of subroutine.
@@ -104,7 +103,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
+#define CTP_LEGACY_MODE .false.
+
+subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
 
    use Ctrl_def
    use ECP_Constants
@@ -120,13 +121,12 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(in)    :: index
-   logical,          intent(in)    :: SetErr
    real,             intent(out)   :: X
-   real,             intent(out)   :: Err
    integer,          intent(out)   :: status
+   real,   optional, intent(out)   :: Err
 
    ! Declare local variables
-   real    :: FGOP(11)
+   real    :: FGOP(11) = [0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, 1.7, 2.0, 2.4] ! Set up first guess optical depth vector
    real    :: Ref_o
    integer :: iFGOP
    real    :: BT_o(1)
@@ -137,10 +137,6 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    integer :: MDAD_LW_to_ctrl_y, MDAD_LW_to_ctrl_ythermal
 
    status = 0
-
-   ! Set up first guess optical depth vector
-
-   data FGOP / 0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, 1.7, 2.0, 2.4 /
 
    ! Parameters supported are Tau, Pc and f.
    select case (index)
@@ -166,8 +162,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
          end if
 
          X = FGOP(iFGOP)
-
-         if (SetErr) Err = MDADErrTau
+         if (present(Err)) Err = MDADErrTau
       else ! Can't calculate Tau unless it's daylight
          write(*,*)'ERROR: X_MDAD(): Cant calculate Tau unless its daylight'
          status = XMDADMeth
@@ -176,7 +171,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    case (iPc) ! Cloud pressure, Pc
 
       if (SPixel%Ind%MDAD_LW > 0) then
-#ifdef LEGACY_CTP_MODE
+if (CTP_LEGACY_MODE) then
          ! Ctrl%Ind%MDAD_LW indexes the desired channel wrt Ctrl%Ind%ICh
          ! Find the corresponding index wrt Ctrl%Ind%YThermal
          MDAD_LW_to_ctrl_y = SPixel%spixel_y_to_ctrl_y_index(SPixel%Ind%MDAD_LW)
@@ -209,20 +204,20 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
             X = Ctrl%X0(iPc)
 
             !FG does not need Error but AP does
-            Err = MDADErrPc
+            if (present(Err)) Err = MDADErrPc
             write(*,*)'ERROR: X_MDAD(): FG does not need Error but AP does'
             status = XMDADMeth
          end if
-#else
+else
          if (SPixel%Ym(SPixel%Ind%MDAD_LW) /= MissingXn) then
             ! Interpolate for the BT to the rad. profile to get Pc FG/AP
             call Int_CTP(SPixel, Ctrl, SPixel%Ym(SPixel%Ind%MDAD_LW), X, status)
-            if (SetErr) Err = MDADErrPc
+            if (present(Err)) Err = MDADErrPc
          else ! Invalid data available
             status = XMDADMeth
             write(*,*) 'WARNING: X_MDAD(): Invalid thermal data'
          end if
-#endif
+endif
       else ! Can't calculate Pc if required LW channels not selected
          status = XMDADMeth
 !         write(*,*) 'WARNING: X_MDAD(): Cant calculate Pc if required LW channels not selected'
@@ -231,7 +226,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, SetErr, X, Err, status)
    case (iFr) ! Cloud fraction, f
       ! Always overcast
       X = 1
-      if (SetErr) Err = MDADErrF1
+      if (present(Err)) Err = MDADErrF1
    end select
 
 end subroutine X_MDAD

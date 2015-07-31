@@ -49,7 +49,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    type(Ctrl_t),   intent(in)    :: Ctrl
    real,           intent(out)   :: BT_o
    real,           intent(out)   :: BP_o
-   real,           intent(out)   :: DBP_o
+   real, optional, intent(out)   :: DBP_o
 
    integer :: i
    integer :: mon_k,mon_k_trop
@@ -57,7 +57,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    integer :: kspot
    integer :: min_prof_lev
 
-   real    :: dx,dy,xd
+   real    :: dx,dy,xd,DBP_temp
    real    :: invert_t(SPixel%RTM%LW%Np)
    real    :: invert_p(SPixel%RTM%LW%Np)
    real    :: invert_h(SPixel%RTM%LW%Np)
@@ -67,7 +67,7 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
    BP_o=Ctrl%X0(iPc)
 
    ! FG does not need Error but AP does
-   DBP_o=MDADErrPc
+   if (present(DBP_o)) DBP_o=MDADErrPc
 
    ! minimum level above which to look for inversion
    min_prof_lev=3
@@ -164,8 +164,6 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
          BP_o=invert_p(1)
       end if
 
-      DBP_o=MDADErrPc
-
    ! If point too high up just use highest point for extrapolation
    ! (could inspect profile coming from top as well, but keep it simple for the
    ! time being)
@@ -181,15 +179,12 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
          BP_o=invert_p(mon_k)
       end if
 
-      DBP_o=MDADErrPc
-
       ! if extrapolation goes too far use just highest point
       if (BP_o .lt. Ctrl%Invpar%XLLim(3)) then
          BP_o=Ctrl%X0(3)
       end if
 
       BP_o=Ctrl%X0(3)
-      DBP_o=MDADErrPc
 
    ! if everything good, do the actual interpolation
    else
@@ -202,17 +197,16 @@ subroutine interpolate2ctp(SPixel,Ctrl,BT_o,BP_o,DBP_o)
       if (abs(invert_t(upper_index)-invert_t(lower_index)) .gt. ditherm3) then
          call polint(invert_t(lower_index:upper_index), &
                      invert_p(lower_index:upper_index), &
-                     upper_index-lower_index+1,BT_o,BP_o,DBP_o)
+                     upper_index-lower_index+1,BT_o,BP_o,DBP_temp)
+         if (present(DBP_o)) DBP_o = DBP_temp
       else
          BP_o=invert_p(upper_index)
-         DBP_o=MDADErrPc
       end if
    end if
 
    ! last safety check, if pressure too low set to lower limit
    if (BP_o .lt. Ctrl%Invpar%XLLim(3)) then
       BP_o=Ctrl%Invpar%XLLim(3)
-      DBP_o=MDADErrPc
    end if
 
 end subroutine interpolate2ctp
