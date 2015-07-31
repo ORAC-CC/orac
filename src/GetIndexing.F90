@@ -42,14 +42,13 @@
 ! 2015/03/11, GM: Remove check for missing r_e channels. It is valid not to
 !    have any.
 ! 2015/07/30, AP: Move cloud indexing logic into its own routine.
+! 2015/07/31, GM: Remove cloud legacy mode.
 !
 ! $Id$
 !
 ! Bugs:
 ! Assumes a single view for now.
 !-------------------------------------------------------------------------------
-
-#define LEGACY_MODE .false.
 
 subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
@@ -294,11 +293,11 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
 
    ! Define arguments
 
-   type(CTRL_t),     intent(in)    :: Ctrl
-   type(SPixel_t),   intent(inout) :: SPixel
-   logical,          intent(inout) :: is_not_used_or_missing(:)
-   real,             intent(out)   :: X(:)
-   integer,          intent(inout) :: status
+   type(CTRL_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(inout) :: SPixel
+   logical,        intent(inout) :: is_not_used_or_missing(:)
+   real,           intent(out)   :: X(:)
+   integer,        intent(inout) :: status
 
    ! Define local variables
 
@@ -365,91 +364,6 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
       end if
    end do
 
-   ! In legacy mode we create conditions so that when the main state variable
-   ! selection loop below is reached it will duplicate what the old code did in
-   ! Read_Illum_nc() and Get_Illum() including all the missed cases.  This is
-   ! here for testing and fall back and should eventually be removed.
-
-if (LEGACY_MODE) then
-   ! Find the opposite of the above (not n_tau_chans but n_bad_tau_chans).  This
-   ! value fits the legacy mode logic better.
-   n_bad_chans     = 0
-   n_bad_tau_chans = 0
-   n_bad_r_e_chans = 0
-   n_bad_ir_chans  = 0
-   do i_chan = 1, Ctrl%Ind%Ny
-      if (is_not_used_or_missing(i_chan)) then
-         if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%tau_chans) .or. &
-             any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%r_e_chans) .or. &
-             any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%ir_chans))  &
-            n_bad_chans = n_bad_chans + 1
-
-         if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%tau_chans)) then
-            n_bad_tau_chans = n_bad_tau_chans + 1
-         end if
-         if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%r_e_chans)) then
-            n_bad_r_e_chans = n_bad_r_e_chans + 1
-         end if
-         if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%ir_chans))  then
-            n_bad_ir_chans  = n_bad_ir_chans  + 1
-         end if
-      end if
-   end do
-
-   ! Limits used in the active state variable selection loop
-   min_tau_chans = 2
-   min_r_e_chans = 1
-   min_ir_chans  = 1
-
-   ! Deal with special cases
-   if (SPixel%Illum(1) .eq. IDay) then
-      if ((n_bad_r_e_chans .eq. 0 .and. n_bad_tau_chans .eq. 0) &
-          .and. n_bad_ir_chans .eq. 0) then
-
-      else if ((n_bad_r_e_chans .eq. 0 .and. n_bad_tau_chans .eq. 1) .and. &
-               n_bad_ir_chans .eq. 0) then
-
-      else if ((n_bad_r_e_chans .eq. 0 .and. n_bad_tau_chans .eq. 0) .and. &
-               n_bad_ir_chans .eq. 1) then
-         if (.not. is_not_used_or_missing(Ctrl%Ind%Ny)) then
-            status = SPixelIndexing
-            return
-         end if
-
-      else if ((n_bad_r_e_chans .gt. 0 .or. n_bad_tau_chans .gt. 0) .and. &
-               n_bad_ir_chans .eq. 0) then
-         SPixel%Illum(1) = INight
-
-         do i_chan = 1, Ctrl%Ind%Ny
-            if (btest(Ctrl%Ind%Ch_Is(i_chan), SolarBit) .and. .not. &
-                btest(Ctrl%Ind%Ch_Is(i_chan), ThermalBit)) then
-                 is_not_used_or_missing(i_chan) = .true.
-            end if
-         end do
-      else
-         status = SPixelIndexing
-         return
-      end if
-
-!  else if (SPixel%Illum(1) .eq. ITwi) then
-
-   else if (SPixel%Illum(1) .eq. INight) then
-      if (n_bad_ir_chans .eq. 1) then
-         status = SPixelIndexing
-         return
-      end if
-   end if
-
-   ! Minimum number of retrievable parameters to perform a retrieval
-   if (SPixel%Illum(1) .eq. IDay) then
-      min_x = Ctrl%Ind%Nx_Dy
-   else if (SPixel%Illum(1) .eq. ITwi) then
-      min_x = Ctrl%Ind%Nx_Tw
-   else if (SPixel%Illum(1) .eq. INight) then
-      min_x = Ctrl%Ind%Nx_Ni
-   end if
-else
-
    ! Limits used in the active state variable selection loop
    min_tau_chans = 1
    min_r_e_chans = 1
@@ -457,7 +371,6 @@ else
 
    ! Minimum number of active state variables to perform a retrieval
    min_x         = 1
-end if
 
    ! Select the active state variables
    ii_x = 0
