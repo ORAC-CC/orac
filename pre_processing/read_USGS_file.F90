@@ -108,7 +108,7 @@ contains
     integer(kind=sint),dimension(2) :: nearest_xy
 
     ! local variables
-    integer :: i, j
+    integer :: i
     real(kind=sreal) :: imager_latlon,nearest_latlon
     integer(kind=lint) :: latlon_1000,latlon_base,latlon_dummy,check50
 

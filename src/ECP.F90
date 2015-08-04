@@ -218,7 +218,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer             :: ios        ! I/O status value from file operations
    integer             :: status     ! Status value returned from subroutines
    logical             :: verbose    ! Verbose print-out flag
-   integer             :: log_lun    ! Logical Unit Number for log file
    integer             :: diag_lun   ! Logical unit number for diagnostics file
 
    character(8)        :: date       ! date returned from Date And Time function

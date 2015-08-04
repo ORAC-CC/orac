@@ -213,10 +213,8 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
 
    ! Define local variables
 
-   integer           :: i
-   integer           :: ictrl, ispix, itherm, isolar
-   real              :: minsolzen
-   real, allocatable :: thermal(:)
+   integer :: i
+   integer :: ictrl, ispix, itherm, isolar
 #ifdef BKP
    integer :: bkp_lun   ! Unit number for breakpoint file
    integer :: ios       ! I/O status for breakpoint file

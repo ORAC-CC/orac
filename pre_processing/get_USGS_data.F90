@@ -43,7 +43,6 @@ subroutine get_USGS_data(path_to_USGS_file, imager_flags, imager_geolocation, &
   logical                          :: USGS_file_exist
   character(len=7)                 :: USGS_file_read
   integer(kind=4)                  :: i,j
-  integer(kind=sint)               :: stat
   integer(kind=sint), dimension(2) :: nearest_xy
 
   if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering get_USGS_data()'

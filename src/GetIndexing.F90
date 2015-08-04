@@ -306,7 +306,6 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
    integer :: n_chans, n_tau_chans, n_r_e_chans, n_ir_chans, &
               n_ir_chans2
    integer :: min_tau_chans, min_r_e_chans, min_ir_chans, min_x
-   integer :: n_bad_chans, n_bad_tau_chans, n_bad_r_e_chans, n_bad_ir_chans
 
    ! If it is day time, Ctrl%ReChans is associated and any channels in
    ! Ctrl%ReChans are greater than zero and match any of the available r_e

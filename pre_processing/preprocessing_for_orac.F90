@@ -307,10 +307,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: verbose
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
-   logical                          :: corrupt
    logical                          :: check
    integer                          :: nargs
-   integer                          :: check_output
 
    integer                          :: i
    character(path_length)           :: line, label, value
@@ -377,6 +375,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    ! this is for the wrapper
 #ifdef WRAPPER
+   logical                          :: corrupt
+   integer                          :: check_output
    integer                          :: mytask,ntasks,lower_bound,upper_bound
    character(len=file_length)       :: jid
 #endif

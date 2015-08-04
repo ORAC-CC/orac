@@ -223,12 +223,12 @@ subroutine NC_READ_PACKED_NAME_1D(ncid, name, val, verbose, dim, ind)
          arr => val(i:i)
 
          start(dim) = ind(i)
-         include 'nc_read_field.inc'
+         include 'nc_read_packed_field.inc'
       end do
    else
       ! read everything
       arr => val
-      include 'nc_read_field.inc'
+      include 'nc_read_packed_field.inc'
    end if
 
 end subroutine NC_READ_PACKED_NAME_1D

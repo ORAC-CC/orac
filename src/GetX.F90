@@ -98,9 +98,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 
    ! Local variables
 
-   integer :: i       ! Loop counters
-   real    :: X       ! State variable value returned by X_MDAD
-   real    :: Err     ! Error value returned by X_MDAD
+   integer :: i ! Loop counter
 
    ! Set status to zero
    status = 0
@@ -114,7 +112,8 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    ! Set a priori
    SPixel%Sx = 0.
    do i = 1, MaxStateVar
-      call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, SPixel%Xb(i), status, SPixel%Sx(i,i))
+      call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, SPixel%Xb(i), &
+                     status, SPixel%Sx(i,i))
 
       ! Having set a priori for the variable, set first guess. If the FG method
       ! is the same as the AP, just copy the AP value. The first "if" is
@@ -176,10 +175,14 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, X, status, Err)
    case (SelmMeas) ! Draw state from measurement vector
       call X_MDAD(Ctrl, SAD_Chan, SPixel, i, X, status, Err)
       if (status == XMDADBounds) then ! ACP: Check cause of this
-!        write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'
+#ifdef DEBUG
+         write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'
+#endif
          status = 0
       else if (status /= 0) then
-!        write(*,*) 'ERROR: X_MDAD(): Failed with status:',status
+#ifdef DEBUG
+         write(*,*) 'ERROR: X_MDAD(): Failed with status:',status
+#endif
       end if
       if (status == 0 .and. present(Err)) Err = Err * Err * Scale2
 

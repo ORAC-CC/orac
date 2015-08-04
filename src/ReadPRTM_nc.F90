@@ -36,9 +36,9 @@ subroutine Read_PRTM_nc(Ctrl, RTM, verbose)
 
    ! Argument declarations
 
-   type(CTRL_t), intent(in)    :: Ctrl
-   type(RTM_t),  intent(out)   :: RTM
-   logical,      intent(in)    :: verbose
+   type(CTRL_t), intent(in)  :: Ctrl
+   type(RTM_t),  intent(out) :: RTM
+   logical,      intent(in)  :: verbose
 
    ! Local variables
 
@@ -47,11 +47,8 @@ subroutine Read_PRTM_nc(Ctrl, RTM, verbose)
    ! become real(8). The parameter arrays read in via buf, and the lat/lons
    ! etc are explicitly written as real(4) in order to reduce the file size.
 
-   integer                  :: ncid, chan_found, i, j
+   integer                  :: ncid, i
    real(sreal), allocatable :: dummy1d(:)
-   character(Instnamelen)   :: platform, sensor, instname
-   integer, allocatable     :: index(:), ChanID(:)
-!  real(4), allocatable     :: WvNumber(:)
 
 
    ! Open PRTM file

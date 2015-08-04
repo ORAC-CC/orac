@@ -87,7 +87,6 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    integer, dimension(1)               :: k_tmax   ! Index of max temperature
    integer, dimension(1)               :: k_tmin   ! Index of min temperature
    integer                             :: k_int    ! Index of interpolated temp
-   real, dimension(:), allocatable     :: t_temp   ! Array temporary
    integer                             :: step     ! Direction of search
    real, dimension(SPixel%RTM%LW%Np-1) :: t        ! Temperature profile
    real, dimension(SPixel%RTM%LW%Np-1) :: p        ! Pressure profile

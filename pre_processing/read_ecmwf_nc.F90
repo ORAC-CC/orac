@@ -104,13 +104,13 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    logical                                  :: three_d
    real(sreal) :: dummy2d(ecmwf%xdim,ecmwf%ydim,1,1)
    real(sreal) :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
-
-   real(sreal) :: ecmwf_lon(ecmwf%xdim),ecmwf_lon_tmp(ecmwf%xdim)
+#ifdef WRAPPER
+   real(sreal) :: ecmwf_lon(ecmwf%xdim)
    real(sreal) :: ecmwf_lat(ecmwf%ydim)
    integer(lint) :: pointer_x(preproc_dims%min_lon:preproc_dims%max_lon)
    integer(lint) :: pointer_y(preproc_dims%min_lat:preproc_dims%max_lat)
    real(sreal) :: diff_lon(ecmwf%xdim),diff_lat(ecmwf%ydim)
-
+#endif
    n=ecmwf%xdim*ecmwf%ydim
 
    allocate(old_data(BUFFER))

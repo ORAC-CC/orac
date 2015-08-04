@@ -500,11 +500,10 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
    type(channel_info_s),       intent(in)    :: channel_info
 
    ! Local variables
-   logical                          :: flag
-   integer(kind=4)                  :: i,j,lon_i,lat_j
-   real(kind=sreal), dimension(4)   :: snow_albedo, ice_albedo, tmp_albedo
-   real(kind=sreal)                 :: snow_threshold, ice_threshold
-   real                             :: fmonth
+   logical                        :: flag
+   integer(kind=4)                :: i,j,lon_i,lat_j
+   real(kind=sreal), dimension(4) :: snow_albedo, ice_albedo, tmp_albedo
+   real(kind=sreal)               :: snow_threshold, ice_threshold
 
 
    snow_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)

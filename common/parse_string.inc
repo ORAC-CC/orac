@@ -62,7 +62,7 @@ integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in) result(status)
    PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: data(:,:)
    integer, optional, intent(in) :: n1_in, n2_in
 
-   character(len=path_length)   :: line, val, remnant
+   character(len=path_length)   :: val, remnant
    integer                      :: i, n1, n2, id
    character(len=1)             :: delim
 
