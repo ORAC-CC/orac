@@ -113,6 +113,7 @@ module ECP_constants
    integer(byte), parameter :: FlagMax    = 1
    integer(byte), parameter :: TypeMin    = 0       ! Cloud/aerosol type flag
    integer(byte), parameter :: TypeMax    = 9
+   real, parameter    :: SolZenMin        = 0.0     ! Solar zenith angle
    real, parameter    :: SatZenMin        = 0.0     ! Satellite zenith angle
    real, parameter    :: SatZenMax        = 90.0
    real, parameter    :: RelAziMin        = 0.0     ! Relative azimuth angle

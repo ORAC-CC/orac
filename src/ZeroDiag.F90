@@ -55,8 +55,8 @@ subroutine Zero_Diag(Ctrl, Diag)
 
    Diag%QCFlag       = 0
    Diag%Iterations   = 0
-   Diag%Jm           = 0
-   Diag%Ja           = 0
+   Diag%Jm           = MissingSn
+   Diag%Ja           = MissingSn
    Diag%St           = 0
    Diag%Ss           = 0
    Diag%Y0           = MissingXn

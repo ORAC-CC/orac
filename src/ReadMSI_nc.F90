@@ -176,12 +176,12 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
             if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
                if (MSI_Data%MSI(k,j,i) < BTMin .or. &
                    MSI_Data%MSI(k,j,i) > BTMax) then
-                  MSI_Data%MSI(k,j,i) = MissingXn
+                  MSI_Data%MSI(k,j,i) = sreal_fill_value
                end if
             else
                if (MSI_Data%MSI(k,j,i) < RefMin .or. &
                    MSI_Data%MSI(k,j,i) > RefMax) then
-                  MSI_Data%MSI(k,j,i) = MissingXn
+                  MSI_Data%MSI(k,j,i) = sreal_fill_value
                end if
             end if
          end do

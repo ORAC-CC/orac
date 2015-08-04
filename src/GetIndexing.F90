@@ -106,7 +106,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    if (SPixel%Illum(1) .eq. IDay) then
       ! All channels are used
       do i_chan = 1, Ctrl%Ind%Ny
-         if (MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, i_chan) == MissingXn) then
+         if (MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, i_chan) == sreal_fill_value) then
             is_not_used_or_missing(i_chan) = .true.
          end if
       end do
@@ -114,7 +114,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       ! Only pure thermal channels (no mixed) are used
       do i_chan = 1, Ctrl%Ind%Ny
          if (btest(Ctrl%Ind%Ch_Is(i_chan), SolarBit) .or. &
-             MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, i_chan) == MissingXn) then
+             MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, i_chan) == sreal_fill_value) then
             is_not_used_or_missing(i_chan) = .true.
          end if
       end do
@@ -122,7 +122,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       ! All thermal channels (including mixed) are used
       do i_chan = 1, Ctrl%Ind%Ny
          if (.not. btest(Ctrl%Ind%Ch_Is(i_chan), ThermalBit) .or. &
-             MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, i_chan) == MissingXn) then
+             MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, i_chan) == sreal_fill_value) then
             is_not_used_or_missing(i_chan) = .true.
          end if
       end do

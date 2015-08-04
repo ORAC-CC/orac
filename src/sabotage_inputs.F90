@@ -61,7 +61,7 @@ subroutine sabotage_inputs(Ctrl, MSI_Data, verbose)
 
          flag = .true.
          do i = 1, Ctrl%Ind%Ny
-            if (MSI_Data%MSI(kk,jj,i) .eq. MissingXn) then
+            if (MSI_Data%MSI(kk,jj,i) .eq. sreal_fill_value) then
                flag = .false.
                exit
             end if
@@ -79,7 +79,7 @@ subroutine sabotage_inputs(Ctrl, MSI_Data, verbose)
 
             do i = 1, Ctrl%Ind%Ny
                if (btest(missing_mask, i - 1)) then
-                  MSI_Data%MSI(kk,jj,i) = MissingXn
+                  MSI_Data%MSI(kk,jj,i) = sreal_fill_value
                end if
             end do
 

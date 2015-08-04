@@ -23,6 +23,7 @@
 !
 ! History:
 ! 2015/02/04, GM: Original version.
+! 2015/08/04, GM: Check for solar zenith angle < SolZenMin.
 !
 ! $Id$
 !
@@ -56,7 +57,8 @@ subroutine Determine_Illum(Ctrl, MSI_Data, verbose)
          do k = 1,Ctrl%Ind%nviews
 
             ! Daytime
-            if (MSI_Data%Geometry%Sol(i, j, k) .lt. Ctrl%MaxSolZen) then
+            if (MSI_Data%Geometry%Sol(i, j, k) .ge. SolZenMin .and. &
+                MSI_Data%Geometry%Sol(i, j, k) .lt. Ctrl%MaxSolZen) then
                MSI_Data%Illum(i,j,k) = IDay
 
             ! Twilight

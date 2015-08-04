@@ -386,7 +386,11 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! costja
    !----------------------------------------------------------------------------
-   temp_real=Diag%Ja
+   if (Diag%Ja .eq. MissingSn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = Diag%Ja
+   end if
    call prepare_float_packed_float( &
            temp_real, output_data%costja(i,j), &
            output_data%costja_scale, output_data%costja_offset, &
@@ -397,7 +401,11 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! costjm
    !----------------------------------------------------------------------------
-   temp_real=Diag%Jm
+   if (Diag%Jm .eq. MissingSn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = Diag%Jm
+   end if
    call prepare_float_packed_float( &
            temp_real, output_data%costjm(i,j), &
            output_data%costjm_scale, output_data%costjm_offset, &
