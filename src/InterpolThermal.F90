@@ -53,7 +53,7 @@
 ! 2014/05/16, GM: Cleaned up the code.
 ! 2014/08/05, GM: Put Interpol_* common code into subroutine find_Pc().
 ! 2015/01/07, AP: Use SPixel index arrays rather than ThF,ThL.
-! 2015/05/07, CP: removes the stop IntTransErr
+! 2015/05/07, CP: Removed the stop IntTransErr.
 !
 ! $Id$
 !
@@ -130,12 +130,12 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
-! this bug needs fixing
-!      write(*, *) 'ERROR: Interpol_Thermal(): Interpolation failure, SPixel ' // &
-!         'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
-!         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc , SPixel%RTM%SW%P
-!     status = IntTransErr
-!      stop IntTransErr
+#ifdef DEBUG
+      write(*, *) 'ERROR: Interpol_Thermal(): Interpolation failure, SPixel ' // &
+         'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
+         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
+#endif
+      status = IntTransErr
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards

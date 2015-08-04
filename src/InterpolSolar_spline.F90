@@ -119,11 +119,12 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
+#ifdef DEBUG
       write(*, *) 'ERROR: Interpol_Solar_spline(): Interpolation failure, SPixel ' // &
          'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
          SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
-!     status = IntTransErr
-      stop IntTransErr
+#endif
+      status = IntTransErr
    else
       ! Start the interpolation or extrapolation calculations
       ! Note: Implicit looping over instrument channels from here onwards
