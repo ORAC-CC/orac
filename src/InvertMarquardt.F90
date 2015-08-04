@@ -160,7 +160,7 @@
 ! 2015/01/09, AP: Patch memory leak with cloud_albedo.
 ! 2015/07/28, AP: Add multiple of unit matrix with add_unit function. Put
 !    calculation of Hessian into it's own routine.
-! 2015/07/28, AP: Replace if status blocks with GO TO 99 to terminate processing.
+! 2015/07/28, AP: Replace if status blocks with go to 99 to terminate processing.
 !    Reorganise main iteration loop to minimise code repetition.
 ! 2015/07/29, AP: Remove mentions of phase changes. Clean algorithm description.
 !    Add RAL's false convergence test (as it's used by the aerosol retrieval).
@@ -281,7 +281,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Set state variable limits
    call Set_Limits(Ctrl, SPixel, stat)
-   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+   if (stat /= 0) go to 99 ! Terminate processing this pixel
 
    ! Invert a priori covariance matrix
    error_matrix = SPixel%Sx(SPixel%X, SPixel%X)
@@ -290,7 +290,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 #ifdef DEBUG
       write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
-      GO TO 99 ! Terminate processing this pixel
+      go to 99 ! Terminate processing this pixel
    end if
 
    ! ************ START EVALUATING FORWARD MODEL ************
@@ -298,22 +298,22 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! arrays. X should be unscaled when passed into FM.
    call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, &
            cloud_albedo, stat)
-   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+   if (stat /= 0) go to 99 ! Terminate processing this pixel
 
    ! Store measurement first guess
    Diag%Y0(1:SPixel%Ind%Ny) = Y
 
    ! Convert dY_dX to Kx and Kbj.
    call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
-   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+   if (stat /= 0) go to 99 ! Terminate processing this pixel
 
    ! Set covariance matrix Sy. Always call Set_Kx before Set_Sy. Needs Kbj.
    call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
-   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+   if (stat /= 0) go to 99 ! Terminate processing this pixel
 
    ! Calculate SyInv and SxInv
    call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
-   if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+   if (stat /= 0) go to 99 ! Terminate processing this pixel
 
    ! Xdiff, the difference between the current state vector X and
    ! the a priori state vector SPixel%Xb for the active state variables.
@@ -414,7 +414,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 #ifdef DEBUG
          write(*, *) 'ERROR: Invert_Marquardt(): Error in Solve_Cholesky'
 #endif
-         GO TO 99 ! Terminate processing this pixel
+         go to 99 ! Terminate processing this pixel
       end if
       ! De-scale delta_X so that the X passed to FM can be kept un-scaled
       delta_X = delta_X / Ctrl%Invpar%XScale(SPixel%X)
@@ -427,12 +427,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       ! Check bounds for active state variables - does delta_X take any state
       ! variable outside it's range? (If so, freeze it at the boundary).
       call Check_Limits(Xplus_dX, SPixel, stat)
-      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       ! ************ START EVALUATE FORWARD MODEL ************
       call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
               dY_dX, cloud_albedo, stat)
-      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
       if (SPixel%Ind%NSolar > 0) then
          Diag%cloud_albedo(1:SPixel%Ind%NSolar) = cloud_albedo
       else
@@ -441,15 +441,15 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
       ! Set new Kx, Kbj, Sy and SyInv
       call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
-      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
       call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
-      if (stat /= 0) GO TO 99 ! Terminate processing this pixel
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
       call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
       if (stat /= 0) then
 #ifdef DEBUG
          write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
-         GO TO 99 ! Terminate processing this pixel
+         go to 99 ! Terminate processing this pixel
       end if
 
       ! Calculate new cost, J.
@@ -585,7 +585,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 #ifdef DEBUG
       write(*, *) 'ERROR: Invert_Marquardt(): Error in Invert_Cholesky'
 #endif
-      GO TO 99 ! Terminate processing this pixel
+      go to 99 ! Terminate processing this pixel
    end if
 
    ! Ss is the state expected error from model parameter noise (inactive state

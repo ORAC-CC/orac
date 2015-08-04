@@ -259,8 +259,8 @@ module CTRL_def
       character(16)          :: Date               ! Date of MSI data
       character(16)          :: Time               ! Time of MSI data (not used?)
       integer                :: DOY                ! Day number in year of MSI data.
-      real                   :: MaxSatZen
       real                   :: MaxSolZen          ! Daynight/twilight boundary
+      real                   :: MaxSatZen
       real                   :: Sunset             ! SolZen angle for sunset
       type (Inst_t)          :: Inst
       type (Ind_t)           :: Ind

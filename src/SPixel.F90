@@ -296,6 +296,8 @@ contains
 
 #include "GetGeometry.F90"
 #include "GetIndexing.F90"
+#include "GetLocation.F90"
+#include "GetLSF.F90"
 #include "GetLwSwRTM.F90"
 #include "GetMeasurements.F90"
 #include "GetRTM.F90"

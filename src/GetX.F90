@@ -102,6 +102,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    real    :: X       ! State variable value returned by X_MDAD
    real    :: Err     ! Error value returned by X_MDAD
 
+   ! Set status to zero
    status = 0
 
    ! Set a priori and associated error covariance, then set first guess.

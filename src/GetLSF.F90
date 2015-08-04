@@ -48,24 +48,19 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   ! Initialise
+   ! Set status to zero
    status = 0
 
-   SPixel%Surface%Land  = 0
-   SPixel%Surface%Sea   = 0
-   SPixel%Surface%NLand = 0
-   SPixel%Surface%NSea  = 0
-
-   SPixel%Surface%Flags = MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0)
-   SPixel%Surface%NLand = SPixel%Surface%Flags
-   SPixel%Surface%NSea  = SPixel%NMask - SPixel%Surface%NLand
-
-   if (SPixel%Surface%NLand > 0) SPixel%Surface%Land = 1
-   if (SPixel%Surface%NSea  > 0) SPixel%Surface%Sea  = 1
+   select case (MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0))
+   case(1)
+      SPixel%Surface%Land = .true.
+   case(0)
+      SPixel%Surface%Land = .false.
+   case default
 #ifdef DEBUG
-   if (SPixel%Surface%Land + SPixel%Surface%Sea > 1) then
-      write(*,*) 'WARNING: Get_LSF() pixel contains mixed surface types'
-      status = -1
-   end if
+      write(*, *) 'WARNING: Get_Surface(): pixel contains mixed surface types'
 #endif
+      status = SPixelInvalid
+   end select
+
 end subroutine Get_LSF

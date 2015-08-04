@@ -67,6 +67,7 @@
 ! 2014/07/30, GM: Cleaned up the code.
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/07/14, AP: Replace loop with any() statement.
+! 2015/08/04, GM: Added range checking.
 !
 ! $Id$
 !
@@ -91,9 +92,6 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   integer :: view
-
-
    ! Set status to zero
    status = 0
 
@@ -102,25 +100,34 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    SPixel%Geom%SatZen = MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0, :)
    SPixel%Geom%RelAzi = MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0, :)
 
-   ! Set status non-zero if satellite zenith angle is outside the allowed range
-   ! specified in Ctrl. (Use absolute y location in the error message rather
-   ! than segment value).
-   if (any(SPixel%Geom%SatZen > Ctrl%MaxSatZen)) then
+   ! Set status non-zero if one of the angles is outside the allowed range
+   ! specified in Ctrl.
+   if (any(SPixel%Geom%SolZen < 0.)) then
+#ifdef DEBUG
+      write(*, *) 'Get_Geometry: Solar zenith angle exceeds maximum at: ' &
+                  SPixel%Loc%X0, SPixel%Loc%Y0
+#endif
       status = SPixelGeomSat
-!     write(unit=message, fmt=*) &
-!        'Get_Geometry: Satellite zenith angle exceeds maximum allowed ' &
-!        // 'in super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
+   end if
+   if (any(SPixel%Geom%SatZen < SatZenMin .or. &
+           SPixel%Geom%SatZen > Ctrl%MaxSatZen)) then
+#ifdef DEBUG
+      write(*, *) 'Get_Geometry: Satellite zenith angle exceeds maximum at: ' &
+                  SPixel%Loc%X0, SPixel%Loc%Y0
+#endif
+      status = SPixelGeomSat
+   end if
+   if (any(SPixel%Geom%RelAzi < RelAziMin .or. &
+           SPixel%Geom%RelAzi > RelAziMax)) then
+#ifdef DEBUG
+      write(*, *) 'Get_Geometry: Relative azimuth angle exceeds maximum at: ' &
+                  SPixel%Loc%X0, SPixel%Loc%Y0
+#endif
+      status = SPixelGeomSat
    end if
 
    ! Calculate the mean air mass factors.
-
-   ! Note: This is an approximation because the AMF of the mean angle is not the
-   ! same as mean AMF taken over all the pixels in the super pixel. Also the
-   ! path through the atmosphere deviates from SEC at larger paths. These
-   ! approximations are valid for small super pixels and small angles.
-
    SPixel%Geom%SEC_o = 1.0 / cos(d2r*SPixel%Geom%Solzen)
-
    SPixel%Geom%SEC_v = 1.0 / cos(d2r*SPixel%Geom%Satzen)
 
 end subroutine Get_Geometry

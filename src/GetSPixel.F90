@@ -183,7 +183,7 @@
 !    channel selection code.
 ! 2015/06/02, AP: Remove Ctrl argument from check_value.
 ! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove Get_LSF
-!    and SPixel%QC. Replace status checks with GO TO 99 in the event of failure.
+!    and SPixel%QC. Replace status checks with go to 99 in the event of failure.
 !
 ! $Id$
 !
@@ -223,12 +223,9 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    integer :: StartChan ! First valid channel for pixel, used in breakpoints.
 #endif
 
-   status   = 0
+   status = 0
 
-   SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0)
-   SPixel%Loc%Lon = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0)
-   SPixel%Type    = MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0)
-
+   SPixel%Type = MSI_Data%Type(SPixel%Loc%X0, SPixel%Loc%Y0)
 
    if (.not. any(Ctrl%Types_to_process(1:Ctrl%NTypes_to_process) == &
                  SPixel%Type)) then
@@ -238,41 +235,33 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       write(*, *) 'WARNING: Get_SPixel(): Incorrect particle type in  ' // &
                   'pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-      GO TO 99 ! Skip further data reading
+      go to 99 ! Skip further data reading
    end if
 
    ! Call 'Get_' subroutines. Non-zero stat flags fatal error for superpixel
    call Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
-   if (status /= 0) GO TO 99 ! Skip further data reading
+   if (status /= 0) go to 99 ! Skip further data reading
 
    call Get_Geometry(Ctrl, SPixel, MSI_Data, status)
-   if (status /= 0) GO TO 99 ! Skip further data reading
+   if (status /= 0) go to 99 ! Skip further data reading
+
+   call Get_Location(Ctrl, SPixel, MSI_Data, status)
+   if (status /= 0) go to 99 ! Skip further data reading
+
+   call Get_LSF(Ctrl, SPixel, MSI_Data, status)
+   if (status /= 0) go to 99 ! Skip further data reading
+
+   call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
+   if (status /= 0) go to 99 ! Skip further data reading
 
    ! ACP: RTM unnecessary for aerosol  (at the moment)
    call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
-   if (status /= 0) GO TO 99 ! Skip further data reading
-
-   call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
-   if (status /= 0) GO TO 99 ! Skip further data reading
-
-   ! Sort out land/sea flag
-   select case (MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0))
-   case(1)
-      SPixel%Surface%Land = .true.
-   case(0)
-      SPixel%Surface%Land = .false.
-   case default
-#ifdef DEBUG
-      write(*, *) 'WARNING: Get_Surface(): pixel contains mixed surface types'
-#endif
-      status = SPixelInvalid
-      GO TO 99 ! Skip further data reading
-   end select
+   if (status /= 0) go to 99 ! Skip further data reading
 
    ! Get surface parameters and reduce reflectance by solar angle effect.
    if (SPixel%Ind%NSolar > 0) then
       call Get_Surface(Ctrl, SPixel, MSI_Data, status)
-      if (status /= 0) GO TO 99 ! Skip further data reading
+      if (status /= 0) go to 99 ! Skip further data reading
 
       do i=1,SPixel%Ind%NSolar
          SPixel%Surface%Rs(i) = SPixel%Surface%Rs(i) &
@@ -340,7 +329,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    end if ! End of NSolar > 0
 
    call Get_X(Ctrl, SAD_Chan, SPixel, status)
-!  if (status /= 0) GO TO 99 ! Skip further data reading
+!  if (status /= 0) go to 99 ! Skip further data reading
 
 
    ! If stat indicates a "super-pixel fatal" condition set the quality

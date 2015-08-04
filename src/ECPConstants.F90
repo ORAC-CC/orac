@@ -328,6 +328,8 @@ module ECP_constants
    integer, parameter :: SPixelGeomSol              = 1150
    integer, parameter :: SPixelGeomSat              = 1151
    integer, parameter :: SPixelGeomRel              = 1152
+   integer, parameter :: SPixelLocLat               = 1154
+   integer, parameter :: SPixelLocLon               = 1155
    integer, parameter :: SPixelSurfglint            = 1153
    integer, parameter :: BkpFileOpenErr             = 1160
    integer, parameter :: GetRTMLwMaxLat             = 1170

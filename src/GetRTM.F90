@@ -61,7 +61,6 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Declare local variables
 
    ! Set status to zero
-
    status = 0
 
    ! Check that the current super pixel location lies within the range of the
@@ -72,28 +71,36 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    ! Longwave
    if (SPixel%Loc%Lat > RTM%Lw%Grid%MaxLat) then
+#ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM latitude exceeded by ' // &
          'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lat, RTM%Lw%Grid%MaxLat
-!        status = GetRTMLwMaxLat
+#endif
+         status = GetRTMLwMaxLat
    end if
    if (SPixel%Loc%Lat < RTM%Lw%Grid%MinLat) then
+#ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM latitude exceeds ', &
          'super pixel latitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lat, RTM%Lw%Grid%MinLat
-!        status = GetRTMLwMinLat
+#endif
+         status = GetRTMLwMinLat
    end if
    if (SPixel%Loc%Lon > RTM%Lw%Grid%MaxLon) then
+#ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM longitude exceeded in ' // &
          'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lon, RTM%Lw%Grid%MaxLon
-!        status = GetRTMLwMaxLon
+#endif
+         status = GetRTMLwMaxLon
    end if
    if (SPixel%Loc%Lon < RTM%Lw%Grid%MinLon) then
+#ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM longitude exceeds ', &
          'super pixel longitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lon, RTM%Lw%Grid%MinLon
-!        status = GetRTMLwMinLon
+#endif
+         status = GetRTMLwMinLon
    end if
 
    ! Shortwave

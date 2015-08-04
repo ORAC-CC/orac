@@ -84,21 +84,21 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   output_data%time(i,j)=MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
+   output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
 
    !----------------------------------------------------------------------------
    ! lat, lon
    !----------------------------------------------------------------------------
-   output_data%lat(i,j)=SPixel%Loc%Lat/output_data%lat_scale
-   output_data%lon(i,j)=SPixel%Loc%Lon/output_data%lon_scale
+   output_data%lat(i,j) = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0)
+   output_data%lon(i,j) = MSI_Data%Location%Lon(SPixel%Loc%X0, SPixel%Loc%Y0)
 
    !----------------------------------------------------------------------------
    ! sol_zen, sat_zen, rel_azi
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%NViews
-      output_data%sol_zen(i,j,k)=MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0,k)
-      output_data%sat_zen(i,j,k)=MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0,k)
-      output_data%rel_azi(i,j,k)=MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0,k)
+      output_data%sol_zen(i,j,k) = MSI_Data%Geometry%Sol(SPixel%Loc%X0, SPixel%Loc%Y0,k)
+      output_data%sat_zen(i,j,k) = MSI_Data%Geometry%Sat(SPixel%Loc%X0, SPixel%Loc%Y0,k)
+      output_data%rel_azi(i,j,k) = MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0,k)
    end do
 
    !----------------------------------------------------------------------------

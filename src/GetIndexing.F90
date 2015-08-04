@@ -74,6 +74,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    logical :: is_not_used_or_missing(Ctrl%Ind%Ny)
    real    :: X(MaxStateVar)
 
+   ! Set status to zero
    status = 0
 
    ! Set these to zero as a default as some of the i/o requires them even when a

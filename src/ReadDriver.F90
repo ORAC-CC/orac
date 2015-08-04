@@ -346,8 +346,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%LUTIntflag = LUTIntMethLinear
 
 
+   Ctrl%MaxSolZen  = 80 ! max solar zenith angle
    Ctrl%MaxSatZen  = 90 ! max satellite zenith angle
-   Ctrl%MaxSolZen  = 80 ! max solar zenith angle > 90 = night image
    Ctrl%Sunset     = 90 ! used to set twilight option
 
 

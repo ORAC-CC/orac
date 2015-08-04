@@ -149,11 +149,11 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    real           :: solar_factor
 
    ! Initialise output
-   status               = 0
-   SPixel_b             = 0.0
-   SPixel_Sb            = 0.0
-   SPixel_b2            = 0.0
-   SPixel_Sb2           = 0.0
+   status     = 0
+   SPixel_b   = 0.0
+   SPixel_Sb  = 0.0
+   SPixel_b2  = 0.0
+   SPixel_Sb2 = 0.0
 
    ! Reallocate surface reflectances to appropriate length
    deallocate(SPixel%Surface%Rs)

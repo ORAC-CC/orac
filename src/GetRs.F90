@@ -33,7 +33,7 @@
 !    **************** ECV work starts here *************************************
 ! 2011/02/23, AS: Cloud flags converted to real to match current ORAC data.
 ! 2011/03/30, AS: Removal of super-pixel averaging. Process single pixels at X0,
-!    Y0, Removed other SPixel indices Xc, Yc, Xn, Yn etc. Removed selection of 
+!    Y0, Removed other SPixel indices Xc, Yc, Xn, Yn etc. Removed selection of
 !    averaging method. SPixel_B and SPixel_Sb re-dimensioned to remove SPixel
 !    size.
 ! 2012/01/23, CP: General tidyup remove data variable
