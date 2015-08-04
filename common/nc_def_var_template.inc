@@ -1,6 +1,6 @@
 subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
    deflate_level,shuffle,long_name,standard_name,fill_value,scale_factor, &
-   add_offset,valid_min,valid_max,units,flag_values,flag_meanings)
+   add_offset,valid_min,valid_max,units,flag_values,flag_masks,flag_meanings)
 
    use common_constants
    use netcdf
@@ -29,6 +29,7 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
                      intent(in), optional :: valid_max
    character(len=*), intent(in), optional :: units
    character(len=*), intent(in), optional :: flag_values
+   character(len=*), intent(in), optional :: flag_masks
    character(len=*), intent(in), optional :: flag_meanings
 
    ! Output
@@ -91,6 +92,15 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
       if (ierr .ne. NF90_NOERR) then
          write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
          ', att_name = flag_values, value = ', flag_values
+         stop error_stop_code
+      end if
+   end if
+
+   if (present(flag_masks)) then
+      ierr = nf90_put_att(ncid, varid, 'flag_masks', flag_masks)
+      if (ierr .ne. NF90_NOERR) then
+         write(*,*) 'ERROR: nf90_put_att(), ', trim(nc_error(ierr)), &
+         ', att_name = flag_masks, value = ', flag_masks
          stop error_stop_code
       end if
    end if

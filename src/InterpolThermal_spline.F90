@@ -144,7 +144,7 @@ subroutine Interpol_Thermal_spline(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
       ! a fatal error
 #ifdef DEBUG
-      write(*, *) 'ERROR: Interpol_Thermal(): Interpolation failure spline, SPixel ' // &
+      write(*, *) 'ERROR: Interpol_Thermal_spline(): Interpolation failure, SPixel ' // &
          'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
          SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
 #endif

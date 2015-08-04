@@ -81,7 +81,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    character(len=512) :: input_dummy2
    character(len=512) :: input_dummy3
    integer            :: i
-   integer            :: iviews
+   integer            :: i_view
    logical            :: verbose = .false.
 
 
@@ -163,9 +163,9 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! Loop over view angles
    !----------------------------------------------------------------------------
-   do iviews=1,Ctrl%Ind%NViews
+   do i_view=1,Ctrl%Ind%NViews
 
-      write(input_num,"(i4)") iviews
+      write(input_num,"(i4)") i_view
 
       !-------------------------------------------------------------------------
       ! solar_zenith_view_no*
@@ -178,7 +178,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
-              output_data%vid_sol_zen(iviews), &
+              output_data%vid_sol_zen(i_view), &
               verbose, &
               long_name     = trim(adjustl(input_dummy2)), &
               standard_name = trim(adjustl(input_dummy3)), &
@@ -202,7 +202,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
-              output_data%vid_sat_zen(iviews), &
+              output_data%vid_sat_zen(i_view), &
               verbose, &
               long_name     = trim(adjustl(input_dummy2)), &
               standard_name = trim(adjustl(input_dummy3)), &
@@ -226,7 +226,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
               ncid, &
               dims_var, &
               trim(adjustl(input_dummy)), &
-              output_data%vid_rel_azi(iviews), &
+              output_data%vid_rel_azi(i_view), &
               verbose, &
               long_name     = trim(adjustl(input_dummy2)), &
               standard_name = trim(adjustl(input_dummy3)), &
@@ -722,10 +722,11 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   input_dummy2='Bit 0 unused, always set to 0, Bits 1-5 set to 1 if state variable error out of bounds'
-   input_dummy2=trim(adjustl(input_dummy2))//', Bit 6 set to 1 if no convergence achieved'
-   input_dummy2=trim(adjustl(input_dummy2))//', Bit 7 set to 1 if cost too large.'
-   input_dummy2=trim(adjustl(input_dummy2))//' Bit 1=COT Bit 2=REF Bit 3=CTP Bit 4=CCT Bit 5=STEMP'
+   input_dummy='Bit 0 unused, always set to 0, ' // &
+               'Bits 1-5 set to 1 if state variable error out of bounds ' // &
+               '(Bit 1=COT Bit 2=REF Bit 3=CTP Bit 4=CCT Bit 5=STEMP), ' // &
+               'Bit 6 set to 1 if no convergence achieved, ' // &
+               'Bit 7 set to 1 if cost too large.'
 
    call nc_def_var_short_packed_short( &
            ncid, &
@@ -740,7 +741,8 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-           flag_meanings = trim(adjustl(input_dummy2)), &
+           flag_masks    = '1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s', &
+           flag_meanings = trim(adjustl(input_dummy)), &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -753,8 +755,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            'illum', &
            output_data%vid_illum, &
            verbose, &
-           flag_values   ='1b, 2b, 3b', &
-           flag_meanings ='Day, Twilight, Night', &
            long_name     = 'illumination flag', &
            standard_name = 'illumination_flag', &
            fill_value    = byte_fill_value, &
@@ -762,15 +762,24 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            add_offset    = output_data%illum_offset, &
            valid_min     = output_data%illum_vmin, &
            valid_max     = output_data%illum_vmax, &
+           flag_values   ='1b, 2b, 3b', &
+           flag_meanings ='Day, Twilight, Night', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cloud type (ie. Pavolonis phase)
    !----------------------------------------------------------------------------
-   input_dummy2='Bit 0=clear Bit 1=N/A Bit 2=fog Bit 3=water Bit 4=supercooled'
-   input_dummy2=trim(adjustl(input_dummy2))//' Bit 5=mixed Bit 6=opaque_ice Bit 7=cirrus'
-   input_dummy2=trim(adjustl(input_dummy2))//' Bit 8=overlap Bit 9=prob_opaque_ice'
+   input_dummy='clear, ' // &
+               'N/A, ' // &
+               'fog, ' // &
+               'water, ' // &
+               'supercooled, ' // &
+               'mixed, ' // &
+               'opaque_ice, ' // &
+               'cirrus, ' // &
+               'overlap, ' // &
+               'prob_opaque_ice'
 
    call nc_def_var_byte_packed_byte( &
            ncid, &
@@ -786,7 +795,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            valid_min     = output_data%cldtype_vmin, &
            valid_max     = output_data%cldtype_vmax, &
            flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b', &
-           flag_meanings = trim(adjustl(input_dummy2)), &
+           flag_meanings = trim(adjustl(input_dummy)), &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -846,33 +855,34 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            add_offset    = output_data%lusflag_offset, &
            valid_min     = output_data%lusflag_vmin, &
            valid_max     = output_data%lusflag_vmax, &
-           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, 11b, &
-              & 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, 20b, 21b, 22b, 23b, 24b', &
-           flag_meanings ='1:Urban and Built-Up Land, &
-                          &2:Dryland Cropland and Pasture, &
-                          &3:Irrigated, Cropland and Pasture, &
-                          &4:Mixed Dryland/Irrigated Cropland and Pasture, &
-                          &5:Cropland/Grassland Mosaic, &
-                          &6:Cropland/Woodland Mosaic, 7:Grassland, &
-                          &8:Shrubland, &
-                          &9:Mixed Shrubland/Grassland, &
-                          &10:Savanna, &
-                          &11:Deciduous Broadleaf Forest, &
-                          &12:Deciduous Needleleaf Forest, &
-                          &13:Evergreen Broadleaf Forest, &
-                          &14:Evergreen Needleleaf Forest, &
-                          &15:Mixed Forest, &
-                          &16:Water Bodies, &
-                          &17:Herbaceous Wetland, &
-                          &18:Wooded Wetland, &
-                          &19:Barren or Sparsely Vegetated, &
-                          &20:Herbaceous Tundra, &
-                          &21:Wooded Tundra, &
-                          &22:Mixed Tundra, &
-                          &23:Bare Ground Tundra, &
-                          &24:Snow or Ice, &
-                          &99:Interrupted Areas, &
-	                  &100:Missing Data', &
+           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, ' // &
+                           '11b, 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, ' // &
+                           '20b, 21b, 22b, 23b, 24b', &
+           flag_meanings ='1:Urban and Built-Up Land, ' // &
+                          '2:Dryland Cropland and Pasture, ' // &
+                          '3:Irrigated, Cropland and Pasture, ' // &
+                          '4:Mixed Dryland/Irrigated Cropland and Pasture, ' // &
+                          '5:Cropland/Grassland Mosaic, ' // &
+                          '6:Cropland/Woodland Mosaic, 7:Grassland, ' // &
+                          '8:Shrubland, ' // &
+                          '9:Mixed Shrubland/Grassland, ' // &
+                          '10:Savanna, ' // &
+                          '11:Deciduous Broadleaf Forest, ' // &
+                          '12:Deciduous Needleleaf Forest, ' // &
+                          '13:Evergreen Broadleaf Forest, ' // &
+                          '14:Evergreen Needleleaf Forest, ' // &
+                          '15:Mixed Forest, ' // &
+                          '16:Water Bodies, ' // &
+                          '17:Herbaceous Wetland, ' // &
+                          '18:Wooded Wetland, ' // &
+                          '19:Barren or Sparsely Vegetated, ' // &
+                          '20:Herbaceous Tundra, ' // &
+                          '21:Wooded Tundra, ' // &
+                          '22:Mixed Tundra, ' // &
+                          '23:Bare Ground Tundra, ' // &
+                          '24:Snow or Ice, ' // &
+                          '99:Interrupted Areas, ' // &
+	                  '100:Missing Data', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -928,17 +938,17 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
       output_data%cloud_albedo_vmin(i)=0
       output_data%cloud_albedo_vmax(i)=11000
 
-      input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
-      input_dummy2='cloud_albedo in channel no '//trim(adjustl(input_num))
+      input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
+      input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
-           trim(adjustl(input_dummy)), &
+           trim(adjustl(input_dummy2)), &
            output_data%vid_cloud_albedo(i), &
            verbose, &
-           long_name     = trim(adjustl(input_dummy2)), &
-           standard_name = trim(adjustl(input_dummy)), &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = trim(adjustl(input_dummy2)), &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cloud_albedo_scale(i), &
            add_offset    = output_data%cloud_albedo_offset(i), &

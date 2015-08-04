@@ -76,7 +76,7 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
          'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lat, RTM%Lw%Grid%MaxLat
 #endif
-         status = GetRTMLwMaxLat
+      status = GetRTMLwMaxLat
    end if
    if (SPixel%Loc%Lat < RTM%Lw%Grid%MinLat) then
 #ifdef DEBUG
@@ -84,7 +84,7 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
          'super pixel latitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lat, RTM%Lw%Grid%MinLat
 #endif
-         status = GetRTMLwMinLat
+      status = GetRTMLwMinLat
    end if
    if (SPixel%Loc%Lon > RTM%Lw%Grid%MaxLon) then
 #ifdef DEBUG
@@ -92,7 +92,7 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
          'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lon, RTM%Lw%Grid%MaxLon
 #endif
-         status = GetRTMLwMaxLon
+      status = GetRTMLwMaxLon
    end if
    if (SPixel%Loc%Lon < RTM%Lw%Grid%MinLon) then
 #ifdef DEBUG
@@ -100,7 +100,7 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
          'super pixel longitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
          SPixel%Loc%Lon, RTM%Lw%Grid%MinLon
 #endif
-         status = GetRTMLwMinLon
+      status = GetRTMLwMinLon
    end if
 
    ! Shortwave
