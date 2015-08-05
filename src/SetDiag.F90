@@ -59,17 +59,20 @@
 ! 2015/05/25, GM: Got rid of flags Diagl and removed obvious comments.
 ! 2015/07/28, AP: Remove status argument (as routine cannot feasibly fail).
 ! 2015/07/29, AP: Remove NPhaseChanges argument.
+! 2015/07/31, AP: Rejig QCFlag for much longer state vector.
 !
 ! $Id$
 !
 ! Bugs:
-! None known.
+! If there are state vector elements in X_Twi or X_Night that are not in X_Dy,
+! the setting of QCFlag will fail.
 !-------------------------------------------------------------------------------
 
 subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
 
    use Ctrl_def
    use ECP_Constants
+   use Int_Routines_def, only : find_in_array
    use SPixel_def
 
    implicit none
@@ -96,8 +99,11 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
 
 
    if (convergence) then
+      Diag%Converged = .true.
+
       if (J > Ctrl%QC%MaxJ) then
-         Diag%QCFlag = ibset(Diag%QCFlag, MaxStateVar+2)
+         ! Flag high cost retrievals
+         Diag%QCFlag = ibset(Diag%QCFlag, CostBit)
       else
          SPixel%XnSav      = SPixel%Xn
          SPixel%SnSav      = SPixel%Sn
@@ -105,23 +111,27 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
          SPixel%Loc%LastY0 = SPixel%Loc%Y0
       end if
    else
-      Diag%QCFlag = ibset(Diag%QCFlag, MaxStateVar+1)
+      Diag%Converged = .false.
    end if
 
+   ! Flag retrieved variables with excessive error (bit of flag set is the index
+   ! of that state vector element in Ctrl%Ind%X_Dy; it is assumed that X_Tw and
+   ! X_Ni are subsets of X_Dy).
    do m = 1, SPixel%Nx
       if (sqrt(SPixel%Sn(SPixel%X(m),SPixel%X(m))) > Ctrl%QC%MaxS(SPixel%X(m))) &
-         Diag%QCFlag = ibset(Diag%QCFlag, SPixel%X(m))
+         Diag%QCFlag = ibset(Diag%QCFlag, &
+                             find_in_array(Ctrl%Ind%X_Dy(1:Ctrl%Ind%Nx_Dy), &
+                                           SPixel%X(m)))
    end do
 
    Diag%Iterations = iter
-
    Diag%Jm = Jm
    Diag%Ja = Ja
 
-   do m = 1, SPixel%Ind%Ny
-      Diag%YError(m) = sqrt(Sy(m,m))
-   end do
+!  do m = 1, SPixel%Ind%Ny
+!     Diag%YError(m) = sqrt(Sy(m,m))
+!  end do
 
-   Diag%APFit = SPixel%Xb - SPixel%Xn
+!   Diag%APFit = SPixel%Xb - SPixel%Xn
 
 end subroutine Set_Diag

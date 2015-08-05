@@ -12,7 +12,6 @@
 ! Name        Type    In/Out/Both Description
 ! ------------------------------------------------------------------------------
 ! Ctrl        struct  In          Control structure
-! convergence int     In          Indicates if retrieval has converged
 ! i           int     In          Across-track pixel to output
 ! j           int     In          Along-track pixel to output
 ! MSI_Data    struct  In          Imager data structure
@@ -47,6 +46,7 @@
 !    again
 ! 2015/07/03, OS: Added cloudmask_error data
 ! 2015/07/04, CP: Added corrected cth
+! 2015/07/31, AP: Remove convergence argument.
 !
 ! $Id$
 !
@@ -54,7 +54,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
+subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
                            Diag, output_data)
 
    use CTRL_def
@@ -67,7 +67,6 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    implicit none
 
    type(CTRL_t),              intent(in)    :: Ctrl
-   integer,                   intent(in)    :: convergence
    integer,                   intent(in)    :: i, j
    type(Data_t),              intent(in)    :: MSI_Data
    type(RTM_Pc_t),            intent(in)    :: RTM_Pc
@@ -373,10 +372,13 @@ subroutine prepare_primary(Ctrl, convergence, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! convergence, niter
    !----------------------------------------------------------------------------
-   output_data%convergence(i,j)=int(convergence,kind=byte)
-
-   if (convergence .eq. 0 ) output_data%niter(i,j)=int(Diag%Iterations,kind=byte)
-   if (convergence .eq. 1 ) output_data%niter(i,j)=int(byte_fill_value,kind=byte)
+   if (Diag%Converged) then
+      output_data%convergence(i,j) = 0_byte
+      output_data%niter(i,j)=int(Diag%Iterations,kind=byte)
+   else
+      output_data%convergence(i,j) = 1_byte
+      output_data%niter(i,j)=int(byte_fill_value,kind=byte)
+   end if
 
    !----------------------------------------------------------------------------
    ! phase

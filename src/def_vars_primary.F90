@@ -54,6 +54,7 @@
 ! 2015/07/01, CP: Added corrected cth
 ! 2015/07/26, GM: Added deflate_level and shuffle_flag arguments to
 !    nc_def_var_*.
+! 2015/07/31, AP: Rejig Diag for longer, variable state vector.
 !
 ! $Id$
 !
@@ -83,6 +84,8 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    integer            :: i
    integer            :: i_view
    logical            :: verbose = .false.
+   character(len=2)   :: temp_str
+   character(len=8)   :: state_label
 
 
    !----------------------------------------------------------------------------
@@ -722,11 +725,17 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   input_dummy='Bit 0 unused, always set to 0, ' // &
-               'Bits 1-5 set to 1 if state variable error out of bounds ' // &
-               '(Bit 1=COT Bit 2=REF Bit 3=CTP Bit 4=CCT Bit 5=STEMP), ' // &
-               'Bit 6 set to 1 if no convergence achieved, ' // &
-               'Bit 7 set to 1 if cost too large.'
+   write(temp_str, '(I2)') Ctrl%Ind%Nx_Dy
+   input_dummy='Bit 0 set to 1 if cost too large, ' // &
+               'Bits 1-' // trim(adjustl(temp_str)) // &
+                       ' set to 1 if state variable error out of bounds, ('
+   do i = 1, Ctrl%Ind%Nx_Dy
+      write(temp_str, '(I2)') i
+      if (string_description_of_state(Ctrl%Ind%X_Dy(i), state_label) == 0) &
+           input_dummy=trim(input_dummy) // ' Bit ' // &
+                       trim(adjustl(temp_str)) // '=' // trim(state_label)
+   end do
+   input_dummy=trim(input_dummy) // ').'
 
    call nc_def_var_short_packed_short( &
            ncid, &
@@ -741,7 +750,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-           flag_masks    = '1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s', &
+           flag_values   = '1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s', &
            flag_meanings = trim(adjustl(input_dummy)), &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

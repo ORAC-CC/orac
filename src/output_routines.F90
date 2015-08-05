@@ -19,6 +19,7 @@
 ! 2015/04/22, OS: cth_vmin set to -1000 m, i.e. -1 km
 ! 2015/07/03, OS: Added cldmask_error variables
 ! 2015/07/04, CP: Added corrected cth
+! 2015/07/31, AP: Add string_description_of_state().
 !
 ! $Id$
 !
@@ -419,5 +420,85 @@ contains
 
 #include "write_primary.F90"
 #include "write_secondary.F90"
+
+
+!-------------------------------------------------------------------------------
+! Name: string_description_of_state
+!
+! Purpose:
+! Given an index of the state vector, this returns a string describing that
+! element that a user can understand.
+!
+! Description and Algorithm details:
+! Many if statements. The expectation is that this function will be extended to
+! return multiple strings when ORAC needs to output elements from an unknown
+! state vector.
+!
+! Arguments:
+! Name   Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! state  integer In          Index of state vector to consider
+! string string  Out         Descriptive string
+! status integer Out         (Return value) Non-zero value indicates the given
+!                            index was not known
+!
+! History:
+! 2015/07/31, AP: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+function string_description_of_state(state, str) result(status)
+   implicit none
+
+   integer,          intent(in)  :: state
+   character(len=*), intent(out) :: str
+   integer                       :: status
+
+   integer                       :: i, j
+   character(len=6), parameter   :: rho_labels(MaxRho_XX) = &
+        ['RHO_OV', 'RHO_0D', 'RHO_DV', 'RHO_DD']
+   character(len=2)              :: temp_str
+
+   status = 0
+
+   if (state == ITau) then
+      str = 'COT'
+      return
+   else if (state == IRe) then
+      str = 'REF'
+      return
+   else if (state == IPc) then
+      str = 'CTP'
+      return
+   else if (state == IFr) then
+      str = 'CCT'
+      return
+   else if (state == ITs) then
+      str = 'STEMP'
+      return
+   end if
+
+!   do j = 1, MaxRho_XX
+!      do i = 1, MaxNumSolar
+!         if (state == IRs(i,j)) then
+!            write(temp_str, '(I2)') i
+!            str = rho_labels(j)//trim(adjustl(temp_str))
+!            return
+!         end if
+!      end do
+!   end do
+
+!   do i = 1, MaxNumViews
+!      if (state == ISP(i)) then
+!         write(temp_str, '(I2)') i
+!         str = 'P'//trim(adjustl(temp_str))
+!         return
+!      end if
+!   end do
+
+   status = 1
+
+end function string_description_of_state
 
 end module output_routines

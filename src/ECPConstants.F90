@@ -221,6 +221,9 @@ module ECP_constants
    integer, parameter :: SolarBit         = 0
    integer, parameter :: ThermalBit       = 1
 
+   ! Bits used with Diag%QCFlag
+   integer, parameter :: CostBit          = 0
+
 
    ! General format statements
    character(len=*), parameter :: FNForm       = '(a2048)' ! Format for I/O of filenames

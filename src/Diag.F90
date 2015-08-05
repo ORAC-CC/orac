@@ -13,6 +13,7 @@
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2014/12/01, CP: Added cloud albedo.
 ! 2015/01/19, GM: Put ZeroDiag.F90 and SetDiag.F90 into this module.
+! 2015/07/31, AP: Rejig QCFlag for much longer state vector.
 !
 ! $Id$
 !
@@ -27,15 +28,14 @@ module Diag_def
    implicit none
 
    type Diag_t
+      logical       :: Converged    ! Did the retrieval converge?
       integer       :: QCFlag       ! Quality control flag. Bits are set as
                                     ! follows:
-				    ! - bits 1 to MaxStateVar: set to 1 if
-				    !   parameter estimated retrieval error
-				    !   too large
-				    ! - bit MaxStateVar+1: retrieval did not
-				    !   converge
-				    ! - bit MaxStateVar+2: retrieval solution
+				    ! - bit 0: retrieval solution
 				    !   cost too great
+				    ! - bits 1 to SPixel%Nx: set to 1 if
+				    !   parameter's estimated retrieval
+				    !   uncertainty too large
       integer       :: Iterations   ! Number of iterations taken by inversion
                                     ! scheme to reach convergence
       real          :: Jm           ! Cost at solution due to measurements
@@ -54,11 +54,11 @@ module Diag_def
                                     ! Difference between measurements
 				    ! (SPixel%Ym) and Y at solution X.
 				    ! Size: no. of channels used in SPixel.
-      real          :: YError(MaxNumMeas)
+!     real          :: YError(MaxNumMeas)
                                     ! Measurement errors (square root of Sy
 				    ! matrix diagonals). Size: no. of channels
 				    ! used in SPixel.
-      real          :: APFit(MaxStateVar)
+!     real          :: APFit(MaxStateVar)
                                     ! Difference between a priori X and
 				    ! solution X for active state variables.
       real          :: AK(MaxStateVar,MaxStateVar)

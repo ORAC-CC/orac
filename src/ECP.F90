@@ -165,6 +165,7 @@
 !    coordinates to be specified in the driver file. Remove SegSize.
 ! 2015/02/04, OS: drifile is passed as call argument for WRAPPER
 ! 2015/05/25, GM: Some cleanup involving Diag.
+! 2015/07/31, AP: Rejig Diag for longer, variable state vector.
 !
 ! $Id$
 !
@@ -228,8 +229,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                      ! First and last super-pixel X locations
    integer             :: iystart,iystop,ystep
                                      ! First and last super-pixel Y locations
-
-   integer             :: conv       ! convergence flag
 
    integer             :: TotPix   = 0   ! Total number of SPixels processed
    integer             :: TotMissed= 0   ! Number of SPixels left unprocessed
@@ -492,7 +491,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Start OMP section by spawning the threads
    !$OMP PARALLEL &
    !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_num,RTM_Pc,SPixel) &
-   !$OMP PRIVATE(Diag,conv,dummyreal) &
+   !$OMP PRIVATE(Diag,dummyreal) &
    !$OMP FIRSTPRIVATE(status)
 
    thread_num = omp_get_thread_num()
@@ -548,12 +547,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
             ! Set values required for overall statistics 1st bit test on QC
             ! flag determines whether convergence occurred.
-            if (.not. btest(Diag%QCFlag,MaxStateVar+1)) then
+            if (Diag%Converged) then
                TotConv_line(j) = TotConv_line(j)+1
                AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
                AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
             end if
-            if (btest(Diag%QCFlag,MaxStateVar+2)) then
+            if (btest(Diag%QCFlag, CostBit)) then
                TotMaxJ_line(j) = TotMaxJ_line(j)+1
             end if
          else
@@ -574,15 +573,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             RTM_Pc%dTc_dPc   = MissingSn
          end if
 
-         ! Convergence flag
-         if (btest(Diag%QCFlag,MaxStateVar+1)) then
-            conv = 1
-         else
-            conv = 0
-         end if
-
          ! Copy output to spixel_scan_out structures
-         call prepare_primary(Ctrl, conv, i, j, MSI_Data, RTM_Pc, SPixel, &
+         call prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
                               Diag, output_data_1)
 
          call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
