@@ -33,11 +33,11 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
             ! Compare string to all ECP_Constants array parameters listed
             select case (label)
 !            case('IRS')
-!               status = PARSE_ARRAY_INDEX_NAME(idx, IRs, out)
+!               status = PARSE_ARRAY_INDEX_NAME_2D(idx, IRs, out)
 !            case('ISP')
-!               status = PARSE_ARRAY_INDEX_NAME(idx, ISP, out)
+!               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISP, out)
 !            case('ISS')
-!               status = PARSE_ARRAY_INDEX_NAME(idx, ISS, out)
+!               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISS, out)
             case default
                status  = PARSE_ERR_CONV
             end select
@@ -133,7 +133,7 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
 end function PARSE_STRING_NAME_0D
 
 
-integer function PARSE_ARRAY_INDEX_NAME(idx, arr, out) result(status)
+integer function PARSE_ARRAY_INDEX_NAME_1D(idx, arr, out) result(status)
    implicit none
 
    character(len=*), intent(in)  :: idx
@@ -141,7 +141,7 @@ integer function PARSE_ARRAY_INDEX_NAME(idx, arr, out) result(status)
    PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: out
    integer                       :: i
 
-   status = parse_string(idx, i)
+   status = parse_user_text(idx, i)
    if (status == 0) then
       ! Check index within bounds
       if (i > 0 .and. i <= size(arr)) then
@@ -150,4 +150,25 @@ integer function PARSE_ARRAY_INDEX_NAME(idx, arr, out) result(status)
          status = PARSE_ERR_BAD_ARR
       end if
    end if
-end function PARSE_ARRAY_INDEX_NAME
+end function PARSE_ARRAY_INDEX_NAME_1D
+
+
+integer function PARSE_ARRAY_INDEX_NAME_2D(idx, arr, out) result(status)
+   implicit none
+
+   character(len=*), intent(in)  :: idx
+   integer,          intent(in)  :: arr(:,:)
+   PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: out
+   integer                       :: i(2)
+
+   status = parse_user_text(idx, i)
+   if (status == 0) then
+      ! Check index within bounds
+      if (i(1) > 0 .and. i(2) > 0 .and. &
+           i(1) <= size(arr,1) .and. i(2) <= size(arr,2)) then
+         out = arr(i(1),i(2))
+      else
+         status = PARSE_ERR_BAD_ARR
+      end if
+   end if
+end function PARSE_ARRAY_INDEX_NAME_2D

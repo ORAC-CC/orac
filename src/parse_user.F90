@@ -27,7 +27,9 @@ module parse_user
    end interface parse_user_text
 
    interface parse_array_index
-      module procedure parse_array_index_sint, parse_array_index_lint
+      module procedure &
+           parse_array_index_1d_sint, parse_array_index_1d_lint, &
+           parse_array_index_2d_sint, parse_array_index_2d_lint
    end interface parse_array_index
 contains
 
@@ -92,27 +94,31 @@ contains
 #define PARSE_STRING_NAME_0D parse_user_text_0d_sint
 #define PARSE_STRING_NAME_1D parse_user_text_1d_sint
 #define PARSE_STRING_NAME_2D parse_user_text_2d_sint
-#define PARSE_ARRAY_INDEX_NAME parse_array_index_sint
+#define PARSE_ARRAY_INDEX_NAME_1D parse_array_index_1d_sint
+#define PARSE_ARRAY_INDEX_NAME_2D parse_array_index_2d_sint
 #include "../common/parse_string.inc"
 #include "parse_user_text.inc"
 #undef PARSE_STRING_KIND
 #undef PARSE_STRING_NAME_0D
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
-#undef PARSE_ARRAY_INDEX_NAME
+#undef PARSE_ARRAY_INDEX_NAME_1D
+#undef PARSE_ARRAY_INDEX_NAME_2D
 
 #define PARSE_STRING_KIND lint
 #define PARSE_STRING_NAME_0D parse_user_text_0d_lint
 #define PARSE_STRING_NAME_1D parse_user_text_1d_lint
 #define PARSE_STRING_NAME_2D parse_user_text_2d_lint
-#define PARSE_ARRAY_INDEX_NAME parse_array_index_lint
+#define PARSE_ARRAY_INDEX_NAME_1D parse_array_index_1d_lint
+#define PARSE_ARRAY_INDEX_NAME_2D parse_array_index_2d_lint
 #include "../common/parse_string.inc"
 #include "parse_user_text.inc"
 #undef PARSE_STRING_KIND
 #undef PARSE_STRING_NAME_0D
 #undef PARSE_STRING_NAME_1D
 #undef PARSE_STRING_NAME_2D
-#undef PARSE_ARRAY_INDEX_NAME
+#undef PARSE_ARRAY_INDEX_NAME_1D
+#undef PARSE_ARRAY_INDEX_NAME_2D
 
 #undef PARSE_STRING_TYPE
 
