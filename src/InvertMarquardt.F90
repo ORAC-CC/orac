@@ -668,6 +668,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    Jm = Jm / SPixel%Ind%Ny
    Ja = Ja / SPixel%Ind%Ny
 
+   ! Set averaging kernel [d2J_dX2-SxInv = matmul(KxT_SyI, Kx)]
+   d2J_dX2 = d2J_dX2 - SxInv
+   Diag%AK(SPixel%X, SPixel%X) = matmul(St_temp, d2J_dX2)
+
 
    ! Void the outputs for failed superpixels
 99 if (stat /= 0) then

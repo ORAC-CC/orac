@@ -208,10 +208,9 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    dummyreal = 0.0
 
    do k=1,SPixel%Nx
-      dummyreal = dummyreal + Diag%AK(k,k)
+      dummyreal = dummyreal + Diag%AK(SPixel%X(k),SPixel%X(k))
    end do
 
-   dummyreal = (dummyreal-output_data%ds_offset)/output_data%ds_scale
    call prepare_short_packed_float( &
            dummyreal, output_data%ds(i,j), &
            output_data%ds_scale, output_data%ds_offset, &
