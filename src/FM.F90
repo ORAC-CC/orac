@@ -168,7 +168,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    real             :: Rad(SPixel%Ind%NThermal)
    real             :: d_Rad(SPixel%Ind%NThermal, MaxStateVar)
    real             :: Ref(SPixel%Ind%NSolar)
-   real             :: d_Ref(SPixel%Ind%NSolar, MaxStateVar+1)
+   real             :: d_Ref(SPixel%Ind%NSolar, MaxStateVar)
    real             :: Y_R(SPixel%Ind%NMixed)
    real             :: T(SPixel%Ind%NMixed)
    real             :: dT_dR(SPixel%Ind%NMixed)
@@ -222,11 +222,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       ! Copy results into output vectors
       Y(SPixel%Ind%YThermal) = BT
-      dY_dX(SPixel%Ind%YThermal,1:MaxStateVar) = d_BT
-
-      ! Although there is no value w.r.t Rs for the thermal channels, the
-      ! dY_dX contains space for it, so set it to 0.
-      dY_dX(SPixel%Ind%YThermal, IRs) = 0
+      dY_dX(SPixel%Ind%YThermal,:) = d_BT
    end if
 
    ! Call solar forward model
@@ -297,8 +293,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
          end do
 
          ! Deal with the Rs terms
-         dY_dX(SPixel%Ind%YMixed,IRs) = &
-              SPixel%f0(isolar) * d_Ref(isolar,IRs) * dT_dR
+!         dY_dX(SPixel%Ind%YMixed,IRs(1,1)) = &
+!              SPixel%f0(isolar) * d_Ref(isolar,IRs(1,1)) * dT_dR
 
       end if ! status == 0 from R2T
    end if ! SPixel%Ind%NMixed > 0

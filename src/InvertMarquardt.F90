@@ -201,7 +201,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! (can't use J: it's the cost function)
    real    :: Y(SPixel%Ind%Ny)    ! TOA reflectances, radiances etc for partly-
                                   ! cloudy conditions. Returned by FM
-   real    :: dY_dX(SPixel%Ind%Ny,MaxStateVar+1)
+   real    :: dY_dX(SPixel%Ind%Ny,MaxStateVar)
                                   ! Derivatives d[ref]/d[tau,Re,pc,f,Ts,Rs]t
    real    :: cloud_albedo(SPixel%Ind%NSolar)
                                   ! cloud albedo Returned by FM
@@ -273,8 +273,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    KxT_SyI   = 0.
    J         = 0.
    d2J_dX2   = 0.
-   Diag%st   = 0.
-   Diag%ss   = 0.
+   Diag%St   = 0.
+   Diag%Ss   = 0.
    SPixel%Sn = 0.
 
    huge_value = huge(1.0)/Ctrl%InvPar%MqStep

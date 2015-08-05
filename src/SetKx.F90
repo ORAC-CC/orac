@@ -76,8 +76,7 @@ subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)
 
    if (Ctrl%Eqmpn%Rs == 1) then
       do i = 1, SPixel%Ind%NSolar
-         Kbj(SPixel%Ind%YSolar(i),i) = &
-              dY_dX(SPixel%Ind%YSolar(i),MaxStateVar+1)
+         Kbj(SPixel%Ind%YSolar(i),i) = dY_dX(SPixel%Ind%YSolar(i),IRs(1,1))
       end do
    end if
 

@@ -32,12 +32,12 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
 
             ! Compare string to all ECP_Constants array parameters listed
             select case (label)
-!            case('IRS')
-!               status = PARSE_ARRAY_INDEX_NAME_2D(idx, IRs, out)
-!            case('ISP')
-!               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISP, out)
-!            case('ISS')
-!               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISS, out)
+            case('IRS')
+               status = PARSE_ARRAY_INDEX_NAME_2D(idx, IRs, out)
+            case('ISP')
+               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISP, out)
+            case('ISS')
+               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISS, out)
             case default
                status  = PARSE_ERR_CONV
             end select

@@ -117,6 +117,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    integer :: ios     ! I/O status for breakpoint file
 #endif
    status = 0
+   d_R = 0
 
    ! Subscripts for thermal channels in RTM arrays
    Thermal = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(:SPixel%Ind%NThermal)

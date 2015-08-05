@@ -363,22 +363,19 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Ind%X_Dy(2) = IRe
    Ctrl%Ind%X_Dy(3) = IPc
    Ctrl%Ind%X_Dy(4) = ITs
-!  Ctrl%Ind%X_Dy(5) = IFr
 
    ! Twilight options
    Ctrl%Ind%Nx_Tw = 2  ! number of active state variables
 
    Ctrl%Ind%X_Tw(1) = IPc ! indices of state parameters
    Ctrl%Ind%X_Tw(2) = ITs
-!  Ctrl%Ind%X_Tw(3) = IFr
-
 
    ! Night options
    Ctrl%Ind%Nx_Ni = 2 ! number of active state variables
 
    Ctrl%Ind%X_Ni(1) = IPc ! indices of state parameters
    Ctrl%Ind%X_Ni(2) = ITs
-!  Ctrl%Ind%X_Ni(3) = IFr
+
 
    ! Force single view (for the time being)
    Ctrl%Ind%NViews=1
@@ -428,28 +425,43 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%CloudType = 1 ! use this to select which coreg/homog errors to use
 
 
-   ! Set a priori options (Tau,Re,Pc,F,Ts)
+   ! Set a priori options
 
    ! Day
-   Ctrl%AP(ITau,IDay) = SelmCtrl
-   Ctrl%AP(IRe,IDay)  = SelmCtrl
-   Ctrl%AP(IPc,IDay)  = SelmCtrl
-   Ctrl%AP(IFr,IDay)  = SelmMeas
-   Ctrl%AP(ITs,IDay)  = SelmAux
+   Ctrl%AP(ITau,IDay)             = SelmCtrl
+   Ctrl%AP(IRe,IDay)              = SelmCtrl
+   Ctrl%AP(IPc,IDay)              = SelmCtrl
+   Ctrl%AP(IFr,IDay)              = SelmMeas
+   Ctrl%AP(ITs,IDay)              = SelmAux
+   Ctrl%AP(IRs(:,IRho_0V),IDay)   = SelmAux
+   Ctrl%AP(IRs(:,IRho_0D),IDay)   = SelmAux
+   Ctrl%AP(IRs(:,IRho_DV),IDay)   = SelmAux
+   Ctrl%AP(IRs(:,IRho_DD),IDay)   = SelmAux
+   Ctrl%AP(ISP,IDay)              = SelmCtrl
 
    ! Twilight
-   Ctrl%AP(ITau,ITwi) = SelmCtrl
-   Ctrl%AP(IRe,ITwi)  = SelmCtrl
-   Ctrl%AP(IPc,ITwi)  = SelmCtrl
-   Ctrl%AP(IFr,ITwi)  = SelmMeas
-   Ctrl%AP(ITs,ITwi)  = SelmAux
+   Ctrl%AP(ITau,ITwi)             = SelmCtrl
+   Ctrl%AP(IRe,ITwi)              = SelmCtrl
+   Ctrl%AP(IPc,ITwi)              = SelmCtrl
+   Ctrl%AP(IFr,ITwi)              = SelmMeas
+   Ctrl%AP(ITs,ITwi)              = SelmAux
+   Ctrl%AP(IRs(:,IRho_0V),ITwi)   = SelmAux
+   Ctrl%AP(IRs(:,IRho_0D),ITwi)   = SelmAux
+   Ctrl%AP(IRs(:,IRho_DV),ITwi)   = SelmAux
+   Ctrl%AP(IRs(:,IRho_DD),ITwi)   = SelmAux
+   Ctrl%AP(ISP,ITwi)              = SelmCtrl
 
    ! Night
-   Ctrl%AP(ITau,INight) = SelmCtrl
-   Ctrl%AP(IRe,INight)  = SelmCtrl
-   Ctrl%AP(IPc,INight)  = SelmCtrl
-   Ctrl%AP(IFr,INight)  = SelmMeas
-   Ctrl%AP(ITs,INight)  = SelmAux
+   Ctrl%AP(ITau,INight)           = SelmCtrl
+   Ctrl%AP(IRe,INight)            = SelmCtrl
+   Ctrl%AP(IPc,INight)            = SelmCtrl
+   Ctrl%AP(IFr,INight)            = SelmMeas
+   Ctrl%AP(ITs,INight)            = SelmAux
+   Ctrl%AP(IRs(:,IRho_0V),INight) = SelmAux
+   Ctrl%AP(IRs(:,IRho_0D),INight) = SelmAux
+   Ctrl%AP(IRs(:,IRho_DV),INight) = SelmAux
+   Ctrl%AP(IRs(:,IRho_DD),INight) = SelmAux
+   Ctrl%AP(ISP,INight)            = SelmCtrl
 
 
    ! Set first guess options (Tau,Re,Pc,F,Ts)
@@ -460,25 +472,40 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Ctrl%FG(state variable, time of day)
 
    ! Day
-   Ctrl%FG(ITau,IDay) = SelmCtrl
-   Ctrl%FG(IRe,IDay)  = SelmCtrl
-   Ctrl%FG(IPc,IDay)  = SelmMeas ! from ir profile
-   Ctrl%FG(IFr,IDay)  = SelmCtrl
-   Ctrl%FG(ITs,IDay)  = SelmAux  ! from auxiliary file
+   Ctrl%FG(ITau,IDay)             = SelmCtrl
+   Ctrl%FG(IRe,IDay)              = SelmCtrl
+   Ctrl%FG(IPc,IDay)              = SelmMeas ! From IR profile
+   Ctrl%FG(IFr,IDay)              = SelmCtrl
+   Ctrl%FG(ITs,IDay)              = SelmAux  ! From ECMWF file
+   Ctrl%FG(IRs(:,IRho_0V),IDay)   = SelmAux  ! From MODIS file
+   Ctrl%FG(IRs(:,IRho_0D),IDay)   = SelmAux
+   Ctrl%FG(IRs(:,IRho_DV),IDay)   = SelmAux
+   Ctrl%FG(IRs(:,IRho_DD),IDay)   = SelmAux
+   Ctrl%FG(ISP,IDay)              = SelmCtrl
 
    ! Twilight
-   Ctrl%FG(ITau,ITwi) = SelmCtrl
-   Ctrl%FG(IRe,ITwi)  = SelmCtrl
-   Ctrl%FG(IPc,ITwi)  = SelmMeas ! from ir profile
-   Ctrl%FG(IFr,ITwi)  = SelmCtrl
-   Ctrl%FG(ITs,ITwi)  = SelmAux  ! from auxiliary file
+   Ctrl%FG(ITau,ITwi)             = SelmCtrl
+   Ctrl%FG(IRe,ITwi)              = SelmCtrl
+   Ctrl%FG(IPc,ITwi)              = SelmMeas
+   Ctrl%FG(IFr,ITwi)              = SelmCtrl
+   Ctrl%FG(ITs,ITwi)              = SelmAux
+   Ctrl%FG(IRs(:,IRho_0V),ITwi)   = SelmAux
+   Ctrl%FG(IRs(:,IRho_0D),ITwi)   = SelmAux
+   Ctrl%FG(IRs(:,IRho_DV),ITwi)   = SelmAux
+   Ctrl%FG(IRs(:,IRho_DD),ITwi)   = SelmAux
+   Ctrl%FG(ISP,ITwi)              = SelmCtrl
 
    ! Night
-   Ctrl%FG(ITau,INight) = SelmCtrl
-   Ctrl%FG(IRe,INight)  = SelmCtrl
-   Ctrl%FG(IPc,INight)  = SelmMeas ! from ir profile
-   Ctrl%FG(IFr,INight)  = SelmCtrl
-   Ctrl%FG(ITs,INight)  = SelmAux  ! from auxiliary file
+   Ctrl%FG(ITau,INight)           = SelmCtrl
+   Ctrl%FG(IRe,INight)            = SelmCtrl
+   Ctrl%FG(IPc,INight)            = SelmMeas
+   Ctrl%FG(IFr,INight)            = SelmCtrl
+   Ctrl%FG(ITs,INight)            = SelmAux
+   Ctrl%FG(IRs(:,IRho_0V),INight) = SelmAux
+   Ctrl%FG(IRs(:,IRho_0D),INight) = SelmAux
+   Ctrl%FG(IRs(:,IRho_DV),INight) = SelmAux
+   Ctrl%FG(IRs(:,IRho_DD),INight) = SelmAux
+   Ctrl%FG(ISP,INight)            = SelmCtrl
 
 
    ! Set default a priori and first guess values. Quite often these values have a
@@ -525,6 +552,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
                  trim(Ctrl%LUTClass)
       stop BadLUTClass
    end select
+   Ctrl%XB(IRs(:,IRho_0V)) = 0.01
+   Ctrl%XB(IRs(:,IRho_0D)) = 0.01
+   Ctrl%XB(IRs(:,IRho_DV)) = 0.01
+   Ctrl%XB(IRs(:,IRho_DD)) = 0.01
+   Ctrl%X0(IRs(:,IRho_0V)) = 0.01
+   Ctrl%X0(IRs(:,IRho_0D)) = 0.01
+   Ctrl%X0(IRs(:,IRho_DV)) = 0.01
+   Ctrl%X0(IRs(:,IRho_DD)) = 0.01
 
 
    ! Set default a priori error covariance
@@ -541,6 +576,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%Sx(IFr) = 1.0e+08 ! fraction
       Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
    end if
+   Ctrl%Sx(IRs(:,IRho_0V)) = 0.05
+   Ctrl%Sx(IRs(:,IRho_0D)) = 0.05
+   Ctrl%Sx(IRs(:,IRho_DV)) = 0.05
+   Ctrl%Sx(IRs(:,IRho_DD)) = 0.05
 
    Ctrl%Max_SDAD = 10 ! No. of pixels where state is valid for SDAD setting
 
@@ -641,7 +680,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       stop InstIDInvalid
    end if
 
-   Ctrl%RS%Sb            = 20.0/100.0 ! Percentage error in surface reflectance
+   Ctrl%RS%Sb            = 0.2        ! Percentage error in surface reflectance
    Ctrl%RS%Cb            = 0.2        ! Correlation between surface reflectance
 
 
@@ -665,6 +704,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%XScale(IPc) = 1.0
    Ctrl%Invpar%XScale(IFr) = 1000.0
    Ctrl%Invpar%XScale(ITs) = 1.0
+   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = 1000.0
+   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = 1000.0
+   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = 1000.0
+   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = 1000.0
+   Ctrl%Invpar%XScale(ISP) = 1.0
 
    ! Lower limit on state
    Ctrl%Invpar%XLLim(ITau)  = -3.0
@@ -673,9 +717,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    else
       Ctrl%Invpar%XLLim(IRe) = 0.1
    end if
-   Ctrl%Invpar%XLLim(IPc)  = 10.0
-   Ctrl%Invpar%XLLim(IFr)  = 1.0
-   Ctrl%Invpar%XLLim(ITs)  = 250.0
+   Ctrl%Invpar%XLLim(IPc) = 10.0
+   Ctrl%Invpar%XLLim(IFr) = 1.0
+   Ctrl%Invpar%XLLim(ITs) = 250.0
+   Ctrl%Invpar%XLLim(IRs(:,IRho_0V)) = 0.00001
+   Ctrl%Invpar%XLLim(IRs(:,IRho_0D)) = 0.00001
+   Ctrl%Invpar%XLLim(IRs(:,IRho_DV)) = 0.00001
+   Ctrl%Invpar%XLLim(IRs(:,IRho_DD)) = 0.00001
+   Ctrl%Invpar%XLLim(ISP) = 0.00001
 
    ! Upper limit on state
    Ctrl%Invpar%XULim(ITau) = 2.408
@@ -689,6 +738,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%XULim(IPc) = 1200.0
    Ctrl%Invpar%XULim(IFr) = 1.0
    Ctrl%Invpar%XULim(ITs) = 320.0
+   Ctrl%Invpar%XULim(IRs(:,IRho_0V)) = 1.0
+   Ctrl%Invpar%XULim(IRs(:,IRho_0D)) = 1.0
+   Ctrl%Invpar%XULim(IRs(:,IRho_DV)) = 1.0
+   Ctrl%Invpar%XULim(IRs(:,IRho_DD)) = 1.0
+   Ctrl%Invpar%XULim(ISP) = 100.0
+
    Ctrl%Invpar%ConvTest   = .false.
 
 
@@ -699,10 +754,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Maximum acceptable retrieval errors
    Ctrl%QC%MaxS(ITau) = 0.08
-   Ctrl%QC%MaxS(IRe) = 3.0
-   Ctrl%QC%MaxS(IPc) = 200.
-   Ctrl%QC%MaxS(IFr) = 0.2
-   Ctrl%QC%MaxS(ITs) = 2.0
+   Ctrl%QC%MaxS(IRe)  = 3.0
+   Ctrl%QC%MaxS(IPc)  = 200.
+   Ctrl%QC%MaxS(IFr)  = 0.2
+   Ctrl%QC%MaxS(ITs)  = 2.0
+   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = 200.0
+   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = 200.0
+   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = 200.0
+   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = 200.0
+   Ctrl%QC%MaxS(ISP)  = 200.0
 
 
    ! See sabotage_input_data.F90
@@ -952,9 +1012,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
             end if
 
          case (SelmAux)
-            if (i /= ITs) then
+            if (i /= ITs .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting first guess Ts'
+                    'for setting first guess Ts and Rs'
                stop FGMethErr
             end if
 
@@ -982,9 +1042,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
             end if
 
          case (SelmAux)
-            if (i /= ITs) then
+            if (i /= ITs .and. .not. any(i == IRs)) then
                write(*,*) 'ERROR: Read_Driver(): AUX method ONLY supported ' // &
-                    'for setting a priori Ts'
+                    'for setting a priori Ts and Rs'
                stop APMethErr
             end if
 

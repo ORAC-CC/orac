@@ -73,6 +73,7 @@
 ! 2015/07/27, AP: Removed unused variables ECPLogReclen, MaxDiagFlags,
 !    MaxCloudClass, AMeth..., DiFlag..., CCFileName. Added MaxNumViews, MaxTypes.
 !    Renamed CloudFlag terms to Type.
+! 2015/08/05, AP: Extend state vector to include BRDF terms.
 !
 ! $Id$
 !
@@ -86,6 +87,8 @@ module ECP_constants
 
    implicit none
 
+   integer            :: i_ECP                      ! Loop variable
+
    ! Maximum string lengths
    integer, parameter :: FilenameLen      = 2048    ! Max. length of filenames
    integer, parameter :: InstNameLen      = 16      ! Max. length of instrument name
@@ -96,7 +99,6 @@ module ECP_constants
    integer, parameter :: MaxNumSolar      = 20      ! Max no. of solar channels
    integer, parameter :: MaxCloudType     = 5       ! Max. no of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max. no. of pressure levels (in SPixel RTM arrays)
-   integer, parameter :: MaxStateVar      = 5       ! Max. number of state variables processed
    integer, parameter :: MaxCRProps       = 11      ! Max no. of properties in SAD_LUT arrays
    integer, parameter :: MaxRho_XX        = 4       ! Max no. of BRDF parameters
    integer, parameter :: MaxTypes         = 10      ! Number of possible cloud/aerosol types
@@ -191,21 +193,24 @@ module ECP_constants
    integer, parameter :: ITau             = 1       ! Index of tau, cloud optical depth
    integer, parameter :: IRe              = 2       ! Index of re, effective radius
 
-   ! Index of values in X (state vector) array - use ITau, IRe from above, plus:
-   ! (also used for the Ref and d_Ref arrays, which include an Rs component).
-   ! Phase can also be included, e.g. in first guess arrays from Ctrl, in which
-   ! case it occupies the 6th position (same as Rs in other cases). N.B. could
-   ! be dangerous!
+   ! Index of values in X (state vector) array - use ITau, IRe from above, plus
    integer, parameter :: IPc              = 3       ! Index of Pc, cloud pressure
    integer, parameter :: IFr              = 4       ! Index of F, cloud fraction (can't
                                                     ! use "If", unfortunately)
    integer, parameter :: ITs              = 5       ! Index of Ts, surface temperature
-   integer, parameter :: IRs              = 6       ! Index of Rs, surface reflectance (in Reflectance arrays).
-   integer, parameter :: IPhase           = 6       ! Index of phase when included in arrays with state vector info. N.B. same as IRs.
 
-   ! Cloud phase (water, ice)
-   integer, parameter :: IPhaseWat        = 1       ! Water
-   integer, parameter :: IPhaseIce        = 2       ! Ice
+   ! Oxford surface reflectance parameters. Though we're unlikely to retrieve
+   ! all the BRDF parameters, space needs to be made in the Jacobian.
+   integer, parameter :: IRs(MaxNumSolar, MaxRho_XX) = &
+        [(i_ECP+iTs, i_ECP = 1, MaxNumSolar*MaxRho_XX)]
+   ! Swansea surface reflectance parameters. ISS is the wavelength-dependent
+   ! s parameter and ISP is the directionally-dependent P parameter.
+   integer, parameter :: ISS(MaxNumSolar) = IRs(:, 1)
+   integer, parameter :: ISP(MaxNumViews) = &
+        [(i_ECP+IRs(MaxNumSolar, MaxRho_XX), i_ECP = 1, MaxNumViews)]
+
+   ! Determine max. no. of state vector elements from indices
+   integer, parameter :: MaxStateVar      = ISP(MaxNumViews)
 
    ! Illumination conditions (day/twilight/night) for arrays Ctrl%FG and AP
    integer, parameter :: IDay             = 1

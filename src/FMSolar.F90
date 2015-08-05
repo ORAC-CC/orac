@@ -277,6 +277,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 #endif
 
    status = 0
+   d_REF = 0
 
    ! Subscripts for solar channels in RTM arrays
    Solar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(:SPixel%Ind%NSolar)
@@ -370,11 +371,11 @@ if (.not. Ctrl%RS%use_full_brdf) then
    d_REF(:,IFr) = (REF_over - SPixel%RTM%REF_clear)
 
    ! Derivative w.r.t. surface temperature, T_s
-   d_REF(:,ITs) = 0.0 ! Constant and zero
+!  d_REF(:,ITs) = 0.0 ! Constant and zero
 
    ! Derivative w.r.t. surface reflectance, R_s
    do i=1, SPixel%Ind%NSolar
-      d_REF(i,IRs) = &
+      d_REF(i,IRs(1,1)) = &
          (X(IFr) * Tac_0v(i) * &
              (Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc_dd(i) / S_dnom(i))) + &
              (SPixel%RTM%dREF_clear_dRs(i) * (1.0-X(IFr)))) / &
@@ -523,7 +524,7 @@ else
 
    REF_over_l = Tac_0v * d_l
 
-   d_REF(:,IRs) = X(IFr) * REF_over_l + (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs
+   d_REF(:,IRs(1,1)) = X(IFr) * REF_over_l + (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs
 end if
    ! Open breakpoint file if required, and write out reflectances and gradients.
 #ifdef BKP
@@ -566,7 +567,7 @@ end if
 
       do i=1, SPixel%Ind%NSolar
       	 write(bkp_lun,'(a,i2,a,6f9.4)') 'Channel index: ', i, &
-	    ' dRef: ', (d_Ref(i,j),j=1,MaxStateVar+1)
+	    ' dRef: ', (d_Ref(i,j),j=1,MaxStateVar)
       end do
 
       write(bkp_lun, '(a,/)') 'FM_Solar: end'
