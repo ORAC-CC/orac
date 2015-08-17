@@ -7,6 +7,7 @@
 ! History:
 ! 2015/02/15, GM: First version.
 ! 2015/07/30, GM: Fixed relative azimuth angle.
+! 2015/08/17, GM: Adapt to the newest version of seviri_native_util.
 !
 ! $Id$
 !
@@ -70,11 +71,11 @@ subroutine read_seviri_dimensions(l1_5_file, n_across_track, n_along_track, &
    ! Get the starting offset and dimensions of the actual image in the file.
    if (verbose) write(*,*) 'Calling seviri_native_get_dimens_f90() from ' // &
                            'the seviri_native_util module'
-   if (seviri_native_get_dimens_f90(trim(l1_5_file)//C_NULL_CHAR, &
+   if (seviri_get_dimens_nat_f90(trim(l1_5_file)//C_NULL_CHAR, &
        i_line, i_column, n_lines, n_columns, 1, 0, 0, 0, 0, &
        0.d0, 0.d0, 0.d0, 0.d0) .ne. 0) then
       write(*,*) 'ERROR: in read_seviri_dimensions(), calling ' // &
-                 'seviri_native_get_dimens_f90(), filename = ', trim(l1_5_file)
+                 'seviri_get_dimens_nat_f90(), filename = ', trim(l1_5_file)
       stop error_stop_code
    end if
 
