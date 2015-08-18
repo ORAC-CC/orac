@@ -74,6 +74,7 @@
 !    MaxCloudClass, AMeth..., DiFlag..., CCFileName. Added MaxNumViews, MaxTypes.
 !    Renamed CloudFlag terms to Type.
 ! 2015/08/05, AP: Extend state vector to include BRDF terms.
+! 2015/08/18, GM: Added LW and SW RTM minimum and maximum values.
 !
 ! $Id$
 !
@@ -128,6 +129,14 @@ module ECP_constants
    real, parameter    :: RefMax           =  1.5
    real, parameter    :: BTMin            =  140.0  ! Brightness temperature
    real, parameter    :: BTMax            =  350.0
+
+   real, parameter    :: TxcMin           = 0.0
+   real, parameter    :: TxcMax           = 1.5
+   real, parameter    :: RxcMin           = 0.
+   real, parameter    :: RxcMax           = 300.    ! T2R at 13.5um and 350K
+                                                    ! up to nearest 100th
+   real, parameter    :: EmsMin           = 0.0
+   real, parameter    :: EmsMax           = 1.0
 
    ! Missing data (fill) values
    real, parameter    :: MissingXn        = -999.   ! Value for "missing data" used as output when a SPixel is not processed.

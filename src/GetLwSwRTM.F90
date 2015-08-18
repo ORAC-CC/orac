@@ -61,6 +61,8 @@
 ! 2015/02/06, AP: Move T profile alteration to Int_CTP.
 ! 2015/03/11, GM: Do not interpolate wavelength dependent fields if the
 !    number of measurements is equal to zero.
+! 2015/08/18, GM: Added range checking to deal with cases where satellite zenith
+!    angle is greater than the maximum allowed by RTTOV.
 !
 ! $Id$
 !
@@ -106,11 +108,23 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    call interp_field2(RTM%LW%H, SPixel%RTM%LW%H, interp)
    if (Ctrl%Ind%NThermal .gt. 0) then
       call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
+      if (any(SPixel%RTM%LW%Ems < EmsMin .or. SPixel%RTM%LW%Ems > TxcMax)) &
+         status = -1
       call interp_field2(RTM%LW%Tac,     SPixel%RTM%LW%Tac,     interp)
+      if (any(SPixel%RTM%LW%Tac < TxcMin .or. SPixel%RTM%LW%Tac > TxcMax)) &
+         status = -1
       call interp_field2(RTM%LW%Tbc,     SPixel%RTM%LW%Tbc,     interp)
+      if (any(SPixel%RTM%LW%Tbc < TxcMin .or. SPixel%RTM%LW%Tbc > TxcMax)) &
+         status = -1
       call interp_field2(RTM%LW%Rac_up,  SPixel%RTM%LW%Rac_up,  interp)
+      if (any(SPixel%RTM%LW%Rac_up < RxcMin .or. SPixel%RTM%LW%Rac_up > RxcMax)) &
+         status = -1
       call interp_field2(RTM%LW%Rac_dwn, SPixel%RTM%LW%Rac_dwn, interp)
+      if (any(SPixel%RTM%LW%Rac_dwn < RxcMin .or. SPixel%RTM%LW%Rac_dwn > RxcMax)) &
+         status = -1
       call interp_field2(RTM%LW%Rbc_up,  SPixel%RTM%LW%Rbc_up,  interp)
+      if (any(SPixel%RTM%LW%Rbc_up < RxcMin .or. SPixel%RTM%LW%Rbc_up > RxcMax)) &
+         status = -1
    end if
 
    ! Set surface level to TOA transmittances
@@ -122,9 +136,17 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    call interp_field2(RTM%LW%P, SPixel%RTM%SW%P, interp)
    if (Ctrl%Ind%NSolar .gt. 0) then
       call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
+      if (any(SPixel%RTM%SW%Tac < TxcMin .or. SPixel%RTM%SW%Tac > TxcMax)) &
+         status = -1
       call interp_field2(RTM%SW%Tbc, SPixel%RTM%SW%Tbc, interp)
+      if (any(SPixel%RTM%SW%Tbc < TxcMin .or. SPixel%RTM%SW%Tbc > TxcMax)) &
+         status = -1
    end if
-
+#ifdef DEBUG
+   if (status /= 0) &
+      write(*, *) 'Get_LwSwRTM: At least one SW or LW RTM field out of range at: ' &
+                  SPixel%Loc%X0, SPixel%Loc%Y0
+#endif
    ! Set surface level to TOA transmittances
    SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)
 
@@ -142,7 +164,8 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    T_Array = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
    SAD_temp = SAD_Chan(Ctrl%Ind%YThermal)
-   call T2R(Ctrl%Ind%NThermal, SAD_temp, &
-        T_Array, R, SPixel%RTM%LW%dB_dTs, status)
+   if (status == 0) &
+      call T2R(Ctrl%Ind%NThermal, SAD_temp, T_Array, R, SPixel%RTM%LW%dB_dTs, &
+               status)
 
 end subroutine Get_LwSwRTM

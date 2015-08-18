@@ -102,7 +102,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
 
    ! Set status non-zero if one of the angles is outside the allowed range
    ! specified in Ctrl.
-   if (any(SPixel%Geom%SolZen < 0.)) then
+   if (any(SPixel%Geom%SolZen < SolZenMin)) then
 #ifdef DEBUG
       write(*, *) 'Get_Geometry: Solar zenith angle exceeds maximum at: ' &
                   SPixel%Loc%X0, SPixel%Loc%Y0
@@ -112,7 +112,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    if (any(SPixel%Geom%SatZen < SatZenMin .or. &
            SPixel%Geom%SatZen > Ctrl%MaxSatZen)) then
 #ifdef DEBUG
-      write(*, *) 'Get_Geometry: Satellite zenith angle exceeds maximum at: ' &
+      write(*, *) 'Get_Geometry: Satellite zenith angle out of range at: ' &
                   SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
       status = SPixelGeomSat
@@ -120,7 +120,7 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
    if (any(SPixel%Geom%RelAzi < RelAziMin .or. &
            SPixel%Geom%RelAzi > RelAziMax)) then
 #ifdef DEBUG
-      write(*, *) 'Get_Geometry: Relative azimuth angle exceeds maximum at: ' &
+      write(*, *) 'Get_Geometry: Relative azimuth angle out of range at: ' &
                   SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
       status = SPixelGeomSat

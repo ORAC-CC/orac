@@ -72,33 +72,33 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Longwave
    if (SPixel%Loc%Lat > RTM%Lw%Grid%MaxLat) then
 #ifdef DEBUG
-      write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM latitude exceeded by ' // &
-         'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
-         SPixel%Loc%Lat, RTM%Lw%Grid%MaxLat
+      write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM latitude exceeded ' // &
+         'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lat, &
+         RTM%Lw%Grid%MaxLat
 #endif
       status = GetRTMLwMaxLat
    end if
    if (SPixel%Loc%Lat < RTM%Lw%Grid%MinLat) then
 #ifdef DEBUG
-      write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM latitude exceeds ', &
-         'super pixel latitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
-         SPixel%Loc%Lat, RTM%Lw%Grid%MinLat
+      write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM latitude exceeded ', &
+         'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lat, &
+         RTM%Lw%Grid%MinLat
 #endif
       status = GetRTMLwMinLat
    end if
    if (SPixel%Loc%Lon > RTM%Lw%Grid%MaxLon) then
 #ifdef DEBUG
-      write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM longitude exceeded in ' // &
-         'super pixel starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
-         SPixel%Loc%Lon, RTM%Lw%Grid%MaxLon
+      write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM longitude exceeded ' // &
+         'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lon, &
+         RTM%Lw%Grid%MaxLon
 #endif
       status = GetRTMLwMaxLon
    end if
    if (SPixel%Loc%Lon < RTM%Lw%Grid%MinLon) then
 #ifdef DEBUG
-      write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM longitude exceeds ', &
-         'super pixel longitude starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, &
-         SPixel%Loc%Lon, RTM%Lw%Grid%MinLon
+      write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM longitude exceeded ', &
+         'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lon, &
+         RTM%Lw%Grid%MinLon
 #endif
       status = GetRTMLwMinLon
    end if
