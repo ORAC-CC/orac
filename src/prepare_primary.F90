@@ -372,12 +372,17 @@ subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! convergence, niter
    !----------------------------------------------------------------------------
-   if (Diag%Converged) then
-      output_data%convergence(i,j) = 0_byte
-      output_data%niter(i,j)=int(Diag%Iterations,kind=byte)
+   if (Diag%Converged .eq. byte_fill_value) then
+      output_data%convergence(i,j) = byte_fill_value
+      output_data%niter(i,j) = byte_fill_value
    else
-      output_data%convergence(i,j) = 1_byte
-      output_data%niter(i,j)=int(byte_fill_value,kind=byte)
+      if (Diag%Converged .ne. 0) then
+         output_data%convergence(i,j) = 0_byte
+         output_data%niter(i,j) = int(Diag%Iterations,kind=byte)
+      else
+         output_data%convergence(i,j) = 1_byte
+         output_data%niter(i,j) = byte_fill_value
+      end if
    end if
 
    !----------------------------------------------------------------------------

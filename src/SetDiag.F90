@@ -99,7 +99,7 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
 
 
    if (convergence) then
-      Diag%Converged = .true.
+      Diag%Converged = 1
 
       if (J > Ctrl%QC%MaxJ) then
          ! Flag high cost retrievals
@@ -111,7 +111,7 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
          SPixel%Loc%LastY0 = SPixel%Loc%Y0
       end if
    else
-      Diag%Converged = .false.
+      Diag%Converged = 0
    end if
 
    ! Flag retrieved variables with excessive error (bit of flag set is the index

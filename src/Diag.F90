@@ -28,7 +28,7 @@ module Diag_def
    implicit none
 
    type Diag_t
-      logical       :: Converged    ! Did the retrieval converge?
+      byte          :: Converged    ! Did the retrieval converge?
       integer       :: QCFlag       ! Quality control flag. Bits are set as
                                     ! follows:
 				    ! - bit 0: retrieval solution

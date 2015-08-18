@@ -53,6 +53,7 @@ subroutine Zero_Diag(Ctrl, Diag)
    type(Ctrl_t), intent(in)    :: Ctrl
    type(Diag_t), intent(inout) :: Diag
 
+   Diag%Converged    = byte_fill_value
    Diag%QCFlag       = 0
    Diag%Iterations   = 0
    Diag%Jm           = MissingSn

@@ -547,7 +547,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
             ! Set values required for overall statistics 1st bit test on QC
             ! flag determines whether convergence occurred.
-            if (Diag%Converged) then
+            if (Diag%Converged .eq. 1) then
                TotConv_line(j) = TotConv_line(j)+1
                AvIter_line(j)  = AvIter_line(j) + Diag%Iterations
                AvJ_line(j) = AvJ_line(j) + Diag%Jm + Diag%Ja
