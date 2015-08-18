@@ -219,7 +219,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer             :: ios        ! I/O status value from file operations
    integer             :: status     ! Status value returned from subroutines
    logical             :: verbose    ! Verbose print-out flag
-   integer             :: diag_lun   ! Logical unit number for diagnostics file
 
    character(8)        :: date       ! date returned from Date And Time function
    character(10)       :: time       ! time returned from Date And Time function
@@ -638,8 +637,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
 
    !----------------------------------------------------------------------------
-   ! Deallocate any allocatable arrays that have been set, close the output and
-   ! diagnostics files.
+   ! Deallocate any allocatable arrays that have been set and close the output.
    !----------------------------------------------------------------------------
 
    ! SAD_LUT is an allocatable arrays of structs, each struct containing
@@ -657,9 +655,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call dealloc_output_data_secondary(output_data_2,lcovar)
 
    call Dealloc_Ctrl(Ctrl)
-if (.false.) then
-   close(unit=diag_lun)
-end if
+
    ! Close netcdf output files
    if (nf90_close(ncid_primary) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: Error closing primary output file'
