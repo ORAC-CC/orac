@@ -186,7 +186,7 @@ subroutine read_seviri_l1_5(l1_5_file, imager_geolocation, imager_measurements, 
    allocate(band_units(n_bands))
    do i = 1, n_bands
       if (channel_info%channel_lw_flag(i) .eq. 0) then
-         band_units(i) = SEVIRI_UNIT_BRF
+         band_units(i) = SEVIRI_UNIT_REF
       else
          band_units(i) = SEVIRI_UNIT_BT
       end if
