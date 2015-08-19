@@ -66,6 +66,7 @@
 ! 2015/04/30, GM: Temporarily index channels in all_map_ids_abs_to_snow_and_ice
 !    that are not supported in the snow and ice correction to nearby supported
 !    channels.
+! 2015/08/19, GM: Modifications to support the SEVIRI HRIT format.
 !
 ! $Id$
 !
@@ -582,8 +583,7 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    ! Static instrument channel definitions. (These should not be changed.)
    integer, parameter :: all_nchannels_total = 11
 
-       ! 1,         2,         3,         4,         5,         6,
-       ! 7,         8,         9,         10,        11
+       ! 1,     2,     3,   4,    5,    6,    7,    8,    9,     10,    11
    real,    parameter :: all_channel_wl_abs(all_nchannels_total) = &
       (/ 0.635, 0.81, 1.64, 3.92, 6.25, 7.35, 8.70, 9.66, 10.80, 12.00, 13.40 /)
 
@@ -636,24 +636,32 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
       stop error_stop_code
    end if
 
+   ! Check if file is HRIT or NAT.
+   index1=index(trim(adjustl(l1b_path_file)),'.nat')
+
    ! which MSG are we processing?
    !
    ! MSG2-SEVI-MSG15-0100-NA-20100507144241.667000000Z-995378.nat
+   ! H-000-MSG1__-MSG1________-_________-EPI______-200603031200-__
    !
-   index1=index(trim(adjustl(l1b_path_file)),'-')
-   platform=l1b_path_file(index1-4:index1-1)
-
-   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
-   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
-   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
-   index1 = index1 + index(trim(adjustl(l1b_path_file(index1 + 1:))),'-')
+   if (index1 .ne. 0) then
+      index2=index(trim(adjustl(l1b_path_file)),'-')
+      platform=l1b_path_file(index2-4:index2-1)
+   else
+      index2=index(trim(adjustl(l1b_path_file)),'__-')
+      platform=l1b_path_file(index2+3:index2+6)
+   end if
+   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
+   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
+   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
+   index2 = index2 + index(trim(adjustl(l1b_path_file(index2 + 1:))),'-')
 
    ! get year, doy, hour and minute as strings
-   cyear=trim(adjustl(l1b_path_file(index1+1:index1+4)))
-   cmonth=trim(adjustl(l1b_path_file(index1+5:index1+6)))
-   cday=trim(adjustl(l1b_path_file(index1+7:index1+8)))
-   chour=trim(adjustl(l1b_path_file(index1+9:index1+10)))
-   cminute=trim(adjustl(l1b_path_file(index1+11:index1+12)))
+   cyear=trim(adjustl(l1b_path_file(index2+1:index2+4)))
+   cmonth=trim(adjustl(l1b_path_file(index2+5:index2+6)))
+   cday=trim(adjustl(l1b_path_file(index2+7:index2+8)))
+   chour=trim(adjustl(l1b_path_file(index2+9:index2+10)))
+   cminute=trim(adjustl(l1b_path_file(index2+11:index2+12)))
 
    ! get year, doy, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
@@ -661,6 +669,12 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
    read(cday(1:len_trim(cday)), '(I2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
+
+   if (index1 .ne. 0) then
+      ! Time in native filename is end of scan, which takes 12 mins. So subtract
+      ! 12 to get the actual start time of the image.
+      minute = minute - 12
+   end if
 
    call GREG2DOY(year, month, day, doy)
    write(cdoy, '(i3.3)') doy
