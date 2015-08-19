@@ -72,7 +72,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    integer :: i, ii, i_view, i_chan
    logical :: is_not_used_or_missing(Ctrl%Ind%Ny)
-   real    :: X(MaxStateVar)
+   integer :: X(MaxStateVar)
 
    ! Set status to zero
    status = 0
@@ -297,7 +297,7 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
    type(CTRL_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
    logical,        intent(inout) :: is_not_used_or_missing(:)
-   real,           intent(out)   :: X(:)
+   integer,        intent(out)   :: X(:)
    integer,        intent(inout) :: status
 
    ! Define local variables

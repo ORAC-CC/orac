@@ -797,13 +797,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 5, 6 /)
    else if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
-      allocate(Ctrl%ReChans(3))
-      Ctrl%ReChans = (/ 20, 6, 7 /)
+      allocate(Ctrl%ReChans(4))
+      Ctrl%ReChans = (/ 20, 6, 7, 5 /)
 
       allocate(Ctrl%tau_chans(4))
       Ctrl%tau_chans = (/ 1, 2, 3, 4 /)
-      allocate(Ctrl%r_e_chans(3))
-      Ctrl%r_e_chans = (/ 6, 7, 20 /)
+      allocate(Ctrl%r_e_chans(4))
+      Ctrl%r_e_chans = (/ 5, 6, 7, 20 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 20, 31, 32 /)
    else if (Ctrl%Inst%Name(1:6) .eq. 'SEVIRI') then
