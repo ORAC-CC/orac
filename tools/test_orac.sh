@@ -141,6 +141,7 @@ if (( $drop )); then
 fi
 # call IDL routine to compare this output to the previous version
 if (( $do_compare && ("$?" == 0) )); then
-    $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav -args $out_folder \
-        $revision 'main' ${#label[@]} ${label[@]}$desc $thresh
+    $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav \
+        -args $out_folder $revision ${#label[@]} ${label[@]} \
+              2 $phase.primary $phase.secondary $thresh
 fi

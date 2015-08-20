@@ -56,12 +56,8 @@
 ;   None
 ;
 ; RESTRICTIONS:
-;   Only inspects the file extensions alb,clf,geo,loc,lsf,msi,uv,lwrtm,prtm,
-;   swrtm,config.
-;   Assumes filenames start with a common identifier, followed by ORACV
-;   and the version number, followed by unique date/time information, ending
-;   in an extension listed above.
-;   Not able to deal with comparing files produced by different institutions.
+;   Assumes file system of ORAC testoutput directory ./VXXXX/INST/basename.suffix
+;   Not able to deal with comparing files with different basenames.
 ;
 ; MODIFICATION HISTORY:
 ;   Written by ACPovey (povey@atm.ox.ac.uk)
@@ -77,92 +73,78 @@
 ;   01 Aug 2014 - AP: Can deal with fields being removed.
 ;   30 Jan 2014 - AP: Remove UV file. Change formatting for points differing
 ;                 below rounding error threshold.
+;   20 Aug 2015 - AP: Made specification of instruments and file extensions
+;                 mandatory, replacing the mode argument. Added use of nccmp to
+;                 check changes in metadata (i.e. attributes). Replaced fatal
+;                 errors with text warnings. Added colour to printing.
 ;-
+
 PRO COMPARE_ORAC_OUT
    args=COMMAND_LINE_ARGS(count=nargs)
    fdr=args[0]
    revision=args[1]
-   mode=args[2]
-   ninst=FIX(args[3])
-   thres = nargs gt 4+ninst ? FLOAT(args[4+ninst]) : 1d-6
+   ;; Fetch list of instruments to compare
+   ninst=FIX(args[2])
+   list=STRARR(ninst)
+   for i=0,ninst-1 do list[i]=args[3+i]
+   ;; Fetch list of file extensions to compare
+   next=FIX(args[3+ninst])
+   a=STRARR(next)
+   for i=0,next-1 do a[i]=args[4+ninst+i]+'.nc'
+   thres = nargs gt 4+ninst+next ? FLOAT(args[4+ninst+next]) : 1d-6
 
-   sthres = STRING(thres,format='(g0.1)')
-
-   ;; appropriate file extensions
-   if mode eq 'preproc' $
-      then a='.'+['alb','config','clf','geo','loc','lsf','msi', $
-               'lwrtm','prtm','swrtm']+'.nc' $
-      else a='.'+['primary','secondary']+'.nc'
 
    ;; available versions
    ver=FILE_SEARCH(fdr+'/V*',/test_dir,count=nver)
-   if nver lt 2 then MESSAGE,'Insufficient file revisions found.'
+   if nver lt 2 then begin
+      PRINT, 'Insufficient file revisions found.', fdr, revision
+      RETURN
+   endif
    ;; translate version # into numeral for sorting
    ver=ver[SORT(FIX(STRMID(ver,TRANSPOSE(STRPOS(ver,'V'))+1)))]
    p=WHERE(STRMATCH(ver,'*V'+revision),np)
-   if np ne 1 then MESSAGE,'Bad folder structure.'
+   if np ne 1 then begin
+      PRINT, 'Bad folder structure.', fdr, revision
+      RETURN
+   endif
    old=ver[p-1]
    new=ver[p]
    PRINT, 'Comparing '+new+' against '+old
 
-   if ninst gt 0 then begin
-      list=STRARR(ninst)
-      for i=0,ninst-1 do list[i]=args[4+i]
-   endif else begin
-      f=FILE_SEARCH(new+'/*',/test_dir,count=nf)
-      for i=0,nf-1 do f[i]=STRMID(f[i],STRPOS(f[i],'/',/reverse_search)+1)
-   endelse
 
-   ;; loop over all experiments
+   ;; Loop over all experiments
    foreach inst,list do begin
-      PRINT,inst
+      PRINT_COLOUR, inst, /yellow, /bold
       pass=1
 
-      ;; find root file names
+      ;; Find root file names
       fs=FILE_SEARCH(old+'/'+inst+'/*'+a[0],count=nf1)
-      if nf1 eq 0 then MESSAGE,'No old files.'
+      if nf1 eq 0 then begin
+         PRINT, 'No old files.'
+         CONTINUE
+      endif
       oldf=fs[(SORT(fs))[nf1-1]]
       oldroot=STRMID(oldf,0,STRLEN(oldf)-STRLEN(a[0]))
       fs=FILE_SEARCH(new+'/'+inst+'/*'+a[0],count=nf1)
-      if nf1 eq 0 then MESSAGE,'No new files.'
+      if nf1 eq 0 then begin
+         PRINT, 'No new files.'
+         CONTINUE
+      endif
       newf=fs[(SORT(fs))[nf1-1]]
       newroot=STRMID(newf,0,STRLEN(newf)-STRLEN(a[0]))
 
-      ;; open all files with that roof
+      ;; Open all files with that root
       for i=0,N_ELEMENTS(a)-1 do begin
-         id1=NCDF_OPEN(oldroot+a[i])
-         id2=NCDF_OPEN(newroot+a[i])
+         COMPARE_NCDF_FILES, oldroot, newroot, a[i], thres, pass
 
-         ;; loop over all variables in that file
-         inq=NCDF_INQUIRE(id2)
-         for j=0,inq.nvars-1 do begin
-            var=NCDF_VARINQ(id2,j)
-            NCDF_VARGET,id1,NCDF_VARID(id1,var.name),c1
-            NCDF_VARGET,id2,j,c2
-            if ~ARRAY_EQUAL(c1,c2) then begin
-               if N_ELEMENTS(c1) ne N_ELEMENTS(c2) then begin
-                  PRINT,var.name+' ('+a[i]+','+ $
-                        STRING(j,format='(I0)')+') - Size mismatch: ['+ $
-                        STRJOIN(STRING(SIZE(c1,/dim),format='(I0)'),',')+ $
-                        '] vs ['+ $
-                        STRJOIN(STRING(SIZE(c2,/dim),format='(I0)'),',')+']'
-                  pass=0
-               endif else begin
-                  trash=WHERE(ABS((c2-c1)/c1) gt thres,nt)
-                  if nt gt 0 then $
-                     PRINT,var.name,a[i],j,nt, format='(A0," (",A0,",",I0,'+ $
-                           '") - ",I0," points are different by > '+sthres+'")' $
-                  else PRINT,var.name,a[i],j, format='("   ",A0," (",A0,",",I0,'+ $
-                           '") - 0 points are different by > '+sthres+'")'
-                  pass=0
-               endelse
-            endif
-         endfor
-         NCDF_CLOSE,id1
-         NCDF_CLOSE,id2
+         SPAWN, 'nccmp -m '+oldroot+a[i]+' '+newroot+a[i], screen
+         if TOTAL(STRLEN(screen)) gt 0 then begin
+            PRINT, screen
+            pass = 0
+         endif
       endfor
 
-      if pass then PRINT,'--- PASSED ---'
+      if pass then PRINT_COLOUR, '--- PASSED ---', /green
    endforeach
 
 END

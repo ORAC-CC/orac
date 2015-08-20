@@ -35,17 +35,17 @@ fi
 #------------------------------------------------------------------------------
 driver_file_base=$out_folder/post_driver_
 com=()
-for inst in ${label[*]}; do
+for j in ${!sensor[*]}; do
     echo "Processing $inst"
 
     # find root file names
-    fdr=$out_folder/V$revision/$inst
+    fdr=$out_folder/V$revision/${label[$j]}
     unset files fi
     while IFS= read -r -d $'\0' tmp; do
         # take only the part of the filename before _ORACV (differentiate chunks)
         files[fi++]="${tmp%*_ORAC_*}"
     done < <(find $fdr \
-        -name "$inst-*_ORAC_*_${file_version}WAT.primary.nc" \
+        -name "${label[$j]}-*_ORAC_*_${file_version}WAT.primary.nc" \
         -printf "%f\0")
     if (( "${#files}" == 0 )); then
         echo 'No files found. Check revision number.'
@@ -117,7 +117,7 @@ for inst in ${label[*]}; do
         echo "$summary" >> $driver                # summary
         echo "$keywords" >> $driver               # keywords
         echo "$comment" >> $driver                # comment
-        echo "$inst" >> $driver                   # project
+        echo "${label[$j]}" >> $driver            # project
         echo "$license" >> $driver                # license
         echo "$file_version" >> $driver           # cfile_version
         echo "???" >> $driver                     # csource
@@ -150,3 +150,13 @@ done
 
 # clean up driver files
 rm -f $driver_file_base*
+
+#------------------------------------------------------------------------------
+# CHECK RESULTS
+#------------------------------------------------------------------------------
+# call IDL routine to compare this output to the previous version
+if (( $do_compare && ("$?" == 0) )); then
+    $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav \
+        -args $out_folder $revision ${#label[@]} ${label[@]} \
+              2 primary secondary $thresh
+fi
