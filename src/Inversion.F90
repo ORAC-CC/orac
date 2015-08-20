@@ -24,6 +24,5 @@ contains
 #include "CheckLimits.F90"
 #include "SetKx.F90"
 #include "SetSy.F90"
-#include "SetUnit.F90"
 
 end module Inversion
