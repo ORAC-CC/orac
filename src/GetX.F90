@@ -74,6 +74,7 @@
 !    lowest T level to skint to be consistent with a priori. As rttov_driver.F90
 !    sets these to be the same, it makes little difference other than tidiness.
 ! 2015/06/02, AP: Moved repeated code into subroutine.
+! 2015/08/20, GM: Fix SelmCtrl setting of SPixel%X0.
 !
 ! $Id$
 !
@@ -112,7 +113,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    ! Set a priori
    SPixel%Sx = 0.
    do i = 1, MaxStateVar
-      call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, SPixel%Xb(i), &
+      call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, 0, SPixel%Xb(i), &
                      status, SPixel%Sx(i,i))
 
       ! Having set a priori for the variable, set first guess. If the FG method
@@ -122,10 +123,10 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
       ! supported for FG and AP.
 
       ! Set first guess
-      if (SPixel%FG(i) == SPixel%AP(i)) then
+      if (SPixel%FG(i) /= SelmCtrl .and. SPixel%FG(i) == SPixel%AP(i)) then
          SPixel%X0(i) = SPixel%Xb(i)
       else
-         call Get_State(SPixel%FG(i), i, Ctrl, SPixel, SAD_Chan, SPixel%X0(i), &
+         call Get_State(SPixel%FG(i), i, Ctrl, SPixel, SAD_Chan, 1, SPixel%X0(i), &
                         status)
       end if
 
@@ -148,7 +149,7 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
 end subroutine Get_X
 
 
-subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, X, status, Err)
+subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
 
    use CTRL_def
    use ECP_Constants
@@ -162,6 +163,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, X, status, Err)
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SPixel_t),   intent(inout) :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   integer,          intent(in)    :: flag
    real,             intent(out)   :: X
    integer,          intent(out)   :: status
    real,   optional, intent(out)   :: Err
@@ -209,7 +211,11 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, X, status, Err)
    ! methods failed. Ctrl%Sx is squared after reading in.
    if (mode == SelmCtrl .or. status /= 0) then
       ! Use a priori value from Ctrl structure
-      X = Ctrl%Xb(i)
+      if (flag /= 0) then
+         X = Ctrl%X0(i)
+      else
+         X = Ctrl%Xb(i)
+      end if
 
       if (present(Err)) then
          if (any(SPixel%X == i)) then
