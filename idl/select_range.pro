@@ -17,13 +17,13 @@
 ;
 ; OPTIONAL INPUTS:
 ;   None.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None.
-;	
+;
 ; OUTPUTS:
 ;   range    = A two-element array giving the min and max of the colourbar.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;

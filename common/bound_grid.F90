@@ -149,7 +149,7 @@ subroutine bound_irregular_grid(grid, n, out, below, above, frac, wrap)
       end if
    else
       ! search for coordinates that bound 'out' via bisection
-      old = below   
+      old = below
       do
          i = (below + above) / 2
          if (out > grid(i)) then

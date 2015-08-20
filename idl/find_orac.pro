@@ -4,7 +4,7 @@
 ;
 ; PURPOSE:
 ;   Assuming the Trac repository structure, this returns the path to a requested
-;   revision for an instrument given the base path. Also find the previous 
+;   revision for an instrument given the base path. Also find the previous
 ;   revision (numerically) available for comparions.
 ;
 ; CATEGORY:
@@ -24,18 +24,18 @@
 ; OPTIONAL INPUTS:
 ;   LABEL       = A very short description that should be printed at the top-left
 ;      of each page.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   COMPARE     = Plot the differences between this revision and the previous.
 ;      If there are none, plot the image with a grey border.
-;	
+;
 ; OUTPUTS:
 ;   folder      = Path to requested revision.
 ;   root        = Base filename(s) of requested revision.
 ;   nroot       = Length of returned root array.
 ;   oldfolder   = Path to requested previous revision.
 ;   oldroot     = Base filename(s) of requested previous revision.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;

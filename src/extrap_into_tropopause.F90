@@ -40,7 +40,7 @@ subroutine extrap_into_tropopause(SPixel)
    integer            :: k, index_ztp
    real               :: dtdp
 
-   
+
    index_ztp = 0
 
    ! Loop from top of atmosphere down

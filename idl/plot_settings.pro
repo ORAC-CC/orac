@@ -4,7 +4,7 @@
 ;
 ; PURPOSE:
 ;   Specifies the properties of diagrams made with PLOT_ORAC. This routine needs
-;   to be recompiled after any changes are made. 
+;   to be recompiled after any changes are made.
 ;
 ; CATEGORY:
 ;   ORAC plotting tools
@@ -14,23 +14,23 @@
 ;
 ; INPUTS:
 ;   suffix     = The file suffix for the file to be plotted. Possibilities are:
-;      ALB, CLF, CONFIG, GEO, LOC, LSF, LWRTM, MSI, PRTM, SWRTM, UV, 
+;      ALB, CLF, CONFIG, GEO, LOC, LSF, LWRTM, MSI, PRTM, SWRTM, UV,
 ;      PRIMARY, SECONDARY
 ;   instrument = A string specifying the swath to be plotted. This is expected
 ;      to be one of the values of $label in trunk/tools/test-preproc.sh
 ;
 ; OPTIONAL INPUTS:
 ;   None.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None.
-;	
+;
 ; OUTPUTS:
 ;   suffix = An array of structures (one per field in the file) each containing:
 ;      NAME:    Name of the field in the NCDF file.
 ;      MODE:    The format of the data, denoting the style of plot. Values are:
 ;         0) Line plot [n]; 1) One map plot [nx,ny];
-;         2) Series of map plots [nx,ny,n]; 3) One map plot [nxy]; 
+;         2) Series of map plots [nx,ny,n]; 3) One map plot [nxy];
 ;         4) Series of map plots [n,nxy]; 5) Levels of map plots [nl,nxy];
 ;         6) Two series of map plots [n,nl,nxy].
 ;      TITLE:   The description to be written above the plot.
@@ -41,19 +41,19 @@
 ;         value sets which bits of the quality control flag to discount a point
 ;         from plotting.
 ;      BTF:     The print format of the colourbar labels. Default (G0.4).
-;      FULL:    If nonzero, use a typical [minimum value, maximum value] 
+;      FULL:    If nonzero, use a typical [minimum value, maximum value]
 ;         colourbar range rather than the preferred percentile version.
 ;      RANGE:   Override the automated colourbar range selection.
 ;      BLABELS: For flag data, the descriptions to print on the colourbar rather
 ;         than numbers.
 ;      NLEVELS: The number of colour levels to be used in the plot. Default 250.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;
 ; RESTRICTIONS:
 ;   This routine needs to be recompiled after any changes are made for them to
-;   be expressed in plotting. Recommendations on how to avoid that gladly 
+;   be expressed in plotting. Recommendations on how to avoid that gladly
 ;   accepted.
 ;
 ; MODIFICATION HISTORY:
@@ -637,7 +637,7 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].title=FMT('Observation time','JDN')
 ;         ++i
       end
-      'SECONDARY': begin 
+      'SECONDARY': begin
 ;         out[i].name='scanline_u'
 ;         out[i].mode=1
 ;         out[i].full=1

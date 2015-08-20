@@ -10,7 +10,7 @@
 ;   ORAC plotting tools
 ;
 ; CALLING SEQUENCE:
-;   WRAP_MAPPOINTS, data, lat, lon, settings, plot_settings, filter, line, nl, 
+;   WRAP_MAPPOINTS, data, lat, lon, settings, plot_settings, filter, line, nl,
 ;                   symsize [, l [, m]]
 ;
 ; INPUTS:
@@ -28,13 +28,13 @@
 ;   l = When plotting fields with a dimension beyond lat/lon, this denotes the
 ;       index such that it can be included in the plot header.
 ;   m = As L, but for fields with two additional dimensions.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None.
-;	
+;
 ; OUTPUTS:
 ;   None.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;
@@ -53,7 +53,7 @@ PRO WRAP_MAPPOINTS, d, lat, lon, set, plot_set, filt, line, nl, syms, l, m, $
 
    ;; determine range for plot colourbar
    if KEYWORD_SET(false) then begin
-      if FINITE(set.range[0]) then fcnorm=set.range 
+      if FINITE(set.range[0]) then fcnorm=set.range
    endif else $
       ran = FINITE(set.range[0]) ? set.range : SELECT_RANGE(d[WHERE(filt)], set)
 

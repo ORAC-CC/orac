@@ -16,24 +16,24 @@
 !   the point is outside of that triangle and the nearest neighbour is returned
 !   instead. A sketch of the situation is shown below, where 1,2,3 are valid
 !   data points at the corners and X is the missing value.
-!                                                                               
-!      Nearest point               /                                            
-!      3 here          3          X                                             
-!                      |\        /                                              
-!                      | \        <- Line of u = t                               
-!                      |  \    /                                                
-!                      |   \                                                    
-!      _ _ _ _ _ _ _ _ |    \/        Nearest point                             
-!            /\        |     \        2 here                                    
-!      Line of u=0.5   |      \                                                 
-!                      |       \                                                
-!      Nearest point   |Triangle\ <- Line of u + t = 1                          
-!      1 here          |here     \                                              
-!                      1__________2                                             
-!                           |                                                   
-!                                                                               
-!                           | <- Line of t = 0.5                                
-!                                                                               
+!
+!      Nearest point               /
+!      3 here          3          X
+!                      |\        /
+!                      | \        <- Line of u = t
+!                      |  \    /
+!                      |   \
+!      _ _ _ _ _ _ _ _ |    \/        Nearest point
+!            /\        |     \        2 here
+!      Line of u=0.5   |      \
+!                      |       \
+!      Nearest point   |Triangle\ <- Line of u + t = 1
+!      1 here          |here     \
+!                      1__________2
+!                           |
+!
+!                           | <- Line of t = 0.5
+!
 !                           |
 ! - If two are missing, return the nearest neighbour.
 ! - If three are missing, return the only valid value.
@@ -54,7 +54,7 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-   
+
    select case (count(miss))
    case(0)
       ! bilinear interpolation
@@ -65,13 +65,13 @@
    !----------------------------------------------------------------------------
    case(1)
       ! triangular interpolation
-      if (miss(1)) then  
+      if (miss(1)) then
          coef = [1.-interp%u, 1.-interp%t, interp%u+interp%t-1.]
-     
+
          ! if outside valid triangle, do nearest neighbour instead
          if (all(coef <= 1. .and. coef >= 0.)) then
             datout = coef(1) * bot_rght + coef(2) * top_left + coef(3) * top_rght
-         else            
+         else
             if (interp%u > 0.5 .and. interp%t > 0.5) then
                datout = top_rght
             else if (interp%t > interp%u) then
@@ -80,13 +80,13 @@
                datout = top_left
             end if
          end if
-      else if (miss(2)) then 
+      else if (miss(2)) then
          coef = [1.-interp%u, interp%u-interp%t, interp%t]
-     
+
          ! if outside valid triangle, do nearest neighbour instead
          if (all(coef <= 1. .and. coef >= 0.)) then
             datout = coef(1) * bot_left + coef(2) * top_left + coef(3) * top_rght
-         else            
+         else
             if (interp%u > 0.5 .and. interp%t < 0.5) then
                datout = top_left
             else if (interp%t+interp%u > 1.) then
@@ -95,13 +95,13 @@
                datout = bot_left
             end if
          end if
-      else if (miss(3)) then 
+      else if (miss(3)) then
          coef = [1.-interp%t, interp%t-interp%u, interp%u]
-     
+
          ! if outside valid triangle, do nearest neighbour instead
          if (all(coef <= 1. .and. coef >= 0.)) then
             datout = coef(1) * bot_left + coef(2) * bot_rght + coef(3) * top_rght
-         else            
+         else
             if (interp%u < 0.5 .and. interp%t > 0.5) then
                datout = bot_rght
             else if (interp%t+interp%u > 1.) then
@@ -112,11 +112,11 @@
          end if
       else ! miss(4)
          coef = [1.-interp%u-interp%t, interp%t, interp%u]
-     
+
          ! if outside valid triangle, do nearest neighbour instead
          if (all(coef <= 1. .and. coef >= 0.)) then
             datout = coef(1) * bot_left + coef(2) * bot_rght + coef(3) * top_left
-         else            
+         else
             if (interp%u < 0.5 .and. interp%t < 0.5) then
                datout = bot_left
             else if (interp%t > interp%u) then

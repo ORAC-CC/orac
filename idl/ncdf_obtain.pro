@@ -18,13 +18,13 @@
 ;
 ; OPTIONAL INPUTS:
 ;   None.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None.
-;	
+;
 ; OUTPUTS:
 ;   field   = The requested data.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   fill    = The fill value applied to the data.
 ;
@@ -76,21 +76,21 @@ FUNCTION NCDF_OBTAIN, fid, name, fill
          else:
       endcase
    endfor
-   
+
    if KEYWORD_SET(sc) then begin
       fill = NCDF_OBTAIN_FILL(sc)
       if KEYWORD_SET(off) then begin
          out = REPLICATE(sc,SIZE(data,/dim))
-         if nvalid gt 0 then out[p_valid] = off + sc*data[p_valid] 
+         if nvalid gt 0 then out[p_valid] = off + sc*data[p_valid]
       endif else begin
          out = REPLICATE(sc,SIZE(data,/dim))
-         if nvalid gt 0 then out[p_valid] = sc*data[p_valid] 
+         if nvalid gt 0 then out[p_valid] = sc*data[p_valid]
       endelse
    endif else begin
       if KEYWORD_SET(off) then begin
          fill = NCDF_OBTAIN_FILL(off)
          out = REPLICATE(off,SIZE(data,/dim))
-         if nvalid gt 0 then out[p_valid] = off + data[p_valid] 
+         if nvalid gt 0 then out[p_valid] = off + data[p_valid]
       endif else begin
          fill = NCDF_OBTAIN_FILL(data[0])
          out = data

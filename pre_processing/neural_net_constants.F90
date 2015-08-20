@@ -5,16 +5,16 @@
 ! Module containing the neutral net constants
 !
 ! Examples:
-!	ex1 and ex2 used for prototype 
-!	ex3,ex4,ex5 used for FBL1 trained with GAC NOAA18 
+!	ex1 and ex2 used for prototype
+!	ex3,ex4,ex5 used for FBL1 trained with GAC NOAA18
 !	ex6,ex7,ex8 used for FBL2 trained with PYGAC NOAA18 ( w. NISE sea-ice, etc)
 !	ex9,ex10,ex11 used for FBL3 trained with PYGAC NOAA18 (w. ECMWF sea-ice, etc)
 !
 ! History:
 ! 2014/10/23, SS: Original version
 ! 2014/11/04, SS+OS: added constants for new cloud mask, which is now
-!    also available for twilight and additionally uses ECMWF skin 
-!    temperature and flags for snow/ice and land/sea 
+!    also available for twilight and additionally uses ECMWF skin
+!    temperature and flags for snow/ice and land/sea
 ! 2015/08/22, SS: added cloud masks 6-11
 !
 ! $Id$
@@ -162,7 +162,7 @@ module neural_net_constants
        & 6.895471096E+00, &
        & -4.942391205E+01, &
        & -5.657720947E+02, &
-       & -1.024770660E+02 / 
+       & -1.024770660E+02 /
 
   data inv_ex1(3,:) / 9.518052673E+01, &
        & -1.844642258E+01, &

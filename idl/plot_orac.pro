@@ -40,7 +40,7 @@
 ;   LABEL      = A very short description that should be printed at the top-left
 ;      of each page.
 ;   FRAMES     = The number of figures across which to plot the swath.
-;   ADD        = A string to add to the end of the filename. 
+;   ADD        = A string to add to the end of the filename.
 ;
 ; KEYWORD PARAMETERS:
 ;   COMPARE    = Plot the differences between this revision and the previous.

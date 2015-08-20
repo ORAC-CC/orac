@@ -8,7 +8,7 @@
 ;   done via the FALSE or DIFF keywords, to which you pass the channels you
 ;   wish plotted.
 ;
-;   The other parameters of these plots are automatically selected where 
+;   The other parameters of these plots are automatically selected where
 ;   possible, though most can be controlled through the PLOT_SETTINGS routine.
 ;
 ; CATEGORY:
@@ -16,7 +16,7 @@
 ;
 ; CALLING SEQUENCE:
 ;   PLOT_FALSE, instrument, revision, folder, false=array, diff=array,
-;            [, root=string] [, xsize=value] [, ysize=value] 
+;            [, root=string] [, xsize=value] [, ysize=value]
 ;            [, nx=value] [, ny=value] [, font_size=value]
 ;            [, scale=value] [, label=string] [, frames=value]
 ;            [, /keep_ps] [, \wat|/ice] [, /abs_ref]
@@ -46,7 +46,7 @@
 ;   LABEL      = A very short description that should be printed at the top-left
 ;      of each page.
 ;   FRAMES      = The number of figures across which to plot the swath.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   KEEP_PS    = Do not delete the postscript plots after combining them into
 ;      a PDF.
@@ -55,7 +55,7 @@
 ;   ABS_REF    = Rather than specify channels using their number in the sensor,
 ;      reference them by their offset within ORAC (i.e. 0=0.67, 1=0.87, 2=1.60,
 ;      3=3.70, 4=11.0, 5=12.0 um).
-;	
+;
 ; OUTPUTS:
 ;   - All outputs are made into the same folder as the input data.
 ;   - During processing, scratch postscripts are produced named ROOT.N###.eps.
@@ -64,7 +64,7 @@
 ;      COMPARE) ROOT.orac.comp.pdf
 ;      PREPROC) ROOT.preproc.pdf
 ;      PREPROC, COMPARE) ROOT.preproc.comp.pdf
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;
@@ -149,7 +149,7 @@ PRO PLOT_FALSE, inst, rev, fdr, false=false, diff=diff, stop=stop, $
 
          ;; open data fields
          data=NCDF_OBTAIN(fid, chs[0], fill_p)
- 
+
          ;; determine plotting filter (all points not missing)
          filt = data ne fill_p
          if KEYWORD_SET(qc_filt) then filt = filt AND ~(qcf AND qc_filt)

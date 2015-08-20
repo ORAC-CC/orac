@@ -152,7 +152,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
         errorstatus_success, errorstatus_fatal, &
         q_mixratio_to_ppmv, o3_mixratio_to_ppmv, &
         zenmax, zenmaxv9
-   
+
    ! rttov_types contains definitions of all RTTOV data types
    use rttov_types, only:    &
         rttov_options,       &
@@ -168,7 +168,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
    ! jpim, jprb and jplm are the RTTOV integer, real and logical KINDs
    use parkind1, only: jpim, jprb, jplm
-   
+
    implicit none
 
 #include "rttov_alloc_prof.interface"
@@ -181,7 +181,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #include "rttov_direct.interface"
 #include "rttov_deallocate_emis_atlas.interface"
 #include "rttov_dealloc_coefs.interface"
-   
+
    ! Arguments
    character(len=path_length),     intent(in)     :: coef_path
    character(len=path_length),     intent(in)     :: emiss_path
@@ -225,7 +225,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    ! Coefficient file selection
    character(len=file_length)           :: coef_file
    character(len=path_length)           :: coef_full_path
- 
+
    ! Scratch variables
    integer(kind=lint),      allocatable :: dummy_lint_1dveca(:)
    integer(kind=lint),      allocatable :: dummy_lint_1dvecb(:)
@@ -272,10 +272,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    case('SEVIRI')
       coef_file = 'rtcoef_msg_2_seviri.dat'
    end select
-   
+
    if (verbose) write(*,*) 'RTTOV coef file: ', trim(coef_file)
 
-   
+
    ! Initialise options structure (leaving default settings be)
    opts % interpolation % addinterp        = .true.  ! Interpolate input profile
    ! Removed as occassionally returns negative ozone at 0.005 hPa
@@ -293,7 +293,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    opts % config % verbose   = .false. ! Display only fatal error messages
 
    if (verbose) write(*,*) 'Write static information to the output files'
-   
+
    ! Write LW channel information
    allocate(dummy_lint_1dveca(channel_info%nchannels_lw))
    allocate(dummy_lint_1dvecb(channel_info%nchannels_lw))
@@ -307,7 +307,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
       end if
    end do
-   
+
    call nc_write_array(netcdf_info%ncid_lwrtm, 'lw_channel_abs_ids', &
            netcdf_info%vid_lw_channel_abs_ids, dummy_lint_1dveca, &
            1, 1, channel_info%nchannels_lw)
@@ -322,7 +322,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    deallocate(dummy_lint_1dvecb)
    deallocate(dummy_sreal_1dveca)
 
-   
+
    ! Write SW channel information
    allocate(dummy_lint_1dveca(channel_info%nchannels_sw))
    allocate(dummy_lint_1dvecb(channel_info%nchannels_sw))
@@ -336,7 +336,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          dummy_sreal_1dveca(count) = channel_info%channel_wl_abs(i_coef)
       end if
    end do
-   
+
    call nc_write_array(netcdf_info%ncid_swrtm, 'sw_channel_abs_ids', &
            netcdf_info%vid_sw_channel_abs_ids, dummy_lint_1dveca, &
            1, 1, channel_info%nchannels_sw)
@@ -351,7 +351,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    deallocate(dummy_lint_1dvecb)
 !  deallocate(dummy_sreal_1dveca)
 
-   
+
    ! Allocate input profile structures (coefs struct not required as addclouds
    ! and addaerosl not set)
    if (verbose) write(*,*) 'Allocate profile structure'
@@ -398,7 +398,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          ! For lack of a better idea, use lowest level we actually have
          profiles(count)%q(nlevels) = profiles(count)%q(nlayers)
          profiles(count)%o3(nlevels) = profiles(count)%o3(nlayers)
-         
+
          ! These features currently disabled and so do not need to be input
          profiles(count)%cfraction = 0.
 !        profiles(count)%ctp   = profiles(count)%p(profiles(count)%nlayers)
@@ -469,7 +469,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 !        netcdf_info%vid_lsf_pw, &
 !        preproc_prtm%land_sea_mask, &
 !        1, 1, preproc_dims%xdim, 1, 1, preproc_dims%ydim)
-   
+
    ! Do RTTOV calculations for long and shortwave in turn
    if (verbose) write(*,*) 'Do RTTOV calculations'
 
@@ -480,7 +480,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          nchan = channel_info%nchannels_lw
          allocate(input_chan(nchan))
          input_chan = channel_info%channel_ids_rttov_coef_lw
-         
+
          ! This assumes the recommended structure of the RTTOV coef library
          coef_full_path = trim(adjustl(coef_path))//'/rttov7pred54L/'// &
               trim(adjustl(coef_file))
@@ -489,7 +489,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
          nchan = channel_info%nchannels_sw
          allocate(input_chan(nchan))
          input_chan = channel_info%channel_ids_rttov_coef_sw
-         
+
          coef_full_path = trim(adjustl(coef_path))//'/rttov9pred54L/'// &
               trim(adjustl(coef_file))
       end if
@@ -504,7 +504,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 
       ! Force all SW channels to be processed
       if (i_coef == 2) coefs%coef%ss_val_chn = 1
-      
+
       if (verbose) write(*,*) 'Allocate channel and emissivity arrays'
       allocate(chanprof(nchan))
       allocate(emissivity(nchan))
@@ -571,7 +571,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                calcemis = emissivity%emis_in <= dither
                ! At some point, put MODIS emissivity here
 
- 
+
                ! Call RTTOV for this profile
                call rttov_direct(stat, chanprof, opts, profiles(count:count), &
                     coefs, transmission, radiance, radiance2, calcemis, &
@@ -580,7 +580,7 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                   write(*,*) 'ERROR: rttov_direct(), errorstatus = ', stat
                   stop error_stop_code
                end if
-               
+
                write_rttov = .true.
             else
                write_rttov = .false.
@@ -628,17 +628,17 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                     emissivity, transmission, radiance, radiance2, write_rttov)
             end if
          end do
-      end do               
+      end do
 
-      
+
       if (verbose) write(*,*) 'Deallocate structures'
-      
+
       call rttov_deallocate_emis_atlas(coefs)
       call rttov_alloc_traj(stat, 1, nchan, opts, nlevels, coefs, DEALLOC, traj)
       call rttov_alloc_transmission(stat, transmission, nlayers, nevals, DEALLOC)
       call rttov_alloc_rad(stat, nevals, radiance, nlayers, DEALLOC, radiance2)
       call rttov_dealloc_coefs(stat, coefs)
-      
+
       deallocate(input_chan)
       deallocate(chanprof)
       deallocate(emissivity)
@@ -647,12 +647,12 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    end do
 
    deallocate(dummy_sreal_1dveca)
-   
+
    call rttov_alloc_prof(stat, nprof, profiles, nlevels, opts, DEALLOC)
    deallocate(profiles)
 
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving rttov_driver()'
-   
+
 end subroutine rttov_driver
 
 

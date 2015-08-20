@@ -4,8 +4,8 @@
 ;   cgScaleVector
 ;
 ; PURPOSE:
-;   This is a utility routine to scale the elements of a vector or an array into a 
-;   given data range. 
+;   This is a utility routine to scale the elements of a vector or an array into a
+;   given data range.
 ;
 ;******************************************************************************************;
 ;                                                                                          ;
@@ -36,12 +36,12 @@
 ;******************************************************************************************;
 ;
 ;+
-; This is a utility routine to scale the elements of a vector or an array into a 
-; given data range. 
+; This is a utility routine to scale the elements of a vector or an array into a
+; given data range.
 ;
 ; :Categories:
 ;    Utilities
-;    
+;
 ; :Returns:
 ;     A vector or array of the same size as the input, scaled into the data range given
 ;     by `minRange` and `maxRange'. The input vector is confined to the data range set
@@ -57,7 +57,7 @@
 ;
 ; :Keywords:
 ;    double: in, optional, type=boolean, default=0
-;       Set this keyword to perform scaling in double precision. Otherwise, scaling 
+;       Set this keyword to perform scaling in double precision. Otherwise, scaling
 ;       is done in floating point precision.
 ;    maxvalue: in, optional
 ;       Set this value to the maximum value of the vector, before scaling (vector < maxvalue).
@@ -72,7 +72,7 @@
 ;
 ; :Examples:
 ;       Simple example of scaling a vector::
-;       
+;
 ;          IDL> x = [3, 5, 0, 10]
 ;          IDL> xscaled = cgScaleVector(x, -50, 50)
 ;          IDL> Print, xscaled

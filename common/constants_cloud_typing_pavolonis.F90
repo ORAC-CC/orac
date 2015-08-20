@@ -40,7 +40,7 @@ module constants_cloud_typing_pavolonis
    real(sreal)   :: COT_THRES_SEA = 0.05       !obsolete
    real(sreal)   :: COT_THRES_SEA_ICE = 0.5    !obsolete
    real(sreal)   :: COT_THRES_LAND = 0.3       !obsolete
-   real(sreal)   :: COT_THRES_DAY_SEA_ICE = 0.4 
+   real(sreal)   :: COT_THRES_DAY_SEA_ICE = 0.4
    real(sreal)   :: COT_THRES_DAY_LAND_ICE = 0.35
    real(sreal)   :: COT_THRES_DAY_SEA = 0.1
    real(sreal)   :: COT_THRES_DAY_LAND = 0.3
@@ -102,7 +102,7 @@ module constants_cloud_typing_pavolonis
    integer(sint) :: NISE_FLAG = 30        ! used in cloud_type subroutine
 
 
-   ! Used in original code cloud_type.f90, these apply to the sfc_type array 
+   ! Used in original code cloud_type.f90, these apply to the sfc_type array
 !  integer(sint) :: WATER_SFC = 0
 !  integer(sint) :: EVERGREEN_NEEDLE_SFC = 1
 !  integer(sint) :: EVERGREEN_BROAD_SFC = 2

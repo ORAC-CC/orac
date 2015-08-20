@@ -17,14 +17,14 @@
 ;
 ; OPTIONAL INPUTS:
 ;   None.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None.
-;	
+;
 ; OUTPUTS:
 ;   result = A string formatted such that TITLE is in bold and UNITS are in
 ;            square brackets.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;
@@ -32,7 +32,7 @@
 ;   None.
 ;
 ; MODIFICATION HISTORY:
-;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
+;   15 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk)
 ;-
 FUNCTION FMT, t, u
    ON_ERROR, 2

@@ -18,7 +18,7 @@
 ! south        integer      in      If not zero, data for Southern
 ! stat         integer      out     (Return value) Status value returned by the
 !                                   various hdf-eos API routines. If an error
-!                                   occurs, it will be returned with the value 
+!                                   occurs, it will be returned with the value
 !                                   -1, otherwise returned as 0.
 !
 ! History:

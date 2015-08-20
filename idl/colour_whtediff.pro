@@ -32,7 +32,7 @@ PRO COLOUR_WHTEDIFF,N_Colours,Back=Back,grey=grey
       r=2.55*[  0,100,100]
       g=2.55*[  0,100,  0]
       b=2.55*[100,100,  0]
-  endelse 
+  endelse
 
   If (N_Elements(N_Colours) Eq 0) Then N_Colours = !d.n_colors < 256
 ; Smooth Colour Range over Number of Available colours
@@ -57,8 +57,8 @@ PRO COLOUR_WHTEDIFF,N_Colours,Back=Back,grey=grey
   EndElse
   TVLCT, r,g,b
 
-; Set up !p.color to point to white 
-  If (!d.name Eq 'PS') then !p.color= 0 else !p.color= N_colours -1 
+; Set up !p.color to point to white
+  If (!d.name Eq 'PS') then !p.color= 0 else !p.color= N_colours -1
 
 
 RETURN

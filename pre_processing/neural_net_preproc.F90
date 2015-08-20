@@ -63,10 +63,10 @@ contains
     real(kind=sreal),allocatable, dimension(:,:) :: inv,minmax_train,scales
     real(kind=sreal),allocatable, dimension(:)   :: input,outv
 
-    real(kind=sreal) :: output     
+    real(kind=sreal) :: output
     real(kind=sreal) :: oscales(3)
     real(kind=sreal) :: temperature,cutoff,bias_i,bias_h
-    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight, 
+    integer(kind=byte) :: illum_nn ! 0 = undefined, 1 = day, 2 = twilight,
     ! 3 = night
 
     ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
@@ -105,7 +105,7 @@ contains
     if ( channel2 .eq. sreal_fill_value ) then
        if ( (trim(adjustl(sensor_name)) .eq. 'MODIS') .and. ch1 .gt. 50. ) then
           ch2 = min(104., ch1 * 1.03)
-       else 
+       else
           ch2 = channel2
        endif
     else
@@ -123,9 +123,9 @@ contains
 
     if ( ( solzen .gt. 0 ) .and. (solzen  .le. 80) ) then
        illum_nn = 1
-    elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then       
+    elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then
        illum_nn = 2
-    elseif (solzen  .gt. 90)  then       
+    elseif (solzen  .gt. 90)  then
        illum_nn = 3
        ! use twilight net if ch3b is missing at night/twilight:
        if ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 2
@@ -143,7 +143,7 @@ contains
 
        !ranges variables within training was performed
        allocate(minmax_train(ninput,2))
-       minmax_train=minmax_train_ex9  
+       minmax_train=minmax_train_ex9
 
        !"weights" for input
        allocate(inv(ninput+1,nneurons))
@@ -162,7 +162,7 @@ contains
        bias_h=bias_h_ex9
 
        ! input
-       allocate(input(ninput+1)) 
+       allocate(input(ninput+1))
 
        input(1) = ch1    	! ch1 600nm
        input(2) = ch2   	! ch2 800nm
@@ -173,7 +173,7 @@ contains
        input(7) = niseflag      ! snow/ice information
        input(8) = lsflag        ! land/sea flag
 
-    elseif ( illum_nn .eq. 2 )  then       
+    elseif ( illum_nn .eq. 2 )  then
 
        ! TWILIGHT
 
@@ -201,7 +201,7 @@ contains
        bias_h=bias_h_ex10
 
        !input
-       allocate(input(ninput+1)) 
+       allocate(input(ninput+1))
 
        input(1) = ch4 	        ! ch4 11 µm
        input(2) = ch5 	        ! ch5 12 µm
@@ -240,7 +240,7 @@ contains
        bias_h=bias_h_ex11
 
        !input
-       allocate(input(ninput+1)) 
+       allocate(input(ninput+1))
        input(1) = ch3b 	        ! ch3b 3.7µm
        input(2) = ch4 	        ! ch4 11 µm
        input(3) = ch5 	        ! ch5 12 µm
@@ -297,9 +297,9 @@ contains
 
        ! SEA
        if ( lsflag .eq. 0_byte ) then
-          ! Day 
-          if (illum_nn .eq. 1 ) then 
-             ! SNOW ICE 
+          ! Day
+          if (illum_nn .eq. 1 ) then
+             ! SNOW ICE
              if ( niseflag .eq. YES ) then
                 threshold_used = COT_THRES_DAY_SEA_ICE
                 if ( cccot_pre .gt. COT_THRES_DAY_SEA_ICE ) then
@@ -318,7 +318,7 @@ contains
           elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
              ! SNOW ICE
              if ( niseflag .eq. YES ) then
-                threshold_used = COT_THRES_NIGHT_SEA_ICE                 
+                threshold_used = COT_THRES_NIGHT_SEA_ICE
                 if ( cccot_pre .gt. COT_THRES_NIGHT_SEA_ICE ) then
                    cldflag = CLOUDY
                 else
@@ -335,9 +335,9 @@ contains
           endif
        ! apply land threshold
        elseif ( lsflag .eq. 1_byte ) then
-          ! Day 
-          if (illum_nn .eq. 1 ) then 
-             ! SNOW ICE 
+          ! Day
+          if (illum_nn .eq. 1 ) then
+             ! SNOW ICE
              if ( niseflag .eq. YES ) then
                 threshold_used = COT_THRES_DAY_LAND_ICE
                 if ( cccot_pre .gt. COT_THRES_DAY_LAND_ICE ) then
@@ -378,7 +378,7 @@ contains
 !          endif
        endif
 
-       ! calculate Uncertainty with pre calculated calipso scores 
+       ! calculate Uncertainty with pre calculated calipso scores
        ! depending on normalized difference between cccot_pre and used threshold
        if ( cldflag .eq. CLEAR ) then
            norm_diff_cc_th = ( cccot_pre - threshold_used ) / threshold_used
@@ -386,21 +386,21 @@ contains
        elseif ( cldflag .eq. CLOUDY ) then
            norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
            cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
-       else 
+       else
            cld_uncertainty = sreal_fill_value
-       endif 
+       endif
 
-       ! here we go. 
+       ! here we go.
        ! What are we doing if at least 1 input parameter is not in trained range
        ! , e.g. fillvalue ?
        ! For now 7 cases are defined to deal with it, choose best one later
-       ! noob equals 1 if one or more input parameter is not within trained range 
+       ! noob equals 1 if one or more input parameter is not within trained range
        if (noob .eq. 1_lint) then
-          ! give penalty; increase uncertainty because at least 1 ANN input parameter 
+          ! give penalty; increase uncertainty because at least 1 ANN input parameter
           ! was not within trained range
-          cld_uncertainty = cld_uncertainty * 1.05 
- 
-          ! Case 1) trust the ann and ... 
+          cld_uncertainty = cld_uncertainty * 1.05
+
+          ! Case 1) trust the ann and ...
           !just do nothing
           ! Case 2) set it to clear
           !imager_pavolonis%CCCOT_pre(i,j)= sreal_fill_value
@@ -411,8 +411,8 @@ contains
           ! Case 4) set it to fillvalue
           !imager_pavolonis%CCCOT_pre(i,j)=sreal_fill_value
           !imager_pavolonis%CLDMASK(i,j)=sint_fill_value
-          ! Case 5) only during nighttime! set it to cloudy if 3.7µm is fillvalue (saturated) 
-          !but 11µm is below 230 K; cloud holes; fixes at least avhrr, dont know about aatsr 
+          ! Case 5) only during nighttime! set it to cloudy if 3.7µm is fillvalue (saturated)
+          !but 11µm is below 230 K; cloud holes; fixes at least avhrr, dont know about aatsr
           !if ( (solzen > 80) .and. (ch3b .lt. 0) .and. &
           !   & (ch4 .gt. 100) .and. (ch4 .lt. 230) ) then
           !  cccot_pre   = 1.0
@@ -432,7 +432,7 @@ contains
        endif
 
        ! double check sunglint
-       if ( ( glint_mask .eq. YES ) .and. ( cldflag .eq. CLOUDY ) .and. & 
+       if ( ( glint_mask .eq. YES ) .and. ( cldflag .eq. CLOUDY ) .and. &
             ( illum_nn .eq. 1 ) .and. ( lsflag .eq. 0_byte ) ) then
           if ( ( ( ch1 .gt. 50. ) .or. ( ch2 .gt. 50. ) ) .and. ( ch3b .gt. 300.) ) cldflag = CLEAR
        endif
@@ -460,21 +460,21 @@ contains
 
     implicit none
 
-    integer(kind=sint) :: noob 
+    integer(kind=sint) :: noob
     integer(kind=sint) :: iinput,ineuron
-    integer(kind=sint) :: nneurons 
-    integer(kind=sint) :: ninput 
+    integer(kind=sint) :: nneurons
+    integer(kind=sint) :: ninput
 
     real(kind=sreal) :: minmax_train(ninput,2),scales(ninput,2),oscales(3),&
          & inv(ninput+1,nneurons),outv(nneurons+1)
-    real(kind=sreal),dimension(:),intent(inout) :: input 
+    real(kind=sreal),dimension(:),intent(inout) :: input
     real(kind=sreal) :: sigmoide
     real(kind=sreal) :: intermed(nneurons+1),vector_res1(nneurons),scalar_res2
     real(kind=sreal) ::temperature,bias_i,bias_h,cutoff
 
     logical :: lbounds
 
-    real(kind=sreal),intent(out) :: output     
+    real(kind=sreal),intent(out) :: output
 
     !check if pixel has values within training min/max and flag it
     !Just flag it make decision later stapel (09/2014)
@@ -491,7 +491,7 @@ contains
 
     !-----------------------------------------------------------------------
 
-    !now do let ANN calculate no matter if input is 
+    !now do let ANN calculate no matter if input is
     !within bounds or not stapel (09/2014)
     do iinput=1,ninput
        input(iinput)=scales(iinput,1)+scales(iinput,2)*(input(iinput) &
@@ -501,7 +501,7 @@ contains
     !apply constant to additional input element
     input(ninput+1)=bias_i
 
-    !perform vector*matrix multiplication of input vector with 
+    !perform vector*matrix multiplication of input vector with
     !matrix of weights (ninput+1).(ninput+1,nneurons)=(nneurons)
     vector_res1=matmul(input,inv)
 
@@ -513,19 +513,19 @@ contains
     enddo
 
     !extend intermediate result by one element
-    intermed(nneurons+1)=bias_h  
+    intermed(nneurons+1)=bias_h
 
     !perform scalar product of intermediate result with output vector
     ! weights: (nneurons+1)*(nneurons+1)
 
-    !resulting in a scalar 
+    !resulting in a scalar
     scalar_res2=dot_product(intermed,outv)
 
-    !apply sigmoidal function to scalar result 
+    !apply sigmoidal function to scalar result
     call sigmoide_function(temperature/float(nneurons),cutoff,scalar_res2,sigmoide)
     output=sigmoide
 
-    !rescale output 
+    !rescale output
     output=(output-oscales(1))/oscales(2)-oscales(3)
 
     !-------------------------------------------------------------------------
@@ -556,7 +556,7 @@ contains
     if(sigmoidein .lt. -1.0*cutoff) sigmoidein=-1.0*cutoff
 
     sigmoidem=-1.0*sigmoidein
-    sigmoide=1.0/(1.0+exp(sigmoidem)) 
+    sigmoide=1.0/(1.0+exp(sigmoidem))
 
     !-------------------------------------------------------------------------
   end subroutine sigmoide_function

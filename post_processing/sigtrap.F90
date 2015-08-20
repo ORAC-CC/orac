@@ -6,7 +6,7 @@
 !
 !   License/Copyright
 !   Copyright 2011, RAL Space, Science and Technology Facilities Council and University
-!   of Oxford. DWD 
+!   of Oxford. DWD
 !
 !   This file and the associated documentation and source code files are part of ORAC.
 !

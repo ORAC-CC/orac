@@ -1,4 +1,4 @@
-;+ 
+;+
 pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
                Levels=Levels, Log=Log, Range=Range, nogrid=nogrid, nobox=nobox,$
                nocontinents=nocontinents, map=map, scale=scale, $
@@ -16,7 +16,7 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
                red=redplot, back=back, rywdiff=rywdiff, $
                charsize=charsize, psym=psym, squares=squares, $
                keyticks=keyticks, plotpos=plotpos
-               
+
 
 ;
 ; Plots an array of values, with corresponding Lat/Lon values,
@@ -27,9 +27,9 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
 ; GET 22 Sep 06 Added fill_grid keyword.
 ; GET 18 Dec 06 Added diffcolourgrey keyword
 ; GET 19 Dec 06 Added coast keyword
-; GET 25 Sep 07 Added code to deal with lat/lon inputs outside 
+; GET 25 Sep 07 Added code to deal with lat/lon inputs outside
 ;               the acceptable range
-; GET 09 Oct 07 Added fcnorm keyword and altered false colour code to 
+; GET 09 Oct 07 Added fcnorm keyword and altered false colour code to
 ;               deal with image arrays with -ve values.
 ; AS2 30 Mar 09 Only set decomposed=0 after fc image if !d.name ='X'
 ; AS2 18 Aug 09 Added countries, usa, green, red, and back keywords as
@@ -45,10 +45,10 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
 ; CPA 15 Oct 10 Added PLOTPSYM keyword
 ; CPA 2  Nov 10 Added d2colourbar keyword
 ; AS2 15 May 12 Changed colourtable handling.
-; AS2 03 Sep 12 Changed handling of LEVELS so that irregular levels 
-;               can be used. Added warnings about conflicting use of 
+; AS2 03 Sep 12 Changed handling of LEVELS so that irregular levels
+;               can be used. Added warnings about conflicting use of
 ;               LEVELS, NLEVELS, and RANGE. Added MYCOLOURS keyword.
-; ACP 15 Jul 13 Superceded with MAPPOINTS_NEW and made wrapper to allow 
+; ACP 15 Jul 13 Superceded with MAPPOINTS_NEW and made wrapper to allow
 ;               calls to this version with the keyword /OLD.
 ;
 ; KNOWN BUGS
@@ -76,7 +76,7 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
 ;               use. This should override COLOURTABLE use.
 ; PLOTPOINTS =  A Nx2 array specifying points to be overploted (as
 ;               crosses) in lat (1st row)/lon (2nd row)
-; PLOTPSYM   =  Sets plotting symbol for points overplotted by 
+; PLOTPSYM   =  Sets plotting symbol for points overplotted by
 ;		PLOTPOINTS
 ; /DIFFCOLOURBAR Uses the blue-white-red colour bar. Useful for
 ;               displaying differences (eg. residuals)
@@ -87,7 +87,7 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
 ;               set to 1 the input array must be a 3*nx*ny array,
 ;               2 implies nx*3*ny and 3 implies nx*ny*3. The colour
 ;               channels are ordered red,green,blue.
-;               ONLY WORKS FOR SCREEN OUTPUT (since true-colour 
+;               ONLY WORKS FOR SCREEN OUTPUT (since true-colour
 ;               plotting to postscript is not supported by IDL)
 ; FCNORM = [min,max] Define the normalisation to apply to the pixels
 ;               when producing a false colour image. If not set the
@@ -95,13 +95,13 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
 ;               used.
 ; PSYM =        Allows the user to overide the default plotting symbol
 ;               (dots if symsize isn't set, circles if it is)
-; /SQUARES      Uses filled squares (insted of circles) for ploting  
+; /SQUARES      Uses filled squares (insted of circles) for ploting
 ; PLOTPOS = variable
 ;               If set to a named variable, this keyword will return
 ;               the position coordinates of the main plot. This can
 ;               be used to overplot onto a previously produced
 ;               mappoints map, using the position and noerase keywords
-;               to plot etc.   
+;               to plot etc.
 ; /COUNTRIES    Passed to map_continents, this draws national borders as well
 ;               as continental ones.
 ; /RIVERS       Passed to map_continents, this draws rivers. Note that
@@ -118,7 +118,7 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
       print,'Hires=Hires, mercator=mercator, stereo=stereo, $'
       print,'colourtable=colourtable, plotpoints=plotpoints, help=help, $'
       print,'diffcolourbar=diffcolourbar, d2colourbar=d2colourbar, $'
-      print,'plotpsym=plotpsym'    
+      print,'plotpsym=plotpsym'
       print,''
       print,'Plots an array of values, with corresponding Lat/Lon values,'
       print,'on to a map'
@@ -147,7 +147,7 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
       print,'/DIFFCOLOURBAR Uses the blue-white-red colour bar. Useful for'
       print,'              displaying differences (eg. residuals)'
       print,'/d2colourbar Uses the purple-blue-white-yellow-red colour bar. Useful for'
-      print,'              displaying differences (eg. residuals)'     
+      print,'              displaying differences (eg. residuals)'
       print,'FALSECOLOUR = {1|2|3}'
       print,'              Produces a false colour RGB image. If the value is'
       print,'              set to 1 the input array must be a 3*nx*ny array,'
@@ -165,7 +165,7 @@ pro mappoints_old, pts_in, lat_in, lon_in, Limit=Limit, Nlevels=NLevels, $
       print,'/COUNTRIES    Passed to map_continents, this draws national borders as well as continental ones.'
       print,'/RIVERS       Passed to map_continents, this draws rivers. Note that  there are an awful lot of rivers in the world to draw!'
       print,'/USA          Passed to map_continents, this draws USA state borders.'
-   
+
       return
   ENDIF
 
@@ -261,14 +261,14 @@ if keyword_set(filter) then filter = filter[ok_loc]
       ENDIF ELSE IF n_elements(colourtable) EQ 1 THEN BEGIN
           loadct,colourtable,ncolors=Colours,/silent, rgb_table=rgb_loadct
           IF KEYWORD_SET(back) THEN BEGIN
-             
+
              TVLCT, REVERSE( rgb_loadct[*,0] ), $
                     REVERSE( rgb_loadct[*,1] ), $
                     REVERSE( rgb_loadct[*,2] )
 
           ENDIF ELSE BEGIN
              TVLCT, rgb_loadct
-          ENDELSE 
+          ENDELSE
 ;          ; Add a black on the end...
 ;          tvlct, my_ct, /get
 ;          tvlct, [ my_ct, [[0],[0],[0]] ]
@@ -281,7 +281,7 @@ if keyword_set(filter) then filter = filter[ok_loc]
           ELSE IF Keyword_Set(nogrey) then colour_ps,colours+1,/no_grey,$
                                           green=greenplot,red=redplot,back=back,rywdiff=rywdiff $
           ELSE IF Keyword_Set(rywdiff) then colour_ps,colours+1,rywdiff=rywdiff $
-          ELSE IF Keyword_Set(d2colourbar) then colour_ps,colours+1,/bwr2diff $  
+          ELSE IF Keyword_Set(d2colourbar) then colour_ps,colours+1,/bwr2diff $
           ELSE colour_cbw,Colours,Greys
       ENDELSE
   endif
@@ -494,7 +494,7 @@ endelse
         for j = 0l,Good-1 do plots,lon(OK(j)),lat(OK(j)),psym=psym,color=Index(j)
      EndElse
   endelse
-  
+
   ; pick the black colour for appropriate device with colour table 0
   loadct,0,/silent
   cblack = !d.name eq 'PS' ? 0 : 255
@@ -511,7 +511,7 @@ endelse
 ; add user specified points
 
   tvlct, my_ct
-  if not keyword_set(plotpsym) then plotpsym = 1 
+  if not keyword_set(plotpsym) then plotpsym = 1
   IF keyword_set(plotpoints) THEN  $
     plots,plotpoints[*,1],plotpoints[*,0],psym=plotpsym,symsize=2,thick=3
 
@@ -522,8 +522,8 @@ endelse
   Cw = convert_coord(!D.X_Ch_Size, 0, 0, Device=1, To_Norm = 1)
   Cwx = Cw(0)
   Position = [!X.Window(0) - 5 * Cwx,!Y.Window(0),!X.Window(0) - 3 * Cwx,!Y.Window(1)] ;$
-   
-  
+
+
 ; Draw the scale
   iii0 = keyword_set(colourtable) ? 1 : 0
   if Not keyword_set(nocolourbar) then begin

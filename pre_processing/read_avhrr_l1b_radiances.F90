@@ -101,7 +101,7 @@ subroutine read_avhrr_l1b_radiances(sensor,platform,path_to_l1b_file, &
       end select
       cimage='image'//cich
 
-      if (verbose) write(*,*) 'Read AVHRR channel: '//cich 
+      if (verbose) write(*,*) 'Read AVHRR channel: '//cich
 
       call read_avhrr_l1b_radiances_2(l1b_id, &
            cimage,"data",cimage//'/what', &

@@ -26,9 +26,9 @@ set -e
 source header.sh
 if (( $drop )); then
     for i in ${!label[*]}; do
-        label[$i]=${label[$i]}$desc   
-    done      
-fi     
+        label[$i]=${label[$i]}$desc
+    done
+fi
 
 #------------------------------------------------------------------------------
 # RUN IDL PLOTTING COMMANDS

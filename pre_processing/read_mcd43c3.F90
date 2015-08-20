@@ -286,7 +286,7 @@ subroutine read_mcd43c3(path_to_file, mcd, nbands, bands, white_sky, black_sky, 
                end if
             end do
          end do
-         
+
       end if
 
       ! Read the black sky albedo

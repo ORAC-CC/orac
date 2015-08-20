@@ -52,7 +52,7 @@
 ! None known.
 !-----------------------------------------------------------------------
 
-! Subroutines included in module: 
+! Subroutines included in module:
 !	CLOUD_TYPE
 !	CLOUD_RETYPE
 !
@@ -68,16 +68,16 @@
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
 !
-! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE 
+! Clouds from AVHRR Extended (CLAVR-x) 1b PROCESSING SOFTWARE
 ! Version 5.3
 !
 ! NAME: cloud_type.f90 (src)
 !       CLOUD_TYPING (program)
 !
-! PURPOSE: This module performs a cloud typing decision on 
+! PURPOSE: This module performs a cloud typing decision on
 !          pixel by pixel basis
 !
-! DESCRIPTION: 
+! DESCRIPTION:
 !
 ! AUTHORS:
 !  Andrew Heidinger, Andrew.Heidinger@noaa.gov
@@ -92,12 +92,12 @@
 ! DOCUMENTATION FOR ANY PURPOSE. THEY ASSUME NO RESPONSIBILITY (1) FOR
 ! THE USE OF THE SOFTWARE AND DOCUMENTATION; OR (2) TO PROVIDE TECHNICAL
 ! SUPPORT TO USERS.
-! 
+!
 ! REVISION HISTORY:
 !   October 2006, Added retype routine - Heidinger
 !   March 2012 - Added check for solar contamination flag
 !
-! Subroutines included in module: 
+! Subroutines included in module:
 !	CLOUD_TYPE
 !	CLOUD_RETYPE
 !
@@ -144,22 +144,22 @@ contains
   !  j2 - the last scan index to process
   !
   ! OUTPUTS:
-  !  
+  !
   ! CALLING SEQUENCE:  call CLOUD_TYPE( j_min, num_scans_read )
   !		      (called from ORAC - CC4CL)
   !
   ! SIDE EFFECTS: None
   !
-  ! MODIFICATIONS: 
+  ! MODIFICATIONS:
   !   april 2005 - added spatial filtering to prevent ct =5,6 for
-  !                isolated pixels in regions where there are no 
+  !                isolated pixels in regions where there are no
   !                cold pixels
   !
-  !   August 30, 2005 - cleaned-up code and eliminated cirrus 
-  !                     quality-based filter; only Bt_Ch31 filter 
+  !   August 30, 2005 - cleaned-up code and eliminated cirrus
+  !                     quality-based filter; only Bt_Ch31 filter
   !                     is now used - mpav
   !
-  !   April 14, 2006 - Modified to process on an arbitrary range of 
+  !   April 14, 2006 - Modified to process on an arbitrary range of
   !                    scans
   !----------------------------------------------------------------------
   !
@@ -167,7 +167,7 @@ contains
   !
   ! NIR_PHASE_THRES		= 1.6 micron phase threshold
   ! NIR_CIRRUS_THRES		= 1.6 micron cirrus threshold
-  ! NIR_OVER_THRES		= Minimum 1.6 um reflectance allowed 
+  ! NIR_OVER_THRES		= Minimum 1.6 um reflectance allowed
   !                               for cloud overlap over SNOW/ICE.
   ! BTD3811_PHASE_THRES		= 3.75um - 11um thresholds used for phase determination.
   ! EMS38_PHASE_THRES		= 3.75 um thresholds used for phase determination.
@@ -178,9 +178,9 @@ contains
   ! EMS38_NOVERLAP_THRES_L	= EMS38 nighttime low cloud overlap threshold
   ! EMS38_NOVERLAP_THRES_H	= EMS38 nighttime high cloud overlap threshold
   ! MIN_BTD1112_DOVERLAP	= The minimum 11um - 12um BTD allowed
-  !  for overlap detection. 
+  !  for overlap detection.
   ! MIN_BTD1112_NOVERLAP	= The minimum allowed Bt_Ch31 -
-  !  Bt_Ch32 allowed for nighttime overlap 
+  !  Bt_Ch32 allowed for nighttime overlap
   ! A1 = Coefficient needed to determine the 11um - 12um BTD for cirrus detection
   ! B1 = Coefficient needed to determine the 11um -
   !  12um BTD for cirrus detection
@@ -218,7 +218,7 @@ contains
   ! index1			= viewing zenith angle bin
   ! index2			= solar zenith angle bin
   ! wflg				= IR window flag
-  ! start_line			= line to start filtering 
+  ! start_line			= line to start filtering
   ! end_line			= line to end filtering
   ! start_pix			= pixel to start filtering
   ! end_pix			= pixel to end filtering
@@ -308,7 +308,7 @@ contains
     !---- CC4CL requirements and adaptions for Pavolonis alg.
 
     integer(kind=sint) :: ch3a_on_avhrr_flag
-    integer(kind=sint) :: ch6_on_atsr_flag,ch7_on_atsr_flag	
+    integer(kind=sint) :: ch6_on_atsr_flag,ch7_on_atsr_flag
     real(kind=sreal)   :: glint_angle, coszen
     real(kind=sreal)   :: BTD_Ch3b_Ch4
     real(kind=sreal)   :: BTD_Ch4_Ch5
@@ -328,7 +328,7 @@ contains
     !
     ! cirrus_quality 	  = quality of cirrus flag
     ! coszen	   	  = cosine of the solar zenith angle
-    ! ch3a_on_avhrr_flag  = whether or not AVHRR channel 3a is 
+    ! ch3a_on_avhrr_flag  = whether or not AVHRR channel 3a is
     !                       used (NO, YES, INEXISTENT)
     ! BTD                 = Brightness Temperature Difference
     ! BTD_Ch3b_Ch4        = BT Ch3b minus BT Ch4
@@ -336,7 +336,7 @@ contains
     ! BTD_Ch4_Ch3b        = BT Ch4 minus BT Ch3b
     !
     !
-    ! -- INPUT  
+    ! -- INPUT
     !                                   wavelength  MODIS=CC4CL=AVHRR
     ! imager_measurements%DATA(i,j,1)   ! 0.659 um  !Ch01=  1  =1
     ! imager_measurements%DATA(i,j,2)   ! 0.865 um  !Ch02=  2  =2
@@ -545,7 +545,7 @@ contains
        ! j2 = number of scanlines to be read
 
        j_loop: do j = 1, imager_geolocation%ny !imager_geolocation%STARTY,
-          ! imager_geolocation%ENDY 
+          ! imager_geolocation%ENDY
 
           !-- check if solar zenith angle is > 0
 
@@ -558,17 +558,17 @@ contains
                imager_measurements%DATA(i,j,ch4) .lt. 0) then
 
              ! Ch3a is used if Ch3b is not avail.
-             ch3a_on_avhrr_flag = YES 
+             ch3a_on_avhrr_flag = YES
 
           elseif ( imager_measurements%DATA(i,j,ch4) .ge. 0 ) then
 
              ! Ch3b is used if avail.
-             ch3a_on_avhrr_flag = NO 
+             ch3a_on_avhrr_flag = NO
 
           else
 
              ! neither Ch3a nor Ch3b avail.
-             ch3a_on_avhrr_flag = INEXISTENT 
+             ch3a_on_avhrr_flag = INEXISTENT
 
           endif
 
@@ -588,7 +588,7 @@ contains
                ch6_on_atsr_flag = NO
 	      endif
 
-   !-- check for sunglint and save result: 
+   !-- check for sunglint and save result:
    !   imager_pavolonis%SUNGLINT_MASK(i,j)
 
           !In PATMOS sunglint calculation:
@@ -603,10 +603,10 @@ contains
                   sin ( imager_angles%SATZEN(i,j,imager_angles%NVIEWS) * d2r ) * &
                   cos ( imager_angles%RELAZI(i,j,imager_angles%NVIEWS) * d2r )
 
-             glint_angle = max( -1.0, min( glint_angle, 1.0 ) ) 
+             glint_angle = max( -1.0, min( glint_angle, 1.0 ) )
              glint_angle = acos(glint_angle) / d2r
 
-          else 
+          else
 
              glint_angle = sreal_fill_value
 
@@ -614,11 +614,11 @@ contains
 
           !-- calculate BT differences
 
-          ! BT(11) minus BT(12) 
+          ! BT(11) minus BT(12)
           BTD_Ch4_Ch5 = imager_measurements%DATA(i,j,ch5) - &
                imager_measurements%DATA(i,j,ch6)
 
-          ! BT(3.75) minus BT(11) 
+          ! BT(3.75) minus BT(11)
           BTD_Ch3b_Ch4 = imager_measurements%DATA(i,j,ch4) - &
                imager_measurements%DATA(i,j,ch5)
 
@@ -652,7 +652,7 @@ contains
              ! 11um channel can occasionally be missing particuarly for AATSR instrument if it gets too warm
              ! also when ch6 atsr is fill value,clear type is assigned
              if ( ( ch6_on_atsr_flag == NO )  .and.  ( ch7_on_atsr_flag == YES ) ) then
-                imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE	   
+                imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
                 imager_pavolonis%CLDMASK(i,j) = CLEAR
                 !             cycle
              endif
@@ -662,7 +662,7 @@ contains
              if ( ch7_on_atsr_flag == NO ) then
                 imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
                 imager_pavolonis%CLDMASK(i,j) = CLOUDY
-                !write(*,*)'testing',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j) 
+                !write(*,*)'testing',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j)
                 !             cycle
              endif
           endif
@@ -686,7 +686,7 @@ contains
              if ( ch3a_on_avhrr_flag == -1 ) then
 !                if ( ( imager_geolocation%LATITUDE(i,j) < 65.0 .and. &
 !                     imager_geolocation%LATITUDE(i,j) > -65.0 ) .and. &
-!                     ( day .eqv. .FALSE. ) ) & 
+!                     ( day .eqv. .FALSE. ) ) &
                 !     imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
                 if ( ( imager_measurements%DATA(i,j,ch5) > 0. ) .and. ( imager_measurements%DATA(i,j,ch5) <= 233.16 ) ) then
 
@@ -721,7 +721,7 @@ contains
           solcon_ch3b    = PlanckInv_out(2)
           PlanckInv_out  = PlanckInv( platform, imager_measurements%DATA(i,j,ch5) )
           rad_ch3b_emis  = PlanckInv_out(1)
-          mu0 = cos ( imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) * d2r ) 
+          mu0 = cos ( imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) * d2r )
           esd = 1.0 - 0.0167 * cos( 2.0 * pi * ( doy - 3 ) / 365.0 )
           c_sun = 1. / esd**2
           imager_pavolonis%emis_ch3b(i,j) = rad_ch3b / rad_ch3b_emis
@@ -731,7 +731,7 @@ contains
           ! calculate true reflectances for avhrr, modis and ??? aatsr
           ref_ch1  = imager_measurements%DATA(i,j,ch1) / mu0
           ref_ch3a = imager_measurements%DATA(i,j,ch3) / mu0
-     
+
           !-- nir_ref = channel 3a or channel 3b reflectance
           nir_ref = sreal_fill_value
 
@@ -762,13 +762,13 @@ contains
 
           !-- initial cirrus quality
 
-          imager_pavolonis%cirrus_quality(i,j) = 0 
+          imager_pavolonis%cirrus_quality(i,j) = 0
 
 
 
           !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           !
-          !-- If DAYTIME, use daytime algorithm. 
+          !-- If DAYTIME, use daytime algorithm.
           !
           !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -811,7 +811,7 @@ contains
 
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
              !-- In the high latitudes, the Ch3b 3.75 um must be
-             !   less than 20% to prevent single layer water clouds 
+             !   less than 20% to prevent single layer water clouds
              !   from being typed as overlap
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
              if ( ( ch3a_on_avhrr_flag == NO ) .and. &
@@ -849,9 +849,9 @@ contains
 
              else
 
-                ! BT(11) > 273.16 K, the melting point of pure water, 
+                ! BT(11) > 273.16 K, the melting point of pure water,
                 ! the cirrus detection test is simply applied.
-                ! If it is passed, then the pixel is classified as nonopaque 
+                ! If it is passed, then the pixel is classified as nonopaque
                 ! ice cloud, otherwise, it is a warm liquid water cld type.
                 ! [Pavolonis et al. (2005)]
 
@@ -868,11 +868,11 @@ contains
              !---------------------------------------------!
 
 
-             if ( (ch3a_on_avhrr_flag == YES) .and. ( ref_ch1 > 0.0) ) then 
+             if ( (ch3a_on_avhrr_flag == YES) .and. ( ref_ch1 > 0.0) ) then
 
 
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                ! Set some 1.6 um thresholds used in phase identification 
+                ! Set some 1.6 um thresholds used in phase identification
                 ! and cirrus detection.
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -887,9 +887,9 @@ contains
                 elseif (imager_pavolonis%SFCTYPE(i,j) == DESERT_FLAG) then
 
                    !NIR_CIRRUS_THRES = 55.0
-                   !NIR_PHASE_THRES  = 32.0 
+                   !NIR_PHASE_THRES  = 32.0
                    NIR_CIRRUS_THRES = 0.55
-                   NIR_PHASE_THRES  = 0.32 
+                   NIR_PHASE_THRES  = 0.32
 
                    ! all other surface types
                 else
@@ -904,7 +904,7 @@ contains
 
 
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                !-- Set the minimum 1.6 um reflectance allowed for 
+                !-- Set the minimum 1.6 um reflectance allowed for
                 !   cloud overlap over SNOW/ICE.
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -918,7 +918,7 @@ contains
 
 
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                !-- The reflectance used in the typing tests to 1.65 um 
+                !-- The reflectance used in the typing tests to 1.65 um
                 !   when Ch3a is on
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -936,7 +936,7 @@ contains
 
 
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                ! Set some 3.75 um thresholds used in phase identification 
+                ! Set some 3.75 um thresholds used in phase identification
                 ! and cirrus detection.
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -955,7 +955,7 @@ contains
                    NIR_CIRRUS_THRES = 0.40
                    NIR_PHASE_THRES  = 0.06
 
-                   ! all other surface types   
+                   ! all other surface types
                 else
 
                    !NIR_CIRRUS_THRES = 12.0
@@ -968,7 +968,7 @@ contains
 
 
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                !-- Set the minimum 3.75 um reflectance allowed for 
+                !-- Set the minimum 3.75 um reflectance allowed for
                 !   cloud overlap over SNOW/ICE.
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -982,11 +982,11 @@ contains
 
 
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-                !-- The reflectance used in the typing tests to 3.75 um 
+                !-- The reflectance used in the typing tests to 3.75 um
                 !   when Ch3b is on.
                 !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-                nir_ref = ref_ch3b 
+                nir_ref = ref_ch3b
 
 
                 ! ----------------------------------------- !
@@ -1019,12 +1019,12 @@ contains
 
 
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-             !-- Perform the cloud overlap test 
+             !-- Perform the cloud overlap test
              !   !! not used over DESERT surfaces !!
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
              if ( ( BTD_Ch4_Ch5 > BTD1112_DOVERLAP_THRES ) .and. &
-                  ( imager_measurements%DATA(i,j,ch5) < 270.0) .and. & 
+                  ( imager_measurements%DATA(i,j,ch5) < 270.0) .and. &
                   ( imager_pavolonis%SFCTYPE(i,j) /= DESERT_FLAG ) .and. &
                   ( nir_ref > NIR_OVER_THRES ) .and. &
                   ( imager_measurements%DATA(i,j,ch5) > 210.0 ) ) then
@@ -1037,7 +1037,7 @@ contains
 
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
              !-- Look for cirrus clouds.
-             !   note, akh modified so that nir_ref test 
+             !   note, akh modified so that nir_ref test
              !   only applied when Solzen < 70
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1055,12 +1055,12 @@ contains
                 else
 
                    imager_pavolonis%CLDTYPE(i,j) = CIRRUS_TYPE
-                   imager_pavolonis%cirrus_quality(i,j) = 0   
+                   imager_pavolonis%cirrus_quality(i,j) = 0
                    ! note, this is a low quality
 
                 endif !end of solzen if loop
 
-             endif !end of look for cirrus clouds  
+             endif !end of look for cirrus clouds
 
 
 
@@ -1130,7 +1130,7 @@ contains
 
 
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-             !-- Set the split window and EMS3b thresholds used in nighttime 
+             !-- Set the split window and EMS3b thresholds used in nighttime
              !   cloud overlap detection.
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1191,7 +1191,7 @@ contains
 
 
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-             !-- These thresholds are not applied if the surface type 
+             !-- These thresholds are not applied if the surface type
              !   is DESERT
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1207,7 +1207,7 @@ contains
 
 
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-             !-- Perform initial IR window brightness temperature-based 
+             !-- Perform initial IR window brightness temperature-based
              !   typing
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
              wflg = 1
@@ -1236,7 +1236,7 @@ contains
 
 
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-             !-- Perform the EMS 3.75 um test for bulk cloud phase 
+             !-- Perform the EMS 3.75 um test for bulk cloud phase
              !   determination
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -1269,7 +1269,7 @@ contains
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
              if ( ( BTD_Ch4_Ch5 > BTD1112_NOVERLAP_THRES_L ) .and. &
-                  ( BTD_Ch4_Ch5 < BTD1112_NOVERLAP_THRES_H ) .and. & 
+                  ( BTD_Ch4_Ch5 < BTD1112_NOVERLAP_THRES_H ) .and. &
                   ( imager_pavolonis%emis_ch3b(i,j) > EMS38_NOVERLAP_THRES_L ) .and. &
                   ( imager_pavolonis%emis_ch3b(i,j) < EMS38_NOVERLAP_THRES_H ) .and. &
                   ( imager_measurements%DATA(i,j,ch5) > 210.0 ) .and. &
@@ -1419,12 +1419,12 @@ contains
           npix       = ((end_line - start_line)+1)*((end_pix - start_pix)+1)
 
 
-          !-- At least one pixel in the 2n_box x 2n_box array must have a 
-          !   Bt_Ch4 < 295 K and the average ems 3.75 um must be < 1.2 
-          !   for low quality cirrus; 
+          !-- At least one pixel in the 2n_box x 2n_box array must have a
+          !   Bt_Ch4 < 295 K and the average ems 3.75 um must be < 1.2
+          !   for low quality cirrus;
           !   otherwise the pixel is reset to water or mixed.
 
-          if ( imager_pavolonis%CLDTYPE(i,j) == CIRRUS_TYPE .and. & 
+          if ( imager_pavolonis%CLDTYPE(i,j) == CIRRUS_TYPE .and. &
                imager_pavolonis%cirrus_quality(i,j) == 0) then
 
              !-- account for atmospheric effects
@@ -1450,7 +1450,7 @@ contains
           endif
 
 
-          !-- At least one pixel in the 2n x 2n array must have a 
+          !-- At least one pixel in the 2n x 2n array must have a
           !   Bt_Ch4 < 275 K for overlap;
           !   otherwise the pixel is reset to water or mixed.
 
@@ -1597,7 +1597,7 @@ contains
   ! =====================================================================
 
 
-  function PlanckInv( input_platform, T ) 
+  function PlanckInv( input_platform, T )
 
     use COMMON_CONSTANTS
 
@@ -1654,13 +1654,13 @@ contains
        index = 17
     case default
        write(*,*) "Error: Platform name does not match local string in function PlanckInv"
-       write(*,*) "Input platform name = ", input_platform 
+       write(*,*) "Input platform name = ", input_platform
        stop
     end select
 
-    !   v: wave number (cm-1)                                                           
-    !   a: alpha parameter                                                                
-    !   b: beta parameter   
+    !   v: wave number (cm-1)
+    !   a: alpha parameter
+    !   b: beta parameter
     !   solcon: solar constant
 
     ! Conversion from SADChan Planck coefficients to the ones here:

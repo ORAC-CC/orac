@@ -4,7 +4,7 @@
 ;   cgErrorMsg
 ;
 ; PURPOSE:
-;   The purpose of this function is to have a device-independent error messaging function. 
+;   The purpose of this function is to have a device-independent error messaging function.
 ;   The error message is reported to the user by using DIALOG_MESSAGE if widgets are
 ;    supported. Otherwise, it is just printed to standard out.
 ;
@@ -37,7 +37,7 @@
 ;******************************************************************************************;
 ;
 ;+
-; The purpose of this function is to have a device-independent error messaging function.  
+; The purpose of this function is to have a device-independent error messaging function.
 ; The error message is reported to the user by using DIALOG_MESSAGE if widgets are
 ; supported. Otherwise, the error message is just printed to standard out.
 ;
@@ -46,17 +46,17 @@
 ;
 ; :Params:
 ;    themessage: in, optional, type=string
-;       This is a string argument containing the error message you want reported. If undefined, 
+;       This is a string argument containing the error message you want reported. If undefined,
 ;       this variable is set to the string in the !Error_State.Msg system variable.
-;       
+;
 ; :Keywords:
 ;    error: in, optional, type=boolean, default=1
-;       Set this keyword to cause Dialog_Message to use the ERROR reporting dialog. 
-;       Note that a longstanding bug in IDL causes the ERROR dialog to be used whether 
+;       Set this keyword to cause Dialog_Message to use the ERROR reporting dialog.
+;       Note that a longstanding bug in IDL causes the ERROR dialog to be used whether
 ;       this keyword is set to 0 or 1!
 ;    informational: in, optional, type=boolean, default=0
-;       Set this keyword to cause Dialog_Message to use the INFORMATION dialog instead of the 
-;       WARNING dialog. Note that a bug in IDL causes the ERROR dialog to be used if this keyword 
+;       Set this keyword to cause Dialog_Message to use the INFORMATION dialog instead of the
+;       WARNING dialog. Note that a bug in IDL causes the ERROR dialog to be used if this keyword
 ;       is set to 0!
 ;    noname: in, optional, type=boolean, default=0
 ;       Normally, the name of the routine in which the error occurs is prepended to the error
@@ -64,16 +64,16 @@
 ;    quiet: in, optional, type=boolean, default=0
 ;       Set this keyword to suppress the DIALOG_MESSAGE pop-up dialog.
 ;    title: in, optional, type=string
-;       Set this keyword to the title of the DIALOG_MESSAGE window. By default the keyword is set to 
-;       'System Error' unless !ERROR_STATE.NAME equals "IDL_M_USER_ERR", in which case it is set to 
+;       Set this keyword to the title of the DIALOG_MESSAGE window. By default the keyword is set to
+;       'System Error' unless !ERROR_STATE.NAME equals "IDL_M_USER_ERR", in which case it is set to
 ;       "Trapped Error'.
 ;     traceback: in, optional, type=boolean, default=1
-;        Setting this keyword results in an error traceback being printed to standard output with the 
+;        Setting this keyword results in an error traceback being printed to standard output with the
 ;        PRINT command. Use TRACEBACK=0 to turn this functionality off.
-;        
+;
 ; :Examples:
-;   In general, the cgErrorMsg function is not called directly. Rather, it is used in a 
-;   CATCH error handler. Errors are thrown to cgErrorMsg with the MESSAGE command. A typical 
+;   In general, the cgErrorMsg function is not called directly. Rather, it is used in a
+;   CATCH error handler. Errors are thrown to cgErrorMsg with the MESSAGE command. A typical
 ;   CATCH error handler is shown below::
 ;
 ;       Catch, theError
@@ -83,7 +83,7 @@
 ;          RETURN
 ;       ENDIF
 ;
-;   Error messages will get into the cgErrorMsg function by throwing an error with the 
+;   Error messages will get into the cgErrorMsg function by throwing an error with the
 ;   MESSAGE command, like this::
 ;
 ;       IF test NE 1 THEN Message, 'The test failed.'
@@ -130,9 +130,9 @@ FUNCTION cgErrorMsg, theMessage, Error=error, Informational=information, $
    Traceback=traceback, NoName=noname, Title=title, Quiet=quiet, _Extra=extra
 
    On_Error, 2
-   
+
    ; Check for presence and type of message.
-   
+
    IF N_Elements(theMessage) EQ 0 THEN theMessage = !Error_State.Msg
    s = Size(theMessage)
    messageType = s[s[0]+1]
@@ -140,11 +140,11 @@ FUNCTION cgErrorMsg, theMessage, Error=error, Informational=information, $
       Message, "The message parameter must be a string.", _Extra=extra
    ENDIF
    IF N_Elements(traceback) EQ 0 THEN traceback = 1
-   
+
    ; Get the call stack and the calling routine's name.
    Help, Calls=callStack
    callingRoutine = (StrSplit(StrCompress(callStack[1])," ", /Extract))[0]
-   
+
    ; Are widgets supported?
    IF !D.Name EQ 'PS' OR !D.Name EQ 'Z' THEN BEGIN
       widgetsSupported = 1
@@ -154,7 +154,7 @@ FUNCTION cgErrorMsg, theMessage, Error=error, Informational=information, $
 
    ; Is the QUIET keyword set? Then no dialogs.
    IF Keyword_Set(quiet) THEN widgetsSupported = 0
-   
+
    ; It is not enough to know if widgets are supported. In CRON jobs, widgets are
    ; supported, but there is no X connection and pop-up dialogs are not allowed.
    ; Here is a quick test to see if we can connect to a windowing system. If not,
@@ -168,53 +168,53 @@ FUNCTION cgErrorMsg, theMessage, Error=error, Informational=information, $
    theWindow = !D.Window
    IF (!D.Flags AND 256) NE 0 THEN Window, /FREE, XSIZE=5, YSIZE=5, /PIXMAP
    Catch, /CANCEL
-   
+
    testWidgetSupport: ; Come here if you choke on creating a window.
    IF !D.Window NE theWindow THEN BEGIN
       WDelete, !D.Window
       IF theWindow GE 0 THEN WSet, theWindow
    ENDIF
-   
+
    IF widgetsSupported THEN BEGIN
-   
+
       ; If this is an error produced with the MESSAGE command, it is a trapped
       ; error and will have the name "IDL_M_USER_ERR".
       IF !ERROR_STATE.NAME EQ "IDL_M_USER_ERR" THEN BEGIN
-   
+
          IF N_Elements(title) EQ 0 THEN title = 'Trapped Error'
-   
+
          ; If the message has the name of the calling routine in it,
          ; it should be stripped out. Can you find a colon in the string?
-   
+
          ; Is the calling routine an object method? If so, special processing
          ; is required. Object methods will have two colons together.
          doublecolon = StrPos(theMessage, "::")
          IF doublecolon NE -1 THEN BEGIN
-   
+
             prefix = StrMid(theMessage, 0, doublecolon+2)
             submessage = StrMid(theMessage, doublecolon+2)
             colon = StrPos(submessage, ":")
             IF colon NE -1 THEN BEGIN
-   
+
                ; Extract the text up to the colon. Is this the same as
                ; the callingRoutine? If so, strip it.
                IF StrMid(theMessage, 0, colon+StrLen(prefix)) EQ callingRoutine THEN $
                   theMessage = StrMid(theMessage, colon+1+StrLen(prefix))
             ENDIF
          ENDIF ELSE BEGIN
-   
+
             colon = StrPos(theMessage, ":")
             IF colon NE -1 THEN BEGIN
-   
+
                ; Extract the text up to the colon. Is this the same as
                ; the callingRoutine? If so, strip it.
                IF StrMid(theMessage, 0, colon) EQ callingRoutine THEN $
                   theMessage = StrMid(theMessage, colon+1)
             ENDIF
-   
+
          ENDELSE
-   
-   
+
+
          ; Add the calling routine's name, unless NONAME is set.
          IF Keyword_Set(noname) THEN BEGIN
             answer = Dialog_Message(theMessage, Title=title, _Extra=extra, $
@@ -224,12 +224,12 @@ FUNCTION cgErrorMsg, theMessage, Error=error, Informational=information, $
                theMessage, Title=title, _Extra=extra, $
                Error=error, Information=information)
          ENDELSE
-   
+
       ENDIF ELSE BEGIN
-   
+
          ; Otherwise, this is an IDL system error.
          IF N_Elements(title) EQ 0 THEN title = 'System Error'
-   
+
          IF StrUpCase(callingRoutine) EQ "$MAIN$" THEN $
             answer = Dialog_Message(theMessage, _Extra=extra, Title=title, $
                Error=error, Information=information) ELSE $
@@ -247,10 +247,10 @@ FUNCTION cgErrorMsg, theMessage, Error=error, Informational=information, $
          Message, theMessage, /Continue, /NoPrint, /NoName, /NoPrefix, _Extra=extra
          IF Keyword_Set(noname) THEN $
             Print, theMessage ELSE $
-            Print, '%' + callingRoutine + ': ' + theMessage 
+            Print, '%' + callingRoutine + ': ' + theMessage
          answer = 'OK'
    ENDELSE
-   
+
    ; Provide traceback information if requested and this is NOT an informational message.
    IF Keyword_Set(traceback) AND ~Keyword_Set(informational)THEN BEGIN
       IF N_Elements(traceback_msg) NE 0 THEN traceback = traceback_msg ELSE Help, /Last_Message, Output=traceback
@@ -259,7 +259,7 @@ FUNCTION cgErrorMsg, theMessage, Error=error, Informational=information, $
       Print, ''
       FOR j=0,N_Elements(traceback)-1 DO Print, "     " + traceback[j]
    ENDIF
-   
+
    RETURN, answer
 END ; ----------------------------------------------------------------------------
 

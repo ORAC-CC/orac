@@ -38,7 +38,7 @@ for fi=0,nf-1 do begin
 
    if ~module then begin
       ;; Modules don't have to define these fields
-      
+
       ;; If this isn't defined, the formatting is often completely off so quit
       READF, id, line
       if line ne '! Description and Algorithm details:' then begin
@@ -54,7 +54,7 @@ for fi=0,nf-1 do begin
       if STREGEX(line,"^! Name +Type +In/Out/Both +Description") lt 0 then PRINT, lead+': Argument header'
       READF, id, line
       if line ne '! ------------------------------------------------------------------------------' then PRINT, lead+': Arg line.'
-      
+
       ;; Could generate a lot of the arguments automatically from the top of the
       ;; code. For now, just ignore them
       while line ne '!' do READF, id, line

@@ -34,16 +34,16 @@
 ;
 ; OPTIONAL INPUTS:
 ;   None.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None.
-;	
+;
 ; OUTPUTS:
 ;   position = A four-element array giving the normalised coordinates of the
 ;              corners of the plotting window.
 ;   colourbar_position = A four-element array giving the normalised coordinates
 ;              of the courners of the colourbar.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;

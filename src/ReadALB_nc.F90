@@ -75,7 +75,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
 
    implicit none
 
-   ! Argument declarations 
+   ! Argument declarations
    type(CTRL_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
    logical,      intent(in)    :: verbose

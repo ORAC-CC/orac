@@ -21,15 +21,15 @@
 ;
 ; OPTIONAL INPUTS:
 ;   None.
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None.
-;	
+;
 ; OUTPUTS:
 ;   limit  = [minimum latitude, minimum longitude, maximum latitude, maximum
 ;            longitude]
 ;   centre = Coordinates at which to centre the map projection.
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None.
 ;
@@ -37,10 +37,10 @@
 ;   None.
 ;
 ; MODIFICATION HISTORY:
-;   28 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk) 
-;   10 Dec 2014 - New logic, abandoning doing something clever. Find the min/max 
+;   28 Jul 2014 - Initial version by ACPovey (povey@atm.ox.ac.uk)
+;   10 Dec 2014 - New logic, abandoning doing something clever. Find the min/max
 ;                 of the corners of the swath. If any points in the swath are
-;                 within 2 deg of the dateline, shift to a 0-360 coord system 
+;                 within 2 deg of the dateline, shift to a 0-360 coord system
 ;                 first.
 ;-
 FUNCTION ANY, a
@@ -67,10 +67,10 @@ PRO SELECT_FRAMES, lat, lon, line1, nl1, frames, cent, lim
          lim[*,i]=[minlat,-180.,90.,180.]
       endif else if minlat lt -89.8 then begin
          cent[*,i]=[-90.,lon[nl1/2, middle]]
-         lim[*,i]=[-90.,-180.,maxlat,180.] 
+         lim[*,i]=[-90.,-180.,maxlat,180.]
       endif else begin
          cent[*,i]=[lat[nl1/2, middle], lon[nl1/2, middle]]
-  
+
          ;; If within 2 deg of dateline, assume it is crossed
          corners = [lon[0,start],lon[nl1-1,start],lon[0,endl],lon[nl1-1,endl]]
          if ANY(ABS(lon[*,start : endl]) gt 178.) then begin
@@ -80,7 +80,7 @@ PRO SELECT_FRAMES, lat, lon, line1, nl1, frames, cent, lim
             if minlon gt 180. then minlon -= 360.
             if maxlon gt 180. then maxlon -= 360.
          endif else minlon = MIN(corners, max=maxlon) ; Dateline not crossed
-            
+
          lim[*,i] = [minlat, minlon, maxlat, maxlon]
       endelse
    endfor

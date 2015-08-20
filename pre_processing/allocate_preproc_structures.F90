@@ -21,7 +21,7 @@
 ! History:
 ! 2012/01/13, MJ: produces draft code for allocating the preprocessing types
 ! 2012/05/30, GT: Added allocation of preproc_surf%emissivity
-! 2012/06/26, CP: Added allocation swrtm information added definitions of 
+! 2012/06/26, CP: Added allocation swrtm information added definitions of
 !    nchan_sw and nchan_lw included channel_info structure
 ! 2012/06/27, CP: Fixed small bug in allocation of swrtm structure
 ! 2012/07/04, CP: removed nviews from rtm array

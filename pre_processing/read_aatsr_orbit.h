@@ -1,4 +1,4 @@
-/* 
+/*
   A set of C functions for reading (A)ATSR L1B data in Envisat format
   (i.e. .N1, .E2 or .E1 files). Included functions are:
   - read_aatsr_orbit         Main C function for reading data.
@@ -8,7 +8,7 @@
   - calculate_rel_azi        Brief function to convert solar and satellite
                              zenith angles into a relative azimuth.
   - get_aatsr_dimension      Function that inspects the orbit to determine the
-                             length and width of the data, subsetted to 
+                             length and width of the data, subsetted to
                              consider only day or night (as required).
 
    Note this code requires the ESA "EPR_API" (available from Brockmann Consult
@@ -37,9 +37,9 @@
 ! Purpose:
 ! Read data from an (A)ATSR Envisat file and copy it into arrays initialised
 ! in Fortran. Pointers to the arrays are passed and as an array is effectively
-! a pointer in C, the arguments of this function are mostly pointers to 
+! a pointer in C, the arguments of this function are mostly pointers to
 ! pointers.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Collect the array pointers into new arrays. These simplify the syntax
 !    later and enable the use of for loops over the channels.
@@ -93,21 +93,21 @@
 ! none known
 */
 void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
-                      const short *nch, const short *ch, 
-                      const short *view, const long *nx, const long *ny, 
+                      const short *nch, const short *ch,
+                      const short *view, const long *nx, const long *ny,
                       const long *startx, const long *starty, short *stat,
-                      float **lat,  float **lon, 
-                      float **nsza, float **niza, float **nsaz, float **nraz,  
+                      float **lat,  float **lon,
+                      float **nsza, float **niza, float **nsaz, float **nraz,
                       short  *nflg, short  *nqul, double *nday,
-                      float **nch1, float **nch2, float **nch3, float **nch4, 
-                      float **nch5, float **nch6, float **nch7, float **ner1, 
-                      float **ner2, float **ner3, float **ner4, float **ner5, 
-                      float **ner6, float **ner7, 
-                      float **fsza, float **fiza, float **fsaz, float **fraz, 
-                      short  *fflg, short  *fqul, double *fday, 
-                      float **fch1, float **fch2, float **fch3, float **fch4, 
-                      float **fch5, float **fch6, float **fch7, float **fer1, 
-                      float **fer2, float **fer3, float **fer4, float **fer5, 
+                      float **nch1, float **nch2, float **nch3, float **nch4,
+                      float **nch5, float **nch6, float **nch7, float **ner1,
+                      float **ner2, float **ner3, float **ner4, float **ner5,
+                      float **ner6, float **ner7,
+                      float **fsza, float **fiza, float **fsaz, float **fraz,
+                      short  *fflg, short  *fqul, double *fday,
+                      float **fch1, float **fch2, float **fch3, float **fch4,
+                      float **fch5, float **fch6, float **fch7, float **fer1,
+                      float **fer2, float **fer3, float **fer4, float **fer5,
                       float **fer6, float **fer7,
                       char start_date[30], char gc1_file[62], char vc1_file[62],
                       bool *is_lut_drift_corrected);
@@ -116,7 +116,7 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 !
 ! Purpose:
 ! Transfers data from its native raster format into the desired Fortran array.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Fetch the ID for the desired band and create and appropriate raster.
 ! 2) Read the data into the raster, taking entire rows as EPR_CREATE_COMPATIBLE_
@@ -147,18 +147,18 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
 ! Bugs:
 ! none known
 */
-void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name, 
-                              const long nx, const long ny, const long x0, 
+void fetch_aatsr_float_values(EPR_SProductId *pid, const char *name,
+                              const long nx, const long ny, const long x0,
                               const long y0, float *out, const bool verbose);
-void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name, 
-                              const long nx, const long ny, const long x0, 
+void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
+                              const long nx, const long ny, const long x0,
                               const long y0, short *out, const bool verbose);
 
 /*Name: calculate_rel_azi
 !
 ! Purpose:
 ! Convert solar and satellite azimuth angles into a relative azimuth.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Subtract the angles.
 ! 2) Cast the angle on the range 0-180 degrees.
@@ -183,7 +183,7 @@ void fetch_aatsr_short_values(EPR_SProductId *pid, const char *name,
 ! Bugs:
 ! none known
 */
-void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx, 
+void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
                        const int ny);
 
 
@@ -191,7 +191,7 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 !
 ! Purpose:
 ! Convert solar and satellite azimuth angles into a relative azimuth.
-! 
+!
 ! Description and Algorithm details:
 ! 1) Subtract the angles.
 ! 2) Cast the angle on the range 0-180 degrees.
@@ -201,7 +201,7 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 ! ------------------------------------------------------------------------------
 ! infile     char  In  Path to L1B file.
 ! daynight   short In  1: daytime data; 2: night data.
-! limit      float In  (/ minimum latitude, minimum longitude, 
+! limit      float In  (/ minimum latitude, minimum longitude,
 !                         maximum latitude, maximum longitude /)
 ! half_orbit short In  Only considered for night data. 1: Take section from end
 !                      of orbit. 0: Take section from beginning of orbit.
@@ -219,24 +219,24 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
   28/08/2012 Gareth Thomas: Changes made for interfacing with Fortran using
                             "iso_c_binding"
 		     Various bug fixes
-  12/09/2012 Gareth and Caroline: fixed bug in indexing of arrays changed <= 
+  12/09/2012 Gareth and Caroline: fixed bug in indexing of arrays changed <=
                             to <
   13/09/2012 Gareth Thomas: Removed some array allocation test code from
                             deallocate_l1b
   12/09/2012 Gareth and Caroline: deallocated lat/lon arrays and changed day allocation
-  13/09/2012 Caroline Poulsen: bug fix longitide being assigned latitude 
+  13/09/2012 Caroline Poulsen: bug fix longitide being assigned latitude
   13/09/2012 Gareth Thomas: Added start_date and gc1 and vc1 file names to
-                            output of read_aatsr_beam_ctof90 (needed by 
+                            output of read_aatsr_beam_ctof90 (needed by
 		     shortwave calibration correction code)
   14/09/2012 Gareth Thomas: Bug fix: solar and instrument elevation angles are now
                             converted into zenith angles.
 		     Also added epr_free_raster statements to get_aatsr_dimension
 		     Bug fix read_aatsr_beam: Indexing of lat/lon rasters was
 		     incorrectly including the y-offset value
-  22/11/2012 Caroline Poulsen: calculation of relative azimuth Bug fix:phi=180.0 - phi 
+  22/11/2012 Caroline Poulsen: calculation of relative azimuth Bug fix:phi=180.0 - phi
                             and absolutte value of angle
   12/12/2012 Gareth Thomas: Bug fix in applying lat-lon limits in get_aatsr_dimension
-                            miny is now set correctly if statement checking for the 
+                            miny is now set correctly if statement checking for the
 		     presence of lat-lon limits now works as it should.
 		     Also, reduced the amount of debugging info coming back from
 		     the EPR API.
@@ -252,8 +252,8 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 ! Bugs:
 ! none known
 */
-void get_aatsr_dimension(const char* infile, const short* daynight, 
-			 const float* limit, const short* half_orbit, 
+void get_aatsr_dimension(const char* infile, const short* daynight,
+			 const float* limit, const short* half_orbit,
 			 long* nxp, long* nyp, long* minyp, short* stat,
                          const bool *verbose);
 #endif

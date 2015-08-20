@@ -89,7 +89,7 @@ FUNCTION Convert_To_Type, input, theType, $
 
    ; Return to caller on error.
    On_Error, 2
-   
+
    ; Two positional parameters are required.
    IF N_Params() NE 2 THEN Message, 'Two input parameters (INPUT and TYPE) are required.'
 

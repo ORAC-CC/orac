@@ -11,13 +11,13 @@
   ! Bugs:
   !    None known
   !-------------------------------------------------------------------------------
-  
+
   !-- Fill coefficents
-  
+
   ! Coefficients needed to determine the 11um - 12um BTD for
-  ! cirrus detection thresholds as a function of 11 um BT.  
+  ! cirrus detection thresholds as a function of 11 um BT.
   ! All coefficients are for 7 different viewing zenith angles.
-  
+
   A1 = reshape((/-3.21578298543e+03, -2.94034788795e+03, &
        & -3.21256258031e+03, -3.47061397845e+03, &
        & -3.50486299804e+03, -5.08846627537e+03, &
@@ -28,12 +28,12 @@
        &  5.32849278382e+01,  7.75358901756e+01, &
        &  7.80030571000e+01/),(/7/))
 
-  C1 = reshape((/-2.76528129603e-01, -2.53525879101e-01, & 
+  C1 = reshape((/-2.76528129603e-01, -2.53525879101e-01, &
        & -2.75138895479e-01, -2.99072421299e-01, &
        & -3.01969990521e-01, -4.40956004022e-01, &
        & -4.45699597692e-01/),(/7/))
 
-  D1 = reshape((/ 6.90692856276e-04,  6.33594236649e-04, & 
+  D1 = reshape((/ 6.90692856276e-04,  6.33594236649e-04, &
        &  6.85787480971e-04,  7.48047893283e-04, &
        &  7.55160035017e-04,  1.10843453838e-03, &
        &  1.12561057802e-03/),(/7/))
@@ -41,16 +41,16 @@
   E1 = reshape((/-6.41179656790e-07, -5.88096462349e-07, &
        & -6.35205859105e-07, -6.95627948240e-07, &
        & -7.02035486892e-07, -1.03800396763e-06, &
-       & -1.05900437811e-06/),(/7/))    
+       & -1.05900437811e-06/),(/7/))
 
 
 
-  ! Coefficients needed to determine the 3.75um - 11um BTD thresholds that 
-  ! differentiate between ice and water as a function of 11um - 12um BTD.  
+  ! Coefficients needed to determine the 3.75um - 11um BTD thresholds that
+  ! differentiate between ice and water as a function of 11um - 12um BTD.
   ! All coefficients are for 7 different viewing zenith angles.
 
   A2 = reshape((/ 3.67107643481e-01,  3.36458606683e-01, &
-       &  2.41676270282e-01,  1.74658763419e-01, & 
+       &  2.41676270282e-01,  1.74658763419e-01, &
        &  2.87704447664e-01,  2.17330552664e-02, &
        & -7.31011031866e-01/),(/7/))
 
@@ -59,7 +59,7 @@
        &  4.47071677565e+00,  4.55202437527e+00, &
        &  4.97669171136e+00/),(/7/))
 
-  C2 = reshape((/ 1.68542169247e+00,  1.69898191715e+00, & 
+  C2 = reshape((/ 1.68542169247e+00,  1.69898191715e+00, &
        &  1.71234157395e+00,  1.50137445131e+00, &
        &  1.08453312818e+00,  1.02913912350e+00, &
        &  1.47244717791e+00/),(/7/))
@@ -69,16 +69,16 @@
        & -1.09555849488e+00, -1.00754783102e+00, &
        & -1.31340559947e+00/),(/7/))
 
-  E2 = reshape((/ 1.82935664832e-01,  1.72289757442e-01, & 
-       &  1.66813773502e-01,  1.76165053220e-01, & 
+  E2 = reshape((/ 1.82935664832e-01,  1.72289757442e-01, &
+       &  1.66813773502e-01,  1.76165053220e-01, &
        &  1.53279656708e-01,  1.28047566835e-01, &
        &  1.74999237696e-01/),(/7/))
 
 
 
-  ! Coefficients needed to determine the 11um - 12um BTD used to 
-  ! find cloud overlap as a function of 0.65 um reflectance.  
-  ! All coefficients are for 7 different viewing zenith angles and 
+  ! Coefficients needed to determine the 11um - 12um BTD used to
+  ! find cloud overlap as a function of 0.65 um reflectance.
+  ! All coefficients are for 7 different viewing zenith angles and
   ! 8 different solar zenith angles.
 
   A3 = reshape((/&
@@ -139,8 +139,8 @@
 
 
 
-  ! The minimum 11um - 12um BTD allowed for overlap detection.  
-  ! All values are for 7 different viewing zenith angles and 
+  ! The minimum 11um - 12um BTD allowed for overlap detection.
+  ! All values are for 7 different viewing zenith angles and
   ! 8 different solar zenith angles.
 
   MIN_BTD1112_DOVERLAP = reshape((/&

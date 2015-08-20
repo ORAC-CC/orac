@@ -86,8 +86,8 @@ while not EOF(id) do begin
          if com-num gt expected_len-1 then $
             date = STRMID(date,0,expected_len-6)+STRMID(date,4,5,/rev)
       endelse
- 
-      ;; Read date string 
+
+      ;; Read date string
       READS, date, format='(c(CDI'+len+','+date_skip+'X,CMoA,X,CYI4))', day
 
       ;; Parse name (assumed between comma and colon)

@@ -24,7 +24,7 @@
 ! 2013/11/08, GM: added missing deallocate statements.
 ! 2014/09/17, CS: added deallocation statements for image_pavolonis,
 !    imager_geolocation%usgs_dem, imager_flags%lusflag
-! 2014/12/01, OS: added imager_pavolonis%emis_ch3b 
+! 2014/12/01, OS: added imager_pavolonis%emis_ch3b
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cldmask_uncertainty
 !
@@ -61,7 +61,7 @@ subroutine deallocate_imager_structures(imager_geolocation,imager_angles, &
    deallocate(imager_time%time)
    deallocate(imager_measurements%data)
    deallocate(imager_measurements%uncertainty)
-   deallocate(imager_pavolonis%sunglint_mask)                       
+   deallocate(imager_pavolonis%sunglint_mask)
    deallocate(imager_pavolonis%cldtype)
    deallocate(imager_pavolonis%sfctype)
    deallocate(imager_pavolonis%cldmask)

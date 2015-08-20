@@ -1,5 +1,5 @@
 PRO COLOUR_cbw,Colours,Greys
-; set up colour table to be N colours then M Grey levels 
+; set up colour table to be N colours then M Grey levels
 ; Use largest possible palate otherwise force to colours+ greys + 2 (including
 ; black and white)
 ; note that the colour table is slightly different between a screen
@@ -11,7 +11,7 @@ PRO COLOUR_cbw,Colours,Greys
 ;     2         colours
 ;    ...
 ; colours       colours
-; colours+1       black   black   
+; colours+1       black   black
 ; colours+2        grey    grey
 ; colours+greys   white   white
 ; colours+greys+1 white   black
@@ -38,7 +38,7 @@ PRO COLOUR_cbw,Colours,Greys
     Endif
     ; Make black, white, and requested greys
     rg = byte(255 * findgen(Greys+2)/(Greys + 1))
-    
+
   ENDIf
   If (!d.name eq 'LJ') Then DEVICE,DEPTH=4,/FLOYD
 
@@ -47,7 +47,7 @@ PRO COLOUR_cbw,Colours,Greys
   b = [0, bc, rg[1:*]]
   TVLCT, r,g,b
 
-; Set up !p.color to point to white 
+; Set up !p.color to point to white
   If (!d.name Eq 'PS') then !p.color= 0 else !p.color= Greys+Colours+1
 
 RETURN

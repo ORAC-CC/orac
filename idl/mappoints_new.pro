@@ -435,7 +435,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
       ;; assign colour values for points outside of designated range
       IF (KEYWORD_SET(cb_top_colour) OR KEYWORD_SET(cb_bot_colour)) THEN BEGIN
          TVLCT,r,g,b,/GET
-         
+
          IF KEYWORD_SET(cb_top_colour) THEN BEGIN
             r[colours+1] = cb_top_colour[0]
             g[colours+1] = cb_top_colour[1]
@@ -446,9 +446,9 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
             g[colours+2] = cb_bot_colour[1]
             b[colours+2] = cb_bot_colour[2]
          ENDIF
-         
+
          TVLCT,r,g,b
-         
+
          IF KEYWORD_SET(cb_top_colour) THEN top_colour=colours+1
          IF KEYWORD_SET(cb_bot_colour) THEN bot_colour=colours+2
       ENDIF ELSE if KEYWORD_SET(mycolours) || KEYWORD_SET(nogrey) || $

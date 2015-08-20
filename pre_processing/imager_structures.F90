@@ -2,7 +2,7 @@
 ! Name: imager_structures.F90
 !
 ! Purpose:
-! Module defining variables types which hold the imager input data. Should be 
+! Module defining variables types which hold the imager input data. Should be
 ! common to all imagers.
 !
 ! History:

@@ -252,7 +252,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
             ! copy data into preprocessing grid
             do i=preproc_dims%min_lon,preproc_dims%max_lon
                do j=preproc_dims%min_lat,preproc_dims%max_lat
-                  array3d(i,j,k) = real(dummy3d(pointer_x(i),pointer_y(j),k,1))      
+                  array3d(i,j,k) = real(dummy3d(pointer_x(i),pointer_y(j),k,1))
                end do
 	    end do
 #endif

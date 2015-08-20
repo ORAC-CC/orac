@@ -38,8 +38,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
    logical,                    intent(inout) :: corrupt
    logical,                    intent(in)    :: verbose
    integer                                   :: ncid, ierr
-   
-   if (verbose) write(*,*) 'Albedo file: ', trim(alb_file)   
+
+   if (verbose) write(*,*) 'Albedo file: ', trim(alb_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(alb_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".alb.nc"'
@@ -52,7 +52,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'Cloud flag file: ', trim(cf_file)   
+   if (verbose) write(*,*) 'Cloud flag file: ', trim(cf_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(cf_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".clf.nc"'
@@ -65,7 +65,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'Config file: ', trim(config_file)   
+   if (verbose) write(*,*) 'Config file: ', trim(config_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(config_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".config.nc"'
@@ -78,7 +78,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'Geometry file: ', trim(geo_file)   
+   if (verbose) write(*,*) 'Geometry file: ', trim(geo_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(geo_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".geo.nc"'
@@ -91,7 +91,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'Location file: ', trim(loc_file)   
+   if (verbose) write(*,*) 'Location file: ', trim(loc_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(loc_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".loc.nc"'
@@ -104,7 +104,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'Land/sea file: ', trim(lsf_file)   
+   if (verbose) write(*,*) 'Land/sea file: ', trim(lsf_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(lsf_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".lsf.nc"'
@@ -117,7 +117,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'LwRTM file: ', trim(lwrtm_file)   
+   if (verbose) write(*,*) 'LwRTM file: ', trim(lwrtm_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(lwrtm_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".lwrtm.nc"'
@@ -130,7 +130,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'Imagery file: ', trim(msi_file)   
+   if (verbose) write(*,*) 'Imagery file: ', trim(msi_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(msi_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".msi.nc"'
@@ -142,8 +142,8 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
          stop error_stop_code
       endif
    endif
-   
-   if (verbose) write(*,*) 'Prtm file: ', trim(prtm_file)   
+
+   if (verbose) write(*,*) 'Prtm file: ', trim(prtm_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(prtm_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".prtm.nc"'
@@ -156,7 +156,7 @@ subroutine netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,confi
       endif
    endif
 
-   if (verbose) write(*,*) 'SwRTM file: ', trim(swrtm_file)   
+   if (verbose) write(*,*) 'SwRTM file: ', trim(swrtm_file)
    call nc_open(ncid, trim(adjustl(output_path))//'/'//trim(adjustl(swrtm_file)), ierr)
    if (ierr .eq. error_stop_code) then
       write (*,*) 'ERROR: netcdf_output_check(): nc_open(): ".swrtm.nc"'

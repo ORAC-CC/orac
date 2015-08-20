@@ -2,7 +2,7 @@
 ! Name: read_ecmwf_wind_dwd.F90
 !
 ! Purpose:
-! Read surface wind components and lat/lon from single ECMWF file in NetCDF format. 
+! Read surface wind components and lat/lon from single ECMWF file in NetCDF format.
 ! Successor to read_ecmwf_wind_nc.F90.
 !
 ! Description and Algorithm details:
@@ -88,7 +88,7 @@ end subroutine read_ecmwf_wind_dwd
 ! Name: read_ecmwf_wind_file
 !
 ! Purpose:
-! Read surface wind components and lat/lon from ECMWF file. 
+! Read surface wind components and lat/lon from ECMWF file.
 ! Successor to read_ecmwf_wind_nc.F90.
 !
 ! Description and Algorithm details:

@@ -3,8 +3,8 @@
 #    header.sh
 #
 # Purpose:
-#    A common header for the ORAC regression tests. 
-#    - The first section defines paths to the ORAC code and data repositories. 
+#    A common header for the ORAC regression tests.
+#    - The first section defines paths to the ORAC code and data repositories.
 #      These should be altered to represent your local file system.
 #    - The second section specifies the headers for the output NCDF files.
 #      These should be altered to describe your institution.
@@ -36,7 +36,7 @@
 #    NIT|NIGHT    NITAATSR, NITAVHRR, NITMYD.
 #    ALL          DAYAATS, NITAATSR, AVHRR, DAYMYD, and NITMYD; default option.
 # -first          By default, the script determines the revision number from svn
-#                 and then increments it by 10000 as you are comparing altered 
+#                 and then increments it by 10000 as you are comparing altered
 #                 code to the previous commited revision. Set this argument to
 #                 not increment the counter (presumably because you are
 #                 processing unaltered code). Implies -no_compare.
@@ -58,7 +58,7 @@
 #                 -first but not -no_compare.
 # -short          Process only a small segment of each of the test files (5
 #                 lines). This is significantly faster than the default
-#                 processing of the full files but may not catch all possible 
+#                 processing of the full files but may not catch all possible
 #                 circumstances.
 # -thresh         The threshold to be used in the rounding error regression test.
 # -tool_folder    The path containing the ORAC tools (i.e. these scripts).
@@ -553,12 +553,12 @@ if (( $do_all || $do_DAYAVHRR || ( (! $short) && $do_NITAVHRR) )); then
     platform[$i]=-NOAA18
     path_to_l1b[$i]=$in_folder/noaa18_20080620_0050_99999_satproj_00000_13111_avhrr.h5
     path_to_geo[$i]=$in_folder/noaa18_20080620_0050_99999_satproj_00000_13111_sunsatangles.h5
-    if (( $short )); then 
+    if (( $short )); then
         label[$i]=DAYAVHRR
         startx[$i]=1
-    else 
+    else
         label[$i]=AVHRR
-        startx[$i]=0 
+        startx[$i]=0
     fi
     endx[$i]=409
     starty[$i]=5190
@@ -616,11 +616,11 @@ if (( $skip_proc )); then
 fi
 
 desc=''
-if (( $drop)); then 
+if (( $drop)); then
     desc=D`echo $channels | sed -e 's/[ \t]//g'`
 fi
 
-if (( $sabotage)); then 
+if (( $sabotage)); then
     desc=T
 fi
 

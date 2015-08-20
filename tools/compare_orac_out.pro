@@ -1,13 +1,13 @@
 ;+
 ; NAME:
 ;   COMPARE_ORAC_OUT
-; 
+;
 ; PURPOSE:
 ;   To compare the NetCDF files output by the ORAC processor to determine
 ;   if changes to the code between your current working version and a previous
 ;   committed version have affected the results.
 ;
-;   This is used in run-time mode by the scripts test_preproc.sh and 
+;   This is used in run-time mode by the scripts test_preproc.sh and
 ;   test_orac.sh. To produce the SAV file necessary for that, run the following
 ;   in IDL:
 ;      .COMPILE compare_orac_out
@@ -28,7 +28,7 @@
 ;   mode   = if set to 'preproc', compares the preprocessor outputs. Otherwise,
 ;            it compares the main processor outputs
 ;   ninst  = an integer giving the number of instruments to be evaluated
-;   list   = the remaining arguments are ninst strings giving the labels for 
+;   list   = the remaining arguments are ninst strings giving the labels for
 ;            the files to be evaluated
 ;   thresh = OPTIONAL. The check for numerical changes includes an output of how
 ;            many values have changed by more than the expected rounding error.
@@ -36,10 +36,10 @@
 ;
 ; OPTIONAL INPUTS:
 ;   None
-;	
+;
 ; KEYWORD PARAMETERS:
 ;   None
-;	
+;
 ; OUTPUTS:
 ;   1) Prints each unique root file name it finds.
 ;   2) If a variable in a file is found to be of a different size between the
@@ -51,20 +51,20 @@
 ;   3) If the variables are of the same size but their elements are not, it
 ;      will print a similar line, but giving the number of points that have a
 ;      fractional difference greater than THRESH (~ rounding error).
-; 
+;
 ; OPTIONAL OUTPUTS:
 ;   None
 ;
 ; RESTRICTIONS:
 ;   Only inspects the file extensions alb,clf,geo,loc,lsf,msi,uv,lwrtm,prtm,
-;   swrtm,config. 
+;   swrtm,config.
 ;   Assumes filenames start with a common identifier, followed by ORACV
 ;   and the version number, followed by unique date/time information, ending
 ;   in an extension listed above.
 ;   Not able to deal with comparing files produced by different institutions.
 ;
 ; MODIFICATION HISTORY:
-;   Written by ACPovey (povey@atm.ox.ac.uk) 
+;   Written by ACPovey (povey@atm.ox.ac.uk)
 ;   01 Nov 2013 - AP: Original version
 ;   27 Jan 2014 - AP: Added functionality for main processor
 ;   04 Feb 2014 - AP: Added CONFIG file.
