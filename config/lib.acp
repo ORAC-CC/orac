@@ -1,0 +1,58 @@
+# Base directory for all libraries and include files
+LIBBASE=/local/home/povey/povey/libs
+
+# Set path to HDF-EOS library. Should be compiled with the same version of the HDF4
+# library specified above (HDFLIB)
+EOSLIB=$(LIBBASE)/hdfeos/lib
+EOSINCLUDE=$(LIBBASE)/hdfeos/include
+
+# Setup EPR_API library
+EPR_APILIB=$(LIBBASE)/epr_api/lib
+EPR_APIINCLUDE=$(LIBBASE)/epr_api/include
+
+# Setup GRIB API library and JASPER
+GRIBLIB=$(LIBBASE)/grib/lib
+GRIBINCLUDE=$(LIBBASE)/grib/include
+
+# Set path to hdf library and include directory. hdf4 has to be compiled with
+# netcdf support turned OFF! otherwise you run into problems when using netcdf
+# explicitly s.b.
+HDFLIB=$(LIBBASE)/hdf4/lib
+HDFINCLUDE=$(LIBBASE)/hdf4/include
+
+HDF5LIB=$(LIBBASE)/hdf5/lib
+HDF5INCLUDE=$(LIBBASE)/hdf5/include
+
+# Set path to netcdf library and include directory.
+NCDFLIB=$(LIBBASE)/ncdf4/lib
+NCDFINCLUDE=$(LIBBASE)/ncdf4/include
+NCDF_FORTRAN_LIB=$(LIBBASE)/ncdff/lib
+NCDF_FORTRAN_INCLUDE=$(LIBBASE)/ncdff/include
+
+# Setup RTTOV library
+RTTOVLIB=$(LIBBASE)/rttov11.2/lib
+RTTOVINCLUDE=$(LIBBASE)/rttov11.2/include
+RTTOVMODULE=$(LIBBASE)/rttov11.2/mod
+
+SZLIB=$(LIBBASE)/szip/lib
+
+EMOSLIB=$(LIBBASE)/emos
+
+# Set up libraries and includes
+LIBS=-L$(NCDFLIB) -lnetcdf -L$(NCDF_FORTRAN_LIB) -lnetcdff \
+     -L$(RTTOVLIB) -lrttov11.2.0_main -lrttov11.2.0_coef_io \
+                   -lrttov11.2.0_emis_atlas \
+     -L$(HDFLIB) -lmfhdf -ldf \
+     -L$(HDF5LIB) -lhdf5 -lhdf5_fortran -lhdf5hl_fortran \
+     -L$(GRIBLIB) -lgrib_api_f77 -lgrib_api_f90 -lgrib_api \
+     -L$(EPR_APILIB) -lepr_api \
+     -L$(SZLIB) -lsz \
+     -L$(EOSLIB) -lhdfeos -lGctp \
+     -L$(EMOSLIB) -lemosR64
+
+INC=-I./ -I$(NCDFINCLUDE) -I$(NCDF_FORTRAN_INCLUDE) \
+         -I$(RTTOVINCLUDE) -I$(RTTOVMODULE) \
+         -I$(HDFINCLUDE) -I$(HDF5INCLUDE) \
+         -I$(GRIBINCLUDE)
+
+CINC=-I./ -I$(EPR_APIINCLUDE)
