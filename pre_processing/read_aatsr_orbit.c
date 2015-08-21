@@ -136,13 +136,13 @@ void read_aatsr_orbit(const char *l1b_file, const bool *verbose,
   // Check that we have what we're expecting
   if (*verbose && strcasecmp(vc1->ds_name, "VISIBLE_CALIBRATION_FILE") != 0)
     printf("read_aatsr_orbit: Didn't find VC file in %s. %s found instead.\n",
-	    l1b_file, vc1->ds_name);
+           l1b_file, vc1->ds_name);
   strcpy(vc1_file, vc1->filename);
   // 3) GC1 file (General Calibration file)
   gc1 = epr_get_dsd_at(pid, 30);
   if (*verbose && strcasecmp(gc1->ds_name, "GENERAL_CALIBRATION_FILE") != 0)
     printf("read_aatsr_orbit: Didn't find GC file in %s. %s found instead.\n",
-	    l1b_file, gc1->ds_name);
+           l1b_file, gc1->ds_name);
   strcpy(gc1_file, gc1->filename);
   // 4) vdt (VISCAL_DRIFT_TABLE)
   vdt = epr_get_dsd_at(pid, 36);
@@ -333,8 +333,8 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 void get_aatsr_dimension(const char* infile, const short* daynight,
-			 const float* limit, const short* half_orbit,
-			 long* nxp, long* nyp, long* minyp, short* statp,
+                         const float* limit, const short* half_orbit,
+                         long* nxp, long* nyp, long* minyp, short* statp,
                          const bool *verbose)
 {
   long i, j;
@@ -358,7 +358,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
   /* The different levels are: e_log_debug
                                e_log_info
                                e_log_warning
-			       e_log_error
+                               e_log_error
      The default log output "epr_log_message" is stdout */
   epr_init_api(e_log_warning, epr_log_message, NULL);
 
@@ -408,17 +408,17 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
   if (*daynight == 1)
     {
       /* Only want daylight data. This forms the middle section of
-	 the orbit */
+         the orbit */
       for (j=0; j<ny; j++)
-	{
-	  selev1 = epr_get_pixel_as_float(selev, 255, j);
-	  if (selev1 > 0) {
-	    okselev[j] = 1;
-	    new_ny = new_ny + 1;
-	    if (miny > j) miny = j;
-	    if (maxy < j) maxy = j; }
-	  else okselev[j] = 0;
-	}
+        {
+          selev1 = epr_get_pixel_as_float(selev, 255, j);
+          if (selev1 > 0) {
+            okselev[j] = 1;
+            new_ny = new_ny + 1;
+            if (miny > j) miny = j;
+            if (maxy < j) maxy = j; }
+          else okselev[j] = 0;
+        }
       epr_free_raster(selev);
     }
   else if (*daynight == 2)
@@ -426,15 +426,15 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
       /* Only want night data. This is found at each end of the orbit,
          so dealing with it is significantly more complicated. */
       for (j=0; j<ny; j++)
-	{
-	  selev1 = epr_get_pixel_as_float(selev, 255, j);
-	  if (selev1 < 0) {
-	    okselev[j] = 1;
-	    new_ny = new_ny + 1;
-	    if (miny > j) miny = j;
-	    if (maxy < j) maxy = j; }
-	  else okselev[j] = 0;
-	}
+        {
+          selev1 = epr_get_pixel_as_float(selev, 255, j);
+          if (selev1 < 0) {
+            okselev[j] = 1;
+            new_ny = new_ny + 1;
+            if (miny > j) miny = j;
+            if (maxy < j) maxy = j; }
+          else okselev[j] = 0;
+        }
       epr_free_raster(selev);
     }
   else
@@ -449,7 +449,7 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
 
   if (ny == 0) {
     fprintf(stderr,"\n read_aatsr_beam: No matching data found in file %s\n",
-	    infile);
+            infile);
     return; }
 
   /* If we have lat-lon limits, then apply them.
@@ -458,10 +458,10 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
           the limit, that row is read.
      (ii) This test takes no account of whether you are reading both day and
           night sides of the orbit. If both sides are read, the orbit will be
-	  read from the first index that lies in the region, to the last. I.e.
-	  you may well get the entire day-side of the orbit. The lat-lon
-	  limiting therefore only really makes sense when used in conjunction
-	  with the daynight switch. */
+          read from the first index that lies in the region, to the last. I.e.
+          you may well get the entire day-side of the orbit. The lat-lon
+          limiting therefore only really makes sense when used in conjunction
+          with the daynight switch. */
   if ((limit[0] > -90.0) || (limit[1] > -180.0) ||
       (limit[2] <  90.0) || (limit[3] <  180.0))
     {
@@ -486,28 +486,28 @@ void get_aatsr_dimension(const char* infile, const short* daynight,
       maxy2 = 0;
       new_ny = 0;
       for (j=0; j<ny; j++)
-	{
-	  row_in = 0;
-	  for (i=0; i<nx; i++)
-	    {
-	      lat1 = epr_get_pixel_as_float(lat, i, j);
-	      lon1 = epr_get_pixel_as_float(lon, i, j);
-	      if ((lat1 >= limit[0]) & (lat1 <= limit[2]) &
-		  (lon1 >= limit[1]) & (lon1 <= limit[3]) &
-		  okselev[j+miny]) row_in=row_in+1;
-	    }
+        {
+          row_in = 0;
+          for (i=0; i<nx; i++)
+            {
+              lat1 = epr_get_pixel_as_float(lat, i, j);
+              lon1 = epr_get_pixel_as_float(lon, i, j);
+              if ((lat1 >= limit[0]) & (lat1 <= limit[2]) &
+                  (lon1 >= limit[1]) & (lon1 <= limit[3]) &
+                  okselev[j+miny]) row_in=row_in+1;
+            }
 
-	  if (row_in >= nx/2)
-	    {
-	      new_ny = new_ny+1;
-	      if (miny2 > j) miny2 = j;
-	      if (maxy2 < j) maxy2 = j;
-	    }
-	}
+          if (row_in >= nx/2)
+            {
+              new_ny = new_ny+1;
+              if (miny2 > j) miny2 = j;
+              if (maxy2 < j) maxy2 = j;
+            }
+        }
       if (new_ny == 0) {
-	fprintf(stderr,"\n read_aatsr_beam: No matching data found in file %s\n",
-		infile);
-	return; }
+        fprintf(stderr,"\n read_aatsr_beam: No matching data found in file %s\n",
+                infile);
+        return; }
       ny = new_ny;
       miny = miny + miny2;
       epr_free_raster(lat);

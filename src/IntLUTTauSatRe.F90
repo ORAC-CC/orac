@@ -104,11 +104,11 @@ subroutine Int_LUT_TauSatRe(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
    type(CTRL_t),           intent(in)   :: Ctrl
    real, dimension(:),     intent(out)  :: FInt
                                            ! Interpolated value of F at the
-					   ! required Tau, Re values, (1 value
+                                           ! required Tau, Re values, (1 value
                                            ! per channel).
    real, dimension(:,:),   intent(out)  :: FGrads
                                            ! Gradients of F wrt Tau and Re at
-					   ! required Tau, Re values, (1 value
+                                           ! required Tau, Re values, (1 value
                                            ! per channel).
    integer,                intent(in)   :: iCRP
    integer,                intent(in)   :: chan_to_ctrl_index(:)

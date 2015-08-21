@@ -5,10 +5,10 @@
 ! Module containing the neutral net constants
 !
 ! Examples:
-!	ex1 and ex2 used for prototype
-!	ex3,ex4,ex5 used for FBL1 trained with GAC NOAA18
-!	ex6,ex7,ex8 used for FBL2 trained with PYGAC NOAA18 ( w. NISE sea-ice, etc)
-!	ex9,ex10,ex11 used for FBL3 trained with PYGAC NOAA18 (w. ECMWF sea-ice, etc)
+! ex1 and ex2 used for prototype
+! ex3,ex4,ex5 used for FBL1 trained with GAC NOAA18
+! ex6,ex7,ex8 used for FBL2 trained with PYGAC NOAA18 ( w. NISE sea-ice, etc)
+! ex9,ex10,ex11 used for FBL3 trained with PYGAC NOAA18 (w. ECMWF sea-ice, etc)
 !
 ! History:
 ! 2014/10/23, SS: Original version

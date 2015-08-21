@@ -43,7 +43,7 @@ subroutine Find_Lun(lun)
       inquire(unit=i, exist=lun_exists, opened=lun_used)
       if (lun_exists .and. (.not. lun_used)) then
          found_lun = .true.
-	 lun = i
+         lun = i
       end if
    end do
 

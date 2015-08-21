@@ -141,8 +141,10 @@ module SPixel_def
       real, pointer       :: Tbc(:,:)     ! Surface to P channel transmittances
       real, pointer       :: Tsf(:)       ! Transmittance at the surface to TOA
       real, pointer       :: Rac_Up(:,:)  ! TOA radiances from atmosphere at P
-      real, pointer       :: Rac_Dwn(:,:) ! Downwelling radiances from atmosphere at P
-      real, pointer       :: Rbc_Up(:,:)  ! Upwelling radiances from atmosphere at P
+      real, pointer       :: Rac_Dwn(:,:) ! Downwelling radiances from
+                                          ! atmosphere at P
+      real, pointer       :: Rbc_Up(:,:)  ! Upwelling radiances from
+                                          ! atmosphere at P
       real, pointer       :: R_clear(:)   ! Clear upwelling TOA radiance
       real, pointer       :: T(:)         ! Temperature at P. (1:LW%Np)
       real, pointer       :: H(:)         ! geopotential height at P. (1:LW%Np)
@@ -158,8 +160,7 @@ module SPixel_def
       real, pointer       :: Tsf_o(:)     ! Transmittance along solar slant path
       real, pointer       :: Tsf_v(:)     ! Transmittance along view slant path
       real, pointer       :: REF_clear(:) ! TOA reflectance for clear conditions
-      real, pointer       :: dREF_clear_dRs(:)
-                                          ! Gradient of clear ref. w.r.t.
+      real, pointer       :: dREF_clear_dRs(:) ! Gradient of clear ref. w.r.t.
                                           ! surface albedo
    end type SPixel_RTM_t
 
@@ -200,17 +201,17 @@ module SPixel_def
    end type Surface_t
 
 
-   type SPixel_Ind_t                      ! Modified Ctrl variables, depending on geometry
-      integer             :: Ny           ! Number of viable measurement channels
-      integer             :: NSolar       ! Number of viable solar channels
-      integer             :: NThermal     ! Number of viable thermal channels
-      integer             :: NMixed       ! Number of mixed solar/thermal channels
+   type SPixel_Ind_t
+      integer             :: Ny           ! # of viable measurement channels
+      integer             :: NSolar       ! # of viable solar channels
+      integer             :: NThermal     ! # of viable thermal channels
+      integer             :: NMixed       ! # of mixed solar/thermal channels
       integer, pointer    :: YSolar(:)    ! Array indices wrt Ctrl%Ind%ICh for
                                           ! solar channels
       integer, pointer    :: YThermal(:)  ! Array indices for thermal channels
       integer, pointer    :: YMixed(:)    ! Array indices for mixed channels
       integer             :: MDAD_LW      ! Index of channel at (or nearest to)
-                                          ! 11 um. Used in MDAD method for setting
+                                          ! 11 um. Used in MDAD method to set
                                           ! FG (AP) cloud pressure and phase
       integer             :: MDAD_SW      ! Index of channel at (or nearest to)
                                           ! 0.67. Used in MDAD method for setting
@@ -308,6 +309,5 @@ contains
 
 #include "GetSPixel.F90"
 #include "IntCTP.F90"
-
 
 end module SPixel_def

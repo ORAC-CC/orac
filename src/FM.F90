@@ -249,7 +249,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       Ref   = 0.0
       d_Ref = 0.0
-
       call FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, &
            Ref, d_Ref, status)
 
@@ -309,9 +308,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       call Find_Lun(bkp_lun)
       open(unit=bkp_lun,      &
            file=Ctrl%FID%Bkp, &
-	   status='old',      &
-	   position='append', &
-	   iostat=ios)
+           status='old',      &
+           position='append', &
+           iostat=ios)
       if (ios /= 0) then
          write(*,*) 'ERROR: FM(): Error opening breakpoint file'
          stop BkpFileOpenErr
@@ -320,41 +319,41 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       end if
 
       write(bkp_lun,'(2(a,f9.2))') ' SolZen(1): ',SPixel%Geom%Solzen(1), &
-         '  Max Sol Zen: ', Ctrl%MaxSolzen
+           '  Max Sol Zen: ', Ctrl%MaxSolzen
 
       do i=1, SPixel%Ind%NThermal
          write(bkp_lun,'(3a,f9.4,a,5f9.4)')'Channel: ', &
-	    SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc,  &
-	    ' Rad ',Rad(i), ' dRad ',(d_Rad(i,j), j=1,MaxStateVar)
+              SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc,  &
+              ' Rad ',Rad(i), ' dRad ',(d_Rad(i,j), j=1,MaxStateVar)
       end do
       do i=1, SPixel%Ind%NThermal
          write(bkp_lun,'(3a,f9.4,a,5f9.4)')'Channel: ', &
-	    SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc, &
-	    ' BT  ',BT(i), ' dBT  ',(d_BT(i,j), j=1,MaxStateVar)
+              SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc, &
+              ' BT  ',BT(i), ' dBT  ',(d_BT(i,j), j=1,MaxStateVar)
       end do
       write(bkp_lun,'(/)')
 
       if (SPixel%Geom%Solzen(1) < Ctrl%MaxSolzen) then
          do i=1, SPixel%Ind%NSolar
             write(bkp_lun,'(3a,f9.4,a,6f9.4)')'Channel: ', &
-	       SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Desc, &
-               ' Ref ',Ref(i), ' dRef ',(d_Ref(i,j),j=1,MaxStateVar+1)
-	 end do
+                 SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Desc, &
+                 ' Ref ',Ref(i), ' dRef ',(d_Ref(i,j),j=1,MaxStateVar+1)
+         end do
          write(bkp_lun,'(/)')
 
          do i=1, SPixel%Ind%Ny
             write(bkp_lun,'(3a,f9.4,a,6f9.4)') 'Channel: ', &
-	       SAD_Chan(i)%Desc, ' Y: ',Y(i),' dY_dX: ',&
-	       (dY_dX(i,j),j=1,MaxStateVar+1)
-	 end do
+                 SAD_Chan(i)%Desc, ' Y: ',Y(i),' dY_dX: ',&
+                 (dY_dX(i,j),j=1,MaxStateVar+1)
+         end do
       else
 
-       do i=1, SPixel%Ind%NThermal
-	    write(bkp_lun,'(3a,f9.4,a,6f9.4)') 'Channel: ', &
-	       SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc, &
-               ' Y: ',Y(SPixel%Ind%YThermal(i)),&
-	       ' dY_dX: ',(dY_dX(SPixel%Ind%YThermal(i),j),j=1,MaxStateVar+1)
-	 end do
+         do i=1, SPixel%Ind%NThermal
+            write(bkp_lun,'(3a,f9.4,a,6f9.4)') 'Channel: ', &
+                 SAD_Chan(SPixel%spixel_y_thermal_to_ctrl_y_index(i))%Desc, &
+                 ' Y: ',Y(SPixel%Ind%YThermal(i)),&
+                 ' dY_dX: ',(dY_dX(SPixel%Ind%YThermal(i),j),j=1,MaxStateVar+1)
+         end do
       end if
       write(bkp_lun,'(/)')
 

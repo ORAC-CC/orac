@@ -138,8 +138,8 @@ contains
     ! --- if day
     if ( illum_nn .eq. 1 ) then
 
-       nneurons = nneurons_ex9 		!set number of neurons
-       ninput   = ninput_ex9    	!set number of input parameter for the neural network
+       nneurons = nneurons_ex9  !set number of neurons
+       ninput   = ninput_ex9    !set number of input parameter for the neural network
 
        !ranges variables within training was performed
        allocate(minmax_train(ninput,2))
@@ -154,9 +154,9 @@ contains
        outv=outv_ex9
 
        allocate(scales(ninput,2))
-       scales=scales_ex9 		!parameters to scale input?
-       oscales=oscales_ex9 		!parameters to scale output?
-       temperature=temperature_ex9	!"temperature" for sigmoid function
+       scales=scales_ex9           !parameters to scale input?
+       oscales=oscales_ex9         !parameters to scale output?
+       temperature=temperature_ex9 !"temperature" for sigmoid function
        cutoff=cutoff_ex9
        bias_i=bias_i_ex9
        bias_h=bias_h_ex9
@@ -164,10 +164,10 @@ contains
        ! input
        allocate(input(ninput+1))
 
-       input(1) = ch1    	! ch1 600nm
-       input(2) = ch2   	! ch2 800nm
-       input(3) = ch4 	        ! ch4 11 µm
-       input(4) = ch5 	        ! ch5 12 µm
+       input(1) = ch1           ! ch1 600nm
+       input(2) = ch2           ! ch2 800nm
+       input(3) = ch4           ! ch4 11 µm
+       input(4) = ch5           ! ch5 12 µm
        input(5) = btd_ch4_ch5   ! 11-12 µm
        input(6) = skint         ! ERA-Interim skin temperature
        input(7) = niseflag      ! snow/ice information
@@ -177,8 +177,8 @@ contains
 
        ! TWILIGHT
 
-       nneurons       = nneurons_ex10 	!set number of neurons
-       ninput         = ninput_ex10 	!set number of input parameter for the neural network
+       nneurons       = nneurons_ex10   !set number of neurons
+       ninput         = ninput_ex10     !set number of input parameter for the neural network
 
        !ranges variables within training was performed
        allocate(minmax_train(ninput,2))
@@ -193,9 +193,9 @@ contains
        outv=outv_ex10
 
        allocate(scales(ninput,2))
-       scales=scales_ex10 		!parameters to scale input?
-       oscales=oscales_ex10		!parameters to scale output?
-       temperature=temperature_ex10	!"temperature" for sigmoid function
+       scales=scales_ex10               !parameters to scale input?
+       oscales=oscales_ex10             !parameters to scale output?
+       temperature=temperature_ex10     !"temperature" for sigmoid function
        cutoff=cutoff_ex10
        bias_i=bias_i_ex10
        bias_h=bias_h_ex10
@@ -203,9 +203,9 @@ contains
        !input
        allocate(input(ninput+1))
 
-       input(1) = ch4 	        ! ch4 11 µm
-       input(2) = ch5 	        ! ch5 12 µm
-       input(3) = btd_ch4_ch5 	! 11-12 µm
+       input(1) = ch4           ! ch4 11 µm
+       input(2) = ch5           ! ch5 12 µm
+       input(3) = btd_ch4_ch5   ! 11-12 µm
        input(4) = skint
        ! exclude negative skin-rad4 temperatures at night/twilight, this needs to be tested!!
        if ( ( skint - ch4 ) .lt. 0 ) input(4) = ch4
@@ -216,8 +216,8 @@ contains
 
        ! --- night
 
-       nneurons       = nneurons_ex11 	!set number of neurons
-       ninput         = ninput_ex11 	!set number of input parameter for the neural network
+       nneurons       = nneurons_ex11   !set number of neurons
+       ninput         = ninput_ex11     !set number of input parameter for the neural network
 
        !ranges variables within training was performed
        allocate(minmax_train(ninput,2))
@@ -232,20 +232,20 @@ contains
        outv=outv_ex11
 
        allocate(scales(ninput,2))
-       scales=scales_ex11 		!parameters to scale input?
-       oscales=oscales_ex11		!parameters to scale output?
-       temperature=temperature_ex11	!"temperature" for sigmoid function
+       scales=scales_ex11               !parameters to scale input?
+       oscales=oscales_ex11             !parameters to scale output?
+       temperature=temperature_ex11     !"temperature" for sigmoid function
        cutoff=cutoff_ex11
        bias_i=bias_i_ex11
        bias_h=bias_h_ex11
 
        !input
        allocate(input(ninput+1))
-       input(1) = ch3b 	        ! ch3b 3.7µm
-       input(2) = ch4 	        ! ch4 11 µm
-       input(3) = ch5 	        ! ch5 12 µm
-       input(4) = btd_ch4_ch3b	! 11-3.7 µm
-       input(5) = btd_ch4_ch5 	! 11-12 µm
+       input(1) = ch3b          ! ch3b 3.7µm
+       input(2) = ch4           ! ch4 11 µm
+       input(3) = ch5           ! ch5 12 µm
+       input(4) = btd_ch4_ch3b  ! 11-3.7 µm
+       input(5) = btd_ch4_ch5   ! 11-12 µm
        input(6) = skint
        ! exclude negative skin-rad4 temperatures at night/twilight, this needs to be tested!!
        if ( ( skint - ch4 ) .lt. 0 ) input(6) = ch4

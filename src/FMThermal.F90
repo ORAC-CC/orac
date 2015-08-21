@@ -30,7 +30,7 @@
 ! d_BT     real array Out     Gradients in part cloudy brightness temps.
 ! R        real array Out     Part cloudy radiance calculated at Pc
 ! d_R      real array Out     Part cloudy radiance gradients calculated at Pc.
-! status   int	 Out	      Error status
+! status   int    Out         Error status
 !
 ! History:
 ! 2000/11/16, KS: original version
@@ -197,9 +197,9 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
       call Find_Lun(bkp_lun)
       open(unit=bkp_lun,      &
            file=Ctrl%FID%Bkp, &
-	   status='old',      &
-	   position='append', &
-	   iostat=ios)
+           status='old',      &
+           position='append', &
+           iostat=ios)
       if (ios /= 0) then
          write(*,*) 'ERROR: FM_Thermal(): Error opening breakpoint file'
          stop BkpFileOpenErr
@@ -212,35 +212,35 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
       write(bkp_lun,'(a)') 'SPixel Lw RTM contributions to R_Clear:'
       do i=1,SPixel%Ind%NThermal
          write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-	    ' R_Clear: ', SPixel%RTM%LW%R_Clear(Thermal(i)), &
-	    ' dB_dTs : ', SPixel%RTM%LW%dB_dTs(Thermal(i)), &
-	    ' Ems: ', SPixel%RTM%LW%Ems(Thermal(i))
+              ' R_Clear: ', SPixel%RTM%LW%R_Clear(Thermal(i)), &
+              ' dB_dTs : ', SPixel%RTM%LW%dB_dTs(Thermal(i)), &
+              ' Ems: ', SPixel%RTM%LW%Ems(Thermal(i))
       end do
 
       do i=1,SPixel%Ind%NThermal
          write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-	    ' CRP Td: ', CRP(i,ITd), '  CRP Em: ', CRP(i,IEm), &
-	    '  CRP Rd: ', CRP(i,IRd)
+              ' CRP Td: ', CRP(i,ITd), '  CRP Em: ', CRP(i,IEm), &
+              '  CRP Rd: ', CRP(i,IRd)
       end do
 
       do i=1,SPixel%Ind%NThermal
          write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-	    ' R_Clear: ', R_Clear(i), '  Rbc_up: ', RTM_Pc%LW%Rbc_up(Thermal(i)), &
-	    '  R_Over: ',R_Over(i)
+              ' R_Clear: ', R_Clear(i), '  Rbc_up: ', RTM_Pc%LW%Rbc_up(Thermal(i)), &
+              '  R_Over: ',R_Over(i)
       end do
       write(bkp_lun,'(/)')
 
       do i=1,SPixel%Ind%NThermal
-      	 write(bkp_lun,'(a,i2,a,2f9.4)') 'Channel index: ', i, &
-	    ' BT, R: ', BT(i), R(i)
+         write(bkp_lun,'(a,i2,a,2f9.4)') 'Channel index: ', i, &
+              ' BT, R: ', BT(i), R(i)
       end do
       write(bkp_lun,'(/)')
 
       do i=1,SPixel%Ind%NThermal
-      	 write(bkp_lun,'(a,i2,a,5f10.3)') 'Channel index: ', i, &
-	    ' dBT: ', (d_BT(i,j),j=1,MaxStateVar)
-	 write(bkp_lun,'(a,5f10.3)') &
-	    '                   dR: ',  (d_R(i,j),j=1,MaxStateVar)
+         write(bkp_lun,'(a,i2,a,5f10.3)') 'Channel index: ', i, &
+              ' dBT: ', (d_BT(i,j),j=1,MaxStateVar)
+         write(bkp_lun,'(a,5f10.3)') &
+              '                   dR: ',  (d_R(i,j),j=1,MaxStateVar)
       end do
       write(bkp_lun,'(/)')
 

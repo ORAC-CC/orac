@@ -754,9 +754,9 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       call Find_Lun(bkp_lun)
       open(unit=bkp_lun,      &
            file=Ctrl%FID%Bkp, &
-	   status='old',      &
-	   position='append', &
-	   iostat=ios)
+           status='old',      &
+           position='append', &
+           iostat=ios)
       if (ios /= 0) then
          write(*,*) 'ERROR: Read_SAD_LUT(): Error opening breakpoint file'
          stop BkpFileOpenErr
@@ -777,7 +777,6 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
    SAD_LUT%table_uses_satzen      = .false.
    SAD_LUT%table_uses_solzen      = .false.
    SAD_LUT%table_uses_relazi      = .false.
-
 
    do i=1, Ctrl%Ind%Ny
       ! Generate channel file name from Ctrl struct info. This sets the channel

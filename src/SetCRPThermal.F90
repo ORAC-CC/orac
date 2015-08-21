@@ -83,11 +83,11 @@ subroutine Set_CRP_Thermal(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
                                           ! points
    type(SAD_LUT_t),        intent(in)  :: SAD_LUT
    real, dimension(:,:),   intent(out) :: CRPOut
-                        		  ! Interpolated values returned
-                        		  ! (CRPOut(1)=RBD, (2)=TB, ...)
+                                          ! Interpolated values returned
+                                          ! (CRPOut(1)=RBD, (2)=TB, ...)
    real, dimension(:,:,:), intent(out) :: dCRPOut
-                                	  ! Interpolated gradients of CRPOut in
-					  ! Tau and Re
+                                          ! Interpolated gradients of CRPOut in
+                                          ! Tau and Re
    integer,                intent(out) :: status
 
    ! Status is not actually set at present. Error-checking would be very costly

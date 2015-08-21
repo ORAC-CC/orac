@@ -254,7 +254,7 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
                do j=preproc_dims%min_lat,preproc_dims%max_lat
                   array3d(i,j,k) = real(dummy3d(pointer_x(i),pointer_y(j),k,1))
                end do
-	    end do
+            end do
 #endif
          end do
          if (verbose) print*,trim(name),') Min: ',minval(array3d), &

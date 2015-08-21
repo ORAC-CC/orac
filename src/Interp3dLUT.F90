@@ -70,7 +70,7 @@ subroutine Interp3dLUT(chan, F, xGrid, yGrid, delx, dely, CurX, CurY, FInt, &
    real    :: k0, k1                  ! Intermediate interpolated values
    real    :: dx, dy                  ! Distance from required x,y values to
                                       ! next (lower) LUT grid point, as a
-				      ! fraction of the LUT cell length in x,y.
+                                      ! fraction of the LUT cell length in x,y.
 
 
    ! Find the array indices of the nearest neighbour grid points

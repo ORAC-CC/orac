@@ -94,7 +94,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    real             :: T_Array(Ctrl%Ind%NThermal)
    type(SAD_Chan_t) :: SAD_temp(Ctrl%Ind%NThermal)
 
-   ! Set status to zero
+
    status = 0
 
    ! Bilinear interpolation (method taken from Numerical Recipes p96, 1987)
@@ -144,7 +144,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    end if
 #ifdef DEBUG
    if (status /= 0) &
-      write(*, *) 'Get_LwSwRTM: At least one SW or LW RTM field out of range at: ' &
+      write(*, *) 'Get_LwSwRTM: At least one SW or LW RTM field out of range at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
    ! Set surface level to TOA transmittances

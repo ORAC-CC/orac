@@ -89,7 +89,6 @@ contains
 !-------------------------------------------------------------------------------
 
 #define PARSE_STRING_TYPE integer
-
 #define PARSE_STRING_KIND sint
 #define PARSE_STRING_NAME_0D parse_user_text_0d_sint
 #define PARSE_STRING_NAME_1D parse_user_text_1d_sint
@@ -104,7 +103,9 @@ contains
 #undef PARSE_STRING_NAME_2D
 #undef PARSE_ARRAY_INDEX_NAME_1D
 #undef PARSE_ARRAY_INDEX_NAME_2D
+#undef PARSE_STRING_TYPE
 
+#define PARSE_STRING_TYPE integer
 #define PARSE_STRING_KIND lint
 #define PARSE_STRING_NAME_0D parse_user_text_0d_lint
 #define PARSE_STRING_NAME_1D parse_user_text_1d_lint
@@ -119,7 +120,6 @@ contains
 #undef PARSE_STRING_NAME_2D
 #undef PARSE_ARRAY_INDEX_NAME_1D
 #undef PARSE_ARRAY_INDEX_NAME_2D
-
 #undef PARSE_STRING_TYPE
 
 end module parse_user

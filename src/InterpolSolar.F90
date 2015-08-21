@@ -21,10 +21,10 @@
 ! Arguments:
 ! Name   Type   In/Out/Both Description
 ! ------------------------------------------------------------------------------
-! Ctrl   struct In	    Control structure
+! Ctrl   struct In          Control structure
 ! SPixel struct Both        Super-pixel structure
-! Pc     float  In	    Current cloud pressure
-! RTM_Pc struct Out	    Contains Tac, Tbc (interpolated transmittances
+! Pc     float  In          Current cloud pressure
+! RTM_Pc struct Out         Contains Tac, Tbc (interpolated transmittances
 !                           above and below cloud) and gradients wrt cloud
 !                           pressure.
 ! status int    Out         Standard status value not set here
@@ -155,9 +155,9 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
       call Find_Lun(bkp_lun)
       open(unit=bkp_lun,      &
            file=Ctrl%FID%Bkp, &
-	   status='old',      &
-	   position='append', &
-	   iostat=ios)
+           status='old',      &
+           position='append', &
+           iostat=ios)
       if (ios /= 0) then
          write(*,*) 'ERROR: Interpol_Solar(): Error opening breakpoint file'
          stop BkpFileOpenErr
@@ -167,9 +167,9 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
       write(bkp_lun,'(a)') 'Chan ind  Tac       Tbc       dTac_dPc  dTbc_dPc'
       do i=1, SPixel%Ind%NSolar
-      	 write(bkp_lun,'(5x,i2,4(1x,f9.4))') i, &
-	    RTM_Pc%SW%Tac(Solar(i)), RTM_Pc%SW%Tbc(Solar(i)), &
-	    RTM_Pc%SW%dTac_dPc(Solar(i)), RTM_Pc%SW%dTbc_dPc(Solar(i))
+         write(bkp_lun,'(5x,i2,4(1x,f9.4))') i, &
+              RTM_Pc%SW%Tac(Solar(i)), RTM_Pc%SW%Tbc(Solar(i)), &
+              RTM_Pc%SW%dTac_dPc(Solar(i)), RTM_Pc%SW%dTbc_dPc(Solar(i))
       end do
 
       write(bkp_lun, '(a,/)') 'Interpol_Solar: end'

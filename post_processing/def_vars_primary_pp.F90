@@ -907,7 +907,7 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
                           '23:Bare Ground Tundra, ' // &
                           '24:Snow or Ice, ' // &
                           '99:Interrupted Areas, ' // &
-	                  '100:Missing Data', &
+                          '100:Missing Data', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 

@@ -46,9 +46,7 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
    type(Data_t),   intent(in)    :: MSI_Data
    integer,        intent(out)   :: status
 
-   ! Define local variables
 
-   ! Set status to zero
    status = 0
 
    select case (MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0))

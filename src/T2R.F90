@@ -61,7 +61,6 @@ subroutine T2R(NChan, SAD_Chan, T, R, d_R_d_T, status)
    real(dreal) :: dummy_denominator(NChan)
    real(dreal) :: dummy_result(NChan)
 
-   ! Set status to zero
 
    status = 0
 

@@ -77,8 +77,8 @@ subroutine Set_Limits(Ctrl, SPixel, status)
    do i = 1, SPixel%Nx
       if (SPixel%X(i) == ITs) then
          delta_Ts          = 3 * sqrt(SPixel%Sx(ITs, ITs))
-	 SPixel%XLLim(ITs) = SPixel%Xb(ITs) - delta_Ts
-	 SPixel%XULim(ITs) = SPixel%Xb(ITs) + delta_Ts
+         SPixel%XLLim(ITs) = SPixel%Xb(ITs) - delta_Ts
+         SPixel%XULim(ITs) = SPixel%Xb(ITs) + delta_Ts
       end if
    end do
 

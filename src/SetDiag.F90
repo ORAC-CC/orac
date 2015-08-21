@@ -84,9 +84,9 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
    logical,        intent(in)    :: convergence   ! Indicates whether the
                                                   ! inversion converged
    real,           intent(in)    :: J, Jm, Ja     ! Cost at final state (plus
-                                	          ! contributions to cost from
-			        	          ! measurements and a priori)
-   integer,        intent(in)    :: iter	  ! Inversion iteration counter
+                                                  ! contributions to cost from
+                                                  ! measurements and a priori)
+   integer,        intent(in)    :: iter          ! Inversion iteration counter
    real,           intent(in)    :: Y(:)          ! Calculated "measurements" at
                                                   ! final state.
    real,           intent(in)    :: Sy(:,:)       ! Error covariance in

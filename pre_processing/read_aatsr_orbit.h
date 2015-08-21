@@ -218,7 +218,7 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
   13/06/2012 Gareth Thomas: First version completed
   28/08/2012 Gareth Thomas: Changes made for interfacing with Fortran using
                             "iso_c_binding"
-		     Various bug fixes
+                            Various bug fixes
   12/09/2012 Gareth and Caroline: fixed bug in indexing of arrays changed <=
                             to <
   13/09/2012 Gareth Thomas: Removed some array allocation test code from
@@ -227,19 +227,19 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
   13/09/2012 Caroline Poulsen: bug fix longitide being assigned latitude
   13/09/2012 Gareth Thomas: Added start_date and gc1 and vc1 file names to
                             output of read_aatsr_beam_ctof90 (needed by
-		     shortwave calibration correction code)
+                            shortwave calibration correction code)
   14/09/2012 Gareth Thomas: Bug fix: solar and instrument elevation angles are now
                             converted into zenith angles.
-		     Also added epr_free_raster statements to get_aatsr_dimension
-		     Bug fix read_aatsr_beam: Indexing of lat/lon rasters was
-		     incorrectly including the y-offset value
+                            Also added epr_free_raster statements to get_aatsr_dimension
+                            Bug fix read_aatsr_beam: Indexing of lat/lon rasters was
+                            incorrectly including the y-offset value
   22/11/2012 Caroline Poulsen: calculation of relative azimuth Bug fix:phi=180.0 - phi
                             and absolutte value of angle
   12/12/2012 Gareth Thomas: Bug fix in applying lat-lon limits in get_aatsr_dimension
                             miny is now set correctly if statement checking for the
-		     presence of lat-lon limits now works as it should.
-		     Also, reduced the amount of debugging info coming back from
-		     the EPR API.
+                            presence of lat-lon limits now works as it should.
+                            Also, reduced the amount of debugging info coming back from
+                            the EPR API.
   13/12/2012 Gareth Thomas: Added a check to make sure the L1B structure has been
                             initialised to the read_aatsr_beam function.
   14/08/2013 Gareth Thomas: Added okselev array for applying day-night masking in
@@ -253,7 +253,7 @@ void calculate_rel_azi(float *saz, float *iaz, float *raz, const int nx,
 ! none known
 */
 void get_aatsr_dimension(const char* infile, const short* daynight,
-			 const float* limit, const short* half_orbit,
-			 long* nxp, long* nyp, long* minyp, short* stat,
+                         const float* limit, const short* half_orbit,
+                         long* nxp, long* nyp, long* minyp, short* stat,
                          const bool *verbose);
 #endif

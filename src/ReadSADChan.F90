@@ -99,7 +99,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
    character(FilenameLen) :: filename         ! File name as read from chan desc file
    integer                :: NSolar, NThermal ! Local values used to check
                                               ! whether selected channels match
-					      ! totals indicated in driver file.
+                                              ! totals indicated in driver file.
    logical                :: file_exists
 
    NThermal        = 0
@@ -178,7 +178,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
             (SAD_Chan(i)%Thermal%NeCoreg(j), j=1,MaxCloudType)
 
          do j=1,MaxCloudType
-	    SAD_Chan(i)%Thermal%NeHomog(j) = &
+            SAD_Chan(i)%Thermal%NeHomog(j) = &
                SAD_Chan(i)%Thermal%NeHomog(j) * SAD_Chan(i)%Thermal%NeHomog(j)
             SAD_Chan(i)%Thermal%NeCoreg(j) = &
                SAD_Chan(i)%Thermal%NeCoreg(j) * SAD_Chan(i)%Thermal%NeCoreg(j)

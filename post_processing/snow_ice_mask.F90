@@ -193,7 +193,7 @@ subroutine snow_ice_mask(input_primary,input_secondary, &
 
          ! possibility to add some more tests based on optical depth/ height/effective radius
          !        if (input_primary%lsflag(i,j) .eq. 0_byte) then
- 	! sea
+         ! sea
          !           if (input_primary%cth(i,j) .lt. cth_thres_opd_sea) then
          !              if (input_primary%cot(i,j) .gt. opd_thres .and. input_primary%ref(i,j) .gt. re_min .and. input_primary%ref(i,j) .lt. re_max ) then
 

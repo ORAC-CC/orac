@@ -123,7 +123,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                        ! solar channels.
    real    :: dR_dT(1) ! Gradient of Rad w.r.t temp.
 
-   ! Set status to zero
+
    status = 0
 
    ! Reallocate to the appropriate size for the SPixel and Assign SPixel values.

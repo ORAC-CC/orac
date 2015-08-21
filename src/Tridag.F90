@@ -23,7 +23,7 @@
 ! b     real array in
 ! c     real array in
 ! r     real array in
-! u     real array Out	       The solution
+! u     real array Out         The solution
 !
 ! History:
 ! 2011/04/31, CA: Adapted for ORAC F90

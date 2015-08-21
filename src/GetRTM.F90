@@ -58,9 +58,7 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(out)   :: status
 
-   ! Declare local variables
 
-   ! Set status to zero
    status = 0
 
    ! Check that the current super pixel location lies within the range of the

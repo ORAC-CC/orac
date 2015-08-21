@@ -35,12 +35,12 @@ module GZero_def
       integer, pointer :: iRm1(:,:), iRp1(:,:)   ! Next-nearest neighbour indices for Re value
       integer, pointer :: iSaZ0(:,:), iSaZ1(:,:) ! Nearest neighbour indices for Sat zen value
       integer, pointer :: iSoZ0(:,:), iSoZ1(:,:) ! Nearest neighbour indices for Sun zen value
-      integer, pointer :: iRA0(:,:), iRA1(:,:)	 ! Nearest neighbour indices for Rel Azi value
+      integer, pointer :: iRA0(:,:), iRA1(:,:)   ! Nearest neighbour indices for Rel Azi value
       integer, pointer :: iSaZSoZ0(:,:), &
                           iSaZSoZ1(:,:)          ! Nearest neighbour indices for Sat zen value
 
       real,    pointer :: dT(:,:)                ! Fraction of grid step in Tau from zero'th
-						 ! point to current Tau value
+                                                 ! point to current Tau value
       real,    pointer :: dR(:,:)                ! Fraction of grid step to current Re
       real,    pointer :: dSaZ(:,:)              ! Fraction of grid step to current Sat zen
       real,    pointer :: dSoZ(:,:)              ! Fraction of grid step to current Sun zen

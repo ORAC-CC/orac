@@ -53,8 +53,8 @@
 !-----------------------------------------------------------------------
 
 ! Subroutines included in module:
-!	CLOUD_TYPE
-!	CLOUD_RETYPE
+!   CLOUD_TYPE
+!   CLOUD_RETYPE
 !
 ! DEPENDENCIES:
 !   COMMON_CONSTANTS
@@ -98,8 +98,8 @@
 !   March 2012 - Added check for solar contamination flag
 !
 ! Subroutines included in module:
-!	CLOUD_TYPE
-!	CLOUD_RETYPE
+!   CLOUD_TYPE
+!   CLOUD_RETYPE
 !
 !-----------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ contains
   ! OUTPUTS:
   !
   ! CALLING SEQUENCE:  call CLOUD_TYPE( j_min, num_scans_read )
-  !		      (called from ORAC - CC4CL)
+  !                    (called from ORAC - CC4CL)
   !
   ! SIDE EFFECTS: None
   !
@@ -165,69 +165,69 @@ contains
   !
   ! LOCAL VARIABLES:
   !
-  ! NIR_PHASE_THRES		= 1.6 micron phase threshold
-  ! NIR_CIRRUS_THRES		= 1.6 micron cirrus threshold
-  ! NIR_OVER_THRES		= Minimum 1.6 um reflectance allowed
+  ! NIR_PHASE_THRES             = 1.6 micron phase threshold
+  ! NIR_CIRRUS_THRES            = 1.6 micron cirrus threshold
+  ! NIR_OVER_THRES              = Minimum 1.6 um reflectance allowed
   !                               for cloud overlap over SNOW/ICE.
-  ! BTD3811_PHASE_THRES		= 3.75um - 11um thresholds used for phase determination.
-  ! EMS38_PHASE_THRES		= 3.75 um thresholds used for phase determination.
-  ! BTD1112_DOVERLAP_THRES	= 11um - 12um cloud overlap threshold
-  ! BTD1112_CIRRUS_THRES	= 11um - 12um cirrus threshold
-  ! BTD1112_NOVERLAP_THRES_L	= Split window nighttime low cloud overlap threshold
-  ! BTD1112_NOVERLAP_THRES_H	= Split window nighttime high cloud overlap threshold
-  ! EMS38_NOVERLAP_THRES_L	= EMS38 nighttime low cloud overlap threshold
-  ! EMS38_NOVERLAP_THRES_H	= EMS38 nighttime high cloud overlap threshold
-  ! MIN_BTD1112_DOVERLAP	= The minimum 11um - 12um BTD allowed
+  ! BTD3811_PHASE_THRES         = 3.75um - 11um thresholds used for phase determination.
+  ! EMS38_PHASE_THRES           = 3.75 um thresholds used for phase determination.
+  ! BTD1112_DOVERLAP_THRES      = 11um - 12um cloud overlap threshold
+  ! BTD1112_CIRRUS_THRES        = 11um - 12um cirrus threshold
+  ! BTD1112_NOVERLAP_THRES_L    = Split window nighttime low cloud overlap threshold
+  ! BTD1112_NOVERLAP_THRES_H    = Split window nighttime high cloud overlap threshold
+  ! EMS38_NOVERLAP_THRES_L      = EMS38 nighttime low cloud overlap threshold
+  ! EMS38_NOVERLAP_THRES_H      = EMS38 nighttime high cloud overlap threshold
+  ! MIN_BTD1112_DOVERLAP        = The minimum 11um - 12um BTD allowed
   !  for overlap detection.
-  ! MIN_BTD1112_NOVERLAP	= The minimum allowed Bt_Ch31 -
+  ! MIN_BTD1112_NOVERLAP        = The minimum allowed Bt_Ch31 -
   !  Bt_Ch32 allowed for nighttime overlap
-  ! A1 = Coefficient needed to determine the 11um - 12um BTD for cirrus detection
-  ! B1 = Coefficient needed to determine the 11um -
-  !  12um BTD for cirrus detection
-  ! C1				= Coefficient needed to determine the 11um -
-  !  12um BTD for cirrus detection
-  ! D1				= Coefficient needed to determine the 11um -
-  !  12um BTD for cirrus detection
-  ! E1				= Coefficient needed to determine the 11um -
-  !  12um BTD for cirrus detection
-  ! A2				= Coefficient needed to determine the 3.75um - 11um BTD thresholds that
-  !				  differentiate between ice and water as a function of 11um - 12um BTD.
-  ! B2				= Coefficient needed to determine the 3.75um - 11um BTD thresholds that
-  !				  differentiate between ice and water as a function of 11um - 12um BTD.
-  ! C2				= Coefficient needed to determine the 3.75um - 11um BTD thresholds that
-  !				  differentiate between ice and water as a function of 11um - 12um BTD.
-  ! D2				= Coefficient needed to determine the 3.75um - 11um BTD thresholds that
-  !				  differentiate between ice and water as a function of 11um - 12um BTD.
-  ! E2				= Coefficient needed to determine the 3.75um - 11um BTD thresholds that
-  !				  differentiate between ice and water as a function of 11um - 12um BTD.
-  ! A3				= Coefficient needed to determine the 11um - 12um BTD used to find cloud
-  !				  overlap as a function of 0.65 um reflectance.
-  ! B3				= Coefficient needed to determine the 11um - 12um BTD used to find cloud
-  !				  overlap as a function of 0.65 um reflectance.
-  ! C3				= Coefficient needed to determine the 11um - 12um BTD used to find cloud
-  !				  overlap as a function of 0.65 um reflectance.
-  ! D3				= Coefficient needed to determine the 11um - 12um BTD used to find cloud
-  !				  overlap as a function of 0.65 um reflectance.
-  ! E3				= Coefficient needed to determine the 11um - 12um BTD used to find cloud
-  !				  overlap as a function of 0.65 um reflectance.
+  ! A1                          = Coefficient needed to determine the 11um - 12um BTD for cirrus detection
+  ! B1                          = Coefficient needed to determine the 11um -
+  !                               12um BTD for cirrus detection
+  ! C1                          = Coefficient needed to determine the 11um -
+  !                               12um BTD for cirrus detection
+  ! D1                          = Coefficient needed to determine the 11um -
+  !                               12um BTD for cirrus detection
+  ! E1                          = Coefficient needed to determine the 11um -
+  !                               12um BTD for cirrus detection
+  ! A2                          = Coefficient needed to determine the 3.75um - 11um BTD thresholds that
+  !                               differentiate between ice and water as a function of 11um - 12um BTD.
+  ! B2                          = Coefficient needed to determine the 3.75um - 11um BTD thresholds that
+  !                               differentiate between ice and water as a function of 11um - 12um BTD.
+  ! C2                          = Coefficient needed to determine the 3.75um - 11um BTD thresholds that
+  !                               differentiate between ice and water as a function of 11um - 12um BTD.
+  ! D2                          = Coefficient needed to determine the 3.75um - 11um BTD thresholds that
+  !                               differentiate between ice and water as a function of 11um - 12um BTD.
+  ! E2                          = Coefficient needed to determine the 3.75um - 11um BTD thresholds that
+  !                               differentiate between ice and water as a function of 11um - 12um BTD.
+  ! A3                          = Coefficient needed to determine the 11um - 12um BTD used to find cloud
+  !                               overlap as a function of 0.65 um reflectance.
+  ! B3                          = Coefficient needed to determine the 11um - 12um BTD used to find cloud
+  !                               overlap as a function of 0.65 um reflectance.
+  ! C3                          = Coefficient needed to determine the 11um - 12um BTD used to find cloud
+  !                               overlap as a function of 0.65 um reflectance.
+  ! D3                          = Coefficient needed to determine the 11um - 12um BTD used to find cloud
+  !                               overlap as a function of 0.65 um reflectance.
+  ! E3                          = Coefficient needed to determine the 11um - 12um BTD used to find cloud
+  !                               overlap as a function of 0.65 um reflectance.
   !
-  ! i				= pixel counter
-  ! j				= scanline counter
-  ! j1				= start scanline
-  ! j2				= ending scanline
-  ! index1			= viewing zenith angle bin
-  ! index2			= solar zenith angle bin
-  ! wflg				= IR window flag
-  ! start_line			= line to start filtering
-  ! end_line			= line to end filtering
-  ! start_pix			= pixel to start filtering
-  ! end_pix			= pixel to end filtering
-  ! npix				= number of pixels to filer
+  ! i                           = pixel counter
+  ! j                           = scanline counter
+  ! j1                          = start scanline
+  ! j2                          = ending scanline
+  ! index1                      = viewing zenith angle bin
+  ! index2                      = solar zenith angle bin
+  ! wflg                        = IR window flag
+  ! start_line                  = line to start filtering
+  ! end_line                    = line to end filtering
+  ! start_pix                   = pixel to start filtering
+  ! end_pix                     = pixel to end filtering
+  ! npix                        = number of pixels to filer
   !
-  ! day				= day/night flag
+  ! day                         = day/night flag
   !
-  ! t4_filter_thresh		= BT4 threshold, accounting for atmospheric effects, for filtering
-  ! nir_ref			= channel 3a/b reflectance
+  ! t4_filter_thresh            = BT4 threshold, accounting for atmospheric effects, for filtering
+  ! nir_ref                     = channel 3a/b reflectance
   !
   ! Not used: A4, B4, C4, D4, E4, n
   !
@@ -326,8 +326,8 @@ contains
 
     ! -- Parameters used here
     !
-    ! cirrus_quality 	  = quality of cirrus flag
-    ! coszen	   	  = cosine of the solar zenith angle
+    ! cirrus_quality      = quality of cirrus flag
+    ! coszen              = cosine of the solar zenith angle
     ! ch3a_on_avhrr_flag  = whether or not AVHRR channel 3a is
     !                       used (NO, YES, INEXISTENT)
     ! BTD                 = Brightness Temperature Difference
@@ -577,7 +577,7 @@ contains
           if ( imager_measurements%DATA(i,j,ch5) .ge. 100 .and. &
                imager_measurements%DATA(i,j,ch6) .lt. 100. ) then
                ch7_on_atsr_flag = NO
-	      endif
+            endif
 
 
    ! check is ATSR 11um channel is missing because too warm
@@ -586,7 +586,7 @@ contains
           if ( imager_measurements%DATA(i,j,ch6) .ge. 200 .and. &
                imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
                ch6_on_atsr_flag = NO
-	      endif
+            endif
 
    !-- check for sunglint and save result:
    !   imager_pavolonis%SUNGLINT_MASK(i,j)
@@ -1357,7 +1357,7 @@ contains
           ! set cccot to a fake high value as otherwise gets set as clear later on
 
           if  (imager_pavolonis%CLDTYPE(i,j) == PROB_OPAQUE_ICE_TYPE ) then
-	     imager_pavolonis%CLDMASK(i,j) = CLOUDY
+             imager_pavolonis%CLDMASK(i,j) = CLOUDY
              imager_pavolonis%cccot_pre(i,j) = .99
           endif
 

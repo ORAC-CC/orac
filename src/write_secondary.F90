@@ -122,16 +122,16 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    end do
 
    do i=1,Ctrl%Ind%Ny
-	write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
         input_dummy='radiance_residual_in_channel_no_'//trim(adjustl(input_num))
 
-	call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+        call nc_write_array(ncid,trim(adjustl(input_dummy)), &
                 output_data%vid_residuals(i),output_data%residuals(ixstart:,:,i), &
                 1,1,n_x,1,1,n_y)
    end do
 
    call nc_write_array(ncid,'degrees_of_freedom_signal',output_data%vid_ds,&
-	   output_data%ds(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+           output_data%ds(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    if (lcovar) then
       do i=1,SPixel%Nx

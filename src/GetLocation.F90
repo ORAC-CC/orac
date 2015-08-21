@@ -40,9 +40,7 @@ subroutine Get_Location(Ctrl, SPixel, MSI_Data, status)
    type(Data_t),   intent(in)    :: MSI_Data
    integer,        intent(out)   :: status
 
-   ! Define local variables
 
-   ! Set status to zero
    status = 0
 
    SPixel%Loc%Lat = MSI_Data%Location%Lat(SPixel%Loc%X0, SPixel%Loc%Y0)
@@ -52,14 +50,14 @@ subroutine Get_Location(Ctrl, SPixel, MSI_Data, status)
    ! Ctrl.
    if (SPixel%Loc%Lat < LatMin .or. SPixel%Loc%Lat > LatMax) then
 #ifdef DEBUG
-      write(*, *) 'Get_Location: Latitude out of range at: ' &
+      write(*, *) 'Get_Location: Latitude out of range at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
       status = SPixelLocLat
    end if
    if (SPixel%Loc%Lon < LonMin .or. SPixel%Loc%Lon > LonMax) then
 #ifdef DEBUG
-      write(*, *) 'Get_Location: Longitude out of range at: ' &
+      write(*, *) 'Get_Location: Longitude out of range at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
       status = SPixelLocLon

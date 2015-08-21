@@ -103,11 +103,11 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
                                           ! points
    type(SAD_LUT_t),        intent(in)  :: SAD_LUT
    real, dimension(:,:),   intent(out) :: CRPOut
-                        		  ! Interpolated values returned
-                        		  ! (CRPOut(1)=RBD, (2)=TB, ...)
+                                          ! Interpolated values returned
+                                          ! (CRPOut(1)=RBD, (2)=TB, ...)
    real, dimension(:,:,:), intent(out) :: dCRPOut
-                                	  ! Interpolated gradients of CRPOut in
-					  ! Tau and Re
+                                          ! Interpolated gradients of CRPOut in
+                                          ! Tau and Re
    integer,                intent(out) :: status
 
    ! Local variables
@@ -158,19 +158,19 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITFd), dCRPOut(:,ITFd,:), &
            ITFd, chan_to_ctrl_index, Ind%YSolar, status)
 
-#ifdef DEBUG
+#ifdef BKP
 !   write(*,*) ' SetCRPSolar: Tb values (2 channels only)'
 !   do j=Ind%SolarFirst, Ind%SolarFirst+1
 !      write(*,'(a,4(f10.5,1x))')' Function values at top corners', &
-!	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ0(j), GZero%iR1),  &
-!	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ0(j), GZero%iR1),  &
-!	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ1(j), GZero%iR1),  &
-!	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ1(j), GZero%iR1)
+!           SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ0(j), GZero%iR1),  &
+!           SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ0(j), GZero%iR1),  &
+!           SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ1(j), GZero%iR1),  &
+!           SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ1(j), GZero%iR1)
 !      write(*,'(a,4(f10.5,1x))')' Function values at bot corners', &
-!	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ0(j), GZero%iR0),  &
-!	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ0(j), GZero%iR0),  &
-!	 SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ1(j), GZero%iR0),  &
-!	 SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ1(j), GZero%iR0)
+!           SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ0(j), GZero%iR0),  &
+!           SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ0(j), GZero%iR0),  &
+!           SAD_LUT%Tb(j, GZero%iT0, GZero%iSoZ1(j), GZero%iR0),  &
+!           SAD_LUT%Tb(j, GZero%iT1, GZero%iSoZ1(j), GZero%iR0)
 !
 !      write(*,*)' Interpolated value ',CRPOut(j,ITB)
 !      write(*,*)' Gradient values    ',(dCRPOut(j,ITB,i),i=1,2)

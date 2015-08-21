@@ -532,9 +532,9 @@ end if
       call Find_Lun(bkp_lun)
       open(unit=bkp_lun,      &
            file=Ctrl%FID%Bkp, &
-	   status='old',      &
-	   position='append', &
-	   iostat=ios)
+           status='old',      &
+           position='append', &
+           iostat=ios)
       if (ios /= 0) then
          write(*,*) 'ERROR: FM_Solar(): Error opening breakpoint file'
          stop BkpFileOpenErr
@@ -543,31 +543,31 @@ end if
       end if
 
       do i=1, SPixel%Ind%NSolar
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' Ref:         ', Ref(i)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' Ref_over:    ', Ref_over(i)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' T:           ', T(i)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' T_all:       ', T_all(i)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' S:           ', S(i)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' CRP(:,IRBd): ',CRP(i,IRBd)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' CRP(:,ITd):  ',CRP(i,ITd)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' CRP(:,ITB):  ',CRP(i,ITB)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' CRP(:,ITFBd):',CRP(i,ITFBd)
-      	 write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
-	    ' CRP(:,IRFd): ',CRP(i,IRFd)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' Ref:         ', Ref(i)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' Ref_over:    ', Ref_over(i)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' T:           ', T(i)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' T_all:       ', T_all(i)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' S:           ', S(i)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' CRP(:,IRBd): ',CRP(i,IRBd)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' CRP(:,ITd):  ',CRP(i,ITd)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' CRP(:,ITB):  ',CRP(i,ITB)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' CRP(:,ITFBd):',CRP(i,ITFBd)
+         write(bkp_lun,'(a,i2,a,f9.4)') 'Channel index: ', i, &
+              ' CRP(:,IRFd): ',CRP(i,IRFd)
       end do
 
       do i=1, SPixel%Ind%NSolar
-      	 write(bkp_lun,'(a,i2,a,6f9.4)') 'Channel index: ', i, &
-	    ' dRef: ', (d_Ref(i,j),j=1,MaxStateVar)
+         write(bkp_lun,'(a,i2,a,6f9.4)') 'Channel index: ', i, &
+              ' dRef: ', (d_Ref(i,j),j=1,MaxStateVar)
       end do
 
       write(bkp_lun, '(a,/)') 'FM_Solar: end'
