@@ -1174,6 +1174,14 @@ endif
               verbose, &
               fill_value = lint_fill_value)
 
+      call nc_def_var_long_packed_long( &
+              netcdf_info%ncid_msi, &
+              dimids_1d, &
+              'msi_ch_view', &
+              netcdf_info%vid_msi_ch_view, &
+              verbose, &
+              fill_value = lint_fill_value)
+
 
       dimids_2d(1)=netcdf_info%dimid_x_msi
       dimids_2d(2)=netcdf_info%dimid_y_msi

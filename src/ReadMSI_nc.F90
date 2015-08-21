@@ -117,7 +117,6 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    ! NetCDF related
    integer           :: ncid
    character(len=12) :: prod_date
-!  integer(kind=lint), allocatable, dimension(:) :: msi_instr_ch_numbers
 
    ! Open MSI file
    if (verbose) write(*,*) 'Imagery file: ', trim(Ctrl%Fid%MSI)
@@ -158,10 +157,10 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    call nc_read_array(ncid, "msi_data", MSI_Data%MSI, verbose, 3, Ctrl%Ind%ICh)
    call nc_read_array(ncid, "time_data", MSI_Data%time, verbose)
 
-   ! Read instrument channel indices from file
-!  allocate(msi_instr_ch_numbers(Ctrl%Ind%Navail))
-!  call nc_read_array(ncid,"msi_instr_ch_numbers",msi_instr_ch_numbers,0)
-!  deallocate(msi_instr_ch_numbers)
+   ! Read channel view indices from file (all channels)
+   allocate(Ctrl%Ind%ViewIdx(Ctrl%Ind%Ny))
+   call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%ViewIdx, verbose)
+   Ctrl%Ind%NViews = maxval(Ctrl%Ind%ViewIdx)
 
    ! Close MSI input file
    if (nf90_close(ncid) /= NF90_NOERR) then

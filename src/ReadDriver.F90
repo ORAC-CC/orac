@@ -98,9 +98,6 @@
 ! $Id$
 !
 ! Bugs:
-! NViews should be changed for dual view
-!
-! IMPORTANT NOTE:
 ! If a new type of LUT i.e aerosol is added then new default values will have
 ! to be added to this routine
 !-------------------------------------------------------------------------------
@@ -376,11 +373,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Ind%X_Ni(1) = IPc ! indices of state parameters
    Ctrl%Ind%X_Ni(2) = ITs
 
-
-   ! Force single view (for the time being)
-   Ctrl%Ind%NViews=1
-   allocate(Ctrl%Ind%Viewidx(Ctrl%Ind%Ny))
-   Ctrl%Ind%Viewidx = 1
 
    ! Use default processing (i.e. process everything in file)
    Ctrl%Ind%X0 = 0
@@ -884,10 +876,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('CTRL%IND%X_NI')
          if (parse_user_text(line, Ctrl%Ind%X_NI, Ctrl%Ind%NX_NI)&
                                                        /= 0) call h_p_e(label)
-      case('CTRL%IND%NVIEWS')
-         if (parse_string(line, Ctrl%Ind%NViews)       /= 0) call h_p_e(label)
-      case('CTRL%IND%VIEWIDX')
-         if (parse_string(line, Ctrl%Ind%Viewidx)      /= 0) call h_p_e(label)
       case('CTRL%IND%X0')
          if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
       case('CTRL%IND%X1')

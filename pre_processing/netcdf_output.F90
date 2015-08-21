@@ -82,8 +82,8 @@ module netcdf_output
       ! config file:
       integer :: vid_msi_instr_ch_numbers_config, &
                  vid_msi_abs_ch_wl_config, vid_msi_ch_lwflag_config, &
-                 vid_msi_ch_swflag_config, vid_msi_ch_procflag_config, &
-                 vid_alb_abs_ch_numbers_config, vid_emis_abs_ch_numbers_config
+                 vid_msi_ch_swflag_config, vid_alb_abs_ch_numbers_config, &
+                 vid_emis_abs_ch_numbers_config
 
       ! geo file
       integer :: vid_solzen, vid_satzen, vid_solaz, vid_relazi
@@ -103,7 +103,7 @@ module netcdf_output
 
       ! msi file:
       integer :: vid_msi_instr_ch_numbers,vid_msi_abs_ch_wl
-      integer :: vid_msi_ch_swflag,vid_msi_ch_lwflag,vid_msi_ch_procflag
+      integer :: vid_msi_ch_swflag,vid_msi_ch_lwflag,vid_msi_ch_view
       integer :: vid_time
       integer :: vid_msi_data
 

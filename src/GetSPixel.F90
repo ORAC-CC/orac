@@ -205,7 +205,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    ! Define arguments
 
    type(CTRL_t),        intent(in)    :: Ctrl
-   type(SAD_Chan_t),    intent(in)    :: SAD_Chan(Ctrl%Ind%Ny)
+   type(SAD_Chan_t),    intent(in)    :: SAD_Chan(:)
    type(Data_t),        intent(in)    :: MSI_Data
    type(RTM_t),         intent(in)    :: RTM
    type(SPixel_t),      intent(inout) :: SPixel
@@ -357,7 +357,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       write(bkp_lun,'(a,2(i4,1x))')' Location: ',SPixel%Loc%X0,SPixel%Loc%Y0
       write(bkp_lun,'(a,2(f7.1,1x))')' Lat, lon: ',SPixel%Loc%Lat,SPixel%Loc%Lon
       write(bkp_lun,'(a,L1)')' Land flag ',SPixel%Surface%Land
-      do view=1,SPixel%Ind%NViews
+      do view=1,Ctrl%Ind%NViews
          write(bkp_lun,'(a,i3,3(a,f7.1))')' View ', view,' sat zen ',SPixel%Geom%SatZen(view),&
               '  sol zen ',SPixel%Geom%SolZen(view), ' rel azi ',SPixel%Geom%RelAzi(view)
       end do
@@ -388,7 +388,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       if (btest(SPixel%QC, SPixFGAP)) write(bkp_lun,*)'SPixFGAP'
       if (btest(SPixel%QC, SPixNoProc)) write(bkp_lun,*)'SPixNoProc '
 
-      do view=1,SPixel%Ind%NViews
+      do view=1,Ctrll%Ind%NViews
          write(bkp_lun,'(a,i2,2(a,f9.4))')' View ',view,', Sec_o: ', &
               SPixel%Geom%SEC_o(view), ' Sec_v: ',SPixel%Geom%SEC_v(view)
       end do

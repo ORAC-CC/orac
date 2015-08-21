@@ -409,6 +409,13 @@ subroutine netcdf_output_write_swath(imager_flags,imager_angles,imager_geolocati
 
    call nc_write_array( &
            netcdf_info%ncid_msi, &
+           'msi_ch_view', &
+           netcdf_info%vid_msi_ch_view, &
+           channel_info%channel_view_ids, &
+           1, 1, channel_info%nchannels_total)
+
+   call nc_write_array( &
+           netcdf_info%ncid_msi, &
            'time', &
            netcdf_info%vid_time, &
            imager_time%time(imager_geolocation%startx:,:), &
