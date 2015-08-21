@@ -58,7 +58,7 @@ PRO COMPARE_NCDF_FILES, oldroot, newroot, suffix, thres, pass
    inq1=NCDF_INQUIRE(id1)
    inq2=NCDF_INQUIRE(id2)
    if inq1.nvars ne inq2.nvars then begin
-      PRINT, 'Files '+FILE_BASENAME(old)+' and '+FILE_BASENAME(new)+ $
+      PRINT, 'Files '+FILE_BASENAME(oldroot)+' and '+FILE_BASENAME(newroot)+ $
              ' contain different numbers of variables.'
       pass=0
    endif
@@ -66,7 +66,12 @@ PRO COMPARE_NCDF_FILES, oldroot, newroot, suffix, thres, pass
    ;; Loop over all variables in new file
    for j=0,inq2.nvars-1 do begin
       var=NCDF_VARINQ(id2,j)
-      NCDF_VARGET,id1,NCDF_VARID(id1,var.name),c1
+      vid=NCDF_VARID(id1,var.name)
+      if vid eq -1 then begin
+         ;; Variable only in new file (warnings printed by NCDF_VARID and nccmp)
+         continue
+      endif
+      NCDF_VARGET,id1,vid,c1
       NCDF_VARGET,id2,j,c2
       if ~ARRAY_EQUAL(c1,c2) then begin
          if N_ELEMENTS(c1) ne N_ELEMENTS(c2) then begin

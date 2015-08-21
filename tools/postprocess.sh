@@ -24,11 +24,10 @@
 set -e
 
 source header.sh
-if (( $drop )); then
-    for i in ${!label[*]}; do
-        label[$i]=${label[$i]}$desc
-    done
-fi
+
+for i in ${!label[*]}; do
+    label[$i]=${label[$i]}$desc
+done
 
 #------------------------------------------------------------------------------
 # RUN ORAC POST-PROCESSOR
