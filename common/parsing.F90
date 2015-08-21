@@ -187,6 +187,9 @@ end subroutine parse_line
 ! 2015/07/22, AP: Added optional argument specifying the length of an array to
 !    be used when an array is not completely set by a driver file (i.e. when the
 !    array will eventually contain blank elements).
+! 2015/08/18, AP: Added optional argument specifying the ID# for each channel
+!    such that CHXX style indexing can be used. Intended for use in main
+!    processor and shouldn't affect usage elsewhere.
 !
 ! Bugs:
 ! None known.

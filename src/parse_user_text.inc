@@ -1,14 +1,16 @@
-integer function PARSE_STRING_NAME_0D(in, out) result(status)
+integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
    use constants_cloud_typing_pavolonis
+   use Int_Routines_def, only : find_in_array
    use ECP_Constants
 
    implicit none
 
-   character(len=*), intent(in)  :: in
+   character(len=*),  intent(in)  :: in
    PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: out
-   integer                       :: ios
-   integer                       :: op, cl, l
-   character(len=FilenameLen)    :: label, idx
+   integer, optional, intent(in)  :: ch_ids(:)
+   integer                        :: ios
+   integer                        :: op, cl, l, ch
+   character(len=FilenameLen)     :: label, idx
 
    status = 0
 
@@ -22,8 +24,8 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
       if (op > 1) then
          ! We are dealing with an array parameter.
          cl = index(in, ')')
-         if (op+1 <= cl) then
-            ! Closing bracket before opening
+         if (op+1 <= cl .or. .not. present(ch_ids)) then
+            ! Closing bracket before opening (or not a wavelength array)
             status  = PARSE_ERR_CONV
          else
             idx = adjustl(in(op+1:cl-1)) ! String between brackets
@@ -33,11 +35,11 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
             ! Compare string to all ECP_Constants array parameters listed
             select case (label)
             case('IRS')
-               status = PARSE_ARRAY_INDEX_NAME_2D(idx, IRs, out)
+               status = PARSE_ARRAY_INDEX_NAME_2D(idx, IRs, out, ch_ids)
             case('ISP')
-               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISP, out)
+               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISP, out, ch_ids)
             case('ISS')
-               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISS, out)
+               status = PARSE_ARRAY_INDEX_NAME_1D(idx, ISS, out, ch_ids)
             case default
                status  = PARSE_ERR_CONV
             end select
@@ -47,6 +49,20 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
          l = len_trim(in)
          label = in(1:l)
          call clean_driver_label(label)
+
+         ! Check for channel number indexing
+         if (present(ch_ids)) then
+            if (label(1:2) == 'CH') then
+               read(label(3:), *, iostat=ios) ch
+               if (ios /= 0) then
+                  status = PARSE_ERR_CONV
+               else
+                  ! Return the index of the channel that has the requested ID
+                  out = find_in_array(ch_ids, ch)
+                  if (out == 0) status = PARSE_ERR_CONV
+               end if
+            end if
+         end if
 
          select case (label)
          ! State vector indices
@@ -133,15 +149,16 @@ integer function PARSE_STRING_NAME_0D(in, out) result(status)
 end function PARSE_STRING_NAME_0D
 
 
-integer function PARSE_ARRAY_INDEX_NAME_1D(idx, arr, out) result(status)
+integer function PARSE_ARRAY_INDEX_NAME_1D(idx, arr, out, ch_ids) result(status)
    implicit none
 
    character(len=*), intent(in)  :: idx
    integer,          intent(in)  :: arr(:)
    PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: out
-   integer                       :: i
+   integer,          intent(in)  :: ch_ids(:)
+   PARSE_STRING_TYPE(kind=PARSE_STRING_KIND) :: i
 
-   status = parse_user_text(idx, i)
+   status = PARSE_STRING_NAME_0D(idx, i, ch_ids=ch_ids)
    if (status == 0) then
       ! Check index within bounds
       if (i > 0 .and. i <= size(arr)) then
@@ -153,15 +170,16 @@ integer function PARSE_ARRAY_INDEX_NAME_1D(idx, arr, out) result(status)
 end function PARSE_ARRAY_INDEX_NAME_1D
 
 
-integer function PARSE_ARRAY_INDEX_NAME_2D(idx, arr, out) result(status)
+integer function PARSE_ARRAY_INDEX_NAME_2D(idx, arr, out, ch_ids) result(status)
    implicit none
 
    character(len=*), intent(in)  :: idx
    integer,          intent(in)  :: arr(:,:)
    PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: out
-   integer                       :: i(2)
+   integer,          intent(in)  :: ch_ids(:)
+   PARSE_STRING_TYPE(kind=PARSE_STRING_KIND) :: i(2)
 
-   status = parse_user_text(idx, i)
+   status = PARSE_STRING_NAME_1D(idx, i, ch_ids=ch_ids)
    if (status == 0) then
       ! Check index within bounds
       if (i(1) > 0 .and. i(2) > 0 .and. &

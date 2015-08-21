@@ -8,8 +8,8 @@ $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         ReadALB_nc.F90 ReadCloudFlags_nc.F90 ReadData_nc.F90 ReadGeometry_nc.F90 \
         ReadLSFlags_nc.F90 ReadLocation_nc.F90 ReadMSI_nc.F90 \
         sabotage_inputs.F90
-$(OBJS)/Diag.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/SPixel.o \
-        SetDiag.F90 ZeroDiag.F90
+$(OBJS)/Diag.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
+        $(OBJS)/SPixel.o SetDiag.F90 ZeroDiag.F90
 $(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o
 $(OBJS)/blmodification.o: $(OBJS)/SPixel.o
 $(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GZero.o \
@@ -33,13 +33,14 @@ $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
 $(OBJS)/Inversion.o: $(OBJS)/Cholesky.o $(OBJS)/Ctrl.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/FMRoutines.o $(OBJS)/RTM_Pc.o \
         $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o CheckLimits.F90 \
-        InvertMarquardt.F90 SetKx.F90 SetLimits.F90 SetSy.F90 SetUnit.F90
+        InvertMarquardt.F90 SetKx.F90 SetLimits.F90 SetSy.F90
 $(OBJS)/output_routines.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o \
         alloc_output_data.F90 dealloc_output_data.F90 def_vars_primary.F90 \
         def_vars_secondary.F90 prepare_primary.F90 prepare_secondary.F90 \
         write_primary.F90 write_secondary.F90
-$(OBJS)/parse_user.o: $(OBJS)/ECPConstants.o parse_user_text.inc
+$(OBJS)/parse_user.o: $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
+        parse_user_text.inc
 $(OBJS)/planck.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o R2T.F90 T2R.F90
 $(OBJS)/read_utils.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o read_config_file.F90 \
         read_input_dimensions.F90

@@ -1,13 +1,14 @@
-integer function PARSE_STRING_NAME_1D(in, data, n_in) result(status)
+integer function PARSE_STRING_NAME_1D(in, data, n_in, ch_ids) result(status)
    implicit none
 
    character(len=*),  intent(in) :: in
    PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: data(:)
    integer, optional, intent(in) :: n_in
+   integer, optional, intent(in) :: ch_ids(:)
 
-   character(len=path_length)   :: val, remnant
-   integer                      :: i, n, id
-   character(len=1)             :: delim
+   character(len=path_length)    :: val, remnant
+   integer                       :: i, n, id
+   character(len=1)              :: delim
 
    status = 0
 
@@ -31,7 +32,7 @@ integer function PARSE_STRING_NAME_1D(in, data, n_in) result(status)
    do while (id > 0 .and. i < n)
       ! Cast string
       val = adjustl(remnant(:id-1))
-      status = PARSE_STRING_NAME_0D(val, data(i))
+      status = PARSE_STRING_NAME_0D(val, data(i), ch_ids=ch_ids)
       if (status /= 0) return
 
       ! Increment to next comma
@@ -51,16 +52,17 @@ integer function PARSE_STRING_NAME_1D(in, data, n_in) result(status)
    endif
 
    ! Final element
-   status = PARSE_STRING_NAME_0D(remnant, data(i))
+   status = PARSE_STRING_NAME_0D(remnant, data(i), ch_ids=ch_ids)
 
 end function PARSE_STRING_NAME_1D
 
-integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in) result(status)
+integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in, ch_ids) result(status)
    implicit none
 
    character(len=*),  intent(in) :: in
    PARSE_STRING_TYPE(kind=PARSE_STRING_KIND), intent(out) :: data(:,:)
    integer, optional, intent(in) :: n1_in, n2_in
+   integer, optional, intent(in) :: ch_ids(:)
 
    character(len=path_length)   :: val, remnant
    integer                      :: i, n1, n2, id
@@ -93,7 +95,7 @@ integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in) result(status)
    do while (id > 0 .and. i < n2)
       ! Cast string
       val = adjustl(remnant(:id-1))
-      status = PARSE_STRING_NAME_1D(val, data(:, i), n1)
+      status = PARSE_STRING_NAME_1D(val, data(:, i), n1, ch_ids=ch_ids)
       if (status /= 0) return
 
       ! Increment to next comma
@@ -113,6 +115,6 @@ integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in) result(status)
    endif
 
    ! Final element
-   status = PARSE_STRING_NAME_1D(remnant, data(:, i), n1)
+   status = PARSE_STRING_NAME_1D(remnant, data(:, i), n1, ch_ids=ch_ids)
 
 end function PARSE_STRING_NAME_2D
