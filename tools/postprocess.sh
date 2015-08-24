@@ -155,7 +155,7 @@ rm -f $driver_file_base*
 #------------------------------------------------------------------------------
 # call IDL routine to compare this output to the previous version
 if (( $do_compare && ("$?" == 0) )); then
-    $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav \
+    $idl_folder/idl -rt=$tool_folder/compare_orac_out.sav -quiet \
         -args $out_folder $revision ${#label[@]} ${label[@]} \
               2 primary secondary $thresh
 fi

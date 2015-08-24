@@ -80,6 +80,9 @@
 ;-
 
 PRO COMPARE_ORAC_OUT
+   quiet  = !quiet
+   !quiet = 1
+
    args=COMMAND_LINE_ARGS(count=nargs)
    fdr=args[0]
    revision=args[1]
@@ -147,4 +150,5 @@ PRO COMPARE_ORAC_OUT
       if pass then PRINT_COLOUR, '--- PASSED ---', /green
    endforeach
 
+   !quiet = quiet
 END
