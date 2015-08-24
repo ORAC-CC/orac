@@ -388,7 +388,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
       if (btest(SPixel%QC, SPixFGAP)) write(bkp_lun,*)'SPixFGAP'
       if (btest(SPixel%QC, SPixNoProc)) write(bkp_lun,*)'SPixNoProc '
 
-      do view=1,Ctrll%Ind%NViews
+      do view=1,Ctrl%Ind%NViews
          write(bkp_lun,'(a,i2,2(a,f9.4))')' View ',view,', Sec_o: ', &
               SPixel%Geom%SEC_o(view), ' Sec_v: ',SPixel%Geom%SEC_v(view)
       end do
