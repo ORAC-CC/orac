@@ -240,6 +240,13 @@ module ECP_constants
    integer, parameter :: CostBit          = 0
 
 
+   ! Retrieval approaches (for Ctrl%Approach)
+   integer, parameter :: CldWat = 1
+   integer, parameter :: CldIce = 2
+   integer, parameter :: AerOx  = 3
+   integer, parameter :: AerSw  = 4
+   integer, parameter :: AshEyj = 5
+
    ! General format statements
    character(len=*), parameter :: FNForm       = '(a2048)' ! Format for I/O of filenames
    character(len=*), parameter :: LUTArrayForm = '(10E14.6)'

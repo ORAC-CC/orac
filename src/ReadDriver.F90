@@ -318,6 +318,34 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       call h_p_e('Ctrl%LUTClass')
    if (verbose) write(*,*)'Ctrl%LUTClass: ',trim(Ctrl%LUTClass)
 
+   ! Selection of retrieval approach currently optional
+   Ctrl%Approach = -1
+   if (parse_driver(dri_lun, line, label) == 0) then
+      call clean_driver_label(label)
+      if (label == 'CTRL%APPROACH') then
+         if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
+      else
+         ! Undo read so optional lines still work
+         backspace dri_lun
+      end if
+   end if
+   if (Ctrl%Approach == -1) then
+      ! Approach not set, so deduce from LUTClass
+      if (Ctrl%LUTClass(1:3) == 'WAT') then
+         Ctrl%Approach = CldWat
+      else if (Ctrl%LUTClass(1:3) == 'ICE') then
+         Ctrl%Approach = CldIce
+      else if (Ctrl%LUTClass(1:3) == 'EYJ') then
+         Ctrl%Approach = AshEyj
+      else if (Ctrl%LUTClass(1:1) == 'A') then
+         Ctrl%Approach = AerOx
+      else
+         write(*,*) 'ERROR: Read_Driver(): Cannot determine retrieval '// &
+              'approach from LUTClass. Please set CTRL%APPROACH.'
+         stop error_stop_code
+      end if
+   end if
+
 
    !----------------------------------------------------------------------------
    ! Set the rest of the Ctrl structure
@@ -327,7 +355,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    outname=trim(scratch_dir)//'/'//trim(input_filename)//trim(Ctrl%LUTClass)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
-   Ctrl%FID%BkP          = trim(outname)//'bkp'
+   Ctrl%FID%BkP          = trim(outname)//'.bkp'
    if (verbose) then
       write(*,*) 'Ctrl%FID%L2_primary: ', trim(Ctrl%FID%L2_primary)
       write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
@@ -384,22 +412,22 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%process_cloudy_only    = .true.
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value
-   select case (trim(Ctrl%LUTClass))
-   case('WAT') ! ACP: Explicitly excludes CLEAR and PROB_CLEAR, didn't originally
+   if (Ctrl%Approach == CldWat) then
+      ! ACP: Explicitly excludes CLEAR and PROB_CLEAR, didn't originally
       Ctrl%NTypes_to_process   = 5
       Ctrl%Types_to_process(1) = FOG_TYPE
       Ctrl%Types_to_process(2) = WATER_TYPE
       Ctrl%Types_to_process(3) = SUPERCOOLED_TYPE
       Ctrl%Types_to_process(4) = MIXED_TYPE
       Ctrl%Types_to_process(5) = PROB_OPAQUE_ICE_TYPE
-   case('ICE')
+   else if (Ctrl%Approach == CldIce) then
       Ctrl%NTypes_to_process   = 5
       Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
       Ctrl%Types_to_process(2) = CIRRUS_TYPE
       Ctrl%Types_to_process(3) = OVERLAP_TYPE
       Ctrl%Types_to_process(4) = MIXED_TYPE
       Ctrl%Types_to_process(5) = PROB_OPAQUE_ICE_TYPE
-   case default
+   else
       ! Accept everything
       Ctrl%NTypes_to_process   = 10
       Ctrl%Types_to_process(1) = CLEAR_TYPE
@@ -412,7 +440,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%Types_to_process(8) = CIRRUS_TYPE
       Ctrl%Types_to_process(9) = OVERLAP_TYPE
       Ctrl%Types_to_process(10)= PROB_OPAQUE_ICE_TYPE
-   end select
+   end if
 
    Ctrl%CloudType = 1 ! use this to select which coreg/homog errors to use
 
@@ -502,8 +530,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Set default a priori and first guess values. Quite often these values have a
    ! very high uncertainty
-   select case (trim(Ctrl%LUTClass))
-   case('WAT')
+   if (Ctrl%Approach == CldWat) then
       Ctrl%XB(ITau) = 0.8
       Ctrl%XB(IRe) = 12.
       Ctrl%XB(IPc) = 900.
@@ -515,7 +542,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%X0(IPc) = 900.
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
-   case('ICE')
+   else if (Ctrl%Approach == CldIce) then
       Ctrl%XB(ITau) = 0.8
       Ctrl%XB(IRe) = 30.
       Ctrl%XB(IPc) = 400.
@@ -527,7 +554,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%X0(IPc) = 400.
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
-   case('EYJ')
+   else if (Ctrl%Approach == AshEyj) then
       Ctrl%XB(ITau) = 0.18
       Ctrl%XB(IRe) = 0.7
       Ctrl%XB(IPc) = 600.
@@ -539,11 +566,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%X0(IPc) = 600.
       Ctrl%X0(IFr) = 1.
       Ctrl%X0(ITs) = 300.
-   case default
+   else
       write(*,*) 'ERROR: ReadDriver(): Unsupported LUT class: ', &
                  trim(Ctrl%LUTClass)
       stop BadLUTClass
-   end select
+   end if
    Ctrl%XB(IRs(:,IRho_0V)) = 0.01
    Ctrl%XB(IRs(:,IRho_0D)) = 0.01
    Ctrl%XB(IRs(:,IRho_DV)) = 0.01
@@ -555,7 +582,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
 
    ! Set default a priori error covariance
-   if (trim(Ctrl%LUTClass) .eq. 'EYJ') then
+   if (Ctrl%Approach == AshEyj) then
       Ctrl%Sx(ITau) = 1.0e+08 ! optical depth
       Ctrl%Sx(IRe) = 1.0e+08 ! effective radii
       Ctrl%Sx(IPc) = 1.0e+08 ! ctp
@@ -704,7 +731,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Lower limit on state
    Ctrl%Invpar%XLLim(ITau)  = -3.0
-   if (trim(Ctrl%LUTClass) .eq. 'EYJ') then
+   if (Ctrl%Approach == AshEyj) then
       Ctrl%Invpar%XLLim(IRe) = 0.01
    else
       Ctrl%Invpar%XLLim(IRe) = 0.1
@@ -720,11 +747,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Upper limit on state
    Ctrl%Invpar%XULim(ITau) = 2.408
-   if (trim(Ctrl%LUTClass) .eq. 'WAT') then
+   if (Ctrl%Approach == CldWat) then
       Ctrl%Invpar%XULim(IRe) = 35.0
-   else if (trim(Ctrl%LUTClass) .eq. 'ICE') then
+   else if (Ctrl%Approach == CldIce) then
       Ctrl%Invpar%XULim(IRe) = 100.0
-   else if (trim(Ctrl%LUTClass) .eq. 'EYJ') then
+   else if (Ctrl%Approach == AshEyj) then
       Ctrl%Invpar%XULim(IRe) = 20.0
    end if
    Ctrl%Invpar%XULim(IPc) = 1200.0

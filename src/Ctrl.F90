@@ -270,6 +270,8 @@ module CTRL_def
                                                    ! run the retrieval
       integer                :: NTypes_to_process  ! Number of valid values in above
       character(3)           :: LUTClass           ! Name of LUT to use
+      integer                :: Approach           ! Controls manner of retrieval
+                                                   ! performed. See ECPConstants.
       integer                :: CloudType          ! Cloud type flag, distinct from
                                                    ! cloud class, used to define
                                                    ! the homog/coreg noise.

@@ -194,7 +194,7 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
       ! When inside the range of the temperature profile, search it for the
       ! first set of levels which bound the desired value. Select the direction
       ! of that search dependent on the cloud phase.
-      if (trim(Ctrl%LUTClass) == 'WAT') then
+      if (Ctrl%Approach == CldWat) then
          ! Search from ground up (to trap under inversions)
          k_int = nz
          step  = -1

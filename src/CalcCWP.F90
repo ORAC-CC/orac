@@ -55,10 +55,10 @@ subroutine Calc_CWP(Ctrl, SPixel)
    real :: al10e2 =.188612 ! =al10e*al10e
 
 
-   if (trim(Ctrl%LUTClass) == 'WAT') then
+   if (Ctrl%Approach == CldWat) then
       rho=rhowat
       fac=(4./3.)*rho/qextwat
-   else if (trim(Ctrl%LUTClass) == 'ICE') then
+   else if (Ctrl%Approach == CldIce) then
       rho=rhoice
       fac=(4./3.)*rho/qextice
    else

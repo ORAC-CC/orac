@@ -83,6 +83,17 @@ integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = SelmMeas
          case('SELMAUX')
             out = SelmAux
+         ! Retrieval approaches
+         case('CLDWAT')
+            out = CldWat
+         case('CLDICE')
+            out = CldIce
+         case('AEROX')
+            out = AerOx
+         case('AERSW')
+            out = AerSw
+         case('ASHEYJ')
+            out = AshEyj
          ! RTM interpolation methods
          case('RTMINTMETHLINEAR')
             out = RTMIntMethLinear
