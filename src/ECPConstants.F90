@@ -192,6 +192,11 @@ module ECP_constants
    integer, parameter :: IRho_DV          = 3       !  "    "  rho_dv  "   "   "
    integer, parameter :: IRho_DD          = 4       !  "    "  rho_dd  "   "   "
 
+   ! Index of B in GetSurface and ReadDriver
+   integer, parameter :: ISea             = 1
+   integer, parameter :: ILand            = 2
+   integer, parameter :: MaxSurf          = 2
+
    ! 3rd index of d_CRP array in functions FM_Thermal, FM_Solar and CRP LUT
    ! interpolation functions. Also used as index of state vector array X in FM
    ! and Invert_Marquardt

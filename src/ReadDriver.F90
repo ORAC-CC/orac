@@ -89,11 +89,17 @@
 ! 2015/03/11, GM: Added an error check for unrecognised instruments.
 ! 2015/05/25, GM: Get rid of filename Diag and flags Diagl. Neither was being
 !    used and have been rotting.
+! 2015/06/02, AP: Additions for aerosol code.
 ! 2015/07/22, AP: Use parse_user_text for arguments which set variables that
 !    are set using ECP_Constants parameters within the code.
 ! 2015/07/29, GM: Removed unused ash CloudClasses.
 ! 2015/07/29, GM: Added missing initializations of Ctrl%RS%B for MODIS.
 ! 2015/07/31, GM: Changed a priori values and uncertainties for EYJ.
+! 2015/08/10, AP: Consolidate X_Dy, X_Tw, X_Ni into one variable.
+! 2015/08/18, AP: Added optional argument specifying the ID# for each channel
+!    such that CHXX style indexing can be used.
+! 2015/08/19, AP: Extensive tidying using the switch function. Tidying of Ctrl.
+!    Eliminated XI as not meaningful.
 !
 ! $Id$
 !
@@ -105,7 +111,13 @@
 ! to be added to this routine
 !-------------------------------------------------------------------------------
 module read_driver_m
+   implicit none
 
+   interface switch
+      module procedure &
+           switch_logic, switch_byte,  switch_sint, switch_lint, &
+           switch_sreal, switch_dreal, switch_char
+   end interface switch
 contains
 
 #ifdef WRAPPER
@@ -147,8 +159,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    integer, allocatable, dimension(:) :: channel_ids_instr, channel_proc_flag
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
    real,    allocatable, dimension(:) :: channel_wvl
+   integer, allocatable, dimension(:) :: solar_ids
    integer                            :: Nx_Dy, Nx_Tw, Nx_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
+   integer                            :: a ! Short name for CtrL%Approach
+   real                               :: wvl_threshold
 
 
    !----------------------------------------------------------------------------
@@ -215,8 +230,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%FID%SAD_Dir  = trim(Ctrl%FID%SAD_Dir)//'/'
    if (verbose) then
       write(*,*) 'Ctrl%FID%Data_Dir: ',trim(Ctrl%FID%Data_Dir)
-      write(*,*) 'Ctrl%FID%Out_Dir: ',trim(Ctrl%FID%Out_Dir)
-      write(*,*) 'Ctrl%FID%SAD_Dir: ',trim(Ctrl%FID%SAD_Dir)
+      write(*,*) 'Ctrl%FID%Out_Dir: ', trim(Ctrl%FID%Out_Dir)
+      write(*,*) 'Ctrl%FID%SAD_Dir: ', trim(Ctrl%FID%SAD_Dir)
    end if
 
    root_filename   = trim(Ctrl%FID%Data_Dir)//trim(Ctrl%FID%Filename)
@@ -377,440 +392,150 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       end if
    end if
 
+   ! Use a short name for Ctrl%Approach
+   a = Ctrl%Approach
 
    !----------------------------------------------------------------------------
-   ! Set the rest of the Ctrl structure
+   ! Set default values of the Ctrl structure
    !----------------------------------------------------------------------------
    Ctrl%Run_ID = 'none'
 
-   ! The level of breakpoint output when the code is compiled with breakpoint
-   ! option Ctrl%Bkpl
-   Ctrl%Bkpl=3
+   !----------------------- CTRL%RS -----------------------
+   Ctrl%RS%RsSelm        = switch(a, Default=SelmAux)
+   Ctrl%RS%use_full_brdf = switch(a, Default=.true.,   AerSw=.false.)
+   Ctrl%RS%Sb            = switch(a, Default=0.2,      Aer=0.05)
+   Ctrl%RS%Cb            = switch(a, Default=0.2,      Aer=0.4)
 
+   ! Select assumed surface reflectance based on wavelength
+   wvl_threshold = 0.05
+   allocate(Ctrl%RS%B(Ctrl%Ind%NSolar, MaxSurf))
+   do i = 1, Ctrl%Ind%NSolar
+      ii = Ctrl%Ind%ICh(Ctrl%Ind%YSolar(i))
 
-   Ctrl%RTMIntSelm = RTMIntMethLinear
-   Ctrl%LUTIntSelm = LUTIntMethLinear
+      if (abs(channel_wvl(ii) - 0.55) < wvl_threshold) then      ! AATSR Ch1
+         Ctrl%RS%B(i,ISea)  = 0.05 !0.01 (these are values from aerosol code)
+         Ctrl%RS%B(i,ILand) = 0.15 !0.20
+      else if (abs(channel_wvl(ii) - 0.67) < wvl_threshold) then ! AATSR Ch2
+         Ctrl%RS%B(i,ISea)  = 0.02 !0.005
+         Ctrl%RS%B(i,ILand) = 0.10 !0.15
+      else if (abs(channel_wvl(ii) - 0.87) < wvl_threshold) then ! AATSR Ch3
+         Ctrl%RS%B(i,ISea)  = 0.01 !0.0001
+         Ctrl%RS%B(i,ILand) = 0.01 !0.10
+      else if (abs(channel_wvl(ii) - 1.6) < wvl_threshold) then  ! AATSR Ch4
+         Ctrl%RS%B(i,ISea)  = 0.01 !0.00
+         Ctrl%RS%B(i,ILand) = 0.01 !0.01
+      else ! No opinion on channel
+         Ctrl%RS%B(i,:)     = 0.0
+      end if
+   end do
 
+   !----------------------- CTRL%EqMPN --------------------
+   Ctrl%EqMPN%Rs     = 1
+   Ctrl%EqMPN%Homog  = switch(a, Default=.true.,  Aer=.false.)
+   Ctrl%EqMPN%Coreg  = switch(a, Default=.true.,  Aer=.false.)
 
-   Ctrl%MaxSolZen  = 80 ! max solar zenith angle
-   Ctrl%MaxSatZen  = 90 ! max satellite zenith angle
-   Ctrl%Sunset     = 90 ! used to set twilight option
+   !----------------------- CTRL%Invpar -------------------
+   Ctrl%Invpar%ConvTest = switch(a, Default=.false., Aer=.true.)
+   Ctrl%Invpar%MqStart  = switch(a, Default=0.001)
+   Ctrl%Invpar%MqStep   = switch(a, Default=10.0)
+   Ctrl%Invpar%MaxIter  = switch(a, Default=40,      Aer=25)
+   Ctrl%Invpar%Ccj      = switch(a, Default=0.05,    AerSw=0.001)
 
+   ! Scale used to avoid pivots in matrix inversion. Terms that a mode shouldn't
+   ! touch are zeroed to
+   ! NOTES: 1) Aerosol LUTs use log Re while cloud uses linear Re.
+   ! 2) For the Swansea retrieval, IRho_DD is equivalent to ISS.
+   Ctrl%Invpar%XScale(ITau)           = switch(a, Default=10.0,   AerSw=1.0)
+   Ctrl%Invpar%XScale(IRe)            = switch(a, Default=1.0,    AerOx=10.0)
+   Ctrl%Invpar%XScale(IPc)            = switch(a, Default=1.0)
+   Ctrl%Invpar%XScale(IFr)            = switch(a, Default=1000.0)
+   Ctrl%Invpar%XScale(ITs)            = switch(a, Default=1.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch(a, Default=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch(a, Default=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch(a, Default=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch(a, Default=1000.0, AerSw=1.0)
+   Ctrl%Invpar%XScale(ISP)            = switch(a, Default=1.0)
+   ! Lower limit
+   Ctrl%Invpar%XLLim(ITau)            = switch(a, Default=-3.0,   Aer=-2.0)
+   Ctrl%Invpar%XLLim(IRe)             = switch(a, Default=0.1,    Aer=-2.0, &
+                                                                  AshEyj=0.01)
+   Ctrl%Invpar%XLLim(IPc)             = switch(a, Default=10.0)
+   Ctrl%Invpar%XLLim(IFr)             = switch(a, Default=0.0)
+   Ctrl%Invpar%XLLim(ITs)             = switch(a, Default=250.0)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_0V))  = switch(a, Default=0.00001)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_0D))  = switch(a, Default=0.00001)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_DV))  = switch(a, Default=0.00001)
+   Ctrl%Invpar%XLLim(IRs(:,IRho_DD))  = switch(a, Default=0.00001)
+   Ctrl%Invpar%XLLim(ISP)             = switch(a, Default=0.00001)
+   ! Upper limit
+   Ctrl%Invpar%XULim(ITau)            = switch(a, Default=2.408,  AerSw=0.7)
+   Ctrl%Invpar%XULim(IRe)             = switch(a, Default=1.0,    AshEyj=20.0, &
+                                                                  CldWat=35.0, &
+                                                                  CldIce=100.0)
+   Ctrl%Invpar%XULim(IPc)             = switch(a, Default=1200.0)
+   Ctrl%Invpar%XULim(IFr)             = switch(a, Default=1.0)
+   Ctrl%Invpar%XULim(ITs)             = switch(a, Default=320.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch(a, Default=1.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_0D))  = switch(a, Default=1.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch(a, Default=1.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch(a, Default=1.0,    AerSw=100.0)
+   Ctrl%Invpar%XULim(ISP)             = switch(a, Default=100.0)
 
-   ! Set stuff in Ctrl%Ind
+   !----------------------- CTRL%QC -----------------------
+   Ctrl%QC%MaxJ                 = switch(a, Default=100.0, Aer=4.0)
+   Ctrl%QC%MaxS(ITau)           = switch(a, Default=0.08)
+   Ctrl%QC%MaxS(IRe)            = switch(a, Default=3.0)
+   Ctrl%QC%MaxS(IPc)            = switch(a, Default=200.0)
+   Ctrl%QC%MaxS(IFr)            = switch(a, Default=0.2)
+   Ctrl%QC%MaxS(ITs)            = switch(a, Default=2.0)
+   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = switch(a, Default=0.2) ! No idea of a sensible
+   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = switch(a, Default=0.2) ! value for these
+   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = switch(a, Default=0.2)
+   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch(a, Default=0.2,   AerSw=10.0)
+   Ctrl%QC%MaxS(ISP)            = switch(a, Default=10.0)
 
-   ! For each of the day, twilight, night active state variable arrays, read the
-   ! array and set up the corresponding inactive array.
-
-   ! Day options
-   Nx_Dy = 4 ! number of active state variables
-
-   X_Dy(1) = ITau ! indices of state parameters
-   X_Dy(2) = IRe
-   X_Dy(3) = IPc
-   X_Dy(4) = ITs
-
-   ! Twilight options
-   Nx_Tw = 2  ! number of active state variables
-
-   X_Tw(1) = IPc ! indices of state parameters
-   X_Tw(2) = ITs
-
-   ! Night options
-   Nx_Ni = 2 ! number of active state variables
-
-   X_Ni(1) = IPc ! indices of state parameters
-   X_Ni(2) = ITs
-
-
-   ! Use default processing (i.e. process everything in file)
+   !------------------- CTRL START/END POINT --------------
+   ! Process entire file
    Ctrl%Ind%X0 = 0
    Ctrl%Ind%X1 = 0
    Ctrl%Ind%Y0 = 0
    Ctrl%Ind%Y1 = 0
 
+   !------------ CTRL ILLUMINATION CONDITIONS -------------
+   Ctrl%MaxSolZen = 80. ! Maximum solar zenith angle
+   Ctrl%MaxSatZen = 90. ! Maximum satellite zenith angle
+   Ctrl%MinRelAzi = 0.  ! Used to remove sunglint (0 = no test)
+   Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
-   Ctrl%process_cloudy_only    = .true.
+   !----------------------- CTRL SWITCHES -----------------
+   Ctrl%LUTIntSelm = switch(a, Default=LUTIntMethLinear)
+   Ctrl%RTMIntSelm = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
+   Ctrl%CloudType  = switch(a, Default=1,                Aer=2)
+   Ctrl%Bkpl                = 3
+   Ctrl%Max_SDAD            = 10.0
+   Ctrl%sabotage_inputs     = .false.
+   Ctrl%process_cloudy_only = .true.
+
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value
    if (Ctrl%Approach == CldWat) then
-      ! ACP: Explicitly excludes CLEAR and PROB_CLEAR, didn't originally
-      Ctrl%NTypes_to_process   = 5
+      Ctrl%NTypes_to_process   = 3
       Ctrl%Types_to_process(1) = FOG_TYPE
       Ctrl%Types_to_process(2) = WATER_TYPE
       Ctrl%Types_to_process(3) = SUPERCOOLED_TYPE
-      Ctrl%Types_to_process(4) = MIXED_TYPE
-      Ctrl%Types_to_process(5) = PROB_OPAQUE_ICE_TYPE
    else if (Ctrl%Approach == CldIce) then
-      Ctrl%NTypes_to_process   = 5
+      Ctrl%NTypes_to_process   = 3
       Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
       Ctrl%Types_to_process(2) = CIRRUS_TYPE
       Ctrl%Types_to_process(3) = OVERLAP_TYPE
-      Ctrl%Types_to_process(4) = MIXED_TYPE
-      Ctrl%Types_to_process(5) = PROB_OPAQUE_ICE_TYPE
    else
       ! Accept everything
-      Ctrl%NTypes_to_process   = 10
-      Ctrl%Types_to_process(1) = CLEAR_TYPE
-      Ctrl%Types_to_process(2) = PROB_CLEAR_TYPE
-      Ctrl%Types_to_process(3) = FOG_TYPE
-      Ctrl%Types_to_process(4) = WATER_TYPE
-      Ctrl%Types_to_process(5) = SUPERCOOLED_TYPE
-      Ctrl%Types_to_process(6) = MIXED_TYPE
-      Ctrl%Types_to_process(7) = OPAQUE_ICE_TYPE
-      Ctrl%Types_to_process(8) = CIRRUS_TYPE
-      Ctrl%Types_to_process(9) = OVERLAP_TYPE
-      Ctrl%Types_to_process(10)= PROB_OPAQUE_ICE_TYPE
+      Ctrl%NTypes_to_process   = MaxTypes
+      Ctrl%Types_to_process    = [(i-1, i = 1, MaxTypes)]
    end if
 
-   Ctrl%CloudType = 1 ! use this to select which coreg/homog errors to use
-
-
-   ! Set a priori options
-
-   ! Day
-   Ctrl%AP(ITau,IDay)             = SelmCtrl
-   Ctrl%AP(IRe,IDay)              = SelmCtrl
-   Ctrl%AP(IPc,IDay)              = SelmCtrl
-   Ctrl%AP(IFr,IDay)              = SelmMeas
-   Ctrl%AP(ITs,IDay)              = SelmAux
-   Ctrl%AP(IRs(:,IRho_0V),IDay)   = SelmAux
-   Ctrl%AP(IRs(:,IRho_0D),IDay)   = SelmAux
-   Ctrl%AP(IRs(:,IRho_DV),IDay)   = SelmAux
-   Ctrl%AP(IRs(:,IRho_DD),IDay)   = SelmAux
-   Ctrl%AP(ISP,IDay)              = SelmCtrl
-
-   ! Twilight
-   Ctrl%AP(ITau,ITwi)             = SelmCtrl
-   Ctrl%AP(IRe,ITwi)              = SelmCtrl
-   Ctrl%AP(IPc,ITwi)              = SelmCtrl
-   Ctrl%AP(IFr,ITwi)              = SelmMeas
-   Ctrl%AP(ITs,ITwi)              = SelmAux
-   Ctrl%AP(IRs(:,IRho_0V),ITwi)   = SelmAux
-   Ctrl%AP(IRs(:,IRho_0D),ITwi)   = SelmAux
-   Ctrl%AP(IRs(:,IRho_DV),ITwi)   = SelmAux
-   Ctrl%AP(IRs(:,IRho_DD),ITwi)   = SelmAux
-   Ctrl%AP(ISP,ITwi)              = SelmCtrl
-
-   ! Night
-   Ctrl%AP(ITau,INight)           = SelmCtrl
-   Ctrl%AP(IRe,INight)            = SelmCtrl
-   Ctrl%AP(IPc,INight)            = SelmCtrl
-   Ctrl%AP(IFr,INight)            = SelmMeas
-   Ctrl%AP(ITs,INight)            = SelmAux
-   Ctrl%AP(IRs(:,IRho_0V),INight) = SelmAux
-   Ctrl%AP(IRs(:,IRho_0D),INight) = SelmAux
-   Ctrl%AP(IRs(:,IRho_DV),INight) = SelmAux
-   Ctrl%AP(IRs(:,IRho_DD),INight) = SelmAux
-   Ctrl%AP(ISP,INight)            = SelmCtrl
-
-
-   ! Set first guess options (Tau,Re,Pc,F,Ts)
-   ! What do the constants mean:
-   ! SelmCtrl: Static a priori variable i.e does not change
-   ! SelmMeas: Use a dynamically chosen first guess dependant on measurements
-   ! SelmAux: Use a value from an external auxiliary file
-   ! Ctrl%FG(state variable, time of day)
-
-   ! Day
-   Ctrl%FG(ITau,IDay)             = SelmCtrl
-   Ctrl%FG(IRe,IDay)              = SelmCtrl
-   Ctrl%FG(IPc,IDay)              = SelmMeas ! From IR profile
-   Ctrl%FG(IFr,IDay)              = SelmCtrl
-   Ctrl%FG(ITs,IDay)              = SelmAux  ! From ECMWF file
-   Ctrl%FG(IRs(:,IRho_0V),IDay)   = SelmAux  ! From MODIS file
-   Ctrl%FG(IRs(:,IRho_0D),IDay)   = SelmAux
-   Ctrl%FG(IRs(:,IRho_DV),IDay)   = SelmAux
-   Ctrl%FG(IRs(:,IRho_DD),IDay)   = SelmAux
-   Ctrl%FG(ISP,IDay)              = SelmCtrl
-
-   ! Twilight
-   Ctrl%FG(ITau,ITwi)             = SelmCtrl
-   Ctrl%FG(IRe,ITwi)              = SelmCtrl
-   Ctrl%FG(IPc,ITwi)              = SelmMeas
-   Ctrl%FG(IFr,ITwi)              = SelmCtrl
-   Ctrl%FG(ITs,ITwi)              = SelmAux
-   Ctrl%FG(IRs(:,IRho_0V),ITwi)   = SelmAux
-   Ctrl%FG(IRs(:,IRho_0D),ITwi)   = SelmAux
-   Ctrl%FG(IRs(:,IRho_DV),ITwi)   = SelmAux
-   Ctrl%FG(IRs(:,IRho_DD),ITwi)   = SelmAux
-   Ctrl%FG(ISP,ITwi)              = SelmCtrl
-
-   ! Night
-   Ctrl%FG(ITau,INight)           = SelmCtrl
-   Ctrl%FG(IRe,INight)            = SelmCtrl
-   Ctrl%FG(IPc,INight)            = SelmMeas
-   Ctrl%FG(IFr,INight)            = SelmCtrl
-   Ctrl%FG(ITs,INight)            = SelmAux
-   Ctrl%FG(IRs(:,IRho_0V),INight) = SelmAux
-   Ctrl%FG(IRs(:,IRho_0D),INight) = SelmAux
-   Ctrl%FG(IRs(:,IRho_DV),INight) = SelmAux
-   Ctrl%FG(IRs(:,IRho_DD),INight) = SelmAux
-   Ctrl%FG(ISP,INight)            = SelmCtrl
-
-
-   ! Set default a priori and first guess values. Quite often these values have a
-   ! very high uncertainty
-   if (Ctrl%Approach == CldWat) then
-      Ctrl%XB(ITau) = 0.8
-      Ctrl%XB(IRe) = 12.
-      Ctrl%XB(IPc) = 900.
-      Ctrl%XB(IFr) = 1.
-      Ctrl%XB(ITs) = 300.0
-
-      Ctrl%X0(ITau) = 0.8
-      Ctrl%X0(IRe) = 12.
-      Ctrl%X0(IPc) = 900.
-      Ctrl%X0(IFr) = 1.
-      Ctrl%X0(ITs) = 300.
-   else if (Ctrl%Approach == CldIce) then
-      Ctrl%XB(ITau) = 0.8
-      Ctrl%XB(IRe) = 30.
-      Ctrl%XB(IPc) = 400.
-      Ctrl%XB(IFr) = 1.
-      Ctrl%XB(ITs) = 300.0
-
-      Ctrl%X0(ITau) = 0.8
-      Ctrl%X0(IRe) = 30.
-      Ctrl%X0(IPc) = 400.
-      Ctrl%X0(IFr) = 1.
-      Ctrl%X0(ITs) = 300.
-   else if (Ctrl%Approach == AshEyj) then
-      Ctrl%XB(ITau) = 0.18
-      Ctrl%XB(IRe) = 0.7
-      Ctrl%XB(IPc) = 600.
-      Ctrl%XB(IFr) = 1.
-      Ctrl%XB(ITs) = 300.
-
-      Ctrl%X0(ITau) = 0.18
-      Ctrl%X0(IRe) = 0.7
-      Ctrl%X0(IPc) = 600.
-      Ctrl%X0(IFr) = 1.
-      Ctrl%X0(ITs) = 300.
-   else
-      write(*,*) 'ERROR: ReadDriver(): Unsupported LUT class: ', &
-                 trim(Ctrl%LUTClass)
-      stop BadLUTClass
-   end if
-   Ctrl%XB(IRs(:,IRho_0V)) = 0.01
-   Ctrl%XB(IRs(:,IRho_0D)) = 0.01
-   Ctrl%XB(IRs(:,IRho_DV)) = 0.01
-   Ctrl%XB(IRs(:,IRho_DD)) = 0.01
-   Ctrl%X0(IRs(:,IRho_0V)) = 0.01
-   Ctrl%X0(IRs(:,IRho_0D)) = 0.01
-   Ctrl%X0(IRs(:,IRho_DV)) = 0.01
-   Ctrl%X0(IRs(:,IRho_DD)) = 0.01
-
-
-   ! Set default a priori error covariance
-   if (Ctrl%Approach == AshEyj) then
-      Ctrl%Sx(ITau) = 1.0e+08 ! optical depth
-      Ctrl%Sx(IRe) = 1.0e+08 ! effective radii
-      Ctrl%Sx(IPc) = 1.0e+08 ! ctp
-      Ctrl%Sx(IFr) = 1.0e+08 ! fraction
-      Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
-   else
-      Ctrl%Sx(ITau) = 1.0e+08 ! optical depth
-      Ctrl%Sx(IRe) = 1.0e+08 ! effective radii
-      Ctrl%Sx(IPc) = 1.0e+08 ! ctp
-      Ctrl%Sx(IFr) = 1.0e+08 ! fraction
-      Ctrl%Sx(ITs) = 1.0e+00 ! surface temperature
-   end if
-   Ctrl%Sx(IRs(:,IRho_0V)) = 0.05
-   Ctrl%Sx(IRs(:,IRho_0D)) = 0.05
-   Ctrl%Sx(IRs(:,IRho_DV)) = 0.05
-   Ctrl%Sx(IRs(:,IRho_DD)) = 0.05
-
-   Ctrl%Max_SDAD = 10 ! No. of pixels where state is valid for SDAD setting
-
-
-   allocate(Ctrl%Sy(Ctrl%Ind%Ny,Ctrl%Ind%Ny))
-
-
-   ! Set Ctrl%RS
-
-   Ctrl%RS%RsSelm = SelmAux ! Selection method
-   Ctrl%RS%use_full_brdf = .true.
-
-   ! Set default surface reflectance values for channels used.
-   ! Additional instruments/channels need to be added explicitly.
-   allocate(Ctrl%RS%B(Ctrl%Ind%NSolar,2))
-   if (Ctrl%InstName(1:5) .eq. 'AATSR') then
-      do i=1, Ctrl%Ind%NSolar
-         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
-         case(1)
-            Ctrl%RS%B(i,1) = 0.05
-            Ctrl%RS%B(i,2) = 0.15
-         case(2)
-            Ctrl%RS%B(i,1) = 0.02
-            Ctrl%RS%B(i,2) = 0.10
-         case(3)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(4)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case default
-            Ctrl%RS%B(i,:) = 0.00
-         end select
-      end do
-   else if (Ctrl%InstName(1:5) .eq. 'AVHRR') then
-      do i=1, Ctrl%Ind%NSolar
-         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
-         case(1)
-            Ctrl%RS%B(i,1) = 0.02
-            Ctrl%RS%B(i,2) = 0.10
-         case(2)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(3)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case default
-            Ctrl%RS%B(i,:) = 0.00
-         end select
-      end do
-   else if (Ctrl%InstName(1:5) .eq. 'MODIS') then
-      do i=1, Ctrl%Ind%NSolar
-         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
-         case(1)
-            Ctrl%RS%B(i,1) = 0.02
-            Ctrl%RS%B(i,2) = 0.10
-         case(2)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(3)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(4)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(5)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(6)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(7)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case default
-            Ctrl%RS%B(i,:) = 0.00
-         end select
-      end do
-   else if (Ctrl%InstName(1:6) .eq. 'SEVIRI') then
-      do i=1, Ctrl%Ind%NSolar
-         select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
-         case(1)
-            Ctrl%RS%B(i,1) = 0.02
-            Ctrl%RS%B(i,2) = 0.10
-         case(2)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case(3)
-            Ctrl%RS%B(i,1) = 0.01
-            Ctrl%RS%B(i,2) = 0.01
-         case default
-            Ctrl%RS%B(i,:) = 0.00
-         end select
-      end do
-   else
-      write(*,*) 'ERROR: ReadDriver(): Unsupported instrument: ', &
-                 trim(Ctrl%InstName)
-      stop InstIDInvalid
-   end if
-
-   Ctrl%RS%Sb            = 0.2        ! Percentage error in surface reflectance
-   Ctrl%RS%Cb            = 0.2        ! Correlation between surface reflectance
-
-
-   ! Set Ctrl%EqMPN
-
-   Ctrl%EqMPN%Rs         = 1          ! Flag to use EqMPN from Rs errors
-   Ctrl%EqMPN%Homog      = .true.     ! Flag to use EqMPN from homog errors
-   Ctrl%EqMPN%Coreg      = .true.     ! Flag to use EqMPN from coReg errors
-
-
-   ! Set Ctrl%Invpar
-
-   Ctrl%Invpar%MqStart   = 0.001      ! Marquardt: starting parameter
-   Ctrl%Invpar%MqStep    = 10.0       ! step parameter
-   Ctrl%Invpar%MaxIter   = 40         ! Maximum # of iterations
-   Ctrl%Invpar%Ccj       = 0.05       ! Cost convergence criteria
-
-   Ctrl%Invpar%XScale(ITau) = 10.0    ! Scaling parameters (Tau,Re,Pc,F,Ts)
-   Ctrl%Invpar%XScale(IRe) = 1.0
-   Ctrl%Invpar%XScale(IPc) = 1.0
-   Ctrl%Invpar%XScale(IFr) = 1000.0
-   Ctrl%Invpar%XScale(ITs) = 1.0
-   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = 1000.0
-   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = 1000.0
-   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = 1000.0
-   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = 1000.0
-   Ctrl%Invpar%XScale(ISP) = 1.0
-
-   ! Lower limit on state
-   Ctrl%Invpar%XLLim(ITau)  = -3.0
-   if (Ctrl%Approach == AshEyj) then
-      Ctrl%Invpar%XLLim(IRe) = 0.01
-   else
-      Ctrl%Invpar%XLLim(IRe) = 0.1
-   end if
-   Ctrl%Invpar%XLLim(IPc) = 10.0
-   Ctrl%Invpar%XLLim(IFr) = 1.0
-   Ctrl%Invpar%XLLim(ITs) = 250.0
-   Ctrl%Invpar%XLLim(IRs(:,IRho_0V)) = 0.00001
-   Ctrl%Invpar%XLLim(IRs(:,IRho_0D)) = 0.00001
-   Ctrl%Invpar%XLLim(IRs(:,IRho_DV)) = 0.00001
-   Ctrl%Invpar%XLLim(IRs(:,IRho_DD)) = 0.00001
-   Ctrl%Invpar%XLLim(ISP) = 0.00001
-
-   ! Upper limit on state
-   Ctrl%Invpar%XULim(ITau) = 2.408
-   if (Ctrl%Approach == CldWat) then
-      Ctrl%Invpar%XULim(IRe) = 35.0
-   else if (Ctrl%Approach == CldIce) then
-      Ctrl%Invpar%XULim(IRe) = 100.0
-   else if (Ctrl%Approach == AshEyj) then
-      Ctrl%Invpar%XULim(IRe) = 20.0
-   end if
-   Ctrl%Invpar%XULim(IPc) = 1200.0
-   Ctrl%Invpar%XULim(IFr) = 1.0
-   Ctrl%Invpar%XULim(ITs) = 320.0
-   Ctrl%Invpar%XULim(IRs(:,IRho_0V)) = 1.0
-   Ctrl%Invpar%XULim(IRs(:,IRho_0D)) = 1.0
-   Ctrl%Invpar%XULim(IRs(:,IRho_DV)) = 1.0
-   Ctrl%Invpar%XULim(IRs(:,IRho_DD)) = 1.0
-   Ctrl%Invpar%XULim(ISP) = 100.0
-
-   Ctrl%Invpar%ConvTest   = .false.
-
-
-   ! Set Ctrl%QC
-
-   ! Maximum acceptable retrieval cost
-   Ctrl%QC%MaxJ = 100.0
-
-   ! Maximum acceptable retrieval errors
-   Ctrl%QC%MaxS(ITau) = 0.08
-   Ctrl%QC%MaxS(IRe)  = 3.0
-   Ctrl%QC%MaxS(IPc)  = 200.
-   Ctrl%QC%MaxS(IFr)  = 0.2
-   Ctrl%QC%MaxS(ITs)  = 2.0
-   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = 200.0
-   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = 200.0
-   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = 200.0
-   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = 200.0
-   Ctrl%QC%MaxS(ISP)  = 200.0
-
-
-   ! See sabotage_input_data.F90
-   CTRL%sabotage_inputs = .false.
-
-
+   !---------------- CTRL INDEXING CHANNELS ---------------
    ! See Ctrl.F90 for descriptions of the variables initialized below.
-   nullify(Ctrl%ReChans)
-
    if (Ctrl%InstName(1:5) .eq. 'AATSR') then
       allocate(Ctrl%ReChans(2))
       Ctrl%ReChans = (/ 5, 4 /)
@@ -857,10 +582,149 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%ir_chans  = (/ 4, 9, 10 /)
    end if
 
+   !---------------- CTRL STATE VECTOR SELM ---------------
+   ! Select the manner by which the a priori (AP) and first guess (FG) values
+   ! are set before the retrieval.
+   ! SelmCtrl) Use constant values prescribed in this routine.
+   ! SelmAux)  Use values from some manner of auxiliary data file.
+   ! SelmMeas) Deduce values from the measurement vector (see XMDAD).
+
+   ! Currently these are identical for all illuminations. To be different, make
+   ! three copies of the line and replace : with IDay, ITwi, and INight.
+   Ctrl%AP(ITau,:)           = switch(a, Default=SelmCtrl)
+   Ctrl%AP(IRe,:)            = switch(a, Default=SelmCtrl)
+   Ctrl%AP(IPc,:)            = switch(a, Default=SelmCtrl)
+   Ctrl%AP(IFr,:)            = switch(a, Default=SelmMeas)
+   Ctrl%AP(ITs,:)            = switch(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_0D),:) = switch(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_DV),:) = switch(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux, Aer=SelmCtrl)
+   Ctrl%AP(ISP,:)            = switch(a, Default=SelmCtrl)
+   ! NOTES: 1) The aerosol code used SelmSAD for Tau and Re, which drew the
+   !    values from a separate driver file. This must now be managed by the
+   !    calling script setting CTRL%XB and X0, as that knows what the LUT is.
+   ! 2) Fr uses SelmMeas so the error is set to MDADErrF. Could be tidier.
+
+   Ctrl%FG(ITau,:)           = switch(a, Default=SelmCtrl)
+   Ctrl%FG(IRe,:)            = switch(a, Default=SelmCtrl)
+   Ctrl%FG(IPc,:)            = switch(a, Default=SelmMeas)
+   Ctrl%FG(IFr,:)            = switch(a, Default=SelmCtrl)
+   Ctrl%FG(ITs,:)            = switch(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_0D),:) = switch(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_DV),:) = switch(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux, Aer=SelmCtrl)
+   Ctrl%FG(ISP,:)            = switch(a, Default=SelmCtrl)
+   ! 3) Not sure why Fr is now SelmCtrl.
+
+   !----------- CTRL PRESCRIBED STATE VECTORS -------------
+   ! A priori values
+   Ctrl%XB(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3,&
+                                                      AshEyj=0.18)
+   Ctrl%XB(IRe)            = switch(a, Default=-0.07, AshEyj=0.7, &
+                                                      CldWat=12.,  CldIce=30.)
+   Ctrl%XB(IPc)            = switch(a, Default=900.,  AshEyj=600., CldIce=400.)
+   Ctrl%XB(IFr)            = switch(a, Default=1.0)
+   Ctrl%XB(ITs)            = switch(a, Default=300.0)
+   Ctrl%XB(IRs(:,IRho_0V)) = switch(a, Default=0.01)
+   Ctrl%XB(IRs(:,IRho_0D)) = switch(a, Default=0.01)
+   Ctrl%XB(IRs(:,IRho_DV)) = switch(a, Default=0.01)
+   Ctrl%XB(IRs(:,IRho_DD)) = switch(a, Default=0.01,  AerSw=0.1)
+   Ctrl%XB(ISP)            = switch(a, Default=0.3)
+   ! First guess values
+   Ctrl%X0(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3,&
+                                                      AshEyj=0.18)
+   Ctrl%X0(IRe)            = switch(a, Default=-0.07, AshEyj=0.7, &
+                                                      CldWat=12.,  CldIce=30.)
+   Ctrl%X0(IPc)            = switch(a, Default=900.,  AshEyj=600., CldIce=400.)
+   Ctrl%X0(IFr)            = switch(a, Default=1.0)
+   Ctrl%X0(ITs)            = switch(a, Default=300.0)
+   Ctrl%X0(IRs(:,IRho_0V)) = switch(a, Default=0.01)
+   Ctrl%X0(IRs(:,IRho_0D)) = switch(a, Default=0.01)
+   Ctrl%X0(IRs(:,IRho_DV)) = switch(a, Default=0.01)
+   Ctrl%X0(IRs(:,IRho_DD)) = switch(a, Default=0.01,  AerSw=0.5)
+   Ctrl%X0(ISP)            = switch(a, Default=0.3)
+   ! A priori uncertainty
+   Ctrl%Sx(ITau)           = switch(a, Default=1.0e+08, Aer=2.0)
+   Ctrl%Sx(IRe)            = switch(a, Default=1.0e+08, Aer=0.5)
+   Ctrl%Sx(IPc)            = switch(a, Default=1.0e+08)
+   Ctrl%Sx(IFr)            = switch(a, Default=1.0e+08)
+   Ctrl%Sx(ITs)            = switch(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_0V)) = switch(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_0D)) = switch(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_DV)) = switch(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_DD)) = switch(a, Default=1.0e+08, AerOx=0.05, AerSw=1.0)
+   Ctrl%Sx(ISP(1))         = switch(a, Default=1.0e+08, AerSw=0.01)
+   Ctrl%Sx(ISP(2:))        = switch(a, Default=1.0e+08, AerSw=0.5)
+   ! NOTE: The nadir P value doesn't really need to be retrieved.
+
+   ! Measurement covariance
+   allocate(Ctrl%Sy(Ctrl%Ind%Ny,Ctrl%Ind%Ny))
+
+   !------------- CTRL STATE VECTOR INDEXING --------------
+   ! These arrays specify which variables should be retrieved in each
+   ! illumination condition (by the index of that variable; see ECP_constants).
+   X_Dy  = sint_fill_value
+   X_Tw  = sint_fill_value
+   X_Ni  = sint_fill_value
+   if (Ctrl%Approach == AerOx) then
+      ! Retrieve optical depth, effective radius, and white sky albedo in all
+      ! channels (it'll work out which duplicate views later). No night/twilight.
+      Nx_Dy   = 2
+      X_Dy(1) = ITau
+      X_Dy(2) = IRe
+      do i = 1, Ctrl%Ind%NSolar
+         Nx_Dy = Nx_Dy+1
+         X_Dy(Nx_Dy) = IRs(i,IRho_DD)
+      end do
+      Nx_Tw = 0
+      Nx_Ni = 0
+   else if (Ctrl%Approach == AerSw) then
+      ! Retrieve optical depth, effective radius, and Swansea parameters in all
+      ! channels (it'll work out which duplicate views later). No night/twilight.
+      Nx_Dy   = 2
+      X_Dy(1) = ITau
+      X_Dy(2) = IRe
+      do i = 1, Ctrl%Ind%NSolar
+         Nx_Dy = Nx_Dy+1
+         X_Dy(Nx_Dy) = ISS(i)
+      end do
+      do i = 1, Ctrl%Ind%NViews
+         Nx_Dy = Nx_Dy+1
+         X_Dy(Nx_Dy) = ISP(i)
+      end do
+      Nx_Tw = 0
+      Nx_Ni = 0
+   else
+      ! By day, retrieve optical depth, effective radius, cloud top pressure and
+      ! surface temperature.
+      Nx_Dy    = 4
+      X_Dy(1)  = ITau
+      X_Dy(2)  = IRe
+      X_Dy(3)  = IPc
+      X_Dy(4)  = ITs
+
+       ! In twilight or night, retrieve cloud top pressure and surface
+      ! temperature. Include white sky albedo in Jacobian.
+      Nx_Tw   = 2
+      X_Tw(1) = IPc
+      X_Tw(2) = ITs
+
+      Nx_Ni   = 2
+      X_Ni(1) = IPc
+      X_Ni(2) = ITs
+   end if
+
 
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
+   ! Array temporary needed for human-readable solar channel indexing
+   allocate(solar_ids(Ctrl%Ind%NSolar))
+   solar_ids = Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar)
+
+   ! Process optional lines of driver file
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
       select case (label)
@@ -888,66 +752,20 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%FID%Loc)          /= 0) call h_p_e(label)
       case('CTRL%FID%ALB')
          if (parse_string(line, Ctrl%FID%Alb)          /= 0) call h_p_e(label)
+      case('CTRL%FID%BKP')
+         if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
       case('CTRL%FID%L2_PRIMARY')
          if (parse_string(line, Ctrl%FID%L2_primary)   /= 0) call h_p_e(label)
       case('CTRL%FID%L2_SECONDARY')
          if (parse_string(line, Ctrl%FID%L2_secondary) /= 0) call h_p_e(label)
-      case('CTRL%FID%BKP')
-         if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
-      case('CTRL%BKPL')
-         if (parse_user_text(line, Ctrl%Bkpl)          /= 0) call h_p_e(label)
-      case('CTRL%RTMINTSELM','CTRL%RTMINTFLAG')
-         if (parse_user_text(line, Ctrl%RTMIntSelm)    /= 0) call h_p_e(label)
-      case('CTRL%LUTINTSELM','CTRL%LUTINTFLAG')
-         if (parse_user_text(line, Ctrl%LUTIntSelm)    /= 0) call h_p_e(label)
-      case('CTRL%MAXSATZEN')
-         if (parse_string(line, Ctrl%MaxSatZen)        /= 0) call h_p_e(label)
-      case('CTRL%MAXSOLZEN')
-         if (parse_string(line, Ctrl%MaxSolZen)        /= 0) call h_p_e(label)
-      case('CTRL%SUNSET')
-         if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
-      case('NX_DY','CTRL%NX_DY','CTRL%IND%NX_DY')
-         if (parse_string(line, NX_DY)                 /= 0) call h_p_e(label)
-      case('X_DY','CTRL%X_DY','CTRL%IND%X_DY')
-         if (parse_user_text(line, X_DY, NX_DY)        /= 0) call h_p_e(label)
-      case('NX_TW','CTRL%NX_TW','CTRL%IND%NX_TW')
-         if (parse_string(line, NX_TW)                 /= 0) call h_p_e(label)
-      case('X_TW','CTRL%X_TW','CTRL%IND%X_TW')
-         if (parse_user_text(line, X_TW, NX_TW)        /= 0) call h_p_e(label)
-      case('NX_NI','CTRL%NX_NI','CTRL%IND%NX_NI')
-         if (parse_string(line, NX_NI)                 /= 0) call h_p_e(label)
-      case('X_NI','CTRL%X_NI','CTRL%IND%X_NI')
-         if (parse_user_text(line, X_NI, NX_NI)        /= 0) call h_p_e(label)
-      case('CTRL%IND%X0')
-         if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
-      case('CTRL%IND%X1')
-         if (parse_string(line, Ctrl%Ind%X1)           /= 0) call h_p_e(label)
-      case('CTRL%IND%Y0')
-         if (parse_string(line, Ctrl%Ind%Y0)           /= 0) call h_p_e(label)
-      case('CTRL%IND%Y1')
-         if (parse_string(line, Ctrl%Ind%Y1)           /= 0) call h_p_e(label)
-      case('CTRL%PROCESS_CLOUDY_ONLY')
-         if (parse_string(line, Ctrl%process_cloudy_only) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%NTYPES_TO_PROCESS')
-         if (parse_string(line, Ctrl%NTypes_to_process)/= 0) call h_p_e(label)
-      case('CTRL%TYPES_TO_PROCESS')
-         if (parse_string(line, Ctrl%Types_to_process, Ctrl%NTypes_to_process) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%AP')
-         if (parse_user_text(line, Ctrl%AP)            /= 0) call h_p_e(label)
-      case('CTRL%FG')
-         if (parse_user_text(line, Ctrl%FG)            /= 0) call h_p_e(label)
-      case('CTRL%XB')
-         if (parse_string(line, Ctrl%XB)               /= 0) call h_p_e(label)
-      case('CTRL%X0')
-         if (parse_string(line, Ctrl%X0)               /= 0) call h_p_e(label)
-      case('CTRL%SX')
-         if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
+      case('CTRL%RUN_ID')
+         if (parse_string(line, Ctrl%Run_ID)           /= 0) call h_p_e(label)
       case('CTRL%RS%RSSELM','CTRL%RS%FLAG')
-         if (parse_string(line, Ctrl%RS%RsSelm)        /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%RS%RsSelm)     /= 0) call h_p_e(label)
       case('CTRL%RS%USE_FULL_BRDF')
          if (parse_string(line, Ctrl%RS%use_full_brdf) /= 0) call h_p_e(label)
+      case('CTRL%RS%B')
+         if (parse_string(line, Ctrl%RS%B)             /= 0) call h_p_e(label)
       case('CTRL%RS%SB')
          if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
       case('CTRL%RS%CB')
@@ -958,6 +776,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%EqMPN%Homog)      /= 0) call h_p_e(label)
       case('CTRL%EQMPN%COREG')
          if (parse_string(line, Ctrl%EqMPN%Coreg)      /= 0) call h_p_e(label)
+      case('CTRL%INVPAR%CONVTEST')
+         if (parse_string(line, Ctrl%Invpar%ConvTest)  /= 0) call h_p_e(label)
       case('CTRL%INVPAR%MQSTART')
          if (parse_string(line, Ctrl%Invpar%MqStart)   /= 0) call h_p_e(label)
       case('CTRL%INVPAR%MQSTEP')
@@ -972,16 +792,72 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%Invpar%XLLim)     /= 0) call h_p_e(label)
       case('CTRL%INVPAR%XULIM')
          if (parse_string(line, Ctrl%Invpar%XULim)     /= 0) call h_p_e(label)
-      case('CTRL%INVPAR%CONVTEST')
-         if (parse_string(line, Ctrl%Invpar%ConvTest)  /= 0) call h_p_e(label)
       case('CTRL%QC%MAXJ')
          if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
       case('CTRL%QC%MAXS')
          if (parse_string(line, Ctrl%QC%MaxS)          /= 0) call h_p_e(label)
+      case('CTRL%IND%X0')
+         if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
+      case('CTRL%IND%X1')
+         if (parse_string(line, Ctrl%Ind%X1)           /= 0) call h_p_e(label)
+      case('CTRL%IND%Y0')
+         if (parse_string(line, Ctrl%Ind%Y0)           /= 0) call h_p_e(label)
+      case('CTRL%IND%Y1')
+         if (parse_string(line, Ctrl%Ind%Y1)           /= 0) call h_p_e(label)
+      case('CTRL%MAXSOLZEN')
+         if (parse_string(line, Ctrl%MaxSolZen)        /= 0) call h_p_e(label)
+      case('CTRL%MAXSATZEN')
+         if (parse_string(line, Ctrl%MaxSatZen)        /= 0) call h_p_e(label)
+      case('CTRL%MINRELAZI')
+         if (parse_string(line, Ctrl%MinRelAzi)        /= 0) call h_p_e(label)
+      case('CTRL%SUNSET')
+         if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
+      case('CTRL%LUTINTSELM','CTRL%LUTINTFLAG')
+         if (parse_user_text(line, Ctrl%LUTIntSelm)    /= 0) call h_p_e(label)
+      case('CTRL%RTMINTSELM','CTRL%RTMINTFLAG')
+         if (parse_user_text(line, Ctrl%RTMIntSelm)    /= 0) call h_p_e(label)
+      case('CTRL%CLOUDTYPE')
+         if (parse_user_text(line, Ctrl%CloudType)     /= 0) call h_p_e(label)
+      case('CTRL%BKPL')
+         if (parse_user_text(line, Ctrl%Bkpl)          /= 0) call h_p_e(label)
+      case('CTRL%MAX_SDAD')
+         if (parse_string(line, Ctrl%Max_SDAD)         /= 0) call h_p_e(label)
       case('CTRL%SABOTAGE_INPUTS')
          if (parse_string(line, Ctrl%sabotage_inputs)  /= 0) call h_p_e(label)
+      case('CTRL%PROCESS_CLOUDY_ONLY')
+         if (parse_string(line, Ctrl%process_cloudy_only) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%NTYPES_TO_PROCESS')
+         if (parse_string(line, Ctrl%NTypes_to_process)/= 0) call h_p_e(label)
+      case('CTRL%TYPES_TO_PROCESS')
+         if (parse_string(line, Ctrl%Types_to_process, Ctrl%NTypes_to_process) &
+                                                       /= 0) call h_p_e(label)
       case('CTRL%RECHANS')
-         if (parse_string(line, Ctrl%ReChans)          /= 0) call h_p_e(label)
+         if (parse_user_text(line, Ctrl%ReChans)       /= 0) call h_p_e(label)
+      case('CTRL%AP')
+         if (parse_user_text(line, Ctrl%AP)            /= 0) call h_p_e(label)
+      case('CTRL%FG')
+         if (parse_user_text(line, Ctrl%FG)            /= 0) call h_p_e(label)
+      case('CTRL%XB')
+         if (parse_string(line, Ctrl%XB)               /= 0) call h_p_e(label)
+      case('CTRL%X0')
+         if (parse_string(line, Ctrl%X0)               /= 0) call h_p_e(label)
+      case('CTRL%SX')
+         if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
+      case('CTRL%SY')
+         if (parse_string(line, Ctrl%Sy)               /= 0) call h_p_e(label)
+      case('NX_DY','CTRL%NX_DY','CTRL%IND%NX_DY')
+         if (parse_string(line, NX_DY)                 /= 0) call h_p_e(label)
+      case('X_DY','CTRL%X_DY','CTRL%IND%X_DY')
+         if (parse_user_text(line, X_DY, NX_DY)        /= 0) call h_p_e(label)
+      case('NX_TW','CTRL%NX_TW','CTRL%IND%NX_TW')
+         if (parse_string(line, NX_TW)                 /= 0) call h_p_e(label)
+      case('X_TW','CTRL%X_TW','CTRL%IND%X_TW')
+         if (parse_user_text(line, X_TW, NX_TW)        /= 0) call h_p_e(label)
+      case('NX_NI','CTRL%NX_NI','CTRL%IND%NX_NI')
+         if (parse_string(line, NX_NI)                 /= 0) call h_p_e(label)
+      case('X_NI','CTRL%X_NI','CTRL%IND%X_NI')
+         if (parse_user_text(line, X_NI, NX_NI)        /= 0) call h_p_e(label)
       case default
          write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code
@@ -1009,9 +885,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! N.B. not all supported methods can be used in all conditions and this is
    ! NOT CHECKED here.
 
-   do j=1,3 ! loop over day, twi, night values for FG
-      do i=1, MaxStateVar
-         select case (Ctrl%Fg(i,j))
+   do j = 1, MaxIllum ! loop over day, twi, night values for FG
+      do i = 1, MaxStateVar
+         select case (Ctrl%FG(i,j))
          case (SelmCtrl)
             continue
 
@@ -1039,9 +915,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Check validity of a priori selection options. Not all legal values are
    ! supported for all variables.
-   do j=1, 3
-      do i=1, MaxStateVar
-         select case (Ctrl%Ap(i,j))
+   do j = 1, MaxIllum
+      do i = 1, MaxStateVar
+         select case (Ctrl%AP(i,j))
          case (SelmCtrl)
             continue
 
@@ -1085,6 +961,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       stop GetSurfaceMeth
    end select
 
+   ! For now, AerSw approach does not allow for non-Lambertian surface
+   if (Ctrl%Approach == AerSw .and. Ctrl%RS%use_full_brdf) then
+      write(*,*) 'ERROR: Read_Driver(): Use of the Swansea surface '// &
+           'reflectance model and full BRDF equations not supported'
+      stop GetSurfaceMeth
+   end if
 
    ! Clean up
    if (drifile /= '-') then
@@ -1094,8 +976,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    deallocate(channel_ids_instr)
    deallocate(channel_sw_flag)
    deallocate(channel_lw_flag)
-   deallocate(channel_proc_flag)
    deallocate(channel_wvl)
+   deallocate(solar_ids)
 
 end subroutine Read_Driver
 
@@ -1114,5 +996,95 @@ subroutine h_p_e(label)
    stop error_stop_code
 
 end subroutine h_p_e
+
+
+!-------------------------------------------------------------------------------
+! Name: switch
+!
+! Purpose:
+! Character-efficient wrapper for switch case statements in Read_Driver.
+! If additional values for Ctrl%Approach are added, they should be included here.
+!
+! Algorithm:
+! If argument for current mode is set, return that value. If not but generic
+! argument for current mode (i.e. Cld or Aer) is set, return that value.
+! Otherwise, return default value.
+!
+! Arguments:
+! Name    Type In/Out/Both Description
+! ------------------------------------------------------------------------------
+! a       int In           MANDATORY ARGUMENT. Value of Ctrl%Approach.
+! Default any In           MANDATORY ARGUMENT. Value to return if the argument
+!                          of this mode is not set.
+! Cld     any In           Value for CldWat and CldIce approaches.
+! CldWat  any In           Value for CldWat approach.
+! CldIce  any In           Value for CldIce approach.
+! Aer     any In           Value for AerOx and AerSw approaches.
+! AerOx   any In           Value for AerOx approach.
+! AerSw   any In           Value for AerSw approach.
+! AshEyj  any In           Value for AshEyj approach.
+! out     any Out          Return value.
+!
+! History:
+! 2015/08/19, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+#define SWITCH_TYPE logical
+#define SWITCH_NAME switch_logic
+#define SWITCH_FILL .false.
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE integer(kind=byte)
+#define SWITCH_NAME switch_byte
+#define SWITCH_FILL byte_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE integer(kind=sint)
+#define SWITCH_NAME switch_sint
+#define SWITCH_FILL sint_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE integer(kind=lint)
+#define SWITCH_NAME switch_lint
+#define SWITCH_FILL lint_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE real(kind=sreal)
+#define SWITCH_NAME switch_sreal
+#define SWITCH_FILL sreal_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE real(kind=dreal)
+#define SWITCH_NAME switch_dreal
+#define SWITCH_FILL dreal_fill_value
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
+
+#define SWITCH_TYPE character(len=FilenameLen)
+#define SWITCH_NAME switch_char
+#define SWITCH_FILL ''
+#include "switch.inc"
+#undef SWITCH_TYPE
+#undef SWITCH_NAME
+#undef SWITCH_FILL
 
 end module read_driver_m
