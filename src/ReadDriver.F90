@@ -146,7 +146,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    logical                            :: file_exists
    integer, allocatable, dimension(:) :: channel_ids_instr, channel_proc_flag
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
-   integer, allocatable, dimension(:) :: channel_wvl
+   real,    allocatable, dimension(:) :: channel_wvl
    integer                            :: Nx_Dy, Nx_Tw, Nx_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
 
