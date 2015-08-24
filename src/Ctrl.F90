@@ -86,7 +86,7 @@
 !    Neither was being used and have been rotting.
 ! 2015/07/27, AP: Convert Homog/Coreg into logicals. Remove Ind%Log and
 !    NInstViews. Replace process_one_phase_only with Types_to_process.
-! 2015/08/21, AP: Tidying comments; Ordering variables logically;
+! 2015/08/21, AP: Tidying comments; Ordering variables logically; Adding WvlIdx;
 !    Renaming Flags as Selm;
 !
 ! $Id$
@@ -148,6 +148,11 @@ module CTRL_def
                                                    ! available
       integer, pointer       :: ViewIdx(:)         ! Array of view values. Values
                                                    ! between 1 and NViews.
+
+      ! Wavelength indexing variables (used to identify different views of the
+      ! same filter; numbered from 1 in order found in file)
+      integer                :: NWvl               ! Number of wavelenths avail
+      integer, pointer       :: WvlIdx(:)          ! Array of wavelength values
 
       ! Spatial grid indexing variables
       integer                :: XMax               ! Max no. of pixels in x

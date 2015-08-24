@@ -146,6 +146,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    logical                            :: file_exists
    integer, allocatable, dimension(:) :: channel_ids_instr, channel_proc_flag
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
+   integer, allocatable, dimension(:) :: channel_wvl
    integer                            :: Nx_Dy, Nx_Tw, Nx_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
 
@@ -246,7 +247,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, global_atts, source_atts, verbose)
+     channel_lw_flag, channel_wvl, global_atts, source_atts, verbose)
 
    ! Read processing flag from driver
    allocate(channel_proc_flag(Ctrl%Ind%NAvail))
@@ -314,6 +315,22 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       write(*,*) 'Ctrl%Ind%YThermal: ',Ctrl%Ind%YThermal
       write(*,*) 'Ctrl%Ind%YMixed: ',Ctrl%Ind%YMixed
    end if
+
+   ! Identify which channels are multiple views of the same wavelength
+   allocate(Ctrl%Ind%WvlIdx(Ctrl%Ind%Ny))
+   Ctrl%Ind%WvlIdx = 0
+   ii = 0
+   do i = 1, Ctrl%Ind%Ny
+      if (Ctrl%Ind%WvlIdx(i) == 0) then
+         ii = ii+1
+         Ctrl%Ind%WvlIdx(i) = ii
+         do j = i+1, Ctrl%Ind%Ny
+            if (channel_wvl(Ctrl%Ind%ICh(i)) == channel_wvl(Ctrl%Ind%ICh(j))) &
+                 Ctrl%Ind%WvlIdx(j) = ii
+         end do
+      end if
+   end do
+   Ctrl%Ind%NWvl = ii
 
    ! Read in cloud class (aka phase of no aerosols processed)
    if (parse_driver(dri_lun, line) /= 0 .or. &
@@ -1077,6 +1094,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    deallocate(channel_ids_instr)
    deallocate(channel_sw_flag)
    deallocate(channel_lw_flag)
+   deallocate(channel_proc_flag)
+   deallocate(channel_wvl)
 
 end subroutine Read_Driver
 

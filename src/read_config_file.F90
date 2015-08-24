@@ -29,6 +29,7 @@
 ! 2014/12/19, AP: Eliminated conf structure. Flags now simply variables.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/08/02, AP: Output channel wavelengths to identify multiple views.
 !
 ! $Id$
 !
@@ -37,7 +38,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, global_atts, source_atts, verbose)
+     channel_lw_flag, channel_wvl, global_atts, source_atts, verbose)
 
    use CTRL_def
    use ECP_constants, only : DriverFileIncompat
@@ -51,6 +52,7 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    integer, allocatable, dimension(:), intent(inout) :: channel_ids_instr
    integer, allocatable, dimension(:), intent(inout) :: channel_sw_flag
    integer, allocatable, dimension(:), intent(inout) :: channel_lw_flag
+   integer, allocatable, dimension(:), intent(inout) :: channel_wvl
    type(global_attributes_s),          intent(inout) :: global_atts
    type(source_attributes_s),          intent(inout) :: source_atts
    logical,                            intent(in)    :: verbose
@@ -76,6 +78,9 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    allocate(channel_lw_flag(Ctrl%Ind%Navail))
    call nc_read_array(ncid, "msi_ch_lwflag", channel_lw_flag, verbose)
    if (verbose) write(*,*) 'lw flag: ',channel_lw_flag
+
+   allocate(channel_wvl(Ctrl%Ind%Navail))
+   call nc_read_array(ncid, "msi_abs_ch_wl", channel_wvl, verbose)
 
    ! Read global attributes
    call nc_get_common_attributes(ncid, global_atts, source_atts)

@@ -38,6 +38,7 @@ subroutine Dealloc_Ctrl(Ctrl)
    type(Ctrl_t), intent(inout) :: Ctrl
 
    deallocate(Ctrl%Ind%ViewIdx)
+   deallocate(Ctrl%Ind%WvlIdx)
    deallocate(Ctrl%Ind%Y_ID)
    deallocate(Ctrl%Ind%ICh)
    deallocate(Ctrl%Ind%Ch_Is)
