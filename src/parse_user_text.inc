@@ -76,6 +76,15 @@ integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = IFr
          case('ITS')
             out = ITs
+         ! BRDF parameter indices
+         case('IRHO_0V')
+            out = IRho_0V
+         case('IRHO_0D')
+            out = IRho_0D
+         case('IRHO_DV')
+            out = IRho_DV
+         case('IRHO_DD')
+            out = IRho_DD
          ! Parameter selection methods
          case('SELMCTRL')
             out = SelmCtrl

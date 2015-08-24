@@ -7,6 +7,9 @@
 !
 ! History:
 ! 2015/07/22, AP: Original version.
+! 2015/08/18, AP: Added optional argument specifying the ID# for each channel
+!    such that CHXX style indexing can be used.
+
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -53,6 +56,7 @@ contains
 ! in     string  In          The string to translate.
 ! out    int     Out         The value of the requested variable.
 ! status int     Out         (Return value) Indicates success/failure.
+! ch_ids int array In        (Optional) Specifies the ID# of each channel.
 !
 ! History:
 ! 2015/07/22, AP: Original version.
@@ -79,6 +83,7 @@ contains
 ! arr    int array In          Array from which to return an element.
 ! out    int       Out         Value of desired array element.
 ! status int       Out         (Return value) Indicates success/failure.
+! ch_ids int array In          (Optional) Specifies the ID# of each channel.
 !
 ! History:
 ! 2015/07/22, AP: Original version.
