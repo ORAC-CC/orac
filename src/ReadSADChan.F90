@@ -69,6 +69,7 @@
 ! 2015/01/19, GM: Use make_sad_chan_num().
 ! 2015/04/30, MS: Correct the chan_file definition for NOAA-7 and NOAA-9
 ! 2015/07/14, AP: Replacing **2 with multiplication.
+! 2015/08/21, AP: Generalised MS last fix.
 !
 ! $Id$
 !
@@ -118,18 +119,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       call make_sad_chan_num(Ctrl, i, chan_num)
       write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
 
-      chan_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // &
-         '_' // trim(chan_num) // '.sad'
-
-      ! Check if NOAA-7 or NOAA-9; then reset chan_file. This could be a little
-      ! bit more generic in the future.
-      if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA7') &
-         chan_file = trim(Ctrl%SAD_Dir) // 'AVHRR-NOAA07' &
-         & // '_' // trim(chan_num) // '.sad'
-      if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA9') &
-         chan_file = trim(Ctrl%SAD_Dir) // 'AVHRR-NOAA09' &
-         & // '_' // trim(chan_num) // '.sad'
-
+      call create_sad_filename(Ctrl, chan_num, chan_file)
       write(*,*) 'chan_file read in: ',trim(adjustl(chan_file))
 
       ! Check if file exists

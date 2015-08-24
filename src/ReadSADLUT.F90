@@ -618,53 +618,6 @@ end subroutine Read_LUT_both
 
 
 !-------------------------------------------------------------------------------
-! Name: create_lut_filename
-!
-! Purpose:
-! Create an LUT filename given the lut name and string channel number.
-!
-! Algorithm:
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-! History:
-! 2014/10/10, GM: Original version
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-subroutine create_lut_filename(Ctrl, lut_name, chan_num, LUT_file)
-
-   use CTRL_def
-
-   implicit none
-
-   ! Argument declarations
-   type(CTRL_t), intent(in)  :: Ctrl
-   character(*), intent(in)  :: lut_name
-   character(*), intent(in)  :: chan_num
-   character(*), intent(out) :: LUT_file
-
-   LUT_file = trim(Ctrl%SAD_Dir) // trim(Ctrl%Inst%Name) // '_' // &
-              trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' &
-              // trim(chan_num) // '.sad'
-
-   !set correct LUF filename for NOAA-7 and NOAA-9
-   !could be a little bit more generic in the future
-   if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA7') &
-     LUT_file = trim(Ctrl%SAD_Dir) // '/' // 'AVHRR-NOAA07' // '_' // &
-              trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' &
-              // trim(chan_num) // '.sad'
-   if(trim(Ctrl%Inst%Name) == 'AVHRR-NOAA9') &
-     LUT_file = trim(Ctrl%SAD_Dir) // '/' // 'AVHRR-NOAA09' // '_' // &
-              trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' &
-              // trim(chan_num) // '.sad'
-
-
-end subroutine create_lut_filename
-
-!-------------------------------------------------------------------------------
 ! Name: Read_SAD_LUT
 !
 ! Purpose:
@@ -720,6 +673,8 @@ end subroutine create_lut_filename
 ! 2014/12/29, GM: Fixed a bug in the channel indexing changes above.
 ! 2015/01/09, CP: Added Rfbd.
 ! 2015/01/19, GM: Use make_sad_chan_num().
+! 2015/08/21, AP: Generalised MS NOAA7/9 fix, moving create_lut_filename into
+!    SAD_Chan_def and renaming it create_sad_filename.
 !
 ! Bugs:
 ! None known.
@@ -786,37 +741,37 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
 
       ! Read the Rd and Rfd LUTs from the Rd file for all channels (solar and
       ! thermal)
-      call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
+      call create_sad_filename(Ctrl, chan_num, LUT_File, 'RD')
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IRd, "Rd", SAD_LUT%Rd, &
                         i_lut2 = IRfd, name2 = "Rfd", values2 = SAD_LUT%Rfd)
 
       ! Read the Td and Tfd LUTs from the Td file for all channels (solar and
       ! thermal)
-      call create_lut_filename(Ctrl, 'TD', chan_num, LUT_File)
+      call create_sad_filename(Ctrl, chan_num, LUT_File, 'TD')
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
                         i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
 
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then
          ! Read the Rbd LUT from the Rbd files
-         call create_lut_filename(Ctrl, 'RBD', chan_num, LUT_File)
+         call create_sad_filename(Ctrl, chan_num, LUT_File, 'RBD')
          call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, IRbd, "Rbd", &
                             SAD_LUT%Rbd)
 
          ! Read the Rd file into the Rfbd table.  This is a temporary solution
          ! until the Rfbd table becomes available in the Rbd file.  Rd is close
          ! but not the same as Rfbd.
-         call create_lut_filename(Ctrl, 'RD', chan_num, LUT_File)
+         call create_sad_filename(Ctrl, chan_num, LUT_File, 'RD')
          call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, IRfbd, "Rd", &
                            SAD_LUT%Rfbd)
 
          ! Read the Tb file LUT from the Tb files
-         call create_lut_filename(Ctrl, 'TB', chan_num, LUT_File)
+         call create_sad_filename(Ctrl, chan_num, LUT_File, 'TB')
          call Read_LUT_sol(Ctrl, LUT_file, i, SAD_LUT, ITb, "Tb", &
                            SAD_LUT%Tb)
 
          ! Read the Tbd and Tfbd LUTs from the Tbd files
-         call create_lut_filename(Ctrl, 'TBD', chan_num, LUT_File)
+         call create_sad_filename(Ctrl, chan_num, LUT_File, 'TBD')
          call Read_LUT_both(Ctrl, LUT_file, i, SAD_LUT, ITbd, "Tbd", &
                             SAD_LUT%Tbd, i_lut2 = ITfbd, name2 = "Tfbd", &
                             values2 = SAD_LUT%Tfbd)
@@ -825,7 +780,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       ! Read thermal channel LUTs
       if (SAD_Chan(i)%Thermal%Flag > 0) then
          ! Read the Em file
-         call create_lut_filename(Ctrl, 'EM', chan_num, LUT_File)
+         call create_sad_filename(Ctrl, chan_num, LUT_File, 'EM')
          call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
       end if
    end do

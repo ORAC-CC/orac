@@ -15,6 +15,7 @@
 !    on the day of year rather than just using an annual mean value.
 ! 2014/05/23, GM: Cleaned up code.
 ! 2014/08/01, GM: Added Find_MDAD_SW() and Find_MDAD_LW().
+! 2015/08/21, AP: Move make_sad_filename() here from ReadSADLUT.
 !
 ! $Id$
 !
@@ -35,7 +36,8 @@ module SAD_Chan_def
              SAD_Chan_t, &
              Find_MDAD_SW, &
              Find_MDAD_LW, &
-             Read_SAD_Chan
+             Read_SAD_Chan, &
+             create_sad_filename
 
    type Solar_t
       integer(1)  :: Flag        ! Value 1 indicates solar source is present
@@ -182,6 +184,60 @@ function Find_MDAD_LW(Ny, SAD_Chan, index) result(MDAD_LW)
    end do
 
 end function Find_MDAD_LW
+
+
+!-------------------------------------------------------------------------------
+! Name: create_sad_filename
+!
+! Purpose:
+! Create a SAD filename given the lut name and string channel number.
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2014/10/10, GM: Original version
+! 2015/08/21, AP: Made lut_name optional so this can generate SAD_Chan filenames.
+!    Generalised treatment of NOAA7/9.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
+
+   use CTRL_def
+
+   implicit none
+
+   ! Argument declarations
+   type(CTRL_t),           intent(in)  :: Ctrl
+   character(*),           intent(in)  :: chan_num
+   character(*),           intent(out) :: LUT_file
+   character(*), optional, intent(in)  :: lut_name
+
+   character(InstnameLen)    :: InstName
+
+   InstName = Ctrl%Inst%Name
+   ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
+   if (InstName(1:10) == 'AVHRR-NOAA') then
+      if (len_trim(InstName(11:)) == 1) then
+         InstName(12:12) = InstName(11:11)
+         InstName(11:11) = '0'
+      end if
+   end if
+
+   if (present(lut_name)) then
+      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+                 trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' // &
+                 trim(chan_num) // '.sad'
+   else
+      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+                 trim(chan_num) // '.sad'
+   end if
+
+end subroutine create_sad_filename
 
 
 #include "ReadSADChan.F90"
