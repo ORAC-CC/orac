@@ -100,7 +100,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
+   if (Ctrl%InstName(1:5) .eq. 'AATSR') then
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
@@ -242,7 +242,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
               deflate_level = deflate_level, &
               shuffle       = shuffle_flag)
 
-      end do
+   end do
 
    !----------------------------------------------------------------------------
    ! cot
@@ -725,13 +725,13 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   write(temp_str, '(I2)') Ctrl%Ind%Nx_Dy
+   write(temp_str, '(I2)') Ctrl%Nx(IDay)
    input_dummy='Bit 0 set to 1 if cost too large, ' // &
                'Bits 1-' // trim(adjustl(temp_str)) // &
                        ' set to 1 if state variable error out of bounds, ('
-   do i = 1, Ctrl%Ind%Nx_Dy
+   do i = 1, Ctrl%Nx(IDay)
       write(temp_str, '(I2)') i
-      if (string_description_of_state(Ctrl%Ind%X_Dy(i), state_label) == 0) &
+      if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
            input_dummy=trim(input_dummy) // ' Bit ' // &
                        trim(adjustl(temp_str)) // '=' // trim(state_label)
    end do
@@ -891,7 +891,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
                           '23:Bare Ground Tundra, ' // &
                           '24:Snow or Ice, ' // &
                           '99:Interrupted Areas, ' // &
-	                  '100:Missing Data', &
+                          '100:Missing Data', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 

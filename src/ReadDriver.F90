@@ -98,6 +98,9 @@
 ! $Id$
 !
 ! Bugs:
+! NViews should be changed for dual view
+!
+! IMPORTANT NOTE:
 ! If a new type of LUT i.e aerosol is added then new default values will have
 ! to be added to this routine
 !-------------------------------------------------------------------------------
@@ -138,12 +141,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    integer                            :: i,ii,i0,i1,i2,j
    integer                            :: ios
    integer                            :: dri_lun
-   character(FilenameLen)             :: input_path, input_filename, scratch_dir
-   character(FilenameLen)             :: lut_dir, root_filename
+   character(FilenameLen)             :: root_filename
    character(FilenameLen)             :: outname, line, label
    logical                            :: file_exists
    integer, allocatable, dimension(:) :: channel_ids_instr, channel_proc_flag
    integer, allocatable, dimension(:) :: channel_sw_flag, channel_lw_flag
+   integer                            :: Nx_Dy, Nx_Tw, Nx_Ni
+   integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
 
 
    !----------------------------------------------------------------------------
@@ -189,32 +193,33 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    !----------------------------------------------------------------------------
    ! Read folder paths
    if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, input_path) /= 0) call h_p_e('input directory')
-   if (verbose) write(*,*) 'Input directory: ',trim(input_path)
+       parse_string(line, Ctrl%FID%Data_Dir) /= 0) call h_p_e('Ctrl%FID%Data_Dir')
+   if (verbose) write(*,*) 'Input directory: ',trim(Ctrl%FID%Data_Dir)
 
    if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, input_filename) /= 0) call h_p_e('input filename')
-   if (verbose) write(*,*) 'Input filename: ',trim(input_filename)
+       parse_string(line, Ctrl%FID%Filename) /= 0) call h_p_e('Ctrl%FID%Filename')
+   if (verbose) write(*,*) 'Input filename: ',trim(Ctrl%FID%Filename)
 
    if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, scratch_dir) /= 0) call h_p_e('output directory')
-   if (verbose) write(*,*) 'Output directory: ',trim(scratch_dir)
+       parse_string(line, Ctrl%FID%Out_Dir) /= 0) call h_p_e('Ctrl%FID%Out_Dir')
+   if (verbose) write(*,*) 'Output directory: ',trim(Ctrl%FID%Out_Dir)
 
    if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, lut_dir) /= 0) call h_p_e('LUT directory')
-   if (verbose) write(*,*) 'LUT directory: ',trim(lut_dir)
+       parse_string(line, Ctrl%FID%SAD_Dir) /= 0) call h_p_e('Ctrl%FID%SAD_Dir')
+   if (verbose) write(*,*) 'LUT directory: ',trim(Ctrl%FID%SAD_Dir)
 
    ! Set filenames
-   Ctrl%Data_Dir = trim(scratch_dir)//'/'
-   Ctrl%Out_Dir  = trim(scratch_dir)//'/'
-   Ctrl%SAD_Dir  = trim(lut_dir)//'/'
+   Ctrl%FID%Data_Dir = trim(Ctrl%FID%Data_Dir)//'/'
+   Ctrl%FID%Out_Dir  = trim(Ctrl%FID%Out_Dir)//'/'
+   Ctrl%FID%SAD_Dir  = trim(Ctrl%FID%SAD_Dir)//'/'
    if (verbose) then
-      write(*,*) 'Ctrl%Data_Dir: ',trim(Ctrl%Data_Dir)
-      write(*,*) 'Ctrl%out_Dir: ',trim(Ctrl%out_Dir)
-      write(*,*) 'Ctrl%SAD_Dir: ',trim(Ctrl%SAD_Dir)
+      write(*,*) 'Ctrl%FID%Data_Dir: ',trim(Ctrl%FID%Data_Dir)
+      write(*,*) 'Ctrl%FID%Out_Dir: ',trim(Ctrl%FID%Out_Dir)
+      write(*,*) 'Ctrl%FID%SAD_Dir: ',trim(Ctrl%FID%SAD_Dir)
    end if
 
-   root_filename   = trim(input_path)//'/'//trim(input_filename)
+   root_filename   = trim(Ctrl%FID%Data_Dir)//trim(Ctrl%FID%Filename)
+   Ctrl%FID%Config = trim(root_filename)//'.config.nc'
    Ctrl%FID%MSI    = trim(root_filename)//'.msi.nc'
    Ctrl%FID%LWRTM  = trim(root_filename)//'.lwrtm.nc'
    Ctrl%FID%SWRTM  = trim(root_filename)//'.swrtm.nc'
@@ -223,15 +228,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%FID%CF     = trim(root_filename)//'.clf.nc'
    Ctrl%FID%Geo    = trim(root_filename)//'.geo.nc'
    Ctrl%FID%Loc    = trim(root_filename)//'.loc.nc'
-   Ctrl%FID%uv     = trim(root_filename)//'.uv.nc'
    Ctrl%FID%Alb    = trim(root_filename)//'.alb.nc'
-   Ctrl%FID%Config = trim(root_filename)//'.config.nc'
    if (verbose) write(*,*) 'Ctrl%FID%Config: ',trim(Ctrl%FID%Config)
 
    ! Read name of instrument
    if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%Inst%Name) /= 0) call h_p_e('Ctrl%Inst%Name')
-   write(*,*) 'Ctrl%Inst%Name: ',trim(Ctrl%Inst%Name)
+       parse_string(line, Ctrl%InstName) /= 0) call h_p_e('Ctrl%InstName')
+   write(*,*) 'Ctrl%InstName: ',trim(Ctrl%InstName)
 
    ! Number of channels in preprocessing file
    ! (this is actually not really necessary as we have that in the config file)
@@ -246,11 +249,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
      channel_lw_flag, global_atts, source_atts, verbose)
 
    ! Read processing flag from driver
-   allocate(channel_proc_flag(Ctrl%Ind%Navail))
+   allocate(channel_proc_flag(Ctrl%Ind%NAvail))
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, channel_proc_flag) /= 0) call h_p_e('channel flags')
    if (sum(channel_proc_flag) < 1 .or. &
-       sum(channel_proc_flag) > Ctrl%Ind%Navail .or. &
+       sum(channel_proc_flag) > Ctrl%Ind%NAvail .or. &
        any(channel_proc_flag /= 0 .and. channel_proc_flag /= 1)) then
       write(*,*) 'ERROR: ReadDriver(): channel flag from driver wrong: ', &
                  channel_proc_flag
@@ -279,7 +282,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    i0 = 0
    i1 = 0
    i2 = 0
-   do i=1,Ctrl%Ind%Navail
+   do i = 1, Ctrl%Ind%NAvail
       ! Identify processing channels WITH RESPECT TO THE PREPROC FILE
       if (channel_proc_flag(i) == 1) then
          ii = ii+1
@@ -318,6 +321,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       call h_p_e('Ctrl%LUTClass')
    if (verbose) write(*,*)'Ctrl%LUTClass: ',trim(Ctrl%LUTClass)
 
+   ! Output filenames
+   outname=trim(Ctrl%FID%Out_Dir)//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
+   Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
+   Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
+   Ctrl%FID%BkP          = trim(outname)//'.bkp'
+   if (verbose) then
+      write(*,*) 'Ctrl%FID%L2_primary: ', trim(Ctrl%FID%L2_primary)
+      write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
+      write(*,*) 'Ctrl%FID%BkP: ',trim(Ctrl%FID%BkP)
+   end if
+
    ! Selection of retrieval approach currently optional
    Ctrl%Approach = -1
    if (parse_driver(dri_lun, line, label) == 0) then
@@ -352,23 +366,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    !----------------------------------------------------------------------------
    Ctrl%Run_ID = 'none'
 
-   outname=trim(scratch_dir)//'/'//trim(input_filename)//trim(Ctrl%LUTClass)
-   Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
-   Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
-   Ctrl%FID%BkP          = trim(outname)//'.bkp'
-   if (verbose) then
-      write(*,*) 'Ctrl%FID%L2_primary: ', trim(Ctrl%FID%L2_primary)
-      write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
-      write(*,*) 'Ctrl%FID%BkP: ',trim(Ctrl%FID%BkP)
-   end if
-
    ! The level of breakpoint output when the code is compiled with breakpoint
    ! option Ctrl%Bkpl
    Ctrl%Bkpl=3
 
 
-   Ctrl%RTMIntflag = RTMIntMethLinear
-   Ctrl%LUTIntflag = LUTIntMethLinear
+   Ctrl%RTMIntSelm = RTMIntMethLinear
+   Ctrl%LUTIntSelm = LUTIntMethLinear
 
 
    Ctrl%MaxSolZen  = 80 ! max solar zenith angle
@@ -382,24 +386,24 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! array and set up the corresponding inactive array.
 
    ! Day options
-   Ctrl%Ind%Nx_Dy = 4 ! number of active state variables
+   Nx_Dy = 4 ! number of active state variables
 
-   Ctrl%Ind%X_Dy(1) = ITau ! indices of state parameters
-   Ctrl%Ind%X_Dy(2) = IRe
-   Ctrl%Ind%X_Dy(3) = IPc
-   Ctrl%Ind%X_Dy(4) = ITs
+   X_Dy(1) = ITau ! indices of state parameters
+   X_Dy(2) = IRe
+   X_Dy(3) = IPc
+   X_Dy(4) = ITs
 
    ! Twilight options
-   Ctrl%Ind%Nx_Tw = 2  ! number of active state variables
+   Nx_Tw = 2  ! number of active state variables
 
-   Ctrl%Ind%X_Tw(1) = IPc ! indices of state parameters
-   Ctrl%Ind%X_Tw(2) = ITs
+   X_Tw(1) = IPc ! indices of state parameters
+   X_Tw(2) = ITs
 
    ! Night options
-   Ctrl%Ind%Nx_Ni = 2 ! number of active state variables
+   Nx_Ni = 2 ! number of active state variables
 
-   Ctrl%Ind%X_Ni(1) = IPc ! indices of state parameters
-   Ctrl%Ind%X_Ni(2) = ITs
+   X_Ni(1) = IPc ! indices of state parameters
+   X_Ni(2) = ITs
 
 
    ! Use default processing (i.e. process everything in file)
@@ -608,13 +612,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Set Ctrl%RS
 
-   Ctrl%RS%Flag = SelmAux ! Selection method
+   Ctrl%RS%RsSelm = SelmAux ! Selection method
    Ctrl%RS%use_full_brdf = .true.
 
    ! Set default surface reflectance values for channels used.
    ! Additional instruments/channels need to be added explicitly.
    allocate(Ctrl%RS%B(Ctrl%Ind%NSolar,2))
-   if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
+   if (Ctrl%InstName(1:5) .eq. 'AATSR') then
       do i=1, Ctrl%Ind%NSolar
          select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
          case(1)
@@ -633,7 +637,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
             Ctrl%RS%B(i,:) = 0.00
          end select
       end do
-   else if (Ctrl%Inst%Name(1:5) .eq. 'AVHRR') then
+   else if (Ctrl%InstName(1:5) .eq. 'AVHRR') then
       do i=1, Ctrl%Ind%NSolar
          select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
          case(1)
@@ -649,7 +653,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
             Ctrl%RS%B(i,:) = 0.00
          end select
       end do
-   else if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
+   else if (Ctrl%InstName(1:5) .eq. 'MODIS') then
       do i=1, Ctrl%Ind%NSolar
          select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
          case(1)
@@ -677,7 +681,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
             Ctrl%RS%B(i,:) = 0.00
          end select
       end do
-   else if (Ctrl%Inst%Name(1:6) .eq. 'SEVIRI') then
+   else if (Ctrl%InstName(1:6) .eq. 'SEVIRI') then
       do i=1, Ctrl%Ind%NSolar
          select case (Ctrl%Ind%Y_ID(Ctrl%Ind%YSolar(i)))
          case(1)
@@ -695,7 +699,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       end do
    else
       write(*,*) 'ERROR: ReadDriver(): Unsupported instrument: ', &
-                 trim(Ctrl%Inst%Name)
+                 trim(Ctrl%InstName)
       stop InstIDInvalid
    end if
 
@@ -706,7 +710,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Set Ctrl%EqMPN
 
    Ctrl%EqMPN%Rs         = 1          ! Flag to use EqMPN from Rs errors
-   Ctrl%EqMPN%TH         = 0          ! Flag to use EqMPN from T/H(z) errors
    Ctrl%EqMPN%Homog      = .true.     ! Flag to use EqMPN from homog errors
    Ctrl%EqMPN%Coreg      = .true.     ! Flag to use EqMPN from coReg errors
 
@@ -791,7 +794,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! See Ctrl.F90 for descriptions of the variables initialized below.
    nullify(Ctrl%ReChans)
 
-   if (Ctrl%Inst%Name(1:5) .eq. 'AATSR') then
+   if (Ctrl%InstName(1:5) .eq. 'AATSR') then
       allocate(Ctrl%ReChans(2))
       Ctrl%ReChans = (/ 5, 4 /)
 
@@ -801,9 +804,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%r_e_chans = (/ 4, 5 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 5, 6, 7 /)
-   else if (Ctrl%Inst%Name(1:5) .eq. 'AVHRR') then
+   else if (Ctrl%InstName(1:5) .eq. 'AVHRR') then
       allocate(Ctrl%ReChans(2))
-      if (Ctrl%Inst%Name(7:12) .eq. 'NOAA17') then
+      if (Ctrl%InstName(7:12) .eq. 'NOAA17') then
          Ctrl%ReChans = (/ 3, 4 /)
       else
          Ctrl%ReChans = (/ 4, 3 /)
@@ -815,7 +818,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%r_e_chans = (/ 3, 4 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 5, 6 /)
-   else if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
+   else if (Ctrl%InstName(1:5) .eq. 'MODIS') then
       allocate(Ctrl%ReChans(4))
       Ctrl%ReChans = (/ 20, 6, 7, 5 /)
 
@@ -825,7 +828,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       Ctrl%r_e_chans = (/ 5, 6, 7, 20 /)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 20, 31, 32 /)
-   else if (Ctrl%Inst%Name(1:6) .eq. 'SEVIRI') then
+   else if (Ctrl%InstName(1:6) .eq. 'SEVIRI') then
       allocate(Ctrl%ReChans(2))
       Ctrl%ReChans = (/ 4, 3 /)
 
@@ -844,12 +847,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
       select case (label)
-      case('CTRL%DATA_DIR')
-         if (parse_string(line, Ctrl%Data_Dir)         /= 0) call h_p_e(label)
-      case('CTRL%OUT_DIR')
-         if (parse_string(line, Ctrl%Out_Dir)          /= 0) call h_p_e(label)
-      case('CTRL%SAD_DIR')
-         if (parse_string(line, Ctrl%SAD_Dir)          /= 0) call h_p_e(label)
+      case('CTRL%FID%DATA_DIR','CTRL%DATA_DIR')
+         if (parse_string(line, Ctrl%FID%Data_Dir)      /= 0) call h_p_e(label)
+      case('CTRL%FID%OUT_DIR','CTRL%OUT_DIR')
+         if (parse_string(line, Ctrl%FID%Out_Dir)      /= 0) call h_p_e(label)
+      case('CTRL%FID%SAD_DIR','CTRL%SAD_DIR')
+         if (parse_string(line, Ctrl%FID%SAD_Dir)      /= 0) call h_p_e(label)
       case('CTRL%FID%MSI')
          if (parse_string(line, Ctrl%FID%MSI)          /= 0) call h_p_e(label)
       case('CTRL%FID%LWRTM')
@@ -866,8 +869,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%FID%Geo)          /= 0) call h_p_e(label)
       case('CTRL%FID%LOC')
          if (parse_string(line, Ctrl%FID%Loc)          /= 0) call h_p_e(label)
-      case('CTRL%FID%UV')
-         if (parse_string(line, Ctrl%FID%uv)           /= 0) call h_p_e(label)
       case('CTRL%FID%ALB')
          if (parse_string(line, Ctrl%FID%Alb)          /= 0) call h_p_e(label)
       case('CTRL%FID%L2_PRIMARY')
@@ -878,31 +879,28 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%FID%BkP)          /= 0) call h_p_e(label)
       case('CTRL%BKPL')
          if (parse_user_text(line, Ctrl%Bkpl)          /= 0) call h_p_e(label)
-      case('CTRL%RTMINTFLAG')
-         if (parse_user_text(line, Ctrl%RTMIntflag)    /= 0) call h_p_e(label)
-      case('CTRL%LUTINTFLAG')
-         if (parse_user_text(line, Ctrl%LUTIntflag)    /= 0) call h_p_e(label)
+      case('CTRL%RTMINTSELM','CTRL%RTMINTFLAG')
+         if (parse_user_text(line, Ctrl%RTMIntSelm)    /= 0) call h_p_e(label)
+      case('CTRL%LUTINTSELM','CTRL%LUTINTFLAG')
+         if (parse_user_text(line, Ctrl%LUTIntSelm)    /= 0) call h_p_e(label)
       case('CTRL%MAXSATZEN')
          if (parse_string(line, Ctrl%MaxSatZen)        /= 0) call h_p_e(label)
       case('CTRL%MAXSOLZEN')
          if (parse_string(line, Ctrl%MaxSolZen)        /= 0) call h_p_e(label)
       case('CTRL%SUNSET')
          if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
-      case('CTRL%IND%NX_DY')
-         if (parse_string(line, Ctrl%Ind%NX_DY)        /= 0) call h_p_e(label)
-      case('CTRL%IND%X_DY')
-         if (parse_user_text(line, Ctrl%Ind%X_DY, Ctrl%Ind%NX_DY) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%IND%NX_TW')
-         if (parse_string(line, Ctrl%Ind%NX_TW)        /= 0) call h_p_e(label)
-      case('CTRL%IND%X_TW')
-         if (parse_user_text(line, Ctrl%Ind%X_TW, Ctrl%Ind%NX_TW) &
-                                                       /= 0) call h_p_e(label)
-      case('CTRL%IND%NX_NI')
-         if (parse_string(line, Ctrl%Ind%NX_NI)        /= 0) call h_p_e(label)
-      case('CTRL%IND%X_NI')
-         if (parse_user_text(line, Ctrl%Ind%X_NI, Ctrl%Ind%NX_NI)&
-                                                       /= 0) call h_p_e(label)
+      case('NX_DY','CTRL%NX_DY','CTRL%IND%NX_DY')
+         if (parse_string(line, NX_DY)                 /= 0) call h_p_e(label)
+      case('X_DY','CTRL%X_DY','CTRL%IND%X_DY')
+         if (parse_user_text(line, X_DY, NX_DY)        /= 0) call h_p_e(label)
+      case('NX_TW','CTRL%NX_TW','CTRL%IND%NX_TW')
+         if (parse_string(line, NX_TW)                 /= 0) call h_p_e(label)
+      case('X_TW','CTRL%X_TW','CTRL%IND%X_TW')
+         if (parse_user_text(line, X_TW, NX_TW)        /= 0) call h_p_e(label)
+      case('NX_NI','CTRL%NX_NI','CTRL%IND%NX_NI')
+         if (parse_string(line, NX_NI)                 /= 0) call h_p_e(label)
+      case('X_NI','CTRL%X_NI','CTRL%IND%X_NI')
+         if (parse_user_text(line, X_NI, NX_NI)        /= 0) call h_p_e(label)
       case('CTRL%IND%X0')
          if (parse_string(line, Ctrl%Ind%X0)           /= 0) call h_p_e(label)
       case('CTRL%IND%X1')
@@ -929,18 +927,16 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%X0)               /= 0) call h_p_e(label)
       case('CTRL%SX')
          if (parse_string(line, Ctrl%Sx)               /= 0) call h_p_e(label)
-      case('CTRL%RS%FLAG')
-         if (parse_string(line, Ctrl%RS%Flag)          /= 0) call h_p_e(label)
+      case('CTRL%RS%RSSELM','CTRL%RS%FLAG')
+         if (parse_string(line, Ctrl%RS%RsSelm)        /= 0) call h_p_e(label)
       case('CTRL%RS%USE_FULL_BRDF')
          if (parse_string(line, Ctrl%RS%use_full_brdf) /= 0) call h_p_e(label)
-       case('CTRL%RS%SB')
+      case('CTRL%RS%SB')
          if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
       case('CTRL%RS%CB')
          if (parse_string(line, Ctrl%RS%Cb)            /= 0) call h_p_e(label)
       case('CTRL%EQMPN%RS')
          if (parse_string(line, Ctrl%EqMPN%Rs)         /= 0) call h_p_e(label)
-      case('CTRL%EQMPN%TH')
-         if (parse_string(line, Ctrl%EqMPN%TH)         /= 0) call h_p_e(label)
       case('CTRL%EQMPN%HOMOG')
          if (parse_string(line, Ctrl%EqMPN%Homog)      /= 0) call h_p_e(label)
       case('CTRL%EQMPN%COREG')
@@ -977,32 +973,15 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
 
    ! ---------------------------------------------------------------------------
-   ! Things that had to be moved to after the optional lines
+   ! Things that have to be after the optional lines
    ! ---------------------------------------------------------------------------
-
-   ! Sort out inactive elements of day/night/twilight arrays
-   Ctrl%Ind%NxI_Dy = MaxStateVar - Ctrl%Ind%Nx_Dy
-   Ctrl%Ind%NxI_Tw = MaxStateVar - Ctrl%Ind%Nx_Tw
-   Ctrl%Ind%NxI_Ni = MaxStateVar - Ctrl%Ind%Nx_Ni
-
-   ! Set inactive state variables
-   i0 = 0
-   i1 = 0
-   i2 = 0
-   do i=1, MaxStateVar
-      if (.not. any(Ctrl%Ind%X_Dy(1:Ctrl%Ind%Nx_Dy) == i)) then
-         i0 = i0+1
-         Ctrl%Ind%XI_Dy(i0) = i
-      end if
-      if (.not. any(Ctrl%Ind%X_Tw(1:Ctrl%Ind%Nx_Tw) == i)) then
-         i1 = i1+1
-         Ctrl%Ind%XI_Tw(i1) = i
-      end if
-      if (.not. any(Ctrl%Ind%X_Ni(1:Ctrl%Ind%Nx_Ni) == i)) then
-         i2 = i2+1
-         Ctrl%Ind%XI_Ni(i2) = i
-      end if
-   end do
+   ! Copy individual illumination arrays into main block
+   Ctrl%Nx(IDay)     = Nx_Dy
+   Ctrl%Nx(ITwi)     = Nx_Tw
+   Ctrl%Nx(INight)   = Nx_Ni
+   Ctrl%X(:,IDay)    = X_Dy
+   Ctrl%X(:,ITwi)    = X_Tw
+   Ctrl%X(:,INight)  = X_Ni
 
 
    !----------------------------------------------------------------------------
@@ -1072,7 +1051,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    end do
 
    ! Check validity of surface reflectance flag
-   select case (Ctrl%RS%Flag)
+   select case (Ctrl%RS%RsSelm)
    case (SelmCtrl)
       if (Ctrl%RS%use_full_brdf) then
          write(*,*) 'ERROR: Read_Driver(): Setting surface reflectance by '//  &

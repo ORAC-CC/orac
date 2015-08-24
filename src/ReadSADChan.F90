@@ -244,8 +244,4 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
    ! Number of channels with both solar and thermal components (needed in FM).
    Ctrl%Ind%NMixed = Ctrl%Ind%NSolar + Ctrl%Ind%NThermal - Ctrl%Ind%Ny
 
-   ! Find indices of channels required for calculation of MDAD FG state parameters
-   Ctrl%Ind%MDAD_LW = Find_MDAD_LW(Ctrl%Ind%Ny, SAD_Chan)
-   Ctrl%Ind%MDAD_SW = Find_MDAD_SW(Ctrl%Ind%Ny, SAD_Chan)
-
 end subroutine Read_SAD_Chan

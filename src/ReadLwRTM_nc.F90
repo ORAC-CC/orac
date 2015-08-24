@@ -132,9 +132,9 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
    end if
-   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%Inst%Name))) then
+   if (trim(adjustl(instname)) /= trim(adjustl(Ctrl%InstName))) then
       write(*,*) 'ERROR: Read_LwRTM_nc(): Instrument in LWRTM header inconsistent: ', &
-                 trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%Inst%Name))
+                 trim(adjustl(instname)), ' /= ', trim(adjustl(Ctrl%InstName))
       stop error_stop_code
    end if
 

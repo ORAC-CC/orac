@@ -143,13 +143,13 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
 
       ! Now call linint or the adapted Numerical Recipes BCuInt subroutine to
       ! perform the interpolation to our desired state vector
-      if (Ctrl%LUTIntflag .eq. LUTIntMethLinear) then
+      if (Ctrl%LUTIntSelm .eq. LUTIntMethLinear) then
          call linint(Y,Grid%Tau(ii,GZero%iT0(ii2,iCRP),iCRP), &
                        Grid%Tau(ii,GZero%iT1(ii2,iCRP),iCRP), &
                        Grid%Re (ii,GZero%iR0(ii2,iCRP),iCRP), &
                        Grid%Re (ii,GZero%iR1(ii2,iCRP),iCRP), &
                        GZero%dT(ii2,iCRP),GZero%dR(ii2,iCRP),a1,a2,a3)
-      else if (Ctrl%LUTIntflag .eq. LUTIntMethBicubic) then
+      else if (Ctrl%LUTIntSelm .eq. LUTIntMethBicubic) then
          ! WRT to Tau
          dYdTau(1) = (G(i,iX1,iX0) - G(i,iXm1,iX0)) / &
                      (Grid%Tau(ii,GZero%iT1 (ii2,iCRP),iCRP) - &
@@ -211,8 +211,8 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
                      Grid%Re(ii,GZero%iR1(ii2,iCRP),iCRP), &
                      GZero%dT(ii2,iCRP),GZero%dR(ii2,iCRP),a1,a2,a3)
       else
-         write(*,*) 'ERROR: Int_LUT_Common(): Invalid value for Ctrl%LUTIntflag: ', &
-                    Ctrl%LUTIntflag
+         write(*,*) 'ERROR: Int_LUT_Common(): Invalid value for Ctrl%LUTIntSelm: ', &
+                    Ctrl%LUTIntSelm
          status = LUTIntflagErr
          return
       end if

@@ -141,7 +141,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
    ! Parameters supported are Tau, Pc and f.
    select case (index)
 
-   case (iTau) ! Cloud optical depth, Tau
+   case (ITau) ! Cloud optical depth, Tau
 
       if ((SPixel%Illum(1) == IDay) .and. &
           SPixel%Ind%MDAD_SW > 0) then
@@ -168,7 +168,7 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
          status = XMDADMeth
       end if
 
-   case (iPc) ! Cloud pressure, Pc
+   case (IPc) ! Cloud pressure, Pc
 
       if (SPixel%Ind%MDAD_LW > 0) then
 if (CTP_LEGACY_MODE) then
@@ -223,10 +223,10 @@ endif
 !         write(*,*) 'WARNING: X_MDAD(): Cant calculate Pc if required LW channels not selected'
       end if
 
-   case (iFr) ! Cloud fraction, f
+   case (IFr) ! Cloud fraction, f
       ! Always overcast
       X = 1
-      if (present(Err)) Err = MDADErrF1
+      if (present(Err)) Err = MDADErrF
    end select
 
 end subroutine X_MDAD

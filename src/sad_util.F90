@@ -53,7 +53,7 @@ subroutine make_sad_chan_num(Ctrl, i_chan, chan_num)
    character(len=*), intent(out) :: chan_num
 
    if (Ctrl%Ind%Y_Id(i_chan) < 10) then
-      if (Ctrl%Inst%Name(1:5) .ne. 'AVHRR') then
+      if (Ctrl%InstName(1:5) .ne. 'AVHRR') then
          write(chan_num, '(a2,i1)') 'Ch',Ctrl%Ind%Y_Id(i_chan)
       else
          select case (Ctrl%Ind%Y_Id(i_chan))

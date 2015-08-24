@@ -153,17 +153,13 @@ module ECP_constants
    ! Error values
    real, parameter    :: MDADErrTau       = 1.0e+08 ! Error on a priori Tau if set by MDAD method.
    real, parameter    :: MDADErrPc        = 1.0e+08 ! Error on a priori Pc if set by MDAD method.
-   real, parameter    :: MDADErrF1        = 0.1
-   real, parameter    :: MDADErrF2        = 0.01
-   real, parameter    :: ErrFthreshold    = 9.0     ! Error on a priori F if set by MDAD method.
-   real, parameter    :: AUXErrTsLand     = 5.0     ! Error on a priori Ts if set by ! AUX method (land value).
-   real, parameter    :: AUXErrTsSea      = 2.0     ! Error on a priori Ts if set by ! AUX method (sea value).
+   real, parameter    :: MDADErrF         = 0.1     ! Error on a priori F if set by MDAD method.
+   real, parameter    :: AUXErrTsLand     = 5.0     ! Error on a priori Ts if set by AUX method (land value).
+   real, parameter    :: AUXErrTsSea      = 2.0     ! Error on a priori Ts if set by AUX method (sea value).
 
-   character(len=*), parameter :: months  = &
-      'JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC'        ! String used to convert month name to number.
-
+   ! For conversion from month/day to day number within year.
    integer, parameter, dimension(12) :: days_in_month = &
-      (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /) ! For conversion from month, day to day number within year.
+      (/ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 /)
 
    ! Codes for RTM interpolation (to Pc) methods
    integer, parameter :: RTMIntMethLinear = 0
@@ -226,6 +222,7 @@ module ECP_constants
    integer, parameter :: IDay             = 1
    integer, parameter :: ITwi             = 2
    integer, parameter :: INight           = 3
+   integer, parameter :: MaxIllum         = 3
 
    ! Constant values used for selection method
    integer, parameter :: SelmCtrl         = 1

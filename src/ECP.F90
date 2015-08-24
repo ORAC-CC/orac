@@ -398,7 +398,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #ifdef USE_ADAPTIVE_PROCESSING
    ! Adaptive processing:
    lhres = .false. ! "high" resolution flag
-   if (Ctrl%Inst%Name(1:5) .eq. 'MODIS') then
+   if (Ctrl%InstName(1:5) .eq. 'MODIS') then
 
       ! Set special range
       range_lat(1) = 42.0

@@ -9,7 +9,7 @@
 !
 ! Description and Algorithm details:
 ! Depending on the method specified for setting surface reflectance
-! (Ctrl%Rs%Flag):
+! (Ctrl%Rs%RsSelm):
 ! - Ctrl
 !      Ctrl: Get B values from Ctrl struct
 !             Set Sb using Ctrl values
@@ -171,7 +171,7 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
    ! the specified method
 
    ! Ctrl initialization method
-   if (Ctrl%Rs%Flag == SelmCtrl) then
+   if (Ctrl%Rs%RsSelm == SelmCtrl) then
       ! Get the surface flag super pixel array (only if the Ctrl or SAD method
       ! is set).
       !
@@ -222,10 +222,10 @@ subroutine Get_Surface(Ctrl, SPixel, MSI_Data, status)
       end do
 
    ! Meas method (not supported in ECP delivery)
-   else if (Ctrl%Rs%Flag == SelmMeas) then
+   else if (Ctrl%Rs%RsSelm == SelmMeas) then
 
    ! AUX method: use Albedo data to set Rs
-   else if (Ctrl%Rs%Flag == SelmAux) then
+   else if (Ctrl%Rs%RsSelm == SelmAux) then
 
       Sb = Ctrl%Rs%Sb ! Note this is a single value filling an array
 

@@ -219,7 +219,7 @@ subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
 
    character(InstnameLen)    :: InstName
 
-   InstName = Ctrl%Inst%Name
+   InstName = Ctrl%InstName
    ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
    if (InstName(1:10) == 'AVHRR-NOAA') then
       if (len_trim(InstName(11:)) == 1) then

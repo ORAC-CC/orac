@@ -201,7 +201,7 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
 
       ! Call routine to interpolate RTM data to the cloud pressure level.
       ! Interpol_Thermal returns transmittances in the LW part of RTM_Pc.
-      select case (Ctrl%RTMIntflag)
+      select case (Ctrl%RTMIntSelm)
       case (RTMIntMethLinear)
          call Interpol_Thermal(Ctrl, SPixel, X(iPc), &
               SAD_therm, RTM_Pc, status)
@@ -210,8 +210,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
               SAD_therm, RTM_Pc, status)
       case (RTMIntMethNone)
       case default
-         write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
-              Ctrl%LUTIntflag
+         write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntSelm: ', &
+              Ctrl%LUTIntSelm
          status = RTMIntflagErr
          return
       end select
@@ -229,15 +229,15 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    if (SPixel%Ind%NSolar > 0 .and. status == 0) then
       ! Call routine to interpolate RTM data to the cloud pressure level.
       ! Interpol_Solar populates the SW part of RTM_Pc.
-      select case (Ctrl%RTMIntflag)
+      select case (Ctrl%RTMIntSelm)
       case (RTMIntMethLinear)
          call Interpol_Solar(Ctrl, SPixel, X(iPc), RTM_Pc, status)
       case (RTMIntMethSpline)
          call Interpol_Solar_spline(Ctrl, SPixel, X(iPc), RTM_Pc, status)
       case (RTMIntMethNone)
       case default
-         write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntflag: ', &
-              Ctrl%LUTIntflag
+         write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntSelm: ', &
+              Ctrl%LUTIntSelm
          status = RTMIntflagErr
          return
       end select

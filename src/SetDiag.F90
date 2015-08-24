@@ -115,12 +115,12 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
    end if
 
    ! Flag retrieved variables with excessive error (bit of flag set is the index
-   ! of that state vector element in Ctrl%Ind%X_Dy; it is assumed that X_Tw and
+   ! of that state vector element in Ctrl%X_Dy; it is assumed that X_Tw and
    ! X_Ni are subsets of X_Dy).
    do m = 1, SPixel%Nx
       if (sqrt(SPixel%Sn(SPixel%X(m),SPixel%X(m))) > Ctrl%QC%MaxS(SPixel%X(m))) &
          Diag%QCFlag = ibset(Diag%QCFlag, &
-                             find_in_array(Ctrl%Ind%X_Dy(1:Ctrl%Ind%Nx_Dy), &
+                             find_in_array(Ctrl%X(1:Ctrl%Nx(IDay),IDay), &
                                            SPixel%X(m)))
    end do
 

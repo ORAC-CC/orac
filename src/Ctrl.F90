@@ -86,6 +86,8 @@
 !    Neither was being used and have been rotting.
 ! 2015/07/27, AP: Convert Homog/Coreg into logicals. Remove Ind%Log and
 !    NInstViews. Replace process_one_phase_only with Types_to_process.
+! 2015/08/21, AP: Tidying comments; Ordering variables logically;
+!    Renaming Flags as Selm;
 !
 ! $Id$
 !
@@ -100,47 +102,42 @@ module CTRL_def
    implicit none
 
    ! Define a type to hold File names used by the ECP
-
    type FID_t
-      character(FilenameLen) :: Config	           ! Configuration
-      character(FilenameLen) :: MSI	           ! Multi-Spectral Image
-      character(FilenameLen) :: LWRTM	           ! LW Rad Trans Model results
-      character(FilenameLen) :: SWRTM	           ! SW Rad Trans Model results
+      character(FilenameLen) :: Data_Dir           ! Directory of input files
+      character(FilenameLen) :: Out_Dir            ! Directory for output files
+      character(FilenameLen) :: SAD_Dir            ! Directory of SAD files
+      character(FilenameLen) :: Filename           ! Basename of input files
+      character(FilenameLen) :: Config             ! Configuration
+      character(FilenameLen) :: MSI                ! Multi-Spectral Image
+      character(FilenameLen) :: LWRTM              ! LW Rad Trans Model results
+      character(FilenameLen) :: SWRTM              ! SW Rad Trans Model results
       character(FilenameLen) :: PRTM               ! Profile RTM
-      character(FilenameLen) :: LS	           ! Land/sea map
-      character(FilenameLen) :: CF	           ! Cloud flag
+      character(FilenameLen) :: LS                 ! Land/sea map
+      character(FilenameLen) :: CF                 ! Cloud flag
       character(FilenameLen) :: Geo                ! Geometry (sun-satellite)
       character(FilenameLen) :: Loc                ! Location (latitudes/longs)
-      character(FilenameLen) :: uv                 ! scan lines u/v
-      character(FilenameLen) :: Alb	           ! Surface albedo, emissivity
-      character(FilenameLen) :: BkP	           ! ECP Break-Point file
+      character(FilenameLen) :: Alb                ! Surface albedo, emissivity
+      character(FilenameLen) :: BkP                ! ECP Break-Point file
       character(FilenameLen) :: L2_primary         ! Primary output file
       character(FilenameLen) :: L2_secondary       ! Secondary output file
    end type FID_t
 
-   ! Define a type for instrument info
-   type Inst_t
-      integer                :: ID
-      character(InstNameLen) :: Name
-   end type Inst_t
-
-   ! Indices: includes pixels to be used, channel and state variable indices and
-   ! "warm-start" pixel indices.
+   ! Indices: channel indexing and spatial grid definitions
    type Ind_t
       ! Channel indexing variables
       integer                :: Ny                 ! No. of instrument channels
                                                    ! actually used
       integer                :: NAvail             ! No. of instrument channels
-                                                   ! available.
+                                                   ! available in file
       integer, pointer       :: Y_Id(:)            ! Instrument IDs for used chs
-      integer, pointer       :: ICh(:)             ! Array indices for used chs
+      integer, pointer       :: ICh(:)             ! Index used chs out of those
+                                                   ! available in file
       integer                :: NSolar             ! No. of chs with solar source
       integer                :: NThermal           ! No. of chs w/ thermal source
       integer                :: NMixed             ! Number of mixed solar/
                                                    ! thermal channels
       integer, pointer       :: YSolar(:)          ! Array indices for solar chs
-                                                   ! i.e. indices in Y array, not
-                                                   ! channel IDs.
+                                                   ! out of those used (Y)
       integer, pointer       :: YThermal(:)        ! Array indices for thermal ch
       integer, pointer       :: YMixed(:)          ! Array indices for mixed chs
       integer, pointer       :: Ch_Is(:)           ! A bit flag of ch properties
@@ -149,159 +146,129 @@ module CTRL_def
       ! View indexing variables
       integer                :: NViews             ! Number of instrument views
                                                    ! available
-      integer, pointer       :: ViewIdx(:)         ! Array of view values, 1 per
-                                                   ! channel
+      integer, pointer       :: ViewIdx(:)         ! Array of view values. Values
+                                                   ! between 1 and NViews.
 
       ! Spatial grid indexing variables
       integer                :: XMax               ! Max no. of pixels in x
                                                    ! direction
       integer                :: YMax               ! Max no. of pixels in y
                                                    ! direction
+
       integer                :: X0                 ! Lower left pixel x coord
       integer                :: Y0                 ! Lower left pixel y coord
       integer                :: X1                 ! Upper right pixel x coord
       integer                :: Y1                 ! Upper right pixel y coord
-
-      ! State vector indexing variables
-      integer                :: Nx_Dy              ! Number of active state
-                                                   ! variables for daylight
-      integer                :: Nx_Tw              ! Number of active state
-                                                   ! variables for twilight
-      integer                :: Nx_Ni              ! Number of active state
-                                                   ! variables for night
-      integer                :: NxI_Dy             ! Number of inactive state
-                                                   ! for daylight conditions
-      integer                :: NxI_Tw             ! Number of inactive state
-                                                   ! variables for twilight
-      integer                :: NxI_Ni             ! Number of inactive state
-                                                   ! variables for night
-      integer                :: X_Dy(MaxStateVar)  ! Active state variable
-                                                   ! indices for daylight
-      integer                :: X_Tw(MaxStateVar)  ! Active state variable
-                                                   ! indices for twilight
-      integer                :: X_Ni(MaxStateVar)  ! Active state variable
-                                                   ! indices for night
-      integer                :: XI_Dy(MaxStateVar) ! Inactive state variable
-                                                   ! indices for daylight
-      integer                :: XI_Tw(MaxStateVar) ! Inactive state variable
-                                                   ! indices for twilight
-      integer                :: XI_Ni(MaxStateVar) ! Inactive state variable
-                                                   ! indices for night
-      integer                :: MDAD_LW            ! Index of channel at (or
-                                                   ! nearest to) 11 um used in
-                                                   ! MDAD method for setting FG
-                                                   ! (AP) cloud pressure and
-                                                   ! phase
-      integer                :: MDAD_SW            ! Index of channel at (or
-                                                   ! nearest to) 0.67 used in
-                                                   ! MDAD method for setting FG
-                                                   ! (AP) cloud optical depth
    end type Ind_t
 
    ! Surface Reflectance parameters
-   ! Arrays are set by Ctrl%ind%nsolar - presumably max possible is total no
-   ! of channels since all could be solar? - Sb, Cb NOT ARRAYS?
    type SurfRef_t
-      integer                :: Flag               ! Surface reflectance flag (1=Ctrl,2=SAD,...)
+      integer                :: RsSelm             ! Surface reflectance
+                                                   ! selection method
       logical                :: use_full_brdf
-      real, pointer          :: B(:,:)             ! Model parameter surface reflectance values
-                                                   ! (chans, sea/land)
-      real                   :: Sb                 ! % error in B
-      real                   :: Cb                 ! Correlation in Sb between channels
+      real, pointer          :: B(:,:)             ! Prescribed surface reflect
+                                                   ! (chs, sea/land)
+      real                   :: Sb                 ! % error in B: constant for
+                                                   ! all chs, sea/land
+      real                   :: Cb                 ! Correlation in error between
+                                                   ! chs: constant for all chs
    end type SurfRef_t
 
    ! Equivalent model parameter noise flags
    type EqMPN_t
       integer                :: Rs                 ! Flag to use EqMPN from Rs errors
-      integer                :: TH                 ! Flag to use Eqmpn from T/H(z) errors
-      logical                :: Homog              ! Flag to use Eqmpn from homog errors
-      logical                :: CoReg              ! Flag to use Eqmpn from coReg errors
+      logical                :: Homog              ! Use homogogeneity errors
+      logical                :: CoReg              ! Use coregistration errors
    end type EqMPN_t
 
    ! Inversion parameters
    type Invpar_t
+      logical                :: ConvTest           ! Apply false convergence test
       real                   :: MqStart            ! Marquardt starting parameter
       real                   :: MqStep             ! Marquardt step parameter
       integer                :: MaxIter            ! Maximum number of iterations
       real                   :: Ccj                ! Cost convergence criteria
-      real                   :: XScale(MaxStateVar)! Scaling parameters (Tau,Re,Pc,F,Ts)
+      real                   :: XScale(MaxStateVar)! Scaling parameters
       real                   :: XLLim(MaxStateVar) ! Lower limit on state
       real                   :: XULim(MaxStateVar) ! Upper limit on state
-      logical                :: ConvTest           ! Apply false convergence test
    end type Invpar_t
 
-   ! Quality control parameters (apply to inversion)
+   ! Quality control parameters (used to set SPixel%QC flag)
    type QC_t
-      real                   :: MaxJ               ! Maximum acceptable value of cost function
-      real                   :: MaxS(MaxStateVar)  ! Maximum acceptable error in state variable
-				                   ! at solution.
+      real                   :: MaxJ               ! Maximum acceptable value of
+                                                   ! cost function
+      real                   :: MaxS(MaxStateVar)  ! Maximum acceptable error in
+                                                   ! state variable at solution
    end type QC_t
 
    ! Main Ctrl structure.
-   ! Note that the FG and AP arrays are 2-d, to allow separate options for
-   ! day, twilight and night. A 2-d array is used (as opposed to the 3 separate
-   ! 1-d arrays used in the case of X_Dy, X_Ni etc) to allow checking via a
-   ! simple nested loop.
    type CTRL_t
-      character(FilenameLen) :: version
-      character(FilenameLen) :: Data_Dir
-      character(FilenameLen) :: Out_Dir
-      character(FilenameLen) :: SAD_Dir
-      character(FilenameLen) :: Run_ID
-      type (FID_t)           :: FID
-      integer                :: Bkpl	           ! Break-point level
-      integer		     :: LUTIntflag         ! LUT Interpolation flag
-                                                   ! 0 = linear interp
-                                                   ! 1 = bicubic
-      integer		     :: RTMIntflag         ! RTM Interpolation flag
-                                                   ! 0 = linear interp
-                                                   ! 1 = bicubic
-      character(16)          :: Date               ! Date of MSI data
-      character(16)          :: Time               ! Time of MSI data (not used?)
-      integer                :: DOY                ! Day number in year of MSI data.
-      real                   :: MaxSolZen          ! Daynight/twilight boundary
-      real                   :: MaxSatZen
-      real                   :: Sunset             ! SolZen angle for sunset
-      type (Inst_t)          :: Inst
-      type (Ind_t)           :: Ind
-      logical                :: process_cloudy_only
-      integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
-                                                   ! type codes for pixels to
-                                                   ! run the retrieval
-      integer                :: NTypes_to_process  ! Number of valid values in above
+      ! Terms drawn from mandatory part of driver file and config file
+      type(FID_t)            :: FID
+      character(InstnameLen) :: InstName           ! Instrument name
       character(3)           :: LUTClass           ! Name of LUT to use
       integer                :: Approach           ! Controls manner of retrieval
                                                    ! performed. See ECPConstants.
-      integer                :: CloudType          ! Cloud type flag, distinct from
-                                                   ! cloud class, used to define
-                                                   ! the homog/coreg noise.
-      integer                :: Ap(MaxStateVar,3)  ! A Priori options
-      integer                :: Fg(MaxStateVar,3)  ! First-guess options for
-                                                   ! state vector plus phase.
-      real                   :: Xb(MaxStateVar)    ! A Priori values
-      real                   :: X0(MaxStateVar)    ! First-guess values
-      real                   :: Sx(MaxStateVar)    ! Error covariance of Xb
-      integer                :: Max_SDAD           ! Max distance (no of pixels) that
-                                                   ! last retrieved solution can
-                                                   ! be used for FG/AP setting by SDAD method.
-      real, pointer          :: Sy(:,:)            ! Measurement error covariance.
-      type (SurfRef_t)       :: RS
-      type (EqMPN_t)         :: EqMPN
-      type (Invpar_t)        :: Invpar
-      type (QC_t)            :: QC                 ! Quality control structure
+      ! Terms that aren't controlled by the driver file
+      type(Ind_t)            :: Ind
+      integer                :: DOY                ! Day number in year of data.
 
+      ! Remaining terms are set in Read_Driver
+      character(FilenameLen) :: Run_ID
+      type(SurfRef_t)        :: RS
+      type(EqMPN_t)          :: EqMPN
+      type(Invpar_t)         :: Invpar
+      type(QC_t)             :: QC
+
+      ! Boundaries of illumination conditions
+      real                   :: MaxSolZen          ! Daynight/twilight boundary
+      real                   :: MaxSatZen
+      real                   :: MinRelAzi          ! Sun glint boundary
+      real                   :: Sunset             ! SolZen angle for sunset
+
+      ! Switches and flags controlling optional behaviours
+      integer                :: LUTIntSelm         ! LUT Interpolation flag,
+                                                   ! See LUTIntMeth variables.
+      integer                :: RTMIntSelm         ! RTM Interpolation flag,
+                                                   ! See RTMIntMeth variables.
+      integer                :: CloudType          ! Defines the homog/coreg
+                                                   ! noise estimates used
+      integer                :: Bkpl               ! Break-point level
+      real                   :: Max_SDAD           ! Max # of pixels since
+                                                   ! sucessful retrieval
+                                                   ! acceptable for using SDAD.
       logical                :: sabotage_inputs    ! See sabotage_input_data.F90
+      logical                :: process_cloudy_only
+      integer                :: NTypes_to_process  ! # of valid values in above
+      integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
+                                                   ! type codes for pixels to
+                                                   ! run the retrieval
 
+      ! Variables used by cloud_indexing_logic (first three ignore driver)
       integer, pointer       :: tau_chans(:)       ! Channels that meet the
                                                    ! Tau retrieval requirement
       integer, pointer       :: r_e_chans(:)       ! Same thing but for Re
       integer, pointer       :: ir_chans(:)        ! Same thing but for Pc, Fr,
                                                    ! and Ts
-
       integer, pointer       :: ReChans(:)         ! A list of effective radius
                                                    ! sensitive channels to use
                                                    ! in an order of decreasing
                                                    ! priority.
+
+      ! State vector selection methods (see Selm variables in ECP_constants)
+      integer                :: Ap(MaxStateVar,MaxIllum) ! A Priori options
+      integer                :: Fg(MaxStateVar,MaxIllum) ! First-guess options
+
+      ! Prescribed retrieval vectors
+      real                   :: Xb(MaxStateVar)    ! A Priori values
+      real                   :: X0(MaxStateVar)    ! First-guess values
+      real                   :: Sx(MaxStateVar)    ! Error covariance of Xb
+      real, pointer          :: Sy(:,:)            ! Measurement error covariance
+
+      ! State vector indexing variables (defined for each illumination condition)
+      integer                :: Nx(MaxIllum)       ! # of active state variables
+      integer                :: X(MaxStateVar,MaxIllum)  ! State vector elements
+                                                         !   to be retrieved
    end type CTRL_t
 
 contains

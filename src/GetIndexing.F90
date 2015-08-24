@@ -13,8 +13,8 @@
 ! these channels are available in each category.  Note: This does not prevent
 ! other unrequired channels from being used.
 !
-! Loop through the required active state variables, either Ctrl%Ind%X_Dy,
-! Ctrl%Ind%X_Tw or Ctrl%Ind%X_Ni, depending on illumination and if the
+! Loop through the required active state variables, either Ctrl%X_Dy,
+! Ctrl%X_Tw or Ctrl%X_Ni, depending on illumination and if the
 ! channel requirement is met in its category, add it to the list of active
 ! state variables.
 !
@@ -376,54 +376,54 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
    ii_x = 0
    n_ir_chans2 = n_ir_chans
    if (SPixel%Illum(1) .eq. IDay) then
-      do i_x = 1, Ctrl%Ind%Nx_Dy
-         if (Ctrl%Ind%X_Dy(i_x) .eq. ITau .and. n_tau_chans .ge. min_tau_chans) then
+      do i_x = 1, Ctrl%Nx(IDay)
+         if (Ctrl%X(i_x,IDay) .eq. ITau .and. n_tau_chans .ge. min_tau_chans) then
             ii_x = ii_x + 1
             X(ii_x) = ITau
-         else if (Ctrl%Ind%X_Dy(i_x) .eq. IRe .and. n_r_e_chans .ge. min_r_e_chans) then
+         else if (Ctrl%X(i_x,IDay) .eq. IRe .and. n_r_e_chans .ge. min_r_e_chans) then
             ii_x = ii_x + 1
             X(ii_x) = IRe
-         else if (Ctrl%Ind%X_Dy(i_x) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
+         else if (Ctrl%X(i_x,IDay) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = IPc
-         else if (Ctrl%Ind%X_Dy(i_x) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
+         else if (Ctrl%X(i_x,IDay) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = ITs
-         else if (Ctrl%Ind%X_Dy(i_x) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
+         else if (Ctrl%X(i_x,IDay) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = IFr
          end if
       end do
    else if (SPixel%Illum(1) .eq. ITwi) then
-      do i_x = 1, Ctrl%Ind%Nx_Tw
-         if (Ctrl%Ind%X_Tw(i_x) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
+      do i_x = 1, Ctrl%Nx(ITwi)
+         if (Ctrl%X(i_x,ITwi) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = IPc
-         else if (Ctrl%Ind%X_Tw(i_x) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
+         else if (Ctrl%X(i_x,ITwi) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = ITs
-         else if (Ctrl%Ind%X_Tw(i_x) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
+         else if (Ctrl%X(i_x,ITwi) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = IFr
          end if
       end do
    else if (SPixel%Illum(1) .eq. INight) then
-      do i_x = 1, Ctrl%Ind%Nx_Ni
-         if (Ctrl%Ind%X_Ni(i_x) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
+      do i_x = 1, Ctrl%Nx(INight)
+         if (Ctrl%X(i_x,INight) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = IPc
-         else if (Ctrl%Ind%X_Ni(i_x) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
+         else if (Ctrl%X(i_x,INight) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = ITs
-         else if (Ctrl%Ind%X_Ni(i_x) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
+         else if (Ctrl%X(i_x,INight) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
             ii_x = ii_x + 1
             n_ir_chans2 = n_ir_chans2 - 1
             X(ii_x) = IFr

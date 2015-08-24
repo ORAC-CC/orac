@@ -62,7 +62,7 @@ subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    ! Call appropriate satellite data reading routines
    ! (Sections to be added as reading routines become available
 
-   if (Ctrl%RS%Flag == SelmAux) then
+   if (Ctrl%RS%RsSelm == SelmAux) then
       if (verbose) write(*,*) 'Reading Albedo data'
       call Read_ALB_nc(Ctrl, MSI_Data, verbose)
    end if

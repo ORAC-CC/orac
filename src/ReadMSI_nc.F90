@@ -125,9 +125,6 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    ! Read product date and time from netcdf global attributes
    if (nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date) == &
         NF90_NOERR) then
-      Ctrl%Date=trim(adjustl(prod_date(1:8)))
-      Ctrl%Time=trim(adjustl(prod_date(9:12)))
-
       ! Get day and month as integers
       read(prod_date(7:8), '(I2)') day
       read(prod_date(5:6), '(I2)') month
