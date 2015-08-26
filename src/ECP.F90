@@ -338,15 +338,17 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
 
    ! Make read in rttov data in one go, no more segment reads
-   call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
-        RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NLWF, verbose)
+   if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
+      call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
+           RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NLWF, verbose)
 
-   call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
-        RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, verbose)
+      call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
+           RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, verbose)
 
-   call Read_PRTM_nc( Ctrl, RTM, verbose)
-   call Read_LwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NThermal > 0 ?
-   call Read_SwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NSolar > 0 ?
+      call Read_PRTM_nc( Ctrl, RTM, verbose)
+      call Read_LwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NThermal > 0 ?
+      call Read_SwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NSolar > 0 ?
+   end if
 
 
    !----------------------------------------------------------------------------
@@ -490,12 +492,19 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    !  Allocate sizes of SPixel sub-structure arrays
-   call Alloc_RTM_Pc(Ctrl, RTM_Pc)
    call Alloc_SPixel(Ctrl, RTM, SPixel)
 
-   ! Set RTM pressure values in SPixel (will not change from here on)
-   SPixel%RTM%LW%Np = RTM%LW%Np
-   SPixel%RTM%SW%NP = RTM%SW%Np
+   if (Ctrl%RTMIntSelm == RTMIntMethNone) then
+      RTM_Pc%Hc      = sreal_fill_value
+      RTM_Pc%Tc      = sreal_fill_value
+      RTM_Pc%dHc_dPc = sreal_fill_value
+      RTM_Pc%dTc_dPc = sreal_fill_value
+   else
+      ! Set RTM pressure values in SPixel (will not change from here on)
+      call Alloc_RTM_Pc(Ctrl, RTM_Pc)
+      SPixel%RTM%LW%Np = RTM%LW%Np
+      SPixel%RTM%SW%NP = RTM%SW%Np
+   end if
 
    ! Initialise values required before main loop begins, e.g. first guess
    ! phase which may be required for SDAD first guess/a priori setting in the
@@ -578,7 +587,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    !$OMP END DO
 
    call Dealloc_SPixel(Ctrl, SPixel)
-   call Dealloc_RTM_Pc(Ctrl, RTM_Pc)
+   if (Ctrl%RTMIntSelm /= RTMIntMethNone) call Dealloc_RTM_Pc(Ctrl, RTM_Pc)
 
    !$OMP END PARALLEL
 
@@ -639,7 +648,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    deallocate(SAD_Chan)
    call Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
-   call Dealloc_RTM(Ctrl, RTM)
+   if (Ctrl%RTMIntSelm /= RTMIntMethNone) call Dealloc_RTM(Ctrl, RTM)
 
    call Dealloc_Data(Ctrl, MSI_Data)
 
