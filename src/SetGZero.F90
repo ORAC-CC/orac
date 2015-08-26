@@ -214,7 +214,7 @@ subroutine Set_GZero(Tau, Re, Ctrl, SPixel, SAD_LUT, GZero, status)
          GZero%SaSo1(i,j) = 1.0 - GZero%dSaZSoZ(i,j)
       end do
 
-#ifdef DEBUG
+#ifdef BKP
       do i=1,SPixel%Ind%Ny
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
          if (SAD_LUT%table_used_for_channel(ii, j)) then

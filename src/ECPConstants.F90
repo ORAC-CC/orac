@@ -249,12 +249,6 @@ module ECP_constants
    integer, parameter :: AerSw  = 4
    integer, parameter :: AshEyj = 5
 
-   ! General format statements
-   character(len=*), parameter :: FNForm       = '(a2048)' ! Format for I/O of filenames
-   character(len=*), parameter :: LUTArrayForm = '(10E14.6)'
-   ! Used in outputting SAD_chan structs (for debugging only)
-   character(len=*), parameter :: SADChanForm  = &
-      '(/, 2A, f10.2, /, i1, 1x, 15(f9.2, 1x), /, i1, 1x, 14(f9.2, 1x))'
 
    ! Breakpoint levels for individual subroutines.  The parameter name is
    ! BkpL_<subroutine name>. Some routines may require multiple breakpoint

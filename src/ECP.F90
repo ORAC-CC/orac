@@ -220,10 +220,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer             :: status     ! Status value returned from subroutines
    logical             :: verbose    ! Verbose print-out flag
 
-   character(8)        :: date       ! date returned from Date And Time function
-   character(10)       :: time       ! time returned from Date And Time function
-   character(24)       :: time_str   ! string to hold date + time
-
    integer             :: ixstart,ixstop,xstep
                                      ! First and last super-pixel X locations
    integer             :: iystart,iystop,ystep
@@ -249,9 +245,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Some netcdf related indices and labels
    integer :: iviews,iinput
-
-   ! Variables to avoid out of bounds contents
-   real(kind=sreal) :: dummyreal
 
    ! OpenMP related variables
    integer :: n_threads,thread_num
@@ -331,7 +324,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       end if
       write(bkp_lun, *)' ORAC breakpoint output'
       write(bkp_lun, *)' Run ID: ', Ctrl%Run_ID
-      write(bkp_lun, *)' Start time: ', time_str
       write(bkp_lun, *)
       close(unit=bkp_lun)
    end if
@@ -490,7 +482,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Start OMP section by spawning the threads
    !$OMP PARALLEL &
    !$OMP PRIVATE(i,j,jj,m,iviews,iinput,thread_num,RTM_Pc,SPixel) &
-   !$OMP PRIVATE(Diag,dummyreal) &
+   !$OMP PRIVATE(Diag) &
    !$OMP FIRSTPRIVATE(status)
 
    thread_num = omp_get_thread_num()
