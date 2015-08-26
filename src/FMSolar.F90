@@ -371,16 +371,18 @@ if (.not. Ctrl%RS%use_full_brdf) then
       Tbc_dd, T_all, S, S_dnom, Sp, d_REF)
 
    ! Derivative w.r.t. cloud-top pressure, P_c
-   do i=1, SPixel%Ind%NSolar
-      d_REF(i,IPc) = X(IFr) * &
-         (1.0 * RTM_Pc%SW%dTac_dPc(Solar(i)) * &
-                (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) + &
-                 SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))) &
-              * REF_over(i) / RTM_Pc%SW%Tac(Solar(i))) + &
-         (2.0 * RTM_Pc%SW%dTbc_dPc(Solar(i)) * Tac_0v(i) * S(i) * &
-                RTM_Pc%SW%Tbc(Solar(i)) * &
-                (1.0/Tbc_dd(i) + CRP(i,IRFd) * SPixel%Surface%Rs(i) / S_dnom(i)))
-   end do
+   if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
+      do i=1, SPixel%Ind%NSolar
+         d_REF(i,IPc) = X(IFr) * &
+            (1.0 * RTM_Pc%SW%dTac_dPc(Solar(i)) * &
+                   (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) + &
+                    SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))) &
+                 * REF_over(i) / RTM_Pc%SW%Tac(Solar(i))) + &
+            (2.0 * RTM_Pc%SW%dTbc_dPc(Solar(i)) * Tac_0v(i) * S(i) * &
+                   RTM_Pc%SW%Tbc(Solar(i)) * &
+                   (1.0/Tbc_dd(i) + CRP(i,IRFd) * SPixel%Surface%Rs(i) / S_dnom(i)))
+      end do
+   end if
 
    ! Derivative w.r.t. cloud fraction, f
    d_REF(:,IFr) = (REF_over - SPixel%RTM%REF_clear)
@@ -449,68 +451,70 @@ else
       Tbc_dd, SPixel%Surface%Rs2, d_REF(:,IRe), a, b, c)
 
    ! Calculate the derivatives of the above cloud (ac) beam transmittances
-   do i = 1, SPixel%Ind%NSolar
-      ! Above cloud at solar zenith angle:
-      Tac_0_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
-         SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tac(Solar(i)) ** &
-            (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-      ! Above cloud at viewing angle:
-      Tac_v_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
-         SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tac(Solar(i)) ** &
-            (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-   end do
+   if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
+      do i = 1, SPixel%Ind%NSolar
+         ! Above cloud at solar zenith angle:
+         Tac_0_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
+            SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+            RTM_Pc%SW%Tac(Solar(i)) ** &
+               (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+         ! Above cloud at viewing angle:
+         Tac_v_l(i) = RTM_Pc%SW%dTac_dPc(Solar(i)) * &
+            SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+            RTM_Pc%SW%Tac(Solar(i)) ** &
+               (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+      end do
 
-   ! Calculate the derivative of the solar transmittance from TOA to cloud-top
-   ! times the viewing transmittance from cloud-top to TOA
-   Tac_0v_l = Tac_0_l * Tac_v + Tac_0 * Tac_v_l
+      ! Calculate the derivative of the solar transmittance from TOA to cloud-top
+      ! times the viewing transmittance from cloud-top to TOA
+      Tac_0v_l = Tac_0_l * Tac_v + Tac_0 * Tac_v_l
 
-   ! Calculate the derivatives of the below cloud (bc) beam transmittances
-   do i = 1, SPixel%Ind%NSolar
-      ! At solar zenith angle:
-      Tbc_0_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
-         SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tbc(Solar(i)) ** &
-            (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-      ! At sensor viewing angle:
-      Tbc_v_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
-         SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
-         RTM_Pc%SW%Tbc(Solar(i)) ** &
-            (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
-      ! Diffuse
-      Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) ! &
+      ! Calculate the derivatives of the below cloud (bc) beam transmittances
+      do i = 1, SPixel%Ind%NSolar
+         ! At solar zenith angle:
+         Tbc_0_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
+            SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+            RTM_Pc%SW%Tbc(Solar(i)) ** &
+               (SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+         ! At sensor viewing angle:
+         Tbc_v_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) * &
+            SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * &
+            RTM_Pc%SW%Tbc(Solar(i)) ** &
+               (SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) - 1.)
+         ! Diffuse
+         Tbc_d_l(i) = RTM_Pc%SW%dTbc_dPc(Solar(i)) ! &
 !        * (1. / cos(66. * d2r)) * RTM_Pc%SW%Tbc(i) ** (1. / cos(66. * d2r) - 1.)
-   end do
+      end do
 
-   ! Calculate the derivative of the diffuse transmittance from cloud to
-   ! surface times transmittance from surface to cloud
-   Tbc_dd_l = 2. * Tbc_d_l * Tbc_d
+      ! Calculate the derivative of the diffuse transmittance from cloud to
+      ! surface times transmittance from surface to cloud
+      Tbc_dd_l = 2. * Tbc_d_l * Tbc_d
 
-   ! Derivative w.r.t. cloud-top pressure, P_c
-   if (i_equation_form .eq. 1) then
-      d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_DD)) * &
-               CRP(:,IT_dv) * (Tbc_0_l * Tbc_d + Tbc_0 * Tbc_d_l) + &
-            ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-               SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
-               CRP(:,IT_dv) * Tbc_d_l)) / a + &
-            b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
-   else
-      d_l = CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
-               Tbc_v + Tbc_0 * Tbc_v_l) + &
-            CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
-               Tbc_v + Tbc_d * Tbc_v_l) + &
-            ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
-               SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
-               Tbc_d_l + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
-               Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
-               CRP(:,IT_vv) * Tbc_dd * Tbc_v_l)) / a + &
-            b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+      ! Derivative w.r.t. cloud-top pressure, P_c
+      if (i_equation_form .eq. 1) then
+         d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_DD)) * &
+                  CRP(:,IT_dv) * (Tbc_0_l * Tbc_d + Tbc_0 * Tbc_d_l) + &
+               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
+                  CRP(:,IT_dv) * Tbc_d_l)) / a + &
+               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+      else
+         d_l = CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0V) * CRP(:,IT_vv) * (Tbc_0_l * &
+                  Tbc_v + Tbc_0 * Tbc_v_l) + &
+               CRP(:,IT_0d) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * (Tbc_d_l * &
+                  Tbc_v + Tbc_d * Tbc_v_l) + &
+               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (CRP(:,IT_dv) * &
+                  Tbc_d_l + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * CRP(:,IT_vv) * &
+                  Tbc_dd_l * Tbc_v + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
+                  CRP(:,IT_vv) * Tbc_dd * Tbc_v_l)) / a + &
+               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+      end if
+
+      REF_over_l = Tac_0v_l * d + Tac_0v * d_l
+
+      d_REF(:,IPc) = X(IFr) * REF_over_l
    end if
-
-   REF_over_l = Tac_0v_l * d + Tac_0v * d_l
-
-   d_REF(:,IPc) = X(IFr) * REF_over_l
 
    ! Derivative w.r.t. cloud fraction, f
    d_REF(:,IFr) = REF_over - SPixel%RTM%REF_clear

@@ -209,6 +209,8 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
          call Interpol_Thermal_spline(Ctrl, SPixel, X(iPc), &
               SAD_therm, RTM_Pc, status)
       case (RTMIntMethNone)
+         write(*,*) 'ERROR: FM(): Thermal forward model requires RTTOV inputs.'
+         stop RTMIntflagErr
       case default
          write(*,*) 'ERROR: FM(): Invalid value for Ctrl%RTMIntSelm: ', &
               Ctrl%LUTIntSelm

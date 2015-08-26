@@ -309,6 +309,11 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
               n_ir_chans2
    integer :: min_tau_chans, min_r_e_chans, min_ir_chans, min_x
 
+   if (Ctrl%RTMIntSelm == RTMIntMethNone) then
+      write(*,*) 'ERROR: Get_Indexing(): Cloud retrieval requires RTTOV inputs.'
+      stop RTMIntFlagErr
+   end if
+
    ! If it is day time, Ctrl%ReChans is associated and any channels in
    ! Ctrl%ReChans are greater than zero and match any of the available r_e
    ! channels then pick the first one in Ctrl%ReChans that matches and set the
