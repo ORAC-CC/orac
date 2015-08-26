@@ -87,11 +87,13 @@
 ! 2015/06/02, AP: Add read of view direction and pixel variance.
 ! 2015/07/03, OS: Added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/08/26, AP: Correct name of date attribute.
 !
 ! $Id$
 !
 ! Bugs:
-! None known.
+! The DOY calculation does not account for leap years. This produces fractional
+! errors in f0 < 6e-4, which is of a similar order to the equation's accuracy.
 !-------------------------------------------------------------------------------
 
 subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
@@ -124,7 +126,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    call nc_open(ncid, Ctrl%Fid%MSI)
 
    ! Read product date and time from netcdf global attributes
-   if (nf90_get_att(ncid, NF90_GLOBAL, "Product_Date", prod_date) == &
+   if (nf90_get_att(ncid, NF90_GLOBAL, "Date_Created", prod_date) == &
         NF90_NOERR) then
       ! Get day and month as integers
       read(prod_date(7:8), '(I2)') day
