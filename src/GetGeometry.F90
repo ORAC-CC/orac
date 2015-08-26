@@ -68,6 +68,7 @@
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/07/14, AP: Replace loop with any() statement.
 ! 2015/08/04, GM: Added range checking.
+! 2015/08/21, AP: Add sunglint test from aerosol (currently off as set to 0).
 !
 ! $Id$
 !
@@ -119,6 +120,15 @@ subroutine Get_Geometry(Ctrl, SPixel, MSI_Data, status)
            SPixel%Geom%RelAzi > RelAziMax)) then
 #ifdef DEBUG
       write(*, *) 'Get_Geometry: Relative azimuth angle out of range at: ', &
+                  SPixel%Loc%X0, SPixel%Loc%Y0
+#endif
+      status = SPixelGeomSat
+   end if
+
+   ! Aerosol sunglint test
+   if (any(SPixel%Geom%RelAzi < Ctrl%MinRelAzi)) then
+#ifdef DEBUG
+      write(*, *) 'Get_Geometry: Relative azimuth indicates sunglint at: ', &
                   SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
       status = SPixelGeomSat
