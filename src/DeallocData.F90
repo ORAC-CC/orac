@@ -77,6 +77,7 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    if (associated(MSI_Data%time))         deallocate(MSI_Data%time)
 
    if (associated(MSI_Data%MSI))          deallocate(MSI_Data%MSI)
+   if (associated(MSI_Data%SD))           deallocate(MSI_Data%SD)
 
    if (associated(MSI_Data%illum))        deallocate(MSI_Data%illum)
 

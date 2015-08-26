@@ -68,6 +68,7 @@
 ! 2015/01/13, AP: Remove First:Last channel indexing.
 ! 2015/01/19, GM: Use make_sad_chan_num().
 ! 2015/04/30, MS: Correct the chan_file definition for NOAA-7 and NOAA-9
+! 2015/06/02, AP: Writing to Sy managed in GetMeasurements.
 ! 2015/07/14, AP: Replacing **2 with multiplication.
 ! 2015/08/21, AP: Generalised MS last fix.
 !
@@ -105,7 +106,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
    NThermal        = 0
    NSolar          = 0
-   Ctrl%Sy         = 0.
 
    write(*,*) 'Number of channels used, Ctrl%Ind%Ny: ',Ctrl%Ind%Ny
 
@@ -209,14 +209,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
          ! Convert Rs from a percentage to a fraction
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Rs
          SAD_Chan(i)%Solar%Rs = SAD_Chan(i)%Solar%Rs / 100.0
-      end if
-
-      ! Set the measurement error covariance for the channel
-      ! Thermal/mixed use NEBT, Solar use NEdR
-      if (SAD_Chan(i)%Thermal%Flag > 0) then
-         Ctrl%Sy(i,i) = SAD_Chan(i)%Thermal%NEBT
-      else
-         Ctrl%Sy(i,i) = SAD_Chan(i)%Solar%NedR
       end if
 
 999   if (ios /= 0) then

@@ -84,6 +84,7 @@
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination,
 !    and channel selection code.  In particular, setting of out-of-range
 !    measurements to MissingXn is now done here.
+! 2015/06/02, AP: Add read of view direction and pixel variance.
 ! 2015/07/03, OS: Added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 !
@@ -153,6 +154,13 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
 
    call nc_read_array(ncid, "msi_data", MSI_Data%MSI, verbose, 3, Ctrl%Ind%ICh)
    call nc_read_array(ncid, "time_data", MSI_Data%time, verbose)
+
+   ! Read variance data if requested (for aerosol retrieval)
+   if (Ctrl%EqMPN%SySelm == SelmMeas) then
+      allocate(MSI_Data%SD(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
+      call nc_read_array(ncid, "var_data", MSI_Data%SD, verbose, &
+                         3, Ctrl%Ind%ICh)
+   end if
 
    ! Read channel view indices from file (all channels)
    allocate(Ctrl%Ind%ViewIdx(Ctrl%Ind%Ny))

@@ -182,6 +182,8 @@ module CTRL_def
    ! Equivalent model parameter noise flags
    type EqMPN_t
       integer                :: Rs                 ! Flag to use EqMPN from Rs errors
+      integer                :: SySelm             ! Measurement covariance
+                                                   ! selection method
       logical                :: Homog              ! Use homogogeneity errors
       logical                :: CoReg              ! Use coregistration errors
    end type EqMPN_t

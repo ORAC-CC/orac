@@ -90,6 +90,8 @@
 !    from MSI_Data%MSI(:,:,:) and cleanup.
 ! 2015/01/13, AP: Remove ThermalFirst,ThermalLast.
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
+! 2015/08/19, AP: Sy may now be drawn from the MSI data files (SelmMeas), the
+!    SAD files (SelmAux), or taken to be constant (SelmCtrl).
 !
 ! $Id$
 !
@@ -147,14 +149,37 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    deallocate(SPixel%Sy)
    allocate(SPixel%Sy(SPixel%Ind%Ny, SPixel%Ind%Ny))
+   SPixel%Sy = 0.
 
-   do i = 1, SPixel%Ind%Ny
-      ii = SPixel%spixel_y_to_ctrl_y_index(i)
-      do j = 1, SPixel%Ind%Ny
-         jj = SPixel%spixel_y_to_ctrl_y_index(j)
-         SPixel%Sy(i,j) = Ctrl%Sy(ii, jj)
+   select case (Ctrl%EqMPN%SySelm)
+   case(SelmMeas)
+      ! Use Sy matrix read in from MSI file
+      do i = 1, SPixel%Ind%Ny
+         ii = SPixel%spixel_y_to_ctrl_y_index(i)
+         ! Square value to a variance
+         SPixel%Sy(i,i) = MSI_Data%SD(SPixel%Loc%X0, SPixel%Loc%Y0, ii) * &
+                          MSI_Data%SD(SPixel%Loc%X0, SPixel%Loc%Y0, ii)
       end do
-   end do
+   case(SelmAux)
+      ! Use values read from SAD_Chan files
+      do i = 1, SPixel%Ind%Ny
+         ii = SPixel%spixel_y_to_ctrl_y_index(i)
+         if (SAD_Chan(ii)%Thermal%Flag > 0) then
+            SPixel%Sy(i,i) = SAD_Chan(ii)%Thermal%NEBT
+         else
+            SPixel%Sy(i,i) = SAD_Chan(ii)%Solar%NedR
+         end if
+      end do
+   case(SelmCtrl)
+      ! Use Sy matrix put in Ctrl by Read_Driver
+      do i = 1, SPixel%Ind%Ny
+         ii = SPixel%spixel_y_to_ctrl_y_index(i)
+         do j = 1, SPixel%Ind%Ny
+            jj = SPixel%spixel_y_to_ctrl_y_index(j)
+            SPixel%Sy(i,j) = Ctrl%Sy(ii, jj)
+         end do
+      end do
+   end select
 
    ! Add in the Homog and Coreg noise IF the appropriate Ctrl flags are set
    ! (For mixed solar/thermal channels, the value in daytime is a sum of the

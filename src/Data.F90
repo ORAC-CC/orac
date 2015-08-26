@@ -84,6 +84,9 @@ module Data_def
       real(dreal),        pointer :: time(:,:)
       real(sreal),        pointer :: MSI(:,:,:)
       integer,            pointer :: illum(:,:,:)
+
+      ! SelmAux surface reflectance uncertainty terms
+      real(sreal),        pointer :: SD(:,:,:)     ! Std deviation in MSI data
    end type Data_t
 
 contains

@@ -431,6 +431,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    !----------------------- CTRL%EqMPN --------------------
    Ctrl%EqMPN%Rs     = 1
+   Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux, Aer=SelmMeas)
    Ctrl%EqMPN%Homog  = switch(a, Default=.true.,  Aer=.false.)
    Ctrl%EqMPN%Coreg  = switch(a, Default=.true.,  Aer=.false.)
 
@@ -661,6 +662,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    ! Measurement covariance
    allocate(Ctrl%Sy(Ctrl%Ind%Ny,Ctrl%Ind%Ny))
+   Ctrl%Sy = 0.
+   do i = 1, Ctrl%Ind%Ny
+      if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
+         Ctrl%Sy(i,i) = 2.0
+      else
+         Ctrl%Sy(i,i) = 0.05
+      end if
+   end do
 
    !------------- CTRL STATE VECTOR INDEXING --------------
    ! These arrays specify which variables should be retrieved in each
@@ -772,6 +781,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%RS%Cb)            /= 0) call h_p_e(label)
       case('CTRL%EQMPN%RS')
          if (parse_string(line, Ctrl%EqMPN%Rs)         /= 0) call h_p_e(label)
+      case('CTRL%EQMPN%SYSELM')
+         if (parse_user_text(line, Ctrl%EqMPN%SySelm)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%HOMOG')
          if (parse_string(line, Ctrl%EqMPN%Homog)      /= 0) call h_p_e(label)
       case('CTRL%EQMPN%COREG')
