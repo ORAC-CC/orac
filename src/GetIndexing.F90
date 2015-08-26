@@ -276,10 +276,12 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
       ii = ii + 1
    end do
 
-   SPixel%Ind%MDAD_SW = Find_MDAD_SW(SPixel%Ind%Ny, SAD_Chan, &
-      SPixel%spixel_y_to_ctrl_y_index)
-   SPixel%Ind%MDAD_LW = Find_MDAD_LW(SPixel%Ind%Ny, SAD_Chan, &
-      SPixel%spixel_y_to_ctrl_y_index)
+   ! Find channel closest to 0.67um (between 0.5 and 1.0um)
+   SPixel%Ind%MDAD_SW = Find_Channel(14925., SPixel%Ind%Ny, SAD_Chan, &
+        SPixel%spixel_y_to_ctrl_y_index, min=10000.0, max=20000.0)
+   ! Find channel closest to 11.0um (greater than 4.0um)
+   SPixel%Ind%MDAD_LW = Find_Channel(909.09, SPixel%Ind%Ny, SAD_Chan, &
+        SPixel%spixel_y_to_ctrl_y_index, max=2500.0)
 
 end subroutine setup_indexes
 
