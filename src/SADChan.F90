@@ -15,6 +15,7 @@
 !    on the day of year rather than just using an annual mean value.
 ! 2014/05/23, GM: Cleaned up code.
 ! 2014/08/01, GM: Added Find_MDAD_SW() and Find_MDAD_LW().
+! 2015/08/14, AP: Replace Find_MDAD() with generalised Find_Channel().
 ! 2015/08/21, AP: Move make_sad_filename() here from ReadSADLUT.
 !
 ! $Id$
@@ -34,8 +35,7 @@ module SAD_Chan_def
    public :: Solar_t, &
              Thermal_t, &
              SAD_Chan_t, &
-             Find_MDAD_SW, &
-             Find_MDAD_LW, &
+             Find_Channel, &
              Read_SAD_Chan, &
              create_sad_filename
 
@@ -71,120 +71,146 @@ module SAD_Chan_def
 contains
 
 !-------------------------------------------------------------------------------
-! Name: Find_MDAD_SW and Find_MDAD_LW
+! Name: Find_Channel
 !
 ! Purpose:
-! Finds reference channels for the MDAD first-guess method.
+! Locates the closest channel to a given wavenumber. With multiple views, will
+! return the first channel in the ordering unless the mask argument is used.
 !
-! Description:
-! Algorithm:
-! 1) If SW, search each channel for that with wavenumber between 10000 and 20000
-!    cm-1 that is closest to 14925.
-! 2) If LW, search each channel for that with wavenumber greater than 2500 cm-1
-!    that is closest to 909.
-! 3) On fail, returns 0.
+! Description and algorithm details:
+! 1) Loop over channels that have wavenumber within the specified range. If
+!    searching for an index that isn't wrt Ctrl%Ind%Ny, specify the conversion
+!    indices.
+! 2) On fail, returns 0.
 !
 ! Arguments:
 ! Name      Type    In/Out/Both    Description
 ! ------------------------------------------------------------------------------
+! wvn       real    In             Wavenumber of the desired channel
 ! Ny        integer In             Number of channels
 ! SAD_Chan  array of structs (out) Channel description info.
 ! index     array of ints (in)     Optional. Indices denoting a subset of the
 !                                  SAD_Chan array to be searched.
+! min       real    In             Optional. Minimal permitted wavenumber
+! max       real    In             Optional. Maximal permitted wavenumber
+! mask      array of logicals (In) Optional. Indicates valid channels.
+! channel   integer Out            (Return value) Index of desired channel.
+!                                  0 is no suitable channel found.
 !
 ! History:
 ! 2014/08/01, GM: Original version
+! 2015/08/14, AP: Generalised Find_MDAD_SW and Find_MDAD_LW
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-
-function Find_MDAD_SW(Ny, SAD_Chan, index) result(MDAD_SW)
-
+function Find_Channel(wvn, Ny, SAD_Chan, index, min, max, mask) result(channel)
    implicit none
 
-   integer,          intent(in)           :: Ny
-   type(SAD_Chan_t), intent(in)           :: SAD_Chan(:)
-   integer,          intent(in), optional :: index(:)
+   real,              intent(in) :: wvn
+   integer,           intent(in) :: Ny
+   type(SAD_Chan_t),  intent(in) :: SAD_Chan(:)
+   integer, optional, intent(in) :: index(:)
+   real,    optional, intent(in) :: min
+   real,    optional, intent(in) :: max
+   logical, optional, intent(in) :: mask(Ny)
+   integer                       :: channel
 
-   integer                                :: MDAD_SW
+   integer :: i,  ii
+   real    :: diff,  min_diff
+   real    :: min_wvn, max_wvn
 
-   integer :: i
-   integer :: ii
-   real    :: diff
-   real    :: min_diff
-
-   MDAD_SW = 0
-
+   channel  = 0
    min_diff = huge(0.)
 
-   ! Loop over all channels
+   if (present(min)) then
+      min_wvn = min
+   else
+      min_wvn = 0.0
+   end if
+   if (present(max)) then
+      max_wvn = max
+   else
+      max_wvn = huge(0.)
+   end if
+
    do i = 1, Ny
-      if (.not. present(index)) then
-         ii = i
-      else
-         ii = index(i)
+      ! Skip masked channels
+      if (present(mask)) then
+         if (.not. mask(i)) continue
       end if
 
-      ! If the channel WN is greater than 10000 cm-1 (1.0 um) and less than
-      ! 20000 cm-1 (0.5 um) then check how close it is to 14925 cm-1 (0.67 um).
-      ! If it is the closest of the channels tried so far, update the minimum
-      ! difference and set the channel index
-      if (SAD_Chan(ii)%WvN > 10000.0 .and. SAD_Chan(ii)%WvN < 20000.0) then
-         ! Difference between central WN and 14925 cm-1 (0.67 um)
-         diff = abs(SAD_Chan(ii)%WvN - 14925.0)
+      ! Convert desired index to Ctrl%Ind%Ny index for SAD_Chan
+      if (present(index)) then
+         ii = index(i)
+      else
+         ii = i
+      end if
+
+      if (SAD_Chan(ii)%WvN > min_wvn .and. SAD_Chan(ii)%WvN < max_wvn) then
+         diff = abs(SAD_Chan(ii)%WvN - wvn)
          if (diff < min_diff) then
             min_diff = diff
-            MDAD_SW = i
+            channel = i
          end if
       end if
    end do
 
-end function Find_MDAD_SW
+end function Find_Channel
 
 
-function Find_MDAD_LW(Ny, SAD_Chan, index) result(MDAD_LW)
+!-------------------------------------------------------------------------------
+! Name: create_sad_filename
+!
+! Purpose:
+! Create a SAD filename given the lut name and string channel number.
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2014/10/10, GM: Original version
+! 2015/08/21, AP: Made lut_name optional so this can generate SAD_Chan filenames.
+!    Generalised treatment of NOAA7/9.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
+
+   use CTRL_def
 
    implicit none
 
-   integer,          intent(in)           :: Ny
-   type(SAD_Chan_t), intent(in)           :: SAD_Chan(:)
-   integer,          intent(in), optional :: index(:)
+   ! Argument declarations
+   type(CTRL_t),           intent(in)  :: Ctrl
+   character(*),           intent(in)  :: chan_num
+   character(*),           intent(out) :: LUT_file
+   character(*), optional, intent(in)  :: lut_name
 
-   integer                                :: MDAD_LW
+   character(InstnameLen)    :: InstName
 
-   integer :: i
-   integer :: ii
-   real    :: diff
-   real    :: min_diff
-
-   MDAD_LW = 0
-
-   min_diff = huge(0.)
-
-   ! Loop over all channels
-   do i = 1, Ny
-      if (.not. present(index)) then
-         ii = i
-      else
-         ii = index(i)
+   InstName = Ctrl%InstName
+   ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
+   if (InstName(1:10) == 'AVHRR-NOAA') then
+      if (len_trim(InstName(11:)) == 1) then
+         InstName(12:12) = InstName(11:11)
+         InstName(11:11) = '0'
       end if
+   end if
 
-      ! If the channel WN is greater than 2500 cm-1 (4.0 um) then check how
-      ! close it is to 909 cm-1 (11.0 um). If it is the closest of the channels
-      ! tried so far, update the minimum difference and set the channel index
-      if (SAD_Chan(ii)%WvN < 2500.0) then
-         ! Difference between central WN and 909 cm-1 (11.0 um)
-         diff = abs(SAD_Chan(ii)%WvN - 909.0)
-         if (diff < min_diff) then
-            min_diff = diff
-            MDAD_LW = i
-         end if
-      end if
-   end do
+   if (present(lut_name)) then
+      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+                 trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' // &
+                 trim(chan_num) // '.sad'
+   else
+      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
+                 trim(chan_num) // '.sad'
+   end if
 
-end function Find_MDAD_LW
-
+end subroutine create_sad_filename
 
 !-------------------------------------------------------------------------------
 ! Name: create_sad_filename
