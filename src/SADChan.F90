@@ -212,59 +212,6 @@ subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
 
 end subroutine create_sad_filename
 
-!-------------------------------------------------------------------------------
-! Name: create_sad_filename
-!
-! Purpose:
-! Create a SAD filename given the lut name and string channel number.
-!
-! Algorithm:
-!
-! Arguments:
-! Name Type In/Out/Both Description
-!
-! History:
-! 2014/10/10, GM: Original version
-! 2015/08/21, AP: Made lut_name optional so this can generate SAD_Chan filenames.
-!    Generalised treatment of NOAA7/9.
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-subroutine create_sad_filename(Ctrl, chan_num, LUT_file, lut_name)
-
-   use CTRL_def
-
-   implicit none
-
-   ! Argument declarations
-   type(CTRL_t),           intent(in)  :: Ctrl
-   character(*),           intent(in)  :: chan_num
-   character(*),           intent(out) :: LUT_file
-   character(*), optional, intent(in)  :: lut_name
-
-   character(InstnameLen)    :: InstName
-
-   InstName = Ctrl%InstName
-   ! NOAA files use (I0) formatting in their filename; LUT files use (I2).
-   if (InstName(1:10) == 'AVHRR-NOAA') then
-      if (len_trim(InstName(11:)) == 1) then
-         InstName(12:12) = InstName(11:11)
-         InstName(11:11) = '0'
-      end if
-   end if
-
-   if (present(lut_name)) then
-      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
-                 trim(Ctrl%LUTClass) // '_' // trim(lut_name) // '_' // &
-                 trim(chan_num) // '.sad'
-   else
-      LUT_file = trim(Ctrl%FID%SAD_Dir) // trim(InstName) // '_' // &
-                 trim(chan_num) // '.sad'
-   end if
-
-end subroutine create_sad_filename
-
 
 #include "ReadSADChan.F90"
 
