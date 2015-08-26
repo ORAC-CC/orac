@@ -33,6 +33,7 @@
 ! 2015/01/20, GM: Added deallocation of spixel_y_mixed_to_spixel_y_solar and
 !    spixel_y_mixed_to_spixel_y_thermal.
 ! 2015/01/30, AP: Remove redundant fields.
+! 2015/08/19, AP: Make reading of RTM terms optional.
 !
 ! $Id$
 !
@@ -52,33 +53,31 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
    type(SPixel_t), intent(inout) :: SPixel
 
    ! Get_RTM arrays
+   if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
+      ! Short wave RTM parameters
+      deallocate(SPixel%RTM%SW%Tac)
+      deallocate(SPixel%RTM%SW%Tbc)
+      deallocate(SPixel%RTM%SW%Tsf)
+      deallocate(SPixel%RTM%SW%P)
 
-   ! Short wave RTM parameters
+      ! Long wave RTM parameters
+      deallocate(SPixel%RTM%LW%Tac)
+      deallocate(SPixel%RTM%LW%Tbc)
+      deallocate(SPixel%RTM%LW%Tsf)
+      deallocate(SPixel%RTM%LW%Rac_up)
+      deallocate(SPixel%RTM%LW%Rac_dwn)
+      deallocate(SPixel%RTM%LW%Rbc_up)
+      deallocate(SPixel%RTM%LW%R_clear)
+      deallocate(SPixel%RTM%LW%dB_dTs)
+      deallocate(SPixel%RTM%LW%Ems)
+      deallocate(SPixel%RTM%LW%T)
+      deallocate(SPixel%RTM%LW%P)
+      deallocate(SPixel%RTM%LW%H)
 
-   deallocate(SPixel%RTM%SW%Tac)
-   deallocate(SPixel%RTM%SW%Tbc)
-   deallocate(SPixel%RTM%SW%Tsf)
-   deallocate(SPixel%RTM%SW%P)
-
-   ! Long wave RTM parameters
-
-   deallocate(SPixel%RTM%LW%Tac)
-   deallocate(SPixel%RTM%LW%Tbc)
-   deallocate(SPixel%RTM%LW%Tsf)
-   deallocate(SPixel%RTM%LW%Rac_up)
-   deallocate(SPixel%RTM%LW%Rac_dwn)
-   deallocate(SPixel%RTM%LW%Rbc_up)
-   deallocate(SPixel%RTM%LW%R_clear)
-   deallocate(SPixel%RTM%LW%dB_dTs)
-   deallocate(SPixel%RTM%LW%Ems)
-   deallocate(SPixel%RTM%LW%T)
-   deallocate(SPixel%RTM%LW%P)
-   deallocate(SPixel%RTM%LW%H)
-
-   ! Overall RTM transmittances and reflectances
-
-   deallocate(SPixel%RTM%Tsf_o)
-   deallocate(SPixel%RTM%Tsf_v)
+      ! Overall RTM transmittances and reflectances
+      deallocate(SPixel%RTM%Tsf_o)
+      deallocate(SPixel%RTM%Tsf_v)
+   end if
    deallocate(SPixel%RTM%Ref_clear)
    deallocate(SPixel%RTM%dRef_clear_dRs)
 

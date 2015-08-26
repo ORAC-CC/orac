@@ -286,37 +286,52 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    call Set_CRP_Solar(Ctrl, SPixel%Ind, SPixel%spixel_y_solar_to_ctrl_y_index, &
         GZero, SAD_LUT, CRP, d_CRP, status)
 
-   do i=1, SPixel%Ind%NSolar
-      ! Calculate above cloud (ac) beam transmittances
-      ! At solar zenith angle:
-      Tac_0(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
-           SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-      ! At sensor viewing angle:
-      Tac_v(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
-           SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
 
-      ! Calculate below cloud (bc) beam transmittances
-      ! At solar zenith angle:
-      Tbc_0(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
-           SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
-      ! At sensor viewing angle:
-      Tbc_v(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
-           SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+   if (Ctrl%RTMIntSelm == RTMIntMethNone) then
+      ! Above/below cloud transmittances are 1 for infinite extent cloud/aerosol
+      Tac_0  = 1.0
+      Tac_v  = 1.0
+      Tac_0v = 1.0
+      Tbc_0  = 1.0
+      Tbc_v  = 1.0
+      Tbc_d  = 1.0
+      Tbc_0v = 1.0
+      Tbc_0d = 1.0
+      Tbc_dv = 1.0
+      Tbc_dd = 1.0
+   else
+      do i = 1, SPixel%Ind%NSolar
+         ! Calculate above cloud (ac) beam transmittances
+         ! At solar zenith angle:
+         Tac_0(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
+              SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+         ! At sensor viewing angle:
+         Tac_v(i) = RTM_Pc%SW%Tac(Solar(i)) ** &
+              SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
 
-      ! Calculate below cloud (bc) diffuse transmittances
-      Tbc_d(i) = RTM_Pc%SW%Tbc(Solar(i)) ! ** (1. / cos(66. * d2r))
-   end do
+         ! Calculate below cloud (bc) beam transmittances
+         ! At solar zenith angle:
+         Tbc_0(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
+              SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+         ! At sensor viewing angle:
+         Tbc_v(i) = RTM_Pc%SW%Tbc(Solar(i)) ** &
+              SPixel%Geom%SEC_v(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
 
-   ! Calculate solar transmittance from TOA to cloud-top times the viewing
-   ! transmittance from cloud-top to TOA
-   Tac_0v = Tac_0 * Tac_v
+         ! Calculate below cloud (bc) diffuse transmittances
+         Tbc_d(i) = RTM_Pc%SW%Tbc(Solar(i)) ! ** (1. / cos(66. * d2r))
+      end do
 
-   ! Calculate transmittance from cloud to surface times transmittance from
-   ! surface to cloud
-   Tbc_0v = Tbc_0 * Tbc_v
-   Tbc_0d = Tbc_0 * Tbc_d
-   Tbc_dv = Tbc_d * Tbc_v
-   Tbc_dd = Tbc_d * Tbc_d
+      ! Calculate solar transmittance from TOA to cloud-top times the viewing
+      ! transmittance from cloud-top to TOA
+      Tac_0v = Tac_0 * Tac_v
+
+      ! Calculate transmittance from cloud to surface times transmittance from
+      ! surface to cloud
+      Tbc_0v = Tbc_0 * Tbc_v
+      Tbc_0d = Tbc_0 * Tbc_d
+      Tbc_dv = Tbc_d * Tbc_v
+      Tbc_dd = Tbc_d * Tbc_d
+   end if
 
 
    !----------------------------------------------------------------------------

@@ -184,6 +184,7 @@
 ! 2015/06/02, AP: Remove Ctrl argument from check_value.
 ! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove Get_LSF
 !    and SPixel%QC. Replace status checks with go to 99 in the event of failure.
+! 2015/08/19, AP: Make reading of RTM terms optional.
 !
 ! $Id$
 !
@@ -252,11 +253,6 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    call Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    if (status /= 0) go to 99 ! Skip further data reading
 
-   ! ACP: RTM unnecessary for aerosol  (at the moment)
-   call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
-   if (status /= 0) go to 99 ! Skip further data reading
-
-   ! Get surface parameters and reduce reflectance by solar angle effect.
    if (SPixel%Ind%NSolar > 0) then
       call Get_Surface(Ctrl, SPixel, MSI_Data, status)
       if (status /= 0) go to 99 ! Skip further data reading
@@ -278,53 +274,72 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
          SPixel%f0(i) = &
               SAD_Chan(SPixel%spixel_y_solar_to_ctrl_y_index(i))%Solar%f0
       end do
+   end if
 
-      ! Calculate transmittances along the slant paths (solar and viewing)
-      ! Pick up the "purely solar" channel values from the SW RTM, and the
-      ! mixed channels from the LW RTM.
-      deallocate(SPixel%RTM%Tsf_o)
-      allocate(SPixel%RTM%Tsf_o         (SPixel%Ind%NSolar))
-      deallocate(SPixel%RTM%Tsf_v)
-      allocate(SPixel%RTM%Tsf_v         (SPixel%Ind%NSolar))
-      deallocate(SPixel%RTM%Ref_clear)
-      allocate(SPixel%RTM%Ref_clear     (SPixel%Ind%NSolar))
-      deallocate(SPixel%RTM%dRef_clear_dRs)
-      allocate(SPixel%RTM%dRef_clear_dRs(SPixel%Ind%NSolar))
+   if (Ctrl%RTMIntSelm == RTMIntMethNone) then
+      ! Using an infinite extent cloud/aerosol layer
+      if (SPixel%Ind%NSolar > 0) then
+         deallocate(SPixel%RTM%Ref_clear)
+         allocate(SPixel%RTM%Ref_clear     (SPixel%Ind%NSolar))
+         deallocate(SPixel%RTM%dRef_clear_dRs)
+         allocate(SPixel%RTM%dRef_clear_dRs(SPixel%Ind%NSolar))
+         SPixel%RTM%Ref_clear      = 0.
+         SPixel%RTM%dRef_clear_dRs = 0.
+      end if
+   else
+      ! Using infinitesimally thin cloud/aerosol layer
+      call Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
+      if (status /= 0) go to 99 ! Skip further data reading
 
-      do i = 1, SPixel%Ind%NSolar
-         ictrl  = SPixel%spixel_y_solar_to_ctrl_y_index(i)
-         ispix  = SPixel%Ind%YSolar(i)
-         isolar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+      ! Reduce reflectance by solar angle effect.
+      if (SPixel%Ind%NSolar > 0) then
+         ! Calculate transmittances along the slant paths (solar and viewing)
+         ! Pick up the "purely solar" channel values from the SW RTM, and the
+         ! mixed channels from the LW RTM.
+         deallocate(SPixel%RTM%Tsf_o)
+         allocate(SPixel%RTM%Tsf_o         (SPixel%Ind%NSolar))
+         deallocate(SPixel%RTM%Tsf_v)
+         allocate(SPixel%RTM%Tsf_v         (SPixel%Ind%NSolar))
+         deallocate(SPixel%RTM%Ref_clear)
+         allocate(SPixel%RTM%Ref_clear     (SPixel%Ind%NSolar))
+         deallocate(SPixel%RTM%dRef_clear_dRs)
+         allocate(SPixel%RTM%dRef_clear_dRs(SPixel%Ind%NSolar))
 
-         if (btest(Ctrl%Ind%Ch_Is(ictrl), ThermalBit)) then
-            itherm = find_in_array(Ctrl%Ind%YThermal, ictrl)
+         do i = 1, SPixel%Ind%NSolar
+            ictrl  = SPixel%spixel_y_solar_to_ctrl_y_index(i)
+            ispix  = SPixel%Ind%YSolar(i)
+            isolar = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
-            ! The Tsf_o, v calculations differ for mixed channels
-            ! because the Tac value used to set Tsf is given at the view
-            ! angle, rather than the nadir as in the SW channels RTM.
-            SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(itherm) &
-                 ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix)) / &
-                     SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix)))
+            if (btest(Ctrl%Ind%Ch_Is(ictrl), ThermalBit)) then
+               itherm = find_in_array(Ctrl%Ind%YThermal, ictrl)
 
-            SPixel%RTM%Tsf_v(i) = SPixel%RTM%LW%Tsf(itherm)
-         else
-            ! Purely solar channel
-            SPixel%RTM%Tsf_o(i) = SPixel%RTM%SW%Tsf(isolar) &
-                 ** SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix))
+               ! The Tsf_o, v calculations differ for mixed channels
+               ! because the Tac value used to set Tsf is given at the view
+               ! angle, rather than the nadir as in the SW channels RTM.
+               SPixel%RTM%Tsf_o(i) = SPixel%RTM%LW%Tsf(itherm) &
+                    ** (SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix)) / &
+                        SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix)))
 
-            SPixel%RTM%Tsf_v(i) = SPixel%RTM%SW%Tsf(isolar) &
-                 ** SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix))
-         end if
-      end do
+               SPixel%RTM%Tsf_v(i) = SPixel%RTM%LW%Tsf(itherm)
+            else
+               ! Purely solar channel
+               SPixel%RTM%Tsf_o(i) = SPixel%RTM%SW%Tsf(isolar) &
+                    ** SPixel%Geom%SEC_o(SPixel%ViewIdx(ispix))
 
-      ! Calculate top of atmosphere reflectance for clear conditions
-      ! (all arrays are sized NSolar).
-      SPixel%RTM%REF_clear = SPixel%Surface%Rs * SPixel%RTM%Tsf_o * &
-                             SPixel%RTM%Tsf_v
+               SPixel%RTM%Tsf_v(i) = SPixel%RTM%SW%Tsf(isolar) &
+                    ** SPixel%Geom%SEC_v(SPixel%ViewIdx(ispix))
+            end if
+         end do
 
-      ! Gradient of REF_clear w.r.t. surface albedo
-      SPixel%RTM%dREF_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
-   end if ! End of NSolar > 0
+         ! Calculate top of atmosphere reflectance for clear conditions
+         ! (all arrays are sized NSolar).
+         SPixel%RTM%REF_clear = SPixel%Surface%Rs * SPixel%RTM%Tsf_o * &
+                                SPixel%RTM%Tsf_v
+
+         ! Gradient of REF_clear w.r.t. surface albedo
+         SPixel%RTM%dREF_clear_dRs = SPixel%RTM%Tsf_o * SPixel%RTM%Tsf_v
+      end if ! End of NSolar > 0
+   end if ! End of RTMIntMeth /= RTMIntMethNone
 
    call Get_X(Ctrl, SAD_Chan, SPixel, status)
 !  if (status /= 0) go to 99 ! Skip further data reading
