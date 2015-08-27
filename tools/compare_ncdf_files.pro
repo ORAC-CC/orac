@@ -47,6 +47,7 @@
 ; MODIFICATION HISTORY:
 ;   Written by ACPovey (povey@atm.ox.ac.uk)
 ;   20 Aug 2015 - AP: Original version
+;   27 Aug 2015 - AP: Adjust threshold for packed values.
 ;-
 @../idl/print_colour.pro
 PRO COMPARE_NCDF_FILES, oldroot, newroot, suffix, thres, pass
@@ -95,8 +96,14 @@ PRO COMPARE_NCDF_FILES, oldroot, newroot, suffix, thres, pass
                   NCDF_ATTGET,id2,j,att_name,scale
             endfor
 
-            ;; Change in value greater than some rounding error threshold
-            trash=WHERE(ABS(DOUBLE(c2-c1)/(c1+offset/scale)) gt thres,nt)
+            if (var.datatype eq 'FLOAT' or var.datatype eq 'DOUBLE') then begin
+               ;; Change in value greater than some rounding error threshold
+               trash=WHERE(ABS(DOUBLE(c2-c1)/(c1+offset/scale)) gt thres,nt)
+            endif else begin
+               ;; Change greater than minimum scale of packed data
+               int_thres = CEIL(thres/scale)
+               trash=WHERE(ABS(c2-c1) gt int_thres,nt)
+            endelse
             if nt gt 0 then begin
                PRINT_COLOUR, var.name, /red, /nonewline
                PRINT,suffix,j,nt, format='(" (",A0,",",I0,'+ $
