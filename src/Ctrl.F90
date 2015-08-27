@@ -87,7 +87,7 @@
 ! 2015/07/27, AP: Convert Homog/Coreg into logicals. Remove Ind%Log and
 !    NInstViews. Replace process_one_phase_only with Types_to_process.
 ! 2015/08/21, AP: Tidying comments; Ordering variables logically; Adding WvlIdx;
-!    Renaming Flags as Selm;
+!    Renaming Flags as Selm; Introducing XJ;
 !
 ! $Id$
 !
@@ -181,7 +181,6 @@ module CTRL_def
 
    ! Equivalent model parameter noise flags
    type EqMPN_t
-      integer                :: Rs                 ! Flag to use EqMPN from Rs errors
       integer                :: SySelm             ! Measurement covariance
                                                    ! selection method
       logical                :: Homog              ! Use homogogeneity errors
@@ -274,8 +273,10 @@ module CTRL_def
 
       ! State vector indexing variables (defined for each illumination condition)
       integer                :: Nx(MaxIllum)       ! # of active state variables
+      integer                :: NxJ(MaxIllum)      ! # of Jacobian parameters
       integer                :: X(MaxStateVar,MaxIllum)  ! State vector elements
                                                          !   to be retrieved
+      integer                :: XJ(MaxStateVar,MaxIllum) ! " included in Jacobian
    end type CTRL_t
 
 contains

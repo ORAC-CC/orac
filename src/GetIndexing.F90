@@ -2,23 +2,28 @@
 ! Name: GetIndexing.F90
 !
 ! Purpose:
-! Determine which set of channels to use in retrieval.
+! Determine which set of channels to use in retrieval and select a state vector.
 !
 ! Description and Algorithm details:
 ! Find missing channels and channels not used due to illumination conditions.
 !
+! CLOUD:
 ! Each of the three categories: "tau" (optical thickness), "r_e" (effective
 ! radius), ir (cloud-top pressure, cloud fraction and surface temperature)
 ! have a set of channels that meet a channel requirement.  Find which of
 ! these channels are available in each category.  Note: This does not prevent
 ! other unrequired channels from being used.
 !
-! Loop through the required active state variables, either Ctrl%X_Dy,
-! Ctrl%X_Tw or Ctrl%X_Ni, depending on illumination and if the
-! channel requirement is met in its category, add it to the list of active
-! state variables.
+! ALL:
+! When a variable is desired, Add_to_State_Vector checks:
+! 1) If it is listed in Ctrl%X (for this illumination condition), the variable
+!    is added to the active state vector.
+! 2) If it is listed in Ctrl%XJ, the variable is added to the variables that
+!    aren't retrieved but are included in the Jacobian.
+! 3) Otherwise, it is added to the inactive state vector so that it will be
+!    included as a parameter error after the retrieval.
 !
-! Setup the rest of the SPixel indexes.
+! Then, setup the rest of the SPixel indexes.
 !
 ! The intention is for this algorithm to be written in a way that allows
 ! additional state variables to be added and additional categories.
@@ -43,6 +48,9 @@
 !    have any.
 ! 2015/07/30, AP: Move cloud indexing logic into its own routine.
 ! 2015/07/31, GM: Remove cloud legacy mode.
+! 2015/08/20, AP: Rather than set every state vector element, only sets those
+!    with meaning in this retrieval. Added indexing logic for aerosol retrievals.
+!    Replaced Find_MDAD with Find_Channel.
 !
 ! $Id$
 !
@@ -55,7 +63,6 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    use CTRL_def
    use Data_def
    use ECP_Constants
-   use Int_Routines_def, only : find_in_array
    use SAD_Chan_def
 
    implicit none
@@ -70,11 +77,11 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! Define local variables
 
-   integer :: i, ii, i_view, i_chan
+   integer :: i_view, i_chan
    logical :: is_not_used_or_missing(Ctrl%Ind%Ny)
-   integer :: X(MaxStateVar)
+   integer, dimension(MaxStateVar) :: X, XJ, XI
 
-   ! Set status to zero
+
    status = 0
 
    ! Set these to zero as a default as some of the i/o requires them even when a
@@ -84,8 +91,9 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    SPixel%Ind%NThermal = 0
    SPixel%Ind%NMixed = 0
 
-   SPixel%Nx = 0
-   SPixel%NxI = 0
+   SPixel%Nx  = 0
+   SPixel%NXJ = 0
+   SPixel%NXI = 0
 
    ! If the views have different illumination conditions then skip this pixel
    do i_view = 1, Ctrl%Ind%NViews
@@ -132,28 +140,37 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    end if
 
    ! Select appropriate logic for channel selection
-   call cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
+   select case (Ctrl%Approach)
+   case (CldWat, CldIce)
+      call cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
+                                X, XJ, XI, status)
+   end select
    if (status /= 0) return
 
    ! Set up the active and inactive state variable indexes and associated counts
    deallocate(SPixel%X)
    allocate(SPixel%X(SPixel%Nx))
+   SPixel%X  = X(1:SPixel%Nx)
 
-   SPixel%NxI = MaxStateVar - SPixel%Nx
+   deallocate(SPixel%XJ)
+   if (SPixel%NXJ > 0) then
+      allocate(SPixel%XJ(SPixel%NXJ))
+      SPixel%XJ = XJ(1:SPixel%NXJ)
+   else
+      allocate(SPixel%XJ(1))
+      SPixel%XJ = 0
+   end if
+
    deallocate(SPixel%XI)
-   allocate(SPixel%XI(SPixel%NxI))
+   if (SPixel%NXI > 0) then
+      allocate(SPixel%XI(SPixel%NXI))
+      SPixel%XI = XI(1:SPixel%NXI)
+   else
+      allocate(SPixel%XI(1))
+      SPixel%XI = 0
+   end if
 
-   SPixel%X = X(1:SPixel%Nx)
-
-   ii = 0
-   do i = 1, MaxStateVar
-      if (.not. any(SPixel%X(1:SPixel%Nx) == i)) then
-         ii = ii + 1
-         SPixel%XI(ii) = i
-      end if
-   end do
-
-   ! Set the illumination dependent first guess and a priori
+   ! Set the illumination-dependent first guess and a priori
    SPixel%FG = Ctrl%FG(:,SPixel%Illum(1))
    SPixel%AP = Ctrl%AP(:,SPixel%Illum(1))
 
@@ -163,6 +180,24 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 end subroutine Get_Indexing
 
 
+!-------------------------------------------------------------------------------
+! Name: setup_indexes
+!
+! Purpose:
+! Determines channel indexing arrays, such as YSolar.
+!
+! Algorithm:
+! Loop over channels, counting various features.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/02/04, GM: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
 
    use CTRL_def
@@ -178,11 +213,6 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
 
    integer :: i
    integer :: ii, i0, i1, i2, ii0, ii1
-
-   SPixel%Ind%Ny       = 0
-   SPixel%Ind%NSolar   = 0
-   SPixel%Ind%NThermal = 0
-   SPixel%Ind%NMixed   = 0
 
    SPixel%spixel_y_to_ctrl_y_index                 = 0
    SPixel%spixel_y_solar_to_ctrl_y_index           = 0
@@ -286,7 +316,30 @@ subroutine setup_indexes(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing)
 end subroutine setup_indexes
 
 
-subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
+!-------------------------------------------------------------------------------
+! Name: cloud_indexing_logic
+!
+! Purpose:
+! Determines state vector elements required for a cloud retrieval.
+!
+! Algorithm:
+! 1) Identify preferred (available) Re channel, invalidating all others.
+! 2) Count number of channels available to retrieve Tau, Re, and IR values.
+! 3) Add Tau, Re, Pc, Ts, and Fr to the state vector. These are active only if
+!    sufficient channels are available. Appropriate BRDF terms are added but are
+!    not active.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/07/30, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
+                                X, XJ, XI, status)
 
    use CTRL_def
    use ECP_Constants
@@ -300,14 +353,22 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
    type(SPixel_t), intent(inout) :: SPixel
    logical,        intent(inout) :: is_not_used_or_missing(:)
    integer,        intent(out)   :: X(:)
+   integer,        intent(out)   :: XJ(:)
+   integer,        intent(out)   :: XI(:)
    integer,        intent(inout) :: status
 
    ! Define local variables
 
-   integer :: i_chan, ii_chan, i_x, ii_x, i_r_e_chan
-   integer :: n_chans, n_tau_chans, n_r_e_chans, n_ir_chans, &
-              n_ir_chans2
-   integer :: min_tau_chans, min_r_e_chans, min_ir_chans, min_x
+   integer :: ii_x, ii_xj, ii_xi
+   integer :: min_rho
+   integer :: i_chan, ii_chan, i_x, i_r_e_chan
+   integer :: n_chans, n_tau_chans, n_r_e_chans, n_ir_chans, n_ir_chans2
+
+   integer, parameter :: min_tau_chans = 1
+   integer, parameter :: min_r_e_chans = 1
+   integer, parameter :: min_ir_chans  = 1
+   integer, parameter :: min_x         = 1
+
 
    if (Ctrl%RTMIntSelm == RTMIntMethNone) then
       write(*,*) 'ERROR: Get_Indexing(): Cloud retrieval requires RTTOV inputs.'
@@ -371,72 +432,38 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
       end if
    end do
 
-   ! Limits used in the active state variable selection loop
-   min_tau_chans = 1
-   min_r_e_chans = 1
-   min_ir_chans  = 1
-
-   ! Minimum number of active state variables to perform a retrieval
-   min_x         = 1
-
    ! Select the active state variables
-   ii_x = 0
+   ii_x  = 0
+   ii_xj = 0
+   ii_xi = 0
    n_ir_chans2 = n_ir_chans
-   if (SPixel%Illum(1) .eq. IDay) then
-      do i_x = 1, Ctrl%Nx(IDay)
-         if (Ctrl%X(i_x,IDay) .eq. ITau .and. n_tau_chans .ge. min_tau_chans) then
-            ii_x = ii_x + 1
-            X(ii_x) = ITau
-         else if (Ctrl%X(i_x,IDay) .eq. IRe .and. n_r_e_chans .ge. min_r_e_chans) then
-            ii_x = ii_x + 1
-            X(ii_x) = IRe
-         else if (Ctrl%X(i_x,IDay) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = IPc
-         else if (Ctrl%X(i_x,IDay) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = ITs
-         else if (Ctrl%X(i_x,IDay) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = IFr
-         end if
-      end do
-   else if (SPixel%Illum(1) .eq. ITwi) then
-      do i_x = 1, Ctrl%Nx(ITwi)
-         if (Ctrl%X(i_x,ITwi) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = IPc
-         else if (Ctrl%X(i_x,ITwi) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = ITs
-         else if (Ctrl%X(i_x,ITwi) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = IFr
-         end if
-      end do
-   else if (SPixel%Illum(1) .eq. INight) then
-      do i_x = 1, Ctrl%Nx(INight)
-         if (Ctrl%X(i_x,INight) .eq. IPc .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = IPc
-         else if (Ctrl%X(i_x,INight) .eq. ITs .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = ITs
-         else if (Ctrl%X(i_x,INight) .eq. IFr .and. n_ir_chans2 .ge. min_ir_chans) then
-            ii_x = ii_x + 1
-            n_ir_chans2 = n_ir_chans2 - 1
-            X(ii_x) = IFr
-         end if
-      end do
-   end if
+   ! Retrieve Tau if sufficient appropriate channels are available
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau, X, ii_x, XJ, ii_xj, &
+        XI, ii_xi, active = n_tau_chans .ge. min_tau_chans)
+   ! Retrieve Re if sufficient appropriate channels are available
+      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe, X, ii_x, XJ, ii_xj, &
+           XI, ii_xi, active = n_r_e_chans .ge. min_r_e_chans)
+   ! Pc, Ts, Fr retreved for all illumination. n_ir_chans2 ensures there aren't
+   ! more things retrieved than there are measurements
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc, X, ii_x, XJ, ii_xj, &
+        XI, ii_xi, active = n_ir_chans2 .ge. min_ir_chans, &
+        ch_available = n_ir_chans2)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITs, X, ii_x, XJ, ii_xj, &
+        XI, ii_xi, active = n_ir_chans2 .ge. min_ir_chans, &
+        ch_available = n_ir_chans2)
+   call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IFr, X, ii_x, XJ, ii_xj, &
+        XI, ii_xi, active = n_ir_chans2 .ge. min_ir_chans, &
+        ch_available = n_ir_chans2)
+
+   ! Add BRDF terms to parameter vector
+   ! If statement commented out as currently no covariance matrix for other terms
+!  if (Ctrl%RS%use_full_brdf) then
+!     min_rho = 1
+!  else
+      min_rho = MaxRho_XX
+!  end if
+   call Identify_BRDF_Terms(Ctrl, SPixel%Illum(1), 1, min_rho, &
+        is_not_used_or_missing, X, ii_x, XJ, ii_xj, XI, ii_xi, .false.)
 
    ! If nothing is retrievable set the error status and return
    if (ii_x .lt. min_x) then
@@ -444,6 +471,162 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, X, status)
       return
    end if
 
-   SPixel%Nx = ii_x
+   SPixel%Nx  = ii_x
+   SPixel%NXJ = ii_xj
+   SPixel%NXI = ii_xi
 
 end subroutine cloud_indexing_logic
+
+
+!-------------------------------------------------------------------------------
+! Name: Add_to_State_Vector
+!
+! Purpose:
+! Include a term in either SPixel%X, XJ, or XI as dictated by the Ctrl structure.
+!
+! Algorithm:
+! 1) If the index is in Ctrl%X and the active argument is either true or
+!    not present, add the index to SPixel%X.
+! 2) If not (1), then if the index is in Ctrl%XJ, add it to SPixel%XJ.
+! 3) Otherwise, add it to SPixel%XI.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/08/17, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine Add_to_State_Vector(Ctrl, illum, index, X, ii_x, XJ, ii_xj, &
+                               XI, ii_xi, active, ch_available)
+   use CTRL_def
+
+   implicit none
+
+   type(CTRL_t),      intent(in)    :: Ctrl
+   integer,           intent(in)    :: illum  ! Illumination condition to check
+   integer,           intent(in)    :: index  ! State element to search for
+   integer,           intent(inout) :: X(:)   ! Active state vector
+   integer,           intent(inout) :: ii_x   ! Current position in X
+   integer,           intent(inout) :: XJ(:)  ! Parameter vector
+   integer,           intent(inout) :: ii_xj  ! Current position in XJ
+   integer,           intent(inout) :: XI(:)  ! Inactive vector
+   integer,           intent(inout) :: ii_xi  ! Current position in XI
+   logical, optional, intent(in)    :: active ! T: Add to X (default); F: To XI
+   integer, optional, intent(inout) :: ch_available
+
+   logical :: act
+
+   if (present(active)) then
+      act = active
+   else
+      act = .true.
+   end if
+
+   if (act .and. any(Ctrl%X(1:Ctrl%Nx(illum),illum) == index)) then
+      ! Retrieve this variable
+      if (present(ch_available)) ch_available = ch_available-1
+      ii_x = ii_x+1
+      X(ii_x) = index
+   else if (any(Ctrl%XJ(1:Ctrl%NXJ(illum),illum) == index)) then
+      ! Include this variable in the Jacobian
+      ii_xj = ii_xj+1
+      XJ(ii_xj) = index
+   else
+      ! An inactive variable for which parameter error will be calculated
+      ii_xi = ii_xi+1
+      XI(ii_xi) = index
+   end if
+
+end subroutine Add_to_State_Vector
+
+
+!-------------------------------------------------------------------------------
+! Name: Identify_BRDF_Terms
+!
+! Purpose:
+! Adds appropriate BRDF terms to the state vector.
+!
+! Algorithm:
+! 1) Loop over solar channels that haven't been inspected already.
+! 2) Count the number of subsequent, available channels that share that
+!    wavelength. If there are fewer than min_view channels, invalidate them.
+!    Otherwise, add the corresponding 1|4 BRDF terms to the state vector.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/08/17, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine Identify_BRDF_Terms(Ctrl, illum, min_view, min_rho, &
+                               is_not_used_or_missing, &
+                               X, ii_x, XJ, ii_xj, XI, ii_xi, active)
+   use CTRL_def
+   use ECP_Constants, only : IRs, MaxRho_XX
+
+   implicit none
+
+   type(CTRL_t),      intent(in)    :: Ctrl
+   integer,           intent(in)    :: illum
+   integer,           intent(in)    :: min_view
+   integer,           intent(in)    :: min_rho
+   logical,           intent(inout) :: is_not_used_or_missing(:)
+   integer,           intent(inout) :: X(:)
+   integer,           intent(inout) :: ii_x
+   integer,           intent(inout) :: XJ(:)
+   integer,           intent(inout) :: ii_xj
+   integer,           intent(inout) :: XI(:)
+   integer,           intent(inout) :: ii_xi
+   logical,           intent(in)    :: active
+
+   integer :: i_solar, i_ctrl, j_solar, j_ctrl, j_rho
+   integer :: nch, ch(Ctrl%Ind%NViews)
+   logical :: checked(Ctrl%Ind%NSolar)
+
+
+   checked = .false.
+
+   ! Identify which valid solar channels are at this wavelength
+   do i_solar = 1, Ctrl%Ind%NSolar
+      i_ctrl = Ctrl%Ind%YSolar(i_solar)
+
+      ! Skip dead chs and wavelengths we've already dealt with
+      if (checked(i_solar) .or. is_not_used_or_missing(i_ctrl)) continue
+
+      ! Make a list of channels that share this wavelength
+      nch = 1
+      ch(1) = i_solar
+!     checked(i_solar) = .true.
+
+      do j_solar = i_solar+1, Ctrl%Ind%NSolar
+         j_ctrl = Ctrl%Ind%YSolar(j_solar)
+
+         if (Ctrl%Ind%WvlIdx(i_ctrl) == Ctrl%Ind%WvlIdx(j_ctrl) .and. &
+              .not. is_not_used_or_missing(i_ctrl)) then
+            nch = nch+1
+            ch(nch) = j_solar
+            checked(j_solar) = .true.
+         end if
+      end do
+
+      ! If too few valid views, ignore all views
+      if (nch < min_view) then
+         ! If insufficient views valid, invalidate all channels
+         is_not_used_or_missing(Ctrl%Ind%YSolar(ch(1:nch))) = .true.
+      else
+         ! Add state vector elements for this wavenumber (NOTE: the first view
+         ! found in the MSI file for this wavenumber is used)
+         do j_rho = min_rho, MaxRho_XX
+            call Add_to_State_Vector(Ctrl, illum, IRs(ch(1),j_rho), &
+                 X, ii_x, XJ, ii_xj, XI, ii_xi, active=active)
+         end do
+      end if
+   end do
+
+end subroutine Identify_BRDF_Terms

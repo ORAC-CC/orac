@@ -74,12 +74,13 @@
 !    lowest T level to skint to be consistent with a priori. As rttov_driver.F90
 !    sets these to be the same, it makes little difference other than tidiness.
 ! 2015/06/02, AP: Moved repeated code into subroutine.
+! 2015/08/14, AP: Only set needed variables.
 ! 2015/08/20, GM: Fix SelmCtrl setting of SPixel%X0.
 !
 ! $Id$
 !
 ! Bugs:
-! None known.
+! Does not facilitate correlation between surface reflectance terms.
 !-------------------------------------------------------------------------------
 
 subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
@@ -91,64 +92,114 @@ subroutine Get_X(Ctrl, SAD_Chan, SPixel, status)
    implicit none
 
    ! Declare arguments
-
    type(Ctrl_t),     intent(in)    :: Ctrl
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SPixel_t),   intent(inout) :: SPixel
    integer,          intent(out)   :: status
 
    ! Local variables
+   integer :: i
 
-   integer :: i ! Loop counter
-
-   ! Set status to zero
    status = 0
 
-   ! Set a priori and associated error covariance, then set first guess.
-   ! Having set both, check for internal consistency vs the cloud class limits.
-   ! Loop over all variables, checking the method for each. One loop is used for
-   ! both AP and FG setting. This is intended to minimise the number of
-   ! operations in incrementing the counter.
-
-   ! Set a priori
+   ! Set all required state vector elements
    SPixel%Sx = 0.
-   do i = 1, MaxStateVar
-      call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, 0, SPixel%Xb(i), &
-                     status, SPixel%Sx(i,i))
-
-      ! Having set a priori for the variable, set first guess. If the FG method
-      ! is the same as the AP, just copy the AP value. The first "if" is
-      ! slightly dangerous: the assumption is that the first guess method is
-      ! legal and supported. This holds provided that the same methods are
-      ! supported for FG and AP.
-
-      ! Set first guess
-      if (SPixel%FG(i) /= SelmCtrl .and. SPixel%FG(i) == SPixel%AP(i)) then
-         SPixel%X0(i) = SPixel%Xb(i)
-      else
-         call Get_State(SPixel%FG(i), i, Ctrl, SPixel, SAD_Chan, 1, SPixel%X0(i), &
-                        status)
-      end if
-
-      ! Check for internal consistency with the cloud class limits. Set the a
-      ! priori or first guess values equal to any limit they exceed.
-      if (SPixel%Xb(i) > Ctrl%Invpar%xUlim(i)) then
-         SPixel%Xb(i) = Ctrl%Invpar%xUlim(i)
-      else if (SPixel%Xb(i) < Ctrl%Invpar%xLlim(i)) then
-         SPixel%Xb(i) = Ctrl%Invpar%xLlim(i)
-      end if
-
-      if (SPixel%X0(i) > Ctrl%Invpar%xUlim(i)) then
-         SPixel%X0(i) = Ctrl%Invpar%xUlim(i)
-      else if (SPixel%X0(i) < Ctrl%Invpar%xLlim(i)) then
-         SPixel%X0(i) = Ctrl%Invpar%xLlim(i)
-      end if
-
+   do i = 1, SPixel%Nx
+      call Set_State(SPixel%X(i), Ctrl, SPixel, SAD_Chan, status)
+   end do
+   do i = 1, SPixel%NXJ
+      call Set_State(SPixel%XJ(i), Ctrl, SPixel, SAD_Chan, status)
+   end do
+   do i = 1, SPixel%NXI
+      call Set_State(SPixel%XI(i), Ctrl, SPixel, SAD_Chan, status)
    end do
 
 end subroutine Get_X
 
 
+!-------------------------------------------------------------------------------
+! Name: Set_State
+!
+! Purpose:
+! Initialise state variable i.
+!
+! Algorithm:
+! 1) Call Get_State twice.
+! 2) Check limits.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/08/20, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine Set_State(i, Ctrl, SPixel, SAD_Chan, status)
+
+   use CTRL_def
+   use ECP_Constants
+   use SAD_Chan_def
+
+   implicit none
+
+   ! Declare arguments
+   integer,          intent(in)    :: i
+   type(Ctrl_t),     intent(in)    :: Ctrl
+   type(SPixel_t),   intent(inout) :: SPixel
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   integer,          intent(out)   :: status
+
+
+   ! Set a priori
+   call Get_State(SPixel%AP(i), i, Ctrl, SPixel, SAD_Chan, 0, SPixel%Xb(i), &
+                  status, SPixel%Sx)
+
+   ! Set first guess
+   if (SPixel%FG(i) /= SelmCtrl .and. SPixel%FG(i) == SPixel%AP(i)) then
+      SPixel%X0(i) = SPixel%Xb(i)
+   else
+      call Get_State(SPixel%FG(i), i, Ctrl, SPixel, SAD_Chan, 1, SPixel%X0(i), &
+                     status)
+   end if
+
+   ! Check for internal consistency with the cloud class limits. Set the a
+   ! priori or first guess values equal to any limit they exceed.
+   if (SPixel%Xb(i) > Ctrl%Invpar%xUlim(i)) then
+      SPixel%Xb(i) = Ctrl%Invpar%xUlim(i)
+   else if (SPixel%Xb(i) < Ctrl%Invpar%xLlim(i)) then
+      SPixel%Xb(i) = Ctrl%Invpar%xLlim(i)
+   end if
+
+   if (SPixel%X0(i) > Ctrl%Invpar%xUlim(i)) then
+      SPixel%X0(i) = Ctrl%Invpar%xUlim(i)
+   else if (SPixel%X0(i) < Ctrl%Invpar%xLlim(i)) then
+      SPixel%X0(i) = Ctrl%Invpar%xLlim(i)
+   end if
+
+end subroutine Set_State
+
+
+!-------------------------------------------------------------------------------
+! Name: Get_State
+!
+! Purpose:
+! Determines the appropriate method by which to initialise state variable i.
+!
+! Algorithm:
+! 1) Switch dependant on value of mode.
+! 2) If that fails, use the Ctrl method.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/07/30, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
 subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
 
    use CTRL_def
@@ -166,16 +217,18 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
    integer,          intent(in)    :: flag
    real,             intent(out)   :: X
    integer,          intent(out)   :: status
-   real,   optional, intent(out)   :: Err
+   real,   optional, intent(out)   :: Err(:,:)
 
    ! Local variables
-   real :: Scale2
+   integer :: is, ic, irho, js, jc
+   real    :: Scale2, err_temp
+
 
    Scale2 = Ctrl%Invpar%XScale(i) * Ctrl%Invpar%XScale(i)
 
    select case (mode)
    case (SelmMeas) ! Draw state from measurement vector
-      call X_MDAD(Ctrl, SAD_Chan, SPixel, i, X, status, Err)
+      call X_MDAD(Ctrl, SAD_Chan, SPixel, i, X, status, err_temp)
       if (status == XMDADBounds) then ! ACP: Check cause of this
 #ifdef DEBUG
          write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'
@@ -186,10 +239,8 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
          write(*,*) 'ERROR: X_MDAD(): Failed with status:',status
 #endif
       end if
-      if (status == 0 .and. present(Err)) Err = Err * Err * Scale2
-
-   ! ACP: case (SelmSAD) is available in the aerosol code and used for
-   ! tau and ref. This will be done via Ctrl%XB/X0 instead.
+      if (status == 0 .and. present(Err)) &
+           Err(i,i) = err_temp * err_temp * Scale2
 
    case (SelmAUX) ! Draw from auxilliary input information
       if (i == ITs) then ! Surface temperature
@@ -199,31 +250,59 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
          X = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
          if (present(Err)) then
             if (SPixel%Surface%Land) then
-               Err = AUXErrTsLand * AUXErrTsLand * Scale2
+               Err(i,i) = AUXErrTsLand * AUXErrTsLand * Scale2
             else
-               Err = AUXErrTsSea * AUXErrTsSea * Scale2
+               Err(i,i) = AUXErrTsSea * AUXErrTsSea * Scale2
             end if
          end if
+      else ! Surface reflectance (BRDF only)
+         search: do is = 1, SPixel%Ind%NSolar
+            ic = SPixel%spixel_y_solar_to_ctrl_y_solar_index(is)
+
+            do irho = 1, MaxRho_XX
+               if (i == IRs(ic,irho)) then
+                  X = SPixel%Surface%Rs2(is,irho)
+
+                  ! Copy over (and scale) covariance matrix
+                  if (present(Err)) then
+                     do js = 1, SPixel%Ind%NSolar
+                        jc = SPixel%spixel_y_solar_to_ctrl_y_solar_index(js)
+
+                        Err(IRs(jc,irho), IRs(ic,irho)) = &
+                             SPixel%Surface%SRs2(js,is,irho)  * &
+                             Ctrl%Invpar%XScale(IRs(ic,irho)) * &
+                             Ctrl%Invpar%XScale(IRs(jc,irho))
+                        Err(IRs(ic,irho), IRs(jc,irho)) = &
+                             Err(IRs(jc,irho), IRs(ic,irho))
+                     end do
+                  end if
+                  exit search
+               end if
+            end do
+         end do search
       end if
    end select
 
    ! Draw from Ctrl structure (e.g. driver file). Used if method other
-   ! methods failed. Ctrl%Sx is squared after reading in.
+   ! methods failed. Ctrl%Sx is squared after reading in. (SelmSAD of the
+   ! aerosol code
    if (mode == SelmCtrl .or. status /= 0) then
-      ! Use a priori value from Ctrl structure
+      ! Use value from Ctrl structure
       if (flag /= 0) then
          X = Ctrl%X0(i)
       else
          X = Ctrl%Xb(i)
       end if
+      ! If surface reflectance, correct for solar zenith angle
+      if (any(i == IRs)) X = X / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
 
       if (present(Err)) then
          if (any(SPixel%X == i)) then
-            Err = Ctrl%Sx(i) * Ctrl%Sx(i) * Scale2
+            Err(i,i) = Ctrl%Sx(i) * Ctrl%Sx(i) * Scale2
          else
             ! Assume that the inactive state variables are well known do not try
             ! to retrieve
-            Err = 1.0e-10 * Scale2 ! 1e-5 ** 2
+            Err(i,i) = 1.0e-10 * Scale2 ! 1e-5 ** 2
          end if
       end if
 

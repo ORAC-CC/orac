@@ -228,7 +228,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    ! Define local variables
    integer, parameter :: i_equation_form = 1
 
-   integer :: i
+   integer :: i, ii
    integer :: Solar(SPixel%Ind%NSolar)
    real    :: a(SPixel%Ind%NSolar)
    real    :: b(SPixel%Ind%NSolar)
@@ -543,7 +543,12 @@ else
 
    REF_over_l = Tac_0v * d_l
 
-   d_REF(:,IRs(1,1)) = X(IFr) * REF_over_l + (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs
+   ! NOTE: This neglects the / sec_o used in the Lambertian model
+   do i = 1, SPixel%Ind%NSolar
+      ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+      d_REF(i,IRs(ii,IRho_DD)) = X(IFr) * REF_over_l(i) + &
+                                 (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs(i)
+   end do
 end if
    ! Open breakpoint file if required, and write out reflectances and gradients.
 #ifdef BKP

@@ -161,7 +161,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    real,    allocatable, dimension(:) :: channel_wvl
    integer, allocatable, dimension(:) :: solar_ids
    integer                            :: Nx_Dy, Nx_Tw, Nx_Ni
+   integer                            :: NXJ_Dy, NXJ_Tw, NXJ_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
+   integer, dimension(MaxStateVar)    :: XJ_Dy, XJ_Tw, XJ_Ni
    integer                            :: a ! Short name for CtrL%Approach
    real                               :: wvl_threshold
 
@@ -430,7 +432,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    end do
 
    !----------------------- CTRL%EqMPN --------------------
-   Ctrl%EqMPN%Rs     = 1
    Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux, Aer=SelmMeas)
    Ctrl%EqMPN%Homog  = switch(a, Default=.true.,  Aer=.false.)
    Ctrl%EqMPN%Coreg  = switch(a, Default=.true.,  Aer=.false.)
@@ -451,10 +452,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Invpar%XScale(IPc)            = switch(a, Default=1.0)
    Ctrl%Invpar%XScale(IFr)            = switch(a, Default=1000.0)
    Ctrl%Invpar%XScale(ITs)            = switch(a, Default=1.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch(a, Default=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch(a, Default=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch(a, Default=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch(a, Default=1000.0, AerSw=1.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch(a, Default=1.0, AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch(a, Default=1.0, AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch(a, Default=1.0, AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch(a, Default=1.0, AerOx=1000.0)
    Ctrl%Invpar%XScale(ISP)            = switch(a, Default=1.0)
    ! Lower limit
    Ctrl%Invpar%XLLim(ITau)            = switch(a, Default=-3.0,   Aer=-2.0)
@@ -677,6 +678,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    X_Dy  = sint_fill_value
    X_Tw  = sint_fill_value
    X_Ni  = sint_fill_value
+   XJ_Dy = sint_fill_value
+   XJ_Tw = sint_fill_value
+   XJ_Ni = sint_fill_value
    if (Ctrl%Approach == AerOx) then
       ! Retrieve optical depth, effective radius, and white sky albedo in all
       ! channels (it'll work out which duplicate views later). No night/twilight.
@@ -689,6 +693,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       end do
       Nx_Tw = 0
       Nx_Ni = 0
+
+      ! No terms added to the Jacobian
+      NXJ_Dy = 0
+      NXJ_Tw = 0
+      NXJ_Ni = 0
    else if (Ctrl%Approach == AerSw) then
       ! Retrieve optical depth, effective radius, and Swansea parameters in all
       ! channels (it'll work out which duplicate views later). No night/twilight.
@@ -705,6 +714,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       end do
       Nx_Tw = 0
       Nx_Ni = 0
+
+      ! No terms added to the Jacobian
+      NXJ_Dy = 0
+      NXJ_Tw = 0
+      NXJ_Ni = 0
    else
       ! By day, retrieve optical depth, effective radius, cloud top pressure and
       ! surface temperature.
@@ -714,15 +728,26 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       X_Dy(3)  = IPc
       X_Dy(4)  = ITs
 
-       ! In twilight or night, retrieve cloud top pressure and surface
+      ! Include white sky albedo in Jacobian.
+      NXJ_Dy   = 0
+      do i = 1, Ctrl%Ind%NSolar
+         NXJ_Dy = NXJ_Dy+1
+         XJ_Dy(NXJ_Dy) = IRs(i,IRho_DD)
+      end do
+
+      ! In twilight or night, retrieve cloud top pressure and surface
       ! temperature. Include white sky albedo in Jacobian.
       Nx_Tw   = 2
       X_Tw(1) = IPc
       X_Tw(2) = ITs
+      NXJ_Tw  = NXJ_Dy
+      XJ_Tw   = XJ_Dy
 
       Nx_Ni   = 2
       X_Ni(1) = IPc
       X_Ni(2) = ITs
+      NXJ_Ni  = NXJ_Dy
+      XJ_Ni   = XJ_Dy
    end if
 
 
@@ -779,8 +804,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
       case('CTRL%RS%CB')
          if (parse_string(line, Ctrl%RS%Cb)            /= 0) call h_p_e(label)
-      case('CTRL%EQMPN%RS')
-         if (parse_string(line, Ctrl%EqMPN%Rs)         /= 0) call h_p_e(label)
       case('CTRL%EQMPN%SYSELM')
          if (parse_user_text(line, Ctrl%EqMPN%SySelm)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%HOMOG')
@@ -860,15 +883,33 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('NX_DY','CTRL%NX_DY','CTRL%IND%NX_DY')
          if (parse_string(line, NX_DY)                 /= 0) call h_p_e(label)
       case('X_DY','CTRL%X_DY','CTRL%IND%X_DY')
-         if (parse_user_text(line, X_DY, NX_DY)        /= 0) call h_p_e(label)
+         if (parse_user_text(line, X_DY, NX_DY, solar_ids) &
+                                                       /= 0) call h_p_e(label)
       case('NX_TW','CTRL%NX_TW','CTRL%IND%NX_TW')
          if (parse_string(line, NX_TW)                 /= 0) call h_p_e(label)
       case('X_TW','CTRL%X_TW','CTRL%IND%X_TW')
-         if (parse_user_text(line, X_TW, NX_TW)        /= 0) call h_p_e(label)
+         if (parse_user_text(line, X_TW, NX_TW, solar_ids) &
+                                                       /= 0) call h_p_e(label)
       case('NX_NI','CTRL%NX_NI','CTRL%IND%NX_NI')
          if (parse_string(line, NX_NI)                 /= 0) call h_p_e(label)
       case('X_NI','CTRL%X_NI','CTRL%IND%X_NI')
-         if (parse_user_text(line, X_NI, NX_NI)        /= 0) call h_p_e(label)
+         if (parse_user_text(line, X_NI, NX_NI, solar_ids) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%NXJ_DY')
+         if (parse_string(line, NXJ_DY)                /= 0) call h_p_e(label)
+      case('CTRL%XJ_DY')
+         if (parse_user_text(line, XJ_DY, NXJ_DY, solar_ids) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%NXJ_TW')
+         if (parse_string(line, NXJ_TW)                /= 0) call h_p_e(label)
+      case('CTRL%XJ_TW')
+         if (parse_user_text(line, XJ_TW, NXJ_TW, solar_ids) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%NXJ_NI')
+         if (parse_string(line, NXJ_NI)                /= 0) call h_p_e(label)
+      case('CTRL%XJ_NI')
+         if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
+                                                       /= 0) call h_p_e(label)
       case default
          write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code
@@ -886,6 +927,13 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%X(:,IDay)    = X_Dy
    Ctrl%X(:,ITwi)    = X_Tw
    Ctrl%X(:,INight)  = X_Ni
+
+   Ctrl%NXJ(IDay)    = NXJ_Dy
+   Ctrl%NXJ(ITwi)    = NXJ_Tw
+   Ctrl%NXJ(INight)  = NXJ_Ni
+   Ctrl%XJ(:,IDay)   = XJ_Dy
+   Ctrl%XJ(:,ITwi)   = XJ_Tw
+   Ctrl%XJ(:,INight) = XJ_Ni
 
 
    !----------------------------------------------------------------------------

@@ -2,12 +2,11 @@
 ! Name: SetKx.F90
 !
 ! Purpose:
-! Set up the gradient matrices Kx and Kbj from the forward model return.
+! Set up the gradient matrices Kx and Kj from the forward model return.
 !
 ! Description and Algorithm details:
-! Set Kx = dY_dX for corresponding channel / scale factor for state variable
-! If Ctrl flag indicates user wants to use EqMPN for Rs:
-!    Set diagonal terms of Kbj = Rs part of dY_dX for corresponding channel
+! Copy dY_dX into Kx for each active variable, appyling the appropriate scale
+! factors. Copy dY_dX into Kj for each parameter.
 !
 ! Arguments:
 ! Name   Type     In/Out/Both Description
@@ -17,9 +16,8 @@
 !                             sizing)
 ! dY_dX  real arr In          Gradients from forward model
 ! Kx     real arr Out         Scaled FM gradients (w.r.t state variables)
-! Kbj    real arr Out         Scaled FM gradients w.r.t. model parameters
+! Kj     real arr Out         Scaled FM gradients w.r.t. model parameters
 !                             (only Rs at present).
-! status integer  Out         Error status
 !
 ! History:
 ! 2001/01/30, KS: Original version
@@ -31,6 +29,8 @@
 ! 2012/01/01, MJ: Changes Kx assignment
 ! 2014/05/21, GM: Cleaned up the code.
 ! 2015/01/15, AP: Facilitate channel indexing in arbitrary order.
+! 2015/08/21, AP: Variables to include in Jacobian (but not retrieve) now listed
+!    in SPixel%XJ.
 !
 ! $Id$
 !
@@ -38,7 +38,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)
+subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kj)
 
    use Ctrl_def
    use ECP_Constants
@@ -52,31 +52,21 @@ subroutine Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, status)
    type(SPixel_t), intent(in)  :: SPixel
    real,           intent(in)  :: dY_dX(:,:)
    real,           intent(out) :: Kx(:,:)
-   real,           intent(out) :: Kbj(:,:)
-   integer,        intent(out) :: status
+   real,           intent(out) :: Kj(:,:)
 
    ! Declare local variables
 
    integer :: i
 
-   status = 0
-
    ! Set values in Kx for the active state variables.
-   ! SPixel%X acts as a "vector subscript", picking out the active state
-   ! variable parts of dY_dX and XScale. A loop is required because dY_dX
-   ! and XScale are not conformable.
-
-   do i = 1, SPixel%Ind%Ny
-!     Kx(i, :) = dY_dX(i, SPixel%X) / Ctrl%Invpar%XScale(SPixel%X)
-      Kx(i,1:SPixel%Nx) = dY_dX(i, SPixel%X) / Ctrl%Invpar%XScale(SPixel%X)
+   do i = 1, SPixel%Nx
+      Kx(:,i) = dY_dX(:, SPixel%X(i)) / Ctrl%Invpar%XScale(SPixel%X(i))
    end do
 
-   ! If Eqmpn%Rs flag is set in Ctrl, set Kbj using the Rs part of dY_dX.
-   ! Kbj should be initialised to 0 in the calling routine.
-
-   if (Ctrl%Eqmpn%Rs == 1) then
-      do i = 1, SPixel%Ind%NSolar
-         Kbj(SPixel%Ind%YSolar(i),i) = dY_dX(SPixel%Ind%YSolar(i),IRs(1,1))
+   ! Set Jacobian for requested parameter errors
+   if (SPixel%NXJ > 0) then
+      do i = 1, SPixel%NXJ
+         Kj(:,i) = dY_dX(:, SPixel%XJ(i)) / Ctrl%Invpar%XScale(SPixel%XJ(i))
       end do
    end if
 

@@ -162,11 +162,14 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    SPixel%ViewIdx(1)=1
 
    ! These reallocated in GetIllum
-   SPixel%Nx = 1
-   allocate(SPixel%X(SPixel%Nx))
+   SPixel%Nx = 0
+   allocate(SPixel%X(1))
    SPixel%X  = 0
-   SPixel%NxI = 1
-   allocate(SPixel%XI(SPixel%NxI))
+   SPixel%NxJ = 0
+   allocate(SPixel%XJ(1))
+   SPixel%XJ  = 0
+   SPixel%NxI = 0
+   allocate(SPixel%XI(1))
    SPixel%XI = 0
    allocate(SPixel%Ind%YSolar(Ctrl%Ind%NSolar))
    allocate(SPixel%Ind%YThermal(Ctrl%Ind%NThermal))

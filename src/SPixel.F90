@@ -89,8 +89,9 @@
 ! 2015/01/30, AP: Remove redundant fields.
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination, and
 !    channel selection code.
-! 2015/03/02, AP: Remove Ctrl argument from
+! 2015/03/02, AP: Adding terms for aerosol retrieval. Remove Ctrl argument from
 !    check_value routines. Remove check_value.
+! 2015/07/29, AP: Remove QC.
 !
 ! $Id$
 !
@@ -240,17 +241,14 @@ module SPixel_def
                                           ! Get_Measurements **)
       real,    pointer    :: Sy(:,:)      ! Measurement error covariance
                                           ! (alloc in Get_Measurements).
-      integer, pointer    :: ViewIdx(:)   ! View index for each active measurement
-      integer             :: Nx           ! Number of active state variables
-                                          ! for the super-pixel
-      integer             :: NxI          ! Number of inactive state variables
-                                          ! for the super-pixel
-      integer, pointer    :: X(:)         ! Array of active state variable
-                                          ! indices for the super-pixel
-                                          ! Allocated to Nx for the SPixel
-      integer, pointer    :: XI(:)        ! Array of inactive state variable
-                                          ! indices for the super-pixel
-                                          ! Allocated to NxI for the SPixel
+!     integer             :: NViews       ! Number of views available
+      integer, pointer    :: ViewIdx(:)   ! View index for active measurements
+      integer             :: Nx           ! # of retrieved variables
+      integer             :: NxJ          ! # of variables included in Jacobian
+      integer             :: NxI          ! # of inactive parameters
+      integer, pointer    :: X(:)         ! Indices of retrieved variables
+      integer, pointer    :: XJ(:)        ! Indices of variables in Jacobian
+      integer, pointer    :: XI(:)        ! Indices of inactive parameters
       real                :: Xb(MaxStateVar)
                                           ! A priori state vector values
       real                :: Sx(MaxStateVar, MaxStateVar)

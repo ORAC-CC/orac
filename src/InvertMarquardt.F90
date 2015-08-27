@@ -164,6 +164,8 @@
 !    Reorganise main iteration loop to minimise code repetition.
 ! 2015/07/29, AP: Remove mentions of phase changes. Clean algorithm description.
 !    Add RAL's false convergence test (as it's used by the aerosol retrieval).
+! 2015/08/21, AP: Variables to include in Jacobian (but not retrieve) now listed
+!    in SPixel%XJ. Uncertainty due to inactive state elements tidied.
 !
 ! $Id$
 !
@@ -207,9 +209,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! cloud albedo Returned by FM
    real    :: Kx(SPixel%Ind%Ny, SPixel%Nx)
                                   ! Scaled, active part of dY_dX
-   real    :: Kbj(SPixel%Ind%Ny, SPixel%Ind%NSolar)
+   real    :: Kj(SPixel%Ind%Ny, SPixel%NXJ)
                                   ! Scaled, surface reflectance part of dY_dX
-                                  ! Set by Set_Kx if Ctrl%Eqmpn%Rs is set.
+   real    :: Sj(Spixel%NXJ, SPixel%NXJ)
+                                  ! Error covariance in parameters
    real    :: Sy(SPixel%Ind%Ny, SPixel%Ind%Ny)
                                   ! Error covariance in measurements
    real    :: SyInv(SPixel%Ind%Ny, SPixel%Ind%Ny)
@@ -249,12 +252,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: delta_J             ! Change in cost between operations
    real    :: Dy(SPixel%Nx, SPixel%Ind%Ny)
                                   ! "Inversion operator" used in error analysis
-   real    :: Kb(SPixel%Ind%Ny, SPixel%NxI+SPixel%Ind%NSolar)
+   real    :: Kb(SPixel%Ind%Ny, SPixel%NxI)
                                   ! "Model parameter" gradients from inactive
                                   ! state variables and surface reflectance.
-   real    :: Dy_Kb(SPixel%Nx, SPixel%NxI+SPixel%Ind%NSolar)
+   real    :: Dy_Kb(SPixel%Nx, SPixel%NxI)
                                   ! Product of Dy and Kb.
-   real    :: Sb(SPixel%NxI+SPixel%Ind%NSolar, SPixel%NxI+SPixel%Ind%NSolar)
+   real    :: Sb(SPixel%NxI, SPixel%NxI)
                                   ! "Model parameter" error covariance.
    real    :: St_temp(SPixel%Nx, SPixel%Nx)
                                   ! Array temporary for Diag%St
@@ -269,7 +272,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    Y         = 0.
    dY_dX     = 0.
    Kx        = 0.
-   Kbj       = 0.
+   Kj        = 0.
    KxT_SyI   = 0.
    J         = 0.
    d2J_dX2   = 0.
@@ -293,6 +296,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       go to 99 ! Terminate processing this pixel
    end if
 
+   ! Set parameter covariance matrix
+   if (SPixel%NXJ > 0) Sj = SPixel%Sx(SPixel%XJ, SPixel%XJ)
+
    ! ************ START EVALUATING FORWARD MODEL ************
    ! Evaluate forward model for the first guess and initialise the various
    ! arrays. X should be unscaled when passed into FM.
@@ -303,13 +309,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Store measurement first guess
    Diag%Y0(1:SPixel%Ind%Ny) = Y
 
-   ! Convert dY_dX to Kx and Kbj.
-   call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
-   if (stat /= 0) go to 99 ! Terminate processing this pixel
+   ! Convert dY_dX to Kx and Kj.
+   call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kj)
 
-   ! Set covariance matrix Sy. Always call Set_Kx before Set_Sy. Needs Kbj.
-   call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
-   if (stat /= 0) go to 99 ! Terminate processing this pixel
+   ! Set covariance matrix Sy. Always call Set_Kx before Set_Sy. Needs Kj.
+   call Set_Sy(Ctrl, SPixel, Kj, Sj, Sy)
 
    ! Calculate SyInv and SxInv
    call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
@@ -439,11 +443,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          Diag%cloud_albedo = 0
       end if
 
-      ! Set new Kx, Kbj, Sy and SyInv
-      call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kbj, stat)
-      if (stat /= 0) go to 99 ! Terminate processing this pixel
-      call Set_Sy(Ctrl, SPixel, Kbj, Sy, stat)
-      if (stat /= 0) go to 99 ! Terminate processing this pixel
+      ! Set new Kx, Kj, Sy and SyInv
+      call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kj)
+      call Set_Sy(Ctrl, SPixel, Kj, Sj, Sy)
       call Invert_Cholesky(Sy, SyInv, SPixel%Ind%Ny, stat)
       if (stat /= 0) then
 #ifdef DEBUG
@@ -601,36 +603,18 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! use active/inactive sections. Initialise the whole array to 0 so that
    ! the terms for correlation between the Rs/XI terms are 0.
 
-   if (SPixel%NxI > 0 .or. Ctrl%EqMPN%Rs == 0) then
+   if (SPixel%NXI > 0) then
       Dy = matmul(St_temp, KxT_SyI) ! The gain matrix
 
       ! Kx isn't actually set for inactive vars so we use a scaled dY_dX.
-      do m=1,SPixel%NxI
+      do m = 1, SPixel%NXI
          Kb(:,m) = dY_dX(:,SPixel%XI(m)) / Ctrl%Invpar%XScale(SPixel%XI(m))
       end do
+      Dy_Kb = matmul(Dy, Kb)
 
-      Sb(1:SPixel%NxI,1:SPixel%NxI) = SPixel%Sx(SPixel%XI,SPixel%XI)
-
-      if (Ctrl%Eqmpn%Rs == 0 .and. SPixel%Ind%NSolar > 0) then
-         ! NON-FUNCTIONAL as Kbj not set in these conditions. Repaired soon.
-         ! Add Rs terms to Kb and Sb. Use the full Dy_Kb.
-         Kb(:, SPixel%NxI+1:SPixel%NxI+SPixel%Ind%NSolar) = Kbj
-
-         Dy_Kb   = matmul(Dy, Kb)
-
-         Sb(SPixel%NxI+1:, SPixel%NxI+1:) = SPixel%Surface%SRs
-
-         Diag%Ss = matmul(Dy_Kb, matmul(Sb, transpose(Dy_Kb)) )
-      else
-         ! No Rs terms: don't use all of Dy_Kb this is a thermal only retrieval
-         Dy_Kb(:,1:SPixel%NxI) = matmul(Dy, Kb(:,1:SPixel%NxI))
-         Diag%Ss(1:SPixel%Nx,1:SPixel%Nx) = matmul(Dy_Kb(:,1:SPixel%NxI), &
-              matmul(Sb(1:SPixel%NxI,1:SPixel%NxI), transpose(Dy_Kb(:,1:SPixel%NxI))) )
-      end if
-   else
-      ! There are no inactive state vars and Eqmpn has been used for Rs, i.e.
-      ! no info to set Ss. Needs some values.
-      Diag%Ss = 0
+      Sb = SPixel%Sx(SPixel%XI,SPixel%XI)
+      Diag%Ss(1:SPixel%Nx,1:SPixel%Nx) = matmul(Dy_Kb, &
+                                                matmul(Sb, transpose(Dy_Kb)))
    end if
 
    ! Assign St+Ss to the parts of SPixel%Sn where state vars are active. For
@@ -638,15 +622,13 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! (by XScale squared, i.e. the product of the XScale factors for the two
    ! state variables contributing to each element).
    SPixel%Sn = 0.0
-   if (SPixel%Nx > 0 .and. SPixel%NxI == 0) then
-      SPixel%Sn(SPixel%X, SPixel%X) = Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
-   end if
-
-   if (SPixel%NxI > 0) then
+   if (SPixel%NXI > 0) then
       SPixel%Sn(SPixel%XI, SPixel%XI) = SPixel%Sx(SPixel%XI, SPixel%XI)
 
       SPixel%Sn(SPixel%X, SPixel%X)   = Diag%St(1:SPixel%Nx, 1:SPixel%Nx) + &
                                         Diag%Ss(1:SPixel%Nx, 1:SPixel%Nx)
+   else
+      SPixel%Sn(SPixel%X, SPixel%X)   = Diag%St(1:SPixel%Nx, 1:SPixel%Nx)
    end if
 
    do m = 1, MaxStateVar
