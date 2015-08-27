@@ -26,42 +26,43 @@
 ! 2001/06/04, AS: Updated to match changes in routines above.
 ! 2001/06/07, AS: Sets status 0 to avoid compilation warnings.
 ! 2001/07/06, AS: Added check on "distance" from last saved state.
+! 2015/08/21, AP: Updated to be consistent with current form of code. Now allows
+!    all variables.
 !
 ! $Id$
 !
 ! Bugs:
-! None known.
+! If desired value was not retrieved in the last "good" retrieval, this will
+!    set a nonsensical value.
+! Last retrieval will be along satellite track, though a nearer retrieval may
+!    exist across track.
 !-------------------------------------------------------------------------------
 
-subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
+subroutine X_SDAD(Ctrl, SPixel, index, X, status, Err)
 
    use ECP_Constants
    use Ctrl_def
 
    implicit none
 
-!  Declare arguments
-
+   ! Declare arguments
    type(Ctrl_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
    integer,        intent(in)    :: index
-   logical,        intent(in)    :: SetErr
    real,           intent(out)   :: X
-   real,           intent(out)   :: Err
    integer,        intent(out)   :: status
+   real, optional, intent(out)   :: Err
 
-!  Declare local variables
-
+   ! Declare local variables
    integer :: NPix
+
 
    status = 0
 
-!  Parameters supported are Tau, Re, Pc, f and Ts.
-
-!  Spixel%XnSav and SnSav contain the last "good" retrieval. Spixel%Loc%X0Last
-!  and Y0Last contain the location for the last good retrieval. Check we aren't
-!  too far away before using these values (e.g. if retrievals fail for a number
-!  of pixels the saved states may be "out of date").
+   ! Spixel%XnSav and SnSav contain the last "good" retrieval. Spixel%Loc%X0Last
+   ! and Y0Last contain the location for the last good retrieval. Check we aren't
+   ! too far away before using these values (e.g. if retrievals fail for a number
+   ! of pixels the saved states may be "out of date").
 
    NPix = sqrt(float((SPixel%Loc%X0-SPixel%Loc%LastX0) ** 2) + &
                float((SPixel%Loc%Y0-SPixel%Loc%LastY0) ** 2))
@@ -69,29 +70,8 @@ subroutine X_SDAD(Ctrl, SPixel, index, SetErr, X, Err, status)
    if (NPix > Ctrl%Max_SDAD) then
       status = XSDADMeth
    else
-      status = 0
-      select case (index)
-	 case (iTau)        !     Cloud optical depth, Tau.
-	    X = SPixel%XnSav(iTau)
-	    if (SetErr) Err = SPixel%SnSav(iTau, iTau)
-
-	 case (iRe)         !     Effective radius, Re.
-	    X = SPixel%XnSav(iRe)
-	    if (SetErr) Err = SPixel%SnSav(iRe, iRe)
-
-	 case (iPc)         !     Cloud pressure, Pc.
-	    X = SPixel%XnSav(iPc)
-	    if (SetErr) Err = SPixel%SnSav(iPc, iPc)
-
-	 case (iFr)         !     Cloud fraction, f.
-	    X = SPixel%XnSav(iFr)
-	    if (SetErr) Err = SPixel%SnSav(iFr, iFr)
-
-	 case (iTs)         !     Surface temperature, Ts.
-	    X = SPixel%XnSav(iTs)
-	    if (SetErr) Err = SPixel%SnSav(iTs, iTs)
-
-      end select
+      X = SPixel%XnSav(index)
+      if (present(Err)) Err = SPixel%SnSav(index, index)
    end if
 
 end subroutine X_SDAD

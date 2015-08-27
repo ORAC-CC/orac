@@ -74,7 +74,7 @@
 !    lowest T level to skint to be consistent with a priori. As rttov_driver.F90
 !    sets these to be the same, it makes little difference other than tidiness.
 ! 2015/06/02, AP: Moved repeated code into subroutine.
-! 2015/08/14, AP: Only set needed variables.
+! 2015/08/14, AP: Only set needed variables. Adding aerosol surface setup.
 ! 2015/08/20, GM: Fix SelmCtrl setting of SPixel%X0.
 !
 ! $Id$
@@ -281,6 +281,10 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
             end do
          end do search
       end if
+   case(SelmPrev)
+      call X_SDAD(Ctrl, SPixel, i, X, status, err_temp)
+      if (status == 0 .and. present(Err)) &
+           Err(i,i) = err_temp * Scale2 ! SnSave is a variance
    end select
 
    ! Draw from Ctrl structure (e.g. driver file). Used if method other

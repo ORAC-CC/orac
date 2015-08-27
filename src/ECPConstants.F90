@@ -233,6 +233,7 @@ module ECP_constants
    integer, parameter :: SelmCtrl         = 1
    integer, parameter :: SelmMeas         = 2
    integer, parameter :: SelmAux          = 3
+   integer, parameter :: SelmPrev         = 4
 
    ! Bit positions used in Ctrl%Ind%Ch_Is flag
    integer, parameter :: SolarBit         = 0
