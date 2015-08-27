@@ -1,4 +1,4 @@
-integer function PARSE_STRING_NAME_1D(in, data, n_in, ch_ids) result(status)
+recursive integer function PARSE_STRING_NAME_1D(in, data, n_in, ch_ids) result(status)
    implicit none
 
    character(len=*),  intent(in) :: in
@@ -56,7 +56,7 @@ integer function PARSE_STRING_NAME_1D(in, data, n_in, ch_ids) result(status)
 
 end function PARSE_STRING_NAME_1D
 
-integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in, ch_ids) result(status)
+recursive integer function PARSE_STRING_NAME_2D(in, data, n1_in, n2_in, ch_ids) result(status)
    implicit none
 
    character(len=*),  intent(in) :: in

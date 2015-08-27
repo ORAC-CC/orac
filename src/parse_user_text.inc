@@ -1,4 +1,4 @@
-integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
+recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
    use constants_cloud_typing_pavolonis
    use Int_Routines_def, only : find_in_array
    use ECP_Constants
@@ -24,7 +24,7 @@ integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
       if (op > 1) then
          ! We are dealing with an array parameter.
          cl = index(in, ')')
-         if (op+1 <= cl .or. .not. present(ch_ids)) then
+         if (op+1 >= cl .or. .not. present(ch_ids)) then
             ! Closing bracket before opening (or not a wavelength array)
             status  = PARSE_ERR_CONV
          else
@@ -61,6 +61,8 @@ integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
                   out = find_in_array(ch_ids, ch)
                   if (out == 0) status = PARSE_ERR_CONV
                end if
+
+               return
             end if
          end if
 
@@ -169,7 +171,7 @@ integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
 end function PARSE_STRING_NAME_0D
 
 
-integer function PARSE_ARRAY_INDEX_NAME_1D(idx, arr, out, ch_ids) result(status)
+recursive integer function PARSE_ARRAY_INDEX_NAME_1D(idx, arr, out, ch_ids) result(status)
    implicit none
 
    character(len=*), intent(in)  :: idx
@@ -190,7 +192,7 @@ integer function PARSE_ARRAY_INDEX_NAME_1D(idx, arr, out, ch_ids) result(status)
 end function PARSE_ARRAY_INDEX_NAME_1D
 
 
-integer function PARSE_ARRAY_INDEX_NAME_2D(idx, arr, out, ch_ids) result(status)
+recursive integer function PARSE_ARRAY_INDEX_NAME_2D(idx, arr, out, ch_ids) result(status)
    implicit none
 
    character(len=*), intent(in)  :: idx
