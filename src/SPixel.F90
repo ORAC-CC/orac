@@ -217,7 +217,6 @@ module SPixel_def
       integer             :: MDAD_SW      ! Index of channel at (or nearest to)
                                           ! 0.67. Used in MDAD method for setting
                                           ! FG (AP) cloud optical depth
-      integer             :: NViews       ! Number of instrument views
    end type SPixel_Ind_t
 
 

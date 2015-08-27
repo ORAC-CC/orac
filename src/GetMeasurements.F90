@@ -142,7 +142,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       SPixel%Ym(i) = MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, ii)
       SPixel%ViewIdx(i) = Ctrl%Ind%ViewIdx(ii)
    end do
-   SPixel%Ind%NViews = maxval(SPixel%ViewIdx)
+!  SPixel%Ind%NViews = maxval(SPixel%ViewIdx)
 
    ! Reallocate the measurement error covariance array to the appropriate size
    ! for the SPixel and set the values. Initial value is the same as Ctrl.

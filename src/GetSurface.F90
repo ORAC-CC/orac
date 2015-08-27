@@ -3,8 +3,7 @@
 !
 ! Purpose:
 ! Passes surface reflectances for the solar channels and current super-pixel
-! array according to the method defined by Ctrl%Rs%Flag to Get_Rs.
-! Get_Rs calculates the mean surface reflectance of the super pixel.
+! array according to the method defined by Ctrl%Rs%RsSelm in SPixel structure.
 ! Also calculates the covariances for the solar channels.
 !
 ! Description and Algorithm details:
