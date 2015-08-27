@@ -363,6 +363,7 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
    integer :: min_rho
    integer :: i_chan, ii_chan, i_x, i_r_e_chan
    integer :: n_chans, n_tau_chans, n_r_e_chans, n_ir_chans, n_ir_chans2
+   logical :: re_thermal
 
    integer, parameter :: min_tau_chans = 1
    integer, parameter :: min_r_e_chans = 1
@@ -413,6 +414,7 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
    n_tau_chans = 0
    n_r_e_chans = 0
    n_ir_chans  = 0
+   re_thermal  = .false.
    do i_chan = 1, Ctrl%Ind%Ny
       if (.not. is_not_used_or_missing(i_chan)) then
          if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%tau_chans) .or. &
@@ -425,6 +427,8 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
          end if
          if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%r_e_chans)) then
             n_r_e_chans = n_r_e_chans + 1
+            ! Check if any thermal channels are used for Re
+            if (btest(Ctrl%Ind%Ch_Is(i_chan), ThermalBit)) re_thermal = .true.
          end if
          if (any(Ctrl%Ind%Y_ID(i_chan) .eq. Ctrl%ir_chans))  then
             n_ir_chans  = n_ir_chans  + 1
@@ -440,9 +444,16 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
    ! Retrieve Tau if sufficient appropriate channels are available
    call Add_to_State_Vector(Ctrl, SPixel%Illum(1), ITau, X, ii_x, XJ, ii_xj, &
         XI, ii_xi, active = n_tau_chans .ge. min_tau_chans)
-   ! Retrieve Re if sufficient appropriate channels are available
+   ! Retrieve Re if sufficient appropriate channels are available (if thermal
+   ! channels used, decrement the IR channel counter)
+   if (re_thermal) then
+      call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe, X, ii_x, XJ, ii_xj, &
+           XI, ii_xi, active = n_r_e_chans .ge. min_r_e_chans, &
+           ch_available = n_ir_chans2)
+   else
       call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IRe, X, ii_x, XJ, ii_xj, &
            XI, ii_xi, active = n_r_e_chans .ge. min_r_e_chans)
+   end if
    ! Pc, Ts, Fr retreved for all illumination. n_ir_chans2 ensures there aren't
    ! more things retrieved than there are measurements
    call Add_to_State_Vector(Ctrl, SPixel%Illum(1), IPc, X, ii_x, XJ, ii_xj, &
