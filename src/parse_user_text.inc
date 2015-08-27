@@ -94,6 +94,8 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = SelmMeas
          case('SELMAUX')
             out = SelmAux
+         case('SELMPREV')
+            out = SelmPrev
          ! Retrieval approaches
          case('CLDWAT')
             out = CldWat
@@ -105,6 +107,11 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = AerSw
          case('ASHEYJ')
             out = AshEyj
+         ! B indices
+         case('ISEA')
+            out = ISea
+         case('ILAND')
+            out = ILand
          ! RTM interpolation methods
          case('RTMINTMETHLINEAR')
             out = RTMIntMethLinear
@@ -117,6 +124,13 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = LUTIntMethLinear
          case('LUTINTMETHBICUBIC')
             out = LUTIntMethBicubic
+         ! Illumination conditions
+         case('IDAY')
+            out = IDay
+         case('ITWI')
+            out = ITwi
+         case('INIGHT')
+            out = INight
          ! Breakpoint file output level selection
          case('BKPL_FM')
             out = Bkpl_FM
