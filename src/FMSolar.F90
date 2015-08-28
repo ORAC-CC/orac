@@ -196,6 +196,56 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
 end subroutine derivative_wrt_crp_parameter_brdf
 
 
+subroutine derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, CRP, f, &
+   Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, Tbc_dd, &
+   rho_l,  d_REF, a, b, c)
+
+   use SPixel_def
+
+   implicit none
+
+   type(SPixel_t), intent(in)  :: SPixel
+   integer,        intent(in)  :: i_equation_form
+   real,           intent(in)  :: CRP(:,:)
+   real,           intent(in)  :: f
+   real,           intent(in)  :: Tac_0v(:)
+   real,           intent(in)  :: Tbc_0(:)
+   real,           intent(in)  :: Tbc_v(:)
+   real,           intent(in)  :: Tbc_d(:)
+   real,           intent(in)  :: Tbc_0v(:)
+   real,           intent(in)  :: Tbc_0d(:)
+   real,           intent(in)  :: Tbc_dv(:)
+   real,           intent(in)  :: Tbc_dd(:)
+   real,           intent(in)  :: rho_l(:,:)
+   real,           intent(out) :: d_REF(SPixel%Ind%NSolar)
+   real,           intent(in)  :: a(:)
+   real,           intent(in)  :: b(:)
+   real,           intent(in)  :: c(:)
+
+   real :: d_l(SPixel%Ind%NSolar)
+   real :: REF_over_l(SPixel%Ind%NSolar)
+
+   if (i_equation_form .eq. 1) then
+      d_l =  CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_DD)) * CRP(:,IT_dv) * Tbc_0d &
+          + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
+             CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
+          +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)
+   else
+      d_l =  CRP(:,IT_00) * rho_l(:,IRho_0V) * CRP(:,IT_vv) * Tbc_0v &
+          +  CRP(:,IT_0d) * rho_l(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dv &
+          + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
+             CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
+          +  b * CRP(:,IR_dd) * rho_l(:,IRho_DV) * CRP(:,IT_vv) * Tbc_dd * Tbc_v / a &
+          +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)
+   end if
+
+   REF_over_l = Tac_0v * d_l
+
+   d_REF = f * REF_over_l + (1.0-f) * SPixel%RTM%dREF_clear_dRs * rho_l(:,IRho_DD)
+
+end subroutine derivative_wrt_rho_parameters_brdf
+
+
 subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
                     d_REF, status)
 
@@ -246,10 +296,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    real, dimension(SPixel%Ind%NSolar) :: a, b, c, d
    ! Used to determine d_REF(:,IRs); gives ratio between element and the term
    ! that is retrieved.
-   real    :: rho_0v_l(SPixel%Ind%NSolar)
-   real    :: rho_0d_l(SPixel%Ind%NSolar)
-   real    :: rho_dv_l(SPixel%Ind%NSolar)
-   real    :: rho_dd_l(SPixel%Ind%NSolar)
+   real                               :: rho_l(SPixel%Ind%NSolar, MaxRho_XX)
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
@@ -490,35 +537,21 @@ else
    d_REF(:,IFr) = REF_over - SPixel%RTM%REF_clear
 
    ! Derivative w.r.t. surface temperature, T_s
-   d_REF(:,ITs) = 0.0 ! Constant and zero
+!  d_REF(:,ITs) = 0.0 ! No dependence
 
    ! Derivative w.r.t. BRDF reflectance parameters, rho_xx
+   do j = MaxRho_XX, MaxRho_XX ! NOTE: Only evaluate Rho_DD for now
+      do i = 1, SPixel%Ind%NSolar
+         ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+         rho_l = 0.0
+         rho_l(i,j) = 1.0
 
-   ! For this the rho_xx values are start point of the linearization but are
-   ! left in the equation and set to one here in case derivatives w.r.t. BRDF
-   ! input parameters are required
-   rho_0v_l = 1.0
-   rho_0d_l = 1.0
-   rho_dv_l = 1.0
-   rho_dd_l = 1.0
-
-   if (i_equation_form .eq. 1) then
-      d_l = -CRP(:,IT_00) * rho_dd_l * CRP(:,IT_DV) * Tbc_0d &
-          +  CRP(:,IT_0D) * rho_dd_l * Tbc_d * c / a &
-          +  b * c * rho_dd_l * CRP(:,IR_dd) * Tbc_dd / a**2
-   else
-      d_l =  CRP(:,IT_0D) * rho_dd_l * Tbc_d * c / a &
-          +  b * c * rho_dd_l * CRP(:,IR_dd) * Tbc_dd / a**2
-   end if
-
-   REF_over_l = Tac_0v * d_l
-
-   ! NOTE: This neglects the / sec_o used in the Lambertian model
-   do i = 1, SPixel%Ind%NSolar
-      ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
-      d_REF(i,IRs(ii,IRho_DD)) = X(IFr) * REF_over_l(i) + &
-                                 (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs(i)
+         call derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, &
+              CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &
+              Tbc_dv, Tbc_dd, rho_l, d_REF(:,IRs(ii,j)), a, b, c)
+      end do
    end do
+
 end if
    ! Open breakpoint file if required, and write out reflectances and gradients.
 #ifdef BKP
