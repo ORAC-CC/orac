@@ -129,6 +129,8 @@ module ECP_constants
    real, parameter    :: RefMax           =  1.5
    real, parameter    :: BTMin            =  140.0  ! Brightness temperature
    real, parameter    :: BTMax            =  350.0
+   real, parameter    :: RhoMin           =  0.0    ! BRDF parameters
+   real, parameter    :: RhoMax           =  1.0
 
    real, parameter    :: TxcMin           = 0.0
    real, parameter    :: TxcMax           = 1.5

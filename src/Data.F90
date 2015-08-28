@@ -87,6 +87,11 @@ module Data_def
 
       ! SelmAux surface reflectance uncertainty terms
       real(sreal),        pointer :: SD(:,:,:)     ! Std deviation in MSI data
+      real(sreal),        pointer :: rho_dd_cor(:,:,:,:) ! Correlation matrix for
+                                                   ! surface reflectance
+      real(sreal),        pointer :: rho_dd_unc(:,:,:) ! Uncertainty in surface
+                                                   ! reflect 3rd dim covers all
+                                                   ! visible chs
    end type Data_t
 
 contains

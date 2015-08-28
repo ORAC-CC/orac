@@ -19,6 +19,7 @@
 !    variables.
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
 ! 2015/07/03, OS: Added cloudmask_error
+! 2015/08/10, AP: Additional surface uncs.
 !
 ! $Id: NullifyData.F90 2356 2014-09-10 20:42:15Z gmcgarragh $
 !
@@ -46,7 +47,6 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
    end if
 
    nullify(MSI_Data%Type)
-
    nullify(MSI_Data%cldtype)
    nullify(MSI_Data%cloudmask)
    nullify(MSI_Data%cloudmask_error)
@@ -68,6 +68,9 @@ subroutine Nullify_Data(Ctrl, MSI_Data)
    nullify(MSI_Data%time)
 
    nullify(MSI_Data%MSI)
+   nullify(MSI_Data%SD)
+   nullify(MSI_Data%rho_dd_cor)
+   nullify(MSI_Data%rho_dd_unc)
 
    nullify(MSI_Data%illum)
 

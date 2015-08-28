@@ -404,6 +404,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
 
    !----------------------- CTRL%RS -----------------------
    Ctrl%RS%RsSelm        = switch(a, Default=SelmAux)
+   Ctrl%RS%SRsSelm       = switch(a, Default=SelmCtrl, Aer=SelmAux)
    Ctrl%RS%use_full_brdf = switch(a, Default=.true.,   AerSw=.false.)
    Ctrl%RS%Sb            = switch(a, Default=0.2,      Aer=0.05)
    Ctrl%RS%Cb            = switch(a, Default=0.2,      Aer=0.4)
@@ -796,6 +797,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          if (parse_string(line, Ctrl%Run_ID)           /= 0) call h_p_e(label)
       case('CTRL%RS%RSSELM','CTRL%RS%FLAG')
          if (parse_user_text(line, Ctrl%RS%RsSelm)     /= 0) call h_p_e(label)
+      case('CTRL%RS%SRSSELM')
+         if (parse_user_text(line, Ctrl%RS%SRsSelm)    /= 0) call h_p_e(label)
       case('CTRL%RS%USE_FULL_BRDF')
          if (parse_string(line, Ctrl%RS%use_full_brdf) /= 0) call h_p_e(label)
       case('CTRL%RS%B')
@@ -1011,7 +1014,22 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
               'alongside the full BRDF.'
          stop GetSurfaceMeth
       end if
+      if (Ctrl%RS%SRsSelm /= SelmCtrl) then
+         write(*,*) 'ERROR: Read_Driver(): Surface reflectance uncertainty '// &
+              'must be set by Ctrl method when surface reflectance is.'
+         stop GetSurfaceMeth
+      end if
    case (SelmAux)
+      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmAux) then
+         write(*,*) 'ERROR: Read_Driver(): surface reflectance uncertainty '// &
+              ' method not supported.'
+         stop GetSurfaceMeth
+      end if
+      if (Ctrl%RS%SRsSelm == SelmAux .and. .not. Ctrl%RS%use_full_brdf) then
+         write(*,*) 'ERROR: Read_Driver(): Full BRDF required with '//&
+              'auxilliary surface uncertainties.'
+         stop GetSurfaceMeth
+      end if
    case (SelmMeas)
       write(*,*) 'ERROR: Read_Driver(): surface reflectance method not supported'
       stop GetSurfaceMeth

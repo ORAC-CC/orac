@@ -170,6 +170,8 @@ module CTRL_def
    type SurfRef_t
       integer                :: RsSelm             ! Surface reflectance
                                                    ! selection method
+      integer                :: SRsSelm            ! Surface reflectance
+                                                   ! uncertainty selection method
       logical                :: use_full_brdf
       real, pointer          :: B(:,:)             ! Prescribed surface reflect
                                                    ! (chs, sea/land)

@@ -254,7 +254,7 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    if (status /= 0) go to 99 ! Skip further data reading
 
    if (SPixel%Ind%NSolar > 0) then
-      call Get_Surface(Ctrl, SPixel, MSI_Data, status)
+      call Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       if (status /= 0) go to 99 ! Skip further data reading
 
       do i=1,SPixel%Ind%NSolar

@@ -29,6 +29,7 @@
 ! 2014/10/24, OS: added deallocation of CldType, CloudMask, CCCOT_pre, LUSFlags,
 !    DEM, nisemask
 ! 2015/01/30, AP: Remove uscan and vscan as unnecessary.
+! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
 !
 ! $Id$
 !
@@ -78,6 +79,8 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
 
    if (associated(MSI_Data%MSI))          deallocate(MSI_Data%MSI)
    if (associated(MSI_Data%SD))           deallocate(MSI_Data%SD)
+   if (associated(MSI_Data%rho_dd_cor))   deallocate(MSI_Data%rho_dd_cor)
+   if (associated(MSI_Data%rho_dd_unc))   deallocate(MSI_Data%rho_dd_unc)
 
    if (associated(MSI_Data%illum))        deallocate(MSI_Data%illum)
 
