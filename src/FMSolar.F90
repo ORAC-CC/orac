@@ -392,7 +392,8 @@ if (.not. Ctrl%RS%use_full_brdf) then
 
    ! Derivative w.r.t. surface reflectance, R_s
    do i=1, SPixel%Ind%NSolar
-      d_REF(i,IRs(1,1)) = &
+      ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+      d_REF(i,IRs(ii,IRho_DD)) = &
          (X(IFr) * Tac_0v(i) * &
              (Sp(i) * TBTD(i) + (S(i) * CRP(i,IRFd) * Tbc_dd(i) / S_dnom(i))) + &
              (SPixel%RTM%dREF_clear_dRs(i) * (1.0-X(IFr)))) / &

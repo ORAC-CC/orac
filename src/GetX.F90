@@ -259,26 +259,46 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
          search: do is = 1, SPixel%Ind%NSolar
             ic = SPixel%spixel_y_solar_to_ctrl_y_solar_index(is)
 
-            do irho = 1, MaxRho_XX
-               if (i == IRs(ic,irho)) then
-                  X = SPixel%Surface%Rs2(is,irho)
+            if (Ctrl%Rs%use_full_brdf) then
+               do irho = 1, MaxRho_XX
+                  if (i == IRs(ic,irho)) then
+                     X = SPixel%Surface%Rs2(is,irho)
 
-                  ! Copy over (and scale) covariance matrix
+                     ! Copy over (and scale) covariance matrix
+                     if (present(Err)) then
+                        do js = 1, SPixel%Ind%NSolar
+                           jc = SPixel%spixel_y_solar_to_ctrl_y_solar_index(js)
+
+                           Err(IRs(jc,irho), IRs(ic,irho)) = &
+                                SPixel%Surface%SRs2(js,is,irho)  * &
+                                Ctrl%Invpar%XScale(IRs(ic,irho)) * &
+                                Ctrl%Invpar%XScale(IRs(jc,irho))
+                           Err(IRs(ic,irho), IRs(jc,irho)) = &
+                                Err(IRs(jc,irho), IRs(ic,irho))
+                        end do
+                     end if
+                     exit search
+                  end if
+               end do
+            else
+               if (i == IRs(ic,IRho_DD)) then
+                  X = SPixel%Surface%Rs(is)
+
                   if (present(Err)) then
                      do js = 1, SPixel%Ind%NSolar
                         jc = SPixel%spixel_y_solar_to_ctrl_y_solar_index(js)
 
-                        Err(IRs(jc,irho), IRs(ic,irho)) = &
-                             SPixel%Surface%SRs2(js,is,irho)  * &
-                             Ctrl%Invpar%XScale(IRs(ic,irho)) * &
-                             Ctrl%Invpar%XScale(IRs(jc,irho))
-                        Err(IRs(ic,irho), IRs(jc,irho)) = &
-                             Err(IRs(jc,irho), IRs(ic,irho))
+                        Err(IRs(jc,IRho_DD), IRs(ic,IRho_DD)) = &
+                             SPixel%Surface%SRs(js,is)  * &
+                             Ctrl%Invpar%XScale(IRs(ic,IRho_DD)) * &
+                             Ctrl%Invpar%XScale(IRs(jc,IRho_DD))
+                        Err(IRs(ic,IRho_DD), IRs(jc,IRho_DD)) = &
+                             Err(IRs(jc,IRho_DD), IRs(ic,IRho_DD))
                      end do
                   end if
                   exit search
                end if
-            end do
+            end if
          end do search
       end if
    case(SelmPrev)
