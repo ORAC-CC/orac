@@ -266,6 +266,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
      channel_lw_flag, channel_wvl, global_atts, source_atts, verbose)
 
+   ! Read dimensions of preprocessing swath files
+   call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
+      Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, verbose)
+
    ! Read processing flag from driver
    allocate(channel_proc_flag(Ctrl%Ind%NAvail))
    if (parse_driver(dri_lun, line) /= 0 .or. &

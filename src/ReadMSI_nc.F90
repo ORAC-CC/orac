@@ -88,6 +88,7 @@
 ! 2015/07/03, OS: Added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/26, AP: Correct name of date attribute.
+! 2015/08/31, AP: Check if ViewIdx have valid values.
 !
 ! $Id$
 !
@@ -167,7 +168,11 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    ! Read channel view indices from file (all channels)
    allocate(Ctrl%Ind%ViewIdx(Ctrl%Ind%Ny))
    call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%ViewIdx, verbose)
-   Ctrl%Ind%NViews = maxval(Ctrl%Ind%ViewIdx)
+   if (minval(Ctrl%Ind%ViewIdx) < 1 .or. &
+       maxval(Ctrl%Ind%ViewIdx) > Ctrl%Ind%NViews) then
+      write(*,*) 'ERROR: Read_MSI_nc(): Invalid view indexing in input files.'
+      stop error_stop_code
+   end if
 
    ! Close MSI input file
    if (nf90_close(ncid) /= NF90_NOERR) then

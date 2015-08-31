@@ -310,9 +310,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call Read_Driver(Ctrl, global_atts, source_atts, verbose)
 #endif
 
-   ! Read dimensions of preprocessing swath files first:
-   call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
-      Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, verbose)
 #ifdef BKP
    ! Clear the breakpoint file (if breakpoints required)
    if (Ctrl%Bkpl > 0) then
