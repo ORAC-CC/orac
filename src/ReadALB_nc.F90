@@ -60,6 +60,8 @@
 ! 2015/07/03, OS: Added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/10, AP: Additional surface uncs.
+! 2015/08/31, AP: Read channels described by a correlation value rather than
+!    assuming them from the channel ordering.
 !
 ! $Id$
 !
@@ -84,7 +86,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    integer                     :: ncid, i, j, k, ind
    integer(kind=lint)          :: NAlb, NCor
    integer(kind=lint), allocatable, dimension(:) :: alb_instr_ch_numbers, subs
-   integer(kind=lint), allocatable, dimension(:) :: permutation
+   integer(kind=lint), allocatable, dimension(:,:)   :: cor_ch_numbers
    real(kind=sreal),   allocatable, dimension(:,:,:) :: cor_temp
 
    ! Open ALB file
@@ -142,42 +144,40 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
       ! stored once only, in the order 12, 13, 14, ..., 23, 24, ..., ... We'll
       ! make a correlation matrix for ORAC.
 
-      ! Firstly, we need to determine the starting point for a given channel
-      allocate(permutation(NAlb))
-      permutation(1) = 0
-      do i = 1, NAlb-1
-         permutation(i+1) = permutation(i) + NAlb - i
-      end do
-
-      ! Then, read in the correlation data to a temporary array
+      ! Read in the correlation data to a temporary array
       NCor = nc_dim_length(ncid, 'nc_corr', verbose)
+      allocate(cor_ch_numbers(2, NCor))
+      call nc_read_array(ncid, "cor_abs_ch_numbers", cor_ch_numbers, verbose)
       allocate(cor_temp(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, NCor))
       call nc_read_array(ncid, "cor_data", cor_temp, verbose)
 
-      ! Determine the number of channel permutations for NSolar
       allocate(MSI_Data%rho_dd_cor(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, &
                                    Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
 
-      ! Loop over all permutations of desired solar channels
-      k = 0 ! Count correlations written
-      do i = 1, Ctrl%Ind%NSolar-1
-         do j = i+1, Ctrl%Ind%NSolar
-            ! Determine which dimension in the file holds this channel pair
-            ! ind = Index_of_start_of_earlier_ch + #_chs_between_them
-            if (subs(i) < subs(j)) then
-               ind = permutation(subs(i)) + subs(j) - subs(i)
-            else
-               ind = permutation(subs(j)) + subs(i) - subs(j)
+      ! Loop over available correlations
+      do ind = 1, NCor
+         ! Identify if the indices of this correlation correspond to solar chs
+         i = 0
+         j = 0
+         do k = 1, Ctrl%Ind%NSolar
+            if (cor_ch_numbers(1,ind) == Ctrl%Ind%ICh(Ctrl%Ind%YSolar(k))) then
+               i = k
+            end if
+            if (cor_ch_numbers(2,ind) == Ctrl%Ind%ICh(Ctrl%Ind%YSolar(k))) then
+               j = k
             end if
 
-            ! Copy data across
-            MSI_Data%rho_dd_cor(:,:,i,j) = cor_temp(:,:,ind)
-!           MSI_Data%rho_dd_cor(:,:,j,i) = MSI_Data%rho_dd_cor(:,:,i,j)
+            ! If both indices found, copy correlation
+            if (i /= 0 .and. j /= 0) then
+               MSI_Data%rho_dd_cor(:,:,i,j) = cor_temp(:,:,ind)
+               MSI_Data%rho_dd_cor(:,:,j,i) = cor_temp(:,:,ind)
+               exit
+            end if
          end do
       end do
 
       ! Clean up
-      deallocate(permutation)
+      deallocate(cor_ch_numbers)
       deallocate(cor_temp)
    end if
 
