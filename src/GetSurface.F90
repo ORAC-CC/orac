@@ -17,7 +17,10 @@
 !      Set uncertainty based on SRsSelm:
 !      - Ctrl) Constant fractional uncertainty on and correlation between terms.
 !      - AUX) Draw uncertainty on and correlation between terms from preprocessor
-!           files.
+!           files. In addition, if the NDVI and NDSI can be calculated, add
+!           uncertainties due to natural variability in the surface over 16 days.
+!           Then add uncertainties due to differences in the channel bandpass
+!           and temporal sampling of this instrument relative to MODIS.
 !
 ! Arguments:
 ! Name      Type         In/Out/Both Description
@@ -133,16 +136,19 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Define local variables
    integer :: i, ii, j, jj
    integer :: i_surf, i_rho
+   logical :: surf_unc
+   real    :: ndvi, ndsi
    real    :: solar_factor
    real    :: correl(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
    real,    dimension(SPixel%Ind%NSolar)            :: uncertainty
-   real,    dimension(SPixel%Ind%NSolar, MaxRho_XX) :: uncertainty2
+   real,    dimension(SPixel%Ind%NSolar, MaxRho_XX) :: uncertainty2, additional
    real,    dimension(Ctrl%Ind%NSolar, MaxSurf)     :: Rs, frac_error
 
 
    status      = 0
    uncertainty = 0.
    uncertainty2= 0.
+   additional  = 0.
    correl      = 0.
 
    ! Reallocate surface reflectances to appropriate length
@@ -190,6 +196,10 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       correl = Ctrl%Rs%Cb
 
    case(SelmAux) ! Use values in preprocessor files
+      ! Determine vegetation and snow indexes outside of loop
+      if (Ctrl%Rs%SRsSelm == SelmAux .and. SPixel%Surface%Land) &
+           surf_unc = Calculate_ND(SAD_Chan, SPixel, ndvi) == 0 .and. &
+                      Calculate_ND(SAD_Chan, SPixel, ndsi, snow=.true.) == 0
 
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
@@ -253,6 +263,33 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                     SPixel%Loc%Y0, SPixel%Ind%YSolar, SPixel%Ind%YSolar(j))
             end do
             ! ACP: Add check for missing data.
+
+            ! Use vegetation and snow indexes to assign surface variablity unc.
+            ! See http://eodg.atm.ox.ac.uk/eodg/mphys_reports/2009_Ward.pdf
+            if (surf_unc) then
+               if (ndsi >= 0.4) then
+                  additional(i,IRho_DD) = MSI_Data%snow_unc(ii) * &
+                                          MSI_Data%snow_unc(ii)
+               else
+                  if (ndvi >= 0.3) then
+                     additional(i,IRho_DD) = MSI_Data%veg_unc(ii) * &
+                                             MSI_Data%veg_unc(ii)
+                  else
+                     additional(i,IRho_DD) = MSI_Data%bare_unc(ii) * &
+                                             MSI_Data%bare_unc(ii)
+                  end if
+               end if
+            end if
+
+            ! From aerosol's Invert_Marquadt, labelled TEMPORARY TEST
+            additional(i,IRho_DD) = additional(i,IRho_DD) + &
+                 0.04*SPixel%Surface%Rs2(i,IRho_DD)*SPixel%Surface%Rs2(i,IRho_DD)
+
+            ! Over land, include SVD/temporal uncertainties
+            if (SPixel%Surface%Land) &
+                 additional(i,IRho_DD) = additional(i,IRho_DD) + &
+                            MSI_Data%svd_unc(ii) * MSI_Data%svd_unc(ii)
+
          end select
 
       end do
@@ -275,7 +312,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       do i_rho = 1, MaxRho_XX
          do i = 1, SPixel%Ind%NSolar
             ! On-diagonal variance
-            SPixel%Surface%SRs2(i,i,i_rho) = &
+            SPixel%Surface%SRs2(i,i,i_rho) = additional(i,i_rho) + &
                  uncertainty2(i,i_rho) * uncertainty2(i,i_rho)
 
             ! Off-diagonal covariance

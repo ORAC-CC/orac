@@ -92,6 +92,12 @@ module Data_def
       real(sreal),        pointer :: rho_dd_unc(:,:,:) ! Uncertainty in surface
                                                    ! reflect 3rd dim covers all
                                                    ! visible chs
+      real(sreal),        pointer :: svd_unc(:)    ! Uncertainty due to differing
+                                                   ! filter bandshapes
+      real(sreal),        pointer :: veg_unc(:)    ! Uncertainty over vegetated
+                                                   ! surfaces
+      real(sreal),        pointer :: bare_unc(:)   ! Uncertainty over bare surf
+      real(sreal),        pointer :: snow_unc(:)   ! Uncertainty over snow
    end type Data_t
 
 contains

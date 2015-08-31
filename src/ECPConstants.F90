@@ -362,6 +362,7 @@ module ECP_constants
    integer, parameter :: GetRTMLwMaxLon             = 1172
    integer, parameter :: GetRTMLwMinLon             = 1173
    integer, parameter :: GetSurfaceMeth             = 1180
+   integer, parameter :: GetSurfaceNDNoCh           = 1181
    integer, parameter :: GetRsCentPix               = 1190
    integer, parameter :: GetRsAvMeth                = 1191
    integer, parameter :: GetLwSwRTMLat              = 1190
