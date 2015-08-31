@@ -104,7 +104,7 @@ PRO COMPARE_ORAC_OUT
       RETURN
    endif
    ;; translate version # into numeral for sorting
-   ver=ver[SORT(FIX(STRMID(ver,TRANSPOSE(STRPOS(ver,'V'))+1)))]
+   ver=ver[SORT(LONG(STRMID(ver,TRANSPOSE(STRPOS(ver,'V'))+1)))]
    p=WHERE(STRMATCH(ver,'*V'+revision),np)
    if np ne 1 then begin
       PRINT, 'Bad folder structure.', fdr, revision

@@ -35,7 +35,7 @@ done
 driver_file_base=$out_folder/post_driver_
 com=()
 for j in ${!sensor[*]}; do
-    echo "Processing $inst"
+    echo "Processing ${label[$j]}"
 
     # find root file names
     fdr=$out_folder/V$revision/${label[$j]}
