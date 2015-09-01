@@ -33,6 +33,7 @@
 ! 2015/01/20, GM: Added deallocation of spixel_y_mixed_to_spixel_y_solar and
 !    spixel_y_mixed_to_spixel_y_thermal.
 ! 2015/01/30, AP: Remove redundant fields.
+! 2015/06/02, AP: Add aerosol fields.
 ! 2015/08/19, AP: Make reading of RTM terms optional.
 !
 ! $Id$
@@ -97,6 +98,8 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
       deallocate(SPixel%Surface%Rs2)
       deallocate(SPixel%Surface%SRs2)
    end if
+   deallocate(SPixel%Surface%XIndex)
+   deallocate(SPixel%Surface%Ratios)
 
    !  Solar constant
 

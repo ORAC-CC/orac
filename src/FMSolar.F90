@@ -93,6 +93,10 @@
 ! 2015/01/15, AP: Facilitate channel indexing in arbitrary order.
 ! 2015/01/21, AP: Finishing the last commit.
 ! 2015/07/31, GM: Remove i_equation 2 as an invalid derivation.
+! 2015/08/21, AP: Massive overhaul to include both aerosol forward models:
+!    Transmittance calculations now optional. Swansea FM integrated with
+!    use_full_brdf=.false. Aerosol FM added as equations_forms 3 and 4.
+!    Calculation of derivatives wrt surface reflectance generalised.
 !
 ! $Id$
 !
@@ -312,6 +316,22 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    ! Interpolate cloud radiative property LUT data to the current Tau, Re values.
    call Set_CRP_Solar(Ctrl, SPixel%Ind, SPixel%spixel_y_solar_to_ctrl_y_index, &
         GZero, SAD_LUT, CRP, d_CRP, status)
+
+
+   ! Fetch surface reflectance
+   if (Ctrl%Rs%use_full_brdf) then
+      ! Copy surface reflectances from X to SPixel%Surface
+      do j = 1, MaxRho_XX
+         SPixel%Surface%Rs2(:,j) = X(SPixel%Surface%XIndex(:,j)) * &
+                                   SPixel%Surface%Ratios(:,j)
+      end do
+   else
+      T_all = CRP(:,ITB) + CRP(:,ITFBd) ! Direct + diffuse transmission
+
+         ! Cloud Lambertian surface
+         SPixel%Surface%Rs = X(SPixel%Surface%XIndex(:,IRho_DD)) * &
+                             SPixel%Surface%Ratios(:,IRho_DD)
+   end if
 
 
    if (Ctrl%RTMIntSelm == RTMIntMethNone) then
@@ -543,8 +563,14 @@ else
    do j = MaxRho_XX, MaxRho_XX ! NOTE: Only evaluate Rho_DD for now
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
-         rho_l = 0.0
-         rho_l(i,j) = 1.0
+         ! Set rho_l for all BRDF terms proportional to this state vector element
+         where (SPixel%Surface%XIndex == IRs(ii,j))
+            rho_l = SPixel%Surface%Ratios
+         elsewhere
+            rho_l = 0.0
+         end where
+         ! If no dependence, skip this derivative
+         if (sum(rho_l) == 0.0) cycle
 
          call derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, &
               CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &

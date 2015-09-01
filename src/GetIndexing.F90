@@ -467,12 +467,11 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
         ch_available = n_ir_chans2)
 
    ! Add BRDF terms to parameter vector
-   ! If statement commented out as currently no covariance matrix for other terms
-!  if (Ctrl%RS%use_full_brdf) then
-!     min_rho = 1
-!  else
+   if (Ctrl%RS%use_full_brdf) then
+      min_rho = 1
+   else
       min_rho = MaxRho_XX
-!  end if
+   end if
    call Identify_BRDF_Terms(Ctrl, SPixel%Illum(1), 1, min_rho, &
         is_not_used_or_missing, X, ii_x, XJ, ii_xj, XI, ii_xi, .false.)
 

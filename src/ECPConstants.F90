@@ -75,6 +75,8 @@
 !    Renamed CloudFlag terms to Type.
 ! 2015/08/05, AP: Extend state vector to include BRDF terms.
 ! 2015/08/18, GM: Added LW and SW RTM minimum and maximum values.
+! 2015/08/20, AP: Removed AUXErr terms. Added indices for XIndex, B, and
+!    Approach along with SelmPrev.
 !
 ! $Id$
 !
@@ -101,7 +103,6 @@ module ECP_constants
    integer, parameter :: MaxCloudType     = 5       ! Max. no of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max. no. of pressure levels (in SPixel RTM arrays)
    integer, parameter :: MaxCRProps       = 11      ! Max no. of properties in SAD_LUT arrays
-   integer, parameter :: MaxRho_XX        = 4       ! Max no. of BRDF parameters
    integer, parameter :: MaxTypes         = 10      ! Number of possible cloud/aerosol types
 
 
@@ -193,6 +194,7 @@ module ECP_constants
    integer, parameter :: IRho_0D          = 2       !  "    "  rho_0d  "   "   "
    integer, parameter :: IRho_DV          = 3       !  "    "  rho_dv  "   "   "
    integer, parameter :: IRho_DD          = 4       !  "    "  rho_dd  "   "   "
+   integer, parameter :: MaxRho_XX        = 4       ! Max no. of BRDF parameters
 
    ! Index of B in GetSurface and ReadDriver
    integer, parameter :: ISea             = 1
@@ -221,6 +223,7 @@ module ECP_constants
    integer, parameter :: ISS(MaxNumSolar) = IRs(:, 1)
    integer, parameter :: ISP(MaxNumViews) = &
         [(i_ECP+IRs(MaxNumSolar, MaxRho_XX), i_ECP = 1, MaxNumViews)]
+   ! NOTE: MaxNumSolar arrays should be treated as if of length Ctrl%Ind%NSolar
 
    ! Determine max. no. of state vector elements from indices
    integer, parameter :: MaxStateVar      = ISP(MaxNumViews)

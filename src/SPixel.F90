@@ -200,6 +200,10 @@ module SPixel_def
       real, pointer       :: Rs2(:,:)     ! Super pixel surface reflectance
       real, pointer       :: SRs2(:,:,:)  ! Super pixel surface reflectance
                                           ! covariances
+      real, pointer       :: Ratios(:,:)  ! Ratio of Rho_XX over it's value
+                                          ! at its reference wavelength
+      integer, pointer    :: XIndex(:,:)  ! Index of state vector from which
+                                          ! values of Rs should be drawn
    end type Surface_t
 
 

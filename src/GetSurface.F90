@@ -22,6 +22,15 @@
 !           Then add uncertainties due to differences in the channel bandpass
 !           and temporal sampling of this instrument relative to MODIS.
 !
+! Then, form the XIndex and Ratios arrays. These have the same shape as the Rs
+! array. The intention is that Rs is set from the state vector by,
+!    Rs = X(XIndex) * Ratios
+! Thus, an element of XIndex indicates which term of the state vector this Rs
+! term is proportional to and the corresponding element of Ratios gives the
+! constant of proportionality. (These facilitate the VariableSurf and FixedSurf
+! modes of the aerosol retrieval. For traditional cloud processing, XIndex=IRs
+! and Ratios=1 as the terms are assumed constant.)
+!
 ! Arguments:
 ! Name      Type         In/Out/Both Description
 ! ------------------------------------------------------------------------------
@@ -106,7 +115,8 @@
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 ! 2015/07/27, AP: Remove SPixel%Mask and Get_Rs. Consolidate setting LSFlag.
 ! 2015/08/19, AP: Extensive overhaul: Uncertainties and correlations can now be
-!    drawn from auxiliary files;
+!    drawn from auxiliary files; The XIndex array maps elements of the state
+!    vector onto the Rs array.
 !
 ! $Id$
 !
@@ -135,11 +145,13 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! Define local variables
    integer :: i, ii, j, jj
-   integer :: i_surf, i_rho
+   integer :: i_surf, i_rho, j_rho, i_wvl
    logical :: surf_unc
    real    :: ndvi, ndsi
    real    :: solar_factor
    real    :: correl(SPixel%Ind%NSolar, SPixel%Ind%NSolar)
+   integer :: nch, min_rho
+   integer, dimension(SPixel%Ind%NSolar)            :: i_s, i_c
    real,    dimension(SPixel%Ind%NSolar)            :: uncertainty
    real,    dimension(SPixel%Ind%NSolar, MaxRho_XX) :: uncertainty2, additional
    real,    dimension(Ctrl%Ind%NSolar, MaxSurf)     :: Rs, frac_error
@@ -324,5 +336,70 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          end do
       end do
    end if
+
+   ! Set up Ratios and XIndex arrays.
+   deallocate(SPixel%Surface%XIndex)
+   allocate(SPixel%Surface%XIndex(SPixel%Ind%NSolar, MaxRho_XX))
+   SPixel%Surface%XIndex = 0
+   deallocate(SPixel%Surface%Ratios)
+   allocate(SPixel%Surface%Ratios(SPixel%Ind%NSolar, MaxRho_XX))
+
+   do i_wvl = 1, Ctrl%Ind%NWvl
+      ! Identify which valid solar channels are at this wavelength
+      nch = 0
+      do i = 1, SPixel%Ind%NSolar
+         ii = SPixel%spixel_y_solar_to_ctrl_y_index(i)
+         if (Ctrl%Ind%WvlIdx(ii) == i_wvl) then
+            nch      = nch+1
+            i_s(nch) = i
+            i_c(nch) = ii
+         end if
+      end do
+      if (nch == 0) cycle
+
+      if (Ctrl%RS%use_full_brdf) then
+         min_rho = 1
+      else
+         min_rho = MaxRho_XX
+      end if
+      do i_rho = min_rho, MaxRho_XX
+         if (any(SPixel%X  == IRs(i_c(1),i_rho)) .or. &
+             any(SPixel%XJ == IRs(i_c(1),i_rho)) .or. &
+             any(SPixel%XI == IRs(i_c(1),i_rho))) then
+            ! Value is retrieved or is a parameter
+            SPixel%Surface%XIndex(i_s(1:nch),i_rho) = IRs(i_c(1),i_rho)
+            SPixel%Surface%Ratios(i_s(1:nch),i_rho) = 1.
+         else
+            ! Is another parameter for this channel retrieved? Analogue to
+            ! VariableSurface in aerosol code.
+            do j_rho = min_rho, MaxRho_XX
+               if (any(SPixel%X == IRs(i_c(1),j_rho))) then
+                  SPixel%Surface%XIndex(i_s(1:nch),i_rho) = IRs(i_c(1),j_rho)
+                  SPixel%Surface%Ratios(i_s(1:nch),i_rho) = &
+                       SPixel%Surface%Rs2(i_s(1:nch),i_rho) / &
+                       SPixel%Surface%Rs2(i_s(1),j_rho)
+                  go to 10
+               end if
+            end do
+            ! No parameters for this wavelength retrieved. Therefore, find the
+            ! *first* parameter that is and associate to that. Analogue to
+            ! FixedSurface in aerosol code.
+            do j = 1, Ctrl%Ind%NSolar
+               do j_rho = min_rho, MaxRho_XX
+                  if (any(SPixel%X == IRs(j,j_rho))) then
+                     SPixel%Surface%XIndex(i_s(1:nch),i_rho) = IRs(j,j_rho)
+                     SPixel%Surface%Ratios(i_s(1:nch),i_rho) = &
+                          SPixel%Surface%Rs2(i_s(1:nch),i_rho) / &
+                          SPixel%Surface%Rs2(j,j_rho)
+                     goto 10
+                  end if
+               end do
+            end do
+            ! Should never get here
+            write(*,*) 'WARNING: Get_Surface(): No surface terms in state ' //&
+                 'vector at ', SPixel%Loc%X0, SPixel%Loc%Y0
+10       end if
+      end do
+   end do
 
 end subroutine Get_Surface

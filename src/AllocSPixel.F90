@@ -63,6 +63,7 @@
 ! 2014/08/01, GM: Added more SPixel to Ctrl map indexes.
 ! 2014/09/09, GM: Changes related to new BRDF support.
 ! 2015/01/30, AP: Remove redundant fields.
+! 2015/06/02, AP: Add aerosol fields.
 ! 2015/08/19, AP: Make reading of RTM terms optional.
 !
 ! $Id$
@@ -139,6 +140,8 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
       allocate(SPixel%Surface%Rs2     (Ctrl%Ind%NSolar, MaxRho_XX))
       allocate(SPixel%Surface%SRs2    (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
    end if
+   allocate(SPixel%Surface%Ratios     (Ctrl%Ind%NSolar, MaxRho_XX))
+   allocate(SPixel%Surface%XIndex     (Ctrl%Ind%NSolar, MaxRho_XX))
 
    !  Solar constant (Reallocated in GetSPixel)
 
