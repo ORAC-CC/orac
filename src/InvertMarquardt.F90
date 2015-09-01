@@ -426,7 +426,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       ! Apply step delta_x to the active state variables. Assumes Xn and
       ! delta_X are both unscaled.
       Xplus_dX(SPixel%X)  = SPixel%Xn(SPixel%X) + delta_X
-      Xplus_dX(SPixel%XI) = SPixel%Xn(SPixel%XI)
+      if (SPixel%NXJ > 0) Xplus_dX(SPixel%XJ) = SPixel%Xn(SPixel%XJ)
+      if (SPixel%NXI > 0) Xplus_dX(SPixel%XI) = SPixel%Xn(SPixel%XI)
 
       ! Check bounds for active state variables - does delta_X take any state
       ! variable outside it's range? (If so, freeze it at the boundary).
