@@ -228,8 +228,8 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                  'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
 !           SPixel%Surface%Rs(i) = Rs(ii,i_surf)
-!           status = SPixelSurfglint
-!           return
+            status = SPixelSurfglint
+            return
          end if
          if (Ctrl%Rs%use_full_brdf) then
             if (any(SPixel%Surface%Rs2(i,:) < RhoMin .or. &
@@ -238,9 +238,9 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                write(*, *) 'WARNING: Get_Surface(): Invalid surface property ' // &
                     'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-!              SPixel%Surface%Rs2(i,IRho_DD) = Rs(ii,i_surf)
-!              status = SPixelSurfglint
-!              return
+!              SPixel%Surface%Rs2(i,:) = Rs(ii,i_surf)
+               status = SPixelSurfglint
+               return
             end if
          end if
 
