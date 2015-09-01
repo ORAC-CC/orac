@@ -608,7 +608,7 @@ subroutine Identify_BRDF_Terms(Ctrl, illum, min_view, min_rho, &
       i_ctrl = Ctrl%Ind%YSolar(i_solar)
 
       ! Skip dead chs and wavelengths we've already dealt with
-      if (checked(i_solar) .or. is_not_used_or_missing(i_ctrl)) continue
+      if (checked(i_solar) .or. is_not_used_or_missing(i_ctrl)) cycle
 
       ! Make a list of channels that share this wavelength
       nch = 1

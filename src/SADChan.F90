@@ -137,7 +137,7 @@ function Find_Channel(wvn, Ny, SAD_Chan, index, min, max, mask) result(channel)
    do i = 1, Ny
       ! Skip masked channels
       if (present(mask)) then
-         if (.not. mask(i)) continue
+         if (.not. mask(i)) cycle
       end if
 
       ! Convert desired index to Ctrl%Ind%Ny index for SAD_Chan
