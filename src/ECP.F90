@@ -485,7 +485,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    !$OMP FIRSTPRIVATE(status)
 
    thread_num = omp_get_thread_num()
+   !$OMP CRITICAL
    write(*,*) 'Thread ', thread_num+1, 'is active'
+   !$OMP END CRITICAL
 #endif
 
    !  Allocate sizes of SPixel sub-structure arrays
