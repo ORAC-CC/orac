@@ -122,6 +122,7 @@
 ! 2015/07/02, GM: Added code to remove the Rayleigh component from the RTTOV 11
 !    computed transmittances.
 ! 2015/07/23, GM: Added specific humidity and ozone profile output.
+! 2015/09/04, GM: Fix support for SEVIRI on MSG1, MSG3 and MSG4.
 !
 ! $Id$
 !
@@ -259,7 +260,9 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       else if (index(platform,'metop') >= 1) then
          coef_file = 'rtcoef_metop_'//platform(6:7)//'_avhrr.dat'
       else
-         stop 'ERROR: rttov_driver(): Invalid AVHRR platform.'
+         write(*,*) 'ERROR: rttov_driver(): Invalid AVHRR platform: ', &
+                    trim(platform)
+         stop error_stop_code
       end if
    case('MODIS')
       if (trim(platform) == 'TERRA') then
@@ -267,10 +270,27 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
       else if (trim(platform) == 'AQUA') then
          coef_file = 'rtcoef_eos_2_modis.dat'
       else
-         stop 'ERROR: rttov_driver(): Invalid MODIS platform.'
+         write(*,*) 'ERROR: rttov_driver(): Invalid MODIS platform: ', &
+                    trim(platform)
+         stop error_stop_code
       end if
    case('SEVIRI')
-      coef_file = 'rtcoef_msg_2_seviri.dat'
+      if (trim(platform) == 'MSG1') then
+         coef_file = 'rtcoef_msg_1_seviri.dat'
+      else if (trim(platform) == 'MSG2') then
+         coef_file = 'rtcoef_msg_2_seviri.dat'
+      else if (trim(platform) == 'MSG3') then
+         coef_file = 'rtcoef_msg_3_seviri.dat'
+      else if (trim(platform) == 'MSG4') then
+         coef_file = 'rtcoef_msg_4_seviri.dat'
+      else
+         write(*,*) 'ERROR: rttov_driver(): Invalid SEVIRI platform: ', &
+                    trim(platform)
+         stop error_stop_code
+      end if
+   case default
+         write(*,*) 'ERROR: rttov_driver(): Invalid sensor: ', trim(sensor)
+         stop error_stop_code
    end select
 
    if (verbose) write(*,*) 'RTTOV coef file: ', trim(coef_file)

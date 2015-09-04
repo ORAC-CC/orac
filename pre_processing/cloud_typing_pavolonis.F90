@@ -1648,7 +1648,7 @@ contains
        index = 14
     case ("Envisat")
        index = 15
-    case ("MSG1", "MSG2")
+    case ("MSG1", "MSG2", "MSG3", "MSG4")
        index = 16
     case ("default")
        index = 17
