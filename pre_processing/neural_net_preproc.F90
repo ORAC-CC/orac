@@ -10,9 +10,9 @@
 ! 2014/11/04, SS+OS: implemented new cloud mask version, which is now also
 !    available for twilight and additionally uses ECMWF skin temperature and
 !    flags for snow/ice and land/sea
-! 2014/11/20, SS+OS: implemented new temporal fill values for all channels, which
-!    was necessary because with these cloud mask classifies pixels with missing
-!    Ch3b data (accidentally) correctly as cloud
+! 2014/11/20, SS+OS: implemented new temporal fill values for all channels,
+!    which was necessary because with these cloud mask classifies pixels with
+!    missing Ch3b data (accidentally) correctly as cloud
 ! 2014/11/20, SS+OS: removed previous implementation; instead, for missing Ch3b
 !    nighttime pixels, twilight cloud mask is applied
 ! 2014/12/03, SS+OS: SATZEN is used for correcting viewing angle effect in NN
@@ -274,11 +274,13 @@ contains
        output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
        ! --- correct for sunglint - test phase for AVHRR
-       ! This probably needs to be done in future because the sunglint correction does not
-       ! really work for AATSR ; but at the moment wait for the results
-!       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
+       ! This probably needs to be done in future because the sunglint
+       ! correction does not really work for AATSR ; but at the moment
+       ! wait for the results
+!      if ((trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. &
+!          (trim(adjustl(sensor_name)) .eq. 'AVHRR')) then
            output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
-!       endif
+!      endif
        ! --- ensure that CCCOT is within 0 - 1 range
        cccot_pre = max( min( output, 1.0 ), 0.0)
 

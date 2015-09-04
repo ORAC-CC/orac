@@ -32,36 +32,40 @@ module neural_net_constants
   ! common variables of all cloud masks
   integer :: noutput = 1
 
-  !put in this module different sections for the groups of constants of the different neural nets
 
-  !1.) cm_orac_day_extended_nn
-  real, parameter :: temperature_ex1=1.0,bias_h_ex1=1.0,bias_i_ex1=1.0,cutoff_ex1=80.0
+  ! put in this module different sections for the groups of constants of the
+  ! different neural nets
+
+  ! 1.) cm_orac_day_extended_nn
+  real, parameter :: temperature_ex1=1.0,bias_h_ex1=1.0, &
+                     bias_i_ex1=1.0,cutoff_ex1=80.0
 
   integer(kind=lint), parameter :: ninput_ex1=6,nneurons_ex1=50
-  real(kind=sreal) :: minmax_train_ex1(ninput_ex1,2),inv_ex1(ninput_ex1+1,nneurons_ex1),&
-       & outv_ex1(nneurons_ex1+1),&
-       & scales_ex1(ninput_ex1,2),oscales_ex1(3)
+  real(kind=sreal) :: minmax_train_ex1(ninput_ex1,2), &
+                      inv_ex1(ninput_ex1+1,nneurons_ex1), &
+                      outv_ex1(nneurons_ex1+1), &
+                      scales_ex1(ninput_ex1,2),oscales_ex1(3)
 
-  !min and max values of training dataset:
-  data minmax_train_ex1(1,:) / 1.000000000E+02, 1.050000000E+03 / !ctp
-  data minmax_train_ex1(2,:) / 1.886499939E+02, 3.199400024E+02 / !ctt
-  data minmax_train_ex1(3,:) / 9.999999776E-03, 2.560000043E+02 / !cot
-  data minmax_train_ex1(4,:) / 2.406600037E+02, 3.199899902E+02 / !stemp
-  data minmax_train_ex1(5,:) / 0.000000000E+00, 1.139899902E+02 / !stemp-ctt
-  data minmax_train_ex1(6,:) / 0.000000000E+00, 1.000000000E+00 / !sea/land
+  ! min and max values of training dataset:
+  data minmax_train_ex1(1,:) / 1.000000000E+02, 1.050000000E+03 / ! ctp
+  data minmax_train_ex1(2,:) / 1.886499939E+02, 3.199400024E+02 / ! ctt
+  data minmax_train_ex1(3,:) / 9.999999776E-03, 2.560000043E+02 / ! cot
+  data minmax_train_ex1(4,:) / 2.406600037E+02, 3.199899902E+02 / ! stemp
+  data minmax_train_ex1(5,:) / 0.000000000E+00, 1.139899902E+02 / ! stemp-ctt
+  data minmax_train_ex1(6,:) / 0.000000000E+00, 1.000000000E+00 / ! sea/land
 
-  !scaling factors for input vector
-  data scales_ex1(1,:) / 5.000000075E-02, 9.473683895E-04 / !ctp
-  data scales_ex1(2,:) / 5.000000075E-02, 6.855052896E-03 / !ctt
-  data scales_ex1(3,:) / 5.000000075E-02, 3.525816603E-03 / !cot
-  data scales_ex1(4,:) / 5.000000075E-02, 1.134501584E-02 / !stemp
-  data scales_ex1(5,:) / 5.000000075E-02, 7.895429619E-03 / !stemp-ctt
-  data scales_ex1(6,:) / 5.000000075E-02, 8.999999762e-01 / !sea/land
+  ! scaling factors for input vector
+  data scales_ex1(1,:) / 5.000000075E-02, 9.473683895E-04 / ! ctp
+  data scales_ex1(2,:) / 5.000000075E-02, 6.855052896E-03 / ! ctt
+  data scales_ex1(3,:) / 5.000000075E-02, 3.525816603E-03 / ! cot
+  data scales_ex1(4,:) / 5.000000075E-02, 1.134501584E-02 / ! stemp
+  data scales_ex1(5,:) / 5.000000075E-02, 7.895429619E-03 / ! stemp-ctt
+  data scales_ex1(6,:) / 5.000000075E-02, 8.999999762e-01 / ! sea/land
 
-  !scaling factors for output vector
-  data oscales_ex1 / 1.000000015E-01, 7.999999523E-01, 0.000000000E+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex1 / 1.000000015E-01, 7.999999523E-01, 0.000000000E+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex1(1,:) /  -1.198862076E+02, &
        & 7.203685284E+00, &
        & -1.144907379E+01, &
@@ -419,7 +423,7 @@ module neural_net_constants
        & 8.176857758E+01, &
        & 1.626640930E+02 /
 
-  !output weights
+  ! output weights
   data outv_ex1 / 6.541716003E+01, &
        & 9.864802551E+01, &
        & 8.040759087E+00, &
@@ -474,32 +478,34 @@ module neural_net_constants
 
 
 
-  !2.) cm_orac_night_extended_nn
-  real, parameter :: temperature_ex2=1.0,bias_h_ex2=1.0,bias_i_ex2=1.0,cutoff_ex2=80.0
+  ! 2.) cm_orac_night_extended_nn
+  real, parameter :: temperature_ex2=1.0,bias_h_ex2=1.0, &
+                     bias_i_ex2=1.0,cutoff_ex2=80.0
 
   integer(kind=lint), parameter :: ninput_ex2=5,nneurons_ex2=50
-  real(kind=sreal) :: minmax_train_ex2(ninput_ex2,2),inv_ex2(ninput_ex2+1,nneurons_ex2),&
-       & outv_ex2(nneurons_ex2+1),&
-       & scales_ex2(ninput_ex2,2),oscales_ex2(3)
+  real(kind=sreal) :: minmax_train_ex2(ninput_ex2,2), &
+                      inv_ex2(ninput_ex2+1,nneurons_ex2), &
+                      outv_ex2(nneurons_ex2+1), &
+                      scales_ex2(ninput_ex2,2),oscales_ex2(3)
 
-  !min and max values of training dataset:
-  data minmax_train_ex2(1,:) / 1.000000000E+02, 1.050000000E+03 / !ctp
-  data minmax_train_ex2(2,:) / 1.732799988e+02, 3.050599976e+02 / !ctt
-  data minmax_train_ex2(3,:) / 2.350000000e+02, 3.189100037e+02 / !stemp
-  data minmax_train_ex2(4,:) / 0.000000000E+00,  1.089100037e+02 / !stemp-ctt
-  data minmax_train_ex2(5,:) / 0.000000000E+00, 1.000000000E+00 / !sea/land
+  ! min and max values of training dataset:
+  data minmax_train_ex2(1,:) / 1.000000000E+02, 1.050000000E+03 / ! ctp
+  data minmax_train_ex2(2,:) / 1.732799988e+02, 3.050599976e+02 / ! ctt
+  data minmax_train_ex2(3,:) / 2.350000000e+02, 3.189100037e+02 / ! stemp
+  data minmax_train_ex2(4,:) / 0.000000000E+00,  1.089100037e+02 / ! stemp-ctt
+  data minmax_train_ex2(5,:) / 0.000000000E+00, 1.000000000E+00 / ! sea/land
 
-  !scaling factors for input vector
-  data scales_ex2(1,:) / 5.000000075E-02, 9.473683895e-04 / !ctp
-  data scales_ex2(2,:) / 5.000000075E-02, 6.829564460e-03 / !ctt
-  data scales_ex2(3,:) / 5.000000075E-02, 1.072577666e-02 / !stemp
-  data scales_ex2(4,:) / 5.000000075E-02, 8.263703436e-03 / !stemp-ctt
-  data scales_ex2(5,:) / 5.000000075E-02, 8.999999762e-01 / !sea/land
+  ! scaling factors for input vector
+  data scales_ex2(1,:) / 5.000000075E-02, 9.473683895e-04 / ! ctp
+  data scales_ex2(2,:) / 5.000000075E-02, 6.829564460e-03 / ! ctt
+  data scales_ex2(3,:) / 5.000000075E-02, 1.072577666e-02 / ! stemp
+  data scales_ex2(4,:) / 5.000000075E-02, 8.263703436e-03 / ! stemp-ctt
+  data scales_ex2(5,:) / 5.000000075E-02, 8.999999762e-01 / ! sea/land
 
-  !scaling factors for output vector
-  data oscales_ex2 / 1.000000015E-01, 7.999999523E-01, 0.000000000E+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex2 / 1.000000015E-01, 7.999999523E-01, 0.000000000E+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex2(1,:) / -3.188936043E+01, &
        & -2.456473923E+01, &
        & -7.681095600E+00, &
@@ -653,7 +659,6 @@ module neural_net_constants
        & -6.032139206E+01, &
        & -2.326605988E+01 /
 
-
   data inv_ex2(4,:) /  2.337104797E+02, &
        & 1.701287231E+02, &
        & -5.790241241E+00, &
@@ -756,7 +761,6 @@ module neural_net_constants
        & -1.811866951E+01, &
        & -4.684573746E+01 /
 
-
   data inv_ex2(6,:) /  -2.171156006E+02, &
        & -1.820392609E+02, &
        & -5.449436188E+00, &
@@ -808,9 +812,7 @@ module neural_net_constants
        & 3.672628403E+01, &
        & 2.160292149E+00 /
 
-
-
-  !output weights
+  ! output weights
   data outv_ex2 / 1.535743256E+02, &
        & 1.124887924E+02, &
        & 1.092334175E+01, &
@@ -863,15 +865,18 @@ module neural_net_constants
        & 1.030218811E+02, &
        & -4.384435730E+02 /
 
-  !3.) day_extended_CC11nn_rad_skintemp_nise_flag_lsflag_nn
-  real, parameter :: temperature_ex3=1.0,bias_h_ex3=1.0,bias_i_ex3=1.0,cutoff_ex3=80.0
+
+  ! 3.) day_extended_CC11nn_rad_skintemp_nise_flag_lsflag_nn
+  real, parameter :: temperature_ex3=1.0,bias_h_ex3=1.0, &
+                     bias_i_ex3=1.0,cutoff_ex3=80.0
 
   integer(kind=sint), parameter :: ninput_ex3=8,nneurons_ex3=50
-  real(kind=sreal) :: minmax_train_ex3(ninput_ex3,2),inv_ex3(ninput_ex3+1,nneurons_ex3),&
-       & outv_ex3(nneurons_ex3+1),&
-       & scales_ex3(ninput_ex3,2),oscales_ex3(3)
+  real(kind=sreal) :: minmax_train_ex3(ninput_ex3,2), &
+                      inv_ex3(ninput_ex3+1,nneurons_ex3), &
+                      outv_ex3(nneurons_ex3+1), &
+                      scales_ex3(ninput_ex3,2),oscales_ex3(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex3(1,:) / 8.799999952e-01, 1.007600021e+02 / ! '600nm'
   data minmax_train_ex3(2,:) / 4.099999964e-01, 9.837000275e+01 / ! '800nm'
   data minmax_train_ex3(3,:) / 1.843200073e+02, 3.344599915e+02 / ! '11µm'
@@ -881,7 +886,7 @@ module neural_net_constants
   data minmax_train_ex3(7,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex3(8,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex3(1,:) / 5.000000075e-02, 9.010812268e-03 / ! '600nm'
   data scales_ex3(2,:) / 5.000000075e-02, 9.187423624e-03 / ! '800nm'
   data scales_ex3(3,:) / 5.000000075e-02, 5.994405597e-03 / ! '11µm'
@@ -891,10 +896,10 @@ module neural_net_constants
   data scales_ex3(7,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex3(8,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex3 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex3 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex3(1,:) / -2.094402771E+02, &
        & -4.706383705E+00, &
        & -1.808649292E+02, &
@@ -1354,7 +1359,7 @@ module neural_net_constants
        & -4.706522751E+01, &
        & 2.599030876E+01 /
 
-  !output weights
+  ! output weights
   data outv_ex3 / -1.055784988E+02,&
        & -3.654032516E+01, &
        & 4.387054825E+01, &
@@ -1407,15 +1412,18 @@ module neural_net_constants
        & -1.338025856E+01, &
        & -1.084294510E+01 /
 
-  !4.) twilight_extended_CC11nn_rad_skintemp_nise_flag_lsflag_nn
-  real, parameter :: temperature_ex4=1.0,bias_h_ex4=1.0,bias_i_ex4=1.0,cutoff_ex4=80.0
+
+  ! 4.) twilight_extended_CC11nn_rad_skintemp_nise_flag_lsflag_nn
+  real, parameter :: temperature_ex4=1.0,bias_h_ex4=1.0, &
+                     bias_i_ex4=1.0,cutoff_ex4=80.0
 
   integer(kind=sint), parameter :: ninput_ex4=6,nneurons_ex4=50
-  real(kind=sreal) :: minmax_train_ex4(ninput_ex4,2),inv_ex4(ninput_ex4+1,nneurons_ex4),&
-       & outv_ex4(nneurons_ex4+1),&
-       & scales_ex4(ninput_ex4,2),oscales_ex4(3)
+  real(kind=sreal) :: minmax_train_ex4(ninput_ex4,2), &
+                      inv_ex4(ninput_ex4+1,nneurons_ex4), &
+                      outv_ex4(nneurons_ex4+1), &
+                      scales_ex4(ninput_ex4,2),oscales_ex4(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex4(1,:) / 1.855000000e+02, 3.032099915e+02 / ! '11µm'
   data minmax_train_ex4(2,:) / 1.849600067e+02, 3.030700073e+02 / ! '12µm'
   data minmax_train_ex4(3,:) / -2.869995117e+00, 1.194000244e+01 / ! '11-12µm'
@@ -1423,7 +1431,7 @@ module neural_net_constants
   data minmax_train_ex4(5,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex4(6,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex4(1,:) / 5.000000075e-02, 7.645909674e-03 / ! '11µm'
   data scales_ex4(2,:) / 5.000000075e-02, 7.620015182e-03 / ! '12µm'
   data scales_ex4(3,:) / 5.000000075e-02, 6.076975912e-02 / ! '11-12µm'
@@ -1431,10 +1439,10 @@ module neural_net_constants
   data scales_ex4(5,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex4(6,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex4 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex4 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex4(1,:) / -3.132783127E+01, &
        & -2.488774261E+02, &
        & -6.839530182E+01, &
@@ -1792,7 +1800,7 @@ module neural_net_constants
        & -2.615720940E+01, &
        & -4.595365047E+00 /
 
-  !output weights
+  ! output weights
   data outv_ex4 / 6.089524746E+00,&
        & 2.287714005E+01, &
        & 9.260635078E-02, &
@@ -1845,15 +1853,18 @@ module neural_net_constants
        & -1.183372345E+02, &
        & -1.492928467E+02 /
 
-  !5.) night_extended_CC11nn_rad_skintemp_nise_flag_lsflag_nn
-  real, parameter :: temperature_ex5=1.0,bias_h_ex5=1.0,bias_i_ex5=1.0,cutoff_ex5=80.0
+
+  ! 5.) night_extended_CC11nn_rad_skintemp_nise_flag_lsflag_nn
+  real, parameter :: temperature_ex5=1.0,bias_h_ex5=1.0, &
+                     bias_i_ex5=1.0,cutoff_ex5=80.0
 
   integer(kind=sint), parameter :: ninput_ex5=8,nneurons_ex5=50
-  real(kind=sreal) :: minmax_train_ex5(ninput_ex5,2),inv_ex5(ninput_ex5+1,nneurons_ex5),&
-       & outv_ex5(nneurons_ex5+1),&
-       & scales_ex5(ninput_ex5,2),oscales_ex5(3)
+  real(kind=sreal) :: minmax_train_ex5(ninput_ex5,2), &
+                      inv_ex5(ninput_ex5+1,nneurons_ex5), &
+                      outv_ex5(nneurons_ex5+1), &
+                      scales_ex5(ninput_ex5,2),oscales_ex5(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex5(1,:) / 2.077200012e+02, 3.035799866e+02 / ! '3.7µm'
   data minmax_train_ex5(2,:) / 1.967799988e+02, 3.032099915e+02 / ! '11µm'
   data minmax_train_ex5(3,:) / 1.963300018e+02, 3.030700073e+02 / ! '12µm'
@@ -1863,7 +1874,7 @@ module neural_net_constants
   data minmax_train_ex5(7,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex5(8,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex5(1,:) / 5.000000075e-02, 9.388692677e-03 / ! '3.7µm'
   data scales_ex5(2,:) / 5.000000075e-02, 8.456262760e-03 / ! '11µm'
   data scales_ex5(3,:) / 5.000000075e-02, 8.431702852e-03 / ! '12µm'
@@ -1873,10 +1884,10 @@ module neural_net_constants
   data scales_ex5(7,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex5(8,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex5 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex5 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex5(1,:) / -3.567267990E+01, &
        & -3.481597137E+01, &
        & -6.546885681E+01, &
@@ -2336,7 +2347,7 @@ module neural_net_constants
        & -1.513429260E+02, &
        & -4.790769958E+01 /
 
-  !output weights
+  ! output weights
   data outv_ex5 / 7.838024139E+01,&
        & -2.718458252E+02, &
        & 7.015122986E+01, &
@@ -2389,15 +2400,18 @@ module neural_net_constants
        & -5.756304264E+00, &
        & -7.786139679E+01 /
 
-  !6.) day_extended_pygac_rad_skintemp_nise_flag_lsflag__06_03_15_nn
-  real, parameter :: temperature_ex6=1.0,bias_h_ex6=1.0,bias_i_ex6=1.0,cutoff_ex6=80.0
+
+  ! 6.) day_extended_pygac_rad_skintemp_nise_flag_lsflag__06_03_15_nn
+  real, parameter :: temperature_ex6=1.0,bias_h_ex6=1.0, &
+                     bias_i_ex6=1.0,cutoff_ex6=80.0
 
   integer(kind=sint), parameter :: ninput_ex6=8,nneurons_ex6=50
-  real(kind=sreal) :: minmax_train_ex6(ninput_ex6,2),inv_ex6(ninput_ex6+1,nneurons_ex6),&
-       & outv_ex6(nneurons_ex6+1),&
-       & scales_ex6(ninput_ex6,2),oscales_ex6(3)
+  real(kind=sreal) :: minmax_train_ex6(ninput_ex6,2), &
+                      inv_ex6(ninput_ex6+1,nneurons_ex6), &
+                      outv_ex6(nneurons_ex6+1), &
+                      scales_ex6(ninput_ex6,2),oscales_ex6(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex6(1,:) / 8.799999952e-01, 1.168600006e+02 / ! '600nm'
   data minmax_train_ex6(2,:) / 3.799999952e-01, 1.072900009e+02 / ! '800nm'
   data minmax_train_ex6(3,:) / 1.846600037e+02, 3.344199829e+02 / ! '11µm'
@@ -2407,7 +2421,7 @@ module neural_net_constants
   data minmax_train_ex6(7,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex6(8,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex6(1,:) / 5.000000075e-02, 7.759958040e-03 / ! '600nm'
   data scales_ex6(2,:) / 5.000000075e-02, 8.418295532e-03 / ! '800nm'
   data scales_ex6(3,:) / 5.000000075e-02, 6.009615958e-03 / ! '11µm'
@@ -2417,10 +2431,10 @@ module neural_net_constants
   data scales_ex6(7,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex6(8,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex6 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex6 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex6(1,:) / -1.732601523E+00, &
        & 3.852765808E+02, &
        & -3.912317038E+00, &
@@ -2880,7 +2894,7 @@ module neural_net_constants
        & 8.542578125E+01, &
        & -4.420686340E+02 /
 
-  !output weights
+  ! output weights
   data outv_ex6 / -4.980071068E+00,&
        & 5.466573715E+01, &
        & 4.781112671E+00, &
@@ -2934,15 +2948,17 @@ module neural_net_constants
        & -8.290648651E+01 /
 
 
-  !7.) twilight_extended_pygac_rad_skintemp_nise_flag_lsflag__06_03_15_nn
-  real, parameter :: temperature_ex7=1.0,bias_h_ex7=1.0,bias_i_ex7=1.0,cutoff_ex7=80.0
+  ! 7.) twilight_extended_pygac_rad_skintemp_nise_flag_lsflag__06_03_15_nn
+  real, parameter :: temperature_ex7=1.0,bias_h_ex7=1.0, &
+                     bias_i_ex7=1.0,cutoff_ex7=80.0
 
   integer(kind=sint), parameter :: ninput_ex7=6,nneurons_ex7=50
-  real(kind=sreal) :: minmax_train_ex7(ninput_ex7,2),inv_ex7(ninput_ex7+1,nneurons_ex7),&
-       & outv_ex7(nneurons_ex7+1),&
-       & scales_ex7(ninput_ex7,2),oscales_ex7(3)
+  real(kind=sreal) :: minmax_train_ex7(ninput_ex7,2), &
+                      inv_ex7(ninput_ex7+1,nneurons_ex7), &
+                      outv_ex7(nneurons_ex7+1), &
+                      scales_ex7(ninput_ex7,2),oscales_ex7(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex7(1,:) / 1.857799988e+02, 3.031600037e+02 / ! '11µm'
   data minmax_train_ex7(2,:) / 1.853399963e+02, 3.030700073e+02 / ! '12µm'
   data minmax_train_ex7(3,:) / -2.919998169e+00, 1.514001465e+01 / ! '11-12µm'
@@ -2950,7 +2966,7 @@ module neural_net_constants
   data minmax_train_ex7(5,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex7(6,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex7(1,:) / 5.000000075e-02, 7.667404599e-03 / ! '11µm'
   data scales_ex7(2,:) / 5.000000075e-02, 7.644609548e-03 / ! '12µm'
   data scales_ex7(3,:) / 5.000000075e-02, 4.983384907e-02 / ! '11-12µm'
@@ -2958,10 +2974,10 @@ module neural_net_constants
   data scales_ex7(5,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex7(6,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex7 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex7 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex7(1,:) / -1.792061005E+02, &
        & -1.648872566E+01, &
        & -9.781687927E+01, &
@@ -3319,7 +3335,7 @@ module neural_net_constants
        & -2.525893021E+01, &
        & 3.720853806E+01 /
 
-  !output weights
+  ! output weights
   data outv_ex7 / 5.128215790E+01,&
        & -1.086546612E+01, &
        & 4.225276184E+01, &
@@ -3372,15 +3388,18 @@ module neural_net_constants
        & -1.336946564E+02, &
        & -1.086701050E+02 /
 
-  !8.) night_extended_pygac_rad_skintemp_nise_flag_lsflag__06_03_15_nn
-  real, parameter :: temperature_ex8=1.0,bias_h_ex8=1.0,bias_i_ex8=1.0,cutoff_ex8=80.0
+
+  ! 8.) night_extended_pygac_rad_skintemp_nise_flag_lsflag__06_03_15_nn
+  real, parameter :: temperature_ex8=1.0,bias_h_ex8=1.0, &
+                     bias_i_ex8=1.0,cutoff_ex8=80.0
 
   integer(kind=sint), parameter :: ninput_ex8=8,nneurons_ex8=50
-  real(kind=sreal) :: minmax_train_ex8(ninput_ex8,2),inv_ex8(ninput_ex8+1,nneurons_ex8),&
-       & outv_ex8(nneurons_ex8+1),&
-       & scales_ex8(ninput_ex8,2),oscales_ex8(3)
+  real(kind=sreal) :: minmax_train_ex8(ninput_ex8,2), &
+                      inv_ex8(ninput_ex8+1,nneurons_ex8), &
+                      outv_ex8(nneurons_ex8+1), &
+                      scales_ex8(ninput_ex8,2),oscales_ex8(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex8(1,:) / 1.922299957e+02, 3.036300049e+02 / ! '3.7µm'
   data minmax_train_ex8(2,:) / 1.857899933e+02, 3.031600037e+02 / ! '11µm'
   data minmax_train_ex8(3,:) / 1.853500061e+02, 3.030700073e+02 / ! '12µm'
@@ -3390,7 +3409,7 @@ module neural_net_constants
   data minmax_train_ex8(7,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex8(8,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex8(1,:) / 5.000000075e-02, 8.078993298e-03 / ! '3.7µm'
   data scales_ex8(2,:) / 5.000000075e-02, 7.668057457e-03 / ! '11µm'
   data scales_ex8(3,:) / 5.000000075e-02, 7.645259611e-03 / ! '12µm'
@@ -3400,10 +3419,10 @@ module neural_net_constants
   data scales_ex8(7,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex8(8,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex8 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex8 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex8(1,:) / -3.392836761E+01, &
        & -4.061168671E+01, &
        & -3.495391464E+01, &
@@ -3863,7 +3882,7 @@ module neural_net_constants
        & -7.871652603E+00, &
        & -1.614541817E+01 /
 
-  !output weights
+  ! output weights
   data outv_ex8 / 1.259294319E+01,&
        & 8.881326294E+01, &
        & 1.985932922E+01, &
@@ -3917,16 +3936,17 @@ module neural_net_constants
        & -1.029371490E+02 /
 
 
-
-  !9.) day_pygac_ecmwf_snow_ice_usgs_land_sea_nn
-  real, parameter :: temperature_ex9=1.0,bias_h_ex9=1.0,bias_i_ex9=1.0,cutoff_ex9=80.0
+  ! 9.) day_pygac_ecmwf_snow_ice_usgs_land_sea_nn
+  real, parameter :: temperature_ex9=1.0,bias_h_ex9=1.0, &
+                     bias_i_ex9=1.0,cutoff_ex9=80.0
 
   integer(kind=sint), parameter :: ninput_ex9=8,nneurons_ex9=50
-  real(kind=sreal) :: minmax_train_ex9(ninput_ex9,2),inv_ex9(ninput_ex9+1,nneurons_ex9),&
-       & outv_ex9(nneurons_ex9+1),&
-       & scales_ex9(ninput_ex9,2),oscales_ex9(3)
+  real(kind=sreal) :: minmax_train_ex9(ninput_ex9,2), &
+                      inv_ex9(ninput_ex9+1,nneurons_ex9),&
+                      outv_ex9(nneurons_ex9+1),&
+                      scales_ex9(ninput_ex9,2),oscales_ex9(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex9(1,:) / 8.799999952e-01, 1.070000000e+02 / ! '600nm'
   data minmax_train_ex9(2,:) / 3.799999952e-01, 1.049499969e+02 / ! '800nm'
   data minmax_train_ex9(3,:) / 1.846600037e+02, 3.344199829e+02 / ! '11µm'
@@ -3936,7 +3956,7 @@ module neural_net_constants
   data minmax_train_ex9(7,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex9(8,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex9(1,:) / 5.000000075e-02, 8.480964229e-03 / ! '600nm'
   data scales_ex9(2,:) / 5.000000075e-02, 8.606675081e-03 / ! '800nm'
   data scales_ex9(3,:) / 5.000000075e-02, 6.009615958e-03 / ! '11µm'
@@ -3946,10 +3966,10 @@ module neural_net_constants
   data scales_ex9(7,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex9(8,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex9 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex9 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex9(1,:) / 3.225126648E+02, &
        & 2.032189178E+02, &
        & -1.623789406E+01, &
@@ -4409,7 +4429,7 @@ module neural_net_constants
        & 2.300616760E+02, &
        & -4.265969543E+02 /
 
-  !output weights
+  ! output weights
   data outv_ex9 / -5.355841446E+01,&
        & 3.914177704E+01, &
        & 1.090543976E+02, &
@@ -4464,12 +4484,14 @@ module neural_net_constants
 
 
   !10.) twilight_pygac_ecmwf_snow_ice_usgs_land_sea_nn
-  real, parameter :: temperature_ex10=1.0,bias_h_ex10=1.0,bias_i_ex10=1.0,cutoff_ex10=80.0
+  real, parameter :: temperature_ex10=1.0,bias_h_ex10=1.0, &
+                     bias_i_ex10=1.0, cutoff_ex10=80.0
 
   integer(kind=sint), parameter :: ninput_ex10=6,nneurons_ex10=50
-  real(kind=sreal) :: minmax_train_ex10(ninput_ex10,2),inv_ex10(ninput_ex10+1,nneurons_ex10),&
-       & outv_ex10(nneurons_ex10+1),&
-       & scales_ex10(ninput_ex10,2),oscales_ex10(3)
+  real(kind=sreal) :: minmax_train_ex10(ninput_ex10,2), &
+                      inv_ex10(ninput_ex10+1,nneurons_ex10),&
+                      outv_ex10(nneurons_ex10+1),&
+                      scales_ex10(ninput_ex10,2),oscales_ex10(3)
 
   !min and max values of training dataset:
   data minmax_train_ex10(1,:) / 1.857799988e+02, 3.031600037e+02 / ! '11µm'
@@ -4488,7 +4510,7 @@ module neural_net_constants
   data scales_ex10(6,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
   !scaling factors for output vector
-  data oscales_ex10 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  data oscales_ex10 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
   !input weights
   data inv_ex10(1,:) / 1.046055984E+02, &
@@ -4848,7 +4870,7 @@ module neural_net_constants
        & -2.038792610E+01, &
        & 7.246390533E+01 /
 
-  !output weights
+  ! output weights
   data outv_ex10 / 1.018526840E+02,&
        & -9.310595512E+00, &
        & 9.394937134E+01, &
@@ -4902,15 +4924,17 @@ module neural_net_constants
        & -5.764546585E+01 /
 
 
-  !11.) night_pygac_ecmwf_snow_ice_usgs_land_sea_nn
-  real, parameter :: temperature_ex11=1.0,bias_h_ex11=1.0,bias_i_ex11=1.0,cutoff_ex11=80.0
+  ! 11.) night_pygac_ecmwf_snow_ice_usgs_land_sea_nn
+  real, parameter :: temperature_ex11=1.0,bias_h_ex11=1.0, &
+                     bias_i_ex11=1.0,cutoff_ex11=80.0
 
   integer(kind=sint), parameter :: ninput_ex11=8,nneurons_ex11=50
-  real(kind=sreal) :: minmax_train_ex11(ninput_ex11,2),inv_ex11(ninput_ex11+1,nneurons_ex11),&
-       & outv_ex11(nneurons_ex11+1),&
-       & scales_ex11(ninput_ex11,2),oscales_ex11(3)
+  real(kind=sreal) :: minmax_train_ex11(ninput_ex11,2), &
+                      inv_ex11(ninput_ex11+1,nneurons_ex11), &
+                      outv_ex11(nneurons_ex11+1), &
+                      scales_ex11(ninput_ex11,2),oscales_ex11(3)
 
-  !min and max values of training dataset:
+  ! min and max values of training dataset:
   data minmax_train_ex11(1,:) / 1.922299957e+02, 3.036300049e+02 / ! '3.7µm'
   data minmax_train_ex11(2,:) / 1.857899933e+02, 3.031600037e+02 / ! '11µm'
   data minmax_train_ex11(3,:) / 1.853500061e+02, 3.030700073e+02 / ! '12µm'
@@ -4920,7 +4944,7 @@ module neural_net_constants
   data minmax_train_ex11(7,:) / 0.000000000e+00, 1.000000000e+00 / ! 'nise_flag'
   data minmax_train_ex11(8,:) / 0.000000000e+00, 1.000000000e+00 / ! 'lsflag'
 
-  !scaling factors for input vector
+  ! scaling factors for input vector
   data scales_ex11(1,:) / 5.000000075e-02, 8.078993298e-03 / ! '3.7µm'
   data scales_ex11(2,:) / 5.000000075e-02, 7.668057457e-03 / ! '11µm'
   data scales_ex11(3,:) / 5.000000075e-02, 7.645259611e-03 / ! '12µm'
@@ -4930,10 +4954,10 @@ module neural_net_constants
   data scales_ex11(7,:) / 5.000000075e-02, 8.999999762e-01 / ! 'nise_flag'
   data scales_ex11(8,:) / 5.000000075e-02, 8.999999762e-01 / ! 'lsflag'
 
-  !scaling factors for output vector
-  data oscales_ex11 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / !final output scales
+  ! scaling factors for output vector
+  data oscales_ex11 / 1.000000015e-01, 7.999999523e-01, 0.000000000e+00 / ! final output scales
 
-  !input weights
+  ! input weights
   data inv_ex11(1,:) / -3.325519943E+01, &
        & -3.721801376E+01, &
        & -1.012369919E+02, &
@@ -5393,7 +5417,7 @@ module neural_net_constants
        & -1.881471634E+01, &
        & -2.248587990E+01 /
 
-  !output weights
+  ! output weights
   data outv_ex11 / 3.694879293E+00,&
        & 1.927345085E+01, &
        & 3.499197006E+01, &
@@ -5446,8 +5470,4 @@ module neural_net_constants
        & 7.682626724E+00, &
        & -1.742878265E+02 /
 
-
 end module neural_net_constants
-
-
-

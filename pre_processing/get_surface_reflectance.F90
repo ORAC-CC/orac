@@ -130,20 +130,21 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   implicit none
 
   ! Input variables
-  character(len=date_length),   intent(in)         :: cyear
-  character(len=date_length),   intent(in)         :: cdoy
-  character(len=path_length),   intent(in)         :: modis_surf_path
-  character(len=path_length),   intent(in)         :: modis_brdf_path
-  type(imager_flags_s),         intent(in)         :: imager_flags
-  type(imager_geolocation_s),   intent(in)         :: imager_geolocation
-  type(imager_angles_s),        intent(in)         :: imager_angles
-  type(channel_info_s),         intent(in)         :: channel_info
-  type(ecmwf_s),                intent(in)         :: ecmwf
-  logical,                      intent(in)         :: assume_full_path
-  logical,                      intent(in)         :: include_full_brdf
-  logical,                      intent(in)         :: verbose
-  type(surface_s),              intent(inout)      :: surface
-  type(source_attributes_s),    intent(inout)      :: source_atts
+  character(len=date_length), intent(in)    :: cyear
+  character(len=date_length), intent(in)    :: cdoy
+  character(len=path_length), intent(in)    :: modis_surf_path
+  character(len=path_length), intent(in)    :: modis_brdf_path
+  type(imager_flags_s),       intent(in)    :: imager_flags
+  type(imager_geolocation_s), intent(in)    :: imager_geolocation
+  type(imager_angles_s),      intent(in)    :: imager_angles
+  type(channel_info_s),       intent(in)    :: channel_info
+  type(ecmwf_s),              intent(in)    :: ecmwf
+  logical,                    intent(in)    :: assume_full_path
+  logical,                    intent(in)    :: include_full_brdf
+  logical,                    intent(in)    :: verbose
+  type(surface_s),            intent(inout) :: surface
+  type(source_attributes_s),  intent(inout) :: source_atts
+
   ! Local variables
 
   ! Land surface reflectance
