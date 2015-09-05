@@ -35,16 +35,17 @@ subroutine write_primary_pp(ncid, ixstart, ixstop, iystart, iystop, indexing, &
    use global_attributes
    use input_routines
    use orac_ncdf
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   integer,                      intent(in) :: ncid
-   integer,                      intent(in) :: ixstart, ixstop, &
-                                               iystart, iystop
-   type(counts_and_indexes),     intent(in) :: indexing
-   type(output_data_primary_pp), intent(in) :: output_data
-   type(global_attributes_s),    intent(in) :: global_atts
+   integer,                   intent(in) :: ncid
+   integer,                   intent(in) :: ixstart, ixstop, &
+                                            iystart, iystop
+   type(counts_and_indexes),  intent(in) :: indexing
+   type(output_data_primary), intent(in) :: output_data
+   type(global_attributes_s), intent(in) :: global_atts
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -57,7 +58,7 @@ subroutine write_primary_pp(ncid, ixstart, ixstop, iystart, iystop, indexing, &
 
    if (global_atts%sensor .eq. 'AATSR') then
       output_data%time = output_data%time + 2451758.0
-   endif
+   end if
 
    call nc_write_array(ncid,'time',output_data%vid_time,&
            output_data%time(ixstart:,iystart:),1,1,n_x,1,1,n_y)
@@ -73,17 +74,17 @@ subroutine write_primary_pp(ncid, ixstart, ixstop, iystart, iystop, indexing, &
 
       input_dummy='solar_zenith_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_sol_zen(i),output_data%sol_zen(ixstart:,:), &
+              output_data%vid_sol_zen(i),output_data%sol_zen(ixstart:,:,i), &
               1,1,n_x,1,1,n_y)
 
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_sat_zen(i),output_data%sat_zen(ixstart:,:), &
+              output_data%vid_sat_zen(i),output_data%sat_zen(ixstart:,:,i), &
               1,1,n_x,1,1,n_y)
 
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_rel_azi(i),output_data%rel_azi(ixstart:,:), &
+              output_data%vid_rel_azi(i),output_data%rel_azi(ixstart:,:,i), &
               1,1,n_x,1,1,n_y)
 
    end do

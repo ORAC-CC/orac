@@ -46,16 +46,13 @@
 ! iystart     int    In   First index of along-track (second) dimension
 ! iystop      int    In   Last index of along-track (second) dimension
 ! NViews      int    In   Number of viewing angles
-! ny          int    In   Total number of along-track points
+! Ny          int    In   Total number of measurments
 ! output_data struct Both Structure of arrays to be allocated
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
-                                     output_data)
-
-   use ECP_Constants
+subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, Ny, output_data, do_phase_pavolonis, do_dem)
 
    implicit none
 
@@ -66,6 +63,8 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
    integer,                   intent(in)    :: NViews
    integer,                   intent(in)    :: Ny
    type(output_data_primary), intent(inout) :: output_data
+   logical,                   intent(in)    :: do_phase_pavolonis
+   logical,                   intent(in)    :: do_dem
 
 
    allocate(output_data%vid_sol_zen(NViews))
@@ -80,16 +79,6 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
 
    allocate(output_data%vid_cloud_albedo(Ny))
    output_data%vid_cloud_albedo=0
-
-
-   allocate(output_data%cloud_albedo_scale(Ny))
-   output_data%cloud_albedo_scale=sreal_fill_value
-   allocate(output_data%cloud_albedo_offset(Ny))
-   output_data%cloud_albedo_offset=sreal_fill_value
-   allocate(output_data%cloud_albedo_vmin(Ny))
-   output_data%cloud_albedo_vmin=sint_fill_value
-   allocate(output_data%cloud_albedo_vmax(Ny))
-   output_data%cloud_albedo_vmax=sint_fill_value
 
 
    allocate(output_data%time(ixstart:ixstop,iystart:iystop))
@@ -168,7 +157,10 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
 
    allocate(output_data%phase(ixstart:ixstop,iystart:iystop))
    output_data%phase(ixstart:ixstop,iystart:iystop)=byte_fill_value
-
+if (do_phase_pavolonis) then
+   allocate(output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop))
+   output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop)=byte_fill_value
+end if
    allocate(output_data%costja(ixstart:ixstop,iystart:iystop))
    output_data%costja(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
@@ -191,14 +183,14 @@ subroutine alloc_output_data_primary(ixstart,ixstop,iystart,iystop,NViews,ny, &
    output_data%cldmask(ixstart:ixstop,iystart:iystop)=byte_fill_value
 
    allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
-   output_data%cccot_pre(ixstart:ixstop,iystart:iystop)=sreal_fill_value
+   output_data%cccot_pre(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
    allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
    output_data%lusflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
-
+if (do_dem) then
    allocate(output_data%dem(ixstart:ixstop,iystart:iystop))
    output_data%dem(ixstart:ixstop,iystart:iystop)=sint_fill_value
-
+end if
    allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
    output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
 
@@ -224,18 +216,16 @@ end subroutine alloc_output_data_primary
 ! ixstop      int    In   Last index of across-track (first) dimension
 ! iystart     int    In   First index of along-track (second) dimension
 ! iystop      int    In   Last index of along-track (second) dimension
-! ny          int    In   Total number of along-track points
-! nx          int    In   Total number of across-track points
+! Ny          int    In   Total number of measurments
+! Nx          int    In   Total number of retrieval parameters
 ! lcovar      logic  Both Switch to allocate covariance matricies
 ! output_data struct Both Structure of arrays to be allocated
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_secondary(ixstart,ixstop,iystart,iystop,Ny,Nx, &
-                                       lcovar,output_data)
-
-   use ECP_Constants
+subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx, &
+                                       output_data, do_covariance)
 
    implicit none
 
@@ -245,8 +235,8 @@ subroutine alloc_output_data_secondary(ixstart,ixstop,iystart,iystop,Ny,Nx, &
    integer,                     intent(in)    :: iystop
    integer,                     intent(in)    :: Ny
    integer,                     intent(in)    :: Nx
-   logical,                     intent(in)    :: lcovar
    type(output_data_secondary), intent(inout) :: output_data
+   logical,                     intent(in)    :: do_covariance
 
 
    allocate(output_data%vid_albedo(Ny))
@@ -342,7 +332,7 @@ subroutine alloc_output_data_secondary(ixstart,ixstop,iystart,iystop,Ny,Nx, &
    allocate(output_data%ds(ixstart:ixstop,iystart:iystop))
    output_data%ds(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
-   if (lcovar) then
+   if (do_covariance) then
       allocate(output_data%vid_covariance(Nx,Nx))
       output_data%vid_covariance=0
 

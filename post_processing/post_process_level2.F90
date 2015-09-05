@@ -103,6 +103,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use netcdf
    use orac_ncdf
    use output_routines
+   use prepare_output
    use source_attributes
    use postproc_constants
 
@@ -121,49 +122,50 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    integer :: nargs
 #ifdef WRAPPER
-   integer :: mytask,ntasks,lower_bound,upper_bound
+   integer :: mytask, ntasks, lower_bound, upper_bound
 #endif
-   integer(kind=byte)         :: mli_flag = 0
+   integer(kind=byte)          :: mli_flag = 0
 
-   logical                    :: one_phase_only, cloudy_only
-   real                       :: cot_thres, cot_thres1, cot_thres2
-   integer                    :: proc_flag(5)
-   character(len=var_length)  :: inst
+   logical                     :: one_phase_only, cloudy_only
+   real                        :: cot_thres, cot_thres1, cot_thres2
+   integer                     :: proc_flag(5)
+   character(len=var_length)   :: inst
 
-   character(len=path_length) :: path_and_file, &
-                                 fname_wat_prim, fname_ice_prim, &
-                                 fname_wat_sec,fname_ice_sec, &
-                                 fname_mli_sec,fname_mli_prim
+   character(len=path_length)  :: path_and_file, &
+                                  fname_wat_prim, fname_ice_prim, &
+                                  fname_wat_sec,fname_ice_sec, &
+                                  fname_mli_sec,fname_mli_prim
 
-   character(len=path_length) :: L2_primary_outputpath_and_file, &
-                                 L2_secondary_outputpath_and_file
+   character(len=path_length)  :: L2_primary_outputpath_and_file, &
+                                  L2_secondary_outputpath_and_file
 
-   type(global_attributes_s)  :: global_atts
-   type(source_attributes_s)  :: source_atts
+   type(global_attributes_s)   :: global_atts
+   type(source_attributes_s)   :: source_atts
 
-   integer                    :: ncid_primary, ncid_secondary, dims_var(2), varid
-   character(len=32)          :: input_num
-   character(len=var_length)  :: varname
+   integer                     :: ncid_primary, ncid_secondary, dims_var(2), varid
+   character(len=32)           :: input_num
+   character(len=var_length)   :: varname
 
-   type(input_data_primary)       :: input_data_wat_primary, &
-                                     input_data_ice_primary, &
-                                     input_data_mli_primary
-   type(input_data_secondary)     :: input_data_wat_secondary, &
-                                     input_data_ice_secondary
-   type(output_data_primary_pp)   :: output_primary
-   type(output_data_secondary_pp) :: output_secondary
+   type(input_data_primary)    :: input_data_wat_primary, &
+                                  input_data_ice_primary, &
+                                  input_data_mli_primary
+   type(input_data_secondary)  :: input_data_wat_secondary, &
+                                  input_data_ice_secondary
+   type(output_data_primary)   :: output_primary
+   type(output_data_secondary) :: output_secondary
 
-   type(counts_and_indexes)       :: indexing
+   type(counts_and_indexes)    :: indexing
 
-   integer(kind=lint) :: xdim,ydim
-   integer(kind=lint) :: ixstart,ixstop,iystart,iystop
+   integer(kind=lint)          :: xdim,ydim
+   integer(kind=lint)          :: ixstart,ixstop,iystart,iystop
 
-   integer(kind=byte) :: lsec_flag,lstrict
+   integer(kind=byte)          :: lsec_flag,lstrict
 
-   integer(kind=byte), allocatable, dimension(:,:) :: phaseflag
+   integer(kind=byte)          :: phase_flag
 
-   real(kind=sreal)   :: newcot
-   real(kind=sreal)   :: precision,huge_value,log10huge_value,log10precision
+   real(kind=sreal)            :: newcot
+   real(kind=sreal)            :: precision, huge_value, log10huge_value, &
+                                  log10precision
 
 
    precision=tiny(1.0_sreal)
@@ -197,7 +199,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'primary water input = ', trim(fname_wat_prim)
    read(11,*) fname_ice_prim
    write(*,*) 'primary ice input = ', trim(fname_ice_prim)
-   if ( mli_flag .eq. 1) then
+   if (mli_flag .eq. 1) then
       read(11,*) fname_mli_prim
       write(*,*) 'primary mli input = ', trim(fname_mli_prim)
    end if
@@ -206,7 +208,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'secondary water input = ', trim(fname_wat_sec)
    read(11,*) fname_ice_sec
    write(*,*) 'secondary ice input = ', trim(fname_ice_sec)
-   if ( mli_flag .eq. 1) then
+   if (mli_flag .eq. 1) then
       read(11,*) fname_mli_sec
       write(*,*) 'secondary mli input = ', trim(fname_mli_sec)
    end if
@@ -226,7 +228,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    read(11,*) cot_thres2
    write(*,*) 'cot_thres2 = ', cot_thres2
    read(11,*) proc_flag
-   write(*,*)'proc = ', proc_flag
+   write(*,*) 'proc = ', proc_flag
    read(11,*) inst
    write(*,*) 'insts = ', inst
    read(11,*) lsec_flag
@@ -239,7 +241,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    write(*,*) 'Obtaining channel indexing'
 
-   indexing%Nx = 4 ! This count is hardwired
+   indexing%Nx = 4 ! This count is hardwired for now
 
    indexing%NViews = 1
 
@@ -250,6 +252,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    indexing%NSolar = 0
    indexing%NThermal = 0
 
+   allocate(indexing%YSolar(MaxNumMeas))
    allocate(indexing%Y_Id(MaxNumMeas))
    allocate(indexing%Ch_Is(MaxNumMeas))
    indexing%Ch_Is = 0
@@ -260,6 +263,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       if (nf90_inq_varid(ncid_secondary,varname,varid) .eq. NF90_NOERR) then
               indexing%Ny = indexing%Ny + 1
               indexing%NSolar = indexing%NSolar + 1
+              indexing%YSolar(indexing%NSolar) = indexing%Ny
               indexing%Y_Id(indexing%Ny) = i
               indexing%Ch_Is(indexing%Ny) = &
                  ibset(indexing%Ch_Is(indexing%Ny), SolarBit)
@@ -285,7 +289,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    ! read ice and water intermediate files and put into a structure
 
    write(*,*) 'Reading input dimensions'
-   call read_input_dimensions_pp(fname_ice_prim,xdim,ydim,verbose)
+   call read_input_dimensions(fname_ice_prim,xdim,ydim,verbose)
 
    write(*,*) '***** ICE *****'
    write(*,*) 'read ice primary'
@@ -298,7 +302,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          indexing)
       call read_secondary_file_all(fname_ice_sec,input_data_ice_secondary,xdim, &
          ydim,indexing,verbose)
-   endif
+   end if
 
    write(*,*) '***** WAT *****'
    write(*,*) 'read wat primary'
@@ -311,7 +315,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          indexing)
       call read_secondary_file_class(fname_wat_sec,input_data_wat_secondary,xdim, &
          ydim,indexing,verbose)
-   endif
+   end if
 
    mli_flag=0
    if (mli_flag .gt. 0) then
@@ -328,11 +332,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    iystart=1
    iystop=ydim
 
-   allocate(phaseflag(ixstart:ixstop,iystart:iystop))
-
-   !set default: ice wins
-   phaseflag=2
-
    write(*,*) 'Processing limits:'
    write(*,*) ixstart,ixstop
    write(*,*) iystart,iystop
@@ -340,43 +339,46 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    do j=iystart,iystop
       do i=ixstart,ixstop
 
-         !default: ICE wins, meaning only ice structure is overwritten
-         !and used in the end for the output
+         ! default: ICE wins, meaning only ice structure is overwritten and used
+         ! in the end for the output
          input_data_ice_primary%phase(i,j)=iphaseice
-         input_data_ice_primary%phase_post(i,j) = iphaseice
-         !Information of Pavolonis cloud type
-         !C,N,F,W,S,M,I,Ci,O
-         !Liquid cloud phase comprises the following categories:
-         !0? Clear
-         !2? fog,
-         !3? warm liquid water clouds, and
-         !4? supercooled-mixed-phased clouds.
-         !? Ice cloud phase comprises the following categories:
-         !6? opaque ice clouds/deep convection,
-         !7? nonopaque high ice clouds (e.g. cirrus),
-         !8? cloud overlap 4 (e.g. multiple cloud layers), and
+
+         ! Information of Pavolonis cloud type
+         ! C,N,F,W,S,M,I,Ci,O
+
+         ! Liquid cloud phase comprises the following categories:
+         ! 0? Clear
+         ! 2? fog
+         ! 3? warm liquid water clouds, and
+         ! 4? supercooled-mixed-phased clouds
+
+         ! ? Ice cloud phase comprises the following categories:
+         ! 6? opaque ice clouds/deep convection
+         ! 7? nonopaque high ice clouds (e.g. cirrus)
+         ! 8? cloud overlap 4 (e.g. multiple cloud layers)
 
          ! here apply Pavolonis phase information to select retrieval phase variables
          ! select water type overwrite ice
+         phase_flag = 2_byte
          if (input_data_ice_primary%cldtype(i,j) .gt. 1 .and. &
              input_data_ice_primary%cldtype(i,j) .lt. 5 ) then
 
-            phaseflag(i,j) = 1_byte
+            phase_flag = 1_byte
             if ((.not. one_phase_only) .and. & ! only reclassify if both phases were processed
                (((input_data_wat_primary%ctt(i,j) .lt. 233.16) .and. &
                  (input_data_wat_primary%ctt(i,j) .ne. sreal_fill_value)) .and. &
                 ((input_data_ice_primary%ctt(i,j) .lt. 273.16 ) .and. &
                  (input_data_ice_primary%ctt(i,j) .ne. sreal_fill_value)))) &
-               phaseflag(i,j) = 2_byte
+               phase_flag = 2_byte
             else
-               phaseflag(i,j) = 2_byte
+               phase_flag = 2_byte
                if ((.not. one_phase_only ) .and. & ! only reclassify if both phases were processed
                    ((input_data_ice_primary%ctt(i,j) .ge. 273.16) .and. &
                     (input_data_wat_primary%ctt(i,j) .ge. 233.16))) &
-               phaseflag(i,j) = 1_byte
+               phase_flag = 1_byte
             end if
 
-            if (phaseflag(i,j) .eq. 1_byte) then
+            if (phase_flag .eq. 1_byte) then
 
                ! primary file
                input_data_ice_primary%cot(i,j) = &
@@ -485,7 +487,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             if(input_data_ice_primary%cc_total(i,j) .eq. 0.0) then
                ! set phase to clear/unknown
                input_data_ice_primary%phase(i,j)=IPhaseClU
-               input_data_ice_primary%phase_post(i,j)=IPhaseClU
             end if
          end do
       end do
@@ -495,7 +496,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       call dealloc_input_data_primary_class(input_data_wat_primary)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call dealloc_input_data_secondary_class(input_data_wat_secondary)
-      endif
+      end if
+
 
       ! now write things out
 
@@ -508,28 +510,24 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
       ! allocate the structures which hold the output in its final form
-      call alloc_output_data_primary_pp(ixstart, ixstop, iystart, iystop, &
-         indexing, output_primary)
+      call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, indexing%NViews, indexing%Ny, output_primary, .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call alloc_output_data_secondary_pp(ixstart, ixstop, iystart, iystop, &
-            indexing, output_secondary)
+         call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, indexing%Ny, indexing%Nx, output_secondary, .false.)
       end if
 
       ! define variables
-         call def_vars_primary_pp(ncid_primary, indexing, dims_var,  &
-            output_primary, global_atts, verbose)
+         call def_vars_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_data_ice_primary%qc_flag_meanings, deflate_level, shuffle_flag, verbose, .true., .false., .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call def_vars_secondary_pp(ncid_secondary, indexing, dims_var, &
-            output_secondary, global_atts, verbose)
+         call def_vars_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level, shuffle_flag, 0, 0, verbose, .false.)
       end if
 
       ! put results in final output arrays with final datatypes
       do j=iystart,iystop
          do i=ixstart,ixstop
-            call prepare_primary_pp(i, j, indexing, input_data_ice_primary, &
+            call prepare_primary(i, j, indexing, input_data_ice_primary, &
                output_primary)
             if (L2_secondary_outputpath_and_file .ne. '') then
-               call prepare_secondary_pp(i, j, indexing, input_data_ice_secondary, &
+               call prepare_secondary(i, j, indexing, input_data_ice_secondary, &
                   output_secondary)
             end if
          end do
@@ -539,20 +537,18 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       call dealloc_input_data_primary_all(input_data_ice_primary)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call dealloc_input_data_secondary_all(input_data_ice_secondary)
-      endif
+      end if
 
       ! now write everything in one big chunk of data to disk
-      call write_primary_pp(ncid_primary, ixstart, ixstop, iystart, iystop, &
-         indexing, output_primary, global_atts)
+      call write_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, .true., .false., .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call write_secondary_pp(ncid_secondary, ixstart, ixstop, iystart, iystop, &
-            indexing, output_secondary, global_atts)
+         call write_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_secondary, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%Nx, indexing%Y_Id, .false.)
       end if
 
       ! deallocate output structure
-      call dealloc_output_data_primary_pp(output_primary)
+      call dealloc_output_data_primary(output_primary, .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call dealloc_output_data_secondary_pp(output_secondary)
+         call dealloc_output_data_secondary(output_secondary, .false.)
       end if
 
 
@@ -570,8 +566,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
 
-      deallocate(phaseflag)
-
+      deallocate(indexing%YSolar)
       deallocate(indexing%Y_Id)
       deallocate(indexing%Ch_Is)
 

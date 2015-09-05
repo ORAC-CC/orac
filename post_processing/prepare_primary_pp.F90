@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: prepare_primary_pp.F90
+! Name: prepare_primary.F90
 !
 ! Purpose:
 ! Map internal representation of variables to output representation by applying
@@ -35,17 +35,18 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_primary_pp(i, j, indexing, input_data, output_data)
+subroutine prepare_primary(i, j, indexing, input_data, output_data)
 
    use input_routines
    use orac_ncdf
+   use output_routines
 
    implicit none
 
-   integer,                      intent(in)    :: i, j
-   type(counts_and_indexes),     intent(in)    :: indexing
-   type(input_data_primary),     intent(in)    :: input_data
-   type(output_data_primary_pp), intent(inout) :: output_data
+   integer,                   intent(in)    :: i, j
+   type(counts_and_indexes),  intent(in)    :: indexing
+   type(input_data_primary),  intent(in)    :: input_data
+   type(output_data_primary), intent(inout) :: output_data
 
    integer            :: k
    integer(kind=sint) :: temp_short_ctp_error
@@ -67,9 +68,9 @@ subroutine prepare_primary_pp(i, j, indexing, input_data, output_data)
    ! sol_zen, sat_zen, rel_azi
    !----------------------------------------------------------------------------
    do k=1,indexing%NViews
-      output_data%sat_zen(i,j)=input_data%satellite_zenith_view_no1(i,j)
-      output_data%sol_zen(i,j)=input_data%solar_zenith_view_no1(i,j)
-      output_data%rel_azi(i,j)=input_data%rel_azimuth_view_no1(i,j)
+      output_data%sat_zen(i,j,k)=input_data%satellite_zenith_view_no1(i,j)
+      output_data%sol_zen(i,j,k)=input_data%solar_zenith_view_no1(i,j)
+      output_data%rel_azi(i,j,k)=input_data%rel_azimuth_view_no1(i,j)
    end do
 
    !----------------------------------------------------------------------------
@@ -417,16 +418,6 @@ subroutine prepare_primary_pp(i, j, indexing, input_data, output_data)
            sint_fill_value)
 
    !----------------------------------------------------------------------------
-   ! cccot
-   !----------------------------------------------------------------------------
-   call prepare_short_packed_float( &
-           input_data%cccot(i,j), output_data%cccot(i,j), &
-           output_data%cccot_scale, output_data%cccot_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cccot_vmin, output_data%cccot_vmax, &
-           sint_fill_value)
-
-   !----------------------------------------------------------------------------
    ! lusflag
    !----------------------------------------------------------------------------
    output_data%lusflag(i,j)=input_data%lusflag(i,j)
@@ -453,4 +444,4 @@ subroutine prepare_primary_pp(i, j, indexing, input_data, output_data)
            sint_fill_value)
    end do
 
-end subroutine prepare_primary_pp
+end subroutine prepare_primary

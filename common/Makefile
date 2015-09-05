@@ -20,6 +20,7 @@ COMMON_OBJ_F90=$(OBJS)/common_constants.o \
                $(OBJS)/constants_cloud_typing_pavolonis.o \
                $(OBJS)/global_attributes.o \
                $(OBJS)/interpol.o \
+               $(OBJS)/output_routines.o \
                $(OBJS)/orac_ncdf.o \
                $(OBJS)/parsing.o \
                $(OBJS)/source_attributes.o

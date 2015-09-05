@@ -41,24 +41,24 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
-                           iystart, iystop, output_data)
+subroutine write_secondary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, Ny, NSolar, Nx, Y_Id, do_covariance)
 
-   use CTRL_def
    use orac_ncdf
-   use SPixel_def
 
    implicit none
 
-   type(CTRL_t),                intent(in)    :: Ctrl
-   logical,                     intent(in)    :: lcovar
-   type(SPixel_t),              intent(in)    :: SPixel
    integer,                     intent(in)    :: ncid
    integer,                     intent(in)    :: ixstart
    integer,                     intent(in)    :: ixstop
    integer,                     intent(in)    :: iystart
    integer,                     intent(in)    :: iystop
    type(output_data_secondary), intent(inout) :: output_data
+   integer,                     intent(in)    :: NViews
+   integer,                     intent(in)    :: Ny
+   integer,                     intent(in)    :: NSolar
+   integer,                     intent(in)    :: Nx
+   integer,                     intent(in)    :: Y_Id(:)
+   logical,                     intent(in)    :: do_covariance
 
    character(len=32)  :: input_num,input_num1,input_num2
    character(len=512) :: input_dummy
@@ -94,8 +94,8 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    call nc_write_array(ncid,'stemp_ap',output_data%vid_stemp_ap,&
            output_data%stemp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   do i=1,Ctrl%Ind%NSolar
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+   do i=1,NSolar
+      write(input_num,"(i4)") Y_Id(i)
       input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
@@ -103,8 +103,8 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
               1,1,n_x,1,1,n_y)
    end do
 
-   do i=1,Ctrl%Ind%Ny
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+   do i=1,Ny
+      write(input_num,"(i4)") Y_Id(i)
       input_dummy='radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
@@ -112,8 +112,8 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
               1,1,n_x,1,1,n_y)
    end do
 
-   do i=1,Ctrl%Ind%Ny
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+   do i=1,Ny
+      write(input_num,"(i4)") Y_Id(i)
       input_dummy='firstguess_radiance_in_channel_no_'//trim(adjustl(input_num))
 
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
@@ -121,8 +121,8 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
               1,1,n_x,1,1,n_y)
    end do
 
-   do i=1,Ctrl%Ind%Ny
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+   do i=1,Ny
+      write(input_num,"(i4)") Y_Id(i)
         input_dummy='radiance_residual_in_channel_no_'//trim(adjustl(input_num))
 
         call nc_write_array(ncid,trim(adjustl(input_dummy)), &
@@ -133,9 +133,9 @@ subroutine write_secondary(Ctrl, lcovar, SPixel, ncid, ixstart, ixstop, &
    call nc_write_array(ncid,'degrees_of_freedom_signal',output_data%vid_ds,&
            output_data%ds(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   if (lcovar) then
-      do i=1,SPixel%Nx
-         do j=1,SPixel%Nx
+   if (do_covariance) then
+      do i=1,Nx
+         do j=1,Nx
             write(input_num1,"(i4)") i
             write(input_num2,"(i4)") j
             input_dummy='covariance_matrix_element_' // &

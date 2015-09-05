@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: prepare_secondary_pp.F90
+! Name: prepare_secondary.F90
 !
 ! Purpose:
 ! The file contains a collection of subroutines which define netcdf output for
@@ -22,17 +22,18 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_secondary_pp(i, j, indexing, input_data, output_data)
+subroutine prepare_secondary(i, j, indexing, input_data, output_data)
 
    use input_routines
    use orac_ncdf
+   use output_routines
 
    implicit none
 
-   integer,                        intent(in)    :: i, j
-   type(counts_and_indexes),       intent(in)    :: indexing
-   type(input_data_secondary),     intent(in)    :: input_data
-   type(output_data_secondary_pp), intent(inout) :: output_data
+   integer,                     intent(in)    :: i, j
+   type(counts_and_indexes),    intent(in)    :: indexing
+   type(input_data_secondary),  intent(in)    :: input_data
+   type(output_data_secondary), intent(inout) :: output_data
 
    logical     :: lcovar = .false.
    integer     :: k
@@ -195,4 +196,4 @@ subroutine prepare_secondary_pp(i, j, indexing, input_data, output_data)
 
    end if
 
-end subroutine prepare_secondary_pp
+end subroutine prepare_secondary

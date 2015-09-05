@@ -53,7 +53,7 @@ subroutine NC_DEF_VAR_NAME(ncid,dimids,name,varid,verbose,chunksizes, &
    else
       ierr = nf90_def_var(ncid, name, NC_DEF_VAR_NF90_TYPE, dimids, varid, &
          chunksizes=chunksizes, deflate_level=deflate_level2, shuffle=shuffle2)
-   endif
+   end if
    if (ierr .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_def_var(), ', trim(nc_error(ierr)), &
          ', name = ', name

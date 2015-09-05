@@ -35,15 +35,13 @@ module input_routines
 
    implicit none
 
-   integer, parameter :: ThermalBit = 1
-   integer, parameter :: SolarBit   = 0
-
 
    type counts_and_indexes
       integer          :: NViews
       integer          :: Ny
       integer          :: NSolar
       integer          :: NThermal
+      integer, pointer :: YSolar(:)
       integer, pointer :: Y_Id(:)
       integer, pointer :: Ch_Is(:)
       integer          :: Nx
@@ -71,14 +69,18 @@ module input_routines
 
       integer(kind=byte),  dimension(:,:),   pointer :: convergence
       integer(kind=byte),  dimension(:,:),   pointer :: niter
+
       integer(kind=byte),  dimension(:,:),   pointer :: phase
-      integer(kind=byte),  dimension(:,:),   pointer :: phase_post
 
       real(kind=sreal),    dimension(:,:),   pointer :: costja,costjm
 
       integer(kind=byte),  dimension(:,:),   pointer :: lsflag
+
+      character(len=512)                             :: qc_flag_meanings
       integer(kind=sint),  dimension(:,:),   pointer :: qcflag
+
       integer(kind=byte),  dimension(:,:),   pointer :: illum
+
       integer(kind=byte),  dimension(:,:),   pointer :: cldtype
       integer(kind=byte),  dimension(:,:),   pointer :: cldmask
       real(kind=sreal),    dimension(:,:),   pointer :: cccot,cccot_pre

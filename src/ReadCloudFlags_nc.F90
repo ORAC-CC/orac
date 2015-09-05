@@ -91,14 +91,14 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
 
    allocate(MSI_Data%Type(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cldtype(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
-   allocate(MSI_Data%cloudmask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
-   allocate(MSI_Data%cloudmask_error(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cldmask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
+   allocate(MSI_Data%cldmask_error(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
 !   call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, verbose)
-   call nc_read_array(ncid, "cldmask", MSI_Data%cloudmask, verbose)
-   call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cloudmask_error, verbose)
+   call nc_read_array(ncid, "cldmask", MSI_Data%cldmask, verbose)
+   call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cldmask_error, verbose)
    call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, verbose)
 
    ! Merge various particle type flags (once aerosol is in)
@@ -106,7 +106,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
 
    if (Ctrl%process_cloudy_only) then
       ! Invalidate clear-sky pixels to 0 to avoid their processing
-      where (MSI_Data%CloudMask .eq. 0)
+      where (MSI_Data%cldmask .eq. 0)
          MSI_Data%Type = byte_fill_value
       endwhere
    endif

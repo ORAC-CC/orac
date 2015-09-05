@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_input_dimensions_pp.F90
+! Name: read_input_dimensions.F90
 !
 ! Purpose:
 ! The file contains a collection of subroutines which define netcdf output for
@@ -25,7 +25,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_input_dimensions_pp(fname,xdim,ydim,verbose)
+subroutine read_input_dimensions(fname,xdim,ydim,verbose)
 
    use common_constants
    use netcdf
@@ -52,4 +52,4 @@ subroutine read_input_dimensions_pp(fname,xdim,ydim,verbose)
       stop error_stop_code
    end if
 
-end subroutine read_input_dimensions_pp
+end subroutine read_input_dimensions

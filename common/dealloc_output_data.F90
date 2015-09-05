@@ -43,25 +43,19 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_primary(output_data)
-
-   use ECP_Constants
+subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, do_dem)
 
    implicit none
 
    type(output_data_primary), intent(inout) :: output_data
+   logical,                    intent(in)   :: do_phase_pavolonis
+   logical,                    intent(in)   :: do_dem
 
    deallocate(output_data%vid_sol_zen)
    deallocate(output_data%vid_sat_zen)
    deallocate(output_data%vid_rel_azi)
 
    deallocate(output_data%vid_cloud_albedo)
-   deallocate(output_data%cloud_albedo)
-
-   deallocate(output_data%cloud_albedo_vmin)
-   deallocate(output_data%cloud_albedo_vmax)
-   deallocate(output_data%cloud_albedo_scale)
-   deallocate(output_data%cloud_albedo_offset)
 
    deallocate(output_data%time)
 
@@ -97,7 +91,9 @@ subroutine dealloc_output_data_primary(output_data)
    deallocate(output_data%niter)
 
    deallocate(output_data%phase)
-
+if (do_phase_pavolonis) then
+   deallocate(output_data%phase_pavolonis)
+end if
    deallocate(output_data%costja)
    deallocate(output_data%costjm)
 
@@ -111,8 +107,12 @@ subroutine dealloc_output_data_primary(output_data)
    deallocate(output_data%cldmask)
    deallocate(output_data%cccot_pre)
    deallocate(output_data%lusflag)
+if (do_dem) then
    deallocate(output_data%dem)
+end if
    deallocate(output_data%nisemask)
+
+   deallocate(output_data%cloud_albedo)
 
 end subroutine dealloc_output_data_primary
 
@@ -135,13 +135,11 @@ end subroutine dealloc_output_data_primary
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_secondary(output_data,lcovar)
-
-   use ECP_Constants
+subroutine dealloc_output_data_secondary(output_data, do_covariance)
 
    implicit none
 
-   logical,                     intent(in)    :: lcovar
+   logical,                     intent(in)    :: do_covariance
 
    type(output_data_secondary), intent(inout) :: output_data
 
@@ -189,7 +187,7 @@ subroutine dealloc_output_data_secondary(output_data,lcovar)
 
    deallocate(output_data%ds)
 
-   if (lcovar) then
+   if (do_covariance) then
       deallocate(output_data%vid_covariance)
       deallocate(output_data%covariance)
    end if

@@ -52,7 +52,6 @@ subroutine NC_WRITE_NAME_2D(ncid, name, varid, values, i1, start1, n1, &
 
    ierr = nf90_put_var(ncid, varid, values(i1:i1 + n1 - 1, i2:i2 + n2 - 1), &
                        start, counter, stride)
-
    if (ierr .ne. NF90_NOERR) then
       print *, 'ERROR: nf90_put_var(), ', trim(nc_error(ierr)), ' name = ', name
       stop error_stop_code

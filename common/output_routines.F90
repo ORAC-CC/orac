@@ -5,16 +5,16 @@
 ! Structure defintion for output_data and module for output routines.
 !
 ! History:
-! 2014/06/13, GM: Original version, output_data_*
-!    structures taken from SPixel module.
+! 2014/06/13, GM: Original version, output_data_* structures taken from SPixel
+!    module.
 ! 2014/09/16, GM: Added output_utils.F90.
-! 2014/10/24, OS: added variables cldtype, cloudmask,
-!    cccot_pre, lusflags, dem, and nisemask
+! 2014/10/24, OS: added variables cldtype, cloudmask, cccot_pre, lusflags, dem,
+!    and nisemask
 ! 2014/11/25, AP: Move scaling/offset definitions here.
 ! 2014/12/01, OS: new cldtype_vmax = 9
 ! 2014/12/01, CP: added cloud albedo
-! 2015/03/05, OS: added values to nisemask scale, offset, vmin,
-!    vmax; set cth_vmin to -0.01
+! 2015/03/05, OS: added values to nisemask scale, offset, vmin, vmax; set
+!    cth_vmin to -0.01
 ! 2015/03/19, OS: cth_vmin set to 0
 ! 2015/04/22, OS: cth_vmin set to -1000 m, i.e. -1 km
 ! 2015/07/03, OS: Added cldmask_error variables
@@ -29,7 +29,7 @@
 
 module output_routines
 
-   use ECP_Constants
+   use common_constants
 
    implicit none
 
@@ -38,26 +38,27 @@ module output_routines
       integer                       :: vid_time
       integer                       :: vid_lat, vid_lon
       integer,dimension(:), pointer :: vid_sol_zen, vid_sat_zen, vid_rel_azi
-      integer                       :: vid_cot, vid_coterror
-      integer                       :: vid_ref, vid_referror
-      integer                       :: vid_ctp, vid_ctperror
-      integer                       :: vid_cct, vid_ccterror
-      integer                       :: vid_stemp, vid_stemperror
-      integer                       :: vid_cth, vid_ctherror
-      integer                       :: vid_cth_corrected, vid_cth_correctederror
-      integer                       :: vid_ctt, vid_ctterror
-      integer                       :: vid_cwp, vid_cwperror
+      integer                       :: vid_cot, vid_cot_error
+      integer                       :: vid_ref, vid_ref_error
+      integer                       :: vid_ctp, vid_ctp_error
+      integer                       :: vid_cct, vid_cct_error
+      integer                       :: vid_stemp, vid_stemp_error
+      integer                       :: vid_cth, vid_cth_error
+      integer                       :: vid_cth_corrected, vid_cth_corrected_error
+      integer                       :: vid_ctt, vid_ctt_error
+      integer                       :: vid_cwp, vid_cwp_error
       integer,dimension(:), pointer :: vid_cloud_albedo
       integer                       :: vid_convergence
       integer                       :: vid_niter
       integer                       :: vid_phase
+      integer                       :: vid_phase_pavolonis
       integer                       :: vid_costja
       integer                       :: vid_costjm
       integer                       :: vid_lsflag
       integer                       :: vid_qcflag
       integer                       :: vid_illum
       integer                       :: vid_cldtype
-      integer                       :: vid_cldmask,vid_cldmaskerror
+      integer                       :: vid_cldmask,vid_cldmask_error
       integer                       :: vid_cccot_pre
       integer                       :: vid_lusflag
       integer                       :: vid_dem
@@ -127,13 +128,17 @@ module output_routines
       integer(kind=sint)            :: cct_error_vmin   = 0
       integer(kind=sint)            :: cct_error_vmax   = 10000
 
-!     real(kind=sreal)              :: albedo_scale,albedo_offset
-!     integer(kind=sint)            :: albedo_vmin,albedo_vmax
-!     real(kind=sreal)              :: albedo_error_scale,albedo_error_offset
-!     integer(kind=sint)            :: albedo_error_vmin,albedo_error_vmax
+!     real(kind=sreal)              :: albedo_scale
+!     real(kind=sreal)              :: albedo_offset
+!     integer(kind=sint)            :: albedo_vmin
+!     integer(kind=sint)            :: albedo_vmax
+!     real(kind=sreal)              :: albedo_error_scale
+!     real(kind=sreal)              :: albedo_error_offset
+!     integer(kind=sint)            :: albedo_error_vmin
+!     integer(kind=sint)            :: albedo_error_vmax
 
       real(kind=sreal)              :: stemp_scale        = 0.01
-      real(kind=sreal)              :: stemp_offset       = 100.0
+      real(kind=sreal)              :: stemp_offset       = 0.0
       integer(kind=sint)            :: stemp_vmin         = 0
       integer(kind=sint)            :: stemp_vmax         = 32000
       real(kind=sreal)              :: stemp_error_scale  = 0.01
@@ -151,7 +156,7 @@ module output_routines
       integer(kind=sint)            :: cth_error_vmax   = 2000
 
       real(kind=sreal)              :: ctt_scale        = 0.01
-      real(kind=sreal)              :: ctt_offset       = 100.0
+      real(kind=sreal)              :: ctt_offset       = 0.0
       integer(kind=sint)            :: ctt_vmin         = 0
       integer(kind=sint)            :: ctt_vmax         = 32000
       real                          :: ctt_error_scale  = 0.01
@@ -176,12 +181,17 @@ module output_routines
       integer(kind=byte)            :: niter_scale  = 1
       integer(kind=byte)            :: niter_offset = 0
       integer(kind=byte)            :: niter_vmin   = 0
-      integer(kind=byte)            :: niter_vmax   ! Assigned by ReadDriver
+      integer(kind=byte)            :: niter_vmax   = 100 ! Assigned by ReadDriver
 
       integer(kind=byte)            :: phase_scale  = 1
       integer(kind=byte)            :: phase_offset = 0
       integer(kind=byte)            :: phase_vmin   = 0
       integer(kind=byte)            :: phase_vmax   = 2
+
+      integer(kind=byte)            :: phase_pavolonis_scale
+      integer(kind=byte)            :: phase_pavolonis_offset
+      integer(kind=byte)            :: phase_pavolonis_vmin
+      integer(kind=byte)            :: phase_pavolonis_vmax
 
       real(kind=sreal)              :: costja_scale  = 1.0
       real(kind=sreal)              :: costja_offset = 0.0
@@ -218,10 +228,10 @@ module output_routines
       integer(kind=byte)            :: cldmask_vmin   = 0
       integer(kind=byte)            :: cldmask_vmax   = 1
 
-      real(kind=sreal)              :: cccot_pre_scale  = 1.0
+      real(kind=sreal)              :: cccot_pre_scale  = 0.001
       real(kind=sreal)              :: cccot_pre_offset = 0.0
-      real(kind=sreal)              :: cccot_pre_vmin   = -1.0
-      real(kind=sreal)              :: cccot_pre_vmax   = 2.0
+      integer(kind=sint)            :: cccot_pre_vmin   = -1000.0
+      integer(kind=sint)            :: cccot_pre_vmax   = 2000.0
 
       integer(kind=byte)            :: lusflag_scale  = 1
       integer(kind=byte)            :: lusflag_offset = 0
@@ -238,10 +248,10 @@ module output_routines
       integer(kind=byte)            :: nisemask_vmin   = 0
       integer(kind=byte)            :: nisemask_vmax   = 1
 
-      real(kind=sreal),   dimension(:), pointer :: cloud_albedo_scale
-      real(kind=sreal),   dimension(:), pointer :: cloud_albedo_offset
-      integer(kind=sint), dimension(:), pointer :: cloud_albedo_vmin
-      integer(kind=sint), dimension(:), pointer :: cloud_albedo_vmax
+      real(kind=sreal)              :: cloud_albedo_scale  = 0.0001
+      real(kind=sreal)              :: cloud_albedo_offset = 0.0
+      integer(kind=sint)            :: cloud_albedo_vmin   = 0
+      integer(kind=sint)            :: cloud_albedo_vmax   = 11000
 
       ! Arrays to store output fields
       real(kind=dreal),   dimension(:,:),   pointer :: time
@@ -290,6 +300,7 @@ module output_routines
       integer(kind=byte), dimension(:,:),   pointer :: niter
 
       integer(kind=byte), dimension(:,:),   pointer :: phase
+      integer(kind=byte), dimension(:,:),   pointer :: phase_pavolonis
 
       real(kind=sreal),   dimension(:,:),   pointer :: costja
 
@@ -307,7 +318,7 @@ module output_routines
 
       real(kind=sreal),   dimension(:,:),   pointer :: cldmask_error
 
-      real(kind=sreal),   dimension(:,:),   pointer :: cccot_pre
+      integer(kind=sint), dimension(:,:),   pointer :: cccot_pre
 
       integer(kind=byte), dimension(:,:),   pointer :: lusflag
 
@@ -415,90 +426,7 @@ contains
 #include "def_vars_primary.F90"
 #include "def_vars_secondary.F90"
 
-#include "prepare_primary.F90"
-#include "prepare_secondary.F90"
-
 #include "write_primary.F90"
 #include "write_secondary.F90"
-
-
-!-------------------------------------------------------------------------------
-! Name: string_description_of_state
-!
-! Purpose:
-! Given an index of the state vector, this returns a string describing that
-! element that a user can understand.
-!
-! Description and Algorithm details:
-! Many if statements. The expectation is that this function will be extended to
-! return multiple strings when ORAC needs to output elements from an unknown
-! state vector.
-!
-! Arguments:
-! Name   Type    In/Out/Both Description
-! ------------------------------------------------------------------------------
-! state  integer In          Index of state vector to consider
-! string string  Out         Descriptive string
-! status integer Out         (Return value) Non-zero value indicates the given
-!                            index was not known
-!
-! History:
-! 2015/07/31, AP: Original version.
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-function string_description_of_state(state, str) result(status)
-   implicit none
-
-   integer,          intent(in)  :: state
-   character(len=*), intent(out) :: str
-   integer                       :: status
-
-   integer                       :: i, j
-   character(len=6), parameter   :: rho_labels(MaxRho_XX) = &
-        ['RHO_OV', 'RHO_0D', 'RHO_DV', 'RHO_DD']
-   character(len=2)              :: temp_str
-
-   status = 0
-
-   if (state == ITau) then
-      str = 'COT'
-      return
-   else if (state == IRe) then
-      str = 'REF'
-      return
-   else if (state == IPc) then
-      str = 'CTP'
-      return
-   else if (state == IFr) then
-      str = 'CCT'
-      return
-   else if (state == ITs) then
-      str = 'STEMP'
-      return
-   end if
-
-!   do j = 1, MaxRho_XX
-!      do i = 1, MaxNumSolar
-!         if (state == IRs(i,j)) then
-!            write(temp_str, '(I2)') i
-!            str = rho_labels(j)//trim(adjustl(temp_str))
-!            return
-!         end if
-!      end do
-!   end do
-
-!   do i = 1, MaxNumViews
-!      if (state == ISP(i)) then
-!         write(temp_str, '(I2)') i
-!         str = 'P'//trim(adjustl(temp_str))
-!         return
-!      end if
-!   end do
-
-   status = 1
-
-end function string_description_of_state
 
 end module output_routines

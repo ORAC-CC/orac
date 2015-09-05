@@ -32,16 +32,17 @@ subroutine def_vars_secondary_pp(ncid, indexing, dims_var, output_data, &
    use input_routines
    use netcdf
    use orac_ncdf
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   integer,                        intent(in)    :: ncid
-   type(counts_and_indexes),       intent(in)    :: indexing
-   integer,                        intent(in)    :: dims_var(2)
-   type(output_data_secondary_pp), intent(inout) :: output_data
-   type(global_attributes_s),      intent(in)    :: global_atts
-   logical,                        intent(in)    :: verbose
+   integer,                     intent(in)    :: ncid
+   type(counts_and_indexes),    intent(in)    :: indexing
+   integer,                     intent(in)    :: dims_var(2)
+   type(output_data_secondary), intent(inout) :: output_data
+   type(global_attributes_s),   intent(in)    :: global_atts
+   logical,                     intent(in)    :: verbose
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy

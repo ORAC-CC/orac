@@ -35,7 +35,7 @@
 ! 2014/06/13, GM: Cleaned up the code.
 ! 2014/08/31, GM: Update to use general routines in the current module.
 ! 2014/09/17, GM: Fixed handling of missing values in some cases.
-! 2014/10/24, OS: Added variables cldtype, cloudmask, cccot_pre, lusflags,
+! 2014/10/24, OS: Added variables cldtype, cldmask, cccot_pre, lusflags,
 !    dem, and nisemask.
 ! 2014/11/15, CP: Added cloud albedo.
 ! 2014/11/25, AP: Fixed bug in writing cth|ctt_uncertainty.
@@ -44,7 +44,7 @@
 ! 2015/03/19, OS: CTH now .ge. 0
 ! 2015/03/19, OS: undid previous change in file; CTH is allowed to be negative
 !    again
-! 2015/07/03, OS: Added cloudmask_error data
+! 2015/07/03, OS: Added cldmask_error data
 ! 2015/07/04, CP: Added corrected cth
 ! 2015/07/31, AP: Remove convergence argument.
 !
@@ -61,6 +61,7 @@ subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
    use Data_def
    use Diag_def
    use orac_ncdf
+   use output_routines
    use RTM_Pc_def
    use SPixel_def
 
@@ -207,7 +208,7 @@ subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
       temp_real = sqrt(SPixel%Sn(IFr,IFr))
    end if
 
-   temp_real=MSI_Data%cloudmask_error(SPixel%Loc%X0, SPixel%Loc%Y0)
+   temp_real=MSI_Data%cldmask_error(SPixel%Loc%X0, SPixel%Loc%Y0)
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
            output_data%cct_error_scale, output_data%cct_error_offset, &
@@ -444,19 +445,19 @@ subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
-   output_data%cldmask(i,j)=int(MSI_Data%cloudmask(SPixel%Loc%X0, SPixel%Loc&
+   output_data%cldmask(i,j)=int(MSI_Data%cldmask(SPixel%Loc%X0, SPixel%Loc&
         %Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! cccot_pre
    !----------------------------------------------------------------------------
    temp_real=MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%Y0)
-   call prepare_float_packed_float( &
+   call prepare_short_packed_float( &
            temp_real, output_data%cccot_pre(i,j), &
            output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
-           sreal_fill_value, sreal_fill_value, &
+           sreal_fill_value, sint_fill_value, &
            output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
-           sreal_fill_value)
+           sint_fill_value)
 
    !----------------------------------------------------------------------------
    ! lusflag
@@ -484,9 +485,9 @@ subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
       dummyreal=Diag%cloud_albedo(k)
       call prepare_short_packed_float( &
            dummyreal, output_data%cloud_albedo(i,j,kk), &
-           output_data%cloud_albedo_scale(kk), output_data%cloud_albedo_offset(kk), &
+           output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
            sreal_fill_value, sint_fill_value, &
-           output_data%cloud_albedo_vmin(kk), output_data%cloud_albedo_vmax(kk), &
+           output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
            sint_fill_value)
    end do
 

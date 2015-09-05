@@ -36,11 +36,12 @@
 subroutine dealloc_output_data_primary_pp(output_data)
 
    use common_constants
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   type(output_data_primary_pp), intent(inout) :: output_data
+   type(output_data_primary), intent(inout) :: output_data
 
    deallocate(output_data%vid_sol_zen)
    deallocate(output_data%vid_sat_zen)
@@ -83,8 +84,8 @@ subroutine dealloc_output_data_primary_pp(output_data)
    deallocate(output_data%illum)
    deallocate(output_data%cldtype)
    deallocate(output_data%cldmask)
-   deallocate(output_data%cccot)
    deallocate(output_data%cccot_pre)
+   deallocate(output_data%cccot)
    deallocate(output_data%lusflag)
 !  deallocate(output_data%dem)
    deallocate(output_data%nisemask)
@@ -95,11 +96,12 @@ end subroutine dealloc_output_data_primary_pp
 subroutine dealloc_output_data_secondary_pp(output_data)
 
    use common_constants
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   type(output_data_secondary_pp), intent(inout) :: output_data
+   type(output_data_secondary), intent(inout) :: output_data
 
    logical :: lcovar = .false.
 

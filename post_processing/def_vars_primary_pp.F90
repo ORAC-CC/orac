@@ -53,16 +53,17 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
    use input_routines
    use netcdf
    use orac_ncdf
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   integer,                      intent(in)    :: ncid
-   type(counts_and_indexes),     intent(in)    :: indexing
-   integer,                      intent(in)    :: dims_var(2)
-   type(output_data_primary_pp), intent(inout) :: output_data
-   type(global_attributes_s),    intent(in)    :: global_atts
-   logical,                      intent(in)    :: verbose
+   integer,                   intent(in)    :: ncid
+   type(counts_and_indexes),  intent(in)    :: indexing
+   integer,                   intent(in)    :: dims_var(2)
+   type(output_data_primary), intent(inout) :: output_data
+   type(global_attributes_s), intent(in)    :: global_atts
+   logical,                   intent(in)    :: verbose
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -646,7 +647,7 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! phase
+   ! phase_pavolonis
    !----------------------------------------------------------------------------
    call nc_def_var_byte_packed_byte( &
            ncid, &
@@ -748,7 +749,7 @@ subroutine def_vars_primary_pp(ncid, indexing, dims_var, output_data, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
            flag_masks    = '1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s', &
-           flag_meanings = trim(adjustl(input_dummy2)), &
+           flag_meanings = trim(adjustl(input_dummy)), &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 

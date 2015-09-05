@@ -57,27 +57,33 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
-
-   use CTRL_def
-   use orac_ncdf
-   use SPixel_def
+subroutine def_vars_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar, Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, Xmax, Ymax, verbose, do_covariance)
 
    use netcdf
+   use orac_ncdf
 
    implicit none
 
-   type(CTRL_t),                intent(in)    :: Ctrl
-   logical,                     intent(in)    :: lcovar
    integer,                     intent(in)    :: ncid
    integer,                     intent(in)    :: dims_var(:)
    type(output_data_secondary), intent(inout) :: output_data
+   integer,                     intent(in)    :: Ny
+   integer,                     intent(in)    :: NSolar
+   integer,                     intent(in)    :: YSolar(:)
+   integer,                     intent(in)    :: Y_Id(:)
+   integer,                     intent(in)    :: Ch_Is(:)
+   integer,                     intent(in)    :: ThermalBit
+   integer,                     intent(in)    :: deflate_level
+   logical,                     intent(in)    :: shuffle_flag
+   integer,                     intent(in)    :: Xmax
+   integer,                     intent(in)    :: Ymax
+   logical,                     intent(in)    :: verbose
+   logical,                     intent(in)    :: do_covariance
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
    integer            :: i
-   logical            :: verbose = .false.
 
 
    !----------------------------------------------------------------------------
@@ -95,7 +101,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    output_data%scanline_u_scale=1
    output_data%scanline_u_offset=0
    output_data%scanline_u_vmin=1
-   output_data%scanline_u_vmax=Ctrl%Ind%Xmax
+   output_data%scanline_u_vmax=Xmax
 
    call nc_def_var_long_packed_long( &
            ncid, &
@@ -119,7 +125,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    output_data%scanline_v_scale=1
    output_data%scanline_v_offset=0
    output_data%scanline_v_vmin=1
-   output_data%scanline_v_vmax=Ctrl%Ind%Ymax
+   output_data%scanline_v_vmax=Ymax
 
    call nc_def_var_long_packed_long( &
            ncid, &
@@ -338,9 +344,9 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ctrl%Ind%NSolar
+   do i=1,NSolar
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%YSolar(i))
+      write(input_num,"(i4)") Y_Id(YSolar(i))
 
       output_data%albedo_scale(i)=0.0001
       output_data%albedo_offset(i)=0.0
@@ -370,11 +376,11 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ctrl%Ind%Ny
+   do i=1,Ny
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+      write(input_num,"(i4)") Y_Id(i)
 
-      if (.not. btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
+      if (.not. btest(Ch_Is(i), ThermalBit)) then
          output_data%channels_scale(i)=0.0001
          output_data%channels_offset(i)=0.0
          output_data%channels_vmin(i)=0
@@ -430,11 +436,11 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! firstguess reflectance and brightness temperature _in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ctrl%Ind%Ny
+   do i=1,Ny
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+      write(input_num,"(i4)") Y_Id(i)
 
-      if (.not. btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
+      if (.not. btest(Ch_Is(i), ThermalBit)) then
          output_data%y0_scale(i)=0.0001
          output_data%y0_offset(i)=0.0
          output_data%y0_vmin(i)=0
@@ -490,11 +496,11 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! reflectances and brightness temperature _residual_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ctrl%Ind%Ny
+   do i=1,Ny
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(i)
+      write(input_num,"(i4)") Y_Id(i)
 
-      if (.not. btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) then
+      if (.not. btest(Ch_Is(i), ThermalBit)) then
          output_data%residuals_scale(i)=0.0001
          output_data%residuals_offset(i)=0.0
          output_data%residuals_vmin(i)=-10000
@@ -574,7 +580,7 @@ subroutine def_vars_secondary(Ctrl, lcovar, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! covariance_matrix_element_*
    !----------------------------------------------------------------------------
-   if (lcovar) then
+   if (do_covariance) then
 
    end if
 

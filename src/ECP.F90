@@ -132,8 +132,8 @@
 ! 2012/08/22, MJ: includes time in MSI structure and writes it to primary
 !    netcdf file
 ! 2012/08/22, MJ: makes adaptions to read netcdf files, start and end indices
-!    of area to be processed determined by preprocessing file contents and
-!    not hardwired any more.
+!    of area to be processed determined by preprocessing file contents and not
+!    hardwired any more.
 ! 2012/08/27, MJ: better implements time variable in output.
 ! 2012/11/01, MJ: implements OpenMP parallelization of along-track loop.
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt & cth
@@ -146,16 +146,15 @@
 !    should just be 'private', i.e. they do not need to enter the parallel
 !    loop initialised. Finally status_line was not needed. Status is private
 !    within the loop.
-! 2014/02/10, MJ: Put the correct boundaries lat/lon for adaptive
-!    processing back in.
-! 2014/06/04, MJ: Introduced "WRAPPER" for c-preprocessor and
-!    associated variables.
-! 2014/06/12, GM: OpenMP functions should be declared by the
-!    omp_lib module, not explicitly.
-! 2014/06/13, GM: Put NetCDF output related includes into
-!    subroutines.
-! 2014/06/15, GM: Set CTH and CTT values to missing in the case
-!    when a retrieval is not possible.
+! 2014/02/10, MJ: Put the correct boundaries lat/lon for adaptive processing
+!    back in.
+! 2014/06/04, MJ: Introduced "WRAPPER" for c-preprocessor and associated
+!    variables.
+! 2014/06/12, GM: OpenMP functions should be declared by the omp_lib module, not
+!    explicitly.
+! 2014/06/13, GM: Put NetCDF output related includes into subroutines.
+! 2014/06/15, GM: Set CTH and CTT values to missing in the case when a retrieval
+!    is not possible.
 ! 2014/08/18, AP: Updating to preprocessor's NCDF routines.
 ! 2014/12/01, CP: added new global and source attributes
 ! 2014/12/19, AP: YSolar and YThermal now contain the index of solar/thermal
@@ -189,6 +188,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use omp_lib
    use orac_ncdf
    use output_routines
+   use prepare_output
    use read_driver_m
    use Read_SAD_def
    use read_utils
@@ -216,14 +216,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    type(SPixel_t)            :: SPixel
 
    integer             :: i, j, jj, m
-   integer             :: ios        ! I/O status value from file operations
-   integer             :: status     ! Status value returned from subroutines
-   logical             :: verbose    ! Verbose print-out flag
+   integer             :: status  ! Status value returned from subroutines
+   logical             :: verbose ! Verbose print-out flag
 
    integer             :: ixstart,ixstop,xstep
-                                     ! First and last super-pixel X locations
+                                  ! First and last super-pixel X locations
    integer             :: iystart,iystop,ystep
-                                     ! First and last super-pixel Y locations
+                                  ! First and last super-pixel Y locations
 
    integer             :: TotPix   = 0   ! Total number of SPixels processed
    integer             :: TotMissed= 0   ! Number of SPixels left unprocessed
@@ -233,11 +232,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                          ! retrieval
    real                :: AvJ      = 0.0 ! Average cost per successful retrieval
 
+   character(len=512)  :: qc_flag_meanings
+
    ! netcdf related variables:
    integer :: ncid_primary,ncid_secondary,dims_var(2)
 
    ! Write full covariance matrix to secondary output file, so far hardwired
-   logical :: lcovar = .FALSE.
+   logical :: write_covariance = .false.
 
    ! Additional types for the scanline output for netcdf are defined
    type(output_data_primary)   :: output_data_1
@@ -262,6 +263,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    real(kind=dreal)   :: cpu_secs,real_secs
 #endif
 #ifdef BKP
+   integer            :: ios
    integer            :: bkp_lun ! Unit number for breakpoint file
 #endif
 #ifdef USE_ADAPTIVE_PROCESSING
@@ -274,7 +276,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    character(len=FilenameLen) :: drifile
    integer :: mytask,ntasks,lower_bound,upper_bound
 #endif
-   !include "sigtrap.F90"
+!  include "sigtrap.F90"
 
 #ifdef USE_TIMING
    ! Initialize timing
@@ -433,15 +435,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
      iystop-iystart+1, dims_var, 2, global_atts, source_atts)
 
    ! Allocate output arrays
-   call alloc_output_data_primary(ixstart,ixstop,iystart,iystop, &
-                                  Ctrl%Ind%NViews,Ctrl%Ind%Ny, output_data_1)
-   call alloc_output_data_secondary(ixstart,ixstop,iystart,iystop, &
-                                    Ctrl%Ind%Ny,MaxStateVar,lcovar, &
-                                    output_data_2)
+   call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, Ctrl%Ind%NViews, Ctrl%Ind%Ny, output_data_1, .false., .true.)
+   call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ctrl%Ind%Ny, MaxStateVar, output_data_2, write_covariance)
+
    ! Create NetCDF files and variables
-   call def_vars_primary(Ctrl, ncid_primary, dims_var, output_data_1)
-   call def_vars_secondary(Ctrl, lcovar, ncid_secondary, dims_var, &
-                           output_data_2)
+   call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
+   call def_vars_primary(ncid_primary, dims_var, output_data_1, Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, .false., .false., .true., .false., .true.)
+   call def_vars_secondary(ncid_secondary, dims_var, output_data_2, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, .false., write_covariance)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
    i = ixstart
@@ -576,7 +576,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          call prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
                               Diag, output_data_1)
 
-         call prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
+         call prepare_secondary(Ctrl, write_covariance, i, j, MSI_Data, SPixel, Diag, &
                                 output_data_2)
 
       end do ! End of super-pixel X loop
@@ -603,10 +603,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Write output from spixel_scan_out structures NetCDF files
-   call write_primary(Ctrl, ncid_primary, ixstart, ixstop, iystart, iystop, &
-                      output_data_1)
-   call write_secondary(Ctrl, lcovar, SPixel, ncid_secondary, ixstart, ixstop, &
-                        iystart, iystop, output_data_2)
+   call write_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%Y_Id, .false., .true., .false., .true.)
+   call write_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Nx(IDay), Ctrl%Ind%Y_Id, write_covariance)
 
    TotPix    = sum(totpix_line)
    Totmissed = sum(totmissed_line)
@@ -651,8 +649,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    call Dealloc_Data(Ctrl, MSI_Data)
 
-   call dealloc_output_data_primary(output_data_1)
-   call dealloc_output_data_secondary(output_data_2,lcovar)
+   call dealloc_output_data_primary(output_data_1, .false., .true.)
+   call dealloc_output_data_secondary(output_data_2, write_covariance)
 
    call Dealloc_Ctrl(Ctrl)
 

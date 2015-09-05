@@ -39,14 +39,15 @@ subroutine alloc_output_data_primary_pp(ixstart,ixstop,iystart,iystop,indexing, 
 
    use common_constants
    use input_routines
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   integer(kind=lint),           intent(in)    :: ixstart, ixstop, &
-                                                  iystart, iystop
-   type(counts_and_indexes),     intent(in)    :: indexing
-   type(output_data_primary_pp), intent(inout) :: output_data
+   integer(kind=lint),        intent(in)    :: ixstart, ixstop, &
+                                               iystart, iystop
+   type(counts_and_indexes),  intent(in)    :: indexing
+   type(output_data_primary), intent(inout) :: output_data
 
    allocate(output_data%vid_sol_zen(indexing%NViews))
    output_data%vid_sol_zen=0
@@ -68,12 +69,12 @@ subroutine alloc_output_data_primary_pp(ixstart,ixstop,iystart,iystop,indexing, 
    allocate(output_data%lon(ixstart:ixstop,iystart:iystop))
    output_data%lon(ixstart:ixstop,iystart:iystop)=sreal_fill_value
 
-   allocate(output_data%sol_zen(ixstart:ixstop,iystart:iystop))
-   output_data%sol_zen(ixstart:ixstop,iystart:iystop)=sreal_fill_value
-   allocate(output_data%sat_zen(ixstart:ixstop,iystart:iystop))
-   output_data%sat_zen(ixstart:ixstop,iystart:iystop)=sreal_fill_value
-   allocate(output_data%rel_azi(ixstart:ixstop,iystart:iystop))
-   output_data%rel_azi(ixstart:ixstop,iystart:iystop)=sreal_fill_value
+   allocate(output_data%sol_zen(ixstart:ixstop,iystart:iystop,indexing%NViews))
+   output_data%sol_zen(ixstart:ixstop,iystart:iystop,indexing%NViews)=sreal_fill_value
+   allocate(output_data%sat_zen(ixstart:ixstop,iystart:iystop,indexing%NViews))
+   output_data%sat_zen(ixstart:ixstop,iystart:iystop,indexing%NViews)=sreal_fill_value
+   allocate(output_data%rel_azi(ixstart:ixstop,iystart:iystop,indexing%NViews))
+   output_data%rel_azi(ixstart:ixstop,iystart:iystop,indexing%NViews)=sreal_fill_value
 
    allocate(output_data%cot(ixstart:ixstop,iystart:iystop))
    output_data%cot(ixstart:ixstop,iystart:iystop)=sint_fill_value
@@ -156,10 +157,10 @@ subroutine alloc_output_data_primary_pp(ixstart,ixstop,iystart,iystop,indexing, 
    allocate(output_data%cldmask(ixstart:ixstop,iystart:iystop))
    output_data%cldmask(ixstart:ixstop,iystart:iystop)=byte_fill_value
 
-   allocate(output_data%cccot(ixstart:ixstop,iystart:iystop))
-   output_data%cccot(ixstart:ixstop,iystart:iystop)=sint_fill_value
    allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
    output_data%cccot_pre(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   allocate(output_data%cccot(ixstart:ixstop,iystart:iystop))
+   output_data%cccot(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
    allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
    output_data%lusflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
@@ -178,14 +179,15 @@ subroutine alloc_output_data_secondary_pp(ixstart,ixstop,iystart,iystop,indexing
 
    use common_constants
    use input_routines
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   integer(kind=lint),             intent(in)    :: ixstart, ixstop, &
-                                                    iystart, iystop
-   type(counts_and_indexes),       intent(in)    :: indexing
-   type(output_data_secondary_pp), intent(inout) :: output_data
+   integer(kind=lint),          intent(in)    :: ixstart, ixstop, &
+                                                 iystart, iystop
+   type(counts_and_indexes),    intent(in)    :: indexing
+   type(output_data_secondary), intent(inout) :: output_data
 
    logical :: lcovar = .false.
 

@@ -62,20 +62,32 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
-
-   use CTRL_def
-   use orac_ncdf
-   use SPixel_def
+subroutine def_vars_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cloudmask_pre, do_dem)
 
    use netcdf
+   use orac_ncdf
 
    implicit none
 
-   type(CTRL_t),              intent(in)    :: Ctrl
-   integer,                   intent(in)    :: ncid
-   integer,                   intent(in)    :: dims_var(:)
-   type(output_data_primary), intent(inout) :: output_data
+   integer,                    intent(in)    :: ncid
+   integer,                    intent(in)    :: dims_var(:)
+   type(output_data_primary),  intent(inout) :: output_data
+   character(len=*),           intent(in)    :: inst_name
+   integer,                    intent(in)    :: NViews
+   integer,                    intent(in)    :: Ny
+   integer,                    intent(in)    :: NSolar
+   integer,                    intent(in)    :: YSolar(:)
+   integer,                    intent(in)    :: Y_Id(:)
+   integer,                    intent(in)    :: Ch_Is(:)
+   integer,                    intent(in)    :: MaxIter
+   character(len=*),           intent(in)    :: qc_flag_meanings
+   integer,                    intent(in)    :: deflate_level
+   logical,                    intent(in)    :: shuffle_flag
+   logical,                    intent(in)    :: verbose
+   logical,                    intent(in)    :: do_phase_pavolonis
+   logical,                    intent(in)    :: do_cldmask
+   logical,                    intent(in)    :: do_cloudmask_pre
+   logical,                    intent(in)    :: do_dem
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -83,9 +95,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    character(len=512) :: input_dummy3
    integer            :: i
    integer            :: i_view
-   logical            :: verbose = .false.
-   character(len=2)   :: temp_str
-   character(len=8)   :: state_label
 
 
    !----------------------------------------------------------------------------
@@ -100,7 +109,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   if (Ctrl%InstName(1:5) .eq. 'AATSR') then
+   if (inst_name(1:5) .eq. 'AATSR') then
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
@@ -166,7 +175,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! Loop over view angles
    !----------------------------------------------------------------------------
-   do i_view=1,Ctrl%Ind%NViews
+   do i_view=1,NViews
 
       write(input_num,"(i4)") i_view
 
@@ -270,7 +279,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'cot_uncertainty', &
-           output_data%vid_coterror, &
+           output_data%vid_cot_error, &
            verbose, &
            long_name     = 'cloud optical thickness uncertainty', &
            standard_name = 'atmosphere_optical_thickness_due_to_cloud uncertainty', &
@@ -309,7 +318,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'ref_uncertainty', &
-           output_data%vid_referror, &
+           output_data%vid_ref_error, &
            verbose, &
            long_name     = 'effective radius uncertainty', &
            standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top uncertainty', &
@@ -349,7 +358,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'ctp_uncertainty', &
-           output_data%vid_ctperror, &
+           output_data%vid_ctp_error, &
            verbose, &
            long_name     = 'cloud top pressure uncertainty', &
            standard_name = 'air_pressure_at_cloud_top uncertainty', &
@@ -388,7 +397,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'cc_total_uncertainty', &
-           output_data%vid_ccterror, &
+           output_data%vid_cct_error, &
            verbose, &
            long_name     = 'cloud fraction uncertainty', &
            standard_name = 'cloud_area_fraction uncertainty', &
@@ -427,7 +436,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'stemp_uncertainty', &
-           output_data%vid_stemperror, &
+           output_data%vid_stemp_error, &
            verbose, &
            long_name     = 'surface temperature uncertainty', &
            standard_name = 'surface_temperature uncertainty', &
@@ -467,7 +476,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'cth_uncertainty', &
-           output_data%vid_ctherror, &
+           output_data%vid_cth_error, &
            verbose, &
            long_name     = 'cloud top height uncertainty', &
            standard_name = 'cloud_top_altitude uncertainty', &
@@ -507,7 +516,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'cth_corrected_uncertainty', &
-           output_data%vid_cth_correctederror, &
+           output_data%vid_cth_corrected_error, &
            verbose, &
            long_name     = 'corrected cloud top height uncertainty', &
            standard_name = 'corrected cloud_top_altitude uncertainty', &
@@ -547,7 +556,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'ctt_uncertainty', &
-           output_data%vid_ctterror, &
+           output_data%vid_ctt_error, &
            verbose, &
            long_name     = 'cloud top temperature uncertainty', &
            standard_name = 'air_temperature_at_cloud_top uncertainty', &
@@ -587,7 +596,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            ncid, &
            dims_var, &
            'cwp_uncertainty', &
-           output_data%vid_cwperror, &
+           output_data%vid_cwp_error, &
            verbose, &
            long_name     = 'cloud liquid water path uncertainty', &
            standard_name = 'atmosphere_mass_content_of_cloud_liquid_water uncertainty', &
@@ -624,7 +633,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! niter
    !----------------------------------------------------------------------------
-   output_data%niter_vmax=Ctrl%Invpar%MaxIter
+   output_data%niter_vmax=MaxIter
 
    call nc_def_var_byte_packed_byte( &
            ncid, &
@@ -652,7 +661,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            output_data%vid_phase, &
            verbose, &
            long_name     = 'cloud phase flag', &
-           standard_name = 'cloud_phase_flag', &
+           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%phase_scale, &
            add_offset    = output_data%phase_offset, &
@@ -663,6 +672,28 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
+   !----------------------------------------------------------------------------
+   ! phase_pavolonis
+   !----------------------------------------------------------------------------
+if (do_phase_pavolonis) then
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'phase_pavolonis', &
+           output_data%vid_phase_pavolonis, &
+           verbose, &
+           long_name     = 'cloud phase flag Pavolonis', &
+           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%phase_pavolonis_scale, &
+           add_offset    = output_data%phase_pavolonis_offset, &
+           valid_min     = output_data%phase_pavolonis_vmin, &
+           valid_max     = output_data%phase_pavolonis_vmax, &
+           flag_values   = '0b, 1b, 2b', &
+           flag_meanings = 'clear/unknown, liquid, ice', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
    !----------------------------------------------------------------------------
    ! costja
    !----------------------------------------------------------------------------
@@ -725,18 +756,6 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   write(temp_str, '(I2)') Ctrl%Nx(IDay)
-   input_dummy='Bit 0 set to 1 if cost too large, ' // &
-               'Bits 1-' // trim(adjustl(temp_str)) // &
-                       ' set to 1 if state variable error out of bounds, ('
-   do i = 1, Ctrl%Nx(IDay)
-      write(temp_str, '(I2)') i
-      if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
-           input_dummy=trim(input_dummy) // ' Bit ' // &
-                       trim(adjustl(temp_str)) // '=' // trim(state_label)
-   end do
-   input_dummy=trim(input_dummy) // ').'
-
    call nc_def_var_short_packed_short( &
            ncid, &
            dims_var, &
@@ -750,8 +769,8 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-           flag_values   = '1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s', &
-           flag_meanings = trim(adjustl(input_dummy)), &
+           flag_masks    = '1s, 2s, ... 2^(n state variables plus one)', &
+           flag_meanings = trim(adjustl(qc_flag_meanings)), &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -777,7 +796,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! cloud type (ie. Pavolonis phase)
+   ! cldtype (ie. Pavolonis phase)
    !----------------------------------------------------------------------------
    input_dummy='clear, ' // &
                'N/A, ' // &
@@ -809,8 +828,9 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! cloud mask
+   ! cldmask
    !----------------------------------------------------------------------------
+if (do_cldmask) then
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -828,11 +848,33 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            flag_meanings = 'clear, cloudy', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
-
+end if
    !----------------------------------------------------------------------------
-   ! CCCOT_pre (cloud optical thickness)
+   ! cloudmask_pre
    !----------------------------------------------------------------------------
-   call nc_def_var_float_packed_float( &
+if (do_cloudmask_pre) then
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'cloudmask_pre', &
+           output_data%vid_cldmask, &
+           verbose, &
+           long_name     = 'Neural net cloud mask (radiance based)', &
+           standard_name = 'Neural_net_cloud_mask', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%cldmask_scale, &
+           add_offset    = output_data%cldmask_offset, &
+           valid_min     = output_data%cldmask_vmin, &
+           valid_max     = output_data%cldmask_vmax, &
+           flag_values   = '0b, 1b', &
+           flag_meanings = 'clear, cloudy', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+   !----------------------------------------------------------------------------
+   ! cccot_pre (cloud optical thickness)
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
            'cccot_pre', &
@@ -840,7 +882,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            verbose, &
            long_name     = 'neural network cloud optical thickness', &
            standard_name = 'NN_CCCOT', &
-           fill_value    = sreal_fill_value, &
+           fill_value    = sint_fill_value, &
            scale_factor  = output_data%cccot_pre_scale, &
            add_offset    = output_data%cccot_pre_offset, &
            valid_min     = output_data%cccot_pre_vmin, &
@@ -896,8 +938,9 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! DEM
+   ! dem
    !----------------------------------------------------------------------------
+if (do_dem) then
    call nc_def_var_short_packed_short( &
            ncid, &
            dims_var, &
@@ -913,7 +956,7 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            valid_max     = output_data%dem_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
-
+end if
    !----------------------------------------------------------------------------
    ! nise mask
    !----------------------------------------------------------------------------
@@ -938,14 +981,9 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
    !----------------------------------------------------------------------------
    ! cloud_albedo_in_channel_no_*
    !----------------------------------------------------------------------------
-   do i=1,Ctrl%Ind%NSolar
+   do i=1,NSolar
 
-      write(input_num,"(i4)") Ctrl%Ind%Y_Id(Ctrl%Ind%YSolar(i))
-
-      output_data%cloud_albedo_scale(i)=0.0001
-      output_data%cloud_albedo_offset(i)=0.0
-      output_data%cloud_albedo_vmin(i)=0
-      output_data%cloud_albedo_vmax(i)=11000
+      write(input_num,"(i4)") Y_Id(YSolar(i))
 
       input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
       input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
@@ -959,10 +997,10 @@ subroutine def_vars_primary(Ctrl, ncid, dims_var, output_data)
            long_name     = trim(adjustl(input_dummy)), &
            standard_name = trim(adjustl(input_dummy2)), &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cloud_albedo_scale(i), &
-           add_offset    = output_data%cloud_albedo_offset(i), &
-           valid_min     = output_data%cloud_albedo_vmin(i), &
-           valid_max     = output_data%cloud_albedo_vmax(i), &
+           scale_factor  = output_data%cloud_albedo_scale, &
+           add_offset    = output_data%cloud_albedo_offset, &
+           valid_min     = output_data%cloud_albedo_vmin, &
+           valid_max     = output_data%cloud_albedo_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
    end do

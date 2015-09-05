@@ -48,6 +48,7 @@ subroutine prepare_secondary(Ctrl, lcovar, i, j, MSI_Data, SPixel, Diag, &
    use Data_def
    use Diag_def
    use orac_ncdf
+   use output_routines
    use SPixel_def
 
    implicit none

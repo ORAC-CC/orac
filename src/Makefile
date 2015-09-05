@@ -220,9 +220,9 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/InterpolRoutines.o \
            $(OBJS)/IntLUTRoutines.o \
            $(OBJS)/Inversion.o \
-           $(OBJS)/output_routines.o \
            $(OBJS)/parse_user.o \
            $(OBJS)/planck.o \
+           $(OBJS)/prepare_output.o \
            $(OBJS)/read_utils.o \
            $(OBJS)/ReadDriver.o \
            $(OBJS)/ReadSAD.o \

@@ -26,16 +26,17 @@ subroutine write_secondary_pp(ncid, ixstart, ixstop, iystart, iystop, indexing, 
    use global_attributes
    use input_routines
    use orac_ncdf
+   use output_routines
    use postproc_constants
 
    implicit none
 
-   integer,                        intent(in) :: ncid
-   integer,                        intent(in) :: ixstart, ixstop, &
-                                                 iystart, iystop
-   type(counts_and_indexes),       intent(in) :: indexing
-   type(output_data_secondary_pp), intent(in) :: output_data
-   type(global_attributes_s),      intent(in) :: global_atts
+   integer,                     intent(in) :: ncid
+   integer,                     intent(in) :: ixstart, ixstop, &
+                                              iystart, iystop
+   type(counts_and_indexes),    intent(in) :: indexing
+   type(output_data_secondary), intent(in) :: output_data
+   type(global_attributes_s),   intent(in) :: global_atts
 
    character(len=32)  :: input_num,input_num1,input_num2
    character(len=512) :: input_dummy

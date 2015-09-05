@@ -35,6 +35,9 @@ module postproc_constants
 
    implicit none
 
+   integer, parameter :: SolarBit=0
+   integer, parameter :: ThermalBit=1
+
    real(kind=sreal), parameter :: dither=1.0E-5
 
    ! NetCDF deflate level

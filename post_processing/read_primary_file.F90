@@ -52,6 +52,8 @@ subroutine read_primary_file_common(ncid,input_data,xdim,ydim,indexing, &
    logical,                   intent(in)    :: verbose
 
    integer            :: i
+   integer            :: ierr
+   integer            :: varid
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
 
@@ -88,12 +90,24 @@ subroutine read_primary_file_common(ncid,input_data,xdim,ydim,indexing, &
          write(input_num,"(i4)") indexing%Y_Id(i)
          input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
          call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo(:,:,i), verbose)
-      endif
+      end if
    end do
 
    call nc_read_array(ncid, "costja", input_data%costja, verbose)
    call nc_read_array(ncid, "costjm", input_data%costjm, verbose)
 
+   ierr = nf90_inq_varid(ncid, "qcflag", varid)
+   if (ierr.ne.NF90_NOERR) then
+      print*,'ERROR: nc_read_file(): Could not locate variable ',trim("qcflag")
+      print*,trim(nc_error(ierr))
+      stop error_stop_code
+   end if
+   ierr = nf90_get_att(ncid, varid, 'flag_meanings', input_data%qc_flag_meanings)
+   if (ierr.ne.NF90_NOERR) then
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nc_error(ierr)), &
+          ', variable: qcflag, name: flag_meanings'
+      stop error_stop_code
+   end if
    call nc_read_array(ncid, "qcflag", input_data%qcflag, verbose)
    where(input_data%qcflag .eq. sint_fill_value) input_data%qcflag = -1
 
@@ -148,7 +162,7 @@ subroutine read_primary_file_all(fname,input_data,xdim,ydim,indexing, &
 
    call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose)
 
-   call nc_read_array(ncid, "cccot_pre", input_data%cccot_pre, verbose)
+   call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose)
 
    call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose)
 
