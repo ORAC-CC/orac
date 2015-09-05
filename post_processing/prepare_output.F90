@@ -33,7 +33,8 @@ module prepare_output
 
 contains
 
-#include "prepare_primary_pp.F90"
-#include "prepare_secondary_pp.F90"
+#include "prepare_primary.F90"
+#include "prepare_secondary.F90"
 
 end module prepare_output
+
