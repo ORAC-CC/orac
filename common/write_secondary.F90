@@ -34,6 +34,8 @@
 ! 2014/12/19, AP: YSolar and YThermal now contain the index of
 !    solar/thermal channels with respect to the channels actually processed,
 !    rather than the MSI file.
+! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
+!    with post_processing/.
 !
 ! $Id$
 !

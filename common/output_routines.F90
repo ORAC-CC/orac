@@ -20,6 +20,9 @@
 ! 2015/07/03, OS: Added cldmask_error variables
 ! 2015/07/04, CP: Added corrected cth
 ! 2015/07/31, AP: Add string_description_of_state().
+! 2015/09/06, GM: Move into common/ from src/ minus the prepare routines and
+!    string_description_of_state().  Also, changes related to sharing with
+!    post_processing/.
 !
 ! $Id$
 !

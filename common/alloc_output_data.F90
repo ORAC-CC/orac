@@ -22,6 +22,8 @@
 !    lusflag, dem, nisemask
 ! 2014/12/01, CP: Added in cloud albedo
 ! 2015/07/01, CP: Added corrected cth
+! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
+!    with post_processing/.
 !
 ! $Id$
 !

@@ -35,6 +35,8 @@
 !    solar/thermal channels with respect to the channels actually processed,
 !    rather than the MSI file.
 ! 2015/07/04, CP: Added corrected cth
+! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
+!    with post_processing/.
 !
 ! $Id$
 !

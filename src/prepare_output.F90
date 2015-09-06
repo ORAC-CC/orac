@@ -2,24 +2,13 @@
 ! Name: prepare_output.F90
 !
 ! Purpose:
-! Structure defintion for output_data and module for output routines.
+! Structure definition for output_data and module for output routines.
 !
 ! History:
-! 2014/06/13, GM: Original version, output_data_*
-!    structures taken from SPixel module.
-! 2014/09/16, GM: Added output_utils.F90.
-! 2014/10/24, OS: added variables cldtype, cloudmask,
-!    cccot_pre, lusflags, dem, and nisemask
-! 2014/11/25, AP: Move scaling/offset definitions here.
-! 2014/12/01, OS: new cldtype_vmax = 9
-! 2014/12/01, CP: added cloud albedo
-! 2015/03/05, OS: added values to nisemask scale, offset, vmin,
-!    vmax; set cth_vmin to -0.01
-! 2015/03/19, OS: cth_vmin set to 0
-! 2015/04/22, OS: cth_vmin set to -1000 m, i.e. -1 km
-! 2015/07/03, OS: Added cldmask_error variables
-! 2015/07/04, CP: Added corrected cth
-! 2015/07/31, AP: Add string_description_of_state().
+! 2015/09/06, GM: Original version created for the parts of output_routines.F90
+!    that were not moved into common/ including the prepare routines and
+!    string_description_of_state().
+! 2015/09/06, GM: Added build_qc_flag_meanings().
 !
 ! $Id$
 !

@@ -55,6 +55,8 @@
 ! 2015/07/26, GM: Added deflate_level and shuffle_flag arguments to
 !    nc_def_var_*.
 ! 2015/07/31, AP: Rejig Diag for longer, variable state vector.
+! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
+!    with post_processing/.
 !
 ! $Id$
 !

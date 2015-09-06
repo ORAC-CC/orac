@@ -3,7 +3,7 @@
 ! post_process_level2
 !
 ! Purpose:
-! Read in level2 ORAC output and apply postprocessing to select cloudmask
+! Read in level2 ORAC output and apply post processing to select cloudmask
 ! and phase.
 !
 ! Description and Algorithm details:
@@ -64,7 +64,7 @@
 ! 2014/09/29, changed wat read_inter)sec is called now need a instrument name
 ! 2014/10/24, OS: added subroutine option for wrapper mode, and further
 !    wrapper-specific details; SteSta added new fill value option for the
-!    postprocessing cloud mask
+!    post processing cloud mask
 ! 2014/11/20, OS: renamed module neural_net_constants to
 !    neural_net_constants_postproc; some editing; replaced hard-coded NN values
 !    with variables
@@ -84,6 +84,7 @@
 !    if CTT>273.15K); removed some debugging statements and further clean up
 ! 2015/07/10, OS: fixed bug related to using flag one_phase_only
 ! 2015/07/16, GM: Major cleanup.
+! 2015/09/06, GM: Adapt to use the output routines in common/.
 !
 ! $Id$
 !
