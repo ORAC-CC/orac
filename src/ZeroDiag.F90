@@ -64,7 +64,7 @@ subroutine Zero_Diag(Ctrl, Diag)
    Diag%YmFit        = MissingXn
 !  Diag%YError       = 0
 !  Diag%APFit        = MissingXn
-   Diag%AK           = 0
+   Diag%AK           = MissingXn
    Diag%cloud_albedo = sreal_fill_value
 
 end subroutine Zero_Diag

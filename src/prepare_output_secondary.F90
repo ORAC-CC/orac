@@ -34,6 +34,8 @@
 ! 2014/08/31, GM: Update to use general routines in the current
 !    module.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
+! 2014/09/06, GM: Output fill_value instead of zero for degrees of freedom for
+!    signal for non-retrieved pixels.
 !
 ! $Id$
 !
@@ -206,12 +208,16 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! ds
    !----------------------------------------------------------------------------
-   dummyreal = 0.0
+   if (SPixel%Nx .eq. 0 .or. &
+       any(Diag%AK(SPixel%X, SPixel%X) .eq. MissingXn)) then
+      dummyreal = sreal_fill_value
+   else
+      dummyreal = 0.0
 
-   do k=1,SPixel%Nx
-      dummyreal = dummyreal + Diag%AK(SPixel%X(k),SPixel%X(k))
-   end do
-
+      do k=1,SPixel%Nx
+         dummyreal = dummyreal + Diag%AK(SPixel%X(k),SPixel%X(k))
+      end do
+   end if
    call prepare_short_packed_float( &
            dummyreal, output_data%ds(i,j), &
            output_data%ds_scale, output_data%ds_offset, &
