@@ -93,18 +93,20 @@ module orac_input
 
    type input_data_secondary
 
-!     integer(kind=lint), dimension(:,:), pointer :: scanline_u
-!     integer(kind=lint), dimension(:,:), pointer :: scanline_v
+!     integer(kind=lint), dimension(:,:),   pointer :: scanline_u
+!     integer(kind=lint), dimension(:,:),   pointer :: scanline_v
 
-      real(kind=sreal),   dimension(:,:), pointer :: cot_ap,cot_fg
-      real(kind=sreal),   dimension(:,:), pointer :: ref_ap,ref_fg
-      real(kind=sreal),   dimension(:,:), pointer :: ctp_ap,ctp_fg
-      real(kind=sreal),   dimension(:,:), pointer :: stemp_ap,stemp_fg
+      real(kind=sreal),   dimension(:,:),   pointer :: cot_ap,cot_fg
+      real(kind=sreal),   dimension(:,:),   pointer :: ref_ap,ref_fg
+      real(kind=sreal),   dimension(:,:),   pointer :: ctp_ap,ctp_fg
+      real(kind=sreal),   dimension(:,:),   pointer :: stemp_ap,stemp_fg
 
-      real(kind=sreal), dimension(:,:,:), pointer :: albedo
-      real(kind=sreal), dimension(:,:,:), pointer :: channels
-      real(kind=sreal), dimension(:,:,:), pointer :: y0
-      real(kind=sreal), dimension(:,:,:), pointer :: residuals
+      real(kind=sreal),   dimension(:,:,:), pointer :: albedo
+      real(kind=sreal),   dimension(:,:,:), pointer :: channels
+      real(kind=sreal),   dimension(:,:,:), pointer :: y0
+      real(kind=sreal),   dimension(:,:,:), pointer :: residuals
+
+      real(kind=sreal),   dimension(:,:),   pointer :: ds
 
    end type input_data_secondary
 

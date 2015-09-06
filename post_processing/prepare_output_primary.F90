@@ -214,7 +214,6 @@ subroutine prepare_output_primary(i, j, indexing, input_data, output_data)
    else
       temp_real = input_data%cc_total_uncertainty(i,j)
    end if
-
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
            output_data%cct_error_scale, output_data%cct_error_offset, &

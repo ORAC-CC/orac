@@ -175,21 +175,14 @@ subroutine prepare_output_secondary(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! ds
    !----------------------------------------------------------------------------
-#ifdef CRAP
-   dummyreal = 0.0
-
-   do k=1,SPixel%_x
-      dummyreal = dummyreal + Diag%AK(k,k)
-   end do
-
-   dummyreal = (dummyreal-output_data%ds_offset)/output_data%ds_scale
+   dummyreal=input_data%ds(i,j)
    call prepare_short_packed_float( &
            dummyreal, output_data%ds(i,j), &
            output_data%ds_scale, output_data%ds_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%ds_vmin, output_data%ds_vmax, &
-           sint_fill_value)
-#endif
+           output_data%ds_vmax)
+
    !----------------------------------------------------------------------------
    ! covariance
    !----------------------------------------------------------------------------

@@ -88,6 +88,8 @@ subroutine read_input_secondary_common(ncid, input_data, xdim, ydim, indexing, &
       end if
    end do
 
+   call nc_read_packed_array(ncid, "degrees_of_freedom_signal", input_data%ds, verbose)
+
 end subroutine read_input_secondary_common
 
 

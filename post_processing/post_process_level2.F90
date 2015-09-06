@@ -458,6 +458,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
                   input_data_ice_secondary%residuals(i,j,:) = &
                         input_data_wat_secondary%residuals(i,j,:)
+
+                  input_data_ice_secondary%ds(i,j) = &
+                        input_data_wat_secondary%ds(i,j)
                end if
             end if
 

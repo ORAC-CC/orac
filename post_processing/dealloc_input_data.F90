@@ -143,6 +143,8 @@ subroutine dealloc_input_data_common(input_data)
 
    deallocate(input_data%residuals)
 
+   deallocate(input_data%ds)
+
 end subroutine dealloc_input_data_common
 
 

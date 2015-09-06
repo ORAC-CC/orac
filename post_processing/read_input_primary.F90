@@ -167,7 +167,6 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
    call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose)
 
 !  call nc_read_array(ncid, "dem", input_data%dem, verbose)
-!  where(input_data%qcflag .eq. sint_fill_value) input_data%qcflags = -1
 
    call nc_read_array(ncid, "nisemask", input_data%nisemask, verbose)
 

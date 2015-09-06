@@ -228,6 +228,9 @@ subroutine alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing
    allocate(input_data%residuals(xdim1km,ydim1km,indexing%Ny))
    input_data%residuals=sreal_fill_value
 
+   allocate(input_data%ds(xdim1km,ydim1km))
+   input_data%ds=sreal_fill_value
+
 end subroutine alloc_input_data_secondary_common
 
 
