@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: def_vars_primary.F90
+! Name: def_output_primary.F90
 !
 ! Purpose:
 ! Define primary output variables for netcdf. Variable type, scale, offset,
@@ -64,7 +64,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_vars_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cloudmask_pre, do_dem)
+subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cloudmask_pre, do_dem)
 
    use netcdf
    use orac_ncdf
@@ -1016,4 +1016,4 @@ end if
       stop error_stop_code
    end if
 
-end subroutine def_vars_primary
+end subroutine def_output_primary

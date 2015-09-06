@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: write_secondary.F90
+! Name: write_output_secondary.F90
 !
 ! Purpose:
 ! Actual writing of the secondary output data to the netcdf file is carried out.
@@ -43,7 +43,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_secondary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, Ny, NSolar, Nx, Y_Id, do_covariance)
+subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, Ny, NSolar, Nx, Y_Id, do_covariance)
 
    use orac_ncdf
 
@@ -148,4 +148,4 @@ subroutine write_secondary(ncid, ixstart, ixstop, iystart, iystop, output_data, 
       end do
    end if
 
-end subroutine write_secondary
+end subroutine write_output_secondary

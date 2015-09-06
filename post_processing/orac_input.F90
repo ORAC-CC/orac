@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: input_routines.F90
+! Name: orac_input.F90
 !
 ! Purpose: F90 Module file which declares user defined variable type structures.
 !
@@ -29,7 +29,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-module input_routines
+module orac_input
 
    use common_constants
 
@@ -113,9 +113,9 @@ contains
 #include "alloc_input_data.F90"
 #include "dealloc_input_data.F90"
 
-#include "read_input_dimensions_pp.F90"
+#include "read_input_dimensions.F90"
 
-#include "read_primary_file.F90"
-#include "read_secondary_file.F90"
+#include "read_input_primary.F90"
+#include "read_input_secondary.F90"
 
-end module input_routines
+end module orac_input

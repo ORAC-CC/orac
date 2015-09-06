@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_secondary_file.F90
+! Name: read_input_secondary.F90
 !
 ! Purpose:
 ! The file contains a collection of subroutines which define netcdf output for
@@ -14,7 +14,7 @@
 ! 2012/02/20, Caroline Poulsen: creates initial file.
 ! 2012/06/20, C. Poulsen: modified to work for all sensors
 ! 2012/06/20, C. Poulsen: modified to add albedo
-! 2012/06/20, C. Poulsen: changed arguments of read_secondary_file added in
+! 2012/06/20, C. Poulsen: changed arguments of read_input_secondary added in
 !    reading of albedo added in reading of channel radiances
 ! 2014/09/29, C. Poulsen: changed number of arguments read in and added MODIS
 !    specific call
@@ -33,8 +33,8 @@
 ! Not a bug but this code assumes 5 channels of instrument data.
 !-------------------------------------------------------------------------------
 
-subroutine read_secondary_file_common(ncid, input_data, xdim, ydim, &
-                                      indexing, verbose)
+subroutine read_input_secondary_common(ncid, input_data, xdim, ydim, indexing, &
+                                       verbose)
 
    use common_constants
    use netcdf
@@ -88,11 +88,11 @@ subroutine read_secondary_file_common(ncid, input_data, xdim, ydim, &
       end if
    end do
 
-end subroutine read_secondary_file_common
+end subroutine read_input_secondary_common
 
 
-subroutine read_secondary_file_all(fname, input_data, xdim, ydim, &
-                                   indexing, verbose)
+subroutine read_input_secondary_all(fname, input_data, xdim, ydim, indexing, &
+                                    verbose)
 
    use common_constants
    use netcdf
@@ -114,7 +114,7 @@ subroutine read_secondary_file_all(fname, input_data, xdim, ydim, &
    write(*,*) 'Opening secondary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
-   call read_secondary_file_common(ncid, input_data, xdim, ydim, &
+   call read_input_secondary_common(ncid, input_data, xdim, ydim, &
       indexing, verbose)
 
 !  call nc_read_packed_array(ncid, "scanline_u", input_data%scanline_u, verbose)
@@ -146,11 +146,11 @@ subroutine read_secondary_file_all(fname, input_data, xdim, ydim, &
       stop error_stop_code
    end if
 
-end subroutine read_secondary_file_all
+end subroutine read_input_secondary_all
 
 
-subroutine read_secondary_file_class(fname, input_data, xdim, ydim, &
-                                     indexing, verbose)
+subroutine read_input_secondary_class(fname, input_data, xdim, ydim, indexing, &
+                                      verbose)
 
    use common_constants
    use netcdf
@@ -170,7 +170,7 @@ subroutine read_secondary_file_class(fname, input_data, xdim, ydim, &
    write(*,*) 'Opening secondary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
-   call read_secondary_file_common(ncid, input_data, xdim, ydim, &
+   call read_input_secondary_common(ncid, input_data, xdim, ydim, &
       indexing, verbose)
 
    write(*,*) 'Closing secondary input file.'
@@ -179,4 +179,4 @@ subroutine read_secondary_file_class(fname, input_data, xdim, ydim, &
       stop error_stop_code
    end if
 
-end subroutine read_secondary_file_class
+end subroutine read_input_secondary_class

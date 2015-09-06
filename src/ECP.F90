@@ -187,7 +187,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    use Inversion
    use omp_lib
    use orac_ncdf
-   use output_routines
+   use orac_output
    use prepare_output
    use read_driver_m
    use Read_SAD_def
@@ -440,8 +440,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Create NetCDF files and variables
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
-   call def_vars_primary(ncid_primary, dims_var, output_data_1, Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, .false., .false., .true., .false., .true.)
-   call def_vars_secondary(ncid_secondary, dims_var, output_data_2, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, .false., write_covariance)
+   call def_output_primary(ncid_primary, dims_var, output_data_1, Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, .false., .false., .true., .false., .true.)
+   call def_output_secondary(ncid_secondary, dims_var, output_data_2, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, .false., write_covariance)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
    i = ixstart
@@ -573,11 +573,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
          end if
 
          ! Copy output to spixel_scan_out structures
-         call prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
-                              Diag, output_data_1)
+         call prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
+                                     Diag, output_data_1)
 
-         call prepare_secondary(Ctrl, write_covariance, i, j, MSI_Data, SPixel, Diag, &
-                                output_data_2)
+         call prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
+                                       output_data_2, write_covariance)
 
       end do ! End of super-pixel X loop
 
@@ -603,8 +603,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Write output from spixel_scan_out structures NetCDF files
-   call write_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%Y_Id, .false., .true., .false., .true.)
-   call write_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Nx(IDay), Ctrl%Ind%Y_Id, write_covariance)
+   call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%Y_Id, .false., .true., .false., .true.)
+   call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Nx(IDay), Ctrl%Ind%Y_Id, write_covariance)
 
    TotPix    = sum(totpix_line)
    Totmissed = sum(totmissed_line)

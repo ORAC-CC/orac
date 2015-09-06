@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: write_primary.F90
+! Name: write_output_primary.F90
 !
 ! Purpose:
 ! Actual writing of the primary output data to the netcdf file is carried out.
@@ -44,7 +44,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_primary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, do_cloudmask_pre, do_dem)
+subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, do_cloudmask_pre, do_dem)
 
    use orac_ncdf
 
@@ -205,4 +205,4 @@ end if
               1,1,n_x,1,1,n_y)
    end do
 
-end subroutine write_primary
+end subroutine write_output_primary

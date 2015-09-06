@@ -1,20 +1,39 @@
 !-------------------------------------------------------------------------------
-! Name: prepare_secondary.F90
+! Name: prepare_output_secondary.F90
 !
 ! Purpose:
-! The file contains a collection of subroutines which define netcdf output for
-! different attribute/variable type combinations.
+! Map internal representation of variables to output representation by applying
+! scale and offset where necessary.
 !
 ! Description and Algorithm details:
+! Call prepare_short_packed_float many times.
 !
 ! Arguments:
-! Name Type In/Out/Both Description
+! Name        Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+! Ctrl        struct  In          Control structure
+! lcovar      logical In          If set, output covariance matrices
+! i           int     In          Across-track pixel to output
+! j           int     In          Along-track pixel to output
+! MSI_Data    struct  In          Imager data structure
+! SPixel      struct  In          Retrieval pixel structure
+! Diag        struct  In          Diagonstic structure
+! output_data struct  Both        Results structure
 !
 ! History:
-! xx/xx/xxxx, Matthias Jerg: Original version
-! 05/01/2012, Caroline Poulsen: add in reflectances and brightness temperature
-! 15/01/2012, Caroline Poulsen: changed how offset was applied
-! 2015/07/16, Greg McGarragh: Major cleanup.
+! 2011/12/19, MJ: Creates initial version
+! 2012/01/05, CP: Add in reflectances and brightness temperature
+! 2012/01/15, CP: Changed how offset was applied
+! 2012/09/20, CP: Remove scaling factor from albedo
+! 2012/09/20, CP: Chanaged how svan value is set
+! 2013/05/29, GT: Added degrees of freedom for signal
+! 2014/01/30, GM: Fixed writing of the residuals and first guess in
+!    the case of nighttime pixels.
+! 2014/06/13, GM: Put the code into a subroutine.
+! 2014/06/13, GM: Cleaned up the code.
+! 2014/08/31, GM: Update to use general routines in the current
+!    module.
+! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
 !
 ! $Id$
 !
@@ -22,31 +41,40 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_secondary(i, j, indexing, input_data, output_data)
+subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
+                                    output_data, do_covariance)
 
-   use input_routines
+   use CTRL_def
+   use Data_def
+   use Diag_def
    use orac_ncdf
-   use output_routines
+   use orac_output
+   use SPixel_def
 
    implicit none
 
+   type(CTRL_t),                intent(in)    :: Ctrl
    integer,                     intent(in)    :: i, j
-   type(counts_and_indexes),    intent(in)    :: indexing
-   type(input_data_secondary),  intent(in)    :: input_data
+   type(Data_t),                intent(in)    :: MSI_Data
+   type(SPixel_t),              intent(in)    :: SPixel
+   type(Diag_t),                intent(in)    :: Diag
    type(output_data_secondary), intent(inout) :: output_data
+   logical,                     intent(in)    :: do_covariance
 
-   logical     :: lcovar = .false.
-   integer     :: k
-   real(sreal) :: dummyreal
+   integer          :: k,kk,l
+   real(kind=sreal) :: dummyreal
 
 
-   output_data%scanline_u(i,j) = j
-   output_data%scanline_v(i,j) = i
+   !----------------------------------------------------------------------------
+   ! scanline_u, scanline_v
+   !----------------------------------------------------------------------------
+   output_data%scanline_u(i,j)=i
+   output_data%scanline_v(i,j)=j
 
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
-   dummyreal=input_data%cot_ap(i,j)
+   dummyreal=SPixel%Xb(ITau)
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_ap(i,j), &
            output_data%cot_ap_scale, output_data%cot_ap_offset, &
@@ -54,7 +82,7 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
            output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
            output_data%cot_ap_vmax)
 
-   dummyreal=input_data%cot_fg(i,j)
+   dummyreal=SPixel%X0(ITau)
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_fg(i,j), &
            output_data%cot_fg_scale, output_data%cot_fg_offset, &
@@ -65,7 +93,7 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! ref_ap, ref_fg
    !----------------------------------------------------------------------------
-   dummyreal=input_data%ref_ap(i,j)
+   dummyreal=SPixel%Xb(IRe)
    call prepare_short_packed_float( &
            dummyreal, output_data%ref_ap(i,j), &
            output_data%ref_ap_scale, output_data%ref_ap_offset, &
@@ -73,7 +101,7 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
            output_data%ref_ap_vmin, output_data%ref_ap_vmax, &
            output_data%ref_ap_vmax)
 
-   dummyreal=input_data%ref_fg(i,j)
+   dummyreal=SPixel%X0(IRe)
    call prepare_short_packed_float( &
            dummyreal, output_data%ref_fg(i,j), &
            output_data%ref_fg_scale, output_data%ref_fg_offset, &
@@ -84,7 +112,7 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! ctp_ap, ctp_fg
    !----------------------------------------------------------------------------
-   dummyreal=input_data%ctp_ap(i,j)
+   dummyreal=SPixel%Xb(IPc)
    call prepare_short_packed_float( &
            dummyreal, output_data%ctp_ap(i,j), &
            output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
@@ -92,7 +120,7 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
            output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
            output_data%ctp_ap_vmax)
 
-   dummyreal=input_data%ctp_fg(i,j)
+   dummyreal=SPixel%X0(IPc)
    call prepare_short_packed_float( &
            dummyreal, output_data%ctp_fg(i,j), &
            output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
@@ -103,7 +131,7 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! stemp_ap, stemp_fg
    !----------------------------------------------------------------------------
-   dummyreal=input_data%stemp_ap(i,j)
+   dummyreal=SPixel%X0(ITs)
    call prepare_short_packed_float( &
            dummyreal, output_data%stemp_ap(i,j), &
            output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
@@ -111,7 +139,7 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
            output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
            output_data%stemp_ap_vmax)
 
-   dummyreal=input_data%stemp_fg(i,j)
+   dummyreal=SPixel%X0(ITs)
    call prepare_short_packed_float( &
            dummyreal, output_data%stemp_fg(i,j), &
            output_data%stemp_fg_scale, output_data%stemp_fg_offset, &
@@ -122,8 +150,8 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! albedo
    !----------------------------------------------------------------------------
-   do k=1,indexing%NSolar
-      dummyreal=input_data%albedo(i,j,k)
+   do k=1,Ctrl%Ind%NSolar
+      dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%Y0,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%albedo(i,j,k), &
            output_data%albedo_scale(k), output_data%albedo_offset(k), &
@@ -135,8 +163,8 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! channels
    !----------------------------------------------------------------------------
-   do k=1,indexing%Ny
-      dummyreal=input_data%channels(i,j,k)
+   do k=1,Ctrl%Ind%Ny
+      dummyreal=MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, k)
       call prepare_short_packed_float( &
            dummyreal, output_data%channels(i,j,k), &
            output_data%channels_scale(k), output_data%channels_offset(k), &
@@ -148,52 +176,63 @@ subroutine prepare_secondary(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! y0
    !----------------------------------------------------------------------------
-   do k=1,indexing%Ny
-      dummyreal=input_data%y0(i,j,k)
+   do k=1,SPixel%Ind%Ny
+      kk = SPixel%spixel_y_to_ctrl_y_index(k)
+
+      dummyreal=Diag%Y0(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%y0(i,j,k), &
-           output_data%y0_scale(k), output_data%y0_offset(k), &
+           dummyreal, output_data%y0(i,j,kk), &
+           output_data%y0_scale(kk), output_data%y0_offset(kk), &
            sreal_fill_value, sint_fill_value, &
-           output_data%y0_vmin(k), output_data%y0_vmax(k), &
+           output_data%y0_vmin(kk), output_data%y0_vmax(kk), &
            sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
    ! residuals
    !----------------------------------------------------------------------------
-   do k=1,indexing%Ny
-      dummyreal=input_data%residuals(i,j,k)
+   do k=1,SPixel%Ind%Ny
+      kk = SPixel%spixel_y_to_ctrl_y_index(k)
+
+      dummyreal=Diag%YmFit(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%residuals(i,j,k), &
-           output_data%residuals_scale(k), output_data%residuals_offset(k), &
+           dummyreal, output_data%residuals(i,j,kk), &
+           output_data%residuals_scale(kk), output_data%residuals_offset(kk), &
            sreal_fill_value, sint_fill_value, &
-           output_data%residuals_vmin(k), output_data%residuals_vmax(k), &
+           output_data%residuals_vmin(kk), output_data%residuals_vmax(kk), &
            sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
    ! ds
    !----------------------------------------------------------------------------
-#ifdef CRAP
    dummyreal = 0.0
 
-   do k=1,SPixel%_x
-      dummyreal = dummyreal + Diag%AK(k,k)
+   do k=1,SPixel%Nx
+      dummyreal = dummyreal + Diag%AK(SPixel%X(k),SPixel%X(k))
    end do
 
-   dummyreal = (dummyreal-output_data%ds_offset)/output_data%ds_scale
    call prepare_short_packed_float( &
            dummyreal, output_data%ds(i,j), &
            output_data%ds_scale, output_data%ds_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%ds_vmin, output_data%ds_vmax, &
            sint_fill_value)
-#endif
+
    !----------------------------------------------------------------------------
    ! covariance
    !----------------------------------------------------------------------------
-   if (lcovar) then
-
+   if (do_covariance) then
+      do k=1,SPixel%Nx
+         do l=1,SPixel%Nx
+           call prepare_float_packed_float( &
+                   SPixel%Sn(k,l), output_data%covariance(i,j,k,l), &
+                   1., 0., &
+                   sreal_fill_value, sreal_fill_value, &
+                   0., huge(dummyreal), &
+                   sreal_fill_value)
+         end do
+      end do
    end if
 
-end subroutine prepare_secondary
+end subroutine prepare_output_secondary

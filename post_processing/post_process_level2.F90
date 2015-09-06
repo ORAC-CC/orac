@@ -100,10 +100,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    use common_constants
    use global_attributes
-   use input_routines
    use netcdf
    use orac_ncdf
-   use output_routines
+   use orac_input
+   use orac_output
    use prepare_output
    use source_attributes
    use postproc_constants
@@ -295,36 +295,37 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) '***** ICE *****'
    write(*,*) 'read ice primary'
    call alloc_input_data_primary_all(input_data_ice_primary,xdim,ydim,indexing)
-   call read_primary_file_all(fname_ice_prim,input_data_ice_primary,xdim,ydim, &
+   call read_input_primary_all(fname_ice_prim,input_data_ice_primary,xdim,ydim, &
       indexing,global_atts,source_atts,verbose)
    if (L2_secondary_outputpath_and_file .ne. '') then
       write(*,*) 'read ice secondary'
       call alloc_input_data_secondary_all(input_data_ice_secondary,xdim,ydim, &
          indexing)
-      call read_secondary_file_all(fname_ice_sec,input_data_ice_secondary,xdim, &
+      call read_input_secondary_all(fname_ice_sec,input_data_ice_secondary,xdim, &
          ydim,indexing,verbose)
    end if
 
    write(*,*) '***** WAT *****'
    write(*,*) 'read wat primary'
    call alloc_input_data_primary_class(input_data_wat_primary,xdim,ydim,indexing)
-   call read_primary_file_class(fname_wat_prim,input_data_wat_primary,xdim,ydim, &
+   call read_input_primary_class(fname_wat_prim,input_data_wat_primary,xdim,ydim, &
       indexing,global_atts,verbose)
    if (L2_secondary_outputpath_and_file .ne. '') then
       write(*,*) 'read wat secondary'
       call alloc_input_data_secondary_class(input_data_wat_secondary,xdim,ydim, &
          indexing)
-      call read_secondary_file_class(fname_wat_sec,input_data_wat_secondary,xdim, &
-         ydim,indexing,verbose)
+      call read_input_secondary_class(fname_wat_sec,input_data_wat_secondary, &
+         xdim,ydim,indexing,verbose)
    end if
 
    mli_flag=0
    if (mli_flag .gt. 0) then
       write(*,*) '***** MLI *****'
       write(*,*) 'read mli primary'
-      call alloc_input_data_primary_class(input_data_mli_primary,xdim,ydim,indexing)
-      call read_primary_file_class(fname_mli_prim,input_data_mli_primary,xdim,ydim, &
-         indexing,global_atts,verbose)
+      call alloc_input_data_primary_class(input_data_mli_primary,xdim,ydim, &
+         indexing)
+      call read_input_primary_class(fname_mli_prim,input_data_mli_primary, &
+         xdim,ydim,indexing,global_atts,verbose)
    end if
 
    ! set the loop bounds
@@ -517,19 +518,19 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
       ! define variables
-         call def_vars_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_data_ice_primary%qc_flag_meanings, deflate_level, shuffle_flag, verbose, .true., .false., .true., .false.)
+         call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_data_ice_primary%qc_flag_meanings, deflate_level, shuffle_flag, verbose, .true., .false., .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call def_vars_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level, shuffle_flag, 0, 0, verbose, .false.)
+         call def_output_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level, shuffle_flag, 0, 0, verbose, .false.)
       end if
 
       ! put results in final output arrays with final datatypes
       do j=iystart,iystop
          do i=ixstart,ixstop
-            call prepare_primary(i, j, indexing, input_data_ice_primary, &
+            call prepare_output_primary(i, j, indexing, input_data_ice_primary, &
                output_primary)
             if (L2_secondary_outputpath_and_file .ne. '') then
-               call prepare_secondary(i, j, indexing, input_data_ice_secondary, &
-                  output_secondary)
+               call prepare_output_secondary(i, j, indexing, input_data_ice_secondary, &
+                  output_secondary, .false.)
             end if
          end do
       end do
@@ -541,9 +542,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
       ! now write everything in one big chunk of data to disk
-      call write_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, .true., .false., .true., .false.)
+      call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, .true., .false., .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
-         call write_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_secondary, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%Nx, indexing%Y_Id, .false.)
+         call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_secondary, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%Nx, indexing%Y_Id, .false.)
       end if
 
       ! deallocate output structure

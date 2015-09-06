@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: def_vars_secondary.F90
+! Name: def_output_secondary.F90
 !
 ! Purpose:
 ! Define secondary output variables for netcdf. Variable type, scale, offset,
@@ -59,7 +59,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_vars_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar, Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, Xmax, Ymax, verbose, do_covariance)
+subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar, Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, Xmax, Ymax, verbose, do_covariance)
 
    use netcdf
    use orac_ncdf
@@ -595,4 +595,4 @@ subroutine def_vars_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar, Y
       stop error_stop_code
    end if
 
-end subroutine def_vars_secondary
+end subroutine def_output_secondary

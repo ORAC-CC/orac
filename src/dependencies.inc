@@ -39,7 +39,7 @@ $(OBJS)/parse_user.o: $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
 $(OBJS)/planck.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o R2T.F90 T2R.F90
 $(OBJS)/prepare_output.o: $(OBJS)/Ctrl.o $(OBJS)/Data.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/RTM_Pc.o $(OBJS)/SPixel.o \
-        prepare_primary.F90 prepare_secondary.F90
+        prepare_output_primary.F90 prepare_output_secondary.F90
 $(OBJS)/read_utils.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o read_config_file.F90 \
         read_input_dimensions.F90
 $(OBJS)/ReadDriver.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/parse_user.o \

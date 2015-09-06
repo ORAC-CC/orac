@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: prepare_primary.F90
+! Name: prepare_output_primary.F90
 !
 ! Purpose:
 ! Map internal representation of variables to output representation by applying
@@ -54,14 +54,14 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
-                           Diag, output_data)
+subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
+                                  output_data)
 
    use CTRL_def
    use Data_def
    use Diag_def
    use orac_ncdf
-   use output_routines
+   use orac_output
    use RTM_Pc_def
    use SPixel_def
 
@@ -491,4 +491,4 @@ subroutine prepare_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
            sint_fill_value)
    end do
 
-end subroutine prepare_primary
+end subroutine prepare_output_primary

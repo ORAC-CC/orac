@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: read_primary_file.F90
+! Name: read_input_primary.F90
 !
 ! Purpose:
 ! The file contains a collection of subroutines which define netcdf output for
@@ -34,8 +34,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_primary_file_common(ncid,input_data,xdim,ydim,indexing, &
-                                    global_atts,verbose)
+subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
+                                    global_atts, verbose)
 
    use global_attributes
    use netcdf
@@ -111,11 +111,11 @@ subroutine read_primary_file_common(ncid,input_data,xdim,ydim,indexing, &
    call nc_read_array(ncid, "qcflag", input_data%qcflag, verbose)
    where(input_data%qcflag .eq. sint_fill_value) input_data%qcflag = -1
 
-end subroutine read_primary_file_common
+end subroutine read_input_primary_common
 
 
-subroutine read_primary_file_all(fname,input_data,xdim,ydim,indexing, &
-                                 global_atts,source_atts,verbose)
+subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
+                                  global_atts, source_atts, verbose)
 
    use global_attributes
    use netcdf
@@ -140,7 +140,7 @@ subroutine read_primary_file_all(fname,input_data,xdim,ydim,indexing, &
 
    call nc_get_common_attributes(ncid, global_atts, source_atts)
 
-   call read_primary_file_common(ncid, input_data, xdim, ydim, indexing, &
+   call read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
       global_atts, verbose)
 
    call nc_read_array(ncid, "time", input_data%time, verbose)
@@ -177,11 +177,11 @@ subroutine read_primary_file_all(fname,input_data,xdim,ydim,indexing, &
       stop error_stop_code
    end if
 
-end subroutine read_primary_file_all
+end subroutine read_input_primary_all
 
 
-subroutine read_primary_file_class(fname,input_data,xdim,ydim,indexing, &
-                                   global_atts,verbose)
+subroutine read_input_primary_class(fname, input_data, xdim, ydim, indexing, &
+                                    global_atts, verbose)
 
    use global_attributes
    use netcdf
@@ -201,7 +201,7 @@ subroutine read_primary_file_class(fname,input_data,xdim,ydim,indexing, &
 
    call nc_open(ncid,fname)
 
-   call read_primary_file_common(ncid, input_data, xdim, ydim, indexing, &
+   call read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
       global_atts, verbose)
 
    if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -209,4 +209,4 @@ subroutine read_primary_file_class(fname,input_data,xdim,ydim,indexing, &
       stop error_stop_code
    end if
 
-end subroutine read_primary_file_class
+end subroutine read_input_primary_class

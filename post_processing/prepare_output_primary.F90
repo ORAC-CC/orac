@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-! Name: prepare_primary.F90
+! Name: prepare_output_primary.F90
 !
 ! Purpose:
 ! Map internal representation of variables to output representation by applying
@@ -35,11 +35,11 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_primary(i, j, indexing, input_data, output_data)
+subroutine prepare_output_primary(i, j, indexing, input_data, output_data)
 
-   use input_routines
+   use orac_input
    use orac_ncdf
-   use output_routines
+   use orac_output
 
    implicit none
 
@@ -444,4 +444,4 @@ subroutine prepare_primary(i, j, indexing, input_data, output_data)
            sint_fill_value)
    end do
 
-end subroutine prepare_primary
+end subroutine prepare_output_primary
