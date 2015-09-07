@@ -23,6 +23,7 @@
 ! 2015/09/06, GM: Move into common/ from src/ minus the prepare routines and
 !    string_description_of_state().  Also, changes related to sharing with
 !    post_processing/.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -61,7 +62,7 @@ module orac_output
       integer                       :: vid_qcflag
       integer                       :: vid_illum
       integer                       :: vid_cldtype
-      integer                       :: vid_cldmask,vid_cldmask_error
+      integer                       :: vid_cldmask,vid_cldmask_uncertainty
       integer                       :: vid_cccot_pre
       integer                       :: vid_lusflag
       integer                       :: vid_dem
@@ -126,8 +127,8 @@ module orac_output
       real(kind=sreal)              :: cct_offset       = 0.0
       integer(kind=sint)            :: cct_vmin         = 0
       integer(kind=sint)            :: cct_vmax         = 100
-      real                          :: cct_error_scale  = 0.01
-      real                          :: cct_error_offset = 0.0
+      real(kind=sreal)              :: cct_error_scale  = 0.01
+      real(kind=sreal)              :: cct_error_offset = 0.0
       integer(kind=sint)            :: cct_error_vmin   = 0
       integer(kind=sint)            :: cct_error_vmax   = 10000
 
@@ -162,8 +163,8 @@ module orac_output
       real(kind=sreal)              :: ctt_offset       = 0.0
       integer(kind=sint)            :: ctt_vmin         = 0
       integer(kind=sint)            :: ctt_vmax         = 32000
-      real                          :: ctt_error_scale  = 0.01
-      real                          :: ctt_error_offset = 0.0
+      real(kind=sreal)              :: ctt_error_scale  = 0.01
+      real(kind=sreal)              :: ctt_error_offset = 0.0
       integer(kind=sint)            :: ctt_error_vmin   = 0
       integer(kind=sint)            :: ctt_error_vmax   = 32000
 
@@ -171,8 +172,8 @@ module orac_output
       real(kind=sreal)              :: cwp_offset       = 0.0
       integer(kind=sint)            :: cwp_vmin         = 0
       integer(kind=sint)            :: cwp_vmax         = 32000
-      real                          :: cwp_error_scale  = 1.0
-      real                          :: cwp_error_offset = 0.0
+      real(kind=sreal)              :: cwp_error_scale  = 1.0
+      real(kind=sreal)              :: cwp_error_offset = 0.0
       integer(kind=sint)            :: cwp_error_vmin   = 0
       integer(kind=sint)            :: cwp_error_vmax   = 32000
 
@@ -191,10 +192,10 @@ module orac_output
       integer(kind=byte)            :: phase_vmin   = 0
       integer(kind=byte)            :: phase_vmax   = 2
 
-      integer(kind=byte)            :: phase_pavolonis_scale
-      integer(kind=byte)            :: phase_pavolonis_offset
-      integer(kind=byte)            :: phase_pavolonis_vmin
-      integer(kind=byte)            :: phase_pavolonis_vmax
+      integer(kind=byte)            :: phase_pavolonis_scale  = 1
+      integer(kind=byte)            :: phase_pavolonis_offset = 0
+      integer(kind=byte)            :: phase_pavolonis_vmin   = 0
+      integer(kind=byte)            :: phase_pavolonis_vmax   = 2
 
       real(kind=sreal)              :: costja_scale  = 1.0
       real(kind=sreal)              :: costja_offset = 0.0
@@ -230,6 +231,11 @@ module orac_output
       integer(kind=byte)            :: cldmask_offset = 0
       integer(kind=byte)            :: cldmask_vmin   = 0
       integer(kind=byte)            :: cldmask_vmax   = 1
+
+      real(kind=sreal)              :: cldmask_uncertainty_scale  = 0.01
+      real(kind=sreal)              :: cldmask_uncertainty_offset = 0.0
+      integer(kind=sint)            :: cldmask_uncertainty_vmin   = 0
+      integer(kind=sint)            :: cldmask_uncertainty_vmax   = 10000
 
       real(kind=sreal)              :: cccot_pre_scale  = 0.001
       real(kind=sreal)              :: cccot_pre_offset = 0.0
@@ -318,8 +324,7 @@ module orac_output
       integer(kind=byte), dimension(:,:),   pointer :: cldtype
 
       integer(kind=byte), dimension(:,:),   pointer :: cldmask
-
-      real(kind=sreal),   dimension(:,:),   pointer :: cldmask_error
+      integer(kind=sint), dimension(:,:),   pointer :: cldmask_uncertainty
 
       integer(kind=sint), dimension(:,:),   pointer :: cccot_pre
 

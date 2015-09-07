@@ -24,6 +24,7 @@
 ! 2015/07/01, CP: Added corrected cth
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -54,7 +55,7 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, Ny, output_data, do_phase_pavolonis, do_dem)
+subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, Ny, output_data, do_phase_pavolonis, do_cldmask_uncertainty, do_dem)
 
    implicit none
 
@@ -66,6 +67,7 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, N
    integer,                   intent(in)    :: Ny
    type(output_data_primary), intent(inout) :: output_data
    logical,                   intent(in)    :: do_phase_pavolonis
+   logical,                   intent(in)    :: do_cldmask_uncertainty
    logical,                   intent(in)    :: do_dem
 
 
@@ -183,7 +185,10 @@ end if
 
    allocate(output_data%cldmask(ixstart:ixstop,iystart:iystop))
    output_data%cldmask(ixstart:ixstop,iystart:iystop)=byte_fill_value
-
+if (do_cldmask_uncertainty) then
+   allocate(output_data%cldmask_uncertainty(ixstart:ixstop,iystart:iystop))
+   output_data%cldmask_uncertainty(ixstart:ixstop,iystart:iystop)=sint_fill_value
+end if
    allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
    output_data%cccot_pre(ixstart:ixstop,iystart:iystop)=sint_fill_value
 

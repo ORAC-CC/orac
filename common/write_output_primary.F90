@@ -37,6 +37,7 @@
 ! 2015/07/04, CP: Added corrected cth
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -44,7 +45,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, do_cloudmask_pre, do_dem)
+subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre, do_dem)
 
    use orac_ncdf
 
@@ -61,6 +62,7 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_d
    integer,                   intent(in)    :: Y_Id(:)
    logical,                   intent(in)    :: do_phase_pavolonis
    logical,                   intent(in)    :: do_cldmask
+   logical,                   intent(in)    :: do_cldmask_uncertainty
    logical,                   intent(in)    :: do_cloudmask_pre
    logical,                   intent(in)    :: do_dem
 
@@ -179,6 +181,10 @@ end if
 if (do_cldmask) then
    call nc_write_array(ncid,'cldmask',output_data%vid_cldmask,&
            output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+end if
+if (do_cldmask_uncertainty) then
+   call nc_write_array(ncid,'cldmask_uncertainty',output_data%vid_cldmask_uncertainty,&
+           output_data%cldmask_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
 if (do_cloudmask_pre) then
    call nc_write_array(ncid,'cloudmask_pre',output_data%vid_cldmask,&

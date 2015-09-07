@@ -59,7 +59,8 @@ subroutine Dealloc_Data(Ctrl, MSI_Data)
    if (associated(MSI_Data%Type))         deallocate(MSI_Data%Type)
    if (associated(MSI_Data%cldtype))      deallocate(MSI_Data%cldtype)
    if (associated(MSI_Data%cldmask))      deallocate(MSI_Data%cldmask)
-   if (associated(MSI_Data%cldmask_error)) deallocate(MSI_Data%cldmask_error)
+   if (associated(MSI_Data%cldmask_uncertainty)) &
+                                          deallocate(MSI_Data%cldmask_uncertainty)
    if (associated(MSI_Data%cccot_pre))    deallocate(MSI_Data%cccot_pre)
 
    if (associated(MSI_Data%Geometry%Sol)) deallocate(MSI_Data%Geometry%Sol)

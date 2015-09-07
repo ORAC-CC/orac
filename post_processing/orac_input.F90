@@ -21,7 +21,8 @@
 ! 2014/12/02, CP: adds in cloud_albedo
 ! 2015/02/05, OS: deactivated use of postproc_constants to force consistency with
 !    common_constants; changed nint to lint; added variable phase_post
-! 2015/07/16, GM: Major cleanup.
+! 2015/07/16, GM: Major cleanup and add associated routines to module.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -83,7 +84,8 @@ module orac_input
 
       integer(kind=byte),  dimension(:,:),   pointer :: cldtype
       integer(kind=byte),  dimension(:,:),   pointer :: cldmask
-      real(kind=sreal),    dimension(:,:),   pointer :: cccot,cccot_pre
+      real(kind=sreal),    dimension(:,:),   pointer :: cldmask_uncertainty
+      real(kind=sreal),    dimension(:,:),   pointer :: cccot_pre
       integer(kind=byte),  dimension(:,:),   pointer :: lusflag
       integer(kind=sint),  dimension(:,:),   pointer :: dem
       integer(kind=byte),  dimension(:,:),   pointer :: nisemask

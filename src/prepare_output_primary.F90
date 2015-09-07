@@ -44,11 +44,12 @@
 ! 2015/03/19, OS: CTH now .ge. 0
 ! 2015/03/19, OS: undid previous change in file; CTH is allowed to be negative
 !    again
-! 2015/07/03, OS: Added cldmask_error data
+! 2015/07/03, OS: Added cldmask_uncertainty data
 ! 2015/07/04, CP: Added corrected cth
 ! 2015/07/31, AP: Remove convergence argument.
 ! 2015/09/07, GM: Change COT uncertainty output from log10(COT) space to COT
 !    space.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -207,7 +208,6 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    else
       temp_real = sqrt(SPixel%Sn(IFr,IFr))
    end if
-   temp_real=MSI_Data%cldmask_error(SPixel%Loc%X0, SPixel%Loc%Y0)
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
            output_data%cct_error_scale, output_data%cct_error_offset, &
@@ -448,6 +448,17 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
         %Y0), kind=byte)
 
    !----------------------------------------------------------------------------
+   ! cldmask_uncertainty
+   !----------------------------------------------------------------------------
+   temp_real=MSI_Data%cldmask_uncertainty(SPixel%Loc%X0, SPixel%Loc%Y0)
+   call prepare_short_packed_float( &
+           temp_real, output_data%cldmask_uncertainty(i,j), &
+           output_data%cldmask_uncertainty_scale, output_data%cldmask_uncertainty_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cldmask_uncertainty_vmin, output_data%cldmask_uncertainty_vmax, &
+           sint_fill_value)
+
+   !----------------------------------------------------------------------------
    ! cccot_pre
    !----------------------------------------------------------------------------
    temp_real=MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%Y0)
@@ -470,7 +481,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    output_data%dem(i,j)=int(MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%Y0), kind=sint)
 
    !----------------------------------------------------------------------------
-   ! lusflag
+   ! nisemask
    !----------------------------------------------------------------------------
    output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
         %Y0), kind=byte)

@@ -88,6 +88,10 @@
 ! 2015/09/07, GM: Propagation of COT uncertainty from log10(COT) space was being
 !    being done incorrectly.  Anyway, it has been moved to the main processor
 !    where it is now being done correctly.
+! 2015/09/07, GM: Move the overwrite of cc_total_uncertainty by
+!    cldmask_uncertainty from the main processor to here.  This overwite is
+!    Cloud CCI specific and will therefore have to be handled once aerosol and
+!    ash support is added to the post processor.
 !
 ! $Id$
 !
@@ -388,6 +392,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                input_data_ice_primary%ctp_uncertainty(i,j) = &
                      input_data_wat_primary%ctp_uncertainty(i,j)
 
+               input_data_ice_primary%cc_total(i,j) = &
+                     input_data_wat_primary%cc_total(i,j)
                input_data_ice_primary%cc_total_uncertainty(i,j) = &
                      input_data_wat_primary%cc_total_uncertainty(i,j)
 
@@ -464,10 +470,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                end if
             end if
 
+            ! Overwrite cc_total with cldmask for Cloud CCI
             input_data_ice_primary%cc_total(i,j) = &
                input_data_ice_primary%cldmask(i,j)
-!           input_data_ice_primary%cc_total_uncertainty(i,j) = &
-!              input_data_ice_primary%cldmask_uncertainty(i,j)
+            input_data_ice_primary%cc_total_uncertainty(i,j) = &
+               input_data_ice_primary%cldmask_uncertainty(i,j)
 
             if (input_data_ice_primary%cc_total(i,j) .eq. 0.0) then
                ! set phase to clear/unknown
@@ -495,13 +502,13 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
       ! allocate the structures which hold the output in its final form
-      call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, indexing%NViews, indexing%Ny, output_primary, .true., .false.)
+      call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, indexing%NViews, indexing%Ny, output_primary, .true., .false., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, indexing%Ny, indexing%Nx, output_secondary, .false.)
       end if
 
       ! define variables
-         call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_data_ice_primary%qc_flag_meanings, deflate_level, shuffle_flag, verbose, .true., .false., .true., .false.)
+         call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_data_ice_primary%qc_flag_meanings, deflate_level, shuffle_flag, verbose, .true., .false., .false., .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call def_output_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level, shuffle_flag, 0, 0, verbose, .false.)
       end if
@@ -525,13 +532,13 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
 
       ! now write everything in one big chunk of data to disk
-      call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, .true., .false., .true., .false.)
+      call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, .true., .false., .false., .true., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_secondary, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%Nx, indexing%Y_Id, .false.)
       end if
 
       ! deallocate output structure
-      call dealloc_output_data_primary(output_primary, .true., .false.)
+      call dealloc_output_data_primary(output_primary, .true., .false., .false.)
       if (L2_secondary_outputpath_and_file .ne. '') then
          call dealloc_output_data_secondary(output_secondary, .false.)
       end if

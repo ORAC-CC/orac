@@ -30,6 +30,7 @@
 ! 2014/11/26, CP: added cloud_albedo
 ! 2015/01/26, CP: added multi layer cloud IR only
 ! 2015/07/16, GM: Major cleanup.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -156,18 +157,20 @@ subroutine alloc_input_data_primary_all(input_data,xdim1km,ydim1km,indexing)
 
    allocate(input_data%cccot_pre(xdim1km,ydim1km))
    input_data%cccot_pre=sreal_fill_value
-   allocate(input_data%cccot(xdim1km,ydim1km))
-   input_data%cccot=sreal_fill_value
 
    allocate(input_data%cldtype(xdim1km,ydim1km))
    input_data%cldtype=byte_fill_value
+
    allocate(input_data%cldmask(xdim1km,ydim1km))
    input_data%cldmask=byte_fill_value
+   allocate(input_data%cldmask_uncertainty(xdim1km,ydim1km))
+   input_data%cldmask_uncertainty=sreal_fill_value
+
    allocate(input_data%lusflag(xdim1km,ydim1km))
    input_data%lusflag=byte_fill_value
 
-   !allocate(input_data%dem(xdim1km,ydim1km))
-   !input_data%dem=sint_fill_value
+!  allocate(input_data%dem(xdim1km,ydim1km))
+!  input_data%dem=sint_fill_value
 
    allocate(input_data%nisemask(xdim1km,ydim1km))
    input_data%nisemask=byte_fill_value

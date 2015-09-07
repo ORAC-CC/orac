@@ -30,6 +30,7 @@
 ! 2014/11/26, CP: added cloud_albedo
 ! 2015/01/26, CP: added multi layer cloud IR only
 ! 2015/07/16, GM: Major cleanup.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -99,7 +100,6 @@ subroutine dealloc_input_data_primary_all(input_data)
    deallocate(input_data%illum)
 
    deallocate(input_data%cccot_pre)
-   deallocate(input_data%cccot)
 
    deallocate(input_data%cldmask)
    deallocate(input_data%lusflag)

@@ -27,6 +27,7 @@
 !    common/orac_ncdf.F90; changed cct to cc_total
 ! 2015/07/16, GM: Major cleanup and made use of the NetCDF interface in the
 !    common library.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -161,6 +162,7 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
    call nc_read_array(ncid, "cldtype", input_data%cldtype, verbose)
 
    call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose)
+   call nc_read_packed_array(ncid, "cldmask_uncertainty", input_data%cldmask_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose)
 

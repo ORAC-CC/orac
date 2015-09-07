@@ -57,6 +57,7 @@
 ! 2015/07/31, AP: Rejig Diag for longer, variable state vector.
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -64,32 +65,33 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cloudmask_pre, do_dem)
+subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre, do_dem)
 
    use netcdf
    use orac_ncdf
 
    implicit none
 
-   integer,                    intent(in)    :: ncid
-   integer,                    intent(in)    :: dims_var(:)
-   type(output_data_primary),  intent(inout) :: output_data
-   character(len=*),           intent(in)    :: inst_name
-   integer,                    intent(in)    :: NViews
-   integer,                    intent(in)    :: Ny
-   integer,                    intent(in)    :: NSolar
-   integer,                    intent(in)    :: YSolar(:)
-   integer,                    intent(in)    :: Y_Id(:)
-   integer,                    intent(in)    :: Ch_Is(:)
-   integer,                    intent(in)    :: MaxIter
-   character(len=*),           intent(in)    :: qc_flag_meanings
-   integer,                    intent(in)    :: deflate_level
-   logical,                    intent(in)    :: shuffle_flag
-   logical,                    intent(in)    :: verbose
-   logical,                    intent(in)    :: do_phase_pavolonis
-   logical,                    intent(in)    :: do_cldmask
-   logical,                    intent(in)    :: do_cloudmask_pre
-   logical,                    intent(in)    :: do_dem
+   integer,                   intent(in)    :: ncid
+   integer,                   intent(in)    :: dims_var(:)
+   type(output_data_primary), intent(inout) :: output_data
+   character(len=*),          intent(in)    :: inst_name
+   integer,                   intent(in)    :: NViews
+   integer,                   intent(in)    :: Ny
+   integer,                   intent(in)    :: NSolar
+   integer,                   intent(in)    :: YSolar(:)
+   integer,                   intent(in)    :: Y_Id(:)
+   integer,                   intent(in)    :: Ch_Is(:)
+   integer,                   intent(in)    :: MaxIter
+   character(len=*),          intent(in)    :: qc_flag_meanings
+   integer,                   intent(in)    :: deflate_level
+   logical,                   intent(in)    :: shuffle_flag
+   logical,                   intent(in)    :: verbose
+   logical,                   intent(in)    :: do_phase_pavolonis
+   logical,                   intent(in)    :: do_cldmask
+   logical,                   intent(in)    :: do_cldmask_uncertainty
+   logical,                   intent(in)    :: do_cloudmask_pre
+   logical,                   intent(in)    :: do_dem
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -848,6 +850,26 @@ if (do_cldmask) then
            valid_max     = output_data%cldmask_vmax, &
            flag_values   = '0b, 1b', &
            flag_meanings = 'clear, cloudy', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+   !----------------------------------------------------------------------------
+   ! cldmask_uncertainty
+   !----------------------------------------------------------------------------
+if (do_cldmask_uncertainty) then
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cldmask_uncertainty', &
+           output_data%vid_cldmask_uncertainty, &
+           verbose, &
+           long_name     = 'Neural net cloud mask (radiance based) uncertainty', &
+           standard_name = 'Neural_net_cloud_mask_uncertainty', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cldmask_uncertainty_scale, &
+           add_offset    = output_data%cldmask_uncertainty_offset, &
+           valid_min     = output_data%cldmask_uncertainty_vmin, &
+           valid_max     = output_data%cldmask_uncertainty_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if

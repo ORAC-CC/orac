@@ -21,6 +21,7 @@
 ! 2015/07/01, CP: Added in corrected cth
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2015/09/07, GM: Add cldmask_uncertainty.
 !
 ! $Id$
 !
@@ -45,12 +46,13 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, do_dem)
+subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, do_cldmask_uncertainty, do_dem)
 
    implicit none
 
    type(output_data_primary), intent(inout) :: output_data
    logical,                    intent(in)   :: do_phase_pavolonis
+   logical,                    intent(in)   :: do_cldmask_uncertainty
    logical,                    intent(in)   :: do_dem
 
    deallocate(output_data%vid_sol_zen)
@@ -107,6 +109,9 @@ end if
 
    deallocate(output_data%cldtype)
    deallocate(output_data%cldmask)
+if (do_cldmask_uncertainty) then
+   deallocate(output_data%cldmask_uncertainty)
+end if
    deallocate(output_data%cccot_pre)
    deallocate(output_data%lusflag)
 if (do_dem) then

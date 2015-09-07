@@ -30,7 +30,7 @@
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination,
 !    and channel selection code.
 ! 2015/04/28, AP: Added fields for surface uncertainty and correlation.
-! 2015/07/03, OS: Added cldmask_error
+! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2015/07/27, AP: Replace CloudFlag with Type.
 !
 ! $Id$
@@ -73,7 +73,7 @@ module Data_def
       integer(byte),      pointer :: Type(:,:)
       integer(byte),      pointer :: cldtype(:,:)
       integer(byte),      pointer :: cldmask(:,:)
-      real(sreal),        pointer :: cldmask_error(:,:)
+      real(sreal),        pointer :: cldmask_uncertainty(:,:)
       real(sreal),        pointer :: cccot_pre(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
