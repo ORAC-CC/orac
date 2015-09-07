@@ -32,7 +32,6 @@
 !                             to be populated with data from the file. This
 !                             is overwritten as successive segments of data
 !                             are read in.
-! verbose  logic  In          Prints log information to screen.
 !
 ! History:
 ! 2012/08/22, MJ: Uses original routine and implements reading of netcdf
@@ -42,6 +41,7 @@
 ! 2014/01/30, AP: Remove NSegs, SegSize arguments.
 ! 2015/07/03, OS: Added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -49,7 +49,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_Location_nc(Ctrl, MSI_Data, verbose)
+subroutine Read_Location_nc(Ctrl, MSI_Data)
 
    use CTRL_def
    use orac_ncdf
@@ -60,19 +60,18 @@ subroutine Read_Location_nc(Ctrl, MSI_Data, verbose)
 
    type(CTRL_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   logical,      intent(in)    :: verbose
 
    integer :: ncid
 
    ! Open location file
-   if (verbose) write(*,*) 'Location file: ', trim(Ctrl%Fid%Loc)
+   if (Ctrl%verbose) write(*,*) 'Location file: ', trim(Ctrl%Fid%Loc)
    call nc_open(ncid, Ctrl%Fid%Loc)
 
    allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call nc_read_array(ncid, "lat", MSI_Data%Location%Lat, verbose)
-   call nc_read_array(ncid, "lon", MSI_Data%Location%Lon, verbose)
+   call nc_read_array(ncid, "lat", MSI_Data%Location%Lat, Ctrl%verbose)
+   call nc_read_array(ncid, "lon", MSI_Data%Location%Lon, Ctrl%verbose)
 
    ! Close location file
    if (nf90_close(ncid) /= NF90_NOERR) then

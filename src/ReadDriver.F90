@@ -21,7 +21,6 @@
 ! Ctrl        struct  Out         Control struct defined in CTRL_def
 ! global_atts struct  Both        Attributes for NCDF files
 ! source_atts struct  Both        Description of file inputs for NCDF files
-! verbose     logic   Both        Controls output to stdout
 !
 ! History:
 ! 2012/05/15, CP: created original file to reapce ReadDriver
@@ -100,6 +99,7 @@
 !    such that CHXX style indexing can be used.
 ! 2015/08/19, AP: Extensive tidying using the switch function. Tidying of Ctrl.
 !    Eliminated XI as not meaningful.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -121,9 +121,9 @@ module read_driver_m
 contains
 
 #ifdef WRAPPER
-subroutine Read_Driver(Ctrl, global_atts, source_atts, drifile, verbose)
+subroutine Read_Driver(Ctrl, global_atts, source_atts, drifile)
 #else
-subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
+subroutine Read_Driver(Ctrl, global_atts, source_atts)
 #endif
 
    use, intrinsic :: iso_fortran_env, only : input_unit
@@ -142,7 +142,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    type(CTRL_t),              intent(out)   :: Ctrl
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
-   logical,                   intent(in)    :: verbose
 #ifdef WRAPPER
    character(FilenameLen),    intent(inout) :: drifile
 #else
@@ -164,10 +163,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    integer                            :: NXJ_Dy, NXJ_Tw, NXJ_Ni
    integer, dimension(MaxStateVar)    :: X_Dy, X_Tw, X_Ni
    integer, dimension(MaxStateVar)    :: XJ_Dy, XJ_Tw, XJ_Ni
-   integer                            :: a ! Short name for CtrL%Approach
+   integer                            :: a ! Short name for Ctrl%Approach
    real                               :: wvl_threshold
 
 
+   Ctrl%verbose = .true.
    !----------------------------------------------------------------------------
    ! Locate the driver file
    !----------------------------------------------------------------------------
@@ -193,8 +193,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          stop DriverFileNotFound
       end if
 
-      if (verbose) write(*,*) 'Driver file: ',trim(drifile)
-
       ! Open the driver file
       call find_lun(dri_lun)
       open(unit=dri_lun, file=drifile, iostat=ios)
@@ -212,29 +210,20 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    ! Read folder paths
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%FID%Data_Dir) /= 0) call h_p_e('Ctrl%FID%Data_Dir')
-   if (verbose) write(*,*) 'Input directory: ',trim(Ctrl%FID%Data_Dir)
 
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%FID%Filename) /= 0) call h_p_e('Ctrl%FID%Filename')
-   if (verbose) write(*,*) 'Input filename: ',trim(Ctrl%FID%Filename)
 
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%FID%Out_Dir) /= 0) call h_p_e('Ctrl%FID%Out_Dir')
-   if (verbose) write(*,*) 'Output directory: ',trim(Ctrl%FID%Out_Dir)
 
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%FID%SAD_Dir) /= 0) call h_p_e('Ctrl%FID%SAD_Dir')
-   if (verbose) write(*,*) 'LUT directory: ',trim(Ctrl%FID%SAD_Dir)
 
    ! Set filenames
    Ctrl%FID%Data_Dir = trim(Ctrl%FID%Data_Dir)//'/'
    Ctrl%FID%Out_Dir  = trim(Ctrl%FID%Out_Dir)//'/'
    Ctrl%FID%SAD_Dir  = trim(Ctrl%FID%SAD_Dir)//'/'
-   if (verbose) then
-      write(*,*) 'Ctrl%FID%Data_Dir: ',trim(Ctrl%FID%Data_Dir)
-      write(*,*) 'Ctrl%FID%Out_Dir: ', trim(Ctrl%FID%Out_Dir)
-      write(*,*) 'Ctrl%FID%SAD_Dir: ', trim(Ctrl%FID%SAD_Dir)
-   end if
 
    root_filename   = trim(Ctrl%FID%Data_Dir)//trim(Ctrl%FID%Filename)
    Ctrl%FID%Config = trim(root_filename)//'.config.nc'
@@ -247,28 +236,24 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%FID%Geo    = trim(root_filename)//'.geo.nc'
    Ctrl%FID%Loc    = trim(root_filename)//'.loc.nc'
    Ctrl%FID%Alb    = trim(root_filename)//'.alb.nc'
-   if (verbose) write(*,*) 'Ctrl%FID%Config: ',trim(Ctrl%FID%Config)
 
    ! Read name of instrument
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%InstName) /= 0) call h_p_e('Ctrl%InstName')
-   write(*,*) 'Ctrl%InstName: ',trim(Ctrl%InstName)
 
    ! Number of channels in preprocessing file
    ! (this is actually not really necessary as we have that in the config file)
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%Ind%NAvail) /= 0) &
       call h_p_e('number of channels expected in preproc files')
-   if (verbose) write(*,*) &
-        'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
 
    ! Read channel related info
    call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, channel_wvl, global_atts, source_atts, verbose)
+     channel_lw_flag, channel_wvl, global_atts, source_atts)
 
    ! Read dimensions of preprocessing swath files
    call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
-      Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, verbose)
+      Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, Ctrl%verbose)
 
    ! Read processing flag from driver
    allocate(channel_proc_flag(Ctrl%Ind%NAvail))
@@ -281,7 +266,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
                  channel_proc_flag
       stop DriverFileIncompat
    end if
-   if (verbose) write(*,*) 'channel flag from driver: ',channel_proc_flag
 
    ! Determine the number of channels to be used.
    Ctrl%Ind%Ny       = count(channel_proc_flag == 1)
@@ -289,8 +273,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%Ind%NThermal = count(channel_lw_flag == 1 .and. channel_proc_flag == 1)
    Ctrl%Ind%NMixed   = count(channel_sw_flag == 1 .and. channel_lw_flag == 1 &
                              .and. channel_proc_flag == 1)
-   if (verbose) write(*,*) 'Ny,NSolar,NThermal,NMixed: ',Ctrl%Ind%Ny, &
-        Ctrl%Ind%NSolar,Ctrl%Ind%NThermal,Ctrl%Ind%NMixed
 
    ! Produce channel indexing arrays
    allocate(Ctrl%Ind%ICh(Ctrl%Ind%Ny))
@@ -329,13 +311,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
          end if
       end if
    end do
-   if (verbose) then
-      write(*,*) 'Ctrl%Ind%ICh: ',Ctrl%Ind%ICh
-      write(*,*) 'Ctrl%Ind%Y_ID: ',Ctrl%Ind%Y_ID
-      write(*,*) 'Ctrl%Ind%YSolar: ',Ctrl%Ind%YSolar
-      write(*,*) 'Ctrl%Ind%YThermal: ',Ctrl%Ind%YThermal
-      write(*,*) 'Ctrl%Ind%YMixed: ',Ctrl%Ind%YMixed
-   end if
 
    ! Identify which channels are multiple views of the same wavelength
    allocate(Ctrl%Ind%WvlIdx(Ctrl%Ind%Ny))
@@ -357,18 +332,12 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    if (parse_driver(dri_lun, line) /= 0 .or. &
        parse_string(line, Ctrl%LUTClass) /= 0) &
       call h_p_e('Ctrl%LUTClass')
-   if (verbose) write(*,*)'Ctrl%LUTClass: ',trim(Ctrl%LUTClass)
 
    ! Output filenames
    outname=trim(Ctrl%FID%Out_Dir)//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
    Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
    Ctrl%FID%BkP          = trim(outname)//'.bkp'
-   if (verbose) then
-      write(*,*) 'Ctrl%FID%L2_primary: ', trim(Ctrl%FID%L2_primary)
-      write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
-      write(*,*) 'Ctrl%FID%BkP: ',trim(Ctrl%FID%BkP)
-   end if
 
    ! Selection of retrieval approach currently optional
    Ctrl%Approach = -1
@@ -873,6 +842,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
       case('CTRL%TYPES_TO_PROCESS')
          if (parse_string(line, Ctrl%Types_to_process, Ctrl%NTypes_to_process) &
                                                        /= 0) call h_p_e(label)
+      case('CTRL%VERBOSE')
+         if (parse_string(line, Ctrl%verbose)          /= 0) call h_p_e(label)
       case('CTRL%RECHANS')
          if (parse_user_text(line, Ctrl%ReChans)       /= 0) call h_p_e(label)
       case('CTRL%AP')
@@ -942,6 +913,31 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts, verbose)
    Ctrl%XJ(:,ITwi)   = XJ_Tw
    Ctrl%XJ(:,INight) = XJ_Ni
 
+   if (Ctrl%verbose) then
+      write(*,*) 'Driver file: ',       trim(drifile)
+      write(*,*) 'Input directory: ',   trim(Ctrl%FID%Data_Dir)
+      write(*,*) 'Input filename: ',    trim(Ctrl%FID%Filename)
+      write(*,*) 'Output directory: ',  trim(Ctrl%FID%Out_Dir)
+      write(*,*) 'LUT directory: ',     trim(Ctrl%FID%SAD_Dir)
+      write(*,*) 'Ctrl%FID%Data_Dir: ', trim(Ctrl%FID%Data_Dir)
+      write(*,*) 'Ctrl%FID%Out_Dir: ',  trim(Ctrl%FID%Out_Dir)
+      write(*,*) 'Ctrl%FID%SAD_Dir: ',  trim(Ctrl%FID%SAD_Dir)
+      write(*,*) 'Ctrl%FID%Config: ',   trim(Ctrl%FID%Config)
+      write(*,*) 'Ctrl%InstName: ',     trim(Ctrl%InstName)
+      write(*,*) 'Number of channels expected in preproc files: ',Ctrl%Ind%NAvail
+      write(*,*) 'channel flag from driver: ', channel_proc_flag
+      write(*,*) 'Ny,NSolar,NThermal,NMixed: ', Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
+           Ctrl%Ind%NThermal, Ctrl%Ind%NMixed
+      write(*,*) 'Ctrl%Ind%ICh: ',          Ctrl%Ind%ICh
+      write(*,*) 'Ctrl%Ind%Y_ID: ',         Ctrl%Ind%Y_ID
+      write(*,*) 'Ctrl%Ind%YSolar: ',       Ctrl%Ind%YSolar
+      write(*,*) 'Ctrl%Ind%YThermal: ',     Ctrl%Ind%YThermal
+      write(*,*) 'Ctrl%Ind%YMixed: ',       Ctrl%Ind%YMixed
+      write(*,*) 'Ctrl%LUTClass: ',         trim(Ctrl%LUTClass)
+      write(*,*) 'Ctrl%FID%L2_primary: ',   trim(Ctrl%FID%L2_primary)
+      write(*,*) 'Ctrl%FID%L2_secondary: ', trim(Ctrl%FID%L2_secondary)
+      write(*,*) 'Ctrl%FID%BkP: ',          trim(Ctrl%FID%BkP)
+   end if
 
    !----------------------------------------------------------------------------
    ! Now do some checks

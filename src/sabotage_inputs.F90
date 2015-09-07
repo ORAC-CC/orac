@@ -17,10 +17,10 @@
 ! MSI_Data struct       Both        Data structure: the MSI data part of this
 !                                   struct is populated by this routine, and
 !                                   is overwritten on successive calls.
-! verbose  logical      In         Verbose print-out flag
 !
 ! History:
 ! 2015/02/04, GM: Original version.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -28,7 +28,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine sabotage_inputs(Ctrl, MSI_Data, verbose)
+subroutine sabotage_inputs(Ctrl, MSI_Data)
 
    use CTRL_def
 
@@ -38,7 +38,6 @@ subroutine sabotage_inputs(Ctrl, MSI_Data, verbose)
 
    type(CTRL_t), intent(inout) :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   logical,      intent(in)    :: verbose
 
    ! Local variables
 

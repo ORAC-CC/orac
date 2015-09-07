@@ -675,6 +675,7 @@ end subroutine Read_LUT_both
 ! 2015/01/19, GM: Use make_sad_chan_num().
 ! 2015/08/21, AP: Generalised MS NOAA7/9 fix, moving create_lut_filename into
 !    SAD_Chan_def and renaming it create_sad_filename.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! Bugs:
 ! None known.
@@ -737,7 +738,8 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       ! Generate channel file name from Ctrl struct info. This sets the channel
       ! to be used in instrument notation for reading from SAD.
       call make_sad_chan_num(Ctrl, i, chan_num)
-      write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
+      if (Ctrl%verbose) &
+           write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
 
       ! Read the Rd and Rfd LUTs from the Rd file for all channels (solar and
       ! thermal)

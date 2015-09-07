@@ -15,10 +15,10 @@
 ! ------------------------------------------------------------------------------
 ! Ctrl    struct       Both        Control structure
 ! RTM     alloc struct Out         RTM structure
-! verbose logical      In          Print out progress information
 !
 ! History:
 ! 2014/04/27, AP: Original version forked from ReadLwRTM_nc.F90.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -26,7 +26,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_PRTM_nc(Ctrl, RTM, verbose)
+subroutine Read_PRTM_nc(Ctrl, RTM)
 
    use CTRL_def
    use ECP_Constants
@@ -38,7 +38,6 @@ subroutine Read_PRTM_nc(Ctrl, RTM, verbose)
 
    type(CTRL_t), intent(in)  :: Ctrl
    type(RTM_t),  intent(out) :: RTM
-   logical,      intent(in)  :: verbose
 
    ! Local variables
 
@@ -64,22 +63,22 @@ subroutine Read_PRTM_nc(Ctrl, RTM, verbose)
 
    ! Read data into arrays
    allocate(dummy1d(RTM%LW%Grid%NLon))
-   call nc_read_array(ncid, "lon_rtm", dummy1d, verbose)
+   call nc_read_array(ncid, "lon_rtm", dummy1d, Ctrl%verbose)
    do i=1,RTM%LW%Grid%NLon
       RTM%LW%lon(i,:) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
    allocate(dummy1d(RTM%LW%Grid%NLat))
-   call nc_read_array(ncid, "lat_rtm", dummy1d, verbose)
+   call nc_read_array(ncid, "lat_rtm", dummy1d, Ctrl%verbose)
    do i=1,RTM%LW%Grid%NLat
       RTM%LW%lat(:,i) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
-   call nc_read_array(ncid, "pprofile_rtm", RTM%LW%P, verbose)
-   call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, verbose)
-   call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, verbose)
+   call nc_read_array(ncid, "pprofile_rtm", RTM%LW%P, Ctrl%verbose)
+   call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, Ctrl%verbose)
+   call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, Ctrl%verbose)
 
    ! Close PRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) then

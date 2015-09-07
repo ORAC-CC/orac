@@ -165,6 +165,7 @@
 ! 2015/02/04, OS: drifile is passed as call argument for WRAPPER
 ! 2015/05/25, GM: Some cleanup involving Diag.
 ! 2015/07/31, AP: Rejig Diag for longer, variable state vector.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -217,7 +218,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    integer             :: i, j, jj, m
    integer             :: status  ! Status value returned from subroutines
-   logical             :: verbose ! Verbose print-out flag
 
    integer             :: ixstart,ixstop,xstep
                                   ! First and last super-pixel X locations
@@ -297,9 +297,6 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    status = 0
 
-   ! Temporary until this is made an argument (somehow)
-   verbose = .true.
-
 
    !----------------------------------------------------------------------------
    ! Program initialization section
@@ -307,9 +304,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Read Ctrl struct from driver file
 #ifdef WRAPPER
-   call Read_Driver(Ctrl, global_atts, source_atts, drifile, verbose)
+   call Read_Driver(Ctrl, global_atts, source_atts, drifile)
 #else
-   call Read_Driver(Ctrl, global_atts, source_atts, verbose)
+   call Read_Driver(Ctrl, global_atts, source_atts)
 #endif
 
 #ifdef BKP
@@ -332,21 +329,20 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! parameters and read the SAD values.
    allocate(SAD_Chan(Ctrl%Ind%Ny))
 
-   write(*,*) 'Reading SAD files'
    call Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
 
 
    ! Make read in rttov data in one go, no more segment reads
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
       call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
-           RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NLWF, verbose)
+           RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NLWF, Ctrl%verbose)
 
       call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
-           RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, verbose)
+           RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, Ctrl%verbose)
 
-      call Read_PRTM_nc( Ctrl, RTM, verbose)
-      call Read_LwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NThermal > 0 ?
-      call Read_SwRTM_nc(Ctrl, RTM, verbose) !ACP: Put if NSolar > 0 ?
+      call Read_PRTM_nc( Ctrl, RTM)
+      call Read_LwRTM_nc(Ctrl, RTM) !ACP: Put if NThermal > 0 ?
+      call Read_SwRTM_nc(Ctrl, RTM) !ACP: Put if NSolar > 0 ?
    end if
 
 
@@ -378,13 +374,15 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       iystop  = Ctrl%Ind%YMax
    end if
 
-   write(*,*) 'Start line: ', iystart
-   write(*,*) 'Stop line: ', iystop
-   write(*,*) 'Total number of lines: ', (iystop - iystart) + 1
+   if (Ctrl%verbose) then
+      write(*,*) 'Start line: ', iystart
+      write(*,*) 'Stop line: ', iystop
+      write(*,*) 'Total number of lines: ', (iystop - iystart) + 1
+   end if
 
 
    ! Read all the swath data
-   call Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
+   call Read_Data_nc(Ctrl, MSI_Data, SAD_Chan)
 
    xstep = 1
    ystep = 1
@@ -426,11 +424,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Open the netcdf output files
-   write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
+   if (Ctrl%verbose) write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
    call nc_create(Ctrl%FID%L2_primary, ncid_primary, ixstop-ixstart+1, &
       iystop-iystart+1, dims_var, 1, global_atts, source_atts)
 
-   write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
+   if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
    call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, ixstop-ixstart+1, &
      iystop-iystart+1, dims_var, 2, global_atts, source_atts)
 

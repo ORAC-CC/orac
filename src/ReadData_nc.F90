@@ -19,7 +19,6 @@
 !                                   this routine: solar constant is
 !                                   modified from annual average to value for
 !                                   the day of the ALB data.
-! verbose  logical      In          Verbose print-out flag
 !
 ! History:
 ! 2012/08/16, MJ: Original version.
@@ -31,6 +30,7 @@
 !    associated.
 ! 2015/02/04, GM: Changes related to the new missing channel, illumination,
 !    and channel selection code.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -38,7 +38,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
+subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan)
 
    use netcdf
 
@@ -52,7 +52,6 @@ subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    type(CTRL_t),     intent(inout) :: Ctrl
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
-   logical,          intent(in)    :: verbose
 
    ! Nullify pointers in case some are not associated.
    call Nullify_Data(Ctrl, MSI_Data)
@@ -63,31 +62,31 @@ subroutine Read_Data_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    ! (Sections to be added as reading routines become available
 
    if (Ctrl%RS%RsSelm == SelmAux) then
-      if (verbose) write(*,*) 'Reading Albedo data'
-      call Read_ALB_nc(Ctrl, MSI_Data, verbose)
+      if (Ctrl%verbose) write(*,*) 'Reading Albedo data'
+      call Read_ALB_nc(Ctrl, MSI_Data)
    end if
 
-   if (verbose) write(*,*) 'Reading Cloud Flag data'
-   call Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
+   if (Ctrl%verbose) write(*,*) 'Reading Cloud Flag data'
+   call Read_CloudFlags_nc(Ctrl, MSI_Data)
 
-   if (verbose) write(*,*) 'Reading Geometry data'
-   call Read_Geometry_nc(Ctrl, MSI_Data, verbose)
+   if (Ctrl%verbose) write(*,*) 'Reading Geometry data'
+   call Read_Geometry_nc(Ctrl, MSI_Data)
 
-   if (verbose) write(*,*) 'Reading Location data'
-   call Read_Location_nc(Ctrl, MSI_Data, verbose)
+   if (Ctrl%verbose) write(*,*) 'Reading Location data'
+   call Read_Location_nc(Ctrl, MSI_Data)
 
-   if (verbose) write(*,*) 'Reading LS Flag data'
-   call Read_LSFlags_nc(Ctrl, MSI_Data, verbose)
+   if (Ctrl%verbose) write(*,*) 'Reading LS Flag data'
+   call Read_LSFlags_nc(Ctrl, MSI_Data)
 
-   if (verbose) write(*,*) 'Reading MSI data'
-   call Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
+   if (Ctrl%verbose) write(*,*) 'Reading MSI data'
+   call Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
    if (Ctrl%sabotage_inputs) then
-      if (verbose) write(*,*) 'Sabatoging input data'
-      call sabotage_inputs(Ctrl, MSI_Data, verbose)
+      if (Ctrl%verbose) write(*,*) 'Sabatoging input data'
+      call sabotage_inputs(Ctrl, MSI_Data)
    end if
 
-   if (verbose) write(*,*) 'Determining Illumination data'
-   call Determine_Illum(Ctrl, MSI_Data, verbose)
+   if (Ctrl%verbose) write(*,*) 'Determining Illumination data'
+   call Determine_Illum(Ctrl, MSI_Data)
 
 end subroutine Read_Data_nc

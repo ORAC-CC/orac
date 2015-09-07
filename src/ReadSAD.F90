@@ -30,6 +30,7 @@
 !    from function name.
 ! 2011/12/05, CP: Removed instrument config file.
 ! 2014/05/23, GM: Cleaned up code.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -56,6 +57,8 @@ subroutine Read_SAD(Ctrl, SAD_Chan, SAD_LUT)
    type(CTRL_t),                   intent(inout) :: Ctrl
    type(SAD_Chan_t), dimension(:), intent(inout) :: SAD_Chan
    type(SAD_LUT_t),                intent(inout) :: SAD_LUT
+
+   if (Ctrl%verbose) write(*,*) 'Reading SAD files'
 
    ! Read channel sad files
    call Read_SAD_Chan(Ctrl, SAD_Chan)

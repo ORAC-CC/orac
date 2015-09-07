@@ -19,11 +19,11 @@
 !                              image measurements, location values, geometry
 !                              etc for the current image segment, from which
 !                              the current SPixel values will be extracted.
-! verbose  logical In          Currently non-functional.
 !
 ! History:
 ! 2015/02/04, GM: Original version.
 ! 2015/08/04, GM: Check for solar zenith angle < SolZenMin.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -31,7 +31,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Determine_Illum(Ctrl, MSI_Data, verbose)
+subroutine Determine_Illum(Ctrl, MSI_Data)
 
    use CTRL_def
    use ECP_Constants
@@ -43,7 +43,6 @@ subroutine Determine_Illum(Ctrl, MSI_Data, verbose)
 
    type(CTRL_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   logical,      intent(in)    :: verbose
 
    ! Local variables
 

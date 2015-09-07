@@ -33,7 +33,6 @@
 !                                    of this struct is populated by this
 !                                    routine, and is overwritten on
 !                                    successive calls.
-! verbose  logical       In          Prints log information to screen.
 !
 ! History:
 ! 2002/05/29, CP: Original version copied from READ_MSI.
@@ -62,6 +61,7 @@
 ! 2015/08/10, AP: Additional surface uncs.
 ! 2015/08/31, AP: Read channels described by a correlation value rather than
 !    assuming them from the channel ordering.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -69,7 +69,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
+subroutine Read_ALB_nc(Ctrl, MSI_Data)
 
    use CTRL_def
    use ECP_Constants
@@ -81,7 +81,6 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    ! Argument declarations
    type(CTRL_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   logical,      intent(in)    :: verbose
 
    integer                     :: ncid, i, j, k, ind
    integer(kind=lint)          :: NAlb, NCor
@@ -90,13 +89,13 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    real(kind=sreal),   allocatable, dimension(:,:,:) :: cor_temp
 
    ! Open ALB file
-   if (verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Alb)
+   if (Ctrl%verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Alb)
    call nc_open(ncid, Ctrl%Fid%Alb)
 
    ! Read instrument channel indices from file
-   NAlb = nc_dim_length(ncid, 'nc_alb', verbose)
+   NAlb = nc_dim_length(ncid, 'nc_alb', Ctrl%verbose)
    allocate(alb_instr_ch_numbers(NAlb))
-   call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, verbose)
+   call nc_read_array(ncid, "alb_abs_ch_numbers", alb_instr_ch_numbers, Ctrl%verbose)
 
    ! Find the subscripts Ctrl%Ind%ysolar within alb_abs_ch_numbers
    allocate(subs(Ctrl%Ind%NSolar))
@@ -113,9 +112,9 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    allocate(MSI_Data%ALB(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
 
    ! Read solar channels from albedo field
-   call nc_read_array(ncid, "alb_data", MSI_Data%ALB, verbose, 3, subs)
+   call nc_read_array(ncid, "alb_data", MSI_Data%ALB, Ctrl%verbose, 3, subs)
 
-   if (verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
+   if (Ctrl%verbose) write(*,*) 'Max/Min Alb: ', maxval(MSI_Data%ALB), &
       minval(MSI_Data%ALB)
 
    if (Ctrl%RS%use_full_brdf) then
@@ -125,10 +124,10 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
       allocate(MSI_Data%rho_dv(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
       allocate(MSI_Data%rho_dd(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
 
-      call nc_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, verbose, 3, subs)
-      call nc_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, verbose, 3, subs)
-      call nc_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, verbose, 3, subs)
-      call nc_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, verbose, 3, subs)
+      call nc_read_array(ncid, "rho_0v_data", MSI_Data%rho_0v, Ctrl%verbose, 3, subs)
+      call nc_read_array(ncid, "rho_0d_data", MSI_Data%rho_0d, Ctrl%verbose, 3, subs)
+      call nc_read_array(ncid, "rho_dv_data", MSI_Data%rho_dv, Ctrl%verbose, 3, subs)
+      call nc_read_array(ncid, "rho_dd_data", MSI_Data%rho_dd, Ctrl%verbose, 3, subs)
    end if
 
 
@@ -136,17 +135,17 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
    if (Ctrl%Rs%SRsSelm == SelmAux) then
       ! Read surface reflectance uncertainties
       allocate(MSI_Data%rho_dd_unc(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "rho_dd_err", MSI_Data%rho_dd_unc, verbose, 3, subs)
+      call nc_read_array(ncid, "rho_dd_err", MSI_Data%rho_dd_unc, Ctrl%verbose, 3, subs)
 
       ! Read additional uncertainty terms (in RhoDD over land)
       allocate(MSI_Data%svd_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "svd_err", MSI_Data%svd_unc, verbose, 1, subs)
+      call nc_read_array(ncid, "svd_err", MSI_Data%svd_unc, Ctrl%verbose, 1, subs)
       allocate(MSI_Data%veg_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "veg_err", MSI_Data%veg_unc, verbose, 1, subs)
+      call nc_read_array(ncid, "veg_err", MSI_Data%veg_unc, Ctrl%verbose, 1, subs)
       allocate(MSI_Data%bare_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "bare_err", MSI_Data%bare_unc, verbose, 1, subs)
+      call nc_read_array(ncid, "bare_err", MSI_Data%bare_unc, Ctrl%verbose, 1, subs)
       allocate(MSI_Data%snow_unc(Ctrl%Ind%NSolar))
-      call nc_read_array(ncid, "snow_err", MSI_Data%snow_unc, verbose, 1, subs)
+      call nc_read_array(ncid, "snow_err", MSI_Data%snow_unc, Ctrl%verbose, 1, subs)
 
       ! Read surface reflectance correlations. The third dimension of this is
       ! every permutation of the Solar channels, so some work is necessary to
@@ -155,11 +154,11 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data, verbose)
       ! make a correlation matrix for ORAC.
 
       ! Read in the correlation data to a temporary array
-      NCor = nc_dim_length(ncid, 'nc_corr', verbose)
+      NCor = nc_dim_length(ncid, 'nc_corr', Ctrl%verbose)
       allocate(cor_ch_numbers(2, NCor))
-      call nc_read_array(ncid, "cor_abs_ch_numbers", cor_ch_numbers, verbose)
+      call nc_read_array(ncid, "cor_abs_ch_numbers", cor_ch_numbers, Ctrl%verbose)
       allocate(cor_temp(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, NCor))
-      call nc_read_array(ncid, "cor_data", cor_temp, verbose)
+      call nc_read_array(ncid, "cor_data", cor_temp, Ctrl%verbose)
 
       allocate(MSI_Data%rho_dd_cor(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, &
                                    Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))

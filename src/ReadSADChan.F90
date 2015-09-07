@@ -71,6 +71,7 @@
 ! 2015/06/02, AP: Writing to Sy managed in GetMeasurements.
 ! 2015/07/14, AP: Replacing **2 with multiplication.
 ! 2015/08/21, AP: Generalised MS last fix.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -107,7 +108,8 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
    NThermal        = 0
    NSolar          = 0
 
-   write(*,*) 'Number of channels used, Ctrl%Ind%Ny: ',Ctrl%Ind%Ny
+   if (Ctrl%verbose) &
+        write(*,*) 'Number of channels used, Ctrl%Ind%Ny: ',Ctrl%Ind%Ny
 
    call Find_LUN(c_lun)
 
@@ -117,10 +119,11 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       ! to be used in instrument notation for reading from SAD.
 
       call make_sad_chan_num(Ctrl, i, chan_num)
-      write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
+      if (Ctrl%verbose) &
+           write(*,*) 'SAD Channel number: ', trim(adjustl(chan_num))
 
       call create_sad_filename(Ctrl, chan_num, chan_file)
-      write(*,*) 'chan_file read in: ',trim(adjustl(chan_file))
+      if (Ctrl%verbose) write(*,*) 'chan_file read in: ',trim(adjustl(chan_file))
 
       ! Check if file exists
       inquire(file=chan_file, exist=file_exists)
@@ -152,8 +155,9 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
 
       read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%WvN
       read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Thermal%Flag
-      write(*,*) 'Specs (wavenumber and t-flag):', SAD_Chan(i)%WvN, &
-                 SAD_Chan(i)%Thermal%Flag
+      if (Ctrl%verbose) &
+           write(*,*) 'Specs (wavenumber and t-flag):', SAD_Chan(i)%WvN, &
+                      SAD_Chan(i)%Thermal%Flag
 
       if (SAD_Chan(i)%Thermal%Flag > 0) then
          NThermal = NThermal + 1
@@ -180,7 +184,7 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
       end if
 
       read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Flag
-      write(*,*) 'Specs (s-flag): ',SAD_Chan(i)%Solar%Flag
+      if (Ctrl%verbose) write(*,*) 'Specs (s-flag): ',SAD_Chan(i)%Solar%Flag
 
       if (SAD_Chan(i)%Solar%Flag > 0) then
          NSolar = NSolar + 1
@@ -221,13 +225,15 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
    end do
 
    ! Check the NSolar and NThermal totals vs. the driver file values
-   write(*,*) 'NSolar,Ctrl%Ind%NSolar: ',NSolar,Ctrl%Ind%NSolar
+   if (Ctrl%verbose) &
+        write(*,*) 'NSolar,Ctrl%Ind%NSolar: ',NSolar,Ctrl%Ind%NSolar
    if (NSolar /= Ctrl%Ind%NSolar) then
       write(*,*) 'ERROR: Read_SAD_Chan(): Error in NSolar value in driver file'
       stop DriverFileDataErr
    end if
 
-   write(*,*) 'NThermal,Ctrl%Ind%NThermal: ',NThermal,Ctrl%Ind%NThermal
+   if (Ctrl%verbose) &
+        write(*,*) 'NThermal,Ctrl%Ind%NThermal: ',NThermal,Ctrl%Ind%NThermal
    if (NThermal /= Ctrl%Ind%NThermal) then
       write(*,*) 'ERROR: Read_SAD_Chan(): Error in NThermal value in driver file'
       stop DriverFileDataErr

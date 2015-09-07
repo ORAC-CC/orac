@@ -18,7 +18,6 @@
 ! ------------------------------------------------------------------------------
 ! Ctrl    struct       Both        Control structure
 ! RTM     alloc struct Out         RTM structure
-! verbose logical      In          Print out progress information
 !
 ! History:
 ! 2000/12/05, KS: Original version
@@ -83,6 +82,7 @@
 ! 2015/04/27, AP: Moved PRTM code into its own routine.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -90,7 +90,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
+subroutine Read_LwRTM_nc(Ctrl, RTM)
 
    use CTRL_def
    use ECP_Constants
@@ -102,7 +102,6 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 
    type(CTRL_t), intent(in)  :: Ctrl
    type(RTM_t),  intent(out) :: RTM
-   logical,      intent(in)  :: verbose
 
    ! Local variables
 
@@ -142,11 +141,11 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
 !  allocate(WvNumber(RTM%LW%NLWF))
 
    ! Read ChanID and WvNumber
-   call nc_read_array(ncid, "lw_channel_instr_ids", ChanID, verbose)
-!  call nc_read_array(ncid, "lw_channel_wvl", WvNumber, verbose)
+   call nc_read_array(ncid, "lw_channel_instr_ids", ChanID, Ctrl%verbose)
+!  call nc_read_array(ncid, "lw_channel_wvl", WvNumber, Ctrl%verbose)
 
-   if (verbose) write(*,*) &
-      'LW channel instrument ids for RTM in LW preprocessing file: ',ChanID
+   if (Ctrl%verbose) write(*,*) &
+      'LW channel instrument ids for RTM in LW preprocessing file: ', ChanID
 
    ! Check that required thermal channels are present
 
@@ -195,12 +194,12 @@ subroutine Read_LwRTM_nc(Ctrl, RTM, verbose)
          RTM%LW%Grid%NLat))
 
       ! Read data into arrays
-      call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, verbose, 1, index)
-      call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, verbose, 1, index)
-      call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, verbose, 1, index)
-      call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, verbose, 1, index)
-      call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, verbose, 1, index)
-      call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, verbose, 1, index)
+      call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, Ctrl%verbose, 1, index)
+      call nc_read_array(ncid, "tac_lw", RTM%LW%Tac, Ctrl%verbose, 1, index)
+      call nc_read_array(ncid, "tbc_lw", RTM%LW%Tbc, Ctrl%verbose, 1, index)
+      call nc_read_array(ncid, "rbc_up_lw", RTM%LW%Rbc_up, Ctrl%verbose, 1, index)
+      call nc_read_array(ncid, "rac_up_lw", RTM%LW%Rac_up, Ctrl%verbose, 1, index)
+      call nc_read_array(ncid, "rac_down_lw", RTM%LW%Rac_dwn, Ctrl%verbose, 1, index)
    end if
 
 !  if (allocated(WvNumber)) deallocate(WvNumber)

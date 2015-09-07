@@ -32,7 +32,6 @@
 !                             to be populated with data from the file. This
 !                             is overwritten as successive segments of data
 !                             are read in.
-! verbose  logic  In          Prints log information to screen.
 !
 ! History:
 ! 2000/11/03, KS: Original version
@@ -59,6 +58,7 @@
 ! 2015/01/30, AP: Remove NSegs, SegSize arguments. Replace YSeg0 with Y0.
 ! 2015/07/03, OS: Added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -66,7 +66,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_LSFlags_nc(Ctrl, MSI_Data, verbose)
+subroutine Read_LSFlags_nc(Ctrl, MSI_Data)
 
    use CTRL_def
    use ECP_Constants
@@ -78,12 +78,11 @@ subroutine Read_LSFlags_nc(Ctrl, MSI_Data, verbose)
 
    type(CTRL_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   logical,      intent(in)    :: verbose
 
    integer :: ncid
 
    ! Open LSF file
-   if (verbose) write(*,*) 'Land/sea flag file: ', trim(Ctrl%Fid%LS)
+   if (Ctrl%verbose) write(*,*) 'Land/sea flag file: ', trim(Ctrl%Fid%LS)
    call nc_open(ncid, Ctrl%Fid%LS)
 
    allocate(MSI_Data%LSFlags(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
@@ -91,10 +90,10 @@ subroutine Read_LSFlags_nc(Ctrl, MSI_Data, verbose)
    allocate(MSI_Data%dem(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%nisemask(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call nc_read_array(ncid, "lsflag", MSI_Data%LSFlags, verbose)
-   call nc_read_array(ncid, "lusflag", MSI_Data%lusflags, verbose)
-   call nc_read_array(ncid, "dem", MSI_Data%dem, verbose)
-   call nc_read_array(ncid, "nisemask", MSI_Data%nisemask, verbose)
+   call nc_read_array(ncid, "lsflag", MSI_Data%LSFlags, Ctrl%verbose)
+   call nc_read_array(ncid, "lusflag", MSI_Data%lusflags, Ctrl%verbose)
+   call nc_read_array(ncid, "dem", MSI_Data%dem, Ctrl%verbose)
+   call nc_read_array(ncid, "nisemask", MSI_Data%nisemask, Ctrl%verbose)
 
    ! Close LSF file
    if (nf90_close(ncid) /= NF90_NOERR) then

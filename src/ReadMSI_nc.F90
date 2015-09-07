@@ -35,7 +35,6 @@
 !                                   by this routine: solar constant is
 !                                   modified from annual average to value for
 !                                   the day of the MSI data.
-! verbose  logical      In          Print log information to screen.
 !
 ! History:
 ! 2000/11/03, KS: Original version
@@ -89,6 +88,7 @@
 ! 2015/07/10, OS: undo previous commit
 ! 2015/08/26, AP: Correct name of date attribute.
 ! 2015/08/31, AP: Check if ViewIdx have valid values.
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -97,7 +97,7 @@
 ! errors in f0 < 6e-4, which is of a similar order to the equation's accuracy.
 !-------------------------------------------------------------------------------
 
-subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
+subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
    use CTRL_def
    use ECP_Constants
@@ -111,7 +111,6 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    type(CTRL_t),     intent(inout) :: Ctrl
    type(Data_t),     intent(inout) :: MSI_Data
    type(SAD_Chan_t), intent(inout) :: SAD_Chan(:)
-   logical,          intent(in)    :: verbose
 
    ! Local variables
 
@@ -123,7 +122,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    character(len=12) :: prod_date
 
    ! Open MSI file
-   if (verbose) write(*,*) 'Imagery file: ', trim(Ctrl%Fid%MSI)
+   if (Ctrl%verbose) write(*,*) 'Imagery file: ', trim(Ctrl%Fid%MSI)
    call nc_open(ncid, Ctrl%Fid%MSI)
 
    ! Read product date and time from netcdf global attributes
@@ -155,19 +154,19 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan, verbose)
    allocate(MSI_Data%MSI(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
    allocate(MSI_Data%time(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-   call nc_read_array(ncid, "msi_data", MSI_Data%MSI, verbose, 3, Ctrl%Ind%ICh)
-   call nc_read_array(ncid, "time_data", MSI_Data%time, verbose)
+   call nc_read_array(ncid, "msi_data", MSI_Data%MSI, Ctrl%verbose, 3, Ctrl%Ind%ICh)
+   call nc_read_array(ncid, "time_data", MSI_Data%time, Ctrl%verbose)
 
    ! Read variance data if requested (for aerosol retrieval)
    if (Ctrl%EqMPN%SySelm == SelmMeas) then
       allocate(MSI_Data%SD(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%Ny))
-      call nc_read_array(ncid, "var_data", MSI_Data%SD, verbose, &
+      call nc_read_array(ncid, "var_data", MSI_Data%SD, Ctrl%verbose, &
                          3, Ctrl%Ind%ICh)
    end if
 
    ! Read channel view indices from file (all channels)
    allocate(Ctrl%Ind%ViewIdx(Ctrl%Ind%Ny))
-   call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%ViewIdx, verbose)
+   call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%ViewIdx, Ctrl%verbose)
    if (minval(Ctrl%Ind%ViewIdx) < 1 .or. &
        maxval(Ctrl%Ind%ViewIdx) > Ctrl%Ind%NViews) then
       write(*,*) 'ERROR: Read_MSI_nc(): Invalid view indexing in input files.'

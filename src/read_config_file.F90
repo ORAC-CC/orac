@@ -17,7 +17,6 @@
 ! global_atts       struct    Both        Global attributes for output files
 ! source_atts       struct    Both        Attributes for output files specifying
 !                                         input files
-! verbose           logical   In          If set, print results
 !
 ! History:
 ! 2013/11/14, MJ: Initial version
@@ -38,7 +37,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, channel_wvl, global_atts, source_atts, verbose)
+     channel_lw_flag, channel_wvl, global_atts, source_atts)
 
    use CTRL_def
    use ECP_constants, only : DriverFileIncompat
@@ -55,32 +54,31 @@ subroutine read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
    real,    allocatable, dimension(:), intent(inout) :: channel_wvl
    type(global_attributes_s),          intent(inout) :: global_atts
    type(source_attributes_s),          intent(inout) :: source_atts
-   logical,                            intent(in)    :: verbose
 
    integer :: ncid
 
    ! Open config file for reading
    call nc_open(ncid, Ctrl%FID%Config)
 
-   if (Ctrl%Ind%Navail /= nc_dim_length(ncid, 'nc_conf', verbose)) then
+   if (Ctrl%Ind%Navail /= nc_dim_length(ncid, 'nc_conf', Ctrl%verbose)) then
       write(*,*) 'ERROR: read_config_file(): Driver incompatible with preprocessor files.'
       stop DriverFileIncompat
    end if
 
    allocate(channel_ids_instr(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr, verbose)
-   if (verbose) write(*,*) 'msi channel numbers instr: ',channel_ids_instr
+   call nc_read_array(ncid, "msi_instr_ch_numbers", channel_ids_instr, Ctrl%verbose)
+   if (Ctrl%verbose) write(*,*) 'msi channel numbers instr: ',channel_ids_instr
 
    allocate(channel_sw_flag(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_ch_swflag", channel_sw_flag, verbose)
-   if (verbose) write(*,*) 'sw flag: ',channel_sw_flag
+   call nc_read_array(ncid, "msi_ch_swflag", channel_sw_flag, Ctrl%verbose)
+   if (Ctrl%verbose) write(*,*) 'sw flag: ',channel_sw_flag
 
    allocate(channel_lw_flag(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_ch_lwflag", channel_lw_flag, verbose)
-   if (verbose) write(*,*) 'lw flag: ',channel_lw_flag
+   call nc_read_array(ncid, "msi_ch_lwflag", channel_lw_flag, Ctrl%verbose)
+   if (Ctrl%verbose) write(*,*) 'lw flag: ',channel_lw_flag
 
    allocate(channel_wvl(Ctrl%Ind%Navail))
-   call nc_read_array(ncid, "msi_abs_ch_wl", channel_wvl, verbose)
+   call nc_read_array(ncid, "msi_abs_ch_wl", channel_wvl, Ctrl%verbose)
 
    ! Read global attributes
    call nc_get_common_attributes(ncid, global_atts, source_atts)

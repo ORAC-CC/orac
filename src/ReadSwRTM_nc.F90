@@ -17,7 +17,6 @@
 ! ------------------------------------------------------------------------------
 ! Ctrl    struct       Both        Control structure
 ! RTM     alloc struct Out         RTM structure
-! verbose logical     In          Print out progress information
 !
 ! History:
 ! 2000/12/05, KS: Original version
@@ -78,7 +77,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
+subroutine Read_SwRTM_nc(Ctrl, RTM)
 
    use CTRL_def
    use ECP_Constants
@@ -90,7 +89,6 @@ subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
 
    type(CTRL_t), intent(in)  :: Ctrl
    type(RTM_t),  intent(out) :: RTM
-   logical,      intent(in)  :: verbose
 
    ! Local variables
 
@@ -134,11 +132,11 @@ subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
 !  allocate(WvNumber(RTM%SW%NSWF))
 
    ! Read ChanID and WvNumber
-   call nc_read_array(ncid, "sw_channel_instr_ids", ChanID, verbose)
-!  call nc_read_array(ncid, "sw_channel_wvl", WvNumber, verbose)
+   call nc_read_array(ncid, "sw_channel_instr_ids", ChanID, Ctrl%verbose)
+!  call nc_read_array(ncid, "sw_channel_wvl", WvNumber, Ctrl%verbose)
 
-   if (verbose) write(*,*) &
-      'SW channel instrument ids for RTM in SW preprocessing file',ChanID
+   if (Ctrl%verbose) write(*,*) &
+      'SW channel instrument ids for RTM in SW preprocessing file', ChanID
 
    ! Check that required solar channels are present
 
@@ -180,8 +178,8 @@ subroutine Read_SwRTM_nc(Ctrl, RTM, verbose)
       allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
          RTM%SW%Grid%NLat))
 
-      call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, verbose, 1, index)
-      call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, verbose, 1, index)
+      call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, Ctrl%verbose, 1, index)
+      call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, Ctrl%verbose, 1, index)
    end if
 
    ! Close SwRTM input file

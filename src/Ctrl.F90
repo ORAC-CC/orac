@@ -88,6 +88,7 @@
 !    NInstViews. Replace process_one_phase_only with Types_to_process.
 ! 2015/08/21, AP: Tidying comments; Ordering variables logically; Adding WvlIdx;
 !    Renaming Flags as Selm; Introducing XJ;
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -251,6 +252,7 @@ module CTRL_def
       integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
                                                    ! type codes for pixels to
                                                    ! run the retrieval
+      logical                :: verbose            ! Controls output to terminal
 
       ! Variables used by cloud_indexing_logic (first three ignore driver)
       integer, pointer       :: tau_chans(:)       ! Channels that meet the

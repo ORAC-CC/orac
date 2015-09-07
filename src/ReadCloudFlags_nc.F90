@@ -32,7 +32,6 @@
 !                             to be populated with data from the file. This
 !                             is overwritten as successive segments of data
 !                             are read in.
-! verbose  logic  In          Print log information to the screen.
 !
 ! History:
 ! 2000/11/03, KS: Original version
@@ -62,6 +61,7 @@
 !    constants
 ! 2015/07/03, OS: Added cldmask_uncertainty
 ! 2015/07/10, OS: removed ierr argument to nc_open call
+! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
 !
@@ -69,7 +69,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
+subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
 
    use CTRL_def
    use ECP_Constants
@@ -81,12 +81,11 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
 
    type(CTRL_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
-   logical,      intent(in)    :: verbose
 
    integer :: ncid
 
    ! Open cloud flag file
-   if (verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
+   if (Ctrl%verbose) write(*,*) 'Cloud flag file: ', trim(Ctrl%Fid%Cf)
    call nc_open(ncid, Ctrl%Fid%CF)
 
    allocate(MSI_Data%Type(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
@@ -95,11 +94,11 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data, verbose)
    allocate(MSI_Data%cldmask_error(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-!   call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, verbose)
-   call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, verbose)
-   call nc_read_array(ncid, "cldmask", MSI_Data%cldmask, verbose)
-   call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cldmask_error, verbose)
-   call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, verbose)
+!   call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
+   call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, Ctrl%verbose)
+   call nc_read_array(ncid, "cldmask", MSI_Data%cldmask, Ctrl%verbose)
+   call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cldmask_error, Ctrl%verbose)
+   call nc_read_array(ncid, "cccot_pre", MSI_Data%cccot_pre, Ctrl%verbose)
 
    ! Merge various particle type flags (once aerosol is in)
    MSI_Data%Type = MSI_Data%cldtype
