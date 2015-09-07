@@ -85,6 +85,9 @@
 ! 2015/07/10, OS: fixed bug related to using flag one_phase_only
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/09/06, GM: Adapt to use the output routines in common/.
+! 2015/09/07, GM: Propagation of COT uncertainty from log10(COT) space was being
+!    being done incorrectly.  Anyway, it has been moved to the main processor
+!    where it is now being done correctly.
 !
 ! $Id$
 !
@@ -101,16 +104,16 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use common_constants
    use global_attributes
    use netcdf
-   use orac_ncdf
    use orac_input
+   use orac_ncdf
    use orac_output
+   use postproc_constants
    use prepare_output
    use source_attributes
-   use postproc_constants
 
    implicit none
 
-   logical, parameter :: verbose = .true.
+   logical,            parameter :: verbose = .true.
 
    integer,            parameter :: MaxNumMeas = 36
 
@@ -119,11 +122,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer(kind=byte), parameter :: IPhaseIce  = 2 ! Ice
    integer(kind=byte), parameter :: IPhasemli  = 3 ! MLI
 
-   integer :: i, j
+   integer                     :: i, j
 
-   integer :: nargs
+   integer                     :: nargs
 #ifdef WRAPPER
-   integer :: mytask, ntasks, lower_bound, upper_bound
+   integer                     :: mytask, ntasks, lower_bound, upper_bound
 #endif
    integer(kind=byte)          :: mli_flag = 0
 
@@ -163,19 +166,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer(kind=byte)          :: lsec_flag,lstrict
 
    integer(kind=byte)          :: phase_flag
-
-   real(kind=sreal)            :: newcot
-   real(kind=sreal)            :: precision, huge_value, log10huge_value, &
-                                  log10precision
-
-
-   precision=tiny(1.0_sreal)
-   huge_value=huge(1.0_sreal)
-   log10huge_value=log10(huge_value)
-   ! include a log10precision value for COT + Uncertainty otherwise no optical
-   ! thickness value below 1 will be written
-   log10precision=log10(precision)
-
 #ifndef WRAPPER
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
@@ -385,37 +375,44 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                ! primary file
                input_data_ice_primary%cot(i,j) = &
                      input_data_wat_primary%cot(i,j)
+               input_data_ice_primary%cot_uncertainty(i,j) = &
+                     input_data_wat_primary%cot_uncertainty(i,j)
+
                input_data_ice_primary%ref(i,j) = &
                      input_data_wat_primary%ref(i,j)
+               input_data_ice_primary%ref_uncertainty(i,j) = &
+                     input_data_wat_primary%ref_uncertainty(i,j)
+
                input_data_ice_primary%ctp(i,j) = &
                      input_data_wat_primary%ctp(i,j)
+               input_data_ice_primary%ctp_uncertainty(i,j) = &
+                     input_data_wat_primary%ctp_uncertainty(i,j)
+
+               input_data_ice_primary%cc_total_uncertainty(i,j) = &
+                     input_data_wat_primary%cc_total_uncertainty(i,j)
+
                input_data_ice_primary%stemp(i,j) = &
                      input_data_wat_primary%stemp(i,j)
+               input_data_ice_primary%stemp_uncertainty(i,j) = &
+                     input_data_wat_primary%stemp_uncertainty(i,j)
+
                input_data_ice_primary%cth(i,j) = &
                      input_data_wat_primary%cth(i,j)
                input_data_ice_primary%cth_uncertainty(i,j) = &
                      input_data_wat_primary%cth_uncertainty(i,j)
+
                input_data_ice_primary%ctt(i,j) = &
                      input_data_wat_primary%ctt(i,j)
                input_data_ice_primary%ctt_uncertainty(i,j) = &
                      input_data_wat_primary%ctt_uncertainty(i,j)
+
                input_data_ice_primary%cwp(i,j) = &
                      input_data_wat_primary%cwp(i,j)
-               input_data_ice_primary%cloud_albedo(i,j,:) = &
-                     input_data_wat_primary%cloud_albedo(i,j,:)
-
-               input_data_ice_primary%cot_uncertainty(i,j) = &
-                     input_data_wat_primary%cot_uncertainty(i,j)
-               input_data_ice_primary%ref_uncertainty(i,j) = &
-                     input_data_wat_primary%ref_uncertainty(i,j)
-               input_data_ice_primary%ctp_uncertainty(i,j) = &
-                     input_data_wat_primary%ctp_uncertainty(i,j)
-               input_data_ice_primary%cc_total_uncertainty(i,j) = &
-                     input_data_wat_primary%cc_total_uncertainty(i,j)
-               input_data_ice_primary%stemp_uncertainty(i,j) = &
-                     input_data_wat_primary%stemp_uncertainty(i,j)
                input_data_ice_primary%cwp_uncertainty(i,j) = &
                      input_data_wat_primary%cwp_uncertainty(i,j)
+
+               input_data_ice_primary%cloud_albedo(i,j,:) = &
+                     input_data_wat_primary%cloud_albedo(i,j,:)
 
                input_data_ice_primary%convergence(i,j) = &
                      input_data_wat_primary%convergence(i,j)
@@ -440,14 +437,17 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                         input_data_wat_secondary%ctp_ap(i,j)
                   input_data_ice_secondary%ctp_fg(i,j) = &
                         input_data_wat_secondary%ctp_fg(i,j)
+
                   input_data_ice_secondary%ref_ap(i,j) = &
                         input_data_wat_secondary%ref_ap(i,j)
                   input_data_ice_secondary%ref_fg(i,j) = &
                         input_data_wat_secondary%ref_fg(i,j)
+
                   input_data_ice_secondary%cot_ap(i,j) = &
                         input_data_wat_secondary%cot_ap(i,j)
                   input_data_ice_secondary%cot_fg(i,j) = &
                         input_data_wat_secondary%cot_fg(i,j)
+
                   input_data_ice_secondary%stemp_ap(i,j) = &
                         input_data_wat_secondary%stemp_ap(i,j)
                   input_data_ice_secondary%stemp_fg(i,j) = &
@@ -469,27 +469,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 !           input_data_ice_primary%cc_total_uncertainty(i,j) = &
 !              input_data_ice_primary%cldmask_uncertainty(i,j)
 
-            ! if tau too high, set to max value not to fill value
-            if (input_data_ice_primary%cot(i,j) .ge. dither) then
-               if (input_data_ice_primary%cot_uncertainty(i,j) .le. &
-                   log10precision) then
-                  newcot=-999.0
-               else if(input_data_ice_primary%cot_uncertainty(i,j) &
-                  +log(input_data_ice_primary%cot(i,j)) .gt. &
-                  log10huge_value) then
-                  newcot=320.0
-               else
-                  newcot=10.0**(input_data_ice_primary%cot_uncertainty(i,j)) &
-                     *input_data_ice_primary%cot(i,j)
-               end if
-            else
-               newcot=-999.0
-            end if
-            input_data_ice_primary%cot_uncertainty(i,j)=newcot
-
-            ! Don't set fill values and leave final masking of products to user
-            ! obsolete: if cloud free, set primary retrieval parameters to fill value
-            if(input_data_ice_primary%cc_total(i,j) .eq. 0.0) then
+            if (input_data_ice_primary%cc_total(i,j) .eq. 0.0) then
                ! set phase to clear/unknown
                input_data_ice_primary%phase(i,j)=IPhaseClU
             end if

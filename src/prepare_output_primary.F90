@@ -47,6 +47,8 @@
 ! 2015/07/03, OS: Added cldmask_error data
 ! 2015/07/04, CP: Added corrected cth
 ! 2015/07/31, AP: Remove convergence argument.
+! 2015/09/07, GM: Change COT uncertainty output from log10(COT) space to COT
+!    space.
 !
 ! $Id$
 !
@@ -119,9 +121,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (SPixel%Sn(ITau,ITau) .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-      temp_real = sqrt(SPixel%Sn(ITau,ITau))
-      ! CErr(OK) = CVAL(ok) * alog(10) * CErr(OK) from load_grape
-!     temp_real = temp_real_cot*alog(10)*sqrt(SPixel%Sn(ITau,ITau))
+      temp_real = sqrt(SPixel%Sn(ITau,ITau)) * temp_real_cot * alog(10.0)
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot_error(i,j), &
@@ -207,7 +207,6 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    else
       temp_real = sqrt(SPixel%Sn(IFr,IFr))
    end if
-
    temp_real=MSI_Data%cldmask_error(SPixel%Loc%X0, SPixel%Loc%Y0)
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
