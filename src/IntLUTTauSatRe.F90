@@ -120,10 +120,6 @@ subroutine Int_LUT_TauSatRe(F, NChans, Grid, GZero, Ctrl, FInt, FGrads, iCRP, &
    ! Local variables
 
    integer                               :: i, ii, ii2, j, jj, k, kk
-   integer, parameter                    :: iXm1 = -1
-   integer, parameter                    :: iX0  =  0
-   integer, parameter                    :: iX1  =  1
-   integer, parameter                    :: iXp1 =  2
    integer, dimension(-1:2)              :: T_index
    integer, dimension(-1:2)              :: R_index
    real, dimension(size(FInt),-1:2,-1:2) :: G ! A Matrix of dimension NTau,Nre

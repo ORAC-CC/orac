@@ -44,6 +44,11 @@ module Int_LUT_Routines_def
              Int_LUT_TauSatSolAziRe, &
              Int_LUT_TauSolRe
 
+   integer, parameter :: iXm1 = -1
+   integer, parameter :: iX0  =  0
+   integer, parameter :: iX1  =  1
+   integer, parameter :: iXp1 =  2
+
 contains
 
 #include "Interp3dLUT.F90"
@@ -112,10 +117,6 @@ subroutine Int_LUT_Common(Ctrl, NChans, iCRP, Grid, GZero, G, FInt, FGrads, &
    integer,                           intent(out) :: status
 
    integer            :: i, ii, ii2
-   integer, parameter :: iXm1 = -1
-   integer, parameter :: iX0  =  0
-   integer, parameter :: iX1  =  1
-   integer, parameter :: iXp1 =  2
    real, dimension(4) :: Y          ! A vector to contain the values of F at
                                     ! (iT0,iR0), (iT0,iR1), (iT1,iR1) and
                                     ! (iT1,iR0) respectively (i.e. anticlockwise
