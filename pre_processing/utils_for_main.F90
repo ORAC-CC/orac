@@ -2,11 +2,11 @@
 ! Name: utils_for_main.F90
 !
 ! Purpose:
-! Module for parsing routines.
 !
 ! History:
 ! 2015/02/24, GM: Pulled these out of preprocessing_for_orac.F90 to get them
 !    module produced interfaces.
+! 2015/09/14, GM: Move handle_parse_error() to trunk/common/parsing.F90.
 !
 ! $Id$
 !
@@ -19,20 +19,6 @@ module utils_for_main
    implicit none
 
 contains
-
-subroutine handle_parse_error(name)
-
-   use preproc_constants
-
-   implicit none
-
-   character(len=*), intent(in) :: name
-
-   write(*,*) 'ERROR: Error parsing value for: ', trim(name)
-
-   stop error_stop_code
-
-end subroutine handle_parse_error
 
 
 subroutine parse_required(lun, value, name)

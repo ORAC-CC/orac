@@ -847,7 +847,7 @@ subroutine netcdf_create_swath(global_atts,source_atts,cyear,cmonth,cday,chour, 
               shuffle = shuffle_flag, &
               fill_value = byte_fill_value)
 
-      ! define cldmask variable
+      ! define cldmask_uncertainty variable
       call nc_def_var_float_packed_float( &
               netcdf_info%ncid_clf, &
               dimids_2d, &

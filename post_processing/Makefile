@@ -19,6 +19,7 @@ ORAC_COMMON = ../common
 # Define object files to be linked.
 POSTPROC_OBJ_F90 =  $(OBJS)/orac_input.o \
                     $(OBJS)/postproc_constants.o \
+                    $(OBJS)/postproc_utils.o \
                     $(OBJS)/prepare_output.o  \
 
 POSTPROC_OBJ_MAIN = $(OBJS)/post_process_level2.o

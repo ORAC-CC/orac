@@ -9,6 +9,7 @@
 ! History:
 ! 2014/12/17, AP: Original version.
 ! 2015/07/22, AP: Moved 0D functions into parse_string2.inc.
+! 2015/09/14, GM: Add handle_parse_error() from trunk/pre_processing/.
 !
 ! $Id$
 !-------------------------------------------------------------------------------
@@ -347,5 +348,17 @@ subroutine clean_driver_label(in)
       end if
    end do
 end subroutine clean_driver_label
+
+
+subroutine handle_parse_error(name)
+   implicit none
+
+   character(len=*), intent(in) :: name
+
+   write(*,*) 'ERROR: Error parsing value for: ', trim(name)
+
+   stop error_stop_code
+end subroutine handle_parse_error
+
 
 end module parsing
