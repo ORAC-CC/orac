@@ -34,8 +34,10 @@
 ! 2014/08/31, GM: Update to use general routines in the current
 !    module.
 ! 2014/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
-! 2014/09/06, GM: Output fill_value instead of zero for degrees of freedom for
+! 2015/09/06, GM: Output fill_value instead of zero for degrees of freedom for
 !    signal for non-retrieved pixels.
+! 2015/09/14, GM: Change output cot_ap and cot_fg from log10 space to linear
+!    space.
 !
 ! $Id$
 !
@@ -76,7 +78,11 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%Xb(ITau)
+   if (SPixel%Xb(ITau) .eq. MissingXn) then
+      dummyreal = sreal_fill_value
+   else
+      dummyreal = 10.0**SPixel%Xb(ITau)
+   end if
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_ap(i,j), &
            output_data%cot_ap_scale, output_data%cot_ap_offset, &
@@ -84,7 +90,11 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
            output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
            output_data%cot_ap_vmax)
 
-   dummyreal=SPixel%X0(ITau)
+   if (SPixel%X0(ITau) .eq. MissingXn) then
+      dummyreal = sreal_fill_value
+   else
+      dummyreal = 10.0**SPixel%X0(ITau)
+   end if
    call prepare_short_packed_float( &
            dummyreal, output_data%cot_fg(i,j), &
            output_data%cot_fg_scale, output_data%cot_fg_offset, &
