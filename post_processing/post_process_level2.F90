@@ -89,7 +89,7 @@
 !    being done incorrectly.  Anyway, it has been moved to the main processor
 !    where it is now being done correctly.
 ! 2015/09/07, GM: Move the overwrite of cc_total_uncertainty by
-!    cldmask_uncertainty from the main processor to here.  This overwite is
+!    cldmask_uncertainty from the main processor to here.  This overwrite is
 !    Cloud CCI specific and will therefore have to be handled once aerosol and
 !    ash support is added to the post processor.
 ! 2015/09/14, GM: Add support for optional driver file arguments.
@@ -98,6 +98,7 @@
 !    input primary/secondary file pairs is supported.  To support this lines
 !    after the required lines that do not parse as a label=value are considered
 !    a primary file name followed by a secondary file name on the next line.
+! 2015/09/14, GM: Add boolean option use_netcdf_compression.
 !
 ! $Id$
 !
@@ -152,6 +153,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    logical                     :: one_phase_only
    real                        :: cot_thresh
    logical                     :: use_baysian_selection = .false.
+   logical                     :: use_netcdf_compression = .true.
 
    integer                     :: n_in_files
 
@@ -185,6 +187,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    integer                     :: i_min_costjm
    real                        :: a_min_costjm
+
+   integer                     :: deflate_level2
+   logical                     :: shuffle_flag2
 #ifndef WRAPPER
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
@@ -240,6 +245,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
      select case (label)
      case('USE_BAYSIAN_SELECTION')
         if (parse_string(value, use_baysian_selection) /= 0) &
+           call handle_parse_error(label)
+     case('USE_NETCDF_COMPRESSION')
+        if (parse_string(value, use_netcdf_compression) /= 0) &
            call handle_parse_error(label)
      case('')
         n_in_files = n_in_files + 1
@@ -461,9 +469,16 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
 
    ! define netcdf variables
-   call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_primary(1)%qc_flag_meanings, deflate_level, shuffle_flag, verbose, .true., .false., .false., .true., .false.)
+   if (use_netcdf_compression) then
+      deflate_level2 = deflate_level
+      shuffle_flag2  = shuffle_flag
+   else
+      deflate_level2 = 0
+      shuffle_flag2  = .false.
+   end if
+   call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_primary(1)%qc_flag_meanings, deflate_level2, shuffle_flag2, verbose, .true., .false., .false., .true., .false.)
    if (do_secondary) then
-      call def_output_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level, shuffle_flag, 0, 0, verbose, .false.)
+      call def_output_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, 0, 0, verbose, .false.)
    end if
 
    ! put results in final output arrays with final datatypes
