@@ -34,6 +34,7 @@
 !    up changes made by CP.
 ! 2015/03/12, GM: Completed support for 2002 to 2014.
 ! 2015/07/05, CP: bug fix for 2007 support
+! 2015/08/05, CP: added in use of climatology and fixed some bugs in file names
 !
 ! $Id$
 !
@@ -51,14 +52,18 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
    implicit none
 
    character(len=date_length), intent(in)  :: cyear
+   character(len=date_length)             :: temp_cyear
    character(len=date_length), intent(in)  :: cdoy
    character(len=path_length), intent(in)  :: modis_surf_path
+   character(len=path_length)  :: temp_modis_surf_path
    logical,                    intent(in)  :: include_full_brdf
    character(len=path_length), intent(out) :: modis_surf_path_file
 
-   integer                                               :: nv
+   integer                                               :: nv,pos1,pos2,pos3
    integer                                               :: doy
+   integer                                               :: intyear
    integer(kind=sint), allocatable, dimension(:)         :: dates
+
    integer(kind=sint), allocatable, dimension(:)         :: newdates
    character(len=date_length), allocatable, dimension(:) :: dates_s
    character(len=path_length), allocatable, dimension(:) :: p_date_s
@@ -83,7 +88,12 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
              '177','185','193','201','209','217','225','233','241','249','257', &
              '265','273','281','289','297','305','313','321','329','337','345', &
              '353','361'/)
+! convert year to integer
+	     intyear=999
+	     read(cyear,'(i4)') intyear
 
+!write(*,*)'cyear',cyear
+!write(*,*)'cdoy',cdoy
    if (trim(adjustl(cyear)) .eq. '2002') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2007116004645','2007117232015','2007122205824','2007123233741', &
@@ -108,10 +118,12 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2007177072142','2007178162254','2007184223950','2007187073141', &
                     '2007190133630','2007192154725','2007199225032','2007203060652', &
                     '2007206112147','2007210024704','2007215073037','2007220014847', &
-                    '2007229043940','2007239135939','2007241122041','2007243134247', &
+                    '2007225171841', '2007229043940','2007239135939','2007241122041','2007243134247', &
                     '2007250150652','2007256234130','2007258001905','2007260040726', &
                     '2007263014338'/)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2003') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2007263074542','2007267073043','2007276133221','2007278190721', &
@@ -141,6 +153,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2008040193134','2008043020754','2008046145821','2008047042231', &
                     '2008050031309','2008101215645' /)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2004') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2007242054828','2007243171609','2007245163354','2007248054939', &
@@ -169,6 +183,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2007339113044','2007342040822','2007345035018','2007348134045', &
                     '2007351134654','2007353174303'/)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2005') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2007353052741','2007354122339','2007356071946','2007358040842', &
@@ -197,6 +213,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2008087073755','2008089092400','2008090063237','2008091114722', &
                     '2008094043205','2008094071946'/)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2006') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2008064175622','2008066040456','2008069082001','2008073033511', &
@@ -225,6 +243,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2008127151212','2008131223442','2008133053419','2008133224917', &
                     '2008135054503','2008135190004'/)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2007') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2007046104338','2007053121538','2007105022224','2007104152343', &
@@ -253,6 +273,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2007358133218','2007360062905','2007363142450','2008003080409', &
                     '2008009024615','2008019123809'/)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2008') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2008025111631','2008033123214','2008040004943','2008047121240', &
@@ -282,6 +304,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2008354113030','2008359102804','2008359102557','2009012193211', &
                     '2009019035318','2009034113826'/)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2009') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2009035033047','2009035093419','2009037163503','2009049045513', &
@@ -310,6 +334,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2009356105656','2009357174048','2009359041714','2009365223206', &
                     '2010013041334','2010022200710'/)
       end if
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2010') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2010027235522','2010034002012','2010040023228','2010044091117', &
@@ -338,6 +364,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2010343013625','2010350011421','2011042103219','2011025130745', &
                     '2011025052328','2011025041249'/)
       endif
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2011') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2011032064909','2011036121757','2011043101556','2011049045026', &
@@ -366,6 +394,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2014185002724','2014185002339','2014185001129','2014185000609', &
                     '2014185005738','2014185011530'/)
       endif
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2012') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2012020183119','2012027193645','2012048173857','2012052180320', &
@@ -394,6 +424,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2014185100303','2014185095949','2014185071656','2014185100213', &
                     '2014185100933','2014185101357'/)
       endif
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2013') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2013022185113','2013028190350','2013042163754','2013043210756', &
@@ -422,6 +454,8 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2013339190643','2013347021821','2013357180350','2013364182936', &
                     '2014007204757','2014016192000'/)
       endif
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
    else if (trim(adjustl(cyear)) .eq. '2014') then
       if (.not. include_full_brdf) then
          p_date_s=(/'2014023213216','2014031103904','2014041200709','2014050031231', &
@@ -437,23 +471,60 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
                     '2014340001507','2014349232625','2014356195726','2014365172653', &
                     '2015007200146','2015021184328'/)
       else
-         p_date_s=(/'2014023210532','2014031102338','2014041195655','2014050030405', &
-                    '2014059073751','2014059080142','2014066203516','2014084035615', &
-                    '2014087174506','2014092040504','2014099001032','2014113181633', &
-                    '2014115182116','2014125183032','2014133010543','2014139175024', &
-                    '2014148183504','2014154195938','2014163180512','2014171200022', &
-                    '2014179002738','2014189211418','2014195175554','2014203104733', &
-                    '2014212021014','2014218204259','2014227191048','2014237202233', &
-                    '2014247175402','2014252184127','2014276230307','2014279050029', &
-                    '2014279201402','2014284072526','2014298010253','2014301041204', &
-                    '2014311025928','2014316223751','2014324220250','2014330204007', &
-                    '2014340000750','2014349231425','2014356194803','2014365172223', &
-                    '2015007195134','2015021181335'/)
+
       endif
+
+temp_cyear=trim(adjustl(cyear))
+temp_modis_surf_path=modis_surf_path
+   else if (intyear .lt. 2000) then
+
+      if (.not. include_full_brdf) then
+      write(*,*) 'WARNING: select_modis_albedo_file(): year not supported using 2003'
+!      stop error_stop_code
+temp_cyear='2003'
+         p_date_s=(/'2007263074542','2007267073043','2007276133221','2007278190721', &
+                    '2007279172043','2007283064232','2007285213619','2007287200010', &
+                    '2007291121914','2007296155150','2007300133348','2007305072356', &
+                    '2007309105757','2007312072616','2007316022749','2007316150956', &
+                    '2007320121205','2007327061534','2007331103240','2007333133142', &
+                    '2007336183923','2007339070832','2007341093512','2007346204849', &
+                    '2007349094749','2007353092418','2007355154845','2007358165645', &
+                    '2007360172903','2007363092858','2008002014243','2008004102539', &
+                    '2008008062519','2008010211341','2008013022430','2008016050318', &
+                    '2008018084933','2008021085017','2008028165507','2008029200354', &
+                    '2008040200209','2008043025315','2008046152731','2008047044546', &
+                    '2008050034405','2008101221508'/)
+
    else
-      write(*,*) 'ERROR: select_modis_albedo_file(): year not supported'
-      stop error_stop_code
+      write(*,*) 'INFO: select_modis_albedo_file(): year not supported use climatology'
+temp_cyear='XXXX'
+         p_date_s=(/'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX','XXXXXXXXXXXXX', &
+                    'XXXXXXXXXXXXX','XXXXXXXXXXXXX'/)
+
+
+
+ endif
+
+
+pos1=index(modis_surf_path,cyear)
+pos2=pos1+4
+pos3=index(modis_surf_path,'hdf')
+
+temp_modis_surf_path=modis_surf_path(1:pos1-1)//temp_cyear//modis_surf_path(pos2+1:pos3+3)//'/'
+
+
    end if
+
 
    ! Find the closest data
    allocate(newdates(nv))
@@ -462,16 +533,18 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
 
    pos = minloc(newdates)
 
+
    mcd_date_s   = dates_s(pos(1))
    mcd_p_date_s = p_date_s(pos(1))
 
+
    if (include_full_brdf) then
-      modis_surf_path_file=trim(adjustl(modis_surf_path))//'/'//'MCD43C1.A'//&
-           trim(adjustl(cyear))//trim(adjustl(mcd_date_s))//'.005.'//&
+      modis_surf_path_file=trim(adjustl(temp_modis_surf_path))//'/'//'MCD43C1.A'//&
+           trim(adjustl(temp_cyear))//trim(adjustl(mcd_date_s))//'.005.'//&
            trim(adjustl(mcd_p_date_s))//'.hdf'
    else
-      modis_surf_path_file=trim(adjustl(modis_surf_path))//'/'//'MCD43C3.A'//&
-           trim(adjustl(cyear))//trim(adjustl(mcd_date_s))//'.005.'//&
+      modis_surf_path_file=trim(adjustl(temp_modis_surf_path))//'/'//'MCD43C3.A'//&
+           trim(adjustl(temp_cyear))//trim(adjustl(mcd_date_s))//'.005.'//&
            trim(adjustl(mcd_p_date_s))//'.hdf'
    end if
 
