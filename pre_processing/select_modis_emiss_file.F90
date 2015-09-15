@@ -32,6 +32,7 @@
 ! 2014/05/26, MJ: Fixed error with data type of year for mod-operation.
 ! 2014/11/26, CP: Modified for change in file versioning numbering prior to
 !    2007.
+! 2015/08/14, CP: adapt to read climatology
 !
 ! $Id$
 !
@@ -129,16 +130,23 @@ subroutine select_modis_emiss_file(cyear,cdoy,cimss_emis_path, &
    emis_date_s=dates_s(pos)
 
    ! files earlier than 2007 do not have the version number in the name
-   if ( year .le. 2007) then
+   if ( year .le. 2006 .and. year .gt. 2002) then
       cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.A'// &
          trim(adjustl(cyear))// &
          trim(adjustl(emis_date_s))//'.nc'
    else
+   if ( year .le. 2002) then
+! use the climatological file
+      cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
+         '/global_emis_inf10_monthFilled_MYD11C3.AXXXX'// &
+         trim(adjustl(emis_date_s))//'.041'//'.nc'
+	 else  
       cimss_emis_path_file=trim(adjustl(cimss_emis_path))// &
          '/global_emis_inf10_monthFilled_MYD11C3.A'// &
          trim(adjustl(cyear))// &
          trim(adjustl(emis_date_s))//'.041'//'.nc'
+   endif
    endif
 
    ! Check that the defined file exists and is readable
