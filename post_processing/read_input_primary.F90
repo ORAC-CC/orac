@@ -82,10 +82,6 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    call nc_read_packed_array(ncid, "cwp", input_data%cwp, verbose)
    call nc_read_packed_array(ncid, "cwp_uncertainty", input_data%cwp_uncertainty, verbose)
 
-   call nc_read_array(ncid, "convergence", input_data%convergence, verbose)
-
-   call nc_read_array(ncid, "niter", input_data%niter, verbose)
-
    do i=1,indexing%NSolar
       if (btest(indexing%Ch_Is(i), SolarBit)) then
          write(input_num,"(i4)") indexing%Y_Id(i)
@@ -94,6 +90,8 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
       end if
    end do
 
+   call nc_read_array(ncid, "convergence", input_data%convergence, verbose)
+   call nc_read_array(ncid, "niter", input_data%niter, verbose)
    call nc_read_array(ncid, "costja", input_data%costja, verbose)
    call nc_read_array(ncid, "costjm", input_data%costjm, verbose)
 
@@ -153,30 +151,24 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
    call nc_read_array(ncid, "satellite_zenith_view_no1", input_data%satellite_zenith_view_no1, verbose)
    call nc_read_array(ncid, "rel_azimuth_view_no1", input_data%rel_azimuth_view_no1, verbose)
 
-!  call nc_read_array(ncid, "phase", input_data%phase, verbose)
-
    call nc_read_array(ncid, "lsflag", input_data%lsflag, verbose)
+   call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose)
+!  call nc_read_array(ncid, "dem", input_data%dem, verbose)
+   call nc_read_array(ncid, "nisemask", input_data%nisemask, verbose)
 
    call nc_read_array(ncid, "illum", input_data%illum, verbose)
-
    call nc_read_array(ncid, "cldtype", input_data%cldtype, verbose)
-
    call nc_read_array(ncid, "cldmask", input_data%cldmask, verbose)
    call nc_read_packed_array(ncid, "cldmask_uncertainty", input_data%cldmask_uncertainty, verbose)
-
    call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose)
-
-   call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose)
-
-!  call nc_read_array(ncid, "dem", input_data%dem, verbose)
-
-   call nc_read_array(ncid, "nisemask", input_data%nisemask, verbose)
 
    write(*,*) 'Closing primary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code
    end if
+
+!  call nc_read_array(ncid, "phase", input_data%phase, verbose)
 
 end subroutine read_input_primary_all
 

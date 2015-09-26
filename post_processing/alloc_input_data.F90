@@ -62,8 +62,8 @@ subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
    allocate(input_data%ctp(xdim1km,ydim1km))
    input_data%ctp=sreal_fill_value
    allocate(input_data%ctp_uncertainty(xdim1km,ydim1km))
-
    input_data%ctp_uncertainty=sreal_fill_value
+
    allocate(input_data%cct(xdim1km,ydim1km))
    input_data%cct=sreal_fill_value
    allocate(input_data%cct_uncertainty(xdim1km,ydim1km))
@@ -147,16 +147,19 @@ subroutine alloc_input_data_primary_all(input_data,xdim1km,ydim1km,indexing)
    allocate(input_data%rel_azimuth_view_no1(xdim1km,ydim1km))
    input_data%rel_azimuth_view_no1=sreal_fill_value
 
-   allocate(input_data%phase(xdim1km,ydim1km))
-   input_data%phase=byte_fill_value
-
    allocate(input_data%lsflag(xdim1km,ydim1km))
    input_data%lsflag=byte_fill_value
+   allocate(input_data%lusflag(xdim1km,ydim1km))
+   input_data%lusflag=byte_fill_value
+
+!  allocate(input_data%dem(xdim1km,ydim1km))
+!  input_data%dem=sint_fill_value
+
+   allocate(input_data%nisemask(xdim1km,ydim1km))
+   input_data%nisemask=byte_fill_value
+
    allocate(input_data%illum(xdim1km,ydim1km))
    input_data%illum=byte_fill_value
-
-   allocate(input_data%cccot_pre(xdim1km,ydim1km))
-   input_data%cccot_pre=sreal_fill_value
 
    allocate(input_data%cldtype(xdim1km,ydim1km))
    input_data%cldtype=byte_fill_value
@@ -166,14 +169,11 @@ subroutine alloc_input_data_primary_all(input_data,xdim1km,ydim1km,indexing)
    allocate(input_data%cldmask_uncertainty(xdim1km,ydim1km))
    input_data%cldmask_uncertainty=sreal_fill_value
 
-   allocate(input_data%lusflag(xdim1km,ydim1km))
-   input_data%lusflag=byte_fill_value
+   allocate(input_data%cccot_pre(xdim1km,ydim1km))
+   input_data%cccot_pre=sreal_fill_value
 
-!  allocate(input_data%dem(xdim1km,ydim1km))
-!  input_data%dem=sint_fill_value
-
-   allocate(input_data%nisemask(xdim1km,ydim1km))
-   input_data%nisemask=byte_fill_value
+   allocate(input_data%phase(xdim1km,ydim1km))
+   input_data%phase=byte_fill_value
 
 end subroutine alloc_input_data_primary_all
 

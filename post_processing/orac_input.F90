@@ -70,15 +70,15 @@ module orac_input
 
       integer(kind=byte),  dimension(:,:),   pointer :: convergence
       integer(kind=byte),  dimension(:,:),   pointer :: niter
-
-      integer(kind=byte),  dimension(:,:),   pointer :: phase
-
-      real(kind=sreal),    dimension(:,:),   pointer :: costja,costjm
-
-      integer(kind=byte),  dimension(:,:),   pointer :: lsflag
-
+      real(kind=sreal),    dimension(:,:),   pointer :: costja
+      real(kind=sreal),    dimension(:,:),   pointer :: costjm
       character(len=512)                             :: qc_flag_meanings
       integer(kind=sint),  dimension(:,:),   pointer :: qcflag
+
+      integer(kind=byte),  dimension(:,:),   pointer :: lsflag
+      integer(kind=byte),  dimension(:,:),   pointer :: lusflag
+      integer(kind=sint),  dimension(:,:),   pointer :: dem
+      integer(kind=byte),  dimension(:,:),   pointer :: nisemask
 
       integer(kind=byte),  dimension(:,:),   pointer :: illum
 
@@ -86,9 +86,8 @@ module orac_input
       integer(kind=byte),  dimension(:,:),   pointer :: cldmask
       real(kind=sreal),    dimension(:,:),   pointer :: cldmask_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cccot_pre
-      integer(kind=byte),  dimension(:,:),   pointer :: lusflag
-      integer(kind=sint),  dimension(:,:),   pointer :: dem
-      integer(kind=byte),  dimension(:,:),   pointer :: nisemask
+
+      integer(kind=byte),  dimension(:,:),   pointer :: phase
 
    end type input_data_primary
 

@@ -52,21 +52,27 @@ module orac_output
       integer                       :: vid_ctt, vid_ctt_error
       integer                       :: vid_cwp, vid_cwp_error
       integer,dimension(:), pointer :: vid_cloud_albedo
+
       integer                       :: vid_convergence
       integer                       :: vid_niter
-      integer                       :: vid_phase
-      integer                       :: vid_phase_pavolonis
       integer                       :: vid_costja
       integer                       :: vid_costjm
-      integer                       :: vid_lsflag
       integer                       :: vid_qcflag
-      integer                       :: vid_illum
-      integer                       :: vid_cldtype
-      integer                       :: vid_cldmask,vid_cldmask_uncertainty
-      integer                       :: vid_cccot_pre
+
+      integer                       :: vid_lsflag
       integer                       :: vid_lusflag
       integer                       :: vid_dem
       integer                       :: vid_nisemask
+
+      integer                       :: vid_illum
+
+      integer                       :: vid_cldtype
+      integer                       :: vid_cldmask,vid_cldmask_uncertainty
+      integer                       :: vid_cccot_pre
+
+      integer                       :: vid_phase
+
+      integer                       :: vid_phase_pavolonis
 
       ! Scale, offset, valid min/max for output fields
       real(kind=dreal)              :: time_scale  = 1.0
@@ -177,6 +183,11 @@ module orac_output
       integer(kind=sint)            :: cwp_error_vmin   = 0
       integer(kind=sint)            :: cwp_error_vmax   = 32000
 
+      real(kind=sreal)              :: cloud_albedo_scale  = 0.0001
+      real(kind=sreal)              :: cloud_albedo_offset = 0.0
+      integer(kind=sint)            :: cloud_albedo_vmin   = 0
+      integer(kind=sint)            :: cloud_albedo_vmax   = 11000
+
       integer(kind=byte)            :: convergence_scale  = 1
       integer(kind=byte)            :: convergence_offset = 0
       integer(kind=byte)            :: convergence_vmin   = 0
@@ -186,16 +197,6 @@ module orac_output
       integer(kind=byte)            :: niter_offset = 0
       integer(kind=byte)            :: niter_vmin   = 0
       integer(kind=byte)            :: niter_vmax   = 100 ! Assigned by ReadDriver
-
-      integer(kind=byte)            :: phase_scale  = 1
-      integer(kind=byte)            :: phase_offset = 0
-      integer(kind=byte)            :: phase_vmin   = 0
-      integer(kind=byte)            :: phase_vmax   = 2
-
-      integer(kind=byte)            :: phase_pavolonis_scale  = 1
-      integer(kind=byte)            :: phase_pavolonis_offset = 0
-      integer(kind=byte)            :: phase_pavolonis_vmin   = 0
-      integer(kind=byte)            :: phase_pavolonis_vmax   = 2
 
       real(kind=sreal)              :: costja_scale  = 1.0
       real(kind=sreal)              :: costja_offset = 0.0
@@ -207,15 +208,30 @@ module orac_output
       real(kind=sreal)              :: costjm_vmin   = 0.0
       real(kind=sreal)              :: costjm_vmax   = 100000.0
 
+      integer(kind=sint)            :: qcflag_scale  = 1
+      integer(kind=sint)            :: qcflag_offset = 0
+      integer(kind=sint)            :: qcflag_vmin   = 0
+      integer(kind=sint)            :: qcflag_vmax   = 254
+
       integer(kind=byte)            :: lsflag_scale  = 1
       integer(kind=byte)            :: lsflag_offset = 0
       integer(kind=byte)            :: lsflag_vmin   = 0
       integer(kind=byte)            :: lsflag_vmax   = 6
 
-      integer(kind=sint)            :: qcflag_scale  = 1
-      integer(kind=sint)            :: qcflag_offset = 0
-      integer(kind=sint)            :: qcflag_vmin   = 0
-      integer(kind=sint)            :: qcflag_vmax   = 254
+      integer(kind=byte)            :: lusflag_scale  = 1
+      integer(kind=byte)            :: lusflag_offset = 0
+      integer(kind=byte)            :: lusflag_vmin   = 1
+      integer(kind=byte)            :: lusflag_vmax   = 24
+
+      integer(kind=sint)            :: dem_scale  = 1
+      integer(kind=sint)            :: dem_offset = 0
+      integer(kind=sint)            :: dem_vmin   = 0
+      integer(kind=sint)            :: dem_vmax   = 10000
+
+      integer(kind=byte)            :: nisemask_scale  = 1
+      integer(kind=byte)            :: nisemask_offset = 0
+      integer(kind=byte)            :: nisemask_vmin   = 0
+      integer(kind=byte)            :: nisemask_vmax   = 1
 
       integer(kind=byte)            :: illum_scale  = 1
       integer(kind=byte)            :: illum_offset = 0
@@ -242,25 +258,15 @@ module orac_output
       integer(kind=sint)            :: cccot_pre_vmin   = -1000.0
       integer(kind=sint)            :: cccot_pre_vmax   = 2000.0
 
-      integer(kind=byte)            :: lusflag_scale  = 1
-      integer(kind=byte)            :: lusflag_offset = 0
-      integer(kind=byte)            :: lusflag_vmin   = 1
-      integer(kind=byte)            :: lusflag_vmax   = 24
+      integer(kind=byte)            :: phase_scale  = 1
+      integer(kind=byte)            :: phase_offset = 0
+      integer(kind=byte)            :: phase_vmin   = 0
+      integer(kind=byte)            :: phase_vmax   = 2
 
-      integer(kind=sint)            :: dem_scale  = 1
-      integer(kind=sint)            :: dem_offset = 0
-      integer(kind=sint)            :: dem_vmin   = 0
-      integer(kind=sint)            :: dem_vmax   = 10000
-
-      integer(kind=byte)            :: nisemask_scale  = 1
-      integer(kind=byte)            :: nisemask_offset = 0
-      integer(kind=byte)            :: nisemask_vmin   = 0
-      integer(kind=byte)            :: nisemask_vmax   = 1
-
-      real(kind=sreal)              :: cloud_albedo_scale  = 0.0001
-      real(kind=sreal)              :: cloud_albedo_offset = 0.0
-      integer(kind=sint)            :: cloud_albedo_vmin   = 0
-      integer(kind=sint)            :: cloud_albedo_vmax   = 11000
+      integer(kind=byte)            :: phase_pavolonis_scale  = 1
+      integer(kind=byte)            :: phase_pavolonis_offset = 0
+      integer(kind=byte)            :: phase_pavolonis_vmin   = 0
+      integer(kind=byte)            :: phase_pavolonis_vmax   = 2
 
       ! Arrays to store output fields
       real(kind=dreal),   dimension(:,:),   pointer :: time
@@ -305,34 +311,25 @@ module orac_output
       integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo
 
       integer(kind=byte), dimension(:,:),   pointer :: convergence
-
       integer(kind=byte), dimension(:,:),   pointer :: niter
-
-      integer(kind=byte), dimension(:,:),   pointer :: phase
-      integer(kind=byte), dimension(:,:),   pointer :: phase_pavolonis
-
       real(kind=sreal),   dimension(:,:),   pointer :: costja
-
       real(kind=sreal),   dimension(:,:),   pointer :: costjm
+      integer(kind=sint), dimension(:,:),   pointer :: qcflag
 
       integer(kind=byte), dimension(:,:),   pointer :: lsflag
-
-      integer(kind=sint), dimension(:,:),   pointer :: qcflag
+      integer(kind=byte), dimension(:,:),   pointer :: lusflag
+      integer(kind=sint), dimension(:,:),   pointer :: dem
+      integer(kind=byte), dimension(:,:),   pointer :: nisemask
 
       integer(kind=byte), dimension(:,:),   pointer :: illum
 
       integer(kind=byte), dimension(:,:),   pointer :: cldtype
-
       integer(kind=byte), dimension(:,:),   pointer :: cldmask
       integer(kind=sint), dimension(:,:),   pointer :: cldmask_uncertainty
-
       integer(kind=sint), dimension(:,:),   pointer :: cccot_pre
 
-      integer(kind=byte), dimension(:,:),   pointer :: lusflag
-
-      integer(kind=sint), dimension(:,:),   pointer :: dem
-
-      integer(kind=byte), dimension(:,:),   pointer :: nisemask
+      integer(kind=byte), dimension(:,:),   pointer :: phase
+      integer(kind=byte), dimension(:,:),   pointer :: phase_pavolonis
 
    end type output_data_primary
 
@@ -347,15 +344,11 @@ module orac_output
       integer                          :: vid_stemp_ap,vid_stemp_fg
 
       integer, dimension(:),   pointer :: vid_albedo
-
       integer, dimension(:),   pointer :: vid_channels
-
       integer, dimension(:),   pointer :: vid_y0
-
       integer, dimension(:),   pointer :: vid_residuals
 
       integer                          :: vid_ds
-
       integer, dimension(:,:), pointer :: vid_covariance
 
 
@@ -421,7 +414,6 @@ module orac_output
       integer(kind=sint), dimension(:,:,:),   pointer :: residuals
 
       integer(kind=sint), dimension(:,:),     pointer :: ds
-
       real(kind=sreal),   dimension(:,:,:,:), pointer :: covariance
 
    end type output_data_secondary

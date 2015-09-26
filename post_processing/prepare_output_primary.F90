@@ -331,33 +331,24 @@ subroutine prepare_output_primary(i, j, indexing, input_data, output_data)
         output_data%ctt_error_vmax)
 
    !----------------------------------------------------------------------------
+   ! cloud_albedo
+   !----------------------------------------------------------------------------
+   do k=1,indexing%NSolar
+      call prepare_short_packed_float( &
+           input_data%cloud_albedo(i,j,k), output_data%cloud_albedo(i,j,k), &
+           output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
+           sint_fill_value)
+   end do
+
+   !----------------------------------------------------------------------------
    ! convergence, niter
    !----------------------------------------------------------------------------
    output_data%convergence(i,j)=input_data%convergence(i,j)
 
    if (input_data%convergence(i,j) .eq. 0 ) output_data%niter(i,j)=input_data%niter(i,j)
    if (input_data%convergence(i,j) .eq. 1 ) output_data%niter(i,j)=input_data%niter(i,j)
-
-   !----------------------------------------------------------------------------
-   ! phase
-   !----------------------------------------------------------------------------
-   if (input_data%phase(i,j) .eq. byte_fill_value) then
-      output_data%phase(i,j) = byte_fill_value
-   else
-      output_data%phase(i,j) = input_data%phase(i,j)
-   end if
-
-   if (     input_data%cldtype(i,j) .eq. 0) then
-      output_data%phase_pavolonis(i,j) = 0 ! phase = clear
-   else if (input_data%cldtype(i,j) .lt. 5 &
-      .and. input_data%cldtype(i,j) .gt. 1) then
-      output_data%phase_pavolonis(i,j) = 1 ! phase = water
-   else if (input_data%cldtype(i,j) .gt. 5) then
-      output_data%phase_pavolonis(i,j) = 2 ! phase = ice
-   else
-      output_data%phase_pavolonis(i,j) = byte_fill_value ! for all
-      ! other values (should not occur)
-   end if
 
    !----------------------------------------------------------------------------
    ! costja
@@ -382,14 +373,29 @@ subroutine prepare_output_primary(i, j, indexing, input_data, output_data)
            sreal_fill_value)
 
    !----------------------------------------------------------------------------
+   ! qcflag
+   !----------------------------------------------------------------------------
+   output_data%qcflag(i,j)=input_data%QCFlag(i,j)
+
+   !----------------------------------------------------------------------------
    ! lsflag
    !----------------------------------------------------------------------------
    output_data%lsflag(i,j)=input_data%LSFlag(i,j)
 
    !----------------------------------------------------------------------------
-   ! qcflag
+   ! lusflag
    !----------------------------------------------------------------------------
-   output_data%qcflag(i,j)=input_data%QCFlag(i,j)
+   output_data%lusflag(i,j)=input_data%lusflag(i,j)
+
+   !----------------------------------------------------------------------------
+   ! dem
+   !----------------------------------------------------------------------------
+!  output_data%dem(i,j)=input_data%dem(i,j)
+
+   !----------------------------------------------------------------------------
+   ! nisemask
+   !----------------------------------------------------------------------------
+   output_data%nisemask(i,j)=input_data%nisemask(i,j)
 
    !----------------------------------------------------------------------------
    ! illum
@@ -417,30 +423,24 @@ subroutine prepare_output_primary(i, j, indexing, input_data, output_data)
            sint_fill_value)
 
    !----------------------------------------------------------------------------
-   ! lusflag
+   ! phase
    !----------------------------------------------------------------------------
-   output_data%lusflag(i,j)=input_data%lusflag(i,j)
+   if (input_data%phase(i,j) .eq. byte_fill_value) then
+      output_data%phase(i,j) = byte_fill_value
+   else
+      output_data%phase(i,j) = input_data%phase(i,j)
+   end if
 
-   !----------------------------------------------------------------------------
-   ! dem
-   !----------------------------------------------------------------------------
-!  output_data%dem(i,j)=input_data%dem(i,j)
-
-   !----------------------------------------------------------------------------
-   ! lusflag
-   !----------------------------------------------------------------------------
-   output_data%nisemask(i,j)=input_data%nisemask(i,j)
-
-   !----------------------------------------------------------------------------
-   ! cloud_albedo
-   !----------------------------------------------------------------------------
-   do k=1,indexing%NSolar
-      call prepare_short_packed_float( &
-           input_data%cloud_albedo(i,j,k), output_data%cloud_albedo(i,j,k), &
-           output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
-           sint_fill_value)
-   end do
+   if (     input_data%cldtype(i,j) .eq. 0) then
+      output_data%phase_pavolonis(i,j) = 0 ! phase = clear
+   else if (input_data%cldtype(i,j) .lt. 5 &
+      .and. input_data%cldtype(i,j) .gt. 1) then
+      output_data%phase_pavolonis(i,j) = 1 ! phase = water
+   else if (input_data%cldtype(i,j) .gt. 5) then
+      output_data%phase_pavolonis(i,j) = 2 ! phase = ice
+   else
+      output_data%phase_pavolonis(i,j) = byte_fill_value ! for all
+      ! other values (should not occur)
+   end if
 
 end subroutine prepare_output_primary

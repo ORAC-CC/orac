@@ -370,6 +370,21 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            output_data%cwp_error_vmax)
 
    !----------------------------------------------------------------------------
+   ! cloud_albedo
+   !----------------------------------------------------------------------------
+   do k=1,SPixel%Ind%NSolar
+      kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+
+      dummyreal=Diag%cloud_albedo(k)
+      call prepare_short_packed_float( &
+           dummyreal, output_data%cloud_albedo(i,j,kk), &
+           output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
+           sint_fill_value)
+   end do
+
+   !----------------------------------------------------------------------------
    ! convergence, niter
    !----------------------------------------------------------------------------
    if (Diag%Converged .eq. byte_fill_value) then
@@ -384,11 +399,6 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
          output_data%niter(i,j) = byte_fill_value
       end if
    end if
-
-   !----------------------------------------------------------------------------
-   ! phase
-   !----------------------------------------------------------------------------
-   output_data%phase(i,j)=int(1,kind=byte)
 
    !----------------------------------------------------------------------------
    ! costja
@@ -421,14 +431,31 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            sreal_fill_value)
 
    !----------------------------------------------------------------------------
+   ! qcflag
+   !----------------------------------------------------------------------------
+   output_data%qcflag(i,j)=int(Diag%QCFlag,kind=sint)
+
+   !----------------------------------------------------------------------------
    ! lsflag
    !----------------------------------------------------------------------------
    output_data%lsflag(i,j)=int(MSI_Data%LSFlags(SPixel%Loc%X0, SPixel%Loc%Y0), kind=byte)
 
    !----------------------------------------------------------------------------
-   ! qcflag
+   ! lusflag
    !----------------------------------------------------------------------------
-   output_data%qcflag(i,j)=int(Diag%QCFlag,kind=sint)
+   output_data%lusflag(i,j)=int(MSI_Data%lusflags(SPixel%Loc%X0, SPixel%Loc&
+        %Y0), kind=byte)
+
+   !----------------------------------------------------------------------------
+   ! dem
+   !----------------------------------------------------------------------------
+   output_data%dem(i,j)=int(MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%Y0), kind=sint)
+
+   !----------------------------------------------------------------------------
+   ! nisemask
+   !----------------------------------------------------------------------------
+   output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
+        %Y0), kind=byte)
 
    !----------------------------------------------------------------------------
    ! illum
@@ -470,35 +497,8 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            sint_fill_value)
 
    !----------------------------------------------------------------------------
-   ! lusflag
+   ! phase
    !----------------------------------------------------------------------------
-   output_data%lusflag(i,j)=int(MSI_Data%lusflags(SPixel%Loc%X0, SPixel%Loc&
-        %Y0), kind=byte)
-
-   !----------------------------------------------------------------------------
-   ! dem
-   !----------------------------------------------------------------------------
-   output_data%dem(i,j)=int(MSI_Data%dem(SPixel%Loc%X0, SPixel%Loc%Y0), kind=sint)
-
-   !----------------------------------------------------------------------------
-   ! nisemask
-   !----------------------------------------------------------------------------
-   output_data%nisemask(i,j)=int(MSI_Data%nisemask(SPixel%Loc%X0, SPixel%Loc&
-        %Y0), kind=byte)
-
-   !----------------------------------------------------------------------------
-   ! cloud_albedo
-   !----------------------------------------------------------------------------
-   do k=1,SPixel%Ind%NSolar
-      kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
-
-      dummyreal=Diag%cloud_albedo(k)
-      call prepare_short_packed_float( &
-           dummyreal, output_data%cloud_albedo(i,j,kk), &
-           output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
-           sint_fill_value)
-   end do
+   output_data%phase(i,j)=int(1,kind=byte)
 
 end subroutine prepare_output_primary

@@ -614,6 +614,33 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
+   ! cloud_albedo_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
+      input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_cloud_albedo(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = trim(adjustl(input_dummy2)), &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cloud_albedo_scale, &
+           add_offset    = output_data%cloud_albedo_offset, &
+           valid_min     = output_data%cloud_albedo_vmin, &
+           valid_max     = output_data%cloud_albedo_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
    ! convergence
    !----------------------------------------------------------------------------
    call nc_def_var_byte_packed_byte( &
@@ -656,49 +683,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! phase
-   !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
-           ncid, &
-           dims_var, &
-           'phase', &
-           output_data%vid_phase, &
-           verbose, &
-           long_name     = 'cloud phase flag', &
-           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
-           fill_value    = byte_fill_value, &
-           scale_factor  = output_data%phase_scale, &
-           add_offset    = output_data%phase_offset, &
-           valid_min     = output_data%phase_vmin, &
-           valid_max     = output_data%phase_vmax, &
-           flag_values   = '0b, 1b, 2b', &
-           flag_meanings = 'clear/unknown, liquid, ice', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
-
-   !----------------------------------------------------------------------------
-   ! phase_pavolonis
-   !----------------------------------------------------------------------------
-if (do_phase_pavolonis) then
-   call nc_def_var_byte_packed_byte( &
-           ncid, &
-           dims_var, &
-           'phase_pavolonis', &
-           output_data%vid_phase_pavolonis, &
-           verbose, &
-           long_name     = 'cloud phase flag Pavolonis', &
-           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
-           fill_value    = byte_fill_value, &
-           scale_factor  = output_data%phase_pavolonis_scale, &
-           add_offset    = output_data%phase_pavolonis_offset, &
-           valid_min     = output_data%phase_pavolonis_vmin, &
-           valid_max     = output_data%phase_pavolonis_vmax, &
-           flag_values   = '0b, 1b, 2b', &
-           flag_meanings = 'clear/unknown, liquid, ice', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
-end if
-   !----------------------------------------------------------------------------
    ! costja
    !----------------------------------------------------------------------------
    call nc_def_var_float_packed_float( &
@@ -737,6 +721,27 @@ end if
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
+   ! qcflag
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_short( &
+           ncid, &
+           dims_var, &
+           'qcflag', &
+           output_data%vid_qcflag, &
+           verbose, &
+           long_name     = 'quality control flag', &
+           standard_name = 'quality_control_flag', &
+           fill_value    = int(-1,kind=sint), &
+           scale_factor  = output_data%qcflag_scale, &
+           add_offset    = output_data%qcflag_offset, &
+           valid_min     = output_data%qcflag_vmin, &
+           valid_max     = output_data%qcflag_vmax, &
+           flag_masks    = '1s, 2s, ... 2^(n state variables plus one)', &
+           flag_meanings = trim(adjustl(qc_flag_meanings)), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
    ! lsflag
    !----------------------------------------------------------------------------
    call nc_def_var_byte_packed_byte( &
@@ -758,23 +763,91 @@ end if
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! qcflag
+   ! lusflag
    !----------------------------------------------------------------------------
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'lusflag', &
+           output_data%vid_lusflag, &
+           verbose, &
+           long_name     = 'land use flag', &
+           standard_name = 'land_use_mask', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%lusflag_scale, &
+           add_offset    = output_data%lusflag_offset, &
+           valid_min     = output_data%lusflag_vmin, &
+           valid_max     = output_data%lusflag_vmax, &
+           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, ' // &
+                           '11b, 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, ' // &
+                           '20b, 21b, 22b, 23b, 24b', &
+           flag_meanings ='1:Urban and Built-Up Land, ' // &
+                          '2:Dryland Cropland and Pasture, ' // &
+                          '3:Irrigated, Cropland and Pasture, ' // &
+                          '4:Mixed Dryland/Irrigated Cropland and Pasture, ' // &
+                          '5:Cropland/Grassland Mosaic, ' // &
+                          '6:Cropland/Woodland Mosaic, ' // &
+                          '7:Grassland, ' // &
+                          '8:Shrubland, ' // &
+                          '9:Mixed Shrubland/Grassland, ' // &
+                          '10:Savanna, ' // &
+                          '11:Deciduous Broadleaf Forest, ' // &
+                          '12:Deciduous Needleleaf Forest, ' // &
+                          '13:Evergreen Broadleaf Forest, ' // &
+                          '14:Evergreen Needleleaf Forest, ' // &
+                          '15:Mixed Forest, ' // &
+                          '16:Water Bodies, ' // &
+                          '17:Herbaceous Wetland, ' // &
+                          '18:Wooded Wetland, ' // &
+                          '19:Barren or Sparsely Vegetated, ' // &
+                          '20:Herbaceous Tundra, ' // &
+                          '21:Wooded Tundra, ' // &
+                          '22:Mixed Tundra, ' // &
+                          '23:Bare Ground Tundra, ' // &
+                          '24:Snow or Ice, ' // &
+                          '99:Interrupted Areas, ' // &
+                          '100:Missing Data', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! dem
+   !----------------------------------------------------------------------------
+if (do_dem) then
    call nc_def_var_short_packed_short( &
            ncid, &
            dims_var, &
-           'qcflag', &
-           output_data%vid_qcflag, &
+           'dem', &
+           output_data%vid_dem, &
            verbose, &
-           long_name     = 'quality control flag', &
-           standard_name = 'quality_control_flag', &
+           long_name     = 'Digital elevation model', &
+           standard_name = 'dem', &
            fill_value    = int(-1,kind=sint), &
-           scale_factor  = output_data%qcflag_scale, &
-           add_offset    = output_data%qcflag_offset, &
-           valid_min     = output_data%qcflag_vmin, &
-           valid_max     = output_data%qcflag_vmax, &
-           flag_masks    = '1s, 2s, ... 2^(n state variables plus one)', &
-           flag_meanings = trim(adjustl(qc_flag_meanings)), &
+           scale_factor  = output_data%dem_scale, &
+           add_offset    = output_data%dem_offset, &
+           valid_min     = output_data%dem_vmin, &
+           valid_max     = output_data%dem_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+   !----------------------------------------------------------------------------
+   ! nise mask
+   !----------------------------------------------------------------------------
+   call nc_def_var_byte_packed_byte( &
+           ncid, &
+           dims_var, &
+           'nisemask', &
+           output_data%vid_nisemask, &
+           verbose, &
+           long_name     = 'NISE snow/ice mask', &
+           standard_name = 'NISE_mask', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%nisemask_scale, &
+           add_offset    = output_data%nisemask_offset, &
+           valid_min     = output_data%nisemask_vmin, &
+           valid_max     = output_data%nisemask_vmax, &
+           flag_values   = '0b, 1b', &
+           flag_meanings = 'snow/ice free, snow/ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -915,122 +988,48 @@ end if
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! lusflag
+   ! phase
    !----------------------------------------------------------------------------
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
-           'lusflag', &
-           output_data%vid_lusflag, &
+           'phase', &
+           output_data%vid_phase, &
            verbose, &
-           long_name     = 'land use flag', &
-           standard_name = 'land_use_mask', &
+           long_name     = 'cloud phase flag', &
+           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
            fill_value    = byte_fill_value, &
-           scale_factor  = output_data%lusflag_scale, &
-           add_offset    = output_data%lusflag_offset, &
-           valid_min     = output_data%lusflag_vmin, &
-           valid_max     = output_data%lusflag_vmax, &
-           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, ' // &
-                           '11b, 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, ' // &
-                           '20b, 21b, 22b, 23b, 24b', &
-           flag_meanings ='1:Urban and Built-Up Land, ' // &
-                          '2:Dryland Cropland and Pasture, ' // &
-                          '3:Irrigated, Cropland and Pasture, ' // &
-                          '4:Mixed Dryland/Irrigated Cropland and Pasture, ' // &
-                          '5:Cropland/Grassland Mosaic, ' // &
-                          '6:Cropland/Woodland Mosaic, ' // &
-                          '7:Grassland, ' // &
-                          '8:Shrubland, ' // &
-                          '9:Mixed Shrubland/Grassland, ' // &
-                          '10:Savanna, ' // &
-                          '11:Deciduous Broadleaf Forest, ' // &
-                          '12:Deciduous Needleleaf Forest, ' // &
-                          '13:Evergreen Broadleaf Forest, ' // &
-                          '14:Evergreen Needleleaf Forest, ' // &
-                          '15:Mixed Forest, ' // &
-                          '16:Water Bodies, ' // &
-                          '17:Herbaceous Wetland, ' // &
-                          '18:Wooded Wetland, ' // &
-                          '19:Barren or Sparsely Vegetated, ' // &
-                          '20:Herbaceous Tundra, ' // &
-                          '21:Wooded Tundra, ' // &
-                          '22:Mixed Tundra, ' // &
-                          '23:Bare Ground Tundra, ' // &
-                          '24:Snow or Ice, ' // &
-                          '99:Interrupted Areas, ' // &
-                          '100:Missing Data', &
+           scale_factor  = output_data%phase_scale, &
+           add_offset    = output_data%phase_offset, &
+           valid_min     = output_data%phase_vmin, &
+           valid_max     = output_data%phase_vmax, &
+           flag_values   = '0b, 1b, 2b', &
+           flag_meanings = 'clear/unknown, liquid, ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! dem
+   ! phase_pavolonis
    !----------------------------------------------------------------------------
-if (do_dem) then
-   call nc_def_var_short_packed_short( &
+if (do_phase_pavolonis) then
+   call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
-           'dem', &
-           output_data%vid_dem, &
+           'phase_pavolonis', &
+           output_data%vid_phase_pavolonis, &
            verbose, &
-           long_name     = 'Digital elevation model', &
-           standard_name = 'dem', &
-           fill_value    = int(-1,kind=sint), &
-           scale_factor  = output_data%dem_scale, &
-           add_offset    = output_data%dem_offset, &
-           valid_min     = output_data%dem_vmin, &
-           valid_max     = output_data%dem_vmax, &
+           long_name     = 'cloud phase flag Pavolonis', &
+           standard_name = 'thermodynamic_phase_of_cloud_water_particles_at_cloud_top', &
+           fill_value    = byte_fill_value, &
+           scale_factor  = output_data%phase_pavolonis_scale, &
+           add_offset    = output_data%phase_pavolonis_offset, &
+           valid_min     = output_data%phase_pavolonis_vmin, &
+           valid_max     = output_data%phase_pavolonis_vmax, &
+           flag_values   = '0b, 1b, 2b', &
+           flag_meanings = 'clear/unknown, liquid, ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
-   !----------------------------------------------------------------------------
-   ! nise mask
-   !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
-           ncid, &
-           dims_var, &
-           'nisemask', &
-           output_data%vid_nisemask, &
-           verbose, &
-           long_name     = 'NISE snow/ice mask', &
-           standard_name = 'NISE_mask', &
-           fill_value    = byte_fill_value, &
-           scale_factor  = output_data%nisemask_scale, &
-           add_offset    = output_data%nisemask_offset, &
-           valid_min     = output_data%nisemask_vmin, &
-           valid_max     = output_data%nisemask_vmax, &
-           flag_values   = '0b, 1b', &
-           flag_meanings = 'snow/ice free, snow/ice', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
-
-   !----------------------------------------------------------------------------
-   ! cloud_albedo_in_channel_no_*
-   !----------------------------------------------------------------------------
-   do i=1,NSolar
-
-      write(input_num,"(i4)") Y_Id(YSolar(i))
-
-      input_dummy='cloud_albedo in channel no '//trim(adjustl(input_num))
-      input_dummy2='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
-
-      call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           trim(adjustl(input_dummy2)), &
-           output_data%vid_cloud_albedo(i), &
-           verbose, &
-           long_name     = trim(adjustl(input_dummy)), &
-           standard_name = trim(adjustl(input_dummy2)), &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cloud_albedo_scale, &
-           add_offset    = output_data%cloud_albedo_offset, &
-           valid_min     = output_data%cloud_albedo_vmin, &
-           valid_max     = output_data%cloud_albedo_vmax, &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
-   end do
-
-
    !----------------------------------------------------------------------------
    !
    !----------------------------------------------------------------------------

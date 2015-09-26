@@ -92,19 +92,16 @@ subroutine dealloc_input_data_primary_all(input_data)
    deallocate(input_data%solar_zenith_view_no1)
    deallocate(input_data%satellite_zenith_view_no1)
    deallocate(input_data%rel_azimuth_view_no1)
-
-   deallocate(input_data%phase)
-
    deallocate(input_data%lsflag)
-   deallocate(input_data%cldtype)
-   deallocate(input_data%illum)
-
-   deallocate(input_data%cccot_pre)
-
-   deallocate(input_data%cldmask)
    deallocate(input_data%lusflag)
 !  deallocate(input_data%dem)
    deallocate(input_data%nisemask)
+   deallocate(input_data%illum)
+   deallocate(input_data%cldtype)
+   deallocate(input_data%cldmask)
+   deallocate(input_data%cldmask_uncertainty)
+   deallocate(input_data%cccot_pre)
+   deallocate(input_data%phase)
 
 end subroutine dealloc_input_data_primary_all
 

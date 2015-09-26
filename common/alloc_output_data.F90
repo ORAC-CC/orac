@@ -152,6 +152,9 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, N
    allocate(output_data%cwp_error(ixstart:ixstop,iystart:iystop))
    output_data%cwp_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
+   allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%cloud_albedo=sint_fill_value
+
 
    allocate(output_data%convergence(ixstart:ixstop,iystart:iystop))
    output_data%convergence(ixstart:ixstop,iystart:iystop)=byte_fill_value
@@ -159,26 +162,32 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, N
    allocate(output_data%niter(ixstart:ixstop,iystart:iystop))
    output_data%niter(ixstart:ixstop,iystart:iystop)=byte_fill_value
 
-   allocate(output_data%phase(ixstart:ixstop,iystart:iystop))
-   output_data%phase(ixstart:ixstop,iystart:iystop)=byte_fill_value
-if (do_phase_pavolonis) then
-   allocate(output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop))
-   output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop)=byte_fill_value
-end if
    allocate(output_data%costja(ixstart:ixstop,iystart:iystop))
    output_data%costja(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
    allocate(output_data%costjm(ixstart:ixstop,iystart:iystop))
    output_data%costjm(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
-   allocate(output_data%lsflag(ixstart:ixstop,iystart:iystop))
-   output_data%lsflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
-
    allocate(output_data%qcflag(ixstart:ixstop,iystart:iystop))
    output_data%qcflag(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
+
+   allocate(output_data%lsflag(ixstart:ixstop,iystart:iystop))
+   output_data%lsflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
+   allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
+   output_data%lusflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
+if (do_dem) then
+   allocate(output_data%dem(ixstart:ixstop,iystart:iystop))
+   output_data%dem(ixstart:ixstop,iystart:iystop)=sint_fill_value
+end if
+   allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
+   output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
+
    allocate(output_data%illum(ixstart:ixstop,iystart:iystop))
    output_data%illum(ixstart:ixstop,iystart:iystop)=byte_fill_value
+
 
    allocate(output_data%cldtype(ixstart:ixstop,iystart:iystop))
    output_data%cldtype(ixstart:ixstop,iystart:iystop)=byte_fill_value
@@ -192,17 +201,13 @@ end if
    allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
    output_data%cccot_pre(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
-   allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
-   output_data%lusflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
-if (do_dem) then
-   allocate(output_data%dem(ixstart:ixstop,iystart:iystop))
-   output_data%dem(ixstart:ixstop,iystart:iystop)=sint_fill_value
-end if
-   allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
-   output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
 
-   allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%cloud_albedo=sint_fill_value
+   allocate(output_data%phase(ixstart:ixstop,iystart:iystop))
+   output_data%phase(ixstart:ixstop,iystart:iystop)=byte_fill_value
+if (do_phase_pavolonis) then
+   allocate(output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop))
+   output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop)=byte_fill_value
+end if
 
 end subroutine alloc_output_data_primary
 

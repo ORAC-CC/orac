@@ -149,29 +149,41 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_d
    call nc_write_array(ncid,'cwp_uncertainty',output_data%vid_cwp_error,&
            output_data%cwp_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
+   do i=1,NSolar
+      write(input_num,"(i4)") Y_Id(i)
+
+      input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
+      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+              output_data%vid_cloud_albedo(i),output_data%cloud_albedo(ixstart:,iystart:,i), &
+              1,1,n_x,1,1,n_y)
+   end do
+
    call nc_write_array(ncid,'convergence',output_data%vid_convergence,&
            output_data%convergence(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'niter',output_data%vid_niter,&
            output_data%niter(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   call nc_write_array(ncid,'phase',output_data%vid_phase,&
-           output_data%phase(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-if (do_phase_pavolonis) then
-   call nc_write_array(ncid,'phase_pavolonis',output_data%vid_phase_pavolonis,&
-           output_data%phase_pavolonis(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-end if
    call nc_write_array(ncid,'costja',output_data%vid_costja,&
            output_data%costja(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'costjm',output_data%vid_costjm,&
            output_data%costjm(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
+   call nc_write_array(ncid,'qcflag',output_data%vid_qcflag,&
+           output_data%qcflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
    call nc_write_array(ncid,'lsflag',output_data%vid_lsflag,&
            output_data%lsflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   call nc_write_array(ncid,'qcflag',output_data%vid_qcflag,&
-           output_data%qcflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'lusflag',output_data%vid_lusflag,&
+           output_data%lusflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (do_dem) then
+   call nc_write_array(ncid,'dem',output_data%vid_dem,&
+           output_data%dem(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+end if
+   call nc_write_array(ncid,'nisemask',output_data%vid_nisemask,&
+           output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'illum',output_data%vid_illum,&
            output_data%illum(ixstart:,iystart:),1,1,n_x,1,1,n_y)
@@ -193,22 +205,10 @@ end if
    call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre,&
            output_data%cccot_pre(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   call nc_write_array(ncid,'lusflag',output_data%vid_lusflag,&
-           output_data%lusflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-if (do_dem) then
-   call nc_write_array(ncid,'dem',output_data%vid_dem,&
-           output_data%dem(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'phase',output_data%vid_phase,&
+           output_data%phase(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (do_phase_pavolonis) then
+   call nc_write_array(ncid,'phase_pavolonis',output_data%vid_phase_pavolonis,&
+           output_data%phase_pavolonis(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
-   call nc_write_array(ncid,'nisemask',output_data%vid_nisemask,&
-           output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-
-   do i=1,NSolar
-      write(input_num,"(i4)") Y_Id(i)
-
-      input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
-      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_cloud_albedo(i),output_data%cloud_albedo(ixstart:,iystart:,i), &
-              1,1,n_x,1,1,n_y)
-   end do
-
 end subroutine write_output_primary
