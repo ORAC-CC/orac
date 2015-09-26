@@ -104,6 +104,7 @@
 !    on cost, class is determined any pixel not meeting these thresholds are set
 !    to fill value.  Each threshold can be turned off individually by setting
 !    them to zero.
+! 2015/09/26, GM: Removed eight unused mandatory driver file lines.
 !
 ! $Id$
 !
@@ -151,7 +152,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 #ifdef WRAPPER
    integer                     :: mytask, ntasks, lower_bound, upper_bound
 #endif
-   character(len=path_length)  :: dummy_arg
    character(len=path_length)  :: label, value
 
    logical                     :: do_secondary = .false.
@@ -235,14 +235,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'secondary output = ', trim(out_file_secondary)
    read(11,*) one_phase_only
    write(*,*) 'one_phase_only = ', one_phase_only
-   read(11,*) dummy_arg
-   read(11,*) dummy_arg
-   read(11,*) dummy_arg
-   read(11,*) dummy_arg
-   read(11,*) dummy_arg
-   read(11,*) dummy_arg
-   read(11,*) dummy_arg
-   read(11,*) dummy_arg
 
    n_in_files = 2
 
