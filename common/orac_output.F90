@@ -220,7 +220,7 @@ module orac_output
       integer(kind=byte)            :: illum_scale  = 1
       integer(kind=byte)            :: illum_offset = 0
       integer(kind=byte)            :: illum_vmin   = 1
-      integer(kind=byte)            :: illum_vmax   = 12
+      integer(kind=byte)            :: illum_vmax   = 3
 
       integer(kind=byte)            :: cldtype_scale  = 1
       integer(kind=byte)            :: cldtype_offset = 0

@@ -938,7 +938,8 @@ end if
                           '3:Irrigated, Cropland and Pasture, ' // &
                           '4:Mixed Dryland/Irrigated Cropland and Pasture, ' // &
                           '5:Cropland/Grassland Mosaic, ' // &
-                          '6:Cropland/Woodland Mosaic, 7:Grassland, ' // &
+                          '6:Cropland/Woodland Mosaic, ' // &
+                          '7:Grassland, ' // &
                           '8:Shrubland, ' // &
                           '9:Mixed Shrubland/Grassland, ' // &
                           '10:Savanna, ' // &
