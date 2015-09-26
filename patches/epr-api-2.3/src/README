@@ -1,0 +1,2 @@
+These files have been changed to enable ATSR-2 data to be read in. They should
+replace the files that are in: epr-api-2.3/include/src
