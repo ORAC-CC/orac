@@ -5,6 +5,7 @@
 !
 ! History:
 ! 2015/09/14, GM: Original version
+! 2015/09/26, GM: Add init_class_specific_inputs().
 !
 ! $Id$
 !
@@ -19,6 +20,80 @@ module postproc_utils
    implicit none
 
 contains
+
+subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
+
+   use orac_input
+   use postproc_constants
+
+   implicit none
+
+   integer,                    intent(in)    :: i, j
+   type(input_data_primary),   intent(inout) :: primary
+   type(input_data_secondary), intent(inout) :: secondary
+   logical,                    intent(in)    :: do_secondary
+
+   ! primary file
+   primary%cot(i,j)                  = sreal_fill_value
+   primary%cot_uncertainty(i,j)      = sreal_fill_value
+
+   primary%ref(i,j)                  = sreal_fill_value
+   primary%ref_uncertainty(i,j)      = sreal_fill_value
+
+   primary%ctp(i,j)                  = sreal_fill_value
+   primary%ctp_uncertainty(i,j)      = sreal_fill_value
+
+   primary%cc_total(i,j)             = sreal_fill_value
+   primary%cc_total_uncertainty(i,j) = sreal_fill_value
+
+   primary%stemp(i,j)                = sreal_fill_value
+   primary%stemp_uncertainty(i,j)    = sreal_fill_value
+
+   primary%cth(i,j)                  = sreal_fill_value
+   primary%cth_uncertainty(i,j)      = sreal_fill_value
+
+   primary%ctt(i,j)                  = sreal_fill_value
+   primary%ctt_uncertainty(i,j)      = sreal_fill_value
+
+   primary%cwp(i,j)                  = sreal_fill_value
+   primary%cwp_uncertainty(i,j)      = sreal_fill_value
+
+   primary%cloud_albedo(i,j,:)       = sreal_fill_value
+
+   primary%convergence(i,j)          = byte_fill_value
+
+   primary%niter(i,j)                = byte_fill_value
+
+   primary%phase(i,j)                = byte_fill_value
+
+   primary%costja(i,j)               = sreal_fill_value
+   primary%costjm(i,j)               = sreal_fill_value
+
+   primary%qcflag(i,j)               = sint_fill_value
+
+   ! secondary file
+   if (do_secondary) then
+      secondary%cot_ap(i,j)      = sreal_fill_value
+      secondary%cot_fg(i,j)      = sreal_fill_value
+
+      secondary%ref_ap(i,j)      = sreal_fill_value
+      secondary%ref_fg(i,j)      = sreal_fill_value
+
+      secondary%ctp_ap(i,j)      = sreal_fill_value
+      secondary%ctp_fg(i,j)      = sreal_fill_value
+
+      secondary%stemp_ap(i,j)    = sreal_fill_value
+      secondary%stemp_fg(i,j)    = sreal_fill_value
+
+      secondary%y0(i,j,:)        = sreal_fill_value
+
+      secondary%residuals(i,j,:) = sreal_fill_value
+
+      secondary%ds(i,j)          = sreal_fill_value
+   end if
+
+end subroutine init_class_specific_inputs
+
 
 subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
                                       secondary1, do_secondary)

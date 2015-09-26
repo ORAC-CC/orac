@@ -93,12 +93,17 @@
 !    Cloud CCI specific and will therefore have to be handled once aerosol and
 !    ash support is added to the post processor.
 ! 2015/09/14, GM: Add support for optional driver file arguments.
-! 2015/09/14, GM: Add use_baysian_selection as an optional driver file argument.
-!    Default is use_baysian_selection=false.  With this option any number of
+! 2015/09/14, GM: Add use_bayesian_selection as an optional driver file argument.
+!    Default is use_bayesian_selection=false.  With this option any number of
 !    input primary/secondary file pairs is supported.  To support this lines
 !    after the required lines that do not parse as a label=value are considered
 !    a primary file name followed by a secondary file name on the next line.
 ! 2015/09/14, GM: Add boolean option use_netcdf_compression.
+! 2015/09/26, GM: Add optional input parameters cost_thresh and norm_prob_thresh
+!    (normalized probability) for Bayesian selection.  After the `best', based
+!    on cost, class is determined any pixel not meeting these thresholds are set
+!    to fill value.  Each threshold can be turned off individually by setting
+!    them to zero.
 !
 ! $Id$
 !
@@ -150,9 +155,12 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    character(len=path_length)  :: label, value
 
    logical                     :: do_secondary = .false.
+
    logical                     :: one_phase_only
-   real                        :: cot_thresh
-   logical                     :: use_baysian_selection = .false.
+
+   real                        :: cost_thresh = 0.
+   real                        :: norm_prob_thresh = .75
+   logical                     :: use_bayesian_selection = .false.
    logical                     :: use_netcdf_compression = .true.
 
    integer                     :: n_in_files
@@ -187,6 +195,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    integer                     :: i_min_costjm
    real                        :: a_min_costjm
+   real                        :: sum_prob
 
    integer                     :: deflate_level2
    logical                     :: shuffle_flag2
@@ -227,8 +236,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    read(11,*) one_phase_only
    write(*,*) 'one_phase_only = ', one_phase_only
    read(11,*) dummy_arg
-   read(11,*) cot_thresh
-   write(*,*) 'cot_thresh = ', cot_thresh
+   read(11,*) dummy_arg
    read(11,*) dummy_arg
    read(11,*) dummy_arg
    read(11,*) dummy_arg
@@ -243,8 +251,14 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    do while (parse_driver(11, value, label) == 0)
      call clean_driver_label(label)
      select case (label)
-     case('USE_BAYSIAN_SELECTION')
-        if (parse_string(value, use_baysian_selection) /= 0) &
+     case('COST_THRESH')
+        if (parse_string(value, cost_thresh) /= 0) &
+           call handle_parse_error(label)
+     case('NORM_PROB_THRESH')
+        if (parse_string(value, norm_prob_thresh) /= 0) &
+           call handle_parse_error(label)
+     case('USE_BAYESIAN_SELECTION')
+        if (parse_string(value, use_bayesian_selection) /= 0) &
            call handle_parse_error(label)
      case('USE_NETCDF_COMPRESSION')
         if (parse_string(value, use_netcdf_compression) /= 0) &
@@ -363,7 +377,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       do i=ixstart,ixstop
 
          ! Cloud CCI selection
-         if (.not. use_baysian_selection) then
+         if (.not. use_bayesian_selection) then
             ! default: ICE wins, meaning only ice structure is overwritten and used
             ! in the end for the output
             input_primary(IWat)%phase(i,j)=IPhaseWat
@@ -389,17 +403,19 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                 input_primary(IWat)%cldtype(i,j) .lt. 5) then
 
                phase_flag = 1_byte
-               if ((.not. one_phase_only) .and. & ! only reclassify if both phases were processed
-                  (((input_primary(IIce)%ctt(i,j) .lt. 233.16) .and. &
-                    (input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value)) .and. &
-                   ((input_primary(IWat)%ctt(i,j) .lt. 273.16 ) .and. &
-                    (input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value)))) &
+               if (.not. one_phase_only .and. & ! only reclassify if both phases were processed
+                   ((input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IIce)%ctt(i,j) .lt. 233.16) .and. &
+                    (input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IWat)%ctt(i,j) .lt. 273.16))) &
                   phase_flag = 2_byte
             else
                phase_flag = 2_byte
-               if ((.not. one_phase_only ) .and. & ! only reclassify if both phases were processed
-                   ((input_primary(IWat)%ctt(i,j) .ge. 273.16) .and. &
-                    (input_primary(IIce)%ctt(i,j) .ge. 233.16))) &
+               if (.not. one_phase_only .and. & ! only reclassify if both phases were processed
+                   ((input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IIce)%ctt(i,j) .ge. 233.16) .and. &
+                    (input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IWat)%ctt(i,j) .ge. 273.16))) &
                phase_flag = 1_byte
             end if
 
@@ -422,24 +438,30 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                input_primary(IWat)%phase(i,j)=IPhaseClU
             end if
 
-         ! Baysian based Selection
+         ! Bayesian based selection
          else
-
+            sum_prob = 0.
             a_min_costjm = huge(a_min_costjm)
             do k = 1, n_in_files
                if (input_primary(k)%costjm(i,j) .lt. a_min_costjm) then
                   a_min_costjm = input_primary(k)%costjm(i,j)
                   i_min_costjm = k
                end if
+               sum_prob = sum_prob + exp(-input_primary(k)%costjm(i,j) / 2.)
             end do
 
-            if (i_min_costjm .ne. 1) then
-               call copy_class_specific_inputs(i, j, &
-                  input_primary(1), input_primary(i_min_costjm), &
-                  input_secondary(1), input_secondary(i_min_costjm), do_secondary)
-            end if
+            if (input_primary(i_min_costjm)%costjm(i,j) .lt. cost_thresh .or. &
+                input_primary(i_min_costjm)%costjm(i,j) / sum_prob .lt. norm_prob_thresh) then
+               call init_class_specific_inputs(i, j, input_primary(1), input_secondary(1), do_secondary)
+            else
+               if (i_min_costjm .ne. 1) then
+                  call copy_class_specific_inputs(i, j, &
+                     input_primary(1), input_primary(i_min_costjm), &
+                     input_secondary(1), input_secondary(i_min_costjm), do_secondary)
+               end if
 
-            input_primary(1)%phase(i,j) = i_min_costjm
+               input_primary(1)%phase(i,j) = i_min_costjm
+            endif
          end if
       end do
    end do
