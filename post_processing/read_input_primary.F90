@@ -153,7 +153,7 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
 
    call nc_read_array(ncid, "lsflag", input_data%lsflag, verbose)
    call nc_read_array(ncid, "lusflag", input_data%lusflag, verbose)
-!  call nc_read_array(ncid, "dem", input_data%dem, verbose)
+   call nc_read_array(ncid, "dem", input_data%dem, verbose)
    call nc_read_array(ncid, "nisemask", input_data%nisemask, verbose)
 
    call nc_read_array(ncid, "illum", input_data%illum, verbose)

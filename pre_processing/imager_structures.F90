@@ -52,7 +52,7 @@ module imager_structures
       real(kind=sreal), dimension(:,:), pointer :: latitude
       real(kind=sreal), dimension(:,:), pointer :: longitude
 
-      integer(kind=lint), dimension(:,:), pointer :: dem
+      integer(kind=sint), dimension(:,:), pointer :: dem
 
    end type imager_geolocation_s
 

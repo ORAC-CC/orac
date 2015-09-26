@@ -631,7 +631,7 @@ contains
                imager_measurements%DATA(i,j,ch6), &
                imager_angles%SOLZEN(i,j,imager_angles%NVIEWS), &
                imager_angles%SATZEN(i,j,imager_angles%NVIEWS), &
-               imager_geolocation%DEM(i,j), &
+               int(imager_geolocation%DEM(i,j), lint), &
                surface%NISE_MASK(i,j), imager_flags%LSFLAG(i,j), &
                imager_flags%LUSFLAG(i,j), &
                imager_pavolonis%SFCTYPE(i,j), &

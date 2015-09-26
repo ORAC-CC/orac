@@ -45,7 +45,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre, do_dem)
+subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre)
 
    use orac_ncdf
 
@@ -64,7 +64,6 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_d
    logical,                   intent(in)    :: do_cldmask
    logical,                   intent(in)    :: do_cldmask_uncertainty
    logical,                   intent(in)    :: do_cloudmask_pre
-   logical,                   intent(in)    :: do_dem
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -178,10 +177,10 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_d
 
    call nc_write_array(ncid,'lusflag',output_data%vid_lusflag,&
            output_data%lusflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-if (do_dem) then
+
    call nc_write_array(ncid,'dem',output_data%vid_dem,&
            output_data%dem(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-end if
+
    call nc_write_array(ncid,'nisemask',output_data%vid_nisemask,&
            output_data%nisemask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 

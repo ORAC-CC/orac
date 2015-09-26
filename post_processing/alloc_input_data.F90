@@ -152,8 +152,8 @@ subroutine alloc_input_data_primary_all(input_data,xdim1km,ydim1km,indexing)
    allocate(input_data%lusflag(xdim1km,ydim1km))
    input_data%lusflag=byte_fill_value
 
-!  allocate(input_data%dem(xdim1km,ydim1km))
-!  input_data%dem=sint_fill_value
+   allocate(input_data%dem(xdim1km,ydim1km))
+   input_data%dem=sint_fill_value
 
    allocate(input_data%nisemask(xdim1km,ydim1km))
    input_data%nisemask=byte_fill_value

@@ -55,7 +55,7 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, Ny, output_data, do_phase_pavolonis, do_cldmask_uncertainty, do_dem)
+subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, Ny, output_data, do_phase_pavolonis, do_cldmask_uncertainty)
 
    implicit none
 
@@ -68,7 +68,6 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, N
    type(output_data_primary), intent(inout) :: output_data
    logical,                   intent(in)    :: do_phase_pavolonis
    logical,                   intent(in)    :: do_cldmask_uncertainty
-   logical,                   intent(in)    :: do_dem
 
 
    allocate(output_data%vid_sol_zen(NViews))
@@ -177,10 +176,10 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, N
 
    allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
    output_data%lusflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
-if (do_dem) then
+
    allocate(output_data%dem(ixstart:ixstop,iystart:iystop))
    output_data%dem(ixstart:ixstop,iystart:iystop)=sint_fill_value
-end if
+
    allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
    output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
 

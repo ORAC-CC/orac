@@ -390,7 +390,7 @@ subroutine prepare_output_primary(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! dem
    !----------------------------------------------------------------------------
-!  output_data%dem(i,j)=input_data%dem(i,j)
+   output_data%dem(i,j)=input_data%dem(i,j)
 
    !----------------------------------------------------------------------------
    ! nisemask

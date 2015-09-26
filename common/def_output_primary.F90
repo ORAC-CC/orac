@@ -65,7 +65,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre, do_dem)
+subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre)
 
    use netcdf
    use orac_ncdf
@@ -91,7 +91,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
    logical,                   intent(in)    :: do_cldmask
    logical,                   intent(in)    :: do_cldmask_uncertainty
    logical,                   intent(in)    :: do_cloudmask_pre
-   logical,                   intent(in)    :: do_dem
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -813,7 +812,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
    !----------------------------------------------------------------------------
    ! dem
    !----------------------------------------------------------------------------
-if (do_dem) then
    call nc_def_var_short_packed_short( &
            ncid, &
            dims_var, &
@@ -829,7 +827,7 @@ if (do_dem) then
            valid_max     = output_data%dem_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
-end if
+
    !----------------------------------------------------------------------------
    ! nise mask
    !----------------------------------------------------------------------------
@@ -937,7 +935,7 @@ if (do_cldmask_uncertainty) then
            output_data%vid_cldmask_uncertainty, &
            verbose, &
            long_name     = 'Neural net cloud mask (radiance based) uncertainty', &
-           standard_name = 'Neural_net_cloud_mask_uncertainty', &
+           standard_name = 'Neural_net_cloud_mask uncertainty', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cldmask_uncertainty_scale, &
            add_offset    = output_data%cldmask_uncertainty_offset, &
