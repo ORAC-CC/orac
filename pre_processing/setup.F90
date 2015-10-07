@@ -170,8 +170,8 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year
-   read(cmonth,'(i2)') month
-   read(cday,'(i2)') day
+   read(cmonth, '(I2)') month
+   read(cday, '(I2)') day
    read(chour(1:len_trim(chour)), '(I2)') hour
    read(cminute(1:len_trim(cminute)), '(I2)') minute
 
@@ -304,8 +304,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
        ! get year, month, day, hour and minute as integers
        read(cyear(1:len_trim(cyear)), '(I4)') year
-       read(cmonth,'(i2)') month
-       read(cday,'(i2)') day
+       read(cmonth, '(I2)') month
+       read(cday, '(I2)') day
        read(chour(1:len_trim(chour)), '(I2)') hour
        read(cminute(1:len_trim(cminute)), '(I2)') minute
 
@@ -360,8 +360,8 @@ subroutine setup_avhrr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
        ! get year, month, day, hour and minute as integers
        read(cyear(1:len_trim(cyear)), '(I4)') year
-       read(cmonth,'(i2)') month
-       read(cday,'(i2)') day
+       read(cmonth, '(I2)') month
+       read(cday, '(I2)') day
        read(chour(1:len_trim(chour)), '(I2)') hour
        read(cminute(1:len_trim(cminute)), '(I2)') minute
 
