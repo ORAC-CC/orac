@@ -127,7 +127,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use parsing
    use postproc_constants
    use postproc_utils
-   use prepare_output
+   use prepare_output_pp
    use source_attributes
 
    implicit none
@@ -154,6 +154,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 #endif
    character(len=path_length)  :: label, value
 
+   logical                     :: switch_phases, cloudy_only
+   real                        :: cot_thres, cot_thres1, cot_thres2
+   integer                     :: proc_flag(5)
+   character(len=var_length)   :: inst
    logical                     :: do_secondary = .false.
 
    logical                     :: one_phase_only
@@ -233,8 +237,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'primary output = ', trim(out_file_primary)
    read(11,*) out_file_secondary
    write(*,*) 'secondary output = ', trim(out_file_secondary)
-   read(11,*) one_phase_only
-   write(*,*) 'one_phase_only = ', one_phase_only
+   read(11,*) switch_phases
+   write(*,*) 'switch_phases = ', switch_phases
 
    n_in_files = 2
 
@@ -277,7 +281,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'Obtaining channel indexing'
 
    indexing%Nx = 4 ! This count is hardwired for now
-
    indexing%NViews = 1
 
    write(*,*) 'Opening first secondary input file: ', trim(in_files_secondary(IIce))
@@ -395,7 +398,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                 input_primary(IWat)%cldtype(i,j) .lt. 5) then
 
                phase_flag = 1_byte
-               if (.not. one_phase_only .and. & ! only reclassify if both phases were processed
+               if (switch_phases .and. & ! only reclassify if both phases were processed
                    ((input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
                      input_primary(IIce)%ctt(i,j) .lt. 233.16) .and. &
                     (input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
@@ -403,7 +406,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
                   phase_flag = 2_byte
             else
                phase_flag = 2_byte
-               if (.not. one_phase_only .and. & ! only reclassify if both phases were processed
+               if (switch_phases .and. & ! only reclassify if both phases were processed
                    ((input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
                      input_primary(IIce)%ctt(i,j) .ge. 233.16) .and. &
                     (input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
@@ -490,7 +493,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       deflate_level2 = 0
       shuffle_flag2  = .false.
    end if
-   call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, input_primary(1)%qc_flag_meanings, deflate_level2, shuffle_flag2, verbose, .true., .false., .false., .true.)
+   call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, &
+        indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, &
+        indexing%Ch_Is, 100, input_primary(1)%qc_flag_meanings, deflate_level2, &
+        shuffle_flag2, verbose, .true., .false., .false., .true.)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, 0, 0, verbose, .false.)
    end if
@@ -498,10 +504,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    ! put results in final output arrays with final datatypes
    do j=iystart,iystop
       do i=ixstart,ixstop
-         call prepare_output_primary(i, j, indexing, input_primary(1), &
+         call prepare_output_primary_pp(i, j, indexing, input_primary(1), &
             output_primary)
          if (do_secondary) then
-            call prepare_output_secondary(i, j, indexing, input_secondary(1), &
+            call prepare_output_secondary_pp(i, j, indexing, input_secondary(1), &
                output_secondary, .false.)
          end if
       end do
