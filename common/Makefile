@@ -23,7 +23,10 @@ COMMON_OBJ_F90=$(OBJS)/common_constants.o \
                $(OBJS)/orac_output.o \
                $(OBJS)/orac_ncdf.o \
                $(OBJS)/parsing.o \
-               $(OBJS)/source_attributes.o
+               $(OBJS)/source_attributes.o \
+               $(OBJS)/system_utils_c.o \
+               $(OBJS)/system_utils.o
+
 
 
 COMMON_OBJ_C=
@@ -73,3 +76,4 @@ Linux2DEC:
 include dependencies.inc
 
 # Fortran 90 on C dependecies
+system_utils.o: system_utils_c.o
