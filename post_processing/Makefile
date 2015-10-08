@@ -20,7 +20,7 @@ ORAC_COMMON = ../common
 POSTPROC_OBJ_F90 =  $(OBJS)/orac_input.o \
                     $(OBJS)/postproc_constants.o \
                     $(OBJS)/postproc_utils.o \
-                    $(OBJS)/prepare_output.o  \
+                    $(OBJS)/prepare_output_pp.o  \
 
 POSTPROC_OBJ_MAIN = $(OBJS)/post_process_level2.o
 
