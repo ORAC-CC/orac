@@ -85,9 +85,9 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
    read(cyear, *) iyear
 
    if (iyear .lt. 2002) then
-         cyear2 = 'XXXX'
+      cyear2 = 'XXXX'
    else
-         cyear2 = cyear
+      cyear2 = cyear
    end if
 
    ! Find the closest data
@@ -105,6 +105,7 @@ subroutine select_modis_albedo_file(cyear,cdoy,modis_surf_path,include_full_brdf
       prefix = 'MCD43C3'
    end if
 
+   ! Search for the file with an unknown processing date
    regex = prefix//'\.A'//trim(adjustl(cyear2))//trim(adjustl(mcd_date_s))// &
            '\.005\..............'//'\.hdf'
 

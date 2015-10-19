@@ -40,7 +40,8 @@ subroutine parse_required(lun, value, name)
 end subroutine parse_required
 
 
-subroutine parse_optional(label, value, n_channels, channel_ids)
+subroutine parse_optional(label, value, n_channels, channel_ids, &
+                          use_modis_emis_in_rttov)
 
    use parsing
    use preproc_constants
@@ -49,8 +50,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids)
 
    character(len=*), intent(in)    :: label
    character(len=*), intent(in)    :: value
-   integer,          intent(out)   :: n_channels
+   integer,          intent(inout) :: n_channels
    integer, pointer, intent(inout) :: channel_ids(:)
+   logical,          intent(inout) :: use_modis_emis_in_rttov
 
    select case (label)
    case('N_CHANNELS')
@@ -63,6 +65,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids)
          stop error_stop_code
       endif
       if (parse_string(value, channel_ids) /= 0) &
+         call handle_parse_error(label)
+   case('USE_MODIS_EMIS_IN_RTTOV')
+      if (parse_string(value, use_modis_emis_in_rttov) /= 0) &
          call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

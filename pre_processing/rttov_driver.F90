@@ -123,6 +123,8 @@
 !    computed transmittances.
 ! 2015/07/23, GM: Added specific humidity and ozone profile output.
 ! 2015/09/04, GM: Fix support for SEVIRI on MSG1, MSG3 and MSG4.
+! 2015/10/19, GM: Add the option to use the MODIS emissivity product instead of
+!    the RTTOV emissivity atlas.
 !
 ! $Id$
 !
@@ -139,8 +141,8 @@ implicit none
 contains
 
 subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
-     preproc_geoloc,preproc_geo,preproc_prtm,netcdf_info,channel_info, &
-     year,month,day,verbose)
+     preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,netcdf_info, &
+     channel_info,year,month,day,use_modis_emis,verbose)
 
    use channel_structures
    use netcdf_output
@@ -184,18 +186,20 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
 #include "rttov_dealloc_coefs.interface"
 
    ! Arguments
-   character(len=path_length),     intent(in)     :: coef_path
-   character(len=path_length),     intent(in)     :: emiss_path
-   character(len=sensor_length),   intent(in)     :: sensor
-   character(len=platform_length), intent(in)     :: platform
-   type(preproc_dims_s),           intent(inout)  :: preproc_dims
-   type(preproc_geoloc_s),         intent(in)     :: preproc_geoloc
-   type(preproc_geo_s),            intent(in)     :: preproc_geo
-   type(preproc_prtm_s),           intent(inout)  :: preproc_prtm
-   type(netcdf_output_info_s),     intent(inout)  :: netcdf_info
-   type(channel_info_s),           intent(in)     :: channel_info
-   integer(kind=sint),             intent(in)     :: year, month, day
-   logical,                        intent(in)     :: verbose
+   character(len=path_length),     intent(in)    :: coef_path
+   character(len=path_length),     intent(in)    :: emiss_path
+   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=platform_length), intent(in)    :: platform
+   type(preproc_dims_s),           intent(in)    :: preproc_dims
+   type(preproc_geoloc_s),         intent(in)    :: preproc_geoloc
+   type(preproc_geo_s),            intent(in)    :: preproc_geo
+   type(preproc_prtm_s),           intent(inout) :: preproc_prtm
+   type(preproc_surf_s),           intent(in)    :: preproc_surf
+   type(netcdf_output_info_s),     intent(inout) :: netcdf_info
+   type(channel_info_s),           intent(in)    :: channel_info
+   integer(kind=sint),             intent(in)    :: year, month, day
+   logical,                        intent(in)    :: use_modis_emis
+   logical,                        intent(in)    :: verbose
 
    ! RTTOV in/outputs
    type(rttov_options)                  :: opts
@@ -580,17 +584,25 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
                 (i_coef == 2 .and. preproc_dims%counter_sw(idim,jdim) > 0 .and. &
                  profiles(count)%zenangle < zenmaxv9)) then
 
-               ! Fetch emissivity from atlas
-               call rttov_get_emis(stat, opts, chanprof, profiles(count:count), &
-                    coefs, emissivity=emis_atlas)
-               if (stat /= errorstatus_success) then
-                  write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', stat
-                  stop error_stop_code
-               end if
-               emissivity%emis_in = emis_atlas
-               calcemis = emissivity%emis_in <= dither
-               ! At some point, put MODIS emissivity here
+               if (i_coef == 1) then
+                  ! Fetch emissivity from atlas
+                  call rttov_get_emis(stat, opts, chanprof, profiles(count:count), &
+                       coefs, emissivity=emis_atlas)
+                  if (stat /= errorstatus_success) then
+                     write(*,*) 'ERROR: rttov_get_emis(), errorstatus = ', stat
+                     stop error_stop_code
+                  end if
+                  emissivity%emis_in = emis_atlas
 
+                  ! Fetch emissivity from the MODIS CIMSS emissivity product
+                  if (i_coef == 1 .and. use_modis_emis) then
+                     where (preproc_surf%emissivity(idim,jdim,:) .ne. sreal_fill_value)
+                        emissivity%emis_in = preproc_surf%emissivity(idim,jdim,:)
+                     end where
+                  end if
+
+                  calcemis = emissivity%emis_in <= dither
+               end if
 
                ! Call RTTOV for this profile
                call rttov_direct(stat, chanprof, opts, profiles(count:count), &

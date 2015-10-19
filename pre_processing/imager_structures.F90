@@ -38,7 +38,6 @@ module imager_structures
 
       integer(kind=lint) :: nchannels
       integer(kind=lint) :: nviews
-      integer(kind=lint) :: nobservations
 
       real(kind=sreal), dimension(:,:,:), pointer :: data
       real(kind=sreal), dimension(:,:,:), pointer :: uncertainty

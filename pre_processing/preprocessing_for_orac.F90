@@ -127,8 +127,8 @@
 ! 2012/08/20, MJ: fixes several bugs with AATSR dimension read
 ! 2012/08/20, MJ: changed read_mcd43c3 from function to subroutine in order to
 !    iron out bugs
-! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices in
-!    surface part
+! 2012/08/22, MJ: implements flexible x and y dimensions start and end indices
+!    in surface part
 ! 2012/08/28, CP: small mods
 ! 2012/09/04, GT: Corrected calls to setup_aatsr and read_aatsr_dimensions
 ! 2012/09/13, GT: Added write statements for some of the input variables to
@@ -173,15 +173,15 @@
 ! 2013/11/08, GM: Added missing call to deallocate_surface_structures().
 ! 2014/01/24, MJ: fixed type mismatch in deallocation of surface structures and
 !    of variable nc.
-! 2014/01/27, GM: Made '1', 't', 'true', 'T', 'True', '0', 'f', 'false', 'F', and
-!    'False' all valid values for the preprocessor verbose option.
+! 2014/01/27, GM: Made '1', 't', 'true', 'T', 'True', '0', 'f', 'false', 'F',
+!    and 'False' all valid values for the preprocessor verbose option.
 ! 2014/02/02, GM: Added NetCDF chunking on/off option.
 ! 2014/02/03, AP: Ensured all arguments that are logical flags are treated
 !    identically
 ! 2014/02/05, MJ: corrected data type of chunkproc from character to logical
 ! 2014/02/10, AP: changes to ECMWF routines
-! 2014/02/05, MJ: adds verbose to argument list of rttov related routines to mute
-!    rttov
+! 2014/02/05, MJ: adds verbose to argument list of rttov related routines to
+!    mute rttov
 ! 2014/03/11, MJ: adds writing out of some flags to gain more information.
 ! 2014/04/02, GM: Get the NetCDF version from the library itself.  Left the
 !    obsolete input argument in place for now but it is over
@@ -191,8 +191,8 @@
 ! 2014/05/01, GM: Move some allocations/deallocations to the proper subroutine.
 ! 2014/06/04, MJ: introduced "WRAPPER" for c-preprocessor and associated
 !    variables
-! 2014/06/25, GM: Rewrote along track chunking code fixing a bug where the second
-!    segment in AATSR night processing was not being processed when
+! 2014/06/25, GM: Rewrote along track chunking code fixing a bug where the
+!    second segment in AATSR night processing was not being processed when
 !    chunking was off.
 ! 2014/07/01, AP: Update to ECMWF code.
 ! 2014/08/10, GM: Changes related to new BRDF support.
@@ -203,8 +203,8 @@
 !    cloud mask in preprocessing, based on radiances and auxiliary
 !    data; implemented CRAY fortran-based alternative for scratch
 !    file I/O of ERA-Interim data
-! 2014/11/04, OS: ecmwf structure is now passed as argument to Pavolonis/NN cloud
-!    mask
+! 2014/11/04, OS: ecmwf structure is now passed as argument to Pavolonis/NN
+!    cloud mask
 ! 2014/11/21, GM: Remove the no longer used cgrid_flag from driver file input.
 !    Was previously removed from command line input.
 ! 2014/11/21, GM: Add modis_brdf_path to command line input which was previously
@@ -220,14 +220,16 @@
 !    (WRAPPER only); added call to snow/ice correction based on ERA-
 !    Interim data
 ! 2015/02/19, GM: Added SEVIRI support.
-! 2015/02/24, GM: Improved command line and driver file support using the parsing
-!    module in the common library including support for comments and
+! 2015/02/24, GM: Improved command line and driver file support using the
+!    parsing module in the common library including support for comments and
 !    optional arguments/fields and better error handling.
-! 2015/02/24, GM: Added command line/driver file options to specify the number of
-!    channels and the channel IDs to process.
+! 2015/02/24, GM: Added command line/driver file options to specify the number
+!    of channels and the channel IDs to process.
 ! 2015/07/02, OS: Added check for output netcdf files (wrapper only) +
 !    uncommented parse of L2_Processor_Version
 ! 2015/07/03, OS: Removed parsing of L2_Processor_Version
+! 2015/10/19, GM: Add option use_modis_emis_in_rttov to use the MODIS emissivity
+!    product instead of the RTTOV emissivity atlas in the RTTOV computations.
 !
 ! $Id$
 !
@@ -316,6 +318,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    integer                          :: n_channels
    integer, pointer                 :: channel_ids(:)
 
+   logical                          :: use_modis_emis_in_rttov
+
    integer(kind=lint)               :: startx,endx,starty,endy
    integer(kind=lint)               :: n_across_track,n_along_track
    integer(kind=lint)               :: along_track_offset
@@ -391,6 +395,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ! Set defaults for optional arguments/fields
    n_channels = 0
    nullify(channel_ids)
+   use_modis_emis_in_rttov = .false.
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -450,7 +455,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call get_command_argument(i, line)
          call parse_line(line, value, label)
          call clean_driver_label(label)
-         call parse_optional(label, value, n_channels, channel_ids)
+         call parse_optional(label, value, n_channels, channel_ids, &
+            use_modis_emis_in_rttov)
       end do
    else
 
@@ -464,57 +470,58 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       open(11,file=trim(adjustl(driver_path_file)),status='old', &
            form='formatted')
 
-      call parse_required(11, sensor,                           'sensor')
-      call parse_required(11, l1b_path_file,                    'l1b_path_file')
-      call parse_required(11, geo_path_file,                    'geo_path_file')
-      call parse_required(11, USGS_path_file,                   'USGS_path_file')
-      call parse_required(11, ecmwf_path,                       'ecmwf_path')
-      call parse_required(11, rttov_coef_path,                  'rttov_coef_path')
-      call parse_required(11, rttov_emiss_path,                 'rttov_emiss_path')
-      call parse_required(11, nise_ice_snow_path,               'nise_ice_snow_path')
-      call parse_required(11, modis_albedo_path,                'modis_albedo_path')
-      call parse_required(11, modis_brdf_path,                  'modis_brdf_path')
-      call parse_required(11, cimss_emiss_path,                 'cimss_emiss_path')
-      call parse_required(11, cdellon,                          'cdellon')
-      call parse_required(11, cdellat,                          'cdellat')
-      call parse_required(11, output_path,                      'output_path')
-      call parse_required(11, cstartx,                          'cstartx')
-      call parse_required(11, cendx,                            'cendx')
-      call parse_required(11, cstarty,                          'cstarty')
-      call parse_required(11, cendy,                            'cendy')
-      call parse_required(11, global_atts%NetCDF_Version,       'NetCDF_Version')
-      call parse_required(11, global_atts%Conventions,          'Conventions')
-      call parse_required(11, global_atts%Institution,          'Institution')
-      call parse_required(11, global_atts%L2_Processor,         'L2_Processor')
-      call parse_required(11, global_atts%Creator_Email,        'Creator_Email')
-      call parse_required(11, global_atts%Creator_URL,          'Creator_URL')
-      call parse_required(11, global_atts%file_version,         'file_version')
-      call parse_required(11, global_atts%References,           'References')
-      call parse_required(11, global_atts%History,              'History')
-      call parse_required(11, global_atts%Summary,              'Summary')
-      call parse_required(11, global_atts%Keywords,             'Keywords')
-      call parse_required(11, global_atts%Comment,              'Comment')
-      call parse_required(11, global_atts%Project,              'Project')
-      call parse_required(11, global_atts%License,              'License')
-      call parse_required(11, global_atts%UUID,                 'UUID')
-      call parse_required(11, global_atts%Production_Time,      'Production_Time')
-      call parse_required(11, aatsr_calib_path_file,            'aatsr_calib_path_file')
-      call parse_required(11, cecmwf_flag,                      'cecmwf_flag')
-      call parse_required(11, ecmwf_path2,                      'ecmwf_path2')
-      call parse_required(11, ecmwf_path3,                      'ecmwf_path3')
-      call parse_required(11, cchunkproc,                       'cchunkproc')
-      call parse_required(11, cday_night,                       'cday_night')
-      call parse_required(11, cverbose,                         'cverbose')
-      call parse_required(11, cdummy_arg,                       'cdummy_arg')
-      call parse_required(11, cassume_full_paths,               'cassume_full_paths')
-      call parse_required(11, cinclude_full_brdf,               'cinclude_full_brdf')
-      call parse_required(11, global_atts%RTTOV_Version,        'RTTOV_Version')
-      call parse_required(11, global_atts%ECMWF_Version,        'ECMWF_Version')
-      call parse_required(11, global_atts%SVN_Version,          'SVN_Version')
+      call parse_required(11, sensor,                      'sensor')
+      call parse_required(11, l1b_path_file,               'l1b_path_file')
+      call parse_required(11, geo_path_file,               'geo_path_file')
+      call parse_required(11, USGS_path_file,              'USGS_path_file')
+      call parse_required(11, ecmwf_path,                  'ecmwf_path')
+      call parse_required(11, rttov_coef_path,             'rttov_coef_path')
+      call parse_required(11, rttov_emiss_path,            'rttov_emiss_path')
+      call parse_required(11, nise_ice_snow_path,          'nise_ice_snow_path')
+      call parse_required(11, modis_albedo_path,           'modis_albedo_path')
+      call parse_required(11, modis_brdf_path,             'modis_brdf_path')
+      call parse_required(11, cimss_emiss_path,            'cimss_emiss_path')
+      call parse_required(11, cdellon,                     'cdellon')
+      call parse_required(11, cdellat,                     'cdellat')
+      call parse_required(11, output_path,                 'output_path')
+      call parse_required(11, cstartx,                     'cstartx')
+      call parse_required(11, cendx,                       'cendx')
+      call parse_required(11, cstarty,                     'cstarty')
+      call parse_required(11, cendy,                       'cendy')
+      call parse_required(11, global_atts%NetCDF_Version,  'NetCDF_Version')
+      call parse_required(11, global_atts%Conventions,     'Conventions')
+      call parse_required(11, global_atts%Institution,     'Institution')
+      call parse_required(11, global_atts%L2_Processor,    'L2_Processor')
+      call parse_required(11, global_atts%Creator_Email,   'Creator_Email')
+      call parse_required(11, global_atts%Creator_URL,     'Creator_URL')
+      call parse_required(11, global_atts%file_version,    'file_version')
+      call parse_required(11, global_atts%References,      'References')
+      call parse_required(11, global_atts%History,         'History')
+      call parse_required(11, global_atts%Summary,         'Summary')
+      call parse_required(11, global_atts%Keywords,        'Keywords')
+      call parse_required(11, global_atts%Comment,         'Comment')
+      call parse_required(11, global_atts%Project,         'Project')
+      call parse_required(11, global_atts%License,         'License')
+      call parse_required(11, global_atts%UUID,            'UUID')
+      call parse_required(11, global_atts%Production_Time, 'Production_Time')
+      call parse_required(11, aatsr_calib_path_file,       'aatsr_calib_path_file')
+      call parse_required(11, cecmwf_flag,                 'cecmwf_flag')
+      call parse_required(11, ecmwf_path2,                 'ecmwf_path2')
+      call parse_required(11, ecmwf_path3,                 'ecmwf_path3')
+      call parse_required(11, cchunkproc,                  'cchunkproc')
+      call parse_required(11, cday_night,                  'cday_night')
+      call parse_required(11, cverbose,                    'cverbose')
+      call parse_required(11, cdummy_arg,                  'cdummy_arg')
+      call parse_required(11, cassume_full_paths,          'cassume_full_paths')
+      call parse_required(11, cinclude_full_brdf,          'cinclude_full_brdf')
+      call parse_required(11, global_atts%RTTOV_Version,   'RTTOV_Version')
+      call parse_required(11, global_atts%ECMWF_Version,   'ECMWF_Version')
+      call parse_required(11, global_atts%SVN_Version,     'SVN_Version')
 
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
-        call parse_optional(label, value, n_channels, channel_ids)
+        call parse_optional(label, value, n_channels, channel_ids, &
+           use_modis_emis_in_rttov)
       end do
 
       close(11)
@@ -875,14 +882,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
               preproc_geoloc,preproc_prtm,verbose)
       end select
 
+      if (verbose) write(*,*)  'Compute geopotential verticle coords'
+      ! compute geopotential vertical coordinate from pressure coordinate
+      call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
+
       ! read USGS physiography file, including land use and DEM data
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
       if (verbose) write(*,*)  'Reading USGS path: ',trim(USGS_path_file)
-      call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, usgs,&
+      call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, usgs, &
            assume_full_paths, source_atts, verbose)
-      if (verbose) write(*,*)  'compute geopotential verticle coords'
-      ! compute geopotential vertical coordinate from pressure coordinate
-      call compute_geopot_coordinate(preproc_prtm, preproc_dims, ecmwf)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*)  'Get surface emissivity'
@@ -893,9 +901,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! select correct reflectance files and calculate surface reflectance
       ! over land and ocean
       if (verbose) write(*,*)  'Get surface reflectance'
-      call get_surface_reflectance(cyear, cdoy, modis_albedo_path, modis_brdf_path, &
-           imager_flags, imager_geolocation, imager_angles, channel_info, ecmwf, &
-           assume_full_paths, include_full_brdf, verbose, surface, source_atts)
+      call get_surface_reflectance(cyear, cdoy, modis_albedo_path, &
+           modis_brdf_path, imager_flags, imager_geolocation, imager_angles, &
+           channel_info, ecmwf, assume_full_paths, include_full_brdf, verbose, &
+           surface, source_atts)
 
       ! Use the Near-real-time Ice and Snow Extent (NISE) data from the National
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
@@ -903,12 +912,13 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       if (verbose) write(*,*)  'Correct for ice and snow'
 #ifdef WRAPPER
       call correct_for_ice_snow_ecmwf(nise_ice_snow_path, imager_geolocation, &
-           preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, channel_info, &
-           assume_full_paths, include_full_brdf, source_atts, verbose)
+           preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
+           channel_info, assume_full_paths, include_full_brdf, source_atts, &
+           verbose)
 #else
       call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
-           preproc_dims, surface, cyear, cmonth, cday, channel_info, &
-           assume_full_paths, include_full_brdf, source_atts, verbose)
+           surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
+           include_full_brdf, source_atts, verbose)
 #endif
 
       if (verbose) write(*,*)  'Calculate Pavolonis cloud phase'
@@ -929,8 +939,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! perform RTTOV calculations
       if (verbose) write(*,*) 'Perform RTTOV calculations'
       call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
-           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,netcdf_info,&
-           channel_info,year,month,day,verbose)
+           preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
+           netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
+           verbose)
 
 #ifdef WRAPPER
 
@@ -940,6 +951,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! implementation necessary for DWD processing chain running on ECMWF,
       ! where writing to network file system seems to cause random errors in
       ! netcdf output files that are not captured during creation
+      ! repeat write attempt in case output files are corrupt implementation
+      ! necessary for DWD processing chain running on ECMWF, where writing to
+      ! network file system seems to cause random errors in netcdf output files
+      ! that are not captured during creation
       do check_output=1,100
 
          ! write netcdf output files
@@ -954,15 +969,17 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
          ! check whether output files are corrupt
          if (verbose) write(*,*)'Check whether output files are corrupt'
-         call netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
-              cf_file,lsf_file,geo_file,loc_file,alb_file,corrupt,verbose)
+         call netcdf_output_check(output_path,lwrtm_file,swrtm_file,prtm_file, &
+              config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
+              corrupt,verbose)
 
          ! exit loop if output files are not corrupt, else try writing again
          if (.not. corrupt) then
             write(*,*) 'No output file is corrupt at attempt ', check_output
             exit
          else
-            write(*,*) 'A preprocessing output file is corrupt - rewriting attempt no. ', check_output
+            write(*,*) 'A preprocessing output file is corrupt - rewriting attempt no. ', &
+               check_output
             ! recreate output files if previous attempt produced corrupt files
             call netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
                  config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &

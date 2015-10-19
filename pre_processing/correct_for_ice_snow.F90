@@ -102,9 +102,9 @@ implicit none
 
 contains
 
-subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
-      surface,cyear,cmonth,cday,channel_info,assume_full_path,include_full_brdf, &
-      source_atts,verbose)
+subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
+      cmonth,cday,channel_info,assume_full_path,include_full_brdf,source_atts, &
+      verbose)
 
    use channel_structures
    use constants_cloud_typing_pavolonis
@@ -120,7 +120,6 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
    ! Arguments
    character(len=path_length), intent(in)    :: nise_path
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
-   type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(surface_s),            intent(inout) :: surface
    character(len=date_length), intent(in)    :: cyear,cmonth,cday
    type(channel_info_s),       intent(in)    :: channel_info
@@ -283,8 +282,8 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
 
             call apply_ice_correction(real(easex-real(xi)), &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
-                 preproc_dims, surface%albedo(i,j,:),channel_info, &
-                 surface%nise_mask(i,j), applied_flag)
+                 surface%albedo(i,j,:),channel_info,surface%nise_mask(i,j), &
+                 applied_flag)
 
          else ! Repeat for the Southern Hemisphere
 
@@ -354,8 +353,8 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,preproc_dims, &
 
             call apply_ice_correction(real(easex-real(xi)), &
                  real(easey-real(yi)), nise_tmp, ice_albedo, snow_albedo, &
-                 preproc_dims, surface%albedo(i,j,:), channel_info, &
-                 surface%nise_mask(i,j), applied_flag)
+                 surface%albedo(i,j,:), channel_info, surface%nise_mask(i,j), &
+                 applied_flag)
          end if
 
          if (include_full_brdf .and. applied_flag) then
@@ -377,7 +376,7 @@ end subroutine correct_for_ice_snow
 !-------------------------------------------------------------------------------
 
 subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
-     preproc_dims, pixel_ref, channel_info, nise_mask_flag, applied_flag)
+     pixel_ref, channel_info, nise_mask_flag, applied_flag)
 
    use preproc_constants
    use preproc_structures
@@ -390,7 +389,6 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
    real,                             intent(in)    :: x, y
    real,             dimension(2,2), intent(in)    :: nise
    real,             dimension(:),   intent(in)    :: ice_albedo, snow_albedo
-   type(preproc_dims_s),             intent(in)    :: preproc_dims
    real(kind=sreal), dimension(:),   intent(inout) :: pixel_ref
    type(channel_info_s),             intent(in)    :: channel_info
    integer(kind=byte),               intent(out)   :: nise_mask_flag
@@ -418,7 +416,7 @@ subroutine apply_ice_correction(x, y, nise, ice_albedo, snow_albedo, &
       end if
    end if
 
-   ! Sea and permanent ice is handled more complexly, and is  denoted by
+   ! Sea and permanent ice is handled more complexly, and is denoted by
    ! values of 1-101, with 1-100 denoting a percentage cover of sea ice and
    ! 101 denoting permanent ice. We set permanent ice to a fraction of 1.0,
    ! and convert the percentage cover to a fraction

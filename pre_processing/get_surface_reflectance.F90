@@ -200,6 +200,8 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   if (verbose) write(*,*) 'assume_full_path: ',  assume_full_path
   if (verbose) write(*,*) 'include_full_brdf: ', include_full_brdf
 
+  source_atts%albedo_file = ''
+  source_atts%brdf_file   = ''
 
   ! Mask out pixels set to fill_value and out of BRDF angular range
   allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &

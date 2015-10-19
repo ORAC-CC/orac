@@ -68,14 +68,14 @@
 ! 2014/10/15, GM: Changes related to supporting an arbitrary set of LW channels.
 ! 2014/12/01, CP: Added source attributes.
 ! 2015/01/13, AP: Alter channel indexing to allow channels in arbitrary order.
+! 2015/10/19, GM: Turn back on reading of unused emissivity fields which are now
+!    optionally required.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-
-#define ONLY_GET_MIXED_CHANNELS
 
 subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
            imager_geolocation, channel_info, preproc_dims, preproc_geoloc, &
@@ -126,6 +126,8 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    if (verbose) write(*,*) 'cimss emis_path: ',  trim(cimss_emis_path)
    if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
 
+   source_atts%emissivity_file = ''
+
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nland = count(imager_flags%lsflag .eq. 1)
    if (verbose) write(*,*) 'nland: ', nland
@@ -133,12 +135,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    ! If there are no land pixels in the scene, we have nothing more to do
    if (nland == 0 .or. channel_info%nchannels_lw == 0) return
 
-#ifdef ONLY_GET_MIXED_CHANNELS
-   n_chans = channel_info%nchannels_sw + channel_info%nchannels_lw - &
-        channel_info%nchannels_total
-#else
    n_chans = channel_info%nchannels_lw
-#endif
 
    allocate(ch_total_index(n_chans))
    allocate(ch_lw_index(n_chans))
@@ -146,11 +143,7 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    k = 1
    do i=1, channel_info%nchannels_total
       if (channel_info%channel_lw_flag(i) == 1) then
-#ifdef ONLY_GET_MIXED_CHANNELS
-         if (channel_info%channel_sw_flag(i) == 1) then
-#else
          if (.true.) then
-#endif
             ! Indices of desired channels wrt all channels
             ch_total_index(j) = i
             ! Indices of desired channels wrt longwave channels
