@@ -16,9 +16,10 @@
 ! 2014/01/12, GM: Added some missing deallocates.
 ! 2014/01/16, GM: Added deallocation of SAD_LUT%table_used_for_channel.
 ! 2014/05/27, GM: Some cleanup.
-! 2014/10/10, GM: Separate out Grid deallocations to be
-!    consistent with allocation routine. Original version of Dealloc_LUT_Grid
+! 2014/10/10, GM: Separate out Grid deallocations to be consistent with
+!    allocation routine.
 ! 2015/01/09, CP: Added Rfbd.
+! 2015/10/19, GM: Added Bext for Ctrl%do_CTP_correction.
 !
 ! $Id$
 !
@@ -114,6 +115,10 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
    deallocate(SAD_LUT%table_used_for_channel)
 
    call Dealloc_LUT_Grid(SAD_LUT%Grid)
+
+   if (Ctrl%do_CTP_correction) then
+      deallocate(SAD_LUT%Bext)
+   end if
 
    deallocate(SAD_LUT%Rd)
    deallocate(SAD_LUT%Rfd)

@@ -421,20 +421,20 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! touch are zeroed to
    ! NOTES: 1) Aerosol LUTs use log Re while cloud uses linear Re.
    ! 2) For the Swansea retrieval, IRho_DD is equivalent to ISS.
-   Ctrl%Invpar%XScale(ITau)           = switch(a, Default=10.0,   AerSw=1.0)
-   Ctrl%Invpar%XScale(IRe)            = switch(a, Default=1.0,    AerOx=10.0)
+   Ctrl%Invpar%XScale(ITau)           = switch(a, Default=10.0, AerSw=1.0)
+   Ctrl%Invpar%XScale(IRe)            = switch(a, Default=1.0,  AerOx=10.0)
    Ctrl%Invpar%XScale(IPc)            = switch(a, Default=1.0)
    Ctrl%Invpar%XScale(IFr)            = switch(a, Default=1000.0)
    Ctrl%Invpar%XScale(ITs)            = switch(a, Default=1.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch(a, Default=1.0, AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch(a, Default=1.0, AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch(a, Default=1.0, AerOx=1000.0)
-   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch(a, Default=1.0, AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0V)) = switch(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_0D)) = switch(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DV)) = switch(a, Default=1.0,  AerOx=1000.0)
+   Ctrl%Invpar%XScale(IRs(:,IRho_DD)) = switch(a, Default=1.0,  AerOx=1000.0)
    Ctrl%Invpar%XScale(ISP)            = switch(a, Default=1.0)
    ! Lower limit
-   Ctrl%Invpar%XLLim(ITau)            = switch(a, Default=-3.0,   Aer=-2.0)
-   Ctrl%Invpar%XLLim(IRe)             = switch(a, Default=0.1,    Aer=-2.0, &
-                                                                  AshEyj=0.01)
+   Ctrl%Invpar%XLLim(ITau)            = switch(a, Default=-3.0, Aer=-2.0)
+   Ctrl%Invpar%XLLim(IRe)             = switch(a, Default=0.1,  Aer=-2.0, &
+                                                                AshEyj=0.01)
    Ctrl%Invpar%XLLim(IPc)             = switch(a, Default=10.0)
    Ctrl%Invpar%XLLim(IFr)             = switch(a, Default=0.0)
    Ctrl%Invpar%XLLim(ITs)             = switch(a, Default=250.0)
@@ -444,17 +444,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XLLim(IRs(:,IRho_DD))  = switch(a, Default=0.00001, Cld=0.)
    Ctrl%Invpar%XLLim(ISP)             = switch(a, Default=0.00001)
    ! Upper limit
-   Ctrl%Invpar%XULim(ITau)            = switch(a, Default=2.408,  AerSw=0.7)
-   Ctrl%Invpar%XULim(IRe)             = switch(a, Default=1.0,    AshEyj=20.0, &
-                                                                  CldWat=35.0, &
-                                                                  CldIce=100.0)
+   Ctrl%Invpar%XULim(ITau)            = switch(a, Default=2.408, AerSw=0.7)
+   Ctrl%Invpar%XULim(IRe)             = switch(a, Default=1.0,   AshEyj=20.0, &
+                                                                 CldWat=35.0, &
+                                                                 CldIce=100.0)
    Ctrl%Invpar%XULim(IPc)             = switch(a, Default=1200.0)
    Ctrl%Invpar%XULim(IFr)             = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(ITs)             = switch(a, Default=320.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_0D))  = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch(a, Default=1.0)
-   Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch(a, Default=1.0,    AerSw=100.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch(a, Default=1.0,   AerSw=100.0)
    Ctrl%Invpar%XULim(ISP)             = switch(a, Default=100.0)
 
    !----------------------- CTRL%QC -----------------------
@@ -596,7 +596,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------- CTRL PRESCRIBED STATE VECTORS -------------
    ! A priori values
-   Ctrl%XB(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3,&
+   Ctrl%XB(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
                                                       AshEyj=0.18)
    Ctrl%XB(IRe)            = switch(a, Default=-0.07, AshEyj=0.7, &
                                                       CldWat=12.,  CldIce=30.)
@@ -609,7 +609,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%XB(IRs(:,IRho_DD)) = switch(a, Default=0.01,  AerSw=0.1)
    Ctrl%XB(ISP)            = switch(a, Default=0.3)
    ! First guess values
-   Ctrl%X0(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3,&
+   Ctrl%X0(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
                                                       AshEyj=0.18)
    Ctrl%X0(IRe)            = switch(a, Default=-0.07, AshEyj=0.7, &
                                                       CldWat=12.,  CldIce=30.)
@@ -725,6 +725,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
 
 
+   Ctrl%do_CTP_correction       = .false.
+
+
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
@@ -737,7 +740,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       call clean_driver_label(label)
       select case (label)
       case('CTRL%FID%DATA_DIR','CTRL%DATA_DIR')
-         if (parse_string(line, Ctrl%FID%Data_Dir)      /= 0) call h_p_e(label)
+         if (parse_string(line, Ctrl%FID%Data_Dir)     /= 0) call h_p_e(label)
       case('CTRL%FID%OUT_DIR','CTRL%OUT_DIR')
          if (parse_string(line, Ctrl%FID%Out_Dir)      /= 0) call h_p_e(label)
       case('CTRL%FID%SAD_DIR','CTRL%SAD_DIR')
@@ -888,6 +891,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       case('CTRL%XJ_NI')
          if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
+      case('CTRL%DO_CTP_CORRECTION')
+         if (parse_string(line, Ctrl%do_CTP_correction)/= 0) call h_p_e(label)
       case default
          write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code

@@ -267,7 +267,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    type(CTRL_t),    intent(in)    :: Ctrl
    type(SAD_LUT_t), intent(in)    :: SAD_LUT
    type(SPixel_t),  intent(inout) :: SPixel
-   type(RTM_Pc_t),  intent(inout) :: RTM_Pc
+   type(RTM_Pc_t),  intent(in)    :: RTM_Pc
    real,            intent(in)    :: X(:)
    type(GZero_t),   intent(in)    :: GZero
    real,            intent(inout) :: CRP(:,:)

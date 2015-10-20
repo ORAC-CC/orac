@@ -43,8 +43,8 @@
 ! 2011/10/07, CP: added in variables to calculate CWP rho and qext
 ! 2011/11/04, CP: changed values of AUXErrTsSea/land
 ! 2011/11/25, CP: changed values maxnummeas
-! 2011/12/08, MJ: added data type definitions for netcdf output
-!    and filenamelengths
+! 2011/12/08, MJ: added data type definitions for netcdf output and
+!    filenamelengths
 ! 2012/01/30, MJ: added ditherm3 as parameter.
 ! 2012/06/15, CP: added iluum error flags
 ! 2012/06/22, CP: added sacura option
@@ -59,11 +59,11 @@
 ! 2014/08/01, GM: Rename illumination conditions for missing conditions.
 ! 2014/08/15, GM: d2r is a derived constant. It should be computed which will be
 !    done at compile time since both operands are constants.
-! 2014/08/30, GM: Use common_constants and remove pi and d2r as
-!    they are in common_constants.
+! 2014/08/30, GM: Use common_constants and remove pi and d2r as they are in
+!    common_constants.
 ! 2014/09/09, GM: Changes related to new BRDF support.
-! 2014/11/20, OS: increased BTMax from 330 to 350 K, thus providing
-!    retrieval results for warm land surfaces (e.g. Sahara, Namib)
+! 2014/11/20, OS: increased BTMax from 330 to 350 K, thus providing retrieval
+!    results for warm land surfaces (e.g. Sahara, Namib)
 ! 2015/01/09, CP: Added IRFBd for cloud albedo calculations.
 ! 2015/01/12, AP: Added bit positions for Ctrl%Ind%Ch_Is.
 ! 2015/03/03, AP: Added terms for aerosol retrieval.
@@ -77,6 +77,7 @@
 ! 2015/08/18, GM: Added LW and SW RTM minimum and maximum values.
 ! 2015/08/20, AP: Removed AUXErr terms. Added indices for XIndex, B, and
 !    Approach along with SelmPrev.
+! 2015/10/19, GM: Added index for Bext LUT.
 !
 ! $Id$
 !
@@ -102,7 +103,7 @@ module ECP_constants
    integer, parameter :: MaxNumSolar      = 20      ! Max no. of solar channels
    integer, parameter :: MaxCloudType     = 5       ! Max. no of cloud types to be
    integer, parameter :: MaxPLevels       = 50      ! Max. no. of pressure levels (in SPixel RTM arrays)
-   integer, parameter :: MaxCRProps       = 11      ! Max no. of properties in SAD_LUT arrays
+   integer, parameter :: MaxCRProps       = 12      ! Max no. of properties in SAD_LUT arrays
    integer, parameter :: MaxTypes         = 10      ! Number of possible cloud/aerosol types
 
 
@@ -175,17 +176,18 @@ module ECP_constants
 
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).
-   integer, parameter :: IRBd             = 1       ! Index of RBd data in array
-   integer, parameter :: IRFBd            = 2       !  "    "  RFBd "   "   "
-   integer, parameter :: IRd              = 3       !  "    "  Rd   "   "   "
-   integer, parameter :: IRFd             = 4       !  "    "  RFd  "   "   "
-   integer, parameter :: ITB              = 5       !  "    "  TB   "   "   "
-   integer, parameter :: ITB_u            = 6       !  "    "  TB   "   "   "
-   integer, parameter :: ITBd             = 7       !  "    "  TBd  "   "   "
-   integer, parameter :: ITd              = 8       !  "    "  Td   "   "   "
+   integer, parameter :: IBext            = 1       ! Index of Bext data in array
+   integer, parameter :: IRBd             = 2       !  "    "  RBd  "   "   "
+   integer, parameter :: IRFBd            = 3       !  "    "  RFBd "   "   "
+   integer, parameter :: IRd              = 4       !  "    "  Rd   "   "   "
+   integer, parameter :: IRFd             = 5       !  "    "  RFd  "   "   "
+   integer, parameter :: ITB              = 6       !  "    "  TB   "   "   "
+   integer, parameter :: ITB_u            = 7       !  "    "  TB   "   "   "
+   integer, parameter :: ITBd             = 8       !  "    "  TBd  "   "   "
    integer, parameter :: ITFBd            = 9       !  "    "  TFBd "   "   "
-   integer, parameter :: ITFd             = 10      !  "    "  TFd  "   "   "
-   integer, parameter :: IEm              = 11      !  "    "  Em   "   "   "
+   integer, parameter :: ITd              = 10      !  "    "  Td   "   "   "
+   integer, parameter :: ITFd             = 11      !  "    "  TFd  "   "   "
+   integer, parameter :: IEm              = 12      !  "    "  Em   "   "   "
 
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal). These are also used to index

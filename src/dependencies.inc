@@ -31,8 +31,9 @@ $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
         IntLUTTauSatReOnSol.F90 IntLUTTauSatSolAziRe.F90 IntLUTTauSolRe.F90 \
         Interp3dLUT.F90
 $(OBJS)/Inversion.o: $(OBJS)/Cholesky.o $(OBJS)/Ctrl.o $(OBJS)/Diag.o \
-        $(OBJS)/ECPConstants.o $(OBJS)/FMRoutines.o $(OBJS)/RTM_Pc.o \
-        $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o CheckLimits.F90 \
+        $(OBJS)/ECPConstants.o $(OBJS)/FMRoutines.o $(OBJS)/GZero.o \
+        $(OBJS)/IntLUTRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
+        $(OBJS)/SADLUT.o $(OBJS)/SPixel.o $(OBJS)/planck.o CheckLimits.F90 \
         InvertMarquardt.F90 SetKx.F90 SetLimits.F90 SetSy.F90
 $(OBJS)/parse_user.o: $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         parse_user_text.inc

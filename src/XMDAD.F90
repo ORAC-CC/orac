@@ -126,15 +126,16 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
    real,   optional, intent(out)   :: Err
 
    ! Declare local variables
-   real    :: FGOP(11) = [0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, 1.7, 2.0, 2.4] ! Set up first guess optical depth vector
-   real    :: Ref_o
-   integer :: iFGOP
-   real    :: BT_o(1)
-   real    :: Rad(1)
-   real    :: Rad_o(1)
-   real    :: dR_dT(1)
-   real    :: dT_dR(1)
-   integer :: MDAD_LW_to_ctrl_y, MDAD_LW_to_ctrl_ythermal
+   real, parameter :: FGOP(11) = [0.1, 0.3, 0.65, 0.8, 1.0, 1.15, 1.3, 1.5, &
+                                  1.7, 2.0, 2.4] ! First guess optical depth
+   real            :: Ref_o
+   integer         :: iFGOP
+   real            :: BT_o(1)
+   real            :: Rad(1)
+   real            :: Rad_o(1)
+   real            :: dR_dT(1)
+   real            :: dT_dR(1)
+   integer         :: MDAD_LW_to_ctrl_y, MDAD_LW_to_ctrl_ythermal
 
    status = 0
 

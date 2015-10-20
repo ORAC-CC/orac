@@ -364,10 +364,76 @@ end subroutine read_values_5d
 
 
 !-------------------------------------------------------------------------------
-! Name: Read_LUT_sat
+! Name: Read_LUT
 !
 ! Purpose:
 ! Read an LUT that has a variable satellite zenith angle
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2014/10/10, GM: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine Read_LUT(Ctrl, LUT_file, i_chan, SAD_LUT, i_lut, name, values)
+
+   use Ctrl_def
+   use ECP_Constants
+
+   implicit none
+
+   ! Argument declarations
+   type(CTRL_t),    intent(in)    :: Ctrl
+   character(*),    intent(in)    :: LUT_file
+   integer,         intent(in)    :: i_chan
+   type(SAD_LUT_t), intent(inout) :: SAD_LUT
+   integer,         intent(in)    :: i_lut
+   character(*),    intent(in)    :: name
+   real,            intent(inout) :: values(:,:,:)
+
+   ! Local variables
+   integer :: lun
+   integer :: iostat
+
+   call Find_LUN(lun)
+   open(unit = lun, file = LUT_file, status = 'old', iostat = iostat)
+   if (iostat .ne. 0) then
+      write(*,*) 'ERROR: Read_LUT_sat(): Error opening file: ', trim(LUT_file)
+      stop LUTFileOpenErr
+   end if
+
+   SAD_LUT%table_used_for_channel(i_chan, i_lut) = .true.
+
+   SAD_LUT%table_uses_solzen(i_lut) = .false.
+   SAD_LUT%table_uses_relazi(i_lut) = .false.
+   SAD_LUT%table_uses_satzen(i_lut) = .false.
+
+   ! Read Wavelength
+   read(lun, *, iostat=iostat) SAD_LUT%Wavelength(i_chan)
+
+   ! Read the grid dimensions
+   call read_grid_dimensions(LUT_file, lun, i_chan, SAD_LUT, .false., .false., &
+                             .false., i_lut)
+
+   ! Read in the i_lut array
+   call read_values_2d(LUT_file, name, lun, i_chan, i_lut, SAD_LUT%Grid%nTau, &
+                       SAD_LUT%Grid%nRe, values)
+
+   close(unit = lun)
+
+end subroutine Read_LUT
+
+
+!-------------------------------------------------------------------------------
+! Name: Read_LUT_sat
+!
+! Purpose:
+! Read an LUT that has a variable solar zenith angle
 !
 ! Algorithm:
 !
@@ -676,6 +742,7 @@ end subroutine Read_LUT_both
 ! 2015/08/21, AP: Generalised MS NOAA7/9 fix, moving create_lut_filename into
 !    SAD_Chan_def and renaming it create_sad_filename.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2015/10/19, GM: Added support to read the Bext LUT for Ctrl%do_CTP_correction.
 !
 ! Bugs:
 ! None known.
@@ -752,6 +819,12 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       call create_sad_filename(Ctrl, chan_num, LUT_File, 'TD')
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
                         i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
+
+      if (Ctrl%do_CTP_correction) then
+         ! Read the Bext file
+         call create_sad_filename(Ctrl, chan_num, LUT_File, 'Bext')
+         call Read_LUT(Ctrl, LUT_file, i, SAD_LUT, IBext, "Bext", SAD_LUT%Bext)
+      end if
 
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then

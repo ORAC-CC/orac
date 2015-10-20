@@ -16,6 +16,7 @@
 ! 2014/01/16, GM: Added SAD_LUT%table_use* arrays.
 ! 2014/01/23, GM: Cleaned up the code.
 ! 2015/01/09, CP: Added Rfbd.
+! 2015/10/19, GM: Added Bext.
 !
 ! $Id$
 !
@@ -84,6 +85,10 @@ module SAD_LUT_def
 
       type(LUT_Grid_t) :: Grid
 
+      real, pointer :: Bext(:,:,:)
+                       ! Extinction coefficient
+                       ! Dimensions: channel, Tau, Re
+
       real, pointer :: Rbd(:,:,:,:,:,:)
                        ! Bi-directional reflectance
                        ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
@@ -108,13 +113,13 @@ module SAD_LUT_def
                        ! Bi-directional reflectance
                        ! Dimensions: channel, Tau, SatZen, SolZen, RelAzi, Re
 
-      real, pointer :: Td(:,:,:,:)
-                       ! Diffuse transmission
-                       ! Dimensions: channel, Tau, SatZen, Re
-
       real, pointer :: Tfbd(:,:,:,:)
                        ! Diffuse part of beam transmission (flux)
                        ! Dimensions: channel, Tau, SolZen, Re
+
+      real, pointer :: Td(:,:,:,:)
+                       ! Diffuse transmission
+                       ! Dimensions: channel, Tau, SatZen, Re
 
       real, pointer :: Tfd(:,:,:)
                        ! Diffuse reflectivity

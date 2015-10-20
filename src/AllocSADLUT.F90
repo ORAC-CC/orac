@@ -7,6 +7,7 @@
 ! History:
 ! 2014/10/10, GM: Original version
 ! 2015/01/09, CP: Added Rfbd.
+! 2015/10/19, GM: Added Bext for Ctrl%do_CTP_correction.
 !
 ! $Id: AllocSADLUT.F90 2293 2014-08-13 08:56:10Z gmcgarragh $
 !
@@ -123,6 +124,11 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
    allocate(SAD_LUT%table_used_for_channel(Ctrl%Ind%Ny, maxcrprops))
 
    call Alloc_LUT_Grid(Ctrl, SAD_LUT%Grid)
+
+   if (Ctrl%do_CTP_correction) then
+      allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, &
+               SAD_LUT%Grid%nmaxre))
+   end if
 
    allocate(SAD_LUT%Rd(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, &
             SAD_LUT%Grid%nmaxsatzen, SAD_LUT%Grid%nmaxre))
