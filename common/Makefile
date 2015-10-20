@@ -13,25 +13,23 @@ include $(ORAC_ARCH)
 include $(ORAC_LIB)
 
 
-# Define object files to be linked. N.B. files containing module definitions
-# should be listed before main program units and subroutines that use those
-# modules so that the modules are known to the compiler.
-COMMON_OBJ_F90=$(OBJS)/common_constants.o \
-               $(OBJS)/constants_cloud_typing_pavolonis.o \
-               $(OBJS)/global_attributes.o \
-               $(OBJS)/interpol.o \
-               $(OBJS)/orac_output.o \
-               $(OBJS)/orac_ncdf.o \
-               $(OBJS)/parsing.o \
-               $(OBJS)/source_attributes.o \
-               $(OBJS)/system_utils_c.o \
-               $(OBJS)/system_utils.o
+# Define object files to be linked.
+COMMON_OBJ_F90 =$(OBJS)/common_constants.o \
+                $(OBJS)/constants_cloud_typing_pavolonis.o \
+                $(OBJS)/global_attributes.o \
+                $(OBJS)/interpol.o \
+                $(OBJS)/orac_output.o \
+                $(OBJS)/orac_ncdf.o \
+                $(OBJS)/parsing.o \
+                $(OBJS)/source_attributes.o \
+                $(OBJS)/system_utils_c.o \
+                $(OBJS)/system_utils.o
 
 
 
-COMMON_OBJ_C=
+COMMON_OBJ_C =
 
-COMMON_OBJ  =  $(COMMON_OBJ_F90) $(COMMON_OBJ_C)
+COMMON_OBJ   = $(COMMON_OBJ_F90) $(COMMON_OBJ_C)
 
 
 # Compilation rules
@@ -49,7 +47,10 @@ $(OBJS)/%.o: %.c
 %.o : %.mod
 
 
-# Main program build
+# Main target list
+all: liborac_common.a
+
+# Main library build
 liborac_common.a: $(COMMON_OBJ) Makefile
 	ar -rs liborac_common.a $(OBJS)/*.o
 
@@ -58,7 +59,7 @@ depend:
 	@../tools/make_depend.pl $(COMMON_OBJ_F90) > dependencies.inc
 
 clean tidy:
-	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x
+	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a
 
 
 # Utilities to change source code extensions when moving between DEC Unix and

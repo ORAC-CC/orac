@@ -197,12 +197,10 @@
 include $(ORAC_LIB)
 include $(ORAC_ARCH)
 
-ORAC_COMMON   = ../common
+ORAC_COMMON = ../common
 
 
-# Define object files to be linked. N.B. files containing module definitions
-# should be listed before main program units and subroutines that use those
-# modules so that the modules are known to the compiler.
+# Define object files to be linked.
 ORAC_OBJ = $(OBJS)/CalcCWP.o \
            $(OBJS)/Cholesky.o \
            $(OBJS)/Ctrl.o \
@@ -236,13 +234,16 @@ ORAC_OBJ = $(OBJS)/CalcCWP.o \
 ORAC_OBJ_MAIN = $(OBJS)/ECP.o
 
 
-# .F90 was originally the extension on DecUnix, but seems to be allowed by the
-# ifc/ifort compiler.
+# Compilation rules
 $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
+
+# Rule to prevent make from identifying Fortran .mod files as Modula2 source
+# files
+%.o : %.mod
 
 
 # Main target list
@@ -252,17 +253,13 @@ all: orac
 orac: $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a Makefile
 	$(F90) -o orac $(LFLAGS) $(ORAC_OBJ_MAIN) liborac.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
+# Main library build
 liborac.a: $(ORAC_OBJ) Makefile
 	ar -rs liborac.a $(ORAC_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
 	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
-
-# Tidy up .cpp files produced by C pre-compiler when compilation errors occur
-# (screws up later attempts to compile - forces C++ compiler to be run)
-clean_cpp tidy_cpp:
-	rm -f *.cpp
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac

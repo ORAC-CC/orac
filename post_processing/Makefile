@@ -17,10 +17,10 @@ include $(ORAC_ARCH)
 ORAC_COMMON = ../common
 
 # Define object files to be linked.
-POSTPROC_OBJ_F90 =  $(OBJS)/orac_input.o \
-                    $(OBJS)/postproc_constants.o \
-                    $(OBJS)/postproc_utils.o \
-                    $(OBJS)/prepare_output_pp.o  \
+POSTPROC_OBJ =  $(OBJS)/orac_input.o \
+                $(OBJS)/postproc_constants.o \
+                $(OBJS)/postproc_utils.o \
+                $(OBJS)/prepare_output_pp.o  \
 
 POSTPROC_OBJ_MAIN = $(OBJS)/post_process_level2.o
 
@@ -32,27 +32,29 @@ $(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 $(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC)  -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
-$(OBJS)/%.o: %.f $(ORAC_COMMON)/liborac_common.a
-	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS)  $<
+# Rule to prevent make from identifying Fortran .mod files as Modula2 source
+# files
+%.o : %.mod
 
 
 # Main target list
 all: post_process_level2
 
 # Main program build
-post_process_level2: $(POSTPROC_OBJ_MAIN) libpostproc.a  $(ORAC_COMMON)/liborac_common.a Makefile
+post_process_level2: $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.a Makefile
 	$(F90) -o post_process_level2 $(LFLAGS) $(POSTPROC_OBJ_MAIN) libpostproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
-libpostproc.a: $(POSTPROC_OBJ_F90) Makefile
-	ar -rs libpostproc.a $(POSTPROC_OBJ_F90)
+# Main library build
+libpostproc.a: $(POSTPROC_OBJ) Makefile
+	ar -rs libpostproc.a $(POSTPROC_OBJ)
 
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../tools/make_depend.pl $(POSTPROC_OBJ_F90) $(POSTPROC_OBJ_MAIN) > dependencies.inc
+	@../tools/make_depend.pl $(POSTPROC_OBJ) $(POSTPROC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a post_process_level2
 
-# Fortran 90 dependencies
+# Object/source dependencies
 include dependencies.inc

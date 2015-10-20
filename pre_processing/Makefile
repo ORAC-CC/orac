@@ -86,10 +86,10 @@ PREPROC_OBJ_MAIN = $(OBJS)/preprocessing_for_orac.o
 
 
 # Compilation rules
-$(OBJS)/%.o: %.f90
+$(OBJS)/%.o: %.f90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
-$(OBJS)/%.o: %.F90
+$(OBJS)/%.o: %.F90 $(ORAC_COMMON)/liborac_common.a
 	$(F90) -o $@ -c $(FFLAGS) $(INC) -I$(ORAC_COMMON)/obj $(AUXFLAGS) $<
 
 $(OBJS)/%.o: %.c
@@ -100,10 +100,14 @@ $(OBJS)/%.o: %.c
 %.o : %.mod
 
 
+# Main target list
+all: orac_preproc.x
+
 # Main program build
 orac_preproc.x: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a Makefile
 	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
 
+# Main library build
 libpreproc.a: $(PREPROC_OBJ) Makefile
 	ar -rs libpreproc.a $(PREPROC_OBJ)
 
