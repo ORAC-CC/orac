@@ -22,12 +22,9 @@ COMMON_OBJ_F90 =$(OBJS)/common_constants.o \
                 $(OBJS)/orac_ncdf.o \
                 $(OBJS)/parsing.o \
                 $(OBJS)/source_attributes.o \
-                $(OBJS)/system_utils_c.o \
                 $(OBJS)/system_utils.o
 
-
-
-COMMON_OBJ_C =
+COMMON_OBJ_C = $(OBJS)/system_utils_c.o
 
 COMMON_OBJ   = $(COMMON_OBJ_F90) $(COMMON_OBJ_C)
 
