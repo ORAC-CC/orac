@@ -166,6 +166,8 @@
 !    Add RAL's false convergence test (as it's used by the aerosol retrieval).
 ! 2015/08/21, AP: Variables to include in Jacobian (but not retrieve) now listed
 !    in SPixel%XJ. Uncertainty due to inactive state elements tidied.
+! 2015/10/21, GM: Pulled evaluation of cloud albedo out of the FM and into here
+!    after the retrieval iteration.
 !
 ! $Id$
 !
@@ -180,6 +182,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    use Diag_def
    use ECP_Constants
    use FM_Routines_def
+   use GZero_def
+   use Int_LUT_Routines_def
    use RTM_Pc_def
    use SAD_Chan_def
    use SAD_LUT_def
@@ -205,8 +209,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! cloudy conditions. Returned by FM
    real    :: dY_dX(SPixel%Ind%Ny,MaxStateVar)
                                   ! Derivatives d[ref]/d[tau,Re,pc,f,Ts,Rs]t
-   real    :: cloud_albedo(SPixel%Ind%NSolar)
-                                  ! cloud albedo Returned by FM
    real    :: Kx(SPixel%Ind%Ny, SPixel%Nx)
                                   ! Scaled, active part of dY_dX
    real    :: Kj(SPixel%Ind%Ny, SPixel%NXJ)
@@ -261,6 +263,10 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! "Model parameter" error covariance.
    real    :: St_temp(SPixel%Nx, SPixel%Nx)
                                   ! Array temporary for Diag%St
+   real    :: CRP(SPixel%Ind%NSolar)
+   real    :: d_CRP(SPixel%Ind%NSolar, 2)
+   type(GZero_t) :: GZero
+
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
    integer :: ios                 ! I/O status for breakpoint file
@@ -299,11 +305,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! Set parameter covariance matrix
    if (SPixel%NXJ > 0) Sj = SPixel%Sx(SPixel%XJ, SPixel%XJ)
 
+
    ! ************ START EVALUATING FORWARD MODEL ************
+
    ! Evaluate forward model for the first guess and initialise the various
    ! arrays. X should be unscaled when passed into FM.
-   call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, &
-           cloud_albedo, stat)
+   call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, SPixel%X0, Y, dY_dX, stat)
    if (stat /= 0) go to 99 ! Terminate processing this pixel
 
    ! Store measurement first guess
@@ -334,7 +341,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    Ja = dot_product(Xdiff, matmul(SxInv, Xdiff))
    Jm = dot_product(Ydiff, matmul(SyInv, Ydiff))
    J0 = Jm + Ja
+
    ! ************* END EVALUATING FORWARD MODEL *************
+
 
    ! Initial breakpoint output (Open breakpoint file if required). Note the
    ! breakpoint file must be closed before any call to a routine that will try
@@ -383,6 +392,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    end if
 #endif
 
+   ! ************* START MAIN ITERATION LOOP *************
+
    ! Set Xn = X0 for 1st iteration
    SPixel%Xn = SPixel%X0
 
@@ -404,7 +415,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! average of leading diagonal of Hessian d2J_dX2.
    alpha = average_hessian(SPixel%Nx, d2J_dX2, Ctrl%Invpar%MqStart)
 
-   ! ************* START MAIN ITERATION LOOP *************
    do
       ! Use alpha and d2J_dX2 to set delta_X. Solve_Cholesky is used to find
       ! delta_X. The equation from the ATBD is
@@ -435,14 +445,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       ! ************ START EVALUATE FORWARD MODEL ************
-      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, &
-              dY_dX, cloud_albedo, stat)
+      call FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Xplus_dX, Y, dY_dX, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
-      if (SPixel%Ind%NSolar > 0) then
-         Diag%cloud_albedo(1:SPixel%Ind%NSolar) = cloud_albedo
-      else
-         Diag%cloud_albedo = 0
-      end if
 
       ! Set new Kx, Kj, Sy and SyInv
       call Set_Kx(Ctrl, SPixel, dY_dX, Kx, Kj)
@@ -574,13 +578,16 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          end if
 #endif
 
-      ! Check whether the maximum iterations has been passed.
       if (iter == Ctrl%Invpar%MaxIter .or. convergence) exit
+
       iter = iter + 1
-   end do !  ************* END MAIN ITERATION LOOP *************
+   end do
+
+   ! ************* END MAIN ITERATION LOOP *************
 
 
-   ! Error analysis:
+   ! ************* START ERROR ANALYSIS *************
+
    ! State expected error from measurements (inverse of Hessian)
    call Invert_Cholesky(d2J_dX2, St_temp, SPixel%Nx, stat)
    Diag%St(1:SPixel%Nx, 1:SPixel%Nx) = St_temp
@@ -645,6 +652,30 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          SPixel%Sn(m,m) = 0.0
       end if
    end do
+
+   ! ************* END ERROR ANALYSIS *************
+
+
+   ! Evaluate cloud_albedo
+   if (SPixel%Ind%NSolar > 0) then
+      call Allocate_GZero(GZero, SPixel)
+
+      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
+         GZero, stat)
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
+
+      call Int_LUT_TauSolRe(SAD_LUT%Rfbd, SPixel%Ind%NSolar, SAD_LUT%Grid, &
+         GZero, Ctrl, CRP, d_CRP, IRfbd, SPixel%spixel_y_solar_to_ctrl_y_index, &
+         SPixel%Ind%YSolar, stat)
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
+
+      Diag%cloud_albedo = CRP
+
+      call Deallocate_GZero(GZero)
+   else
+      Diag%cloud_albedo = 0
+   end if
+
 
    ! Costs are divided by number of active instrument channels before output.
    J  = J  / SPixel%Ind%Ny

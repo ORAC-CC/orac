@@ -73,6 +73,8 @@
 ! 2014/12/01, CP: Added in interpolation for cloud albedo
 ! 2015/01/13, AP: Switch to array-based channel indexing rather than using
 !    offsets.
+! 2015/10/21, GM: Removed interpolation for cloud albedo as it is now done
+!    elsewhere.
 !
 ! $Id$
 !
@@ -129,10 +131,6 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    call Int_LUT_TauSatSolAziRe(SAD_LUT%Rbd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), &
            iRBd, chan_to_ctrl_index, Ind%YSolar, status)
-
-   call Int_LUT_TauSolRe(SAD_LUT%Rfbd, Ind%NSolar, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRfbd), dCRPOut(:,IRfbd,:), &
-           IRfbd, chan_to_ctrl_index, Ind%YSolar, status)
 
    call Int_LUT_TauRe(SAD_LUT%Rfd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRFd), dCRPOut(:,IRFd,:), &

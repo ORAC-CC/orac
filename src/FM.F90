@@ -122,6 +122,7 @@
 !    indexing.
 ! 2015/01/21, AP: Finishing the previous commit.
 ! 2015/01/30, GM: Fixed a bug in the recent channel indexing changes.
+! 2015/10/21, GM: Removed cloud albedo output as it is now evaluated elsewhere.
 !
 ! $Id$
 !
@@ -129,8 +130,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
-              cloud_albedo, status)
+subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
 
    use Ctrl_def
    use ECP_Constants
@@ -154,7 +154,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
    real,             intent(in)    :: X(:)
    real,             intent(out)   :: Y(:)
    real,             intent(out)   :: dY_dX(:,:)
-   real,             intent(out)   :: cloud_albedo(:)
    integer,          intent(out)   :: status
 
    ! Declare local variables
@@ -257,7 +256,6 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, &
       ! Copy results into output vectors (may overwrite mixed chs)
       Y(SPixel%Ind%YSolar) = Ref
       dY_dX(SPixel%Ind%YSolar,:) = d_Ref
-      cloud_albedo = CRP(:,IRfbd)
    end if
 
 
