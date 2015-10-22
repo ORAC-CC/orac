@@ -30,6 +30,7 @@
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/10/07, Oliver Sus: renamed to *_pp.F90, as we have to avoid duplicate
 !    subroutine names for wrapper
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -342,6 +343,13 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
            sreal_fill_value, sint_fill_value, &
            output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
            sint_fill_value)
+
+      call prepare_short_packed_float( &
+           input_data%cloud_albedo_uncertainty(i,j,k), output_data%cloud_albedo_error(i,j,k), &
+           output_data%cloud_albedo_error_scale, output_data%cloud_albedo_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cloud_albedo_error_vmin, output_data%cloud_albedo_error_vmax, &
+           sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -349,8 +357,8 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    output_data%convergence(i,j)=input_data%convergence(i,j)
 
-   if (input_data%convergence(i,j) .eq. 0 ) output_data%niter(i,j)=input_data%niter(i,j)
-   if (input_data%convergence(i,j) .eq. 1 ) output_data%niter(i,j)=input_data%niter(i,j)
+   if (input_data%convergence(i,j) .eq. 0) output_data%niter(i,j)=input_data%niter(i,j)
+   if (input_data%convergence(i,j) .eq. 1) output_data%niter(i,j)=input_data%niter(i,j)
 
    !----------------------------------------------------------------------------
    ! costja

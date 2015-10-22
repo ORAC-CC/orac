@@ -31,6 +31,7 @@
 ! 2015/01/26, CP: added multi layer cloud IR only
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -67,6 +68,7 @@ subroutine dealloc_input_data_primary_common(input_data)
    deallocate(input_data%cwp)
    deallocate(input_data%cwp_uncertainty)
    deallocate(input_data%cloud_albedo)
+   deallocate(input_data%cloud_albedo_uncertainty)
    deallocate(input_data%convergence)
    deallocate(input_data%niter)
    deallocate(input_data%costja)

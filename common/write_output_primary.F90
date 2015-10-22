@@ -38,6 +38,7 @@
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -154,6 +155,11 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_d
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
               output_data%vid_cloud_albedo(i),output_data%cloud_albedo(ixstart:,iystart:,i), &
+              1,1,n_x,1,1,n_y)
+
+      input_dummy='cloud_albedo_in_channel_uncertainty_no_'//trim(adjustl(input_num))
+      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+              output_data%vid_cloud_albedo_error(i),output_data%cloud_albedo_error(ixstart:,iystart:,i), &
               1,1,n_x,1,1,n_y)
    end do
 

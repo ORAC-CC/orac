@@ -24,6 +24,7 @@
 !    string_description_of_state().  Also, changes related to sharing with
 !    post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -51,7 +52,7 @@ module orac_output
       integer                       :: vid_cth_corrected, vid_cth_corrected_error
       integer                       :: vid_ctt, vid_ctt_error
       integer                       :: vid_cwp, vid_cwp_error
-      integer,dimension(:), pointer :: vid_cloud_albedo
+      integer,dimension(:), pointer :: vid_cloud_albedo, vid_cloud_albedo_error
 
       integer                       :: vid_convergence
       integer                       :: vid_niter
@@ -188,6 +189,11 @@ module orac_output
       integer(kind=sint)            :: cloud_albedo_vmin   = 0
       integer(kind=sint)            :: cloud_albedo_vmax   = 11000
 
+      real(kind=sreal)              :: cloud_albedo_error_scale  = 0.0001
+      real(kind=sreal)              :: cloud_albedo_error_offset = 0.0
+      integer(kind=sint)            :: cloud_albedo_error_vmin   = 0
+      integer(kind=sint)            :: cloud_albedo_error_vmax   = 11000
+
       integer(kind=byte)            :: convergence_scale  = 1
       integer(kind=byte)            :: convergence_offset = 0
       integer(kind=byte)            :: convergence_vmin   = 0
@@ -309,6 +315,7 @@ module orac_output
       integer(kind=sint), dimension(:,:),   pointer :: cwp_error
 
       integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo
+      integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo_error
 
       integer(kind=byte), dimension(:,:),   pointer :: convergence
       integer(kind=byte), dimension(:,:),   pointer :: niter

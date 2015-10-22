@@ -23,6 +23,7 @@
 !    common_constants; changed nint to lint; added variable phase_post
 ! 2015/07/16, GM: Major cleanup and add associated routines to module.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -66,7 +67,7 @@ module orac_input
       real(kind=sreal),    dimension(:,:),   pointer :: cth_corrected, cth_corrected_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: ctt, ctt_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cwp, cwp_uncertainty
-      real(kind=sreal),    dimension(:,:,:), pointer :: cloud_albedo
+      real(kind=sreal),    dimension(:,:,:), pointer :: cloud_albedo, cloud_albedo_uncertainty
 
       integer(kind=byte),  dimension(:,:),   pointer :: convergence
       integer(kind=byte),  dimension(:,:),   pointer :: niter

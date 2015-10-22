@@ -22,6 +22,7 @@
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -60,6 +61,7 @@ subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, do_cldma
    deallocate(output_data%vid_rel_azi)
 
    deallocate(output_data%vid_cloud_albedo)
+   deallocate(output_data%vid_cloud_albedo_error)
 
    deallocate(output_data%time)
 
@@ -84,11 +86,14 @@ subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, do_cldma
    deallocate(output_data%ctt)
    deallocate(output_data%ctt_error)
    deallocate(output_data%cth)
-   deallocate(output_data%cth_corrected)
    deallocate(output_data%cth_error)
+   deallocate(output_data%cth_corrected)
    deallocate(output_data%cth_corrected_error)
    deallocate(output_data%cwp)
    deallocate(output_data%cwp_error)
+
+   deallocate(output_data%cloud_albedo)
+   deallocate(output_data%cloud_albedo_error)
 
    deallocate(output_data%convergence)
 
@@ -118,8 +123,6 @@ if (do_dem) then
    deallocate(output_data%dem)
 end if
    deallocate(output_data%nisemask)
-
-   deallocate(output_data%cloud_albedo)
 
 end subroutine dealloc_output_data_primary
 

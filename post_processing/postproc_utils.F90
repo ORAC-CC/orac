@@ -34,42 +34,43 @@ subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
    logical,                    intent(in)    :: do_secondary
 
    ! primary file
-   primary%cot(i,j)                  = sreal_fill_value
-   primary%cot_uncertainty(i,j)      = sreal_fill_value
+   primary%cot(i,j)                        = sreal_fill_value
+   primary%cot_uncertainty(i,j)            = sreal_fill_value
 
-   primary%ref(i,j)                  = sreal_fill_value
-   primary%ref_uncertainty(i,j)      = sreal_fill_value
+   primary%ref(i,j)                        = sreal_fill_value
+   primary%ref_uncertainty(i,j)            = sreal_fill_value
 
-   primary%ctp(i,j)                  = sreal_fill_value
-   primary%ctp_uncertainty(i,j)      = sreal_fill_value
+   primary%ctp(i,j)                        = sreal_fill_value
+   primary%ctp_uncertainty(i,j)            = sreal_fill_value
 
-   primary%cc_total(i,j)             = sreal_fill_value
-   primary%cc_total_uncertainty(i,j) = sreal_fill_value
+   primary%cc_total(i,j)                   = sreal_fill_value
+   primary%cc_total_uncertainty(i,j)       = sreal_fill_value
 
-   primary%stemp(i,j)                = sreal_fill_value
-   primary%stemp_uncertainty(i,j)    = sreal_fill_value
+   primary%stemp(i,j)                      = sreal_fill_value
+   primary%stemp_uncertainty(i,j)          = sreal_fill_value
 
-   primary%cth(i,j)                  = sreal_fill_value
-   primary%cth_uncertainty(i,j)      = sreal_fill_value
+   primary%cth(i,j)                        = sreal_fill_value
+   primary%cth_uncertainty(i,j)            = sreal_fill_value
 
-   primary%ctt(i,j)                  = sreal_fill_value
-   primary%ctt_uncertainty(i,j)      = sreal_fill_value
+   primary%ctt(i,j)                        = sreal_fill_value
+   primary%ctt_uncertainty(i,j)            = sreal_fill_value
 
-   primary%cwp(i,j)                  = sreal_fill_value
-   primary%cwp_uncertainty(i,j)      = sreal_fill_value
+   primary%cwp(i,j)                        = sreal_fill_value
+   primary%cwp_uncertainty(i,j)            = sreal_fill_value
 
-   primary%cloud_albedo(i,j,:)       = sreal_fill_value
+   primary%cloud_albedo(i,j,:)             = sreal_fill_value
+   primary%cloud_albedo_uncertainty(i,j,:) = sreal_fill_value
 
-   primary%convergence(i,j)          = byte_fill_value
+   primary%convergence(i,j)                = byte_fill_value
 
-   primary%niter(i,j)                = byte_fill_value
+   primary%niter(i,j)                      = byte_fill_value
 
-   primary%phase(i,j)                = byte_fill_value
+   primary%phase(i,j)                      = byte_fill_value
 
-   primary%costja(i,j)               = sreal_fill_value
-   primary%costjm(i,j)               = sreal_fill_value
+   primary%costja(i,j)                     = sreal_fill_value
+   primary%costjm(i,j)                     = sreal_fill_value
 
-   primary%qcflag(i,j)               = sint_fill_value
+   primary%qcflag(i,j)                     = sint_fill_value
 
    ! secondary file
    if (do_secondary) then
@@ -111,42 +112,43 @@ subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
    logical,                    intent(in)    :: do_secondary
 
    ! primary file
-   primary2%cot(i,j)                  = primary1%cot(i,j)
-   primary2%cot_uncertainty(i,j)      = primary1%cot_uncertainty(i,j)
+   primary2%cot(i,j)                        = primary1%cot(i,j)
+   primary2%cot_uncertainty(i,j)            = primary1%cot_uncertainty(i,j)
 
-   primary2%ref(i,j)                  = primary1%ref(i,j)
-   primary2%ref_uncertainty(i,j)      = primary1%ref_uncertainty(i,j)
+   primary2%ref(i,j)                        = primary1%ref(i,j)
+   primary2%ref_uncertainty(i,j)            = primary1%ref_uncertainty(i,j)
 
-   primary2%ctp(i,j)                  = primary1%ctp(i,j)
-   primary2%ctp_uncertainty(i,j)      = primary1%ctp_uncertainty(i,j)
+   primary2%ctp(i,j)                        = primary1%ctp(i,j)
+   primary2%ctp_uncertainty(i,j)            = primary1%ctp_uncertainty(i,j)
 
-   primary2%cc_total(i,j)             = primary1%cc_total(i,j)
-   primary2%cc_total_uncertainty(i,j) = primary1%cc_total_uncertainty(i,j)
+   primary2%cc_total(i,j)                   = primary1%cc_total(i,j)
+   primary2%cc_total_uncertainty(i,j)       = primary1%cc_total_uncertainty(i,j)
 
-   primary2%stemp(i,j)                = primary1%stemp(i,j)
-   primary2%stemp_uncertainty(i,j)    = primary1%stemp_uncertainty(i,j)
+   primary2%stemp(i,j)                      = primary1%stemp(i,j)
+   primary2%stemp_uncertainty(i,j)          = primary1%stemp_uncertainty(i,j)
 
-   primary2%cth(i,j)                  = primary1%cth(i,j)
-   primary2%cth_uncertainty(i,j)      = primary1%cth_uncertainty(i,j)
+   primary2%cth(i,j)                        = primary1%cth(i,j)
+   primary2%cth_uncertainty(i,j)            = primary1%cth_uncertainty(i,j)
 
-   primary2%ctt(i,j)                  = primary1%ctt(i,j)
-   primary2%ctt_uncertainty(i,j)      = primary1%ctt_uncertainty(i,j)
+   primary2%ctt(i,j)                        = primary1%ctt(i,j)
+   primary2%ctt_uncertainty(i,j)            = primary1%ctt_uncertainty(i,j)
 
-   primary2%cwp(i,j)                  = primary1%cwp(i,j)
-   primary2%cwp_uncertainty(i,j)      = primary1%cwp_uncertainty(i,j)
+   primary2%cwp(i,j)                        = primary1%cwp(i,j)
+   primary2%cwp_uncertainty(i,j)            = primary1%cwp_uncertainty(i,j)
 
-   primary2%cloud_albedo(i,j,:)       = primary1%cloud_albedo(i,j,:)
+   primary2%cloud_albedo(i,j,:)             = primary1%cloud_albedo(i,j,:)
+   primary2%cloud_albedo_uncertainty(i,j,:) = primary1%cloud_albedo_uncertainty(i,j,:)
 
-   primary2%convergence(i,j)          = primary1%convergence(i,j)
+   primary2%convergence(i,j)                = primary1%convergence(i,j)
 
-   primary2%niter(i,j)                = primary1%niter(i,j)
+   primary2%niter(i,j)                      = primary1%niter(i,j)
 
-!  primary2%phase(i,j)                = primary1%phase(i,j)
+!  primary2%phase(i,j)                      = primary1%phase(i,j)
 
-   primary2%costja(i,j)               = primary1%costja(i,j)
-   primary2%costjm(i,j)               = primary1%costjm(i,j)
+   primary2%costja(i,j)                     = primary1%costja(i,j)
+   primary2%costjm(i,j)                     = primary1%costjm(i,j)
 
-   primary2%qcflag(i,j)               = primary1%qcflag(i,j)
+   primary2%qcflag(i,j)                     = primary1%qcflag(i,j)
 
    ! secondary file
    if (do_secondary) then

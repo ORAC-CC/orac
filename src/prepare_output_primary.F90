@@ -50,6 +50,7 @@
 ! 2015/09/07, GM: Change COT uncertainty output from log10(COT) space to COT
 !    space.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -81,7 +82,6 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    integer            :: k, kk
    integer(kind=sint) :: temp_short_ctp_error
    real(kind=sreal)   :: temp_real, temp_real_cot, temp_real_ctp_error
-   real(kind=sreal)   :: dummyreal
 
 
    !----------------------------------------------------------------------------
@@ -370,17 +370,29 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            output_data%cwp_error_vmax)
 
    !----------------------------------------------------------------------------
-   ! cloud_albedo
+   ! cloud_albedo, cloud_albedo_error
    !----------------------------------------------------------------------------
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
-      dummyreal=Diag%cloud_albedo(k)
+      temp_real=Diag%cloud_albedo(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%cloud_albedo(i,j,kk), &
+           temp_real, output_data%cloud_albedo(i,j,kk), &
            output_data%cloud_albedo_scale, output_data%cloud_albedo_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%cloud_albedo_vmin, output_data%cloud_albedo_vmax, &
+           sint_fill_value)
+
+      if (Diag%cloud_albedo_s(k) .eq. sreal_fill_value) then
+         temp_real = sreal_fill_value
+      else
+         temp_real = sqrt(Diag%cloud_albedo_s(k))
+      end if
+      call prepare_short_packed_float( &
+           temp_real, output_data%cloud_albedo_error(i,j,kk), &
+           output_data%cloud_albedo_error_scale, output_data%cloud_albedo_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cloud_albedo_error_vmin, output_data%cloud_albedo_error_vmax, &
            sint_fill_value)
    end do
 

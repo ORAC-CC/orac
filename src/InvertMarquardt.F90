@@ -168,6 +168,7 @@
 !    in SPixel%XJ. Uncertainty due to inactive state elements tidied.
 ! 2015/10/21, GM: Pulled evaluation of cloud albedo out of the FM and into here
 !    after the retrieval iteration.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -266,7 +267,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    real    :: CRP(SPixel%Ind%NSolar)
    real    :: d_CRP(SPixel%Ind%NSolar, 2)
    type(GZero_t) :: GZero
-
+   real    :: temp(SPixel%Ind%NSolar,SPixel%Ind%NSolar)
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
    integer :: ios                 ! I/O status for breakpoint file
@@ -670,6 +671,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       Diag%cloud_albedo = CRP
+
+      temp = matmul(matmul(d_CRP, SPixel%Sn((/ITau,IRe/), (/ITau,IRe/))), transpose(d_CRP))
+      do m = 1, SPixel%Ind%NSolar
+         Diag%cloud_albedo_s(m) = temp(m, m)
+      end do
 
       call Deallocate_GZero(GZero)
    else

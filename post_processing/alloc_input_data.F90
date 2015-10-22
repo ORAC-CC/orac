@@ -31,6 +31,7 @@
 ! 2015/01/26, CP: added multi layer cloud IR only
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -101,6 +102,8 @@ subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
 
    allocate(input_data%cloud_albedo(xdim1km,ydim1km,indexing%NSolar))
    input_data%cloud_albedo=sreal_fill_value
+   allocate(input_data%cloud_albedo_uncertainty(xdim1km,ydim1km,indexing%NSolar))
+   input_data%cloud_albedo_uncertainty=sreal_fill_value
 
    allocate(input_data%convergence(xdim1km,ydim1km))
    input_data%convergence=byte_fill_value

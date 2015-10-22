@@ -28,6 +28,7 @@
 ! 2015/07/16, GM: Major cleanup and made use of the NetCDF interface in the
 !    common library.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -87,6 +88,10 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
          write(input_num,"(i4)") indexing%Y_Id(i)
          input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
          call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo(:,:,i), verbose)
+
+         write(input_num,"(i4)") indexing%Y_Id(i)
+         input_dummy='cloud_albedo_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo_uncertainty(:,:,i), verbose)
       end if
    end do
 

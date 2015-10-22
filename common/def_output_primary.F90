@@ -58,6 +58,7 @@
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -638,6 +639,35 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
    end do
+
+
+   !----------------------------------------------------------------------------
+   ! cloud_albedo_uncertainty_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      input_dummy='cloud_albedo_uncertainty in channel no '//trim(adjustl(input_num))
+      input_dummy2='cloud_albedo_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_cloud_albedo_error(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = trim(adjustl(input_dummy2)), &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cloud_albedo_error_scale, &
+           add_offset    = output_data%cloud_albedo_error_offset, &
+           valid_min     = output_data%cloud_albedo_error_vmin, &
+           valid_max     = output_data%cloud_albedo_error_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
 
    !----------------------------------------------------------------------------
    ! convergence

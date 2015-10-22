@@ -14,6 +14,7 @@
 ! 2014/12/01, CP: Added cloud albedo.
 ! 2015/01/19, GM: Put ZeroDiag.F90 and SetDiag.F90 into this module.
 ! 2015/07/31, AP: Rejig QCFlag for much longer state vector.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -65,6 +66,8 @@ module Diag_def
                                     ! Averaging kernel matrix
       real          :: cloud_albedo(MaxNumSolar)
                                     ! Cloud albedo
+      real          :: cloud_albedo_s(MaxNumSolar)
+                                    ! Cloud albedo variance
    end type Diag_t
 
 contains

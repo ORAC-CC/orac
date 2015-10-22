@@ -25,6 +25,7 @@
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
+! 2015/10/22, GM: Add cloud albedo uncertainty.
 !
 ! $Id$
 !
@@ -82,6 +83,8 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, N
 
    allocate(output_data%vid_cloud_albedo(Ny))
    output_data%vid_cloud_albedo=0
+   allocate(output_data%vid_cloud_albedo_error(Ny))
+   output_data%vid_cloud_albedo_error=0
 
 
    allocate(output_data%time(ixstart:ixstop,iystart:iystop))
@@ -153,6 +156,8 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, N
 
    allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
    output_data%cloud_albedo=sint_fill_value
+   allocate(output_data%cloud_albedo_error(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%cloud_albedo_error=sint_fill_value
 
 
    allocate(output_data%convergence(ixstart:ixstop,iystart:iystop))
