@@ -64,6 +64,7 @@
 !    the data as in the 3rd reprocessing (V2.1) data.
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
+! 2015/09/15, CP: Adapted to read ATSR-2 data
 !
 ! $Id$
 !
@@ -73,7 +74,7 @@
 
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
      imager_measurements, imager_angles, imager_flags, imager_time, &
-     channel_info, verbose)
+     channel_info,platform, verbose)
 
    use iso_c_binding ! technically Fortran 2003
    use aatsr_corrections
@@ -101,6 +102,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
 
          character(c_char), dimension(path_length) :: l1b_file
          character(c_char), dimension(30)   :: start_date
+
          character(c_char), dimension(62)   :: gc1_file, vc1_file
          integer(c_short)                   :: nch, stat
          integer(c_short), dimension(nch)   :: ch, view
@@ -126,6 +128,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(imager_flags_s),        intent(inout) :: imager_flags
    type(imager_time_s),         intent(inout) :: imager_time
    type(channel_info_s),        intent(in)    :: channel_info
+   character(len=platform_length), intent(in) :: platform
+
    logical,                     intent(in)    :: verbose
 
    integer                   :: i,ii,j,jj,status
@@ -308,6 +312,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       end if
    end do
 
+
+
    ! read data using C routine (correct starts to zero offset)
    startx=startx-1
    starty=starty-1
@@ -323,8 +329,13 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
         fch1, fch2, fch3, fch4, fch5, fch6, fch7, &
         fer1, fer2, fer3, fer4, fer5, fer6, fer7, &
         start_date, gc1_file, vc1_file, is_lut_drift_corrected)
-   if (verbose) write(*,*) 'C function returned with status ', stat
 
+   if (verbose) write(*,*) 'C function returned with status ', stat
+write(*,*)' is_lut_drift_corrected', is_lut_drift_corrected
+!temporary for now
+is_lut_drift_corrected=.true.
+
+write(*,*)' afteris_lut_drift_corrected', is_lut_drift_corrected
    ! convert elevation angles read into zenith angles
    imager_angles%solzen = 90.0 - imager_angles%solzen
    imager_angles%satzen = 90.0 - imager_angles%satzen
@@ -333,8 +344,10 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
       call aatsr_read_drift_table(drift_file, lut, status)
       if (verbose) write(*,*) 'finish drift table read returned with status ', stat
    end if
-
+write(*,*)'read_aatsr_l1b apply corrections'
+   if (.not. is_lut_drift_corrected) then
    ! apply corrections
+  if (verbose) write(*,*) ' apply calibration corrections'
    do i=1,channel_info%nchannels_total
       j=channel_info%channel_ids_instr(i)
 
@@ -345,7 +358,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
          imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i)*0.01
          imager_measurements%uncertainty(:,:,i) = &
               imager_measurements%uncertainty(:,:,i) * 0.01
-
+write(*,*)'ch sw drift correction',i,imager_measurements%data(:,1,i)
          ! determine if non-linearity correction has been applied
          if (j.eq.4 .and. gc1_file .eq. &
              'ATS_GC1_AXVIEC20020123_073430_20020101_000000_20200101_000000') then
@@ -358,7 +371,9 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
                  imager_measurements%data(:,:,i)*(A(2) + &
                  imager_measurements%data(:,:,i)*(A(3) + &
                  imager_measurements%data(:,:,i)* A(4)))
-         end if
+
+write(*,*)'after ch difift correaction',i,imager_measurements%data(:,1,i)
+         end if ! j eq 4
 
          ! determine drift correction to remove from data
          if (.not. is_lut_drift_corrected .and. status.eq.0) then
@@ -375,8 +390,8 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
                  *imager_measurements%uncertainty(:,:,i) + &
                  drift_var*imager_measurements%data(:,:,i) &
                  *imager_measurements%data(:,:,i)) / new_drift
-         end if
-      end if
+         end if ! drift corrected
+      end if ! j eq 4
 
       ! 12um nonlinearity_correction
       if (j .eq. 7) then
@@ -388,12 +403,29 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
                     imager_measurements%data(ii,jj,i))
             end do
          end do
-      end if
-   end do
+      end if ! jeq 7
+   end do ! channel info
+end if ! drift corrected
+
+
+   if (is_lut_drift_corrected) then
+   do i=1,channel_info%nchannels_total
+      j=channel_info%channel_ids_instr(i)
+if (j.le.4) then
+         ! AATSR L1B reflectances are stored as percentage values, so scale to
+         ! the fractional value used by ORAC
+         imager_measurements%data(:,:,i) = imager_measurements%data(:,:,i)*0.01
+         imager_measurements%uncertainty(:,:,i) = &
+              imager_measurements%uncertainty(:,:,i) * 0.01
+write(*,*)'ch sw no drift',i,imager_measurements%data(:,1,i)
+endif
+enddo
+endif
 
    ! copy time values into rows from nadir (which we're presumably viewing)
    do i=1,imager_geolocation%ny
       imager_time%time(:,i) = nday(i)
+  !    write(*,*)'imager_time%time',imager_time%time(:,i)
    end do
 
    ! translate flags (THIS USED TO BE RATHER MORE COMPLICATED)

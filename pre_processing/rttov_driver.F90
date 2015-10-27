@@ -122,6 +122,9 @@
 ! 2015/07/02, GM: Added code to remove the Rayleigh component from the RTTOV 11
 !    computed transmittances.
 ! 2015/07/23, GM: Added specific humidity and ozone profile output.
+
+! 2015/08/08, CP added ATSR2 functionality
+
 ! 2015/09/04, GM: Fix support for SEVIRI on MSG1, MSG3 and MSG4.
 ! 2015/10/19, GM: Add the option to use the MODIS emissivity product instead of
 !    the RTTOV emissivity atlas.
@@ -254,6 +257,8 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    select case (trim(sensor))
    case('AATSR')
       coef_file = 'rtcoef_envisat_1_atsr.dat'
+   case('ATSR2')
+      coef_file = 'rtcoef_ers_2_atsr.dat'
    case('AVHRR')
       if (index(platform,'noaa') >= 1) then
          if(platform(5:5) == '1') then

@@ -67,6 +67,7 @@
 ! 2014/05/01, GM: Reordered data/time arguments into a logical order.
 ! 2014/05/02, AP: Made badc into ecmwf_flag.
 ! 2014/05/02, CP: Changed AATSR file naming
+! 2015/08/08, CP : added functionality for ATSR-2
 !
 ! $Id$
 !
@@ -148,7 +149,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    end if
 
    ! deal with ATSR chunking in filename
-   if (sensor .eq. 'AATSR') then
+   if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
       startr=imager_geolocation%latitude(imager_geolocation%startx,1)
       endr=imager_geolocation%latitude(imager_geolocation%endx, &
            imager_geolocation%ny)
@@ -164,6 +165,16 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
       range_name=''
    end if
    if (verbose) write(*,*) 'chunk range_name: ', trim(range_name)
+
+!ESACCI-L2-CLOUD-CLD-${sensor}_${product_string}_${platform}_*${YYYY}${MM}${DD}${HH}${II}_${version2}.*.nc
+   !put basic filename together
+   file_base=trim(adjustl(global_atts%project))//'-L2-CLOUD-CLD-'// &
+             trim(adjustl(sensor))//'_'// &
+	     !trim(adjustl(range_name))//  &
+             trim(adjustl(global_atts%l2_processor))
+   file_base=trim(adjustl(file_base))//'_'//trim(adjustl(platform))
+!             '_'//trim(adjustl(global_atts%production_time))
+
 
    ! ESACCI-L2-CLOUD-CLD-${sensor}_${product_string}_${platform}_*${YYYY}${MM}${DD}${HH}${II}_${version2}.*.nc
 

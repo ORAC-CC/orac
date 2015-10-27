@@ -38,6 +38,7 @@
 ! 2014/12/01, OS: removed call to read_avhrr_land_sea_mask, which was obsolete
 !    as land/sea information is now read in SR read_USGS_file
 ! 2015/02/19, GM: Added SEVIRI support.
+! 2015/08/08, CP: added ATSR2 functionality
 !
 ! $Id$
 !
@@ -87,7 +88,7 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
    if (verbose) write(*,*) 'path_to_geo_file: ', trim(path_to_geo_file)
 
    !branches for the sensors
-   if (trim(adjustl(sensor)) .eq. 'AATSR') then
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') then
       if (verbose) write(*,*) 'path_to_aatsr_drift_table: ', &
                               trim(path_to_aatsr_drift_table)
 
@@ -95,7 +96,11 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! imager_geolocation
       call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
            imager_geolocation, imager_measurements, imager_angles, &
-           imager_flags,imager_time, channel_info, verbose)
+           imager_flags,imager_time, channel_info,platform, verbose)
+
+write(*,*)'read imager ch1',imager_measurements%data(:,1,1)
+write(*,*)'read imager ch2',imager_measurements%data(:,1,2)
+write(*,*)'read imager ch5',imager_measurements%data(:,1,5)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

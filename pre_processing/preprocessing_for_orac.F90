@@ -228,6 +228,7 @@
 ! 2015/07/02, OS: Added check for output netcdf files (wrapper only) +
 !    uncommented parse of L2_Processor_Version
 ! 2015/07/03, OS: Removed parsing of L2_Processor_Version
+! 2015/08/08, CP: functionality for ATSR2
 ! 2015/10/19, GM: Add option use_modis_emis_in_rttov to use the MODIS emissivity
 !    product instead of the RTTOV emissivity atlas in the RTTOV computations.
 !
@@ -309,8 +310,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: verbose
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
+
    logical                          :: check
    integer                          :: nargs
+
 
    integer                          :: i
    character(path_length)           :: line, label, value
@@ -379,6 +382,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    ! this is for the wrapper
 #ifdef WRAPPER
+
    logical                          :: corrupt
    integer                          :: check_output
    integer                          :: mytask,ntasks,lower_bound,upper_bound
@@ -395,7 +399,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ! Set defaults for optional arguments/fields
    n_channels = 0
    nullify(channel_ids)
+
+  write(*,*) 'nargs',nargs
+
    use_modis_emis_in_rttov = .false.
+
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -443,6 +451,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call get_command_argument(37,ecmwf_path2)
       call get_command_argument(38,ecmwf_path3)
       call get_command_argument(39,cchunkproc)
+
       call get_command_argument(40,cday_night)
       call get_command_argument(41,cverbose)
       call get_command_argument(42,cdummy_arg)
@@ -526,6 +535,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       close(11)
    end if
+! Set this since it was removed from the command line but not removed from
+   ! the global attributes.
+   global_atts%L2_Processor_Version = '1.0'
 
    ! Set this since it was removed from the command line but not removed from
    ! the global attributes.
@@ -598,10 +610,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    source_atts%level1b_file=l1b_path_file
    source_atts%geo_file=geo_path_file
 
-   if (trim(adjustl(sensor)) .eq. 'AATSR') then
+   if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') then
       call setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
            doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
-           channel_info,verbose)
+           channel_info,sensor,verbose)
 
       ! currently setup to do day only by default
       if (day_night .eq. 0) day_night=1
@@ -662,7 +674,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       write(*,*) 'n_across_track:      ', n_across_track
       write(*,*) 'along_track_offset:  ', along_track_offset
       write(*,*) 'n_along_track:       ', n_along_track
-      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
+      if ((trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') .and. day_night .eq. 2) then
          write(*,*) 'along_track_offset2: ', along_track_offset2
          write(*,*) 'n_along_track2:      ', n_along_track2
       end if
@@ -677,7 +689,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          write(*,*) '       Should be < ',n_across_track
          stop error_stop_code
       end if
-      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
+      if ((trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') .and. day_night .eq. 2) then
          along_pos = along_track_offset2 + n_along_track2
       else
          along_pos = along_track_offset + n_along_track
@@ -713,8 +725,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       segment_starts(1) = along_track_offset + 1
       segment_ends(1)   = along_track_offset + n_along_track
 
-      if (trim(adjustl(sensor)) .eq. 'AATSR' .and. day_night .eq. 2) then
+      if ((trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') .and. day_night .eq. 2) then
          n_segments = n_segments + 1
+
          segment_starts(n_segments) = along_track_offset2 + 1
          segment_ends(n_segments)   = along_track_offset2 + n_along_track2
       end if
