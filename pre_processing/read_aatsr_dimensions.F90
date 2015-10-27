@@ -39,6 +39,7 @@
 ! 2013/09/06, AP: tidying
 ! 2013/10/08, AP: altered call to C routine
 ! 2013/01/24, MJ: removed "optionality" of some arguments
+! 2015/09/15, CP: put a stop in if reads too narrow swath this is a bug fix to prevent zero files being created
 !
 ! $Id$
 !
@@ -52,6 +53,7 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
 
    use iso_c_binding
    use preproc_constants
+   use common_constants
 
    implicit none
 
@@ -123,6 +125,11 @@ subroutine read_aatsr_dimensions(path_to_l1b_file,n_across_track, &
    n_across_track = tmp_nx
    n_along_track  = tmp_ny
    along_track_offset = tmp_miny
+
+   if( n_across_track < 10) then
+       write(*,*) 'ERROR: read_aatsr_dimensions: swath too narrow, n_across_track=', n_across_track
+         stop error_stop_code
+   end if
 
    ! make second call for second night time chunk
    if (tmp_dynght .eq. 2) then
