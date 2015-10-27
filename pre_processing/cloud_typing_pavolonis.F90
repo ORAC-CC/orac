@@ -44,6 +44,8 @@
 !    occurring when using OpenMP.
 ! 2015/07/03, OS: Added cldmask_uncertainty; added coefficients to calculate
 !    NOAA19 Ch3.7 reflectance + slight update for other platforms
+!        9/7/2015 CP changed order of AATSR as previously they were over written
+!        9/8/2015 CP icluded ATSR-2 functionality
 ! 2015/07/27, AP: Replaced sym structure with parameters.
 !
 ! $Id$
@@ -308,7 +310,9 @@ contains
     !---- CC4CL requirements and adaptions for Pavolonis alg.
 
     integer(kind=sint) :: ch3a_on_avhrr_flag
-    integer(kind=sint) :: ch6_on_atsr_flag,ch7_on_atsr_flag
+
+    integer(kind=sint) :: ch6_on_atsr_flag,ch7_on_atsr_flag,ch2_on_atsr_flag	
+
     real(kind=sreal)   :: glint_angle, coszen
     real(kind=sreal)   :: BTD_Ch3b_Ch4
     real(kind=sreal)   :: BTD_Ch4_Ch5
@@ -337,7 +341,7 @@ contains
     !
     !
     ! -- INPUT
-    !                                   wavelength  MODIS=CC4CL=AVHRR
+    !                                   wavelength  MODIS=CC4CL=AVHRR=AATSR
     ! imager_measurements%DATA(i,j,1)   ! 0.659 um  !Ch01=  1  =1
     ! imager_measurements%DATA(i,j,2)   ! 0.865 um  !Ch02=  2  =2
     ! imager_measurements%DATA(i,j,3)   ! 1.640 um  !Ch06=  3  =3a
@@ -376,8 +380,9 @@ contains
     !
     !---------------------------------------------------------------------
 
+write(*,*)' cloud_type channel_info%channel_ids_instr',channel_info%channel_ids_instr
     ! Determine channel indexes based on instrument channel number
-    if (trim(adjustl(sensor)) .eq. 'AATSR') then
+    if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
        do i=1,channel_info%nchannels_total
           select case (channel_info%channel_ids_instr(i))
           case(2)
@@ -394,6 +399,18 @@ contains
              ch6=i
           end select
        end do
+
+
+!
+!apply correction factors from Karl Goran Calibration papaer
+!modified from first try
+!	ch1= ch1*.937
+!	ch2=ch2*.957
+!       ch3=ch3 ! no factor
+!	ch4=ch4*.998 
+
+
+
     else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
        do i=1,channel_info%nchannels_total
           select case (channel_info%channel_ids_instr(i))
@@ -572,6 +589,29 @@ contains
 
           endif
 
+
+          if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
+! changed min value of 3.7 for AATSR
+          if ( imager_measurements%DATA(i,j,ch3) .ge. 0 .and. &
+               imager_measurements%DATA(i,j,ch4) .lt. 100) then
+
+             ! Ch3a is used if Ch3b is not avail.
+             ch3a_on_avhrr_flag = YES 
+
+          elseif ( imager_measurements%DATA(i,j,ch4) .ge. 100 ) then
+
+             ! Ch3b is used if avail.
+             ch3a_on_avhrr_flag = NO 
+
+          else
+
+             ! neither Ch3a nor Ch3b avail.
+             ch3a_on_avhrr_flag = INEXISTENT 
+
+          endif
+	  endif
+
+
           ! check is ATSR 12um channel is missing
           ch7_on_atsr_flag = YES
           if ( imager_measurements%DATA(i,j,ch5) .ge. 100 .and. &
@@ -579,16 +619,36 @@ contains
                ch7_on_atsr_flag = NO
             endif
 
+               ch2_on_atsr_flag = YES
+          if ( imager_measurements%DATA(i,j,ch2) .lt. 0. ) then
+               ch2_on_atsr_flag = NO
+	      endif
+
+
+
+          ! check is ATSR 3.7um channel is missing
+          
 
    ! check is ATSR 11um channel is missing because too warm
           ch6_on_atsr_flag = YES
 
-          if ( imager_measurements%DATA(i,j,ch6) .ge. 200 .and. &
+          if ( imager_measurements%DATA(i,j,ch6) .ge. 220 .and. &
                imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
                ch6_on_atsr_flag = NO
-            endif
+	  endif
 
-   !-- check for sunglint and save result:
+ ! check is ATSR 11um channel is missing because too cold
+          ch6_on_atsr_flag = YES
+
+          if ( imager_measurements%DATA(i,j,ch6) .lt. 100 .and. &
+               imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
+               ch6_on_atsr_flag = NO
+	       ch7_on_atsr_flag = NO
+	  endif
+
+
+   !-- check for sunglint and save result: 
+
    !   imager_pavolonis%SUNGLINT_MASK(i,j)
 
           !In PATMOS sunglint calculation:
@@ -646,31 +706,63 @@ contains
                sensor, &
                verbose )
 
-          !-- First Pavolonis test: clear or cloudy
+   
 
-          if (trim(adjustl(sensor)) .eq. 'AATSR') then
+
+!now cycle if clear no need to define cloud type
+
+
+          if ( imager_pavolonis%CLDMASK(i,j) == CLEAR ) then
+             imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
+          if (trim(adjustl(sensor)) .ne. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') then
+cycle             
+          endif
+	  endif
+
+! implement extra tests for AATSR
+       !-- First Pavolonis test: clear or cloudy
+
+
+          if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
+
              ! 11um channel can occasionally be missing particuarly for AATSR instrument if it gets too warm
              ! also when ch6 atsr is fill value,clear type is assigned
              if ( ( ch6_on_atsr_flag == NO )  .and.  ( ch7_on_atsr_flag == YES ) ) then
                 imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
                 imager_pavolonis%CLDMASK(i,j) = CLEAR
-                !             cycle
              endif
+
 
              ! 12um channel can occasionally be missing particuarly for AATSR instrument
              ! also when ch7 atsr is fill value, %PROB_OPAQUE_ICE_TYPE is assigned
-             if ( ch7_on_atsr_flag == NO ) then
+
+             if ( (ch7_on_atsr_flag == NO ) .and. (ch2_on_atsr_flag ==YES) ) then
                 imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
+                !imager_pavolonis%CLDTYPE(i,j) = OPAQUE_ICE_TYPE
+
                 imager_pavolonis%CLDMASK(i,j) = CLOUDY
-                !write(*,*)'testing',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j)
-                !             cycle
+                !write(*,*)'testing',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j) 
              endif
-          endif
+
+
+! if both IR channels are missing them likely a very cold opaque cloud enable a CTH retrieval by setting minimum threshold values of IR channels
+            if  ( ( ch6_on_atsr_flag == NO )  .and. ( ch7_on_atsr_flag == NO ) .and. (ch2_on_atsr_flag == yes)) then
+                imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
+                !imager_pavolonis%CLDTYPE(i,j) = OPAQUE_ICE_TYPE
+		imager_measurements%DATA(i,j,ch6)=210.0
+		imager_measurements%DATA(i,j,ch5)=209.0
+                imager_pavolonis%CLDMASK(i,j) = CLOUDY
+                
+             endif
+	  endif
 
           if ( imager_pavolonis%CLDMASK(i,j) == CLEAR ) then
              imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
              cycle
+
           endif
+
+
 
           !-- Check if daytime or nighttime algorithm is to be used.
           day = .FALSE.
@@ -728,7 +820,7 @@ contains
           ref_ch3b = ( rad_ch3b - rad_ch3b_emis ) / &
                ( solcon_ch3b * c_sun * mu0 - rad_ch3b_emis )
 
-          ! calculate true reflectances for avhrr, modis and ??? aatsr
+          ! calculate true reflectances for avhrr, modis and aatsr
           ref_ch1  = imager_measurements%DATA(i,j,ch1) / mu0
           ref_ch3a = imager_measurements%DATA(i,j,ch3) / mu0
 
@@ -1359,6 +1451,7 @@ contains
           if  (imager_pavolonis%CLDTYPE(i,j) == PROB_OPAQUE_ICE_TYPE ) then
              imager_pavolonis%CLDMASK(i,j) = CLOUDY
              imager_pavolonis%cccot_pre(i,j) = .99
+
           endif
 
 
@@ -1647,6 +1740,8 @@ contains
     case ("AQUA")
        index = 14
     case ("Envisat")
+       index = 15
+    case ("ERS2")
        index = 15
     case ("MSG1", "MSG2", "MSG3", "MSG4")
        index = 16
