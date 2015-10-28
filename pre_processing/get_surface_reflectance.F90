@@ -309,7 +309,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      if (verbose) print *, 'MCD43CX bands selected: ', bands
 
      ! Select correct modis file
-     if (verbose) write(*,*) 'find appropriate files'
+     if (verbose) write(*,*) 'find appropriate files',modis_surf_path,modis_brdf_path
      if (assume_full_path) then
        modis_surf_path_file = modis_surf_path
        modis_brdf_path_file = modis_brdf_path
@@ -317,7 +317,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         call select_modis_albedo_file(cyear,cdoy,modis_surf_path, &
                                       .false.,modis_surf_path_file)
         if (include_full_brdf) then
-           call select_modis_albedo_file(cyear,cdoy,modis_surf_path, &
+           call select_modis_albedo_file(cyear,cdoy,modis_brdf_path, &
                                          .true.,modis_brdf_path_file)
         end if
      end if
