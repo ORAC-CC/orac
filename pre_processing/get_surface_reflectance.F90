@@ -103,6 +103,7 @@
 ! 2015/01/14, AP: Allow the code to accept channels in arbitrary order.
 ! 2015/10/03, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
 !    and 7 for sea surface reflectance.
+!  2015/10/27 CP changed path for brdf files to be surf_brdf_path
 !
 ! $Id$
 !
