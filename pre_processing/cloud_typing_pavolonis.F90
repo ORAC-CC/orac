@@ -261,7 +261,7 @@ contains
     type(imager_flags_s),           intent(in)    :: imager_flags
     type(imager_angles_s),          intent(in)    :: imager_angles
     type(imager_geolocation_s),     intent(in)    :: imager_geolocation
-    type(imager_measurements_s),    intent(in)    :: imager_measurements
+    type(imager_measurements_s),    intent(inout) :: imager_measurements
     type(imager_pavolonis_s),       intent(inout) :: imager_pavolonis
     type(ecmwf_s),                  intent(in)    :: ecmwf
     character(len=platform_length), intent(in)    :: platform
