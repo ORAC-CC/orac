@@ -123,7 +123,7 @@
 !    computed transmittances.
 ! 2015/07/23, GM: Added specific humidity and ozone profile output.
 
-! 2015/08/08, CP added ATSR2 functionality
+! 2015/08/08, CP: Added ATSR2 functionality
 
 ! 2015/09/04, GM: Fix support for SEVIRI on MSG1, MSG3 and MSG4.
 ! 2015/10/19, GM: Add the option to use the MODIS emissivity product instead of

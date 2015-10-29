@@ -80,9 +80,9 @@ module setup_instrument
 
 contains
 
-subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
-   doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids_user, &
-   channel_info,sensor,verbose)
+subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
+   month,day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute, &
+   channel_ids_user,channel_info,verbose)
 
    use calender
    use preproc_constants
@@ -94,7 +94,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
    character(len=path_length),     intent(in)    :: l1b_path_file
    character(len=path_length),     intent(in)    :: geo_path_file
    character(len=platform_length), intent(out)   :: platform
-   character(len=platform_length), intent(in)   :: sensor
+   character(len=platform_length), intent(in)    :: sensor
    integer(kind=sint),             intent(out)   :: year,month,day,doy
    integer(kind=sint),             intent(out)   :: hour,minute
    character(len=date_length),     intent(out)   :: cyear,cmonth,cday
@@ -160,15 +160,13 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    ! which aatsr are we processing?
 
- if (trim(adjustl(sensor)) .eq. 'AATSR') then
-   index1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)  
- platform='Envisat'
-else
-platform='ERS2'
-   index1=index(trim(adjustl(l1b_path_file)),'.E2',back=.true.)
-endif
-
-	write(*,*)'platform',platform
+   if (trim(adjustl(sensor)) .eq. 'AATSR') then
+      index1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)  
+      platform='Envisat'
+   else
+      platform='ERS2'
+      index1=index(trim(adjustl(l1b_path_file)),'.E2',back=.true.)
+   endif
 
    ! Get year, month, day, hour and minute as strings
    cyear=trim(adjustl(l1b_path_file(index1-45:index1-42)))
@@ -176,12 +174,6 @@ endif
    cday=trim(adjustl(l1b_path_file(index1-39:index1-38)))
    chour=trim(adjustl(l1b_path_file(index1-36:index1-35)))
    cminute=trim(adjustl(l1b_path_file(index1-34:index1-33)))
-	write(*,*)'cyear',cyear
-	write(*,*)'cmonth',cmonth
-	write(*,*)'cyear',cday
-	write(*,*)'chour',chour
-	write(*,*)'cminute',cminute
-
 
    ! get year, month, day, hour and minute as integers
    read(cyear(1:len_trim(cyear)), '(I4)') year

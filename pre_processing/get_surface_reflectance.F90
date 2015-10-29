@@ -103,7 +103,7 @@
 ! 2015/01/14, AP: Allow the code to accept channels in arbitrary order.
 ! 2015/10/03, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
 !    and 7 for sea surface reflectance.
-!  2015/10/27 CP changed path for brdf files to be surf_brdf_path
+! 2015/10/27, CP: Changed path for brdf files to be modis_brdf_path
 !
 ! $Id$
 !
@@ -310,7 +310,9 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
      if (verbose) print *, 'MCD43CX bands selected: ', bands
 
      ! Select correct modis file
-     if (verbose) write(*,*) 'find appropriate files',modis_surf_path,modis_brdf_path
+     if (verbose) write(*,*) 'find appropriate files:'
+     if (verbose) write(*,*) 'modis_surf_path: ', trim(modis_surf_path)
+     if (verbose) write(*,*) 'modis_brdf_path: ', trim(modis_brdf_path)
      if (assume_full_path) then
        modis_surf_path_file = modis_surf_path
        modis_brdf_path_file = modis_brdf_path
