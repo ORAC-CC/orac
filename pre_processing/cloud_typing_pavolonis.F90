@@ -44,10 +44,10 @@
 !    occurring when using OpenMP.
 ! 2015/07/03, OS: Added cldmask_uncertainty; added coefficients to calculate
 !    NOAA19 Ch3.7 reflectance + slight update for other platforms
-!        9/7/2015 CP changed order of AATSR as previously they were over written
-!        9/8/2015 CP icluded ATSR-2 functionality
-! 2015/07/27, AP: Replaced sym structure with parameters.
-!
+! 	 2015/07/27, AP: Replaced sym structure with parameters.
+
+
+
 ! $Id$
 !
 ! Bugs:
@@ -380,6 +380,7 @@ contains
     !
     !---------------------------------------------------------------------
 
+
     ! Determine channel indexes based on instrument channel number
     if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
        do i=1,channel_info%nchannels_total
@@ -397,14 +398,8 @@ contains
           case(7)
              ch6=i
           end select
+
        end do
-!
-!      apply correction factors from Karl Goran Calibration paper
-!      modified from first try
-!      ch1= ch1*.937
-!      ch2=ch2*.957
-!      ch3=ch3 ! no factor
-!      ch4=ch4*.998
 
     else if (trim(adjustl(sensor)) .eq. 'AVHRR') then
        do i=1,channel_info%nchannels_total
@@ -459,7 +454,6 @@ contains
        end do
     end if
 
-
     allocate(skint(imager_geolocation%startx:imager_geolocation%endx, &
          1:imager_geolocation%ny))
     skint=sreal_fill_value
@@ -476,6 +470,7 @@ contains
 
        end do
     end do
+
 
     deallocate(interp)
     !-- copy land use flag array to Surface TYPE array
@@ -549,7 +544,6 @@ contains
 
     i_loop: do  i = imager_geolocation%STARTX, imager_geolocation%ENDX
 
-
        !-------------------------------------------------------------------
        !-- loop over scanlines (y)
        !j_loop: do j = j1, j2 + j1 - 1
@@ -565,6 +559,7 @@ contains
 
 
           !-- check if Ch3a is available or not (fill_value is negative)
+
 
           if ( imager_measurements%DATA(i,j,ch3) .ge. 0 .and. &
                imager_measurements%DATA(i,j,ch4) .lt. 0) then
@@ -608,6 +603,7 @@ contains
 
           ! check is ATSR 12um channel is missing
           ch7_on_atsr_flag = YES
+
           if ( imager_measurements%DATA(i,j,ch5) .ge. 100 .and. &
                imager_measurements%DATA(i,j,ch6) .lt. 100. ) then
                ch7_on_atsr_flag = NO
@@ -626,7 +622,10 @@ contains
                ch6_on_atsr_flag = NO
 	  endif
 
-          ! check is ATSR 11um channel is missing because too cold
+
+
+ ! check is ATSR 11um channel is missing because too cold
+
           ch6_on_atsr_flag = YES
 
           if ( imager_measurements%DATA(i,j,ch6) .lt. 100 .and. &
@@ -669,6 +668,9 @@ contains
                imager_measurements%DATA(i,j,ch5)
 
           !-- NEURAL_NET_PREPROC subroutine
+
+
+
           call ann_cloud_mask( &
                imager_measurements%DATA(i,j,ch1), &
                imager_measurements%DATA(i,j,ch2), &
@@ -742,11 +744,14 @@ contains
 
           endif
 
+
           !-- Check if daytime or nighttime algorithm is to be used.
           day = .FALSE.
           if ( ( imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) < 88.0 ) .or. ( ch3a_on_avhrr_flag .eq. YES ) ) then
              day = .TRUE.
           endif
+
+
 
           !-- neither ch3a nor ch3b available
           if (trim(adjustl(sensor)) .eq. 'AVHRR') then
