@@ -59,7 +59,9 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
-!
+! 2015/08/08 CP added in ATSR time stamp
+! 2015/10/24 CP added in st and CF compliance
+
 ! $Id$
 !
 ! Bugs:
@@ -113,7 +115,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   if (inst_name(1:5) .eq. 'AATSR') then
+   if (inst_name(1:5) .eq. 'AATSR' .or. inst_name(1:5) .eq. 'ATSR2'  ) then
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
@@ -197,7 +199,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
               output_data%vid_sol_zen(i_view), &
               verbose, &
               long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy3)), &
+              standard_name = 'solar_zenith_angle', &
               fill_value    = sreal_fill_value, &
               scale_factor  = output_data%sol_scale, &
               add_offset    = output_data%sol_offset, &
@@ -221,7 +223,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
               output_data%vid_sat_zen(i_view), &
               verbose, &
               long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy3)), &
+              standard_name = 'platform_zenith_angle', &
               fill_value    = sreal_fill_value, &
               scale_factor  = output_data%sat_scale, &
               add_offset    = output_data%sat_offset, &
@@ -245,7 +247,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
               output_data%vid_rel_azi(i_view), &
               verbose, &
               long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy3)), &
+              standard_name = 'relative_platform_azimuth_angle', &
               fill_value    = sreal_fill_value, &
               scale_factor  = output_data%azi_scale, &
               add_offset    = output_data%azi_offset, &
@@ -273,6 +275,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            add_offset    = output_data%cot_offset, &
            valid_min     = output_data%cot_vmin, &
            valid_max     = output_data%cot_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -286,12 +289,13 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cot_error, &
            verbose, &
            long_name     = 'cloud optical thickness uncertainty', &
-           standard_name = 'atmosphere_optical_thickness_due_to_cloud uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cot_error_scale, &
            add_offset    = output_data%cot_error_offset, &
            valid_min     = output_data%cot_error_vmin, &
            valid_max     = output_data%cot_error_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -325,7 +329,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_ref_error, &
            verbose, &
            long_name     = 'effective radius uncertainty', &
-           standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%ref_error_scale, &
            add_offset    = output_data%ref_error_offset, &
@@ -365,7 +369,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_ctp_error, &
            verbose, &
            long_name     = 'cloud top pressure uncertainty', &
-           standard_name = 'air_pressure_at_cloud_top uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%ctp_error_scale, &
            add_offset    = output_data%ctp_error_offset, &
@@ -391,6 +395,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            add_offset    = output_data%cct_offset, &
            valid_min     = output_data%cct_vmin, &
            valid_max     = output_data%cct_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -404,12 +409,13 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cct_error, &
            verbose, &
            long_name     = 'cloud fraction uncertainty', &
-           standard_name = 'cloud_area_fraction uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cct_error_scale, &
            add_offset    = output_data%cct_error_offset, &
            valid_min     = output_data%cct_error_vmin, &
            valid_max     = output_data%cct_error_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -443,7 +449,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_stemp_error, &
            verbose, &
            long_name     = 'surface temperature uncertainty', &
-           standard_name = 'surface_temperature uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%stemp_error_scale, &
            add_offset    = output_data%stemp_error_offset, &
@@ -483,7 +489,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cth_error, &
            verbose, &
            long_name     = 'cloud top height uncertainty', &
-           standard_name = 'cloud_top_altitude uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cth_error_scale, &
            add_offset    = output_data%cth_error_offset, &
@@ -503,7 +509,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cth_corrected, &
            verbose, &
            long_name     = 'corrected cloud top height', &
-           standard_name = 'corrected cloud_top_altitude', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cth_scale, &
            add_offset    = output_data%cth_offset, &
@@ -523,7 +529,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cth_corrected_error, &
            verbose, &
            long_name     = 'corrected cloud top height uncertainty', &
-           standard_name = 'corrected cloud_top_altitude uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cth_error_scale, &
            add_offset    = output_data%cth_error_offset, &
@@ -563,7 +569,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_ctt_error, &
            verbose, &
            long_name     = 'cloud top temperature uncertainty', &
-           standard_name = 'air_temperature_at_cloud_top uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%ctt_error_scale, &
            add_offset    = output_data%ctt_error_offset, &
@@ -603,7 +609,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cwp_error, &
            verbose, &
            long_name     = 'cloud liquid water path uncertainty', &
-           standard_name = 'atmosphere_mass_content_of_cloud_liquid_water uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cwp_error_scale, &
            add_offset    = output_data%cwp_error_offset, &
@@ -630,12 +636,13 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cloud_albedo(i), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
-           standard_name = trim(adjustl(input_dummy2)), &
+           standard_name = 'cloud_albedo', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cloud_albedo_scale, &
            add_offset    = output_data%cloud_albedo_offset, &
            valid_min     = output_data%cloud_albedo_vmin, &
            valid_max     = output_data%cloud_albedo_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
    end do
@@ -658,12 +665,13 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cloud_albedo_error(i), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
-           standard_name = trim(adjustl(input_dummy2)), &
+           standard_name = 'cloud_albedo', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cloud_albedo_error_scale, &
            add_offset    = output_data%cloud_albedo_error_offset, &
            valid_min     = output_data%cloud_albedo_error_vmin, &
            valid_max     = output_data%cloud_albedo_error_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
    end do
@@ -679,14 +687,15 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_convergence, &
            verbose, &
            long_name     = 'retrieval convergence flag', &
-           standard_name = 'retrieval_convergence_flag', &
+           standard_name = '', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%convergence_scale, &
            add_offset    = output_data%convergence_offset, &
            valid_min     = output_data%convergence_vmin, &
            valid_max     = output_data%convergence_vmax, &
-           flag_values   = '0b, 1b', &
-           flag_meanings = 'yes, no', &
+           units         = '1', &
+           flag_values   = '0b 1b', &
+           flag_meanings = 'yes no', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -702,12 +711,13 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_niter, &
            verbose, &
            long_name     = 'number of retrieval iterations', &
-           standard_name = 'number_of_retrieval_iterations', &
+           standard_name = '', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%niter_scale, &
            add_offset    = output_data%niter_offset, &
            valid_min     = output_data%niter_vmin, &
            valid_max     = output_data%niter_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -721,12 +731,13 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_costja, &
            verbose, &
            long_name     = 'a priori cost at solution', &
-           standard_name = 'a_priori_cost_at_solution', &
+           standard_name = '', &
            fill_value    = sreal_fill_value, &
            scale_factor  = output_data%costja_scale, &
            add_offset    = output_data%costja_offset, &
            valid_min     = output_data%costja_vmin, &
            valid_max     = output_data%costja_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -740,18 +751,21 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_costjm, &
            verbose, &
            long_name     = 'measurement cost at solution', &
-           standard_name = 'measurement_cost_at_solution', &
+           standard_name = '', &
            fill_value    = sreal_fill_value, &
            scale_factor  = output_data%costjm_scale, &
            add_offset    = output_data%costjm_offset, &
            valid_min     = output_data%costjm_vmin, &
            valid_max     = output_data%costjm_vmax, &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
+
+
    call nc_def_var_short_packed_short( &
            ncid, &
            dims_var, &
@@ -759,14 +773,15 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_qcflag, &
            verbose, &
            long_name     = 'quality control flag', &
-           standard_name = 'quality_control_flag', &
+           standard_name = '', &
            fill_value    = int(-1,kind=sint), &
            scale_factor  = output_data%qcflag_scale, &
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-           flag_masks    = '1s, 2s, ... 2^(n state variables plus one)', &
-           flag_meanings = trim(adjustl(qc_flag_meanings)), &
+	   flag_values   ='1b  2b  3b 4b 5b', & 
+           flag_meanings = trim(adjustl(input_dummy2)), &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -786,8 +801,9 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            add_offset    = output_data%lsflag_offset, &
            valid_min     = output_data%lsflag_vmin, &
            valid_max     = output_data%lsflag_vmax, &
-           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b', &
-           flag_meanings = 'sea, land, sunglint, snow, ice, snow_and_ice', &
+	   units         = '1' , &
+           flag_values   = '0b  1b  2b  3b  4b  5b ', &
+           flag_meanings = 'sea  land  sunglint  snow  ice  snow_and_ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -807,35 +823,36 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            add_offset    = output_data%lusflag_offset, &
            valid_min     = output_data%lusflag_vmin, &
            valid_max     = output_data%lusflag_vmax, &
-           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b, 10b, ' // &
-                           '11b, 12b, 13b, 14b, 15b, 16b, 17b, 18b, 19b, ' // &
-                           '20b, 21b, 22b, 23b, 24b', &
-           flag_meanings ='1:Urban and Built-Up Land, ' // &
-                          '2:Dryland Cropland and Pasture, ' // &
-                          '3:Irrigated, Cropland and Pasture, ' // &
-                          '4:Mixed Dryland/Irrigated Cropland and Pasture, ' // &
+	   units         = '1' , &
+           flag_values   = '0b 1b 2b 3b 4b 5b 6b 7b 8b 9b 10b ' // &
+                           '11b 12b 13b 14b 15b 16b 17b 18b 19b ' // &
+                           '20b 21b 22b 23b 24b', &
+           flag_meanings ='1:Urban_and_Built-Up_Land, ' // &
+                          '2:Dryland_Cropland_and_Pasture, ' // &
+                          '3:Irrigated_Cropland_and_Pasture, ' // &
+                          '4:Mixed_Dryland/Irrigated_Cropland_and_Pasture, ' // &
                           '5:Cropland/Grassland Mosaic, ' // &
                           '6:Cropland/Woodland Mosaic, ' // &
                           '7:Grassland, ' // &
                           '8:Shrubland, ' // &
                           '9:Mixed Shrubland/Grassland, ' // &
                           '10:Savanna, ' // &
-                          '11:Deciduous Broadleaf Forest, ' // &
-                          '12:Deciduous Needleleaf Forest, ' // &
-                          '13:Evergreen Broadleaf Forest, ' // &
-                          '14:Evergreen Needleleaf Forest, ' // &
-                          '15:Mixed Forest, ' // &
-                          '16:Water Bodies, ' // &
-                          '17:Herbaceous Wetland, ' // &
-                          '18:Wooded Wetland, ' // &
-                          '19:Barren or Sparsely Vegetated, ' // &
-                          '20:Herbaceous Tundra, ' // &
-                          '21:Wooded Tundra, ' // &
-                          '22:Mixed Tundra, ' // &
-                          '23:Bare Ground Tundra, ' // &
-                          '24:Snow or Ice, ' // &
-                          '99:Interrupted Areas, ' // &
-                          '100:Missing Data', &
+                          '11:Deciduous_Broadleaf_Forest, ' // &
+                          '12:Deciduous_Needleleaf_Forest, ' // &
+                          '13:Evergreen_Broadleaf_Forest, ' // &
+                          '14:Evergreen_Needleleaf_Forest, ' // &
+                          '15:Mixed_Forest, ' // &
+                          '16:Water_Bodies, ' // &
+                          '17:Herbaceous_Wetland, ' // &
+                          '18:Wooded_Wetland, ' // &
+                          '19:Barren_or_Sparsely_Vegetated, ' // &
+                          '20:Herbaceous_Tundra, ' // &
+                          '21:Wooded_Tundra, ' // &
+                          '22:Mixed_Tundra, ' // &
+                          '23:Bare_Ground_Tundra, ' // &
+                          '24:Snow_or_Ice, ' // &
+                          '99:Interrupted_Areas, ' // &
+                          '100:Missing_Data', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -849,12 +866,13 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_dem, &
            verbose, &
            long_name     = 'Digital elevation model', &
-           standard_name = 'dem', &
+           standard_name = '', &
            fill_value    = int(-1,kind=sint), &
            scale_factor  = output_data%dem_scale, &
            add_offset    = output_data%dem_offset, &
            valid_min     = output_data%dem_vmin, &
            valid_max     = output_data%dem_vmax, &
+	   units         = '1' , &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -868,14 +886,15 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_nisemask, &
            verbose, &
            long_name     = 'NISE snow/ice mask', &
-           standard_name = 'NISE_mask', &
+           standard_name = '', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%nisemask_scale, &
            add_offset    = output_data%nisemask_offset, &
            valid_min     = output_data%nisemask_vmin, &
            valid_max     = output_data%nisemask_vmax, &
-           flag_values   = '0b, 1b', &
-           flag_meanings = 'snow/ice free, snow/ice', &
+	   units         = '1' , &
+           flag_values   = '0b 1b', &
+           flag_meanings = 'snow_ice_free, snow_ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -889,29 +908,30 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_illum, &
            verbose, &
            long_name     = 'illumination flag', &
-           standard_name = 'illumination_flag', &
+           standard_name = '', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%illum_scale, &
            add_offset    = output_data%illum_offset, &
            valid_min     = output_data%illum_vmin, &
            valid_max     = output_data%illum_vmax, &
-           flag_values   ='1b, 2b, 3b', &
-           flag_meanings ='Day, Twilight, Night', &
+	   units         = '1' , &
+           flag_values   ='1b 2b 3b', &
+           flag_meanings ='Day Twilight Night', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! cldtype (ie. Pavolonis phase)
    !----------------------------------------------------------------------------
-   input_dummy='clear, ' // &
-               'N/A, ' // &
-               'fog, ' // &
-               'water, ' // &
-               'supercooled, ' // &
-               'mixed, ' // &
-               'opaque_ice, ' // &
-               'cirrus, ' // &
-               'overlap, ' // &
+   input_dummy='clear ' // &
+               'N/A ' // &
+               'fog ' // &
+               'water ' // &
+               'supercooled ' // &
+               'mixed ' // &
+               'opaque_ice ' // &
+               'cirrus ' // &
+               'overlap ' // &
                'prob_opaque_ice'
 
    call nc_def_var_byte_packed_byte( &
@@ -921,13 +941,14 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cldtype, &
            verbose, &
            long_name     = 'Pavolonis cloud type', &
-           standard_name = 'Pavolonis_cloud_type', &
+           standard_name = '', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%cldtype_scale, &
            add_offset    = output_data%cldtype_offset, &
            valid_min     = output_data%cldtype_vmin, &
            valid_max     = output_data%cldtype_vmax, &
-           flag_values   = '0b, 1b, 2b, 3b, 4b, 5b, 6b, 7b, 8b, 9b', &
+	   units         = '1' , &
+           flag_values   = '0b 1b 2b 3b 4b 5b 6b 7b 8b 9b', &
            flag_meanings = trim(adjustl(input_dummy)), &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -943,14 +964,15 @@ if (do_cldmask) then
            output_data%vid_cldmask, &
            verbose, &
            long_name     = 'Neural net cloud mask (radiance based)', &
-           standard_name = 'Neural_net_cloud_mask', &
+           standard_name = '', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%cldmask_scale, &
            add_offset    = output_data%cldmask_offset, &
            valid_min     = output_data%cldmask_vmin, &
            valid_max     = output_data%cldmask_vmax, &
-           flag_values   = '0b, 1b', &
-           flag_meanings = 'clear, cloudy', &
+	   units         = '1' , &
+           flag_values   = '0b 1b', &
+           flag_meanings = 'clear cloudy', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
@@ -965,12 +987,13 @@ if (do_cldmask_uncertainty) then
            output_data%vid_cldmask_uncertainty, &
            verbose, &
            long_name     = 'Neural net cloud mask (radiance based) uncertainty', &
-           standard_name = 'Neural_net_cloud_mask uncertainty', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cldmask_uncertainty_scale, &
            add_offset    = output_data%cldmask_uncertainty_offset, &
            valid_min     = output_data%cldmask_uncertainty_vmin, &
            valid_max     = output_data%cldmask_uncertainty_vmax, &
+	   units         = '1' , &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
@@ -985,14 +1008,15 @@ if (do_cloudmask_pre) then
            output_data%vid_cldmask, &
            verbose, &
            long_name     = 'Neural net cloud mask (radiance based)', &
-           standard_name = 'Neural_net_cloud_mask', &
+           standard_name = '', &
            fill_value    = byte_fill_value, &
            scale_factor  = output_data%cldmask_scale, &
            add_offset    = output_data%cldmask_offset, &
            valid_min     = output_data%cldmask_vmin, &
            valid_max     = output_data%cldmask_vmax, &
-           flag_values   = '0b, 1b', &
-           flag_meanings = 'clear, cloudy', &
+           flag_values   = '0b 1b', &
+           flag_meanings = 'clear cloudy', &
+	   units         = '1' , &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
@@ -1006,12 +1030,13 @@ end if
            output_data%vid_cccot_pre, &
            verbose, &
            long_name     = 'neural network cloud optical thickness', &
-           standard_name = 'NN_CCCOT', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cccot_pre_scale, &
            add_offset    = output_data%cccot_pre_offset, &
            valid_min     = output_data%cccot_pre_vmin, &
            valid_max     = output_data%cccot_pre_vmax, &
+	   units         = '1' , &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -1031,8 +1056,9 @@ end if
            add_offset    = output_data%phase_offset, &
            valid_min     = output_data%phase_vmin, &
            valid_max     = output_data%phase_vmax, &
-           flag_values   = '0b, 1b, 2b', &
-           flag_meanings = 'clear/unknown, liquid, ice', &
+           flag_values   = '0b 1b 2b', &
+           flag_meanings = 'clear/unknown liquid ice', &
+	   units         = '1' , &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -1053,8 +1079,9 @@ if (do_phase_pavolonis) then
            add_offset    = output_data%phase_pavolonis_offset, &
            valid_min     = output_data%phase_pavolonis_vmin, &
            valid_max     = output_data%phase_pavolonis_vmax, &
-           flag_values   = '0b, 1b, 2b', &
-           flag_meanings = 'clear/unknown, liquid, ice', &
+	   units         = '1' , &
+           flag_values   = '0b 1b 2b', &
+           flag_meanings = 'clear/unknown liquid ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
