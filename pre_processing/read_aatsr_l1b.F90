@@ -64,17 +64,21 @@
 !    the data as in the 3rd reprocessing (V2.1) data.
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
-! 2015/09/15, CP: Adapted to read ATSR-2 data
+! 2015/09/15, CP: Adapted to read ATSR-2 data NB a bug currently exists such that
+! ATSR-2 drift correction idicator does not work so the code currently assumes we 
+!are using the latest calibrated version of AATSR data v 2.1/3.0
+! 2015/11/15 CP corrects implementataion of 12um non linearity correction.
 !
 ! $Id$
 !
-! Bugs:
+! Bugs: current ATSR-2 needs to be hardwired to true drift correction as drift flag does not work
+! The 12um non linearity correction
 ! None known.
 !-------------------------------------------------------------------------------
 
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
      imager_measurements, imager_angles, imager_flags, imager_time, &
-     channel_info,platform, verbose)
+     channel_info, platform, sensor, verbose)
 
    use iso_c_binding ! technically Fortran 2003
    use aatsr_corrections
@@ -128,6 +132,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(imager_time_s),         intent(inout) :: imager_time
    type(channel_info_s),        intent(in)    :: channel_info
    character(len=platform_length), intent(in) :: platform
+   character(len=sensor_length),   intent(in)    :: sensor
 
    logical,                     intent(in)    :: verbose
 
@@ -317,6 +322,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    l1b_file_c = trim(l1b_file)//C_NULL_CHAR
    if (verbose) write(*,*) 'Calling C function READ_AATSR_ORBIT with file ', &
         trim(l1b_file)
+write(*,*)' is_lut_drift_corrected--', is_lut_drift_corrected
    call read_aatsr_orbit(l1b_file_c, verb, nch, ch, view, &
         nx, ny, startx, starty, stat, lat, lon, &
         nsza, niza, nsaz, nraz, nflg, nqul, nday, &
@@ -328,10 +334,18 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
         start_date, gc1_file, vc1_file, is_lut_drift_corrected)
 
    if (verbose) write(*,*) 'C function returned with status ', stat
-   if (verbose) write(*,*) 'is_lut_drift_corrected: ', is_lut_drift_corrected
 
-   ! temporary for now
-   is_lut_drift_corrected = .true.
+write(*,*)' is_lut_drift_corrected', is_lut_drift_corrected
+!temporary for now
+ if (trim(adjustl(sensor)) .eq. 'ATSR2') then
+is_lut_drift_corrected=.true.
+
+endif
+
+
+write(*,*)' is_lut_drift_corrected', is_lut_drift_corrected
+write(*,*)'ch sw drift correction before',1,imager_measurements%data(:,1,1)
+write(*,*)' afteris_lut_drift_corrected', is_lut_drift_corrected
 
    ! convert elevation angles read into zenith angles
    imager_angles%solzen = 90.0 - imager_angles%solzen
@@ -389,6 +403,16 @@ if (.not. is_lut_drift_corrected) then
          end if
       end if
 
+
+   end do ! channel info
+end if ! drift corrected
+
+!
+!This correction need to be applied to AATSR version 2.1/3.0
+!NB might need to remove this in future versions
+ if (trim(adjustl(sensor)) .eq. 'AATSR') then
+   do i=1,channel_info%nchannels_total
+      j=channel_info%channel_ids_instr(i)
       ! 12um nonlinearity_correction
       if (j .eq. 7) then
          do ii=imager_geolocation%startx,imager_geolocation%endx
@@ -399,9 +423,12 @@ if (.not. is_lut_drift_corrected) then
                     imager_measurements%data(ii,jj,i))
             end do
          end do
-      end if
-   end do
-else
+
+      end if ! jeq 7
+    enddo 
+ endif
+
+   if (is_lut_drift_corrected) then
    do i=1,channel_info%nchannels_total
       j=channel_info%channel_ids_instr(i)
       if (j.le.4) then

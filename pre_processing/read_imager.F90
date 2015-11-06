@@ -94,9 +94,10 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
 
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
-      call read_aatsr_l1b(path_to_l1b_file,path_to_aatsr_drift_table, &
-           imager_geolocation,imager_measurements,imager_angles, &
-           imager_flags,imager_time,channel_info,platform,verbose)
+
+      call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
+           imager_geolocation, imager_measurements, imager_angles, &
+           imager_flags,imager_time, channel_info,platform, sensor,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
