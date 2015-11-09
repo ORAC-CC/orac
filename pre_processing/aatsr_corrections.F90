@@ -406,7 +406,7 @@ end subroutine aatsr_read_drift_table
 ! Description and Algorithm details:
 ! Dave Smith: Empirical Nonlinearity Correction for 12um Channel, RAL Space
 ! AATSR Technical note, Doc No: PO-TN-RAL-AT-0562, Issue: 1.1, Date: 27-Feb-2014.
-!
+! needs to be applied to version 2.1/3.0 of aatsr
 ! Arguments:
 ! Name    Type  In/Out/Both Description
 ! ------------------------------------------------------------------------------
