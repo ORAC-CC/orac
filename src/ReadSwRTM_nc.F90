@@ -70,6 +70,7 @@
 !    equal to 0.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/08/10, CP: added in ATSR-2 capability
 !
 ! $Id$
 !
@@ -117,7 +118,7 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
                  Ctrl%FID%LWRTM
       stop error_stop_code
    end if
-   if (sensor =='AATSR') then
+   if (sensor =='AATSR' .or. sensor =='ATSR2' ) then
       instname=trim(adjustl(sensor))
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))

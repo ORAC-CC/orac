@@ -100,6 +100,7 @@
 ! 2015/08/19, AP: Extensive tidying using the switch function. Tidying of Ctrl.
 !    Eliminated XI as not meaningful.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2015/08/08 CPadded in ATSR-2 capability
 !
 ! $Id$
 !
@@ -176,7 +177,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       drifile = ''
       call get_command_argument(1, drifile)
    else
-      call get_environment_variable("ORAC_TEXTIN", drifile)
+      call get_environment_variable("CC4CL_TEXTIN", drifile)
    end if
 #endif
 
@@ -512,7 +513,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !---------------- CTRL INDEXING CHANNELS ---------------
    ! See Ctrl.F90 for descriptions of the variables initialized below.
-   if (Ctrl%InstName(1:5) .eq. 'AATSR') then
+   if (Ctrl%InstName(1:5) .eq. 'AATSR' .or. Ctrl%InstName(1:5) .eq. 'ATSR2' ) then
       allocate(Ctrl%ReChans(2))
       Ctrl%ReChans = (/ 5, 4 /)
 

@@ -82,6 +82,7 @@
 ! 2015/04/27, AP: Moved PRTM code into its own routine.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/08/08, CP: added in ATSR2 capability
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 !
 ! $Id$
@@ -126,7 +127,7 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
                  Ctrl%FID%LWRTM
       stop error_stop_code
    end if
-   if (sensor =='AATSR') then
+   if (sensor =='AATSR' .or. sensor =='ATSR2' ) then
       instname=trim(adjustl(sensor))
    else
       instname=trim(adjustl(sensor))//'-'//trim(adjustl(platform))
