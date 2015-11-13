@@ -90,7 +90,7 @@ foreach $source_file (@source_file_list) {
 		die("Unable to open source file: $source_file");
 	while (<FILE>) {
 		/^\s*module\s+([^\s!]+)/i &&
-			($module_to_mod_base{lc($1)} = $source_file) =~ s/\.($ext_regex_f90)//;
+			($module_to_mod_base{lc($1)} = $source_file) =~ s/\.($ext_regex_f90)$//;
 	}
 	close(FILE);
 }
@@ -98,7 +98,7 @@ foreach $source_file (@source_file_list) {
 # Write dependencies for each source file to standard output
 foreach $source_file (@source_file_list) {
 	$object_file = $source_file;
-	$object_file =~ s/\.($ext_regex_fxx)/.o/;
+	$object_file =~ s/\.($ext_regex_fxx)$/.o/;
 
 	get_file_depencies($source_file, $source_file);
 
@@ -109,7 +109,7 @@ foreach $source_file (@source_file_list) {
 		@dependencies2 = &uniq(sort(@dependencies2));
 
 		$object_file = $source_file;
-		$object_file =~ s/\.($ext_regex_fxx)/.o/;
+		$object_file =~ s/\.($ext_regex_fxx)$/.o/;
 
 		print "$objects_path$object_file:";
 
