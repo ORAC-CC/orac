@@ -10,12 +10,12 @@
 # It is assumed that dependencies on source files of the following form are
 # implicitly defined as is usually the case:
 #
-#	file.o: file.F90
+#	file.o: file.f90
 #
-# Usage: make_f90_depend.pl [object files] [include files]
+# Usage: make_depend.pl [object files] [include files]
 #
 # ... where object files have a '.o' extension and include files have a '.inc'
-# or .F90 extension.
+# extension.
 #
 # History
 # 2013/12/04, Greg McGarragh: Original version
@@ -29,12 +29,17 @@
 # 2014/07/27, Greg McGarragh: Removed use of "defined" which is depricated in
 #    Perl 5, version 18.  Added "use strict" and implemented explicit variable
 #    declarations required by use strict.  Finally, some rearranging.
+# 2015/11/13, Greg McGarragh: Added support for includes in .f, .F, .for, .FOR,
+#    and .f90 files and added support for modules in .f90 files.
 #
 #*******************************************************************************
 use strict;
 
 use File::Basename;
 
+my $ext_regex_f77   = "f|for";
+my $ext_regex_f90   = "f90|F90";
+my $ext_regex_fxx   = "$ext_regex_f77|$ext_regex_f90";
 my $objects_path    = "\$(OBJS)/";	# Path where the object files are to be located
 my $includes_path   = "";		# Path where the include files are to be located
 my $indent_length   = 8;
@@ -56,15 +61,25 @@ my %module_to_mod_base;
 foreach (@ARGV) {
 	if    (index($_, "\.o")   != -1) { push(@source_file_list,  $_); }
 	elsif (index($_, "\.inc") != -1) { push(@include_file_list, $_); }
-	elsif (index($_, "\.F90") != -1) { push(@include_file_list, $_); }
 }
 
-# Change from object to source extensions and strip paths from the object and
-# include files
+# Strip paths from the object files and change from object to source extensions
+opendir dir, '.';
+my @dir_list = readdir dir;
+closedir dir;
+
 foreach (@source_file_list) {
 	s{.*/}{};
-	s/\.o/.F90/;
+	s/\.o//;
+	my $regex = "^$_\.($ext_regex_fxx)";
+	my @filelist = grep(/$regex/, @dir_list);
+	if (scalar @filelist > 1) {
+		die("ERROR: More than one extension for base name: $_");
+	}
+	$_ = $filelist[0];
 }
+
+# Strip paths from the include files
 foreach (@include_file_list) {
 	s/(.*)\/.*$/$1/
 }
@@ -75,7 +90,7 @@ foreach $source_file (@source_file_list) {
 		die("Unable to open source file: $source_file");
 	while (<FILE>) {
 		/^\s*module\s+([^\s!]+)/i &&
-			($module_to_mod_base{lc($1)} = $source_file) =~ s/\.F90//;
+			($module_to_mod_base{lc($1)} = $source_file) =~ s/\.($ext_regex_f90)//;
 	}
 	close(FILE);
 }
@@ -83,7 +98,7 @@ foreach $source_file (@source_file_list) {
 # Write dependencies for each source file to standard output
 foreach $source_file (@source_file_list) {
 	$object_file = $source_file;
-	$object_file =~ s/\.F90/.o/;
+	$object_file =~ s/\.($ext_regex_fxx)/.o/;
 
 	get_file_depencies($source_file, $source_file);
 
@@ -94,7 +109,7 @@ foreach $source_file (@source_file_list) {
 		@dependencies2 = &uniq(sort(@dependencies2));
 
 		$object_file = $source_file;
-		$object_file =~ s/\.F90/.o/;
+		$object_file =~ s/\.($ext_regex_fxx)/.o/;
 
 		print "$objects_path$object_file:";
 
@@ -164,7 +179,7 @@ sub get_file_depencies {
 
 		# If the module is local include it as a dependency
 		foreach (@mod_bases) {
-			if ("$_.F90" ~~ @source_file_list) {
+			if ("$_.f90" ~~ @source_file_list or "$_.F90" ~~ @source_file_list) {
 				push(@dependencies, "$objects_path$_.o");
 			}
 		}
