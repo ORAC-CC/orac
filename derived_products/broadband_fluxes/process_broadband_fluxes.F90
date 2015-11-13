@@ -19,6 +19,7 @@
 !
 ! Bugs:
 ! None known.
+!
 ! example
 ! bsub -q lotus -W 24:00 -R "order[-r15s:pg]" -o bugsrad.out -e bugsrad.err -J BUGSrad 
 !
@@ -26,11 +27,12 @@
 !
 ! MODIS
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.bugsrad.nc
-
+!
 ! AATSR
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc 182 13487
-
+!
 !-------------------------------------------------------------------------------
+
 program process_broadband_fluxes
 
    use interpol
@@ -67,7 +69,7 @@ program process_broadband_fluxes
    real, allocatable :: Q(:,:,:)  ! Humidity - grid
    real, allocatable :: O3(:,:,:) ! Ozone - grid
    real, allocatable :: inP(:)  ! Pressure - interpolated
-   real, allocatable :: inT(:)  ! Temperature - interpolated
+   real, allocatable :: inT_(:)  ! Temperature - interpolated
    real, allocatable :: inH(:)  ! Height - interpolated
    real, allocatable :: inQ(:)  ! Humidity - interpolated
    real, allocatable :: inO3(:) ! Ozone - interpolated
@@ -76,14 +78,14 @@ program process_broadband_fluxes
    real, allocatable :: tlon_prtm(:)  ! Longitude values         
    real, allocatable :: tlat_prtm(:)  ! Latitude values
    real, allocatable :: dummy1d(:)
-   integer(kind=lint)  :: xdim_prtm,ydim_prtm,levdim_prtm !PRTM dimensions
-   integer(kind=lint)  :: xN,yN !Satellite 1-km dimensions
+   integer(kind=lint) :: xdim_prtm,ydim_prtm,levdim_prtm !PRTM dimensions
+   integer(kind=lint) :: xN,yN !Satellite 1-km dimensions
    integer, dimension(NLS) :: mask_vres !to match PRTM vertical resolution to BUGSrad
 
    !Albedo FILE
    real, allocatable :: rho_dd(:,:,:)  ! Albedo
    real, allocatable :: alb_abs_ch_numbers(:) !channels used in albedo product
-   real ch1ID,ch2ID,ch3ID,ch4ID,ch5ID,ch6ID
+   integer :: ch1ID,ch2ID,ch3ID,ch4ID,ch5ID,ch6ID
    real, parameter :: ch1WT=0.65,ch2WT=0.15,ch3WT=0.05,ch4WT=0.03,ch5WT=0.015,ch6WT=0.005
    integer(kind=lint) :: nc_alb
 
@@ -504,7 +506,7 @@ program process_broadband_fluxes
 
    !Interpolated PRTM arrays
    allocate(inP(levdim_prtm))
-   allocate(inT(levdim_prtm))
+   allocate(inT_(levdim_prtm))
    allocate(inH(levdim_prtm))
    allocate(inQ(levdim_prtm))
    allocate(inO3(levdim_prtm))
@@ -601,7 +603,7 @@ program process_broadband_fluxes
       !meteorology
       call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
                               xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
-                              LON(i,j),LAT(i,j),inP,inT,inH,inQ,inO3)
+                              LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
 
       !use to debug current interpolation scheme
       !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
@@ -609,7 +611,7 @@ program process_broadband_fluxes
        !print*,tlonid,tlatid
        !set value
       ! inH(:)= H(:,tlonid,tlatid)
-      ! inT(:)= T(:,tlonid,tlatid)
+      ! inT_(:)= T(:,tlonid,tlatid)
       ! inP(:)= P(:,tlonid,tlatid)
       ! inQ(:)= Q(:,tlonid,tlatid)
       ! inO3(:) = O3(:,tlonid,tlatid)
@@ -618,7 +620,7 @@ program process_broadband_fluxes
       !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
       pxZ = inH(mask_vres)
       pxP = inP(mask_vres)
-      pxT = inT(mask_vres)
+      pxT = inT_(mask_vres)
       pxQ = inQ(mask_vres)
       pxO3 = inO3(mask_vres)
 
@@ -773,8 +775,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'degrees', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -794,8 +796,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'degrees', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -814,8 +816,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'degrees', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -834,8 +836,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -854,8 +856,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -874,8 +876,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -896,8 +898,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -916,8 +918,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -936,8 +938,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -957,8 +959,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -979,8 +981,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -999,8 +1001,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1020,8 +1022,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1040,8 +1042,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1060,8 +1062,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1081,8 +1083,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1103,8 +1105,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1124,8 +1126,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1144,8 +1146,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = 0, &
-               valid_max     = 1, &
+               valid_min     = int(0, sint), &
+               valid_max     = int(1, sint), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)

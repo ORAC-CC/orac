@@ -4,7 +4,7 @@ subroutine midlatsum1(z,P,T,rh2o,ro3,NLS)
 
    !Define arguments
    integer i
-   real NLS
+   integer NLS
    real zz(31),PP(31),TT(31),rrho(31),rrh20(31),rrO3(31)
    real z(NLS),P(NLS),T(NLS),rh2o(NLS),ro3(NLS)
 

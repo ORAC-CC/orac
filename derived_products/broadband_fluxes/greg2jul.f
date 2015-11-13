@@ -58,8 +58,7 @@ c
 
       subroutine modjulianday(day, year, month, fracday, jday)
 c
-c      calculate the julian day from day, month, year and fraction of a
-day
+c      calculate the julian day from day, month, year and fraction of a day
 c 
       implicit none
 c     

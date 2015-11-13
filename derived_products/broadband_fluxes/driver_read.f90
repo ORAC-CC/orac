@@ -118,9 +118,9 @@
       character(LEN=1)   ::  l0
       character(LEN=200) ::  line
 
-      real, parameter :: NL = 30
-      real, parameter :: NLS = NL+1
-      real, dimension(NLS) :: pxZ, pxP, pxT, pxQ, pxO3
+      integer, parameter :: NL = 30
+      integer, parameter :: NLS = NL+1
+      integer, dimension(NLS) :: pxZ, pxP, pxT, pxQ, pxO3
 
       real LWP, CWC
 
