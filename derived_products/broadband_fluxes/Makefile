@@ -71,7 +71,7 @@ libprocess_broadband_fluxes.a: $(ORAC_OBJ) Makefile
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
+	@../../tools/make_depend.pl $(ORAC_OBJ) $(ORAC_OBJ_MAIN) > dependencies.inc
 
 # Tidy up .cpp files produced by C pre-compiler when compilation errors occur
 # (screws up later attempts to compile - forces C++ compiler to be run)
