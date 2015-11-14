@@ -5,8 +5,7 @@
 ! Finds the location of the pair of values in the set xx that bound x
 !
 ! Description and Algorithm details:
-! This routine is the linear equivalent of bcuint.f90 from Numerical Recipes in
-! Fortran 90
+! From Numerical Recipes in Fortran 90 [Press, Flannery].
 !
 ! Arguments:
 ! Name   Type       In/Out/Both Description

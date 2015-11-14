@@ -64,10 +64,10 @@
 !    the data as in the 3rd reprocessing (V2.1) data.
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
 ! 2015/01/15, AP: Eliminate channel_ids_abs.
-! 2015/09/15, CP: Adapted to read ATSR-2 data NB a bug currently exists such that
-! ATSR-2 drift correction idicator does not work so the code currently assumes we 
-!are using the latest calibrated version of AATSR data v 2.1/3.0
-! 2015/11/15 CP corrects implementataion of 12um non linearity correction.
+! 2015/09/15, CP: Adapted to read ATSR-2 data. NB a bug currently exists such
+!    that ATSR-2 drift correction idicator does not work so the code currently
+!    assumes we  are using the latest calibrated version of AATSR data v 2.1/3.0
+! 2015/11/15, CP: Corrects implementataion of 12um non linearity correction.
 !
 ! $Id$
 !
@@ -322,7 +322,6 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    l1b_file_c = trim(l1b_file)//C_NULL_CHAR
    if (verbose) write(*,*) 'Calling C function READ_AATSR_ORBIT with file ', &
         trim(l1b_file)
-write(*,*)' is_lut_drift_corrected--', is_lut_drift_corrected
    call read_aatsr_orbit(l1b_file_c, verb, nch, ch, view, &
         nx, ny, startx, starty, stat, lat, lon, &
         nsza, niza, nsaz, nraz, nflg, nqul, nday, &
@@ -334,18 +333,12 @@ write(*,*)' is_lut_drift_corrected--', is_lut_drift_corrected
         start_date, gc1_file, vc1_file, is_lut_drift_corrected)
 
    if (verbose) write(*,*) 'C function returned with status ', stat
+   if (verbose) write(*,*) 'is_lut_drift_corrected: ', is_lut_drift_corrected
 
-write(*,*)' is_lut_drift_corrected', is_lut_drift_corrected
-!temporary for now
- if (trim(adjustl(sensor)) .eq. 'ATSR2') then
-is_lut_drift_corrected=.true.
-
-endif
-
-
-write(*,*)' is_lut_drift_corrected', is_lut_drift_corrected
-write(*,*)'ch sw drift correction before',1,imager_measurements%data(:,1,1)
-write(*,*)' afteris_lut_drift_corrected', is_lut_drift_corrected
+   ! temporary for now
+   if (trim(adjustl(sensor)) .eq. 'ATSR2') then
+      is_lut_drift_corrected = .true.
+   endif
 
    ! convert elevation angles read into zenith angles
    imager_angles%solzen = 90.0 - imager_angles%solzen
@@ -401,34 +394,30 @@ if (.not. is_lut_drift_corrected) then
                  drift_var*imager_measurements%data(:,:,i) &
                  *imager_measurements%data(:,:,i)) / new_drift
          end if
-      end if
-
-
-   end do ! channel info
+      end if ! j.le.4
+   end do ! channel info%nchannels_total
 end if ! drift corrected
 
-!
-!This correction need to be applied to AATSR version 2.1/3.0
-!NB might need to remove this in future versions
- if (trim(adjustl(sensor)) .eq. 'AATSR') then
-   do i=1,channel_info%nchannels_total
-      j=channel_info%channel_ids_instr(i)
-      ! 12um nonlinearity_correction
-      if (j .eq. 7) then
-         do ii=imager_geolocation%startx,imager_geolocation%endx
-            do jj=1,imager_geolocation%ny
-               imager_measurements%data(ii,jj,i) = &
-                    imager_measurements%data(ii,jj,i) - &
-                    aatsr_12um_nonlinearity_correction( &
-                    imager_measurements%data(ii,jj,i))
+   ! This correction need to be applied to AATSR version 2.1/3.0
+   ! NB might need to remove this in future versions
+   if (trim(adjustl(sensor)) .eq. 'AATSR') then
+      do i=1,channel_info%nchannels_total
+         j=channel_info%channel_ids_instr(i)
+         ! 12um nonlinearity_correction
+         if (j .eq. 7) then
+            do ii=imager_geolocation%startx,imager_geolocation%endx
+               do jj=1,imager_geolocation%ny
+                  imager_measurements%data(ii,jj,i) = &
+                       imager_measurements%data(ii,jj,i) - &
+                       aatsr_12um_nonlinearity_correction( &
+                       imager_measurements%data(ii,jj,i))
+               end do
             end do
-         end do
+         end if
+      enddo
+   endif
 
-      end if ! jeq 7
-    enddo 
- endif
-
-   if (is_lut_drift_corrected) then
+if (is_lut_drift_corrected) then
    do i=1,channel_info%nchannels_total
       j=channel_info%channel_ids_instr(i)
       if (j.le.4) then

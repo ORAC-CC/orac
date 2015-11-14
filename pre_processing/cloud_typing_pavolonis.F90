@@ -44,10 +44,8 @@
 !    occurring when using OpenMP.
 ! 2015/07/03, OS: Added cldmask_uncertainty; added coefficients to calculate
 !    NOAA19 Ch3.7 reflectance + slight update for other platforms
-! 	 2015/07/27, AP: Replaced sym structure with parameters.
-
-
-
+! 2015/07/27, AP: Replaced sym structure with parameters.
+!
 ! $Id$
 !
 ! Bugs:
@@ -580,24 +578,24 @@ contains
           endif
 
           if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
-          ! changed min value of 3.7 for AATSR
-          if ( imager_measurements%DATA(i,j,ch3) .ge. 0 .and. &
-               imager_measurements%DATA(i,j,ch4) .lt. 100) then
+             ! changed min value of 3.7 for AATSR
+             if ( imager_measurements%DATA(i,j,ch3) .ge. 0 .and. &
+                  imager_measurements%DATA(i,j,ch4) .lt. 100) then
 
-             ! Ch3a is used if Ch3b is not avail.
-             ch3a_on_avhrr_flag = YES
+                ! Ch3a is used if Ch3b is not avail.
+                ch3a_on_avhrr_flag = YES
 
-          elseif ( imager_measurements%DATA(i,j,ch4) .ge. 100 ) then
+             elseif ( imager_measurements%DATA(i,j,ch4) .ge. 100 ) then
 
-             ! Ch3b is used if avail.
-             ch3a_on_avhrr_flag = NO
+                ! Ch3b is used if avail.
+                ch3a_on_avhrr_flag = NO
 
-          else
+             else
 
-             ! neither Ch3a nor Ch3b avail.
-             ch3a_on_avhrr_flag = INEXISTENT
+                ! neither Ch3a nor Ch3b avail.
+                ch3a_on_avhrr_flag = INEXISTENT
 
-          endif
+             endif
 	  endif
 
 
@@ -624,8 +622,7 @@ contains
 
 
 
- ! check is ATSR 11um channel is missing because too cold
-
+          ! check is ATSR 11um channel is missing because too cold
           ch6_on_atsr_flag = YES
 
           if ( imager_measurements%DATA(i,j,ch6) .lt. 100 .and. &

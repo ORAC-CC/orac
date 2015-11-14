@@ -495,7 +495,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
    call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, &
         indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, &
-        indexing%Ch_Is, 100, input_primary(1)%qc_flag_meanings, deflate_level2, &
+        indexing%Ch_Is, 100, input_primary(1)%qc_flag_masks, &
+        input_primary(1)%qc_flag_meanings, deflate_level2, &
         shuffle_flag2, verbose, .true., .false., .false., .true.)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, 0, 0, verbose, .false.)

@@ -109,6 +109,44 @@ end function string_description_of_state
 
 
 !-------------------------------------------------------------------------------
+! Name: build_qc_flag_masks
+!
+! Purpose:
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name   Type    In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2015/09/05, GM: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine build_qc_flag_masks(Ctrl, str)
+   use Ctrl_def
+
+   implicit none
+
+   type(Ctrl_t),     intent(in)  :: Ctrl
+   character(len=*), intent(out) :: str
+
+   integer          :: i
+   character(len=5) :: temp_str
+   character(len=8) :: state_label
+
+   str = '1b'
+   do i = 1, Ctrl%Nx(IDay)
+      write(temp_str, '(I5)') 2**i
+      if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
+           str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b' 
+   end do
+end subroutine build_qc_flag_masks
+
+
+!-------------------------------------------------------------------------------
 ! Name: build_qc_flag_meanings
 !
 ! Purpose:
@@ -134,21 +172,15 @@ subroutine build_qc_flag_meanings(Ctrl, str)
    character(len=*), intent(out) :: str
 
    integer          :: i
-   character(len=2) :: temp_str
    character(len=8) :: state_label
 
-   write(temp_str, '(I2)') Ctrl%Nx(IDay)
-   str = 'Bit 0 set to 1 if cost too large, ' // &
-         'Bits 1-' // trim(adjustl(temp_str)) // &
-         ' set to 1 if state variable error out of bounds, ('
+   str = 'cost_too_large'
    do i = 1, Ctrl%Nx(IDay)
-      write(temp_str, '(I2)') i
       if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
-           str = trim(str) // ' Bit ' // &
-                 trim(adjustl(temp_str)) // '=' // trim(state_label)
+           str = trim(str) // ' ' // trim(state_label) // '_out_of_range'
    end do
-   str = trim(str ) // ').'
 
 end subroutine build_qc_flag_meanings
+
 
 end module prepare_output

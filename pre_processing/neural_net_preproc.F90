@@ -30,7 +30,7 @@
 !    as cloudy , checks in sunglint at day over sea if reflectances in ch1 and
 !    ch2 is high and also ch3b has values gt 300 Kelvin
 ! 2015/06/24, SS: added cloud mask uncertainty
-! 2015/10/29 CP functionality for ATSR2 added added SteSta NN calibration corrections
+! 2015/10/29, CP: functionality for ATSR2 added added SteSta NN calibration corrections
 ! $Id$
 !
 ! Bugs:
@@ -111,22 +111,19 @@ contains
     else
        ch2 = min(104., channel2 * 100.) ! Dont allow reflectance to be higher than trained
     endif
- if ( trim(adjustl(sensor_name)) .eq. 'AATSR' .or. trim(adjustl(sensor_name)) .eq. 'ATSR2') then 
-! stefan calibration correction
-!write(*,*)'channels',channel1, channel2, channel3b, channel4, channel5
 
-  		 ch1  = (0.854 * channel1 +   2.822/100.0)
- 		 ch2  = (0.779 * channel2 +   2.307/100.0)
-		 ch3b  = (1.063 * channel3b  - 15.777)
- 		 ch4  = (0.979 * channel4  +   5.366) 
-	  	 ch5  = (0.990 * channel5  +   2.568)
-!write(*,*)'channels-',ch1, ch2, ch3b, ch4, ch5
-
-else
-    ch3b = channel3b
-    ch4 = channel4
-    ch5 = channel5
-endif
+    if ( trim(adjustl(sensor_name)) .eq. 'AATSR' .or. trim(adjustl(sensor_name)) .eq. 'ATSR2') then
+       ! stefan calibration correction
+       ch1  = (0.854 * channel1 +   2.822/100.0)
+       ch2  = (0.779 * channel2 +   2.307/100.0)
+       ch3b  = (1.063 * channel3b  - 15.777)
+       ch4  = (0.979 * channel4  +   5.366)
+       ch5  = (0.990 * channel5  +   2.568)
+    else
+       ch3b = channel3b
+       ch4 = channel4
+       ch5 = channel5
+    endif
 
     btd_ch4_ch5  = ch4 - ch5
     btd_ch4_ch3b = ch4 - ch3b

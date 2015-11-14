@@ -126,11 +126,12 @@ subroutine get_surface_emissivity(cyear, cdoy, cimss_emis_path, imager_flags, &
    if (verbose) write(*,*) 'cimss emis_path: ',  trim(cimss_emis_path)
    if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
 
-   source_atts%emissivity_file = ''
 
    ! Count the number of land and sea pixels, using the imager land/sea mask
    nland = count(imager_flags%lsflag .eq. 1)
    if (verbose) write(*,*) 'nland: ', nland
+
+   source_atts%emissivity_file = 'Not used (no pixels of land)'
 
    ! If there are no land pixels in the scene, we have nothing more to do
    if (nland == 0 .or. channel_info%nchannels_lw == 0) return

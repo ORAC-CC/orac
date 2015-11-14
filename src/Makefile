@@ -201,8 +201,7 @@ ORAC_COMMON = ../common
 
 
 # Define object files to be linked.
-ORAC_OBJ = $(OBJS)/CalcCWP.o \
-           $(OBJS)/Cholesky.o \
+ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/Ctrl.o \
            $(OBJS)/Data.o \
            $(OBJS)/Diag.o \

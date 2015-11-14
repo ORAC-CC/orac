@@ -201,8 +201,6 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   if (verbose) write(*,*) 'assume_full_path: ',  assume_full_path
   if (verbose) write(*,*) 'include_full_brdf: ', include_full_brdf
 
-  source_atts%albedo_file = ''
-  source_atts%brdf_file   = ''
 
   ! Mask out pixels set to fill_value and out of BRDF angular range
   allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
@@ -234,6 +232,9 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
   nland = count(mask .and. imager_flags%lsflag .eq. 1)
   if (verbose) write(*,*) 'nsea, nland: ', nsea, nland
 
+
+  source_atts%albedo_file = 'Not used (no pixels of land)'
+  source_atts%brdf_file   = 'Not used (no pixels of land)'
 
   !----------------------------------------------------------------------------
   ! Extract land surface reflectance

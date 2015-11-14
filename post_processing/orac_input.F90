@@ -73,6 +73,7 @@ module orac_input
       integer(kind=byte),  dimension(:,:),   pointer :: niter
       real(kind=sreal),    dimension(:,:),   pointer :: costja
       real(kind=sreal),    dimension(:,:),   pointer :: costjm
+      character(len=512)                             :: qc_flag_masks
       character(len=512)                             :: qc_flag_meanings
       integer(kind=sint),  dimension(:,:),   pointer :: qcflag
 

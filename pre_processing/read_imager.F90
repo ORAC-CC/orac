@@ -38,7 +38,7 @@
 ! 2014/12/01, OS: removed call to read_avhrr_land_sea_mask, which was obsolete
 !    as land/sea information is now read in SR read_USGS_file
 ! 2015/02/19, GM: Added SEVIRI support.
-! 2015/08/08, CP: added ATSR2 functionality
+! 2015/08/08, CP: Added ATSR2 functionality
 !
 ! $Id$
 !
@@ -95,9 +95,9 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
 
-      call read_aatsr_l1b(path_to_l1b_file, path_to_aatsr_drift_table, &
-           imager_geolocation, imager_measurements, imager_angles, &
-           imager_flags,imager_time, channel_info,platform, sensor,verbose)
+      call read_aatsr_l1b(path_to_l1b_file,path_to_aatsr_drift_table, &
+           imager_geolocation,imager_measurements,imager_angles, &
+           imager_flags,imager_time,channel_info,platform,sensor,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1
@@ -129,8 +129,8 @@ subroutine read_imager(sensor,platform,path_to_l1b_file,path_to_geo_file, &
       ! Read the L1B data, according to the dimensions and offsets specified in
       ! imager_geolocation
       call read_seviri_l1_5(path_to_l1b_file, &
-           imager_geolocation, imager_measurements, imager_angles, &
-           imager_flags, imager_time, channel_info, verbose)
+           imager_geolocation,imager_measurements,imager_angles, &
+           imager_flags,imager_time,channel_info,verbose)
 
       !in absence of proper mask set everything to "1" for cloud mask
       imager_flags%cflag = 1

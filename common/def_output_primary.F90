@@ -59,8 +59,8 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
-! 2015/08/08 CP added in ATSR time stamp
-! 2015/10/24 CP added in st and CF compliance
+! 2015/08/08, CP: Added in ATSR time stamp
+! 2015/10/24, CP: Added in st and CF compliance
 
 ! $Id$
 !
@@ -68,7 +68,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre)
+subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre)
 
    use netcdf
    use orac_ncdf
@@ -86,6 +86,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
    integer,                   intent(in)    :: Y_Id(:)
    integer,                   intent(in)    :: Ch_Is(:)
    integer,                   intent(in)    :: MaxIter
+   character(len=*),          intent(in)    :: qc_flag_masks
    character(len=*),          intent(in)    :: qc_flag_meanings
    integer,                   intent(in)    :: deflate_level
    logical,                   intent(in)    :: shuffle_flag
@@ -98,7 +99,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
-   character(len=512) :: input_dummy3
    integer            :: i
    integer            :: i_view
 
@@ -115,7 +115,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   if (inst_name(1:5) .eq. 'AATSR' .or. inst_name(1:5) .eq. 'ATSR2'  ) then
+   if (inst_name(1:5) .eq. 'AATSR' .or. inst_name(1:5) .eq. 'ATSR2') then
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
    else
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
@@ -190,7 +190,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
       !-------------------------------------------------------------------------
       input_dummy='solar_zenith_view_no'//trim(adjustl(input_num))
       input_dummy2='solar zenith angle for view no '//trim(adjustl(input_num))
-      input_dummy3='solar_zenith_angle_for_view_no_'//trim(adjustl(input_num))
 
       call nc_def_var_float_packed_float( &
               ncid, &
@@ -214,7 +213,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
       !-------------------------------------------------------------------------
       input_dummy='satellite_zenith_view_no'//trim(adjustl(input_num))
       input_dummy2='sensor zenith angle for view no '//trim(adjustl(input_num))
-      input_dummy3='sensor_zenith_angle_for_view_no_'//trim(adjustl(input_num))
 
       call nc_def_var_float_packed_float( &
               ncid, &
@@ -238,7 +236,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
       !-------------------------------------------------------------------------
       input_dummy='rel_azimuth_view_no'//trim(adjustl(input_num))
       input_dummy2='relative azimuth angle for view no '//trim(adjustl(input_num))
-      input_dummy3='relative_azimuth_angle_for_view_no_'//trim(adjustl(input_num))
 
       call nc_def_var_float_packed_float( &
               ncid, &
@@ -665,7 +662,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            output_data%vid_cloud_albedo_error(i), &
            verbose, &
            long_name     = trim(adjustl(input_dummy)), &
-           standard_name = 'cloud_albedo', &
+           standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%cloud_albedo_error_scale, &
            add_offset    = output_data%cloud_albedo_error_offset, &
@@ -764,8 +761,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-
-
    call nc_def_var_short_packed_short( &
            ncid, &
            dims_var, &
@@ -779,8 +774,8 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-	   flag_values   ='1b  2b  3b 4b 5b', & 
-           flag_meanings = trim(adjustl(input_dummy2)), &
+	   flag_masks    = trim(qc_flag_masks), &
+           flag_meanings = trim(qc_flag_meanings), &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -827,32 +822,32 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, Ny
            flag_values   = '0b 1b 2b 3b 4b 5b 6b 7b 8b 9b 10b ' // &
                            '11b 12b 13b 14b 15b 16b 17b 18b 19b ' // &
                            '20b 21b 22b 23b 24b', &
-           flag_meanings ='1:Urban_and_Built-Up_Land, ' // &
-                          '2:Dryland_Cropland_and_Pasture, ' // &
-                          '3:Irrigated_Cropland_and_Pasture, ' // &
-                          '4:Mixed_Dryland/Irrigated_Cropland_and_Pasture, ' // &
-                          '5:Cropland/Grassland Mosaic, ' // &
-                          '6:Cropland/Woodland Mosaic, ' // &
-                          '7:Grassland, ' // &
-                          '8:Shrubland, ' // &
-                          '9:Mixed Shrubland/Grassland, ' // &
-                          '10:Savanna, ' // &
-                          '11:Deciduous_Broadleaf_Forest, ' // &
-                          '12:Deciduous_Needleleaf_Forest, ' // &
-                          '13:Evergreen_Broadleaf_Forest, ' // &
-                          '14:Evergreen_Needleleaf_Forest, ' // &
-                          '15:Mixed_Forest, ' // &
-                          '16:Water_Bodies, ' // &
-                          '17:Herbaceous_Wetland, ' // &
-                          '18:Wooded_Wetland, ' // &
-                          '19:Barren_or_Sparsely_Vegetated, ' // &
-                          '20:Herbaceous_Tundra, ' // &
-                          '21:Wooded_Tundra, ' // &
-                          '22:Mixed_Tundra, ' // &
-                          '23:Bare_Ground_Tundra, ' // &
-                          '24:Snow_or_Ice, ' // &
-                          '99:Interrupted_Areas, ' // &
-                          '100:Missing_Data', &
+           flag_meanings = '1:Urban_and_Built-Up_Land ' // &
+                           '2:Dryland_Cropland_and_Pasture ' // &
+                           '3:Irrigated_Cropland_and_Pasture ' // &
+                           '4:Mixed_Dryland/Irrigated_Cropland_and_Pasture ' // &
+                           '5:Cropland/Grassland Mosaic ' // &
+                           '6:Cropland/Woodland Mosaic ' // &
+                           '7:Grassland ' // &
+                           '8:Shrubland ' // &
+                           '9:Mixed Shrubland/Grassland ' // &
+                           '10:Savanna ' // &
+                           '11:Deciduous_Broadleaf_Forest ' // &
+                           '12:Deciduous_Needleleaf_Forest ' // &
+                           '13:Evergreen_Broadleaf_Forest ' // &
+                           '14:Evergreen_Needleleaf_Forest ' // &
+                           '15:Mixed_Forest ' // &
+                           '16:Water_Bodies ' // &
+                           '17:Herbaceous_Wetland ' // &
+                           '18:Wooded_Wetland ' // &
+                           '19:Barren_or_Sparsely_Vegetated ' // &
+                           '20:Herbaceous_Tundra ' // &
+                           '21:Wooded_Tundra ' // &
+                           '22:Mixed_Tundra ' // &
+                           '23:Bare_Ground_Tundra ' // &
+                           '24:Snow_or_Ice ' // &
+                           '99:Interrupted_Areas ' // &
+                           '100:Missing_Data', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 

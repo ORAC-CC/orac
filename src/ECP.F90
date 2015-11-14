@@ -232,6 +232,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
                                          ! retrieval
    real                :: AvJ      = 0.0 ! Average cost per successful retrieval
 
+   character(len=512)  :: qc_flag_masks
    character(len=512)  :: qc_flag_meanings
 
    ! netcdf related variables:
@@ -437,8 +438,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ctrl%Ind%Ny, MaxStateVar, output_data_2, write_covariance)
 
    ! Create NetCDF files and variables
+   call build_qc_flag_masks(Ctrl, qc_flag_masks)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
-   call def_output_primary(ncid_primary, dims_var, output_data_1, Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, qc_flag_meanings, deflate_level, shuffle_flag, .false., .false., .true., .true., .false.)
+   call def_output_primary(ncid_primary, dims_var, output_data_1, Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, .false., .false., .true., .true., .false.)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, .false., write_covariance)
 
    ! Set i, the counter for the image x dimension, for the first row processed.

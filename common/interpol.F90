@@ -3,8 +3,8 @@
 !
 ! Purpose:
 ! Container for interpolation routines. To interpolate a field, call
-! bilinear_coefs and then interp_field. The structure interpol passes information
-! between them.
+! bilinear_coefs and then interp_field. The structure interpol passes
+! information between them.
 !
 ! Description and Algorithm details:
 ! The interpol structure contains the fields:

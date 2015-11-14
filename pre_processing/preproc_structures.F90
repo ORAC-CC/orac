@@ -64,8 +64,7 @@ module preproc_structures
                                                      spec_hum,ozone
       real(kind=sreal), dimension(:,:,:), pointer :: phi_lev,phi_lay
 
-      real(kind=sreal), dimension(:,:), pointer   :: geopot,lnsp, &
-                                                     surface_pressure
+      real(kind=sreal), dimension(:,:), pointer   :: geopot,lnsp
       real(kind=sreal), dimension(:,:), pointer   :: u10,v10
       real(kind=sreal), dimension(:,:), pointer   :: land_sea_mask
       real(kind=sreal), dimension(:,:), pointer   :: temp2,skin_temp

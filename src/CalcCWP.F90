@@ -33,7 +33,6 @@
 
 subroutine Calc_CWP(Ctrl, SPixel)
 
-   ! Modules used by this program.
    use CTRL_def
    use ECP_Constants
    use SPixel_def
@@ -63,14 +62,14 @@ subroutine Calc_CWP(Ctrl, SPixel)
       fac=(4./3.)*rho/qextice
    else
       ! most likely aerosol but could be some other crash
-      SPixel%cwp=sreal_fill_value
-      SPixel%cwp_error=sreal_fill_value
+      SPixel%CWP=sreal_fill_value
+      SPixel%CWP_error=sreal_fill_value
       return
    end if
 
    tenpcot=10.**(SPixel%Xn(iTau))
 
-   SPixel%cwp=fac* tenpcot*SPixel%Xn(iRe)
+   SPixel%CWP=fac* tenpcot*SPixel%Xn(iRe)
 
    ! covariance
    s_cot_cre=(SPixel%Sn(iTau,iRe)*tenpcot)/al10e
@@ -79,9 +78,9 @@ subroutine Calc_CWP(Ctrl, SPixel)
    s_cot=(SPixel%Sn(iTau,iTau)*tenpcot*tenpcot)/al10e2
 
    ! based on
-   ! SPixel%cwp_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
+   ! SPixel%CWP_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
 
-   SPixel%cwp_error=SPixel%Xn(iRe)*SPixel%Xn(iRe)*s_cot+ &
+   SPixel%CWP_error=SPixel%Xn(iRe)*SPixel%Xn(iRe)*s_cot+ &
                     tenpcot*tenpcot*SPixel%Sn(iRe,iRe)+ &
                     2.* tenpcot*SPixel%Xn(iRe)*s_cot_cre
 
