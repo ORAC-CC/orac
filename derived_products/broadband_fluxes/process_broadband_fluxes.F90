@@ -14,6 +14,7 @@
 ! History:
 ! 2015/10/14, MC: Inital developement
 ! 2015/11/10, MC: Put into repository
+! 2015/11/16, MC: Changed NetCDF output to include more digits by using nc_def_var_float_packed_float
 !
 ! $Id$
 !
@@ -26,10 +27,10 @@
 ! Examples
 !
 ! MODIS
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.bugsrad.nc
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.bugsrad.nc
 !
 ! AATSR
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc 182 13487
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc 182 13487
 !
 !-------------------------------------------------------------------------------
 
@@ -156,6 +157,10 @@ program process_broadband_fluxes
       bpardir      !boa par direct
 
 
+
+   !NETCDF Output geolocation data
+   real, allocatable :: lat_data(:,:), lon_data(:,:) !latitude & longitude
+
    !NETCDF Output TOA & BOA radiation flux data
    real, allocatable :: toa_lwup(:,:) !TOA outgoing LW flux
      integer toa_lwup_vid
@@ -218,14 +223,15 @@ program process_broadband_fluxes
    integer(kind=1), allocatable :: retrflag(:,:) !regime flag
       integer retrflag_vid
 
-   integer, parameter :: deflate_lv = 0
+   integer, parameter :: deflate_lv = 9
    logical, parameter :: shuffle_flag = .false.
 
    !To compress data
    real(kind=sreal) :: temp_real_var
    integer(kind=sint) :: vmin = 0
    integer(kind=sint) :: vmax = 32000
-   real(kind=sreal) :: var_scale = 1.0
+   real(kind=sreal) :: var_scale = 10.0
+   real(kind=sreal) :: var_scale_geo = 100.0
    real(kind=sreal) :: var_offset = 0.0
 
    !NetCDF output dimensions
@@ -512,6 +518,8 @@ program process_broadband_fluxes
    allocate(inO3(levdim_prtm))
 
    !Allocate OUTPUT variables
+   allocate(lat_data(xN,yN))
+   allocate(lon_data(xN,yN))
    allocate(toa_lwup(xN,yN))
    allocate(toa_swup(xN,yN))
    allocate(toa_swdn(xN,yN))
@@ -532,6 +540,8 @@ program process_broadband_fluxes
    allocate(retrflag(xN,yN))
 
     !Fill OUTPUT with missing
+    lat_data(:,:) = sint_fill_value
+    lon_data(:,:) = sint_fill_value
     toa_lwup(:,:)=sint_fill_value
     toa_swup(:,:) = sint_fill_value
     toa_swdn(:,:) = sint_fill_value
@@ -587,8 +597,8 @@ program process_broadband_fluxes
       print*,'complete: ',i*100./(xN*1.),'%   i=',i
 
       !loop over along-track dimension
-      do j=pxY0,pxY1
-!      do j=pxY0,pxY0+1 !for testing
+!      do j=pxY0,pxY1
+      do j=pxY0,pxY0+1 !for testing
 
       !surface albedo
       pxAsfcSWR = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
@@ -683,26 +693,31 @@ program process_broadband_fluxes
         if(nanFlag == 0) then
          !netCDF output arrays
          !Observed
-         toa_lwup(i,j) = pxtoalwup
-         toa_swup(i,j) = pxtoaswup
-         toa_swdn(i,j) = pxtoaswdn
-         boa_lwup(i,j) = pxboalwup
-         boa_lwdn(i,j) = pxboalwdn
-         boa_swup(i,j) = pxboaswup
-         boa_swdn(i,j) = pxboaswdn
+         lat_data(i,j) = LAT(i,j)! * var_scale_geo
+         lon_data(i,j) = LON(i,j)! * var_scale_geo
+
+         toa_lwup(i,j) = pxtoalwup! * var_scale
+         toa_swup(i,j) = pxtoaswup! * var_scale
+         toa_swdn(i,j) = pxtoaswdn! * var_scale
+         boa_lwup(i,j) = pxboalwup! * var_scale
+         boa_lwdn(i,j) = pxboalwdn! * var_scale
+         boa_swup(i,j) = pxboaswup! * var_scale
+         boa_swdn(i,j) = pxboaswdn! * var_scale
 
          !Clear-sky retrieval
-         toa_lwup_clr(i,j) = pxtoalwupclr
-         toa_swup_clr(i,j) = pxtoaswupclr
-         boa_lwup_clr(i,j) = pxboalwupclr
-         boa_lwdn_clr(i,j) = pxboalwdnclr
-         boa_swup_clr(i,j) = pxboaswupclr
-         boa_swdn_clr(i,j) = pxboaswdnclr
+         toa_lwup_clr(i,j) = pxtoalwupclr! * var_scale
+         toa_swup_clr(i,j) = pxtoaswupclr! * var_scale
+         boa_lwup_clr(i,j) = pxboalwupclr! * var_scale
+         boa_lwdn_clr(i,j) = pxboalwdnclr! * var_scale
+         boa_swup_clr(i,j) = pxboaswupclr! * var_scale
+         boa_swdn_clr(i,j) = pxboaswdnclr! * var_scale
 
          !PAR
-         toa_par_tot(i,j) = tpar
-         boa_par_tot(i,j) = bpar
-         boa_par_dif(i,j) = bpardif
+         toa_par_tot(i,j) = tpar! * var_scale
+         boa_par_tot(i,j) = bpar! * var_scale
+         boa_par_dif(i,j) = bpardif! * var_scale
+
+
         endif !valid data
 !      endif !user-defined
     enddo !j-loop
@@ -714,16 +729,15 @@ if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
  do i=pxX0,pxX1
  do j=pxY0,pxY1
   print*,i,j
-  print*,'toa_swdn: ',toa_swdn(i,j)
-  print*,'toa_lwup    : ',toa_lwup(i,j)
-  print*,'toa_lwup_clr: ',toa_lwup_clr(i,j)
-  print*,'toa_swup: ',toa_swup(i,j)
-  print*,'toa_swup_clr: ',toa_swup_clr(i,j)
-  print*,'toa_albedo: ',toa_swup(i,j)/toa_swdn(i,j)
+  print*,'toa_swdn: ',toa_swdn(i,j) / var_scale
+  print*,'toa_lwup    : ',toa_lwup(i,j) / var_scale
+  print*,'toa_lwup_clr: ',toa_lwup_clr(i,j) / var_scale
+  print*,'toa_swup: ',toa_swup(i,j) / var_scale
+  print*,'toa_swup_clr: ',toa_swup_clr(i,j) / var_scale
+  print*,'toa_albedo: ',toa_swup(i,j)/toa_swdn(i,j) / var_scale
  enddo
  enddo
 endif
-
 
 !-------------------------------------------------------------------------
 !Make output netcdf file
@@ -764,7 +778,7 @@ end if
       !-------------------------------------------------------------------------
       ! latitude
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'lat', &
@@ -772,11 +786,11 @@ end if
                verbose, &
                long_name     = 'latitude', &
                standard_name = 'latitude', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(-90., sreal), &
+               valid_max     = real(90., sreal), &
                units         = 'degrees', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -785,7 +799,7 @@ end if
       !-------------------------------------------------------------------------
       ! longitude
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'lon', &
@@ -793,11 +807,11 @@ end if
                verbose, &
                long_name     = 'longitude', &
                standard_name = 'longitude', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(-180, sreal), &
+               valid_max     = real(180, sreal), &
                units         = 'degrees', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -816,8 +830,8 @@ end if
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = int(1, sint), &
+               valid_max     = int(4, sint), &
                units         = 'degrees', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -825,7 +839,7 @@ end if
       !-------------------------------------------------------------------------
       ! toa_incoming_shortwave_flux
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'toa_swdn', &
@@ -833,11 +847,11 @@ end if
                verbose, &
                long_name     = 'top of atmosphere incident solar radiation', &
                standard_name = 'toa_incoming_shortwave_flux', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -845,7 +859,7 @@ end if
       !-------------------------------------------------------------------------
       ! toa_outgoing_shortwave_flux
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'toa_swup', &
@@ -853,11 +867,11 @@ end if
                verbose, &
                long_name     = 'top of atmosphere upwelling solar radiation', &
                standard_name = 'toa_outgoing_shortwave_flux', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -865,7 +879,7 @@ end if
       !-------------------------------------------------------------------------
       ! toa_outgoing_longwave_flux
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'toa_lwup', &
@@ -873,11 +887,11 @@ end if
                verbose, &
                long_name     = 'top of atmosphere upwelling thermal radiation', &
                standard_name = 'toa_outgoing_longwave_flux', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -887,7 +901,7 @@ end if
       !-------------------------------------------------------------------------
       ! surface_downwelling_shortwave_flux_in_air
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_swdn', &
@@ -895,11 +909,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere downwelling solar radiation', &
                standard_name = 'surface_downwelling_shortwave_flux_in_air', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -907,7 +921,7 @@ end if
       !-------------------------------------------------------------------------
       ! surface_upwelling_shortwave_flux_in_air
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_swup', &
@@ -915,11 +929,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere upwelling solar radiation', &
                standard_name = 'surface_upwelling_shortwave_flux_in_air', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -927,7 +941,7 @@ end if
       !-------------------------------------------------------------------------
       ! surface_upwelling_longwave_flux_in_air
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_lwup', &
@@ -935,11 +949,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere upwelling thermal radiation', &
                standard_name = 'surface_upwelling_longwave_flux_in_air', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -948,7 +962,7 @@ end if
       !-------------------------------------------------------------------------
       ! surface_downwelling_longwave_flux_in_air
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_lwdn', &
@@ -956,11 +970,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere downwelling thermal radiation', &
                standard_name = 'surface_downwelling_longwave_flux_in_air', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -970,7 +984,7 @@ end if
       !-------------------------------------------------------------------------
       ! toa_outgoing_shortwave_flux_assuming_clear_sky
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'toa_swup_clr', &
@@ -978,11 +992,11 @@ end if
                verbose, &
                long_name     = 'top of atmosphere upwelling solar radiation', &
                standard_name = 'toa_outgoing_shortwave_flux_assuming_clear_sky', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -990,7 +1004,7 @@ end if
       !-------------------------------------------------------------------------
       ! toa_outgoing_longwave_flux_assuming_clear_sky
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'toa_lwup_clr', &
@@ -998,11 +1012,11 @@ end if
                verbose, &
                long_name     = 'top of atmosphere upwelling thermal radiation', &
                standard_name = 'toa_outgoing_longwave_flux_assuming_clear_sky', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1011,7 +1025,7 @@ end if
       !-------------------------------------------------------------------------
       ! boa_downwelling_shortwave_flux_in_air_assuming_clear_sky
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_swdn_clr', &
@@ -1019,11 +1033,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere downwelling solar radiation', &
                standard_name = 'surface_downwelling_shortwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1031,7 +1045,7 @@ end if
       !-------------------------------------------------------------------------
       ! boa_upwelling_shortwave_flux_in_air_assuming_clear_sky
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_swup_clr', &
@@ -1039,11 +1053,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere upwelling solar radiation', &
                standard_name = 'surface_upwelling_shortwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1051,7 +1065,7 @@ end if
       !-------------------------------------------------------------------------
       ! boa_upwelling_longwave_flux_in_air_assuming_clear_sky
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_lwup_clr', &
@@ -1059,11 +1073,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere upwelling thermal radiation', &
                standard_name = 'surface_upwelling_longwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1072,7 +1086,7 @@ end if
       !-------------------------------------------------------------------------
       ! boa_downwelling_longwave_flux_in_air_assuming_clear_sky
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_lwdn_clr', &
@@ -1080,11 +1094,11 @@ end if
                verbose, &
                long_name     = 'bottom of atmosphere downwelling thermal radiation', &
                standard_name = 'surface_downwelling_longwave_flux_in_air_assuming_clear_sky', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1094,7 +1108,7 @@ end if
       !-------------------------------------------------------------------------
       ! surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_par_dif', &
@@ -1102,11 +1116,11 @@ end if
                verbose, &
                long_name     = 'surface diffuse par', &
                standard_name = 'surface_diffuse_downwelling_photosynthetic_radiative_flux_in_air', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1115,7 +1129,7 @@ end if
       !-------------------------------------------------------------------------
       ! surface_downwelling_photosynthetic_radiative_flux_in_air
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'boa_par_tot', &
@@ -1123,11 +1137,11 @@ end if
                verbose, &
                long_name     = 'surface total par', &
                standard_name = 'surface_downwelling_photosynthetic_radiative_flux_in_air', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1135,7 +1149,7 @@ end if
       !-------------------------------------------------------------------------
       ! toa_incoming_photosynthetic_radiative_flux
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_float_packed_float( &
                ncid, &
                dims_var, &
                'toa_par_tot', &
@@ -1143,11 +1157,11 @@ end if
                verbose, &
                long_name     = 'top of atmosphere incident par', &
                standard_name = 'toa_incoming_photosynthetic_radiative_flux', &
-               fill_value    = sint_fill_value, &
+               fill_value    = sreal_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
-               valid_min     = int(0, sint), &
-               valid_max     = int(1, sint), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
                units         = 'W m-2', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
@@ -1166,10 +1180,10 @@ end if
              retrflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
      call nc_write_array(ncid,'lat',LAT_vid,&
-             LAT(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+             lat_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
      call nc_write_array(ncid,'lon',LON_vid,&
-             LON(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+             lon_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
      call nc_write_array(ncid,'toa_swdn',toa_swdn_vid,&
              toa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
