@@ -309,7 +309,7 @@ contains
 
     integer(kind=sint) :: ch3a_on_avhrr_flag
 
-    integer(kind=sint) :: ch6_on_atsr_flag,ch7_on_atsr_flag,ch2_on_atsr_flag
+    integer(kind=sint) :: ch2_on_atsr_flag,ch6_on_atsr_flag,ch7_on_atsr_flag
 
     real(kind=sreal)   :: glint_angle, coszen
     real(kind=sreal)   :: BTD_Ch3b_Ch4
@@ -503,6 +503,7 @@ contains
     !$OMP PRIVATE(i) &
     !$OMP PRIVATE(j) &
     !$OMP PRIVATE(ch3a_on_avhrr_flag) &
+    !$OMP PRIVATE(ch2_on_atsr_flag) &
     !$OMP PRIVATE(ch6_on_atsr_flag) &
     !$OMP PRIVATE(ch7_on_atsr_flag) &
     !$OMP PRIVATE(glint_angle) &
@@ -607,7 +608,7 @@ contains
                ch7_on_atsr_flag = NO
             endif
 
-               ch2_on_atsr_flag = YES
+          ch2_on_atsr_flag = YES
           if ( imager_measurements%DATA(i,j,ch2) .lt. 0. ) then
                ch2_on_atsr_flag = NO
 	      endif
