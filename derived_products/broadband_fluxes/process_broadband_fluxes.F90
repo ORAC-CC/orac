@@ -597,8 +597,8 @@ program process_broadband_fluxes
       print*,'complete: ',i*100./(xN*1.),'%   i=',i
 
       !loop over along-track dimension
-!      do j=pxY0,pxY1
-      do j=pxY0,pxY0+1 !for testing
+      do j=pxY0,pxY1
+!      do j=pxY0,pxY0+1 !for testing
 
       !surface albedo
       pxAsfcSWR = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
