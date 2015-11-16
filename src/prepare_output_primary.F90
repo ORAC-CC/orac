@@ -51,6 +51,7 @@
 !    space.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/11/16, GM: Fixed calculation of temp_short_ctp_error.
 !
 ! $Id$
 !
@@ -177,9 +178,9 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       temp_real_ctp_error=sreal_fill_value
    else
       temp_real_ctp_error = sqrt(SPixel%Sn(IPc,IPc))
-      temp_short_ctp_error = ( int(temp_real_ctp_error, kind=sint) - &
-                               output_data%ctp_error_scale &
-                             ) / output_data%ctp_error_scale
+      temp_short_ctp_error = int((temp_real_ctp_error - &
+                                  output_data%ctp_error_offset) / &
+                                  output_data%ctp_error_scale, kind=sint)
    end if
    call prepare_short_packed_float( &
            temp_real_ctp_error, output_data%ctp_error(i,j), &
