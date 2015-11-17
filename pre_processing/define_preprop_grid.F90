@@ -26,6 +26,7 @@
 ! 2013/10/23, AP: Tidying. Removed ecmwf_prtm argument.
 ! 2015/07/27, AP: lat, lon and mask should be dynamically allocated not
 !    automatic.
+! 2015/15/11, OS: nitpicking
 !
 ! $Id$
 !
@@ -56,7 +57,7 @@ subroutine define_preprop_grid(imager_geolocation,preproc_dims,verbose)
    allocate(mask(imager_geolocation%startx:imager_geolocation%endx, &
         1:imager_geolocation%ny))
 
-   ! determine which preproc grid points each pixels falls in (start at 1)
+   ! determine which preproc grid points each pixel falls in (start at 1)
    lat = (imager_geolocation%latitude + preproc_dims%lat_offset)* &
         preproc_dims%dellat + 1.
    lon = (imager_geolocation%longitude + preproc_dims%lon_offset)* &
