@@ -105,6 +105,9 @@
 !    to fill value.  Each threshold can be turned off individually by setting
 !    them to zero.
 ! 2015/09/26, GM: Removed eight unused mandatory driver file lines.
+! 2015/11/17, OS: Some bug fixing in correctly switching phase and cloud types.
+!    Previously, switching was wrong and, additionally, phase was ice for all 
+!    cloud free pixels. This should all be resolved with this commit.
 !
 ! $Id$
 !
@@ -129,6 +132,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    use postproc_utils
    use prepare_output_pp
    use source_attributes
+   use constants_cloud_typing_pavolonis
 
    implicit none
 
@@ -276,7 +280,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
 
    ! Here we have a general hack to get some channel indexing information from
-   ! the secondary measurment variable names.
+   ! the secondary measurement variable names.
 
    write(*,*) 'Obtaining channel indexing'
 
@@ -394,37 +398,39 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
             ! here apply Pavolonis phase information to select retrieval phase variables
             ! select water type overwrite ice
             phase_flag = 2_byte
-            if (input_primary(IWat)%cldtype(i,j) .gt. 1 .and. &
-                input_primary(IWat)%cldtype(i,j) .lt. 5) then
-
+            if (input_primary(IWat)%cldtype(i,j) .gt. SWITCHED_TO_WATER_TYPE .and. &
+                input_primary(IWat)%cldtype(i,j) .lt. SWITCHED_TO_ICE_TYPE) then
                phase_flag = 1_byte
                if (switch_phases .and. & ! only reclassify if both phases were processed
-                   ((input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IIce)%ctt(i,j) .lt. 233.16) .and. &
-                    (input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IWat)%ctt(i,j) .lt. 273.16))) &
+                   ((input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IWat)%ctt(i,j) .lt. 233.16) .and. &
+                    (input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IIce)%ctt(i,j) .lt. 273.16))) then
                   phase_flag = 2_byte
-            else
+                  input_primary(IWat)%cldtype(i,j) = SWITCHED_TO_ICE_TYPE
+               end if
+            else if (input_primary(IWat)%cldtype(i,j) .gt. SWITCHED_TO_ICE_TYPE) then
                phase_flag = 2_byte
                if (switch_phases .and. & ! only reclassify if both phases were processed
-                   ((input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IIce)%ctt(i,j) .ge. 233.16) .and. &
-                    (input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
-                     input_primary(IWat)%ctt(i,j) .ge. 273.16))) &
-               phase_flag = 1_byte
+                   ((input_primary(IWat)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IWat)%ctt(i,j) .ge. 233.16) .and. &
+                    (input_primary(IIce)%ctt(i,j) .ne. sreal_fill_value .and. &
+                     input_primary(IIce)%ctt(i,j) .ge. 273.16))) then
+                  phase_flag = 1_byte
+                  input_primary(IWAT)%cldtype(i,j) = SWITCHED_TO_WATER_TYPE
+               end if
             end if
 
             if (phase_flag .eq. 2_byte) then
                call copy_class_specific_inputs(i, j, &
-                  input_primary(IWat), input_primary(IIce), &
-                  input_secondary(IWat), input_secondary(IIce), do_secondary)
-
+                    input_primary(IWat), input_primary(IIce), &
+                    input_secondary(IWat), input_secondary(IIce), do_secondary)
                input_primary(IWat)%phase(i,j) = IPhaseIce
             end if
 
             ! Overwrite cc_total with cldmask for Cloud CCI
             input_primary(IWat)%cc_total(i,j) = &
-               input_primary(IWat)%cldmask(i,j)
+                 input_primary(IWat)%cldmask(i,j)
             input_primary(IWat)%cc_total_uncertainty(i,j) = &
                input_primary(IWat)%cldmask_uncertainty(i,j)
 

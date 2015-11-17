@@ -31,6 +31,7 @@
 ! 2015/10/07, Oliver Sus: renamed to *_pp.F90, as we have to avoid duplicate
 !    subroutine names for wrapper
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/11/17, OS: Including switched types when estimating phase.
 !
 ! $Id$
 !
@@ -444,9 +445,9 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    if (     input_data%cldtype(i,j) .eq. 0) then
       output_data%phase_pavolonis(i,j) = 0 ! phase = clear
    else if (input_data%cldtype(i,j) .lt. 5 &
-      .and. input_data%cldtype(i,j) .gt. 1) then
+      .and. input_data%cldtype(i,j) .gt. 0) then
       output_data%phase_pavolonis(i,j) = 1 ! phase = water
-   else if (input_data%cldtype(i,j) .gt. 5) then
+   else if (input_data%cldtype(i,j) .gt. 4) then
       output_data%phase_pavolonis(i,j) = 2 ! phase = ice
    else
       output_data%phase_pavolonis(i,j) = byte_fill_value ! for all
