@@ -13,6 +13,7 @@
 ! 2015/07/02, OS: Added uncertainty constants variables.
 ! 2015/07/27, AP: Converted from a structure of variables to a module of
 !    parameters (to be consistent with similar files elsewhere in the code).
+! 2015/11/17, OS: Added cloud types for phase switching.
 !
 ! $Id$
 !
@@ -49,13 +50,18 @@ module constants_cloud_typing_pavolonis
    real(sreal)   :: COT_THRES_NIGHT_SEA = 0.2
    real(sreal)   :: COT_THRES_NIGHT_LAND = 0.3
 
+   !---
+   REAL(kind=sreal)   :: NOAA7_9_CH3B_BT_THRES=240 ! Dont use 3.7 µm channel at night,
+                                                     ! if BT of ch3b is below this value.
+   !---
+
    !--- cldtype OUTPUT
    integer(sint) :: CLEAR_TYPE = 0
-   integer(sint) :: PROB_CLEAR_TYPE = 1
+   integer(sint) :: SWITCHED_TO_WATER_TYPE = 1
    integer(sint) :: FOG_TYPE = 2
    integer(sint) :: WATER_TYPE = 3
    integer(sint) :: SUPERCOOLED_TYPE = 4
-   integer(sint) :: MIXED_TYPE = 5
+   integer(sint) :: SWITCHED_TO_ICE_TYPE = 5
    integer(sint) :: OPAQUE_ICE_TYPE = 6
    integer(sint) :: CIRRUS_TYPE = 7
    integer(sint) :: OVERLAP_TYPE = 8
