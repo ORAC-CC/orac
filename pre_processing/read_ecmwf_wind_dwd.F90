@@ -19,6 +19,7 @@
 ! 2014/12/17, OS: First version.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
+! 2015/11/17, OS: Added snow_depth and sea_ice_cover reading.
 !
 ! $Id: read_ecmwf_wind_nc.F90 2746 2014-11-21 10:12:39Z gmcgarragh $
 !
@@ -78,6 +79,8 @@ subroutine read_ecmwf_wind_dwd(ecmwf_path, ecmwf)
    nullify(ecmwf%u10)
    nullify(ecmwf%v10)
    nullify(ecmwf%skin_temp)
+   nullify(ecmwf%snow_depth)
+   nullify(ecmwf%sea_ice_cover)
 
    ! loop over given files (order not necessarily known)
    call read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)
@@ -199,6 +202,22 @@ subroutine read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)
             allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
             call nc_read_array(fid,name,val,verbose)
             ecmwf%skin_temp=val(:,:,1,1)
+            deallocate(val)
+         end if
+      case('SD','sd')
+         if (.not.associated(ecmwf%snow_depth)) then
+            allocate(ecmwf%snow_depth(ecmwf%xdim,ecmwf%ydim))
+            allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
+            call nc_read_array(fid,name,val,verbose)
+            ecmwf%snow_depth=val(:,:,1,1)
+            deallocate(val)
+         end if
+      case('CI','ci')
+         if (.not.associated(ecmwf%sea_ice_cover)) then
+            allocate(ecmwf%sea_ice_cover(ecmwf%xdim,ecmwf%ydim))
+            allocate(val(ecmwf%xdim,ecmwf%ydim,1,1))
+            call nc_read_array(fid,name,val,verbose)
+            ecmwf%sea_ice_cover=val(:,:,1,1)
             deallocate(val)
          end if
       end select

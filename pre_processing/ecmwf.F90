@@ -14,6 +14,7 @@
 ! 2014/11/04, OS: added skin temperature to ecmwf structure
 ! 2014/11/19, GM: C #includes should use double quotes.
 ! 2014/02/04, OS: added include of read_ecmwf_wind_dwd.F90
+! 2014/02/04, OS: added snow_depth and sea_ice_cover fields for high res ERA data
 !
 ! $Id$
 !
@@ -31,7 +32,7 @@ module ecmwf_m
       integer(kind=lint)                        :: xdim,ydim,kdim
       real(kind=sreal), dimension(:),   pointer :: lat,lon
       real(kind=sreal), dimension(:),   pointer :: avec,bvec
-      real(kind=sreal), dimension(:,:), pointer :: u10,v10,skin_temp
+      real(kind=sreal), dimension(:,:), pointer :: u10,v10,skin_temp,snow_depth,sea_ice_cover
    end type ecmwf_s
 
 contains

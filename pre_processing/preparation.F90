@@ -68,6 +68,9 @@
 ! 2014/05/02, AP: Made badc into ecmwf_flag.
 ! 2014/05/02, CP: Changed AATSR file naming
 ! 2015/08/08, CP: Added functionality for ATSR-2
+! 2015/11/17, OS: Building high resolution ERA-Interim file name from low 
+!   resolution ERA file, appending suffix "_HR":
+!   path/to/low_res_era_file.nc = path/to/low_res_era_file_HR.nc
 !
 ! $Id$
 !
@@ -84,8 +87,8 @@ contains
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &
      cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_path_file, &
-     ecmwf_path_file2,ecmwf_path_file3,global_atts,ecmwf_flag, &
-     imager_geolocation,i_chunk,assume_full_path,verbose)
+     ecmwf_HR_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts, &
+     ecmwf_flag,imager_geolocation,i_chunk,assume_full_path,verbose)
 
    use imager_structures
    use global_attributes
@@ -104,6 +107,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                                                   ecmwf_path2, &
                                                   ecmwf_path3
    character(len=path_length),     intent(out) :: ecmwf_path_file, &
+                                                  ecmwf_HR_path_file, &
                                                   ecmwf_path_file2, &
                                                   ecmwf_path_file3
    type(global_attributes_s),      intent(in)  :: global_atts
@@ -117,6 +121,8 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=file_length) :: file_base
    real                       :: startr,endr
    character(len=32)          :: startc,endc,chunkc
+   character(len=path_length) :: base,suffix
+   integer                    :: cut_off,ecmwf_path_file_length
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering preparation()'
 
@@ -140,8 +146,17 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                   ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
                   ecmwf_flag,assume_full_path)
 
+   ! build file path for high resolution ERA-Interim data from low resolution
+   ! file path
+   cut_off = index(trim(adjustl(ecmwf_path_file)),'.',BACK=.true.)
+   ecmwf_path_file_length = len(trim(ecmwf_path_file))
+   base = trim(adjustl(ecmwf_path_file(1:(cut_off-1))))
+   suffix = trim(adjustl(ecmwf_path_file((cut_off+1):ecmwf_path_file_length)))
+   ecmwf_HR_path_file = trim(adjustl(base)) // '_HR.' // trim(adjustl(suffix))
+
    if (verbose) then
       write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file)
+      write(*,*)'ecmwf_HR_path_file:  ',trim(ecmwf_HR_path_file)
       if (ecmwf_flag .gt. 0) then
          write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2)
          write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3)

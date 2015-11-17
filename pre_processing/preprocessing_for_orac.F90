@@ -231,6 +231,8 @@
 ! 2015/08/08, CP: Add functionality for ATSR2
 ! 2015/10/19, GM: Add option use_modis_emis_in_rttov to use the MODIS emissivity
 !    product instead of the RTTOV emissivity atlas in the RTTOV computations.
+! 2015/11/17, OS: Implemented use of high resolution ERA-Interim data for
+!    surface variables only (skint, sea-ice, snow-depth)
 !
 ! $Id$
 !
@@ -282,6 +284,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=path_length)       :: geo_path_file
    character(len=path_length)       :: usgs_path_file
    character(len=path_length)       :: ecmwf_path,ecmwf_path_file
+   character(len=path_length)       :: ecmwf_HR_path_file
    character(len=path_length)       :: rttov_coef_path
    character(len=path_length)       :: rttov_emiss_path
    character(len=path_length)       :: nise_ice_snow_path
@@ -325,7 +328,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    integer(kind=lint)               :: startx,endx,starty,endy
    integer(kind=lint)               :: n_across_track,n_along_track
    integer(kind=lint)               :: along_track_offset
-
+   
    integer(kind=lint)               :: along_pos
 
    integer                          :: segment_starts(2)
@@ -365,7 +368,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    type(USGS_s)                     :: usgs
 
-   type(ecmwf_s)                    :: ecmwf
+   type(ecmwf_s)                    :: ecmwf,ecmwf_HR
 
    type(surface_s)                  :: surface
 
@@ -385,15 +388,12 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    integer                          :: check_output
    integer                          :: mytask,ntasks,lower_bound,upper_bound
    character(len=file_length)       :: jid
-#endif
-!  include "sigtrap.F90"
-
-   ! get number of arguments
-#ifndef WRAPPER
-   nargs = command_argument_count()
-#else
    nargs = -1
+#else
+   ! get number of arguments
+   nargs = command_argument_count()
 #endif
+
    ! Set defaults for optional arguments/fields
    n_channels = 0
    nullify(channel_ids)
@@ -686,6 +686,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       end if
       if (starty.gt.along_pos .or. endy.gt.along_pos) then
          write(*,*) 'ERROR: invalid along track dimensions'
+         write(*,*) 'starty, endy = ', starty, endy
          write(*,*) '       Should be < ',along_pos
          stop error_stop_code
       end if
@@ -778,17 +779,20 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! information,set paths and filenames to those required auxiliary /
       ! ancillary input...
       if (verbose) write(*,*)  'Carry out any preparatory steps'
+
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear, &
            cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3, &
-           ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts, &
-           ecmwf_flag,imager_geolocation,i_chunk,assume_full_paths,verbose)
+           ecmwf_path_file,ecmwf_HR_path_file,ecmwf_path_file2, &
+           ecmwf_path_file3,global_atts,ecmwf_flag,imager_geolocation, &
+           i_chunk,assume_full_paths,verbose)
 
       ! read ECMWF fields and grid information
       if (verbose) then
          write(*,*) 'Start reading ecmwf era interim grib file'
          write(*,*) 'ecmwf_flag: ', ecmwf_flag
          write(*,*) 'ecmwf_path_file: ',trim(ecmwf_path_file)
+         write(*,*) 'ecmwf_HR_path_file: ',trim(ecmwf_HR_path_file)
          if (ecmwf_flag.gt.0) then
             write(*,*) 'ecmwf_path_file2: ',trim(ecmwf_path_file2)
             write(*,*) 'ecmwf_path_file3: ',trim(ecmwf_path_file3)
@@ -811,13 +815,17 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       case(3)
          call read_ecmwf_wind_dwd(ecmwf_path_file,ecmwf)
          if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim,ecmwf%kdim
+         call read_ecmwf_wind_dwd(ecmwf_HR_path_file,ecmwf_HR)
       end select
       if (verbose) then
          write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
          write(*,*) 'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
          write(*,*) 'SKINT) Min: ',minval(ecmwf%skin_temp),', Max: ',maxval(ecmwf%skin_temp)
       end if
-      call rearrange_ecmwf(ecmwf)
+      call rearrange_ecmwf(ecmwf,.false.)
+#ifdef WRAPPER
+      call rearrange_ecmwf(ecmwf_HR,.true.)
+#endif
 
       ! define preprocessing grid from user grid spacing and satellite limits
       if (verbose) write(*,*)  'Define preprocessing grid'
@@ -918,21 +926,24 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
            channel_info, assume_full_paths, include_full_brdf, source_atts, &
            verbose)
+      if (verbose) write(*,*)  'Calculate Pavolonis cloud phase with high resolution ERA surface data'
+      call cloud_type(channel_info, sensor, surface, imager_flags, &
+           imager_angles, imager_geolocation, imager_measurements, &
+           imager_pavolonis, ecmwf_HR, platform, doy, verbose)
 #else
       call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
            surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
            include_full_brdf, source_atts, verbose)
-#endif
-
       if (verbose) write(*,*)  'Calculate Pavolonis cloud phase'
       call cloud_type(channel_info, sensor, surface, imager_flags, &
            imager_angles, imager_geolocation, imager_measurements, &
            imager_pavolonis, ecmwf, platform, doy, verbose)
+#endif
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'
       if (verbose) write(*,*) 'output_path: ',trim(output_path)
-
+      
       call netcdf_output_create(output_path,lwrtm_file,swrtm_file,prtm_file, &
            config_file,msi_file,cf_file,lsf_file,geo_file,loc_file,alb_file, &
            platform,sensor,global_atts,source_atts,cyear,cmonth,cday,chour, &

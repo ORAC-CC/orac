@@ -16,6 +16,7 @@
 ! 2012/01/13, MJ: produces draft code for ERA Interim grib 1 parameters required
 ! 2014/05/07, AP: new version of structures
 ! 2014/11/04, OS: added deallocation of skin temperature
+! 2014/11/04, OS: added deallocation of snow_depth and sea_ice_cover
 !
 ! $Id$
 !
@@ -38,5 +39,7 @@ subroutine deallocate_ecmwf_structures(ecmwf)
    deallocate(ecmwf%u10)
    deallocate(ecmwf%v10)
    deallocate(ecmwf%skin_temp)
+   deallocate(ecmwf%snow_depth)
+   deallocate(ecmwf%sea_ice_cover)
 
 end subroutine deallocate_ecmwf_structures

@@ -45,6 +45,9 @@
 ! 2015/07/03, OS: Added cldmask_uncertainty; added coefficients to calculate
 !    NOAA19 Ch3.7 reflectance + slight update for other platforms
 ! 2015/07/27, AP: Replaced sym structure with parameters.
+! 2015/11/17, OS: Added interpolation of ERA-Interim surface fields
+!    snow_depth and sea_ice_cover; data are used for defining snow/ice
+!    mask (here called NISE_MASK) input to neural net
 !
 ! $Id$
 !
@@ -300,7 +303,7 @@ contains
          start_line, end_line, start_pix, end_pix, npix
     logical :: day
     real    :: t4_filter_thresh, nir_ref
-    real(kind=sreal),allocatable,dimension(:,:) :: skint
+    real(kind=sreal),allocatable,dimension(:,:) :: skint,snow_depth,sea_ice_cover
     type(interpol_s), allocatable, dimension(:) :: interp
 
     ! --------------------------------------------------------------------
@@ -455,6 +458,12 @@ contains
     allocate(skint(imager_geolocation%startx:imager_geolocation%endx, &
          1:imager_geolocation%ny))
     skint=sreal_fill_value
+    allocate(snow_depth(imager_geolocation%startx:imager_geolocation%endx, &
+         1:imager_geolocation%ny))
+    snow_depth=sreal_fill_value
+    allocate(sea_ice_cover(imager_geolocation%startx:imager_geolocation%endx, &
+         1:imager_geolocation%ny))
+    sea_ice_cover=sreal_fill_value
     allocate(interp(1))
 
     do i=1,imager_geolocation%ny
@@ -465,6 +474,15 @@ contains
                imager_geolocation%latitude(j,i), interp(1))
 
           call interp_field (ecmwf%skin_temp, skint(j,i), interp(1))
+          call interp_field (ecmwf%snow_depth, snow_depth(j,i), interp(1))
+          call interp_field (ecmwf%sea_ice_cover, sea_ice_cover(j,i), interp(1))
+
+          if (((snow_depth(j,i) .GT. 0.01) .and. (imager_flags%LSFLAG(j,i) .EQ. 1_byte)) .OR. ((sea_ice_cover(j,i) .GT. 0.15) .and. (imager_flags%LSFLAG(j,i) .EQ. 0_byte))) then
+!          if ((snow_depth(j,i) .GT. 0.01) .OR. (sea_ice_cover(j,i) .GT. 0.15)) then
+             surface%NISE_MASK(j,i) = YES
+          else
+             surface%NISE_MASK(j,i) = NO
+          endif
 
        end do
     end do
@@ -690,6 +708,7 @@ contains
                i, j, &
                glint_angle, &
                sensor, &
+               platform, &
                verbose )
 
           ! now cycle if clear no need to define cloud type
