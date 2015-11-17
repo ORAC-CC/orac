@@ -166,6 +166,7 @@
 ! 2015/05/25, GM: Some cleanup involving Diag.
 ! 2015/07/31, AP: Rejig Diag for longer, variable state vector.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2015/11/17, OS: Minor edit.
 !
 ! $Id$
 !
@@ -440,7 +441,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Create NetCDF files and variables
    call build_qc_flag_masks(Ctrl, qc_flag_masks)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
-   call def_output_primary(ncid_primary, dims_var, output_data_1, Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, .false., .false., .true., .true., .false.)
+   call def_output_primary(ncid_primary, dims_var, output_data_1, &
+        Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
+        Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, &
+        qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
+        .false., .false., .true., .true., .false.)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, .false., write_covariance)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
