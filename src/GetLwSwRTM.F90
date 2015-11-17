@@ -97,12 +97,13 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
 
    status = 0
 
-   ! Bilinear interpolation (method taken from Numerical Recipes p96, 1987)
+   ! Compute bilinear interpolation coefficients common to all interpolations
    call bilinear_coef(RTM%LW%Grid%Lon0, RTM%LW%Grid%inv_delta_Lon, &
         RTM%LW%Grid%NLon, RTM%LW%Grid%Lat0, RTM%LW%Grid%inv_delta_Lat, &
         RTM%LW%Grid%NLat, SPixel%Loc%Lon, SPixel%Loc%Lat, interp, &
         RTM%LW%Grid%Wrap)
 
+   ! Bilinear interpolation
    call interp_field2(RTM%LW%P, SPixel%RTM%LW%P, interp)
    call interp_field2(RTM%LW%T, SPixel%RTM%LW%T, interp)
    call interp_field2(RTM%LW%H, SPixel%RTM%LW%H, interp)
@@ -133,6 +134,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Set R_Clear using Rbc_up at the TOA
    SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
 
+   ! Bilinear interpolation
    call interp_field2(RTM%LW%P, SPixel%RTM%SW%P, interp)
    if (Ctrl%Ind%NSolar .gt. 0) then
       call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
