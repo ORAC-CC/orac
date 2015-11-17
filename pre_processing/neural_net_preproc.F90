@@ -31,6 +31,8 @@
 !    ch2 is high and also ch3b has values gt 300 Kelvin
 ! 2015/06/24, SS: added cloud mask uncertainty
 ! 2015/10/29, CP: functionality for ATSR2 added added SteSta NN calibration corrections
+! 2015/11/17, OS: added platform flag and correction coefficients for MODIS and AATSR;
+!    removed sunglint double check; minor editing
 ! $Id$
 !
 ! Bugs:
@@ -49,12 +51,14 @@ contains
   subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
        & solzen, satzen, dem, niseflag, lsflag, &
        & lusflag, sfctype, cccot_pre, cldflag, cld_uncertainty, lat, skint, &
-       & ch3a_on_avhrr_flag, i, j, glint_angle, sensor_name, verbose)
+       & ch3a_on_avhrr_flag, i, j, glint_angle, sensor_name, platform, verbose)
     !------------------------------------------------------------------------
 
     use constants_cloud_typing_pavolonis
     use common_constants
     use neural_net_constants
+
+    implicit none
 
     integer(kind=sint) :: noob     !# of pixels out of bounds
     integer(kind=sint) :: nneurons !# of employed neurons
@@ -71,6 +75,7 @@ contains
 
     ! INPUT from cloud_type subroutine (module cloud_typing_pavolonis.F90)
     character(len=sensor_length),   intent(in)    :: sensor_name
+    character(len=platform_length), intent(in)    :: platform
     integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
     integer(kind=sint), intent(in) :: sfctype, ch3a_on_avhrr_flag
     integer(kind=lint), intent(in) :: dem
@@ -89,7 +94,7 @@ contains
     real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b, norm_diff_cc_th
     integer(kind=sint) :: glint_mask
     logical            :: call_neural_net
-
+    
     if ( glint_angle .lt. 40.0 .and. glint_angle .ne. sreal_fill_value ) then
        glint_mask = YES
     else
@@ -99,7 +104,10 @@ contains
     if ( channel1 .eq. sreal_fill_value ) then
        ch1 = channel1
     else
-       ch1 = min(106.,channel1 * 100.) ! Dont allow reflectance to be higher than trained
+       ch1 = channel1 * 100.
+       if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch1 = 0.8945 * ch1 + 2.217
+       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch1 = 0.8542 * ch1 + 2.822
+       ch1 = min(106.,ch1) ! Dont allow reflectance to be higher than trained
     endif
 
     if ( channel2 .eq. sreal_fill_value ) then
@@ -109,20 +117,37 @@ contains
           ch2 = channel2
        endif
     else
-       ch2 = min(104., channel2 * 100.) ! Dont allow reflectance to be higher than trained
+       ch2 = channel2 * 100.
+       if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch2 = 0.8336 * ch2 + 1.749
+       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch2 = 0.7787 * ch2 + 2.307
+       ch2 = min(104.,ch2) ! Dont allow reflectance to be higher than trained
     endif
 
-    if ( trim(adjustl(sensor_name)) .eq. 'AATSR' .or. trim(adjustl(sensor_name)) .eq. 'ATSR2') then
-       ! stefan calibration correction
-       ch1  = (0.854 * channel1 +   2.822/100.0)
-       ch2  = (0.779 * channel2 +   2.307/100.0)
-       ch3b  = (1.063 * channel3b  - 15.777)
-       ch4  = (0.979 * channel4  +   5.366)
-       ch5  = (0.990 * channel5  +   2.568)
+    if ( channel3b .eq. sreal_fill_value ) then
+       ch3b = channel3b
     else
        ch3b = channel3b
+       if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch3b = 0.9944 * ch3b + 1.152
+       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch3b = 1.0626 * ch3b - 15.777
+    endif
+
+    if ( channel4 .eq. sreal_fill_value ) then
        ch4 = channel4
+    else
+       ch4 = channel4
+       if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch4 = 0.9742 * ch4 + 7.205
+       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch4 = 0.9793 * ch4 + 5.366
+    endif
+
+    if ( channel5 .eq. sreal_fill_value ) then
        ch5 = channel5
+    else
+       ch5 = channel5
+       if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch5 = 0.9676 * ch5 + 8.408
+       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch5 = 0.9838 * ch5 + 4.255
+       ! use following instead of previous line if AATSR channel 5 (12 um)...
+       ! ...is NOT "non-linearity" corrected
+       ! if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch5 = 0.9901 * ch5 + 2.568
     endif
 
     btd_ch4_ch5  = ch4 - ch5
@@ -131,7 +156,7 @@ contains
     ! call neural net unless solzen is negative
     call_neural_net = .TRUE.
 
-    if ( ( solzen .gt. 0 ) .and. (solzen  .le. 80) ) then
+    if ( ( solzen .ge. 0. ) .and. (solzen  .le. 80) ) then
        illum_nn = 1
     elseif ( (solzen  .gt. 80) .and. (solzen .le. 90) ) then
        illum_nn = 2
@@ -139,6 +164,10 @@ contains
        illum_nn = 3
        ! use twilight net if ch3b is missing at night/twilight:
        if ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 2
+!       if ( ( ch3b .lt. NOAA7_9_CH3B_BT_THRES ) .and. ( (trim(adjustl(platform)) .eq. 'noaa7') &
+!            .or. (trim(adjustl(platform)) .eq. 'noaa9') ) ) then
+!          illum_nn = 2
+!       endif
     else
        illum_nn = 0
        ! if solzen is negative, do not call neural net
@@ -284,13 +313,11 @@ contains
        output = output - ( 1. / 12. * ( 1. / cos( satzen * d2r) - 1. ) )
 
        ! --- correct for sunglint - test phase for AVHRR
-       ! This probably needs to be done in future because the sunglint
-       ! correction does not really work for AATSR ; but at the moment
-       ! wait for the results
-!      if ((trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. &
-!          (trim(adjustl(sensor_name)) .eq. 'AVHRR')) then
-           output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
-!      endif
+       ! This probably needs to be done in future because the sunglint correction does not
+       ! really work for AATSR ; but at the moment wait for the results
+       !       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
+       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
+       !       endif
        ! --- ensure that CCCOT is within 0 - 1 range
        cccot_pre = max( min( output, 1.0 ), 0.0)
 
@@ -314,14 +341,14 @@ contains
              ! SNOW ICE
              if ( niseflag .eq. YES ) then
                 threshold_used = COT_THRES_DAY_SEA_ICE
-                if ( cccot_pre .gt. COT_THRES_DAY_SEA_ICE ) then
+                if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
                 endif
              else ! SNOW-ICE FREE
                  threshold_used = COT_THRES_DAY_SEA
-                 if ( cccot_pre .gt. COT_THRES_DAY_SEA ) then
+                 if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
@@ -331,35 +358,35 @@ contains
              ! SNOW ICE
              if ( niseflag .eq. YES ) then
                 threshold_used = COT_THRES_NIGHT_SEA_ICE
-                if ( cccot_pre .gt. COT_THRES_NIGHT_SEA_ICE ) then
+                if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
                 endif
              else ! SNOW ICE FREE
                  threshold_used = COT_THRES_NIGHT_SEA
-                 if ( cccot_pre .gt. COT_THRES_NIGHT_SEA ) then
+                 if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
                 endif
              endif
           endif
-       ! apply land threshold
+          ! apply land threshold
        elseif ( lsflag .eq. 1_byte ) then
           ! Day
           if (illum_nn .eq. 1 ) then
              ! SNOW ICE
              if ( niseflag .eq. YES ) then
                 threshold_used = COT_THRES_DAY_LAND_ICE
-                if ( cccot_pre .gt. COT_THRES_DAY_LAND_ICE ) then
+                if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
                 endif
              else ! SNOW ICE FREE
                 threshold_used = COT_THRES_DAY_LAND
-                if ( cccot_pre .gt. COT_THRES_DAY_LAND ) then
+                if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
@@ -369,26 +396,21 @@ contains
              ! SNOW ICE
              if ( niseflag .eq. YES ) then
                 threshold_used = COT_THRES_NIGHT_LAND_ICE
-                if ( cccot_pre .gt. COT_THRES_NIGHT_LAND_ICE ) then
+                if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
                 endif
              else ! SNOW ICE FREE
                 threshold_used = COT_THRES_NIGHT_LAND
-                if ( cccot_pre .gt. COT_THRES_NIGHT_LAND ) then
+                if ( cccot_pre .gt. threshold_used ) then
                    cldflag = CLOUDY
                 else
                    cldflag = CLEAR
                 endif
              endif
           endif
-!          if( cccot_pre .gt. COT_THRES_LAND ) then
-!             cldflag = CLOUDY
-!          else
-!             cldflag = CLEAR
-!          endif
-       endif
+      endif
 
        ! calculate Uncertainty with pre calculated calipso scores
        ! depending on normalized difference between cccot_pre and used threshold
@@ -437,16 +459,10 @@ contains
           !  below 0. (=fillvalue)
           if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
                & .and. ch5 .lt. 0) then
-               cldflag = byte_fill_value
-               cld_uncertainty = sreal_fill_value
+             cldflag = byte_fill_value
+             cld_uncertainty = sreal_fill_value
           endif
           ! end of noob if-loop
-       endif
-
-       ! double check sunglint
-       if ( ( glint_mask .eq. YES ) .and. ( cldflag .eq. CLOUDY ) .and. &
-            ( illum_nn .eq. 1 ) .and. ( lsflag .eq. 0_byte ) ) then
-          if ( ( ( ch1 .gt. 50. ) .or. ( ch2 .gt. 50. ) ) .and. ( ch3b .gt. 300.) ) cldflag = CLEAR
        endif
 
     else
