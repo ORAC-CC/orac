@@ -101,6 +101,7 @@
 !    Eliminated XI as not meaningful.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/08/08, CP: Added in ATSR-2 capability
+! 2015/11/17, OS: Added prob_opaque_ice_type to CldIce types to process
 !
 ! $Id$
 !
@@ -502,10 +503,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Types_to_process(2) = WATER_TYPE
       Ctrl%Types_to_process(3) = SUPERCOOLED_TYPE
    else if (Ctrl%Approach == CldIce) then
-      Ctrl%NTypes_to_process   = 3
+      Ctrl%NTypes_to_process   = 4
       Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
       Ctrl%Types_to_process(2) = CIRRUS_TYPE
       Ctrl%Types_to_process(3) = OVERLAP_TYPE
+      Ctrl%Types_to_process(4) = PROB_OPAQUE_ICE_TYPE
    else
       ! Accept everything
       Ctrl%NTypes_to_process   = MaxTypes

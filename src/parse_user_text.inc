@@ -159,16 +159,16 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
          ! Pavolonis cloud typing outputs
          case('CLEAR_TYPE','CLEAR')
             out = CLEAR_TYPE
-         case('PROB_CLEAR_TYPE','PROB_CLEAR')
-            out = PROB_CLEAR_TYPE
+         case('SWITCHED_TO_WATER_TYPE','SWITCHED_TO_WATER')
+            out = SWITCHED_TO_WATER_TYPE
          case('FOG_TYPE','FOG')
             out = FOG_TYPE
          case('WATER_TYPE','WATER')
             out = WATER_TYPE
          case('SUPERCOOLED_TYPE','SUPERCOOLED')
             out = SUPERCOOLED_TYPE
-         case('MIXED_TYPE','MIXED')
-            out = MIXED_TYPE
+         case('SWITCHED_TO_ICE_TYPE','SWITCHED_TO_ICE')
+            out = SWITCHED_TO_ICE_TYPE
          case('OPAQUE_ICE_TYPE','OPAQUE_ICE')
             out = OPAQUE_ICE_TYPE
          case('CIRRUS_TYPE','CIRRUS')
