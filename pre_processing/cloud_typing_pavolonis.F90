@@ -48,6 +48,7 @@
 ! 2015/11/17, OS: Added interpolation of ERA-Interim surface fields
 !    snow_depth and sea_ice_cover; data are used for defining snow/ice
 !    mask (here called NISE_MASK) input to neural net
+! 2015/11/18, OS: Replaced surface%NISE_MASK with local variable snow_ice_mask
 !
 ! $Id$
 !
@@ -304,6 +305,7 @@ contains
     logical :: day
     real    :: t4_filter_thresh, nir_ref
     real(kind=sreal),allocatable,dimension(:,:) :: skint,snow_depth,sea_ice_cover
+    integer(kind=byte), allocatable,dimension(:,:) :: snow_ice_mask
     type(interpol_s), allocatable, dimension(:) :: interp
 
     ! --------------------------------------------------------------------
@@ -464,6 +466,9 @@ contains
     allocate(sea_ice_cover(imager_geolocation%startx:imager_geolocation%endx, &
          1:imager_geolocation%ny))
     sea_ice_cover=sreal_fill_value
+    allocate(snow_ice_mask(imager_geolocation%startx:imager_geolocation%endx, &
+         1:imager_geolocation%ny))
+    snow_ice_mask=byte_fill_value
     allocate(interp(1))
 
     do i=1,imager_geolocation%ny
@@ -477,11 +482,13 @@ contains
           call interp_field (ecmwf%snow_depth, snow_depth(j,i), interp(1))
           call interp_field (ecmwf%sea_ice_cover, sea_ice_cover(j,i), interp(1))
 
-          if (((snow_depth(j,i) .GT. 0.01) .and. (imager_flags%LSFLAG(j,i) .EQ. 1_byte)) .OR. ((sea_ice_cover(j,i) .GT. 0.15) .and. (imager_flags%LSFLAG(j,i) .EQ. 0_byte))) then
-!          if ((snow_depth(j,i) .GT. 0.01) .OR. (sea_ice_cover(j,i) .GT. 0.15)) then
-             surface%NISE_MASK(j,i) = YES
+          if (((snow_depth(j,i) .GT. 0.01) .and. & 
+               (imager_flags%LSFLAG(j,i) .EQ. 1_byte)) .OR. & 
+               ((sea_ice_cover(j,i) .GT. 0.15) .and. & 
+               (imager_flags%LSFLAG(j,i) .EQ. 0_byte))) then
+             snow_ice_mask(j,i) = YES
           else
-             surface%NISE_MASK(j,i) = NO
+             snow_ice_mask(j,i) = NO
           endif
 
        end do
@@ -493,7 +500,7 @@ contains
     imager_pavolonis%SFCTYPE = imager_flags%LUSFLAG
 
     !-- correction of SFCTYPE with NISE aux. data
-    where (surface%NISE_MASK .eq. YES)
+    where (snow_ice_mask .eq. YES)
        imager_pavolonis%SFCTYPE = NISE_FLAG
     endwhere
 
@@ -696,7 +703,7 @@ contains
                imager_angles%SOLZEN(i,j,imager_angles%NVIEWS), &
                imager_angles%SATZEN(i,j,imager_angles%NVIEWS), &
                int(imager_geolocation%DEM(i,j), lint), &
-               surface%NISE_MASK(i,j), imager_flags%LSFLAG(i,j), &
+               snow_ice_mask(i,j), imager_flags%LSFLAG(i,j), &
                imager_flags%LUSFLAG(i,j), &
                imager_pavolonis%SFCTYPE(i,j), &
                imager_pavolonis%CCCOT_pre(i,j), &
