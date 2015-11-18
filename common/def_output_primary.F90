@@ -61,8 +61,8 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/08/08, CP: Added in ATSR time stamp
 ! 2015/10/24, CP: Added in st and CF compliance
+! 2015/10/24, CP: bug fix time
 ! 2015/11/17, OS: line 71 was too long for compiler 
-
 ! $Id$
 !
 ! Bugs:
@@ -120,7 +120,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
    ! time
    !----------------------------------------------------------------------------
    if (inst_name(1:5) .eq. 'AATSR' .or. inst_name(1:5) .eq. 'ATSR2') then
-      input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
+      input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
    else
       input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
    end if
