@@ -71,7 +71,7 @@ closedir dir;
 foreach (@source_file_list) {
 	s{.*/}{};
 	s/\.o//;
-	my $regex = "^$_\.($ext_regex_fxx)";
+	my $regex = "^$_\.($ext_regex_fxx)\$";
 	my @filelist = grep(/$regex/, @dir_list);
 	if (scalar @filelist > 1) {
 		die("ERROR: More than one extension for base name: $_");
