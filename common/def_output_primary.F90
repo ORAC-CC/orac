@@ -119,11 +119,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   if (inst_name(1:5) .eq. 'AATSR' .or. inst_name(1:5) .eq. 'ATSR2') then
-      input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
-   else
-      input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
-   end if
+   input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
 
    call nc_def_var_double_packed_double( &
            ncid, &

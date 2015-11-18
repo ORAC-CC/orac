@@ -89,15 +89,11 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-
-   output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
-
-
    if (Ctrl%InstName(1:5) .eq. 'ATSR2' .or. Ctrl%InstName(1:5) .eq. 'AATSR' ) then
-	   output_data%time(i,j)=MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)+2451545.0
+      output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0) + 2451545.0
+   else
+      output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
    endif
-
-
 
    !----------------------------------------------------------------------------
    ! lat, lon
