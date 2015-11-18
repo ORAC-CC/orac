@@ -14,7 +14,10 @@
 ! History:
 ! 2015/10/14, MC: Inital developement
 ! 2015/11/10, MC: Put into repository
+! 2015/11/16, MC: Added compression to NETDF output
 ! 2015/11/16, MC: Changed NetCDF output to include more digits by using nc_def_var_float_packed_float
+! 2015/11/17, MC: TOASWUP can now = 0 without triggering the skipflag.
+! 2015/11/18, MC: Output ASCII file with flux profile for the single pixel-optional argument.
 !
 ! $Id$
 !
@@ -32,6 +35,9 @@
 ! AATSR
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc 182 13487
 !
+! SEVIRI
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc 1500 1500
+!
 !-------------------------------------------------------------------------------
 
 program process_broadband_fluxes
@@ -46,7 +52,7 @@ program process_broadband_fluxes
    implicit none
 
    character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname
-   integer :: ncid, i, j, dims_var(2)
+   integer :: ncid, i, j, k, dims_var(2)
    logical, parameter :: verbose=.true.
    type(global_attributes_s) :: global_atts
    type(source_attributes_s) :: source_atts
@@ -600,126 +606,135 @@ program process_broadband_fluxes
       do j=pxY0,pxY1
 !      do j=pxY0,pxY0+1 !for testing
 
-      !surface albedo
-      pxAsfcSWR = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
-      pxAsfcNIR = (rho_dd(i,j,ch3ID)*ch3WT+rho_dd(i,j,ch4ID)*ch4WT)/(ch3WT+ch4WT)
-        !*note*
-        !weights are based on the fraction of planck radiation integrated over the band width
-        !based on heritage channels 1,2, shortwave & 3,4 NIR
+      !Valid lat/lon required to run (needed for SEVIRI)
+      if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
 
-      !solar zenith angle
-      pxTheta = COS( SOLZ(i,j) * Pi/180.)
+       !surface albedo
+       pxAsfcSWR = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
+       pxAsfcNIR = (rho_dd(i,j,ch3ID)*ch3WT+rho_dd(i,j,ch4ID)*ch4WT)/(ch3WT+ch4WT)
+         !*note*
+         !weights are based on the fraction of planck radiation integrated over the band width
+         !based on heritage channels 1,2, shortwave & 3,4 NIR
 
-      !meteorology
-      call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
-                              xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
-                              LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
+       !solar zenith angle
+       pxTheta = COS( SOLZ(i,j) * Pi/180.)
+ 
+       !meteorology
+       call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
+                               xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
+                               LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
 
-      !use to debug current interpolation scheme
-      !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
-      !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
-       !print*,tlonid,tlatid
-       !set value
-      ! inH(:)= H(:,tlonid,tlatid)
-      ! inT_(:)= T(:,tlonid,tlatid)
-      ! inP(:)= P(:,tlonid,tlatid)
-      ! inQ(:)= Q(:,tlonid,tlatid)
-      ! inO3(:) = O3(:,tlonid,tlatid)
-      !call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS) !standard profile if wanted
+       !use to debug current interpolation scheme
+       !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
+       !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
+        !print*,tlonid,tlatid
+        !set value
+       ! inH(:)= H(:,tlonid,tlatid)
+       ! inT_(:)= T(:,tlonid,tlatid)
+       ! inP(:)= P(:,tlonid,tlatid)
+       ! inQ(:)= Q(:,tlonid,tlatid)
+       ! inO3(:) = O3(:,tlonid,tlatid)
+       !call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS) !standard profile if wanted
 
-      !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
-      pxZ = inH(mask_vres)
-      pxP = inP(mask_vres)
-      pxT = inT_(mask_vres)
-      pxQ = inQ(mask_vres)
-      pxO3 = inO3(mask_vres)
+       !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
+       pxZ = inH(mask_vres)
+       pxP = inP(mask_vres)
+       pxT = inT_(mask_vres)
+       pxQ = inQ(mask_vres)
+       pxO3 = inO3(mask_vres)
 
-      !Surface temperature
-      pxts = pxT(NLS)
+       !Surface temperature
+       pxts = pxT(NLS)
 
-      !cloud base & top height calculation
-      call preprocess_bugsrad(cc_tot(i,j),0.,0.,phase(i,j),&
-                       CTT(i,j),REF(i,j),COT(i,j),CTH(i,j),&
-                       NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
-                       pxPhaseFlag,pxLayerType,&
-                       pxregime,pxcomputationFlag,pxHctopID,pxHcbaseID)
+!         print*,'latitude: ',LAT(i,j)
+!         print*,'longitude: ',LON(i,j)
+!         print*,'Sat Phase: ',PHASE(i,j)
+!         print*,'Sat retr. CTH = ',CTH(i,j)
+!         print*,'Sat retr. CTT = ',CTT(i,j)
+!         print*,'SAT retr. REF = ',REF(i,j)
+!         print*,'SAT retr. COT = ',COT(i,j)
+!         print*,'SAT retr. cc_tot = ',cc_tot(i,j)
 
+       !cloud base & top height calculation
+       call preprocess_bugsrad(cc_tot(i,j),0.,0.,phase(i,j),&
+                        CTT(i,j),REF(i,j),COT(i,j),CTH(i,j),&
+                        NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
+                        pxPhaseFlag,pxLayerType,&
+                        pxregime,pxcomputationFlag,pxHctopID,pxHcbaseID)
 
-      !for detecting NaN's produced by BUGSrad
-      nanFlag=0
+       !for detecting NaN's produced by BUGSrad
+       nanFlag=0
 
-      !Run BUGSrad over valid retrieval
-!     if(pxcomputationFlag == 1 .and. nanFlag == 0) then
+       !Run BUGSrad over valid retrieval
+!      if(pxcomputationFlag == 1 .and. nanFlag == 0) then
 
-        !print statements for debugging
-        !print*,'phase: ',pxPhaseFlag
-        !print*,'re :',pxREF
-        !print*,'tau :',pxCOT
-        !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
-        !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
-        !print*,'Sat retr. CTH = ',CTH(i,j)
-        !print*,'Regime: ',pxregime
-      
+         !debugging (print statements)
+!         print*,'phase: ',pxPhaseFlag
+!         print*,'re :',pxREF
+!         print*,'tau :',pxCOT
+!         print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
+!         print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
+!         print*,'Regime: ',pxregime      
 
-        call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWR,pxAsfcNIR,pxts,&
-                         pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
-                         pxHctopID,pxHcbaseID,&
-                         pxZ,pxP,pxT,pxQ,pxO3,&
-                         pxtoalwup,pxtoaswdn,pxtoaswup,&
-                         pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
-                         pxtoalwupclr,pxtoaswupclr,&
-                         pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
-                         bpar,bpardif,tpar,&
-                         ulwfx,dlwfx,uswfx,dswfx,&
-                         ulwfxclr,dlwfxclr,uswfxclr,dswfxclr)
+         call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWR,pxAsfcNIR,pxts,&
+                          pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
+                          pxHctopID,pxHcbaseID,&
+                          pxZ,pxP,pxT,pxQ,pxO3,&
+                          pxtoalwup,pxtoaswdn,pxtoaswup,&
+                          pxboalwup,pxboalwdn,pxboaswdn,pxboaswup,&
+                          pxtoalwupclr,pxtoaswupclr,&
+                          pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
+                          bpar,bpardif,tpar,&
+                          ulwfx,dlwfx,uswfx,dswfx,&
+                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr)
 
-          !print*,pxtoalwup,pxtoaswdn,pxtoaswup
-          !print*,pxtoalwupclr,pxtoaswupclr
-          !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-          !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-          !print*,bpar,bpardif
-          !if(j .eq. 10) stop
+!           print*,pxtoalwup,pxtoaswdn,pxtoaswup
+!           print*,pxtoalwupclr,pxtoaswupclr
+!           print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+!           print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+!           print*,bpar,bpardif
+           !if(j .eq. 10) stop
 
-        !catch NaN
-        if(pxtoalwup .le. 0. .or. pxtoalwup .gt. 1500.) nanFlag=1
-        if(pxtoaswup .le. 0. .or. pxtoaswup .gt. 1500.) nanFlag=1
-        if(pxtoalwupclr .le. 0. .or. pxtoalwupclr .gt. 1500.) nanFlag=1
-        if(pxtoaswupclr .le. 0. .or. pxtoaswupclr .gt. 1500.) nanFlag=1
+         !catch NaN
+         if(pxtoalwup .le. 0. .or. pxtoalwup .gt. 1500.) nanFlag=1
+         if(pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1500.) nanFlag=1
+         if(pxtoalwupclr .le. 0. .or. pxtoalwupclr .gt. 1500.) nanFlag=1
+         if(pxtoaswupclr .lt. 0. .or. pxtoaswupclr .gt. 1500.) nanFlag=1
 
-        !regime type
-        retrflag(i,j) = pxregime
+         !regime type
+         retrflag(i,j) = pxregime
 
-        !valid data only
-        if(nanFlag == 0) then
-         !netCDF output arrays
-         !Observed
-         lat_data(i,j) = LAT(i,j)! * var_scale_geo
-         lon_data(i,j) = LON(i,j)! * var_scale_geo
+         !valid data only
+         if(nanFlag == 0) then
+          !netCDF output arrays
+          !Observed
+          lat_data(i,j) = LAT(i,j)
+          lon_data(i,j) = LON(i,j)
 
-         toa_lwup(i,j) = pxtoalwup! * var_scale
-         toa_swup(i,j) = pxtoaswup! * var_scale
-         toa_swdn(i,j) = pxtoaswdn! * var_scale
-         boa_lwup(i,j) = pxboalwup! * var_scale
-         boa_lwdn(i,j) = pxboalwdn! * var_scale
-         boa_swup(i,j) = pxboaswup! * var_scale
-         boa_swdn(i,j) = pxboaswdn! * var_scale
+          toa_lwup(i,j) = pxtoalwup
+          toa_swup(i,j) = pxtoaswup
+          toa_swdn(i,j) = pxtoaswdn
+          boa_lwup(i,j) = pxboalwup
+          boa_lwdn(i,j) = pxboalwdn
+          boa_swup(i,j) = pxboaswup
+          boa_swdn(i,j) = pxboaswdn
 
-         !Clear-sky retrieval
-         toa_lwup_clr(i,j) = pxtoalwupclr! * var_scale
-         toa_swup_clr(i,j) = pxtoaswupclr! * var_scale
-         boa_lwup_clr(i,j) = pxboalwupclr! * var_scale
-         boa_lwdn_clr(i,j) = pxboalwdnclr! * var_scale
-         boa_swup_clr(i,j) = pxboaswupclr! * var_scale
-         boa_swdn_clr(i,j) = pxboaswdnclr! * var_scale
+          !Clear-sky retrieval
+          toa_lwup_clr(i,j) = pxtoalwupclr
+          toa_swup_clr(i,j) = pxtoaswupclr
+          boa_lwup_clr(i,j) = pxboalwupclr
+          boa_lwdn_clr(i,j) = pxboalwdnclr
+          boa_swup_clr(i,j) = pxboaswupclr
+          boa_swdn_clr(i,j) = pxboaswdnclr
 
-         !PAR
-         toa_par_tot(i,j) = tpar! * var_scale
-         boa_par_tot(i,j) = bpar! * var_scale
-         boa_par_dif(i,j) = bpardif! * var_scale
+          !PAR
+          toa_par_tot(i,j) = tpar
+          boa_par_tot(i,j) = bpar
+          boa_par_dif(i,j) = bpardif
 
-
-        endif !valid data
-!      endif !user-defined
+         endif !valid data
+!       endif !user-defined
+      endif   !valid geolocation data
     enddo !j-loop
    enddo !i-loop
 
@@ -728,13 +743,26 @@ program process_broadband_fluxes
 if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
  do i=pxX0,pxX1
  do j=pxY0,pxY1
-  print*,i,j
-  print*,'toa_swdn: ',toa_swdn(i,j) / var_scale
-  print*,'toa_lwup    : ',toa_lwup(i,j) / var_scale
-  print*,'toa_lwup_clr: ',toa_lwup_clr(i,j) / var_scale
-  print*,'toa_swup: ',toa_swup(i,j) / var_scale
-  print*,'toa_swup_clr: ',toa_swup_clr(i,j) / var_scale
-  print*,'toa_albedo: ',toa_swup(i,j)/toa_swdn(i,j) / var_scale
+  print*,'i = ',i,' j = ',j
+  print*,'toa_swdn    : ',toa_swdn(i,j)
+  print*,'toa_lwup    : ',toa_lwup(i,j)
+  print*,'toa_lwup_clr: ',toa_lwup_clr(i,j)
+  print*,'toa_swup    : ',toa_swup(i,j)
+  print*,'toa_swup_clr: ',toa_swup_clr(i,j)
+  print*,'toa_albedo  : ',toa_swup(i,j)/toa_swdn(i,j)
+  print*,'boa_par_tot : ',boa_par_tot(i,j)
+  print*,'boa_par_dif : ',boa_par_dif(i,j)
+
+  !write profile of last pixel to ascii file 
+  !(to write out more than 1 pixel would take tremendous memory)
+  open(unit=1,file=trim(fname),status="new",action="write")
+   write(unit=1, fmt=*) " Fluxes   Plev       SW_DN       SW_UP       LW_DN       LW_UP"
+   write(unit=1, fmt=*) "            Pa       W/m^2       W/m^2       W/m^2       W/m^2"
+  do k=1,NLS
+    write(unit=1, fmt="(I4,5(F12.3))") k,pxP(k),dswfx(1,k),uswfx(1,k),dlwfx(1,k),ulwfx(1,k)
+  enddo
+  close(unit=1)
+
  enddo
  enddo
 endif
@@ -1240,7 +1268,7 @@ end if
       end if
 
 print*,'CREATED:'
-print*,fname
+print*,TRIM(fname)
 endif !netCDF mode
 
 end program process_broadband_fluxes
