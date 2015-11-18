@@ -89,6 +89,7 @@
 ! 2015/08/21, AP: Tidying comments; Ordering variables logically; Adding WvlIdx;
 !    Renaming Flags as Selm; Introducing XJ;
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2015/11/18, GM: Add Ind%Y_Id_11_micron and Ind%Y_Id_12_micron.
 !
 ! $Id$
 !
@@ -133,6 +134,10 @@ module CTRL_def
       integer, pointer       :: Y_Id(:)            ! Instrument IDs for used chs
       integer, pointer       :: ICh(:)             ! Index used chs out of those
                                                    ! available in file
+      integer                :: Y_Id_11_micron     ! The closest available 11
+                                                   ! micron channel or -1 otherwise
+      integer                :: Y_Id_12_micron     ! The closest available 12
+                                                   ! micron channel or -1 otherwise
       integer                :: NSolar             ! No. of chs with solar source
       integer                :: NThermal           ! No. of chs w/ thermal source
       integer                :: NMixed             ! Number of mixed solar/

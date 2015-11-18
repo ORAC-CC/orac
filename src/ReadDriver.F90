@@ -102,6 +102,7 @@
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/08/08, CP: Added in ATSR-2 capability
 ! 2015/11/17, OS: Added prob_opaque_ice_type to CldIce types to process
+! 2015/11/18, GM: Add setting of Ctrl%Ind%Y_Id_**_micron.
 !
 ! $Id$
 !
@@ -517,6 +518,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    !---------------- CTRL INDEXING CHANNELS ---------------
    ! See Ctrl.F90 for descriptions of the variables initialized below.
    if (Ctrl%InstName(1:5) .eq. 'AATSR' .or. Ctrl%InstName(1:5) .eq. 'ATSR2') then
+      Ctrl%Ind%Y_Id_11_micron = 6
+      Ctrl%Ind%Y_Id_12_micron = 7
+
       allocate(Ctrl%ReChans(2))
       Ctrl%ReChans = (/ 5, 4 /)
 
@@ -527,6 +531,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 5, 6, 7 /)
    else if (Ctrl%InstName(1:5) .eq. 'AVHRR') then
+      Ctrl%Ind%Y_Id_11_micron = 5
+      Ctrl%Ind%Y_Id_12_micron = 6
+
       allocate(Ctrl%ReChans(2))
       if (Ctrl%InstName(7:12) .eq. 'NOAA17') then
          Ctrl%ReChans = (/ 3, 4 /)
@@ -541,6 +548,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 4, 5, 6 /)
    else if (Ctrl%InstName(1:5) .eq. 'MODIS') then
+      Ctrl%Ind%Y_Id_11_micron = 31
+      Ctrl%Ind%Y_Id_12_micron = 32
+
       allocate(Ctrl%ReChans(4))
       Ctrl%ReChans = (/ 20, 6, 7, 5 /)
 
@@ -551,6 +561,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       allocate(Ctrl%ir_chans(3))
       Ctrl%ir_chans  = (/ 20, 31, 32 /)
    else if (Ctrl%InstName(1:6) .eq. 'SEVIRI') then
+      Ctrl%Ind%Y_Id_11_micron = 9
+      Ctrl%Ind%Y_Id_12_micron = 10
+
       allocate(Ctrl%ReChans(2))
       Ctrl%ReChans = (/ 4, 3 /)
 
@@ -729,7 +742,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
 
 
-   Ctrl%do_CTP_correction       = .false.
+   Ctrl%do_CTP_correction = .false.
 
 
    !----------------------------------------------------------------------------

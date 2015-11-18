@@ -169,6 +169,7 @@
 ! 2015/10/21, GM: Pulled evaluation of cloud albedo out of the FM and into here
 !    after the retrieval iteration.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/11/18, GM: Add call to Calc_Corrected_CTX().
 !
 ! $Id$
 !
@@ -681,6 +682,14 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    else
       Diag%cloud_albedo = 0
    end if
+
+
+   if (Ctrl%do_CTP_correction) then
+      call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
+   else
+      SPixel%CTH_corrected       = MissingXn
+      SPixel%CTH_corrected_error = MissingSn
+   endif
 
 
    ! Costs are divided by number of active instrument channels before output.

@@ -93,6 +93,7 @@
 !    check_value routines. Remove check_value.
 ! 2015/07/29, AP: Remove QC.
 ! 2015/08/13, AP: Add Calculate_ND for NDVI and NDSI calculcation.
+! 2015/11/18, GM: Add CTH_corrected and CTH_corrected_error (uncertainty).
 !
 ! $Id$
 !
@@ -234,6 +235,7 @@ module SPixel_def
       type(Surface_t)     :: Surface      ! Super-pixel surface flag info
       type(SPixel_Ind_t)  :: Ind          ! Numbers and indices of channels
       integer, pointer    :: Illum(:)     ! Illumination flag (day,twi, night)
+      real,    pointer    :: f0(:)        ! Solar constant
       integer             :: FG(MaxStateVar)
                                           ! Methods for setting first guess
                                           ! state vector, matched to
@@ -278,8 +280,9 @@ module SPixel_def
       real                :: SnSav(MaxStateVar, MaxStateVar)
                                           ! Error values for XnSav.
       real                :: CWP          ! Cloud water path
-      real                :: CWP_Error    ! Cloud water path error
-      real,    pointer    :: f0(:)        ! Solar constant
+      real                :: CWP_error    ! Cloud water path error
+      real                :: CTH_corrected
+      real                :: CTH_corrected_error
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
                                           ! Map SPixel measurement index space to
                                           !     CRTL   measurement index space

@@ -283,12 +283,10 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! cth_corrected, cth_corrected_error
    !----------------------------------------------------------------------------
-   if (RTM_Pc%Hc .eq. MissingXn) then
+   if (SPixel%CTH_corrected .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = sreal_fill_value
-      ! Placeholder
-!     temp_real = RTM_Pc%Hc/10./1000. ! now it's in km
+      temp_real = SPixel%CTH_corrected/10./1000. ! now it's in km
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cth_corrected(i,j), &
@@ -298,23 +296,17 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            output_data%cth_vmax)
 
    ! If ctp_error is good compute cth_corrected_error
-   if (temp_real_ctp_error .eq. sreal_fill_value) then
-      output_data%cth_corrected_error(i,j)=sint_fill_value
-   else if (temp_short_ctp_error .lt. output_data%ctp_error_vmin) then
-      output_data%cth_corrected_error(i,j)=sint_fill_value
-   else if (temp_short_ctp_error .gt. output_data%ctp_error_vmax) then
-      output_data%cth_corrected_error(i,j)=output_data%cth_error_vmax
+   if (SPixel%CTH_corrected_error .eq. MissingSn) then
+      temp_real = sreal_fill_value
    else
-      temp_real=sreal_fill_value
-      ! Placeholder
-!     temp_real=abs(RTM_Pc%dHc_dPc/10./1000.)*temp_real_ctp_error
-      call prepare_short_packed_float( &
-           temp_real, output_data%cth_corrected_error(i,j), &
-           output_data%cth_error_scale, output_data%cth_error_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cth_error_vmin, output_data%cth_error_vmax, &
-           output_data%cth_error_vmax)
+      temp_real = SPixel%CTH_corrected_error/10./1000. ! now it's in km
    end if
+   call prepare_short_packed_float( &
+        temp_real, output_data%cth_corrected_error(i,j), &
+        output_data%cth_error_scale, output_data%cth_error_offset, &
+        sreal_fill_value, sint_fill_value, &
+        output_data%cth_error_vmin, output_data%cth_error_vmax, &
+        output_data%cth_error_vmax)
 
    !----------------------------------------------------------------------------
    ! ctt, ctt_error

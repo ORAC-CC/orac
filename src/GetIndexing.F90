@@ -141,7 +141,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! Select appropriate logic for channel selection
    select case (Ctrl%Approach)
-   case (CldWat, CldIce)
+   case (CldWat, CldIce, AshEyj)
       call cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                 X, XJ, XI, status)
    end select
@@ -150,7 +150,7 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Set up the active and inactive state variable indexes and associated counts
    deallocate(SPixel%X)
    allocate(SPixel%X(SPixel%Nx))
-   SPixel%X  = X(1:SPixel%Nx)
+   SPixel%X = X(1:SPixel%Nx)
 
    deallocate(SPixel%XJ)
    if (SPixel%NXJ > 0) then
