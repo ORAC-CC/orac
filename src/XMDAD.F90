@@ -218,7 +218,7 @@ else
             status = XMDADMeth
             write(*,*) 'WARNING: X_MDAD(): Invalid thermal data'
          end if
-endif
+end if
       else ! Can't calculate Pc if required LW channels not selected
          status = XMDADMeth
 !         write(*,*) 'WARNING: X_MDAD(): Cant calculate Pc if required LW channels not selected'

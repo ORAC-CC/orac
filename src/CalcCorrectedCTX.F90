@@ -37,7 +37,7 @@ function get_i_spixel_thermal(Ctrl, SPixel) result(i_spixel_thermal)
       if (Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(i)) .eq. 32) then
          i_spixel_thermal = i
          exit
-      endif
+      end if
    enddo
 
 end function get_i_spixel_thermal
@@ -152,19 +152,19 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    i_spixel_11_thermal = 0
    do i = 1, SPixel%Ind%NThermal
       if (Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(i)) .eq. &
-          Ctrl%Ind%Y_Id_11_micron) then
+          Ctrl%Ind%Y_Id_legacy(I_legacy_11_x)) then
          i_spixel_11_thermal = i
          exit
-      endif
+      end if
    enddo
 
    i_spixel_12_thermal = 0
    do i = 1, SPixel%Ind%NThermal
       if (Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(i)) .eq. &
-          Ctrl%Ind%Y_Id_12_micron) then
+          Ctrl%Ind%Y_Id_legacy(I_legacy_12_x)) then
          i_spixel_12_thermal = i
          exit
-      endif
+      end if
    enddo
 
    i_spixel_11 = SPixel%Ind%YThermal(i_spixel_11_thermal)

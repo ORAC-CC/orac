@@ -8,7 +8,8 @@
 ! 2015/09/06, GM: Original version created for the parts of output_routines.F90
 !    that were not moved into common/ including the prepare routines and
 !    string_description_of_state().
-! 2015/09/06, GM: Added build_qc_flag_meanings().
+! 2015/11/14, GM: Added build_qc_flag_meanings().
+! 2015/11/19, GM: Added support for x_xx_um_legacy_channel_used masks.
 !
 ! $Id$
 !
@@ -134,15 +135,21 @@ subroutine build_qc_flag_masks(Ctrl, str)
    character(len=*), intent(out) :: str
 
    integer          :: i
-   character(len=5) :: temp_str
+   character(len=8) :: temp_str
    character(len=8) :: state_label
 
    str = '1b'
    do i = 1, Ctrl%Nx(IDay)
       write(temp_str, '(I5)') 2**i
       if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
-           str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b' 
+           str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b'
    end do
+
+   do i = 1, N_legacy
+      write(temp_str, '(I5)') 2**(i + 4)
+      str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b'
+   end do
+
 end subroutine build_qc_flag_masks
 
 
@@ -179,6 +186,13 @@ subroutine build_qc_flag_meanings(Ctrl, str)
       if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
            str = trim(str) // ' ' // trim(state_label) // '_out_of_range'
    end do
+
+   str = trim(str) // ' ' // '0_63_um_legacy_channel_used'
+   str = trim(str) // ' ' // '0_86_um_legacy_channel_used'
+   str = trim(str) // ' ' // '1_61_um_legacy_channel_used'
+   str = trim(str) // ' ' // '3_74_um_legacy_channel_used'
+   str = trim(str) // ' ' // '10_8_um_legacy_channel_used'
+   str = trim(str) // ' ' // '12_0_um_legacy_channel_used'
 
 end subroutine build_qc_flag_meanings
 

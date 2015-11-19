@@ -689,7 +689,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    else
       SPixel%CTH_corrected       = MissingXn
       SPixel%CTH_corrected_error = MissingSn
-   endif
+   end if
 
 
    ! Costs are divided by number of active instrument channels before output.

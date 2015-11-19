@@ -94,7 +94,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
    allocate(MSI_Data%cldmask_uncertainty(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%cccot_pre(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
 
-!   call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
+!  call nc_read_array(ncid, "cflag", MSI_Data%CloudFlags, Ctrl%verbose)
    call nc_read_array(ncid, "cldtype", MSI_Data%cldtype, Ctrl%verbose)
    call nc_read_array(ncid, "cldmask", MSI_Data%cldmask, Ctrl%verbose)
    call nc_read_array(ncid, "cldmask_uncertainty", MSI_Data%cldmask_uncertainty, Ctrl%verbose)
@@ -108,7 +108,7 @@ subroutine Read_CloudFlags_nc(Ctrl, MSI_Data)
       where (MSI_Data%cldmask .eq. 0)
          MSI_Data%Type = byte_fill_value
       endwhere
-   endif
+   end if
 
    ! Close cloud flag file
    if (nf90_close(ncid) /= NF90_NOERR) then

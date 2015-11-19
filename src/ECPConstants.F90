@@ -78,6 +78,7 @@
 ! 2015/08/20, AP: Removed AUXErr terms. Added indices for XIndex, B, and
 !    Approach along with SelmPrev.
 ! 2015/10/19, GM: Added index for Bext LUT.
+! 2015/11/19, GM: Added index values for the Ctrl%Ind%Y_Id_legacy index.
 !
 ! $Id$
 !
@@ -173,6 +174,16 @@ module ECP_constants
    ! Codes for FM LUT interpolation methods
    integer, parameter :: LUTIntMethLinear  = 0
    integer, parameter :: LUTIntMethBicubic = 1
+
+   ! Index of legacy channels in Ctrl%Ind%Y_Id_legacy
+   integer, parameter :: N_legacy          = 6
+
+   integer, parameter :: I_legacy_0_6x     = 1
+   integer, parameter :: I_legacy_0_8x     = 2
+   integer, parameter :: I_legacy_1_6x     = 3
+   integer, parameter :: I_legacy_3_xx     = 4
+   integer, parameter :: I_legacy_11_x     = 5
+   integer, parameter :: I_legacy_12_x     = 6
 
    ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
    ! functions Set_CRP_Solar and Set_CRP_Thermal).

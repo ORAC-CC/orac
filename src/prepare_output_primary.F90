@@ -93,7 +93,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0) + 2451545.0
    else
       output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
-   endif
+   end if
 
    !----------------------------------------------------------------------------
    ! lat, lon

@@ -60,6 +60,7 @@
 ! 2015/07/28, AP: Remove status argument (as routine cannot feasibly fail).
 ! 2015/07/29, AP: Remove NPhaseChanges argument.
 ! 2015/07/31, AP: Rejig QCFlag for much longer state vector.
+! 2015/11/19, GM: Add Legacy channels used to QCFlag (6 bits).
 !
 ! $Id$
 !
@@ -122,6 +123,14 @@ subroutine Set_Diag(Ctrl, SPixel, convergence, J, Jm, Ja, iter, Y, Sy, Diag)
          Diag%QCFlag = ibset(Diag%QCFlag, &
                              find_in_array(Ctrl%X(1:Ctrl%Nx(IDay),IDay), &
                                            SPixel%X(m)))
+   end do
+
+   ! Flag legacy channels used *6 bits).
+   do m = 1, N_Legacy
+      if (find_in_array(Ctrl%Ind%Y_Id(SPixel%spixel_y_to_ctrl_y_index(1:SPixel%Ind%Ny)), &
+                        Ctrl%Ind%Y_Id_legacy(m)) .gt. 0) then
+         Diag%QCFlag = ibset(Diag%QCFlag, Ctrl%Nx(IDay) + m)
+      end if
    end do
 
    Diag%Iterations = iter
