@@ -8,7 +8,8 @@
 ! 2015/09/06, GM: Original version created for the parts of output_routines.F90
 !    that were not moved into common/ including the prepare routines and
 !    string_description_of_state().
-! 2015/11/14, GM: Added build_qc_flag_meanings().
+! 2015/09/06, GM: Added build_qc_flag_meanings().
+! 2015/11/14, GM: Added build_qc_flag_masks().
 ! 2015/11/19, GM: Added support for x_xx_um_legacy_channel_used masks.
 !
 ! $Id$

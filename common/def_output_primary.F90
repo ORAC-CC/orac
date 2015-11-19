@@ -62,7 +62,10 @@
 ! 2015/08/08, CP: Added in ATSR time stamp
 ! 2015/10/24, CP: Added in st and CF compliance
 ! 2015/10/24, CP: bug fix time
-! 2015/11/17, OS: line 71 was too long for compiler 
+! 2015/11/14, GM: Fix some of the recent CF compliance fixes.
+! 2015/11/17, OS: line 71 was too long for compiler
+! 2015/10/24, GM: Fix flag_values and flag_meanings for lsflag.
+!
 ! $Id$
 !
 ! Bugs:
@@ -774,7 +777,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &
            valid_max     = output_data%qcflag_vmax, &
-	   flag_masks    = trim(qc_flag_masks), &
+           flag_masks    = trim(qc_flag_masks), &
            flag_meanings = trim(qc_flag_meanings), &
            units         = '1', &
            deflate_level = deflate_level, &
@@ -796,9 +799,9 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
            add_offset    = output_data%lsflag_offset, &
            valid_min     = output_data%lsflag_vmin, &
            valid_max     = output_data%lsflag_vmax, &
-	   units         = '1' , &
-           flag_values   = '0b  1b  2b  3b  4b  5b ', &
-           flag_meanings = 'sea  land  sunglint  snow  ice  snow_and_ice', &
+           units         = '1', &
+           flag_values   = '0b 1b', &
+           flag_meanings = 'sea land', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -818,7 +821,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
            add_offset    = output_data%lusflag_offset, &
            valid_min     = output_data%lusflag_vmin, &
            valid_max     = output_data%lusflag_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            flag_values   = '0b 1b 2b 3b 4b 5b 6b 7b 8b 9b 10b ' // &
                            '11b 12b 13b 14b 15b 16b 17b 18b 19b ' // &
                            '20b 21b 22b 23b 24b', &
@@ -867,7 +870,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
            add_offset    = output_data%dem_offset, &
            valid_min     = output_data%dem_vmin, &
            valid_max     = output_data%dem_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -887,9 +890,9 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
            add_offset    = output_data%nisemask_offset, &
            valid_min     = output_data%nisemask_vmin, &
            valid_max     = output_data%nisemask_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            flag_values   = '0b 1b', &
-           flag_meanings = 'snow_ice_free, snow_ice', &
+           flag_meanings = 'snow_ice_free snow_ice', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -909,9 +912,9 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
            add_offset    = output_data%illum_offset, &
            valid_min     = output_data%illum_vmin, &
            valid_max     = output_data%illum_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            flag_values   ='1b 2b 3b', &
-           flag_meanings ='Day Twilight Night', &
+           flag_meanings ='day twilight night', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -942,7 +945,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
            add_offset    = output_data%cldtype_offset, &
            valid_min     = output_data%cldtype_vmin, &
            valid_max     = output_data%cldtype_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            flag_values   = '0b 1b 2b 3b 4b 5b 6b 7b 8b 9b', &
            flag_meanings = trim(adjustl(input_dummy)), &
            deflate_level = deflate_level, &
@@ -965,7 +968,7 @@ if (do_cldmask) then
            add_offset    = output_data%cldmask_offset, &
            valid_min     = output_data%cldmask_vmin, &
            valid_max     = output_data%cldmask_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            flag_values   = '0b 1b', &
            flag_meanings = 'clear cloudy', &
            deflate_level = deflate_level, &
@@ -988,7 +991,7 @@ if (do_cldmask_uncertainty) then
            add_offset    = output_data%cldmask_uncertainty_offset, &
            valid_min     = output_data%cldmask_uncertainty_vmin, &
            valid_max     = output_data%cldmask_uncertainty_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
@@ -1011,7 +1014,7 @@ if (do_cloudmask_pre) then
            valid_max     = output_data%cldmask_vmax, &
            flag_values   = '0b 1b', &
            flag_meanings = 'clear cloudy', &
-	   units         = '1' , &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
@@ -1031,7 +1034,7 @@ end if
            add_offset    = output_data%cccot_pre_offset, &
            valid_min     = output_data%cccot_pre_vmin, &
            valid_max     = output_data%cccot_pre_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -1053,7 +1056,7 @@ end if
            valid_max     = output_data%phase_vmax, &
            flag_values   = '0b 1b 2b', &
            flag_meanings = 'clear/unknown liquid ice', &
-	   units         = '1' , &
+           units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
@@ -1074,7 +1077,7 @@ if (do_phase_pavolonis) then
            add_offset    = output_data%phase_pavolonis_offset, &
            valid_min     = output_data%phase_pavolonis_vmin, &
            valid_max     = output_data%phase_pavolonis_vmax, &
-	   units         = '1' , &
+           units         = '1', &
            flag_values   = '0b 1b 2b', &
            flag_meanings = 'clear/unknown liquid ice', &
            deflate_level = deflate_level, &
