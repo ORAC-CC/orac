@@ -38,6 +38,9 @@
 !    the lut (lut%n) to the static size of lut%julday.
 ! 2014/01/27, MJ: data type corrections
 ! 2014/06/30, GM: Apply 12um nonlinearity brightness temperature correction.
+! 2015/11/20, GM: Minor bug fix to real constants.  For example: 26_dreal
+!    results in an 8 byte integer so that 26_dreal/60_dreal will be zero.  It
+!    should be 26._dreal to get the intended result. 
 !
 ! $Id$
 !
@@ -157,9 +160,9 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    A(3,:)=(/ 0.041, 9.6111E-4 /)
 
    ! define various dates on which drift correction changed
-   call GREG2JD(2002_sint, 3_sint, 1_sint, T0) ! Envisat launch date
+   call GREG2JD(2002_sint, 3_sint,   1_sint, T0) ! Envisat launch date
    call GREG2JD(2005_sint, 11_sint, 29_sint, T1)
-   T1 = T1 + (13_dreal + (20_dreal + 26_dreal/60_dreal)/60_dreal)/24_dreal
+   T1 = T1 + (13._dreal + (20._dreal + 26._dreal/60._dreal)/60._dreal)/24._dreal
    call GREG2JD(2006_sint, 12_sint, 18_sint, T2)
    call GREG2JD(2010_sint,  4_sint,  4_sint, T3)
    call GREG2JD(2010_sint,  7_sint, 13_sint, T4)
@@ -176,7 +179,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    read(sdate(16:17), '(I2)') minute
    read(sdate(19:), '(F9.6)') second
    call GREG2JD(year, month, day, Tn)
-   Tn = Tn + (hour + (minute + second/60_dreal)/60_dreal)/24_dreal
+   Tn = Tn + (hour + (minute + second/60._dreal)/60._dreal)/24._dreal
 
    ! Check that the measurement lies within the time-span covered by the
    ! correction table
@@ -203,7 +206,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
    read(vc1_file(26:27), '(i2)') vc_minute
    read(vc1_file(28:29), '(i2)') vc_second
    call GREG2JD(vc_year, vc_month, vc_day, Tvc)
-   Tvc = Tvc + (vc_hour + (vc_minute + vc_second/60_dreal)/60_dreal)/24_dreal
+   Tvc = Tvc + (vc_hour + (vc_minute + vc_second/60._dreal)/60._dreal)/24._dreal
 
    ! Identify which processing period we're in for the correction to REMOVE
    if ((Tvc.lt.T1) .or. ((Tvc.ge.T3) .and. (Tvc.lt.T4))) then
@@ -211,7 +214,7 @@ subroutine aatsr_drift_correction(start_date, vc1_file, lut, chan, new_drift, &
       old_drift = 1.0
    else if ((chan.eq.4) .or. ((Tvc.ge.T1) .and. (Tvc.lt.T2))) then
       ! Exponential drift correction applied
-      old_drift = exp(K(chan)*(Tn-T0)/365_dreal)
+      old_drift = exp(K(chan)*(Tn-T0)/365._dreal)
    else
       ! Thin film drift correction applied
       old_drift = sin(A(chan,2)*(Tn-T0))
@@ -358,7 +361,7 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
       call GREG2JD(lut%year(i), lut%month(i), lut%day(i), lut%julday(i))
       lut%julday(i) = lut%julday(i) + (real(lut%hour(i),dreal) + &
            (real(lut%minute(i),dreal) + (real(lut%second(i),dreal) &
-           / 60_dreal))/60_dreal)/24_dreal
+           / 60._dreal))/60._dreal)/24._dreal
 
       ! There are two different formats of drift file: one includes
       ! uncertainties on the drift correction, one doesn't
@@ -373,10 +376,10 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
          read(line(84:91),   '(f8.5)') lut%er(3,i)
          read(line(105:112), '(f8.5)') lut%er(4,i)
       else
-         read(line(31:38), '(f8.5)') lut%ch(1,i)
-         read(line(41:48), '(f8.5)') lut%ch(2,i)
-         read(line(51:58), '(f8.5)') lut%ch(3,i)
-         read(line(60:68), '(f8.5)') lut%ch(4,i)
+         read(line(31:38),   '(f8.5)') lut%ch(1,i)
+         read(line(41:48),   '(f8.5)') lut%ch(2,i)
+         read(line(51:58),   '(f8.5)') lut%ch(3,i)
+         read(line(60:68),   '(f8.5)') lut%ch(4,i)
          lut%er(1,i) = 0.0
          lut%er(2,i) = 0.0
          lut%er(3,i) = 0.0
