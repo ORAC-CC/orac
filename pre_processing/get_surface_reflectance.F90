@@ -103,7 +103,9 @@
 ! 2015/01/14, AP: Allow the code to accept channels in arbitrary order.
 ! 2015/10/03, GM: Changes to support AATSR channel 1 and MODIS channels 3, 4, 5,
 !    and 7 for sea surface reflectance.
-! 2015/10/27, CP: Changed path for brdf files to be modis_brdf_path
+! 2015/10/27, CP: Changed path for brdf files to be modis_brdf_path.
+! 2015/11/21, GM: Fixed use of channel_info%nchannels_sw where it should have
+!    been n_ref_chans.
 !
 ! $Id$
 !
@@ -428,7 +430,7 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
         end do
 
         call ross_thick_li_sparse_r_rho_0v_0d_dv_and_dd &
-           (channel_info%nchannels_sw, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, &
+           (n_ref_chans, solzalnd, satzalnd, solazlnd, relazlnd, wgtlnd, &
             sreal_fill_value, rholnd(:,:,1), rholnd(:,:,2), rholnd(:,:,3), &
             rholnd(:,:,4), verbose)
      end if
