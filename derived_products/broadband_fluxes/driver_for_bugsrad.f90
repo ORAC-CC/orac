@@ -68,7 +68,7 @@
          tsfc           !surface temperature
 
       !meteorological profiles
-       real, dimension(nlm) :: &
+       real, dimension(nlm+1) :: &
          pxZ   ,& !geopotential height profile at SAT. pixel  (km).
          pxP   ,& !pressure profile at SAT. pixel            (hPa).
          pxT   ,& !temperature profile at SAT. pixel           (K).
