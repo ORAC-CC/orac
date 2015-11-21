@@ -18,6 +18,7 @@
 ! 2015/11/16, MC: Changed NetCDF output to include more digits by using nc_def_var_float_packed_float
 ! 2015/11/17, MC: TOASWUP can now = 0 without triggering the skipflag.
 ! 2015/11/18, MC: Output ASCII file with flux profile for the single pixel-optional argument.
+! 2015/11/21, GM: Fix, retrflag long_name, standard_name, and units.
 !
 ! $Id$
 !
@@ -853,14 +854,14 @@ end if
                'retrflag', &
                retrflag_vid, &
                verbose, &
-               long_name     = 'longitude', &
-               standard_name = 'longitude', &
+               long_name     = 'retrflag', &
+               standard_name = 'retrflag', &
                fill_value    = sint_fill_value, &
                scale_factor  = real(1), &
                add_offset    = real(0), &
                valid_min     = int(1, sint), &
                valid_max     = int(4, sint), &
-               units         = 'degrees', &
+               units         = '1', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
 
@@ -1204,14 +1205,14 @@ end if
 
 
      !write the array to the netcdf file
-     call nc_write_array(ncid,'retrflag',retrflag_vid,&
-             retrflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-
      call nc_write_array(ncid,'lat',LAT_vid,&
              lat_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
      call nc_write_array(ncid,'lon',LON_vid,&
              lon_data(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+     call nc_write_array(ncid,'retrflag',retrflag_vid,&
+             retrflag(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
      call nc_write_array(ncid,'toa_swdn',toa_swdn_vid,&
              toa_swdn(ixstart:,iystart:),1,1,n_x,1,1,n_y)
