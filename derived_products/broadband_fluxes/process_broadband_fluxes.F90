@@ -6,19 +6,22 @@
 ! functions to read in data and process.
 !
 ! Subroutines:
-!
 !   preprocess_bugsrad.F90
 !   driver_for_bugsrad.F90
 !   interpolate_meteorology.F90
 !
 ! History:
-! 2015/10/14, MC: Inital developement
+! 2015/10/14, MC: Initial development
 ! 2015/11/10, MC: Put into repository
 ! 2015/11/16, MC: Added compression to NETDF output
-! 2015/11/16, MC: Changed NetCDF output to include more digits by using nc_def_var_float_packed_float
+! 2015/11/16, MC: Changed NetCDF output to include more digits by using
+!    nc_def_var_float_packed_float
 ! 2015/11/17, MC: TOASWUP can now = 0 without triggering the skipflag.
-! 2015/11/18, MC: Output ASCII file with flux profile for the single pixel-optional argument.
-! 2015/11/21, GM: Fix, retrflag long_name, standard_name, and units.
+! 2015/11/18, MC: Output ASCII file with flux profile for the single pixel-
+!    optional argument.
+! 2015/11/21, GM: Fix retrflag long_name, standard_name, and units.
+! 2015/11/21, GM: Range checking is not a valid way to check for nan.  The
+!    result was nans getting into the output.  Use Fortran intrinsic isnan().
 !
 ! $Id$
 !
@@ -549,7 +552,7 @@ program process_broadband_fluxes
     !Fill OUTPUT with missing
     lat_data(:,:) = sint_fill_value
     lon_data(:,:) = sint_fill_value
-    toa_lwup(:,:)=sint_fill_value
+    toa_lwup(:,:) = sint_fill_value
     toa_swup(:,:) = sint_fill_value
     toa_swdn(:,:) = sint_fill_value
     boa_lwup(:,:) = sint_fill_value
@@ -697,10 +700,10 @@ program process_broadband_fluxes
            !if(j .eq. 10) stop
 
          !catch NaN
-         if(pxtoalwup .le. 0. .or. pxtoalwup .gt. 1500.) nanFlag=1
-         if(pxtoaswup .lt. 0. .or. pxtoaswup .gt. 1500.) nanFlag=1
-         if(pxtoalwupclr .le. 0. .or. pxtoalwupclr .gt. 1500.) nanFlag=1
-         if(pxtoaswupclr .lt. 0. .or. pxtoaswupclr .gt. 1500.) nanFlag=1
+         if(isnan(pxtoalwup)) nanFlag=1
+         if(isnan(pxtoaswup)) nanFlag=1
+         if(isnan(pxtoalwupclr)) nanFlag=1
+         if(isnan(pxtoaswupclr)) nanFlag=1
 
          !regime type
          retrflag(i,j) = pxregime
