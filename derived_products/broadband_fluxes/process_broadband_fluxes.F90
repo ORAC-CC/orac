@@ -22,6 +22,9 @@
 ! 2015/11/21, GM: Fix retrflag long_name, standard_name, and units.
 ! 2015/11/21, GM: Range checking is not a valid way to check for nan.  The
 !    result was nans getting into the output.  Use Fortran intrinsic isnan().
+! 2015/11/22, GM: Fixed retrflag output.  It was defined as a float when it is
+!    actually a byte and it was not being initialized leading to garbage output.
+!    Also set the flag_values and flag meanings attributes.
 !
 ! $Id$
 !
@@ -230,7 +233,7 @@ program process_broadband_fluxes
       integer LON_vid
       integer TIME_vid
 
-   integer(kind=1), allocatable :: retrflag(:,:) !regime flag
+   integer(kind=byte), allocatable :: retrflag(:,:) !regime flag
       integer retrflag_vid
 
    integer, parameter :: deflate_lv = 9
@@ -530,6 +533,7 @@ program process_broadband_fluxes
    !Allocate OUTPUT variables
    allocate(lat_data(xN,yN))
    allocate(lon_data(xN,yN))
+   allocate(retrflag(xN,yN))
    allocate(toa_lwup(xN,yN))
    allocate(toa_swup(xN,yN))
    allocate(toa_swdn(xN,yN))
@@ -547,11 +551,11 @@ program process_broadband_fluxes
    allocate(toa_par_tot(xN,yN))
    allocate(boa_par_tot(xN,yN))
    allocate(boa_par_dif(xN,yN))
-   allocate(retrflag(xN,yN))
 
     !Fill OUTPUT with missing
     lat_data(:,:) = sint_fill_value
     lon_data(:,:) = sint_fill_value
+    retrflag(:,:) = byte_fill_value
     toa_lwup(:,:) = sint_fill_value
     toa_swup(:,:) = sint_fill_value
     toa_swdn(:,:) = sint_fill_value
@@ -851,7 +855,7 @@ end if
       !-------------------------------------------------------------------------
       ! retrieval flag
       !-------------------------------------------------------------------------
-       call nc_def_var_short_packed_float( &
+       call nc_def_var_byte_packed_byte( &
                ncid, &
                dims_var, &
                'retrflag', &
@@ -859,12 +863,14 @@ end if
                verbose, &
                long_name     = 'retrflag', &
                standard_name = 'retrflag', &
-               fill_value    = sint_fill_value, &
-               scale_factor  = real(1), &
-               add_offset    = real(0), &
-               valid_min     = int(1, sint), &
-               valid_max     = int(4, sint), &
+               fill_value    = byte_fill_value, &
+               scale_factor  = int(1, byte), &
+               add_offset    = int(0, byte), &
+               valid_min     = int(1, byte), &
+               valid_max     = int(4, byte), &
                units         = '1', &
+               flag_values   = '1b 2b 3b 4b', &
+               flag_meanings = 'overcast joint_aerosol-cloud clear_with_AOD clear_no_AOD', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
 
