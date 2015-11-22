@@ -1,3 +1,24 @@
+!-------------------------------------------------------------------------------
+! Name: interpolate_meteorology.F90
+!
+! Purpose:
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/10/14, MC: Initial implementation.
+! 2015/11/21, GM: Wrap was being passed to bilinear_coef_reg_reg() without being
+!    set to anything.  Added the proper setting.
+!
+! $Id$
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+
    subroutine interpolate_meteorology(lon,lat,nlev,xdim,ydim,&
                                       P,T,H,Q,O3,&
                                       ilon,ilat,iP,iT,iH,iQ,iO3)
@@ -20,8 +41,7 @@
    logical :: Wrap
    integer  NLat, NLon !#of lat/lon indices
    real(8) :: Lat0, LatN, Lon0, LonN, delta_Lat, inv_delta_Lat, delta_Lon, inv_delta_Lon !inputs to bilinear
-
-
+   real(8) :: MinLon, MaxLon
 
 
    NLat = ydim
@@ -37,12 +57,19 @@
    delta_Lon = (LonN - Lon0) / (NLon-1)
    inv_delta_Lon = 1. / delta_Lon
 
-   ! Bilinear interpolation (method taken from Numerical Recipes p96, 1987)
+   ! Max and Min lon values
+   MinLon = min(Lon0-0.5*delta_Lon, LonN+0.5*delta_Lon)
+   MaxLon = max(Lon0-0.5*delta_Lon, LonN+0.5*delta_Lon)
+
+   ! Does the grid wrap around the international date-line?
+   Wrap = MinLon <= -180. .and. MaxLon >=  180.
+
+   ! Compute bilinear interpolation coefficients common to all interpolations
    call bilinear_coef_reg_reg(Lon0, inv_delta_Lon, &
         NLon, Lat0, inv_delta_Lat, &
         NLat, ilon, ilat, interp, &
         Wrap)
-   
+
    call interp_field2(P, iP, interp)
    call interp_field2(T, iT, interp)
    call interp_field2(H, iH, interp)
