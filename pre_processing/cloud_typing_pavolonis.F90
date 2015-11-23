@@ -49,6 +49,8 @@
 !    snow_depth and sea_ice_cover; data are used for defining snow/ice
 !    mask (here called NISE_MASK) input to neural net
 ! 2015/11/18, OS: Replaced surface%NISE_MASK with local variable snow_ice_mask
+! 2015/11/23, OS: Fixed bug that could lead to uninitialised variables when
+!    ch3a was available for solzen > 88.
 !
 ! $Id$
 !
@@ -625,41 +627,41 @@ contains
 	  endif
 
 
-          ! check is ATSR 12um channel is missing
+   ! check if ATSR 12um channel is missing
           ch7_on_atsr_flag = YES
 
           if ( imager_measurements%DATA(i,j,ch5) .ge. 100 .and. &
                imager_measurements%DATA(i,j,ch6) .lt. 100. ) then
-               ch7_on_atsr_flag = NO
-            endif
+             ch7_on_atsr_flag = NO
+          endif
 
           ch2_on_atsr_flag = YES
           if ( imager_measurements%DATA(i,j,ch2) .lt. 0. ) then
-               ch2_on_atsr_flag = NO
-	      endif
+             ch2_on_atsr_flag = NO
+          endif
 
-          ! check is ATSR 11um channel is missing because too warm
+          ! check if ATSR 11um channel is missing because too warm
           ch6_on_atsr_flag = YES
 
           if ( imager_measurements%DATA(i,j,ch6) .ge. 220 .and. &
                imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
-               ch6_on_atsr_flag = NO
+             ch6_on_atsr_flag = NO
 	  endif
 
 
 
-          ! check is ATSR 11um channel is missing because too cold
+   ! check if ATSR 11um channel is missing because too cold
           ch6_on_atsr_flag = YES
 
           if ( imager_measurements%DATA(i,j,ch6) .lt. 100 .and. &
                imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
-               ch6_on_atsr_flag = NO
-	       ch7_on_atsr_flag = NO
+             ch6_on_atsr_flag = NO
+             ch7_on_atsr_flag = NO
 	  endif
 
-          !-- check for sunglint and save result:
+   !-- check for sunglint and save result:
 
-          ! In PATMOS sunglint calculation:
+   ! In PATMOS sunglint calculation:
           if ( imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) .ne. sreal_fill_value .and. &
                imager_angles%SATZEN(i,j,imager_angles%NVIEWS) .ne. sreal_fill_value .and. &
                imager_angles%RELAZI(i,j,imager_angles%NVIEWS) .ne. sreal_fill_value ) then
@@ -718,17 +720,17 @@ contains
                platform, &
                verbose )
 
-          ! now cycle if clear no need to define cloud type
+          ! cycle if clear, as no need to define cloud type
           if ( imager_pavolonis%CLDMASK(i,j) == CLEAR ) then
              imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
              if (trim(adjustl(sensor)) .ne. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2') then
-               cycle
+                cycle
              endif
 	  endif
 
-          ! implement extra tests for AATSR
+   ! implement extra tests for AATSR
 
-          !-- First Pavolonis test: clear or cloudy
+   !-- First Pavolonis test: clear or cloudy
 
           if (trim(adjustl(sensor)) .eq. 'AATSR' .or. trim(adjustl(sensor)) .eq. 'ATSR2' ) then
 
@@ -750,10 +752,10 @@ contains
                 !write(*,*)'testing',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j)
              endif
 
-            ! if both IR channels are missing them likely a very cold opaque
-            ! cloud enable a CTH retrieval by setting minimum threshold values
-            ! of IR channels
-            if  ( ( ch6_on_atsr_flag == NO )  .and. ( ch7_on_atsr_flag == NO ) .and. (ch2_on_atsr_flag == yes)) then
+             ! if both IR channels are missing them likely a very cold opaque
+             ! cloud enable a CTH retrieval by setting minimum threshold values
+             ! of IR channels
+             if  ( ( ch6_on_atsr_flag == NO )  .and. ( ch7_on_atsr_flag == NO ) .and. (ch2_on_atsr_flag == yes)) then
                 imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
                 !imager_pavolonis%CLDTYPE(i,j) = OPAQUE_ICE_TYPE
 		imager_measurements%DATA(i,j,ch6)=210.0
@@ -768,24 +770,15 @@ contains
 
           endif
 
-
-          !-- Check if daytime or nighttime algorithm is to be used.
-          day = .FALSE.
-          if ( ( imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) < 88.0 ) .or. ( ch3a_on_avhrr_flag .eq. YES ) ) then
-             day = .TRUE.
-          endif
-
-
-
           !-- neither ch3a nor ch3b available
           if (trim(adjustl(sensor)) .eq. 'AVHRR') then
              !-- at night, assign probably opaque ice flag
              !-- as ch3.7 has fill value due to low S/N
              !only apply to avhrr data as when fill for aatsr it is actaully warm
-             if ( ch3a_on_avhrr_flag == -1 ) then
-!                if ( ( imager_geolocation%LATITUDE(i,j) < 65.0 .and. &
-!                     imager_geolocation%LATITUDE(i,j) > -65.0 ) .and. &
-!                     ( day .eqv. .FALSE. ) ) &
+             if ( ch3a_on_avhrr_flag == INEXISTENT ) then
+                !                if ( ( imager_geolocation%LATITUDE(i,j) < 65.0 .and. &
+                !                     imager_geolocation%LATITUDE(i,j) > -65.0 ) .and. &
+                !                     ( day .eqv. .FALSE. ) ) &
                 !     imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
                 if ( ( imager_measurements%DATA(i,j,ch5) > 0. ) .and. ( imager_measurements%DATA(i,j,ch5) <= 233.16 ) ) then
 
@@ -814,7 +807,7 @@ contains
           endif ! end avhrr
 
 
-          ! calculate ch3b emissivity and reflectance
+          ! calculate ch3b radiance and emissivity
           PlanckInv_out  = PlanckInv( platform, imager_measurements%DATA(i,j,ch4) )
           rad_ch3b       = PlanckInv_out(1)
           solcon_ch3b    = PlanckInv_out(2)
@@ -824,12 +817,15 @@ contains
           esd = 1.0 - 0.0167 * cos( 2.0 * pi * ( doy - 3 ) / 365.0 )
           c_sun = 1. / esd**2
           imager_pavolonis%emis_ch3b(i,j) = rad_ch3b / rad_ch3b_emis
-          ref_ch3b = ( rad_ch3b - rad_ch3b_emis ) / &
-               ( solcon_ch3b * c_sun * mu0 - rad_ch3b_emis )
 
           ! calculate true reflectances for avhrr, modis and aatsr
           ref_ch1  = imager_measurements%DATA(i,j,ch1) / mu0
           ref_ch3a = imager_measurements%DATA(i,j,ch3) / mu0
+          ref_ch3b = ( rad_ch3b - rad_ch3b_emis ) / ( solcon_ch3b * c_sun * mu0 - rad_ch3b_emis )
+          ! make sure reflectances are positive, else fill value
+          if (ref_ch1 .lt. 0.) ref_ch1 = sreal_fill_value
+          if (ref_ch3a .lt. 0.) ref_ch3a = sreal_fill_value
+          if (ref_ch3b .lt. 0.) ref_ch3b = sreal_fill_value
 
           !-- nir_ref = channel 3a or channel 3b reflectance
           nir_ref = sreal_fill_value
@@ -863,6 +859,11 @@ contains
 
           imager_pavolonis%cirrus_quality(i,j) = 0
 
+          !-- Check if daytime or nighttime algorithm is to be used.
+          day = .FALSE.
+          if ( ( imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) < 88.0 ) .or. ( ch3a_on_avhrr_flag .eq. YES ) ) then
+             day = .TRUE.
+          endif
 
           !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           !
@@ -913,8 +914,8 @@ contains
              !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
              if ( ( ch3a_on_avhrr_flag == NO ) .and. &
                   ( ( imager_geolocation%LATITUDE(i,j) > 65.0 )   .or.  &
-                    ( imager_geolocation%LATITUDE(i,j) < -65.0 ) ) .and. &
-                    ( ref_ch3b > 0.20 ) ) then
+                  ( imager_geolocation%LATITUDE(i,j) < -65.0 ) ) .and. &
+                  ( ref_ch3b > 0.20 ) ) then
 
                 BTD1112_DOVERLAP_THRES = 9999.0
 
@@ -1079,6 +1080,12 @@ contains
 
                 nir_ref = ref_ch3b
 
+             else
+
+                ! In case it is daytime, but ref_ch1 <= 0, skip further Pavolonis tests.
+                ! Algorithm output is simple IR window brightness temperature-based typing
+                ! as applied previously.
+                cycle
 
                 ! ----------------------------------------- !
                 !                                           !
@@ -1305,12 +1312,12 @@ contains
                 wflg = 0
 
              elseif ( ( imager_measurements%DATA(i,j,ch5) > 233.16 ) .and. &
-                      ( imager_measurements%DATA(i,j,ch5) <= 253.16 ) ) then
+                  ( imager_measurements%DATA(i,j,ch5) <= 253.16 ) ) then
 
                 imager_pavolonis%CLDTYPE(i,j) = OPAQUE_ICE_TYPE
 
              elseif ( ( imager_measurements%DATA(i,j,ch5) > 253.16 ) .and. &
-                      ( imager_measurements%DATA(i,j,ch5) <= 273.16 ) ) then
+                  ( imager_measurements%DATA(i,j,ch5) <= 273.16 ) ) then
 
                 imager_pavolonis%CLDTYPE(i,j) = SUPERCOOLED_TYPE
 
@@ -1381,7 +1388,7 @@ contains
 
 
              if( ( imager_pavolonis%emis_ch3b(i,j) > 1.6 ) .and. &
-                 ( imager_measurements%DATA(i,j,ch5) < 300.0 ) ) then
+                  ( imager_measurements%DATA(i,j,ch5) < 300.0 ) ) then
 
                 imager_pavolonis%cirrus_quality(i,j) = 1
 
@@ -1405,10 +1412,10 @@ contains
              endif
 
              if ( ( ( imager_pavolonis%emis_ch3b(i,j) > 1.6 )       .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 300.0 ) ) .or. &
+                  ( imager_measurements%DATA(i,j,ch5) < 300.0 ) ) .or. &
                   ( ( imager_pavolonis%emis_ch3b(i,j) > 1.4 )       .and. &
-                    ( imager_measurements%DATA(i,j,ch5) < 300.0 )   .and. &
-                    ( BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES ) ) ) then
+                  ( imager_measurements%DATA(i,j,ch5) < 300.0 )   .and. &
+                  ( BTD_Ch4_Ch5 > BTD1112_CIRRUS_THRES ) ) ) then
 
                 imager_pavolonis%cirrus_quality(i,j) = 1
 
@@ -1490,7 +1497,7 @@ contains
                imager_pavolonis%CLDTYPE(i,j) .ne. OVERLAP_TYPE) cycle
 
           !-- coszen = cosine of the solar zenith angle
-!         coszen = cos(imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) * d2r )
+          !         coszen = cos(imager_angles%SOLZEN(i,j,imager_angles%NVIEWS) * d2r )
           coszen = cos(imager_angles%SATZEN(i,j,imager_angles%NVIEWS) * d2r )
 
           !-- determine box for filtering
