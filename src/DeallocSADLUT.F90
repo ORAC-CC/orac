@@ -116,7 +116,7 @@ subroutine Dealloc_SAD_LUT(Ctrl, SAD_LUT)
 
    call Dealloc_LUT_Grid(SAD_LUT%Grid)
 
-   if (Ctrl%do_CTP_correction) then
+   if (Ctrl%do_CTH_correction) then
       deallocate(SAD_LUT%Bext)
    end if
 

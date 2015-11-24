@@ -125,7 +125,7 @@ subroutine Alloc_SAD_LUT(Ctrl, SAD_LUT)
 
    call Alloc_LUT_Grid(Ctrl, SAD_LUT%Grid)
 
-   if (Ctrl%do_CTP_correction) then
+   if (Ctrl%do_CTH_correction) then
       allocate(SAD_LUT%Bext(Ctrl%Ind%Ny, SAD_LUT%Grid%Nmaxtau, &
                SAD_LUT%Grid%nmaxre))
    end if

@@ -852,7 +852,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
          call create_sad_filename(Ctrl, chan_num, LUT_File, 'EM')
          call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
 
-         if (Ctrl%do_CTP_correction .and. &
+         if (Ctrl%do_CTH_correction .and. &
              (Ctrl%Ind%Y_Id(i) .eq. Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) .or. &
               Ctrl%Ind%Y_Id(i) .eq. Ctrl%Ind%Y_Id_legacy(I_legacy_12_x))) then
             ! Read the Bext file

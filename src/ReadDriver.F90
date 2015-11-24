@@ -760,9 +760,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
 
 
-   Ctrl%do_CTP_correction = .false.
+   Ctrl%do_CTH_correction = .false.
    if (Ctrl%Approach == CldIce) then
-      Ctrl%do_CTP_correction = .true.
+      Ctrl%do_CTH_correction = .true.
    end if
 
 
@@ -929,8 +929,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       case('CTRL%XJ_NI')
          if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('CTRL%DO_CTP_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTP_correction)/= 0) call h_p_e(label)
+      case('CTRL%DO_CTH_CORRECTION')
+         if (parse_string(line, Ctrl%do_CTH_correction)/= 0) call h_p_e(label)
       case default
          write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code

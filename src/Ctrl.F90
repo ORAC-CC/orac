@@ -267,7 +267,7 @@ module CTRL_def
                                                    ! sensitive channels to use
                                                    ! in an order of decreasing
                                                    ! priority.
-      logical                :: do_CTP_correction
+      logical                :: do_CTH_correction
 
       ! State vector selection methods (see Selm variables in ECP_constants)
       integer                :: Ap(MaxStateVar,MaxIllum) ! A Priori options
