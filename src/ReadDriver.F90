@@ -761,6 +761,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
 
    Ctrl%do_CTP_correction = .false.
+   if (Ctrl%Approach == CldIce) then
+      Ctrl%do_CTP_correction = .true.
+   end if
 
 
    !----------------------------------------------------------------------------

@@ -820,12 +820,6 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
       call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, ITd, "Td", SAD_LUT%Td, &
                         i_lut2 = ITfd, name2 = "Tfd", values2 = SAD_LUT%Tfd)
 
-      if (Ctrl%do_CTP_correction) then
-         ! Read the Bext file
-         call create_sad_filename(Ctrl, chan_num, LUT_File, 'Bext')
-         call Read_LUT(Ctrl, LUT_file, i, SAD_LUT, IBext, "Bext", SAD_LUT%Bext)
-      end if
-
       ! Read solar channel LUTs
       if (SAD_Chan(i)%Solar%Flag > 0) then
          ! Read the Rbd LUT from the Rbd files
@@ -857,6 +851,14 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
          ! Read the Em file
          call create_sad_filename(Ctrl, chan_num, LUT_File, 'EM')
          call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
+
+         if (Ctrl%do_CTP_correction .and. &
+             (Ctrl%Ind%Y_Id(i) .eq. Ctrl%Ind%Y_Id_legacy(I_legacy_11_x) .or. &
+              Ctrl%Ind%Y_Id(i) .eq. Ctrl%Ind%Y_Id_legacy(I_legacy_12_x))) then
+            ! Read the Bext file
+            call create_sad_filename(Ctrl, chan_num, LUT_File, 'Bext')
+            call Read_LUT(Ctrl, LUT_file, i, SAD_LUT, IBext, "Bext", SAD_LUT%Bext)
+         end if
       end if
    end do
 
