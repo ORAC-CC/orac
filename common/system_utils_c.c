@@ -64,6 +64,8 @@ int system_utils_match_file(const char *dir_name, const char *file_regex,
         }
     }
 
+    regfree(&regex);
+
     closedir(dir);
 
     return flag;
