@@ -282,7 +282,6 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! cth_corrected, cth_corrected_error
    !----------------------------------------------------------------------------
-#ifdef CRAP
    if (input_data%cth_corrected(i,j) .eq. sreal_fill_value) then
       temp_real = sreal_fill_value
    else
@@ -306,7 +305,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
         sreal_fill_value, sint_fill_value, &
         output_data%cth_error_vmin, output_data%cth_error_vmax, &
         output_data%cth_error_vmax)
-#endif
+
    !----------------------------------------------------------------------------
    ! ctt, ctt_error
    !----------------------------------------------------------------------------

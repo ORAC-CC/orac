@@ -52,6 +52,9 @@ subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
    primary%cth(i,j)                        = sreal_fill_value
    primary%cth_uncertainty(i,j)            = sreal_fill_value
 
+   primary%cth_corrected(i,j)              = sreal_fill_value
+   primary%cth_corrected_uncertainty(i,j)  = sreal_fill_value
+
    primary%ctt(i,j)                        = sreal_fill_value
    primary%ctt_uncertainty(i,j)            = sreal_fill_value
 
@@ -129,6 +132,9 @@ subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
 
    primary2%cth(i,j)                        = primary1%cth(i,j)
    primary2%cth_uncertainty(i,j)            = primary1%cth_uncertainty(i,j)
+
+   primary2%cth_corrected(i,j)              = primary1%cth_corrected(i,j)
+   primary2%cth_corrected_uncertainty(i,j)  = primary1%cth_corrected_uncertainty(i,j)
 
    primary2%ctt(i,j)                        = primary1%ctt(i,j)
    primary2%ctt_uncertainty(i,j)            = primary1%ctt_uncertainty(i,j)
