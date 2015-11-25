@@ -45,7 +45,6 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/cloud_typing_pavolonis.o \
                   $(OBJS)/correct_for_ice_snow.o \
                   $(OBJS)/cox_munk.o \
-                  $(OBJS)/date_type_structure.o \
                   $(OBJS)/define_preprop_grid.o \
                   $(OBJS)/ecmwf.o \
                   $(OBJS)/fill_grid.o \

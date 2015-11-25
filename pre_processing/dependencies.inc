@@ -1,9 +1,8 @@
-$(OBJS)/aatsr_corrections.o: $(OBJS)/calender.o $(OBJS)/date_type_structure.o \
-        $(OBJS)/preproc_constants.o
+$(OBJS)/aatsr_corrections.o: $(OBJS)/calender.o $(OBJS)/preproc_constants.o
 $(OBJS)/bright_m.o: $(OBJS)/preproc_constants.o fundamental_constants.inc
 $(OBJS)/build_preproc_fields.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
-$(OBJS)/calender.o: $(OBJS)/date_type_structure.o $(OBJS)/preproc_constants.o
+$(OBJS)/calender.o: $(OBJS)/preproc_constants.o
 $(OBJS)/channel_structures.o: $(OBJS)/preproc_constants.o \
         allocate_channel_info.F90 deallocate_channel_info.F90
 $(OBJS)/cloud_typing_pavolonis.o: $(OBJS)/channel_structures.o $(OBJS)/ecmwf.o \
@@ -14,7 +13,6 @@ $(OBJS)/correct_for_ice_snow.o: $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         $(OBJS)/surface_structures.o
 $(OBJS)/cox_munk.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
-$(OBJS)/date_type_structure.o: $(OBJS)/preproc_constants.o
 $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
@@ -71,8 +69,7 @@ $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
         write_ir_rttov.F90 write_solar_rttov.F90
 $(OBJS)/set_ecmwf.o: $(OBJS)/preproc_constants.o
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
-        $(OBJS)/date_type_structure.o $(OBJS)/preproc_constants.o \
-        $(OBJS)/preproc_structures.o
+        $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_cimss_emissivity.o \

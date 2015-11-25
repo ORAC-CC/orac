@@ -278,7 +278,6 @@ subroutine aatsr_read_drift_table(drift_table, lut, stat)
 
    use calender
    use preproc_constants
-   use date_type_structures
 
    implicit none
 

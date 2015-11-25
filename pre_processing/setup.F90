@@ -161,7 +161,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
    ! which aatsr are we processing?
 
    if (trim(adjustl(sensor)) .eq. 'AATSR') then
-      index1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)  
+      index1=index(trim(adjustl(l1b_path_file)),'.N1',back=.true.)
       platform='Envisat'
    else
       platform='ERS2'
@@ -396,7 +396,6 @@ subroutine setup_modis(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    use calender
    use channel_structures
-   use date_type_structures
    use preproc_constants
    use preproc_structures
 
@@ -567,7 +566,6 @@ subroutine setup_seviri(l1b_path_file,geo_path_file,platform,year,month,day, &
 
    use calender
    use channel_structures
-   use date_type_structures
    use preproc_constants
    use preproc_structures
 
