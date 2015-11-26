@@ -51,7 +51,8 @@
 ! 2015/11/18, OS: Replaced surface%NISE_MASK with local variable snow_ice_mask
 ! 2015/11/23, OS: Fixed bug that could lead to uninitialised variables when
 !    ch3a was available for solzen > 88.
-!
+! 2015/11/28  CP: used probabaly clear to deal with saturation of 12um channel
+!                 over antarctica in ATSR channel
 ! $Id$
 !
 ! Bugs:
@@ -135,7 +136,7 @@ contains
   !    defined in constants_cloud_typing_pavolonis.f90:
   !
   !    INTEGER(kind=sint) :: CLEAR_TYPE = 0
-  !    INTEGER(kind=sint) :: PROB_CLEAR_TYPE = 1 !currently not used
+  !    INTEGER(kind=sint) :: PROB_CLEAR_TYPE = 1 
   !    INTEGER(kind=sint) :: FOG_TYPE = 2
   !    INTEGER(kind=sint) :: WATER_TYPE = 3
   !    INTEGER(kind=sint) :: SUPERCOOLED_TYPE = 4
@@ -641,13 +642,13 @@ contains
           endif
 
           ! check if ATSR 11um channel is missing because too warm
-          ch6_on_atsr_flag = YES
+!          ch6_on_atsr_flag = YES
+
 
           if ( imager_measurements%DATA(i,j,ch6) .ge. 220 .and. &
                imager_measurements%DATA(i,j,ch5) .lt. 100. ) then
              ch6_on_atsr_flag = NO
 	  endif
-
 
 
    ! check if ATSR 11um channel is missing because too cold
@@ -746,10 +747,8 @@ contains
 
              if ( (ch7_on_atsr_flag == NO ) .and. (ch2_on_atsr_flag == YES) ) then
                 imager_pavolonis%CLDTYPE(i,j) = PROB_OPAQUE_ICE_TYPE
-                !imager_pavolonis%CLDTYPE(i,j) = OPAQUE_ICE_TYPE
-
                 imager_pavolonis%CLDMASK(i,j) = CLOUDY
-                !write(*,*)'testing',imager_pavolonis%CLDMASK(i,j),imager_pavolonis%CLDTYPE(i,j)
+
              endif
 
              ! if both IR channels are missing them likely a very cold opaque
@@ -763,6 +762,15 @@ contains
                 imager_pavolonis%CLDMASK(i,j) = CLOUDY
              endif
 	  endif
+
+
+             if ( (ch7_on_atsr_flag == NO )  ) then
+! check if over very cold atlantic plateau Antarctica in which case probably clear if 12um is missing
+   	     if ((imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) .and.   (imager_geolocation%LATITUDE(i,j) < -70.0) ) then
+	     	imager_pavolonis%CLDTYPE(i,j) = PROB_CLEAR_TYPE
+                imager_pavolonis%CLDMASK(i,j) = CLEAR
+   	     endif
+	     endif
 
           if ( imager_pavolonis%CLDMASK(i,j) == CLEAR ) then
              imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
