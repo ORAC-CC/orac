@@ -274,6 +274,9 @@
       radvdcc_loc(1:len) = 0.
       radnbcc_loc(1:len) = 0.
       radndcc_loc(1:len) = 0.
+      tboapar            = 0.
+      tboapardif         = 0.
+      ttoapar            = 0.
 
 
 !---- 1.1 initialization of local scalars
