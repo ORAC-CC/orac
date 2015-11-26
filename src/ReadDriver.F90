@@ -506,10 +506,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Types_to_process(1) = FOG_TYPE
       Ctrl%Types_to_process(2) = WATER_TYPE
       Ctrl%Types_to_process(3) = SUPERCOOLED_TYPE
-      if (Ctrl%process_cloudy_only == .false. ) then
-       	Ctrl%NTypes_to_process   = 5
-       	Ctrl%Types_to_process(4) = CLEAR_TYPE
-       	Ctrl%Types_to_process(5) = PROB_CLEAR_TYPE
+      if (.NOT. Ctrl%process_cloudy_only) then
+         Ctrl%NTypes_to_process   = 5
+         Ctrl%Types_to_process(4) = CLEAR_TYPE
+         Ctrl%Types_to_process(5) = PROB_CLEAR_TYPE
       endif
    else if (Ctrl%Approach == CldIce) then
       Ctrl%NTypes_to_process   = 4
@@ -517,10 +517,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Types_to_process(2) = CIRRUS_TYPE
       Ctrl%Types_to_process(3) = OVERLAP_TYPE
       Ctrl%Types_to_process(4) = PROB_OPAQUE_ICE_TYPE
-      if (Ctrl%process_cloudy_only == .false. ) then
-      	 Ctrl%NTypes_to_process   = 6	   
-      	 Ctrl%Types_to_process(5) = CLEAR_TYPE
-      	 Ctrl%Types_to_process(6) = PROB_CLEAR_TYPE
+      if (.NOT. Ctrl%process_cloudy_only) then
+         Ctrl%NTypes_to_process   = 6
+         Ctrl%Types_to_process(5) = CLEAR_TYPE
+         Ctrl%Types_to_process(6) = PROB_CLEAR_TYPE
       endif
    else
       ! Accept everything
