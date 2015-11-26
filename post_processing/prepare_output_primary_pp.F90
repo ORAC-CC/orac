@@ -32,6 +32,7 @@
 !    subroutine names for wrapper
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/11/17, OS: Including switched types when estimating phase.
+! 2015/11/27, CP: Added additional cloud type prob clear
 !
 ! $Id$
 !
@@ -446,8 +447,11 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    else if (input_data%cldtype(i,j) .lt. 5 &
       .and. input_data%cldtype(i,j) .gt. 0) then
       output_data%phase_pavolonis(i,j) = 1 ! phase = water
-   else if (input_data%cldtype(i,j) .gt. 4) then
+   else if (input_data%cldtype(i,j) .gt. 4 .and. input_data%cldtype(i,j) .le. 9) then
       output_data%phase_pavolonis(i,j) = 2 ! phase = ice
+   else if (input_data%cldtype(i,j) .eq. 10 ) then
+      output_data%phase_pavolonis(i,j) = 0 ! phase = clear
+
    else
       output_data%phase_pavolonis(i,j) = byte_fill_value ! for all
       ! other values (should not occur)
