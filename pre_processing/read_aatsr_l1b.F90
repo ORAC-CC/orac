@@ -68,12 +68,12 @@
 !    that ATSR-2 drift correction idicator does not work so the code currently
 !    assumes we  are using the latest calibrated version of AATSR data v 2.1/3.0
 ! 2015/11/15, CP: Corrects implementataion of 12um non linearity correction.
+! 2015/11/26, GM: Translate AATSR time to Julian time.
 !
 ! $Id$
 !
-! Bugs: current ATSR-2 needs to be hardwired to true drift correction as drift flag does not work
-! The 12um non linearity correction
-! None known.
+! Bugs: Current ATSR-2 needs to be hardwired to true drift correction as the
+! drift flag does not work
 !-------------------------------------------------------------------------------
 
 subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
@@ -430,9 +430,10 @@ if (is_lut_drift_corrected) then
    enddo
 endif
 
-   ! copy time values into rows from nadir (which we're presumably viewing)
+   ! copy time values into rows from nadir (which we're presumably viewing) and
+   ! translate to Julian time
    do i=1,imager_geolocation%ny
-      imager_time%time(:,i) = nday(i)
+      imager_time%time(:,i) = nday(i) + 2451544.5
    end do
 
    ! translate flags (THIS USED TO BE RATHER MORE COMPLICATED)

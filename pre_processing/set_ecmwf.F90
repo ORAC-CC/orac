@@ -130,9 +130,6 @@ else if (time_interp_method .eq. 1) then
       ! in the next year, or if the year is a leap year it is more straight
       ! forward to convert to Julian day space, then operate, then convert back.
       jday = find_center_time(imager_geolocation, imager_time)
-      if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
-         jday = jday + 2451544.5
-      end if
 
       jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
       jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
@@ -162,9 +159,6 @@ else if (time_interp_method .eq. 2) then
       ! in the next year, or if the year is a leap year it is more straight
       ! forward to convert to Julian day space, then operate, then convert back.
       jday = find_center_time(imager_geolocation, imager_time)
-      if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
-         jday = jday + 2451544.5
-      end if
 
       jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
       jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal

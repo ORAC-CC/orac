@@ -54,6 +54,7 @@
 ! 2015/11/16, GM: Fixed calculation of temp_short_ctp_error.
 ! 2015/11/16, CP: Made AATSR times consistent with AVHRR and MODIS.
 ! 2015/11/26, GM: Fixed AATSR time offset relative to Julian day.
+! 2015/11/26, GM: AATSR time offset is now applied in the preprocessor.
 !
 ! $Id$
 !
@@ -90,11 +91,8 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   if (Ctrl%InstName(1:5) .eq. 'ATSR2' .or. Ctrl%InstName(1:5) .eq. 'AATSR' ) then
-      output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0) + 2451544.5
-   else
-      output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
-   end if
+   output_data%time(i,j) = MSI_Data%time(SPixel%Loc%X0, SPixel%Loc%Y0)
+
 
    !----------------------------------------------------------------------------
    ! lat, lon
