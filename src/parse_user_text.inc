@@ -177,6 +177,8 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = OVERLAP_TYPE
          case('PROB_OPAQUE_ICE_TYPE','PROB_OPAQUE_ICE')
             out = PROB_OPAQUE_ICE_TYPE
+         case('PROB_CLEAR_TYPE','PROB_CLEAR')
+            out = PROB_CLEAR_TYPE
          case default
             status = PARSE_ERR_CONV
          end select
