@@ -832,6 +832,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
          call deallocate_ecmwf_structures(ecmwf1)
          call deallocate_ecmwf_structures(ecmwf2)
+#ifdef WRAPPER
+         call deallocate_ecmwf_structures(ecmwf_HR1)
+         call deallocate_ecmwf_structures(ecmwf_HR2)
+#endif
       end if
 
       ! define preprocessing grid from user grid spacing and satellite limits
@@ -997,6 +1001,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
       call deallocate_ecmwf_structures(ecmwf)
+#ifdef WRAPPER
+      call deallocate_ecmwf_structures(ecmwf_HR)
+#endif
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
