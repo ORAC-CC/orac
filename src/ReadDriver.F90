@@ -103,6 +103,7 @@
 ! 2015/08/08, CP: Added in ATSR-2 capability
 ! 2015/11/17, OS: Added prob_opaque_ice_type to CldIce types to process
 ! 2015/11/18, GM: Add setting of Ctrl%Ind%Y_Id_legacy.
+! 2015/11/27, CP: modified setting so clear pixiels are processed when not cloud only
 !
 ! $Id$
 !
@@ -344,7 +345,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FID%BkP          = trim(outname)//'.bkp'
 
    ! Selection of retrieval approach currently optional
+
    Ctrl%Approach = -1
+
    if (parse_driver(dri_lun, line, label) == 0) then
       call clean_driver_label(label)
       if (label == 'CTRL%APPROACH') then
@@ -503,12 +506,22 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       Ctrl%Types_to_process(1) = FOG_TYPE
       Ctrl%Types_to_process(2) = WATER_TYPE
       Ctrl%Types_to_process(3) = SUPERCOOLED_TYPE
+      if (Ctrl%process_cloudy_only == .false. ) then
+       	Ctrl%NTypes_to_process   = 5
+       	Ctrl%Types_to_process(4) = CLEAR_TYPE
+       	Ctrl%Types_to_process(5) = PROB_CLEAR_TYPE
+      endif
    else if (Ctrl%Approach == CldIce) then
       Ctrl%NTypes_to_process   = 4
       Ctrl%Types_to_process(1) = OPAQUE_ICE_TYPE
       Ctrl%Types_to_process(2) = CIRRUS_TYPE
       Ctrl%Types_to_process(3) = OVERLAP_TYPE
       Ctrl%Types_to_process(4) = PROB_OPAQUE_ICE_TYPE
+      if (Ctrl%process_cloudy_only == .false. ) then
+      	 Ctrl%NTypes_to_process   = 6	   
+      	 Ctrl%Types_to_process(5) = CLEAR_TYPE
+      	 Ctrl%Types_to_process(6) = PROB_CLEAR_TYPE
+      endif
    else
       ! Accept everything
       Ctrl%NTypes_to_process   = MaxTypes
