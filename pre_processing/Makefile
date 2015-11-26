@@ -69,7 +69,6 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/read_USGS_file.o \
                   $(OBJS)/ross_thick_li_sparse_r.o \
                   $(OBJS)/rttov_driver.o \
-                  $(OBJS)/set_ecmwf.o \
                   $(OBJS)/setup.o \
                   $(OBJS)/surface_emissivity.o \
                   $(OBJS)/surface_reflectance.o \

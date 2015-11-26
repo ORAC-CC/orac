@@ -68,9 +68,10 @@
 ! 2014/05/02, AP: Made badc into ecmwf_flag.
 ! 2014/05/02, CP: Changed AATSR file naming
 ! 2015/08/08, CP: Added functionality for ATSR-2
-! 2015/11/17, OS: Building high resolution ERA-Interim file name from low 
+! 2015/11/17, OS: Building high resolution ERA-Interim file name from low
 !   resolution ERA file, appending suffix "_HR":
 !   path/to/low_res_era_file.nc = path/to/low_res_era_file_HR.nc
+! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
 !
 ! $Id$
 !
@@ -84,11 +85,15 @@ module preparation_m
 
 contains
 
+#include "set_ecmwf.F90"
+
+
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &
      cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_path_file, &
      ecmwf_HR_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts, &
-     ecmwf_flag,imager_geolocation,i_chunk,assume_full_path,verbose)
+     ecmwf_flag,ecmwf_time_int_method,imager_geolocation,imager_time,i_chunk, &
+     time_int_fac,assume_full_path,verbose)
 
    use imager_structures
    use global_attributes
@@ -103,17 +108,20 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=sensor_length),   intent(in)  :: sensor
    character(len=platform_length), intent(in)  :: platform
    character(len=date_length),     intent(in)  :: cyear,cmonth,cday,chour,cminute
-   character(len=path_length),     intent(in)  :: ecmwf_path, &
-                                                  ecmwf_path2, &
-                                                  ecmwf_path3
-   character(len=path_length),     intent(out) :: ecmwf_path_file, &
-                                                  ecmwf_HR_path_file, &
-                                                  ecmwf_path_file2, &
-                                                  ecmwf_path_file3
+   character(len=path_length),     intent(in)  :: ecmwf_path(2), &
+                                                  ecmwf_path2(2), &
+                                                  ecmwf_path3(2)
+   character(len=path_length),     intent(out) :: ecmwf_path_file(2), &
+                                                  ecmwf_HR_path_file(2), &
+                                                  ecmwf_path_file2(2), &
+                                                  ecmwf_path_file3(2)
    type(global_attributes_s),      intent(in)  :: global_atts
    integer,                        intent(in)  :: ecmwf_flag
+   integer,                        intent(in)  :: ecmwf_time_int_method
    type(imager_geolocation_s),     intent(in)  :: imager_geolocation
+   type(imager_time_s),            intent(in)  :: imager_time
    integer,                        intent(in)  :: i_chunk
+   real,                           intent(out) :: time_int_fac
    logical,                        intent(in)  :: assume_full_path
    logical,                        intent(in)  :: verbose
 
@@ -121,45 +129,47 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=file_length) :: file_base
    real                       :: startr,endr
    character(len=32)          :: startc,endc,chunkc
-   character(len=path_length) :: base,suffix
-   integer                    :: cut_off,ecmwf_path_file_length
 
    if (verbose) write(*,*) '<<<<<<<<<<<<<<< Entering preparation()'
 
-   if (verbose) write(*,*) 'sensor: ',           trim(sensor)
-   if (verbose) write(*,*) 'platform: ',         trim(platform)
-   if (verbose) write(*,*) 'cyear: ',            trim(cyear)
-   if (verbose) write(*,*) 'cmonth: ',           trim(cmonth)
-   if (verbose) write(*,*) 'cday: ',             trim(cday)
-   if (verbose) write(*,*) 'chour: ',            trim(chour)
-   if (verbose) write(*,*) 'cminute: ',          trim(cminute)
-   if (verbose) write(*,*) 'ecmwf_path: ',       trim(ecmwf_path)
-   if (verbose) write(*,*) 'ecmwf_path2: ',      trim(ecmwf_path2)
-   if (verbose) write(*,*) 'ecmwf_path3: ',      trim(ecmwf_path3)
-   if (verbose) write(*,*) 'ecmwf_flag: ',       ecmwf_flag
-   if (verbose) write(*,*) 'assume_full_path: ', assume_full_path
-   if (verbose) write(*,*) 'i_chunk: ',          i_chunk
+   if (verbose) write(*,*) 'sensor: ',                trim(sensor)
+   if (verbose) write(*,*) 'platform: ',              trim(platform)
+   if (verbose) write(*,*) 'cyear: ',                 trim(cyear)
+   if (verbose) write(*,*) 'cmonth: ',                trim(cmonth)
+   if (verbose) write(*,*) 'cday: ',                  trim(cday)
+   if (verbose) write(*,*) 'chour: ',                 trim(chour)
+   if (verbose) write(*,*) 'cminute: ',               trim(cminute)
+   if (verbose) write(*,*) 'ecmwf_path(1): ',         trim(ecmwf_path(1))
+   if (verbose) write(*,*) 'ecmwf_path2(1): ',        trim(ecmwf_path2(1))
+   if (verbose) write(*,*) 'ecmwf_path3(1): ',        trim(ecmwf_path3(1))
+   if (verbose) write(*,*) 'ecmwf_path(2): ',         trim(ecmwf_path(2))
+   if (verbose) write(*,*) 'ecmwf_path2(2): ',        trim(ecmwf_path2(2))
+   if (verbose) write(*,*) 'ecmwf_path3(2): ',        trim(ecmwf_path3(2))
+   if (verbose) write(*,*) 'ecmwf_flag: ',            ecmwf_flag
+   if (verbose) write(*,*) 'ecmwf_time_int_method: ', ecmwf_time_int_method
+   if (verbose) write(*,*) 'i_chunk: ',               i_chunk
+   if (verbose) write(*,*) 'assume_full_path: ',      assume_full_path
 
    ! determine ecmwf path/filename
-   call set_ecmwf(cyear,cmonth,cday,chour, &
+   call set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute, &
                   ecmwf_path,     ecmwf_path2,     ecmwf_path3, &
                   ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3, &
-                  ecmwf_flag,assume_full_path)
+                  ecmwf_flag,imager_geolocation,imager_time, &
+                  ecmwf_time_int_method,time_int_fac,assume_full_path)
 
    ! build file path for high resolution ERA-Interim data from low resolution
    ! file path
-   cut_off = index(trim(adjustl(ecmwf_path_file)),'.',BACK=.true.)
-   ecmwf_path_file_length = len(trim(ecmwf_path_file))
-   base = trim(adjustl(ecmwf_path_file(1:(cut_off-1))))
-   suffix = trim(adjustl(ecmwf_path_file((cut_off+1):ecmwf_path_file_length)))
-   ecmwf_HR_path_file = trim(adjustl(base)) // '_HR.' // trim(adjustl(suffix))
+   call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_HR_path_file(1))
+   if (ecmwf_time_int_method .eq. 2) then
+      call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
+   end if
 
    if (verbose) then
-      write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file)
-      write(*,*)'ecmwf_HR_path_file:  ',trim(ecmwf_HR_path_file)
+      write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file(1))
+      write(*,*)'ecmwf_HR_path_file:  ',trim(ecmwf_HR_path_file(1))
       if (ecmwf_flag .gt. 0) then
-         write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2)
-         write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3)
+         write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
+         write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
       end if
    end if
 
@@ -210,5 +220,26 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) '>>>>>>>>>>>>>>> Leaving preparation()'
 
 end subroutine preparation
+
+
+subroutine build_ecmwf_HR_file_from_LR(ecmwf_path_file, ecmwf_HR_path_file)
+
+   use preproc_constants
+
+   implicit none
+
+   character(len=*), intent(in)  :: ecmwf_path_file
+   character(len=*), intent(out) :: ecmwf_HR_path_file
+
+   character(len=path_length) :: base,suffix
+   integer :: cut_off, ecmwf_path_file_length
+
+   cut_off = index(trim(adjustl(ecmwf_path_file)),'.',back=.true.)
+   ecmwf_path_file_length = len(trim(ecmwf_path_file))
+   base = trim(adjustl(ecmwf_path_file(1:(cut_off-1))))
+   suffix = trim(adjustl(ecmwf_path_file((cut_off+1):ecmwf_path_file_length)))
+   ecmwf_HR_path_file = trim(adjustl(base)) // '_HR.' // trim(adjustl(suffix))
+
+end subroutine build_ecmwf_HR_file_from_LR
 
 end module preparation_m

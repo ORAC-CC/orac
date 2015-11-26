@@ -7,6 +7,9 @@
 ! 2015/02/24, GM: Pulled these out of preprocessing_for_orac.F90 to get them
 !    module produced interfaces.
 ! 2015/09/14, GM: Move handle_parse_error() to trunk/common/parsing.F90.
+! 2015/10/19, GM: Add use_modis_emis_in_rttov to parse_optional().
+! 2015/11/26, GM: Add ecmwf_time_int_method, ecmwf_path_file, ecmwf_path_file2,
+!    and ecmwf_path_file3 to parse_optional().
 !
 ! $Id$
 !
@@ -41,7 +44,8 @@ end subroutine parse_required
 
 
 subroutine parse_optional(label, value, n_channels, channel_ids, &
-                          use_modis_emis_in_rttov)
+                          ecmwf_time_int_method, use_modis_emis_in_rttov, &
+                          ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3)
 
    use parsing
    use preproc_constants
@@ -52,7 +56,11 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    character(len=*), intent(in)    :: value
    integer,          intent(inout) :: n_channels
    integer, pointer, intent(inout) :: channel_ids(:)
+   integer,          intent(inout) :: ecmwf_time_int_method
    logical,          intent(inout) :: use_modis_emis_in_rttov
+   character(len=*), intent(inout) :: ecmwf_path_file
+   character(len=*), intent(inout) :: ecmwf_path_file2
+   character(len=*), intent(inout) :: ecmwf_path_file3
 
    select case (label)
    case('N_CHANNELS')
@@ -66,8 +74,20 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
       endif
       if (parse_string(value, channel_ids) /= 0) &
          call handle_parse_error(label)
+   case('ECMWF_TIME_INT_METHOD')
+      if (parse_string(value, ecmwf_time_int_method) /= 0) &
+         call handle_parse_error(label)
    case('USE_MODIS_EMIS_IN_RTTOV')
       if (parse_string(value, use_modis_emis_in_rttov) /= 0) &
+         call handle_parse_error(label)
+   case('ECMWF_PATH_FILE_2')
+      if (parse_string(value, ecmwf_path_file) /= 0) &
+         call handle_parse_error(label)
+   case('ECMWF_PATH_FILE2_2')
+      if (parse_string(value, ecmwf_path_file2) /= 0) &
+         call handle_parse_error(label)
+   case('ECMWF_PATH_FILE3_2')
+      if (parse_string(value, ecmwf_path_file3) /= 0) &
          call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

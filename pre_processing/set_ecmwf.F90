@@ -44,6 +44,7 @@
 ! 2014/02/03, AP: made badc a logical variable
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/02, AP: Replaced code with CASE statements. Added third option.
+! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
 !
 ! $Id$
 !
@@ -51,37 +52,48 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2,ecmwf_path3, &
-   ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag,assume_full_path)
+subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2, &
+   ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag, &
+   imager_geolocation, imager_time,time_interp_method,time_int_fac,assume_full_path)
 
+   use calender
+   use imager_structures
    use preproc_constants
 
    implicit none
 
-   character(len=date_length), intent(in)  :: cyear,cmonth,cday,chour
-   character(len=path_length), intent(in)  :: ecmwf_path
-   character(len=path_length), intent(in)  :: ecmwf_path2
-   character(len=path_length), intent(in)  :: ecmwf_path3
-   character(len=path_length), intent(out) :: ecmwf_path_file
-   character(len=path_length), intent(out) :: ecmwf_path_file2
-   character(len=path_length), intent(out) :: ecmwf_path_file3
+   character(len=*),           intent(in)  :: sensor
+   character(len=*),           intent(in)  :: cyear,cmonth,cday,chour,cminute
+   character(len=*),           intent(in)  :: ecmwf_path(2)
+   character(len=*),           intent(in)  :: ecmwf_path2(2)
+   character(len=*),           intent(in)  :: ecmwf_path3(2)
+   character(len=*),           intent(out) :: ecmwf_path_file(2)
+   character(len=*),           intent(out) :: ecmwf_path_file2(2)
+   character(len=*),           intent(out) :: ecmwf_path_file3(2)
    integer,                    intent(in)  :: ecmwf_flag
+   type(imager_geolocation_s), intent(in)  :: imager_geolocation
+   type(imager_time_s),        intent(in)  :: imager_time
+   integer,                    intent(in)  :: time_interp_method
+   real,                       intent(out) :: time_int_fac
    logical,                    intent(in)  :: assume_full_path
 
-   integer   :: hour
-   character :: cera_hour*2
+   integer(sint) :: year, month, day, hour, minute
+   integer(sint) :: year2, month2, day2, hour2
+   real(dreal)   :: jday, jday0, jday1, jday2
+   real(dreal)   :: day_real
+   character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
 
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
-      if (index(ecmwf_path,'.nc') .gt. 0) then
+      if (index(ecmwf_path(1),'.nc') .gt. 0) then
          ecmwf_path_file  = ecmwf_path
          ecmwf_path_file2 = ecmwf_path2
          ecmwf_path_file3 = ecmwf_path3
-      else if (index(ecmwf_path2,'.nc') .gt. 0) then
+      else if (index(ecmwf_path2(1),'.nc') .gt. 0) then
          ecmwf_path_file  = ecmwf_path2
          ecmwf_path_file2 = ecmwf_path
          ecmwf_path_file3 = ecmwf_path3
-      else if (index(ecmwf_path3,'.nc') .gt. 0) then
+      else if (index(ecmwf_path3(1),'.nc') .gt. 0) then
          ecmwf_path_file  = ecmwf_path3
          ecmwf_path_file2 = ecmwf_path
          ecmwf_path_file3 = ecmwf_path2
@@ -91,7 +103,9 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2,ecmwf_path3,
          ecmwf_path_file3 = ecmwf_path3
       end if
    else
-      ! pick last ERA interim time wrt sensor time (as on the same day)
+
+if (time_interp_method .eq. 0) then
+      ! pick last ERA interim file wrt sensor time (as on the same day)
       read(chour, *) hour
       select case (hour)
       case(0:5)
@@ -106,36 +120,196 @@ subroutine set_ecmwf(cyear,cmonth,cday,chour,ecmwf_path,ecmwf_path2,ecmwf_path3,
          cera_hour='00'
       end select
 
-      select case (ecmwf_flag)
-      case(0)
-         ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
-              trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-              trim(adjustl(cday))//'_'//trim(adjustl(cera_hour))//'+00.grb'
-      case(1)
-         ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ggas'// &
-              trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-              trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-         ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/ggam'// &
-              trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-              trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-         ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/gpam'// &
-              trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-              trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-      case(2)
-         ecmwf_path_file=trim(adjustl(ecmwf_path2))//'/ggas'// &
-              trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-              trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.nc'
-         ecmwf_path_file2=trim(adjustl(ecmwf_path))//'/ggam'// &
-              trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-              trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.grb'
-         ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/spam'// &
-              trim(adjustl(cyear))//trim(adjustl(cmonth))// &
-              trim(adjustl(cday))//trim(adjustl(cera_hour))//'00.grb'
-      case default
-         write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
-                  & 'Please select 0, 1, or 2.'
-         stop error_stop_code
-      end select
-    end if
+      call make_ecmwf_name(cyear,cmonth,cday,cera_hour,ecmwf_flag,ecmwf_path(1), &
+         ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1),ecmwf_path_file2(1), &
+         ecmwf_path_file3(1))
+else if (time_interp_method .eq. 1) then
+      ! Pick the closest ERA interim file wrt sensor time
+
+      ! Rather than deal with whether the next 6 hour file is in the next month,
+      ! in the next year, or if the year is a leap year it is more straight
+      ! forward to convert to Julian day space, then operate, then convert back.
+if (.false.) then
+      read(cyear, *)   year
+      read(cmonth, *)  month
+      read(cday, *)    day
+      read(chour, *)   hour
+      read(cminute, *) minute
+
+      call GREG2JD(year, month, day, jday)
+
+      jday = jday + (hour + minute / 60._dreal) / 24._dreal
+else
+      jday = find_center_time(imager_geolocation, imager_time)
+      if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
+         jday = jday + 2451545.0
+      end if
+endif
+      jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
+      jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
+
+      if (jday - jday0 .lt. jday1 - jday) then
+         jday2 = jday0
+      else
+         jday2 = jday1
+      endif
+
+      call JD2GREG(jday2, year2, month2, day_real)
+      day2 = int(day_real, sint)
+      hour2 = int((day_real - day2) * 24._dreal, sint)
+
+      write(cera_year,  '(I4.4)') year2
+      write(cera_month, '(I2.2)') month2
+      write(cera_day,   '(I2.2)') day2
+      write(cera_hour,  '(I2.2)') hour2
+
+      call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+         ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
+         ecmwf_path_file2(1), ecmwf_path_file3(1))
+else if (time_interp_method .eq. 2) then
+      ! Pick the ERA interim files before and after wrt sensor time
+
+      ! Rather than deal with whether the next 6 hour file is in the next month,
+      ! in the next year, or if the year is a leap year it is more straight
+      ! forward to convert to Julian day space, then operate, then convert back.
+if (.false.) then
+      read(cyear, *)   year
+      read(cmonth, *)  month
+      read(cday, *)    day
+      read(chour, *)   hour
+      read(cminute, *) minute
+
+      call GREG2JD(year, month, day, jday)
+
+      jday = jday + (hour + minute / 60._dreal) / 24._dreal
+else
+      jday = find_center_time(imager_geolocation, imager_time)
+      if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
+         jday = jday + 2451545.0
+      end if
+endif
+      jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
+      jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
+
+      time_int_fac = (jday - jday0) / (jday1 - jday0)
+
+      call JD2GREG(jday0, year2, month2, day_real)
+      day2  = int(day_real, sint)
+      hour2 = int((day_real - day2) * 24._dreal, sint)
+
+      write(cera_year,  '(I4.4)') year2
+      write(cera_month, '(I2.2)') month2
+      write(cera_day,   '(I2.2)') day2
+      write(cera_hour,  '(I2.2)') hour2
+
+      call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+         ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
+         ecmwf_path_file2(1), ecmwf_path_file3(1))
+
+      call JD2GREG(jday1, year2, month2, day_real)
+      day2 = int(day_real, sint)
+      hour2 = int((day_real - day2) * 24._dreal, sint)
+
+      write(cera_year,  '(I4.4)') year2
+      write(cera_month, '(I2.2)') month2
+      write(cera_day,   '(I2.2)') day2
+      write(cera_hour,  '(I2.2)') hour2
+
+      call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+         ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(2), &
+         ecmwf_path_file2(2), ecmwf_path_file3(2))
+else
+      write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', time_interp_method
+      stop error_stop_code
+end if
+   end if
 
 end subroutine set_ecmwf
+
+
+real(dreal) function find_center_time(imager_geolocation, imager_time) &
+   result(center_time)
+
+   use imager_structures
+   use preproc_constants
+
+   implicit none
+
+   type(imager_geolocation_s), intent(in) :: imager_geolocation
+   type(imager_time_s),        intent(in) :: imager_time
+
+   integer     :: i, j
+   real(dreal) :: start_time
+   real(dreal) :: end_time
+
+   do i = 1, imager_geolocation%ny
+      do j = imager_geolocation%startx, imager_geolocation%endx
+          if (imager_time%time(j,i) .ne. dreal_fill_value) then
+             start_time = imager_time%time(j,i)
+             goto 98
+          end if
+      end do
+   end do
+
+98 do i = imager_geolocation%ny, 1, -1
+      do j = imager_geolocation%endx, imager_geolocation%startx, -1
+          if (imager_time%time(j,i) .ne. dreal_fill_value) then
+             end_time = imager_time%time(j,i)
+             goto 99
+          end if
+      end do
+   end do
+
+99 center_time = (start_time + end_time) / 2.
+
+end function find_center_time
+
+
+subroutine make_ecmwf_name(cyear,cmonth,cday,chour,ecmwf_flag,ecmwf_path, &
+   ecmwf_path2,ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3)
+
+   use preproc_constants
+
+   implicit none
+
+   character(len=*), intent(in)  :: cyear,cmonth,cday,chour
+   character(len=*), intent(in)  :: ecmwf_path
+   character(len=*), intent(in)  :: ecmwf_path2
+   character(len=*), intent(in)  :: ecmwf_path3
+   character(len=*), intent(out) :: ecmwf_path_file
+   character(len=*), intent(out) :: ecmwf_path_file2
+   character(len=*), intent(out) :: ecmwf_path_file3
+   integer,          intent(in)  :: ecmwf_flag
+
+   select case (ecmwf_flag)
+   case(0)
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ERA_Interim_an_'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//'_'//trim(adjustl(chour))//'+00.grb'
+   case(1)
+      ecmwf_path_file=trim(adjustl(ecmwf_path))//'/ggas'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
+      ecmwf_path_file2=trim(adjustl(ecmwf_path2))//'/ggam'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
+      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/gpam'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
+   case(2)
+      ecmwf_path_file=trim(adjustl(ecmwf_path2))//'/ggas'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.nc'
+      ecmwf_path_file2=trim(adjustl(ecmwf_path))//'/ggam'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
+      ecmwf_path_file3=trim(adjustl(ecmwf_path3))//'/spam'// &
+           trim(adjustl(cyear))//trim(adjustl(cmonth))// &
+           trim(adjustl(cday))//trim(adjustl(chour))//'00.grb'
+   case default
+      write(*,*) 'ERROR: set_ecmwf(): Unknown ECMWF file format flag. ' // &
+               & 'Please select 0, 1, or 2.'
+      stop error_stop_code
+   end select
+
+end subroutine make_ecmwf_name

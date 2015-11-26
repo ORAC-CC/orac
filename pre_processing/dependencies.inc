@@ -17,9 +17,9 @@ $(OBJS)/define_preprop_grid.o: $(OBJS)/imager_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/ecmwf.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         compute_geopot_coordinate.F90 deallocate_ecmwf_structures.F90 \
-        read_ecmwf_grib.F90 read_ecmwf_nc.F90 read_ecmwf_wind_badc.F90 \
-        read_ecmwf_wind_dwd.F90 read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 \
-        rearrange_ecmwf.F90
+        read_ecmwf.F90 read_ecmwf_grib.F90 read_ecmwf_nc.F90 \
+        read_ecmwf_wind_badc.F90 read_ecmwf_wind_dwd.F90 \
+        read_ecmwf_wind_grib.F90 read_ecmwf_wind_nc.F90 rearrange_ecmwf.F90
 $(OBJS)/fill_grid.o: $(OBJS)/preproc_constants.o
 $(OBJS)/get_USGS_data.o: $(OBJS)/imager_structures.o $(OBJS)/read_USGS_file.o
 $(OBJS)/imager_structures.o: $(OBJS)/channel_structures.o \
@@ -35,7 +35,8 @@ $(OBJS)/netcdf_output.o: $(OBJS)/channel_structures.o \
         netcdf_output_create_file.F90 netcdf_output_write_swath.F90
 $(OBJS)/neural_net_preproc.o: $(OBJS)/neural_net_constants.o
 $(OBJS)/nise_def.o: $(OBJS)/preproc_constants.o read_nsidc_nise.F90
-$(OBJS)/preparation.o: $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o
+$(OBJS)/preparation.o: $(OBJS)/calender.o $(OBJS)/imager_structures.o \
+        $(OBJS)/preproc_constants.o set_ecmwf.F90
 $(OBJS)/preproc_structures.o: $(OBJS)/channel_structures.o \
         $(OBJS)/imager_structures.o $(OBJS)/preproc_constants.o \
         allocate_preproc_structures.F90 deallocate_preproc_structures.F90
@@ -67,7 +68,6 @@ $(OBJS)/ross_thick_li_sparse_r.o: $(OBJS)/nr.o $(OBJS)/preproc_constants.o
 $(OBJS)/rttov_driver.o: $(OBJS)/channel_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o \
         write_ir_rttov.F90 write_solar_rttov.F90
-$(OBJS)/set_ecmwf.o: $(OBJS)/preproc_constants.o
 $(OBJS)/setup.o: $(OBJS)/calender.o $(OBJS)/channel_structures.o \
         $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/surface_emissivity.o: $(OBJS)/channel_structures.o \
@@ -87,9 +87,10 @@ $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         deallocate_surface_structures.F90
 $(OBJS)/test_rttov.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/utils_for_main.o: $(OBJS)/preproc_constants.o
-$(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
-        $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/correct_for_ice_snow.o \
-        $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
+$(OBJS)/preprocessing_for_orac.o: $(OBJS)/calender.o \
+        $(OBJS)/channel_structures.o $(OBJS)/cloud_typing_pavolonis.o \
+        $(OBJS)/correct_for_ice_snow.o $(OBJS)/ecmwf.o \
+        $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \

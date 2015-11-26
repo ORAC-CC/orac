@@ -32,12 +32,42 @@
 ! 2014/05/01, GM: Cleaned up the code.
 ! 2014/05/07, AP: Removed unnecessary fields from preproc_dims.
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
+! 2015/11/26, GM: Refactored to include allocate_preproc_prtm() for use
+!    elsewhere.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
+
+subroutine deallocate_preproc_prtm(preproc_prtm)
+
+   implicit none
+
+   type(preproc_prtm_s), intent(inout) :: preproc_prtm
+
+   deallocate(preproc_prtm%pressure)
+   deallocate(preproc_prtm%temperature)
+   deallocate(preproc_prtm%spec_hum)
+   deallocate(preproc_prtm%ozone)
+   deallocate(preproc_prtm%phi_lev)
+   deallocate(preproc_prtm%phi_lay)
+   deallocate(preproc_prtm%geopot)
+   deallocate(preproc_prtm%lnsp)
+   deallocate(preproc_prtm%u10)
+   deallocate(preproc_prtm%v10)
+   deallocate(preproc_prtm%land_sea_mask)
+   deallocate(preproc_prtm%temp2)
+   deallocate(preproc_prtm%skin_temp)
+   deallocate(preproc_prtm%snow_albedo)
+   deallocate(preproc_prtm%snow_depth)
+   deallocate(preproc_prtm%sst)
+   deallocate(preproc_prtm%sea_ice_cover)
+   deallocate(preproc_prtm%totcolwv)
+
+end subroutine deallocate_preproc_prtm
+
 
 subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    preproc_geo,preproc_prtm,preproc_surf)
@@ -67,24 +97,7 @@ subroutine deallocate_preproc_structures(preproc_dims,preproc_geoloc, &
    deallocate(preproc_geo%relazi)
 
    ! preproc_prtm
-   deallocate(preproc_prtm%pressure)
-   deallocate(preproc_prtm%temperature)
-   deallocate(preproc_prtm%spec_hum)
-   deallocate(preproc_prtm%ozone)
-   deallocate(preproc_prtm%phi_lev)
-   deallocate(preproc_prtm%phi_lay)
-   deallocate(preproc_prtm%geopot)
-   deallocate(preproc_prtm%lnsp)
-   deallocate(preproc_prtm%u10)
-   deallocate(preproc_prtm%v10)
-   deallocate(preproc_prtm%land_sea_mask)
-   deallocate(preproc_prtm%temp2)
-   deallocate(preproc_prtm%skin_temp)
-   deallocate(preproc_prtm%snow_albedo)
-   deallocate(preproc_prtm%snow_depth)
-   deallocate(preproc_prtm%sst)
-   deallocate(preproc_prtm%sea_ice_cover)
-   deallocate(preproc_prtm%totcolwv)
+   call deallocate_preproc_prtm(preproc_prtm)
 
    ! preproc_surf
    deallocate(preproc_surf%emissivity)

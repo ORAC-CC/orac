@@ -48,6 +48,8 @@
 ! 2014/05/28, MJ: Fixed bug with intent statement for preproc_dims
 ! 2014/07/01, AP: Redefined limits to minimise array sizes
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
+! 2015/11/26, GM: Refactored to include allocate_preproc_prtm() for use
+!    elsewhere.
 !
 ! $Id$
 !
@@ -55,58 +57,22 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
-   preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,channel_info)
+subroutine allocate_preproc_prtm(preproc_dims, preproc_prtm)
 
-   use channel_structures
-   use imager_structures
    use preproc_constants
 
    implicit none
 
-   type(imager_angles_s),  intent(in)    :: imager_angles
-   type(preproc_dims_s),   intent(inout) :: preproc_dims
-   type(preproc_geoloc_s), intent(out)   :: preproc_geoloc
-   type(preproc_geo_s),    intent(out)   :: preproc_geo
-   type(preproc_prtm_s),   intent(out)   :: preproc_prtm
-   type(preproc_surf_s),   intent(out)   :: preproc_surf
-   type(channel_info_s),   intent(inout) :: channel_info
+   type(preproc_dims_s), intent(in)  :: preproc_dims
+   type(preproc_prtm_s), intent(out) :: preproc_prtm
 
-   integer                               :: nchan_sw, nchan_lw, sx, ex, sy, ey
+   integer :: sx, ex, sy, ey
 
-   nchan_sw=channel_info%nchannels_sw
-   nchan_lw=channel_info%nchannels_lw
    sx=preproc_dims%min_lon
    ex=preproc_dims%max_lon
    sy=preproc_dims%min_lat
    ey=preproc_dims%max_lat
 
-   ! preproc_dims
-   allocate(preproc_dims%counter_sw(sx:ex,sy:ey))
-   preproc_dims%counter_sw=0
-   allocate(preproc_dims%counter_lw(sx:ex,sy:ey))
-   preproc_dims%counter_lw=0
-
-
-   ! preproc_geoloc
-   allocate(preproc_geoloc%longitude(sx:ex))
-   preproc_geoloc%longitude=sreal_fill_value
-   allocate(preproc_geoloc%latitude(sy:ey))
-   preproc_geoloc%latitude=sreal_fill_value
-
-
-   ! preproc_geo (init to 0 as used for summation in build_preproc_fields)
-   allocate(preproc_geo%solza(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%solza=0.0
-   allocate(preproc_geo%solazi(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%solazi=0.0
-   allocate(preproc_geo%satza(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%satza=0.0
-   allocate(preproc_geo%relazi(sx:ex,sy:ey,imager_angles%nviews))
-   preproc_geo%relazi=0.0
-
-
-   ! preproc_prtm
    allocate(preproc_prtm%pressure(sx:ex,sy:ey,preproc_dims%kdim))
    preproc_prtm%pressure=sreal_fill_value
    allocate(preproc_prtm%temperature(sx:ex,sy:ey,preproc_dims%kdim))
@@ -152,6 +118,59 @@ subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
    allocate(preproc_prtm%totcolwv(sx:ex,sy:ey))
    preproc_prtm%totcolwv=sreal_fill_value
 
+end subroutine allocate_preproc_prtm
+
+
+subroutine allocate_preproc_structures(imager_angles,preproc_dims, &
+   preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,channel_info)
+
+   use channel_structures
+   use imager_structures
+   use preproc_constants
+
+   implicit none
+
+   type(imager_angles_s),  intent(in)    :: imager_angles
+   type(preproc_dims_s),   intent(inout) :: preproc_dims
+   type(preproc_geoloc_s), intent(out)   :: preproc_geoloc
+   type(preproc_geo_s),    intent(out)   :: preproc_geo
+   type(preproc_prtm_s),   intent(out)   :: preproc_prtm
+   type(preproc_surf_s),   intent(out)   :: preproc_surf
+   type(channel_info_s),   intent(inout) :: channel_info
+
+   integer :: nchan_sw, nchan_lw, sx, ex, sy, ey
+
+   nchan_sw=channel_info%nchannels_sw
+   nchan_lw=channel_info%nchannels_lw
+   sx=preproc_dims%min_lon
+   ex=preproc_dims%max_lon
+   sy=preproc_dims%min_lat
+   ey=preproc_dims%max_lat
+
+   ! preproc_dims
+   allocate(preproc_dims%counter_sw(sx:ex,sy:ey))
+   preproc_dims%counter_sw=0
+   allocate(preproc_dims%counter_lw(sx:ex,sy:ey))
+   preproc_dims%counter_lw=0
+
+   ! preproc_geoloc
+   allocate(preproc_geoloc%longitude(sx:ex))
+   preproc_geoloc%longitude=sreal_fill_value
+   allocate(preproc_geoloc%latitude(sy:ey))
+   preproc_geoloc%latitude=sreal_fill_value
+
+   ! preproc_geo (init to 0 as used for summation in build_preproc_fields)
+   allocate(preproc_geo%solza(sx:ex,sy:ey,imager_angles%nviews))
+   preproc_geo%solza=0.0
+   allocate(preproc_geo%solazi(sx:ex,sy:ey,imager_angles%nviews))
+   preproc_geo%solazi=0.0
+   allocate(preproc_geo%satza(sx:ex,sy:ey,imager_angles%nviews))
+   preproc_geo%satza=0.0
+   allocate(preproc_geo%relazi(sx:ex,sy:ey,imager_angles%nviews))
+   preproc_geo%relazi=0.0
+
+   ! preproc_prtm
+   call allocate_preproc_prtm(preproc_dims, preproc_prtm)
 
    ! preproc_surf
    allocate(preproc_surf%emissivity(sx:ex,sy:ey,nchan_lw))

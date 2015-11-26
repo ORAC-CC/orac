@@ -34,9 +34,9 @@
 ! 2013/01/29, CP: changed how geopotential was read out
 ! 2013/03/05, CP: small change to work in gfortran
 ! 2013/03/06, CP: tidy up and rearrange badc files
-! 2013/03/07, CP: tidied up allocations and changed code to read in q and 03 form
-!    a netcdf file because grib code did not work for badc style grb files also
-!    added computation of geopot because was previously dome in grib read
+! 2013/03/07, CP: tidied up allocations and changed code to read in q and 03
+!    form a netcdf file because grib code did not work for badc style grb files
+!    also added computation of geopot because was previously dome in grib read
 ! 2013/03/18, GT: Altered the allocation of temporary arrays to hold the various
 !    ECMWF variable to avoid the compiler complaining of possible use of
 !    unallocated arrays.
@@ -61,7 +61,8 @@
 !    should be explicitly allocated on the heap anyway.
 ! 2014/02/04, MS+OS: Implemented nearest neighbour interpolation of ECMWF data;
 !    only activated when WRAPPER flag is set; preliminary approach which will
-!    be made obsolete when ECMWF data will be retrieved on preproc grid resolution
+!    be made obsolete when ECMWF data will be retrieved on preproc grid
+!    resolution.
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 !
@@ -84,32 +85,32 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    character(len=path_length), intent(in)    :: ecmwf_path
    type(ecmwf_s),              intent(in)    :: ecmwf
    type(preproc_dims_s),       intent(in)    :: preproc_dims
-   type(preproc_geoloc_s),     intent(inout) :: preproc_geoloc
+   type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
    type(preproc_prtm_s),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
 
-   integer(lint),     external              :: INTIN,INTOUT,INTF
-   integer(lint),     parameter             :: BUFFER = 2000000
+   integer(lint),     external            :: INTIN,INTOUT,INTF
+   integer(lint),     parameter           :: BUFFER = 2000000
 
-   integer(lint),            dimension(1)   :: intv,old_grib,new_grib
-   real(dreal)                              :: grid(2),area(4)
-   real(dreal), allocatable, dimension(:)   :: old_data,new_data
-   character(len=20),        dimension(1)   :: charv
+   integer(lint),            dimension(1) :: intv,old_grib,new_grib
+   real(dreal)                            :: grid(2),area(4)
+   real(dreal), allocatable, dimension(:) :: old_data,new_data
+   character(len=20),        dimension(1) :: charv
 
-   real(sreal),       pointer               :: array2d(:,:), array3d(:,:,:)
-   integer(4)                               :: n,ni,nj,i,j,k,ivar
-   integer(4)                               :: fid,ndim,nvar,natt
-   integer(4)                               :: old_len,new_len
-   character(len=20)                        :: name
-   logical                                  :: three_d
-   real(sreal) :: dummy2d(ecmwf%xdim,ecmwf%ydim,1,1)
-   real(sreal) :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
+   real(sreal),       pointer             :: array2d(:,:), array3d(:,:,:)
+   integer(4)                             :: n,ni,nj,i,j,k,ivar
+   integer(4)                             :: fid,ndim,nvar,natt
+   integer(4)                             :: old_len,new_len
+   character(len=20)                      :: name
+   logical                                :: three_d
+   real(sreal)   :: dummy2d(ecmwf%xdim,ecmwf%ydim,1,1)
+   real(sreal)   :: dummy3d(ecmwf%xdim,ecmwf%ydim,ecmwf%kdim,1)
 #ifdef WRAPPER
-   real(sreal) :: ecmwf_lon(ecmwf%xdim)
-   real(sreal) :: ecmwf_lat(ecmwf%ydim)
+   real(sreal)   :: ecmwf_lon(ecmwf%xdim)
+   real(sreal)   :: ecmwf_lat(ecmwf%ydim)
    integer(lint) :: pointer_x(preproc_dims%min_lon:preproc_dims%max_lon)
    integer(lint) :: pointer_y(preproc_dims%min_lat:preproc_dims%max_lat)
-   real(sreal) :: diff_lon(ecmwf%xdim),diff_lat(ecmwf%ydim)
+   real(sreal)   :: diff_lon(ecmwf%xdim),diff_lat(ecmwf%ydim)
 #endif
    n=ecmwf%xdim*ecmwf%ydim
 

@@ -20,6 +20,8 @@
 ! 2014/05/01, GM: Cleaned up the code.
 ! 2014/05/07, AP: Removed unnecessary fields from preproc_dims.
 ! 2014/09/10, AP: Removed unnecessary LWRTM and SWRTM structures.
+! 2015/11/26, GM: Added linearly_combine_prtms() to facilitate linear
+!    interpolation between preproc_prtm_s structures.
 !
 ! $Id$
 !
@@ -84,5 +86,37 @@ contains
 
 include 'allocate_preproc_structures.F90'
 include 'deallocate_preproc_structures.F90'
+
+
+subroutine linearly_combine_prtms(a, b, prtm1, prtm2, prtm)
+
+   implicit none
+
+   real,                 intent(in)  :: a
+   real,                 intent(in)  :: b
+   type(preproc_prtm_s), intent(in)  :: prtm1
+   type(preproc_prtm_s), intent(in)  :: prtm2
+   type(preproc_prtm_s), intent(out) :: prtm
+
+   prtm%pressure      = a * prtm1%pressure      + b * prtm2%pressure
+   prtm%temperature   = a * prtm1%temperature   + b * prtm2%temperature
+   prtm%spec_hum      = a * prtm1%spec_hum      + b * prtm2%spec_hum
+   prtm%ozone         = a * prtm1%ozone         + b * prtm2%ozone
+   prtm%phi_lev       = a * prtm1%phi_lev       + b * prtm2%phi_lev
+   prtm%phi_lay       = a * prtm1%phi_lay       + b * prtm2%phi_lay
+   prtm%geopot        = a * prtm1%geopot        + b * prtm2%geopot
+   prtm%lnsp          = a * prtm1%lnsp          + b * prtm2%lnsp
+   prtm%u10           = a * prtm1%u10           + b * prtm2%u10
+   prtm%v10           = a * prtm1%v10           + b * prtm2%v10
+   prtm%land_sea_mask = a * prtm1%land_sea_mask + b * prtm2%land_sea_mask
+   prtm%temp2         = a * prtm1%temp2         + b * prtm2%temp2
+   prtm%skin_temp     = a * prtm1%skin_temp     + b * prtm2%skin_temp
+   prtm%snow_albedo   = a * prtm1%snow_albedo   + b * prtm2%snow_albedo
+   prtm%snow_depth    = a * prtm1%snow_depth    + b * prtm2%snow_depth
+   prtm%sst           = a * prtm1%sst           + b * prtm2%sst
+   prtm%sea_ice_cover = a * prtm1%sea_ice_cover + b * prtm2%sea_ice_cover
+   prtm%totcolwv      = a * prtm1%totcolwv      + b * prtm2%totcolwv
+
+end subroutine linearly_combine_prtms
 
 end module preproc_structures

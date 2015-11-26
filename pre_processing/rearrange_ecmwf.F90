@@ -37,7 +37,7 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    implicit none
 
    type(ecmwf_s), intent(inout) :: ecmwf
-   logical, intent(in)          :: highRes
+   logical,       intent(in)    :: highRes
 
    integer                      :: date, ind, i
    real(kind=sreal)             :: utemp(ecmwf%xdim,ecmwf%ydim)
@@ -57,22 +57,22 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    ! swap left and right halfs into a temp array
    if (.not. highRes) then
       ! wind fields not contained in high resolution data
-      utemp(1:ind,:)     = ecmwf%u10(date:,:)
-      vtemp(1:ind,:)     = ecmwf%v10(date:,:)
+      utemp(1:ind,:) = ecmwf%u10(date:,:)
+      vtemp(1:ind,:) = ecmwf%v10(date:,:)
    endif
    skinttemp(1:ind,:)         = ecmwf%skin_temp(date:,:)
    snow_depthtemp(1:ind,:)    = ecmwf%snow_depth(date:,:)
    sea_ice_covertemp(1:ind,:) = ecmwf%sea_ice_cover(date:,:)
-   lontemp(1:ind)     = ecmwf%lon(date:) - 360.
+   lontemp(1:ind) = ecmwf%lon(date:) - 360.
    if (.not. highRes) then
       ! wind fields not contained in high resolution data
-      utemp(date:,:)     = ecmwf%u10(1:ind,:)
-      vtemp(date:,:)     = ecmwf%v10(1:ind,:)
+      utemp(date:,:) = ecmwf%u10(1:ind,:)
+      vtemp(date:,:) = ecmwf%v10(1:ind,:)
    endif
    skinttemp(date:,:)         = ecmwf%skin_temp(1:ind,:)
    snow_depthtemp(date:,:)    = ecmwf%snow_depth(1:ind,:)
    sea_ice_covertemp(date:,:) = ecmwf%sea_ice_cover(1:ind,:)
-   lontemp(date:)     = ecmwf%lon(1:ind)
+   lontemp(date:)             = ecmwf%lon(1:ind)
 
    ecmwf%lon = lontemp
 
@@ -81,19 +81,19 @@ subroutine rearrange_ecmwf(ecmwf,highRes)
    if (.not. highRes) then
       ! wind fields not contained in high resolution data
       do i=1,ecmwf%ydim
-         ecmwf%u10(:,ecmwf%ydim+1-i)       = utemp(:,i)
-         ecmwf%v10(:,ecmwf%ydim+1-i)       = vtemp(:,i)
-         ecmwf%skin_temp(:,ecmwf%ydim+1-i) = skinttemp(:,i)
-         ecmwf%snow_depth(:,ecmwf%ydim+1-i) = snow_depthtemp(:,i)
+         ecmwf%u10(:,ecmwf%ydim+1-i)           = utemp(:,i)
+         ecmwf%v10(:,ecmwf%ydim+1-i)           = vtemp(:,i)
+         ecmwf%skin_temp(:,ecmwf%ydim+1-i)     = skinttemp(:,i)
+         ecmwf%snow_depth(:,ecmwf%ydim+1-i)    = snow_depthtemp(:,i)
          ecmwf%sea_ice_cover(:,ecmwf%ydim+1-i) = sea_ice_covertemp(:,i)
-         ecmwf%lat(ecmwf%ydim+1-i)         = lattemp(i)
+         ecmwf%lat(ecmwf%ydim+1-i)             = lattemp(i)
       end do
    else
       do i=1,ecmwf%ydim
-         ecmwf%skin_temp(:,ecmwf%ydim+1-i) = skinttemp(:,i)
-         ecmwf%snow_depth(:,ecmwf%ydim+1-i) = snow_depthtemp(:,i)
+         ecmwf%skin_temp(:,ecmwf%ydim+1-i)     = skinttemp(:,i)
+         ecmwf%snow_depth(:,ecmwf%ydim+1-i)    = snow_depthtemp(:,i)
          ecmwf%sea_ice_cover(:,ecmwf%ydim+1-i) = sea_ice_covertemp(:,i)
-         ecmwf%lat(ecmwf%ydim+1-i)         = lattemp(i)
+         ecmwf%lat(ecmwf%ydim+1-i)             = lattemp(i)
       end do
    endif
 

@@ -75,7 +75,7 @@ subroutine read_modis_l1b_radiances(sensor,platform,path_to_l1b_file, &
       if (verbose) write(*,*) 'Read MODIS band: ', &
            channel_info%channel_ids_instr(ich)
 
-      ! use channel_info from SETUP.F90
+      ! use channel_info from setup.F90
       lrefl = channel_info%channel_ids_instr(ich).lt.20 .or. &
            channel_info%channel_ids_instr(ich).eq.26
 
