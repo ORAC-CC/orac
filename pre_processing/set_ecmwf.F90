@@ -129,22 +129,11 @@ else if (time_interp_method .eq. 1) then
       ! Rather than deal with whether the next 6 hour file is in the next month,
       ! in the next year, or if the year is a leap year it is more straight
       ! forward to convert to Julian day space, then operate, then convert back.
-if (.false.) then
-      read(cyear, *)   year
-      read(cmonth, *)  month
-      read(cday, *)    day
-      read(chour, *)   hour
-      read(cminute, *) minute
-
-      call GREG2JD(year, month, day, jday)
-
-      jday = jday + (hour + minute / 60._dreal) / 24._dreal
-else
       jday = find_center_time(imager_geolocation, imager_time)
       if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
-         jday = jday + 2451545.0
+         jday = jday + 2451544.5
       end if
-endif
+
       jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
       jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
 
@@ -172,22 +161,11 @@ else if (time_interp_method .eq. 2) then
       ! Rather than deal with whether the next 6 hour file is in the next month,
       ! in the next year, or if the year is a leap year it is more straight
       ! forward to convert to Julian day space, then operate, then convert back.
-if (.false.) then
-      read(cyear, *)   year
-      read(cmonth, *)  month
-      read(cday, *)    day
-      read(chour, *)   hour
-      read(cminute, *) minute
-
-      call GREG2JD(year, month, day, jday)
-
-      jday = jday + (hour + minute / 60._dreal) / 24._dreal
-else
       jday = find_center_time(imager_geolocation, imager_time)
       if (sensor .eq. 'AATSR' .or. sensor .eq. 'ATSR2') then
-         jday = jday + 2451545.0
+         jday = jday + 2451544.5
       end if
-endif
+
       jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
       jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
 
