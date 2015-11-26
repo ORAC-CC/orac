@@ -14,6 +14,7 @@
 ! 2015/07/27, AP: Converted from a structure of variables to a module of
 !    parameters (to be consistent with similar files elsewhere in the code).
 ! 2015/11/17, OS: Added cloud types for phase switching.
+! 2015/11/27, CP: Added prob clear type 
 !
 ! $Id$
 !
@@ -66,6 +67,7 @@ module constants_cloud_typing_pavolonis
    integer(sint) :: CIRRUS_TYPE = 7
    integer(sint) :: OVERLAP_TYPE = 8
    integer(sint) :: PROB_OPAQUE_ICE_TYPE = 9 ! missing ch3.7 due to low S/N
+   integer(sint) :: PROB_CLEAR_TYPE = 10 ! cold antarctic
 
    !--- used for sunglint_mask, nise_mask
    integer(sint) :: NO = 0
