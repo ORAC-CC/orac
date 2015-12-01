@@ -87,10 +87,9 @@ $(OBJS)/surface_structures.o: $(OBJS)/channel_structures.o \
         deallocate_surface_structures.F90
 $(OBJS)/test_rttov.o: $(OBJS)/preproc_constants.o $(OBJS)/preproc_structures.o
 $(OBJS)/utils_for_main.o: $(OBJS)/preproc_constants.o
-$(OBJS)/preprocessing_for_orac.o: $(OBJS)/calender.o \
-        $(OBJS)/channel_structures.o $(OBJS)/cloud_typing_pavolonis.o \
-        $(OBJS)/correct_for_ice_snow.o $(OBJS)/ecmwf.o \
-        $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
+$(OBJS)/preprocessing_for_orac.o: $(OBJS)/channel_structures.o \
+        $(OBJS)/cloud_typing_pavolonis.o $(OBJS)/correct_for_ice_snow.o \
+        $(OBJS)/ecmwf.o $(OBJS)/imager_structures.o $(OBJS)/netcdf_output.o \
         $(OBJS)/preparation.o $(OBJS)/preproc_constants.o \
         $(OBJS)/preproc_structures.o $(OBJS)/read_USGS_file.o \
         $(OBJS)/read_aatsr.o $(OBJS)/read_avhrr.o $(OBJS)/read_imager.o \

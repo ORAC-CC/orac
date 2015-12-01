@@ -138,8 +138,10 @@
 ;   06 Mar 2015 - AJAS: Bug fix for UNITS keyword and TITLE when /WHITE_BACK set
 ;   29 Jun 2015 - ACP: Changed top/bot colour for greyscale colourbar.
 ;   14 Jul 2015 - CH: Added CB_TOP_COLOUR and CB_BOT_COLOUR keywords to allow the
-;      colours at the top and bottom of the colour bar to be specified by the user.
-;      Corrected the centring of the map for regions that cross the dateline.
+;      colours at the top and bottom of the colour bar to be specified by the
+;      user. Corrected the centring of the map for regions that cross the
+;      dateline.
+;   16 Nov 2015 - ACP: Added ROBINSON projection. Best used with CENTRE.
 ;-
 pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    falsecolour=falsecolour, fcnorm=fcnorm, nlevels=nlevels, $
@@ -150,6 +152,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
                    rywdiff=rywdiff, d2colourbar=d2colourbar, red=rplt, $
                    green=gplt, colourtable=colourtable, omi=omi, $
                    mercator=mercator,stereo=stereo,hammer=hammer, $
+                   robinson=robinson, $
                    cartesian_projection=cartesian, nocolourbar=nocolourbar, $
                    isotropic=isotropic, dpcm=dpcm, nobox=nobox, hires=hires, $
                    coast=coast, countries=countries, usa=usa, rivers=rivers, $
@@ -263,7 +266,7 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
    ;; AJAS Added color keyword so that the white background gets a black title.
    MAP_SET,limit=limit,advance=advance,xmar=xmar,ymar=ymar,/noborder, $
            title=tit,charsize=charsize,isotropic=isotropic,position=pos, $
-           noerase=noerase,central=azi,centre[0],centre[1], $
+           noerase=noerase,central=azi,centre[0],centre[1],robinson=robinson, $
            COLOR= white_back ? 0 : (falsecolour ? 16777215 : 255)
    pos=[!x.window[0],!y.window[0],!x.window[1],!y.window[1]]
 
@@ -306,7 +309,8 @@ pro MAPPOINTS_NEW, pts, lat, lon, limit=lim, centre=centre, $
 
    ;; make a map that fills the entire buffer
    MAP_SET,limit=limit,/noborder,position=[0.,0.,1.,1.],centre[0],centre[1], $
-           mercator=mercator,stereo=stereo,hammer=hammer,central=azi
+           mercator=mercator,stereo=stereo,hammer=hammer,central=azi, $
+           robinson=robinson
 
    ;; plot data points
    if falsecolour then begin
