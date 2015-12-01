@@ -439,7 +439,7 @@ fi
 if (( $ld_set )); then
     # load library paths from Makefile lib file
     # 1) Read contents of lib file, whose location is given by $ORAC_LIB
-    lib_contents=$(<${preproc_folder}/${ORAC_LIB})
+    lib_contents=$(<${ORAC_LIB})
     # 2) Replace round braces with curly braces
     lib_commands=`echo "$lib_contents" | sed -e 's/(/\{/g' -e 's/)/\}/g'`
     # 3) Make a string that does everything before defining the variable $LIBS

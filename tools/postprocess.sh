@@ -60,68 +60,18 @@ for j in ${!sensor[*]}; do
         ice_sec=`find $fdr -name $root*ICE.secondary.nc`
         out_sec=${wat_sec:0:-16}.secondary.nc
 
-        driver=$driver_file_base${inst}.txt
-        log_file=$fdr/${inst}'_POSTPROC_V'$revision'_'`date +"%y%m%d_%H%M"`.log
+        driver=$driver_file_base${label[$j]}.txt
+        log_file=$fdr/${label[$j]}'_POSTPROC_V'$revision'_'`date +"%y%m%d_%H%M"`.log
 
         # write driver file
-        echo "'$wat_prim'" 1> $driver
+        echo "'$wat_prim'" 1>  $driver # Primary files for WAT & ICE phases
         echo "'$ice_prim'" 1>> $driver
-        echo "'$wat_sec'" 1>> $driver
-        echo "'$ice_sec'" 1>> $driver
-        echo "'$out_prim'" 1>> $driver
-        echo "'$out_sec'" 1>> $driver
-        echo "false" 1>> $driver                  # Process one phase only
-        echo "false" 1>> $driver                  # Process cloudy only
-        echo "0.1  0.1       " >> $driver         # minre water/ice
-        echo "30.  200.      " >> $driver         # maxre water/ice
-        echo "0.1   0.1      " >> $driver         # minod water/ice
-        echo "999.  999.     " >> $driver         # maxod water/ice
-        echo "1000000.       " >> $driver         # maxcost
-        echo "1.5            " >> $driver         # costfactor
-        echo "1.39            " >> $driver        # cot thre hold land cloud mask
-        echo "0.2            " >> $driver         # cot thre hold sea cloud mask
-        echo "0.3            " >> $driver         # cot thre hold for cloud mask
-        echo "2 3 4 5 6 7  " >> $driver           # AATSR channel ids !!IGNORED!!
-        echo "BLANK  " >> $driver                 # instrument
-        echo "1                 " >> $driver      #! 1: work also on secondary input file, 0 dont
-        echo "0                 " >> $driver      #! 1: do strict checking, with convergence flag, 0 dont
-        echo "19.0           " >> $driver         # temp_thres_h
-        echo "19.0           " >> $driver         # temp_thres_m
-        echo "19.0           " >> $driver         # temp_thres_l
-        echo "14.0           " >> $driver         # temp_thres1
-        echo "150.0        " >> $driver           # ctt_bound
-        echo "275.0        " >> $driver           # ctt_bound_winter
-        echo "295.0        " >> $driver           # ctt_bound_summer
-        echo "280.0        " >> $driver           # ctt_thres
-        echo "907.0        " >> $driver           # ctp_thres
-        echo "957.0        " >> $driver           # ctp_thres1
-        echo "50.0           " >> $driver         # ctp_bound
-        echo "1100.0      " >> $driver            # ctp_bound_up
-        echo "100000.0 " >> $driver               # ctp_udivctp
-        echo "xxx" >> $driver                     # uuid_tag_primary
-        echo "xxx" >> $driver                     # uuid_tag_secondary
-        echo "???" >> $driver                     # platform
-        echo "20120803:122601" >> $driver         # prodtime
-        echo "'L2 final output'" >> $driver       # prod_name
-        echo 'L2' >> $driver                      # cprodtype
-        echo "$ncdf_version" >> $driver           # cncver
-        echo "$cf_convention" >> $driver          # ccon
-        echo "$processing_inst" >> $driver        # cinst
-        echo "$l2processor" >> $driver            # l2cproc
-        echo "$revision" >> $driver               # l2cprocver
-        echo "$contact_email" >> $driver          # contact
-        echo "$contact_website" >> $driver        # website
-        echo "$reference" >> $driver              # reference
-        echo "$hist" >> $driver                   # history
-        echo "$summary" >> $driver                # summary
-        echo "$keywords" >> $driver               # keywords
-        echo "$comment" >> $driver                # comment
-        echo "${label[$j]}" >> $driver            # project
-        echo "$license" >> $driver                # license
-        echo "$file_version" >> $driver           # cfile_version
-        echo "???" >> $driver                     # csource
-        echo " " >> $driver                       # !!IGNORED!!
-        echo "'NetCDF Climate Forecast (CF) Metadata Convention version 18'" >> $driver # std_name_voc
+        echo "'$wat_sec'"  1>> $driver # Secondary files for WAT & ICE phases
+        echo "'$ice_sec'"  1>> $driver
+        echo "'$out_prim'" 1>> $driver # Primary/secondary output filenames
+        echo "'$out_sec'"  1>> $driver
+        echo "false"       1>> $driver # Process one phase only
+        echo "use_netcdf_compression=false" 1>> $driver # For testing purposes
 
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" 1> $log_file
         echo '' 1>> $log_file
