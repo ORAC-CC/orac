@@ -217,7 +217,7 @@ module orac_output
       integer(kind=sint)            :: qcflag_scale  = 1
       integer(kind=sint)            :: qcflag_offset = 0
       integer(kind=sint)            :: qcflag_vmin   = 0
-      integer(kind=sint)            :: qcflag_vmax   = 254
+      integer(kind=sint)            :: qcflag_vmax   = 32767
 
       integer(kind=byte)            :: lsflag_scale  = 1
       integer(kind=byte)            :: lsflag_offset = 0
