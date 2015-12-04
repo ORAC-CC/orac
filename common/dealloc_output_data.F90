@@ -47,7 +47,8 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, do_cldmask_uncertainty, do_dem)
+subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
+   do_cldmask_uncertainty, do_dem)
 
    implicit none
 

@@ -106,7 +106,7 @@
 !    them to zero.
 ! 2015/09/26, GM: Removed eight unused mandatory driver file lines.
 ! 2015/11/17, OS: Some bug fixing in correctly switching phase and cloud types.
-!    Previously, switching was wrong and, additionally, phase was ice for all 
+!    Previously, switching was wrong and, additionally, phase was ice for all
 !    cloud free pixels. This should all be resolved with this commit.
 !
 ! $Id$
@@ -478,9 +478,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
 
    ! allocate the structures which hold the output in its final form
-   call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, indexing%NViews, indexing%Ny, output_primary, .true., .false.)
+   call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
+        indexing%NViews, indexing%Ny, output_primary, .true., .false.)
    if (do_secondary) then
-      call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, indexing%Ny, indexing%Nx, output_secondary, .false.)
+      call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
+           indexing%Ny, indexing%Nx, output_secondary, .false.)
    end if
 
    ! open the netcdf output file
@@ -499,13 +501,16 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       deflate_level2 = 0
       shuffle_flag2  = .false.
    end if
-   call def_output_primary(ncid_primary, dims_var, output_primary, global_atts%sensor, &
-        indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, &
-        indexing%Ch_Is, 100, input_primary(1)%qc_flag_masks, &
-        input_primary(1)%qc_flag_meanings, deflate_level2, &
-        shuffle_flag2, verbose, .true., .false., .false., .true.)
+   call def_output_primary(ncid_primary, dims_var, output_primary, &
+        global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, &
+        indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, &
+        input_primary(1)%qc_flag_masks, input_primary(1)%qc_flag_meanings, &
+        deflate_level2, shuffle_flag2, verbose, .true., .false., .false., .true.)
    if (do_secondary) then
-      call def_output_secondary(ncid_secondary, dims_var, output_secondary, indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, 0, 0, verbose, .false.)
+      call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
+           indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, &
+           indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, 0, 0, &
+           verbose, .false.)
    end if
 
    ! put results in final output arrays with final datatypes
@@ -527,9 +532,13 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
 
    ! write output to netcdf variables
-   call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, .true., .false., .false., .true.)
+   call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
+        output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, &
+        .true., .false., .false., .true.)
    if (do_secondary) then
-      call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, output_secondary, indexing%NViews, indexing%Ny, indexing%NSolar, indexing%Nx, indexing%Y_Id, .false.)
+      call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
+      iystop, output_secondary, indexing%NViews, indexing%Ny, indexing%NSolar, &
+      indexing%Nx, indexing%Y_Id, .false.)
    end if
 
    ! close output file

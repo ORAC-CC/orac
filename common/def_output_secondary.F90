@@ -59,7 +59,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar, Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, Xmax, Ymax, verbose, do_covariance)
+subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar, &
+   Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, Xmax, Ymax, verbose, &
+   do_covariance)
 
    use netcdf
    use orac_ncdf

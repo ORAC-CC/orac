@@ -56,7 +56,8 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, NViews, Ny, output_data, do_phase_pavolonis, do_cldmask_uncertainty)
+subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
+   NViews, Ny, output_data, do_phase_pavolonis, do_cldmask_uncertainty)
 
    implicit none
 

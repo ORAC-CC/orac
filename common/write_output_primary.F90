@@ -46,7 +46,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre)
+subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
+   output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, &
+   do_cldmask_uncertainty, do_cloudmask_pre)
 
    use orac_ncdf
 

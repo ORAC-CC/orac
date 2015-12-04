@@ -72,10 +72,10 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_primary(ncid, dims_var, output_data, inst_name, &
-     NViews, Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_masks, &
-     qc_flag_meanings, deflate_level, shuffle_flag, verbose,          &
-     do_phase_pavolonis, do_cldmask, do_cldmask_uncertainty, do_cloudmask_pre)
+subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
+   Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_masks, qc_flag_meanings, &
+   deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, &
+   do_cldmask_uncertainty, do_cloudmask_pre)
 
    use netcdf
    use orac_ncdf

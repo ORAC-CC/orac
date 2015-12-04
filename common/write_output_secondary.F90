@@ -43,7 +43,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, output_data, NViews, Ny, NSolar, Nx, Y_Id, do_covariance)
+subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
+   output_data, NViews, Ny, NSolar, Nx, Y_Id, do_covariance)
 
    use orac_ncdf
 
