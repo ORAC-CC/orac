@@ -55,6 +55,8 @@
 ! 2015/11/16, CP: Made AATSR times consistent with AVHRR and MODIS.
 ! 2015/11/26, GM: Fixed AATSR time offset relative to Julian day.
 ! 2015/11/26, GM: AATSR time offset is now applied in the preprocessor.
+! 2015/12/10, GM: Fixed conversion of geopotential height to geometric height:
+!    10.0 was being used instead of g_wmo (gravitational acceleration).
 !
 ! $Id$
 !
@@ -253,7 +255,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (RTM_Pc%Hc .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = RTM_Pc%Hc/10./1000. ! now it's in km
+      temp_real = RTM_Pc%Hc/g_wmo/1000. ! now it's in km
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cth(i,j), &
@@ -270,7 +272,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    else if (temp_short_ctp_error .gt. output_data%ctp_error_vmax) then
       output_data%cth_error(i,j)=output_data%cth_error_vmax
    else
-      temp_real=abs(RTM_Pc%dHc_dPc/10./1000.)*temp_real_ctp_error
+      temp_real=abs(RTM_Pc%dHc_dPc/g_wmo/1000.)*temp_real_ctp_error
       call prepare_short_packed_float( &
            temp_real, output_data%cth_error(i,j), &
            output_data%cth_error_scale, output_data%cth_error_offset, &
@@ -285,7 +287,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (SPixel%CTH_corrected .eq. MissingXn) then
       temp_real = sreal_fill_value
    else
-      temp_real = SPixel%CTH_corrected/10./1000. ! now it's in km
+      temp_real = SPixel%CTH_corrected/g_wmo/1000. ! now it's in km
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cth_corrected(i,j), &
@@ -298,7 +300,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (SPixel%CTH_corrected_error .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-      temp_real = SPixel%CTH_corrected_error/10./1000. ! now it's in km
+      temp_real = SPixel%CTH_corrected_error/g_wmo/1000. ! now it's in km
    end if
    call prepare_short_packed_float( &
         temp_real, output_data%cth_corrected_error(i,j), &
