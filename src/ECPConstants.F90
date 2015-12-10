@@ -150,8 +150,8 @@ module ECP_constants
    ! Physical constants/parameters
    real, parameter    :: rhowat           = 1.0     ! Density of water
    real, parameter    :: rhoice           = 0.9167  ! Density of ice
-   real, parameter    :: qextwat          = 2.0     ! Extinction coefficient water
-   real, parameter    :: qextice          = 2.1     ! Extinction coefficient ice
+   real, parameter    :: qextwat          = 2.0     ! Extinction efficiency for water
+   real, parameter    :: qextice          = 2.1     ! Extinction efficiency for ice
 
    real, parameter    :: g_wmo            = 9.80665 ! Gravity
 
