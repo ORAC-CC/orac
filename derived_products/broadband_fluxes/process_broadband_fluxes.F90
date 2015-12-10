@@ -25,6 +25,7 @@
 ! 2015/11/22, GM: Fixed retrflag output.  It was defined as a float when it is
 !    actually a byte and it was not being initialized leading to garbage output.
 !    Also set the flag_values and flag meanings attributes.
+! 2015/12/10, MC: Removed nighttime and twilight retrievals (solar zenith angle < 80)
 !
 ! $Id$
 !
@@ -626,33 +627,35 @@ program process_broadband_fluxes
 
        !solar zenith angle
        pxTheta = COS( SOLZ(i,j) * Pi/180.)
+       !Valid solar zenith angle (remove nighttime & twilight)
+       if( SOLZ(i,j) .lt. 80.) then
  
-       !meteorology
-       call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
-                               xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
-                               LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
+        !meteorology
+        call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
+                                xdim_prtm,ydim_prtm,P,T,H,Q,O3,&
+                                LON(i,j),LAT(i,j),inP,inT_,inH,inQ,inO3)
 
-       !use to debug current interpolation scheme
-       !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
-       !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
+        !use to debug current interpolation scheme
+        !call collocate_prtm_profile(LON(i,j),LAT(i,j),&
+        !          xdim_prtm,ydim_prtm,tlon_prtm,tlat_prtm,tlonid,tlatid)
         !print*,tlonid,tlatid
         !set value
-       ! inH(:)= H(:,tlonid,tlatid)
-       ! inT_(:)= T(:,tlonid,tlatid)
-       ! inP(:)= P(:,tlonid,tlatid)
-       ! inQ(:)= Q(:,tlonid,tlatid)
-       ! inO3(:) = O3(:,tlonid,tlatid)
-       !call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS) !standard profile if wanted
+        ! inH(:)= H(:,tlonid,tlatid)
+        ! inT_(:)= T(:,tlonid,tlatid)
+        ! inP(:)= P(:,tlonid,tlatid)
+        ! inQ(:)= Q(:,tlonid,tlatid)
+        ! inO3(:) = O3(:,tlonid,tlatid)
+        !call midlatsum1(pxZ,pxP,pxT,pxQ,pxO3,NLS) !standard profile if wanted
 
-       !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
-       pxZ = inH(mask_vres)
-       pxP = inP(mask_vres)
-       pxT = inT_(mask_vres)
-       pxQ = inQ(mask_vres)
-       pxO3 = inO3(mask_vres)
+        !collocate PRTM vertical resolution to BUGSrad profile resolution (31 levels)
+        pxZ = inH(mask_vres)
+        pxP = inP(mask_vres)
+        pxT = inT_(mask_vres)
+        pxQ = inQ(mask_vres)
+        pxO3 = inO3(mask_vres)
 
-       !Surface temperature
-       pxts = pxT(NLS)
+        !Surface temperature
+        pxts = pxT(NLS)
 
 !         print*,'latitude: ',LAT(i,j)
 !         print*,'longitude: ',LON(i,j)
@@ -663,18 +666,15 @@ program process_broadband_fluxes
 !         print*,'SAT retr. COT = ',COT(i,j)
 !         print*,'SAT retr. cc_tot = ',cc_tot(i,j)
 
-       !cloud base & top height calculation
-       call preprocess_bugsrad(cc_tot(i,j),0.,0.,phase(i,j),&
-                        CTT(i,j),REF(i,j),COT(i,j),CTH(i,j),&
-                        NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
-                        pxPhaseFlag,pxLayerType,&
-                        pxregime,pxcomputationFlag,pxHctopID,pxHcbaseID)
+        !cloud base & top height calculation
+        call preprocess_bugsrad(cc_tot(i,j),0.,0.,phase(i,j),&
+                         CTT(i,j),REF(i,j),COT(i,j),CTH(i,j),&
+                         NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
+                         pxPhaseFlag,pxLayerType,&
+                         pxregime,pxcomputationFlag,pxHctopID,pxHcbaseID)
 
-       !for detecting NaN's produced by BUGSrad
-       nanFlag=0
-
-       !Run BUGSrad over valid retrieval
-!      if(pxcomputationFlag == 1 .and. nanFlag == 0) then
+        !for detecting NaN's produced by BUGSrad
+        nanFlag=0
 
          !debugging (print statements)
 !         print*,'phase: ',pxPhaseFlag
@@ -741,7 +741,7 @@ program process_broadband_fluxes
           boa_par_dif(i,j) = bpardif
 
          endif !valid data
-!       endif !user-defined
+       endif   !valid solar zenith angle
       endif   !valid geolocation data
     enddo !j-loop
    enddo !i-loop
