@@ -11,37 +11,13 @@
 !
 ! History:
 ! 2015/11/18, GM: Original version.
+! 2015/12/15, GM: Some cleanup.  Make use of find_in_array().
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-
-function get_i_spixel_thermal(Ctrl, SPixel) result(i_spixel_thermal)
-
-   use Ctrl_def
-   use SPixel_def
-
-   implicit none
-
-   type(Ctrl_t),     intent(in) :: Ctrl
-   type(SPixel_t),   intent(in) :: SPixel
-
-   integer :: i_spixel_thermal
-
-   integer :: i
-
-   i_spixel_thermal = -1
-   do i = 1, SPixel%Ind%NThermal
-      if (Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(i)) .eq. 32) then
-         i_spixel_thermal = i
-         exit
-      end if
-   enddo
-
-end function get_i_spixel_thermal
-
 
 function get_detransmitted_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal, &
                               Y) result(bt)
@@ -64,18 +40,20 @@ function get_detransmitted_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal
    real                         :: bt
 
    integer :: i_ctrl_y
+   integer :: i_spixel_y
    integer :: status
 
    real    :: a(1)
    real    :: b(1)
    real    :: R(1)
 
-   i_ctrl_y = SPixel%spixel_y_to_ctrl_y_index(SPixel%Ind%YThermal(i_spixel_y_thermal))
+   i_spixel_y = SPixel%Ind%YThermal(i_spixel_y_thermal)
+   i_ctrl_y   = SPixel%spixel_y_to_ctrl_y_index(i_spixel_y)
 
-   call T2R(1, SAD_Chan(i_ctrl_y:i_ctrl_y), &
-      Y(SPixel%Ind%YThermal(i_spixel_y_thermal):SPixel%Ind%YThermal(i_spixel_y_thermal)), &
-      R, a, status)
+   call T2R(1, SAD_Chan(i_ctrl_y:i_ctrl_y), Y(i_spixel_y:i_spixel_y), R, a, status)
+
    R = R / RTM_Pc%LW%Tac(SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(i_spixel_y_thermal))
+
    call R2T(1, SAD_Chan(i_ctrl_y:i_ctrl_y), R, a, b, status)
    bt = a(1)
 
@@ -87,6 +65,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    use CTRL_def
    use ECP_Constants
    use GZero_def
+   use Int_Routines_def
    use Int_LUT_Routines_def
    use planck
    use RTM_Pc_def
@@ -102,7 +81,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    type(SPixel_t),   intent(inout) :: SPixel
    type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
    type(SAD_LUT_t),  intent(in)    :: SAD_LUT
-   type(RTM_Pc_t),   intent(inout) :: RTM_Pc
+   type(RTM_Pc_t),   intent(in)    :: RTM_Pc
    real,             intent(in)    :: Sy(:,:)
 
    ! Local variable declarations
@@ -113,6 +92,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    integer       :: i_spixel_12
    integer       :: i_spixel_11_thermal
    integer       :: i_spixel_12_thermal
+   integer       :: Y_Id(SPixel%Ind%NThermal)
    real          :: a(1)
    real          :: b(1)
    real          :: R(1)
@@ -149,26 +129,9 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    end if
 
    ! Find 11 and 12 micron indexes
-   i_spixel_11_thermal = 0
-   do i = 1, SPixel%Ind%NThermal
-      if (Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(i)) .eq. &
-          Ctrl%Ind%Y_Id_legacy(I_legacy_11_x)) then
-         i_spixel_11_thermal = i
-         exit
-      end if
-   enddo
-
-   i_spixel_12_thermal = 0
-   do i = 1, SPixel%Ind%NThermal
-      if (Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(i)) .eq. &
-          Ctrl%Ind%Y_Id_legacy(I_legacy_12_x)) then
-         i_spixel_12_thermal = i
-         exit
-      end if
-   enddo
-
-   i_spixel_11 = SPixel%Ind%YThermal(i_spixel_11_thermal)
-   i_spixel_12 = SPixel%Ind%YThermal(i_spixel_12_thermal)
+   Y_Id = Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal))
+   i_spixel_11_thermal = find_in_array(Y_Id, Ctrl%Ind%Y_Id_legacy(I_legacy_11_x))
+   i_spixel_12_thermal = find_in_array(Y_Id, Ctrl%Ind%Y_Id_legacy(I_legacy_12_x))
 
    ! Need both 11 and 12 micron to perform the correction
    if (i_spixel_11_thermal .gt. 0 .and. i_spixel_12_thermal .gt. 0) then
@@ -193,9 +156,12 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       T_12 = get_detransmitted_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, &
                                   i_spixel_12_thermal, SPixel%Ym)
 
+      ! For now we assume these are zero.  In fact the are not zero w.r.t. both
+      ! the measurements and Pc.
       T_11_l = 1.
       T_12_l = 1.
 
+      ! Extinction coefficients and associated derivatives
       beta_11       = CRP_thermal(i_spixel_11_thermal)
       beta_12       = CRP_thermal(i_spixel_12_thermal)
 
@@ -213,8 +179,9 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       ctt_new_l_t12 = - beta_12  * T_12_l / delta_beta
 
       ! Bext is not a function of Tau so SPixel%Sn(ITau, ITau) and Tau cross
-      ! terms need not be included.
-      ctt_new_sigma = sqrt((ctt_new_l_r_e * SPixel%Sn(IRe, IRe))         * ctt_new_l_r_e + &
+      ! terms need not be included.  Still not including measurement and Pc
+      ! uncertainty.
+      ctt_new_sigma = sqrt((ctt_new_l_r_e * SPixel%Sn(IRe, IRe)) * ctt_new_l_r_e + &
                            (ctt_new_l_t11 * Sy(i_spixel_11,i_spixel_11) + &
                             ctt_new_l_t12 * Sy(i_spixel_11,i_spixel_12)) * ctt_new_l_t11 + &
                            (ctt_new_l_t11 * Sy(i_spixel_12,i_spixel_11) + &
@@ -233,8 +200,6 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       ! It doesn't happen much but if it does lets just ignore corrections in
       ! the downward direction
       if (ctp_new - SPixel%Xn(iPc) .lt. 0) then
-!        SPixel%Xn(IPc)             = ctp_new
-!        RTM_Pc%Tc                  = ctt_new
          SPixel%CTH_corrected       = cth_new
          SPixel%CTH_corrected_error = cth_new_sigma
       end if
