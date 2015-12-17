@@ -65,6 +65,7 @@
 ! 2015/11/14, GM: Fix some of the recent CF compliance fixes.
 ! 2015/11/17, OS: line 71 was too long for compiler
 ! 2015/10/24, GM: Fix flag_values and flag_meanings for lsflag.
+! 2015/12/17, OS: Updated NetCDF time variable definition.
 !
 ! $Id$
 !
@@ -122,7 +123,11 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
    !----------------------------------------------------------------------------
    ! time
    !----------------------------------------------------------------------------
-   input_dummy='Julian Date, days elapsed since 12:00 January 1, 4713 BC'
+!   if (inst_name(1:5) .eq. 'AATSR' .or. inst_name(1:5) .eq. 'ATSR2') then
+!      input_dummy='Julian Date, days elapsed since 12:00 January 1, 2000'
+!   else
+      input_dummy='days since -4712-01-01 12:00:00'
+!   end if
 
    call nc_def_var_double_packed_double( &
            ncid, &
@@ -130,8 +135,8 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
            'time', &
            output_data%vid_time, &
            verbose, &
-           long_name     = 'time', &
-           standard_name = 'time', &
+           long_name     = 'Time in Julian days', &
+           standard_name = 'Julian Days', &
            fill_value    = dreal_fill_value, &
            scale_factor  = output_data%time_scale, &
            add_offset    = output_data%time_offset, &
