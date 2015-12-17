@@ -18,6 +18,7 @@
 # 2014/08/22, Greg McGarragh: Use the library file instead of the object list
 #    for the executable and make the executable dependent on the library file.
 #    Now 'make' will build both the executable and library in one command.
+# 2014/10/23, Oliver Sus: Changes related to USGS, Pavolonis, and NN cloud mask.
 # 2015/02/19, Greg McGarragh: Added the read_seviri module.
 # 2015/02/24, Greg McGarragh: Added the utils_for_main module.
 #
@@ -29,20 +30,13 @@
 # Set files from which compiler, flags, and libraries are set. archfile also
 # defines the "$(OBJS)" variable, which places object and module files in a
 # subdirectory
+include $(ORAC_LIB)
+include $(ORAC_ARCH)
 
-#include $(ORAC_ARCH)
-#include $(ORAC_LIB)
+ORAC_COMMON = ../common
 
-archfile=arch.ecmwf.cray
-libfile=lib.ecmwf.cray
-ORAC_COMMON   = ../common
 
-include $(archfile)
-include $(libfile)
-
-# Define object files to be linked. N.B. files containing module definitions
-# should be listed before main program units and subroutines that use those
-# modules so that the modules are known to the compiler.
+# Define object files to be linked.
 PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/bright_m.o \
                   $(OBJS)/build_preproc_fields.o \
@@ -66,7 +60,6 @@ PREPROC_OBJ_F90 = $(OBJS)/aatsr_corrections.o \
                   $(OBJS)/preparation.o \
                   $(OBJS)/preproc_constants.o \
                   $(OBJS)/preproc_structures.o \
-                  $(OBJS)/preprocessing_for_orac.o \
                   $(OBJS)/read_aatsr.o \
                   $(OBJS)/read_avhrr.o \
                   $(OBJS)/read_cimss_emissivity.o \
@@ -87,7 +80,7 @@ PREPROC_OBJ_C    = $(OBJS)/read_aatsr_orbit.o
 
 PREPROC_OBJ      = $(PREPROC_OBJ_F90) $(PREPROC_OBJ_C)
 
-#PREPROC_OBJ_MAIN = $(OBJS)/preprocessing_for_orac.o
+PREPROC_OBJ_MAIN = $(OBJS)/preprocessing_for_orac.o
 
 
 # Compilation rules
@@ -106,18 +99,19 @@ $(OBJS)/%.o: %.c
 
 
 # Main target list
-#all: orac_preproc.x
+all: orac_preproc.x
 
 # Main program build
-#orac_preproc.x: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a Makefile
-#	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
+orac_preproc.x: $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a Makefile
+	$(F90) -o orac_preproc.x $(LFLAGS) $(PREPROC_OBJ_MAIN) libpreproc.a $(ORAC_COMMON)/liborac_common.a -I./$(OBJS) $(LIBS)
+
 # Main library build
 libpreproc.a: $(PREPROC_OBJ) Makefile
 	ar -rs libpreproc.a $(PREPROC_OBJ)
 
 # Rebuild dependencies housed in dependencies.inc
 depend:
-	@../tools/make_depend.pl $(PREPROC_OBJ_F90) > dependencies.inc 
+	@../tools/make_depend.pl $(PREPROC_OBJ_F90) $(PREPROC_OBJ_MAIN) > dependencies.inc
 
 clean tidy:
 	rm -f $(OBJS)/*.o $(OBJS)/*.mod *.a orac_preproc.x
