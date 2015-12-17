@@ -33,6 +33,8 @@
 ! 2015/10/29, CP: functionality for ATSR2 added added SteSta NN calibration corrections
 ! 2015/11/17, OS: added platform flag and correction coefficients for MODIS and AATSR;
 !    removed sunglint double check; minor editing
+! 2015/12/17, OS: changed structure of setting thresholds
+
 ! $Id$
 !
 ! Bugs:
@@ -174,6 +176,8 @@ contains
        call_neural_net = .FALSE.
     endif
 
+    threshold_used = sreal_fill_value
+ 
     ! --- if day
     if ( illum_nn .eq. 1 ) then
 
@@ -211,6 +215,15 @@ contains
        input(6) = skint         ! ERA-Interim skin temperature
        input(7) = niseflag      ! snow/ice information
        input(8) = lsflag        ! land/sea flag
+
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+           threshold_used = COT_THRES_DAY_SEA
+           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+           threshold_used = COT_THRES_DAY_LAND
+           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_LAND_ICE
+       endif
 
     elseif ( illum_nn .eq. 2 )  then
 
@@ -250,6 +263,15 @@ contains
        if ( ( skint - ch4 ) .lt. 0 ) input(4) = ch4
        input(5) = niseflag
        input(6) = lsflag
+
+        !set threshold
+       if ( lsflag .eq. 0_byte ) then
+           threshold_used = COT_THRES_TWL_SEA
+           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+           threshold_used = COT_THRES_TWL_LAND
+           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_LAND_ICE
+       endif
 
     elseif ( illum_nn .eq. 3 ) then
 
@@ -291,6 +313,15 @@ contains
        input(7) = niseflag
        input(8) = lsflag
 
+       !set threshold
+       if ( lsflag .eq. 0_byte ) then
+           threshold_used = COT_THRES_NIGHT_SEA
+           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_SEA_ICE
+       elseif ( lsflag .eq. 1_byte ) then
+           threshold_used = COT_THRES_NIGHT_LAND
+           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_LAND_ICE
+       endif
+
     else
 
        if (verbose) then
@@ -300,6 +331,8 @@ contains
        ! --- end of day/night if loop
     endif
 
+    !this should never happen and is only the case if lsflag is neither 0 nor 1
+    if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false. 
 
     ! --- subroutine which carries out neural network computation
 
@@ -321,7 +354,6 @@ contains
        ! --- ensure that CCCOT is within 0 - 1 range
        cccot_pre = max( min( output, 1.0 ), 0.0)
 
-
        ! --- get rid of fields
        deallocate(minmax_train)
        deallocate(inv)
@@ -329,88 +361,13 @@ contains
        deallocate(input)
        deallocate(scales)
 
-       ! now create BIT mask: 0=CLEAR, 1=CLOUDY, fill_value=unknown
+       ! now apply threshold and create BIT mask: 0=CLEAR, 1=CLOUDY
+       if ( cccot_pre .gt. threshold_used ) then
+            cldflag = CLOUDY
+       else
+            cldflag = CLEAR
+       endif
 
-       ! apply sea threshold
-       ! introduced more thresholds to be more flexible
-
-       ! SEA
-       if ( lsflag .eq. 0_byte ) then
-          ! Day
-          if (illum_nn .eq. 1 ) then
-             ! SNOW ICE
-             if ( niseflag .eq. YES ) then
-                threshold_used = COT_THRES_DAY_SEA_ICE
-                if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             else ! SNOW-ICE FREE
-                 threshold_used = COT_THRES_DAY_SEA
-                 if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             endif
-          elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
-             ! SNOW ICE
-             if ( niseflag .eq. YES ) then
-                threshold_used = COT_THRES_NIGHT_SEA_ICE
-                if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             else ! SNOW ICE FREE
-                 threshold_used = COT_THRES_NIGHT_SEA
-                 if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             endif
-          endif
-          ! apply land threshold
-       elseif ( lsflag .eq. 1_byte ) then
-          ! Day
-          if (illum_nn .eq. 1 ) then
-             ! SNOW ICE
-             if ( niseflag .eq. YES ) then
-                threshold_used = COT_THRES_DAY_LAND_ICE
-                if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             else ! SNOW ICE FREE
-                threshold_used = COT_THRES_DAY_LAND
-                if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             endif
-          elseif ( (illum_nn  .eq. 2) .or. (illum_nn .eq. 3) ) then  ! Night or Twilight
-             ! SNOW ICE
-             if ( niseflag .eq. YES ) then
-                threshold_used = COT_THRES_NIGHT_LAND_ICE
-                if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             else ! SNOW ICE FREE
-                threshold_used = COT_THRES_NIGHT_LAND
-                if ( cccot_pre .gt. threshold_used ) then
-                   cldflag = CLOUDY
-                else
-                   cldflag = CLEAR
-                endif
-             endif
-          endif
-      endif
 
        ! calculate Uncertainty with pre calculated calipso scores
        ! depending on normalized difference between cccot_pre and used threshold
@@ -427,7 +384,7 @@ contains
        ! here we go.
        ! What are we doing if at least 1 input parameter is not in trained range
        ! , e.g. fillvalue ?
-       ! For now 7 cases are defined to deal with it, choose best one later
+       ! For now 5 cases are defined to deal with it, choose best one later
        ! noob equals 1 if one or more input parameter is not within trained range
        if (noob .eq. 1_lint) then
           ! give penalty; increase uncertainty because at least 1 ANN input parameter
@@ -445,18 +402,8 @@ contains
           ! Case 4) set it to fillvalue
           !imager_pavolonis%CCCOT_pre(i,j)=sreal_fill_value
           !imager_pavolonis%CLDMASK(i,j)=sint_fill_value
-          ! Case 5) only during nighttime! set it to cloudy if 3.7µm is fillvalue (saturated)
-          !but 11µm is below 230 K; cloud holes; fixes at least avhrr, dont know about aatsr
-          !if ( (solzen > 80) .and. (ch3b .lt. 0) .and. &
-          !   & (ch4 .gt. 100) .and. (ch4 .lt. 230) ) then
-          !  cccot_pre   = 1.0
-          !  cldflag = CLOUDY
-          !else
-          !  cccot_pre   = sreal_fill_value
-          !  cldflag = sint_fill_value
-          !endif
-          ! Case 6) trust ann, set cldflag to fillvalue only if all channels are
-          !  below 0. (=fillvalue)
+          ! Case 5) trust ann, set cldflag to fillvalue only if all channels are
+          !         below 0. (=fillvalue)
           if (ch1 .lt. 0 .and. ch2 .lt. 0 .and. ch3b .lt. 0 .and. ch4 .lt. 0 &
                & .and. ch5 .lt. 0) then
              cldflag = byte_fill_value
