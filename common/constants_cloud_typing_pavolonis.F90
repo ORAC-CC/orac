@@ -15,6 +15,7 @@
 !    parameters (to be consistent with similar files elsewhere in the code).
 ! 2015/11/17, OS: Added cloud types for phase switching.
 ! 2015/11/27, CP: Added prob clear type 
+! 2015/12/17, OS: Added twilight NN thresholds
 !
 ! $Id$
 !
@@ -39,9 +40,6 @@ module constants_cloud_typing_pavolonis
    real(sreal)   :: CLOUDY_UNC_MAX = 55.995 !43.620
 
    !--- ann_cloud_mask
-   real(sreal)   :: COT_THRES_SEA = 0.05       !obsolete
-   real(sreal)   :: COT_THRES_SEA_ICE = 0.5    !obsolete
-   real(sreal)   :: COT_THRES_LAND = 0.3       !obsolete
    real(sreal)   :: COT_THRES_DAY_SEA_ICE = 0.4
    real(sreal)   :: COT_THRES_DAY_LAND_ICE = 0.35
    real(sreal)   :: COT_THRES_DAY_SEA = 0.1
@@ -50,6 +48,10 @@ module constants_cloud_typing_pavolonis
    real(sreal)   :: COT_THRES_NIGHT_LAND_ICE = 0.35
    real(sreal)   :: COT_THRES_NIGHT_SEA = 0.2
    real(sreal)   :: COT_THRES_NIGHT_LAND = 0.3
+   real(sreal)   :: COT_THRES_TWL_SEA_ICE = 0.4
+   real(sreal)   :: COT_THRES_TWL_LAND_ICE = 0.35
+   real(sreal)   :: COT_THRES_TWL_SEA = 0.2
+   real(sreal)   :: COT_THRES_TWL_LAND = 0.3
 
    !---
    REAL(kind=sreal)   :: NOAA7_9_CH3B_BT_THRES=240 ! Dont use 3.7 µm channel at night,
