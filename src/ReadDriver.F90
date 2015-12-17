@@ -104,6 +104,7 @@
 ! 2015/11/17, OS: Added prob_opaque_ice_type to CldIce types to process
 ! 2015/11/18, GM: Add setting of Ctrl%Ind%Y_Id_legacy.
 ! 2015/11/27, CP: modified setting so clear pixiels are processed when not cloud only
+! 2015/12/17, OS: MaxSolZen decreased from 80. to 75. to remove low quality microphysical retrievals.
 !
 ! $Id$
 !
@@ -485,7 +486,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Ind%Y1 = 0
 
    !------------ CTRL ILLUMINATION CONDITIONS -------------
-   Ctrl%MaxSolZen = 80. ! Maximum solar zenith angle
+   Ctrl%MaxSolZen = 75. ! Maximum solar zenith angle
    Ctrl%MaxSatZen = 90. ! Maximum satellite zenith angle
    Ctrl%MinRelAzi = 0.  ! Used to remove sunglint (0 = no test)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
