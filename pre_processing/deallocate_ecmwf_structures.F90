@@ -17,6 +17,7 @@
 ! 2014/05/07, AP: new version of structures
 ! 2014/11/04, OS: added deallocation of skin temperature
 ! 2014/11/04, OS: added deallocation of snow_depth and sea_ice_cover
+! 2015/12/17, OS: Added low_res flag.
 !
 ! $Id$
 !
@@ -24,20 +25,21 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine deallocate_ecmwf_structures(ecmwf)
+subroutine deallocate_ecmwf_structures(ecmwf, low_res)
 
    use preproc_constants
 
    implicit none
 
    type(ecmwf_s), intent(inout) :: ecmwf
+   logical,       intent(in)    :: low_res
 
    deallocate(ecmwf%lon)
    deallocate(ecmwf%lat)
    deallocate(ecmwf%avec)
    deallocate(ecmwf%bvec)
-   deallocate(ecmwf%u10)
-   deallocate(ecmwf%v10)
+   if (low_res) deallocate(ecmwf%u10)
+   if (low_res) deallocate(ecmwf%v10)
    deallocate(ecmwf%skin_temp)
    deallocate(ecmwf%snow_depth)
    deallocate(ecmwf%sea_ice_cover)

@@ -16,6 +16,7 @@
 ! 2015/11/26, GM: Pulled this code from the main program into this subroutine so
 !    that it could be executed twice, once for the ECMWF data on each side of
 !    the satellite acquisition.
+! 2015/12/17, OS: Added wrapper specific variables.
 !
 ! $Id$
 !
@@ -110,6 +111,11 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
    type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
    type(preproc_prtm_s),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
+#ifdef WRAPPER
+   integer                                   :: mytask
+   character(len=file_length)                :: jid
+#endif
+
 
    select case (ecmwf_flag)
    case(0)

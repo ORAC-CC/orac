@@ -235,6 +235,9 @@
 !    surface variables only (skint, sea-ice, snow-depth)
 ! 2015/11/26, GM: Implemented linear interpolation between ECMWF inputs before
 !    after the temporal center of the satellite orbit.
+! 2015/12/17, OS: ECMWF (de)allocation routines and SR to linearly combine ERA data
+!                 now use flag indicating whether high or low resolution data
+!                 are used. High res data do not contain same variables as low res.
 !
 ! $Id$
 !
@@ -372,6 +375,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    type(ecmwf_s)                    :: ecmwf,ecmwf1,ecmwf2
    type(ecmwf_s)                    :: ecmwf_HR,ecmwf_HR1,ecmwf_HR2
+   logical                          :: low_res = .true., high_res = .false.
 
    type(surface_s)                  :: surface
 
@@ -825,16 +829,19 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(2), ecmwf_HR_path_file(2), &
               ecmwf_path_file2(2), ecmwf_path_file3(2), ecmwf2, ecmwf_HR2, verbose)
 
-         call dup_ecmwf_allocation(ecmwf1, ecmwf)
+         call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
+         call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
 
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
-              ecmwf1, ecmwf2, ecmwf)
+              ecmwf1, ecmwf2, ecmwf, low_res)
+         call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
+              ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
 
-         call deallocate_ecmwf_structures(ecmwf1)
-         call deallocate_ecmwf_structures(ecmwf2)
+         call deallocate_ecmwf_structures(ecmwf1, low_res)
+         call deallocate_ecmwf_structures(ecmwf2, low_res)
 #ifdef WRAPPER
-         call deallocate_ecmwf_structures(ecmwf_HR1)
-         call deallocate_ecmwf_structures(ecmwf_HR2)
+         call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
+         call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
 #endif
       end if
 
@@ -1000,9 +1007,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
-      call deallocate_ecmwf_structures(ecmwf)
+      call deallocate_ecmwf_structures(ecmwf, low_res)
 #ifdef WRAPPER
-      call deallocate_ecmwf_structures(ecmwf_HR)
+      call deallocate_ecmwf_structures(ecmwf_HR, high_res)
 #endif
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)

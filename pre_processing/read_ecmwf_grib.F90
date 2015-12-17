@@ -48,6 +48,7 @@
 ! 2014/05/07, AP: First version.
 ! 2014/08/20, OS: Adaptations made for cray-fortran compiler specific issues
 ! 2014/12/04, OS: include job ID in scratch file name - only for wrapper
+! 2015/12/17, OS: Added some wrapper specific variables.
 !
 ! $Id$
 !
@@ -95,7 +96,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    ! this is for the wrapper
 #ifdef WRAPPER
-   integer                                  :: mytask, cutoff, jid_int, jid_length
+   integer                                  :: cutoff, jid_int, jid_length, mytask
    character(len=file_length)               :: jid, jid_temp
    character(len=file_length)               :: system_call
 

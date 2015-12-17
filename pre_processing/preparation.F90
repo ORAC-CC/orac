@@ -72,6 +72,7 @@
 !   resolution ERA file, appending suffix "_HR":
 !   path/to/low_res_era_file.nc = path/to/low_res_era_file_HR.nc
 ! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
+! 2015/12/17, OS: Added write of HR file 2.
 !
 ! $Id$
 !
@@ -167,6 +168,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) then
       write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file(1))
       write(*,*)'ecmwf_HR_path_file:  ',trim(ecmwf_HR_path_file(1))
+      write(*,*)'ecmwf_HR_path_file2:  ',trim(ecmwf_HR_path_file(2))
       if (ecmwf_flag .gt. 0) then
          write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
          write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
