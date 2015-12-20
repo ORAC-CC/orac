@@ -830,13 +830,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
               ecmwf_path_file2(2), ecmwf_path_file3(2), ecmwf2, ecmwf_HR2, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
+#ifdef WRAPPER
          call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
-
+#endif
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
               ecmwf1, ecmwf2, ecmwf, low_res)
+#ifdef WRAPPER
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
               ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
-
+#endif
          call deallocate_ecmwf_structures(ecmwf1, low_res)
          call deallocate_ecmwf_structures(ecmwf2, low_res)
 #ifdef WRAPPER
