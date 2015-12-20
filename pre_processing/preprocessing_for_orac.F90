@@ -235,9 +235,9 @@
 !    surface variables only (skint, sea-ice, snow-depth)
 ! 2015/11/26, GM: Implemented linear interpolation between ECMWF inputs before
 !    after the temporal center of the satellite orbit.
-! 2015/12/17, OS: ECMWF (de)allocation routines and SR to linearly combine ERA data
-!                 now use flag indicating whether high or low resolution data
-!                 are used. High res data do not contain same variables as low res.
+! 2015/12/17, OS: ECMWF (de)allocation routines and SR to linearly combine ERA
+!    data now use flag indicating whether high or low resolution data are used.
+!    High res data do not contain same variables as low res.
 !
 ! $Id$
 !
