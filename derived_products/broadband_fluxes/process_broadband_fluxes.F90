@@ -5,6 +5,19 @@
 ! Main program for the radiative flux driver of ORAC-CC4CL. Calls subordinate
 ! functions to read in data and process.
 !
+! Inputs:
+!  Required
+!   1) Primary file (post-processed for water & ice)
+!   2) PRTM file (pre-processing)
+!   3) ALB file (pre-processing)
+!   4) TSI file (http://proj.badc.rl.ac.uk/svn/orac/data/tsi_soho_sorce_1978_2015.nc)
+!   5) BUGSrad output filename (user specified)
+!  Optional inputs:
+!   6) Aerosol CCI file (needs to coincide with cloud file) --> use '' to skip
+!   7) Collocated aerosol-cloud netcdf file (user specified) --> use '' to skip
+!  Options 8,9,10,11 are to process individual or multiple 1km pixels
+!   8) x0, 9) y0, 10) x1, 11) y1
+!
 ! Subroutines:
 !   preprocess_bugsrad.F90
 !   driver_for_bugsrad.F90
@@ -26,14 +39,13 @@
 !    actually a byte and it was not being initialized leading to garbage output.
 !    Also set the flag_values and flag meanings attributes.
 ! 2015/12/10, MC: Removed nighttime and twilight retrievals (solar zenith angle < 80)
+! 2015/12/21, MC: Added optional argument and collocation routine to process 
+!    radiative fluxes using aerosol cci data.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
-!
-! example
-! bsub -q lotus -W 24:00 -R "order[-r15s:pg]" -o bugsrad.out -e bugsrad.err -J BUGSrad 
 !
 ! Examples
 !
@@ -41,10 +53,13 @@
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.bugsrad.nc
 !
 ! AATSR
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc 182 13487
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc '' '' 182 13487
+!
+! AATSR WITH AEROSOL
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc /group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v03-02/L2/2008/2008_06_20/20080620084636-ESACCI-L2P_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC_32969-fv03.02.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/aci/collocation/200806200846_V1.0.collocation.nc 182 13487
 !
 ! SEVIRI
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc 1500 1500
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc '' '' 1500 1500
 !
 !-------------------------------------------------------------------------------
 
@@ -59,9 +74,10 @@ program process_broadband_fluxes
 
    implicit none
 
-   character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname
+   character(path_length) :: Fprimary,FPRTM,FTSI,FALB,fname,Faerosol,Fcollocation
    integer :: ncid, i, j, k, dims_var(2)
    logical, parameter :: verbose=.true.
+   logical there
    type(global_attributes_s) :: global_atts
    type(source_attributes_s) :: source_atts
 
@@ -121,6 +137,19 @@ program process_broadband_fluxes
    real, allocatable :: TSI_year(:) !TSI INDEX YEAR
    real, allocatable :: TSI_jday(:) !TSI INDEX Julian Day
    integer(kind=lint)  :: nTSI = 13425
+
+   !AEROSOL CCI File (optional)
+   real, allocatable :: aerLon(:)  ! longitude
+   real, allocatable :: aerLat(:)  ! latitude
+   real, allocatable :: aerAOD(:)  ! aerosol optical depth
+   real, allocatable :: aerREF(:)  ! aerosol effective radius
+   real, allocatable :: aerQflag(:)! q-flag
+   real, allocatable :: AOD550(:,:)! Aerosol optical depth at 1 km resolution
+   real, allocatable :: AREF(:,:)  ! Aerosol Effective Radius 1 km resolution
+   integer, allocatable :: aID(:,:)   ! aerosol index for i,jth locations in cloud file
+   integer(kind=lint) :: nc_aer
+      integer aID_vid
+
 
    !Local Pixel-Scale Variables
    integer :: pxYear  !Year
@@ -262,6 +291,7 @@ program process_broadband_fluxes
    integer :: pxX0,pxY0,pxX1,pxY1
    integer value
    integer px_processing_mode !=0 all pixels make netCDF, =1 multiple pixels (print to screen), =2 one pixel (print to screen)
+   integer aerosol_processing_mode !=0 no processing, =1 collocate aerosol cci file, =2 collocate & save file
 
    !ECMWF-PRTM for comparing my interpolation scheme to ORAC scheme
    integer :: tlatid,tlonid
@@ -288,10 +318,17 @@ program process_broadband_fluxes
     print*,'output file: ',trim(fname)
 
    !Read optional arguments
-   call get_command_argument(6, cpxX0)
-   call get_command_argument(7, cpxY0)
-   call get_command_argument(8, cpxX1)
-   call get_command_argument(9, cpxY1)
+   call get_command_argument(6, Faerosol)
+    aerosol_processing_mode = 0
+    if(len(trim(Faerosol)) .gt. 1.) aerosol_processing_mode = 1 !collocate aerosol2cloud
+   
+   call get_command_argument(7, Fcollocation)
+    if(len(trim(Fcollocation)) .gt. 1.) aerosol_processing_mode = 2 !collocate & save file
+
+   call get_command_argument(8, cpxX0)
+   call get_command_argument(9, cpxY0)
+   call get_command_argument(10, cpxX1)
+   call get_command_argument(11, cpxY1)
     !x-y range of selected pixels
     if(len(trim(cpxX0)) .ne. 0 .and. len(trim(cpxX1)) .ne. 0 .and. &
        len(trim(cpxY0)) .ne. 0 .and. len(trim(cpxY1)) .ne. 0) then
@@ -494,7 +531,7 @@ program process_broadband_fluxes
 
     !Get #Channels
     nc_alb = nc_dim_length(ncid, 'nc_alb', verbose)
-   
+
     !Allocate arrays
     allocate(rho_dd(xN, yN, nc_alb))
     allocate(alb_abs_ch_numbers(nc_alb))
@@ -502,11 +539,11 @@ program process_broadband_fluxes
     !Read ALB data
     call nc_read_array(ncid, "rho_dd_data", rho_dd, verbose)
     call nc_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
-
+ 
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
        write(*,*) 'ERROR: read_input_dimensions_lwrtm(): Error closing ' // &
-                  'LWRTM file: ', FPRTM
+                  'LWRTM file: ', FALB
        stop error_stop_code
     end if
     
@@ -519,6 +556,36 @@ program process_broadband_fluxes
       if(alb_abs_ch_numbers(i) .eq. 5) ch5ID=i
       if(alb_abs_ch_numbers(i) .eq. 6) ch6ID=i
     enddo
+
+!-------------------------------------------------------------------------------
+
+  ! Open Aerosol CCI file (optional)
+  if(aerosol_processing_mode .ge. 1) then
+   call nc_open(ncid,Faerosol)
+
+    !Get dimension
+    nc_aer = nc_dim_length(ncid, 'pixel_number', verbose)
+   
+    !Allocate arrays
+    allocate(aerLon(nc_aer))
+    allocate(aerLat(nc_aer))
+    allocate(aerAOD(nc_aer))
+    allocate(aerREF(nc_aer))
+    allocate(aerQflag(nc_aer))
+
+    !Read Aerosol data
+    call nc_read_array(ncid, "longitude", aerLon, verbose)
+    call nc_read_array(ncid, "latitude", aerLat, verbose)
+    call nc_read_array(ncid, "AOD550", aerAOD, verbose)
+    call nc_read_array(ncid, "REFF", aerREF, verbose)
+    call nc_read_array(ncid, "quality_flag", aerQflag, verbose)
+
+    ! Close file
+    if (nf90_close(ncid) .ne. NF90_NOERR) then
+       write(*,*) 'ERROR: ',Faerosol
+       stop error_stop_code
+    end if
+  endif
 
 !-------------------------------------------------------------------------------
 ! Allocate arrays
@@ -585,6 +652,11 @@ program process_broadband_fluxes
     mask_vres(NLS)=levdim_prtm
     print*,mask_vres
 
+
+!-------------------------------------------------------------------------
+!OPTIONAL INPUTS
+!-------------------------------------------------------------------------
+
    !OPTION - PROCESS all pixels in granule if range not specified
    if(len(trim(cpxX0)) .eq. 0 .and. len(trim(cpxX1)) .eq. 0 .and. &
       len(trim(cpxY0)) .eq. 0 .and. len(trim(cpxY1)) .eq. 0) then
@@ -596,9 +668,135 @@ program process_broadband_fluxes
       pxY1=yN
     endif
 
-!-------------------------------------------------------------------------------
-! Loop over each satellite pixel
-!-------------------------------------------------------------------------------
+   allocate(AOD550(xN,yN))
+   allocate(AREF(xN,yN))
+   !OPTION - PROCESS aerosol
+   if(aerosol_processing_mode .ge. 1) then
+    allocate(aID(xN,yN))
+    !determine if netcdf file already exists
+    inquire( file=Fcollocation, exist=there )
+    if(.not. there) then
+     call collocate_aerosol2cloud(nc_aer,aerLon,aerLat,xN,yN,LON,LAT,aID)
+
+     !-------------------------------------------------------------------------
+     !Make collocation netcdf file
+     !-------------------------------------------------------------------------
+     call nc_open(ncid,Fprimary)
+
+     !get common attributes from primary file
+     call nc_get_common_attributes(ncid, global_atts, source_atts)
+
+      if (nf90_close(ncid) .ne. NF90_NOERR) then
+               write(*,*) 'ERROR: nf90_close()'
+         stop error_stop_code
+      end if
+
+      !dimensions
+      ixstart = 1
+      ixstop = xN
+      iystart = 1
+      iystop = yN
+      n_x = ixstop - ixstart + 1
+      n_y = iystop - iystart + 1
+
+
+     ! create netcdf file
+      call nc_create(trim(Fcollocation), ncid, ixstop-ixstart+1, &
+         iystop-iystart+1, dims_var, 1, global_atts, source_atts)
+
+         !Need this to exit data mode to define variables
+         if (nf90_redef(ncid) .ne. NF90_NOERR) then
+           write(*,*) 'ERROR: nf90_redef()'
+           stop error_stop_code
+         end if
+
+         !-------------------------------------------------------------------------
+         ! Aerosol Index
+         !-------------------------------------------------------------------------
+          call nc_def_var_long_packed_long( &
+                  ncid, &
+                  dims_var, &
+                  'aID', &
+                  aID_vid, &
+                  verbose, &
+                  long_name     = 'aerosol 10-km pixel index location', &
+                  standard_name = 'aID_standard', &
+                  fill_value    = lint_fill_value)
+
+         !Need to exit define mode to write data
+          if (nf90_enddef(ncid) .ne. NF90_NOERR) then
+           write(*,*) 'ERROR: nf90_enddef()'
+           stop error_stop_code
+          end if
+
+
+         !write the array to the netcdf file
+         call nc_write_array(ncid,'aID',aID_vid,&
+                 aID(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+         !close netcdf file
+          if (nf90_close(ncid) .ne. NF90_NOERR) then
+             write(*,*) 'ERROR: nf90_close()'
+             stop error_stop_code
+          end if
+
+         print*,'CREATED: '
+         print*,Fcollocation
+
+    endif !file not there
+
+   !Netcdf collocation file exists get aID
+    if(there) then
+      print*,'Extracting data from:'
+      write(*,*) trim(Fcollocation)
+     ! Open Collocation file
+     call nc_open(ncid,Fcollocation)
+
+     !Read collocation data
+     call nc_read_array(ncid, "aID", aID, verbose)
+ 
+     ! Close file
+      if (nf90_close(ncid) .ne. NF90_NOERR) then
+        write(*,*) 'ERROR:  ' // &
+                   'LWRTM file: ', Fcollocation
+        stop error_stop_code
+      end if
+    endif !file there
+
+    !fill arrays
+    do i=1,xN 
+    do j=1,yN
+      AOD550(i,j) = aerAOD(aID(i,j))
+      AREF(i,j) = aerREF(aID(i,j))
+    enddo
+    enddo
+
+   endif !end aerosol collocation option
+   if(aerosol_processing_mode .eq. 0) then
+    !fill arrays
+    do i=1,xN 
+    do j=1,yN
+      AOD550(i,j) = -999.
+      AREF(i,j) = -999.
+    enddo
+    enddo
+   endif
+
+!print*,aID(:,13500)
+!print*,aerAOD(aID(:,13500))
+!-------------------------------------------------------------------------
+!END OPTIONAL INPUTS SECTION
+!-------------------------------------------------------------------------
+
+
+
+
+
+
+
+!-------------------------------------------------------------------------
+!BEGIN MAIN CODE
+!-------------------------------------------------------------------------
     print*,'Processing Pixel Range:'
     print*,'x-start = ',pxX0
     print*,'y-start = ',pxY0
@@ -659,15 +857,18 @@ program process_broadband_fluxes
 
 !         print*,'latitude: ',LAT(i,j)
 !         print*,'longitude: ',LON(i,j)
+!         print*,'cc_tot:  ',cc_tot(i,j)
 !         print*,'Sat Phase: ',PHASE(i,j)
 !         print*,'Sat retr. CTH = ',CTH(i,j)
 !         print*,'Sat retr. CTT = ',CTT(i,j)
 !         print*,'SAT retr. REF = ',REF(i,j)
 !         print*,'SAT retr. COT = ',COT(i,j)
 !         print*,'SAT retr. cc_tot = ',cc_tot(i,j)
+!         print*,'Aerosol Optical Depth: ',aerAOD(aID(i,j))
+!         print*,'Aerosol Effective Radius: ',aerREF(aID(i,j))     
 
         !cloud base & top height calculation
-        call preprocess_bugsrad(cc_tot(i,j),0.,0.,phase(i,j),&
+        call preprocess_bugsrad(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
                          CTT(i,j),REF(i,j),COT(i,j),CTH(i,j),&
                          NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
                          pxPhaseFlag,pxLayerType,&
@@ -702,6 +903,7 @@ program process_broadband_fluxes
 !           print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
 !           print*,bpar,bpardif
            !if(j .eq. 10) stop
+!if(pxregime .eq. 3) stop
 
          !catch NaN
          if(isnan(pxtoalwup)) nanFlag=1
