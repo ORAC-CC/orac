@@ -1,3 +1,44 @@
+!-------------------------------------------------------------------------------
+! Name: preprocess_bugsrad.F90
+!
+! Purpose:
+! Prepares pixel-scale retrievals of aerosol & cloud properties for ingestion
+! to BUGSrad. Three steps: 1) categorizes phase and type  
+! 2) calculates cloud base height from adiabatic profile, & 3) ensures accurate
+! placement of layer to BUGSrad vertical bin. Step 3 is particularly important
+! as the layer must span a complete vertical bin to impose changes on the fluxes.
+!
+! Inputs:
+! cMASK: cloud mask
+! aREF: aerosol retrieved 550 nm effective radius
+! AOD: aerosol retrieved 550 nm optical depth
+! cPHASE: cloud phase
+! cCTT: cloud top temperature
+! NLS: number of vertical levels used to compute fluxes in BB code
+! zz: geopotential height vertical profile
+!
+! Output:
+! REDAT: effective particle radius (cloud or aerosol)
+! TAUDAT: optical thickness (cloud or aerosol)
+! Hctop: layer top height (cloud or aerosol)
+! Hcbase: layer base height (cloud or aerosol)
+! phaseFlag: phase of cloud; 0=clear, 1=water, 2=ice
+! LayerType: 1=cloud, 2=aerosol
+! regime: 1=overcast, 2=joint, 3=clear, 4=no cloud or aerosol
+! computationFlag: currently not being used for anything -delete this-
+! TopID: layer top location in vertical profile used in BB code
+! BaseID: layer base location in vertical profile used in BB code
+!
+! History:
+! 2015/10/14, MC: Initial development
+! 2015/21/14, MC: Added aerosol input data to code
+!
+! $Id$
+!
+! Bugs:
+! none.
+!
+!-------------------------------------------------------------------------------
    subroutine preprocess_bugsrad(cMASK,aREF,AOD,cPHASE,&
                                  cCTT,cREF,cTAU,cCTH,&
                                  NLS,zz,REDAT,TAUDAT,Hctop,Hcbase,&
@@ -106,14 +147,16 @@
     phaseFlag=1 !set the retrieval to do water cloud
 
     !Valid AOD retrieval use same values
-    if(cREF .gt. 0 .and. aod .gt. 0) then
+    if(aREF .gt. 0 .and. aod .gt. 0) then
       REDAT=aREF
       TAUDAT=AOD
+      Hctop=1.5
+      Hcbase=0.5
       computationFlag=1
     endif
 
     !Invalid AOD retrieval
-    if(cREF .le. 0 .or. aod .le. 0) then
+    if(aREF .le. 0 .or. aod .le. 0) then
       REDAT=0.05
       TAUDAT=0.05
       Hctop=1.5
