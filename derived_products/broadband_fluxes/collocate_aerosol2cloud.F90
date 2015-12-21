@@ -2,7 +2,7 @@
 ! Name: collocate_aerosol2cloud.F90
 !
 ! Purpose:
-! Used to match  A(A)TSR CCI aerosol retrievals (at 10 km resolution) to the 
+! Used to match A(A)TSR CCI aerosol retrievals (at 10 km resolution) to the 
 ! 1-km (instrument) pixel retrievals in the primary and secondary CC4CL products.
 !
 ! Inputs:
