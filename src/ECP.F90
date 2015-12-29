@@ -665,7 +665,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    call Dealloc_Data(Ctrl, MSI_Data)
 
-   call dealloc_output_data_primary(output_data_1, .false., .true., .true.)
+   call dealloc_output_data_primary(output_data_1, .false., .true.)
    call dealloc_output_data_secondary(output_data_2, write_covariance)
 
    call Dealloc_Ctrl(Ctrl)

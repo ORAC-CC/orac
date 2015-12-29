@@ -556,7 +556,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
 
    ! deallocate output structure
-   call dealloc_output_data_primary(output_primary, .true., .false., .false.)
+   call dealloc_output_data_primary(output_primary, .true., .false.)
    if (do_secondary) then
       call dealloc_output_data_secondary(output_secondary, .false.)
    end if

@@ -48,14 +48,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
-   do_cldmask_uncertainty, do_dem)
+   do_cldmask_uncertainty)
 
    implicit none
 
    type(output_data_primary), intent(inout) :: output_data
-   logical,                    intent(in)   :: do_phase_pavolonis
-   logical,                    intent(in)   :: do_cldmask_uncertainty
-   logical,                    intent(in)   :: do_dem
+   logical,                   intent(in)    :: do_phase_pavolonis
+   logical,                   intent(in)    :: do_cldmask_uncertainty
 
    deallocate(output_data%vid_sol_zen)
    deallocate(output_data%vid_sat_zen)
@@ -97,19 +96,15 @@ subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
    deallocate(output_data%cloud_albedo_error)
 
    deallocate(output_data%convergence)
-
    deallocate(output_data%niter)
-
-   deallocate(output_data%phase)
-if (do_phase_pavolonis) then
-   deallocate(output_data%phase_pavolonis)
-end if
    deallocate(output_data%costja)
    deallocate(output_data%costjm)
+   deallocate(output_data%qcflag)
 
    deallocate(output_data%lsflag)
-
-   deallocate(output_data%qcflag)
+   deallocate(output_data%lusflag)
+   deallocate(output_data%dem)
+   deallocate(output_data%nisemask)
 
    deallocate(output_data%illum)
 
@@ -119,11 +114,11 @@ if (do_cldmask_uncertainty) then
    deallocate(output_data%cldmask_uncertainty)
 end if
    deallocate(output_data%cccot_pre)
-   deallocate(output_data%lusflag)
-if (do_dem) then
-   deallocate(output_data%dem)
+
+   deallocate(output_data%phase)
+if (do_phase_pavolonis) then
+   deallocate(output_data%phase_pavolonis)
 end if
-   deallocate(output_data%nisemask)
 
 end subroutine dealloc_output_data_primary
 
