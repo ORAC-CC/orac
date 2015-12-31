@@ -671,7 +671,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
-      Diag%cloud_albedo = CRP
+      Diag%cloud_albedo(1:SPixel%Ind%NSolar) = CRP
 
       temp = matmul(matmul(d_CRP, SPixel%Sn((/ITau,IRe/), (/ITau,IRe/))), transpose(d_CRP))
       do m = 1, SPixel%Ind%NSolar
