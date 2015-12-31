@@ -2177,7 +2177,7 @@ end if
             rho_dd(i, j) = rho_dd(i, j) + a * qx_cos_sin_qw_theta(k)
          end do
 
-         rho_dd(i, j) = rho_dd(i, j) * 2.
+         rho_dd(i, j) = rho_dd(i, j) * 2. / pi
       end do
 !$OMP END DO
 !$OMP END PARALLEL
