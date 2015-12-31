@@ -627,9 +627,9 @@ subroutine get_surface_reflectance(cyear, cdoy, modis_surf_path, modis_brdf_path
                      surface%albedo(j,i,ii) = 1.0 - surface%emissivity(j,i,kk)
 
                      if (include_full_brdf) then
-                        surface%rho_0v(j,i,ii) = 0.
-                        surface%rho_0d(j,i,ii) = 0.
-                        surface%rho_dv(j,i,ii) = 0.
+                        surface%rho_0v(j,i,ii) = 1.0 - surface%emissivity(j,i,kk)
+                        surface%rho_0d(j,i,ii) = 1.0 - surface%emissivity(j,i,kk)
+                        surface%rho_dv(j,i,ii) = 1.0 - surface%emissivity(j,i,kk)
                         surface%rho_dd(j,i,ii) = 1.0 - surface%emissivity(j,i,kk)
                      end if
                   end if

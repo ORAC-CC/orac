@@ -358,9 +358,9 @@ subroutine correct_for_ice_snow(nise_path,imager_geolocation,surface,cyear, &
          end if
 
          if (include_full_brdf .and. applied_flag) then
-            surface%rho_0v(i,j,:) = 0.
-            surface%rho_0d(i,j,:) = 0.
-            surface%rho_dv(i,j,:) = 0.
+            surface%rho_0v(i,j,:) = surface%albedo(i,j,:)
+            surface%rho_0d(i,j,:) = surface%albedo(i,j,:)
+            surface%rho_dv(i,j,:) = surface%albedo(i,j,:)
             surface%rho_dd(i,j,:) = surface%albedo(i,j,:)
          endif
       end do
@@ -564,9 +564,9 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
          endif
 
          if (include_full_brdf .and. flag) then
-            surface%rho_0v(i,j,:) = 0.
-            surface%rho_0d(i,j,:) = 0.
-            surface%rho_dv(i,j,:) = 0.
+            surface%rho_0v(i,j,:) = surface%albedo(i,j,:)
+            surface%rho_0d(i,j,:) = surface%albedo(i,j,:)
+            surface%rho_dv(i,j,:) = surface%albedo(i,j,:)
             surface%rho_dd(i,j,:) = surface%albedo(i,j,:)
          end if
       enddo
