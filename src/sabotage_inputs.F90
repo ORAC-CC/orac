@@ -21,6 +21,7 @@
 ! History:
 ! 2015/02/04, GM: Original version.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
+! 2015/01/01, GM: Base illumination settings on Ctrl%MaxSolZen and Ctrl%Sunset.
 !
 ! $Id$
 !
@@ -36,13 +37,12 @@ subroutine sabotage_inputs(Ctrl, MSI_Data)
 
    ! Define arguments
 
-   type(CTRL_t), intent(inout) :: Ctrl
+   type(CTRL_t), intent(in)    :: Ctrl
    type(Data_t), intent(inout) :: MSI_Data
 
    ! Local variables
 
    integer            :: i,j,jj,kk
-   logical            :: flag
    integer            :: count
    integer            :: missing_mask
    integer            :: i_illum
@@ -58,22 +58,15 @@ subroutine sabotage_inputs(Ctrl, MSI_Data)
          jj = (j - 1) / Ctrl%Ind%Xmax + 1
          kk = mod(j - 1, Ctrl%Ind%Xmax) + 1
 
-         flag = .true.
-         do i = 1, Ctrl%Ind%Ny
-            if (MSI_Data%MSI(kk,jj,i) .eq. sreal_fill_value) then
-               flag = .false.
-               exit
-            end if
-         end do
-
-         if (flag) then
+         if (.not. any(MSI_Data%MSI(kk,jj,:) .eq. sreal_fill_value)) then
             select case (illum_list(i_illum))
                case (IDay)
-                  MSI_Data%Geometry%Sol(kk,jj,:) = 75.
+                  MSI_Data%Geometry%Sol(kk,jj,:) = Ctrl%MaxSolZen - 1.
                case (ITwi)
-                  MSI_Data%Geometry%Sol(kk,jj,:) = 85.
+                  MSI_Data%Geometry%Sol(kk,jj,:) = (Ctrl%MaxSolZen + &
+                                                    Ctrl%Sunset) / 2.
                case (INight)
-                  MSI_Data%Geometry%Sol(kk,jj,:) = 95.
+                  MSI_Data%Geometry%Sol(kk,jj,:) = Ctrl%Sunset + 1.
             end select
 
             do i = 1, Ctrl%Ind%Ny
