@@ -82,13 +82,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    ! cot, cot_error
    !----------------------------------------------------------------------------
    ! write microphysical values only if pixel is "day"
-   if (input_data%illum(i,j) .eq. 1_byte .or.&
-       input_data%illum(i,j) .eq. 4_byte .or. &
-       input_data%illum(i,j) .eq. 5_byte .or.&
-       input_data%illum(i,j) .eq. 6_byte .or. &
-       input_data%illum(i,j) .eq. 7_byte .or.&
-       input_data%illum(i,j) .eq. 8_byte .or. &
-       input_data%illum(i,j) .eq. 9_byte ) then
+   if (input_data%illum(i,j) .eq. 1_byte) then
 
       if (input_data%cot(i,j) .eq. sreal_fill_value) then
          temp_real_cot = sreal_fill_value
