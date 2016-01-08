@@ -58,7 +58,7 @@ module orac_input
       real(kind=sreal),    dimension(:,:),   pointer :: satellite_zenith_view_no1
       real(kind=sreal),    dimension(:,:),   pointer :: rel_azimuth_view_no1
       real(kind=sreal),    dimension(:,:),   pointer :: cot, cot_uncertainty
-      real(kind=sreal),    dimension(:,:),   pointer :: ref, ref_uncertainty
+      real(kind=sreal),    dimension(:,:),   pointer :: cer, cer_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: ctp, ctp_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cct, cct_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cc_total, cc_total_uncertainty
@@ -100,7 +100,7 @@ module orac_input
 !     integer(kind=lint), dimension(:,:),   pointer :: scanline_v
 
       real(kind=sreal),   dimension(:,:),   pointer :: cot_ap,cot_fg
-      real(kind=sreal),   dimension(:,:),   pointer :: ref_ap,ref_fg
+      real(kind=sreal),   dimension(:,:),   pointer :: cer_ap,cer_fg
       real(kind=sreal),   dimension(:,:),   pointer :: ctp_ap,ctp_fg
       real(kind=sreal),   dimension(:,:),   pointer :: stemp_ap,stemp_fg
 

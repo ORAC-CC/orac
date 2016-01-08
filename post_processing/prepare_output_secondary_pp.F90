@@ -66,23 +66,23 @@ subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data, 
            output_data%cot_fg_vmax)
 
    !----------------------------------------------------------------------------
-   ! ref_ap, ref_fg
+   ! cer_ap, cer_fg
    !----------------------------------------------------------------------------
-   dummyreal=input_data%ref_ap(i,j)
+   dummyreal=input_data%cer_ap(i,j)
    call prepare_short_packed_float( &
-           dummyreal, output_data%ref_ap(i,j), &
-           output_data%ref_ap_scale, output_data%ref_ap_offset, &
+           dummyreal, output_data%cer_ap(i,j), &
+           output_data%cer_ap_scale, output_data%cer_ap_offset, &
            sreal_fill_value, sint_fill_value, &
-           output_data%ref_ap_vmin, output_data%ref_ap_vmax, &
-           output_data%ref_ap_vmax)
+           output_data%cer_ap_vmin, output_data%cer_ap_vmax, &
+           output_data%cer_ap_vmax)
 
-   dummyreal=input_data%ref_fg(i,j)
+   dummyreal=input_data%cer_fg(i,j)
    call prepare_short_packed_float( &
-           dummyreal, output_data%ref_fg(i,j), &
-           output_data%ref_fg_scale, output_data%ref_fg_offset, &
+           dummyreal, output_data%cer_fg(i,j), &
+           output_data%cer_fg_scale, output_data%cer_fg_offset, &
            sreal_fill_value, sint_fill_value, &
-           output_data%ref_fg_vmin, output_data%ref_fg_vmax, &
-           output_data%ref_fg_vmax)
+           output_data%cer_fg_vmin, output_data%cer_fg_vmax, &
+           output_data%cer_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! ctp_ap, ctp_fg

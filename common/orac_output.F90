@@ -44,7 +44,7 @@ module orac_output
       integer                       :: vid_lat, vid_lon
       integer,dimension(:), pointer :: vid_sol_zen, vid_sat_zen, vid_rel_azi
       integer                       :: vid_cot, vid_cot_error
-      integer                       :: vid_ref, vid_ref_error
+      integer                       :: vid_cer, vid_cer_error
       integer                       :: vid_ctp, vid_ctp_error
       integer                       :: vid_cct, vid_cct_error
       integer                       :: vid_stemp, vid_stemp_error
@@ -112,14 +112,14 @@ module orac_output
       integer(kind=sint)            :: cot_error_vmin   = 0
       integer(kind=sint)            :: cot_error_vmax   = 32000
 
-      real(kind=sreal)              :: ref_scale        = 0.01
-      real(kind=sreal)              :: ref_offset       = 0.0
-      integer(kind=sint)            :: ref_vmin         = 0
-      integer(kind=sint)            :: ref_vmax         = 20000
-      real(kind=sreal)              :: ref_error_scale  = 0.01
-      real(kind=sreal)              :: ref_error_offset = 0.0
-      integer(kind=sint)            :: ref_error_vmin   = 0
-      integer(kind=sint)            :: ref_error_vmax   = 20000
+      real(kind=sreal)              :: cer_scale        = 0.01
+      real(kind=sreal)              :: cer_offset       = 0.0
+      integer(kind=sint)            :: cer_vmin         = 0
+      integer(kind=sint)            :: cer_vmax         = 20000
+      real(kind=sreal)              :: cer_error_scale  = 0.01
+      real(kind=sreal)              :: cer_error_offset = 0.0
+      integer(kind=sint)            :: cer_error_vmin   = 0
+      integer(kind=sint)            :: cer_error_vmax   = 20000
 
       real(kind=sreal)              :: ctp_scale        = 0.1
       real(kind=sreal)              :: ctp_offset       = 0.0
@@ -287,8 +287,8 @@ module orac_output
       integer(kind=sint), dimension(:,:),   pointer :: cot
       integer(kind=sint), dimension(:,:),   pointer :: cot_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: ref
-      integer(kind=sint), dimension(:,:),   pointer :: ref_error
+      integer(kind=sint), dimension(:,:),   pointer :: cer
+      integer(kind=sint), dimension(:,:),   pointer :: cer_error
 
       integer(kind=sint), dimension(:,:),   pointer :: ctp
       integer(kind=sint), dimension(:,:),   pointer :: ctp_error
@@ -346,7 +346,7 @@ module orac_output
       integer                          :: vid_scanline_v
 
       integer                          :: vid_cot_ap,vid_cot_fg
-      integer                          :: vid_ref_ap,vid_ref_fg
+      integer                          :: vid_cer_ap,vid_cer_fg
       integer                          :: vid_ctp_ap,vid_ctp_fg
       integer                          :: vid_stemp_ap,vid_stemp_fg
 
@@ -371,11 +371,11 @@ module orac_output
       real(kind=sreal)                 :: cot_fg_scale,cot_fg_offset
       integer(kind=sint)               :: cot_fg_vmin,cot_fg_vmax
 
-      real(kind=sreal)                 :: ref_ap_scale,ref_ap_offset
-      integer(kind=sint)               :: ref_ap_vmin,ref_ap_vmax
+      real(kind=sreal)                 :: cer_ap_scale,cer_ap_offset
+      integer(kind=sint)               :: cer_ap_vmin,cer_ap_vmax
 
-      real(kind=sreal)                 :: ref_fg_scale,ref_fg_offset
-      integer(kind=sint)               :: ref_fg_vmin,ref_fg_vmax
+      real(kind=sreal)                 :: cer_fg_scale,cer_fg_offset
+      integer(kind=sint)               :: cer_fg_vmin,cer_fg_vmax
 
       real(kind=sreal)                 :: ctp_ap_scale,ctp_ap_offset
       integer(kind=sint)               :: ctp_ap_vmin,ctp_ap_vmax
@@ -411,7 +411,7 @@ module orac_output
       integer(kind=lint), dimension(:,:),     pointer :: scanline_u, scanline_v
 
       integer(kind=sint), dimension(:,:),     pointer :: cot_ap,cot_fg
-      integer(kind=sint), dimension(:,:),     pointer :: ref_ap,ref_fg
+      integer(kind=sint), dimension(:,:),     pointer :: cer_ap,cer_fg
       integer(kind=sint), dimension(:,:),     pointer :: ctp_ap,ctp_fg
       integer(kind=sint), dimension(:,:),     pointer :: stemp_ap,stemp_fg
 

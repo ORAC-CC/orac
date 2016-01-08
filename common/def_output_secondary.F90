@@ -196,51 +196,51 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! ref_ap
+   ! cer_ap
    !----------------------------------------------------------------------------
-   output_data%ref_ap_scale=0.01
-   output_data%ref_ap_offset=0.0
-   output_data%ref_ap_vmin=0
-   output_data%ref_ap_vmax=20000
+   output_data%cer_ap_scale=0.01
+   output_data%cer_ap_offset=0.0
+   output_data%cer_ap_vmin=0
+   output_data%cer_ap_vmax=20000
 
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
-           'ref_ap', &
-           output_data%vid_ref_ap, &
+           'cer_ap', &
+           output_data%vid_cer_ap, &
            verbose, &
-           long_name     = 'effective radius a priori', &
+           long_name     = 'cloud effective radius a priori', &
            standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top a_priori', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ref_ap_scale, &
-           add_offset    = output_data%ref_ap_offset, &
-           valid_min     = output_data%ref_ap_vmin, &
-           valid_max     = output_data%ref_ap_vmax, &
+           scale_factor  = output_data%cer_ap_scale, &
+           add_offset    = output_data%cer_ap_offset, &
+           valid_min     = output_data%cer_ap_vmin, &
+           valid_max     = output_data%cer_ap_vmax, &
            units         = 'micrometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! ref_fg
+   ! cer_fg
    !----------------------------------------------------------------------------
-   output_data%ref_fg_scale=0.01
-   output_data%ref_fg_offset=0.0
-   output_data%ref_fg_vmin=0
-   output_data%ref_fg_vmax=20000
+   output_data%cer_fg_scale=0.01
+   output_data%cer_fg_offset=0.0
+   output_data%cer_fg_vmin=0
+   output_data%cer_fg_vmax=20000
 
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
-           'ref_fg', &
-           output_data%vid_ref_fg, &
+           'cer_fg', &
+           output_data%vid_cer_fg, &
            verbose, &
-           long_name     = 'effective radius first guess', &
+           long_name     = 'cloud effective radius first guess', &
            standard_name = 'effective_radius_of_cloud_condensed_water_particle_at_cloud_top first_guess', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ref_fg_scale, &
-           add_offset    = output_data%ref_fg_offset, &
-           valid_min     = output_data%ref_fg_vmin, &
-           valid_max     = output_data%ref_fg_vmax, &
+           scale_factor  = output_data%cer_fg_scale, &
+           add_offset    = output_data%cer_fg_offset, &
+           valid_min     = output_data%cer_fg_vmin, &
+           valid_max     = output_data%cer_fg_vmax, &
            units         = 'micrometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

@@ -111,10 +111,10 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
    call nc_write_array(ncid,'cot_uncertainty',output_data%vid_cot_error,&
            output_data%cot_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   call nc_write_array(ncid,'ref',output_data%vid_ref,&
-           output_data%ref(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'ref_uncertainty',output_data%vid_ref_error,&
-           output_data%ref_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cer',output_data%vid_cer,&
+           output_data%cer(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cer_uncertainty',output_data%vid_cer_error,&
+           output_data%cer_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ctp',output_data%vid_ctp,&
            output_data%ctp(ixstart:,iystart:),1,1,n_x,1,1,n_y)

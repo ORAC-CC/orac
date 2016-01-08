@@ -37,8 +37,8 @@ subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
    primary%cot(i,j)                        = sreal_fill_value
    primary%cot_uncertainty(i,j)            = sreal_fill_value
 
-   primary%ref(i,j)                        = sreal_fill_value
-   primary%ref_uncertainty(i,j)            = sreal_fill_value
+   primary%cer(i,j)                        = sreal_fill_value
+   primary%cer_uncertainty(i,j)            = sreal_fill_value
 
    primary%ctp(i,j)                        = sreal_fill_value
    primary%ctp_uncertainty(i,j)            = sreal_fill_value
@@ -80,8 +80,8 @@ subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
       secondary%cot_ap(i,j)      = sreal_fill_value
       secondary%cot_fg(i,j)      = sreal_fill_value
 
-      secondary%ref_ap(i,j)      = sreal_fill_value
-      secondary%ref_fg(i,j)      = sreal_fill_value
+      secondary%cer_ap(i,j)      = sreal_fill_value
+      secondary%cer_fg(i,j)      = sreal_fill_value
 
       secondary%ctp_ap(i,j)      = sreal_fill_value
       secondary%ctp_fg(i,j)      = sreal_fill_value
@@ -118,8 +118,8 @@ subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
    primary2%cot(i,j)                        = primary1%cot(i,j)
    primary2%cot_uncertainty(i,j)            = primary1%cot_uncertainty(i,j)
 
-   primary2%ref(i,j)                        = primary1%ref(i,j)
-   primary2%ref_uncertainty(i,j)            = primary1%ref_uncertainty(i,j)
+   primary2%cer(i,j)                        = primary1%cer(i,j)
+   primary2%cer_uncertainty(i,j)            = primary1%cer_uncertainty(i,j)
 
    primary2%ctp(i,j)                        = primary1%ctp(i,j)
    primary2%ctp_uncertainty(i,j)            = primary1%ctp_uncertainty(i,j)
@@ -161,8 +161,8 @@ subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
       secondary2%cot_ap(i,j)      = secondary1%cot_ap(i,j)
       secondary2%cot_fg(i,j)      = secondary1%cot_fg(i,j)
 
-      secondary2%ref_ap(i,j)      = secondary1%ref_ap(i,j)
-      secondary2%ref_fg(i,j)      = secondary1%ref_fg(i,j)
+      secondary2%cer_ap(i,j)      = secondary1%cer_ap(i,j)
+      secondary2%cer_fg(i,j)      = secondary1%cer_fg(i,j)
 
       secondary2%ctp_ap(i,j)      = secondary1%ctp_ap(i,j)
       secondary2%ctp_fg(i,j)      = secondary1%ctp_fg(i,j)

@@ -109,31 +109,31 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
               output_data%cot_error_vmax)
 
       !--------------------------------------------------------------------------
-      ! ref, ref_error
+      ! cer, cer_error
       !--------------------------------------------------------------------------
-      if (input_data%ref(i,j) .eq. sreal_fill_value) then
+      if (input_data%cer(i,j) .eq. sreal_fill_value) then
          temp_real = sreal_fill_value
       else
-         temp_real = input_data%ref(i,j)
+         temp_real = input_data%cer(i,j)
       end if
       call prepare_short_packed_float( &
-              temp_real, output_data%ref(i,j), &
-              output_data%ref_scale, output_data%ref_offset, &
+              temp_real, output_data%cer(i,j), &
+              output_data%cer_scale, output_data%cer_offset, &
               sreal_fill_value, sint_fill_value, &
-              output_data%ref_vmin, output_data%ref_vmax, &
-              output_data%ref_vmax)
+              output_data%cer_vmin, output_data%cer_vmax, &
+              output_data%cer_vmax)
 
-      if (input_data%ref_uncertainty(i,j) .eq. sreal_fill_value) then
+      if (input_data%cer_uncertainty(i,j) .eq. sreal_fill_value) then
          temp_real = sreal_fill_value
       else
-         temp_real = input_data%ref_uncertainty(i,j)
+         temp_real = input_data%cer_uncertainty(i,j)
       end if
       call prepare_short_packed_float( &
-              temp_real, output_data%ref_error(i,j), &
-              output_data%ref_error_scale, output_data%ref_error_offset, &
+              temp_real, output_data%cer_error(i,j), &
+              output_data%cer_error_scale, output_data%cer_error_offset, &
               sreal_fill_value, sint_fill_value, &
-              output_data%ref_error_vmin, output_data%ref_error_vmax, &
-              output_data%ref_error_vmax)
+              output_data%cer_error_vmin, output_data%cer_error_vmax, &
+              output_data%cer_error_vmax)
 
       !-------------------------------------------------------------------------
       ! cwp, cwp_error

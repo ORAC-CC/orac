@@ -55,10 +55,10 @@ subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
    allocate(input_data%cot_uncertainty(xdim1km,ydim1km))
    input_data%cot_uncertainty=sreal_fill_value
 
-   allocate(input_data%ref(xdim1km,ydim1km))
-   input_data%ref=sreal_fill_value
-   allocate(input_data%ref_uncertainty(xdim1km,ydim1km))
-   input_data%ref_uncertainty=sreal_fill_value
+   allocate(input_data%cer(xdim1km,ydim1km))
+   input_data%cer=sreal_fill_value
+   allocate(input_data%cer_uncertainty(xdim1km,ydim1km))
+   input_data%cer_uncertainty=sreal_fill_value
 
    allocate(input_data%ctp(xdim1km,ydim1km))
    input_data%ctp=sreal_fill_value
@@ -213,10 +213,10 @@ subroutine alloc_input_data_secondary_common(input_data,xdim1km,ydim1km,indexing
    allocate(input_data%cot_fg(xdim1km,ydim1km))
    input_data%cot_fg=sreal_fill_value
 
-   allocate(input_data%ref_ap(xdim1km,ydim1km))
-   input_data%ref_ap=sreal_fill_value
-   allocate(input_data%ref_fg(xdim1km,ydim1km))
-   input_data%ref_fg=sreal_fill_value
+   allocate(input_data%cer_ap(xdim1km,ydim1km))
+   input_data%cer_ap=sreal_fill_value
+   allocate(input_data%cer_fg(xdim1km,ydim1km))
+   input_data%cer_fg=sreal_fill_value
 
    allocate(input_data%ctp_ap(xdim1km,ydim1km))
    input_data%ctp_ap=sreal_fill_value

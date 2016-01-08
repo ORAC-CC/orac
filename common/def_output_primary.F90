@@ -301,41 +301,41 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! ref
+   ! cer
    !----------------------------------------------------------------------------
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
-           'ref', &
-           output_data%vid_ref, &
+           'cer', &
+           output_data%vid_cer, &
            verbose, &
-           long_name     = 'effective radius', &
+           long_name     = 'cloud effective radius', &
            standard_name = 'effective_radius_of_cloud_condensed_water_particles_at_cloud_top', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ref_scale, &
-           add_offset    = output_data%ref_offset, &
-           valid_min     = output_data%ref_vmin, &
-           valid_max     = output_data%ref_vmax, &
+           scale_factor  = output_data%cer_scale, &
+           add_offset    = output_data%cer_offset, &
+           valid_min     = output_data%cer_vmin, &
+           valid_max     = output_data%cer_vmax, &
            units         = 'micrometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
-   ! ref_uncertainty
+   ! cer_uncertainty
    !----------------------------------------------------------------------------
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
-           'ref_uncertainty', &
-           output_data%vid_ref_error, &
+           'cer_uncertainty', &
+           output_data%vid_cer_error, &
            verbose, &
-           long_name     = 'effective radius uncertainty', &
+           long_name     = 'cloud effective radius uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%ref_error_scale, &
-           add_offset    = output_data%ref_error_offset, &
-           valid_min     = output_data%ref_error_vmin, &
-           valid_max     = output_data%ref_error_vmax, &
+           scale_factor  = output_data%cer_error_scale, &
+           add_offset    = output_data%cer_error_offset, &
+           valid_min     = output_data%cer_error_vmin, &
+           valid_max     = output_data%cer_error_vmax, &
            units         = 'micrometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

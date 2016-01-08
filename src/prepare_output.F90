@@ -71,10 +71,10 @@ function string_description_of_state(state, str) result(status)
    status = 0
 
    if (state == ITau) then
-      str = 'COT'
+      str = 'OT'
       return
    else if (state == IRe) then
-      str = 'REF'
+      str = 'ER'
       return
    else if (state == IPc) then
       str = 'CTP'

@@ -82,10 +82,10 @@ subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
    call nc_write_array(ncid,'cot_fg',output_data%vid_cot_fg,&
            output_data%cot_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   call nc_write_array(ncid,'ref_ap',output_data%vid_ref_ap,&
-           output_data%ref_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-   call nc_write_array(ncid,'ref_fg',output_data%vid_ref_fg,&
-           output_data%ref_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cer_ap',output_data%vid_cer_ap,&
+           output_data%cer_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'cer_fg',output_data%vid_cer_fg,&
+           output_data%cer_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'ctp_ap',output_data%vid_ctp_ap,&
            output_data%ctp_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)

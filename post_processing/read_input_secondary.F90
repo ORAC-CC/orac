@@ -55,8 +55,8 @@ subroutine read_input_secondary_common(ncid, input_data, xdim, ydim, indexing, &
    call nc_read_packed_array(ncid, "cot_ap", input_data%cot_ap, verbose)
    call nc_read_packed_array(ncid, "cot_fg", input_data%cot_fg, verbose)
 
-   call nc_read_packed_array(ncid, "ref_ap", input_data%ref_ap, verbose)
-   call nc_read_packed_array(ncid, "ref_fg", input_data%ref_fg, verbose)
+   call nc_read_packed_array(ncid, "cer_ap", input_data%cer_ap, verbose)
+   call nc_read_packed_array(ncid, "cer_fg", input_data%cer_fg, verbose)
 
    call nc_read_packed_array(ncid, "ctp_ap", input_data%ctp_ap, verbose)
    call nc_read_packed_array(ncid, "ctp_fg", input_data%ctp_fg, verbose)

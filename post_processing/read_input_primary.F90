@@ -62,8 +62,8 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    call nc_read_packed_array(ncid, "cot", input_data%cot, verbose)
    call nc_read_packed_array(ncid, "cot_uncertainty", input_data%cot_uncertainty, verbose)
 
-   call nc_read_packed_array(ncid, "ref", input_data%ref, verbose)
-   call nc_read_packed_array(ncid, "ref_uncertainty", input_data%ref_uncertainty, verbose)
+   call nc_read_packed_array(ncid, "cer", input_data%cer, verbose)
+   call nc_read_packed_array(ncid, "cer_uncertainty", input_data%cer_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "ctp", input_data%ctp, verbose)
    call nc_read_packed_array(ncid, "ctp_uncertainty", input_data%ctp_uncertainty, verbose)

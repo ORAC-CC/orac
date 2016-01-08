@@ -139,7 +139,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            output_data%cot_error_vmax)
 
    !----------------------------------------------------------------------------
-   ! ref, ref_error
+   ! cer, cer_error
    !----------------------------------------------------------------------------
    if (SPixel%Xn(IRe) .eq. MissingXn) then
       temp_real = sreal_fill_value
@@ -147,11 +147,11 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       temp_real = SPixel%Xn(IRe)
    end if
    call prepare_short_packed_float( &
-           temp_real, output_data%ref(i,j), &
-           output_data%ref_scale, output_data%ref_offset, &
+           temp_real, output_data%cer(i,j), &
+           output_data%cer_scale, output_data%cer_offset, &
            sreal_fill_value, sint_fill_value, &
-           output_data%ref_vmin, output_data%ref_vmax, &
-           output_data%ref_vmax)
+           output_data%cer_vmin, output_data%cer_vmax, &
+           output_data%cer_vmax)
 
    if (SPixel%Sn(IRe,IRe) .eq. MissingSn) then
       temp_real = sreal_fill_value
@@ -159,11 +159,11 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       temp_real = sqrt(SPixel%Sn(IRe,IRe))
    end if
    call prepare_short_packed_float( &
-           temp_real, output_data%ref_error(i,j), &
-           output_data%ref_error_scale, output_data%ref_error_offset, &
+           temp_real, output_data%cer_error(i,j), &
+           output_data%cer_error_scale, output_data%cer_error_offset, &
            sreal_fill_value, sint_fill_value, &
-           output_data%ref_error_vmin, output_data%ref_error_vmax, &
-           output_data%ref_error_vmax)
+           output_data%cer_error_vmin, output_data%cer_error_vmax, &
+           output_data%cer_error_vmax)
 
    !----------------------------------------------------------------------------
    ! ctp, ctp_error

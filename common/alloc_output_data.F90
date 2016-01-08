@@ -114,10 +114,10 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
    allocate(output_data%cot_error(ixstart:ixstop,iystart:iystop))
    output_data%cot_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
-   allocate(output_data%ref(ixstart:ixstop,iystart:iystop))
-   output_data%ref(ixstart:ixstop,iystart:iystop)=sint_fill_value
-   allocate(output_data%ref_error(ixstart:ixstop,iystart:iystop))
-   output_data%ref_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   allocate(output_data%cer(ixstart:ixstop,iystart:iystop))
+   output_data%cer(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   allocate(output_data%cer_error(ixstart:ixstop,iystart:iystop))
+   output_data%cer_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
    allocate(output_data%ctp(ixstart:ixstop,iystart:iystop))
    output_data%ctp(ixstart:ixstop,iystart:iystop)=sint_fill_value
@@ -318,10 +318,10 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx,
    allocate(output_data%cot_fg(ixstart:ixstop,iystart:iystop))
    output_data%cot_fg(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
-   allocate(output_data%ref_ap(ixstart:ixstop,iystart:iystop))
-   output_data%ref_ap(ixstart:ixstop,iystart:iystop)=sint_fill_value
-   allocate(output_data%ref_fg(ixstart:ixstop,iystart:iystop))
-   output_data%ref_fg(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   allocate(output_data%cer_ap(ixstart:ixstop,iystart:iystop))
+   output_data%cer_ap(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   allocate(output_data%cer_fg(ixstart:ixstop,iystart:iystop))
+   output_data%cer_fg(ixstart:ixstop,iystart:iystop)=sint_fill_value
 
    allocate(output_data%ctp_ap(ixstart:ixstop,iystart:iystop))
    output_data%ctp_ap(ixstart:ixstop,iystart:iystop)=sint_fill_value
