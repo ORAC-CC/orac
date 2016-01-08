@@ -39,6 +39,8 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2016/01/05, AP: The cloud albedo field name is now properly subscripted with
+!    YSolar, rather than just counting up Y_Id.
 !
 ! $Id$
 !
@@ -47,7 +49,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
-   output_data, NViews, NSolar, Y_Id, do_phase_pavolonis, do_cldmask, &
+   output_data, NViews, NSolar, YSolar, Y_Id, do_phase_pavolonis, do_cldmask, &
    do_cldmask_uncertainty, do_cloudmask_pre)
 
    use orac_ncdf
@@ -62,6 +64,7 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
    type(output_data_primary), intent(inout) :: output_data
    integer,                   intent(in)    :: NViews
    integer,                   intent(in)    :: NSolar
+   integer,                   intent(in)    :: YSolar(:)
    integer,                   intent(in)    :: Y_Id(:)
    logical,                   intent(in)    :: do_phase_pavolonis
    logical,                   intent(in)    :: do_cldmask
@@ -152,7 +155,7 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
            output_data%cwp_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    do i=1,NSolar
-      write(input_num,"(i4)") Y_Id(i)
+      write(input_num,"(i4)") Y_Id(YSolar(i))
 
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &

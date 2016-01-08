@@ -618,7 +618,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Write output from spixel_scan_out structures NetCDF files
    call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%Y_Id, &
+        output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, &
         .false., .true., .true., .false.)
    call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, &
         output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &

@@ -534,7 +534,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    ! write output to netcdf variables
    call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_primary, indexing%NViews, indexing%NSolar, indexing%Y_Id, &
+        output_primary, indexing%NViews, indexing%NSolar, indexing%YSolar, indexing%Y_Id, &
         .true., .false., .false., .true.)
    if (do_secondary) then
       call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
