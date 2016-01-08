@@ -319,6 +319,10 @@ while [[ $# > 0 ]]; do
             shift
             preproc_folder="$1"
             ;;
+        -postproc_folder)
+            shift
+            postproc_folder="$1"
+            ;;
         -revision)
             shift
             revision="$1"

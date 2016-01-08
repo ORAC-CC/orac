@@ -172,6 +172,7 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
          lat=NCDF_OBTAIN(fid,'lat')
          lon=NCDF_OBTAIN(fid,'lon')
          qcf=NCDF_OBTAIN(fid,'qcflag')
+         cnv=NCDF_OBTAIN(fid,'convergence')
          if KEYWORD_SET(clear) then phs=NCDF_OBTAIN(fid,'phase')
          NCDF_CLOSE,fid
 
@@ -215,8 +216,10 @@ PRO PLOT_ORAC, inst, rev, fdr, stop=stop, compare=comp, preproc=preproc, $
                filt = FINITE(data)
                if kc then filt = filt AND FINITE(data2)
             endelse
+            if KEYWORD_SET(cnv) then filt = filt AND cnv eq 0
             ;; apply requested filter
-            if KEYWORD_SET(qcf) then filt = filt AND ~(qcf AND set[k].filter)
+            if KEYWORD_SET(qcf) and set[k].filter gt 0 then $
+               filt = filt AND ~(qcf AND set[k].filter)
             if KEYWORD_SET(clear) then filt=filt AND phs gt 0
             ;; set output if plotting a comparison
             plot_set.col=0

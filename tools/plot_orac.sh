@@ -35,8 +35,8 @@ fi
 #------------------------------------------------------------------------------
 orig=$PWD
 cd $orac_repos/idl
-for i in ${!label[*]}; do
-    for flag in '' ',/comp,/diff' ',/comp,/diff,/clear,add="clear"' ',/preproc,/comp,/diff'; do
+for flag in '' ',/comp,/diff' ',/comp,/diff,/clear,add="clear"' ',/preproc,/comp,/diff'; do
+    for i in ${!label[*]}; do
         echo "PLOT_ORAC,\'${label[$i]}\',frame=${frame[$i]},$revision$flag"
     done
 done | xargs -P 6 -n 1 -I{} idl -quiet -e {} &>/dev/null

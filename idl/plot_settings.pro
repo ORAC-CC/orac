@@ -64,6 +64,7 @@
 ;   28 Jul 2014 - ACP: Added falsecolour and difference plots.
 ;   19 Sep 2014 - ACP: New RTM output field names.
 ;   20 Jan 2015 - ACP: Update fields to current outputs.
+;   08 Jan 2016 - ACP: Update fields to current outputs.
 ;-
 FUNCTION PLOT_SETTINGS, suffix, inst
    ON_ERROR, 2
@@ -102,15 +103,39 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Surface emissivity','%')
          ++i
 
-         out[i].name='alb_abs_ch_numbers'
-         out[i].mode=0
-         out[i].full=1
+         out[i].name='rho_0v_data'
+         out[i].mode=2
+         out[i].log=1
+         out[i].title=FMT('Direct beam surface reflectance','%')
          ++i
 
-         out[i].name='emis_abs_ch_numbers'
-         out[i].mode=0
-         out[i].full=1
+         out[i].name='rho_0d_data'
+         out[i].mode=2
+         out[i].log=1
+         out[i].title=FMT('Direct-to-beam surface reflectance','%')
          ++i
+
+         out[i].name='rho_dv_data'
+         out[i].mode=2
+         out[i].log=1
+         out[i].title=FMT('Diffuse-to-direct surface reflectance','%')
+         ++i
+
+         out[i].name='rho_dd_data'
+         out[i].mode=2
+         out[i].log=1
+         out[i].title=FMT('Diffuse surface reflectance','%')
+         ++i
+
+;         out[i].name='alb_abs_ch_numbers'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
+
+;         out[i].name='emis_abs_ch_numbers'
+;         out[i].mode=0
+;         out[i].full=1
+;         ++i
       end
       'CLF': begin
          out[i].name='cflag'
@@ -121,6 +146,38 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].blabels[0:1]=['Clear','Cloudy']
          out[i].range=[0,1]
          out[i].nlevels=2
+         ++i
+
+         out[i].name='cldtype'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Cloud type')
+         out[i].btf=''
+         out[i].blabels[0:10]=['Clear','To water','Fog','Water','Supercooled', $
+                               'To ice','Opaque ice','Cirrus','Overlap', $
+                               '~ opaque ice','~ clear']
+         out[i].range=[0,10]
+         out[i].nlevels=11
+         ++i
+
+         out[i].name='cldmask'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Cloud mask')
+         out[i].btf=''
+         out[i].blabels[0:1]=['Clear','Cloudy']
+         out[i].range=[0,1]
+         out[i].nlevels=2
+         ++i
+
+         out[i].name='cldmask_uncertainty'
+         out[i].mode=1
+         out[i].title=FMT('Cloud mask uncertainty')
+         ++i
+
+         out[i].name='cccot_pre'
+         out[i].mode=1
+         out[i].title=FMT('Neural net thing')
          ++i
       end
       'CONFIG': begin
@@ -144,20 +201,15 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].full=1
          ++i
 
-;         out[i].name='msi_ch_procflag'
-;         out[i].mode=0
-;         out[i].full=1
-;         ++i
+         out[i].name='alb_abs_ch_numbers'
+         out[i].mode=0
+         out[i].full=1
+         ++i
 
-;         out[i].name='alb_abs_ch_numbers'
-;         out[i].mode=0
-;         out[i].full=1
-;         ++i
-
-;         out[i].name='emis_abs_ch_numbers'
-;         out[i].mode=0
-;         out[i].full=1
-;         ++i
+         out[i].name='emis_abs_ch_numbers'
+         out[i].mode=0
+         out[i].full=1
+         ++i
       end
       'GEO': begin
          out[i].name='solzen'
@@ -207,6 +259,26 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].range=[0,1]
          out[i].nlevels=2
          ++i
+
+         out[i].name='lusflag'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Land use flag')
+         out[i].nlevels=16
+         out[i].range=[1,16]
+         ++i
+
+         out[i].name='dem'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Digital elevation model')
+         ++i
+
+         out[i].name='nisemask'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Ice mask')
+         ++i
       end
       'LWRTM': begin
 ;         out[i].name='lw_channel_abs_ids'
@@ -222,29 +294,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].name='lw_channel_wvl'
 ;         out[i].mode=0
 ;         out[i].full=1
-;         ++i
-
-;         out[i].name='counter_lw'
-;         out[i].full=1
-;         out[i].mode=3
-;         ++i
-
-;         out[i].name='solza_lw'
-;         out[i].full=1
-;         out[i].mode=4
-;         out[i].title=FMT('RTM LW solar azimuth angle','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='satza_lw'
-;         out[i].full=1
-;         out[i].mode=4
-;         out[i].title=FMT('RTM LW satellite azimuth angle','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='relazi_lw'
-;         out[i].full=1
-;         out[i].mode=4
-;         out[i].title=FMT('RTM LW relative azimuth angle','!9'+STRING(176b)+'!X')
 ;         ++i
 
          out[i].name='emiss_lw'
@@ -279,12 +328,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          ++i
       end
       'MSI': begin
-         out[i].name='msi_data'
-         out[i].mode=2
-         out[i].title=FMT('Imager data','% || K')
-         out[i].full=1
-         ++i
-
 ;         out[i].name='msi_instr_ch_numbers'
 ;         out[i].mode=0
 ;         out[i].full=1
@@ -305,10 +348,16 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].full=1
 ;         ++i
 
-;         out[i].name='msi_ch_procflag'
+;         out[i].name='msi_ch_view'
 ;         out[i].mode=0
 ;         out[i].full=1
 ;         ++i
+
+         out[i].name='msi_data'
+         out[i].mode=2
+         out[i].title=FMT('Imager data','% || K')
+         out[i].full=1
+         ++i
 
          out[i].name='time_data'
          out[i].mode=1
@@ -316,21 +365,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          ++i
       end
       'PRTM': begin
-;         out[i].name='i_pw'
-;         out[i].mode=3
-;         out[i].full=1
-;         ++i
-
-;         out[i].name='j_pw'
-;         out[i].mode=3
-;         out[i].full=1
-;         ++i
-
-;         out[i].name='counter_pw'
-;         out[i].mode=3
-;         out[i].full=1
-;         ++i
-
 ;         out[i].name='lon_rtm'
 ;         out[i].mode=3
 ;         out[i].full=1
@@ -341,36 +375,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].mode=3
 ;         out[i].full=1
 ;         out[i].title=FMT('RTM latitude','!9'+STRING(176b)+'!X')
-;         ++i
-
-         out[i].name='skint_rtm'
-         out[i].mode=3
-         out[i].bottom=1
-         out[i].title=FMT('RTM skin temperature','K')
-         ++i
-
-         out[i].name='explnsp_rtm'
-         out[i].mode=3
-         out[i].bottom=1
-         out[i].title=FMT('RTM surface pressure','hPa')
-         ++i
-
-;         out[i].name='lsf_rtm'
-;         out[i].mode=3
-;         out[i].full=1
-;         out[i].title=FMT('RTM surface albedo','%')
-;         ++i
-
-;         out[i].name='satzen_pw'
-;         out[i].mode=3
-;         out[i].full=1
-;         out[i].title=FMT('RTM satellite zenith angle','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='solzen_pw'
-;         out[i].mode=3
-;         out[i].full=1
-;         out[i].title=FMT('RTM solar zenith angle','!9'+STRING(176b)+'!X')
 ;         ++i
 
          out[i].name='pprofile_rtm'
@@ -390,6 +394,18 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].bottom=1
          out[i].title=FMT('RTM geopotential','m')
          ++i
+
+         out[i].name='qprofile_rtm'
+         out[i].mode=5
+         out[i].bottom=1
+         out[i].title=FMT('Relative humidity','%')
+         ++i
+
+         out[i].name='o3profile_rtm'
+         out[i].mode=5
+         out[i].bottom=1
+         out[i].title=FMT('Column ozone','?')
+         ++i
       end
       'SWRTM': begin
 ;         out[i].name='sw_channel_abs_ids'
@@ -407,29 +423,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].full=1
 ;         ++i
 
-;         out[i].name='counter_sw'
-;         out[i].full=1
-;         out[i].mode=3
-;         ++i
-
-;         out[i].name='solza_sw'
-;         out[i].full=1
-;         out[i].mode=4
-;         out[i].title=FMT('RTM SW solar azimuth angle','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='satza_sw'
-;         out[i].full=1
-;         out[i].mode=4
-;         out[i].title=FMT('RTM SW satellite azimuth angle','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='relazi_sw'
-;         out[i].full=1
-;         out[i].mode=4
-;         out[i].title=FMT('RTM SW relative azimuth angle','!9'+STRING(176b)+'!X')
-;         ++i
-
          out[i].name='tac_sw'
          out[i].mode=6
          out[i].full=1
@@ -440,19 +433,24 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].full=1
          ++i
       end
-      'UV': begin
-         out[i].name='uscan'
-         out[i].mode=1
-         out[i].full=1
-         ++i
-
-         out[i].name='vscan'
-         out[i].mode=1
-         out[i].full=1
-         ++i
-      end
       'PRIMARY': begin
-         out.filter=64
+;         out[i].name='time'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Observation time','JDN')
+;         ++i
+
+;         out[i].name='lat'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Latitude','!9'+STRING(176b)+'!X')
+;         ++i
+
+;         out[i].name='lon'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Longitude','!9'+STRING(176b)+'!X')
+;         ++i
 
          out[i].name='cot'
          out[i].mode=1
@@ -465,12 +463,12 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Optical thickness !Ms!N','-')
          ++i
 
-         out[i].name='ref'
+         out[i].name='cer'
          out[i].mode=1
          out[i].title=FMT('Effective radius','!Mm!Xm')
          ++i
 
-         out[i].name='ref_uncertainty'
+         out[i].name='cer_uncertainty'
          out[i].mode=1
          out[i].title=FMT('Effective radius !Ms!N','!Mm!Xm')
          ++i
@@ -485,6 +483,16 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Cloud top pressure !Ms!N','hPa')
          ++i
 
+;         out[i].name='cc_total'
+;         out[i].mode=1
+;         out[i].title=FMT('Cloud fraction','%')
+;         ++i
+
+;         out[i].name='ctp_uncertainty'
+;         out[i].mode=1
+;         out[i].title=FMT('Cloud fraction !Ms!N','%')
+;         ++i
+
          out[i].name='stemp'
          out[i].mode=1
          out[i].bottom=1
@@ -496,6 +504,26 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Surface temperature !Ms!N','K')
          ++i
 
+;         out[i].name='cth'
+;         out[i].mode=1
+;         out[i].title=FMT('Cloud top height','km')
+;         ++i
+
+;         out[i].name='cth_uncertainty'
+;         out[i].mode=1
+;         out[i].title=FMT('Cloud top height !Ms!N','K')
+;         ++i
+
+;         out[i].name='ctt'
+;         out[i].mode=1
+;         out[i].title=FMT('Cloud top temperature','K')
+;         ++i
+
+;         out[i].name='ctt_uncertainty'
+;         out[i].mode=1
+;         out[i].title=FMT('Cloud top temperature !Ms!N','K')
+;         ++i
+
          out[i].name='cwp'
          out[i].mode=1
          out[i].title=FMT('Cloud water path','g m!E-2!N')
@@ -504,36 +532,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].name='cwp_uncertainty'
          out[i].mode=1
          out[i].title=FMT('Cloud water path !Ms!N','g m!E-2!N')
-         ++i
-
-         out[i].name='cc_total'
-         out[i].mode=1
-         out[i].title=FMT('Cloud fraction','%')
-         ++i
-
-;         out[i].name='cc_total_uncertainty'
-;         out[i].mode=1
-;         out[i].title=FMT('Cloud fraction !Ms!N','%')
-;         ++i
-
-         out[i].name='cth'
-         out[i].mode=1
-         out[i].title=FMT('Cloud top height','km')
-         ++i
-
-         out[i].name='cth_uncertainty'
-         out[i].mode=1
-         out[i].title=FMT('Cloud top height !Ms!N','K')
-         ++i
-
-         out[i].name='ctt'
-         out[i].mode=1
-         out[i].title=FMT('Cloud top temperature','K')
-         ++i
-
-         out[i].name='ctt_uncertainty'
-         out[i].mode=1
-         out[i].title=FMT('Cloud top temperature !Ms!N','K')
          ++i
 
 ;         out[i].name='convergence'
@@ -552,10 +550,58 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('Iterations','-')
          ++i
 
+         out[i].name='costja'
+         out[i].mode=1
+         out[i].title=FMT('A priori cost','-')
+         ++i
+
+         out[i].name='costjm'
+         out[i].mode=1
+         out[i].title=FMT('Measurement cost','-')
+         ++i
+
          out[i].name='qcflag'
          out[i].mode=1
          out[i].full=1
          out[i].title=FMT('Quality control flag','-')
+         ++i
+
+;         out[i].name='lsflag'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Land sea flag')
+;         out[i].btf=''
+;         out[i].blabels[0:1]=['Sea','Land']
+;         out[i].range=[0,1]
+;         out[i].nlevels=2
+;         ++i
+
+;         out[i].name='lusflag'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Land use flag')
+;         ++i
+
+;         out[i].name='dem'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Digital elevation model')
+;         ++i
+
+;         out[i].name='nisemask'
+;         out[i].mode=1
+;         out[i].full=1
+;         out[i].title=FMT('Ice mask')
+;         ++i
+
+         out[i].name='illum'
+         out[i].mode=1
+         out[i].full=1
+         out[i].title=FMT('Illumination flag')
+         out[i].btf=''
+         out[i].blabels[0:2]=['Day','Twilight','Night']
+         out[i].range=[1,3]
+         out[i].nlevels=3
          ++i
 
          out[i].name='phase'
@@ -568,74 +614,6 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].nlevels=3
          ++i
 
-         out[i].name='costja'
-         out[i].mode=1
-         out[i].title=FMT('A priori cost','-')
-         ++i
-
-         out[i].name='costjm'
-         out[i].mode=1
-         out[i].title=FMT('Measurement cost','-')
-         ++i
-
-         out[i].name='lsflag'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Land sea flag')
-         out[i].btf=''
-         out[i].blabels[0:1]=['Sea','Land']
-         out[i].range=[0,1]
-         out[i].nlevels=2
-         ++i
-
-         out[i].name='illum'
-         out[i].mode=1
-         out[i].full=1
-         out[i].title=FMT('Illumination flag')
-         out[i].btf=''
-         out[i].blabels[0:2]=['Day','Twilight','Night']
-;         out[i].blabels[0:11]=['Day','Twilight','Night','Daynore','Day -VIS1', $
-;                               'Day -VIS2','Day -IR1','Day -IR2','Day -IR3', $
-;                               'Night -IR1','Night -IR2','Night -IR3']
-         out[i].range=[1,3]
-         out[i].nlevels=3
-         ++i
-
-;         out[i].name='satellite_zenith_view_no1'
-;         out[i].mode=1
-;         out[i].full=1
-;         out[i].title=FMT('Nadir satellite zenith','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='solar_zenith_view_no1'
-;         out[i].mode=1
-;         out[i].full=1
-;         out[i].title=FMT('Nadir solar zenith','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='rel_azimuth_view_no1'
-;         out[i].mode=1
-;         out[i].full=1
-;         out[i].title=FMT('Nadir relative azimuth','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='lon'
-;         out[i].mode=1
-;         out[i].full=1
-;         out[i].title=FMT('Longitude','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='lat'
-;         out[i].mode=1
-;         out[i].full=1
-;         out[i].title=FMT('Latitude','!9'+STRING(176b)+'!X')
-;         ++i
-
-;         out[i].name='time'
-;         out[i].mode=1
-;         out[i].full=1
-;         out[i].title=FMT('Observation time','JDN')
-;         ++i
       end
       'SECONDARY': begin
 ;         out[i].name='scanline_u'
@@ -650,35 +628,45 @@ FUNCTION PLOT_SETTINGS, suffix, inst
 ;         out[i].title=FMT('Scan v','-')
 ;         ++i
 
-         out[i].name='cot_ap'
-         out[i].mode=1
-         out[i].title=FMT('A priori: Optical thickness','-')
-         ++i
+;         out[i].name='cot_ap'
+;         out[i].mode=1
+;         out[i].title=FMT('A priori: Optical thickness','-')
+;         ++i
 
-         out[i].name='cot_fg'
-         out[i].mode=1
-         out[i].title=FMT('First guess: Optical thickness','-')
-         ++i
+;         out[i].name='cot_fg'
+;         out[i].mode=1
+;         out[i].title=FMT('First guess: Optical thickness','-')
+;         ++i
 
-         out[i].name='ref_ap'
-         out[i].mode=1
-         out[i].title=FMT('A priori: Effective radius','!Mm!Xm')
-         ++i
+;         out[i].name='cer_ap'
+;         out[i].mode=1
+;         out[i].title=FMT('A priori: Effective radius','!Mm!Xm')
+;         ++i
 
-         out[i].name='ref_fg'
-         out[i].mode=1
-         out[i].title=FMT('First guess: Effective radius','!Mm!Xm')
-         ++i
+;         out[i].name='cer_fg'
+;         out[i].mode=1
+;         out[i].title=FMT('First guess: Effective radius','!Mm!Xm')
+;         ++i
 
-         out[i].name='ctp_ap'
-         out[i].mode=1
-         out[i].title=FMT('A priori: Cloud top pressure','Pa')
-         ++i
+;         out[i].name='ctp_ap'
+;         out[i].mode=1
+;         out[i].title=FMT('A priori: Cloud top pressure','Pa')
+;         ++i
 
          out[i].name='ctp_fg'
          out[i].mode=1
          out[i].title=FMT('First guess: cloud top pressure','Pa')
          ++i
+
+;         out[i].name='stemp_ap'
+;         out[i].mode=1
+;         out[i].title=FMT('A priori: surface temperature','K')
+;         ++i
+
+;         out[i].name='stemp_fg'
+;         out[i].mode=1
+;         out[i].title=FMT('First guess: surface temperature','K')
+;         ++i
 
          out[i].name='reflectance_residual_in_channel_no_'
          out[i].mode=1
@@ -808,18 +796,13 @@ FUNCTION PLOT_SETTINGS, suffix, inst
          out[i].title=FMT('First guess: BT Ch 6','K')
          ++i
 
-         out[i].name='stemp_fg'
-         out[i].mode=1
-         out[i].title=FMT('First guess: Surface temperature','K')
-         ++i
-
          out[i].name='degrees_of_freedom_signal'
          out[i].mode=1
          out[i].full=1
          out[i].title=FMT('Signal degrees of freedom','-')
          ++i
 
-         vars=[8,14,24,20]-2
+         vars=[1,7,17,13]
          if STREGEX(inst,'.*M[OY]D.*',/boolean) then begin
             out[vars].name+='1'
             out[vars+1].name+='2'
