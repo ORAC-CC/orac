@@ -170,6 +170,7 @@
 !    after the retrieval iteration.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/11/18, GM: Add call to Calc_Corrected_CTX().
+! 2016/01/05, AP: The convergence test should re-evaluate dJ_dX when failed.
 !
 ! $Id$
 !
@@ -507,15 +508,16 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                alpha = 0.
             else
                ! Retrieval converged. Exit loop
-               convergence = .true. !ACP: step size check?
+               convergence = .true.
+               exit
              end if
          else
             ! Not converged so decrease steepest descent part for next iteration
-            alpha = alpha / Ctrl%InvPar%MqStep
-
-            J0 = J
-            dJ_dX   = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
+            alpha = alpha / Ctrl%Invpar%MqStep
          end if
+
+         J0 = J
+         dJ_dX = matmul(KxT_SyI, Ydiff) + matmul(SXInv, Xdiff)
       else
          ! No improvement in cost. Reject solution
 
