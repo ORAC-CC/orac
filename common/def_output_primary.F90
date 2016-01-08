@@ -677,6 +677,25 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
            shuffle       = shuffle_flag)
    end do
 
+   !----------------------------------------------------------------------------
+   ! cccot_pre (cloud optical thickness)
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'cccot_pre', &
+           output_data%vid_cccot_pre, &
+           verbose, &
+           long_name     = 'neural network cloud optical thickness', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cccot_pre_scale, &
+           add_offset    = output_data%cccot_pre_offset, &
+           valid_min     = output_data%cccot_pre_vmin, &
+           valid_max     = output_data%cccot_pre_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! convergence
@@ -952,10 +971,10 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
+if (do_cldmask) then
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
-if (do_cldmask) then
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -975,10 +994,10 @@ if (do_cldmask) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
+if (do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
-if (do_cldmask_uncertainty) then
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -996,10 +1015,11 @@ if (do_cldmask_uncertainty) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
+
+if (do_cloudmask_pre) then
    !----------------------------------------------------------------------------
    ! cloudmask_pre
    !----------------------------------------------------------------------------
-if (do_cloudmask_pre) then
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -1019,25 +1039,6 @@ if (do_cloudmask_pre) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
-   !----------------------------------------------------------------------------
-   ! cccot_pre (cloud optical thickness)
-   !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_float( &
-           ncid, &
-           dims_var, &
-           'cccot_pre', &
-           output_data%vid_cccot_pre, &
-           verbose, &
-           long_name     = 'neural network cloud optical thickness', &
-           standard_name = '', &
-           fill_value    = sint_fill_value, &
-           scale_factor  = output_data%cccot_pre_scale, &
-           add_offset    = output_data%cccot_pre_offset, &
-           valid_min     = output_data%cccot_pre_vmin, &
-           valid_max     = output_data%cccot_pre_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
    ! phase
@@ -1061,10 +1062,10 @@ end if
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
+if (do_phase_pavolonis) then
    !----------------------------------------------------------------------------
    ! phase_pavolonis
    !----------------------------------------------------------------------------
-if (do_phase_pavolonis) then
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
@@ -1084,6 +1085,7 @@ if (do_phase_pavolonis) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
+
    !----------------------------------------------------------------------------
    !
    !----------------------------------------------------------------------------

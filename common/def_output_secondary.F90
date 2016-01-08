@@ -85,8 +85,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    logical,                     intent(in)    :: do_covariance
 
    character(len=32)  :: input_num
-   character(len=512) :: input_dummy
-   character(len=512) :: input_dummy2
+   character(len=512) :: input_dummy, input_dummy2, input_dummy3
    integer            :: i
 
 
@@ -384,31 +383,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
 
       write(input_num,"(i4)") Y_Id(i)
 
-      if (.not. btest(Ch_Is(i), ThermalBit)) then
-         output_data%channels_scale(i)=0.0001
-         output_data%channels_offset(i)=0.0
-         output_data%channels_vmin(i)=0
-         output_data%channels_vmax(i)=10000
-
-         input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
-
-         call nc_def_var_short_packed_float( &
-              ncid, &
-              dims_var, &
-              trim(adjustl(input_dummy)), &
-              output_data%vid_channels(i), &
-              verbose, &
-              long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy)), &
-              fill_value    = sint_fill_value, &
-              scale_factor  = output_data%channels_scale(i), &
-              add_offset    = output_data%channels_offset(i), &
-              valid_min     = output_data%channels_vmin(i), &
-              valid_max     = output_data%channels_vmax(i), &
-              deflate_level = deflate_level, &
-              shuffle       = shuffle_flag)
-      else
+      if (btest(Ch_Is(i), ThermalBit)) then
          output_data%channels_scale(i)=0.01
          output_data%channels_offset(i)=100.0
          output_data%channels_vmin(i)=0
@@ -416,25 +391,35 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
 
          input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
+         input_dummy3='kelvin'
+      else
+         output_data%channels_scale(i)=0.0001
+         output_data%channels_offset(i)=0.0
+         output_data%channels_vmin(i)=0
+         output_data%channels_vmax(i)=10000
 
-         call nc_def_var_short_packed_float( &
-              ncid, &
-              dims_var, &
-              trim(adjustl(input_dummy)), &
-              output_data%vid_channels(i), &
-              verbose, &
-              long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy)), &
-              fill_value    = sint_fill_value, &
-              scale_factor  = output_data%channels_scale(i), &
-              add_offset    = output_data%channels_offset(i), &
-              valid_min     = output_data%channels_vmin(i), &
-              valid_max     = output_data%channels_vmax(i), &
-              units         = 'kelvin', &
-              deflate_level = deflate_level, &
-              shuffle       = shuffle_flag)
+         input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
+         input_dummy3='1'
+
       end if
 
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_channels(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = trim(adjustl(input_dummy)), &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%channels_scale(i), &
+           add_offset    = output_data%channels_offset(i), &
+           valid_min     = output_data%channels_vmin(i), &
+           valid_max     = output_data%channels_vmax(i), &
+           units         = trim(adjustl(input_dummy3)), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
    end do
 
    !----------------------------------------------------------------------------
@@ -444,31 +429,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
 
       write(input_num,"(i4)") Y_Id(i)
 
-      if (.not. btest(Ch_Is(i), ThermalBit)) then
-         output_data%y0_scale(i)=0.0001
-         output_data%y0_offset(i)=0.0
-         output_data%y0_vmin(i)=0
-         output_data%y0_vmax(i)=10000
-
-         input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
-
-         call nc_def_var_short_packed_float( &
-              ncid, &
-              dims_var, &
-              trim(adjustl(input_dummy)), &
-              output_data%vid_y0(i), &
-              verbose, &
-              long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy)), &
-              fill_value    = sint_fill_value, &
-              scale_factor  = output_data%y0_scale(i), &
-              add_offset    = output_data%y0_offset(i), &
-              valid_min     = output_data%y0_vmin(i), &
-              valid_max     = output_data%y0_vmax(i), &
-              deflate_level = deflate_level, &
-              shuffle       = shuffle_flag)
-      else
+      if (btest(Ch_Is(i), ThermalBit)) then
          output_data%y0_scale(i)=0.01
          output_data%y0_offset(i)=100.0
          output_data%y0_vmin(i)=0
@@ -476,25 +437,34 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
 
          input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
+         input_dummy3='kelvin'
+      else
+         output_data%y0_scale(i)=0.0001
+         output_data%y0_offset(i)=0.0
+         output_data%y0_vmin(i)=0
+         output_data%y0_vmax(i)=10000
 
-         call nc_def_var_short_packed_float( &
-              ncid, &
-              dims_var, &
-              trim(adjustl(input_dummy)), &
-              output_data%vid_y0(i), &
-              verbose, &
-              long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy)), &
-              fill_value    = sint_fill_value, &
-              scale_factor  = output_data%y0_scale(i), &
-              add_offset    = output_data%y0_offset(i), &
-              valid_min     = output_data%y0_vmin(i), &
-              valid_max     = output_data%y0_vmax(i), &
-              units         = 'kelvin', &
-              deflate_level = deflate_level, &
-              shuffle       = shuffle_flag)
+         input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
+         input_dummy3='1'
       end if
 
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_y0(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = trim(adjustl(input_dummy)), &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%y0_scale(i), &
+           add_offset    = output_data%y0_offset(i), &
+           valid_min     = output_data%y0_vmin(i), &
+           valid_max     = output_data%y0_vmax(i), &
+           units         = trim(adjustl(input_dummy3)), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
    end do
 
    !----------------------------------------------------------------------------
@@ -504,31 +474,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
 
       write(input_num,"(i4)") Y_Id(i)
 
-      if (.not. btest(Ch_Is(i), ThermalBit)) then
-         output_data%residuals_scale(i)=0.0001
-         output_data%residuals_offset(i)=0.0
-         output_data%residuals_vmin(i)=-10000
-         output_data%residuals_vmax(i)=10000
-
-         input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
-         input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
-
-         call nc_def_var_short_packed_float( &
-              ncid, &
-              dims_var, &
-              trim(adjustl(input_dummy)), &
-              output_data%vid_residuals(i), &
-              verbose, &
-              long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy)), &
-              fill_value    = sint_fill_value, &
-              scale_factor  = output_data%residuals_scale(i), &
-              add_offset    = output_data%residuals_offset(i), &
-              valid_min     = output_data%residuals_vmin(i), &
-              valid_max     = output_data%residuals_vmax(i), &
-              deflate_level = deflate_level, &
-              shuffle       = shuffle_flag)
-      else
+      if (btest(Ch_Is(i), ThermalBit)) then
          output_data%residuals_scale(i)=0.01
          output_data%residuals_offset(i)=100.0
          output_data%residuals_vmin(i)=-32000
@@ -536,25 +482,34 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
 
          input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
+         input_dummy3='kelvin'
+      else
+         output_data%residuals_scale(i)=0.0001
+         output_data%residuals_offset(i)=0.0
+         output_data%residuals_vmin(i)=-10000
+         output_data%residuals_vmax(i)=10000
 
-         call nc_def_var_short_packed_float( &
-              ncid, &
-              dims_var, &
-              trim(adjustl(input_dummy)), &
-              output_data%vid_residuals(i), &
-              verbose, &
-              long_name     = trim(adjustl(input_dummy2)), &
-              standard_name = trim(adjustl(input_dummy)), &
-              fill_value    = sint_fill_value, &
-              scale_factor  = output_data%residuals_scale(i), &
-              add_offset    = output_data%residuals_offset(i), &
-              valid_min     = output_data%residuals_vmin(i), &
-              valid_max     = output_data%residuals_vmax(i), &
-              units         = 'kelvin', &
-              deflate_level = deflate_level, &
-              shuffle       = shuffle_flag)
+         input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
+         input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
+         input_dummy3='1'
       end if
 
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_residuals(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = trim(adjustl(input_dummy)), &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%residuals_scale(i), &
+           add_offset    = output_data%residuals_offset(i), &
+           valid_min     = output_data%residuals_vmin(i), &
+           valid_max     = output_data%residuals_vmax(i), &
+           units         = trim(adjustl(input_dummy3)), &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
    end do
 
    !----------------------------------------------------------------------------

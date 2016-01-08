@@ -301,14 +301,15 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    do i = 1, MaxNumMeas
       write(input_num, "(i4)") i
+
       varname = 'reflectance_in_channel_no_'//trim(adjustl(input_num))
       if (nf90_inq_varid(ncid_secondary,varname,varid) .eq. NF90_NOERR) then
-              indexing%Ny = indexing%Ny + 1
-              indexing%NSolar = indexing%NSolar + 1
-              indexing%YSolar(indexing%NSolar) = indexing%Ny
-              indexing%Y_Id(indexing%Ny) = i
-              indexing%Ch_Is(indexing%Ny) = &
-                 ibset(indexing%Ch_Is(indexing%Ny), SolarBit)
+         indexing%Ny = indexing%Ny + 1
+         indexing%NSolar = indexing%NSolar + 1
+         indexing%YSolar(indexing%NSolar) = indexing%Ny
+         indexing%Y_Id(indexing%Ny) = i
+         indexing%Ch_Is(indexing%Ny) = &
+              ibset(indexing%Ch_Is(indexing%Ny), SolarBit)
       else
          write(input_num, "(i4)") i
          varname = 'brightness_temperature_in_channel_no_'//trim(adjustl(input_num))

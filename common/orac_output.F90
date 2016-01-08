@@ -139,15 +139,6 @@ module orac_output
       integer(kind=sint)            :: cct_error_vmin   = 0
       integer(kind=sint)            :: cct_error_vmax   = 10000
 
-!     real(kind=sreal)              :: albedo_scale
-!     real(kind=sreal)              :: albedo_offset
-!     integer(kind=sint)            :: albedo_vmin
-!     integer(kind=sint)            :: albedo_vmax
-!     real(kind=sreal)              :: albedo_error_scale
-!     real(kind=sreal)              :: albedo_error_offset
-!     integer(kind=sint)            :: albedo_error_vmin
-!     integer(kind=sint)            :: albedo_error_vmax
-
       real(kind=sreal)              :: stemp_scale        = 0.01
       real(kind=sreal)              :: stemp_offset       = 0.0
       integer(kind=sint)            :: stemp_vmin         = 0
@@ -275,68 +266,65 @@ module orac_output
       integer(kind=byte)            :: phase_pavolonis_vmax   = 2
 
       ! Arrays to store output fields
-      real(kind=dreal),   dimension(:,:),   pointer :: time
+      real(kind=dreal),   dimension(:,:),     pointer :: time
 
-      real(kind=sreal),   dimension(:,:),   pointer :: lat
-      real(kind=sreal),   dimension(:,:),   pointer :: lon
+      real(kind=sreal),   dimension(:,:),     pointer :: lat
+      real(kind=sreal),   dimension(:,:),     pointer :: lon
 
-      real(kind=sreal),   dimension(:,:,:), pointer :: sol_zen
-      real(kind=sreal),   dimension(:,:,:), pointer :: sat_zen
-      real(kind=sreal),   dimension(:,:,:), pointer :: rel_azi
+      real(kind=sreal),   dimension(:,:,:),   pointer :: sol_zen
+      real(kind=sreal),   dimension(:,:,:),   pointer :: sat_zen
+      real(kind=sreal),   dimension(:,:,:),   pointer :: rel_azi
 
-      integer(kind=sint), dimension(:,:),   pointer :: cot
-      integer(kind=sint), dimension(:,:),   pointer :: cot_error
+      integer(kind=sint), dimension(:,:),     pointer :: cot
+      integer(kind=sint), dimension(:,:),     pointer :: cot_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: cer
-      integer(kind=sint), dimension(:,:),   pointer :: cer_error
+      integer(kind=sint), dimension(:,:),     pointer :: cer
+      integer(kind=sint), dimension(:,:),     pointer :: cer_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: ctp
-      integer(kind=sint), dimension(:,:),   pointer :: ctp_error
+      integer(kind=sint), dimension(:,:),     pointer :: ctp
+      integer(kind=sint), dimension(:,:),     pointer :: ctp_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: cct
-      integer(kind=sint), dimension(:,:),   pointer :: cct_error
+      integer(kind=sint), dimension(:,:),     pointer :: cct
+      integer(kind=sint), dimension(:,:),     pointer :: cct_error
 
-!     integer(kind=sint), dimension(:,:),   pointer :: albedo
-!     integer(kind=sint), dimension(:,:),   pointer :: albedo_error
+      integer(kind=sint), dimension(:,:),     pointer :: stemp
+      integer(kind=sint), dimension(:,:),     pointer :: stemp_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: stemp
-      integer(kind=sint), dimension(:,:),   pointer :: stemp_error
+      integer(kind=sint), dimension(:,:),     pointer :: ctt
+      integer(kind=sint), dimension(:,:),     pointer :: ctt_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: ctt
-      integer(kind=sint), dimension(:,:),   pointer :: ctt_error
+      integer(kind=sint), dimension(:,:),     pointer :: cth
+      integer(kind=sint), dimension(:,:),     pointer :: cth_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: cth
-      integer(kind=sint), dimension(:,:),   pointer :: cth_error
+      integer(kind=sint), dimension(:,:),     pointer :: cth_corrected
+      integer(kind=sint), dimension(:,:),     pointer :: cth_corrected_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: cth_corrected
-      integer(kind=sint), dimension(:,:),   pointer :: cth_corrected_error
+      integer(kind=sint), dimension(:,:),     pointer :: cwp
+      integer(kind=sint), dimension(:,:),     pointer :: cwp_error
 
-      integer(kind=sint), dimension(:,:),   pointer :: cwp
-      integer(kind=sint), dimension(:,:),   pointer :: cwp_error
+      integer(kind=sint), dimension(:,:,:),   pointer :: cloud_albedo
+      integer(kind=sint), dimension(:,:,:),   pointer :: cloud_albedo_error
 
-      integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo
-      integer(kind=sint), dimension(:,:,:), pointer :: cloud_albedo_error
+      integer(kind=byte), dimension(:,:),     pointer :: convergence
+      integer(kind=byte), dimension(:,:),     pointer :: niter
+      real(kind=sreal),   dimension(:,:),     pointer :: costja
+      real(kind=sreal),   dimension(:,:),     pointer :: costjm
+      integer(kind=sint), dimension(:,:),     pointer :: qcflag
 
-      integer(kind=byte), dimension(:,:),   pointer :: convergence
-      integer(kind=byte), dimension(:,:),   pointer :: niter
-      real(kind=sreal),   dimension(:,:),   pointer :: costja
-      real(kind=sreal),   dimension(:,:),   pointer :: costjm
-      integer(kind=sint), dimension(:,:),   pointer :: qcflag
+      integer(kind=byte), dimension(:,:),     pointer :: lsflag
+      integer(kind=byte), dimension(:,:),     pointer :: lusflag
+      integer(kind=sint), dimension(:,:),     pointer :: dem
+      integer(kind=byte), dimension(:,:),     pointer :: nisemask
 
-      integer(kind=byte), dimension(:,:),   pointer :: lsflag
-      integer(kind=byte), dimension(:,:),   pointer :: lusflag
-      integer(kind=sint), dimension(:,:),   pointer :: dem
-      integer(kind=byte), dimension(:,:),   pointer :: nisemask
+      integer(kind=byte), dimension(:,:),     pointer :: illum
 
-      integer(kind=byte), dimension(:,:),   pointer :: illum
+      integer(kind=byte), dimension(:,:),     pointer :: cldtype
+      integer(kind=byte), dimension(:,:),     pointer :: cldmask
+      integer(kind=sint), dimension(:,:),     pointer :: cldmask_uncertainty
+      integer(kind=sint), dimension(:,:),     pointer :: cccot_pre
 
-      integer(kind=byte), dimension(:,:),   pointer :: cldtype
-      integer(kind=byte), dimension(:,:),   pointer :: cldmask
-      integer(kind=sint), dimension(:,:),   pointer :: cldmask_uncertainty
-      integer(kind=sint), dimension(:,:),   pointer :: cccot_pre
-
-      integer(kind=byte), dimension(:,:),   pointer :: phase
-      integer(kind=byte), dimension(:,:),   pointer :: phase_pavolonis
+      integer(kind=byte), dimension(:,:),     pointer :: phase
+      integer(kind=byte), dimension(:,:),     pointer :: phase_pavolonis
 
    end type output_data_primary
 

@@ -60,18 +60,10 @@ subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
    deallocate(output_data%vid_sat_zen)
    deallocate(output_data%vid_rel_azi)
 
+
+
    deallocate(output_data%vid_cloud_albedo)
    deallocate(output_data%vid_cloud_albedo_error)
-
-   deallocate(output_data%time)
-
-   deallocate(output_data%lon)
-   deallocate(output_data%lat)
-
-   deallocate(output_data%sol_zen)
-   deallocate(output_data%sat_zen)
-   deallocate(output_data%rel_azi)
-
    deallocate(output_data%cot)
    deallocate(output_data%cot_error)
    deallocate(output_data%cer)
@@ -95,6 +87,19 @@ subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
    deallocate(output_data%cloud_albedo)
    deallocate(output_data%cloud_albedo_error)
 
+   deallocate(output_data%cccot_pre)
+
+
+   deallocate(output_data%time)
+
+   deallocate(output_data%lon)
+   deallocate(output_data%lat)
+
+   deallocate(output_data%sol_zen)
+   deallocate(output_data%sat_zen)
+   deallocate(output_data%rel_azi)
+
+
    deallocate(output_data%convergence)
    deallocate(output_data%niter)
    deallocate(output_data%costja)
@@ -113,9 +118,9 @@ subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
 if (do_cldmask_uncertainty) then
    deallocate(output_data%cldmask_uncertainty)
 end if
-   deallocate(output_data%cccot_pre)
 
    deallocate(output_data%phase)
+
 if (do_phase_pavolonis) then
    deallocate(output_data%phase_pavolonis)
 end if
@@ -150,29 +155,32 @@ subroutine dealloc_output_data_secondary(output_data, do_covariance)
    type(output_data_secondary), intent(inout) :: output_data
 
    deallocate(output_data%vid_albedo)
-   deallocate(output_data%vid_channels)
-   deallocate(output_data%vid_y0)
-   deallocate(output_data%vid_residuals)
-
    deallocate(output_data%albedo_scale)
    deallocate(output_data%albedo_offset)
    deallocate(output_data%albedo_vmin)
    deallocate(output_data%albedo_vmax)
+   deallocate(output_data%albedo)
 
+   deallocate(output_data%vid_channels)
    deallocate(output_data%channels_scale)
    deallocate(output_data%channels_offset)
    deallocate(output_data%channels_vmin)
    deallocate(output_data%channels_vmax)
+   deallocate(output_data%channels)
 
+   deallocate(output_data%vid_y0)
    deallocate(output_data%y0_scale)
    deallocate(output_data%y0_offset)
    deallocate(output_data%y0_vmin)
    deallocate(output_data%y0_vmax)
+   deallocate(output_data%y0)
 
+   deallocate(output_data%vid_residuals)
    deallocate(output_data%residuals_scale)
    deallocate(output_data%residuals_offset)
    deallocate(output_data%residuals_vmin)
    deallocate(output_data%residuals_vmax)
+   deallocate(output_data%residuals)
 
    deallocate(output_data%scanline_u)
    deallocate(output_data%scanline_v)
@@ -185,11 +193,6 @@ subroutine dealloc_output_data_secondary(output_data, do_covariance)
    deallocate(output_data%ctp_fg)
    deallocate(output_data%stemp_ap)
    deallocate(output_data%stemp_fg)
-
-   deallocate(output_data%albedo)
-   deallocate(output_data%channels)
-   deallocate(output_data%y0)
-   deallocate(output_data%residuals)
 
    deallocate(output_data%ds)
 

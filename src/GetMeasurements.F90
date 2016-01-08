@@ -185,7 +185,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! (For mixed solar/thermal channels, the value in daytime is a sum of the
    ! thermal and solar contributions).
 
-   if (Ctrl%Eqmpn%Homog) then
+   if (Ctrl%EqMPN%Homog) then
       do i = 1, SPixel%Ind%Ny
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 
@@ -226,7 +226,7 @@ subroutine Get_Measurements(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       end do
    end if ! End of Homog noise section
 
-   if (Ctrl%Eqmpn%Coreg) then
+   if (Ctrl%EqMPN%Coreg) then
       do i = 1, SPixel%Ind%Ny
          ii = SPixel%spixel_y_to_ctrl_y_index(i)
 

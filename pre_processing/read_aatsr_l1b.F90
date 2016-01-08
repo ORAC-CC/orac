@@ -132,7 +132,7 @@ subroutine read_aatsr_l1b(l1b_file, drift_file, imager_geolocation, &
    type(imager_time_s),         intent(inout) :: imager_time
    type(channel_info_s),        intent(in)    :: channel_info
    character(len=platform_length), intent(in) :: platform
-   character(len=sensor_length),   intent(in)    :: sensor
+   character(len=sensor_length),   intent(in) :: sensor
 
    logical,                     intent(in)    :: verbose
 

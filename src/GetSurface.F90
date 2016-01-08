@@ -3,7 +3,7 @@
 !
 ! Purpose:
 ! Passes surface reflectances for the solar channels and current super-pixel
-! array according to the method defined by Ctrl%Rs%RsSelm.
+! array according to the method defined by Ctrl%RS%RsSelm.
 ! Also calculates the covariances for the solar channels.
 !
 ! Description and Algorithm details:
@@ -188,12 +188,12 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
    ! These are copied into temporary arrays in case we ever make Ctrl%Rs terms
    ! arrays rather than scalars
-   Rs         = Ctrl%Rs%b
-   frac_error = Ctrl%Rs%Sb
+   Rs         = Ctrl%RS%b
+   frac_error = Ctrl%RS%Sb
 
 
    ! Get the surface reflectances
-   select case (Ctrl%Rs%RsSelm)
+   select case (Ctrl%RS%RsSelm)
    case(SelmCtrl) ! Use values specified in driver file (only white sky albedo)
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
@@ -205,7 +205,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       end do
 
       ! Constant correlation between channels
-      correl = Ctrl%Rs%Cb
+      correl = Ctrl%RS%Cb
 
    case(SelmAux) ! Use values in preprocessor files
       ! Determine vegetation and snow indexes outside of loop
@@ -222,7 +222,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ! Copy surface reflectances from MSI files
          SPixel%Surface%Rs(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, ii) /&
                                 solar_factor
-         if (Ctrl%Rs%use_full_brdf) then
+         if (Ctrl%RS%use_full_brdf) then
             SPixel%Surface%Rs2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &
                                             SPixel%Loc%Y0, ii) / solar_factor
             SPixel%Surface%Rs2(i,IRho_0D) = MSI_Data%rho_0d(SPixel%Loc%X0, &
@@ -257,15 +257,15 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          end if
 
          ! Fetch uncertainty information
-         select case (Ctrl%Rs%SRsSelm)
+         select case (Ctrl%RS%SRsSelm)
          case(SelmCtrl)
             ! Uncertainty is a constant fraction of the reflectance
             uncertainty(i) = SPixel%Surface%Rs(i) * frac_error(ii,i_surf)
-            if (Ctrl%Rs%use_full_brdf) &
+            if (Ctrl%RS%use_full_brdf) &
                  uncertainty2(i,:) = uncertainty(i)
 !                uncertainty2(i,:) = SPixel%Surface%Rs2(i,:) * frac_error(ii,i_surf)
             ! Constant correlation between channels
-            correl = Ctrl%Rs%Cb
+            correl = Ctrl%RS%Cb
          case(SelmAux)
             ! Uncertainty and correlations drawn from MSI files
             uncertainty2(i,IRho_DD) = MSI_Data%rho_dd_unc(SPixel%Loc%X0, &

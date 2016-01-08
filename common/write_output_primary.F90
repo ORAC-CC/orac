@@ -156,14 +156,19 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
 
       input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_cloud_albedo(i),output_data%cloud_albedo(ixstart:,iystart:,i), &
+              output_data%vid_cloud_albedo(i),&
+              output_data%cloud_albedo(ixstart:,iystart:,i), &
               1,1,n_x,1,1,n_y)
 
       input_dummy='cloud_albedo_in_channel_uncertainty_no_'//trim(adjustl(input_num))
       call nc_write_array(ncid,trim(adjustl(input_dummy)), &
-              output_data%vid_cloud_albedo_error(i),output_data%cloud_albedo_error(ixstart:,iystart:,i), &
+              output_data%vid_cloud_albedo_error(i),&
+              output_data%cloud_albedo_error(ixstart:,iystart:,i), &
               1,1,n_x,1,1,n_y)
    end do
+
+   call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre,&
+           output_data%cccot_pre(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'convergence',output_data%vid_convergence,&
            output_data%convergence(ixstart:,iystart:),1,1,n_x,1,1,n_y)
@@ -197,6 +202,7 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
 
    call nc_write_array(ncid,'cldtype',output_data%vid_cldtype,&
            output_data%cldtype(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
 if (do_cldmask) then
    call nc_write_array(ncid,'cldmask',output_data%vid_cldmask,&
            output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
@@ -205,17 +211,18 @@ if (do_cldmask_uncertainty) then
    call nc_write_array(ncid,'cldmask_uncertainty',output_data%vid_cldmask_uncertainty,&
            output_data%cldmask_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
+
 if (do_cloudmask_pre) then
    call nc_write_array(ncid,'cloudmask_pre',output_data%vid_cldmask,&
            output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
-   call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre,&
-           output_data%cccot_pre(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'phase',output_data%vid_phase,&
            output_data%phase(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
 if (do_phase_pavolonis) then
    call nc_write_array(ncid,'phase_pavolonis',output_data%vid_phase_pavolonis,&
            output_data%phase_pavolonis(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
+
 end subroutine write_output_primary

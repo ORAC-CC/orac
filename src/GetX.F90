@@ -229,7 +229,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
    select case (mode)
    case (SelmMeas) ! Draw state from measurement vector
       call X_MDAD(Ctrl, SAD_Chan, SPixel, i, X, status, err_temp)
-      if (status == XMDADBounds) then ! ACP: Check cause of this
+      if (status == XMDADBounds) then
 #ifdef DEBUG
          write(*,*) 'WARNING: X_MDAD(): Out-of-bounds interpolation'
 #endif
@@ -259,7 +259,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
          search: do is = 1, SPixel%Ind%NSolar
             ic = SPixel%spixel_y_solar_to_ctrl_y_solar_index(is)
 
-            if (Ctrl%Rs%use_full_brdf) then
+            if (Ctrl%RS%use_full_brdf) then
                do irho = 1, MaxRho_XX
                   if (i == IRs(ic,irho)) then
                      X = SPixel%Surface%Rs2(is,irho)

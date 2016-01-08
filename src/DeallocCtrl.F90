@@ -46,7 +46,7 @@ subroutine Dealloc_Ctrl(Ctrl)
    deallocate(Ctrl%Ind%YThermal)
    deallocate(Ctrl%Ind%YMixed)
 
-   deallocate(Ctrl%Rs%B)
+   deallocate(Ctrl%RS%B)
 
    deallocate(Ctrl%Sy)
 

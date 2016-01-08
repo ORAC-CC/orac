@@ -227,8 +227,6 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
 
    ! Overwrite RTM profile with that extrapolated. (Later used to determine
    ! RTM_Pc%LW%B for the forward model.)
-   ! ACP: I'm not sure why this is necessary, but without it retrieval costs
-   !      are massive.
    SPixel%RTM%LW%T(1:nz)=t
 
 end subroutine Int_CTP

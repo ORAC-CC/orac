@@ -87,131 +87,132 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
    allocate(output_data%vid_cloud_albedo_error(Ny))
    output_data%vid_cloud_albedo_error=0
 
-
-   allocate(output_data%time(ixstart:ixstop,iystart:iystop))
-   output_data%time(ixstart:ixstop,iystart:iystop)=sreal_fill_value
-
-
-   allocate(output_data%lat(ixstart:ixstop,iystart:iystop))
-   output_data%lat(ixstart:ixstop,iystart:iystop)=sreal_fill_value
-
-   allocate(output_data%lon(ixstart:ixstop,iystart:iystop))
-   output_data%lon(ixstart:ixstop,iystart:iystop)=sreal_fill_value
-
-
-   allocate(output_data%sol_zen(ixstart:ixstop,iystart:iystop,NViews))
-   output_data%sol_zen(ixstart:ixstop,iystart:iystop,NViews)=sreal_fill_value
-
-   allocate(output_data%sat_zen(ixstart:ixstop,iystart:iystop,NViews))
-   output_data%sat_zen(ixstart:ixstop,iystart:iystop,NViews)=sreal_fill_value
-
-   allocate(output_data%rel_azi(ixstart:ixstop,iystart:iystop,NViews))
-   output_data%rel_azi(ixstart:ixstop,iystart:iystop,NViews)=sreal_fill_value
-
-
    allocate(output_data%cot(ixstart:ixstop,iystart:iystop))
-   output_data%cot(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cot=sint_fill_value
    allocate(output_data%cot_error(ixstart:ixstop,iystart:iystop))
-   output_data%cot_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cot_error=sint_fill_value
 
    allocate(output_data%cer(ixstart:ixstop,iystart:iystop))
-   output_data%cer(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cer=sint_fill_value
    allocate(output_data%cer_error(ixstart:ixstop,iystart:iystop))
-   output_data%cer_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cer_error=sint_fill_value
 
    allocate(output_data%ctp(ixstart:ixstop,iystart:iystop))
-   output_data%ctp(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%ctp=sint_fill_value
    allocate(output_data%ctp_error(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%ctp_error=sint_fill_value
 
    allocate(output_data%cct(ixstart:ixstop,iystart:iystop))
-   output_data%cct(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cct=sint_fill_value
    allocate(output_data%cct_error(ixstart:ixstop,iystart:iystop))
-   output_data%cct_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cct_error=sint_fill_value
 
    allocate(output_data%stemp(ixstart:ixstop,iystart:iystop))
-   output_data%stemp(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%stemp=sint_fill_value
    allocate(output_data%stemp_error(ixstart:ixstop,iystart:iystop))
-   output_data%stemp_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%stemp_error=sint_fill_value
 
 
    allocate(output_data%ctt(ixstart:ixstop,iystart:iystop))
-   output_data%ctt(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%ctt=sint_fill_value
    allocate(output_data%ctt_error(ixstart:ixstop,iystart:iystop))
-   output_data%ctt_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%ctt_error=sint_fill_value
 
    allocate(output_data%cth(ixstart:ixstop,iystart:iystop))
-   output_data%cth(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cth=sint_fill_value
    allocate(output_data%cth_error(ixstart:ixstop,iystart:iystop))
-   output_data%cth_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cth_error=sint_fill_value
 
    allocate(output_data%cth_corrected(ixstart:ixstop,iystart:iystop))
-   output_data%cth_corrected(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cth_corrected=sint_fill_value
    allocate(output_data%cth_corrected_error(ixstart:ixstop,iystart:iystop))
-   output_data%cth_corrected_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cth_corrected_error=sint_fill_value
 
    allocate(output_data%cwp(ixstart:ixstop,iystart:iystop))
-   output_data%cwp(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cwp=sint_fill_value
    allocate(output_data%cwp_error(ixstart:ixstop,iystart:iystop))
-   output_data%cwp_error(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cwp_error=sint_fill_value
+
 
    allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
    output_data%cloud_albedo=sint_fill_value
    allocate(output_data%cloud_albedo_error(ixstart:ixstop,iystart:iystop,Ny))
    output_data%cloud_albedo_error=sint_fill_value
 
+   allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
+   output_data%cccot_pre=sint_fill_value
+
+
+   allocate(output_data%time(ixstart:ixstop,iystart:iystop))
+   output_data%time=sreal_fill_value
+
+
+   allocate(output_data%lat(ixstart:ixstop,iystart:iystop))
+   output_data%lat=sreal_fill_value
+
+   allocate(output_data%lon(ixstart:ixstop,iystart:iystop))
+   output_data%lon=sreal_fill_value
+
+
+   allocate(output_data%sol_zen(ixstart:ixstop,iystart:iystop,NViews))
+   output_data%sol_zen=sreal_fill_value
+
+   allocate(output_data%sat_zen(ixstart:ixstop,iystart:iystop,NViews))
+   output_data%sat_zen=sreal_fill_value
+
+   allocate(output_data%rel_azi(ixstart:ixstop,iystart:iystop,NViews))
+   output_data%rel_azi=sreal_fill_value
+
 
    allocate(output_data%convergence(ixstart:ixstop,iystart:iystop))
-   output_data%convergence(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%convergence=byte_fill_value
 
    allocate(output_data%niter(ixstart:ixstop,iystart:iystop))
-   output_data%niter(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%niter=byte_fill_value
 
    allocate(output_data%costja(ixstart:ixstop,iystart:iystop))
-   output_data%costja(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%costja=sint_fill_value
 
    allocate(output_data%costjm(ixstart:ixstop,iystart:iystop))
-   output_data%costjm(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%costjm=sint_fill_value
 
    allocate(output_data%qcflag(ixstart:ixstop,iystart:iystop))
-   output_data%qcflag(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%qcflag=sint_fill_value
 
 
    allocate(output_data%lsflag(ixstart:ixstop,iystart:iystop))
-   output_data%lsflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%lsflag=byte_fill_value
 
    allocate(output_data%lusflag(ixstart:ixstop,iystart:iystop))
-   output_data%lusflag(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%lusflag=byte_fill_value
 
    allocate(output_data%dem(ixstart:ixstop,iystart:iystop))
-   output_data%dem(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%dem=sint_fill_value
 
    allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
-   output_data%nisemask(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%nisemask=byte_fill_value
 
 
    allocate(output_data%illum(ixstart:ixstop,iystart:iystop))
-   output_data%illum(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%illum=byte_fill_value
 
 
    allocate(output_data%cldtype(ixstart:ixstop,iystart:iystop))
-   output_data%cldtype(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%cldtype=byte_fill_value
 
    allocate(output_data%cldmask(ixstart:ixstop,iystart:iystop))
-   output_data%cldmask(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%cldmask=byte_fill_value
 if (do_cldmask_uncertainty) then
    allocate(output_data%cldmask_uncertainty(ixstart:ixstop,iystart:iystop))
-   output_data%cldmask_uncertainty(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%cldmask_uncertainty=sint_fill_value
 end if
-   allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
-   output_data%cccot_pre(ixstart:ixstop,iystart:iystop)=sint_fill_value
-
 
    allocate(output_data%phase(ixstart:ixstop,iystart:iystop))
-   output_data%phase(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%phase=byte_fill_value
+
 if (do_phase_pavolonis) then
    allocate(output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop))
-   output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop)=byte_fill_value
+   output_data%phase_pavolonis=byte_fill_value
 end if
 
 end subroutine alloc_output_data_primary
@@ -255,20 +256,28 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx,
    type(output_data_secondary), intent(inout) :: output_data
    logical,                     intent(in)    :: do_covariance
 
+   allocate(output_data%cot_ap(ixstart:ixstop,iystart:iystop))
+   output_data%cot_ap=sint_fill_value
+   allocate(output_data%cot_fg(ixstart:ixstop,iystart:iystop))
+   output_data%cot_fg=sint_fill_value
+
+   allocate(output_data%cer_ap(ixstart:ixstop,iystart:iystop))
+   output_data%cer_ap=sint_fill_value
+   allocate(output_data%cer_fg(ixstart:ixstop,iystart:iystop))
+   output_data%cer_fg=sint_fill_value
+
+   allocate(output_data%ctp_ap(ixstart:ixstop,iystart:iystop))
+   output_data%ctp_ap=sint_fill_value
+   allocate(output_data%ctp_fg(ixstart:ixstop,iystart:iystop))
+   output_data%ctp_fg=sint_fill_value
+
+   allocate(output_data%stemp_ap(ixstart:ixstop,iystart:iystop))
+   output_data%stemp_ap=sint_fill_value
+   allocate(output_data%stemp_fg(ixstart:ixstop,iystart:iystop))
+   output_data%stemp_fg=sint_fill_value
 
    allocate(output_data%vid_albedo(Ny))
    output_data%vid_albedo=0
-
-   allocate(output_data%vid_channels(Ny))
-   output_data%vid_channels=0
-
-   allocate(output_data%vid_y0(Ny))
-   output_data%vid_y0=0
-
-   allocate(output_data%vid_residuals(Ny))
-   output_data%vid_residuals=0
-
-
    allocate(output_data%albedo_scale(Ny))
    output_data%albedo_scale=sreal_fill_value
    allocate(output_data%albedo_offset(Ny))
@@ -277,7 +286,11 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx,
    output_data%albedo_vmin=sint_fill_value
    allocate(output_data%albedo_vmax(Ny))
    output_data%albedo_vmax=sint_fill_value
+   allocate(output_data%albedo(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%albedo=sint_fill_value
 
+   allocate(output_data%vid_channels(Ny))
+   output_data%vid_channels=0
    allocate(output_data%channels_scale(Ny))
    output_data%channels_scale=sreal_fill_value
    allocate(output_data%channels_offset(Ny))
@@ -286,7 +299,11 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx,
    output_data%channels_vmin=sint_fill_value
    allocate(output_data%channels_vmax(Ny))
    output_data%channels_vmax=sint_fill_value
+   allocate(output_data%channels(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%channels=sint_fill_value
 
+   allocate(output_data%vid_y0(Ny))
+   output_data%vid_y0=0
    allocate(output_data%y0_scale(Ny))
    output_data%y0_scale=sreal_fill_value
    allocate(output_data%y0_offset(Ny))
@@ -295,7 +312,11 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx,
    output_data%y0_vmin=sint_fill_value
    allocate(output_data%y0_vmax(Ny))
    output_data%y0_vmax=sint_fill_value
+   allocate(output_data%y0(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%y0=sint_fill_value
 
+   allocate(output_data%vid_residuals(Ny))
+   output_data%vid_residuals=0
    allocate(output_data%residuals_scale(Ny))
    output_data%residuals_scale=sreal_fill_value
    allocate(output_data%residuals_offset(Ny))
@@ -304,57 +325,27 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx,
    output_data%residuals_vmin=sint_fill_value
    allocate(output_data%residuals_vmax(Ny))
    output_data%residuals_vmax=sint_fill_value
-
-
-   allocate(output_data%scanline_u(ixstart:ixstop,iystart:iystop))
-   output_data%scanline_u(ixstart:ixstop,iystart:iystop)=lint_fill_value
-
-   allocate(output_data%scanline_v(ixstart:ixstop,iystart:iystop))
-   output_data%scanline_v(ixstart:ixstop,iystart:iystop)=lint_fill_value
-
-
-   allocate(output_data%cot_ap(ixstart:ixstop,iystart:iystop))
-   output_data%cot_ap(ixstart:ixstop,iystart:iystop)=sint_fill_value
-   allocate(output_data%cot_fg(ixstart:ixstop,iystart:iystop))
-   output_data%cot_fg(ixstart:ixstop,iystart:iystop)=sint_fill_value
-
-   allocate(output_data%cer_ap(ixstart:ixstop,iystart:iystop))
-   output_data%cer_ap(ixstart:ixstop,iystart:iystop)=sint_fill_value
-   allocate(output_data%cer_fg(ixstart:ixstop,iystart:iystop))
-   output_data%cer_fg(ixstart:ixstop,iystart:iystop)=sint_fill_value
-
-   allocate(output_data%ctp_ap(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_ap(ixstart:ixstop,iystart:iystop)=sint_fill_value
-   allocate(output_data%ctp_fg(ixstart:ixstop,iystart:iystop))
-   output_data%ctp_fg(ixstart:ixstop,iystart:iystop)=sint_fill_value
-
-   allocate(output_data%stemp_ap(ixstart:ixstop,iystart:iystop))
-   output_data%stemp_ap(ixstart:ixstop,iystart:iystop)=sint_fill_value
-   allocate(output_data%stemp_fg(ixstart:ixstop,iystart:iystop))
-   output_data%stemp_fg(ixstart:ixstop,iystart:iystop)=sint_fill_value
-
-
-   allocate(output_data%albedo(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%albedo=sint_fill_value
-
-   allocate(output_data%channels(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%channels=sint_fill_value
-
-   allocate(output_data%y0(ixstart:ixstop,iystart:iystop,Ny))
-   output_data%y0=sint_fill_value
-
    allocate(output_data%residuals(ixstart:ixstop,iystart:iystop,Ny))
    output_data%residuals=sint_fill_value
 
+
+   allocate(output_data%scanline_u(ixstart:ixstop,iystart:iystop))
+   output_data%scanline_u=lint_fill_value
+   allocate(output_data%scanline_v(ixstart:ixstop,iystart:iystop))
+   output_data%scanline_v=lint_fill_value
+
+
    allocate(output_data%ds(ixstart:ixstop,iystart:iystop))
-   output_data%ds(ixstart:ixstop,iystart:iystop)=sint_fill_value
+   output_data%ds=sint_fill_value
 
-   if (do_covariance) then
-      allocate(output_data%vid_covariance(Nx,Nx))
-      output_data%vid_covariance=0
+if (do_covariance) then
+   allocate(output_data%vid_covariance(Nx,Nx))
+   output_data%vid_covariance=0
 
-      allocate(output_data%covariance(ixstart:ixstop,iystart:iystop,Nx,Nx))
-      output_data%covariance=sreal_fill_value
-   end if
+   allocate(output_data%covariance(ixstart:ixstop,iystart:iystop,Nx,Nx))
+   output_data%covariance=sreal_fill_value
+end if
+
+
 
 end subroutine alloc_output_data_secondary

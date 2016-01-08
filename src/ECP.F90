@@ -336,15 +336,17 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Make read in rttov data in one go, no more segment reads
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
-      call read_input_dimensions_lwrtm(Ctrl%Fid%LWRTM, RTM%LW%Grid%NLon, &
+      call read_input_dimensions_lwrtm(Ctrl%FID%LWRTM, RTM%LW%Grid%NLon, &
            RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NLWF, Ctrl%verbose)
 
-      call read_input_dimensions_swrtm(Ctrl%Fid%SWRTM, RTM%SW%Grid%NLon, &
+      call read_input_dimensions_swrtm(Ctrl%FID%SWRTM, RTM%SW%Grid%NLon, &
            RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, Ctrl%verbose)
 
       call Read_PRTM_nc( Ctrl, RTM)
-      call Read_LwRTM_nc(Ctrl, RTM) !ACP: Put if NThermal > 0 ?
-      call Read_SwRTM_nc(Ctrl, RTM) !ACP: Put if NSolar > 0 ?
+      if (Ctrl%Ind%NThermal > 0) &
+           call Read_LwRTM_nc(Ctrl, RTM)
+      if (Ctrl%Ind%NSolar > 0) &
+           call Read_SwRTM_nc(Ctrl, RTM)
    end if
 
 

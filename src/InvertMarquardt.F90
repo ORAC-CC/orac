@@ -288,7 +288,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    Diag%Ss   = 0.
    SPixel%Sn = 0.
 
-   huge_value = huge(1.0)/Ctrl%InvPar%MqStep
+   huge_value = huge(1.0)/Ctrl%Invpar%MqStep
 
    ! Set state variable limits
    call Set_Limits(Ctrl, SPixel, stat)
@@ -502,7 +502,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
          ! Check for convergence.
          if (abs(delta_J) <= Ccj_Ny) then
-            if (Ctrl%InvPar%ConvTest) then
+            if (Ctrl%Invpar%ConvTest) then
                ! Use CP/RS convergence test and perform Gauss-Newton iteration
                alpha = 0.
             else
@@ -521,7 +521,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
          ! Increase steepest descent part for next iteration.
          ! "if" inserted to catch (academic?) case of overflow if alpha gets huge
-         if (alpha .lt. huge_value) alpha = alpha * Ctrl%InvPar%MqStep
+         if (alpha .lt. huge_value) alpha = alpha * Ctrl%Invpar%MqStep
       end if
 
       ! Main iteration loop breakpoint outputs. The file is opened and closed
@@ -663,17 +663,18 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       call Allocate_GZero(GZero, SPixel)
 
       call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
-         GZero, stat)
+           GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       call Int_LUT_TauSolRe(SAD_LUT%Rfbd, SPixel%Ind%NSolar, SAD_LUT%Grid, &
-         GZero, Ctrl, CRP, d_CRP, IRfbd, SPixel%spixel_y_solar_to_ctrl_y_index, &
-         SPixel%Ind%YSolar, stat)
+           GZero, Ctrl, CRP, d_CRP, IRfbd, &
+           SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
       Diag%cloud_albedo(1:SPixel%Ind%NSolar) = CRP
 
-      temp = matmul(matmul(d_CRP, SPixel%Sn((/ITau,IRe/), (/ITau,IRe/))), transpose(d_CRP))
+      temp = matmul(matmul(d_CRP, SPixel%Sn((/ITau,IRe/), (/ITau,IRe/))), &
+                    transpose(d_CRP))
       do m = 1, SPixel%Ind%NSolar
          Diag%cloud_albedo_s(m) = temp(m, m)
       end do
