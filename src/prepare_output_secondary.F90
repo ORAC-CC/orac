@@ -38,6 +38,8 @@
 !    signal for non-retrieved pixels.
 ! 2015/09/14, GM: Change output cot_ap and cot_fg from log10 space to linear
 !    space.
+! 2015/01/07, AP: Check for valid AK values relied on short-circuiting, which
+!    isn't standard Fortran.
 !
 ! $Id$
 !
@@ -218,8 +220,9 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! ds
    !----------------------------------------------------------------------------
-   if (SPixel%Nx .eq. 0 .or. &
-       any(Diag%AK(SPixel%X, SPixel%X) .eq. MissingXn)) then
+   if (SPixel%Nx .eq. 0) then
+      dummyreal = sreal_fill_value
+   else if (any(Diag%AK(SPixel%X, SPixel%X) .eq. MissingXn)) then
       dummyreal = sreal_fill_value
    else
       dummyreal = 0.0
