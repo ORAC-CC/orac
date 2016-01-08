@@ -95,6 +95,8 @@
 ! Bugs:
 ! The DOY calculation does not account for leap years. This produces fractional
 ! errors in f0 < 6e-4, which is of a similar order to the equation's accuracy.
+! Also, older codes deduced DOY from the end of the orbit whilst this is now
+! derived from the beginning, introducing a slight difference.
 !-------------------------------------------------------------------------------
 
 subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
@@ -122,8 +124,8 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
    character(len=12) :: prod_date
 
    ! Open MSI file
-   if (Ctrl%verbose) write(*,*) 'Imagery file: ', trim(Ctrl%Fid%MSI)
-   call nc_open(ncid, Ctrl%Fid%MSI)
+   if (Ctrl%verbose) write(*,*) 'Imagery file: ', trim(Ctrl%FID%MSI)
+   call nc_open(ncid, Ctrl%FID%MSI)
 
    ! Read product date and time from netcdf global attributes
    if (nf90_get_att(ncid, NF90_GLOBAL, "Date_Created", prod_date) == &

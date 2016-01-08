@@ -258,7 +258,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
      channel_lw_flag, channel_wvl, global_atts, source_atts)
 
    ! Read dimensions of preprocessing swath files
-   call read_input_dimensions_msi(Ctrl%Fid%MSI, Ctrl%FID%Geo, &
+   call read_input_dimensions_msi(Ctrl%FID%MSI, Ctrl%FID%Geo, &
       Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, Ctrl%verbose)
 
    ! Read processing flag from driver
@@ -419,11 +419,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%EqMPN%Coreg  = switch(a, Default=.true.,  Aer=.false.)
 
    !----------------------- CTRL%Invpar -------------------
-   Ctrl%Invpar%ConvTest = switch(a, Default=.false., Aer=.true.)
-   Ctrl%Invpar%MqStart  = switch(a, Default=0.001)
-   Ctrl%Invpar%MqStep   = switch(a, Default=10.0)
-   Ctrl%Invpar%MaxIter  = switch(a, Default=40,      Aer=25)
-   Ctrl%Invpar%Ccj      = switch(a, Default=0.05,    AerSw=0.001)
+   Ctrl%Invpar%ConvTest           = switch(a, Default=.false., Aer=.true.)
+   Ctrl%Invpar%MqStart            = switch(a, Default=0.001)
+   Ctrl%Invpar%MqStep             = switch(a, Default=10.0)
+   Ctrl%Invpar%MaxIter            = switch(a, Default=40,      Aer=25)
+   Ctrl%Invpar%Ccj                = switch(a, Default=0.05,    AerSw=0.001)
 
    ! Scale used to avoid pivots in matrix inversion. Terms that a mode shouldn't
    ! touch are zeroed to
@@ -492,9 +492,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
    !----------------------- CTRL SWITCHES -----------------
-   Ctrl%LUTIntSelm = switch(a, Default=LUTIntMethLinear)
-   Ctrl%RTMIntSelm = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
-   Ctrl%CloudType  = switch(a, Default=1,                Aer=2)
+   Ctrl%LUTIntSelm      = switch(a, Default=LUTIntMethLinear)
+   Ctrl%RTMIntSelm      = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
+   Ctrl%CloudType       = switch(a, Default=1,                Aer=2)
    Ctrl%Bkpl                = 3
    Ctrl%Max_SDAD            = 10.0
    Ctrl%sabotage_inputs     = .false.

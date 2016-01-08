@@ -89,8 +89,8 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
    real(kind=sreal),   allocatable, dimension(:,:,:) :: cor_temp
 
    ! Open ALB file
-   if (Ctrl%verbose) write(*,*) 'Albedo file: ', trim(Ctrl%Fid%Alb)
-   call nc_open(ncid, Ctrl%Fid%Alb)
+   if (Ctrl%verbose) write(*,*) 'Albedo file: ', trim(Ctrl%FID%Alb)
+   call nc_open(ncid, Ctrl%FID%Alb)
 
    ! Read instrument channel indices from file
    NAlb = nc_dim_length(ncid, 'nc_alb', Ctrl%verbose)
@@ -132,7 +132,7 @@ subroutine Read_ALB_nc(Ctrl, MSI_Data)
 
 
    ! Correlations for aerosol retrieval
-   if (Ctrl%Rs%SRsSelm == SelmAux) then
+   if (Ctrl%RS%SRsSelm == SelmAux) then
       ! Read surface reflectance uncertainties
       allocate(MSI_Data%rho_dd_unc(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax, Ctrl%Ind%NSolar))
       call nc_read_array(ncid, "rho_dd_err", MSI_Data%rho_dd_unc, Ctrl%verbose, 3, subs)

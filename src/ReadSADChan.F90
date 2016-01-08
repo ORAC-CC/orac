@@ -207,8 +207,6 @@ subroutine Read_SAD_Chan(Ctrl, SAD_Chan)
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%NedR
          SAD_Chan(i)%Solar%NedR = SAD_Chan(i)%Solar%NedR / SAD_Chan(i)%Solar%F0
          SAD_Chan(i)%Solar%NedR = SAD_Chan(i)%Solar%NedR * SAD_Chan(i)%Solar%NedR
-         ! ACP: Aerosol code has SAD_Chan(i)%Solar%NedR = &
-         !         SAD_Chan(i)%Solar%NedR / (Ctrl%Ind%XRes*Ctrl%Ind%YRes)
 
          ! Convert Rs from a percentage to a fraction
          read(c_lun, *, err=999, iostat=ios) SAD_Chan(i)%Solar%Rs

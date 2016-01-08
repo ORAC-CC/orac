@@ -64,8 +64,8 @@ subroutine Read_Location_nc(Ctrl, MSI_Data)
    integer :: ncid
 
    ! Open location file
-   if (Ctrl%verbose) write(*,*) 'Location file: ', trim(Ctrl%Fid%Loc)
-   call nc_open(ncid, Ctrl%Fid%Loc)
+   if (Ctrl%verbose) write(*,*) 'Location file: ', trim(Ctrl%FID%Loc)
+   call nc_open(ncid, Ctrl%FID%Loc)
 
    allocate(MSI_Data%Location%Lat(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))
    allocate(MSI_Data%Location%Lon(Ctrl%Ind%Xmax, Ctrl%Ind%Ymax))

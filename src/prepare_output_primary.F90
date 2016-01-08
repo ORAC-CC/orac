@@ -87,7 +87,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
 
    integer            :: k, kk
    integer(kind=sint) :: temp_short_ctp_error
-   real(kind=sreal)   :: temp_real, temp_real_cot, temp_real_ctp_error
+   real(kind=sreal)   :: temp_real, temp_real_ot, temp_real_ctp_error
 
 
    !----------------------------------------------------------------------------
@@ -115,12 +115,12 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    ! cot, cot_error
    !----------------------------------------------------------------------------
    if (SPixel%Xn(ITau) .eq. MissingXn) then
-      temp_real_cot = sreal_fill_value
+      temp_real_ot = sreal_fill_value
    else
-      temp_real_cot = 10.0**SPixel%Xn(ITau)
+      temp_real_ot = 10.0**SPixel%Xn(ITau)
    end if
    call prepare_short_packed_float( &
-           temp_real_cot, output_data%cot(i,j), &
+           temp_real_ot, output_data%cot(i,j), &
            output_data%cot_scale, output_data%cot_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%cot_vmin, output_data%cot_vmax, &
@@ -129,7 +129,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    if (SPixel%Sn(ITau,ITau) .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
-      temp_real = sqrt(SPixel%Sn(ITau,ITau)) * temp_real_cot * alog(10.0)
+      temp_real = sqrt(SPixel%Sn(ITau,ITau)) * temp_real_ot * alog(10.0)
    end if
    call prepare_short_packed_float( &
            temp_real, output_data%cot_error(i,j), &
@@ -396,6 +396,17 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    end do
 
    !----------------------------------------------------------------------------
+   ! cccot_pre
+   !----------------------------------------------------------------------------
+   temp_real=MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%Y0)
+   call prepare_short_packed_float( &
+           temp_real, output_data%cccot_pre(i,j), &
+           output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
+           sint_fill_value)
+
+   !----------------------------------------------------------------------------
    ! convergence, niter
    !----------------------------------------------------------------------------
    if (Diag%Converged .eq. byte_fill_value) then
@@ -494,17 +505,6 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            output_data%cldmask_uncertainty_scale, output_data%cldmask_uncertainty_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%cldmask_uncertainty_vmin, output_data%cldmask_uncertainty_vmax, &
-           sint_fill_value)
-
-   !----------------------------------------------------------------------------
-   ! cccot_pre
-   !----------------------------------------------------------------------------
-   temp_real=MSI_Data%cccot_pre(SPixel%Loc%X0, SPixel%Loc%Y0)
-   call prepare_short_packed_float( &
-           temp_real, output_data%cccot_pre(i,j), &
-           output_data%cccot_pre_scale, output_data%cccot_pre_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
            sint_fill_value)
 
    !----------------------------------------------------------------------------
