@@ -352,7 +352,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          if (Ctrl%Ind%WvlIdx(ii) == i_wvl) then
             nch      = nch+1
             i_s(nch) = i
-            i_c(nch) = ii
+            i_c(nch) = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
          end if
       end do
       if (nch == 0) cycle
