@@ -206,13 +206,9 @@ ORAC_OBJ = $(OBJS)/Cholesky.o \
            $(OBJS)/Data.o \
            $(OBJS)/Diag.o \
            $(OBJS)/ECPConstants.o \
-           $(OBJS)/extrap_into_tropopause.o \
-           $(OBJS)/blmodification.o \
            $(OBJS)/FindLUN.o \
            $(OBJS)/FMRoutines.o \
            $(OBJS)/GZero.o \
-           $(OBJS)/hpsort.o \
-           $(OBJS)/interpolate_to_ctp.o \
            $(OBJS)/IntRoutines.o \
            $(OBJS)/InterpolRoutines.o \
            $(OBJS)/IntLUTRoutines.o \

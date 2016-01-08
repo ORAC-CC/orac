@@ -94,16 +94,15 @@
 ! 2015/01/12, AP: Replace use of ThermalFirst.
 ! 2015/01/22, AP: Bug fix in the last commit.
 ! 2015/02/06, AP: Switch to Int_CTP rather than interpolate2ctp.
-! 2105/07/27, AP: Removed consideration of cloud fraction. Now always returns
+! 2015/07/27, AP: Removed consideration of cloud fraction. Now always returns
 !     values for an overcast pixel (consistent with the preprocessor).
+! 2016/01/08, AP: Removed old CTP interpolation entirely.
 !
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-
-#define CTP_LEGACY_MODE .false.
 
 subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
 
@@ -130,12 +129,6 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
                                   1.7, 2.0, 2.4] ! First guess optical depth
    real            :: Ref_o
    integer         :: iFGOP
-   real            :: BT_o(1)
-   real            :: Rad(1)
-   real            :: Rad_o(1)
-   real            :: dR_dT(1)
-   real            :: dT_dR(1)
-   integer         :: MDAD_LW_to_ctrl_y, MDAD_LW_to_ctrl_ythermal
 
    status = 0
 
@@ -172,44 +165,6 @@ subroutine X_MDAD(Ctrl, SAD_Chan, SPixel, index, X, status, Err)
    case (IPc) ! Cloud pressure, Pc
 
       if (SPixel%Ind%MDAD_LW > 0) then
-if (CTP_LEGACY_MODE) then
-         ! Ctrl%Ind%MDAD_LW indexes the desired channel wrt Ctrl%Ind%ICh
-         ! Find the corresponding index wrt Ctrl%Ind%YThermal
-         MDAD_LW_to_ctrl_y = SPixel%spixel_y_to_ctrl_y_index(SPixel%Ind%MDAD_LW)
-         MDAD_LW_to_ctrl_ythermal = find_in_array(Ctrl%Ind%YThermal, &
-                                                  MDAD_LW_to_ctrl_y)
-
-         ! Convert observed brightness temperature to radiance
-         ! Uses channel nearest 11 microns, index Ctrl%Ind%MDAD_LW in SAD_Chan,
-         ! but SPixel%Ind%MDAD_LW in the measurement array.
-         call T2R(1, SAD_Chan(MDAD_LW_to_ctrl_y:MDAD_LW_to_ctrl_y), &
-                  SPixel%Ym(SPixel%Ind%MDAD_LW:SPixel%Ind%MDAD_LW), &
-                  Rad, dR_dT, status)
-
-         ! Calculate overcast radiance from observed radiance and cloud
-         ! fraction. Note MDAD_LW must be offset for use with R_Clear since
-         ! R_Clear stores thermal channels only.
-         Rad_o = Rad(1) - SPixel%RTM%LW%R_clear(MDAD_LW_to_ctrl_ythermal)
-
-         ! Exclude negative Rad_o (can arise due to approximation in the RTM)
-         if (Rad_o(1) >= 0.0) then
-            ! Convert overcast radiance back to brightness temperature
-            call R2T(1, SAD_Chan(MDAD_LW_to_ctrl_y:MDAD_LW_to_ctrl_y), Rad_o, &
-                     BT_o, dT_dR, status)
-
-            ! Interpolate for the BT to the rad. profile to get Pc FG/AP
-            call interpolate2ctp(SPixel,Ctrl,BT_o,X,Err)
-         else
-            ! If no interpolation possible set BP_o and DBP_o to hardcoded
-            ! values to recover:
-            X = Ctrl%X0(iPc)
-
-            !FG does not need Error but AP does
-            if (present(Err)) Err = MDADErrPc
-            write(*,*)'ERROR: X_MDAD(): FG does not need Error but AP does'
-            status = XMDADMeth
-         end if
-else
          if (SPixel%Ym(SPixel%Ind%MDAD_LW) /= MissingXn) then
             ! Interpolate for the BT to the rad. profile to get Pc FG/AP
             call Int_CTP(SPixel, Ctrl, SPixel%Ym(SPixel%Ind%MDAD_LW), X, status)
@@ -218,7 +173,6 @@ else
             status = XMDADMeth
             write(*,*) 'WARNING: X_MDAD(): Invalid thermal data'
          end if
-end if
       else ! Can't calculate Pc if required LW channels not selected
          status = XMDADMeth
 !         write(*,*) 'WARNING: X_MDAD(): Cant calculate Pc if required LW channels not selected'

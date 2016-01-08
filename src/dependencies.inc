@@ -9,18 +9,14 @@ $(OBJS)/Data.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         sabotage_inputs.F90
 $(OBJS)/Diag.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         $(OBJS)/SPixel.o SetDiag.F90 ZeroDiag.F90
-$(OBJS)/extrap_into_tropopause.o: $(OBJS)/SPixel.o
-$(OBJS)/blmodification.o: $(OBJS)/SPixel.o
 $(OBJS)/FMRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/GZero.o \
         $(OBJS)/IntLUTRoutines.o $(OBJS)/InterpolRoutines.o $(OBJS)/RTM_Pc.o \
         $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o $(OBJS)/planck.o \
         FM.F90 FMSolar.F90 FMThermal.F90 SetCRPSolar.F90 SetCRPThermal.F90
 $(OBJS)/GZero.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         $(OBJS)/SADLUT.o $(OBJS)/SPixel.o SetGZero.F90
-$(OBJS)/interpolate_to_ctp.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
-        $(OBJS)/IntRoutines.o $(OBJS)/SPixel.o
 $(OBJS)/IntRoutines.o: $(OBJS)/ECPConstants.o Bcucof.F90 Bcuint.F90 Linint.F90 \
-        Locate.F90 Spline.F90 Tridag.F90 find_in_array.inc polint.F90
+        Locate.F90 Spline.F90 Tridag.F90 find_in_array.inc
 $(OBJS)/InterpolRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/ECPConstants.o \
         $(OBJS)/IntRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
         $(OBJS)/SPixel.o $(OBJS)/planck.o InterpolSolar.F90 \
@@ -31,10 +27,10 @@ $(OBJS)/IntLUTRoutines.o: $(OBJS)/Ctrl.o $(OBJS)/GZero.o $(OBJS)/IntRoutines.o \
         Interp3dLUT.F90
 $(OBJS)/Inversion.o: $(OBJS)/Cholesky.o $(OBJS)/Ctrl.o $(OBJS)/Diag.o \
         $(OBJS)/ECPConstants.o $(OBJS)/FMRoutines.o $(OBJS)/GZero.o \
-        $(OBJS)/IntLUTRoutines.o $(OBJS)/RTM_Pc.o $(OBJS)/SADChan.o \
-        $(OBJS)/SADLUT.o $(OBJS)/SPixel.o $(OBJS)/planck.o CalcCWP.F90 \
-        CalcCorrectedCTX.F90 CheckLimits.F90 InvertMarquardt.F90 SetKx.F90 \
-        SetLimits.F90 SetSy.F90
+        $(OBJS)/IntLUTRoutines.o $(OBJS)/IntRoutines.o $(OBJS)/RTM_Pc.o \
+        $(OBJS)/SADChan.o $(OBJS)/SADLUT.o $(OBJS)/SPixel.o $(OBJS)/planck.o \
+        CalcCWP.F90 CalcCorrectedCTX.F90 CheckLimits.F90 InvertMarquardt.F90 \
+        SetKx.F90 SetLimits.F90 SetSy.F90
 $(OBJS)/parse_user.o: $(OBJS)/ECPConstants.o $(OBJS)/IntRoutines.o \
         parse_user_text.inc
 $(OBJS)/planck.o: $(OBJS)/ECPConstants.o $(OBJS)/SADChan.o R2T.F90 T2R.F90

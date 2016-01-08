@@ -33,7 +33,6 @@ contains
 #include "Locate.F90"
 #include "Spline.F90"
 #include "Tridag.F90"
-#include "polint.F90"
 
 
 !---------------------------------------------------------------------
