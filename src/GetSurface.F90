@@ -117,6 +117,9 @@
 ! 2015/08/19, AP: Extensive overhaul: Uncertainties and correlations can now be
 !    drawn from auxiliary files; The XIndex array maps elements of the state
 !    vector onto the Rs array.
+! 2015/01/06, AP: Fix a minor channel indexing bug when searching for solar chs.
+!    As aerosol preprocessing does not calculate Rho_DV, remove check for its
+!    validity. Add check for missing values in auxiliary uncertainties.
 !
 ! $Id$
 !
@@ -284,7 +287,15 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                correl(:,j) = MSI_Data%rho_dd_cor(SPixel%Loc%X0, &
                     SPixel%Loc%Y0, SPixel%Ind%YSolar, SPixel%Ind%YSolar(j))
             end do
-            ! ACP: Add check for missing data.
+
+            if (uncertainty2(i,IRho_DD) < RhoErrMin .or. &
+                uncertainty2(i,IRho_DD) > RhoErrMax .or. &
+                any(correl < CorrMin) .or. any(correl > CorrMax)) then
+               write(*,*) 'WARNING: Get_Surface(): Invalid surface uncertainty '// &
+                    'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
+               status = SPixelSurfErr
+               return
+            end if
 
             ! Use vegetation and snow indexes to assign surface variablity unc.
             ! See http://eodg.atm.ox.ac.uk/eodg/mphys_reports/2009_Ward.pdf

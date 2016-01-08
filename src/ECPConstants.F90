@@ -134,6 +134,10 @@ module ECP_constants
    real, parameter    :: BTMax            =  350.0
    real, parameter    :: RhoMin           =  0.0    ! BRDF parameters
    real, parameter    :: RhoMax           =  1.0
+   real, parameter    :: RhoErrMin        =  0.0    ! BRDF uncertainties
+   real, parameter    :: RhoErrMax        =  1.0
+   real, parameter    :: CorrMin          = -1.0
+   real, parameter    :: CorrMax          =  1.0
 
    real, parameter    :: TxcMin           = 0.0
    real, parameter    :: TxcMax           = 1.5
@@ -369,9 +373,10 @@ module ECP_constants
    integer, parameter :: SPixelGeomSol              = 1150
    integer, parameter :: SPixelGeomSat              = 1151
    integer, parameter :: SPixelGeomRel              = 1152
+   integer, parameter :: SPixelSurfglint            = 1153
    integer, parameter :: SPixelLocLat               = 1154
    integer, parameter :: SPixelLocLon               = 1155
-   integer, parameter :: SPixelSurfglint            = 1153
+   integer, parameter :: SPixelSurfErr              = 1156
    integer, parameter :: BkpFileOpenErr             = 1160
    integer, parameter :: GetRTMLwMaxLat             = 1170
    integer, parameter :: GetRTMLwMinLat             = 1171
