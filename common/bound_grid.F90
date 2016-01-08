@@ -48,13 +48,13 @@ subroutine bound_regular_grid(start, invdel, n, out, below, above, frac, wrap)
    real(8),     intent(in)  :: start  ! first point on grid
    real(8),     intent(in)  :: invdel ! 1 / grid division
    integer,     intent(in)  :: n      ! length of grid
-   real(sreal), intent(in)  :: out    ! desired point
+   real,        intent(in)  :: out    ! desired point
    integer,     intent(out) :: below  ! grid reference just below out
    integer,     intent(out) :: above  ! grid reference just above out
-   real(sreal), intent(out) :: frac   ! fraction of cell covered by out
+   real,        intent(out) :: frac   ! fraction of cell covered by out
    logical,     intent(in)  :: wrap
 
-   real(sreal)              :: tmp
+   real                     :: tmp
    logical                  :: bottom
 
    ! index of grid point below desired location
@@ -107,12 +107,12 @@ end subroutine bound_regular_grid
 subroutine bound_irregular_grid(grid, n, out, below, above, frac, wrap)
    implicit none
 
-   real(sreal), intent(in)  :: grid(:)  ! grid values
+   real,        intent(in)  :: grid(:)  ! grid values
    integer,     intent(in)  :: n        ! length of grid
-   real(sreal), intent(in)  :: out      ! desired point
+   real,        intent(in)  :: out      ! desired point
    integer,     intent(out) :: below    ! grid reference just below out
    integer,     intent(out) :: above    ! grid reference just above out
-   real(sreal), intent(out) :: frac     ! fraction of cell covered by out
+   real,        intent(out) :: frac     ! fraction of cell covered by out
    logical,     intent(in)  :: wrap
 
    integer                  :: mode, old, i

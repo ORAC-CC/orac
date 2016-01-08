@@ -37,7 +37,7 @@ module interpol
 
    type interpol_s
       integer     :: x0, x1, y0, y1
-      real(sreal) :: t, u
+      real        :: t, u
    end type interpol_s
 
    interface bilinear_coef
@@ -66,7 +66,7 @@ subroutine bilinear_coef_reg_reg(xstart, x_invdel, nx, ystart, y_invdel, ny, &
    real(8),          intent(in)  :: xstart, x_invdel
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
@@ -82,9 +82,9 @@ subroutine bilinear_coef_reg_irr(xstart, x_invdel, nx, ygrid, ny, &
    implicit none
 
    real(8),          intent(in)  :: xstart, x_invdel
-   real(sreal),      intent(in)  :: ygrid(:)
+   real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
@@ -99,10 +99,10 @@ subroutine bilinear_coef_irr_reg(xgrid, nx, ystart, y_invdel, ny, &
      xout, yout, interp, wrap)
    implicit none
 
-   real(sreal),      intent(in)  :: xgrid(:)
+   real,             intent(in)  :: xgrid(:)
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
@@ -117,10 +117,10 @@ subroutine bilinear_coef_irr_irr(xgrid, nx, ygrid, ny, &
      xout, yout, interp, wrap)
    implicit none
 
-   real(sreal),      intent(in)  :: xgrid(:)
-   real(sreal),      intent(in)  :: ygrid(:)
+   real,             intent(in)  :: xgrid(:)
+   real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
    logical,          intent(in)  :: wrap
 
@@ -138,7 +138,7 @@ subroutine bilinear_coef_reg_reg2(xstart, x_invdel, nx, ystart, y_invdel, ny, &
    real(8),          intent(in)  :: xstart, x_invdel
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
 
    call bound_regular_grid(xstart, x_invdel, nx, xout, &
@@ -153,9 +153,9 @@ subroutine bilinear_coef_reg_irr2(xstart, x_invdel, nx, ygrid, ny, &
    implicit none
 
    real(8),          intent(in)  :: xstart, x_invdel
-   real(sreal),      intent(in)  :: ygrid(:)
+   real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
 
    call bound_regular_grid(xstart, x_invdel, nx, xout, &
@@ -169,10 +169,10 @@ subroutine bilinear_coef_irr_reg2(xgrid, nx, ystart, y_invdel, ny, &
      xout, yout, interp)
    implicit none
 
-   real(sreal),      intent(in)  :: xgrid(:)
+   real,             intent(in)  :: xgrid(:)
    real(8),          intent(in)  :: ystart, y_invdel
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
 
    call bound_irregular_grid(xgrid, nx, xout, &
@@ -186,10 +186,10 @@ subroutine bilinear_coef_irr_irr2(xgrid, nx, ygrid, ny, &
      xout, yout, interp)
    implicit none
 
-   real(sreal),      intent(in)  :: xgrid(:)
-   real(sreal),      intent(in)  :: ygrid(:)
+   real,             intent(in)  :: xgrid(:)
+   real,             intent(in)  :: ygrid(:)
    integer,          intent(in)  :: nx, ny
-   real(sreal),      intent(in)  :: xout, yout
+   real,             intent(in)  :: xout, yout
    type(interpol_s), intent(out) :: interp
 
    call bound_irregular_grid(xgrid, nx, xout, &
@@ -203,13 +203,13 @@ subroutine interp_field_0d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)    :: datin(:,:)
-   real(sreal),         intent(inout) :: datout
+   real,        target, intent(in)    :: datin(:,:)
+   real,                intent(inout) :: datout
    type(interpol_s),    intent(in)    :: interp
 
    logical     :: miss(4)
-   real(sreal) :: coef(3)
-   real(sreal) :: bot_left, bot_rght, top_left, top_rght
+   real        :: coef(3)
+   real        :: bot_left, bot_rght, top_left, top_rght
 
    ! decide that interpolation to do dependent on the missing values
    miss = [datin(interp%x0, interp%y0) == sreal_fill_value, &
@@ -230,13 +230,13 @@ subroutine interp_field_1d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)    :: datin(:,:,:)
-   real(sreal),         intent(inout) :: datout(:)
+   real,        target, intent(in)    :: datin(:,:,:)
+   real,                intent(inout) :: datout(:)
    type(interpol_s),    intent(in)    :: interp
 
    logical                            :: miss(4)
-   real(sreal)                        :: coef(3)
-   real(sreal), pointer, dimension(:) :: bot_left, bot_rght, top_left, top_rght
+   real                               :: coef(3)
+   real,        pointer, dimension(:) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide interpolation to do dependent on the missing values
    miss = [datin(interp%x0, interp%y0, 1) == sreal_fill_value, &
@@ -257,13 +257,13 @@ subroutine interp_field_2d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)    :: datin(:,:,:,:)
-   real(sreal),         intent(inout) :: datout(:,:)
+   real,        target, intent(in)    :: datin(:,:,:,:)
+   real,                intent(inout) :: datout(:,:)
    type(interpol_s),    intent(in)    :: interp
 
    logical                              :: miss(4)
-   real(sreal)                          :: coef(3)
-   real(sreal), pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
+   real                                 :: coef(3)
+   real,        pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide interpolation to do dependent on the missing values
    miss = [datin(interp%x0, interp%y0, 1, 1) == sreal_fill_value, &
@@ -284,13 +284,13 @@ subroutine interp_field2_1d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)    :: datin(:,:,:)
-   real(sreal),         intent(inout) :: datout(:)
+   real,        target, intent(in)    :: datin(:,:,:)
+   real,                intent(inout) :: datout(:)
    type(interpol_s),    intent(in)    :: interp
 
    logical                            :: miss(4)
-   real(sreal)                        :: coef(3)
-   real(sreal), pointer, dimension(:) :: bot_left, bot_rght, top_left, top_rght
+   real                               :: coef(3)
+   real,        pointer, dimension(:) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide interpolation to do dependent on the missing values
    miss = [datin(1, interp%x0, interp%y0) == sreal_fill_value, &
@@ -311,13 +311,13 @@ subroutine interp_field2_2d(datin, datout, interp)
 
    implicit none
 
-   real(sreal), target, intent(in)    :: datin(:,:,:,:)
-   real(sreal),         intent(inout) :: datout(:,:)
+   real,        target, intent(in)    :: datin(:,:,:,:)
+   real,                intent(inout) :: datout(:,:)
    type(interpol_s),    intent(in)    :: interp
 
    logical                              :: miss(4)
-   real(sreal)                          :: coef(3)
-   real(sreal), pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
+   real                                 :: coef(3)
+   real,        pointer, dimension(:,:) :: bot_left, bot_rght, top_left, top_rght
 
    ! decide interpolation to do dependent on the missing values
    miss = [datin(1, 1, interp%x0, interp%y0) == sreal_fill_value, &

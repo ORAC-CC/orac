@@ -242,10 +242,10 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
       do k=1,SPixel%Nx
          do l=1,SPixel%Nx
            call prepare_float_packed_float( &
-                   SPixel%Sn(k,l), output_data%covariance(i,j,k,l), &
-                   1., 0., &
+                   real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
+                   1._sreal, 0._sreal, &
                    sreal_fill_value, sreal_fill_value, &
-                   0., huge(dummyreal), &
+                   0._sreal, huge(dummyreal), &
                    sreal_fill_value)
          end do
       end do

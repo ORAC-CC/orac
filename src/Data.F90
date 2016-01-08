@@ -54,27 +54,27 @@ module Data_def
              Read_Data_nc
 
    type Geometry_t
-      real(sreal), pointer :: Sol(:,:,:)
-      real(sreal), pointer :: Sat(:,:,:)
-      real(sreal), pointer :: Azi(:,:,:)
+      real, pointer :: Sol(:,:,:)
+      real, pointer :: Sat(:,:,:)
+      real, pointer :: Azi(:,:,:)
    end type Geometry_t
 
    type Location_t
-      real(sreal), pointer :: Lat(:,:)
-      real(sreal), pointer :: Lon(:,:)
+      real, pointer :: Lat(:,:)
+      real, pointer :: Lon(:,:)
    end type Location_t
 
    type Data_t
-      real(sreal),        pointer :: ALB(:,:,:)
-      real(sreal),        pointer :: rho_0v(:,:,:)
-      real(sreal),        pointer :: rho_0d(:,:,:)
-      real(sreal),        pointer :: rho_dv(:,:,:)
-      real(sreal),        pointer :: rho_dd(:,:,:)
+      real,               pointer :: ALB(:,:,:)
+      real,               pointer :: rho_0v(:,:,:)
+      real,               pointer :: rho_0d(:,:,:)
+      real,               pointer :: rho_dv(:,:,:)
+      real,               pointer :: rho_dd(:,:,:)
       integer(byte),      pointer :: Type(:,:)
       integer(byte),      pointer :: cldtype(:,:)
       integer(byte),      pointer :: cldmask(:,:)
-      real(sreal),        pointer :: cldmask_uncertainty(:,:)
-      real(sreal),        pointer :: cccot_pre(:,:)
+      real,               pointer :: cldmask_uncertainty(:,:)
+      real,               pointer :: cccot_pre(:,:)
       type(Geometry_t)            :: Geometry
       type(Location_t)            :: Location
       integer(byte),      pointer :: LSFlags(:,:)
@@ -82,22 +82,22 @@ module Data_def
       integer(sint),      pointer :: dem(:,:)
       integer(byte),      pointer :: nisemask(:,:)
       real(dreal),        pointer :: time(:,:)
-      real(sreal),        pointer :: MSI(:,:,:)
+      real,               pointer :: MSI(:,:,:)
       integer,            pointer :: illum(:,:,:)
 
       ! SelmAux surface reflectance uncertainty terms
-      real(sreal),        pointer :: SD(:,:,:)     ! Std deviation in MSI data
-      real(sreal),        pointer :: rho_dd_cor(:,:,:,:) ! Correlation matrix for
+      real,               pointer :: SD(:,:,:)     ! Std deviation in MSI data
+      real,               pointer :: rho_dd_cor(:,:,:,:) ! Correlation matrix for
                                                    ! surface reflectance
-      real(sreal),        pointer :: rho_dd_unc(:,:,:) ! Uncertainty in surface
+      real,               pointer :: rho_dd_unc(:,:,:) ! Uncertainty in surface
                                                    ! reflect 3rd dim covers all
                                                    ! visible chs
-      real(sreal),        pointer :: svd_unc(:)    ! Uncertainty due to differing
+      real,               pointer :: svd_unc(:)    ! Uncertainty due to differing
                                                    ! filter bandshapes
-      real(sreal),        pointer :: veg_unc(:)    ! Uncertainty over vegetated
+      real,               pointer :: veg_unc(:)    ! Uncertainty over vegetated
                                                    ! surfaces
-      real(sreal),        pointer :: bare_unc(:)   ! Uncertainty over bare surf
-      real(sreal),        pointer :: snow_unc(:)   ! Uncertainty over snow
+      real,               pointer :: bare_unc(:)   ! Uncertainty over bare surf
+      real,               pointer :: snow_unc(:)   ! Uncertainty over snow
    end type Data_t
 
 contains
