@@ -17,6 +17,7 @@
 ! 2015/07/16, Greg McGarragh: Major cleanup.
 ! 2015/10/07, Oliver Sus: renamed to *_pp.F90, as we have to avoid duplicate
 !             subroutine names for wrapper
+! 2015/12/30, AP: Have all albedo fields use the same values.
 !
 ! $Id$
 !
@@ -129,9 +130,9 @@ subroutine prepare_output_secondary_pp(i, j, indexing, input_data, output_data, 
       dummyreal=input_data%albedo(i,j,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%albedo(i,j,k), &
-           output_data%albedo_scale(k), output_data%albedo_offset(k), &
+           output_data%albedo_scale, output_data%albedo_offset, &
            sreal_fill_value, sint_fill_value, &
-           output_data%albedo_vmin(k), output_data%albedo_vmax(k), &
+           output_data%albedo_vmin, output_data%albedo_vmax, &
            sint_fill_value)
    end do
 

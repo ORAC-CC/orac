@@ -38,7 +38,8 @@
 !    signal for non-retrieved pixels.
 ! 2015/09/14, GM: Change output cot_ap and cot_fg from log10 space to linear
 !    space.
-! 2015/01/07, AP: Check for valid AK values relied on short-circuiting, which
+! 2015/12/30, AP: Have all albedo fields use the same values.
+! 2016/01/07, AP: Check for valid AK values relied on short-circuiting, which
 !    isn't standard Fortran.
 !
 ! $Id$
@@ -168,11 +169,12 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
       dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%Y0,k)
       call prepare_short_packed_float( &
            dummyreal, output_data%albedo(i,j,k), &
-           output_data%albedo_scale(k), output_data%albedo_offset(k), &
+           output_data%albedo_scale, output_data%albedo_offset, &
            sreal_fill_value, sint_fill_value, &
-           output_data%albedo_vmin(k), output_data%albedo_vmax(k), &
+           output_data%albedo_vmin, output_data%albedo_vmax, &
            sint_fill_value)
    end do
+
 
    !----------------------------------------------------------------------------
    ! channels

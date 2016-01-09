@@ -52,6 +52,9 @@
 !    nc_def_var_*.
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
+!    routines for fields that could be BTs or reflectances. Have all albedo
+!    fields use the same values.
 !
 ! $Id$
 !
@@ -311,10 +314,10 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
            long_name     = trim(adjustl(input_dummy2)), &
            standard_name = trim(adjustl(input_dummy)), &
            fill_value    = sint_fill_value, &
-           scale_factor  = output_data%albedo_scale(i), &
-           add_offset    = output_data%albedo_offset(i), &
-           valid_min     = output_data%albedo_vmin(i), &
-           valid_max     = output_data%albedo_vmax(i), &
+           scale_factor  = output_data%albedo_scale, &
+           add_offset    = output_data%albedo_offset, &
+           valid_min     = output_data%albedo_vmin, &
+           valid_max     = output_data%albedo_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
    end do

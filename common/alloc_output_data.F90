@@ -26,6 +26,9 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax here from def_
+!    routines for fields that could be BTs or reflectances. Have all albedo
+!    fields use the same values.
 !
 ! $Id$
 !
@@ -292,14 +295,6 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
 
    allocate(output_data%vid_albedo(Ny))
    output_data%vid_albedo=0
-   allocate(output_data%albedo_scale(Ny))
-   output_data%albedo_scale=sreal_fill_value
-   allocate(output_data%albedo_offset(Ny))
-   output_data%albedo_offset=sreal_fill_value
-   allocate(output_data%albedo_vmin(Ny))
-   output_data%albedo_vmin=sint_fill_value
-   allocate(output_data%albedo_vmax(Ny))
-   output_data%albedo_vmax=sint_fill_value
    allocate(output_data%albedo(ixstart:ixstop,iystart:iystop,Ny))
    output_data%albedo=sint_fill_value
 
@@ -397,11 +392,6 @@ end if
          output_data%residuals_vmin(i)=-10000
          output_data%residuals_vmax(i)=10000
       end if
-
-      output_data%albedo_scale(i)=0.0001
-      output_data%albedo_offset(i)=0.0
-      output_data%albedo_vmin(i)=0
-      output_data%albedo_vmax(i)=10000
    end do
 
 end subroutine alloc_output_data_secondary

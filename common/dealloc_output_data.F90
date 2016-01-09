@@ -23,6 +23,7 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/12/30, AP: Have all albedo fields use the same values.
 !
 ! $Id$
 !
@@ -155,10 +156,6 @@ subroutine dealloc_output_data_secondary(output_data, do_covariance)
    type(output_data_secondary), intent(inout) :: output_data
 
    deallocate(output_data%vid_albedo)
-   deallocate(output_data%albedo_scale)
-   deallocate(output_data%albedo_offset)
-   deallocate(output_data%albedo_vmin)
-   deallocate(output_data%albedo_vmax)
    deallocate(output_data%albedo)
 
    deallocate(output_data%vid_channels)

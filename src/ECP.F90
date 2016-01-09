@@ -167,6 +167,7 @@
 ! 2015/07/31, AP: Rejig Diag for longer, variable state vector.
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/11/17, OS: Minor edit.
+! 2015/12/30, AP: Move creation of NCDF files to after the main processing loop.
 !
 ! $Id$
 !

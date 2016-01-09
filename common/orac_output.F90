@@ -25,6 +25,8 @@
 !    post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax to here from def_
+!    routines. Have all albedo fields use the same values.
 !
 ! $Id$
 !
@@ -397,8 +399,10 @@ module orac_output
       integer(kind=sint)               :: stemp_fg_vmin     = 0
       integer(kind=sint)               :: stemp_fg_vmax     = 32000
 
-      real(kind=sreal),   dimension(:), pointer :: albedo_scale,albedo_offset
-      integer(kind=sint), dimension(:), pointer :: albedo_vmin,albedo_vmax
+      real(kind=sreal)                 :: albedo_scale      = 0.0001
+      real(kind=sreal)                 :: albedo_offset     = 0.0
+      integer(kind=sint)               :: albedo_vmin       = 0
+      integer(kind=sint)               :: albedo_vmax       = 10000
 
       real(kind=sreal),   dimension(:), pointer :: channels_scale,channels_offset
       integer(kind=sint), dimension(:), pointer :: channels_vmin,channels_vmax

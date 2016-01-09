@@ -66,6 +66,8 @@
 ! 2015/11/17, OS: line 71 was too long for compiler
 ! 2015/10/24, GM: Fix flag_values and flag_meanings for lsflag.
 ! 2015/12/17, OS: Updated NetCDF time variable definition.
+! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
+!    routines for fields that could be BTs or reflectances.
 !
 ! $Id$
 !
