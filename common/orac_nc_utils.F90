@@ -802,7 +802,7 @@ end subroutine nc_get_common_attributes
 !
 ! History:
 ! 2014/12/16, GM: Original version
-
+! 2016/01/02, AP: Round values rather than simply casting.
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
@@ -833,7 +833,7 @@ subroutine prepare_short_packed_float(value_in, value_out, &
       else if (temp .gt. real(valid_max,kind=sreal)) then
          value_out=bound_max_value
       else
-         value_out=int(temp, kind=sint)
+         value_out=nint(temp, kind=sint)
       end if
    else
       value_out=sint_fill_value
