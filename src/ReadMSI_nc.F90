@@ -146,7 +146,7 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
       do i = 1, Ctrl%Ind%Ny
          if (SAD_Chan(i)%Solar%Flag > 0) &
               SAD_Chan(i)%Solar%F0 = SAD_Chan(i)%Solar%F0 + &
-              (SAD_Chan(i)%Solar%F1 * cos(2 * Pi * Ctrl%DOY / 365.))
+              (SAD_Chan(i)%Solar%F1 * cos(2. * Pi * Ctrl%DOY / 365.))
       end do
    end if
 
@@ -168,7 +168,8 @@ subroutine Read_MSI_nc(Ctrl, MSI_Data, SAD_Chan)
 
    ! Read channel view indices from file (all channels)
    allocate(Ctrl%Ind%ViewIdx(Ctrl%Ind%Ny))
-   call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%ViewIdx, Ctrl%verbose)
+   call nc_read_array(ncid, "msi_ch_view", Ctrl%Ind%ViewIdx, Ctrl%verbose, &
+                      1, Ctrl%Ind%ICh)
    if (minval(Ctrl%Ind%ViewIdx) < 1 .or. &
        maxval(Ctrl%Ind%ViewIdx) > Ctrl%Ind%NViews) then
       write(*,*) 'ERROR: Read_MSI_nc(): Invalid view indexing in input files.'
