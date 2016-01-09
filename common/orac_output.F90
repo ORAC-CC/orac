@@ -27,6 +27,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax to here from def_
 !    routines. Have all albedo fields use the same values.
+! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 !
 ! $Id$
 !
@@ -207,10 +208,10 @@ module orac_output
       real(kind=sreal)              :: costjm_vmin   = 0.0
       real(kind=sreal)              :: costjm_vmax   = 100000.0
 
-      integer(kind=sint)            :: qcflag_scale  = 1
-      integer(kind=sint)            :: qcflag_offset = 0
-      integer(kind=sint)            :: qcflag_vmin   = 0
-      integer(kind=sint)            :: qcflag_vmax   = 32767
+      integer(kind=lint)            :: qcflag_scale  = 1
+      integer(kind=lint)            :: qcflag_offset = 0
+      integer(kind=lint)            :: qcflag_vmin   = 0
+      integer(kind=lint)            :: qcflag_vmax   = 32767
 
       integer(kind=byte)            :: lsflag_scale  = 1
       integer(kind=byte)            :: lsflag_offset = 0
@@ -311,7 +312,7 @@ module orac_output
       integer(kind=byte), dimension(:,:),     pointer :: niter
       real(kind=sreal),   dimension(:,:),     pointer :: costja
       real(kind=sreal),   dimension(:,:),     pointer :: costjm
-      integer(kind=sint), dimension(:,:),     pointer :: qcflag
+      integer(kind=lint), dimension(:,:),     pointer :: qcflag
 
       integer(kind=byte), dimension(:,:),     pointer :: lsflag
       integer(kind=byte), dimension(:,:),     pointer :: lusflag

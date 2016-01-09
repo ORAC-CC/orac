@@ -15,6 +15,7 @@
 ! 2015/01/19, GM: Put ZeroDiag.F90 and SetDiag.F90 into this module.
 ! 2015/07/31, AP: Rejig QCFlag for much longer state vector.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 !
 ! $Id$
 !
@@ -29,8 +30,8 @@ module Diag_def
    implicit none
 
    type Diag_t
-      byte          :: Converged    ! Did the retrieval converge?
-      integer       :: QCFlag       ! Quality control flag. Bits are set as
+      integer(byte) :: Converged    ! Did the retrieval converge?
+      integer(lint) :: QCFlag       ! Quality control flag. Bits are set as
                                     ! follows:
                                     ! - bit 0: retrieval solution
                                     !   cost too great

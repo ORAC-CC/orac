@@ -11,6 +11,7 @@
 ! 2015/09/06, GM: Added build_qc_flag_meanings().
 ! 2015/11/14, GM: Added build_qc_flag_masks().
 ! 2015/11/19, GM: Added support for x_xx_um_legacy_channel_used masks.
+! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 !
 ! $Id$
 !
@@ -135,15 +136,16 @@ subroutine build_qc_flag_masks(Ctrl, str)
    type(Ctrl_t),     intent(in)  :: Ctrl
    character(len=*), intent(out) :: str
 
-   integer          :: i
-   character(len=8) :: temp_str
-   character(len=8) :: state_label
+   integer(lint)     :: i
+   character(len=10) :: temp_str
+   character(len=8)  :: state_label
 
    str = '1b'
    do i = 1, Ctrl%Nx(IDay)
-      write(temp_str, '(I5)') 2**i
-      if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) &
-           str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b'
+      write(temp_str, '(I10)') 2**i
+      if (string_description_of_state(Ctrl%X(i,IDay), state_label) == 0) then
+         str = trim(str) // ' ' // trim(adjustl(temp_str)) // 'b'
+      end if
    end do
 
    do i = 1, N_legacy
@@ -179,7 +181,7 @@ subroutine build_qc_flag_meanings(Ctrl, str)
    type(Ctrl_t),     intent(in)  :: Ctrl
    character(len=*), intent(out) :: str
 
-   integer          :: i
+   integer(lint)    :: i
    character(len=8) :: state_label
 
    str = 'cost_too_large'

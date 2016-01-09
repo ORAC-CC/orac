@@ -68,6 +68,7 @@
 ! 2015/12/17, OS: Updated NetCDF time variable definition.
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
 !    routines for fields that could be BTs or reflectances.
+! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 !
 ! $Id$
 !
@@ -781,7 +782,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   call nc_def_var_short_packed_short( &
+   call nc_def_var_long_packed_long( &
            ncid, &
            dims_var, &
            'qcflag', &
@@ -789,7 +790,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
            verbose, &
            long_name     = 'quality control flag', &
            standard_name = '', &
-           fill_value    = int(-1,kind=sint), &
+           fill_value    = int(-1,kind=lint), &
            scale_factor  = output_data%qcflag_scale, &
            add_offset    = output_data%qcflag_offset, &
            valid_min     = output_data%qcflag_vmin, &

@@ -455,7 +455,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! qcflag
    !----------------------------------------------------------------------------
-   output_data%qcflag(i,j)=int(Diag%QCFlag,kind=sint)
+   output_data%qcflag(i,j)=int(Diag%QCFlag,kind=lint)
 
    !----------------------------------------------------------------------------
    ! lsflag
