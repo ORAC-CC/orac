@@ -477,13 +477,13 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
    end do
 
-
    ! allocate the structures which hold the output in its final form
    call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-        indexing%NViews, indexing%Ny, output_primary, .true., .false.)
+        indexing%NViews, indexing%Ny, 100, output_primary, .true., .false.)
    if (do_secondary) then
       call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-           indexing%Ny, indexing%Nx, output_secondary, .false.)
+           indexing%NSolar, indexing%Ny, indexing%Nx, indexing%Ch_Is, ThermalBit, xdim, ydim, &
+           output_secondary, .false.)
    end if
 
    ! open the netcdf output file
@@ -503,14 +503,14 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       shuffle_flag2  = .false.
    end if
    call def_output_primary(ncid_primary, dims_var, output_primary, &
-        global_atts%sensor, indexing%NViews, indexing%Ny, indexing%NSolar, &
-        indexing%YSolar, indexing%Y_Id, indexing%Ch_Is, 100, &
+        indexing%NViews, indexing%Ny, indexing%NSolar, &
+        indexing%YSolar, indexing%Y_Id, &
         input_primary(1)%qc_flag_masks, input_primary(1)%qc_flag_meanings, &
         deflate_level2, shuffle_flag2, verbose, .true., .false., .false., .true.)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
-           indexing%Ny, indexing%NSolar, indexing%YSolar, indexing%Y_Id, &
-           indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, 0, 0, &
+           indexing%Ny, indexing%NSolar, indexing%YSolar, &
+           indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, &
            verbose, .false.)
    end if
 

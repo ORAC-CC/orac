@@ -57,7 +57,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-   NViews, Ny, output_data, do_phase_pavolonis, do_cldmask_uncertainty)
+   NViews, Ny, MaxIter, output_data, do_phase_pavolonis, do_cldmask_uncertainty)
 
    implicit none
 
@@ -67,6 +67,7 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
    integer,                   intent(in)    :: iystop
    integer,                   intent(in)    :: NViews
    integer,                   intent(in)    :: Ny
+   integer,                   intent(in)    :: MaxIter
    type(output_data_primary), intent(inout) :: output_data
    logical,                   intent(in)    :: do_phase_pavolonis
    logical,                   intent(in)    :: do_cldmask_uncertainty
@@ -215,6 +216,10 @@ if (do_phase_pavolonis) then
    output_data%phase_pavolonis=byte_fill_value
 end if
 
+
+   ! Set scale/offset/vmin/vmax dynamically as required
+   output_data%niter_vmax=MaxIter
+
 end subroutine alloc_output_data_primary
 
 
@@ -242,8 +247,8 @@ end subroutine alloc_output_data_primary
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx, &
-                                       output_data, do_covariance)
+subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
+   NSolar, Ny, Nx, Ch_Is, ThermalBit, Xmax, Ymax, output_data, do_covariance)
 
    implicit none
 
@@ -251,10 +256,19 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, Ny, Nx,
    integer,                     intent(in)    :: ixstop
    integer,                     intent(in)    :: iystart
    integer,                     intent(in)    :: iystop
+   integer,                     intent(in)    :: NSolar
    integer,                     intent(in)    :: Ny
    integer,                     intent(in)    :: Nx
+   integer,                     intent(in)    :: Ch_Is(:)
+   integer,                     intent(in)    :: ThermalBit
+   integer,                     intent(in)    :: Xmax
+   integer,                     intent(in)    :: Ymax
    type(output_data_secondary), intent(inout) :: output_data
    logical,                     intent(in)    :: do_covariance
+
+   integer :: i
+
+
 
    allocate(output_data%cot_ap(ixstart:ixstop,iystart:iystop))
    output_data%cot_ap=sint_fill_value
@@ -347,5 +361,47 @@ if (do_covariance) then
 end if
 
 
+   ! Set scale/offset/vmin/vmax dynamically as required
+   output_data%scanline_u_vmax=Xmax
+   output_data%scanline_v_vmax=Ymax
+
+   do i=1,Ny
+      if (btest(Ch_Is(i), ThermalBit)) then
+         output_data%channels_scale(i)=0.01
+         output_data%channels_offset(i)=100.0
+         output_data%channels_vmin(i)=0
+         output_data%channels_vmax(i)=32000
+
+         output_data%y0_scale(i)=0.01
+         output_data%y0_offset(i)=100.0
+         output_data%y0_vmin(i)=0
+         output_data%y0_vmax(i)=32000
+
+         output_data%residuals_scale(i)=0.01
+         output_data%residuals_offset(i)=100.0
+         output_data%residuals_vmin(i)=-32000
+         output_data%residuals_vmax(i)=32000
+      else
+         output_data%channels_scale(i)=0.0001
+         output_data%channels_offset(i)=0.0
+         output_data%channels_vmin(i)=0
+         output_data%channels_vmax(i)=10000
+
+         output_data%y0_scale(i)=0.0001
+         output_data%y0_offset(i)=0.0
+         output_data%y0_vmin(i)=0
+         output_data%y0_vmax(i)=10000
+
+         output_data%residuals_scale(i)=0.0001
+         output_data%residuals_offset(i)=0.0
+         output_data%residuals_vmin(i)=-10000
+         output_data%residuals_vmax(i)=10000
+      end if
+
+      output_data%albedo_scale(i)=0.0001
+      output_data%albedo_offset(i)=0.0
+      output_data%albedo_vmin(i)=0
+      output_data%albedo_vmax(i)=10000
+   end do
 
 end subroutine alloc_output_data_secondary

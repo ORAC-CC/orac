@@ -427,33 +427,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
 #endif
 
-   ! Open the netcdf output files
-   if (Ctrl%verbose) write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
-   call nc_create(Ctrl%FID%L2_primary, ncid_primary, ixstop-ixstart+1, &
-      iystop-iystart+1, dims_var, 1, global_atts, source_atts)
-
-   if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
-   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, ixstop-ixstart+1, &
-     iystop-iystart+1, dims_var, 2, global_atts, source_atts)
-
    ! Allocate output arrays
    call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-        Ctrl%Ind%NViews, Ctrl%Ind%Ny, output_data_1, .false., .true.)
-   call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-        Ctrl%Ind%Ny, MaxStateVar, output_data_2, write_covariance)
-
-   ! Create NetCDF files and variables
-   call build_qc_flag_masks(Ctrl, qc_flag_masks)
-   call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
-   call def_output_primary(ncid_primary, dims_var, output_data_1, &
-        Ctrl%InstName, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
-        Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  Ctrl%Ind%Ch_Is, Ctrl%Invpar%MaxIter, &
-        qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
-        .false., .false., .true., .true., .false.)
-   call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
-        Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, &
-        Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, Ctrl%Ind%Xmax, &
-        Ctrl%Ind%Ymax, .false., write_covariance)
+        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Invpar%MaxIter, output_data_1, &
+        .false., .true.)
+    call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
+        Ctrl%Ind%NSolar, Ctrl%Ind%Ny, MaxStateVar, Ctrl%Ind%Ch_Is, ThermalBit, Ctrl%Ind%XMax, &
+        Ctrl%Ind%YMax, output_data_2, write_covariance)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
    i = ixstart
@@ -615,6 +595,28 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    cpu_secs=cpu_secs/real_secs
    write(*,115) cpu_secs
 #endif
+
+   ! Open the netcdf output files
+   if (Ctrl%verbose) write(*,*) 'path1: ',trim(Ctrl%FID%L2_primary)
+   call nc_create(Ctrl%FID%L2_primary, ncid_primary, ixstop-ixstart+1, &
+      iystop-iystart+1, dims_var, 1, global_atts, source_atts)
+
+   if (Ctrl%verbose) write(*,*) 'path2: ',trim(Ctrl%FID%L2_secondary)
+   call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, ixstop-ixstart+1, &
+     iystop-iystart+1, dims_var, 2, global_atts, source_atts)
+
+   ! Create NetCDF files and variables
+   call build_qc_flag_masks(Ctrl, qc_flag_masks)
+   call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
+   call def_output_primary(ncid_primary, dims_var, output_data_1, &
+        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
+        Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  &
+        qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
+        .false., .false., .true., .true., .false.)
+   call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
+        Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
+        Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, &
+        .false., write_covariance)
 
    ! Write output from spixel_scan_out structures NetCDF files
    call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &

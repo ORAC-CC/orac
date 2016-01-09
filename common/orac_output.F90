@@ -347,35 +347,55 @@ module orac_output
       integer, dimension(:,:), pointer :: vid_covariance
 
 
-      integer(kind=lint)               :: scanline_u_scale,scanline_u_offset
-      integer(kind=lint)               :: scanline_u_vmin,scanline_u_vmax
+      integer(kind=lint)               :: scanline_u_scale  = 1
+      integer(kind=lint)               :: scanline_u_offset = 0
+      integer(kind=lint)               :: scanline_u_vmin   = 1
+      integer(kind=lint)               :: scanline_u_vmax
 
-      integer(kind=lint)               :: scanline_v_scale,scanline_v_offset
-      integer(kind=lint)               :: scanline_v_vmin,scanline_v_vmax
+      integer(kind=lint)               :: scanline_v_scale  = 1
+      integer(kind=lint)               :: scanline_v_offset = 0
+      integer(kind=lint)               :: scanline_v_vmin   = 1
+      integer(kind=lint)               :: scanline_v_vmax
 
-      real(kind=sreal)                 :: cot_ap_scale,cot_ap_offset
-      integer(kind=sint)               :: cot_ap_vmin,cot_ap_vmax
+      real(kind=sreal)                 :: cot_ap_scale      = 0.01
+      real(kind=sreal)                 :: cot_ap_offset     = 0.0
+      integer(kind=sint)               :: cot_ap_vmin       = 0
+      integer(kind=sint)               :: cot_ap_vmax       = 32000
 
-      real(kind=sreal)                 :: cot_fg_scale,cot_fg_offset
-      integer(kind=sint)               :: cot_fg_vmin,cot_fg_vmax
+      real(kind=sreal)                 :: cot_fg_scale      = 0.01
+      real(kind=sreal)                 :: cot_fg_offset     = 0.0
+      integer(kind=sint)               :: cot_fg_vmin       = 0
+      integer(kind=sint)               :: cot_fg_vmax       = 32000
 
-      real(kind=sreal)                 :: cer_ap_scale,cer_ap_offset
-      integer(kind=sint)               :: cer_ap_vmin,cer_ap_vmax
+      real(kind=sreal)                 :: cer_ap_scale      = 0.01
+      real(kind=sreal)                 :: cer_ap_offset     = 0.0
+      integer(kind=sint)               :: cer_ap_vmin       = 0
+      integer(kind=sint)               :: cer_ap_vmax       = 20000
 
-      real(kind=sreal)                 :: cer_fg_scale,cer_fg_offset
-      integer(kind=sint)               :: cer_fg_vmin,cer_fg_vmax
+      real(kind=sreal)                 :: cer_fg_scale      = 0.01
+      real(kind=sreal)                 :: cer_fg_offset     = 0.0
+      integer(kind=sint)               :: cer_fg_vmin       = 0
+      integer(kind=sint)               :: cer_fg_vmax       = 20000
 
-      real(kind=sreal)                 :: ctp_ap_scale,ctp_ap_offset
-      integer(kind=sint)               :: ctp_ap_vmin,ctp_ap_vmax
+      real(kind=sreal)                 :: ctp_ap_scale      = 0.1
+      real(kind=sreal)                 :: ctp_ap_offset     = 0.0
+      integer(kind=sint)               :: ctp_ap_vmin       = 500
+      integer(kind=sint)               :: ctp_ap_vmax       = 12000
 
-      real(kind=sreal)                 :: ctp_fg_scale,ctp_fg_offset
-      integer(kind=sint)               :: ctp_fg_vmin,ctp_fg_vmax
+      real(kind=sreal)                 :: ctp_fg_scale      = 0.1
+      real(kind=sreal)                 :: ctp_fg_offset     = 0.0
+      integer(kind=sint)               :: ctp_fg_vmin       = 500
+      integer(kind=sint)               :: ctp_fg_vmax       = 12000
 
-      real(kind=sreal)                 :: stemp_ap_offset,stemp_ap_scale
-      integer(kind=sint)               :: stemp_ap_vmin,stemp_ap_vmax
+      real(kind=sreal)                 :: stemp_ap_scale    = 0.01
+      real(kind=sreal)                 :: stemp_ap_offset   = 100.0
+      integer(kind=sint)               :: stemp_ap_vmin     = 0
+      integer(kind=sint)               :: stemp_ap_vmax     = 32000
 
-      real(kind=sreal)                 :: stemp_fg_offset,stemp_fg_scale
-      integer(kind=sint)               :: stemp_fg_vmin,stemp_fg_vmax
+      real(kind=sreal)                 :: stemp_fg_scale    = 0.01
+      real(kind=sreal)                 :: stemp_fg_offset   = 100.0
+      integer(kind=sint)               :: stemp_fg_vmin     = 0
+      integer(kind=sint)               :: stemp_fg_vmax     = 32000
 
       real(kind=sreal),   dimension(:), pointer :: albedo_scale,albedo_offset
       integer(kind=sint), dimension(:), pointer :: albedo_vmin,albedo_vmax
@@ -389,11 +409,15 @@ module orac_output
       real(kind=sreal),   dimension(:), pointer :: residuals_scale,residuals_offset
       integer(kind=sint), dimension(:), pointer :: residuals_vmin,residuals_vmax
 
-      real(kind=sreal)                          :: ds_offset, ds_scale
-      integer(kind=sint)                        :: ds_vmin, ds_vmax
+      real(kind=sreal)                 :: ds_scale          = 0.001
+      real(kind=sreal)                 :: ds_offset         = 0.0
+      integer(kind=sint)               :: ds_vmin           = 0
+      integer(kind=sint)               :: ds_vmax           = 10000
 
-      real(kind=sreal)                          :: covariance_offset, covariance_scale
-      integer(kind=sint)                        :: covariance_vmin, covariance_vmax
+      real(kind=sreal)                 :: covariance_scale  = 0.001
+      real(kind=sreal)                 :: covariance_offset = 0.0
+      integer(kind=sint)               :: covariance_vmax   = -32000
+      integer(kind=sint)               :: covariance_vmin   = 32000
 
 
       integer(kind=lint), dimension(:,:),     pointer :: scanline_u, scanline_v

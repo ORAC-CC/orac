@@ -73,8 +73,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
-   Ny, NSolar, YSolar, Y_Id, Ch_Is, MaxIter, qc_flag_masks, qc_flag_meanings, &
+subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
+   Ny, NSolar, YSolar, Y_Id, qc_flag_masks, qc_flag_meanings, &
    deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, &
    do_cldmask_uncertainty, do_cloudmask_pre)
 
@@ -86,14 +86,11 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
    integer,                   intent(in)    :: ncid
    integer,                   intent(in)    :: dims_var(:)
    type(output_data_primary), intent(inout) :: output_data
-   character(len=*),          intent(in)    :: inst_name
    integer,                   intent(in)    :: NViews
    integer,                   intent(in)    :: Ny
    integer,                   intent(in)    :: NSolar
    integer,                   intent(in)    :: YSolar(:)
    integer,                   intent(in)    :: Y_Id(:)
-   integer,                   intent(in)    :: Ch_Is(:)
-   integer,                   intent(in)    :: MaxIter
    character(len=*),          intent(in)    :: qc_flag_masks
    character(len=*),          intent(in)    :: qc_flag_meanings
    integer,                   intent(in)    :: deflate_level
@@ -722,8 +719,6 @@ subroutine def_output_primary(ncid, dims_var, output_data, inst_name, NViews, &
    !----------------------------------------------------------------------------
    ! niter
    !----------------------------------------------------------------------------
-   output_data%niter_vmax=MaxIter
-
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &

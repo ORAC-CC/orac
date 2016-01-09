@@ -59,9 +59,9 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar, &
-   Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, Xmax, Ymax, verbose, &
-   do_covariance)
+subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
+   NSolar, YSolar, Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, &
+   verbose, do_covariance)
 
    use netcdf
    use orac_ncdf
@@ -79,8 +79,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    integer,                     intent(in)    :: ThermalBit
    integer,                     intent(in)    :: deflate_level
    logical,                     intent(in)    :: shuffle_flag
-   integer,                     intent(in)    :: Xmax
-   integer,                     intent(in)    :: Ymax
    logical,                     intent(in)    :: verbose
    logical,                     intent(in)    :: do_covariance
 
@@ -101,11 +99,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! scanline_u
    !----------------------------------------------------------------------------
-   output_data%scanline_u_scale=1
-   output_data%scanline_u_offset=0
-   output_data%scanline_u_vmin=1
-   output_data%scanline_u_vmax=Xmax
-
    call nc_def_var_long_packed_long( &
            ncid, &
            dims_var, &
@@ -125,11 +118,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! scanline_v
    !----------------------------------------------------------------------------
-   output_data%scanline_v_scale=1
-   output_data%scanline_v_offset=0
-   output_data%scanline_v_vmin=1
-   output_data%scanline_v_vmax=Ymax
-
    call nc_def_var_long_packed_long( &
            ncid, &
            dims_var, &
@@ -149,11 +137,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! cot_ap
    !----------------------------------------------------------------------------
-   output_data%cot_ap_scale=0.01
-   output_data%cot_ap_offset=0.0
-   output_data%cot_ap_vmin=0
-   output_data%cot_ap_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -173,11 +156,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! cot_fg
    !----------------------------------------------------------------------------
-   output_data%cot_fg_scale=0.01
-   output_data%cot_fg_offset=0.0
-   output_data%cot_fg_vmin=0
-   output_data%cot_fg_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -197,11 +175,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! cer_ap
    !----------------------------------------------------------------------------
-   output_data%cer_ap_scale=0.01
-   output_data%cer_ap_offset=0.0
-   output_data%cer_ap_vmin=0
-   output_data%cer_ap_vmax=20000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -222,11 +195,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! cer_fg
    !----------------------------------------------------------------------------
-   output_data%cer_fg_scale=0.01
-   output_data%cer_fg_offset=0.0
-   output_data%cer_fg_vmin=0
-   output_data%cer_fg_vmax=20000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -247,11 +215,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! ctp_ap
    !----------------------------------------------------------------------------
-   output_data%ctp_ap_scale=0.1
-   output_data%ctp_ap_offset=0.0
-   output_data%ctp_ap_vmin=500
-   output_data%ctp_ap_vmax=12000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -272,11 +235,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! ctp_fg
    !----------------------------------------------------------------------------
-   output_data%ctp_fg_scale=0.1
-   output_data%ctp_fg_offset=0.0
-   output_data%ctp_fg_vmin=500
-   output_data%ctp_fg_vmax=12000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -297,11 +255,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! stemp_ap
    !----------------------------------------------------------------------------
-   output_data%stemp_ap_scale=0.01
-   output_data%stemp_ap_offset=100.0
-   output_data%stemp_ap_vmin=0
-   output_data%stemp_ap_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -322,11 +275,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! stemp_fg
    !----------------------------------------------------------------------------
-   output_data%stemp_fg_scale=0.01
-   output_data%stemp_fg_offset=100.0
-   output_data%stemp_fg_vmin=0
-   output_data%stemp_fg_vmax=32000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
@@ -350,11 +298,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    do i=1,NSolar
 
       write(input_num,"(i4)") Y_Id(YSolar(i))
-
-      output_data%albedo_scale(i)=0.0001
-      output_data%albedo_offset(i)=0.0
-      output_data%albedo_vmin(i)=0
-      output_data%albedo_vmax(i)=10000
 
       input_dummy='albedo_in_channel_no_'//trim(adjustl(input_num))
       input_dummy2='albedo in channel no '//trim(adjustl(input_num))
@@ -384,20 +327,10 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
       write(input_num,"(i4)") Y_Id(i)
 
       if (btest(Ch_Is(i), ThermalBit)) then
-         output_data%channels_scale(i)=0.01
-         output_data%channels_offset(i)=100.0
-         output_data%channels_vmin(i)=0
-         output_data%channels_vmax(i)=32000
-
          input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
       else
-         output_data%channels_scale(i)=0.0001
-         output_data%channels_offset(i)=0.0
-         output_data%channels_vmin(i)=0
-         output_data%channels_vmax(i)=10000
-
          input_dummy='reflectance_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='reflectance in channel no '//trim(adjustl(input_num))
          input_dummy3='1'
@@ -430,20 +363,10 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
       write(input_num,"(i4)") Y_Id(i)
 
       if (btest(Ch_Is(i), ThermalBit)) then
-         output_data%y0_scale(i)=0.01
-         output_data%y0_offset(i)=100.0
-         output_data%y0_vmin(i)=0
-         output_data%y0_vmax(i)=32000
-
          input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
       else
-         output_data%y0_scale(i)=0.0001
-         output_data%y0_offset(i)=0.0
-         output_data%y0_vmin(i)=0
-         output_data%y0_vmax(i)=10000
-
          input_dummy='firstguess_reflectance_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='firstguess reflectance in channel no '//trim(adjustl(input_num))
          input_dummy3='1'
@@ -475,20 +398,10 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
       write(input_num,"(i4)") Y_Id(i)
 
       if (btest(Ch_Is(i), ThermalBit)) then
-         output_data%residuals_scale(i)=0.01
-         output_data%residuals_offset(i)=100.0
-         output_data%residuals_vmin(i)=-32000
-         output_data%residuals_vmax(i)=32000
-
          input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
       else
-         output_data%residuals_scale(i)=0.0001
-         output_data%residuals_offset(i)=0.0
-         output_data%residuals_vmin(i)=-10000
-         output_data%residuals_vmax(i)=10000
-
          input_dummy='reflectance_residual_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='reflectance residual in channel no '//trim(adjustl(input_num))
          input_dummy3='1'
@@ -515,11 +428,6 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, NSolar, YSolar,
    !----------------------------------------------------------------------------
    ! degrees_of_freedom_signal
    !----------------------------------------------------------------------------
-   output_data%ds_scale=0.001
-   output_data%ds_offset=0.0
-   output_data%ds_vmin=0
-   output_data%ds_vmax=10000
-
    call nc_def_var_short_packed_float( &
            ncid, &
            dims_var, &
