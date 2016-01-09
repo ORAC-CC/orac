@@ -358,7 +358,7 @@ function Calculate_ND(SAD_Chan, SPixel, nd, snow) result(status)
 
       ! Find visible ch near 0.67um (in range 0.4-0.7um)
       wvn2 = 14925.
-      max1 = 25000.
+      max2 = 25000.
       min2 = 14286.
    end if
 
