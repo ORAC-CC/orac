@@ -361,6 +361,7 @@ module ECP_constants
    integer, parameter :: SPixelAmeth                = 1143
    integer, parameter :: SPixelInvalid              = 1144
    integer, parameter :: SPixelType                 = 1145
+   integer, parameter :: SPixelSkip                 = 1146
    integer, parameter :: SPixelGeomSol              = 1150
    integer, parameter :: SPixelGeomSat              = 1151
    integer, parameter :: SPixelGeomRel              = 1152

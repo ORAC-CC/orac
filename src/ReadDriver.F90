@@ -504,6 +504,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Max_SDAD            = 10.0
    Ctrl%sabotage_inputs     = .false.
    Ctrl%process_cloudy_only = .true.
+   Ctrl%surfaces_to_skip    = 0_byte
 
    ! Set cloud types to process depending on requested LUT
    Ctrl%Types_to_process = byte_fill_value
@@ -913,6 +914,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%NTypes_to_process)/= 0) call h_p_e(label)
       case('CTRL%TYPES_TO_PROCESS')
          if (parse_string(line, Ctrl%Types_to_process, Ctrl%NTypes_to_process) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%SURFACES_TO_SKIP')
+         if (parse_user_text(line, Ctrl%surfaces_to_skip) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%VERBOSE')
          if (parse_string(line, Ctrl%verbose)          /= 0) call h_p_e(label)

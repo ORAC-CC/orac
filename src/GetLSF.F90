@@ -24,6 +24,7 @@
 ! 2012/02/08, CP: Original version
 ! 2014/07/30, GM: Cleaned up the code.
 ! 2015/01/30, AP: Replace YSeg0 with Y0 as superpixeling removed.
+! 2015/12/30, AP: Add surfaces_to_skip.
 !
 ! $Id$
 !
@@ -60,5 +61,9 @@ subroutine Get_LSF(Ctrl, SPixel, MSI_Data, status)
 #endif
       status = SPixelInvalid
    end select
+
+   if (SPixel%Surface%Land .and. Ctrl%Surfaces_to_skip == ILand .or. &
+       .not. SPixel%Surface%Land .and. Ctrl%Surfaces_to_skip == ISea) &
+       status = SPixelSkip
 
 end subroutine Get_LSF

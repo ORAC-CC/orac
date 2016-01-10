@@ -267,6 +267,8 @@ module CTRL_def
       integer(byte)          :: Types_to_process(MaxTypes) ! Pavolonis (or other)
                                                    ! type codes for pixels to
                                                    ! run the retrieval
+      integer                :: Surfaces_to_skip   ! Setting to ILand or ISea
+                                                   ! skips all respective pixels
       logical                :: verbose            ! Controls output to terminal
 
       ! Variables used by cloud_indexing_logic (first three ignore driver)
