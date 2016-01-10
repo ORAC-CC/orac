@@ -577,11 +577,13 @@ else
 end if
 
    ! Account for solar factor scaling applied in GetSurface()
+   if (Ctrl%RS%solar_factor) then
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
          d_REF(i,IRs(ii,IRho_DD)) = d_REF(i,IRs(ii,IRho_DD)) / &
               SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
       end do
+   end if
 
    ! Open breakpoint file if required, and write out reflectances and gradients.
 #ifdef BKP

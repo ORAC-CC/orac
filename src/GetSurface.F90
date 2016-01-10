@@ -220,8 +220,13 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
-         ! ACP: No idea why this is here. CP added it in R595. Not in aerosol.
-         solar_factor = 1. / cos(SPixel%Geom%solzen(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * d2r)
+         if (Ctrl%RS%solar_factor) then
+            ! This affects d_REF(:,IRs) in FMSolar
+            solar_factor = SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+         else
+            ! Used by old Oxford surface model with i_equation_form == 2
+            solar_factor = 1.
+         end if
 
          ! Copy surface reflectances from MSI files
          SPixel%Surface%Rs(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, ii) /&

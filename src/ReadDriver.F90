@@ -389,6 +389,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%use_full_brdf  = switch(a, Default=.true.,   AerSw=.false.)
    Ctrl%RS%Sb             = switch(a, Default=0.2,      Aer=0.05)
    Ctrl%RS%Cb             = switch(a, Default=0.2,      Aer=0.4)
+   Ctrl%RS%solar_factor   = switch(a, Default=.true.,   Aer=.false.)
 
    ! Select assumed surface reflectance based on wavelength
    wvl_threshold = 0.05
@@ -839,6 +840,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
       case('CTRL%RS%CB')
          if (parse_string(line, Ctrl%RS%Cb)            /= 0) call h_p_e(label)
+      case('CTRL%RS%SOLAR_FACTOR')
+         if (parse_string(line, Ctrl%RS%solar_factor)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%SYSELM')
          if (parse_user_text(line, Ctrl%EqMPN%SySelm)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%HOMOG')

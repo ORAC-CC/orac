@@ -183,6 +183,8 @@ module CTRL_def
                                                    ! all chs, sea/land
       real                   :: Cb                 ! Correlation in error between
                                                    ! chs: constant for all chs
+      logical                :: solar_factor       ! In GetSurface divide surface
+                                                   ! reflectances by SEC_o
    end type SurfRef_t
 
    ! Equivalent model parameter noise flags
