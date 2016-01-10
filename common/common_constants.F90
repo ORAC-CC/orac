@@ -15,6 +15,7 @@
 ! 2014/08/30, GM: Change integer fill values to be consistent with the main
 !    processor.
 ! 2014/08/30, GM: Added pi and d2r.
+! 2015/12/15, AP: Move IRho terms from ECP_constants.
 !
 ! $Id$
 !
@@ -62,5 +63,12 @@ module common_constants
    ! Mathematical constants
    real(kind=sreal),    parameter :: pi=3.14159265
    real(kind=sreal),    parameter :: d2r=pi/180.0
+
+   ! Indices of surface reflectance terms
+   integer, parameter :: IRho_0V          = 1 ! Index of rho_0v data in array
+   integer, parameter :: IRho_0D          = 2 !  "    "  rho_0d  "   "   "
+   integer, parameter :: IRho_DV          = 3 !  "    "  rho_dv  "   "   "
+   integer, parameter :: IRho_DD          = 4 !  "    "  rho_dd  "   "   "
+   integer, parameter :: MaxRho_XX        = 4 ! Max no. of BRDF parameters
 
 end module common_constants

@@ -204,15 +204,6 @@ module ECP_constants
    integer, parameter :: ITFd             = 11      !  "    "  TFd  "   "   "
    integer, parameter :: IEm              = 12      !  "    "  Em   "   "   "
 
-   ! Index of CRP array parameter in interpolated arrays (e.g. CRPOut in
-   ! functions Set_CRP_Solar and Set_CRP_Thermal). These are also used to index
-   ! IRs in FM_Solar for cloud retrievals (so ensure they don't exceed NIRs).
-   integer, parameter :: IRho_0V          = 1       ! Index of rho_0v data in array
-   integer, parameter :: IRho_0D          = 2       !  "    "  rho_0d  "   "   "
-   integer, parameter :: IRho_DV          = 3       !  "    "  rho_dv  "   "   "
-   integer, parameter :: IRho_DD          = 4       !  "    "  rho_dd  "   "   "
-   integer, parameter :: MaxRho_XX        = 4       ! Max no. of BRDF parameters
-
    ! Index of B in GetSurface and ReadDriver
    integer, parameter :: ISea             = 1
    integer, parameter :: ILand            = 2
