@@ -208,6 +208,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    integer                     :: deflate_level2
    logical                     :: shuffle_flag2
+
+   logical, allocatable        :: is_thermal(:)
 #ifndef WRAPPER
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
@@ -298,7 +300,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    allocate(indexing%YSolar(MaxNumMeas))
    allocate(indexing%Y_Id(MaxNumMeas))
    allocate(indexing%Ch_Is(MaxNumMeas))
+   allocate(is_thermal(MaxNumMeas))
    indexing%Ch_Is = 0
+   is_thermal = .false.
 
    do i = 1, MaxNumMeas
       write(input_num, "(i4)") i
@@ -320,6 +324,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
               indexing%Y_Id(indexing%Ny) = i
               indexing%Ch_Is(indexing%Ny) = &
                  ibset(indexing%Ch_Is(indexing%Ny), ThermalBit)
+              is_thermal(indexing%Ny) = .true.
          end if
       end if
    end do
@@ -490,7 +495,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
         indexing%NViews, indexing%Ny, 100, output_primary, output_flags)
    if (do_secondary) then
       call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-           indexing%NSolar, indexing%Ny, indexing%Nx, indexing%Ch_Is, ThermalBit, xdim, ydim, &
+           indexing%NSolar, indexing%Ny, indexing%Nx, is_thermal, xdim, ydim, &
            output_secondary, output_flags)
    end if
 
@@ -518,7 +523,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
            indexing%Ny, indexing%NSolar, indexing%YSolar, &
-           indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, &
+           indexing%Y_Id, is_thermal, deflate_level2, shuffle_flag2, &
            verbose, output_flags)
    end if
 
@@ -574,6 +579,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    deallocate(indexing%YSolar)
    deallocate(indexing%Y_Id)
    deallocate(indexing%Ch_Is)
+   deallocate(is_thermal)
 
 #ifdef WRAPPER
 end subroutine post_process_level2

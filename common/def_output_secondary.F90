@@ -55,7 +55,8 @@
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
 !    routines for fields that could be BTs or reflectances. Have all albedo
 !    fields use the same values.
-! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
+!    to identify thermal channels rather than dealing with Ch_Is.
 !
 ! $Id$
 !
@@ -64,7 +65,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
-   NSolar, YSolar, Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, &
+   NSolar, YSolar, Y_Id, thermal, deflate_level, shuffle_flag, &
    verbose, output_flags)
 
    use netcdf
@@ -79,8 +80,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
    integer,                     intent(in)    :: NSolar
    integer,                     intent(in)    :: YSolar(:)
    integer,                     intent(in)    :: Y_Id(:)
-   integer,                     intent(in)    :: Ch_Is(:)
-   integer,                     intent(in)    :: ThermalBit
+   logical,                     intent(in)    :: thermal(:)
    integer,                     intent(in)    :: deflate_level
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
@@ -330,7 +330,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
 
       write(input_num,"(i4)") Y_Id(i)
 
-      if (btest(Ch_Is(i), ThermalBit)) then
+      if (thermal(i)) then
          input_dummy='brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
@@ -366,7 +366,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
 
       write(input_num,"(i4)") Y_Id(i)
 
-      if (btest(Ch_Is(i), ThermalBit)) then
+      if (thermal(i)) then
          input_dummy='firstguess_brightness_temperature_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='firstguess brightness temperature in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'
@@ -401,7 +401,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
 
       write(input_num,"(i4)") Y_Id(i)
 
-      if (btest(Ch_Is(i), ThermalBit)) then
+      if (thermal(i)) then
          input_dummy='brightness_temperature_residual_in_channel_no_'//trim(adjustl(input_num))
          input_dummy2='brightness temperature residual in channel no '//trim(adjustl(input_num))
          input_dummy3='kelvin'

@@ -251,6 +251,9 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! OpenMP related variables
    integer :: n_threads,thread_num
 
+   ! Flags for different retrieval approaches for output
+   logical :: is_thermal(MaxNumMeas)
+
    ! Some more variables for OpenMP implementation
    integer, allocatable, dimension(:) :: totpix_line,totmissed_line,totconv_line, &
                                          totmaxj_line
@@ -433,12 +436,18 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    write(*,*) 'Adaptive processing: ',lhres,xstep,ystep
 #endif
 
+   ! Identify thermal channels (for output code)
+   is_thermal = .false.
+   do i=1,Ctrl%Ind%Ny
+      if (btest(Ctrl%Ind%Ch_Is(i), ThermalBit)) is_thermal(i) = .true.
+   end do
+
    ! Allocate output arrays
    call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
         Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Invpar%MaxIter, output_data_1, &
         output_flags)
    call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-        Ctrl%Ind%NSolar, Ctrl%Ind%Ny, MaxStateVar, Ctrl%Ind%Ch_Is, ThermalBit, Ctrl%Ind%XMax, &
+        Ctrl%Ind%NSolar, Ctrl%Ind%Ny, MaxStateVar, is_thermal, Ctrl%Ind%XMax, &
         Ctrl%Ind%YMax, output_data_2, output_flags)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
@@ -621,7 +630,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
         .false., output_flags)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
         Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
-        Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, &
+        Ctrl%Ind%Y_Id, is_thermal, deflate_level, shuffle_flag, &
         .false., output_flags)
 
    ! Write output from spixel_scan_out structures NetCDF files

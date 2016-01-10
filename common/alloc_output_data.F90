@@ -29,7 +29,8 @@
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax here from def_
 !    routines for fields that could be BTs or reflectances. Have all albedo
 !    fields use the same values.
-! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
+!    to identify thermal channels rather than dealing with Ch_Is.
 !
 ! $Id$
 !
@@ -251,7 +252,7 @@ end subroutine alloc_output_data_primary
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-     NSolar, Ny, Nx, Ch_Is, ThermalBit, Xmax, Ymax, output_data, output_flags)
+     NSolar, Ny, Nx, thermal, Xmax, Ymax, output_data, output_flags)
 
    implicit none
 
@@ -262,8 +263,7 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
    integer,                     intent(in)    :: NSolar
    integer,                     intent(in)    :: Ny
    integer,                     intent(in)    :: Nx
-   integer,                     intent(in)    :: Ch_Is(:)
-   integer,                     intent(in)    :: ThermalBit
+   logical,                     intent(in)    :: thermal(:)
    integer,                     intent(in)    :: Xmax
    integer,                     intent(in)    :: Ymax
    type(output_data_secondary), intent(inout) :: output_data
@@ -361,7 +361,7 @@ end if
    output_data%scanline_v_vmax=Ymax
 
    do i=1,Ny
-      if (btest(Ch_Is(i), ThermalBit)) then
+      if (thermal(i)) then
          output_data%channels_scale(i)=0.01
          output_data%channels_offset(i)=100.0
          output_data%channels_vmin(i)=0
