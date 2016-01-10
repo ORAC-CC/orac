@@ -28,6 +28,7 @@
 ! 2001/07/06, AS: Added check on "distance" from last saved state.
 ! 2015/08/21, AP: Updated to be consistent with current form of code. Now allows
 !    all variables.
+! 2016/01/04, AP: Use MissingXn and MissingSn to flag invalid retrievals.
 !
 ! $Id$
 !
@@ -64,10 +65,11 @@ subroutine X_SDAD(Ctrl, SPixel, index, X, status, Err)
    ! too far away before using these values (e.g. if retrievals fail for a number
    ! of pixels the saved states may be "out of date").
 
-   NPix = sqrt(float((SPixel%Loc%X0-SPixel%Loc%LastX0) ** 2) + &
-               float((SPixel%Loc%Y0-SPixel%Loc%LastY0) ** 2))
+   NPix = sqrt(real((SPixel%Loc%X0-SPixel%Loc%LastX0)) ** 2 + &
+               real((SPixel%Loc%Y0-SPixel%Loc%LastY0)) ** 2)
 
-   if (NPix > Ctrl%Max_SDAD) then
+   if (NPix > Ctrl%Max_SDAD .or. SPixel%XnSav(index) == MissingXn .or. &
+        SPixel%SnSav(index, index) == MissingSn) then
       status = XSDADMeth
    else
       X = SPixel%XnSav(index)

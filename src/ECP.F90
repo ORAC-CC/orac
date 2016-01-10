@@ -516,16 +516,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       SPixel%RTM%SW%NP = RTM%SW%Np
    end if
 
-   ! Initialise values required before main loop begins, e.g. first guess
-   ! phase which may be required for SDAD first guess/a priori setting in the
-   ! first SPixel when no retrieved data is available.
-   SPixel%XnSav = Ctrl%Xb
-   SPixel%SnSav = 0
-   do m=1,MaxStateVar
-      SPixel%SnSav(m,m) = Ctrl%Sx(m) * Ctrl%Sx(m)
-   end do
-   SPixel%Loc%LastX0 = 1
-   SPixel%Loc%LastY0 = 1
+   ! Initialise values required before main loop begins
+   SPixel%XnSav = MissingXn
+   SPixel%SnSav = MissingSn
+   SPixel%Loc%LastX0 = 0
+   SPixel%Loc%LastY0 = 0
 
    ! Start OMP parallel loop for along track direction.
    !$OMP DO SCHEDULE(GUIDED)
