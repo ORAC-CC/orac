@@ -78,6 +78,19 @@ subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
    call nc_write_array(ncid,'scanline_v',output_data%vid_scanline_v,&
            output_data%scanline_v(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
+if (output_flags%do_aerosol) then
+   call nc_write_array(ncid,'aot550_ap',output_data%vid_aot550_ap,&
+           output_data%aot550_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aot550_fg',output_data%vid_aot550_fg,&
+           output_data%aot550_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'aer_ap',output_data%vid_aer_ap,&
+           output_data%aer_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aer_fg',output_data%vid_aer_fg,&
+           output_data%aer_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+end if
+
+if (output_flags%do_cloud) then
    call nc_write_array(ncid,'cot_ap',output_data%vid_cot_ap,&
            output_data%cot_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cot_fg',output_data%vid_cot_fg,&
@@ -106,6 +119,7 @@ subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
               output_data%vid_albedo(i),output_data%albedo(ixstart:,:,i), &
               1,1,n_x,1,1,n_y)
    end do
+end if
 
    do i=1,Ny
       write(input_num,"(i4)") Y_Id(i)

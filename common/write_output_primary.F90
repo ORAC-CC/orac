@@ -106,6 +106,23 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
 
    end do
 
+if (output_flags%do_aerosol) then
+   call nc_write_array(ncid,'aot550',output_data%vid_aot550,&
+           output_data%aot550(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aot550_uncertainty',output_data%vid_aot550_error,&
+           output_data%aot550_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aot870',output_data%vid_aot870,&
+           output_data%aot870(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aot870_uncertainty',output_data%vid_aot870_error,&
+           output_data%aot870_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'aer',output_data%vid_aer,&
+           output_data%aer(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'aer_uncertainty',output_data%vid_aer_error,&
+           output_data%aer_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+end if
+
+if (output_flags%do_cloud) then
    call nc_write_array(ncid,'cot',output_data%vid_cot,&
            output_data%cot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cot_uncertainty',output_data%vid_cot_error,&
@@ -169,6 +186,7 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
 
    call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre,&
            output_data%cccot_pre(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+end if
 
    call nc_write_array(ncid,'convergence',output_data%vid_convergence,&
            output_data%convergence(ixstart:,iystart:),1,1,n_x,1,1,n_y)

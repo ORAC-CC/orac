@@ -314,6 +314,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #endif
 
    ! Set output fields to be produced
+   output_flags%do_aerosol = Ctrl%Approach == AerOx  .or. Ctrl%Approach == AerSw
+   output_flags%do_cloud   = .not. output_flags%do_aerosol
    output_flags%do_phase_pavolonis     = .false.
    output_flags%do_cldmask             = .true.
    output_flags%cloudmask_pre          = .false.

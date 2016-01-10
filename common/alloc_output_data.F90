@@ -86,7 +86,24 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
    allocate(output_data%vid_rel_azi(NViews))
    output_data%vid_rel_azi=0
 
+if (output_flags%do_aerosol) then
+   allocate(output_data%aot550(ixstart:ixstop,iystart:iystop))
+   output_data%aot550=sint_fill_value
+   allocate(output_data%aot550_error(ixstart:ixstop,iystart:iystop))
+   output_data%aot550_error=sint_fill_value
 
+   allocate(output_data%aot870(ixstart:ixstop,iystart:iystop))
+   output_data%aot870=sint_fill_value
+   allocate(output_data%aot870_error(ixstart:ixstop,iystart:iystop))
+   output_data%aot870_error=sint_fill_value
+
+   allocate(output_data%aer(ixstart:ixstop,iystart:iystop))
+   output_data%aer=sint_fill_value
+   allocate(output_data%aer_error(ixstart:ixstop,iystart:iystop))
+   output_data%aer_error=sint_fill_value
+end if
+
+if (output_flags%do_cloud) then
    allocate(output_data%vid_cloud_albedo(Ny))
    output_data%vid_cloud_albedo=0
    allocate(output_data%vid_cloud_albedo_error(Ny))
@@ -146,6 +163,7 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
 
    allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
    output_data%cccot_pre=sint_fill_value
+end if
 
 
    allocate(output_data%time(ixstart:ixstop,iystart:iystop))
@@ -272,7 +290,19 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
    integer :: i
 
 
+if (output_flags%do_aerosol) then
+   allocate(output_data%aot550_ap(ixstart:ixstop,iystart:iystop))
+   output_data%aot550_ap=sint_fill_value
+   allocate(output_data%aot550_fg(ixstart:ixstop,iystart:iystop))
+   output_data%aot550_fg=sint_fill_value
 
+   allocate(output_data%aer_ap(ixstart:ixstop,iystart:iystop))
+   output_data%aer_ap=sint_fill_value
+   allocate(output_data%aer_fg(ixstart:ixstop,iystart:iystop))
+   output_data%aer_fg=sint_fill_value
+end if
+
+if (output_flags%do_cloud) then
    allocate(output_data%cot_ap(ixstart:ixstop,iystart:iystop))
    output_data%cot_ap=sint_fill_value
    allocate(output_data%cot_fg(ixstart:ixstop,iystart:iystop))
@@ -292,6 +322,7 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
    output_data%stemp_ap=sint_fill_value
    allocate(output_data%stemp_fg(ixstart:ixstop,iystart:iystop))
    output_data%stemp_fg=sint_fill_value
+end if
 
    allocate(output_data%vid_albedo(Ny))
    output_data%vid_albedo=0

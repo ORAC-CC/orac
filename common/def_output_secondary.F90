@@ -138,6 +138,85 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
+if (output_flags%do_aerosol) then
+   !----------------------------------------------------------------------------
+   ! aot550_ap
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aot550_ap', &
+           output_data%vid_aot550_ap, &
+           verbose, &
+           long_name     = 'aerosol optical thickness at 550 nm a priori', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles a_priori', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aot550_ap_scale, &
+           add_offset    = output_data%aot550_ap_offset, &
+           valid_min     = output_data%aot550_ap_vmin, &
+           valid_max     = output_data%aot550_ap_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aot550_fg
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aot550_fg', &
+           output_data%vid_aot550_fg, &
+           verbose, &
+           long_name     = 'aerosol optical thickness at 550 nm first guess', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles first_guess', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aot550_fg_scale, &
+           add_offset    = output_data%aot550_fg_offset, &
+           valid_min     = output_data%aot550_fg_vmin, &
+           valid_max     = output_data%aot550_fg_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aer_ap
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aer_ap', &
+           output_data%vid_aer_ap, &
+           verbose, &
+           long_name     = 'aerosol effective radius a priori', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aer_ap_scale, &
+           add_offset    = output_data%aer_ap_offset, &
+           valid_min     = output_data%aer_ap_vmin, &
+           valid_max     = output_data%aer_ap_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aer_fg
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aer_fg', &
+           output_data%vid_aer_fg, &
+           verbose, &
+           long_name     = 'aerosol effective radius first guess', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aer_fg_scale, &
+           add_offset    = output_data%aer_fg_offset, &
+           valid_min     = output_data%aer_fg_vmin, &
+           valid_max     = output_data%aer_fg_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+
+if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_ap
    !----------------------------------------------------------------------------
@@ -322,6 +401,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
    end do
+end if
 
    !----------------------------------------------------------------------------
    ! reflectance and brightness temperature _in_channel_no_*

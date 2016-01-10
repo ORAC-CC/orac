@@ -79,6 +79,63 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    output_data%scanline_u(i,j)=i
    output_data%scanline_v(i,j)=j
 
+if (output_flags%do_aerosol) then
+   !----------------------------------------------------------------------------
+   ! aot550_ap, aot550_fg
+   !----------------------------------------------------------------------------
+   if (SPixel%Xb(ITau) .eq. MissingXn) then
+      dummyreal = sreal_fill_value
+   else
+      dummyreal = 10.0**SPixel%Xb(ITau)
+   end if
+   call prepare_short_packed_float( &
+           dummyreal, output_data%aot550_ap(i,j), &
+           output_data%aot550_ap_scale, output_data%aot550_ap_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aot550_ap_vmin, output_data%aot550_ap_vmax, &
+           output_data%aot550_ap_vmax)
+
+   if (SPixel%X0(ITau) .eq. MissingXn) then
+      dummyreal = sreal_fill_value
+   else
+      dummyreal = 10.0**SPixel%X0(ITau)
+   end if
+   call prepare_short_packed_float( &
+           dummyreal, output_data%aot550_fg(i,j), &
+           output_data%aot550_fg_scale, output_data%aot550_fg_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aot550_fg_vmin, output_data%aot550_fg_vmax, &
+           output_data%aot550_fg_vmax)
+
+   !----------------------------------------------------------------------------
+   ! aer_ap, aer_fg
+   !----------------------------------------------------------------------------
+   if (SPixel%Xb(ITau) .eq. MissingXn) then
+      dummyreal = sreal_fill_value
+   else
+      dummyreal = 10.0**SPixel%Xb(IRe)
+   end if
+   call prepare_short_packed_float( &
+           dummyreal, output_data%aer_ap(i,j), &
+           output_data%aer_ap_scale, output_data%aer_ap_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aer_ap_vmin, output_data%aer_ap_vmax, &
+           output_data%aer_ap_vmax)
+
+   if (SPixel%X0(ITau) .eq. MissingXn) then
+      dummyreal = sreal_fill_value
+   else
+      dummyreal = 10.0**SPixel%X0(IRe)
+   end if
+   call prepare_short_packed_float( &
+           dummyreal, output_data%aer_fg(i,j), &
+           output_data%aer_fg_scale, output_data%aer_fg_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aer_fg_vmin, output_data%aer_fg_vmax, &
+           output_data%aer_fg_vmax)
+end if
+
+if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
@@ -175,7 +232,7 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
            output_data%albedo_vmin, output_data%albedo_vmax, &
            sint_fill_value)
    end do
-
+end if
 
    !----------------------------------------------------------------------------
    ! channels

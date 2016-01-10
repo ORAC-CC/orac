@@ -113,6 +113,63 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
       output_data%rel_azi(i,j,k) = MSI_Data%Geometry%Azi(SPixel%Loc%X0, SPixel%Loc%Y0,k)
    end do
 
+if (output_flags%do_aerosol) then
+   !----------------------------------------------------------------------------
+   ! aot, aot_error
+   !----------------------------------------------------------------------------
+   if (SPixel%Xn(ITau) .eq. MissingXn) then
+      temp_real_ot = sreal_fill_value
+   else
+      temp_real_ot = 10.0**SPixel%Xn(ITau)
+   end if
+   call prepare_short_packed_float( &
+           temp_real_ot, output_data%aot550(i,j), &
+           output_data%aot550_scale, output_data%aot550_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aot550_vmin, output_data%aot550_vmax, &
+           output_data%aot550_vmax)
+
+   if (SPixel%Sn(ITau,ITau) .eq. MissingSn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = sqrt(SPixel%Sn(ITau,ITau)) * temp_real_ot * alog(10.0)
+   end if
+   call prepare_short_packed_float( &
+           temp_real, output_data%aot550_error(i,j), &
+           output_data%aot550_error_scale, output_data%aot550_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aot550_error_vmin, output_data%aot550_error_vmax, &
+           output_data%aot550_error_vmax)
+
+   !----------------------------------------------------------------------------
+   ! aer, aer_error
+   !----------------------------------------------------------------------------
+   if (SPixel%Xn(IRe) .eq. MissingXn) then
+      temp_real_ot = sreal_fill_value
+   else
+      temp_real_ot = 10.0**SPixel%Xn(IRe)
+   end if
+   call prepare_short_packed_float( &
+           temp_real_ot, output_data%aer(i,j), &
+           output_data%aer_scale, output_data%aer_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aer_vmin, output_data%aer_vmax, &
+           output_data%aer_vmax)
+
+   if (SPixel%Sn(IRe,IRe) .eq. MissingSn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = sqrt(SPixel%Sn(IRe,IRe)) * temp_real_ot * alog(10.0)
+   end if
+   call prepare_short_packed_float( &
+           temp_real, output_data%aer_error(i,j), &
+           output_data%aer_error_scale, output_data%aer_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%aer_error_vmin, output_data%aer_error_vmax, &
+           output_data%aer_error_vmax)
+end if
+
+if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot, cot_error
    !----------------------------------------------------------------------------
@@ -407,6 +464,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            sreal_fill_value, sint_fill_value, &
            output_data%cccot_pre_vmin, output_data%cccot_pre_vmax, &
            sint_fill_value)
+end if
 
    !----------------------------------------------------------------------------
    ! convergence, niter

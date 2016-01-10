@@ -47,6 +47,11 @@ module orac_output
       integer                       :: vid_time
       integer                       :: vid_lat, vid_lon
       integer,dimension(:), pointer :: vid_sol_zen, vid_sat_zen, vid_rel_azi
+
+      integer                       :: vid_aot550, vid_aot550_error
+      integer                       :: vid_aot870, vid_aot870_error
+      integer                       :: vid_aer, vid_aer_error
+
       integer                       :: vid_cot, vid_cot_error
       integer                       :: vid_cer, vid_cer_error
       integer                       :: vid_ctp, vid_ctp_error
@@ -106,6 +111,33 @@ module orac_output
       real(kind=sreal)              :: azi_offset = 0.0
       real(kind=sreal)              :: azi_vmin   = -180.0
       real(kind=sreal)              :: azi_vmax   = 180.0
+
+      real(kind=sreal)              :: aot550_scale        = 0.001
+      real(kind=sreal)              :: aot550_offset       = 0.0
+      integer(kind=sint)            :: aot550_vmin         = 0
+      integer(kind=sint)            :: aot550_vmax         = 32000
+      real(kind=sreal)              :: aot550_error_scale  = 0.001
+      real(kind=sreal)              :: aot550_error_offset = 0.0
+      integer(kind=sint)            :: aot550_error_vmin   = 0
+      integer(kind=sint)            :: aot550_error_vmax   = 32000
+
+      real(kind=sreal)              :: aot870_scale        = 0.001
+      real(kind=sreal)              :: aot870_offset       = 0.0
+      integer(kind=sint)            :: aot870_vmin         = 0
+      integer(kind=sint)            :: aot870_vmax         = 32000
+      real(kind=sreal)              :: aot870_error_scale  = 0.001
+      real(kind=sreal)              :: aot870_error_offset = 0.0
+      integer(kind=sint)            :: aot870_error_vmin   = 0
+      integer(kind=sint)            :: aot870_error_vmax   = 32000
+
+      real(kind=sreal)              :: aer_scale        = 0.001
+      real(kind=sreal)              :: aer_offset       = 0.0
+      integer(kind=sint)            :: aer_vmin         = 0
+      integer(kind=sint)            :: aer_vmax         = 32000
+      real(kind=sreal)              :: aer_error_scale  = 0.001
+      real(kind=sreal)              :: aer_error_offset = 0.0
+      integer(kind=sint)            :: aer_error_vmin   = 0
+      integer(kind=sint)            :: aer_error_vmax   = 32000
 
       real(kind=sreal)              :: cot_scale        = 0.01
       real(kind=sreal)              :: cot_offset       = 0.0
@@ -279,6 +311,15 @@ module orac_output
       real(kind=sreal),   dimension(:,:,:),   pointer :: sat_zen
       real(kind=sreal),   dimension(:,:,:),   pointer :: rel_azi
 
+      integer(kind=sint), dimension(:,:),     pointer :: aot550
+      integer(kind=sint), dimension(:,:),     pointer :: aot550_error
+
+      integer(kind=sint), dimension(:,:),     pointer :: aot870
+      integer(kind=sint), dimension(:,:),     pointer :: aot870_error
+
+      integer(kind=sint), dimension(:,:),     pointer :: aer
+      integer(kind=sint), dimension(:,:),     pointer :: aer_error
+
       integer(kind=sint), dimension(:,:),     pointer :: cot
       integer(kind=sint), dimension(:,:),     pointer :: cot_error
 
@@ -337,6 +378,9 @@ module orac_output
       integer                          :: vid_scanline_u
       integer                          :: vid_scanline_v
 
+      integer                          :: vid_aot550_ap,vid_aot550_fg
+      integer                          :: vid_aer_ap,vid_aer_fg
+
       integer                          :: vid_cot_ap,vid_cot_fg
       integer                          :: vid_cer_ap,vid_cer_fg
       integer                          :: vid_ctp_ap,vid_ctp_fg
@@ -360,6 +404,26 @@ module orac_output
       integer(kind=lint)               :: scanline_v_offset = 0
       integer(kind=lint)               :: scanline_v_vmin   = 1
       integer(kind=lint)               :: scanline_v_vmax
+
+      real(kind=sreal)                 :: aot550_ap_scale   = 0.001
+      real(kind=sreal)                 :: aot550_ap_offset  = 0.0
+      integer(kind=sint)               :: aot550_ap_vmin    = 0
+      integer(kind=sint)               :: aot550_ap_vmax    = 32000
+
+      real(kind=sreal)                 :: aot550_fg_scale   = 0.001
+      real(kind=sreal)                 :: aot550_fg_offset  = 0.0
+      integer(kind=sint)               :: aot550_fg_vmin    = 0
+      integer(kind=sint)               :: aot550_fg_vmax    = 32000
+
+      real(kind=sreal)                 :: aer_ap_scale      = 0.001
+      real(kind=sreal)                 :: aer_ap_offset     = 0.0
+      integer(kind=sint)               :: aer_ap_vmin       = 0
+      integer(kind=sint)               :: aer_ap_vmax       = 32000
+
+      real(kind=sreal)                 :: aer_fg_scale      = 0.001
+      real(kind=sreal)                 :: aer_fg_offset     = 0.0
+      integer(kind=sint)               :: aer_fg_vmin       = 0
+      integer(kind=sint)               :: aer_fg_vmax       = 32000
 
       real(kind=sreal)                 :: cot_ap_scale      = 0.01
       real(kind=sreal)                 :: cot_ap_offset     = 0.0
@@ -428,6 +492,9 @@ module orac_output
 
       integer(kind=lint), dimension(:,:),     pointer :: scanline_u, scanline_v
 
+      integer(kind=sint), dimension(:,:),     pointer :: aot550_ap,aot550_fg
+      integer(kind=sint), dimension(:,:),     pointer :: aer_ap,aer_fg
+
       integer(kind=sint), dimension(:,:),     pointer :: cot_ap,cot_fg
       integer(kind=sint), dimension(:,:),     pointer :: cer_ap,cer_fg
       integer(kind=sint), dimension(:,:),     pointer :: ctp_ap,ctp_fg
@@ -444,6 +511,10 @@ module orac_output
    end type output_data_secondary
 
    type output_data_flags
+      ! Flags relevant to both files
+      logical :: do_cloud               ! Output cloud retrieval terms
+      logical :: do_aerosol             ! Output aerosol retrieval terms
+
       ! Primary file flags
       logical :: do_phase_pavolonis     ! Output the Pavolonis cloud phase
       logical :: do_cldmask             ! Output neural net cloud mask

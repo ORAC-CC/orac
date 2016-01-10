@@ -60,8 +60,16 @@ subroutine dealloc_output_data_primary(output_data, output_flags)
    deallocate(output_data%vid_sat_zen)
    deallocate(output_data%vid_rel_azi)
 
+if (output_flags%do_aerosol) then
+   deallocate(output_data%aot550)
+   deallocate(output_data%aot550_error)
+   deallocate(output_data%aot870)
+   deallocate(output_data%aot870_error)
+   deallocate(output_data%aer)
+   deallocate(output_data%aer_error)
+end if
 
-
+if (output_flags%do_cloud) then
    deallocate(output_data%vid_cloud_albedo)
    deallocate(output_data%vid_cloud_albedo_error)
    deallocate(output_data%cot)
@@ -88,6 +96,7 @@ subroutine dealloc_output_data_primary(output_data, output_flags)
    deallocate(output_data%cloud_albedo_error)
 
    deallocate(output_data%cccot_pre)
+end if
 
 
    deallocate(output_data%time)
@@ -153,6 +162,13 @@ subroutine dealloc_output_data_secondary(output_data, output_flags)
    type(output_data_secondary), intent(inout) :: output_data
    type(output_data_flags),     intent(in)    :: output_flags
 
+if (output_flags%do_aerosol) then
+   deallocate(output_data%aot550_ap)
+   deallocate(output_data%aot550_fg)
+   deallocate(output_data%aer_ap)
+   deallocate(output_data%aer_fg)
+end if
+
    deallocate(output_data%vid_albedo)
    deallocate(output_data%albedo)
 
@@ -180,6 +196,7 @@ subroutine dealloc_output_data_secondary(output_data, output_flags)
    deallocate(output_data%scanline_u)
    deallocate(output_data%scanline_v)
 
+if (output_flags%do_cloud) then
    deallocate(output_data%cot_ap)
    deallocate(output_data%cot_fg)
    deallocate(output_data%cer_ap)
@@ -188,6 +205,7 @@ subroutine dealloc_output_data_secondary(output_data, output_flags)
    deallocate(output_data%ctp_fg)
    deallocate(output_data%stemp_ap)
    deallocate(output_data%stemp_fg)
+end if
 
    deallocate(output_data%ds)
 

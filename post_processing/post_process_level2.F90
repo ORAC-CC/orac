@@ -484,6 +484,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end do
 
    ! Hardwire outputs until different input file types supported
+   output_flags%do_cloud               = .true.
+   output_flags%do_aerosol             = .false.
    output_flags%do_phase_pavolonis     = .true.
    output_flags%do_cldmask             = .true.
    output_flags%cloudmask_pre          = .true.

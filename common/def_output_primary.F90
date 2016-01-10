@@ -257,6 +257,129 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
 
    end do
 
+if (output_flags%do_aerosol) then
+   !----------------------------------------------------------------------------
+   ! aot550
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aot550', &
+           output_data%vid_aot550, &
+           verbose, &
+           long_name     = 'aerosol optical thickness at 550 nm', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aot550_scale, &
+           add_offset    = output_data%aot550_offset, &
+           valid_min     = output_data%aot550_vmin, &
+           valid_max     = output_data%aot550_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aot550_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aot550_uncertainty', &
+           output_data%vid_aot550_error, &
+           verbose, &
+           long_name     = 'uncertainty in aerosol optical thickness at 550 nm', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aot550_error_scale, &
+           add_offset    = output_data%aot550_error_offset, &
+           valid_min     = output_data%aot550_error_vmin, &
+           valid_max     = output_data%aot550_error_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aot870
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aot870', &
+           output_data%vid_aot870, &
+           verbose, &
+           long_name     = 'aerosol optical thickness at 870 nm', &
+           standard_name = 'atmosphere_optical_thickness_due_to_ambient_aerosol_particles', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aot870_scale, &
+           add_offset    = output_data%aot870_offset, &
+           valid_min     = output_data%aot870_vmin, &
+           valid_max     = output_data%aot870_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aot870_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aot870_uncertainty', &
+           output_data%vid_aot870_error, &
+           verbose, &
+           long_name     = 'uncertainty in aerosol optical thickness at 870 nm', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aot870_error_scale, &
+           add_offset    = output_data%aot870_error_offset, &
+           valid_min     = output_data%aot870_error_vmin, &
+           valid_max     = output_data%aot870_error_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aer
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aer', &
+           output_data%vid_aer, &
+           verbose, &
+           long_name     = 'aerosol effective radius', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aer_scale, &
+           add_offset    = output_data%aer_offset, &
+           valid_min     = output_data%aer_vmin, &
+           valid_max     = output_data%aer_vmax, &
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! aer_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'aer_uncertainty', &
+           output_data%vid_aer_error, &
+           verbose, &
+           long_name     = 'effective radius uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%aer_error_scale, &
+           add_offset    = output_data%aer_error_offset, &
+           valid_min     = output_data%aer_error_vmin, &
+           valid_max     = output_data%aer_error_vmax, &
+           units         = 'micrometer', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+end if
+
+if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot
    !----------------------------------------------------------------------------
@@ -693,6 +816,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
 
    !----------------------------------------------------------------------------
    ! convergence
