@@ -427,7 +427,7 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "lat", LAT, verbose)
     call nc_read_array(ncid, "lon", LON, verbose)
     call nc_read_array(ncid, "cot", COT, verbose)
-    call nc_read_array(ncid, "ref", REF, verbose)
+    call nc_read_array(ncid, "cer", REF, verbose)
     call nc_read_array(ncid, "cc_total", CC_TOT, verbose)
     call nc_read_array(ncid, "phase", PHASE, verbose)
     call nc_read_array(ncid, "ctt", CTT, verbose)
