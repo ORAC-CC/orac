@@ -26,6 +26,7 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax here from def_
 !    routines for fields that could be BTs or reflectances. Have all albedo
 !    fields use the same values.
@@ -101,6 +102,18 @@ if (output_flags%do_aerosol) then
    output_data%aer=sint_fill_value
    allocate(output_data%aer_error(ixstart:ixstop,iystart:iystop))
    output_data%aer_error=sint_fill_value
+end if
+
+if (output_flags%do_rho) then
+   allocate(output_data%vid_rho(Ny,MaxRho_XX))
+   output_data%vid_rho=0
+   allocate(output_data%vid_rho_error(Ny,MaxRho_XX))
+   output_data%vid_rho_error=0
+
+   allocate(output_data%rho(ixstart:ixstop,iystart:iystop,Ny,MaxRho_XX))
+   output_data%rho=sint_fill_value
+   allocate(output_data%rho_error(ixstart:ixstop,iystart:iystop,Ny,MaxRho_XX))
+   output_data%rho_error=sint_fill_value
 end if
 
 if (output_flags%do_swansea) then
@@ -332,6 +345,18 @@ if (output_flags%do_aerosol) then
    output_data%aer_ap=sint_fill_value
    allocate(output_data%aer_fg(ixstart:ixstop,iystart:iystop))
    output_data%aer_fg=sint_fill_value
+end if
+
+if (output_flags%do_rho) then
+   allocate(output_data%vid_rho_ap(NSolar,MaxRho_XX))
+   output_data%vid_rho_ap=0
+   allocate(output_data%vid_rho_fg(NSolar,MaxRho_XX))
+   output_data%vid_rho_fg=0
+
+   allocate(output_data%rho_ap(ixstart:ixstop,iystart:iystop,NSolar,MaxRho_XX))
+   output_data%rho_ap=sint_fill_value
+   allocate(output_data%rho_fg(ixstart:ixstop,iystart:iystop,NSolar,MaxRho_XX))
+   output_data%rho_fg=sint_fill_value
 end if
 
 if (output_flags%do_swansea) then

@@ -209,7 +209,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer                     :: deflate_level2
    logical                     :: shuffle_flag2
 
-   logical, allocatable        :: is_thermal(:)
+   logical, allocatable        :: is_thermal(:), rho_terms(:,:)
 #ifndef WRAPPER
       nargs = COMMAND_ARGUMENT_COUNT()
 #else
@@ -301,8 +301,10 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    allocate(indexing%Y_Id(MaxNumMeas))
    allocate(indexing%Ch_Is(MaxNumMeas))
    allocate(is_thermal(MaxNumMeas))
+   allocate(rho_terms(MaxNumMeas,MaxRho_XX))
    indexing%Ch_Is = 0
    is_thermal = .false.
+   rho_terms = .false.
 
    do i = 1, MaxNumMeas
       write(input_num, "(i4)") i
@@ -486,6 +488,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    ! Hardwire outputs until different input file types supported
    output_flags%do_cloud               = .true.
    output_flags%do_aerosol             = .false.
+   output_flags%do_rho                 = .false.
    output_flags%do_swansea             = .false.
    output_flags%do_phase_pavolonis     = .true.
    output_flags%do_cldmask             = .true.
@@ -520,13 +523,13 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
    call def_output_primary(ncid_primary, dims_var, output_primary, &
         indexing%NViews, indexing%Ny, indexing%NSolar, &
-        indexing%YSolar, indexing%Y_Id, &
+        indexing%YSolar, indexing%Y_Id, rho_terms, &
         input_primary(1)%qc_flag_masks, input_primary(1)%qc_flag_meanings, &
         deflate_level2, shuffle_flag2, verbose, output_flags)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
            indexing%NViews, indexing%Ny, indexing%NSolar, indexing%YSolar, &
-           indexing%Y_Id, is_thermal, deflate_level2, shuffle_flag2, &
+           indexing%Y_Id, is_thermal, rho_terms, deflate_level2, shuffle_flag2, &
            verbose, output_flags)
    end if
 
@@ -583,6 +586,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    deallocate(indexing%Y_Id)
    deallocate(indexing%Ch_Is)
    deallocate(is_thermal)
+   deallocate(rho_terms)
 
 #ifdef WRAPPER
 end subroutine post_process_level2

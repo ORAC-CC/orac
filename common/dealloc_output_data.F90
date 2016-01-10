@@ -23,6 +23,7 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
@@ -67,6 +68,13 @@ if (output_flags%do_aerosol) then
    deallocate(output_data%aot870_error)
    deallocate(output_data%aer)
    deallocate(output_data%aer_error)
+end if
+
+if (output_flags%do_rho) then
+   deallocate(output_data%vid_rho)
+   deallocate(output_data%vid_rho_error)
+   deallocate(output_data%rho)
+   deallocate(output_data%rho_error)
 end if
 
 if (output_flags%do_swansea) then
@@ -182,6 +190,13 @@ if (output_flags%do_aerosol) then
    deallocate(output_data%aot550_fg)
    deallocate(output_data%aer_ap)
    deallocate(output_data%aer_fg)
+end if
+
+if (output_flags%do_rho) then
+   deallocate(output_data%vid_rho_ap)
+   deallocate(output_data%vid_rho_fg)
+   deallocate(output_data%rho_ap)
+   deallocate(output_data%rho_fg)
 end if
 
 if (output_flags%do_swansea) then

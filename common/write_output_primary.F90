@@ -39,6 +39,7 @@
 !    with post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2016/01/05, AP: The cloud albedo field name is now properly subscripted with
 !    YSolar, rather than just counting up Y_Id.
 ! 2016/01/06, AP: Add do_cldmask checks from output_flags structure.
@@ -70,7 +71,7 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
-   integer            :: i
+   integer            :: i, j
    integer            :: n_x
    integer            :: n_y
 
@@ -120,6 +121,21 @@ if (output_flags%do_aerosol) then
            output_data%aer(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'aer_uncertainty',output_data%vid_aer_error,&
            output_data%aer_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+end if
+
+if (output_flags%do_rho) then
+   do i=1,NSolar
+      do j=1,MaxRho_XX
+         if (output_data%vid_rho(i,j) /= 0) then
+            call nc_write_array(ncid,'rho', &
+                 output_data%vid_rho(i,j),&
+                 output_data%rho(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
+            call nc_write_array(ncid,'rho_uncertainty', &
+                 output_data%vid_rho_error(i,j), &
+                 output_data%rho_error(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
+         end if
+      end do
+   end do
 end if
 
 if (output_flags%do_swansea) then

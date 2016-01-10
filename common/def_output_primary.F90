@@ -66,6 +66,7 @@
 ! 2015/11/17, OS: line 71 was too long for compiler
 ! 2015/10/24, GM: Fix flag_values and flag_meanings for lsflag.
 ! 2015/12/17, OS: Updated NetCDF time variable definition.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
 !    routines for fields that could be BTs or reflectances.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
@@ -78,7 +79,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
-   Ny, NSolar, YSolar, Y_Id, qc_flag_masks, qc_flag_meanings, &
+   Ny, NSolar, YSolar, Y_Id, rho_terms, qc_flag_masks, qc_flag_meanings, &
    deflate_level, shuffle_flag, verbose, output_flags)
 
    use netcdf
@@ -94,6 +95,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    integer,                   intent(in)    :: NSolar
    integer,                   intent(in)    :: YSolar(:)
    integer,                   intent(in)    :: Y_Id(:)
+   logical,                   intent(in)    :: rho_terms(:,:)
    character(len=*),          intent(in)    :: qc_flag_masks
    character(len=*),          intent(in)    :: qc_flag_meanings
    integer,                   intent(in)    :: deflate_level
@@ -104,7 +106,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
    character(len=512) :: input_dummy2
-   integer            :: i
+   integer            :: i, j
    integer            :: i_view
 
 
@@ -377,6 +379,102 @@ if (output_flags%do_aerosol) then
            units         = 'micrometer', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
+
+if (output_flags%do_rho) then
+   !----------------------------------------------------------------------------
+   ! rho_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      do j=1,MaxRho_XX
+         if (rho_terms(i,j)) then
+            select case (j)
+            case(IRho_0V)
+               input_dummy='surface direct beam reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0V_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_0D)
+               input_dummy='surface direct-to-diffuse reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0D_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DV)
+               input_dummy='surface diffuse-to-direct reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DV_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DD)
+               input_dummy='surface diffuse reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DD_in_channel_no_'//trim(adjustl(input_num))
+            end select
+
+            call nc_def_var_short_packed_float( &
+                 ncid, &
+                 dims_var, &
+                 trim(adjustl(input_dummy2)), &
+                 output_data%vid_rho(i,j), &
+                 verbose, &
+                 long_name     = trim(adjustl(input_dummy)), &
+                 standard_name = '', &
+                 fill_value    = sint_fill_value, &
+                 scale_factor  = output_data%rho_scale, &
+                 add_offset    = output_data%rho_offset, &
+                 valid_min     = output_data%rho_vmin, &
+                 valid_max     = output_data%rho_vmax, &
+                 units         = '1', &
+                 deflate_level = deflate_level, &
+                 shuffle       = shuffle_flag)
+         end if
+      end do
+   end do
+
+   !----------------------------------------------------------------------------
+   ! rho_uncertainty_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      do j=1,MaxRho_XX
+         if (rho_terms(i,j)) then
+            select case (j)
+            case(IRho_0V)
+               input_dummy='uncertainty in surface direct beam reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0V_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_0D)
+               input_dummy='uncertainty in surface direct-to-diffuse reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0D_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DV)
+               input_dummy='uncertainty in surface diffuse-to-direct reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DV_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DD)
+               input_dummy='uncertainty in surface diffuse reflectance in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DD_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+            end select
+
+            call nc_def_var_short_packed_float( &
+                 ncid, &
+                 dims_var, &
+                 trim(adjustl(input_dummy2)), &
+                 output_data%vid_rho_error(i,j), &
+                 verbose, &
+                 long_name     = trim(adjustl(input_dummy)), &
+                 standard_name = '', &
+                 fill_value    = sint_fill_value, &
+                 scale_factor  = output_data%rho_error_scale, &
+                 add_offset    = output_data%rho_error_offset, &
+                 valid_min     = output_data%rho_error_vmin, &
+                 valid_max     = output_data%rho_error_vmax, &
+                 units         = '1', &
+                 deflate_level = deflate_level, &
+                 shuffle       = shuffle_flag)
+         end if
+      end do
+   end do
 end if
 
 if (output_flags%do_swansea) then

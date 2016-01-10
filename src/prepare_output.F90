@@ -88,7 +88,7 @@ function string_description_of_state(state, str) result(status)
       str = 'STEMP'
       return
    end if
-if (.false.) then
+
    do j = 1, MaxRho_XX
       do i = 1, MaxNumSolar
          if (state == IRs(i,j)) then
@@ -106,7 +106,7 @@ if (.false.) then
          return
       end if
    end do
-end if
+
    status = 1
 
 end function string_description_of_state

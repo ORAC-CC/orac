@@ -38,6 +38,7 @@
 !    signal for non-retrieved pixels.
 ! 2015/09/14, GM: Change output cot_ap and cot_fg from log10 space to linear
 !    space.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/07, AP: Check for valid AK values relied on short-circuiting, which
@@ -133,6 +134,47 @@ if (output_flags%do_aerosol) then
            sreal_fill_value, sint_fill_value, &
            output_data%aer_fg_vmin, output_data%aer_fg_vmax, &
            output_data%aer_fg_vmax)
+end if
+
+if (output_flags%do_rho) then
+   !----------------------------------------------------------------------------
+   ! rho_ap, rho_fg
+   !----------------------------------------------------------------------------
+   do k=1,SPixel%Ind%NSolar
+      kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+
+      do l=1,MaxRho_XX
+         if (any(SPixel%X .eq. IRs(kk,l))) then
+            if (SPixel%Xb(IRs(kk,l)) .eq. MissingXn) then
+               dummyreal = sreal_fill_value
+            else
+               dummyreal = SPixel%Xb(IRs(kk,l))
+            end if
+            call prepare_short_packed_float( &
+                 dummyreal, output_data%rho_ap(i,j,kk,l), &
+                 output_data%rho_ap_scale, &
+                 output_data%rho_ap_offset, &
+                 sreal_fill_value, sint_fill_value, &
+                 output_data%rho_ap_vmin, &
+                 output_data%rho_ap_vmax, &
+                 sint_fill_value)
+
+            if (SPixel%X0(IRs(kk,l)) .eq. MissingXn) then
+               dummyreal = sreal_fill_value
+            else
+               dummyreal = SPixel%X0(IRs(kk,l))
+            end if
+            call prepare_short_packed_float( &
+                 dummyreal, output_data%rho_fg(i,j,kk,l), &
+                 output_data%rho_fg_scale, &
+                 output_data%rho_fg_offset, &
+                 sreal_fill_value, sint_fill_value, &
+                 output_data%rho_fg_vmin, &
+                 output_data%rho_fg_vmax, &
+                 sint_fill_value)
+         end if
+      end do
+   end do
 end if
 
 if (output_flags%do_swansea) then

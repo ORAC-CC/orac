@@ -252,7 +252,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    integer :: n_threads,thread_num
 
    ! Flags for different retrieval approaches for output
-   logical :: is_thermal(MaxNumMeas)
+   logical :: is_thermal(MaxNumMeas), rho_terms(MaxNumSolar,MaxRho_XX)
 
    ! Some more variables for OpenMP implementation
    integer, allocatable, dimension(:) :: totpix_line,totmissed_line,totconv_line, &
@@ -316,6 +316,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Set output fields to be produced
    output_flags%do_aerosol = Ctrl%Approach == AerOx  .or. Ctrl%Approach == AerSw
    output_flags%do_cloud   = .not. output_flags%do_aerosol
+   output_flags%do_rho     = Ctrl%Approach == AerOx
    output_flags%do_swansea = Ctrl%Approach == AerSw
    output_flags%do_phase_pavolonis     = .false.
    output_flags%do_cldmask             = .true.
@@ -623,17 +624,27 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call nc_create(Ctrl%FID%L2_secondary, ncid_secondary, ixstop-ixstart+1, &
      iystop-iystart+1, dims_var, 2, global_atts, source_atts)
 
+   ! Identify which surface terms need to be output
+   rho_terms = .false.
+   if (output_flags%do_rho) then
+      do i=1,Ctrl%Ind%NSolar
+         do j=1,MaxRho_XX
+            if (any(Ctrl%X == IRs(i,j))) rho_terms(i,j) = .true.
+         end do
+      end do
+   end if
+
    ! Create NetCDF files and variables
    call build_qc_flag_masks(Ctrl, qc_flag_masks)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
         Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
-        Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  &
+        Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  rho_terms, &
         qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
         .false., output_flags)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
         Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
-        Ctrl%Ind%Y_Id, is_thermal, deflate_level, shuffle_flag, &
+        Ctrl%Ind%Y_Id, is_thermal, rho_terms, deflate_level, shuffle_flag, &
         .false., output_flags)
 
    ! Write output from spixel_scan_out structures NetCDF files

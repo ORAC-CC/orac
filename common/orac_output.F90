@@ -25,6 +25,7 @@
 !    post_processing/.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax to here from def_
 !    routines. Have all albedo fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
@@ -51,6 +52,7 @@ module orac_output
       integer                       :: vid_aot550, vid_aot550_error
       integer                       :: vid_aot870, vid_aot870_error
       integer                       :: vid_aer, vid_aer_error
+      integer,dimension(:,:),pointer:: vid_rho, vid_rho_error
       integer,dimension(:), pointer :: vid_swansea_s, vid_swansea_s_error
       integer,dimension(:), pointer :: vid_swansea_p, vid_swansea_p_error
       integer,dimension(:), pointer :: vid_diffuse_frac, vid_diffuse_frac_error
@@ -141,6 +143,15 @@ module orac_output
       real(kind=sreal)              :: aer_error_offset = 0.0
       integer(kind=sint)            :: aer_error_vmin   = 0
       integer(kind=sint)            :: aer_error_vmax   = 32000
+
+      real(kind=sreal)              :: rho_scale        = 0.0001
+      real(kind=sreal)              :: rho_offset       = 0.0
+      integer(kind=sint)            :: rho_vmin         = 0
+      integer(kind=sint)            :: rho_vmax         = 32000
+      real(kind=sreal)              :: rho_error_scale  = 0.00001
+      real(kind=sreal)              :: rho_error_offset = 0.0
+      integer(kind=sint)            :: rho_error_vmin   = 0
+      integer(kind=sint)            :: rho_error_vmax   = 32000
 
       real(kind=sreal)              :: swansea_s_scale        = 0.0001
       real(kind=sreal)              :: swansea_s_offset       = 0.0
@@ -350,6 +361,9 @@ module orac_output
       integer(kind=sint), dimension(:,:),     pointer :: aer
       integer(kind=sint), dimension(:,:),     pointer :: aer_error
 
+      integer(kind=sint), dimension(:,:,:,:), pointer :: rho
+      integer(kind=sint), dimension(:,:,:,:), pointer :: rho_error
+
       integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s
       integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s_error
 
@@ -420,6 +434,7 @@ module orac_output
       integer                          :: vid_aot550_ap,vid_aot550_fg
       integer                          :: vid_aer_ap,vid_aer_fg
 
+      integer, dimension(:,:), pointer :: vid_rho_ap, vid_rho_fg
       integer, dimension(:),   pointer :: vid_swansea_s_ap, vid_swansea_s_fg
       integer, dimension(:),   pointer :: vid_swansea_p_ap, vid_swansea_p_fg
 
@@ -466,6 +481,16 @@ module orac_output
       real(kind=sreal)                 :: aer_fg_offset     = 0.0
       integer(kind=sint)               :: aer_fg_vmin       = 0
       integer(kind=sint)               :: aer_fg_vmax       = 32000
+
+      real(kind=sreal)                 :: rho_ap_scale      = 0.000
+      real(kind=sreal)                 :: rho_ap_offset     = 0.0
+      integer(kind=sint)               :: rho_ap_vmin       = 0
+      integer(kind=sint)               :: rho_ap_vmax       = 32000
+
+      real(kind=sreal)                 :: rho_fg_scale      = 0.001
+      real(kind=sreal)                 :: rho_fg_offset     = 0.0
+      integer(kind=sint)               :: rho_fg_vmin       = 0
+      integer(kind=sint)               :: rho_fg_vmax       = 32000
 
       real(kind=sreal)                 :: swansea_s_ap_scale  = 0.0001
       real(kind=sreal)                 :: swansea_s_ap_offset = 0.0
@@ -556,6 +581,7 @@ module orac_output
 
       integer(kind=sint), dimension(:,:),     pointer :: aot550_ap,aot550_fg
       integer(kind=sint), dimension(:,:),     pointer :: aer_ap,aer_fg
+      integer(kind=sint), dimension(:,:,:,:), pointer :: rho_ap,rho_fg
       integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s_ap,swansea_s_fg
       integer(kind=sint), dimension(:,:,:),   pointer :: swansea_p_ap,swansea_p_fg
 
@@ -578,6 +604,7 @@ module orac_output
       ! Flags relevant to both files
       logical :: do_cloud               ! Output cloud retrieval terms
       logical :: do_aerosol             ! Output aerosol retrieval terms
+      logical :: do_rho                 ! Output retrieved surface reflectances
       logical :: do_swansea             ! Output retrieved Swansea parameters
 
       ! Primary file flags

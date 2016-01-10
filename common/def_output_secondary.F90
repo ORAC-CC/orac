@@ -52,6 +52,7 @@
 !    nc_def_var_*.
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
 !    routines for fields that could be BTs or reflectances. Have all albedo
 !    fields use the same values.
@@ -65,7 +66,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine def_output_secondary(ncid, dims_var, output_data, NViews, Ny, &
-   NSolar, YSolar, Y_Id, thermal, deflate_level, shuffle_flag, &
+   NSolar, YSolar, Y_Id, thermal, rho_terms, deflate_level, shuffle_flag, &
    verbose, output_flags)
 
    use netcdf
@@ -82,6 +83,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, NViews, Ny, &
    integer,                     intent(in)    :: YSolar(:)
    integer,                     intent(in)    :: Y_Id(:)
    logical,                     intent(in)    :: thermal(:)
+   logical,                     intent(in)    :: rho_terms(:,:)
    integer,                     intent(in)    :: deflate_level
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
@@ -89,7 +91,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, NViews, Ny, &
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy, input_dummy2, input_dummy3
-   integer            :: i
+   integer            :: i, j
 
 
    !----------------------------------------------------------------------------
@@ -215,6 +217,91 @@ if (output_flags%do_aerosol) then
            valid_max     = output_data%aer_fg_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
+
+if (output_flags%do_rho) then
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      do j=1,MaxRho_XX
+         if (rho_terms(i,j)) then
+   !----------------------------------------------------------------------------
+   ! rho_XX_ap_in_channel_no_*
+   !----------------------------------------------------------------------------
+            select case (j)
+            case(IRho_0V)
+               input_dummy='surface direct beam reflectance a priori in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0V_ap_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_0D)
+               input_dummy='surface direct-to-diffuse reflectance a priori in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0D_ap_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DV)
+               input_dummy='surface diffuse-to-direct reflectance a priori in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DV_ap_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DD)
+               input_dummy='surface diffuse reflectance a priori in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DD_ap_in_channel_no_'//trim(adjustl(input_num))
+            end select
+
+            call nc_def_var_short_packed_float( &
+                 ncid, &
+                 dims_var, &
+                 trim(adjustl(input_dummy2)), &
+                 output_data%vid_rho_ap(i,j), &
+                 verbose, &
+                 long_name     = trim(adjustl(input_dummy)), &
+                 standard_name = '', &
+                 fill_value    = sint_fill_value, &
+                 scale_factor  = output_data%rho_ap_scale, &
+                 add_offset    = output_data%rho_ap_offset, &
+                 valid_min     = output_data%rho_ap_vmin, &
+                 valid_max     = output_data%rho_ap_vmax, &
+                 deflate_level = deflate_level, &
+                 shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! rho_XX_fg_in_channel_no_*
+   !----------------------------------------------------------------------------
+            select case (j)
+            case(IRho_0V)
+               input_dummy='surface direct beam reflectance first guess in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0V_fg_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_0D)
+               input_dummy='surface direct-to-diffuse reflectance first guess in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_0D_fg_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DV)
+               input_dummy='surface diffuse-to-direct reflectance first guess in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DV_fg_in_channel_no_'//trim(adjustl(input_num))
+
+            case(IRho_DD)
+               input_dummy='surface diffuse reflectance first guess in channel no '//trim(adjustl(input_num))
+               input_dummy2='rho_DD_fg_in_channel_no_'//trim(adjustl(input_num))
+            end select
+
+            call nc_def_var_short_packed_float( &
+                 ncid, &
+                 dims_var, &
+                 trim(adjustl(input_dummy2)), &
+                 output_data%vid_rho_fg(i,j), &
+                 verbose, &
+                 long_name     = trim(adjustl(input_dummy)), &
+                 standard_name = '', &
+                 fill_value    = sint_fill_value, &
+                 scale_factor  = output_data%rho_fg_scale, &
+                 add_offset    = output_data%rho_fg_offset, &
+                 valid_min     = output_data%rho_fg_vmin, &
+                 valid_max     = output_data%rho_fg_vmax, &
+                 deflate_level = deflate_level, &
+                 shuffle       = shuffle_flag)
+         end if
+      end do
+   end do
 end if
 
 if (output_flags%do_swansea) then

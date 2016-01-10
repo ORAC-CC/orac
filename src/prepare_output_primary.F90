@@ -57,6 +57,7 @@
 ! 2015/11/26, GM: AATSR time offset is now applied in the preprocessor.
 ! 2015/12/10, GM: Fixed conversion of geopotential height to geometric height:
 !    10.0 was being used instead of g_wmo (gravitational acceleration).
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
@@ -87,7 +88,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    type(output_data_primary), intent(inout) :: output_data
    type(output_data_flags),   intent(in)    :: output_flags
 
-   integer            :: k, kk
+   integer            :: k, kk, l
    integer(kind=sint) :: temp_short_ctp_error
    real(kind=sreal)   :: temp_real, temp_real_ot, temp_real_ctp_error
 
@@ -167,6 +168,48 @@ if (output_flags%do_aerosol) then
            sreal_fill_value, sint_fill_value, &
            output_data%aer_error_vmin, output_data%aer_error_vmax, &
            output_data%aer_error_vmax)
+end if
+
+if (output_flags%do_rho) then
+   !----------------------------------------------------------------------------
+   ! rho, rho_error
+   !----------------------------------------------------------------------------
+   do k=1,SPixel%Ind%NSolar
+      kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+
+      do l=1,MaxRho_XX
+         if (any(SPixel%X .eq. IRs(kk,l))) then
+
+            if (SPixel%Xn(IRs(kk,l)) .eq. MissingXn) then
+               temp_real = sreal_fill_value
+            else
+               temp_real = SPixel%Xn(IRs(kk,l))
+            end if
+            call prepare_short_packed_float( &
+                 temp_real, output_data%rho(i,j,kk,l), &
+                 output_data%rho_scale, &
+                 output_data%rho_offset, &
+                 sreal_fill_value, sint_fill_value, &
+                 output_data%rho_vmin, &
+                 output_data%rho_vmax, &
+                 sint_fill_value)
+
+            if (SPixel%Sn(IRs(kk,l),IRs(kk,l)) .eq. MissingSn) then
+               temp_real = sreal_fill_value
+            else
+               temp_real = sqrt(SPixel%Sn(IRs(kk,l),IRs(kk,l)))
+            end if
+            call prepare_short_packed_float( &
+                 temp_real, output_data%rho_error(i,j,kk,l), &
+                 output_data%rho_error_scale, &
+                 output_data%rho_error_offset, &
+                 sreal_fill_value, sint_fill_value, &
+                 output_data%rho_error_vmin, &
+                 output_data%rho_error_vmax, &
+                 sint_fill_value)
+         end if
+      end do
+   end do
 end if
 
 if (output_flags%do_swansea) then

@@ -36,6 +36,7 @@
 !    rather than the MSI file.
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
@@ -88,6 +89,19 @@ if (output_flags%do_aerosol) then
            output_data%aer_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'aer_fg',output_data%vid_aer_fg,&
            output_data%aer_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+end if
+
+if (output_flags%do_rho) then
+   do i=1,NSolar
+      do j=1,MaxRho_XX
+         if (output_data%vid_rho_ap(i,j) /= 0) then
+            call nc_write_array(ncid,'rho_ap',output_data%vid_rho_ap(i,j),&
+                 output_data%rho_ap(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
+            call nc_write_array(ncid,'rho_fg',output_data%vid_rho_fg(i,j),&
+                 output_data%rho_fg(ixstart:,iystart:,i,j),1,1,n_x,1,1,n_y)
+         end if
+      end do
+   end do
 end if
 
 if (output_flags%do_swansea) then
