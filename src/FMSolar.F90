@@ -276,8 +276,6 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    ! of the CRP array refers to the property. Hence ITB is the index of TB, etc.
 
    ! Define local variables
-   integer, parameter :: i_equation_form = 1
-
    integer                            :: i, ii, j
    integer                            :: Solar(SPixel%Ind%NSolar)
    real                               :: REF_over(SPixel%Ind%NSolar)
@@ -447,7 +445,7 @@ else
           SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d
 
    ! Calculate overcast reflectance
-   if (i_equation_form .eq. 1) then ! Traditional ORAC forward model
+   if (Ctrl%i_equation_form .eq. 1) then ! Traditional ORAC forward model
       c = CRP(:,IT_dv) * Tbc_d
 
       d = CRP(:,IR_0v) + &
@@ -475,12 +473,12 @@ else
    ! cloudy conditions
 
    ! Derivative w.r.t. cloud optical depth, Tau
-   call derivative_wrt_crp_parameter_brdf(SPixel, ITau, i_equation_form, CRP, &
+   call derivative_wrt_crp_parameter_brdf(SPixel, ITau, Ctrl%i_equation_form, CRP, &
       d_CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, &
       Tbc_dd, SPixel%Surface%Rs2, d_REF(:,ITau), a, b, c)
 
    ! Derivative w.r.t. effective radius, r_e
-   call derivative_wrt_crp_parameter_brdf(SPixel, IRe,  i_equation_form, CRP, &
+   call derivative_wrt_crp_parameter_brdf(SPixel, IRe,  Ctrl%i_equation_form, CRP, &
       d_CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, Tbc_dv, &
       Tbc_dd, SPixel%Surface%Rs2, d_REF(:,IRe), a, b, c)
 
@@ -525,7 +523,7 @@ else
       Tbc_dd_l = 2. * Tbc_d_l * Tbc_d
 
       ! Derivative w.r.t. cloud-top pressure, P_c
-      if (i_equation_form .eq. 1) then
+      if (Ctrl%i_equation_form .eq. 1) then
          d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_DD)) * &
                   CRP(:,IT_dv) * (Tbc_0_l * Tbc_d + Tbc_0 * Tbc_d_l) + &
                ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
@@ -569,13 +567,13 @@ else
          ! If no dependence, skip this derivative
          if (sum(rho_l) == 0.0) cycle
 
-         call derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, &
+         call derivative_wrt_rho_parameters_brdf(SPixel, Ctrl%i_equation_form, &
               CRP, X(IFr), Tac_0v, Tbc_0, Tbc_v, Tbc_d, Tbc_0v, Tbc_0d, &
               Tbc_dv, Tbc_dd, rho_l, d_REF(:,IRs(ii,j)), a, b, c)
       end do
    end do
-
 end if
+
    ! Open breakpoint file if required, and write out reflectances and gradients.
 #ifdef BKP
    if (Ctrl%Bkpl >= BkpL_FM_Solar) then

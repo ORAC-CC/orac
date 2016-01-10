@@ -246,6 +246,9 @@ module CTRL_def
       real                   :: Sunset             ! SolZen angle for sunset
 
       ! Switches and flags controlling optional behaviours
+      integer                :: i_equation_form    ! Selects equation used in
+                                                   ! FMSolar if Surface%
+                                                   ! use_full_brdf = .true.
       integer                :: LUTIntSelm         ! LUT Interpolation flag,
                                                    ! See LUTIntMeth variables.
       integer                :: RTMIntSelm         ! RTM Interpolation flag,

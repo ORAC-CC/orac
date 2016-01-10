@@ -384,11 +384,11 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Run_ID = 'none'
 
    !----------------------- CTRL%RS -----------------------
-   Ctrl%RS%RsSelm        = switch(a, Default=SelmAux)
-   Ctrl%RS%SRsSelm       = switch(a, Default=SelmCtrl, Aer=SelmAux)
-   Ctrl%RS%use_full_brdf = switch(a, Default=.true.,   AerSw=.false.)
-   Ctrl%RS%Sb            = switch(a, Default=0.2,      Aer=0.05)
-   Ctrl%RS%Cb            = switch(a, Default=0.2,      Aer=0.4)
+   Ctrl%RS%RsSelm         = switch(a, Default=SelmAux)
+   Ctrl%RS%SRsSelm        = switch(a, Default=SelmCtrl, Aer=SelmAux)
+   Ctrl%RS%use_full_brdf  = switch(a, Default=.true.,   AerSw=.false.)
+   Ctrl%RS%Sb             = switch(a, Default=0.2,      Aer=0.05)
+   Ctrl%RS%Cb             = switch(a, Default=0.2,      Aer=0.4)
 
    ! Select assumed surface reflectance based on wavelength
    wvl_threshold = 0.05
@@ -495,6 +495,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sunset    = 90. ! Used to identify twilight conditions
 
    !----------------------- CTRL SWITCHES -----------------
+   Ctrl%i_equation_form = switch(a, Default=1, AerOx=2)
    Ctrl%LUTIntSelm      = switch(a, Default=LUTIntMethLinear)
    Ctrl%RTMIntSelm      = switch(a, Default=RTMIntMethLinear, Aer=RTMIntMethNone)
    Ctrl%CloudType       = switch(a, Default=1,                Aer=2)
@@ -888,6 +889,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%MinRelAzi)        /= 0) call h_p_e(label)
       case('CTRL%SUNSET')
          if (parse_string(line, Ctrl%Sunset)           /= 0) call h_p_e(label)
+      case('CTRL%I_EQUATION_FORM')
+         if (parse_string(line, Ctrl%i_equation_form)  /= 0) call h_p_e(label)
       case('CTRL%LUTINTSELM','CTRL%LUTINTFLAG')
          if (parse_user_text(line, Ctrl%LUTIntSelm)    /= 0) call h_p_e(label)
       case('CTRL%RTMINTSELM','CTRL%RTMINTFLAG')
