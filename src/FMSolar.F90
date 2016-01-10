@@ -104,15 +104,13 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine derivative_wrt_crp_parameter(SPixel, i_param, CRP, d_CRP, f, Tac_0v, &
+subroutine derivative_wrt_crp_parameter(i_param, Rs, CRP, d_CRP, f, Tac_0v, &
    Tbc2, T_all, S, S_dnom, d_Rs, d_REF)
-
-   use SPixel_def
 
    implicit none
 
-   type(SPixel_t), intent(in)  :: SPixel
    integer,        intent(in)  :: i_param
+   real,           intent(in)  :: Rs(:)
    real,           intent(in)  :: CRP(:,:)
    real,           intent(in)  :: d_CRP(:,:,:)
    real,           intent(in)  :: f
@@ -125,12 +123,11 @@ subroutine derivative_wrt_crp_parameter(SPixel, i_param, CRP, d_CRP, f, Tac_0v, 
    real,           intent(out) :: d_REF(:,:)
 
    d_REF(:,i_param) = f * Tac_0v * ( &
-      d_CRP(:,IRBd,i_param) + &
-      Tbc2 / S_dnom * SPixel%Surface%Rs * ( &
-         T_all * d_CRP(:,ITd,i_param) + &
-         CRP(:,ITd) * (d_CRP(:,ITB,i_param) + d_CRP(:,ITFBd,i_param))) + &
-      S / S_dnom * (d_Rs(:,i_param) + &
-                    SPixel%Surface%Rs * Tbc2 * d_CRP(:,IRFd,i_param)))
+      d_CRP(:,IR_0v,i_param) + &
+      Tbc2 / S_dnom * Rs * ( &
+         T_all * d_CRP(:,IT_dv,i_param) + &
+         CRP(:,IT_dv) * (d_CRP(:,IT_00,i_param) + d_CRP(:,IT_0d,i_param))) + &
+      S / S_dnom * (d_Rs(:,i_param) + Rs * Tbc2 * d_CRP(:,IR_dd,i_param)))
 
 end subroutine derivative_wrt_crp_parameter
 
@@ -319,7 +316,7 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
 
 
    ! Fetch surface reflectance
-   if (Ctrl%Rs%use_full_brdf) then
+   if (Ctrl%RS%use_full_brdf) then
       ! Copy surface reflectances from X to SPixel%Surface
       do j = 1, MaxRho_XX
          SPixel%Surface%Rs2(:,j) = X(SPixel%Surface%XIndex(:,j)) * &
@@ -389,23 +386,23 @@ if (.not. Ctrl%RS%use_full_brdf) then
    ! derivatives
 
    T_all = CRP(:,ITB) + CRP(:,ITFBd) ! Direct + diffuse transmission
-   a = 1.0 - SPixel%Surface%Rs * CRP(:,IRFd) * Tbc_dd
+   a = 1.0 - SPixel%Surface%Rs * CRP(:,IR_dd) * Tbc_dd
 
-   d = T_all * SPixel%Surface%Rs * CRP(:,ITd) * Tbc_dd / a
+   d = T_all * SPixel%Surface%Rs * CRP(:,IT_dv) * Tbc_dd / a
 
    ! Calculate overcast reflectance
-   REF_over = Tac_0v * (CRP(:,IRBd) + d)
+   REF_over = Tac_0v * (CRP(:,IR_0v) + d)
 
    ! Calculate top of atmosphere reflectance for fractional cloud cover
    REF = X(IFr) * REF_over + (1.0-X(IFr)) * SPixel%RTM%REF_clear
 
    ! Derivative w.r.t. cloud optical depth, Tau
-   call derivative_wrt_crp_parameter(SPixel, ITau, CRP, d_CRP, X(IFr), Tac_0v, &
-      Tbc_dd, T_all, d, a, d_Rs, d_REF)
+   call derivative_wrt_crp_parameter(ITau, SPixel%Surface%Rs, CRP, d_CRP, &
+        X(IFr), Tac_0v, Tbc_dd, T_all, d, a, d_Rs, d_REF)
 
    ! Derivative w.r.t. effective radius, r_e
-   call derivative_wrt_crp_parameter(SPixel, IRe,  CRP, d_CRP, X(IFr), Tac_0v, &
-      Tbc_dd, T_all, d, a, d_Rs, d_REF)
+   call derivative_wrt_crp_parameter(IRe,  SPixel%Surface%Rs, CRP, d_CRP, &
+        X(IFr), Tac_0v, Tbc_dd, T_all, d, a, d_Rs, d_REF)
 
    ! Derivative w.r.t. cloud-top pressure, P_c
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
@@ -417,7 +414,7 @@ if (.not. Ctrl%RS%use_full_brdf) then
                  * REF_over(i) / RTM_Pc%SW%Tac(Solar(i))) + &
             (2.0 * RTM_Pc%SW%dTbc_dPc(Solar(i)) * Tac_0v(i) * d(i) * &
                    RTM_Pc%SW%Tbc(Solar(i)) * &
-                   (1.0/Tbc_dd(i) + CRP(i,IRFd) * SPixel%Surface%Rs(i) / a(i)))
+                   (1.0/Tbc_dd(i) + CRP(i,IR_dd) * SPixel%Surface%Rs(i) / a(i)))
       end do
    end if
 
@@ -431,8 +428,8 @@ if (.not. Ctrl%RS%use_full_brdf) then
    do i = 1, SPixel%Ind%NSolar
       ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
       d_REF(i,IRs(ii,IRho_DD)) = ( &
-           X(IFr) * Tac_0v(i) * Tbc_dd(i) / a(i) * (T_all(i) * CRP(i,ITd) + &
-                                                    d(i) * CRP(i,IRFd)) + &
+           X(IFr) * Tac_0v(i) * Tbc_dd(i) / a(i) * (T_all(i) * CRP(i,IT_dv) + &
+                                                    d(i) * CRP(i,IR_dd)) + &
            (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs(i)) / &
            SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
    end do
