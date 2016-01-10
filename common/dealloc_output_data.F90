@@ -69,6 +69,21 @@ if (output_flags%do_aerosol) then
    deallocate(output_data%aer_error)
 end if
 
+if (output_flags%do_swansea) then
+   deallocate(output_data%vid_swansea_s)
+   deallocate(output_data%vid_swansea_s_error)
+   deallocate(output_data%vid_swansea_p)
+   deallocate(output_data%vid_swansea_p_error)
+   deallocate(output_data%vid_diffuse_frac)
+   deallocate(output_data%vid_diffuse_frac_error)
+   deallocate(output_data%swansea_s)
+   deallocate(output_data%swansea_s_error)
+   deallocate(output_data%swansea_p)
+   deallocate(output_data%swansea_p_error)
+   deallocate(output_data%diffuse_frac)
+   deallocate(output_data%diffuse_frac_error)
+end if
+
 if (output_flags%do_cloud) then
    deallocate(output_data%vid_cloud_albedo)
    deallocate(output_data%vid_cloud_albedo_error)
@@ -167,6 +182,17 @@ if (output_flags%do_aerosol) then
    deallocate(output_data%aot550_fg)
    deallocate(output_data%aer_ap)
    deallocate(output_data%aer_fg)
+end if
+
+if (output_flags%do_swansea) then
+   deallocate(output_data%vid_swansea_s_ap)
+   deallocate(output_data%vid_swansea_s_fg)
+   deallocate(output_data%vid_swansea_p_ap)
+   deallocate(output_data%vid_swansea_p_fg)
+   deallocate(output_data%swansea_s_ap)
+   deallocate(output_data%swansea_s_fg)
+   deallocate(output_data%swansea_p_ap)
+   deallocate(output_data%swansea_p_fg)
 end if
 
    deallocate(output_data%vid_albedo)

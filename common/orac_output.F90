@@ -51,6 +51,9 @@ module orac_output
       integer                       :: vid_aot550, vid_aot550_error
       integer                       :: vid_aot870, vid_aot870_error
       integer                       :: vid_aer, vid_aer_error
+      integer,dimension(:), pointer :: vid_swansea_s, vid_swansea_s_error
+      integer,dimension(:), pointer :: vid_swansea_p, vid_swansea_p_error
+      integer,dimension(:), pointer :: vid_diffuse_frac, vid_diffuse_frac_error
 
       integer                       :: vid_cot, vid_cot_error
       integer                       :: vid_cer, vid_cer_error
@@ -138,6 +141,33 @@ module orac_output
       real(kind=sreal)              :: aer_error_offset = 0.0
       integer(kind=sint)            :: aer_error_vmin   = 0
       integer(kind=sint)            :: aer_error_vmax   = 32000
+
+      real(kind=sreal)              :: swansea_s_scale        = 0.0001
+      real(kind=sreal)              :: swansea_s_offset       = 0.0
+      integer(kind=sint)            :: swansea_s_vmin         = 0
+      integer(kind=sint)            :: swansea_s_vmax         = 32000
+      real(kind=sreal)              :: swansea_s_error_scale  = 0.0001
+      real(kind=sreal)              :: swansea_s_error_offset = 0.0
+      integer(kind=sint)            :: swansea_s_error_vmin   = 0
+      integer(kind=sint)            :: swansea_s_error_vmax   = 32000
+
+      real(kind=sreal)              :: swansea_p_scale        = 0.0001
+      real(kind=sreal)              :: swansea_p_offset       = 0.0
+      integer(kind=sint)            :: swansea_p_vmin         = 0
+      integer(kind=sint)            :: swansea_p_vmax         = 32000
+      real(kind=sreal)              :: swansea_p_error_scale  = 0.0001
+      real(kind=sreal)              :: swansea_p_error_offset = 0.0
+      integer(kind=sint)            :: swansea_p_error_vmin   = 0
+      integer(kind=sint)            :: swansea_p_error_vmax   = 32000
+
+      real(kind=sreal)              :: diffuse_frac_scale        = 0.0001
+      real(kind=sreal)              :: diffuse_frac_offset       = 0.0
+      integer(kind=sint)            :: diffuse_frac_vmin         = 0
+      integer(kind=sint)            :: diffuse_frac_vmax         = 10000
+      real(kind=sreal)              :: diffuse_frac_error_scale  = 0.0001
+      real(kind=sreal)              :: diffuse_frac_error_offset = 0.0
+      integer(kind=sint)            :: diffuse_frac_error_vmin   = 0
+      integer(kind=sint)            :: diffuse_frac_error_vmax   = 10000
 
       real(kind=sreal)              :: cot_scale        = 0.01
       real(kind=sreal)              :: cot_offset       = 0.0
@@ -320,6 +350,15 @@ module orac_output
       integer(kind=sint), dimension(:,:),     pointer :: aer
       integer(kind=sint), dimension(:,:),     pointer :: aer_error
 
+      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s
+      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s_error
+
+      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_p
+      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_p_error
+
+      integer(kind=sint), dimension(:,:,:),   pointer :: diffuse_frac
+      integer(kind=sint), dimension(:,:,:),   pointer :: diffuse_frac_error
+
       integer(kind=sint), dimension(:,:),     pointer :: cot
       integer(kind=sint), dimension(:,:),     pointer :: cot_error
 
@@ -381,6 +420,9 @@ module orac_output
       integer                          :: vid_aot550_ap,vid_aot550_fg
       integer                          :: vid_aer_ap,vid_aer_fg
 
+      integer, dimension(:),   pointer :: vid_swansea_s_ap, vid_swansea_s_fg
+      integer, dimension(:),   pointer :: vid_swansea_p_ap, vid_swansea_p_fg
+
       integer                          :: vid_cot_ap,vid_cot_fg
       integer                          :: vid_cer_ap,vid_cer_fg
       integer                          :: vid_ctp_ap,vid_ctp_fg
@@ -424,6 +466,26 @@ module orac_output
       real(kind=sreal)                 :: aer_fg_offset     = 0.0
       integer(kind=sint)               :: aer_fg_vmin       = 0
       integer(kind=sint)               :: aer_fg_vmax       = 32000
+
+      real(kind=sreal)                 :: swansea_s_ap_scale  = 0.0001
+      real(kind=sreal)                 :: swansea_s_ap_offset = 0.0
+      integer(kind=sint)               :: swansea_s_ap_vmin   = 0
+      integer(kind=sint)               :: swansea_s_ap_vmax   = 32000
+
+      real(kind=sreal)                 :: swansea_s_fg_scale  = 0.0001
+      real(kind=sreal)                 :: swansea_s_fg_offset = 0.0
+      integer(kind=sint)               :: swansea_s_fg_vmin   = 0
+      integer(kind=sint)               :: swansea_s_fg_vmax   = 32000
+
+      real(kind=sreal)                 :: swansea_p_ap_scale  = 0.0001
+      real(kind=sreal)                 :: swansea_p_ap_offset = 0.0
+      integer(kind=sint)               :: swansea_p_ap_vmin   = 0
+      integer(kind=sint)               :: swansea_p_ap_vmax   = 32000
+
+      real(kind=sreal)                 :: swansea_p_fg_scale  = 0.0001
+      real(kind=sreal)                 :: swansea_p_fg_offset = 0.0
+      integer(kind=sint)               :: swansea_p_fg_vmin   = 0
+      integer(kind=sint)               :: swansea_p_fg_vmax   = 32000
 
       real(kind=sreal)                 :: cot_ap_scale      = 0.01
       real(kind=sreal)                 :: cot_ap_offset     = 0.0
@@ -494,6 +556,8 @@ module orac_output
 
       integer(kind=sint), dimension(:,:),     pointer :: aot550_ap,aot550_fg
       integer(kind=sint), dimension(:,:),     pointer :: aer_ap,aer_fg
+      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_s_ap,swansea_s_fg
+      integer(kind=sint), dimension(:,:,:),   pointer :: swansea_p_ap,swansea_p_fg
 
       integer(kind=sint), dimension(:,:),     pointer :: cot_ap,cot_fg
       integer(kind=sint), dimension(:,:),     pointer :: cer_ap,cer_fg
@@ -514,6 +578,7 @@ module orac_output
       ! Flags relevant to both files
       logical :: do_cloud               ! Output cloud retrieval terms
       logical :: do_aerosol             ! Output aerosol retrieval terms
+      logical :: do_swansea             ! Output retrieved Swansea parameters
 
       ! Primary file flags
       logical :: do_phase_pavolonis     ! Output the Pavolonis cloud phase

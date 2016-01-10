@@ -64,7 +64,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
+subroutine def_output_secondary(ncid, dims_var, output_data, NViews, Ny, &
    NSolar, YSolar, Y_Id, thermal, deflate_level, shuffle_flag, &
    verbose, output_flags)
 
@@ -76,6 +76,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
    integer,                     intent(in)    :: ncid
    integer,                     intent(in)    :: dims_var(:)
    type(output_data_secondary), intent(inout) :: output_data
+   integer,                     intent(in)    :: NViews
    integer,                     intent(in)    :: Ny
    integer,                     intent(in)    :: NSolar
    integer,                     intent(in)    :: YSolar(:)
@@ -214,6 +215,106 @@ if (output_flags%do_aerosol) then
            valid_max     = output_data%aer_fg_vmax, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
+end if
+
+if (output_flags%do_swansea) then
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+   !----------------------------------------------------------------------------
+   ! swansea_s_ap_in_channel_no_*
+   !----------------------------------------------------------------------------
+      input_dummy='s parameter a priori in channel no '//trim(adjustl(input_num))
+      input_dummy2='swansea_s_ap_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_swansea_s_ap(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_s_ap_scale, &
+           add_offset    = output_data%swansea_s_ap_offset, &
+           valid_min     = output_data%swansea_s_ap_vmin, &
+           valid_max     = output_data%swansea_s_ap_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! swansea_s_fg_in_channel_no_*
+   !----------------------------------------------------------------------------
+      input_dummy='s parameter first guess in channel no '//trim(adjustl(input_num))
+      input_dummy2='swansea_s_fg_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_swansea_s_fg(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_s_fg_scale, &
+           add_offset    = output_data%swansea_s_fg_offset, &
+           valid_min     = output_data%swansea_s_fg_vmin, &
+           valid_max     = output_data%swansea_s_fg_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   do i=1,NViews
+
+      write(input_num,"(i4)") i
+
+   !----------------------------------------------------------------------------
+   ! swansea_p_ap_in_channel_no_*
+   !----------------------------------------------------------------------------
+      input_dummy='p parameter a priori in channel no '//trim(adjustl(input_num))
+      input_dummy2='swansea_p_ap_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_swansea_p_ap(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_p_ap_scale, &
+           add_offset    = output_data%swansea_p_ap_offset, &
+           valid_min     = output_data%swansea_p_ap_vmin, &
+           valid_max     = output_data%swansea_p_ap_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! swansea_p_fg_in_channel_no_*
+   !----------------------------------------------------------------------------
+      input_dummy='p parameter first guess in channel no '//trim(adjustl(input_num))
+      input_dummy2='swansea_p_fg_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy)), &
+           output_data%vid_swansea_p_fg(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy2)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_p_fg_scale, &
+           add_offset    = output_data%swansea_p_fg_offset, &
+           valid_min     = output_data%swansea_p_fg_vmin, &
+           valid_max     = output_data%swansea_p_fg_vmax, &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
 end if
 
 if (output_flags%do_cloud) then

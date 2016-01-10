@@ -379,6 +379,172 @@ if (output_flags%do_aerosol) then
            shuffle       = shuffle_flag)
 end if
 
+if (output_flags%do_swansea) then
+   !----------------------------------------------------------------------------
+   ! swansea_s_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      input_dummy='s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
+      input_dummy2='swansea_s_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_swansea_s(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_s_scale, &
+           add_offset    = output_data%swansea_s_offset, &
+           valid_min     = output_data%swansea_s_vmin, &
+           valid_max     = output_data%swansea_s_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! swansea_s_uncertainty_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      input_dummy='uncertainty in s parameter for Swansea surface reflectance model in channel no '//trim(adjustl(input_num))
+      input_dummy2='swansea_s_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_swansea_s_error(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_s_error_scale, &
+           add_offset    = output_data%swansea_s_error_offset, &
+           valid_min     = output_data%swansea_s_error_vmin, &
+           valid_max     = output_data%swansea_s_error_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! swansea_p_in_view_no_*
+   !----------------------------------------------------------------------------
+   do i_view=1,NViews
+      write(input_num,"(i4)") i_view
+
+      input_dummy='p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
+      input_dummy2='swansea_p_in_view_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_swansea_p(i_view), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_p_scale, &
+           add_offset    = output_data%swansea_p_offset, &
+           valid_min     = output_data%swansea_p_vmin, &
+           valid_max     = output_data%swansea_p_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! swansea_p_uncertainty_in_view_no_*
+   !----------------------------------------------------------------------------
+   do i_view=1,NViews
+      write(input_num,"(i4)") i_view
+
+      input_dummy='uncertainty in p parameter for Swansea surface reflectance model in view no '//trim(adjustl(input_num))
+      input_dummy2='swansea_p_uncertainty_in_view_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_swansea_p_error(i_view), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%swansea_p_error_scale, &
+           add_offset    = output_data%swansea_p_error_offset, &
+           valid_min     = output_data%swansea_p_error_vmin, &
+           valid_max     = output_data%swansea_p_error_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! diffuse_frac_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      input_dummy='diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
+      input_dummy2='diffuse_frac_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_diffuse_frac(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%diffuse_frac_scale, &
+           add_offset    = output_data%diffuse_frac_offset, &
+           valid_min     = output_data%diffuse_frac_vmin, &
+           valid_max     = output_data%diffuse_frac_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! diffuse_frac_uncertainty_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NSolar
+      write(input_num,"(i4)") Y_Id(YSolar(i))
+
+      input_dummy='uncertainty in diffuse fraction of radiation in channel no '//trim(adjustl(input_num))
+      input_dummy2='diffuse_frac_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_diffuse_frac_error(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%diffuse_frac_error_scale, &
+           add_offset    = output_data%diffuse_frac_error_offset, &
+           valid_min     = output_data%diffuse_frac_error_vmin, &
+           valid_max     = output_data%diffuse_frac_error_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+end if
+
 if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot

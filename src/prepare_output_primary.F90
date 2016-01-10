@@ -169,6 +169,78 @@ if (output_flags%do_aerosol) then
            output_data%aer_error_vmax)
 end if
 
+if (output_flags%do_swansea) then
+   do k=1,SPixel%Ind%NSolar
+      kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
+
+   !----------------------------------------------------------------------------
+   ! swansea_s, swansea_s_error
+   !----------------------------------------------------------------------------
+      if (SPixel%Xn(ISS(kk)) .eq. MissingXn) then
+         temp_real = sreal_fill_value
+      else
+         temp_real = SPixel%Xn(ISS(kk))
+      end if
+      call prepare_short_packed_float( &
+           temp_real, output_data%swansea_s(i,j,kk), &
+           output_data%swansea_s_scale, &
+           output_data%swansea_s_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%swansea_s_vmin, &
+           output_data%swansea_s_vmax, &
+           sint_fill_value)
+
+      if (SPixel%Sn(ISS(kk),ISS(kk)) .eq. MissingSn) then
+         temp_real = sreal_fill_value
+      else
+         temp_real = sqrt(SPixel%Sn(ISS(kk),ISS(kk)))
+      end if
+      call prepare_short_packed_float( &
+           temp_real, output_data%swansea_s_error(i,j,kk), &
+           output_data%swansea_s_error_scale, &
+           output_data%swansea_s_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%swansea_s_error_vmin, &
+           output_data%swansea_s_error_vmax, &
+           sint_fill_value)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! swansea_p, swansea_p_error
+   !----------------------------------------------------------------------------
+   do k=1,Ctrl%Ind%NViews
+      if (any(SPixel%X .eq. ISP(k))) then
+         if (SPixel%Xn(ISP(k)) .eq. MissingXn) then
+            temp_real = sreal_fill_value
+         else
+            temp_real = SPixel%Xn(ISP(k))
+         end if
+         call prepare_short_packed_float( &
+              temp_real, output_data%swansea_p(i,j,k), &
+              output_data%swansea_p_scale, &
+              output_data%swansea_p_offset, &
+              sreal_fill_value, sint_fill_value, &
+              output_data%swansea_p_vmin, &
+              output_data%swansea_p_vmax, &
+              sint_fill_value)
+
+         if (SPixel%Sn(ISP(k),ISP(k)) .eq. MissingSn) then
+            temp_real = sreal_fill_value
+         else
+            temp_real = sqrt(SPixel%Sn(ISP(k),ISP(k)))
+         end if
+         call prepare_short_packed_float( &
+              temp_real, output_data%swansea_p_error(i,j,k), &
+              output_data%swansea_p_error_scale, &
+              output_data%swansea_p_error_offset, &
+              sreal_fill_value, sint_fill_value, &
+              output_data%swansea_p_error_vmin, &
+              output_data%swansea_p_error_vmax, &
+              sint_fill_value)
+      end if
+   end do
+end if
+
 if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot, cot_error

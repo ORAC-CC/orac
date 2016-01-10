@@ -316,6 +316,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Set output fields to be produced
    output_flags%do_aerosol = Ctrl%Approach == AerOx  .or. Ctrl%Approach == AerSw
    output_flags%do_cloud   = .not. output_flags%do_aerosol
+   output_flags%do_swansea = Ctrl%Approach == AerSw
    output_flags%do_phase_pavolonis     = .false.
    output_flags%do_cldmask             = .true.
    output_flags%cloudmask_pre          = .false.
@@ -631,7 +632,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
         qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
         .false., output_flags)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
-        Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
+        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
         Ctrl%Ind%Y_Id, is_thermal, deflate_level, shuffle_flag, &
         .false., output_flags)
 

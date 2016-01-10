@@ -90,6 +90,26 @@ if (output_flags%do_aerosol) then
            output_data%aer_fg(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
 
+if (output_flags%do_swansea) then
+   do i=1,NSolar
+      call nc_write_array(ncid,'swansea_s_ap', &
+           output_data%vid_swansea_s_ap(i),&
+           output_data%swansea_s_ap(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+      call nc_write_array(ncid,'swansea_s_fg', &
+           output_data%vid_swansea_s_fg(i),&
+           output_data%swansea_s_fg(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+   end do
+
+   do i=1,NViews
+      call nc_write_array(ncid,'swansea_p_ap', &
+           output_data%vid_swansea_p_ap(i),&
+           output_data%swansea_p_ap(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+      call nc_write_array(ncid,'swansea_p_fg', &
+           output_data%vid_swansea_p_fg(i),&
+           output_data%swansea_p_fg(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+   end do
+end if
+
 if (output_flags%do_cloud) then
    call nc_write_array(ncid,'cot_ap',output_data%vid_cot_ap,&
            output_data%cot_ap(ixstart:,iystart:),1,1,n_x,1,1,n_y)

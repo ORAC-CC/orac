@@ -122,6 +122,32 @@ if (output_flags%do_aerosol) then
            output_data%aer_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
 
+if (output_flags%do_swansea) then
+   do i=1,NSolar
+      call nc_write_array(ncid,'swansea_s', &
+           output_data%vid_swansea_s(i),&
+           output_data%swansea_s(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+      call nc_write_array(ncid,'swansea_s_uncertainty', &
+           output_data%vid_swansea_s_error(i),&
+           output_data%swansea_s_error(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+      call nc_write_array(ncid,'diffuse_frac', &
+           output_data%vid_diffuse_frac(i),&
+           output_data%diffuse_frac(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+      call nc_write_array(ncid,'diffuse_frac_uncertainty', &
+           output_data%vid_diffuse_frac_error(i),&
+           output_data%diffuse_frac_error(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+   end do
+
+   do i=1,NViews
+      call nc_write_array(ncid,'swansea_p', &
+           output_data%vid_swansea_p(i),&
+           output_data%swansea_p(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+      call nc_write_array(ncid,'swansea_p_uncertainty', &
+           output_data%vid_swansea_p_error(i),&
+           output_data%swansea_p_error(ixstart:,iystart:,i),1,1,n_x,1,1,n_y)
+   end do
+end if
+
 if (output_flags%do_cloud) then
    call nc_write_array(ncid,'cot',output_data%vid_cot,&
            output_data%cot(ixstart:,iystart:),1,1,n_x,1,1,n_y)

@@ -103,6 +103,38 @@ if (output_flags%do_aerosol) then
    output_data%aer_error=sint_fill_value
 end if
 
+if (output_flags%do_swansea) then
+   allocate(output_data%vid_swansea_s(Ny))
+   output_data%vid_swansea_s=0
+   allocate(output_data%vid_swansea_s_error(Ny))
+   output_data%vid_swansea_s_error=0
+
+   allocate(output_data%vid_swansea_p(NViews))
+   output_data%vid_swansea_p=0
+   allocate(output_data%vid_swansea_p_error(NViews))
+   output_data%vid_swansea_p_error=0
+
+   allocate(output_data%vid_diffuse_frac(Ny))
+   output_data%vid_diffuse_frac=0
+   allocate(output_data%vid_diffuse_frac_error(Ny))
+   output_data%vid_diffuse_frac_error=0
+
+   allocate(output_data%swansea_s(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%swansea_s=sint_fill_value
+   allocate(output_data%swansea_s_error(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%swansea_s_error=sint_fill_value
+
+   allocate(output_data%swansea_p(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%swansea_p=sint_fill_value
+   allocate(output_data%swansea_p_error(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%swansea_p_error=sint_fill_value
+
+   allocate(output_data%diffuse_frac(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%diffuse_frac=sint_fill_value
+   allocate(output_data%diffuse_frac_error(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%diffuse_frac_error=sint_fill_value
+end if
+
 if (output_flags%do_cloud) then
    allocate(output_data%vid_cloud_albedo(Ny))
    output_data%vid_cloud_albedo=0
@@ -300,6 +332,28 @@ if (output_flags%do_aerosol) then
    output_data%aer_ap=sint_fill_value
    allocate(output_data%aer_fg(ixstart:ixstop,iystart:iystop))
    output_data%aer_fg=sint_fill_value
+end if
+
+if (output_flags%do_swansea) then
+   allocate(output_data%vid_swansea_s_ap(NSolar))
+   output_data%vid_swansea_s_ap=0
+   allocate(output_data%vid_swansea_s_fg(NSolar))
+   output_data%vid_swansea_s_fg=0
+
+   allocate(output_data%vid_swansea_p_ap(NSolar))
+   output_data%vid_swansea_p_ap=0
+   allocate(output_data%vid_swansea_p_fg(NSolar))
+   output_data%vid_swansea_p_fg=0
+
+   allocate(output_data%swansea_s_ap(ixstart:ixstop,iystart:iystop,NSolar))
+   output_data%swansea_s_ap=sint_fill_value
+   allocate(output_data%swansea_s_fg(ixstart:ixstop,iystart:iystop,NSolar))
+   output_data%swansea_s_fg=sint_fill_value
+
+   allocate(output_data%swansea_p_ap(ixstart:ixstop,iystart:iystop,NSolar))
+   output_data%swansea_p_ap=sint_fill_value
+   allocate(output_data%swansea_p_fg(ixstart:ixstop,iystart:iystop,NSolar))
+   output_data%swansea_p_fg=sint_fill_value
 end if
 
 if (output_flags%do_cloud) then
