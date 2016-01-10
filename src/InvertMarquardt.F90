@@ -482,10 +482,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          ! (ii) If that changes the cost by less than one, we've converged.
          !      Otherwise, re-initialise the Marquadt parameter and continue.
          if (abs(delta_J) < 1) then ! ACP: ccj_ny?
-            ! If Newton step improved the cost, use it's solution.
-            SPixel%Xn = Xplus_dX
-            KxT_SyI   = matmul(transpose(Kx), SyInv)
-            d2J_dX2   = matmul(KxT_SyI, Kx) + SxInv
+            if (delta_J < 0 .or. Ctrl%Invpar%always_take_GN) then
+               ! If Newton step improved the cost, use it's solution.
+               SPixel%Xn = Xplus_dX
+               KxT_SyI   = matmul(transpose(Kx), SyInv)
+               d2J_dX2   = matmul(KxT_SyI, Kx) + SxInv
+            end if
 
             convergence = .true.
             exit
@@ -506,6 +508,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
             if (Ctrl%Invpar%ConvTest) then
                ! Use CP/RS convergence test and perform Gauss-Newton iteration
                alpha = 0.
+               if (Ctrl%Invpar%dont_iter_convtest) iter = iter - 1
             else
                ! Retrieval converged. Exit loop
                convergence = .true.
@@ -634,7 +637,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    ! (by XScale squared, i.e. the product of the XScale factors for the two
    ! state variables contributing to each element).
    SPixel%Sn = 0.0
-   if (SPixel%NXI > 0) then
+   if (SPixel%NXI > 0 .and. .not. Ctrl%Invpar%disable_Ss) then
       SPixel%Sn(SPixel%XI, SPixel%XI) = SPixel%Sx(SPixel%XI, SPixel%XI)
 
       SPixel%Sn(SPixel%X, SPixel%X)   = Diag%St(1:SPixel%Nx, 1:SPixel%Nx) + &

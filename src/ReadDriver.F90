@@ -424,6 +424,9 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%MqStep             = switch(a, Default=10.0)
    Ctrl%Invpar%MaxIter            = switch(a, Default=40,      Aer=25)
    Ctrl%Invpar%Ccj                = switch(a, Default=0.05,    AerSw=0.001)
+   Ctrl%Invpar%always_take_GN     = switch(a, Default=.false., AerOx=.true.)
+   Ctrl%Invpar%dont_iter_convtest = switch(a, Default=.false., Aer=.true.)
+   Ctrl%Invpar%disable_Ss         = switch(a, Default=.false., Aer=.true.)
 
    ! Scale used to avoid pivots in matrix inversion. Terms that a mode shouldn't
    ! touch are zeroed to
@@ -857,6 +860,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%Invpar%XLLim)     /= 0) call h_p_e(label)
       case('CTRL%INVPAR%XULIM')
          if (parse_string(line, Ctrl%Invpar%XULim)     /= 0) call h_p_e(label)
+      case('CTRL%INVPAR%ALWAYS_TAKE_GN')
+         if (parse_string(line, Ctrl%Invpar%always_take_GN) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%INVPAR%DONT_ITER_CONVTEST')
+         if (parse_string(line, Ctrl%Invpar%dont_iter_convtest) &
+                                                       /= 0) call h_p_e(label)
+      case('CTRL%INVPAR%DISABLE_SS')
+         if (parse_string(line, Ctrl%Invpar%disable_Ss)/= 0) call h_p_e(label)
       case('CTRL%QC%MAXJ')
          if (parse_string(line, Ctrl%QC%MaxJ)          /= 0) call h_p_e(label)
       case('CTRL%QC%MAXS')

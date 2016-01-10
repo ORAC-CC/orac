@@ -203,6 +203,13 @@ module CTRL_def
       real                   :: XScale(MaxStateVar)! Scaling parameters
       real                   :: XLLim(MaxStateVar) ! Lower limit on state
       real                   :: XULim(MaxStateVar) ! Upper limit on state
+      logical                :: always_take_GN     ! When using ConvTest, always
+                                                   ! return the Gauss-Newton
+                                                   ! result, even if worse.
+      logical                :: dont_iter_convtest ! When using ConvTest, don't
+                                                   ! count tests towards iter
+      logical                :: disable_Ss         ! Don't include inactive state
+                                                   ! elements in uncertainty calc
    end type Invpar_t
 
    ! Quality control parameters (used to set SPixel%QC flag)
