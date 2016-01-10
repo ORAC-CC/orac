@@ -193,6 +193,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    type(output_data_primary)   :: output_primary
    type(output_data_secondary) :: output_secondary
+   type(output_data_flags)     :: output_flags
 
    type(counts_and_indexes)    :: indexing
 
@@ -477,13 +478,20 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
    end do
 
+   ! Hardwire outputs until different input file types supported
+   output_flags%do_phase_pavolonis     = .true.
+   output_flags%do_cldmask             = .true.
+   output_flags%cloudmask_pre          = .true.
+   output_flags%do_cldmask_uncertainty = .false.
+   output_flags%do_covariance          = .false.
+
    ! allocate the structures which hold the output in its final form
    call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-        indexing%NViews, indexing%Ny, 100, output_primary, .true., .false.)
+        indexing%NViews, indexing%Ny, 100, output_primary, output_flags)
    if (do_secondary) then
       call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
            indexing%NSolar, indexing%Ny, indexing%Nx, indexing%Ch_Is, ThermalBit, xdim, ydim, &
-           output_secondary, .false.)
+           output_secondary, output_flags)
    end if
 
    ! open the netcdf output file
@@ -506,12 +514,12 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
         indexing%NViews, indexing%Ny, indexing%NSolar, &
         indexing%YSolar, indexing%Y_Id, &
         input_primary(1)%qc_flag_masks, input_primary(1)%qc_flag_meanings, &
-        deflate_level2, shuffle_flag2, verbose, .true., .false., .false., .true.)
+        deflate_level2, shuffle_flag2, verbose, output_flags)
    if (do_secondary) then
       call def_output_secondary(ncid_secondary, dims_var, output_secondary, &
            indexing%Ny, indexing%NSolar, indexing%YSolar, &
            indexing%Y_Id, indexing%Ch_Is, ThermalBit, deflate_level2, shuffle_flag2, &
-           verbose, .false.)
+           verbose, output_flags)
    end if
 
    ! put results in final output arrays with final datatypes
@@ -534,12 +542,12 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    ! write output to netcdf variables
    call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_primary, indexing%NViews, indexing%NSolar, indexing%YSolar, indexing%Y_Id, &
-        .true., .false., .false., .true.)
+        output_primary, indexing%NViews, indexing%NSolar, indexing%YSolar, &
+        indexing%Y_Id, output_flags)
    if (do_secondary) then
       call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
-      iystop, output_secondary, indexing%NViews, indexing%Ny, indexing%NSolar, &
-      indexing%Nx, indexing%Y_Id, .false.)
+           iystop, output_secondary, indexing%NViews, indexing%Ny, &
+           indexing%NSolar, indexing%Nx, indexing%Y_Id, output_flags)
    end if
 
    ! close output file
@@ -557,9 +565,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
 
    ! deallocate output structure
-   call dealloc_output_data_primary(output_primary, .true., .false.)
+   call dealloc_output_data_primary(output_primary, output_flags)
    if (do_secondary) then
-      call dealloc_output_data_secondary(output_secondary, .false.)
+      call dealloc_output_data_secondary(output_secondary, output_flags)
    end if
 
 

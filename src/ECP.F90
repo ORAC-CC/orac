@@ -240,12 +240,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! netcdf related variables:
    integer :: ncid_primary,ncid_secondary,dims_var(2)
 
-   ! Write full covariance matrix to secondary output file, so far hardwired
-   logical :: write_covariance = .false.
-
    ! Additional types for the scanline output for netcdf are defined
    type(output_data_primary)   :: output_data_1
    type(output_data_secondary) :: output_data_2
+   type(output_data_flags)     :: output_flags
 
    ! Some netcdf related indices and labels
    integer :: iviews,iinput
@@ -311,6 +309,13 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #else
    call Read_Driver(Ctrl, global_atts, source_atts)
 #endif
+
+   ! Set output fields to be produced
+   output_flags%do_phase_pavolonis     = .false.
+   output_flags%do_cldmask             = .true.
+   output_flags%cloudmask_pre          = .false.
+   output_flags%do_cldmask_uncertainty = .true.
+   output_flags%do_covariance          = .false.
 
 #ifdef BKP
    ! Clear the breakpoint file (if breakpoints required)
@@ -431,10 +436,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    ! Allocate output arrays
    call alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
         Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Invpar%MaxIter, output_data_1, &
-        .false., .true.)
-    call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
+        output_flags)
+   call alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
         Ctrl%Ind%NSolar, Ctrl%Ind%Ny, MaxStateVar, Ctrl%Ind%Ch_Is, ThermalBit, Ctrl%Ind%XMax, &
-        Ctrl%Ind%YMax, output_data_2, write_covariance)
+        Ctrl%Ind%YMax, output_data_2, output_flags)
 
    ! Set i, the counter for the image x dimension, for the first row processed.
    i = ixstart
@@ -569,10 +574,10 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
          ! Copy output to spixel_scan_out structures
          call prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, &
-                                     Diag, output_data_1)
+                                     Diag, output_data_1, output_flags)
 
          call prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
-                                       output_data_2, write_covariance)
+                                       output_data_2, output_flags)
 
       end do ! End of super-pixel X loop
 
@@ -613,19 +618,19 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
         Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
         Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  &
         qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
-        .false., .false., .true., .true., .false.)
+        .false., output_flags)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
         Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
         Ctrl%Ind%Y_Id, Ctrl%Ind%Ch_Is, ThermalBit, deflate_level, shuffle_flag, &
-        .false., write_covariance)
+        .false., output_flags)
 
    ! Write output from spixel_scan_out structures NetCDF files
    call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, Ctrl%Ind%Y_Id, &
-        .false., .true., .true., .false.)
-   call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, iystop, &
-        output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
-        Ctrl%Nx(IDay), Ctrl%Ind%Y_Id, write_covariance)
+        output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
+        Ctrl%Ind%Y_Id, output_flags)
+   call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
+        iystop, output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
+        Ctrl%Nx(IDay), Ctrl%Ind%Y_Id, output_flags)
 
    TotPix    = sum(totpix_line)
    Totmissed = sum(totmissed_line)
@@ -670,8 +675,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    call Dealloc_Data(Ctrl, MSI_Data)
 
-   call dealloc_output_data_primary(output_data_1, .false., .true.)
-   call dealloc_output_data_secondary(output_data_2, write_covariance)
+   call dealloc_output_data_primary(output_data_1, output_flags)
+   call dealloc_output_data_secondary(output_data_2, output_flags)
 
    call Dealloc_Ctrl(Ctrl)
 

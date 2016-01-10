@@ -36,6 +36,7 @@
 !    rather than the MSI file.
 ! 2015/09/06, GM: Move into common/ from src/ and changes related to sharing
 !    with post_processing/.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
 !
@@ -44,7 +45,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
-   output_data, NViews, Ny, NSolar, Nx, Y_Id, do_covariance)
+   output_data, NViews, Ny, NSolar, Nx, Y_Id, output_flags)
 
    use orac_ncdf
 
@@ -61,7 +62,7 @@ subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
    integer,                     intent(in)    :: NSolar
    integer,                     intent(in)    :: Nx
    integer,                     intent(in)    :: Y_Id(:)
-   logical,                     intent(in)    :: do_covariance
+   type(output_data_flags),     intent(in)    :: output_flags
 
    character(len=32)  :: input_num,input_num1,input_num2
    character(len=512) :: input_dummy
@@ -136,7 +137,7 @@ subroutine write_output_secondary(ncid, ixstart, ixstop, iystart, iystop, &
    call nc_write_array(ncid,'degrees_of_freedom_signal',output_data%vid_ds,&
            output_data%ds(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-   if (do_covariance) then
+   if (output_flags%do_covariance) then
       do i=1,Nx
          do j=1,Nx
             write(input_num1,"(i4)") i

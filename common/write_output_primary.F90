@@ -41,6 +41,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/05, AP: The cloud albedo field name is now properly subscripted with
 !    YSolar, rather than just counting up Y_Id.
+! 2016/01/06, AP: Add do_cldmask checks from output_flags structure.
 !
 ! $Id$
 !
@@ -49,8 +50,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
-   output_data, NViews, NSolar, YSolar, Y_Id, do_phase_pavolonis, do_cldmask, &
-   do_cldmask_uncertainty, do_cloudmask_pre)
+   output_data, NViews, NSolar, YSolar, Y_Id, output_flags)
 
    use orac_ncdf
 
@@ -66,10 +66,7 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
    integer,                   intent(in)    :: NSolar
    integer,                   intent(in)    :: YSolar(:)
    integer,                   intent(in)    :: Y_Id(:)
-   logical,                   intent(in)    :: do_phase_pavolonis
-   logical,                   intent(in)    :: do_cldmask
-   logical,                   intent(in)    :: do_cldmask_uncertainty
-   logical,                   intent(in)    :: do_cloudmask_pre
+   type(output_data_flags),   intent(in)    :: output_flags
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -206,24 +203,24 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
    call nc_write_array(ncid,'cldtype',output_data%vid_cldtype,&
            output_data%cldtype(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-if (do_cldmask) then
-   call nc_write_array(ncid,'cldmask',output_data%vid_cldmask,&
-           output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+if (output_flags%do_cldmask) then
+   if (output_flags%cloudmask_pre) then
+      call nc_write_array(ncid,'cloudmask_pre',output_data%vid_cldmask,&
+              output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   else
+      call nc_write_array(ncid,'cldmask',output_data%vid_cldmask,&
+              output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   end if
 end if
-if (do_cldmask_uncertainty) then
+if (output_flags%do_cldmask_uncertainty) then
    call nc_write_array(ncid,'cldmask_uncertainty',output_data%vid_cldmask_uncertainty,&
            output_data%cldmask_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)
-end if
-
-if (do_cloudmask_pre) then
-   call nc_write_array(ncid,'cloudmask_pre',output_data%vid_cldmask,&
-           output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
 
    call nc_write_array(ncid,'phase',output_data%vid_phase,&
            output_data%phase(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
-if (do_phase_pavolonis) then
+if (output_flags%do_phase_pavolonis) then
    call nc_write_array(ncid,'phase_pavolonis',output_data%vid_phase_pavolonis,&
            output_data%phase_pavolonis(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if

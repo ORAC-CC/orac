@@ -24,6 +24,7 @@
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/12/30, AP: Have all albedo fields use the same values.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
 !
@@ -48,14 +49,12 @@
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
-   do_cldmask_uncertainty)
+subroutine dealloc_output_data_primary(output_data, output_flags)
 
    implicit none
 
    type(output_data_primary), intent(inout) :: output_data
-   logical,                   intent(in)    :: do_phase_pavolonis
-   logical,                   intent(in)    :: do_cldmask_uncertainty
+   type(output_data_flags),   intent(in)    :: output_flags
 
    deallocate(output_data%vid_sol_zen)
    deallocate(output_data%vid_sat_zen)
@@ -116,13 +115,13 @@ subroutine dealloc_output_data_primary(output_data, do_phase_pavolonis, &
 
    deallocate(output_data%cldtype)
    deallocate(output_data%cldmask)
-if (do_cldmask_uncertainty) then
+if (output_flags%do_cldmask_uncertainty) then
    deallocate(output_data%cldmask_uncertainty)
 end if
 
    deallocate(output_data%phase)
 
-if (do_phase_pavolonis) then
+if (output_flags%do_phase_pavolonis) then
    deallocate(output_data%phase_pavolonis)
 end if
 
@@ -147,13 +146,12 @@ end subroutine dealloc_output_data_primary
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
-subroutine dealloc_output_data_secondary(output_data, do_covariance)
+subroutine dealloc_output_data_secondary(output_data, output_flags)
 
    implicit none
 
-   logical,                     intent(in)    :: do_covariance
-
    type(output_data_secondary), intent(inout) :: output_data
+   type(output_data_flags),     intent(in)    :: output_flags
 
    deallocate(output_data%vid_albedo)
    deallocate(output_data%albedo)
@@ -193,9 +191,9 @@ subroutine dealloc_output_data_secondary(output_data, do_covariance)
 
    deallocate(output_data%ds)
 
-   if (do_covariance) then
-      deallocate(output_data%vid_covariance)
-      deallocate(output_data%covariance)
-   end if
+if (output_flags%do_covariance) then
+   deallocate(output_data%vid_covariance)
+   deallocate(output_data%covariance)
+end if
 
 end subroutine dealloc_output_data_secondary

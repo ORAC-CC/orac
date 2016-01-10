@@ -57,6 +57,7 @@
 ! 2015/11/26, GM: AATSR time offset is now applied in the preprocessor.
 ! 2015/12/10, GM: Fixed conversion of geopotential height to geometric height:
 !    10.0 was being used instead of g_wmo (gravitational acceleration).
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
 !
@@ -65,7 +66,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
-                                  output_data)
+                                  output_data, output_flags)
 
    use CTRL_def
    use Data_def
@@ -84,6 +85,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    type(SPixel_t),            intent(in)    :: SPixel
    type(Diag_t),              intent(in)    :: Diag
    type(output_data_primary), intent(inout) :: output_data
+   type(output_data_flags),   intent(in)    :: output_flags
 
    integer            :: k, kk
    integer(kind=sint) :: temp_short_ctp_error
@@ -493,9 +495,11 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
+if (output_flags%do_cldmask) then
    output_data%cldmask(i,j)=int(MSI_Data%cldmask(SPixel%Loc%X0, SPixel%Loc&
         %Y0), kind=byte)
-
+end if
+if (output_flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
@@ -506,6 +510,7 @@ subroutine prepare_output_primary(Ctrl, i, j, MSI_Data, RTM_Pc, SPixel, Diag, &
            sreal_fill_value, sint_fill_value, &
            output_data%cldmask_uncertainty_vmin, output_data%cldmask_uncertainty_vmax, &
            sint_fill_value)
+end if
 
    !----------------------------------------------------------------------------
    ! phase

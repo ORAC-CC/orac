@@ -29,6 +29,7 @@
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax here from def_
 !    routines for fields that could be BTs or reflectances. Have all albedo
 !    fields use the same values.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
 !
@@ -60,7 +61,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
-   NViews, Ny, MaxIter, output_data, do_phase_pavolonis, do_cldmask_uncertainty)
+     NViews, Ny, MaxIter, output_data, output_flags)
 
    implicit none
 
@@ -72,8 +73,7 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
    integer,                   intent(in)    :: Ny
    integer,                   intent(in)    :: MaxIter
    type(output_data_primary), intent(inout) :: output_data
-   logical,                   intent(in)    :: do_phase_pavolonis
-   logical,                   intent(in)    :: do_cldmask_uncertainty
+   type(output_data_flags),   intent(in)    :: output_flags
 
 
    allocate(output_data%vid_sol_zen(NViews))
@@ -206,7 +206,7 @@ subroutine alloc_output_data_primary(ixstart, ixstop, iystart, iystop, &
 
    allocate(output_data%cldmask(ixstart:ixstop,iystart:iystop))
    output_data%cldmask=byte_fill_value
-if (do_cldmask_uncertainty) then
+if (output_flags%do_cldmask_uncertainty) then
    allocate(output_data%cldmask_uncertainty(ixstart:ixstop,iystart:iystop))
    output_data%cldmask_uncertainty=sint_fill_value
 end if
@@ -214,7 +214,7 @@ end if
    allocate(output_data%phase(ixstart:ixstop,iystart:iystop))
    output_data%phase=byte_fill_value
 
-if (do_phase_pavolonis) then
+if (output_flags%do_phase_pavolonis) then
    allocate(output_data%phase_pavolonis(ixstart:ixstop,iystart:iystop))
    output_data%phase_pavolonis=byte_fill_value
 end if
@@ -251,7 +251,7 @@ end subroutine alloc_output_data_primary
 ! None known.
 !-------------------------------------------------------------------------------
 subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
-   NSolar, Ny, Nx, Ch_Is, ThermalBit, Xmax, Ymax, output_data, do_covariance)
+     NSolar, Ny, Nx, Ch_Is, ThermalBit, Xmax, Ymax, output_data, output_flags)
 
    implicit none
 
@@ -267,7 +267,7 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
    integer,                     intent(in)    :: Xmax
    integer,                     intent(in)    :: Ymax
    type(output_data_secondary), intent(inout) :: output_data
-   logical,                     intent(in)    :: do_covariance
+   type(output_data_flags),     intent(in)    :: output_flags
 
    integer :: i
 
@@ -347,7 +347,7 @@ subroutine alloc_output_data_secondary(ixstart, ixstop, iystart, iystop, &
    allocate(output_data%ds(ixstart:ixstop,iystart:iystop))
    output_data%ds=sint_fill_value
 
-if (do_covariance) then
+if (output_flags%do_covariance) then
    allocate(output_data%vid_covariance(Nx,Nx))
    output_data%vid_covariance=0
 

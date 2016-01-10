@@ -39,6 +39,7 @@
 ! 2015/09/14, GM: Change output cot_ap and cot_fg from log10 space to linear
 !    space.
 ! 2015/12/30, AP: Have all albedo fields use the same values.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/07, AP: Check for valid AK values relied on short-circuiting, which
 !    isn't standard Fortran.
 !
@@ -49,7 +50,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
-                                    output_data, do_covariance)
+                                    output_data, output_flags)
 
    use CTRL_def
    use Data_def
@@ -66,9 +67,9 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    type(SPixel_t),              intent(in)    :: SPixel
    type(Diag_t),                intent(in)    :: Diag
    type(output_data_secondary), intent(inout) :: output_data
-   logical,                     intent(in)    :: do_covariance
+   type(output_data_flags),     intent(in)    :: output_flags
 
-   integer          :: k,kk,l
+   integer          :: k, kk, l
    real(kind=sreal) :: dummyreal
 
 
@@ -243,17 +244,17 @@ subroutine prepare_output_secondary(Ctrl, i, j, MSI_Data, SPixel, Diag, &
    !----------------------------------------------------------------------------
    ! covariance
    !----------------------------------------------------------------------------
-   if (do_covariance) then
-      do k=1,SPixel%Nx
-         do l=1,SPixel%Nx
-           call prepare_float_packed_float( &
-                   real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
-                   1._sreal, 0._sreal, &
-                   sreal_fill_value, sreal_fill_value, &
-                   0._sreal, huge(dummyreal), &
-                   sreal_fill_value)
-         end do
+if (output_flags%do_covariance) then
+   do k=1,SPixel%Nx
+      do l=1,SPixel%Nx
+        call prepare_float_packed_float( &
+                real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
+                1._sreal, 0._sreal, &
+                sreal_fill_value, sreal_fill_value, &
+                0._sreal, huge(dummyreal), &
+                sreal_fill_value)
       end do
-   end if
+   end do
+end if
 
 end subroutine prepare_output_secondary

@@ -55,6 +55,7 @@
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
 !    routines for fields that could be BTs or reflectances. Have all albedo
 !    fields use the same values.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
 !
@@ -64,7 +65,7 @@
 
 subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
    NSolar, YSolar, Y_Id, Ch_Is, ThermalBit, deflate_level, shuffle_flag, &
-   verbose, do_covariance)
+   verbose, output_flags)
 
    use netcdf
    use orac_ncdf
@@ -83,7 +84,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
    integer,                     intent(in)    :: deflate_level
    logical,                     intent(in)    :: shuffle_flag
    logical,                     intent(in)    :: verbose
-   logical,                     intent(in)    :: do_covariance
+   type(output_data_flags),     intent(in)    :: output_flags
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy, input_dummy2, input_dummy3
@@ -450,7 +451,7 @@ subroutine def_output_secondary(ncid, dims_var, output_data, Ny, &
    !----------------------------------------------------------------------------
    ! covariance_matrix_element_*
    !----------------------------------------------------------------------------
-   if (do_covariance) then
+   if (output_flags%do_covariance) then
 
    end if
 

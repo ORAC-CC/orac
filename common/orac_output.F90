@@ -27,6 +27,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax to here from def_
 !    routines. Have all albedo fields use the same values.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 !
 ! $Id$
@@ -441,6 +442,17 @@ module orac_output
       real(kind=sreal),   dimension(:,:,:,:), pointer :: covariance
 
    end type output_data_secondary
+
+   type output_data_flags
+      ! Primary file flags
+      logical :: do_phase_pavolonis     ! Output the Pavolonis cloud phase
+      logical :: do_cldmask             ! Output neural net cloud mask
+      logical :: cloudmask_pre          ! Call that cloudmask_pre instead
+      logical :: do_cldmask_uncertainty ! Output the uncertainty on that
+
+      ! Secondary file flags
+      logical :: do_covariance          ! Output the final covariance matrix
+   end type output_data_flags
 
 contains
 

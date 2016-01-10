@@ -69,6 +69,7 @@
 ! 2015/12/30, AP: Move declarations of scale/offset/vmin/vmax from here to alloc_
 !    routines for fields that could be BTs or reflectances.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
+! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 !
 ! $Id$
 !
@@ -78,8 +79,7 @@
 
 subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    Ny, NSolar, YSolar, Y_Id, qc_flag_masks, qc_flag_meanings, &
-   deflate_level, shuffle_flag, verbose, do_phase_pavolonis, do_cldmask, &
-   do_cldmask_uncertainty, do_cloudmask_pre)
+   deflate_level, shuffle_flag, verbose, output_flags)
 
    use netcdf
    use orac_ncdf
@@ -99,10 +99,7 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    integer,                   intent(in)    :: deflate_level
    logical,                   intent(in)    :: shuffle_flag
    logical,                   intent(in)    :: verbose
-   logical,                   intent(in)    :: do_phase_pavolonis
-   logical,                   intent(in)    :: do_cldmask
-   logical,                   intent(in)    :: do_cldmask_uncertainty
-   logical,                   intent(in)    :: do_cloudmask_pre
+   type(output_data_flags),   intent(in)    :: output_flags
 
    character(len=32)  :: input_num
    character(len=512) :: input_dummy
@@ -969,14 +966,19 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
-if (do_cldmask) then
+if (output_flags%do_cldmask) then
    !----------------------------------------------------------------------------
    ! cldmask
    !----------------------------------------------------------------------------
+   if (output_flags%cloudmask_pre) then
+      input_dummy = 'cloudmask_pre'
+   else
+      input_dummy = 'cldmask'
+   end if
    call nc_def_var_byte_packed_byte( &
            ncid, &
            dims_var, &
-           'cldmask', &
+           trim(adjustl(input_dummy)), &
            output_data%vid_cldmask, &
            verbose, &
            long_name     = 'Neural net cloud mask (radiance based)', &
@@ -992,7 +994,7 @@ if (do_cldmask) then
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 end if
-if (do_cldmask_uncertainty) then
+if (output_flags%do_cldmask_uncertainty) then
    !----------------------------------------------------------------------------
    ! cldmask_uncertainty
    !----------------------------------------------------------------------------
@@ -1009,30 +1011,6 @@ if (do_cldmask_uncertainty) then
            add_offset    = output_data%cldmask_uncertainty_offset, &
            valid_min     = output_data%cldmask_uncertainty_vmin, &
            valid_max     = output_data%cldmask_uncertainty_vmax, &
-           units         = '1', &
-           deflate_level = deflate_level, &
-           shuffle       = shuffle_flag)
-end if
-
-if (do_cloudmask_pre) then
-   !----------------------------------------------------------------------------
-   ! cloudmask_pre
-   !----------------------------------------------------------------------------
-   call nc_def_var_byte_packed_byte( &
-           ncid, &
-           dims_var, &
-           'cloudmask_pre', &
-           output_data%vid_cldmask, &
-           verbose, &
-           long_name     = 'Neural net cloud mask (radiance based)', &
-           standard_name = '', &
-           fill_value    = byte_fill_value, &
-           scale_factor  = output_data%cldmask_scale, &
-           add_offset    = output_data%cldmask_offset, &
-           valid_min     = output_data%cldmask_vmin, &
-           valid_max     = output_data%cldmask_vmax, &
-           flag_values   = '0b 1b', &
-           flag_meanings = 'clear cloudy', &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
@@ -1060,7 +1038,7 @@ end if
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)
 
-if (do_phase_pavolonis) then
+if (output_flags%do_phase_pavolonis) then
    !----------------------------------------------------------------------------
    ! phase_pavolonis
    !----------------------------------------------------------------------------
