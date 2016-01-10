@@ -127,7 +127,7 @@ subroutine derivative_wrt_crp_parameter(i_param, Rs, CRP, d_CRP, f, Tac_0v, &
       Tbc2 / S_dnom * Rs * ( &
          T_all * d_CRP(:,IT_dv,i_param) + &
          CRP(:,IT_dv) * (d_CRP(:,IT_00,i_param) + d_CRP(:,IT_0d,i_param))) + &
-      S / S_dnom * (d_Rs(:,i_param) + Rs * Tbc2 * d_CRP(:,IR_dd,i_param)))
+      S / S_dnom * (d_Rs(:,i_param) / Rs + Rs * Tbc2 * d_CRP(:,IR_dd,i_param)))
 
 end subroutine derivative_wrt_crp_parameter
 
