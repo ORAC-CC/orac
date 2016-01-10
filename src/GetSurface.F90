@@ -120,6 +120,7 @@
 ! 2015/01/06, AP: Fix a minor channel indexing bug when searching for solar chs.
 !    As aerosol preprocessing does not calculate Rho_DV, remove check for its
 !    validity. Add check for missing values in auxiliary uncertainties.
+! 2015/01/07, AP: solar_factor didn't consider multiple views.
 !
 ! $Id$
 !
@@ -220,7 +221,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
          ! ACP: No idea why this is here. CP added it in R595. Not in aerosol.
-         solar_factor = 1. / cos(SPixel%Geom%solzen(1) * d2r)
+         solar_factor = 1. / cos(SPixel%Geom%solzen(SPixel%ViewIdx(SPixel%Ind%YSolar(i))) * d2r)
 
          ! Copy surface reflectances from MSI files
          SPixel%Surface%Rs(i) = MSI_Data%ALB(SPixel%Loc%X0, SPixel%Loc%Y0, ii) /&

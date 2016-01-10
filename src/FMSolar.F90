@@ -97,6 +97,9 @@
 !    Transmittance calculations now optional. Swansea FM integrated with
 !    use_full_brdf=.false. Aerosol FM added as equations_forms 3 and 4.
 !    Calculation of derivatives wrt surface reflectance generalised.
+! 2016/01/07, AP: Bug fix in BRDF Jacobians. IRs terms were not being divided by
+!    the solar factor. The uncertainty in surface reflectance describes the un-
+!    corrected value, so derivatives need to be scaled.
 !
 ! $Id$
 !
@@ -428,8 +431,7 @@ if (.not. Ctrl%RS%use_full_brdf) then
       d_REF(i,IRs(ii,IRho_DD)) = ( &
            X(IFr) * Tac_0v(i) * Tbc_dd(i) / a(i) * (T_all(i) * CRP(i,IT_dv) + &
                                                     d(i) * CRP(i,IR_dd)) + &
-           (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs(i)) / &
-           SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+           (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs(i))
    end do
 
    !----------------------------------------------------------------------------
@@ -573,6 +575,13 @@ else
       end do
    end do
 end if
+
+   ! Account for solar factor scaling applied in GetSurface()
+      do i = 1, SPixel%Ind%NSolar
+         ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+         d_REF(i,IRs(ii,IRho_DD)) = d_REF(i,IRs(ii,IRho_DD)) / &
+              SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(i)))
+      end do
 
    ! Open breakpoint file if required, and write out reflectances and gradients.
 #ifdef BKP
