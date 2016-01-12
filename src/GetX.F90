@@ -197,6 +197,7 @@ end subroutine Set_State
 !
 ! History:
 ! 2015/07/30, AP: Original version
+! 2016/01/12, AP: Make treatment of solar_factor consistent with GetSurface.
 !
 ! Bugs:
 ! None known.
@@ -331,7 +332,14 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
          X = Ctrl%Xb(i)
       end if
       ! If surface reflectance, correct for solar zenith angle
-      if (any(i == IRs)) X = X / SPixel%Geom%SEC_o(SPixel%ViewIdx(i))
+      if (Ctrl%Approach /= AerSw .and. Ctrl%RS%solar_factor) then
+         do is = 1, SPixel%Ind%NSolar
+            ic = SPixel%spixel_y_solar_to_ctrl_y_solar_index(is)
+
+            if (any(i == IRs(ic,:))) X = X / &
+                 SPixel%Geom%SEC_o(SPixel%ViewIdx(SPixel%Ind%YSolar(is)))
+         end do
+      end if
 
       if (present(Err)) then
          if (any(SPixel%X == i)) then

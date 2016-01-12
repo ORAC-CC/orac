@@ -1119,7 +1119,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          stop GetSurfaceMeth
       end if
       if (Ctrl%RS%SRsSelm == SelmCtrl .and. Ctrl%RS%add_fractional .and. &
-           Ctrl%RS%use_full_brdf) then
+           .not. Ctrl%RS%use_full_brdf) then
          write(*,*) 'ERROR: Read_Driver(): add_fractional is not currently '//&
               'functional for the Lambertian surface with SRsSelm == Ctrl.'
          stop GetSurfaceMeth
