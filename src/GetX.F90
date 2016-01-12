@@ -76,6 +76,7 @@
 ! 2015/06/02, AP: Moved repeated code into subroutine.
 ! 2015/08/14, AP: Only set needed variables. Adding aerosol surface setup.
 ! 2015/08/20, GM: Fix SelmCtrl setting of SPixel%X0.
+! 2016/01/02, AP: Ctrl%RS%diagonal_SRs produces a diagonal covariance matrix.
 !
 ! $Id$
 !
@@ -220,7 +221,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
    real,   optional, intent(out)   :: Err(:,:)
 
    ! Local variables
-   integer :: is, ic, irho, js, jc
+   integer :: is, ic, irho, js, jc, start, finsh
    real    :: Scale2, err_temp
 
 
@@ -266,9 +267,15 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
 
                      ! Copy over (and scale) covariance matrix
                      if (present(Err)) then
-                        do js = 1, SPixel%Ind%NSolar
+                        if (Ctrl%RS%diagonal_SRs) then
+                           start = is
+                           finsh = is
+                        else
+                           start = 1
+                           finsh = SPixel%Ind%NSolar
+                        end if
+                        do js = start, finsh
                            jc = SPixel%spixel_y_solar_to_ctrl_y_solar_index(js)
-
                            Err(IRs(jc,irho), IRs(ic,irho)) = &
                                 SPixel%Surface%SRs2(js,is,irho)  * &
                                 Ctrl%Invpar%XScale(IRs(ic,irho)) * &
@@ -285,9 +292,15 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
                   X = SPixel%Surface%Rs(is)
 
                   if (present(Err)) then
-                     do js = 1, SPixel%Ind%NSolar
+                     if (Ctrl%RS%diagonal_SRs) then
+                        start = is
+                        finsh = is
+                     else
+                        start = 1
+                        finsh = SPixel%Ind%NSolar
+                     end if
+                     do js = start, finsh
                         jc = SPixel%spixel_y_solar_to_ctrl_y_solar_index(js)
-
                         Err(IRs(jc,IRho_DD), IRs(ic,IRho_DD)) = &
                              SPixel%Surface%SRs(js,is)  * &
                              Ctrl%Invpar%XScale(IRs(ic,IRho_DD)) * &
