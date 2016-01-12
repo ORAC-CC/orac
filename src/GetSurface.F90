@@ -212,11 +212,6 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
       correl = Ctrl%RS%Cb
 
    case(SelmAux) ! Use values in preprocessor files
-      ! Determine vegetation and snow indexes outside of loop
-      if (Ctrl%Rs%SRsSelm == SelmAux .and. SPixel%Surface%Land) &
-           surf_unc = Calculate_ND(SAD_Chan, SPixel, ndvi) == 0 .and. &
-                      Calculate_ND(SAD_Chan, SPixel, ndsi, snow=.true.) == 0
-
       do i = 1, SPixel%Ind%NSolar
          ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
@@ -274,6 +269,18 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                return
             end if
          end if
+      end do
+
+      ! Determine vegetation and snow indexes outside of loop
+      if (Ctrl%RS%SRsSelm == SelmAux .and. SPixel%Surface%Land) then
+         surf_unc = Calculate_ND(SAD_Chan, SPixel, ndvi) == 0 .and. &
+                    Calculate_ND(SAD_Chan, SPixel, ndsi, snow=.true.) == 0
+      else
+         surf_unc = .false.
+      end if
+
+      do i = 1, SPixel%Ind%NSolar
+         ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
 
          ! Fetch uncertainty information
          select case (Ctrl%RS%SRsSelm)
