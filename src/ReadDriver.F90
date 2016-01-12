@@ -399,17 +399,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       ii = Ctrl%Ind%ICh(Ctrl%Ind%YSolar(i))
 
       if (abs(channel_wvl(ii) - 0.55) < wvl_threshold) then      ! AATSR Ch1
-         Ctrl%RS%B(i,ISea)  = 0.05 !0.01 (these are values from aerosol code)
-         Ctrl%RS%B(i,ILand) = 0.15 !0.20
+         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.05, Aer=0.01)
+         Ctrl%RS%B(i,ILand) = switch(a, Default=0.15, Aer=0.20)
       else if (abs(channel_wvl(ii) - 0.67) < wvl_threshold) then ! AATSR Ch2
-         Ctrl%RS%B(i,ISea)  = 0.02 !0.005
-         Ctrl%RS%B(i,ILand) = 0.10 !0.15
+         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.02, Aer=0.005)
+         Ctrl%RS%B(i,ILand) = switch(a, Default=0.10, Aer=0.15)
       else if (abs(channel_wvl(ii) - 0.87) < wvl_threshold) then ! AATSR Ch3
-         Ctrl%RS%B(i,ISea)  = 0.01 !0.0001
-         Ctrl%RS%B(i,ILand) = 0.01 !0.10
+         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.01, Aer=0.0001)
+         Ctrl%RS%B(i,ILand) = switch(a, Default=0.01, Aer=0.10)
       else if (abs(channel_wvl(ii) - 1.6) < wvl_threshold) then  ! AATSR Ch4
-         Ctrl%RS%B(i,ISea)  = 0.01 !0.00
-         Ctrl%RS%B(i,ILand) = 0.01 !0.01
+         Ctrl%RS%B(i,ISea)  = switch(a, Default=0.01, Aer=0.00)
+         Ctrl%RS%B(i,ILand) = switch(a, Default=0.01, Aer=0.01)
       else ! No opinion on channel
          Ctrl%RS%B(i,:)     = 0.0
       end if
@@ -461,17 +461,17 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Invpar%XLLim(IRs(:,IRho_DD))  = switch(a, Default=0.00001, Cld=0.)
    Ctrl%Invpar%XLLim(ISP)             = switch(a, Default=0.00001)
    ! Upper limit
-   Ctrl%Invpar%XULim(ITau)            = switch(a, Default=2.408, AerSw=0.7)
+   Ctrl%Invpar%XULim(ITau)            = switch(a, Default=2.408, Aer=0.7)
    Ctrl%Invpar%XULim(IRe)             = switch(a, Default=1.0,   AshEyj=20.0, &
                                                                  CldWat=35.0, &
                                                                  CldIce=100.0)
    Ctrl%Invpar%XULim(IPc)             = switch(a, Default=1200.0)
    Ctrl%Invpar%XULim(IFr)             = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(ITs)             = switch(a, Default=320.0)
-   Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch(a, Default=1.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_0V))  = switch(a, Default=1.0,   AerSw=100.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_0D))  = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(IRs(:,IRho_DV))  = switch(a, Default=1.0)
-   Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch(a, Default=1.0,   AerSw=100.0)
+   Ctrl%Invpar%XULim(IRs(:,IRho_DD))  = switch(a, Default=1.0)
    Ctrl%Invpar%XULim(ISP)             = switch(a, Default=100.0)
 
    !----------------------- CTRL%QC -----------------------
@@ -481,10 +481,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%QC%MaxS(IPc)            = switch(a, Default=200.0)
    Ctrl%QC%MaxS(IFr)            = switch(a, Default=0.2)
    Ctrl%QC%MaxS(ITs)            = switch(a, Default=2.0)
-   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = switch(a, Default=0.2) ! No idea of a sensible
-   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = switch(a, Default=0.2) ! value for these
-   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = switch(a, Default=0.2)
-   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch(a, Default=0.2,   AerSw=10.0)
+   Ctrl%QC%MaxS(IRs(:,IRho_0V)) = switch(a, Default=0.2,   AerSw=10.0)
+   Ctrl%QC%MaxS(IRs(:,IRho_0D)) = switch(a, Default=0.2) ! No idea of a sensible
+   Ctrl%QC%MaxS(IRs(:,IRho_DV)) = switch(a, Default=0.2) ! value for these
+   Ctrl%QC%MaxS(IRs(:,IRho_DD)) = switch(a, Default=0.2)
    Ctrl%QC%MaxS(ISP)            = switch(a, Default=10.0)
 
    !------------------- CTRL START/END POINT --------------
@@ -632,10 +632,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%AP(IPc,:)            = switch(a, Default=SelmCtrl)
    Ctrl%AP(IFr,:)            = switch(a, Default=SelmMeas)
    Ctrl%AP(ITs,:)            = switch(a, Default=SelmAux)
-   Ctrl%AP(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux)
+   Ctrl%AP(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux, AerSw=SelmCtrl)
    Ctrl%AP(IRs(:,IRho_0D),:) = switch(a, Default=SelmAux)
    Ctrl%AP(IRs(:,IRho_DV),:) = switch(a, Default=SelmAux)
-   Ctrl%AP(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux, Aer=SelmCtrl)
+   Ctrl%AP(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux)
    Ctrl%AP(ISP,:)            = switch(a, Default=SelmCtrl)
    ! NOTES: 1) The aerosol code used SelmSAD for Tau and Re, which drew the
    !    values from a separate driver file. This must now be managed by the
@@ -647,10 +647,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FG(IPc,:)            = switch(a, Default=SelmMeas)
    Ctrl%FG(IFr,:)            = switch(a, Default=SelmCtrl)
    Ctrl%FG(ITs,:)            = switch(a, Default=SelmAux)
-   Ctrl%FG(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux)
+   Ctrl%FG(IRs(:,IRho_0V),:) = switch(a, Default=SelmAux, AerSw=SelmCtrl)
    Ctrl%FG(IRs(:,IRho_0D),:) = switch(a, Default=SelmAux)
    Ctrl%FG(IRs(:,IRho_DV),:) = switch(a, Default=SelmAux)
-   Ctrl%FG(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux, Aer=SelmCtrl)
+   Ctrl%FG(IRs(:,IRho_DD),:) = switch(a, Default=SelmAux)
    Ctrl%FG(ISP,:)            = switch(a, Default=SelmCtrl)
    ! 3) Not sure why Fr is now SelmCtrl.
 
@@ -663,10 +663,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%XB(IPc)            = switch(a, Default=900.,  AshEyj=600., CldIce=400.)
    Ctrl%XB(IFr)            = switch(a, Default=1.0)
    Ctrl%XB(ITs)            = switch(a, Default=300.0)
-   Ctrl%XB(IRs(:,IRho_0V)) = switch(a, Default=0.01)
+   Ctrl%XB(IRs(:,IRho_0V)) = switch(a, Default=0.01,  AerSw=0.1)
    Ctrl%XB(IRs(:,IRho_0D)) = switch(a, Default=0.01)
    Ctrl%XB(IRs(:,IRho_DV)) = switch(a, Default=0.01)
-   Ctrl%XB(IRs(:,IRho_DD)) = switch(a, Default=0.01,  AerSw=0.1)
+   Ctrl%XB(IRs(:,IRho_DD)) = switch(a, Default=0.01)
    Ctrl%XB(ISP)            = switch(a, Default=0.3)
    ! First guess values
    Ctrl%X0(ITau)           = switch(a, Default=0.8,   AerOx=-1.5,  AerSw=-0.3, &
@@ -676,10 +676,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%X0(IPc)            = switch(a, Default=900.,  AshEyj=600., CldIce=400.)
    Ctrl%X0(IFr)            = switch(a, Default=1.0)
    Ctrl%X0(ITs)            = switch(a, Default=300.0)
-   Ctrl%X0(IRs(:,IRho_0V)) = switch(a, Default=0.01)
+   Ctrl%X0(IRs(:,IRho_0V)) = switch(a, Default=0.01,  AerSw=0.5)
    Ctrl%X0(IRs(:,IRho_0D)) = switch(a, Default=0.01)
    Ctrl%X0(IRs(:,IRho_DV)) = switch(a, Default=0.01)
-   Ctrl%X0(IRs(:,IRho_DD)) = switch(a, Default=0.01,  AerSw=0.5)
+   Ctrl%X0(IRs(:,IRho_DD)) = switch(a, Default=0.01)
    Ctrl%X0(ISP)            = switch(a, Default=0.3)
    ! A priori uncertainty
    Ctrl%Sx(ITau)           = switch(a, Default=1.0e+08, Aer=2.0)
@@ -687,10 +687,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Sx(IPc)            = switch(a, Default=1.0e+08)
    Ctrl%Sx(IFr)            = switch(a, Default=1.0e+08)
    Ctrl%Sx(ITs)            = switch(a, Default=1.0e+08)
-   Ctrl%Sx(IRs(:,IRho_0V)) = switch(a, Default=1.0e+08)
+   Ctrl%Sx(IRs(:,IRho_0V)) = switch(a, Default=1.0e+08, AerSw=1.0)
    Ctrl%Sx(IRs(:,IRho_0D)) = switch(a, Default=1.0e+08)
    Ctrl%Sx(IRs(:,IRho_DV)) = switch(a, Default=1.0e+08)
-   Ctrl%Sx(IRs(:,IRho_DD)) = switch(a, Default=1.0e+08, AerOx=0.05, AerSw=1.0)
+   Ctrl%Sx(IRs(:,IRho_DD)) = switch(a, Default=1.0e+08, AerOx=0.05)
    Ctrl%Sx(ISP(1))         = switch(a, Default=1.0e+08, AerSw=0.01)
    Ctrl%Sx(ISP(2:))        = switch(a, Default=1.0e+08, AerSw=0.5)
    ! NOTE: The nadir P value doesn't really need to be retrieved.
