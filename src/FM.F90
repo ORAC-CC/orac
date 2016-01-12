@@ -122,6 +122,7 @@
 !    indexing.
 ! 2015/01/21, AP: Finishing the previous commit.
 ! 2015/01/30, GM: Fixed a bug in the recent channel indexing changes.
+! 2015/08/21, AP: Turn off thermal retrieval with aerosol approaches.
 ! 2015/10/21, GM: Removed cloud albedo output as it is now evaluated elsewhere.
 !
 ! $Id$
@@ -194,7 +195,9 @@ subroutine FM(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, X, Y, dY_dX, status)
    ! is daytime, twilight or nighttime).
 
    ! Call thermal forward model (required for day, twilight and night)
-   if (SPixel%Ind%NThermal > 0 .and. status == 0) then
+   ! ACP: Temporarily turn off Thermal entirely for aerosol retrieval
+   if (SPixel%Ind%NThermal > 0 .and. status == 0 .and. &
+        Ctrl%Approach /= AerOx .and. Ctrl%Approach /= AerSw) then
       SAD_therm = SAD_Chan( &
            SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal))
 

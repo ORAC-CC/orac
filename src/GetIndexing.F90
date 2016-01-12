@@ -14,6 +14,13 @@
 ! these channels are available in each category.  Note: This does not prevent
 ! other unrequired channels from being used.
 !
+! AEROSOL:
+! Each solar channel is checked for other solar channels that have the same
+! wavelength. If there are less than min_view available, the channels are
+! ignored. Otherwise, the appropriate surface terms are added. For the Swansea
+! model, each available view is checked to have at least min_wvl available or the
+! channels are ignored.
+!
 ! ALL:
 ! When a variable is desired, Add_to_State_Vector checks:
 ! 1) If it is listed in Ctrl%X (for this illumination condition), the variable
@@ -144,6 +151,9 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    case (CldWat, CldIce, AshEyj)
       call cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
                                 X, XJ, XI, status)
+   case (AerOx)
+      call aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+                              X, XJ, XI, status)
    end select
    if (status /= 0) return
 
@@ -486,6 +496,85 @@ subroutine cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
    SPixel%NXI = ii_xi
 
 end subroutine cloud_indexing_logic
+
+
+!-------------------------------------------------------------------------------
+! Name: aer_indexing_logic
+!
+! Purpose:
+! Determines state vector elements required for an Oxford surface retrieval.
+!
+! Algorithm:
+! 1) Use same BRDF logic as the cloud retrieval.
+! 2) If there are sufficient channels, add Tau and Re to the state vector.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/08/17, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+                              X, XJ, XI, status)
+
+   use CTRL_def
+   use ECP_Constants
+   use Int_Routines_def, only : find_in_array
+   use SAD_Chan_def
+
+   implicit none
+
+   ! Define arguments
+
+   type(CTRL_t),     intent(in)    :: Ctrl
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   type(SPixel_t),   intent(inout) :: SPixel
+   logical,          intent(inout) :: is_not_used_or_missing(:)
+   integer,          intent(out)   :: X(:)
+   integer,          intent(out)   :: XJ(:)
+   integer,          intent(out)   :: XI(:)
+   integer,          intent(inout) :: status
+
+   ! Define local variables
+   integer :: ii_x, ii_xj, ii_xi
+
+   integer, parameter :: min_view = 2 ! AATSR chs at a minimum
+
+
+   ! Daytime only
+   if (SPixel%Illum(1) /= IDay) then
+      status = SPixelIndexing
+      return
+   end if
+
+   ! Must have a least min_view valid observations to use a channel
+   ii_x  = 0             ! Number of state vector elements set
+   ii_xj = 0
+   ii_xi = 0             ! Number of parameters set
+   call Identify_BRDF_Terms(Ctrl, IDay, min_view, &
+                            MaxRho_XX, & ! Only retrieve Rho_DD.
+                            is_not_used_or_missing, &
+                            X, ii_x, XJ, ii_xj, XI, ii_xi, .true.)
+
+   if (ii_x+2 > count(.not. is_not_used_or_missing)) then
+      ! Insufficient wavelengths to perform retrieval
+      status = SPixelIndexing
+   else
+      ! As we're OK for a retrieval, add elements to the state vector
+      call Add_to_State_Vector(Ctrl, IDay, ITau, X, ii_x, XJ, ii_xj, XI, ii_xi)
+      call Add_to_State_Vector(Ctrl, IDay, IRe,  X, ii_x, XJ, ii_xj, XI, ii_xi)
+      call Add_to_State_Vector(Ctrl, IDay, IFr,  X, ii_x, XJ, ii_xj, XI, ii_xi, &
+           active = .false.)
+
+      SPixel%Nx  = ii_x
+      SPixel%NXJ = ii_xj
+      SPixel%NXI = ii_xi
+   end if
+
+end subroutine aer_indexing_logic
 
 
 !-------------------------------------------------------------------------------

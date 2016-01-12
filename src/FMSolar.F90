@@ -95,7 +95,7 @@
 ! 2015/07/31, GM: Remove i_equation 2 as an invalid derivation.
 ! 2015/08/21, AP: Massive overhaul to include both aerosol forward models:
 !    Transmittance calculations now optional. Swansea FM integrated with
-!    use_full_brdf=.false. Aerosol FM added as equations_forms 3 and 4.
+!    use_full_brdf=.false. Aerosol FM added as equations_forms 2 and 3.
 !    Calculation of derivatives wrt surface reflectance generalised.
 ! 2016/01/07, AP: Bug fix in BRDF Jacobians. IRs terms were not being divided by
 !    the solar factor. The uncertainty in surface reflectance describes the un-
@@ -176,6 +176,27 @@ subroutine derivative_wrt_crp_parameter_brdf(SPixel, i_param, i_equation_form, &
                d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + b * &
                d_CRP(:,IT_dv,i_param) * Tbc_d)  / a + &
             b * c  * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)
+   else if (i_equation_form .eq. 2) then
+      d_l = d_CRP(:,IR_0v,i_param) + &
+           ((d_CRP(:,IT_00,i_param) * (Rs2(:,IRho_0V) - &
+               Rs2(:,IRho_0D)) * CRP(:,IT_vv) + CRP(:,IT_00) * &
+               (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
+               d_CRP(:,IT_vv,i_param)) * Tbc_0v + &
+            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
+               b * d_CRP(:,IT_dv,i_param) * Tbc_d) / a + &
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)) &
+           / SPixel%Geom%SEC_o(1)
+   else if (i_equation_form .eq. 3) then
+      d_l = d_CRP(:,IR_0v,i_param) + &
+            (d_CRP(:,IT_00,i_param) * (Rs2(:,IRho_0V) - &
+               Rs2(:,IRho_0D)) * CRP(:,IT_vv) + CRP(:,IT_00) * &
+               (Rs2(:,IRho_0V) - Rs2(:,IRho_0D)) * &
+               d_CRP(:,IT_vv,i_param)) * Tbc_0v + &
+            ((d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0D) * Tbc_0 + &
+               d_CRP(:,IT_0d,i_param) * Rs2(:,IRho_DD) * Tbc_d) * c + &
+               b * d_CRP(:,IT_dv,i_param) * Tbc_d) / a + &
+            b * c * Rs2(:,IRho_DD) * d_CRP(:,IR_dd,i_param) * Tbc_dd / (a*a)
    else
       d_l = d_CRP(:,IR_0v,i_param) + &
             (d_CRP(:,IT_00,i_param) * Rs2(:,IRho_0V) * CRP(:,IT_vv) + &
@@ -231,6 +252,17 @@ subroutine derivative_wrt_rho_parameters_brdf(SPixel, i_equation_form, CRP, f, &
 
    if (i_equation_form .eq. 1) then
       d_l =  CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_DD)) * CRP(:,IT_dv) * Tbc_0d &
+          + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
+             CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
+          +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)
+   else if (i_equation_form .eq. 2) then
+      d_l =( CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_0D)) * CRP(:,IT_vv) * Tbc_0v &
+          + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
+             CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
+          +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)) &
+          / SPixel%Geom%SEC_o(1)
+   else if (i_equation_form .eq. 3) then
+      d_l =  CRP(:,IT_00) * (rho_l(:,IRho_0V) - rho_l(:,IRho_0D)) * CRP(:,IT_vv) * Tbc_0v &
           + (CRP(:,IT_00) * rho_l(:,IRho_0D) * Tbc_0 + &
              CRP(:,IT_0d) * rho_l(:,IRho_DD) * Tbc_d) * c / a &
           +  b * c * rho_l(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd / (a*a)
@@ -456,6 +488,24 @@ else
           b * c / a
 
       REF_over = Tac_0v * d
+   else if (Ctrl%i_equation_form .eq. 2) then ! Aerosol CCI forward model (c from 2 and d from 1)
+      c = CRP(:,IT_dv) * Tbc_d
+
+      d = CRP(:,IR_0v) + &
+         (CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+             CRP(:,IT_vv) * Tbc_0v + &
+          b * c / a) / SPixel%Geom%SEC_o(1) ! Only nadir zenith used
+
+      REF_over = Tac_0v * d
+   else if (Ctrl%i_equation_form .eq. 3) then ! Aerosol CCI forward model without cos theta_0 correction (use with CtrL%RS%solar_factor == .true.)
+      c = CRP(:,IT_dv) * Tbc_d
+
+      d = CRP(:,IR_0v) + &
+          CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+             CRP(:,IT_vv) * Tbc_0v + &
+          b * c / a
+
+      REF_over = Tac_0v * d
    else ! GT's reciprocity-obeying forward model
       c = CRP(:,IT_dv) * Tbc_d + CRP(:,IR_dd) * SPixel%Surface%Rs2(:,IRho_DV) * &
              CRP(:,IT_vv) * Tbc_dd * Tbc_v
@@ -528,6 +578,20 @@ else
       if (Ctrl%i_equation_form .eq. 1) then
          d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_DD)) * &
                   CRP(:,IT_dv) * (Tbc_0_l * Tbc_d + Tbc_0 * Tbc_d_l) + &
+               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
+                  CRP(:,IT_dv) * Tbc_d_l)) / a + &
+               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)
+      else if (Ctrl%i_equation_form .eq. 2) then
+         d_l = (CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+                  CRP(:,IT_vv) * (Tbc_0_l * Tbc_v + Tbc_0 * Tbc_v_l) + &
+               ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
+                  SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
+                  CRP(:,IT_dv) * Tbc_d_l)) / a + &
+               b * c * SPixel%Surface%Rs2(:,IRho_DD) * CRP(:,IR_dd) * Tbc_dd_l / (a*a)) / SPixel%Geom%SEC_o(1)
+      else if (Ctrl%i_equation_form .eq. 3) then
+         d_l = CRP(:,IT_00) * (SPixel%Surface%Rs2(:,IRho_0V) - SPixel%Surface%Rs2(:,IRho_0D)) * &
+                  CRP(:,IT_vv) * (Tbc_0_l * Tbc_v + Tbc_0 * Tbc_v_l) + &
                ((CRP(:,IT_00) * SPixel%Surface%Rs2(:,IRho_0D) * Tbc_0_l + CRP(:,IT_0d) * &
                   SPixel%Surface%Rs2(:,IRho_DD) * Tbc_d_l) * c + b * (                   &
                   CRP(:,IT_dv) * Tbc_d_l)) / a + &
