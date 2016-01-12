@@ -387,8 +387,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%RsSelm         = switch(a, Default=SelmAux)
    Ctrl%RS%SRsSelm        = switch(a, Default=SelmMeas, Aer=SelmCtrl)
    Ctrl%RS%use_full_brdf  = switch(a, Default=.true.,   AerSw=.false.)
-   Ctrl%RS%Sb             = switch(a, Default=0.2,      Aer=0.05)
    Ctrl%RS%Cb             = switch(a, Default=0.2,      Aer=0.4)
+   Ctrl%RS%add_fractional = switch(a, Default=.false.,  AerOx=.true.)
    Ctrl%RS%solar_factor   = switch(a, Default=.true.,   Aer=.false.)
 
    ! Select assumed surface reflectance based on wavelength
@@ -413,6 +413,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          Ctrl%RS%B(i,:)     = 0.0
       end if
    end do
+
+   allocate(Ctrl%RS%Sb(Ctrl%Ind%NSolar, MaxSurf))
+   Ctrl%RS%Sb(:,ISea)  = switch(a, Default=0.2, AerOx=0.0)
+   Ctrl%RS%Sb(:,ILand) = switch(a, Default=0.2, AerOx=2e-4)
 
    !----------------------- CTRL%EqMPN --------------------
    Ctrl%EqMPN%SySelm = switch(a, Default=SelmAux, Aer=SelmMeas)
@@ -841,6 +845,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_string(line, Ctrl%RS%Sb)            /= 0) call h_p_e(label)
       case('CTRL%RS%CB')
          if (parse_string(line, Ctrl%RS%Cb)            /= 0) call h_p_e(label)
+      case('CTRL%RS%ADD_FRACTIONAL')
+         if (parse_string(line, Ctrl%RS%add_fractional)/= 0) call h_p_e(label)
       case('CTRL%RS%SOLAR_FACTOR')
          if (parse_string(line, Ctrl%RS%solar_factor)  /= 0) call h_p_e(label)
       case('CTRL%EQMPN%SYSELM')
@@ -1108,6 +1114,16 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          write(*,*) 'ERROR: Read_Driver(): Full BRDF required with '//&
               'auxilliary surface uncertainties.'
          stop GetSurfaceMeth
+      end if
+      if (Ctrl%RS%SRsSelm == SelmCtrl .and. Ctrl%RS%add_fractional .and. &
+           Ctrl%RS%use_full_brdf) then
+         write(*,*) 'ERROR: Read_Driver(): add_fractional is not currently '//&
+              'functional for the Lambertian surface with SRsSelm == Ctrl.'
+         stop GetSurfaceMeth
+      end if
+      if (Ctrl%RS%SRsSelm == SelmMeas .and. Ctrl%RS%add_fractional) then
+         write(*,*) 'WARNING: Read_Driver(): add_fractional is ignored '//&
+              'with SRsSelm == Meas.'
       end if
    case (SelmMeas)
       write(*,*) 'ERROR: Read_Driver(): surface reflectance method not supported'

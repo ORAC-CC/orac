@@ -47,6 +47,7 @@ subroutine Dealloc_Ctrl(Ctrl)
    deallocate(Ctrl%Ind%YMixed)
 
    deallocate(Ctrl%RS%B)
+   deallocate(Ctrl%RS%Sb)
 
    deallocate(Ctrl%Sy)
 

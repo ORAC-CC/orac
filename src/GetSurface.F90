@@ -119,6 +119,8 @@
 !    vector onto the Rs array.
 ! 2015/12/22, AP: Rename SRsSelm==SelmCtrl to SelmMeas as it is dependent on the
 !    measurement. Add a SelmCtrl that draws a constant value from Ctrl.
+! 2015/12/29, AP: add_fractional increases the uncertainty in surface reflectance
+!    by a fraction (set by Ctrl%RS%Sb) of the current value.
 ! 2015/01/06, AP: Fix a minor channel indexing bug when searching for solar chs.
 !    As aerosol preprocessing does not calculate Rho_DV, remove check for its
 !    validity. Add check for missing values in auxiliary uncertainties.
@@ -294,6 +296,11 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
             ! Constant correlation between channels
             correl = Ctrl%RS%Cb
+
+            ! A "temporary test" from the aerosol code
+            if (Ctrl%RS%add_fractional) additional(i,IRho_DD) = &
+                 frac_error(ii,i_surf) * frac_error(ii,i_surf) * &
+                 SPixel%Surface%Rs2(i,IRho_DD) * SPixel%Surface%Rs2(i,IRho_DD)
          case(SelmMeas)
             ! Uncertainty is a constant fraction of the reflectance
             uncertainty(i) = SPixel%Surface%Rs(i) * frac_error(ii,i_surf)
@@ -337,15 +344,16 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                end if
             end if
 
-            ! From aerosol's Invert_Marquadt, labelled TEMPORARY TEST
-            additional(i,IRho_DD) = additional(i,IRho_DD) + &
-                 0.04*SPixel%Surface%Rs2(i,IRho_DD)*SPixel%Surface%Rs2(i,IRho_DD)
-
             ! Over land, include SVD/temporal uncertainties
             if (SPixel%Surface%Land) &
                  additional(i,IRho_DD) = additional(i,IRho_DD) + &
-                            MSI_Data%svd_unc(ii) * MSI_Data%svd_unc(ii)
+                 MSI_Data%svd_unc(ii) * MSI_Data%svd_unc(ii)
 
+            ! A "temporary test" from the aerosol code
+            if (Ctrl%RS%add_fractional) &
+                 additional(i,IRho_DD) = additional(i,IRho_DD) + &
+                 frac_error(ii,i_surf) * frac_error(ii,i_surf) * &
+                 SPixel%Surface%Rs2(i,IRho_DD) * SPixel%Surface%Rs2(i,IRho_DD)
          end select
 
       end do

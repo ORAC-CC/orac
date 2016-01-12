@@ -179,10 +179,11 @@ module CTRL_def
       logical                :: use_full_brdf
       real, pointer          :: B(:,:)             ! Prescribed surface reflect
                                                    ! (chs, sea/land)
-      real                   :: Sb                 ! % error in B: constant for
-                                                   ! all chs, sea/land
+      real, pointer          :: Sb(:,:)            ! % error in B
       real                   :: Cb                 ! Correlation in error between
                                                    ! chs: constant for all chs
+      logical                :: add_fractional     ! When using SRsSelm /= Meas,
+                                                   ! add Sb*Rs to the uncertainty
       logical                :: solar_factor       ! In GetSurface divide surface
                                                    ! reflectances by SEC_o
    end type SurfRef_t
