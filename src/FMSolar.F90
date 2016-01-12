@@ -107,6 +107,46 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
+subroutine d_derivative_wrt_crp_parameter(i_param, T_0d, T_00, d_T_0d, d_T_00, &
+     T_all, d_D)
+
+   implicit none
+
+   integer, intent(in)  :: i_param
+   real,    intent(in)  :: T_0d(:)
+   real,    intent(in)  :: T_00(:)
+   real,    intent(in)  :: d_T_0d(:,:)
+   real,    intent(in)  :: d_T_00(:,:)
+   real,    intent(in)  :: T_all(:)
+   real,    intent(out) :: d_D(:,:)
+
+   d_D(:,i_param) = (d_T_0d(:,i_param) * T_00 - d_T_00(:,i_param) * T_0d) / &
+                    (T_all * T_all)
+
+end subroutine d_derivative_wrt_crp_parameter
+
+
+subroutine rs_derivative_wrt_crp_parameter(i_param, gamma, s, p, CRP, d_CRP, &
+     T_all, d_Rs)
+
+   implicit none
+
+   integer, intent(in)  :: i_param
+   real,    intent(in)  :: gamma
+   real,    intent(in)  :: s(:)
+   real,    intent(in)  :: p(:)
+   real,    intent(in)  :: CRP(:,:)
+   real,    intent(in)  :: d_CRP(:,:,:)
+   real,    intent(in)  :: T_all(:)
+   real,    intent(out) :: d_Rs(:,:)
+
+   call d_derivative_wrt_crp_parameter(i_param, CRP(:,IT_0d), CRP(:,IT_00), &
+        d_CRP(:,IT_0d,:), d_CRP(:,IT_00,:), T_all, d_Rs)
+   d_Rs(:,i_param) = s * (gamma - p) * d_Rs(:,i_param)
+
+end subroutine rs_derivative_wrt_crp_parameter
+
+
 subroutine derivative_wrt_crp_parameter(i_param, Rs, CRP, d_CRP, f, Tac_0v, &
    Tbc2, T_all, S, S_dnom, d_Rs, d_REF)
 
@@ -324,8 +364,11 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
    real, dimension(SPixel%Ind%NSolar) :: d_l, REF_over_l
    ! Lambertian surface model terms
    real, dimension(SPixel%Ind%NSolar) :: T_all
-
+   ! Swansea surface model terms
+   real, dimension(SPixel%Ind%NSolar) :: Ss, Sp, Sd, Sa
    real                               :: d_Rs(SPixel%Ind%NSolar,4)
+   real,    parameter                 :: gamma = 0.3
+   real,    parameter                 :: onemg = 1.0 - gamma
    ! BRDF forward model terms
    real, dimension(SPixel%Ind%NSolar) :: a, b, c, d
    ! Used to determine d_REF(:,IRs); gives ratio between element and the term
@@ -356,11 +399,41 @@ subroutine FM_Solar(Ctrl, SAD_LUT, SPixel, RTM_Pc, X, GZero, CRP, d_CRP, REF, &
                                    SPixel%Surface%Ratios(:,j)
       end do
    else
-      T_all = CRP(:,ITB) + CRP(:,ITFBd) ! Direct + diffuse transmission
+      T_all = CRP(:,IT_00) + CRP(:,IT_0d) ! Direct + diffuse transmission
 
+      if (Ctrl%Approach == AerSw) then
+         ! D is proportion of the downward transmission which is diffuse
+         Sd = CRP(:,IT_0d) / T_all
+
+         ! Copy terms from X into tidier local variables
+         Ss = X(SPixel%Surface%XIndex(:,ISwan_S))
+         Sp = X(SPixel%Surface%XIndex(:,ISwan_P))
+
+         ! Calculate surface reflectance with Swansea surface
+         Sa = 1.0 - onemg * Ss ! Denominator
+         SPixel%Surface%Rs = &
+              ! Forward model as written in ATBD
+              (1.0 - Sd) * (Sp * Ss + gamma * onemg * Ss * Ss / Sa) + &
+              Sd * gamma * Ss / Sa
+            ! More efficient expression factorised in D
+!             Sp * Ss + Sd * Ss * (gamma - Sp) + gamma * onemg * Ss * Ss / Sa
+
+         ! Derivatives of Rs wrt state vector terms
+         call rs_derivative_wrt_crp_parameter(ITau, gamma, Ss, Sp, CRP, d_CRP, &
+              T_all, d_Rs)
+         call rs_derivative_wrt_crp_parameter(IRe,  gamma, Ss, Sp, CRP, d_CRP, &
+              T_all, d_Rs)
+         ! Derivative wrt s vector (Using hardcoded second index for d_Rs as we
+         ! only need to reference the s vector in this routine)
+         d_Rs(:,ISv) = Sp + Sd * (gamma - Sp) + &
+              gamma * onemg * Ss * (1.0 + Sa) / (Sa * Sa)
+         ! Derivative wrt p vector
+         d_Rs(:,IPv) = Ss * (1.0 - Sd)
+      else
          ! Cloud Lambertian surface
          SPixel%Surface%Rs = X(SPixel%Surface%XIndex(:,IRho_DD)) * &
                              SPixel%Surface%Ratios(:,IRho_DD)
+      end if
    end if
 
 
@@ -418,7 +491,6 @@ if (.not. Ctrl%RS%use_full_brdf) then
    ! Calculate auxillary quantitities used for the reflectance and its
    ! derivatives
 
-   T_all = CRP(:,ITB) + CRP(:,ITFBd) ! Direct + diffuse transmission
    a = 1.0 - SPixel%Surface%Rs * CRP(:,IR_dd) * Tbc_dd
 
    d = T_all * SPixel%Surface%Rs * CRP(:,IT_dv) * Tbc_dd / a
@@ -465,6 +537,18 @@ if (.not. Ctrl%RS%use_full_brdf) then
                                                     d(i) * CRP(i,IR_dd)) + &
            (1.0-X(IFr)) * SPixel%RTM%dREF_clear_dRs(i))
    end do
+
+   if (Ctrl%Approach == AerSw) then
+      ! Derivatives wrt Swansea surface parameters
+      do i = 1, SPixel%Ind%NSolar
+         ii = SPixel%spixel_y_solar_to_ctrl_y_solar_index(i)
+
+         d_REF(i,SPixel%Surface%XIndex(i,ISwan_S)) = &
+              d_REF(i,IRs(ii,IRho_DD)) * d_Rs(i,ISv)
+         d_REF(i,SPixel%Surface%XIndex(i,ISwan_P)) = &
+              d_REF(i,IRs(ii,IRho_DD)) * d_Rs(i,IPv)
+      end do
+   end if
 
    !----------------------------------------------------------------------------
    ! The new BRDF implementation

@@ -204,6 +204,11 @@ module ECP_constants
    integer, parameter :: ITFd             = 11      !  "    "  TFd  "   "   "
    integer, parameter :: IEm              = 12      !  "    "  Em   "   "   "
 
+   ! Index of XIndex array in GetSurface
+   integer, parameter :: ISwan_S          = 1
+   integer, parameter :: ISwan_P          = 2
+   integer, parameter :: MaxSwan_X        = 2
+
    ! Index of B in GetSurface and ReadDriver
    integer, parameter :: ISea             = 1
    integer, parameter :: ILand            = 2

@@ -107,6 +107,11 @@ recursive integer function PARSE_STRING_NAME_0D(in, out, ch_ids) result(status)
             out = AerSw
          case('ASHEYJ')
             out = AshEyj
+         ! XIndex indices
+         case('ISWAN_S')
+            out = ISwan_S
+         case('ISWAN_P')
+            out = ISwan_P
          ! B indices
          case('ISEA')
             out = ISea

@@ -55,6 +55,7 @@
 !    have any.
 ! 2015/07/30, AP: Move cloud indexing logic into its own routine.
 ! 2015/07/31, GM: Remove cloud legacy mode.
+! 2015/08/17, AP: Add selection logics for aerosol retrievals.
 ! 2015/08/20, AP: Rather than set every state vector element, only sets those
 !    with meaning in this retrieval. Added indexing logic for aerosol retrievals.
 !    Replaced Find_MDAD with Find_Channel.
@@ -154,6 +155,9 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    case (AerOx)
       call aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
                               X, XJ, XI, status)
+   case (AerSw)
+      call swan_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+                               X, XJ, XI, status)
    end select
    if (status /= 0) return
 
@@ -575,6 +579,149 @@ subroutine aer_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
    end if
 
 end subroutine aer_indexing_logic
+
+
+!-------------------------------------------------------------------------------
+! Name: swan_indexing_logic
+!
+! Purpose:
+! Determines state vector elements required for a Swansea surface retrieval.
+!
+! Algorithm:
+! 1) Loop over solar channels that haven't been inspected already.
+!    Count the number of subsequent, available channels that share that
+!    wavelength. If there are fewer than min_view channels, invalidate them.
+!    Otherwise, add the corresponding S terms to the state vector.
+! 2) Loop over views. Count the number of subsequent, available channels that
+!    share that view. If there are fewer than min_wvl, invalidate them.
+!    Otherwise, add the corresponding P terms to the state vector.
+! 3) If there are sufficient channels, add Tau and Re to the state vector.
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/08/17, AP: Original version
+!
+! Bugs:
+! The wvl and view checks are not actually independent, so the result could be
+! different if their order is inverted.
+!-------------------------------------------------------------------------------
+subroutine swan_indexing_logic(Ctrl, SAD_Chan, SPixel, is_not_used_or_missing, &
+                              X, XJ, XI, status)
+
+   use CTRL_def
+   use ECP_Constants
+   use Int_Routines_def, only : find_in_array
+   use SAD_Chan_def
+
+   implicit none
+
+   ! Define arguments
+
+   type(CTRL_t),     intent(in)    :: Ctrl
+   type(SAD_Chan_t), intent(in)    :: SAD_Chan(:)
+   type(SPixel_t),   intent(inout) :: SPixel
+   logical,          intent(inout) :: is_not_used_or_missing(:)
+   integer,          intent(out)   :: X(:)
+   integer,          intent(out)   :: XJ(:)
+   integer,          intent(out)   :: XI(:)
+   integer,          intent(inout) :: status
+
+   ! Define local variables
+   integer :: ii_x, ii_xj, ii_xi
+   integer :: i_view, i_solar, i_ctrl, j_solar, j_ctrl
+   integer :: nch, ch(Ctrl%Ind%NSolar)
+   logical :: checked(Ctrl%Ind%NSolar)
+
+   integer, parameter :: min_view = 2 ! AATSR chs at a minimum
+   integer, parameter :: min_wvn  = 2
+
+
+   ! Daytime only
+   if (SPixel%Illum(1) /= IDay) then
+      status = SPixelIndexing
+      return
+   end if
+
+   ii_x  = 0             ! Number of state vector elements set
+   ii_xj = 0
+   ii_xi = 0             ! Number of parameters set
+
+   checked = .false.
+
+   ! Identify which valid solar channels are at this wavelength
+   ! [Duplication of Identify_BRDF_Terms using ISS(:) rather than IRs(:,:)]
+   do i_solar = 1, Ctrl%Ind%NSolar
+      i_ctrl = Ctrl%Ind%YSolar(i_solar)
+
+      ! Skip dead chs and wavelengths we've already dealt with
+      if (checked(i_solar) .or. is_not_used_or_missing(i_ctrl)) cycle
+
+      ! Make a list of channels that share this wavelength
+      nch = 1
+      ch(1) = i_solar
+!     checked(i_solar) = .true.
+
+      do j_solar = i_solar+1, Ctrl%Ind%NSolar
+         j_ctrl = Ctrl%Ind%YSolar(j_solar)
+
+         if (Ctrl%Ind%WvlIdx(i_ctrl) == Ctrl%Ind%WvlIdx(j_ctrl) .and. &
+              .not. is_not_used_or_missing(i_ctrl)) then
+            nch = nch+1
+            ch(nch) = j_solar
+            checked(j_solar) = .true.
+         end if
+      end do
+
+      ! If too few valid views, ignore all views
+      if (nch < min_view) then
+         ! If insufficient views valid, invalidate all channels
+         is_not_used_or_missing(Ctrl%Ind%YSolar(ch(1:nch))) = .true.
+      else
+         ! Add state vector elements for this wavenumber (NOTE: the first view
+         ! found in the MSI file for this wavenumber is used)
+         call Add_to_State_Vector(Ctrl, IDay, ISS(ch(1)), &
+                                  X, ii_x, XJ, ii_xj, XI, ii_xi)
+      end if
+   end do
+
+   ! Sort through view dependant variables
+   do i_view = 1, Ctrl%Ind%NViews
+      nch = 0
+      do i_solar = 1, Ctrl%Ind%NSolar
+         i_ctrl = Ctrl%Ind%YSolar(i_solar)
+         if (Ctrl%Ind%ViewIdx(i_ctrl) == i_view .and. &
+              .not. is_not_used_or_missing(i_ctrl)) then
+            nch = nch+1
+            ch(nch) = i_solar
+         end if
+      end do
+
+      if (nch < min_wvn) then
+         is_not_used_or_missing(Ctrl%Ind%YSolar(ch(1:nch))) = .true.
+      else
+         call Add_to_State_Vector(Ctrl, IDay, ISP(i_view), &
+                                  X, ii_x, XJ, ii_xj, XI, ii_xi)
+      end if
+   end do
+
+   if (ii_x+2 > count(.not. is_not_used_or_missing)) then ! Includes thermal
+      ! Insufficient wavelengths to perform retrieval
+      status = SPixelIndexing
+   else
+      ! As we're OK for a retrieval, add elements to the state vector
+      call Add_to_State_Vector(Ctrl, IDay, ITau, X, ii_x, XJ, ii_xj, XI, ii_xi)
+      call Add_to_State_Vector(Ctrl, IDay, IRe,  X, ii_x, XJ, ii_xj, XI, ii_xi)
+      call Add_to_State_Vector(Ctrl, IDay, IFr,  X, ii_x, XJ, ii_xj, XI, ii_xi, &
+           active = .false.)
+
+      SPixel%Nx  = ii_x
+      SPixel%NXJ = ii_xj
+      SPixel%NXI = ii_xi
+   end if
+
+end subroutine swan_indexing_logic
 
 
 !-------------------------------------------------------------------------------

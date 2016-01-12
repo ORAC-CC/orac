@@ -41,6 +41,9 @@ module FM_Routines_def
    integer, parameter :: IT_0d = ITFBd
    integer, parameter :: IT_dd = ITFd
 
+   integer, parameter :: ISv   = 3
+   integer, parameter :: IPv   = 4
+
 contains
 
 #include "FM.F90"

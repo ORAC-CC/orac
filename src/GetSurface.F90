@@ -455,3 +455,74 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    end do
 
 end subroutine Get_Surface
+
+
+!-------------------------------------------------------------------------------
+! Name: Get_Surface_Swansea
+!
+! Purpose:
+! Sets XIndex array for Swansea model retrievals.
+!
+! Algorithm:
+!
+! Arguments:
+! Name Type In/Out/Both Description
+!
+! History:
+! 2015/08/17, AP: Original version
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+subroutine Get_Surface_Swansea(Ctrl, SPixel)
+   use CTRL_def
+   use ECP_Constants
+
+   implicit none
+
+   ! Define arguments
+
+   type(CTRL_t),   intent(in)    :: Ctrl
+   type(SPixel_t), intent(inout) :: SPixel
+
+   ! Define local variables
+   integer :: i_solar, i_ctrl, j_solar, j_ctrl
+   integer :: nch, i_s(SPixel%Ind%NSolar)
+   logical :: checked(SPixel%Ind%NSolar)
+
+
+   checked = .false.
+
+   deallocate(SPixel%Surface%XIndex)
+   allocate(SPixel%Surface%XIndex(SPixel%Ind%NSolar, MaxSwan_X))
+   SPixel%Surface%XIndex = 0
+
+   ! Copy over indices for view-dependant P parameter
+   SPixel%Surface%XIndex(:, ISwan_P) = ISP(SPixel%ViewIdx)
+
+   ! For each wavelength, copy over S parameter index
+   do i_solar = 1, SPixel%Ind%NSolar
+      ! Skip wavelengths we've already dealt with
+      if (checked(i_solar)) cycle
+
+      i_ctrl = SPixel%spixel_y_solar_to_ctrl_y_index(i_solar)
+
+      ! Make a list of channels that share this wavelength
+      nch = 1
+      i_s(1) = i_solar
+!     checked(i_solar) = .true.
+
+      do j_solar = i_solar+1, SPixel%Ind%NSolar
+         j_ctrl = SPixel%spixel_y_solar_to_ctrl_y_index(j_solar)
+
+         if (Ctrl%Ind%WvlIdx(i_ctrl) == Ctrl%Ind%WvlIdx(j_ctrl)) then
+            nch = nch+1
+            i_s(nch) = j_solar
+            checked(j_solar) = .true.
+         end if
+      end do
+
+      SPixel%Surface%XIndex(i_s(1:nch), ISwan_S) = ISS(i_s(1))
+   end do
+
+end subroutine Get_Surface_Swansea

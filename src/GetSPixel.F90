@@ -184,7 +184,8 @@
 ! 2015/06/02, AP: Remove Ctrl argument from check_value.
 ! 2015/07/27, AP: Replace SPixel%Cloudy with check of SPixel%Type. Remove Get_LSF
 !    and SPixel%QC. Replace status checks with go to 99 in the event of failure.
-! 2015/08/19, AP: Make reading of RTM terms optional.
+! 2015/08/19, AP: Make reading of RTM terms optional. Add alternative Get_Surface
+!    for Swansea model.
 ! 2015/12/17, GM: Get rid of the secant of the solar zenith angle division of
 !    surface reflectance.
 !
@@ -256,8 +257,12 @@ subroutine Get_SPixel(Ctrl, SAD_Chan, MSI_Data, RTM, SPixel, status)
    if (status /= 0) go to 99 ! Skip further data reading
 
    if (SPixel%Ind%NSolar > 0) then
-      call Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
-      if (status /= 0) go to 99 ! Skip further data reading
+      if (Ctrl%Approach == AerSw) then
+         call Get_Surface_Swansea(Ctrl, SPixel)
+      else
+         call Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
+         if (status /= 0) go to 99 ! Skip further data reading
+      end if
 
       ! Set the solar constant for the solar channels used in this SPixel.
       deallocate(SPixel%f0)
