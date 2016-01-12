@@ -662,9 +662,9 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! ************* END ERROR ANALYSIS *************
 
-
    ! Evaluate cloud_albedo
-   if (SPixel%Ind%NSolar > 0) then
+   if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
+        SPixel%Ind%NSolar > 0) then
       call Allocate_GZero(GZero, SPixel)
 
       call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
@@ -689,15 +689,15 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       Diag%cloud_albedo = 0
    end if
 
-
    ! Evaluate corrected CTH
-   if (Ctrl%do_CTH_correction .and. all(SPixel%illum .eq. IDay)) then
+   if (Ctrl%do_CTH_correction .and. all(SPixel%illum .eq. IDay) .and. &
+        (Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
+        SPixel%Ind%NSolar > 0) then
       call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    else
       SPixel%CTH_corrected       = MissingXn
       SPixel%CTH_corrected_error = MissingSn
    end if
-
 
    ! Costs are divided by number of active instrument channels before output.
    J  = J  / SPixel%Ind%Ny
