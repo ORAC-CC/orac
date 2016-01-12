@@ -385,7 +385,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
    !----------------------- CTRL%RS -----------------------
    Ctrl%RS%RsSelm         = switch(a, Default=SelmAux)
-   Ctrl%RS%SRsSelm        = switch(a, Default=SelmCtrl, Aer=SelmAux)
+   Ctrl%RS%SRsSelm        = switch(a, Default=SelmMeas, Aer=SelmCtrl)
    Ctrl%RS%use_full_brdf  = switch(a, Default=.true.,   AerSw=.false.)
    Ctrl%RS%Sb             = switch(a, Default=0.2,      Aer=0.05)
    Ctrl%RS%Cb             = switch(a, Default=0.2,      Aer=0.4)
@@ -1092,13 +1092,14 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
               'alongside the full BRDF.'
          stop GetSurfaceMeth
       end if
-      if (Ctrl%RS%SRsSelm /= SelmCtrl) then
+      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmMeas) then
          write(*,*) 'ERROR: Read_Driver(): Surface reflectance uncertainty '// &
-              'must be set by Ctrl method when surface reflectance is.'
+              'must be set by Ctrl or Meas method when surface reflectance is.'
          stop GetSurfaceMeth
       end if
    case (SelmAux)
-      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmAux) then
+      if (Ctrl%RS%SRsSelm /= SelmCtrl .and. Ctrl%RS%SRsSelm /= SelmAux .and. &
+           Ctrl%RS%SRsSelm /= SelmMeas) then
          write(*,*) 'ERROR: Read_Driver(): surface reflectance uncertainty '// &
               ' method not supported.'
          stop GetSurfaceMeth

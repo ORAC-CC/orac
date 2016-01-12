@@ -117,6 +117,8 @@
 ! 2015/08/19, AP: Extensive overhaul: Uncertainties and correlations can now be
 !    drawn from auxiliary files; The XIndex array maps elements of the state
 !    vector onto the Rs array.
+! 2015/12/22, AP: Rename SRsSelm==SelmCtrl to SelmMeas as it is dependent on the
+!    measurement. Add a SelmCtrl that draws a constant value from Ctrl.
 ! 2015/01/06, AP: Fix a minor channel indexing bug when searching for solar chs.
 !    As aerosol preprocessing does not calculate Rho_DV, remove check for its
 !    validity. Add check for missing values in auxiliary uncertainties.
@@ -285,6 +287,14 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
          ! Fetch uncertainty information
          select case (Ctrl%RS%SRsSelm)
          case(SelmCtrl)
+            ! Uncertainty is a constant drawn from the driver file
+            uncertainty(i) = Ctrl%Sx(IRs(ii,IRho_DD))
+            if (Ctrl%RS%use_full_brdf) &
+                 uncertainty2(i,:) = Ctrl%Sx(IRs(ii,:))
+
+            ! Constant correlation between channels
+            correl = Ctrl%RS%Cb
+         case(SelmMeas)
             ! Uncertainty is a constant fraction of the reflectance
             uncertainty(i) = SPixel%Surface%Rs(i) * frac_error(ii,i_surf)
             if (Ctrl%RS%use_full_brdf) &
