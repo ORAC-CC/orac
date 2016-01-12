@@ -246,6 +246,33 @@ if (output_flags%do_swansea) then
            output_data%swansea_s_error_vmin, &
            output_data%swansea_s_error_vmax, &
            sint_fill_value)
+
+   !----------------------------------------------------------------------------
+   ! diffuse_frac, diffuse_frac_error
+   !----------------------------------------------------------------------------
+      temp_real = Diag%diffuse_frac(k)
+      call prepare_short_packed_float( &
+           temp_real, output_data%diffuse_frac(i,j,kk), &
+           output_data%diffuse_frac_scale, &
+           output_data%diffuse_frac_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%diffuse_frac_vmin, &
+           output_data%diffuse_frac_vmax, &
+           sint_fill_value)
+
+      if (Diag%diffuse_frac(k) .eq. sreal_fill_value) then
+         temp_real = sreal_fill_value
+      else
+         temp_real = Diag%diffuse_frac_s(k)
+      end if
+      call prepare_short_packed_float( &
+           temp_real, output_data%diffuse_frac_error(i,j,kk), &
+           output_data%diffuse_frac_error_scale, &
+           output_data%diffuse_frac_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%diffuse_frac_error_vmin, &
+           output_data%diffuse_frac_error_vmax, &
+           sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------

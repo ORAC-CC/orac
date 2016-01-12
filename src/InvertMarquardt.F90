@@ -171,6 +171,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/11/18, GM: Add call to Calc_Corrected_CTX().
 ! 2016/01/05, AP: The convergence test should re-evaluate dJ_dX when failed.
+! 2016/01/07, AP: Add output of diffuse fraction of illumination and AOT870.
 !
 ! $Id$
 !
@@ -266,10 +267,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! "Model parameter" error covariance.
    real    :: St_temp(SPixel%Nx, SPixel%Nx)
                                   ! Array temporary for Diag%St
-   real    :: CRP(SPixel%Ind%NSolar)
-   real    :: d_CRP(SPixel%Ind%NSolar, 2)
+   real, dimension(SPixel%Ind%NSolar)    :: CRP, T_00, T_0d, T_all
+   real, dimension(SPixel%Ind%NSolar, 2) :: d_CRP, d_T_00, d_T_0d
    type(GZero_t) :: GZero
    real    :: temp(SPixel%Ind%NSolar,SPixel%Ind%NSolar)
+
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
    integer :: ios                 ! I/O status for breakpoint file
@@ -661,6 +663,39 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    end do
 
    ! ************* END ERROR ANALYSIS *************
+
+   ! Output diffuse fraction so surface reflectance can be calculated by users
+   if (Ctrl%Approach == AerSw) then
+      call Allocate_GZero(GZero, SPixel)
+
+      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
+           GZero, stat)
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
+
+      call Int_LUT_TauSolRe(SAD_LUT%TB, SPixel%Ind%NSolar, SAD_LUT%Grid, &
+           GZero, Ctrl, T_0d, d_T_0d, ITB, &
+           SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
+      call Int_LUT_TauSolRe(SAD_LUT%TFBd, SPixel%Ind%NSolar, SAD_LUT%Grid, &
+           GZero, Ctrl, T_00, d_T_00, ITFBd, &
+           SPixel%spixel_y_solar_to_ctrl_y_index, SPixel%Ind%YSolar, stat)
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
+
+      T_all = T_0d + T_00
+      Diag%diffuse_frac(1:SPixel%Ind%NSolar) = T_0d / T_all
+      call d_derivative_wrt_crp_parameter(ITau, T_00, T_0d, d_T_0d, d_T_00, &
+           T_all, d_CRP)
+      call d_derivative_wrt_crp_parameter(IRe,  T_00, T_0d, d_T_0d, d_T_00, &
+           T_all, d_CRP)
+
+      temp = matmul(matmul(d_CRP, SPixel%Sn((/ITau,IRe/), (/ITau,IRe/))), &
+           transpose(d_CRP))
+      do m = 1, SPixel%Ind%NSolar
+         Diag%diffuse_frac_s(m) = temp(m, m)
+      end do
+
+      call Deallocate_GZero(GZero)
+   end if
 
    ! Evaluate cloud_albedo
    if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &

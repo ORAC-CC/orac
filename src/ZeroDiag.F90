@@ -68,5 +68,7 @@ subroutine Zero_Diag(Ctrl, Diag)
    Diag%AK             = MissingXn
    Diag%cloud_albedo   = sreal_fill_value
    Diag%cloud_albedo_s = sreal_fill_value
+   Diag%diffuse_frac   = sreal_fill_value
+   Diag%diffuse_frac_s = sreal_fill_value
 
 end subroutine Zero_Diag

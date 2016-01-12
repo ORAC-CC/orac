@@ -69,6 +69,10 @@ module Diag_def
                                     ! Cloud albedo
       real          :: cloud_albedo_s(MaxNumSolar)
                                     ! Cloud albedo variance
+      real          :: diffuse_frac(MaxNumSolar)
+                                    ! Diffuse fraction of radiance
+      real          :: diffuse_frac_s(MaxNumSolar)
+                                    ! Diffuse fraction variance
    end type Diag_t
 
 contains
