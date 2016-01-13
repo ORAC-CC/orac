@@ -49,6 +49,11 @@
 ! 2014/08/20, OS: Adaptations made for cray-fortran compiler specific issues
 ! 2014/12/04, OS: include job ID in scratch file name - only for wrapper
 ! 2015/12/17, OS: Added some wrapper specific variables.
+! 2016/01/13, GM: Allocate old_data and new_data on the heap explicitly rather
+!    than declaring them automatic. In this case, as automatic, gfortran, and
+!    maybe other compilers, were allocating the arrays on the stack overflowing
+!    the stack. These arrays are big enough that they should be explicitly
+!    allocated on the heap anyway.
 !
 ! $Id$
 !
@@ -83,7 +88,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    integer(lint)                             :: fu,stat,lun,nbytes
    integer(lint)                             :: in_words,out_words
    logical                                   :: lun_exists, lun_used, open_status
-   integer(lint), dimension(BUFFER)          :: in_data,out_data
+   integer(lint), allocatable, dimension(:)  :: in_data,out_data
    integer(lint)                             :: iblank(4)
    real(dreal)                               :: zni(1),zno(1),grid(2),area(4)
    character(len=20)                         :: charv(1)
@@ -107,7 +112,6 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    jid_temp = jid_temp( cutoff + 3 : )
    jid_length = len_trim(jid_temp)
    read(jid_temp, '(I10)') jid_int
-
 #endif
 
    ! open the ECMWF file
@@ -138,6 +142,9 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
    if (INTOUT('area',iblank,area,charv).ne.0) &
         stop 'ERROR: read_ecmwf_grib(): INTOUT area failed.'
+
+   allocate(in_data(BUFFER))
+   allocate(out_data(BUFFER))
 
    ! interpolate ECMWF products to preproc grid
    do
@@ -173,7 +180,7 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
       ! read scratch file
       call grib_open_file(fid,name,'r',stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error opening GRIB field.'
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error opening GRIB file.'
       call grib_new_from_file(fid,gid,stat)
       if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting GRIB_ID.'
 
@@ -302,6 +309,9 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    end do
 
    deallocate(val)
+
+   deallocate(in_data)
+   deallocate(out_data)
 
    ! close ECMWF file
    call PBCLOSE(fu,stat)

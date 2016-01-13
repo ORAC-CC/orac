@@ -57,8 +57,8 @@
 ! 2014/12/30, GM: Allocate old_data and new_data on the heap explicitly rather
 !    than declaring them automatic. In this case, as automatic, gfortran, and
 !    maybe other compilers, were allocating the arrays on the stack overflowing
-!    the stack when running with OpenMP. These arrays are big enough that they
-!    should be explicitly allocated on the heap anyway.
+!    the stack. These arrays are big enough that they should be explicitly
+!    allocated on the heap anyway.
 ! 2014/02/04, MS+OS: Implemented nearest neighbour interpolation of ECMWF data;
 !    only activated when WRAPPER flag is set; preliminary approach which will
 !    be made obsolete when ECMWF data will be retrieved on preproc grid
@@ -114,9 +114,6 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
 #endif
    n=ecmwf%xdim*ecmwf%ydim
 
-   allocate(old_data(BUFFER))
-   allocate(new_data(BUFFER))
-
    ! input details of new grid (see note in read_ecmwf_grib)
    charv(1)='yes'
    grid(1)=sreal_fill_value
@@ -147,6 +144,9 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
    call nc_open(fid,ecmwf_path)
    if (nf90_inquire(fid,ndim,nvar,natt) .ne. 0) &
         stop 'ERROR: read_ecmwf_nc(): NF INQ failed.'
+
+   allocate(old_data(BUFFER))
+   allocate(new_data(BUFFER))
 
    ! loop over variables
    do ivar=1,nvar
@@ -293,10 +293,10 @@ subroutine read_ecmwf_nc(ecmwf_path, ecmwf, preproc_dims, preproc_geoloc, &
       end if
    end do
 
-   if (nf90_close(fid) .ne. NF90_NOERR) &
-        stop 'ERROR: read_ecmwf_nc(): Failure to close file.'
-
    deallocate(old_data)
    deallocate(new_data)
+
+   if (nf90_close(fid) .ne. NF90_NOERR) &
+        stop 'ERROR: read_ecmwf_nc(): Failure to close file.'
 
 end subroutine read_ecmwf_nc
