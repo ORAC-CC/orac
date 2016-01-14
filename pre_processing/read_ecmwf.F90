@@ -111,57 +111,37 @@ subroutine read_ecmwf(ecmwf_flag, ecmwf_path_file, ecmwf_path_file2, &
    type(preproc_geoloc_s),     intent(in)    :: preproc_geoloc
    type(preproc_prtm_s),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
-#ifdef WRAPPER
-   integer                                   :: mytask
-   character(len=file_length)                :: jid
-#endif
-
 
    select case (ecmwf_flag)
    case(0)
-#ifndef WRAPPER
       call read_ecmwf_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
-#else
-      call read_ecmwf_grib(ecmwf_path_file,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose,mytask,jid)
-#endif
    case(1)
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
 
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file2)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
       call read_ecmwf_nc(ecmwf_path_file2,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
 
-      if (verbose) write(*,*)  'Reading ecmwf path:  ',trim(ecmwf_path_file3)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file3)
       call read_ecmwf_nc(ecmwf_path_file3,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
    case(2)
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
 
-#ifndef WRAPPER
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file2)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file2)
       call read_ecmwf_grib(ecmwf_path_file2,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
 
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file3)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file3)
       call read_ecmwf_grib(ecmwf_path_file3,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
-#else
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file2)
-      call read_ecmwf_grib(ecmwf_path_file2,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose,mytask,jid)
-
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file3)
-      call read_ecmwf_grib(ecmwf_path_file3,preproc_dims,preproc_geoloc, &
-           preproc_prtm,verbose,mytask,jid)
-#endif
    case(3)
-      if (verbose) write(*,*)  'Reading ecmwf path: ',trim(ecmwf_path_file)
+      if (verbose) write(*,*) 'Reading ecmwf path: ',trim(ecmwf_path_file)
       call read_ecmwf_nc(ecmwf_path_file,ecmwf,preproc_dims,preproc_geoloc, &
            preproc_prtm,verbose)
    end select

@@ -30,7 +30,7 @@
 !    a) Read data field.
 !    b) Interpolate it with INTF.
 !    c) Write new GRIB field to scratch file.
-!    d) Read scratch file with GRIB API routines. Check for reduced Gaus grid.
+!    d) Read scratch file with GRIB API routines. Check for reduced Gauss grid.
 !    e) Select correct output array from parameter #.
 !    f) Write data into preproc structures.
 ! 4) Close files.
@@ -54,6 +54,9 @@
 !    maybe other compilers, were allocating the arrays on the stack overflowing
 !    the stack. These arrays are big enough that they should be explicitly
 !    allocated on the heap anyway.
+! 2016/01/13, GM: Eliminate the need for a scratch file by reading the grib
+!    output from INTF() directly into the grib_api library code from memory with
+!    grib_new_from_message().
 !
 ! $Id$
 !
@@ -62,13 +65,8 @@
 ! for additional debugging output.
 !-------------------------------------------------------------------------------
 
-#ifndef WRAPPER
 subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
      preproc_prtm,verbose)
-#else
-subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
-     preproc_prtm,verbose,mytask,jid)
-#endif
 
    use grib_api
    use preproc_constants
@@ -83,46 +81,23 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
    type(preproc_prtm_s),       intent(inout) :: preproc_prtm
    logical,                    intent(in)    :: verbose
 
-   integer(lint), parameter                  :: BUFFER = 2000000
-   integer(lint), external                   :: INTIN,INTOUT,INTF
-   integer(lint)                             :: fu,stat,lun,nbytes
-   integer(lint)                             :: in_words,out_words
-   logical                                   :: lun_exists, lun_used, open_status
-   integer(lint), allocatable, dimension(:)  :: in_data,out_data
-   integer(lint)                             :: iblank(4)
-   real(dreal)                               :: zni(1),zno(1),grid(2),area(4)
-   character(len=20)                         :: charv(1)
-   character(len=file_length)                :: name
+   integer(lint), parameter                 :: BUFFER = 2000000
+   integer(lint), external                  :: INTIN,INTOUT,INTF
+   integer(lint)                            :: fu,stat,nbytes
+   integer(lint)                            :: in_words,out_words
+   integer(lint), allocatable, dimension(:) :: in_data,out_data
+   integer(lint)                            :: iblank(4)
+   real(dreal)                              :: zni(1),zno(1),grid(2),area(4)
+   character(len=20)                        :: charv(1)
 
-   integer(lint)                             :: fid,gid,level,param
-   integer(lint)                             :: n,ni,nj,i,j,plpresent
-   real(sreal), dimension(:),   allocatable  :: pl,val
-   real(sreal), dimension(:,:), pointer      :: array
-
-   ! this is for the wrapper
-#ifdef WRAPPER
-   integer                                  :: cutoff, jid_int, jid_length, mytask
-   character(len=file_length)               :: jid, jid_temp
-   character(len=file_length)               :: system_call
-
-   ! extract job ID integer variable for subsequent naming of scratch files
-   cutoff = index(trim(adjustl(jid)),'_', back=.true.)
-   jid_temp = jid( 1 : ( cutoff - 1 ) )
-   cutoff = index(trim(adjustl(jid_temp)),'_ID', back=.true.)
-   jid_temp = jid_temp( cutoff + 3 : )
-   jid_length = len_trim(jid_temp)
-   read(jid_temp, '(I10)') jid_int
-#endif
+   integer(lint)                            :: gid,level,param
+   integer(lint)                            :: n,ni,nj,i,j,plpresent
+   real(sreal), dimension(:),   allocatable :: pl,val
+   real(sreal), dimension(:,:), pointer     :: array
 
    ! open the ECMWF file
    call PBOPEN(fu, ecmwf_file, 'r', stat)
    if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Failed to read file.'
-
-   ! find an available file unit for scratch file
-   do lun=97,1,-1
-      inquire(unit=lun, exist=lun_exists, opened=lun_used)
-      if (lun_exists .and. (.not. lun_used)) exit
-   end do
 
    ! select appropriate grid definition
    charv(1)='grib'
@@ -159,29 +134,8 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       if (INTF(in_data,in_words,zni,out_data,out_words,zno).ne.0) &
            stop 'ERROR: read_ecmwf_grib(): INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.'
 
-      ! open a scratch file to store the interpolated product
-#ifndef WRAPPER
-      open(unit=lun,status='SCRATCH',iostat=stat,form='UNFORMATTED')
-#else
-      write(name,"(A5,I0.10,A1,I0.5)") 'orac_', jid_int, '.', mytask
-      open(unit=lun,file=trim(adjustl(name)),iostat=stat,form='UNFORMATTED', &
-           status='REPLACE')
-#endif
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Failed to open scratch file.'
-      inquire(unit=lun,name=name,opened=open_status)
-
-      ! write interpolated field to scratch file
-      write(lun) out_data(1:out_words)
-
-#ifdef WRAPPER
-      ! close scratch file
-      close(unit=lun,status='KEEP')
-#endif
-
-      ! read scratch file
-      call grib_open_file(fid,name,'r',stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error opening GRIB file.'
-      call grib_new_from_file(fid,gid,stat)
+      ! load grib data into grib_api
+      call grib_new_from_message(gid,out_data(1:out_words),stat)
       if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting GRIB_ID.'
 
       call grib_get(gid,'parameter',param,stat)
@@ -213,19 +167,6 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error reading data.'
       call grib_release(gid,stat)
       if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error releasing GRIB_ID.'
-      call grib_close_file(fid,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error closing GRIB field.'
-
-#ifndef WRAPPER
-      ! close scratch file
-      close(unit=lun)
-#else
-      ! remove scratch file
-      if (open_status) then
-         write(system_call,"(A6,A50)") 'rm -f ', trim(adjustl(name))
-         call system(system_call)
-      endif
-#endif
 
       ! select correct output array
       select case (param)

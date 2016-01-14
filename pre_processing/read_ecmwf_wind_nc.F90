@@ -165,7 +165,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path,ecmwf)
             if (ecmwf%ydim .ne. size) &
                  stop 'ERROR: read_ecmwf_wind(): Inconsistent lat.'
          end if
-         ! the vertical coordinate is inconsistently between gpam and ggam
+         ! the vertical coordinate is inconsistently named between gpam and ggam
       else if ((name.eq.'hybrid' .and. ndim.eq.4) .or. &
            name.eq.'hybrid_1') then
          if (ecmwf%kdim .eq. 0) then
