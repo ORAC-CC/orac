@@ -105,9 +105,10 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
         RTM%Grid%Wrap)
 
    ! Bilinear interpolation
-   call interp_field2(RTM%P, SPixel%RTM%LW%P, interp)
-   call interp_field2(RTM%T, SPixel%RTM%LW%T, interp)
-   call interp_field2(RTM%H, SPixel%RTM%LW%H, interp)
+   call interp_field2(RTM%P, SPixel%RTM%P, interp)
+   call interp_field2(RTM%T, SPixel%RTM%T, interp)
+   call interp_field2(RTM%H, SPixel%RTM%H, interp)
+
    if (Ctrl%Ind%NThermal .gt. 0) then
       call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
       if (any(SPixel%RTM%LW%Ems < EmsMin .or. SPixel%RTM%LW%Ems > TxcMax)) &
@@ -136,7 +137,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
 
    ! Bilinear interpolation
-   call interp_field2(RTM%P, SPixel%RTM%SW%P, interp)
+   call interp_field2(RTM%P, SPixel%RTM%P, interp)
    if (Ctrl%Ind%NSolar .gt. 0) then
       call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
       if (any(SPixel%RTM%SW%Tac < TxcMin .or. SPixel%RTM%SW%Tac > TxcMax)) &
@@ -156,7 +157,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
    ! one per channel, to convert).
 
-   T_Array = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+   T_Array = SPixel%RTM%T(SPixel%RTM%Np)
    SAD_temp = SAD_Chan(Ctrl%Ind%YThermal)
    if (status == 0) &
       call T2R(Ctrl%Ind%NThermal, SAD_temp, T_Array, R, SPixel%RTM%LW%dB_dTs, &

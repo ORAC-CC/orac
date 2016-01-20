@@ -55,11 +55,14 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
 
    ! Get_RTM arrays
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
+      deallocate(SPixel%RTM%P)
+      deallocate(SPixel%RTM%T)
+      deallocate(SPixel%RTM%H)
+
       ! Short wave RTM parameters
       deallocate(SPixel%RTM%SW%Tac)
       deallocate(SPixel%RTM%SW%Tbc)
       deallocate(SPixel%RTM%SW%Tsf)
-      deallocate(SPixel%RTM%SW%P)
 
       ! Long wave RTM parameters
       deallocate(SPixel%RTM%LW%Tac)
@@ -71,9 +74,6 @@ subroutine Dealloc_SPixel(Ctrl, SPixel)
       deallocate(SPixel%RTM%LW%R_clear)
       deallocate(SPixel%RTM%LW%dB_dTs)
       deallocate(SPixel%RTM%LW%Ems)
-      deallocate(SPixel%RTM%LW%T)
-      deallocate(SPixel%RTM%LW%P)
-      deallocate(SPixel%RTM%LW%H)
 
       ! Overall RTM transmittances and reflectances
       deallocate(SPixel%RTM%Tsf_o)

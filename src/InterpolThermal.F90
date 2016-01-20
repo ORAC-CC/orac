@@ -58,8 +58,8 @@
 ! $Id$
 !
 ! Bugs:
-! call find_Pc(Ctrl, SPixel%RTM%LW%Np, SPixel%RTM%LW%P, Pc, i, status)
-! occasionally returns status 0 particually with ice retreivals
+! call find_Pc(Ctrl, SPixel%RTM%Np, SPixel%RTM%P, Pc, i, status) occasionally
+! returns status 0 particually with ice retreivals
 !-------------------------------------------------------------------------------
 
 subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
@@ -125,7 +125,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
    ! Search for Pc in the LW RTM pressure levels. If Pc lies outside the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level
-   call find_Pc(Ctrl, SPixel%RTM%LW%Np, SPixel%RTM%LW%P, Pc, i, status)
+   call find_Pc(Ctrl, SPixel%RTM%Np, SPixel%RTM%P, Pc, i, status)
 
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
@@ -142,7 +142,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
       ! Change in pressure between RTM levels i and i+1
       ! (delta_p is negative for decreasing pressure with increasing i)
-      delta_p = SPixel%RTM%LW%P(i+1) - SPixel%RTM%LW%P(i)
+      delta_p = SPixel%RTM%P(i+1) - SPixel%RTM%P(i)
 
       ! Change in transmittances between RTM levels i and i+1
       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
@@ -167,13 +167,13 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       RTM_Pc%LW%dRbc_up_dPc(Thermal)  = delta_Rbc_up  / delta_p
 
       ! Change in temperature between RTM levels i and i+1
-      delta_T = SPixel%RTM%LW%T(i+1) - SPixel%RTM%LW%T(i)
+      delta_T = SPixel%RTM%T(i+1) - SPixel%RTM%T(i)
 
       ! Gradient of Planck functions w.r.t. pressure (around Pc)
       RTM_Pc%dTc_dPc = delta_T / delta_p
 
       ! Change in GPH between RTM levels i and i+1
-      delta_H = SPixel%RTM%LW%H(i+1) - SPixel%RTM%LW%H(i)
+      delta_H = SPixel%RTM%H(i+1) - SPixel%RTM%H(i)
 
       ! Gradient of delta GPH w.r.t. pressure (around Pc)
       RTM_Pc%dHc_dPc = delta_H / delta_p
@@ -185,7 +185,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! the pressure of the lowest altitude RTM pressure level)
 
       ! Diff. between Pc and lower RTM level
-      delta_Pc = Pc - SPixel%RTM%LW%P(i)
+      delta_Pc = Pc - SPixel%RTM%P(i)
 
       ! Diff. in trans. from gradient
       delta_Tc = delta_Pc * RTM_Pc%LW%dTac_dPc(Thermal)
@@ -210,7 +210,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
       ! Set current temperature RTM_Pc%Tc and calculate equivalent radiance.
       ! (T2R requires T to be an array).
       delta_T = delta_Pc * RTM_Pc%dTc_dPc
-      RTM_Pc%Tc = SPixel%RTM%LW%T(i) + delta_T
+      RTM_Pc%Tc = SPixel%RTM%T(i) + delta_T
       T = RTM_Pc%Tc
 
       ! Interpolated Planck functions: calculate T and convert to B using T2R
@@ -222,7 +222,7 @@ subroutine Interpol_Thermal(Ctrl, SPixel, Pc, SAD_Chan, RTM_Pc, status)
 
       ! Set current GPH
       delta_H = delta_Pc * RTM_Pc%dHc_dPc
-      RTM_Pc%Hc = SPixel%RTM%LW%H(i) + delta_H
+      RTM_Pc%Hc = SPixel%RTM%H(i) + delta_H
    end if
 
    ! Open breakpoint file if required, and write our reflectances and gradients.

@@ -50,13 +50,13 @@
 !    interpolated gradients using the cubic spline method described in
 !    'Numerical Recipes for fortran 90' [Press, Flannery, Teukolsky, Vetterling]
 ! 2012/02/06, CA: Explicit indexing when spline routine is called ie call
-!    spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np), &
-!           SPixel%RTM%SW%Tac(k,1:SPixel%RTM%SW%Np), &
+!    spline(SPixel%RTM%P(1:SPixel%RTM%Np), &
+!           SPixel%RTM%SW%Tac(k,1:SPixel%RTM%Np), &
 !           d2Tac_dP2(k,:))
 !    replaced with -> call
-!    spline(SPixel%RTM%SW%P(1:SPixel%RTM%SW%Np), &
-!           SPixel%RTM%SW%Tbc(k,1:SPixel%RTM%SW%Np), &
-!           d2Tbc_dP2(k,1:SPixel%RTM%SW%Np))
+!    spline(SPixel%RTM%P(1:SPixel%RTM%Np), &
+!           SPixel%RTM%SW%Tbc(k,1:SPixel%RTM%Np), &
+!           d2Tbc_dP2(k,1:SPixel%RTM%Np))
 ! 2014/07/08, CP: Small bug fix to BKP readout.
 ! 2014/08/05, GM: Cleaned up the code.
 ! 2014/08/05, GM: Put Interpol_* common code into subroutine find_Pc().
@@ -99,8 +99,8 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
    real    :: delta_p
    real    :: delta_Tac(SPixel%Ind%NSolar)
    real    :: delta_Tbc(SPixel%Ind%NSolar)
-   real    :: d2Tac_dP2(SPixel%Ind%NSolar,SPixel%RTM%SW%Np)
-   real    :: d2Tbc_dP2(SPixel%Ind%NSolar,SPixel%RTM%SW%Np)
+   real    :: d2Tac_dP2(SPixel%Ind%NSolar,SPixel%RTM%Np)
+   real    :: d2Tbc_dP2(SPixel%Ind%NSolar,SPixel%RTM%Np)
 #ifdef BKP
    integer :: bkp_lun ! Unit number for breakpoint file
    integer :: ios     ! I/O status for breakpoint file
@@ -114,7 +114,7 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    ! Search for Pc in the SW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
-   call find_Pc(Ctrl, SPixel%RTM%SW%Np, SPixel%RTM%SW%P, Pc, i, status)
+   call find_Pc(Ctrl, SPixel%RTM%Np, SPixel%RTM%P, Pc, i, status)
 
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
@@ -122,7 +122,7 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
 #ifdef DEBUG
       write(*, *) 'ERROR: Interpol_Solar_spline(): Interpolation failure, SPixel ' // &
          'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
-         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
+         SPixel%RTM%P(1), SPixel%RTM%P(SPixel%RTM%Np), Pc
 #endif
       status = IntTransErr
    else
@@ -130,17 +130,17 @@ subroutine Interpol_Solar_spline(Ctrl, SPixel, Pc, RTM_Pc, status)
       ! Note: Implicit looping over instrument channels from here onwards
 
       do j = 1, SPixel%Ind%NSolar
-         call spline(SPixel%RTM%SW%P, &
+         call spline(SPixel%RTM%P, &
               SPixel%RTM%SW%Tac(Solar(j),:),d2Tac_dP2(j,:))
-         call spline(SPixel%RTM%SW%P, &
+         call spline(SPixel%RTM%P, &
               SPixel%RTM%SW%Tbc(Solar(j),:),d2Tbc_dP2(j,:))
       end do
 
       ! Change in pressure between RTM levels i and i+1
       ! (delta_p is negative for decreasing pressure with increasing i)
-      delta_p =  SPixel%RTM%SW%P(i+1) - SPixel%RTM%SW%P(i)
+      delta_p =  SPixel%RTM%P(i+1) - SPixel%RTM%P(i)
 
-      dP = (SPixel%RTM%SW%P(i+1)-Pc)/delta_p
+      dP = (SPixel%RTM%P(i+1)-Pc)/delta_p
       p1 = 1.0 - dP
 
       k0 = (((3.0*dP*dP)-1.0)/6.0) * delta_p

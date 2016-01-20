@@ -128,7 +128,7 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
         GZero, SAD_LUT, CRP, d_CRP, status)
 
    ! Calculate delta_Ts
-   delta_Ts = X(ITs) - SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+   delta_Ts = X(ITs) - SPixel%RTM%T(SPixel%RTM%Np)
 
    ! Calculate product dB_dTs * SPixel%RTM%LW%Ems (for efficiency)
    Es_dB_dTs = SPixel%RTM%LW%dB_dTs(Thermal) * SPixel%RTM%LW%Ems(Thermal)

@@ -82,16 +82,16 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    real,    parameter :: max_tropopause = 500.0    ! Lowest p allowed for trop
    integer, parameter :: depth          = 2        ! # layers added to inversions
 
-   integer                             :: nz       ! Number of vertical levels
-   integer                             :: k, l     ! Indexing variables
-   integer, dimension(1)               :: k_tmax   ! Index of max temperature
-   integer, dimension(1)               :: k_tmin   ! Index of min temperature
-   integer                             :: k_int    ! Index of interpolated temp
-   integer                             :: step     ! Direction of search
-   real, dimension(SPixel%RTM%LW%Np-1) :: t        ! Temperature profile
-   real, dimension(SPixel%RTM%LW%Np-1) :: p        ! Pressure profile
-   real, dimension(SPixel%RTM%LW%Np-1) :: h        ! Approx height profile
-   real                                :: gradient ! For extrapolation
+   integer                          :: nz       ! Number of vertical levels
+   integer                          :: k, l     ! Indexing variables
+   integer, dimension(1)            :: k_tmax   ! Index of max temperature
+   integer, dimension(1)            :: k_tmin   ! Index of min temperature
+   integer                          :: k_int    ! Index of interpolated temp
+   integer                          :: step     ! Direction of search
+   real, dimension(SPixel%RTM%Np-1) :: t        ! Temperature profile
+   real, dimension(SPixel%RTM%Np-1) :: p        ! Pressure profile
+   real, dimension(SPixel%RTM%Np-1) :: h        ! Approx height profile
+   real                             :: gradient ! For extrapolation
 
 
    status = 0
@@ -101,11 +101,11 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
    ! temperature in the level vertically above this level?"
 
    ! Short variable names
-   nz = SPixel%RTM%LW%Np-1
-   t  = SPixel%RTM%LW%T(1:nz)
-   p  = SPixel%RTM%LW%P(1:nz)
+   nz = SPixel%RTM%Np-1
+   t  = SPixel%RTM%T(1:nz)
+   p  = SPixel%RTM%P(1:nz)
    ! Estimate vertical height with the geopotential divided by gravity
-   h  = (0.001 / g_wmo) * SPixel%RTM%LW%H(1:nz)
+   h  = (0.001 / g_wmo) * SPixel%RTM%H(1:nz)
 
 
    !----------------------- CORRECT TEMPERATURE PROFILE ------------------------
@@ -227,6 +227,6 @@ subroutine Int_CTP(SPixel, Ctrl, BT, CTP, status)
 
    ! Overwrite RTM profile with that extrapolated. (Later used to determine
    ! RTM_Pc%LW%B for the forward model.)
-   SPixel%RTM%LW%T(1:nz)=t
+   SPixel%RTM%T(1:nz)=t
 
 end subroutine Int_CTP

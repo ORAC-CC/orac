@@ -94,6 +94,8 @@
 ! 2015/07/29, AP: Remove QC.
 ! 2015/08/13, AP: Add Calculate_ND for NDVI and NDSI calculcation.
 ! 2015/11/18, GM: Add CTH_corrected and CTH_corrected_error (uncertainty).
+! 2016/01/20, GM: Move fields in RTM_LW_t and RTM_SW_t that are common to both
+!    up one level into SPixel_RTM_t.
 !
 ! $Id$
 !
@@ -124,8 +126,6 @@ module SPixel_def
    ! Define a type for the Short Wave RTM parameters
 
    type RTM_SW_t
-      integer             :: Np           ! Number of pressure levels
-      real, pointer       :: P(:)         ! Array of pressure levels (1:SW%Np)
       real, pointer       :: Tbc(:,:)     ! Surface to P channel transmittances
       real, pointer       :: Tac(:,:)     ! P to TOA channel transmittances
       real, pointer       :: Tsf(:)       ! Transmittance at the surface to TOA
@@ -135,10 +135,6 @@ module SPixel_def
    ! Define a type for the Long Wave RTM parameters
 
    type RTM_LW_t
-      integer             :: Np           ! Number of pressure levels
-      real                :: Lat          ! Latitude
-      real                :: Lon          ! Longitude
-      real, pointer       :: P(:)         ! Array of pressure levels
       real, pointer       :: Ems(:)       ! Channel emissivities
       real, pointer       :: Tac(:,:)     ! P to space channel transmittances
       real, pointer       :: Tbc(:,:)     ! Surface to P channel transmittances
@@ -149,8 +145,6 @@ module SPixel_def
       real, pointer       :: Rbc_Up(:,:)  ! Upwelling radiances from
                                           ! atmosphere at P
       real, pointer       :: R_clear(:)   ! Clear upwelling TOA radiance
-      real, pointer       :: T(:)         ! Temperature at P. (1:LW%Np)
-      real, pointer       :: H(:)         ! geopotential height at P. (1:LW%Np)
       real, pointer       :: dB_dTs(:)    ! Gradient of Bs w.r.t surface temp.
    end type RTM_LW_t
 
@@ -158,6 +152,12 @@ module SPixel_def
    ! Define the overall RTM structure
 
    type SPixel_RTM_t
+      integer             :: Np           ! Number of pressure levels
+      real                :: Lat          ! Latitude
+      real                :: Lon          ! Longitude
+      real, pointer       :: P(:)         ! Array of pressure levels (1:SW%Np)
+      real, pointer       :: T(:)         ! Temperature at P. (1:LW%Np)
+      real, pointer       :: H(:)         ! geopotential height at P. (1:LW%Np)
       type(RTM_SW_t)      :: SW           ! Short wave RTM parameters
       type(RTM_LW_t)      :: LW           ! Long wave RTM parameters
       real, pointer       :: Tsf_o(:)     ! Transmittance along solar slant path

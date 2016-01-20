@@ -101,7 +101,7 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
    ! Search for Pc in the SW RTM pressure levels. If Pc lies outwith the RTM
    ! pressure levels avoid search and set index to 1 or the penultimate RTM level.
-   call find_Pc(Ctrl, SPixel%RTM%SW%Np, SPixel%RTM%SW%P, Pc, i, status)
+   call find_Pc(Ctrl, SPixel%RTM%Np, SPixel%RTM%P, Pc, i, status)
 
    if (status /= 0) then
       ! If none of the above conditions are met (e.g. Pc = NaN) then return with
@@ -109,7 +109,7 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 #ifdef DEBUG
       write(*, *) 'ERROR: Interpol_Solar(): Interpolation failure, SPixel ' // &
          'starting at: ',SPixel%Loc%X0, SPixel%Loc%Y0, ', P(1), P(Np), Pc: ', &
-         SPixel%RTM%SW%P(1), SPixel%RTM%SW%P(SPixel%RTM%SW%Np), Pc
+         SPixel%RTM%P(1), SPixel%RTM%P(SPixel%RTM%Np), Pc
 #endif
       status = IntTransErr
    else
@@ -118,7 +118,7 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
 
       ! Change in pressure between RTM levels i and i+1
       ! (delta_p is negative for decreasing pressure with increasing i)
-      delta_p = SPixel%RTM%SW%P(i+1) - SPixel%RTM%SW%P(i)
+      delta_p = SPixel%RTM%P(i+1) - SPixel%RTM%P(i)
 
       ! Change in transmittances between RTM levels i and i+1
       ! (delta_Tac/bc are positive for increasing trans. with increasing i)
@@ -136,7 +136,7 @@ subroutine Interpol_Solar(Ctrl, SPixel, Pc, RTM_Pc, status)
       ! the pressure of the lowest altitude RTM pressure level)
 
       ! Diff. between Pc and lower RTM level
-      delta_Pc = Pc - SPixel%RTM%SW%P(i)
+      delta_Pc = Pc - SPixel%RTM%P(i)
 
       ! Diff. in trans. from gradient
       delta_Tc = delta_Pc * RTM_Pc%SW%dTac_dPc(Solar)

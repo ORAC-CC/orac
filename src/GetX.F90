@@ -249,7 +249,7 @@ subroutine Get_State(mode, i, Ctrl, SPixel, SAD_Chan, flag, X, status, Err)
          ! Error setting could be much more sophisticated. The current scheme
          ! takes no account of relative proportions of land/sea in the
          ! current SPixel.
-         X = SPixel%RTM%LW%T(SPixel%RTM%LW%Np)
+         X = SPixel%RTM%T(SPixel%RTM%Np)
          if (present(Err)) then
             if (SPixel%Surface%Land) then
                Err(i,i) = AUXErrTsLand * AUXErrTsLand * Scale2

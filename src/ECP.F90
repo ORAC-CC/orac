@@ -510,8 +510,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    else
       ! Set RTM pressure values in SPixel (will not change from here on)
       call Alloc_RTM_Pc(Ctrl, RTM_Pc)
-      SPixel%RTM%LW%Np = RTM%Np
-      SPixel%RTM%SW%NP = RTM%Np
+      SPixel%RTM%Np = RTM%Np
+      SPixel%RTM%NP = RTM%Np
    end if
 
    ! Initialise values required before main loop begins
