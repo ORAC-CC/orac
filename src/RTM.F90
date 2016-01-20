@@ -29,6 +29,8 @@
 ! 2015/01/19, GM: Put ReadSwRTM_nc.F90 and ReadLwRTM_nc.F90 into this module.
 ! 2015/01/30, AP: Eliminate redundant fields.
 ! 2015/04/27, AP: Moved PRTM code into its own routine.
+! 2016/01/20, GM: Move fields in LW_t and SW_t that are common to both up one
+!    level into RTM_t.
 !
 ! $Id$
 !
@@ -57,30 +59,18 @@ module RTM_def
       logical          :: Wrap             ! Does this grid wrap in lon?
    end type RTM_Grid_t
 
-   ! Define short-wave sub-structure
 
    type SW_t
-      integer          :: NP               ! No of pressure levels
       integer          :: NSWF             ! Number of solar channels in SWRTM File
-      integer          :: NV               ! Number of views in SWRTM File
       real,    pointer :: Tac(:,:,:,:)     ! Transmittance above cloud
                                            ! (lat,lon, channel, pressure)
       real,    pointer :: Tbc(:,:,:,:)     ! Transmittance below cloud
                                            ! (lat, lon, channel, pressure)
-      type(RTM_Grid_t) :: Grid
    end type SW_t
 
-   ! Define long-wave sub-structure
 
    type LW_t
-      integer          :: NP               ! No of pressure levels
       integer          :: NLWF             ! Number of thermal channels in LWRTM File
-      integer          :: NV               ! Number of views in LWRTM File
-      real,    pointer :: Lat(:,:)         ! Latitude values in grid (lat,lon)
-      real,    pointer :: Lon(:,:)         ! Longitude values (lat,lon)
-      real,    pointer :: P(:,:,:)         ! Pressure values (lat,lon,pressure)
-      real,    pointer :: T(:,:,:)         ! Temperatures (lat,lon,pressure)
-      real,    pointer :: H(:,:,:)         ! geopotential height
       real,    pointer :: Ems(:,:,:)       ! Emissivity (lat,lon,channels)
       real,    pointer :: Tac(:,:,:,:)     ! Transmittance above cloud
                                            ! (lat,lon,channels,pressure)
@@ -92,10 +82,18 @@ module RTM_def
                                            ! (lat,lon,channels,pressure)
       real,    pointer :: Rbc_up(:,:,:,:)  ! Upwelling radiance below cloud
                                            ! (lat,lon,channels,pressure)
-      type(RTM_Grid_t) :: Grid
    end type LW_t
 
+
    type RTM_t
+      integer          :: NP               ! No of pressure levels
+      integer          :: NV               ! Number of views in SWRTM File
+      real,    pointer :: Lat(:,:)         ! Latitude values in grid (lat,lon)
+      real,    pointer :: Lon(:,:)         ! Longitude values (lat,lon)
+      real,    pointer :: P(:,:,:)         ! Pressure values (lat,lon,pressure)
+      real,    pointer :: T(:,:,:)         ! Temperatures (lat,lon,pressure)
+      real,    pointer :: H(:,:,:)         ! geopotential height
+      type(RTM_Grid_t) :: Grid
       type(LW_t)       :: LW
       type(SW_t)       :: SW
    end type RTM_t

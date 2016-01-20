@@ -54,31 +54,31 @@ subroutine Read_PRTM_nc(Ctrl, RTM)
    call nc_open(ncid, Ctrl%FID%PRTM)
 
    ! Allocate arrays
-   allocate(RTM%LW%lat(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-   allocate(RTM%LW%lon(RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
+   allocate(RTM%lat(RTM%Grid%NLon, RTM%Grid%NLat))
+   allocate(RTM%lon(RTM%Grid%NLon, RTM%Grid%NLat))
 
-   allocate(RTM%LW%P(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-   allocate(RTM%LW%T(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
-   allocate(RTM%LW%H(RTM%LW%NP, RTM%LW%Grid%NLon, RTM%LW%Grid%NLat))
+   allocate(RTM%P(RTM%NP, RTM%Grid%NLon, RTM%Grid%NLat))
+   allocate(RTM%T(RTM%NP, RTM%Grid%NLon, RTM%Grid%NLat))
+   allocate(RTM%H(RTM%NP, RTM%Grid%NLon, RTM%Grid%NLat))
 
    ! Read data into arrays
-   allocate(dummy1d(RTM%LW%Grid%NLon))
+   allocate(dummy1d(RTM%Grid%NLon))
    call nc_read_array(ncid, "lon_rtm", dummy1d, Ctrl%verbose)
-   do i=1,RTM%LW%Grid%NLon
-      RTM%LW%lon(i,:) = dummy1d(i)
+   do i=1,RTM%Grid%NLon
+      RTM%lon(i,:) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
-   allocate(dummy1d(RTM%LW%Grid%NLat))
+   allocate(dummy1d(RTM%Grid%NLat))
    call nc_read_array(ncid, "lat_rtm", dummy1d, Ctrl%verbose)
-   do i=1,RTM%LW%Grid%NLat
-      RTM%LW%lat(:,i) = dummy1d(i)
+   do i=1,RTM%Grid%NLat
+      RTM%lat(:,i) = dummy1d(i)
    end do
    deallocate(dummy1d)
 
-   call nc_read_array(ncid, "pprofile_rtm", RTM%LW%P, Ctrl%verbose)
-   call nc_read_array(ncid, "tprofile_rtm", RTM%LW%T, Ctrl%verbose)
-   call nc_read_array(ncid, "hprofile_rtm", RTM%LW%H, Ctrl%verbose)
+   call nc_read_array(ncid, "pprofile_rtm", RTM%P, Ctrl%verbose)
+   call nc_read_array(ncid, "tprofile_rtm", RTM%T, Ctrl%verbose)
+   call nc_read_array(ncid, "hprofile_rtm", RTM%H, Ctrl%verbose)
 
    ! Close PRTM input file
    if (nf90_close(ncid) /= NF90_NOERR) then
@@ -86,5 +86,34 @@ subroutine Read_PRTM_nc(Ctrl, RTM)
                  Ctrl%FID%PRTM
       stop error_stop_code
    end if
+
+   ! Calculate grid parameters
+
+   ! Corners of the grid
+   RTM%Grid%Lat0 = real(RTM%Lat(1,1), kind=8)
+   RTM%Grid%LatN = real(RTM%Lat(1,RTM%Grid%NLat), kind=8)
+   RTM%Grid%Lon0 = real(RTM%Lon(1,1), kind=8)
+   RTM%Grid%LonN = real(RTM%Lon(RTM%Grid%NLon,1), kind=8)
+
+   ! Grid spacing and inverse
+   RTM%Grid%delta_Lat = (RTM%Grid%LatN - RTM%Grid%Lat0) / (RTM%Grid%NLat-1)
+   RTM%Grid%inv_delta_Lat = 1. / RTM%Grid%delta_Lat
+
+   RTM%Grid%delta_Lon = (RTM%Grid%LonN - RTM%Grid%Lon0) / (RTM%Grid%NLon-1)
+   RTM%Grid%inv_delta_Lon = 1. / RTM%Grid%delta_Lon
+
+   ! Max and Min grid values
+   RTM%Grid%MinLat = min(RTM%Grid%Lat0-0.5*RTM%Grid%delta_Lat, &
+                            RTM%Grid%LatN+0.5*RTM%Grid%delta_Lat)
+   RTM%Grid%MaxLat = max(RTM%Grid%Lat0-0.5*RTM%Grid%delta_Lat, &
+                            RTM%Grid%LatN+0.5*RTM%Grid%delta_Lat)
+   RTM%Grid%MinLon = min(RTM%Grid%Lon0-0.5*RTM%Grid%delta_Lon, &
+                            RTM%Grid%LonN+0.5*RTM%Grid%delta_Lon)
+   RTM%Grid%MaxLon = max(RTM%Grid%Lon0-0.5*RTM%Grid%delta_Lon, &
+                            RTM%Grid%LonN+0.5*RTM%Grid%delta_Lon)
+
+   ! Does the grid wrap around the international date-line?
+   RTM%Grid%Wrap = RTM%Grid%MinLon <= -180. .and. &
+                   RTM%Grid%MaxLon >=  180.
 
 end subroutine Read_PRTM_nc

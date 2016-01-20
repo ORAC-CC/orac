@@ -68,35 +68,35 @@ subroutine Get_RTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    ! no extrapolation)
 
    ! Longwave
-   if (SPixel%Loc%Lat > RTM%Lw%Grid%MaxLat) then
+   if (SPixel%Loc%Lat > RTM%Grid%MaxLat) then
 #ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM latitude exceeded ' // &
          'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lat, &
-         RTM%Lw%Grid%MaxLat
+         RTM%Grid%MaxLat
 #endif
       status = GetRTMLwMaxLat
    end if
-   if (SPixel%Loc%Lat < RTM%Lw%Grid%MinLat) then
+   if (SPixel%Loc%Lat < RTM%Grid%MinLat) then
 #ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM latitude exceeded ', &
          'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lat, &
-         RTM%Lw%Grid%MinLat
+         RTM%Grid%MinLat
 #endif
       status = GetRTMLwMinLat
    end if
-   if (SPixel%Loc%Lon > RTM%Lw%Grid%MaxLon) then
+   if (SPixel%Loc%Lon > RTM%Grid%MaxLon) then
 #ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Maximum LW RTM longitude exceeded ' // &
          'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lon, &
-         RTM%Lw%Grid%MaxLon
+         RTM%Grid%MaxLon
 #endif
       status = GetRTMLwMaxLon
    end if
-   if (SPixel%Loc%Lon < RTM%Lw%Grid%MinLon) then
+   if (SPixel%Loc%Lon < RTM%Grid%MinLon) then
 #ifdef DEBUG
       write(*,*) 'WARNING: Get_RTM(): Minimum LW RTM longitude exceeded ', &
          'starting at:', SPixel%Loc%X0, SPixel%Loc%Y0, SPixel%Loc%Lon, &
-         RTM%Lw%Grid%MinLon
+         RTM%Grid%MinLon
 #endif
       status = GetRTMLwMinLon
    end if

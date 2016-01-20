@@ -349,13 +349,11 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Make read in rttov data in one go, no more segment reads
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
-      call read_input_dimensions_lwrtm(Ctrl%FID%LWRTM, RTM%LW%Grid%NLon, &
-           RTM%LW%Grid%NLat, RTM%LW%NP, RTM%LW%NLWF, Ctrl%verbose)
+      call read_input_dimensions_rtm(Ctrl%FID%PRTM, Ctrl%FID%LWRTM, &
+           Ctrl%FID%SWRTM, RTM%Grid%NLon, RTM%Grid%NLat, RTM%NP, &
+           RTM%LW%NLWF, RTM%SW%NSWF, Ctrl%verbose)
 
-      call read_input_dimensions_swrtm(Ctrl%FID%SWRTM, RTM%SW%Grid%NLon, &
-           RTM%SW%Grid%NLat, RTM%SW%NP, RTM%SW%NSWF, Ctrl%verbose)
-
-      call Read_PRTM_nc( Ctrl, RTM)
+      call Read_PRTM_nc(Ctrl, RTM)
       if (Ctrl%Ind%NThermal > 0) &
            call Read_LwRTM_nc(Ctrl, RTM)
       if (Ctrl%Ind%NSolar > 0) &
@@ -512,8 +510,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    else
       ! Set RTM pressure values in SPixel (will not change from here on)
       call Alloc_RTM_Pc(Ctrl, RTM_Pc)
-      SPixel%RTM%LW%Np = RTM%LW%Np
-      SPixel%RTM%SW%NP = RTM%SW%Np
+      SPixel%RTM%LW%Np = RTM%Np
+      SPixel%RTM%SW%NP = RTM%Np
    end if
 
    ! Initialise values required before main loop begins

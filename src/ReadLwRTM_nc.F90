@@ -23,7 +23,7 @@
 ! 2000/12/05, KS: Original version
 ! 2001/01/15, KS: Changed Ctrl%Ind%Y to Ctrl%Ind%Y_Id
 ! 2001/01/17, KS: Corrected indexing of RTM%LW%Lat and Lon from 1-D to 2-D array
-! 2001/01/25, KS: Corrected calculation of LatN and LonN in RTM%LW%Grid.
+! 2001/01/25, KS: Corrected calculation of LatN and LonN in RTM%Grid.
 ! 2001/02/21, AS: Added Tbc to LW structure. Previously missing from model data.
 ! 2001/03/01, AS: Removed allocation of R_Clear in LW RTM struct. R_Clear not
 !    available from RTM data file.
@@ -182,17 +182,17 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
 
    if (Ctrl%Ind%NThermal > 0) then
       ! Allocate arrays
-      allocate(RTM%LW%Ems(Ctrl%Ind%NThermal,RTM%LW%Grid%NLon,RTM%LW%Grid%NLat))
-      allocate(RTM%LW%Tac(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-         RTM%LW%Grid%NLat))
-      allocate(RTM%LW%Tbc(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-         RTM%LW%Grid%NLat))
-      allocate(RTM%LW%Rac_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-         RTM%LW%Grid%NLat))
-      allocate(RTM%LW%Rac_dwn(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-         RTM%LW%Grid%NLat))
-      allocate(RTM%LW%Rbc_up(Ctrl%Ind%NThermal,RTM%LW%NP,RTM%LW%Grid%NLon, &
-         RTM%LW%Grid%NLat))
+      allocate(RTM%LW%Ems(Ctrl%Ind%NThermal,RTM%Grid%NLon,RTM%Grid%NLat))
+      allocate(RTM%LW%Tac(Ctrl%Ind%NThermal,RTM%NP,RTM%Grid%NLon, &
+         RTM%Grid%NLat))
+      allocate(RTM%LW%Tbc(Ctrl%Ind%NThermal,RTM%NP,RTM%Grid%NLon, &
+         RTM%Grid%NLat))
+      allocate(RTM%LW%Rac_up(Ctrl%Ind%NThermal,RTM%NP,RTM%Grid%NLon, &
+         RTM%Grid%NLat))
+      allocate(RTM%LW%Rac_dwn(Ctrl%Ind%NThermal,RTM%NP,RTM%Grid%NLon, &
+         RTM%Grid%NLat))
+      allocate(RTM%LW%Rbc_up(Ctrl%Ind%NThermal,RTM%NP,RTM%Grid%NLon, &
+         RTM%Grid%NLat))
 
       ! Read data into arrays
       call nc_read_array(ncid, "emiss_lw", RTM%LW%Ems, Ctrl%verbose, 1, index)
@@ -213,35 +213,5 @@ subroutine Read_LwRTM_nc(Ctrl, RTM)
                  Ctrl%FID%LWRTM
       stop error_stop_code
    end if
-
-   ! Calculate grid parameters for use in Get_LwRTM
-   ! Corners of the grid
-   RTM%LW%Grid%Lat0 = real(RTM%LW%Lat(1,1), kind=8)
-   RTM%LW%Grid%LatN = real(RTM%LW%Lat(1,RTM%LW%Grid%NLat), kind=8)
-   RTM%LW%Grid%Lon0 = real(RTM%LW%Lon(1,1), kind=8)
-   RTM%LW%Grid%LonN = real(RTM%LW%Lon(RTM%LW%Grid%NLon,1), kind=8)
-
-   ! Grid spacing and inverse
-   RTM%LW%Grid%delta_Lat = (RTM%LW%Grid%LatN - RTM%LW%Grid%Lat0) &
-                           / (RTM%LW%Grid%NLat-1)
-   RTM%LW%Grid%inv_delta_Lat = 1. / RTM%LW%Grid%delta_Lat
-
-   RTM%LW%Grid%delta_Lon = (RTM%LW%Grid%LonN - RTM%LW%Grid%Lon0) &
-                           / (RTM%LW%Grid%NLon-1)
-   RTM%LW%Grid%inv_delta_Lon = 1. / RTM%LW%Grid%delta_Lon
-
-   ! Max and Min grid values
-   RTM%LW%Grid%MinLat = min(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
-                            RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
-   RTM%LW%Grid%MaxLat = max(RTM%LW%Grid%Lat0-0.5*RTM%LW%Grid%delta_Lat, &
-                            RTM%LW%Grid%LatN+0.5*RTM%LW%Grid%delta_Lat)
-   RTM%LW%Grid%MinLon = min(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
-                            RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
-   RTM%LW%Grid%MaxLon = max(RTM%LW%Grid%Lon0-0.5*RTM%LW%Grid%delta_Lon, &
-                            RTM%LW%Grid%LonN+0.5*RTM%LW%Grid%delta_Lon)
-
-   ! Does the grid wrap around the international date-line?
-   RTM%LW%Grid%Wrap = RTM%LW%Grid%MinLon <= -180. .and. &
-                      RTM%LW%Grid%MaxLon >=  180.
 
 end subroutine Read_LwRTM_nc

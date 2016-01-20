@@ -22,7 +22,7 @@
 ! 2000/12/05, KS: Original version
 ! 2001/01/15, KS: Changed Ctrl%Ind%Y to Ctrl%Ind%Y_Id
 ! 2001/01/17, KS: Corrected indexing of RTM%SW%Lat and Lon from 1-D to 2-D array
-! 2001/01/25, KS: Corrected calculation of LatN and LonN in RTM%SW%Grid.
+! 2001/01/25, KS: Corrected calculation of LatN and LonN in RTM%Grid.
 ! 2001/02/21, AS: Added Tbc to SW structure. Previously missing from model data.
 ! 2001/03/01, AS: Removed allocation of R_Clear in SW RTM struct. R_Clear not
 !    availablefrom RTM data file.
@@ -174,10 +174,10 @@ subroutine Read_SwRTM_nc(Ctrl, RTM)
 
    if (Ctrl%Ind%NSolar > 0) then
       ! Allocate arrays
-      allocate(RTM%SW%Tbc(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
-         RTM%SW%Grid%NLat))
-      allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%SW%NP, RTM%SW%Grid%NLon, &
-         RTM%SW%Grid%NLat))
+      allocate(RTM%SW%Tbc(Ctrl%Ind%NSolar, RTM%NP, RTM%Grid%NLon, &
+         RTM%Grid%NLat))
+      allocate(RTM%SW%Tac(Ctrl%Ind%NSolar, RTM%NP, RTM%Grid%NLon, &
+         RTM%Grid%NLat))
 
       call nc_read_array(ncid, "tac_sw", RTM%SW%Tac, Ctrl%verbose, 1, index)
       call nc_read_array(ncid, "tbc_sw", RTM%SW%Tbc, Ctrl%verbose, 1, index)

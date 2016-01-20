@@ -95,15 +95,16 @@ module ECP_constants
    integer            :: i_ECP                      ! Loop variable
 
    ! Maximum string lengths
-   integer, parameter :: FilenameLen      = 2048    ! Max. length of filenames
-   integer, parameter :: InstNameLen      = 16      ! Max. length of instrument name
+   integer, parameter :: FilenameLen      = 2048    ! Max length of filenames
+   integer, parameter :: InstNameLen      = 16      ! Max length of instrument name
 
    ! Maximum array lengths
    integer, parameter :: MaxNumMeas       = 36      ! Max no. of measurement channels
    integer, parameter :: MaxNumViews      = 2       ! Max no. of measurement views
-   integer, parameter :: MaxNumSolar      = 20      ! Max no. of solar channels
-   integer, parameter :: MaxCloudType     = 5       ! Max. no of cloud types to be
-   integer, parameter :: MaxPLevels       = 50      ! Max. no. of pressure levels (in SPixel RTM arrays)
+   integer, parameter :: MaxNumSolar      = 24      ! Max no. of solar channels
+   integer, parameter :: MaxNumThermal    = 16      ! Max no. of thermal channels
+   integer, parameter :: MaxCloudType     = 5       ! Max no. of cloud types to be
+   integer, parameter :: MaxPLevels       = 50      ! Max no. of pressure levels (in SPixel RTM arrays)
    integer, parameter :: MaxCRProps       = 12      ! Max no. of properties in SAD_LUT arrays
    integer, parameter :: MaxTypes         = 10      ! Number of possible cloud/aerosol types
 

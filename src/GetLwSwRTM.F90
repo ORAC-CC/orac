@@ -99,15 +99,15 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    status = 0
 
    ! Compute bilinear interpolation coefficients common to all interpolations
-   call bilinear_coef(RTM%LW%Grid%Lon0, RTM%LW%Grid%inv_delta_Lon, &
-        RTM%LW%Grid%NLon, RTM%LW%Grid%Lat0, RTM%LW%Grid%inv_delta_Lat, &
-        RTM%LW%Grid%NLat, SPixel%Loc%Lon, SPixel%Loc%Lat, interp, &
-        RTM%LW%Grid%Wrap)
+   call bilinear_coef(RTM%Grid%Lon0, RTM%Grid%inv_delta_Lon, &
+        RTM%Grid%NLon, RTM%Grid%Lat0, RTM%Grid%inv_delta_Lat, &
+        RTM%Grid%NLat, SPixel%Loc%Lon, SPixel%Loc%Lat, interp, &
+        RTM%Grid%Wrap)
 
    ! Bilinear interpolation
-   call interp_field2(RTM%LW%P, SPixel%RTM%LW%P, interp)
-   call interp_field2(RTM%LW%T, SPixel%RTM%LW%T, interp)
-   call interp_field2(RTM%LW%H, SPixel%RTM%LW%H, interp)
+   call interp_field2(RTM%P, SPixel%RTM%LW%P, interp)
+   call interp_field2(RTM%T, SPixel%RTM%LW%T, interp)
+   call interp_field2(RTM%H, SPixel%RTM%LW%H, interp)
    if (Ctrl%Ind%NThermal .gt. 0) then
       call interp_field2(RTM%LW%Ems,     SPixel%RTM%LW%Ems,     interp)
       if (any(SPixel%RTM%LW%Ems < EmsMin .or. SPixel%RTM%LW%Ems > TxcMax)) &
@@ -130,13 +130,13 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
    end if
 
    ! Set surface level to TOA transmittances
-   SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%LW%Np)
+   SPixel%RTM%LW%Tsf = SPixel%RTM%LW%Tac(:,RTM%Np)
 
    ! Set R_Clear using Rbc_up at the TOA
    SPixel%RTM%LW%R_clear = SPixel%RTM%LW%Rbc_up(:,1)
 
    ! Bilinear interpolation
-   call interp_field2(RTM%LW%P, SPixel%RTM%SW%P, interp)
+   call interp_field2(RTM%P, SPixel%RTM%SW%P, interp)
    if (Ctrl%Ind%NSolar .gt. 0) then
       call interp_field2(RTM%SW%Tac, SPixel%RTM%SW%Tac, interp)
       if (any(SPixel%RTM%SW%Tac < TxcMin .or. SPixel%RTM%SW%Tac > TxcMax)) &
@@ -151,7 +151,7 @@ subroutine Get_LwSwRTM(Ctrl, SAD_Chan, RTM, SPixel, status)
                   SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
    ! Set surface level to TOA transmittances
-   SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%SW%Np)
+   SPixel%RTM%SW%Tsf = SPixel%RTM%SW%Tac(:,RTM%Np)
 
    ! Set dB_dTs using the surface temperature. (T2R needs an array of T values,
    ! one per channel, to convert).

@@ -94,28 +94,28 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    ! Get_RTM arrays
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
       ! Short wave RTM parameters
-      allocate(SPixel%RTM%SW%Tac      (Ctrl%Ind%NSolar, RTM%SW%NP))
-      allocate(SPixel%RTM%SW%Tbc      (Ctrl%Ind%NSolar, RTM%SW%NP))
+      allocate(SPixel%RTM%SW%Tac      (Ctrl%Ind%NSolar, RTM%NP))
+      allocate(SPixel%RTM%SW%Tbc      (Ctrl%Ind%NSolar, RTM%NP))
       allocate(SPixel%RTM%SW%Tsf      (Ctrl%Ind%NSolar))
-      allocate(SPixel%RTM%SW%P        (RTM%LW%NP))
+      allocate(SPixel%RTM%SW%P        (RTM%NP))
 
       ! Long wave RTM parameters
-      allocate(SPixel%RTM%LW%Tac      (Ctrl%Ind%NThermal,RTM%LW%NP))
-      allocate(SPixel%RTM%LW%Tbc      (Ctrl%Ind%NThermal,RTM%LW%NP))
+      allocate(SPixel%RTM%LW%Tac      (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%Tbc      (Ctrl%Ind%NThermal, RTM%NP))
       allocate(SPixel%RTM%LW%Tsf      (Ctrl%Ind%NThermal))
-      allocate(SPixel%RTM%LW%Rac_up   (Ctrl%Ind%NThermal,RTM%LW%NP))
-      allocate(SPixel%RTM%LW%Rac_dwn  (Ctrl%Ind%NThermal,RTM%LW%NP))
-      allocate(SPixel%RTM%LW%Rbc_up   (Ctrl%Ind%NThermal,RTM%LW%NP))
+      allocate(SPixel%RTM%LW%Rac_up   (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%Rac_dwn  (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%Rbc_up   (Ctrl%Ind%NThermal, RTM%NP))
       allocate(SPixel%RTM%LW%R_clear  (Ctrl%Ind%NThermal))
       allocate(SPixel%RTM%LW%dB_dTs   (Ctrl%Ind%NThermal))
       allocate(SPixel%RTM%LW%Ems      (Ctrl%Ind%NThermal))
-      allocate(SPixel%RTM%LW%T        (RTM%LW%NP))
-      allocate(SPixel%RTM%LW%H        (RTM%LW%NP))
-      allocate(SPixel%RTM%LW%P        (RTM%LW%NP))
+      allocate(SPixel%RTM%LW%T        (RTM%NP))
+      allocate(SPixel%RTM%LW%H        (RTM%NP))
+      allocate(SPixel%RTM%LW%P        (RTM%NP))
 
       ! Assign number of pressure levels
-      SPixel%RTM%LW%Np = RTM%LW%Np
-      SPixel%RTM%SW%Np = RTM%SW%Np
+      SPixel%RTM%LW%Np = RTM%Np
+      SPixel%RTM%SW%Np = RTM%Np
 
    ! Overall RTM transmittances and reflectances (Reallocated in GetSPixel)
       allocate(SPixel%RTM%Tsf_o       (Ctrl%Ind%NSolar))
@@ -158,13 +158,13 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    allocate(SPixel%Illum(Ctrl%Ind%NViews))
 
-   ! These reallocated in GetMeasurements
+   ! These are reallocated in GetMeasurements
    allocate(SPixel%Ym(1))
    allocate(SPixel%Sy(1,1))
    allocate(SPixel%ViewIdx(1))
    SPixel%ViewIdx(1)=1
 
-   ! These reallocated in GetIllum
+   ! These are reallocated in GetIndexing
    SPixel%Nx = 0
    allocate(SPixel%X(1))
    SPixel%X  = 0
