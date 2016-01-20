@@ -40,7 +40,9 @@ ORAC_OBJ = $(OBJS)/kinds.o \
            $(OBJS)/interpolate_meteorology.o \
            $(OBJS)/greg2jul.o \
            $(OBJS)/collocate_prtm_profile.o \
-           $(OBJS)/collocate_aerosol2cloud.o
+           $(OBJS)/collocate_aerosol2cloud.o \
+           $(OBJS)/adiabatic_lwc.o
+
 
 ORAC_OBJ_MAIN = $(OBJS)/process_broadband_fluxes.o
 
