@@ -32,6 +32,9 @@
 ! History:
 ! 2015/10/14, MC: Initial development
 ! 2015/21/14, MC: Added aerosol input data to code
+! 2016/01/13, MC: Added additional categories for cloud phase to regime pixel
+! 2016/01/13, MC: Modified adiabatic model to depend on temperature and pressure for 
+!                 cloud base height calculation.
 !
 ! $Id$
 !
@@ -40,10 +43,10 @@
 !
 !-------------------------------------------------------------------------------
    subroutine preprocess_bugsrad(cMASK,aREF,AOD,cPHASE,&
-                                 cCTT,cREF,cTAU,cCTH,&
+                                 cCTT,cCTP,cREF,cTAU,cCTH,&
                                  NLS,zz,REDAT,TAUDAT,Hctop,Hcbase,&
                                  phaseFlag,LayerType,&
-                                 regime,computationFlag,TopID,BaseID)
+                                 regime,TopID,BaseID)
 
    implicit none
 
@@ -58,7 +61,8 @@
        cCTH   ,&  !cloud top height
        cTAU   ,&  !cloud optical depth
        cREF   ,&  !cloud effective droplet radius
-       cCTT       !cloud top temperature
+       cCTT   ,&  !cloud top temperature
+       cCTP       !cloud top pressure
 
     real, intent(in), dimension(NLS) :: zz !height profile
 
@@ -70,8 +74,7 @@
        TAUDAT    ,&    !cloud optical depth input to BUGSrad
        phaseFlag ,&    !phase of cloud
        LayerType ,&    !type of layer (aerosol or cloud)
-       regime    ,&    !regime (aerosol/cloud)
-       computationflag !problem with retrieval
+       regime          !regime (aerosol/cloud)
 
     integer, intent(out) :: &
        TopID(1)  ,&    !index of cloud top height in Hprofile
@@ -85,8 +88,9 @@
     real, parameter :: rhowat = 999.9*1000., rhoice = 934.4*1000.  !density of water & ice [g/m3]
      !*note, adiabatic assumption can be improved by using T&P data
 
+    real dw_dz
+
 !-----------------------------------------------------------------------------
-   computationFlag=0
 
  
    !Cloud Phase
@@ -103,20 +107,24 @@
    !CLEAR - DEFINITE
    IF(cMASK .eq. 0) phaseFlag=0 !CLEAR
 
-
+   regime = 0
    !Determine pixel regime
-   if(cMASK .eq. 1.0 .and. AOD .le. 0. .and. phaseFlag .ne. 0) regime = 1 !overcast
-   if(cMASK .eq. 1.0 .and. AOD .gt. 0. .and. phaseFlag .ne. 0) regime = 2 !joint aerosol-cloud
-   if(cMASK .ne. 1.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 0) regime = 3 !clear with AOD
-   if(cMASK .ne. 1.0 .and. AOD .le. 0. .and. phaseFlag .eq. 0) regime = 4 !clear no AOD
-
-
+   if(cMASK .eq. 1.0 .and. AOD .le. 0. .and. phaseFlag .eq. 1) regime = 1 !overcast LIQUID cloud
+   if(cMASK .eq. 1.0 .and. AOD .le. 0. .and. phaseFlag .eq. 2) regime = 2 !overcast ICE cloud
+   if(cMASK .eq. 0.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 0) regime = 3 !clear with AOD
+   if(cMASK .eq. 0.0 .and. AOD .le. 0. .and. phaseFlag .eq. 0) regime = 4 !clear no AOD
+   if(cMASK .eq. 1.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 1) regime = 5 !joint aerosol-LIQUID-cloud
+   if(cMASK .eq. 1.0 .and. AOD .gt. 0. .and. phaseFlag .eq. 2) regime = 6 !joint aerosol-ICE-cloud
+    if(regime .eq. 0) then
+      !print*,'PROBLEM in pre-processor: pixel regime undefined!'
+      !STOP
+      regime = 4
+    endif
 
 !Compute cloud top/base height and fit to vertical coordinates
-
 !REGIMES 1 & 2
    !OVERCAST or JOINT Aerosol & CLOUD PIXEL
-   if(regime .eq. 1 .or. regime .eq. 2) then
+   if(regime .eq. 1 .or. regime .eq. 2 .or. regime .eq. 5 .or. regime .eq. 6) then
     LayerType=1 !cloud
 
     !Valid Cloud Retrieval
@@ -126,8 +134,16 @@
       Hctop=cCTH  !keep value same
       if(phaseFlag .eq. 1) rhocld=rhowat
       if(phaseFlag .eq. 2) rhocld=rhoice
-      Hcbase = cCTH - ( sqrt( ((10./9.)*(cTAU)*(cREF*1e-6)*(rhocld))/(A*ALPH)) ) / 1000. !from Meerkotter & zinner
-      computationFlag=1 !valid computation was made
+      !Hcbase = cCTH - ( sqrt( ((10./9.)*(cTAU)*(cREF*1e-6)*(rhocld))/(A*ALPH)) ) / 1000. !from Meerkotter & zinner
+
+      !Cloud base height using dynamic adiabatic that depends on cloud top temperature and pressure    
+!      call adiabatic_lwc(283.,525.,dw_dz)
+!      print*,cCTT,cCTP
+      call adiabatic_lwc(cCTT,cCTP,dw_dz)
+!      print*,dw_dz
+      Hcbase = cCTH - ( sqrt( ((10./9.)*(cTAU)*(cREF*1e-6)*(rhocld))/( (dw_dz/1000.)*ALPH)) ) / 1000. !from Meerkotter & zinner
+!      print*,dw_dz,cCTH - ( sqrt( ((10./9.)*(cTAU)*(cREF*1e-6)*(rhocld))/(A*ALPH)) ) / 1000.,Hcbase,cCTH
+      
     endif
 
     !inValid Cloud Retrieval
@@ -152,7 +168,6 @@
       TAUDAT=AOD
       Hctop=1.5
       Hcbase=0.5
-      computationFlag=1
     endif
 
     !Invalid AOD retrieval
