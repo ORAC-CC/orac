@@ -4,7 +4,7 @@
 ! CVS:  $Name:  $
 
 !-----------------------------------------------------------------------
-      subroutine driver_for_bugsrad(nlm,tsi,theta,asfcswr,asfcnir,tsfc,&
+      subroutine driver_for_bugsrad(nlm,tsi,theta,asfcswrdr,asfcnirdr,asfcswrdf,asfcnirdf,tsfc,&
                              phaseflag,cref,ccot,hctop,hcbase,&                            
                              hctopID,hcbaseID,&
                              pxZ,pxP,pxT,pxQ,pxO3,&
@@ -63,8 +63,10 @@
          ccot      ,&   !satellite cloud optical depth           (-).
          hctop     ,&   !satellite cloud top height             (km).
          hcbase    ,&   !satelliet cloud base height            (km).
-         asfcswr   ,&   !visible surface albedo                  (-).
-         asfcnir   ,&   !near infrared surface albedo            (-).
+         asfcswrdr   ,&   !DIRECT visible surface albedo                  (-).
+         asfcnirdr   ,&   !DIRECT near infrared surface albedo            (-).
+         asfcswrdf   ,&   !DIFFUSE visible surface albedo                  (-).
+         asfcnirdf   ,&   !DIFFUSE near infrared surface albedo            (-).
          tsfc           !surface temperature
 
       !meteorological profiles
@@ -176,10 +178,10 @@
    !read surface quantities 
    ts(1)=tsfc
    amu0(1)=theta
-   alvdr(1)=asfcswr
-   alndr(1)=asfcnir
-   alvdf(1)=asfcswr
-   alndf(1)=asfcnir
+   alvdr(1)=asfcswrdr
+   alndr(1)=asfcnirdr
+   alvdf(1)=asfcswrdf
+   alndf(1)=asfcnirdf
 
    !read trace gas quantities
    umco2(1)=380.
