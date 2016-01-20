@@ -41,6 +41,9 @@
 ! 2015/12/10, MC: Removed nighttime and twilight retrievals (solar zenith angle < 80)
 ! 2015/12/21, MC: Added optional argument and collocation routine to process 
 !    radiative fluxes using aerosol cci data.
+! 2016/01/12, MC: Added Liang (2000) surface albedo model which converts narrowband
+!    albedo radiances for each channel into broadband albedo for direct visible,
+!    diffuse visible, direct near-IR, and diffuse-IR as required inputs for BUGSrad.
 !
 ! $Id$
 !
@@ -48,6 +51,7 @@
 ! None known.
 !
 ! Examples
+! bsub -q lotus -W 06:00 -R "order[-r15s:pg]" -o bugsrad.out -e bugsrad.err -J BUGSrad 
 !
 ! MODIS
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.bugsrad.nc
@@ -56,7 +60,7 @@
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc '' '' 182 13487
 !
 ! AATSR WITH AEROSOL
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc /group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v03-02/L2/2008/2008_06_20/20080620084636-ESACCI-L2P_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC_32969-fv03.02.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/aci/collocation/200806200846_V1.0.collocation.nc 182 13487
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.8.bugsrad.nc /group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v03-02/L2/2008/2008_06_20/20080620084636-ESACCI-L2P_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC_32969-fv03.02.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/aci/collocation/200806200846_V1.0.collocation.nc 182 13487
 !
 ! SEVIRI
 !./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc '' '' 1500 1500
@@ -114,10 +118,11 @@ program process_broadband_fluxes
    integer, dimension(NLS) :: mask_vres !to match PRTM vertical resolution to BUGSrad
 
    !Albedo FILE
-   real, allocatable :: rho_dd(:,:,:)  ! Albedo
+   real, allocatable :: rho_0d(:,:,:)  ! Albedo direct directional - blacksky albedo
+   real, allocatable :: rho_dd(:,:,:)  ! Albedo diffuse directional - whitesky albedo
    real, allocatable :: alb_abs_ch_numbers(:) !channels used in albedo product
-   integer :: ch1ID,ch2ID,ch3ID,ch4ID,ch5ID,ch6ID
-   real, parameter :: ch1WT=0.65,ch2WT=0.15,ch3WT=0.05,ch4WT=0.03,ch5WT=0.015,ch6WT=0.005
+   integer :: ch1ID,ch2ID,ch3ID,ch4ID
+   real, parameter :: ch1WT=0.95,ch2WT=0.05,ch3WT=0.05,ch4WT=0.95
    integer(kind=lint) :: nc_alb
 
    !PRIMARY FILE
@@ -130,6 +135,7 @@ program process_broadband_fluxes
    real, allocatable :: SOLZ(:,:)  ! Solar zenith angle (xp,yp)
    real, allocatable :: PHASE(:,:)  ! Cloud phase (xp,yp)
    real, allocatable :: CTT(:,:)  ! Cloud top temperature (xp,yp)
+   real, allocatable :: CTP(:,:)  ! Cloud top pressure (xp,yp)
 
    !Total Solar Irriadiance File
    real, allocatable :: TSI_tsi_true_earth(:) !TOTAL SOLAR IRRADIANCE AT EARTH-SUN DISTANCE
@@ -158,12 +164,15 @@ program process_broadband_fluxes
    real :: pxJday  !JULIAN DAY FROM 1 - 365
    real :: pxTSI   !Total incoming solar irradiance (true-earth)
    real :: pxAsfc  !Surface albedo
-   real :: pxAsfcSWR !visible surface albedo channels 1,2,3
-   real :: pxAsfcNIR !near-infrared surface albedo channels 4,5,6
+   real :: pxAsfcSWRdr !DIRECT visible surface albedo
+   real :: pxAsfcNIRdr !DIRECT near-infrared surface albedo
+   real :: pxAsfcSWRdf !DIFFUSE visible surface albedo
+   real :: pxAsfcNIRdf !DIFFUSE near-infrared surface albedo
    real :: pxTheta !cosine of solar zenith angle
    real :: pxPhase !cloud phase
    real :: pxMask  !cloud mask
    real :: pxCTT   !cloud top temperature
+   real :: pxCTP   !cloud top PRESSURE
    real :: pxaREF  !aerosol effective radius
    real :: pxAOD  !aerosol optical depth
    real :: pxREF   !cloud effective radius
@@ -174,7 +183,7 @@ program process_broadband_fluxes
    real :: pxLayerType !aerosol type
    real :: pxPhaseFlag !cloud phase type
    real :: pxts   !land/sea surface temperature
-   real pxregime,pxcomputationFlag
+   real pxregime
    integer pxHctopID(1),pxHcbaseID(1)
 
    !radiation flux profiles
@@ -302,6 +311,9 @@ program process_broadband_fluxes
    character(len=2) :: cmonth
    character(len=2) :: cday
 
+   !For CPU processing time
+   real :: cpuStart,cpuFinish
+
 !-------------------------------------------------------------------------------
 !Get File Names
 
@@ -421,6 +433,7 @@ program process_broadband_fluxes
     allocate(CTH(xN,yN))
     allocate(SOLZ(xN,yN))
     allocate(CTT(xN,yN))
+    allocate(CTP(xN,yN))
     allocate(PHASE(xN,yN))
 
     !Read primary data
@@ -431,6 +444,7 @@ program process_broadband_fluxes
     call nc_read_array(ncid, "cc_total", CC_TOT, verbose)
     call nc_read_array(ncid, "phase", PHASE, verbose)
     call nc_read_array(ncid, "ctt", CTT, verbose)
+    call nc_read_array(ncid, "ctp", CTP, verbose)
     call nc_read_array(ncid, "cth", CTH, verbose)
     call nc_read_array(ncid, "solar_zenith_view_no1", SOLZ, verbose)
    
@@ -534,10 +548,12 @@ program process_broadband_fluxes
 
     !Allocate arrays
     allocate(rho_dd(xN, yN, nc_alb))
+    allocate(rho_0d(xN, yN, nc_alb))
     allocate(alb_abs_ch_numbers(nc_alb))
 
     !Read ALB data
     call nc_read_array(ncid, "rho_dd_data", rho_dd, verbose)
+    call nc_read_array(ncid, "rho_0d_data", rho_0d, verbose)
     call nc_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
  
     ! Close file
@@ -553,8 +569,6 @@ program process_broadband_fluxes
       if(alb_abs_ch_numbers(i) .eq. 2) ch2ID=i
       if(alb_abs_ch_numbers(i) .eq. 3) ch3ID=i
       if(alb_abs_ch_numbers(i) .eq. 4) ch4ID=i
-      if(alb_abs_ch_numbers(i) .eq. 5) ch5ID=i
-      if(alb_abs_ch_numbers(i) .eq. 6) ch6ID=i
     enddo
 
 !-------------------------------------------------------------------------------
@@ -797,6 +811,7 @@ program process_broadband_fluxes
 !-------------------------------------------------------------------------
 !BEGIN MAIN CODE
 !-------------------------------------------------------------------------
+call cpu_time(cpuStart)
     print*,'Processing Pixel Range:'
     print*,'x-start = ',pxX0
     print*,'y-start = ',pxY0
@@ -817,11 +832,27 @@ program process_broadband_fluxes
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
 
        !surface albedo
-       pxAsfcSWR = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
-       pxAsfcNIR = (rho_dd(i,j,ch3ID)*ch3WT+rho_dd(i,j,ch4ID)*ch4WT)/(ch3WT+ch4WT)
-         !*note*
+        !pxAsfcSWRdr = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
+        !pxAsfcNIRdr = (rho_dd(i,j,ch3ID)*ch3WT+rho_dd(i,j,ch4ID)*ch4WT)/(ch3WT+ch4WT)
+        !pxAsfcSWRdf = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
+        !pxAsfcNIRdf = (rho_dd(i,j,ch3ID)*ch3WT+rho_dd(i,j,ch4ID)*ch4WT)/(ch3WT+ch4WT)
+        !*note*
          !weights are based on the fraction of planck radiation integrated over the band width
          !based on heritage channels 1,2, shortwave & 3,4 NIR
+        
+        !Visible direct albedo
+        !pxAsfcSWRdr = ( 0.369*rho_0d(i,j,ch1ID) + 0.374*rho_0d(i,j,ch1ID) + 0.257*rho_0d(i,j,ch1ID) ) * pi/2.
+        !pxAsfcSWRdf = ( 0.246*rho_dd(i,j,ch1ID) + 0.528*rho_dd(i,j,ch1ID) + 0.226*rho_dd(i,j,ch1ID) - 0.0013 ) * pi/2. 
+        !pxAsfcNIRdr = ( 0.085*rho_0d(i,j,ch1ID) + 0.693*rho_0d(i,j,ch2ID) - 0.146*rho_0d(i,j,ch1ID) + 0.176*rho_0d(i,j,ch1ID) + 0.146*rho_0d(i,j,ch3ID) + 0.047*rho_0d(i,j,ch3ID) - 0.0021 ) * pi/2.
+        !pxAsfcNIRdf = ( 0.037*rho_dd(i,j,ch1ID) + 0.479*rho_dd(i,j,ch2ID) - 0.068*rho_dd(i,j,ch1ID) + 0.09796*rho_dd(i,j,ch1ID) + 0.266*rho_dd(i,j,ch3ID) + 0.0757*rho_dd(i,j,ch3ID) + 0.107*rho_dd(i,j,ch3ID) ) * pi/2.
+
+        pxAsfcSWRdr = ( 0.369*rho_0d(i,j,ch1ID) + 0.374*rho_0d(i,j,ch1ID) + 0.257*rho_0d(i,j,ch1ID) ) * pi/4.
+        pxAsfcSWRdf = ( 0.246*rho_dd(i,j,ch1ID) + 0.528*rho_dd(i,j,ch1ID) + 0.226*rho_dd(i,j,ch1ID) - 0.0013 ) * pi/4.
+        pxAsfcNIRdr = ( 0.085*rho_0d(i,j,ch1ID) + 0.693*rho_0d(i,j,ch2ID) - 0.146*rho_0d(i,j,ch1ID) + 0.176*rho_0d(i,j,ch1ID) + 0.146*rho_0d(i,j,ch3ID) + 0.047*rho_0d(i,j,ch3ID) - 0.0021 ) * pi/4.
+        pxAsfcNIRdf = ( 0.037*rho_dd(i,j,ch1ID) + 0.479*rho_dd(i,j,ch2ID) - 0.068*rho_dd(i,j,ch1ID) + 0.09796*rho_dd(i,j,ch1ID) + 0.266*rho_dd(i,j,ch3ID) + 0.0757*rho_dd(i,j,ch3ID) + 0.107*rho_dd(i,j,ch3ID) ) * pi/4.
+
+        !converting narrowband radiances to broadband land surface albedo using formula from Liang (2000).
+        !A factor of pi/2 is used to match the integration over the hemisphere BRDF model. Not sure if it is accurate at this point; currently investigating.
 
        !solar zenith angle
        pxTheta = COS( SOLZ(i,j) * Pi/180.)
@@ -869,10 +900,10 @@ program process_broadband_fluxes
 
         !cloud base & top height calculation
         call preprocess_bugsrad(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
-                         CTT(i,j),REF(i,j),COT(i,j),CTH(i,j),&
+                         CTT(i,j),CTP(i,j),REF(i,j),COT(i,j),CTH(i,j),&
                          NLS,pxZ,pxREF,pxCOT,pxHctop,pxHcbase,&
                          pxPhaseFlag,pxLayerType,&
-                         pxregime,pxcomputationFlag,pxHctopID,pxHcbaseID)
+                         pxregime,pxHctopID,pxHcbaseID)
 
         !for detecting NaN's produced by BUGSrad
         nanFlag=0
@@ -885,7 +916,7 @@ program process_broadband_fluxes
 !         print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
 !         print*,'Regime: ',pxregime      
 
-         call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWR,pxAsfcNIR,pxts,&
+         call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
                           pxHctopID,pxHcbaseID,&
                           pxZ,pxP,pxT,pxQ,pxO3,&
@@ -947,7 +978,8 @@ program process_broadband_fluxes
       endif   !valid geolocation data
     enddo !j-loop
    enddo !i-loop
-
+call cpu_time(cpuFinish)
+print*,cpuFinish-cpuStart,' seconds elapsed'
 
 !OPTIONAL - print to screen for selected satellite pixel/s
 if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
@@ -1071,8 +1103,8 @@ end if
                valid_min     = int(1, byte), &
                valid_max     = int(4, byte), &
                units         = '1', &
-               flag_values   = '1b 2b 3b 4b', &
-               flag_meanings = 'overcast joint_aerosol-cloud clear_with_AOD clear_no_AOD', &
+               flag_values   = '1b 2b 3b 4b 5b 6b', &
+               flag_meanings = 'oc_liq-cld oc_ice-cld clear-AOD clear_no_AOD joint_aod-liq_cld joint_aod-ice_cld', &
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
 
