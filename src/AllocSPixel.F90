@@ -82,9 +82,9 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    ! Declare arguments
 
-   type(Ctrl_t),   intent(in)    :: Ctrl
-   type(RTM_t),    intent(in)    :: RTM
-   type(SPixel_t), intent(out)   :: SPixel
+   type(Ctrl_t),   intent(in)  :: Ctrl
+   type(RTM_t),    intent(in)  :: RTM
+   type(SPixel_t), intent(out) :: SPixel
 
    ! Declare local variables
 
@@ -93,59 +93,59 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
 
    ! Get_RTM arrays
    if (Ctrl%RTMIntSelm /= RTMIntMethNone) then
+      allocate(SPixel%RTM%P          (RTM%NP))
+      allocate(SPixel%RTM%T          (RTM%NP))
+      allocate(SPixel%RTM%H          (RTM%NP))
+
       ! Short wave RTM parameters
-      allocate(SPixel%RTM%SW%Tac      (Ctrl%Ind%NSolar, RTM%NP))
-      allocate(SPixel%RTM%SW%Tbc      (Ctrl%Ind%NSolar, RTM%NP))
-      allocate(SPixel%RTM%SW%Tsf      (Ctrl%Ind%NSolar))
-      allocate(SPixel%RTM%SW%P        (RTM%NP))
+      allocate(SPixel%RTM%SW%Tac     (Ctrl%Ind%NSolar, RTM%NP))
+      allocate(SPixel%RTM%SW%Tbc     (Ctrl%Ind%NSolar, RTM%NP))
+      allocate(SPixel%RTM%SW%Tsf     (Ctrl%Ind%NSolar))
 
       ! Long wave RTM parameters
-      allocate(SPixel%RTM%LW%Tac      (Ctrl%Ind%NThermal, RTM%NP))
-      allocate(SPixel%RTM%LW%Tbc      (Ctrl%Ind%NThermal, RTM%NP))
-      allocate(SPixel%RTM%LW%Tsf      (Ctrl%Ind%NThermal))
-      allocate(SPixel%RTM%LW%Rac_up   (Ctrl%Ind%NThermal, RTM%NP))
-      allocate(SPixel%RTM%LW%Rac_dwn  (Ctrl%Ind%NThermal, RTM%NP))
-      allocate(SPixel%RTM%LW%Rbc_up   (Ctrl%Ind%NThermal, RTM%NP))
-      allocate(SPixel%RTM%LW%R_clear  (Ctrl%Ind%NThermal))
-      allocate(SPixel%RTM%LW%dB_dTs   (Ctrl%Ind%NThermal))
-      allocate(SPixel%RTM%LW%Ems      (Ctrl%Ind%NThermal))
-      allocate(SPixel%RTM%LW%T        (RTM%NP))
-      allocate(SPixel%RTM%LW%H        (RTM%NP))
-      allocate(SPixel%RTM%LW%P        (RTM%NP))
+      allocate(SPixel%RTM%LW%Tac     (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%Tbc     (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%Tsf     (Ctrl%Ind%NThermal))
+      allocate(SPixel%RTM%LW%Rac_up  (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%Rac_dwn (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%Rbc_up  (Ctrl%Ind%NThermal, RTM%NP))
+      allocate(SPixel%RTM%LW%R_clear (Ctrl%Ind%NThermal))
+      allocate(SPixel%RTM%LW%dB_dTs  (Ctrl%Ind%NThermal))
+      allocate(SPixel%RTM%LW%Ems     (Ctrl%Ind%NThermal))
 
       ! Assign number of pressure levels
-      SPixel%RTM%LW%Np = RTM%Np
-      SPixel%RTM%SW%Np = RTM%Np
+      SPixel%RTM%Np = RTM%Np
+      SPixel%RTM%Np = RTM%Np
 
    ! Overall RTM transmittances and reflectances (Reallocated in GetSPixel)
-      allocate(SPixel%RTM%Tsf_o       (Ctrl%Ind%NSolar))
-      allocate(SPixel%RTM%Tsf_v       (Ctrl%Ind%NSolar))
+      allocate(SPixel%RTM%Tsf_o      (Ctrl%Ind%NSolar))
+      allocate(SPixel%RTM%Tsf_v      (Ctrl%Ind%NSolar))
    end if
-   allocate(SPixel%RTM%Ref_clear      (Ctrl%Ind%NSolar))
-   allocate(SPixel%RTM%dRef_clear_dRs (Ctrl%Ind%NSolar))
+   allocate(SPixel%RTM%Ref_clear     (Ctrl%Ind%NSolar))
+   allocate(SPixel%RTM%dRef_clear_dRs(Ctrl%Ind%NSolar))
 
    ! Geometrical parameters
 
-   allocate(SPixel%Geom%SolZen        (Ctrl%Ind%NViews))
-   allocate(SPixel%Geom%SatZen        (Ctrl%Ind%NViews))
-   allocate(SPixel%Geom%RelAzi        (Ctrl%Ind%NViews))
-   allocate(SPixel%Geom%SEC_o         (Ctrl%Ind%NViews))
-   allocate(SPixel%Geom%SEC_v         (Ctrl%Ind%NViews))
+   allocate(SPixel%Geom%SolZen       (Ctrl%Ind%NViews))
+   allocate(SPixel%Geom%SatZen       (Ctrl%Ind%NViews))
+   allocate(SPixel%Geom%RelAzi       (Ctrl%Ind%NViews))
+   allocate(SPixel%Geom%SEC_o        (Ctrl%Ind%NViews))
+   allocate(SPixel%Geom%SEC_v        (Ctrl%Ind%NViews))
 
    ! Get_Surface arrays (Reallocated in GetSurface)
 
-   allocate(SPixel%Surface%Rs         (Ctrl%Ind%NSolar))
-   allocate(SPixel%Surface%SRs        (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
+   allocate(SPixel%Surface%Rs        (Ctrl%Ind%NSolar))
+   allocate(SPixel%Surface%SRs       (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar))
    if (Ctrl%RS%use_full_brdf) then
-      allocate(SPixel%Surface%Rs2     (Ctrl%Ind%NSolar, MaxRho_XX))
-      allocate(SPixel%Surface%SRs2    (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
+      allocate(SPixel%Surface%Rs2    (Ctrl%Ind%NSolar, MaxRho_XX))
+      allocate(SPixel%Surface%SRs2   (Ctrl%Ind%NSolar, Ctrl%Ind%NSolar, MaxRho_XX))
    end if
-   allocate(SPixel%Surface%Ratios     (Ctrl%Ind%NSolar, MaxRho_XX))
-   allocate(SPixel%Surface%XIndex     (Ctrl%Ind%NSolar, MaxRho_XX))
+   allocate(SPixel%Surface%Ratios    (Ctrl%Ind%NSolar, MaxRho_XX))
+   allocate(SPixel%Surface%XIndex    (Ctrl%Ind%NSolar, MaxRho_XX))
 
    !  Solar constant (Reallocated in GetSPixel)
 
-   allocate(SPixel%f0                 (Ctrl%Ind%NSolar))
+   allocate(SPixel%f0                (Ctrl%Ind%NSolar))
 
    ! Initialise super-pixel active and inactive state vectors, measurements and
    ! errors. Allocate and initialise here in case the first (few) SPixel(s)
@@ -185,5 +185,6 @@ subroutine Alloc_SPixel(Ctrl, RTM, SPixel)
    allocate(SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(Ctrl%Ind%Ny))
    allocate(SPixel%spixel_y_mixed_to_spixel_y_solar(Ctrl%Ind%Ny))
    allocate(SPixel%spixel_y_mixed_to_spixel_y_thermal(Ctrl%Ind%Ny))
+   allocate(SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(Ctrl%Ind%Ny))
 
 end subroutine Alloc_SPixel
