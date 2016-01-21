@@ -55,6 +55,7 @@
 !                 over antarctica in ATSR channel
 ! 2016/01/21  OS: Removed bug due to differences in land/sea masks between 
 !                 ERA-Interim and USGS
+! 2016/01/21  OS: Removed bug: test with AATSR flag was also applied to other sensors
 
 ! $Id$
 !
@@ -643,7 +644,7 @@ contains
           endif
 
           ! check if ATSR 11um channel is missing because too warm
-!          ch6_on_atsr_flag = YES
+          !          ch6_on_atsr_flag = YES
 
 
           if ( imager_measurements%DATA(i,j,ch6) .ge. 220 .and. &
@@ -762,24 +763,22 @@ contains
 		imager_measurements%DATA(i,j,ch5)=209.0
                 imager_pavolonis%CLDMASK(i,j) = CLOUDY
              endif
-	  endif
-
 
              if ( (ch7_on_atsr_flag == NO )  ) then
-! check if over very cold atlantic plateau Antarctica in which case probably clear if 12um is missing
-   	     if ((imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) .and.   (imager_geolocation%LATITUDE(i,j) < -70.0) ) then
-	     	imager_pavolonis%CLDTYPE(i,j) = PROB_CLEAR_TYPE
-                imager_pavolonis%CLDMASK(i,j) = CLEAR
-   	     endif
-	     endif
+                ! check if over very cold atlantic plateau Antarctica in which case probably clear if 12um is missing
+                if ((imager_pavolonis%SFCTYPE(i,j) == NISE_FLAG) .and.   (imager_geolocation%LATITUDE(i,j) < -70.0) ) then
+                   imager_pavolonis%CLDTYPE(i,j) = PROB_CLEAR_TYPE
+                   imager_pavolonis%CLDMASK(i,j) = CLEAR
+                endif
+             endif
 
-          if ( imager_pavolonis%CLDMASK(i,j) == CLEAR ) then
-             imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
-             cycle
+             if ( imager_pavolonis%CLDMASK(i,j) == CLEAR ) then
+                imager_pavolonis%CLDTYPE(i,j) = CLEAR_TYPE
+                cycle
+             endif
+	  endif
 
-          endif
-
-          !-- neither ch3a nor ch3b available
+   !-- neither ch3a nor ch3b available
           if (trim(adjustl(sensor)) .eq. 'AVHRR') then
              !-- at night, assign probably opaque ice flag
              !-- as ch3.7 has fill value due to low S/N
