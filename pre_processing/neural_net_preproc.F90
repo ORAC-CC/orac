@@ -34,6 +34,7 @@
 ! 2015/11/17, OS: added platform flag and correction coefficients for MODIS and AATSR;
 !    removed sunglint double check; minor editing
 ! 2015/12/17, OS: changed structure of setting thresholds
+! 2016/01/21, OS: Added correction for ice-free sea skin temperature - to be tested
 
 ! $Id$
 !
@@ -351,6 +352,12 @@ contains
        !       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
        output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
        !       endif
+
+       ! Testing ice-free sea skin temperature correction
+       if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO)) then
+          output = output - ((300.- skint)/30.)*0.15
+       endif
+
        ! --- ensure that CCCOT is within 0 - 1 range
        cccot_pre = max( min( output, 1.0 ), 0.0)
 
