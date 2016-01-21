@@ -35,6 +35,7 @@
 !    removed sunglint double check; minor editing
 ! 2015/12/17, OS: changed structure of setting thresholds
 ! 2016/01/21, OS: Added correction for ice-free sea skin temperature - to be tested
+! 2016/01/21, OS: Removed offset when correcting AATSR ch1 and ch2 data
 
 ! $Id$
 !
@@ -109,7 +110,7 @@ contains
     else
        ch1 = channel1 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch1 = 0.8945 * ch1 + 2.217
-       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch1 = 0.8542 * ch1 + 2.822
+       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch1 = 0.8542 * ch1
        ch1 = min(106.,ch1) ! Dont allow reflectance to be higher than trained
     endif
 
@@ -122,7 +123,7 @@ contains
     else
        ch2 = channel2 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch2 = 0.8336 * ch2 + 1.749
-       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch2 = 0.7787 * ch2 + 2.307
+       if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch2 = 0.7787 * ch2
        ch2 = min(104.,ch2) ! Dont allow reflectance to be higher than trained
     endif
 
