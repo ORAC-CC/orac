@@ -16,6 +16,7 @@
 ! 2015/11/17, OS: Added cloud types for phase switching.
 ! 2015/11/27, CP: Added prob clear type 
 ! 2015/12/17, OS: Added twilight NN thresholds
+! 2015/12/17, OS: Changed twilight NN thresholds for land_ice and sea
 !
 ! $Id$
 !
@@ -49,8 +50,8 @@ module constants_cloud_typing_pavolonis
    real(sreal)   :: COT_THRES_NIGHT_SEA = 0.2
    real(sreal)   :: COT_THRES_NIGHT_LAND = 0.3
    real(sreal)   :: COT_THRES_TWL_SEA_ICE = 0.4
-   real(sreal)   :: COT_THRES_TWL_LAND_ICE = 0.35
-   real(sreal)   :: COT_THRES_TWL_SEA = 0.2
+   real(sreal)   :: COT_THRES_TWL_LAND_ICE = 0.4 
+   real(sreal)   :: COT_THRES_TWL_SEA = 0.35 
    real(sreal)   :: COT_THRES_TWL_LAND = 0.3
 
    !---
