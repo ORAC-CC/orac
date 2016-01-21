@@ -53,6 +53,9 @@
 !    ch3a was available for solzen > 88.
 ! 2015/11/28  CP: used probabaly clear to deal with saturation of 12um channel
 !                 over antarctica in ATSR channel
+! 2016/01/21  OS: Removed bug due to differences in land/sea masks between 
+!                 ERA-Interim and USGS
+
 ! $Id$
 !
 ! Bugs:
@@ -485,10 +488,8 @@ contains
           call interp_field (ecmwf%snow_depth, snow_depth(j,i), interp(1))
           call interp_field (ecmwf%sea_ice_cover, sea_ice_cover(j,i), interp(1))
 
-          if (((snow_depth(j,i) .GT. 0.01) .and. & 
-               (imager_flags%LSFLAG(j,i) .EQ. 1_byte)) .OR. & 
-               ((sea_ice_cover(j,i) .GT. 0.15) .and. & 
-               (imager_flags%LSFLAG(j,i) .EQ. 0_byte))) then
+          if ((snow_depth(j,i) .GT. 0.01) .OR. & 
+               (sea_ice_cover(j,i) .GT. 0.15)) then
              snow_ice_mask(j,i) = YES
           else
              snow_ice_mask(j,i) = NO
