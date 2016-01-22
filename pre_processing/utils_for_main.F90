@@ -45,7 +45,7 @@ end subroutine parse_required
 
 subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_time_int_method, use_modis_emis_in_rttov, &
-                          ecmwf_path_file, ecmwf_path_file2, ecmwf_path_file3)
+                          ecmwf_path, ecmwf_path2, ecmwf_path3)
 
    use parsing
    use preproc_constants
@@ -58,9 +58,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    integer, pointer, intent(inout) :: channel_ids(:)
    integer,          intent(inout) :: ecmwf_time_int_method
    logical,          intent(inout) :: use_modis_emis_in_rttov
-   character(len=*), intent(inout) :: ecmwf_path_file
-   character(len=*), intent(inout) :: ecmwf_path_file2
-   character(len=*), intent(inout) :: ecmwf_path_file3
+   character(len=*), intent(inout) :: ecmwf_path
+   character(len=*), intent(inout) :: ecmwf_path2
+   character(len=*), intent(inout) :: ecmwf_path3
 
    select case (label)
    case('N_CHANNELS')
@@ -80,14 +80,14 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    case('USE_MODIS_EMIS_IN_RTTOV')
       if (parse_string(value, use_modis_emis_in_rttov) /= 0) &
          call handle_parse_error(label)
-   case('ECMWF_PATH_FILE_2')
-      if (parse_string(value, ecmwf_path_file) /= 0) &
+   case('ECMWF_PATH_2')
+      if (parse_string(value, ecmwf_path) /= 0) &
          call handle_parse_error(label)
-   case('ECMWF_PATH_FILE2_2')
-      if (parse_string(value, ecmwf_path_file2) /= 0) &
+   case('ECMWF_PATH2_2')
+      if (parse_string(value, ecmwf_path2) /= 0) &
          call handle_parse_error(label)
-   case('ECMWF_PATH_FILE3_2')
-      if (parse_string(value, ecmwf_path_file3) /= 0) &
+   case('ECMWF_PATH3_2')
+      if (parse_string(value, ecmwf_path3) /= 0) &
          call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

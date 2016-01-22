@@ -45,6 +45,8 @@
 ! 2014/04/21, GM: Added logical option assume_full_path.
 ! 2014/05/02, AP: Replaced code with CASE statements. Added third option.
 ! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
+! 2016/01/22, GM: If assume_full_path = .false. and a file from the next day is
+!    required use ecmwf_path_file*(2).
 !
 ! $Id$
 !
@@ -77,8 +79,9 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
    real,                       intent(out) :: time_int_fac
    logical,                    intent(in)  :: assume_full_path
 
-   integer(sint) :: year, month, day, hour, minute
-   integer(sint) :: year2, month2, day2, hour2
+   integer       :: i_path
+   integer(sint) :: year, month, day, hour
+   integer       :: day_before
    real(dreal)   :: jday, jday0, jday1, jday2
    real(dreal)   :: day_real
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
@@ -140,18 +143,29 @@ else if (time_interp_method .eq. 1) then
          jday2 = jday1
       endif
 
-      call JD2GREG(jday2, year2, month2, day_real)
-      day2 = int(day_real, sint)
-      hour2 = int((day_real - day2) * 24._dreal, sint)
+      call JD2GREG(jday0, year, month, day_real)
+      day = int(day_real, sint)
 
-      write(cera_year,  '(I4.4)') year2
-      write(cera_month, '(I2.2)') month2
-      write(cera_day,   '(I2.2)') day2
-      write(cera_hour,  '(I2.2)') hour2
+      day_before = day
+
+      call JD2GREG(jday2, year, month, day_real)
+      day = int(day_real, sint)
+      hour = int((day_real - day) * 24._dreal, sint)
+
+      write(cera_year,  '(I4.4)') year
+      write(cera_month, '(I2.2)') month
+      write(cera_day,   '(I2.2)') day
+      write(cera_hour,  '(I2.2)') hour
+
+      if (day_before .eq. day) then
+         i_path = 1
+      else
+         i_path = 2
+      end if
 
       call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-         ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
-         ecmwf_path_file2(1), ecmwf_path_file3(1))
+         ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+         ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
 else if (time_interp_method .eq. 2) then
       ! Pick the ERA interim files before and after wrt sensor time
 
@@ -165,31 +179,39 @@ else if (time_interp_method .eq. 2) then
 
       time_int_fac = (jday - jday0) / (jday1 - jday0)
 
-      call JD2GREG(jday0, year2, month2, day_real)
-      day2  = int(day_real, sint)
-      hour2 = int((day_real - day2) * 24._dreal, sint)
+      call JD2GREG(jday0, year, month, day_real)
+      day  = int(day_real, sint)
+      hour = int((day_real - day) * 24._dreal, sint)
 
-      write(cera_year,  '(I4.4)') year2
-      write(cera_month, '(I2.2)') month2
-      write(cera_day,   '(I2.2)') day2
-      write(cera_hour,  '(I2.2)') hour2
+      write(cera_year,  '(I4.4)') year
+      write(cera_month, '(I2.2)') month
+      write(cera_day,   '(I2.2)') day
+      write(cera_hour,  '(I2.2)') hour
 
       call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
          ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
          ecmwf_path_file2(1), ecmwf_path_file3(1))
 
-      call JD2GREG(jday1, year2, month2, day_real)
-      day2 = int(day_real, sint)
-      hour2 = int((day_real - day2) * 24._dreal, sint)
+      day_before = day
 
-      write(cera_year,  '(I4.4)') year2
-      write(cera_month, '(I2.2)') month2
-      write(cera_day,   '(I2.2)') day2
-      write(cera_hour,  '(I2.2)') hour2
+      call JD2GREG(jday1, year, month, day_real)
+      day = int(day_real, sint)
+      hour = int((day_real - day) * 24._dreal, sint)
+
+      write(cera_year,  '(I4.4)') year
+      write(cera_month, '(I2.2)') month
+      write(cera_day,   '(I2.2)') day
+      write(cera_hour,  '(I2.2)') hour
+
+      if (day_before .eq. day) then
+         i_path = 1
+      else
+         i_path = 2
+      end if
 
       call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-         ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(2), &
-         ecmwf_path_file2(2), ecmwf_path_file3(2))
+         ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+         ecmwf_path_file(2),ecmwf_path_file2(2), ecmwf_path_file3(2))
 else
       write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', time_interp_method
       stop error_stop_code

@@ -583,6 +583,18 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       stop error_stop_code
    endif
 
+   if (assume_full_paths .and. ecmwf_time_int_method .eq. 2 .and. &
+       (ecmwf_path(2) .eq. '' .or. ecmwf_path2(2) .eq. '' .or. &
+        ecmwf_path3(2) .eq. '')) then
+      write(*,*) 'ERROR: must supply all 3 second ECMWF paths when ' // &
+                 'assume_full_paths = true .and. ecmwf_time_int_method = 2'
+      stop error_stop_code
+   endif
+
+   if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
+   if (ecmwf_path2(2) .eq. '') ecmwf_path2(2) = ecmwf_path2(1)
+   if (ecmwf_path3(2) .eq. '') ecmwf_path3(2) = ecmwf_path3(1)
+
    ! get the NetCDF version
    global_atts%netcdf_version=nf90_inq_libvers()
 
