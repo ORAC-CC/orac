@@ -65,6 +65,7 @@ contains
 ! History:
 ! 2014/12/17, AP: Original version.
 ! 2015/02/24, GM: Use parse_line().
+! 2016/01/25, GM: Add check for buffer overflow.
 !
 ! Bugs:
 ! None known.
@@ -96,6 +97,11 @@ function parse_driver(lun, data, label) result(ios)
       data  = ''
       ios = -1
    else
+      if (line(len(line):len(line)) .ne. ' ') then
+         write(*,*) 'ERROR: parse_driver(), line to long for line buffer'
+         stop error_stop_code
+      end if
+
       ! Remove end-of-line comments
       if (id > 0) line(id:) = ''
 

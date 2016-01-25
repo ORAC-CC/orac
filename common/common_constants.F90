@@ -36,7 +36,7 @@ module common_constants
 
    integer, parameter :: cmd_arg_length=128
    integer, parameter :: file_length=512
-   integer, parameter :: path_length=1024
+   integer, parameter :: path_length=2048
 
    integer, parameter :: date_length=4
    integer, parameter :: platform_length=8
