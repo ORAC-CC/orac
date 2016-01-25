@@ -95,7 +95,8 @@ module ECP_constants
    integer            :: i_ECP                      ! Loop variable
 
    ! Maximum string lengths
-   integer, parameter :: FilenameLen      = 2048    ! Max length of filenames
+   integer, parameter :: FilenameLen      = path_length
+                                                    ! Max length of filenames
    integer, parameter :: InstNameLen      = 16      ! Max length of instrument name
 
    ! Maximum array lengths
