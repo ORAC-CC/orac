@@ -42,12 +42,12 @@ subroutine read_input_dimensions_msi(fname_msi, fname_geo, xdim, ydim, vdim, &
 
    implicit none
 
-   character(len=FilenameLen), intent(in)  :: fname_msi
-   character(len=FilenameLen), intent(in)  :: fname_geo
-   integer(kind=lint),         intent(out) :: xdim,ydim,vdim
-   logical,                    intent(in)  :: verbose
+   character(len=*),   intent(in)  :: fname_msi
+   character(len=*),   intent(in)  :: fname_geo
+   integer(kind=lint), intent(out) :: xdim,ydim,vdim
+   logical,            intent(in)  :: verbose
 
-   integer                                 :: ncid
+   integer                         :: ncid
 
 
    ! Open msi file
@@ -89,14 +89,14 @@ subroutine read_input_dimensions_rtm(fname_prtm,fname_lwrtm,fname_swrtm, &
 
    implicit none
 
-   character(len=FilenameLen), intent(in)  :: fname_prtm
-   character(len=FilenameLen), intent(in)  :: fname_lwrtm
-   character(len=FilenameLen), intent(in)  :: fname_swrtm
-   integer(kind=lint),         intent(out) :: xdim,ydim,levdim, &
-                                              channeldim_lw,channeldim_sw
-   logical,                    intent(in)  :: verbose
+   character(len=*),   intent(in)  :: fname_prtm
+   character(len=*),   intent(in)  :: fname_lwrtm
+   character(len=*),   intent(in)  :: fname_swrtm
+   integer(kind=lint), intent(out) :: xdim,ydim,levdim, &
+                                      channeldim_lw,channeldim_sw
+   logical,            intent(in)  :: verbose
 
-   integer                                 :: ncid
+   integer                         :: ncid
 
 
    ! Open PRTM file

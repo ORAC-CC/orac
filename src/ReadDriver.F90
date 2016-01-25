@@ -148,7 +148,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    type(global_attributes_s), intent(inout) :: global_atts
    type(source_attributes_s), intent(inout) :: source_atts
 #ifdef WRAPPER
-   character(FilenameLen),    intent(inout) :: drifile
+   character(*),              intent(inout) :: drifile
 #else
    character(FilenameLen)                   :: drifile
 #endif
