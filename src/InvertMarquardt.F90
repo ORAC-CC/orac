@@ -725,9 +725,8 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    end if
 
    ! Evaluate corrected CTH
-   if (Ctrl%do_CTH_correction .and. all(SPixel%illum .eq. IDay) .and. &
-        (Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
-        SPixel%Ind%NSolar > 0) then
+   if (Ctrl%do_CTH_correction .and. &
+       all(SPixel%illum .eq. IDay) .and. SPixel%Ind%NSolar > 0) then
       call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    else
       SPixel%CTH_corrected       = MissingXn

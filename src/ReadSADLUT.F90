@@ -852,7 +852,7 @@ subroutine Read_SAD_LUT(Ctrl, SAD_Chan, SAD_LUT)
          call create_sad_filename(Ctrl, chan_num, LUT_File, 'EM')
          call Read_LUT_sat(Ctrl, LUT_file, i, SAD_LUT, IEm, "EM", SAD_LUT%Em)
 
-         if (Ctrl%do_CTH_correction) then
+         if (Ctrl%do_CTH_correction .and. Ctrl%Approach .eq. CldIce) then
             ! Read the Bext file
             call create_sad_filename(Ctrl, chan_num, LUT_File, 'Bext')
             call Read_LUT(Ctrl, LUT_file, i, SAD_LUT, IBext, "Bext", SAD_LUT%Bext)

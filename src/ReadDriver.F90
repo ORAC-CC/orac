@@ -785,10 +785,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
 
 
-   Ctrl%do_CTH_correction = .false.
-   if (Ctrl%Approach == CldIce) then
-      Ctrl%do_CTH_correction = .true.
-   end if
+   Ctrl%do_CTH_correction = .true.
 
 
    !----------------------------------------------------------------------------

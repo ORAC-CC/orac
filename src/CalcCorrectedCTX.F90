@@ -19,8 +19,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-function get_detransmitted_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal, &
-                              Y) result(bt)
+function get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal, Y) &
+         result(bt)
 
    use Ctrl_def
    use RTM_Pc_def
@@ -57,7 +57,7 @@ function get_detransmitted_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_y_thermal
    call R2T(1, SAD_Chan(i_ctrl_y:i_ctrl_y), R, a, b, status)
    bt = a(1)
 
-end function get_detransmitted_bt
+end function get_corrected_bt
 
 
 subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
@@ -128,6 +128,10 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       SPixel%CTH_corrected_error = abs(RTM_Pc%dHc_dPc) * sqrt(SPixel%Sn(IPc,IPc))
    end if
 
+   if (Ctrl%Approach .ne. CldIce) then
+      return
+   end if
+
    ! Find 11 and 12 micron indexes
    Y_Id = Ctrl%Ind%Y_Id(SPixel%spixel_y_thermal_to_ctrl_y_index(1:SPixel%Ind%NThermal))
    i_spixel_11_thermal = find_in_array(Y_Id, Ctrl%Ind%Y_Id_legacy(I_legacy_11_x))
@@ -143,7 +147,7 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       ! that existing routines can be used.
       call Allocate_GZero(GZero, SPixel)
       call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
-                     GZero, status)
+              GZero, status)
       call Int_LUT_TauRe(SAD_LUT%Bext, SPixel%Ind%NThermal, SAD_LUT%Grid, GZero, &
               Ctrl, CRP_thermal, d_CRP_thermal, IBext, &
               SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, status)
@@ -151,10 +155,10 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
 
       ! Correct the BT11 and BT12 to that which will be observed through a
       ! transparent atmosphere.
-      T_11 = get_detransmitted_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, &
-                                  i_spixel_11_thermal, SPixel%Ym)
-      T_12 = get_detransmitted_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, &
-                                  i_spixel_12_thermal, SPixel%Ym)
+      T_11 = get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_11_thermal, &
+                SPixel%Ym)
+      T_12 = get_corrected_bt(Ctrl, SPixel, SAD_Chan, RTM_Pc, i_spixel_12_thermal, &
+                SPixel%Ym)
 
       ! For now we assume these are zero.  In fact the are not zero w.r.t. both
       ! the measurements and Pc.
@@ -181,11 +185,12 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       ! Bext is not a function of Tau so SPixel%Sn(ITau, ITau) and Tau cross
       ! terms need not be included.  Still not including measurement and Pc
       ! uncertainty.
-      ctt_new_sigma = sqrt((ctt_new_l_r_e * SPixel%Sn(IRe, IRe)) * ctt_new_l_r_e + &
-                           (ctt_new_l_t11 * Sy(i_spixel_11,i_spixel_11) + &
-                            ctt_new_l_t12 * Sy(i_spixel_11,i_spixel_12)) * ctt_new_l_t11 + &
-                           (ctt_new_l_t11 * Sy(i_spixel_12,i_spixel_11) + &
-                            ctt_new_l_t12 * Sy(i_spixel_12,i_spixel_12)) * ctt_new_l_t12)
+      ctt_new_sigma = &
+         sqrt((ctt_new_l_r_e * SPixel%Sn(IRe, IRe)) * ctt_new_l_r_e + &
+              (ctt_new_l_t11 * Sy(i_spixel_11,i_spixel_11) + &
+               ctt_new_l_t12 * Sy(i_spixel_11,i_spixel_12)) * ctt_new_l_t11 + &
+              (ctt_new_l_t11 * Sy(i_spixel_12,i_spixel_11) + &
+               ctt_new_l_t12 * Sy(i_spixel_12,i_spixel_12)) * ctt_new_l_t12)
 
       delta_ctp     = (ctt_new - RTM_Pc%Tc) / RTM_Pc%dTc_dPc
 
