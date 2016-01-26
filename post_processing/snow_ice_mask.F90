@@ -28,22 +28,21 @@
 !    4. different tests applicable day or night
 !
 ! History:
-!   28/08/2014, Caroline Poulsen: original version
-!   25/09/2014, Caroline Poulsen: updated to include channel translation for
-!      AVHRR and MODIS
-!   25/09/2014, Caroline Poulsen: tidy up and updated to include night tests
-!   29/09/2014, Caroline Poulsen: fixed up flagging at night
-!   24/10/2014, Oliver Sus: shortened overly long line
-!   20/11/2014, Oliver Sus: deactivated use of module neural_net_constants
-!   2014/12/03, CP: added in common_constants should eventually remove
+!   28/08/2014, CP: Original version
+!   25/09/2014, CP: Updated to include channel translation for AVHRR and MODIS
+!   25/09/2014, CP: Tidy up and updated to include night tests
+!   29/09/2014, CP: Fixed up flagging at night
+!   24/10/2014, OS: Shortened overly long line
+!   20/11/2014, OS: Deactivated use of module neural_net_constants
+!   2014/12/03, CP: Added in common_constants should eventually remove
 !      postproc_constants
-!   2015/01/12, CP: added in more comments to make it clearer.
-!   2015/01/19, CP: added in some more stringent cloud clearing
-!   2015/02/09, CP: applied mask during night updated to work for AVHRR and
+!   2015/01/12, CP: Added in more comments to make it clearer.
+!   2015/01/19, CP: Added in some more stringent cloud clearing
+!   2015/02/09, CP: Applied mask during night updated to work for AVHRR and
 !      MODIS instruments
-!   2015/02/09, CP: applied mask to remove very thick ice cloud over ice
+!   2015/02/09, CP: Applied mask to remove very thick ice cloud over ice
 !      surfaces
-!   2015/04/23, OS: some minor edits
+!   2015/04/23, OS: Some minor edits
 !   2015/07/16, GM: Major cleanup.
 !
 ! $Id$

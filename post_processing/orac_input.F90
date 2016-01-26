@@ -9,18 +9,18 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2012/02/03, MJ: cleans out prototype code to prepare repository upload.
-! 2012/03/06, CP: modified to produce post processed files
-! 2012/03/18, CP: modified to add cloud flag
-! 2012/06/20, CP: modified to add albedo
-! 2012/07/06, MJ: extensively overhauls and restructures the code
-! 2014/09/20, CP: adds in extra channel variables
-! 2014/09/29, CP: adds in variable names for MODIS
-! 2014/10/24, OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM,
+! 2012/02/03, MJ: Cleans out prototype code to prepare repository upload.
+! 2012/03/06, CP: Modified to produce post processed files
+! 2012/03/18, CP: Modified to add cloud flag
+! 2012/06/20, CP: Modified to add albedo
+! 2012/07/06, MJ: Extensively overhauls and restructures the code
+! 2014/09/20, CP: Adds in extra channel variables
+! 2014/09/29, CP: Adds in variable names for MODIS
+! 2014/10/24, OS: Added variables cccot_pre, lusflag, cldtype, cloudmask, DEM,
 !    and nisemask
-! 2014/12/02, CP: adds in cloud_albedo
-! 2015/02/05, OS: deactivated use of postproc_constants to force consistency with
-!    common_constants; changed nint to lint; added variable phase_post
+! 2014/12/02, CP: Adds in cloud_albedo
+! 2015/02/05, OS: Deactivated use of postproc_constants to force consistency
+!    with common_constants; changed nint to lint; added variable phase_post
 ! 2015/07/16, GM: Major cleanup and add associated routines to module.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.

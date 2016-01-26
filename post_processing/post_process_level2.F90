@@ -39,50 +39,50 @@
 ! 09/02/2012, CP: Original version. Needs modifying to work with AATSR/AVHRR
 !    does not output covariance information into secondary output file.  Have
 !    not included cloud mask at present.
-! 2012/03/18, CP: modified to add cloud flag
-! 2012/07/06, MJ: extensively overhauls and restructures the code
-! 2012/07/13, MJ: extends range of valid ref for netcdf write
-! 2012/07/23, MJ: adds choice of strictness of cloud checks.
-! 2012/07/23, MJ: adds code to play with cloud screening during day and night
-! 2012/08/27, MJ: better implements time variable in output.
+! 2012/03/18, CP: Modified to add cloud flag
+! 2012/07/06, MJ: Extensively overhauls and restructures the code
+! 2012/07/13, MJ: Extends range of valid ref for netcdf write
+! 2012/07/23, MJ: Adds choice of strictness of cloud checks.
+! 2012/07/23, MJ: Adds code to play with cloud screening during day and night
+! 2012/08/27, MJ: Better implements time variable in output.
 ! 2012/11 to 2013/01, SS, MJ and MS: make major changes to cloud masking
 !    approach,
-! 2012/11 to 2013/01, SS, MJ: implements untested OMP parallelization, changes
+! 2012/11 to 2013/01, SS, MJ: Implements untested OMP parallelization, changes
 !    wrt CF compliance.
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
-! 2014/01/22, MJ: fixes FP overflow with COT uncertainty.
-! 2014/01/23, MJ: changes of how COT uncertainty is treated.
-! 2014/02/07, MJ: corrects logical error (water got penalty when ice prop.
+! 2014/01/22, MJ: Fixes FP overflow with COT uncertainty.
+! 2014/01/23, MJ: Changes of how COT uncertainty is treated.
+! 2014/02/07, MJ: Corrects logical error (water got penalty when ice prop.
 ! were out of range and vice versa),cleans up code
-! 2014/02/10, MJ: reorders and rewrites the penalty assignment in phase
+! 2014/02/10, MJ: Reorders and rewrites the penalty assignment in phase
 !    selection
-! 2014/03/14, MJ: removes code to scale cot from log_10(tau) to tau as this step
+! 2014/03/14, MJ: Removes code to scale cot from log_10(tau) to tau as this step
 !    was already introduced in ORAC.
-! 2014/07/08, CP: added more illumination options
-! 2014/07/08, CP: added in extra subroutine that uses Istomina like tests to
+! 2014/07/08, CP: Added more illumination options
+! 2014/07/08, CP: Added in extra subroutine that uses Istomina like tests to
 !    detect clear snow and ice
 ! 2014/09/29, changed wat read_inter)sec is called now need a instrument name
-! 2014/10/24, OS: added subroutine option for wrapper mode, and further
+! 2014/10/24, OS: Added subroutine option for wrapper mode, and further
 !    wrapper-specific details; SteSta added new fill value option for the
 !    post processing cloud mask
-! 2014/11/20, OS: renamed module neural_net_constants to
+! 2014/11/20, OS: Renamed module neural_net_constants to
 !    neural_net_constants_postproc; some editing; replaced hard-coded NN values
 !    with variables
-! 2015/02/05, OS: changed nint to lint; further replacements of variables
+! 2015/02/05, OS: Changed nint to lint; further replacements of variables
 !    defined in postproc_constants with those defined in common_constants; added
 !    phase_post; Pavolonis phase is now used as basis for
-! 2015/02/06, CP: added in case of ML IR only retrieval
-! 2015/02/06, CP: tidied up phase selection removed obsolete stuff
-! 2015/02/06, CP: added case of IR only multi layer selection phase-dependent
+! 2015/02/06, CP: Added in case of ML IR only retrieval
+! 2015/02/06, CP: Tidied up phase selection removed obsolete stuff
+! 2015/02/06, CP: Added case of IR only multi layer selection phase-dependent
 !    variables
-! 2015/02/07, CP: massive tidy up including of common constants
+! 2015/02/07, CP: Massive tidy up including of common constants
 ! 2015/03/19, OS: COT maximum value set to 100, CWP scaled accordingly + minor
 !    editing
-! 2015/04/22, OS: only apply Istomina retyping when cloud mask says cloud
-! 2015/07/06, OS: added flags "one_phase_only" and "cloudy_only" as file input;
+! 2015/04/22, OS: Only apply Istomina retyping when cloud mask says cloud
+! 2015/07/06, OS: Added flags "one_phase_only" and "cloudy_only" as file input;
 !    reclassify phase if CTT does not match phase temperature range (i.e. no ice
 !    if CTT>273.15K); removed some debugging statements and further clean up
-! 2015/07/10, OS: fixed bug related to using flag one_phase_only
+! 2015/07/10, OS: Fixed bug related to using flag one_phase_only
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/09/06, GM: Adapt to use the output routines in common/.
 ! 2015/09/07, GM: Propagation of COT uncertainty from log10(COT) space was being
@@ -104,7 +104,7 @@
 !    on cost, class is determined any pixel not meeting these thresholds are set
 !    to fill value.  Each threshold can be turned off individually by setting
 !    them to zero.
-! 2015/09/26, GM: Removed eight unused mandatory driver file lines.
+! 2015/09/26, GM: Remove eight unused mandatory driver file lines.
 ! 2015/11/17, OS: Some bug fixing in correctly switching phase and cloud types.
 !    Previously, switching was wrong and, additionally, phase was ice for all
 !    cloud free pixels. This should all be resolved with this commit.

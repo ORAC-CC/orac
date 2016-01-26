@@ -9,15 +9,15 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2012/02/03, MJ: cleans out prototype code to prepare repository upload.
-! 2012/03/06, CP: modified to produce post processed files
-! 2012/07/06, MJ: extensively overhauls and restructures the code
-! 2014/04/01, MJ: fixes some problems/cleanup with illumination
-! 2014/11/10, OS: very minor edit
-! 2014/12/03, CP: removed variables duplicated in common_constants
-! 2015/02/05, OS: some cleanup; changed nint to lint
-! 2015/02/07, CP: removed all variables common to common_constants
-! 2015/04/23, OS: added variables related to NETCDF4 compression
+! 2012/02/03, MJ: Cleans out prototype code to prepare repository upload.
+! 2012/03/06, CP: Modified to produce post processed files
+! 2012/07/06, MJ: Extensively overhauls and restructures the code
+! 2014/04/01, MJ: Fixes some problems/cleanup with illumination
+! 2014/11/10, OS: Very minor edit
+! 2014/12/03, CP: Removed variables duplicated in common_constants
+! 2015/02/05, OS: Some cleanup; changed nint to lint
+! 2015/02/07, CP: Removed all variables common to common_constants
+! 2015/04/23, OS: Added variables related to NETCDF4 compression
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/07/26, GM: Changed type specific deflate levels and shuffling flags to
 !    just one.

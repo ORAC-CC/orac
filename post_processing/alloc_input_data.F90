@@ -11,24 +11,24 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2012/02/03, MJ: cleans out prototype code to prepare repository upload.
-! 15/02/2012, CP: to do level 2 post processing
-! 07/03/2012, MS: added missing stemp_ap
-! 07/03/2012, CP: cleaned up
-! 2012/03/18, CP: modified to add cloud flag
-! 2012/06/20, CP: added albedo
-! 2012/07/04, MJ fixed several data type bugs
-! 2012/07/06, MJ extensively overhauls and restructures the code
+! 2012/02/03, MJ: Cleans out prototype code to prepare repository upload.
+! 15/02/2012, CP: To do level 2 post processing
+! 07/03/2012, MS: Added missing stemp_ap
+! 07/03/2012, CP: Cleaned up
+! 2012/03/18, CP: Modified to add cloud flag
+! 2012/06/20, CP: Added albedo
+! 2012/07/04, MJ: Fixed several data type bugs
+! 2012/07/06, MJ: Extensively overhauls and restructures the code
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
 ! 2014/09/20, change phase from 2 to 1, changed arguments of
 !    alloc_input_data_secondary added in channels
-! 2014/09/29, CP: added in MODIS variable names
-! 2014/10/24, OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
+! 2014/09/29, CP: Added in MODIS variable names
+! 2014/10/24, OS: Added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
 !    (currently deactivated), and nisemask; commented out (de)allocation of
 !    variables for water within if condition iphase = 2 (never true for water)
-! 2014/11/20, OS: some minor editing
-! 2014/11/26, CP: added cloud_albedo
-! 2015/01/26, CP: added multi layer cloud IR only
+! 2014/11/20, OS: Some minor editing
+! 2014/11/26, CP: Added cloud_albedo
+! 2015/01/26, CP: Added multi layer cloud IR only
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.

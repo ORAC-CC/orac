@@ -11,19 +11,19 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2012/02/20, CP: creates initial file.
-! 2012/03/18, CP: modified to add cloud flag
-! 2012/07/06, MJ: extensively overhauls and restructures the code
+! 2012/02/20, CP: Creates initial file.
+! 2012/03/18, CP: Modified to add cloud flag
+! 2012/07/06, MJ: Extensively overhauls and restructures the code
 ! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
-! 2014/06/04, MJ: changes routine names to "*_pp" to avoid confusion when
+! 2014/06/04, MJ: Changes routine names to "*_pp" to avoid confusion when
 !    building libraries.
-! 2014/10/24, OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
-! 2014/11/26, CP: added cloud_albedo
+! 2014/10/24, OS: Added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
+! 2014/11/26, CP: Added cloud_albedo
 !    (currently deactivated), and nisemask; commented out reading of variables
 !    for water within if condition iphase = 2 (never true for water)
-! 2014/12/02, CP: reads in global and source attributes from file
-! 2015/01/26, CP: add in ml from IR only option changed to common constants
-! 2015/07/06, OS: changed some nf90_attributes to their naming convention in
+! 2014/12/02, CP: Reads in global and source attributes from file
+! 2015/01/26, CP: Add in ml from IR only option changed to common constants
+! 2015/07/06, OS: Changed some nf90_attributes to their naming convention in
 !    common/orac_ncdf.F90; changed cct to cc_total
 ! 2015/07/16, GM: Major cleanup and made use of the NetCDF interface in the
 !    common library.

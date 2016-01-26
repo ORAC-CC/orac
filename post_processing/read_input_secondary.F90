@@ -11,19 +11,19 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2012/02/20, Caroline Poulsen: creates initial file.
-! 2012/06/20, C. Poulsen: modified to work for all sensors
-! 2012/06/20, C. Poulsen: modified to add albedo
-! 2012/06/20, C. Poulsen: changed arguments of read_input_secondary added in
-!    reading of albedo added in reading of channel radiances
-! 2014/09/29, C. Poulsen: changed number of arguments read in and added MODIS
-!    specific call
-! 2014/10/10, A. Povey: Added case statement to secondary read to very badly
-! 2014/12/03, CP: uncommented albedo because need for snow mask added
+! 2012/02/20, CP: Creates initial file.
+! 2012/06/20, CP: Modified to work for all sensors
+! 2012/06/20, CP: Modified to add albedo
+! 2012/06/20, CP: Changed arguments of read_input_secondary added in reading of
+!    albedo added in reading of channel radiances
+! 2014/09/29, CP: Changed number of arguments read in and added MODIS specific
+!    call
+! 2014/10/10, AP: Added case statement to secondary read to very badly
+! 2014/12/03, CP: Uncommented albedo because need for snow mask added
 !    common_constants deal with differing instrument channels.
-! 2015/02/05, OS: changed nint to lint; now checks for AVHRR whether ch3a or
+! 2015/02/05, OS: Changed nint to lint; now checks for AVHRR whether ch3a or
 !    ch3b data exist in input files
-! 2015/02/07, CP: changed to common constants and tidied up string reading of
+! 2015/02/07, CP: Changed to common constants and tidied up string reading of
 !    instrument
 ! 2015/07/16, GM: Major cleanup.
 !

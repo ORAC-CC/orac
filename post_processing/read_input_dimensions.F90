@@ -11,11 +11,12 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2014/06/04, MJ: changes routine names to "*_pp" to avoid confusion when
+! 2014/06/04, MJ: Changes routine names to "*_pp" to avoid confusion when
 !    building libraries.
-! 2014/12/03, CP: added in common_constants should eventually remove postproc_constants
-! 2015/02/05, OS: changed nint to lint
-! 2015/02/05, CP: updated constants file
+! 2014/12/03, CP: Added in common_constants should eventually remove
+!    postproc_constants
+! 2015/02/05, OS: Changed nint to lint
+! 2015/02/05, CP: Updated constants file
 ! 2015/07/10, GM: Major cleanup and made use of the NetCDF interface in the
 !    common library.
 !

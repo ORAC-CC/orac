@@ -11,12 +11,12 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! xx/xx/xxxx, Matthias Jerg: Original version
-! 05/01/2012, Caroline Poulsen: add in reflectances and brightness temperature
-! 15/01/2012, Caroline Poulsen: changed how offset was applied
-! 2015/07/16, Greg McGarragh: Major cleanup.
-! 2015/10/07, Oliver Sus: renamed to *_pp.F90, as we have to avoid duplicate
-!             subroutine names for wrapper
+! xx/xx/xxxx, MJ: Original version
+! 05/01/2012, CP: Add in reflectances and brightness temperature
+! 15/01/2012, CP: Changed how offset was applied
+! 2015/07/16, GM: Major cleanup.
+! 2015/10/07, OS: Renamed to *_pp.F90, as we have to avoid duplicate subroutine
+!    names for wrapper
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 !
 ! $Id$

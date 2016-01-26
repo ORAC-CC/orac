@@ -11,22 +11,21 @@
 ! Name Type In/Out/Both Description
 !
 ! History:
-! 2011/12/19, Matthias Jerg creates initial output for main ooutput variables.
-! 2012/01/06, Matthias Jerg added in cwp
-! 2012/01/16, Caroline Poulsen bug fix: changed how offset applied
-! 2012/07/06, MJ: extensively overhauls and restructures the code
-! 2012/07/17, MJ: fixes bug in CWP write.
-! 2012/07/31, MJ: fixes bug in CTY write.
-! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and
-!    cth
-! 2014/01/22, MJ fixes FP overflow with COT.
-! 2014/07/08, CP added more illumination options
-! 2014/10/24, OS: added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
+! 2011/12/19, MJ: Creates initial output for main ooutput variables.
+! 2012/01/06, MJ: Added in cwp
+! 2012/01/16, CP: Bug fix: changed how offset applied
+! 2012/07/06, MJ: Extensively overhauls and restructures the code
+! 2012/07/17, MJ: Fixes bug in CWP write.
+! 2012/07/31, MJ: Fixes bug in CTY write.
+! 2013/01/17, MJ: Adds code to accommodate uncertainties of ctt and cth
+! 2014/01/22, MJ: Fixes FP overflow with COT.
+! 2014/07/08, CP: Added more illumination options
+! 2014/10/24, OS: Added variables cccot_pre, lusflag, cldtype, cloudmask, DEM
 !    (currently deactivated), and nisemask
-! 2014/11/20, OS: added Pavolonis cloud phase variable, which is here classified
+! 2014/11/20, OS: Added Pavolonis cloud phase variable, which is here classified
 !    through Pavolonis cloud types
-! 2014/11/20, CP: added cloud albedo
-! 2015/02/07, CP: changed to common constants
+! 2014/11/20, CP: Added cloud albedo
+! 2015/02/07, CP: Changed to common constants
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/10/07, Oliver Sus: renamed to *_pp.F90, as we have to avoid duplicate
 !    subroutine names for wrapper
