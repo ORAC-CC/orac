@@ -25,6 +25,7 @@
 ! 2014/05/07, AP: First version.
 ! 2016/01/29, GM: read_ecmwf_wind_file() expects values to be initilized do must
 !    call ecmwf_wind_init().
+! 2016/01/27, GM: Check and trim filename length for grib_open_file().
 !
 ! $Id$
 !
@@ -47,8 +48,16 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    integer                         :: PVPresent,PLPresent,level
    integer                         :: npv,nk,nlevels
    real, allocatable               :: pv(:)
-   character(len=path_length)      :: paths(2)
-   paths=(/ ecmwf2path, ecmwf3path /)
+   character(len=1024)             :: paths(2)
+
+   if (len(trim(ecmwf2path)) .gt. 1024 .or. len(trim(ecmwf3path)) .gt. 1024) then
+         write(*,*) 'ERROR: read_ecmwf_wind_badc(), Filename argument strings ' // &
+                    'ecmwf2path and ecmwf3path are too long.  They must be ' // &
+                    'limited to a length of 1024 due to a bug in grib_api.'
+         stop error_stop_code
+   end if
+
+   paths=(/ trim(ecmwf2path), trim(ecmwf3path) /)
 
    call ecmwf_wind_init(ecmwf)
 

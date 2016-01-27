@@ -22,7 +22,8 @@
 !
 ! History:
 ! 2014/05/07, AP: First version.
-! 2014/11/04, OS: added reading of skin temperature
+! 2014/11/04, OS: Added reading of skin temperature.
+! 2016/01/27, GM: Check and trim filename length for grib_open_file().
 !
 ! $Id$
 !
@@ -46,8 +47,15 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
    integer                         :: i,n,ni,nj,nk,npv,ni_,nj_
    integer                         :: param,level,nlevels
 
+   if (len(trim(ecmwf_path)) .gt. 1024) then
+         write(*,*) 'ERROR: read_ecmwf_wind_grib(), Filename argument string ' // &
+                    'ecmwf_path is too long.  It must be limited to a length of ' // &
+                    '1024 due to a bug in grib_api.'
+         stop error_stop_code
+   end if
+
    ! open file
-   call grib_open_file(fid,ecmwf_path,'r',stat)
+   call grib_open_file(fid,trim(ecmwf_path),'r',stat)
    if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error opening GRIB field.'
    call grib_new_from_file(fid,gid,stat)
    if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting GRIB_ID.'

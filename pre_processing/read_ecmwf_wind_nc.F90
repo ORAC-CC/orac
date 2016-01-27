@@ -46,6 +46,8 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
 
    call ecmwf_wind_init(ecmwf)
 
+   allocate(ecmwf%avec(61))
+   allocate(ecmwf%bvec(61))
    ecmwf%avec=[0.000000,     2.000000E+01, 3.842534E+01, 6.364780E+01, &
                9.563696E+01, 1.344833E+02, 1.805844E+02, 2.347791E+02, &
                2.984958E+02, 3.739719E+02, 4.646182E+02, 5.756511E+02, &
