@@ -40,7 +40,6 @@
 ! year           sint   in   Year of observation (4 digit)
 ! month          sint   in   Month of year (1-12)
 ! day            siny   in   Day of month (1-31)
-! rttov_ver      int    in   Flag for RTTOV version used in processing
 ! verbose        logic  in   T: print status information; F: don't
 !
 ! History:
@@ -129,7 +128,7 @@
 ! 2015/09/04, GM: Fix support for SEVIRI on MSG1, MSG3 and MSG4.
 ! 2015/10/19, GM: Add the option to use the MODIS emissivity product instead of
 !    the RTTOV emissivity atlas.
-! 2016/01/27, SP: Added support for RTTOV 11.3, default is still 11.2
+! 2016/01/27, SP: Added support for RTTOV v11.3 via the NEW_RTTOV definition
 !
 ! $Id$
 !
@@ -147,7 +146,7 @@ contains
 
 subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
      preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf,netcdf_info, &
-     channel_info,year,month,day,use_modis_emis,rttov_ver,verbose)
+     channel_info,year,month,day,use_modis_emis,verbose)
 
    use channel_structures
    use netcdf_output
@@ -204,7 +203,6 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    type(channel_info_s),           intent(in)    :: channel_info
    integer(kind=sint),             intent(in)    :: year, month, day
    logical,                        intent(in)    :: use_modis_emis
-   integer,                        intent(in)    :: rttov_ver
    logical,                        intent(in)    :: verbose
 
    ! RTTOV in/outputs
@@ -255,7 +253,10 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    if (verbose) write(*,*) 'sensor: ', trim(sensor)
    if (verbose) write(*,*) 'platform: ', trim(platform)
    if (verbose) write(*,*) 'Date: ', year, month, day
-   if (verbose) write(*,*) 'RTTOV version: ', rttov_ver
+#ifdef NEW_RTTOV
+   if (verbose) write(*,*) 'Using new RTTOV version (>11.2)'
+#endif
+
 
    ! Determine coefficient filename (vis/IR distinction made later)
    select case (trim(sensor))
@@ -408,35 +409,31 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    do jdim=preproc_dims%min_lat,preproc_dims%max_lat
       do idim=preproc_dims%min_lon,preproc_dims%max_lon
          count = count + 1
-         
+        
          ! If using RTTOV version 11.3 or greater then
          ! set gas units to 1, specifying gas input in kg/kg
          ! (2 = ppmv moist air, 1 = kg/kg, 0 = old method, -1 = ppmv dry air)
-         if (rttov_ver>112) then
-              profiles(count)%gas_units = 1
-         endif
+#ifdef NEW_RTTOV
+         profiles(count)%gas_units = 1
+#endif
 
          ! Profile information
          profiles(count)%p(:nlayers) = preproc_prtm%pressure(idim,jdim,:) * &
               pa2hpa ! convert from Pa to hPa
          profiles(count)%t(:nlayers) = preproc_prtm%temperature(idim,jdim,:)
-         
-         ! If RTTOV is new version (>=11.3) then don't convert q and o3
-         ! Otherwise, convet as before using:
          ! convert from kg/kg to ppmv by multiplying with dry air molecule
          ! weight(28.9644)/molcule weight of gas (e.g. o3  47.9982)*1.0E6
-         if (rttov_ver>112) then
-              profiles(count)%q(:nlayers) = &
-                   preproc_prtm%spec_hum(idim,jdim,:)
-              profiles(count)%o3(:nlayers) = &
-                   preproc_prtm%ozone(idim,jdim,:)
-         else
-              profiles(count)%q(:nlayers) = &
-                   preproc_prtm%spec_hum(idim,jdim,:) * q_mixratio_to_ppmv
-              profiles(count)%o3(:nlayers) = &
-                   preproc_prtm%ozone(idim,jdim,:) * o3_mixratio_to_ppmv
-         endif
-
+#ifdef NEW_RTTOV
+         profiles(count)%q(:nlayers) = &
+              preproc_prtm%spec_hum(idim,jdim,:)
+         profiles(count)%o3(:nlayers) = &
+              preproc_prtm%ozone(idim,jdim,:)
+#else
+         profiles(count)%q(:nlayers) = &
+              preproc_prtm%spec_hum(idim,jdim,:) * q_mixratio_to_ppmv
+         profiles(count)%o3(:nlayers) = &
+              preproc_prtm%ozone(idim,jdim,:) * o3_mixratio_to_ppmv
+#endif
          ! Surface information
          profiles(count)%s2m%p = exp(preproc_prtm%lnsp(idim,jdim)) * pa2hpa
          profiles(count)%s2m%t = preproc_prtm%temp2(idim,jdim)

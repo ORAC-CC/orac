@@ -238,7 +238,6 @@
 ! 2015/12/17, OS: ECMWF (de)allocation routines and SR to linearly combine ERA
 !    data now use flag indicating whether high or low resolution data are used.
 !    High res data do not contain same variables as low res.
-! 2016/01/27, SP: Added support for RTTOV 11.3, default is still 11.2
 !
 ! $Id$
 !
@@ -310,7 +309,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=cmd_arg_length)    :: cassume_full_paths
    character(len=cmd_arg_length)    :: cinclude_full_brdf
    character(len=cmd_arg_length)    :: cdummy_arg
-   integer                          :: rttov_ver
 
    type(global_attributes_s)        :: global_atts
    type(source_attributes_s)        :: source_atts
@@ -414,8 +412,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ecmwf_path(2)  = ''
    ecmwf_path2(2) = ''
    ecmwf_path3(2) = ''
-   ! Default to 'old' rttov treatment
-   rttov_ver      = 112
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -477,7 +473,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call clean_driver_label(label)
          call parse_optional(label, value, n_channels, channel_ids, &
             ecmwf_time_int_method, use_modis_emis_in_rttov, ecmwf_path(2), &
-            ecmwf_path2(2), ecmwf_path3(2),rttov_ver)
+            ecmwf_path2(2), ecmwf_path3(2))
       end do
    else
 
@@ -543,7 +539,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
         call clean_driver_label(label)
         call parse_optional(label, value, n_channels, channel_ids, &
            ecmwf_time_int_method, use_modis_emis_in_rttov, ecmwf_path(2), &
-           ecmwf_path2(2), ecmwf_path3(2),rttov_ver)
+           ecmwf_path2(2), ecmwf_path3(2))
       end do
 
       close(11)
@@ -964,7 +960,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call rttov_driver(rttov_coef_path,rttov_emiss_path,sensor,platform, &
            preproc_dims,preproc_geoloc,preproc_geo,preproc_prtm,preproc_surf, &
            netcdf_info,channel_info,year,month,day,use_modis_emis_in_rttov, &
-           rttov_ver,verbose)
+           verbose)
 
 #ifdef WRAPPER
 

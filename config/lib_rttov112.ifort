@@ -1,0 +1,72 @@
+# Base directory for all libraries and include files
+LIBBASE=/home/proud/Desktop/ORAC/Libraries
+
+# Set path to HDF-EOS library. Should be compiled with the same version of the HDF4
+# library specified above (HDFLIB)
+EOSLIB=$(LIBBASE)/hdfeos/lib
+EOSINCLUDE=$(LIBBASE)/hdfeos/include
+
+# Setup EPR_API library
+EPR_APILIB=$(LIBBASE)/epr_api/lib
+EPR_APIINCLUDE=$(LIBBASE)/epr_api/include
+
+# Setup GRIB API library and JASPER
+GRIBLIB=$(LIBBASE)/grib/lib
+GRIBINCLUDE=$(LIBBASE)/grib/include
+
+# Set path to hdf library and include directory. hdf4 has to be compiled with
+# netcdf support turned OFF! otherwise you run into problems when using netcdf
+# explicitly s.b.
+HDFLIB=$(LIBBASE)/hdf4/lib
+HDFINCLUDE=$(LIBBASE)/hdf4/include
+
+HDF5LIB=$(LIBBASE)/hdf5/lib
+HDF5INCLUDE=$(LIBBASE)/hdf5/include
+
+# Set path to netcdf library and include directory.
+NCDFLIB=$(LIBBASE)/ncdf4/lib
+NCDFINCLUDE=$(LIBBASE)/ncdf4/include
+NCDF_FORTRAN_LIB=$(LIBBASE)/ncdff/lib
+NCDF_FORTRAN_INCLUDE=$(LIBBASE)/ncdff/include
+
+# Setup RTTOV library
+RTTOVLIB=$(LIBBASE)/rttov11/lib
+RTTOVINCLUDE=$(LIBBASE)/rttov11/include
+RTTOVMODULE=$(LIBBASE)/rttov11/mod
+
+SZLIB=$(LIBBASE)/szip/lib
+ZLIB=$(LIBBASE)/zlib/lib
+ZINC=$(LIBBASE)/zlib/include
+
+JPEGLIB=$(LIBBASE)/jpeg/lib
+JPEGINC=$(LIBBASE)/jpeg/include
+
+# Setup seviri_native_util.
+SEVIRI_NATIVE_UTIL_LIB=$(LIBBASE)/seviri_native_util
+SEVIRI_NATIVE_UTIL_INCLUDE=$(LIBBASE)/seviri_native_util
+
+EMOSLIB=$(LIBBASE)/emos/lib
+
+# Set up libraries and includes
+LIBS=-L$(NCDFLIB) -lnetcdf -L$(NCDF_FORTRAN_LIB) -lnetcdff \
+     -L$(RTTOVLIB) -lrttov11.2.0_main -lrttov11.2.0_coef_io \
+                   -lrttov11.2.0_emis_atlas \
+     -L$(HDFLIB) -lmfhdf -ldf \
+     -L$(JPEGLIB) -ljpeg  \
+     -L$(HDF5LIB) -lhdf5 -lhdf5_fortran -lhdf5hl_fortran \
+     -L$(GRIBLIB) -lgrib_api_f77 -lgrib_api_f90 -lgrib_api \
+     -L$(EPR_APILIB) -lepr_api \
+     -L$(ZLIB) -lz \
+     -L$(SZLIB) -lsz \
+     -L$(EOSLIB) -lhdfeos -lGctp \
+     -L$(EMOSLIB) -lemosR64 \
+     -L$(SEVIRI_NATIVE_UTIL_LIB) -lseviri_native_util
+
+INC=-I./ -I$(NCDFINCLUDE) -I$(NCDF_FORTRAN_INCLUDE) \
+          -I$(ZINC) -I$(JPEGINC) \
+         -I$(RTTOVINCLUDE) -I$(RTTOVMODULE) \
+         -I$(HDFINCLUDE) -I$(HDF5INCLUDE) \
+         -I$(GRIBINCLUDE) \
+         -I$(SEVIRI_NATIVE_UTIL_INCLUDE) -DINCLUDE_SEVIRI_SUPPORT
+
+CINC=-I./ -I$(EPR_APIINCLUDE)
