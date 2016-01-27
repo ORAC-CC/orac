@@ -32,6 +32,7 @@
 !    fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
 !    to identify thermal channels rather than dealing with Ch_Is.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -154,6 +155,12 @@ if (output_flags%do_cloud) then
    allocate(output_data%vid_cloud_albedo_error(Ny))
    output_data%vid_cloud_albedo_error=0
 
+   allocate(output_data%vid_cee(Ny))
+   output_data%vid_cee=0
+   allocate(output_data%vid_cee_error(Ny))
+   output_data%vid_cee_error=0
+
+
    allocate(output_data%cot(ixstart:ixstop,iystart:iystop))
    output_data%cot=sint_fill_value
    allocate(output_data%cot_error(ixstart:ixstop,iystart:iystop))
@@ -179,7 +186,6 @@ if (output_flags%do_cloud) then
    allocate(output_data%stemp_error(ixstart:ixstop,iystart:iystop))
    output_data%stemp_error=sint_fill_value
 
-
    allocate(output_data%ctt(ixstart:ixstop,iystart:iystop))
    output_data%ctt=sint_fill_value
    allocate(output_data%ctt_error(ixstart:ixstop,iystart:iystop))
@@ -200,27 +206,28 @@ if (output_flags%do_cloud) then
    allocate(output_data%cwp_error(ixstart:ixstop,iystart:iystop))
    output_data%cwp_error=sint_fill_value
 
-
    allocate(output_data%cloud_albedo(ixstart:ixstop,iystart:iystop,Ny))
    output_data%cloud_albedo=sint_fill_value
    allocate(output_data%cloud_albedo_error(ixstart:ixstop,iystart:iystop,Ny))
    output_data%cloud_albedo_error=sint_fill_value
 
+   allocate(output_data%cee(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%cee=sint_fill_value
+   allocate(output_data%cee_error(ixstart:ixstop,iystart:iystop,Ny))
+   output_data%cee_error=sint_fill_value
+
    allocate(output_data%cccot_pre(ixstart:ixstop,iystart:iystop))
    output_data%cccot_pre=sint_fill_value
 end if
 
-
    allocate(output_data%time(ixstart:ixstop,iystart:iystop))
    output_data%time=sreal_fill_value
-
 
    allocate(output_data%lat(ixstart:ixstop,iystart:iystop))
    output_data%lat=sreal_fill_value
 
    allocate(output_data%lon(ixstart:ixstop,iystart:iystop))
    output_data%lon=sreal_fill_value
-
 
    allocate(output_data%sol_zen(ixstart:ixstop,iystart:iystop,NViews))
    output_data%sol_zen=sreal_fill_value
@@ -230,7 +237,6 @@ end if
 
    allocate(output_data%rel_azi(ixstart:ixstop,iystart:iystop,NViews))
    output_data%rel_azi=sreal_fill_value
-
 
    allocate(output_data%convergence(ixstart:ixstop,iystart:iystop))
    output_data%convergence=byte_fill_value
@@ -247,7 +253,6 @@ end if
    allocate(output_data%qcflag(ixstart:ixstop,iystart:iystop))
    output_data%qcflag=sint_fill_value
 
-
    allocate(output_data%lsflag(ixstart:ixstop,iystart:iystop))
    output_data%lsflag=byte_fill_value
 
@@ -260,16 +265,15 @@ end if
    allocate(output_data%nisemask(ixstart:ixstop,iystart:iystop))
    output_data%nisemask=byte_fill_value
 
-
    allocate(output_data%illum(ixstart:ixstop,iystart:iystop))
    output_data%illum=byte_fill_value
-
 
    allocate(output_data%cldtype(ixstart:ixstop,iystart:iystop))
    output_data%cldtype=byte_fill_value
 
    allocate(output_data%cldmask(ixstart:ixstop,iystart:iystop))
    output_data%cldmask=byte_fill_value
+
 if (output_flags%do_cldmask_uncertainty) then
    allocate(output_data%cldmask_uncertainty(ixstart:ixstop,iystart:iystop))
    output_data%cldmask_uncertainty=sint_fill_value
@@ -447,12 +451,10 @@ end if
    allocate(output_data%residuals(ixstart:ixstop,iystart:iystop,Ny))
    output_data%residuals=sint_fill_value
 
-
    allocate(output_data%scanline_u(ixstart:ixstop,iystart:iystop))
    output_data%scanline_u=lint_fill_value
    allocate(output_data%scanline_v(ixstart:ixstop,iystart:iystop))
    output_data%scanline_v=lint_fill_value
-
 
    allocate(output_data%ds(ixstart:ixstop,iystart:iystop))
    output_data%ds=sint_fill_value

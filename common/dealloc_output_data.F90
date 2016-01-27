@@ -26,6 +26,7 @@
 ! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -95,6 +96,9 @@ end if
 if (output_flags%do_cloud) then
    deallocate(output_data%vid_cloud_albedo)
    deallocate(output_data%vid_cloud_albedo_error)
+   deallocate(output_data%vid_cee)
+   deallocate(output_data%vid_cee_error)
+
    deallocate(output_data%cot)
    deallocate(output_data%cot_error)
    deallocate(output_data%cer)
@@ -118,9 +122,11 @@ if (output_flags%do_cloud) then
    deallocate(output_data%cloud_albedo)
    deallocate(output_data%cloud_albedo_error)
 
+   deallocate(output_data%cee)
+   deallocate(output_data%cee_error)
+
    deallocate(output_data%cccot_pre)
 end if
-
 
    deallocate(output_data%time)
 
@@ -130,7 +136,6 @@ end if
    deallocate(output_data%sol_zen)
    deallocate(output_data%sat_zen)
    deallocate(output_data%rel_azi)
-
 
    deallocate(output_data%convergence)
    deallocate(output_data%niter)

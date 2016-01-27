@@ -43,6 +43,7 @@
 ! 2016/01/05, AP: The cloud albedo field name is now properly subscripted with
 !    YSolar, rather than just counting up Y_Id.
 ! 2016/01/06, AP: Add do_cldmask checks from output_flags structure.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -51,7 +52,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
-   output_data, NViews, NSolar, YSolar, Y_Id, output_flags)
+   output_data, NViews, NSolar, NThermal, YSolar, YThermal, Y_Id, output_flags)
 
    use orac_ncdf
 
@@ -65,7 +66,9 @@ subroutine write_output_primary(ncid, ixstart, ixstop, iystart, iystop, &
    type(output_data_primary), intent(inout) :: output_data
    integer,                   intent(in)    :: NViews
    integer,                   intent(in)    :: NSolar
+   integer,                   intent(in)    :: NThermal
    integer,                   intent(in)    :: YSolar(:)
+   integer,                   intent(in)    :: YThermal(:)
    integer,                   intent(in)    :: Y_Id(:)
    type(output_data_flags),   intent(in)    :: output_flags
 
@@ -226,6 +229,22 @@ if (output_flags%do_cloud) then
               1,1,n_x,1,1,n_y)
    end do
 
+   do i=1,NThermal
+      write(input_num,"(i4)") Y_Id(YThermal(i))
+
+      input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
+      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+              output_data%vid_cee(i),&
+              output_data%cee(ixstart:,iystart:,i), &
+              1,1,n_x,1,1,n_y)
+
+      input_dummy='cee_in_channel_uncertainty_no_'//trim(adjustl(input_num))
+      call nc_write_array(ncid,trim(adjustl(input_dummy)), &
+              output_data%vid_cee_error(i),&
+              output_data%cee_error(ixstart:,iystart:,i), &
+              1,1,n_x,1,1,n_y)
+   end do
+
    call nc_write_array(ncid,'cccot_pre',output_data%vid_cccot_pre,&
            output_data%cccot_pre(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 end if
@@ -272,6 +291,7 @@ if (output_flags%do_cldmask) then
               output_data%cldmask(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    end if
 end if
+
 if (output_flags%do_cldmask_uncertainty) then
    call nc_write_array(ncid,'cldmask_uncertainty',output_data%vid_cldmask_uncertainty,&
            output_data%cldmask_uncertainty(ixstart:,iystart:),1,1,n_x,1,1,n_y)

@@ -32,6 +32,7 @@
 ! 2015/07/16, GM: Major cleanup.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -104,6 +105,11 @@ subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
    input_data%cloud_albedo=sreal_fill_value
    allocate(input_data%cloud_albedo_uncertainty(xdim1km,ydim1km,indexing%NSolar))
    input_data%cloud_albedo_uncertainty=sreal_fill_value
+
+   allocate(input_data%cee(xdim1km,ydim1km,indexing%NThermal))
+   input_data%cee=sreal_fill_value
+   allocate(input_data%cee_uncertainty(xdim1km,ydim1km,indexing%NThermal))
+   input_data%cee_uncertainty=sreal_fill_value
 
    allocate(input_data%convergence(xdim1km,ydim1km))
    input_data%convergence=byte_fill_value

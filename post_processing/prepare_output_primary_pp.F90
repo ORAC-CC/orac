@@ -32,6 +32,7 @@
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/11/17, OS: Including switched types when estimating phase.
 ! 2015/11/27, CP: Added additional cloud type prob clear
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -343,6 +344,25 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
            output_data%cloud_albedo_error_scale, output_data%cloud_albedo_error_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%cloud_albedo_error_vmin, output_data%cloud_albedo_error_vmax, &
+           sint_fill_value)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! cee
+   !----------------------------------------------------------------------------
+   do k=1,indexing%NThermal
+      call prepare_short_packed_float( &
+           input_data%cee(i,j,k), output_data%cee(i,j,k), &
+           output_data%cee_scale, output_data%cee_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cee_vmin, output_data%cee_vmax, &
+           sint_fill_value)
+
+      call prepare_short_packed_float( &
+           input_data%cee_uncertainty(i,j,k), output_data%cee_error(i,j,k), &
+           output_data%cee_error_scale, output_data%cee_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cee_error_vmin, output_data%cee_error_vmax, &
            sint_fill_value)
    end do
 

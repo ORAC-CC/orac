@@ -29,6 +29,7 @@
 !    common library.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -53,7 +54,7 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    type(global_attributes_s), intent(in)    :: global_atts
    logical,                   intent(in)    :: verbose
 
-   integer            :: i
+   integer            :: i, ii
    integer            :: ierr
    integer            :: varid
    character(len=32)  :: input_num
@@ -86,15 +87,33 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    call nc_read_packed_array(ncid, "cwp", input_data%cwp, verbose)
    call nc_read_packed_array(ncid, "cwp_uncertainty", input_data%cwp_uncertainty, verbose)
 
-   do i=1,indexing%NSolar
+   ii = 1
+   do i=1,indexing%Ny
       if (btest(indexing%Ch_Is(i), SolarBit)) then
          write(input_num,"(i4)") indexing%Y_Id(i)
          input_dummy='cloud_albedo_in_channel_no_'//trim(adjustl(input_num))
-         call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo(:,:,i), verbose)
+         call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo(:,:,ii), verbose)
 
          write(input_num,"(i4)") indexing%Y_Id(i)
          input_dummy='cloud_albedo_uncertainty_in_channel_no_'//trim(adjustl(input_num))
-         call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo_uncertainty(:,:,i), verbose)
+         call nc_read_packed_array(ncid, input_dummy, input_data%cloud_albedo_uncertainty(:,:,ii), verbose)
+
+         ii = ii + 1
+      end if
+   end do
+
+   ii = 1
+   do i=1,indexing%Ny
+      if (btest(indexing%Ch_Is(i), ThermalBit)) then
+         write(input_num,"(i4)") indexing%Y_Id(i)
+         input_dummy='cee_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, input_dummy, input_data%cee(:,:,ii), verbose)
+
+         write(input_num,"(i4)") indexing%Y_Id(i)
+         input_dummy='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+         call nc_read_packed_array(ncid, input_dummy, input_data%cee_uncertainty(:,:,ii), verbose)
+
+         ii = ii + 1
       end if
    end do
 

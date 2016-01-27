@@ -631,8 +631,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    call build_qc_flag_masks(Ctrl, qc_flag_masks)
    call build_qc_flag_meanings(Ctrl, qc_flag_meanings)
    call def_output_primary(ncid_primary, dims_var, output_data_1, &
-        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
-        Ctrl%Ind%YSolar,  Ctrl%Ind%Y_Id,  rho_terms, &
+        Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, Ctrl%Ind%NThermal, &
+        Ctrl%Ind%YSolar, Ctrl%Ind%YThermal, Ctrl%Ind%Y_Id,  rho_terms, &
         qc_flag_masks, qc_flag_meanings, deflate_level, shuffle_flag, &
         .false., output_flags)
    call def_output_secondary(ncid_secondary, dims_var, output_data_2, &
@@ -642,8 +642,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    ! Write output from spixel_scan_out structures NetCDF files
    call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%YSolar, &
-        Ctrl%Ind%Y_Id, output_flags)
+        output_data_1, Ctrl%Ind%NViews, Ctrl%Ind%NSolar, Ctrl%Ind%NThermal, &
+        Ctrl%Ind%YSolar, Ctrl%Ind%YThermal, Ctrl%Ind%Y_Id, output_flags)
    call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
         iystop, output_data_2, Ctrl%Ind%NViews, Ctrl%Ind%Ny, Ctrl%Ind%NSolar, &
         Ctrl%Nx(IDay), Ctrl%Ind%Y_Id, output_flags)

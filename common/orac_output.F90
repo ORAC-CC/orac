@@ -30,6 +30,7 @@
 !    routines. Have all albedo fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -67,6 +68,7 @@ module orac_output
       integer                       :: vid_ctt, vid_ctt_error
       integer                       :: vid_cwp, vid_cwp_error
       integer,dimension(:), pointer :: vid_cloud_albedo, vid_cloud_albedo_error
+      integer,dimension(:), pointer :: vid_cee, vid_cee_error
 
       integer                       :: vid_convergence
       integer                       :: vid_niter
@@ -252,15 +254,23 @@ module orac_output
       integer(kind=sint)            :: cwp_error_vmin   = 0
       integer(kind=sint)            :: cwp_error_vmax   = 32000
 
-      real(kind=sreal)              :: cloud_albedo_scale  = 0.0001
-      real(kind=sreal)              :: cloud_albedo_offset = 0.0
-      integer(kind=sint)            :: cloud_albedo_vmin   = 0
-      integer(kind=sint)            :: cloud_albedo_vmax   = 11000
-
+      real(kind=sreal)              :: cloud_albedo_scale        = 0.0001
+      real(kind=sreal)              :: cloud_albedo_offset       = 0.0
+      integer(kind=sint)            :: cloud_albedo_vmin         = 0
+      integer(kind=sint)            :: cloud_albedo_vmax         = 11000
       real(kind=sreal)              :: cloud_albedo_error_scale  = 0.0001
       real(kind=sreal)              :: cloud_albedo_error_offset = 0.0
       integer(kind=sint)            :: cloud_albedo_error_vmin   = 0
       integer(kind=sint)            :: cloud_albedo_error_vmax   = 11000
+
+      real(kind=sreal)              :: cee_scale        = 0.0001
+      real(kind=sreal)              :: cee_offset       = 0.0
+      integer(kind=sint)            :: cee_vmin         = 0
+      integer(kind=sint)            :: cee_vmax         = 11000
+      real(kind=sreal)              :: cee_error_scale  = 0.0001
+      real(kind=sreal)              :: cee_error_offset = 0.0
+      integer(kind=sint)            :: cee_error_vmin   = 0
+      integer(kind=sint)            :: cee_error_vmax   = 11000
 
       integer(kind=byte)            :: convergence_scale  = 1
       integer(kind=byte)            :: convergence_offset = 0
@@ -402,6 +412,9 @@ module orac_output
 
       integer(kind=sint), dimension(:,:,:),   pointer :: cloud_albedo
       integer(kind=sint), dimension(:,:,:),   pointer :: cloud_albedo_error
+
+      integer(kind=sint), dimension(:,:,:),   pointer :: cee
+      integer(kind=sint), dimension(:,:,:),   pointer :: cee_error
 
       integer(kind=byte), dimension(:,:),     pointer :: convergence
       integer(kind=byte), dimension(:,:),     pointer :: niter

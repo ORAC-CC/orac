@@ -71,6 +71,7 @@
 !    routines for fields that could be BTs or reflectances.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -79,8 +80,8 @@
 !-------------------------------------------------------------------------------
 
 subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
-   Ny, NSolar, YSolar, Y_Id, rho_terms, qc_flag_masks, qc_flag_meanings, &
-   deflate_level, shuffle_flag, verbose, output_flags)
+   Ny, NSolar, NThermal, YSolar, YThermal, Y_Id, rho_terms, qc_flag_masks, &
+   qc_flag_meanings, deflate_level, shuffle_flag, verbose, output_flags)
 
    use netcdf
    use orac_ncdf
@@ -93,7 +94,9 @@ subroutine def_output_primary(ncid, dims_var, output_data, NViews, &
    integer,                   intent(in)    :: NViews
    integer,                   intent(in)    :: Ny
    integer,                   intent(in)    :: NSolar
+   integer,                   intent(in)    :: NThermal
    integer,                   intent(in)    :: YSolar(:)
+   integer,                   intent(in)    :: YThermal(:)
    integer,                   intent(in)    :: Y_Id(:)
    logical,                   intent(in)    :: rho_terms(:,:)
    character(len=*),          intent(in)    :: qc_flag_masks
@@ -1032,7 +1035,6 @@ if (output_flags%do_cloud) then
            shuffle       = shuffle_flag)
    end do
 
-
    !----------------------------------------------------------------------------
    ! cloud_albedo_uncertainty_in_channel_no_*
    !----------------------------------------------------------------------------
@@ -1056,6 +1058,62 @@ if (output_flags%do_cloud) then
            add_offset    = output_data%cloud_albedo_error_offset, &
            valid_min     = output_data%cloud_albedo_error_vmin, &
            valid_max     = output_data%cloud_albedo_error_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! cee_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NThermal
+
+      write(input_num,"(i4)") Y_Id(YThermal(i))
+
+      input_dummy='cee in channel no '//trim(adjustl(input_num))
+      input_dummy2='cee_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_cee(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = 'cee', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cee_scale, &
+           add_offset    = output_data%cee_offset, &
+           valid_min     = output_data%cee_vmin, &
+           valid_max     = output_data%cee_vmax, &
+           units         = '1', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! cee_uncertainty_in_channel_no_*
+   !----------------------------------------------------------------------------
+   do i=1,NThermal
+
+      write(input_num,"(i4)") Y_Id(YThermal(i))
+
+      input_dummy='cee_uncertainty in channel no '//trim(adjustl(input_num))
+      input_dummy2='cee_uncertainty_in_channel_no_'//trim(adjustl(input_num))
+
+      call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           trim(adjustl(input_dummy2)), &
+           output_data%vid_cee_error(i), &
+           verbose, &
+           long_name     = trim(adjustl(input_dummy)), &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%cee_error_scale, &
+           add_offset    = output_data%cee_error_offset, &
+           valid_min     = output_data%cee_error_vmin, &
+           valid_max     = output_data%cee_error_vmax, &
            units         = '1', &
            deflate_level = deflate_level, &
            shuffle       = shuffle_flag)

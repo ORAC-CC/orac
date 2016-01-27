@@ -6,6 +6,8 @@
 ! History:
 ! 2015/09/14, GM: Original version
 ! 2015/09/26, GM: Add init_class_specific_inputs().
+! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -63,6 +65,9 @@ subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
 
    primary%cloud_albedo(i,j,:)             = sreal_fill_value
    primary%cloud_albedo_uncertainty(i,j,:) = sreal_fill_value
+
+   primary%cee(i,j,:)                      = sreal_fill_value
+   primary%cee_uncertainty(i,j,:)          = sreal_fill_value
 
    primary%convergence(i,j)                = byte_fill_value
 
@@ -144,6 +149,9 @@ subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
 
    primary2%cloud_albedo(i,j,:)             = primary1%cloud_albedo(i,j,:)
    primary2%cloud_albedo_uncertainty(i,j,:) = primary1%cloud_albedo_uncertainty(i,j,:)
+
+   primary2%cee(i,j,:)                      = primary1%cee(i,j,:)
+   primary2%cee_uncertainty(i,j,:)          = primary1%cee_uncertainty(i,j,:)
 
    primary2%convergence(i,j)                = primary1%convergence(i,j)
 

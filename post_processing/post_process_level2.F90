@@ -298,6 +298,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    indexing%NThermal = 0
 
    allocate(indexing%YSolar(MaxNumMeas))
+   allocate(indexing%YThermal(MaxNumMeas))
    allocate(indexing%Y_Id(MaxNumMeas))
    allocate(indexing%Ch_Is(MaxNumMeas))
    allocate(is_thermal(MaxNumMeas))
@@ -323,6 +324,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          if (nf90_inq_varid(ncid_secondary,varname,varid) .eq. NF90_NOERR) then
               indexing%Ny = indexing%Ny + 1
               indexing%NThermal = indexing%NThermal + 1
+              indexing%YThermal(indexing%NThermal) = indexing%Ny
               indexing%Y_Id(indexing%Ny) = i
               indexing%Ch_Is(indexing%Ny) = &
                  ibset(indexing%Ch_Is(indexing%Ny), ThermalBit)
@@ -485,6 +487,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
    end do
 
+
    ! Hardwire outputs until different input file types supported
    output_flags%do_cloud               = .true.
    output_flags%do_aerosol             = .false.
@@ -522,8 +525,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       shuffle_flag2  = .false.
    end if
    call def_output_primary(ncid_primary, dims_var, output_primary, &
-        indexing%NViews, indexing%Ny, indexing%NSolar, &
-        indexing%YSolar, indexing%Y_Id, rho_terms, &
+        indexing%NViews, indexing%Ny, indexing%NSolar, indexing%NThermal, &
+        indexing%YSolar, indexing%YThermal, indexing%Y_Id, rho_terms, &
         input_primary(1)%qc_flag_masks, input_primary(1)%qc_flag_meanings, &
         deflate_level2, shuffle_flag2, verbose, output_flags)
    if (do_secondary) then
@@ -553,8 +556,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    ! write output to netcdf variables
    call write_output_primary(ncid_primary, ixstart, ixstop, iystart, iystop, &
-        output_primary, indexing%NViews, indexing%NSolar, indexing%YSolar, &
-        indexing%Y_Id, output_flags)
+        output_primary, indexing%NViews, indexing%NSolar, indexing%NThermal, &
+        indexing%YSolar, indexing%YThermal, indexing%Y_Id, output_flags)
    if (do_secondary) then
       call write_output_secondary(ncid_secondary, ixstart, ixstop, iystart, &
            iystop, output_secondary, indexing%NViews, indexing%Ny, &
@@ -574,7 +577,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
       end if
    end if
 
-
    ! deallocate output structure
    call dealloc_output_data_primary(output_primary, output_flags)
    if (do_secondary) then
@@ -583,6 +585,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
 
    deallocate(indexing%YSolar)
+   deallocate(indexing%YThermal)
    deallocate(indexing%Y_Id)
    deallocate(indexing%Ch_Is)
    deallocate(is_thermal)

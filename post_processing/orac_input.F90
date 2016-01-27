@@ -24,6 +24,7 @@
 ! 2015/07/16, GM: Major cleanup and add associated routines to module.
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2016/01/27, GM: Add cee and cee_uncertainty.
 !
 ! $Id$
 !
@@ -44,6 +45,7 @@ module orac_input
       integer          :: NSolar
       integer          :: NThermal
       integer, pointer :: YSolar(:)
+      integer, pointer :: YThermal(:)
       integer, pointer :: Y_Id(:)
       integer, pointer :: Ch_Is(:)
       integer          :: Nx
@@ -68,6 +70,7 @@ module orac_input
       real(kind=sreal),    dimension(:,:),   pointer :: ctt, ctt_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cwp, cwp_uncertainty
       real(kind=sreal),    dimension(:,:,:), pointer :: cloud_albedo, cloud_albedo_uncertainty
+      real(kind=sreal),    dimension(:,:,:), pointer :: cee, cee_uncertainty
 
       integer(kind=byte),  dimension(:,:),   pointer :: convergence
       integer(kind=byte),  dimension(:,:),   pointer :: niter

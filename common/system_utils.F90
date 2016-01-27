@@ -64,8 +64,8 @@ function match_file(dir_name, file_pattern, file_name) result(status)
    status = 0
 
    if (system_utils_match_file(trim(dir_name)//C_NULL_CHAR, &
-                                  trim(file_pattern)//C_NULL_CHAR, &
-                                  file_name, len(file_name)) .le. 0) then
+                               trim(file_pattern)//C_NULL_CHAR, &
+                               file_name, len(file_name)) .le. 0) then
       status = 1
       return
    end if
