@@ -103,8 +103,14 @@
 ! 2015/08/08, CP: Added in ATSR-2 capability
 ! 2015/11/17, OS: Added prob_opaque_ice_type to CldIce types to process
 ! 2015/11/18, GM: Add setting of Ctrl%Ind%Y_Id_legacy.
-! 2015/11/27, CP: modified setting so clear pixiels are processed when not cloud only
-! 2015/12/17, OS: MaxSolZen decreased from 80. to 75. to remove low quality microphysical retrievals.
+! 2015/11/27, CP: Modified setting so clear pixels are processed when not cloud
+!    only.
+! 2015/12/17, OS: MaxSolZen decreased from 80. to 75. to remove low quality
+!    microphysical retrievals.
+! 2016/01/27, GM: Pass through the driver file twice.  Once for mandatory and
+!    code path controlling arguments.  Then a second time for optional arguments
+!    dependent on the path controlling arguments since they control default
+!    values. 
 !
 ! $Id$
 !
@@ -345,19 +351,30 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
    Ctrl%FID%BkP          = trim(outname)//'.bkp'
 
-   ! Selection of retrieval approach currently optional
-
+   ! Read code path controlling options from the driver file.
    Ctrl%Approach = -1
 
-   if (parse_driver(dri_lun, line, label) == 0) then
+   Ctrl%do_CTH_correction = .true.
+
+   do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
-      if (label == 'CTRL%APPROACH') then
+      select case (label)
+      case('CTRL%APPROACH')
          if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
-      else
-         ! Undo read so optional lines still work
-         backspace dri_lun
-      end if
-   end if
+      case('CTRL%DO_CTH_CORRECTION')
+         if (parse_string(line, Ctrl%do_CTH_correction)/= 0) call h_p_e(label)
+      case default
+         cycle
+      end select
+   end do
+
+   ! Done with first pass through driver file.  Move file position to the end of
+   ! the mandatory arguments which is the beginning of the optional arguments.
+   rewind dri_lun
+   do i = 1, 8
+      read(dri_lun, *)
+   end do
+
    if (Ctrl%Approach == -1) then
       ! Approach not set, so deduce from LUTClass
       if (Ctrl%LUTClass(1:3) == 'WAT') then
@@ -785,9 +802,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    end if
 
 
-   Ctrl%do_CTH_correction = .true.
-
-
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
    !----------------------------------------------------------------------------
@@ -970,8 +984,10 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       case('CTRL%XJ_NI')
          if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
-      case('CTRL%DO_CTH_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTH_correction)/= 0) call h_p_e(label)
+      case('CTRL%APPROACH', &
+           'CTRL%DO_CTH_CORRECTION')
+         cycle ! These arguments have already been parsed in the first pass
+               ! through the driver file.
       case default
          write(*,*) 'ERROR: ReadDriver(): Unknown option: ',trim(label)
          stop error_stop_code
