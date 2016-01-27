@@ -23,6 +23,7 @@
 ! History:
 ! 2015/15/14, MC: Initial development
 ! 2015/21/14, MC: Committed to repository
+! 2015/27/14, MC: Fixed bug in longitude range for swaths acros the international dateline.
 !
 ! $Id$
 !
@@ -93,7 +94,7 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
 !---------------------------------------------------------------------
 
    call cpu_time(start)
-
+   print*,ydim
    !Method 1 (~12 mins) (construct index based on each satellite row)
    do iY=11,ydim-11 !loop over each scanline
 !    do iY=13499,13501 !loop over each scanline
@@ -101,7 +102,10 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
     !longitude minimum & maximum over across scan pixels
     lonmin=minval(cLon(:,iY-10:iY+10))
     lonmax=maxval(cLon(:,iY-10:iY+10))
-     !international dateline fix
+    Wrap=0
+    !international dateline fix
+    if(abs(lonmin) .gt. 175. .or. abs(lonmax) .gt. 175.) Wrap=1
+      
 
     !latitude min&max over across scan pixels
     latmin=minval(cLat(:,iY-10:iY+10))
@@ -112,35 +116,55 @@ subroutine collocate_aerosol2cloud(anum,aLon,aLat,xdim,ydim,cLon,cLat,aID)
     tID(:)=-1 !set temporary index to -1
     tct=1
     do k=1,anum
-      if(aLat(k) .ge. latmin-0.15 .and. aLat(k) .le. latmax+0.15 .and. aLon(k) .ge. lonmin-0.15 .and. aLon(k) .le. lonmax+0.15) then
+      if(Wrap .eq. 0) then
+       if(aLat(k) .ge. latmin-0.15 .and. aLat(k) .le. latmax+0.15 .and. aLon(k) .ge. lonmin-0.15 .and. aLon(k) .le. lonmax+0.15) then
         tID(tct) = k
         tct=tct+1
+       endif
       endif
+
+      !international dateline
+      if(Wrap .eq. 1) then
+       if( (aLat(k) .ge. latmin-0.15 .and. aLat(k) .le. latmax+0.15) .and. (aLon(k) .lt. -175. .or. aLon(k) .gt. 175.) ) then
+        tID(tct) = k
+        tct=tct+1
+       endif
+      endif
+
     enddo
+    !print*,iY,': 2'
     if(tct .gt. 1) then
 
      !loop over each scan pixel
       do iX=1,xdim
         act2=1
-        do k=1,tct !loop over each aerosol within known range (from above)
-        !compute distance between points
-        call haversine(cLat(iX,iY),cLon(iX,iY),aLat(tID(k)),aLon(tID(k)),d)
+        !print*,iY,iX,': 3',tct
 
-        !select pairs within 15 km of each other
-        if(d .le. 15.) then
-          aID2(act2) = tID(k)
-          aDist2(act2) = d
-          act2=act2+1
-        endif !within 15 km
-        !select nearest neighbor
-        if(act2 .gt. 1) then
-          aID3 = aID2(minloc(aDist2(1:act2-1)))
-          aDist3 = aDist2(minloc(aDist2(1:act2-1)))
-          aID(iX,iY) = aID3(1)
-          aDist(iX,iY) = aDist3(1)
-        endif
+        do k=1,tct-1 !loop over each aerosol within known range (from above)
+         !if(iY .eq. 1491) print*,iY,iX,': 4',k,cLat(iX,iY),cLon(iX,iY)!,aLat(tID(k)),aLon(tID(k))
+         !compute distance between points
+         call haversine(cLat(iX,iY),cLon(iX,iY),aLat(tID(k)),aLon(tID(k)),d)
+         !if(iY .eq. 1491) print*,iY,iX,': 5',k,d,act2
+
+         !select pairs within 15 km of each other
+         if(d .le. 15.) then
+           aID2(act2) = tID(k)
+           aDist2(act2) = d
+           act2=act2+1
+         endif !within 15 km
+         !if(iY .eq. 1491) print*,iY,iX,': 6',k,d,act2
+
+         !select nearest neighbor
+         if(act2 .gt. 1) then
+           aID3 = aID2(minloc(aDist2(1:act2-1)))
+           aDist3 = aDist2(minloc(aDist2(1:act2-1)))
+           aID(iX,iY) = aID3(1)
+           aDist(iX,iY) = aDist3(1)
+         endif
+         !if(iY .eq. 1491) print*,iY,iX,': 7',k,d,act2
 
         enddo !loop over aerosol in geographic range
+       !print*,iY,': 8'
 
       enddo !x-loop over across track pixels
     endif !range  
