@@ -25,6 +25,7 @@
 ! 2015/07/03, OS: added error status variable to nc_open call
 ! 2015/07/10, OS: undo previous commit
 ! 2015/11/17, OS: added reading of snow_depth and sea_ice_cover data
+! 2016/01/29, GM: Add ecmwf_wind_init() and use it in read_ecmwf_wind_nc().
 !
 ! $Id$
 !
@@ -43,12 +44,8 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    character(len=path_length), intent(in)    :: ecmwf3path
    type(ecmwf_s),              intent(inout) :: ecmwf
 
-   ! initialise
-   ecmwf%xdim=0
-   ecmwf%ydim=0
-   ecmwf%kdim=0
-   allocate(ecmwf%avec(61))
-   allocate(ecmwf%bvec(61))
+   call ecmwf_wind_init(ecmwf)
+
    ecmwf%avec=[0.000000,     2.000000E+01, 3.842534E+01, 6.364780E+01, &
                9.563696E+01, 1.344833E+02, 1.805844E+02, 2.347791E+02, &
                2.984958E+02, 3.739719E+02, 4.646182E+02, 5.756511E+02, &
@@ -81,6 +78,42 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
                0.9078839,     0.9319403,     0.9518215,     0.9676452,     &
                0.9796627,     0.9882701,     0.9940194,     0.9976301,     &
                1.0000000 ]
+
+   ! loop over given files (order not necessarily known)
+   call read_ecmwf_wind_file(ecmwf_path,ecmwf)
+   call read_ecmwf_wind_file(ecmwf2path,ecmwf)
+   call read_ecmwf_wind_file(ecmwf3path,ecmwf)
+
+end subroutine read_ecmwf_wind_nc
+
+!-------------------------------------------------------------------------------
+! Name: ecmwf_wind_init
+!
+! Purpose:
+!
+! Description and Algorithm details:
+!
+! Arguments:
+! Name       Type   In/Out/Both Description
+! ------------------------------------------------------------------------------
+!
+! History:
+! 2016/01/27, GM: Original version.
+!
+! Bugs:
+! None known.
+!-------------------------------------------------------------------------------
+
+subroutine ecmwf_wind_init(ecmwf)
+
+   implicit none
+
+   type(ecmwf_s), intent(out) :: ecmwf
+
+   ecmwf%xdim=0
+   ecmwf%ydim=0
+   ecmwf%kdim=0
+
    nullify(ecmwf%lon)
    nullify(ecmwf%lat)
    nullify(ecmwf%u10)
@@ -89,12 +122,7 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    nullify(ecmwf%snow_depth)
    nullify(ecmwf%sea_ice_cover)
 
-   ! loop over given files (order not necessarily known)
-   call read_ecmwf_wind_file(ecmwf_path,ecmwf)
-   call read_ecmwf_wind_file(ecmwf2path,ecmwf)
-   call read_ecmwf_wind_file(ecmwf3path,ecmwf)
-
-end subroutine read_ecmwf_wind_nc
+end subroutine ecmwf_wind_init
 
 !-------------------------------------------------------------------------------
 ! Name: read_ecmwf_wind_file

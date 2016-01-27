@@ -23,6 +23,8 @@
 !
 ! History:
 ! 2014/05/07, AP: First version.
+! 2016/01/29, GM: read_ecmwf_wind_file() expects values to be initilized do must
+!    call ecmwf_wind_init().
 !
 ! $Id$
 !
@@ -47,6 +49,8 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    real, allocatable               :: pv(:)
    character(len=path_length)      :: paths(2)
    paths=(/ ecmwf2path, ecmwf3path /)
+
+   call ecmwf_wind_init(ecmwf)
 
    ! ggas NCDF file, giving U10,V10,lat,lon
    call read_ecmwf_wind_file(ecmwf_path,ecmwf)

@@ -409,14 +409,13 @@ subroutine rttov_driver(coef_path,emiss_path,sensor,platform,preproc_dims, &
    do jdim=preproc_dims%min_lat,preproc_dims%max_lat
       do idim=preproc_dims%min_lon,preproc_dims%max_lon
          count = count + 1
-        
+
          ! If using RTTOV version 11.3 or greater then
          ! set gas units to 1, specifying gas input in kg/kg
          ! (2 = ppmv moist air, 1 = kg/kg, 0 = old method, -1 = ppmv dry air)
 #ifdef NEW_RTTOV
          profiles(count)%gas_units = 1
 #endif
-
          ! Profile information
          profiles(count)%p(:nlayers) = preproc_prtm%pressure(idim,jdim,:) * &
               pa2hpa ! convert from Pa to hPa
