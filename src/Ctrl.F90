@@ -283,6 +283,7 @@ module CTRL_def
                                                    ! sensitive channels to use
                                                    ! in an order of decreasing
                                                    ! priority.
+      logical                :: do_new_night_retrieval
       logical                :: do_CTH_correction
 
       ! State vector selection methods (see Selm variables in ECP_constants)

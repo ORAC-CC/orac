@@ -35,6 +35,7 @@
 ! 2015/05/25, GM: Got rid of flags Diagl and removed obvious comments.
 ! 2015/07/28, AP: Removed status argument.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
+! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
 !
 ! $Id$
 !
@@ -68,6 +69,8 @@ subroutine Zero_Diag(Ctrl, Diag)
    Diag%AK             = MissingXn
    Diag%cloud_albedo   = sreal_fill_value
    Diag%cloud_albedo_s = sreal_fill_value
+   Diag%cloud_emissivity   = sreal_fill_value
+   Diag%cloud_emissivity_s = sreal_fill_value
    Diag%diffuse_frac   = sreal_fill_value
    Diag%diffuse_frac_s = sreal_fill_value
 

@@ -130,7 +130,7 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
 
    call Int_LUT_TauSatSolAziRe(SAD_LUT%Rbd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:, IRBd), dCRPOut(:,IRBd,:), &
-           iRBd, chan_to_ctrl_index, Ind%YSolar, status)
+           IRBd, chan_to_ctrl_index, Ind%YSolar, status)
 
    call Int_LUT_TauRe(SAD_LUT%Rfd, Ind%NSolar, &
            SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRFd), dCRPOut(:,IRFd,:), &
@@ -180,11 +180,11 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
       Ind%SolarFirst,Ind%SolarLast
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR1(j,iTFd)), &
-         SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR1(j,iTFd))
+         SAD_LUT%TFd(j, GZero%iT0(j,ITFd), GZero%iR1(j,ITFd)), &
+         SAD_LUT%TFd(j, GZero%iT1(j,ITFd), GZero%iR1(j,ITFd))
       write(*,*)' Function values at bot corners', &
-         SAD_LUT%TFd(j, GZero%iT0(j,iTFd), GZero%iR0(j,iTFd)), &
-         SAD_LUT%TFd(j, GZero%iT1(j,iTFd), GZero%iR0(j,iTFd))
+         SAD_LUT%TFd(j, GZero%iT0(j,ITFd), GZero%iR0(j,ITFd)), &
+         SAD_LUT%TFd(j, GZero%iT1(j,ITFd), GZero%iR0(j,ITFd))
 
       write(*,*)' Interpolated value ',CRPOut(j,ITFd)
       write(*,*)' Gradient values    ',(dCRPOut(j,ITFd,i),i=1,2)
@@ -195,18 +195,18 @@ subroutine Set_CRP_Solar(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    do j=Ind%SolarFirst, Ind%SolarLast
       write(*,*) 'channels',j,Ind%SolarFirst, Ind%SolarLast
       write(*,*)' Function values at top corners', &
-         SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR1(j,iRFd)), &
-         SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR1(j,iRFd))
+         SAD_LUT%RFd(j, GZero%iT0(j,IRFd), GZero%iR1(j,IRFd)), &
+         SAD_LUT%RFd(j, GZero%iT1(j,IRFd), GZero%iR1(j,IRFd))
       write(*,*)' Function values at bot corners', &
-        SAD_LUT%RFd(j, GZero%iT0(j,iRFd), GZero%iR0(j,iRFd)), &
-        SAD_LUT%RFd(j, GZero%iT1(j,iRFd), GZero%iR0(j,iRFd))
+        SAD_LUT%RFd(j, GZero%iT0(j,IRFd), GZero%iR0(j,IRFd)), &
+        SAD_LUT%RFd(j, GZero%iT1(j,IRFd), GZero%iR0(j,IRFd))
 
       write(*,*)' Interpolated value ',CRPOut(j,IRFd)
       write(*,*)' Gradient values    ',(dCRPOut(j,IRFd,i),i=1,2)
-      write(*,*) 'Indices of corners', GZero%iT0(j,iRFd), GZero%iT1(j,iRFd), &
-         GZero%iR0(j,iRFd), GZero%iR1(j,iRFd)
-      write(*,*) 'ranges of indices',SAD_LUT%Grid%nTau(j,iRFd), &
-         SAD_LUT%Grid%nre(j,iRFd)
+      write(*,*) 'Indices of corners', GZero%iT0(j,IRFd), GZero%iT1(j,IRFd), &
+         GZero%iR0(j,IRFd), GZero%iR1(j,IRFd)
+      write(*,*) 'ranges of indices',SAD_LUT%Grid%nTau(j,IRFd), &
+         SAD_LUT%Grid%nre(j,IRFd)
       write(*,*)
    end do
 #endif

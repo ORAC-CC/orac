@@ -16,6 +16,7 @@
 ! 2015/07/31, AP: Rejig QCFlag for much longer state vector.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
+! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
 !
 ! $Id$
 !
@@ -69,6 +70,10 @@ module Diag_def
                                     ! Cloud albedo
       real          :: cloud_albedo_s(MaxNumSolar)
                                     ! Cloud albedo variance
+      real          :: cloud_emissivity(MaxNumThermal)
+                                    ! Cloud emissivity
+      real          :: cloud_emissivity_s(MaxNumThermal)
+                                    ! Cloud emissivity variance
       real          :: diffuse_frac(MaxNumSolar)
                                     ! Diffuse fraction of radiance
       real          :: diffuse_frac_s(MaxNumSolar)

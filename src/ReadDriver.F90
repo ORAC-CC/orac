@@ -110,12 +110,13 @@
 ! 2016/01/27, GM: Pass through the driver file twice.  Once for mandatory and
 !    code path controlling arguments.  Then a second time for optional arguments
 !    dependent on the path controlling arguments since they control default
-!    values. 
+!    values.
+! 2016/01/27, GM: Changes for the new night cloud retrieval.
 !
 ! $Id$
 !
 ! Bugs:
-! NViews should be changed for dual view
+! None known.
 !
 ! IMPORTANT NOTE:
 ! If a new type of LUT i.e aerosol is added then new default values will have
@@ -354,13 +355,16 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    ! Read code path controlling options from the driver file.
    Ctrl%Approach = -1
 
-   Ctrl%do_CTH_correction = .true.
+   Ctrl%do_new_night_retrieval = .true.
+   Ctrl%do_CTH_correction  = .true.
 
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
       select case (label)
       case('CTRL%APPROACH')
          if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
+      case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
+         if (parse_string(line, Ctrl%do_new_night_retrieval)/= 0) call h_p_e(label)
       case('CTRL%DO_CTH_CORRECTION')
          if (parse_string(line, Ctrl%do_CTH_correction)/= 0) call h_p_e(label)
       case default
@@ -788,17 +792,35 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
 
       ! In twilight or night, retrieve cloud top pressure and surface
       ! temperature. Include white sky albedo in Jacobian.
-      Nx_Tw   = 2
-      X_Tw(1) = IPc
-      X_Tw(2) = ITs
-      NXJ_Tw  = NXJ_Dy
-      XJ_Tw   = XJ_Dy
+      if (.not. Ctrl%do_new_night_retrieval) then
+         Nx_Tw   = 2
+         X_Tw(1) = IPc
+         X_Tw(2) = ITs
+         NXJ_Tw  = NXJ_Dy
+         XJ_Tw   = XJ_Dy
 
-      Nx_Ni   = 2
-      X_Ni(1) = IPc
-      X_Ni(2) = ITs
-      NXJ_Ni  = NXJ_Dy
-      XJ_Ni   = XJ_Dy
+         Nx_Ni   = 2
+         X_Ni(1) = IPc
+         X_Ni(2) = ITs
+         NXJ_Ni  = NXJ_Dy
+         XJ_Ni   = XJ_Dy
+      else
+         Nx_Tw    = 4
+         X_Tw(1)  = ITau
+         X_Tw(2)  = IRe
+         X_Tw(3)  = IPc
+         X_Tw(4)  = ITs
+         NXJ_Tw  = NXJ_Dy
+         XJ_Tw   = XJ_Dy
+
+         Nx_Ni    = 4
+         X_Ni(1)  = ITau
+         X_Ni(2)  = IRe
+         X_Ni(3)  = IPc
+         X_Ni(4)  = ITs
+         NXJ_Ni  = NXJ_Dy
+         XJ_Ni   = XJ_Dy
+      end if
    end if
 
 
@@ -985,6 +1007,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_user_text(line, XJ_NI, NXJ_NI, solar_ids) &
                                                        /= 0) call h_p_e(label)
       case('CTRL%APPROACH', &
+           'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
            'CTRL%DO_CTH_CORRECTION')
          cycle ! These arguments have already been parsed in the first pass
                ! through the driver file.

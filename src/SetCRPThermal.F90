@@ -35,7 +35,7 @@
 !
 ! History:
 ! 2001/01/16, AS: original version
-! 2001/01/23, AS:  "Zero'th point" calculation moved out of this routine into a
+! 2001/01/23, AS: "Zero'th point" calculation moved out of this routine into a
 !    separate subroutine called before this one (info is common to both
 !    SetCRPSolar and Thermal). New argument GZero passed in, Tau, Re, Geom
 !    arguments no longer required as a result.
@@ -102,15 +102,15 @@ subroutine Set_CRP_Thermal(Ctrl, Ind, chan_to_ctrl_index, GZero, SAD_LUT, &
    ! Td, Rd and Em are interpolated in Tau, SatZen and Re over a range of
    ! channels from First to NY.
    call Int_LUT_TauSatRe(SAD_LUT%Rd, Ind%NThermal, &
-           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:), iRd, &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IRd), dCRPOut(:,IRd,:), IRd, &
            chan_to_ctrl_index, Ind%YThermal, status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Td, Ind%NThermal, &
-           SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:),  iTd, &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,ITd), dCRPOut(:,ITd,:), ITd, &
            chan_to_ctrl_index, Ind%YThermal, status)
 
    call Int_LUT_TauSatRe(SAD_LUT%Em, Ind%NThermal, &
-           SAD_LUT%Grid, GZero,Ctrl, CRPOut(:,IEm), dCRPOut(:,IEm,:), iEm, &
+           SAD_LUT%Grid, GZero, Ctrl, CRPOut(:,IEm), dCRPOut(:,IEm,:), IEm, &
            chan_to_ctrl_index, Ind%YThermal, status)
 
 end subroutine Set_CRP_Thermal

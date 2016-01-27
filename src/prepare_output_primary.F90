@@ -59,6 +59,7 @@
 !    10.0 was being used instead of g_wmo (gravitational acceleration).
 ! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
+! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
 !
 ! $Id$
 !
@@ -593,6 +594,33 @@ if (output_flags%do_cloud) then
            output_data%cloud_albedo_error_scale, output_data%cloud_albedo_error_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%cloud_albedo_error_vmin, output_data%cloud_albedo_error_vmax, &
+           sint_fill_value)
+   end do
+
+   !----------------------------------------------------------------------------
+   ! cee, cee_error
+   !----------------------------------------------------------------------------
+   do k=1,SPixel%Ind%NThermal
+      kk = SPixel%spixel_y_thermal_to_ctrl_y_thermal_index(k)
+
+      temp_real=Diag%cloud_emissivity(k)
+      call prepare_short_packed_float( &
+           temp_real, output_data%cee(i,j,kk), &
+           output_data%cee_scale, output_data%cee_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cee_vmin, output_data%cee_vmax, &
+           sint_fill_value)
+
+      if (Diag%cloud_emissivity_s(k) .eq. sreal_fill_value) then
+         temp_real = sreal_fill_value
+      else
+         temp_real = sqrt(Diag%cloud_emissivity_s(k))
+      end if
+      call prepare_short_packed_float( &
+           temp_real, output_data%cee_error(i,j,kk), &
+           output_data%cee_error_scale, output_data%cee_error_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%cee_error_vmin, output_data%cee_error_vmax, &
            sint_fill_value)
    end do
 

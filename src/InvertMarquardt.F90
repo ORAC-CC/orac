@@ -172,6 +172,8 @@
 ! 2015/11/18, GM: Add call to Calc_Corrected_CTX().
 ! 2016/01/05, AP: The convergence test should re-evaluate dJ_dX when failed.
 ! 2016/01/07, AP: Add output of diffuse fraction of illumination and AOT870.
+! 2016/01/27, GM: Compute ecc and ecc uncertainty.
+! 2016/01/27, GM: Compute corrected CTH for both day and night.
 !
 ! $Id$
 !
@@ -269,8 +271,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
                                   ! Array temporary for Diag%St
    real, dimension(SPixel%Ind%NSolar)    :: CRP, T_00, T_0d, T_all
    real, dimension(SPixel%Ind%NSolar, 2) :: d_CRP, d_T_00, d_T_0d
-   type(GZero_t) :: GZero
+   real    :: a
+   real    :: CRP_thermal(SPixel%Ind%NThermal)
+   real    :: d_CRP_thermal(SPixel%Ind%NThermal, 2)
    real    :: temp(SPixel%Ind%NSolar,SPixel%Ind%NSolar)
+   real    :: temp_thermal(SPixel%Ind%NThermal,SPixel%Ind%NThermal)
+   type(GZero_t) :: GZero
 
 #ifdef BKP
    integer :: bkp_lun             ! Unit number for breakpoint file
@@ -724,9 +730,39 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       Diag%cloud_albedo = 0
    end if
 
+   ! Evaluate cloud effective emissivity
+   if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
+        SPixel%Ind%NThermal > 0) then
+      call Allocate_GZero(GZero, SPixel)
+
+!     a = SPixel%Geom%Satzen(1)
+!     SPixel%Geom%Satzen(1) = 0.
+      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
+         GZero, stat)
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
+!     SPixel%Geom%Satzen(1) = a
+
+      call Int_LUT_TauSatRe(SAD_LUT%Em, SPixel%Ind%NThermal, SAD_LUT%Grid, &
+         GZero, Ctrl, CRP_thermal, d_CRP_thermal, IEm, &
+         SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, stat)
+      if (stat /= 0) go to 99 ! Terminate processing this pixel
+
+      Diag%cloud_emissivity(1:SPixel%Ind%NThermal) = CRP_thermal
+
+      temp_thermal = matmul(matmul(d_CRP_thermal, SPixel%Sn((/ITau,IRe/), &
+                            (/ITau,IRe/))), transpose(d_CRP_thermal))
+      do m = 1, SPixel%Ind%NThermal
+         Diag%cloud_emissivity_s(m) = temp_thermal(m, m)
+      end do
+
+      call Deallocate_GZero(GZero)
+   else
+      Diag%cloud_emissivity = 0
+   end if
+
    ! Evaluate corrected CTH
    if (Ctrl%do_CTH_correction .and. &
-       all(SPixel%illum .eq. IDay) .and. SPixel%Ind%NSolar > 0) then
+       (Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce)) then
       call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    else
       SPixel%CTH_corrected       = MissingXn
