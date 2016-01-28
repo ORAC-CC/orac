@@ -281,7 +281,7 @@ SPixel%Surface%Rs2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &
                  SPixel%Surface%Rs2(i,IRho_DV) = Ctrl%RS%B(i,i_surf) 
                  SPixel%Surface%Rs2(i,IRho_DD) = Ctrl%RS%B(i,i_surf) 
 !               write(*, *) 'WARNING: Get_Surface(): Invalid/Missing surface property set to default ' // &
-                    'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
+!                    'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 
 !              SPixel%Surface%Rs2(i,:) = Rs(ii,i_surf)
 !               status = SPixelSurfglint
