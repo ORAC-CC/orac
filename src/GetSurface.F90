@@ -125,10 +125,12 @@
 !    As aerosol preprocessing does not calculate Rho_DV, remove check for its
 !    validity. Add check for missing values in auxiliary uncertainties.
 ! 2015/01/07, AP: solar_factor didn't consider multiple views.
+! 2016/01/16, CP: added in default values for suface if missing in climatology
 !
 ! $Id$
 !
 ! Bugs:
+! may want to remove default surface values if running in Aerosol mode.
 ! SelmCtrl only sets IRho_DD.
 ! SRs2 is only set for IRho_DD as it isn't clear where uncertainty estimates for
 !    the other terms would come from.
@@ -243,10 +245,18 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
 
          ! Check for invalid values
          if (SPixel%Surface%Rs(i) < RhoMin .or. SPixel%Surface%Rs(i) > RhoMax) then
-#ifdef DEBUG
+
             write(*, *) 'WARNING: Get_Surface(): Invalid surface property ' // &
                  'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
-#endif
+SPixel%Surface%Rs2(i,IRho_0V) = MSI_Data%rho_0v(SPixel%Loc%X0, &
+                                            SPixel%Loc%Y0, ii) / solar_factor
+            SPixel%Surface%Rs2(i,IRho_0D) = MSI_Data%rho_0d(SPixel%Loc%X0, &
+                                            SPixel%Loc%Y0, ii) / solar_factor
+            SPixel%Surface%Rs2(i,IRho_DV) = MSI_Data%rho_dv(SPixel%Loc%X0, &
+                                            SPixel%Loc%Y0, ii) / solar_factor
+            SPixel%Surface%Rs2(i,IRho_DD) = MSI_Data%rho_dd(SPixel%Loc%X0, &
+                                            SPixel%Loc%Y0, ii) / solar_factor
+
 !           SPixel%Surface%Rs(i) = Rs(ii,i_surf)
             status = SPixelSurfglint
             return
@@ -264,12 +274,17 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                  SPixel%Surface%Rs2(i,IRho_0D) > RhoMax .or. &
 !                SPixel%Surface%Rs2(i,IRho_DV) > RhoMax .or. &
                  SPixel%Surface%Rs2(i,IRho_DD) > RhoMax) then
-#ifdef DEBUG
-               write(*, *) 'WARNING: Get_Surface(): Invalid surface property ' // &
+
+!
+	         SPixel%Surface%Rs2(i,IRho_0V) = Ctrl%RS%B(i,i_surf) 
+                 SPixel%Surface%Rs2(i,IRho_0D) = Ctrl%RS%B(i,i_surf) 
+                 SPixel%Surface%Rs2(i,IRho_DV) = Ctrl%RS%B(i,i_surf) 
+                 SPixel%Surface%Rs2(i,IRho_DD) = Ctrl%RS%B(i,i_surf) 
+!               write(*, *) 'WARNING: Get_Surface(): Invalid/Missing surface property set to default ' // &
                     'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
-#endif
+
 !              SPixel%Surface%Rs2(i,:) = Rs(ii,i_surf)
-               status = SPixelSurfglint
+!               status = SPixelSurfglint
                return
             end if
          end if
