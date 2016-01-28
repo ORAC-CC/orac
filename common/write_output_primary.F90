@@ -44,6 +44,7 @@
 !    YSolar, rather than just counting up Y_Id.
 ! 2016/01/06, AP: Add do_cldmask checks from output_flags structure.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -183,6 +184,11 @@ if (output_flags%do_cloud) then
    call nc_write_array(ncid,'ctp_uncertainty',output_data%vid_ctp_error,&
            output_data%ctp_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
+   call nc_write_array(ncid,'ctp_corrected',output_data%vid_ctp_corrected,&
+           output_data%ctp_corrected(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'ctp_corrected_uncertainty',output_data%vid_ctp_corrected_error,&
+           output_data%ctp_corrected_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
    call nc_write_array(ncid,'cc_total',output_data%vid_cct,&
            output_data%cct(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'cc_total_uncertainty',output_data%vid_cct_error,&
@@ -207,6 +213,11 @@ if (output_flags%do_cloud) then
            output_data%ctt(ixstart:,iystart:),1,1,n_x,1,1,n_y)
    call nc_write_array(ncid,'ctt_uncertainty',output_data%vid_ctt_error,&
            output_data%ctt_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+   call nc_write_array(ncid,'ctt_corrected',output_data%vid_ctt_corrected,&
+           output_data%ctt_corrected(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+   call nc_write_array(ncid,'ctt_corrected_uncertainty',output_data%vid_ctt_corrected_error,&
+           output_data%ctt_corrected_error(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
    call nc_write_array(ncid,'cwp',output_data%vid_cwp,&
            output_data%cwp(ixstart:,iystart:),1,1,n_x,1,1,n_y)

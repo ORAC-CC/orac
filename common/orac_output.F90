@@ -31,6 +31,7 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -61,11 +62,13 @@ module orac_output
       integer                       :: vid_cot, vid_cot_error
       integer                       :: vid_cer, vid_cer_error
       integer                       :: vid_ctp, vid_ctp_error
+      integer                       :: vid_ctp_corrected, vid_ctp_corrected_error
       integer                       :: vid_cct, vid_cct_error
       integer                       :: vid_stemp, vid_stemp_error
       integer                       :: vid_cth, vid_cth_error
       integer                       :: vid_cth_corrected, vid_cth_corrected_error
       integer                       :: vid_ctt, vid_ctt_error
+      integer                       :: vid_ctt_corrected, vid_ctt_corrected_error
       integer                       :: vid_cwp, vid_cwp_error
       integer,dimension(:), pointer :: vid_cloud_albedo, vid_cloud_albedo_error
       integer,dimension(:), pointer :: vid_cee, vid_cee_error
@@ -392,20 +395,26 @@ module orac_output
       integer(kind=sint), dimension(:,:),     pointer :: ctp
       integer(kind=sint), dimension(:,:),     pointer :: ctp_error
 
+      integer(kind=sint), dimension(:,:),     pointer :: ctp_corrected
+      integer(kind=sint), dimension(:,:),     pointer :: ctp_corrected_error
+
       integer(kind=sint), dimension(:,:),     pointer :: cct
       integer(kind=sint), dimension(:,:),     pointer :: cct_error
 
       integer(kind=sint), dimension(:,:),     pointer :: stemp
       integer(kind=sint), dimension(:,:),     pointer :: stemp_error
 
-      integer(kind=sint), dimension(:,:),     pointer :: ctt
-      integer(kind=sint), dimension(:,:),     pointer :: ctt_error
-
       integer(kind=sint), dimension(:,:),     pointer :: cth
       integer(kind=sint), dimension(:,:),     pointer :: cth_error
 
       integer(kind=sint), dimension(:,:),     pointer :: cth_corrected
       integer(kind=sint), dimension(:,:),     pointer :: cth_corrected_error
+
+      integer(kind=sint), dimension(:,:),     pointer :: ctt
+      integer(kind=sint), dimension(:,:),     pointer :: ctt_error
+
+      integer(kind=sint), dimension(:,:),     pointer :: ctt_corrected
+      integer(kind=sint), dimension(:,:),     pointer :: ctt_corrected_error
 
       integer(kind=sint), dimension(:,:),     pointer :: cwp
       integer(kind=sint), dimension(:,:),     pointer :: cwp_error

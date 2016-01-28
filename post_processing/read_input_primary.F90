@@ -30,6 +30,7 @@
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -69,6 +70,9 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    call nc_read_packed_array(ncid, "ctp", input_data%ctp, verbose)
    call nc_read_packed_array(ncid, "ctp_uncertainty", input_data%ctp_uncertainty, verbose)
 
+   call nc_read_packed_array(ncid, "ctp_corrected", input_data%ctp_corrected, verbose)
+   call nc_read_packed_array(ncid, "ctp_corrected_uncertainty", input_data%ctp_corrected_uncertainty, verbose)
+
    call nc_read_packed_array(ncid, "cc_total", input_data%cc_total, verbose)
    call nc_read_packed_array(ncid, "cc_total_uncertainty", input_data%cc_total_uncertainty, verbose)
 
@@ -83,6 +87,9 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
 
    call nc_read_packed_array(ncid, "ctt", input_data%ctt, verbose)
    call nc_read_packed_array(ncid, "ctt_uncertainty", input_data%ctt_uncertainty, verbose)
+
+   call nc_read_packed_array(ncid, "ctt_corrected", input_data%ctt_corrected, verbose)
+   call nc_read_packed_array(ncid, "ctt_corrected_uncertainty", input_data%ctt_corrected_uncertainty, verbose)
 
    call nc_read_packed_array(ncid, "cwp", input_data%cwp, verbose)
    call nc_read_packed_array(ncid, "cwp_uncertainty", input_data%cwp_uncertainty, verbose)

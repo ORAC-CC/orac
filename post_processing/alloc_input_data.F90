@@ -33,6 +33,7 @@
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -66,6 +67,11 @@ subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
    allocate(input_data%ctp_uncertainty(xdim1km,ydim1km))
    input_data%ctp_uncertainty=sreal_fill_value
 
+   allocate(input_data%ctp_corrected(xdim1km,ydim1km))
+   input_data%ctp_corrected=sreal_fill_value
+   allocate(input_data%ctp_corrected_uncertainty(xdim1km,ydim1km))
+   input_data%ctp_corrected_uncertainty=sreal_fill_value
+
    allocate(input_data%cct(xdim1km,ydim1km))
    input_data%cct=sreal_fill_value
    allocate(input_data%cct_uncertainty(xdim1km,ydim1km))
@@ -95,6 +101,11 @@ subroutine alloc_input_data_primary_common(input_data,xdim1km,ydim1km,indexing)
    input_data%ctt=sreal_fill_value
    allocate(input_data%ctt_uncertainty(xdim1km,ydim1km))
    input_data%ctt_uncertainty=sreal_fill_value
+
+   allocate(input_data%ctt_corrected(xdim1km,ydim1km))
+   input_data%ctt_corrected=sreal_fill_value
+   allocate(input_data%ctt_corrected_uncertainty(xdim1km,ydim1km))
+   input_data%ctt_corrected_uncertainty=sreal_fill_value
 
    allocate(input_data%cwp(xdim1km,ydim1km))
    input_data%cwp=sreal_fill_value

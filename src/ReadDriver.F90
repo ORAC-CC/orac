@@ -356,7 +356,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%Approach = -1
 
    Ctrl%do_new_night_retrieval = .true.
-   Ctrl%do_CTH_correction  = .true.
+   Ctrl%do_CTX_correction      = .true.
 
    do while (parse_driver(dri_lun, line, label) == 0)
       call clean_driver_label(label)
@@ -365,8 +365,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
       case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
          if (parse_string(line, Ctrl%do_new_night_retrieval)/= 0) call h_p_e(label)
-      case('CTRL%DO_CTH_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTH_correction)/= 0) call h_p_e(label)
+      case('CTRL%DO_CTX_CORRECTION')
+         if (parse_string(line, Ctrl%do_CTX_correction)/= 0) call h_p_e(label)
       case default
          cycle
       end select
@@ -1008,7 +1008,7 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
                                                        /= 0) call h_p_e(label)
       case('CTRL%APPROACH', &
            'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
-           'CTRL%DO_CTH_CORRECTION')
+           'CTRL%DO_CTX_CORRECTION')
          cycle ! These arguments have already been parsed in the first pass
                ! through the driver file.
       case default

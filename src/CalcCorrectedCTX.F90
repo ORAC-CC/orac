@@ -12,6 +12,7 @@
 ! History:
 ! 2015/11/18, GM: Original version.
 ! 2015/12/15, GM: Some cleanup.  Make use of find_in_array().
+! 2016/01/28, GM: Output ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -121,11 +122,17 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    type(GZero_t) :: GZero
 
    ! Set the corrected CTH to the retrieved CTH by default
+   SPixel%CTP_corrected = SPixel%Xn(IPc)
    SPixel%CTH_corrected = RTM_Pc%Hc
+   SPixel%CTT_corrected = RTM_Pc%Tc
    if (SPixel%Sn(IPc,IPc) .eq. MissingSn) then
+      SPixel%CTP_corrected_error = MissingSn
       SPixel%CTH_corrected_error = MissingSn
+      SPixel%CTT_corrected_error = MissingSn
    else
-      SPixel%CTH_corrected_error = abs(RTM_Pc%dHc_dPc) * sqrt(SPixel%Sn(IPc,IPc))
+      SPixel%CTP_corrected_error = sqrt(SPixel%Sn(IPc,IPc))
+      SPixel%CTH_corrected_error = abs(RTM_Pc%dHc_dPc) * SPixel%CTP_corrected_error
+      SPixel%CTT_corrected_error = abs(RTM_Pc%dTc_dPc) * SPixel%CTP_corrected_error
    end if
 
    if (Ctrl%Approach .ne. CldIce) then
@@ -205,8 +212,12 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       ! It doesn't happen much but if it does lets just ignore corrections in
       ! the downward direction
       if (ctp_new - SPixel%Xn(iPc) .lt. 0) then
+         SPixel%CTP_corrected       = ctp_new
+         SPixel%CTP_corrected_error = ctp_new_sigma
          SPixel%CTH_corrected       = cth_new
          SPixel%CTH_corrected_error = cth_new_sigma
+         SPixel%CTT_corrected       = ctt_new
+         SPixel%CTT_corrected_error = ctt_new_sigma
       end if
    end if
 

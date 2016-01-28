@@ -25,6 +25,7 @@
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -62,12 +63,14 @@ module orac_input
       real(kind=sreal),    dimension(:,:),   pointer :: cot, cot_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cer, cer_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: ctp, ctp_uncertainty
+      real(kind=sreal),    dimension(:,:),   pointer :: ctp_corrected, ctp_corrected_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cct, cct_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cc_total, cc_total_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: stemp, stemp_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cth, cth_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cth_corrected, cth_corrected_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: ctt, ctt_uncertainty
+      real(kind=sreal),    dimension(:,:),   pointer :: ctt_corrected, ctt_corrected_uncertainty
       real(kind=sreal),    dimension(:,:),   pointer :: cwp, cwp_uncertainty
       real(kind=sreal),    dimension(:,:,:), pointer :: cloud_albedo, cloud_albedo_uncertainty
       real(kind=sreal),    dimension(:,:,:), pointer :: cee, cee_uncertainty

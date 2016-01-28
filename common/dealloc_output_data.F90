@@ -27,6 +27,7 @@
 ! 2015/12/30, AP: Have all albedo fields use the same values.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -105,17 +106,21 @@ if (output_flags%do_cloud) then
    deallocate(output_data%cer_error)
    deallocate(output_data%ctp)
    deallocate(output_data%ctp_error)
+   deallocate(output_data%ctp_corrected)
+   deallocate(output_data%ctp_corrected_error)
    deallocate(output_data%cct)
    deallocate(output_data%cct_error)
    deallocate(output_data%stemp)
    deallocate(output_data%stemp_error)
 
-   deallocate(output_data%ctt)
-   deallocate(output_data%ctt_error)
    deallocate(output_data%cth)
    deallocate(output_data%cth_error)
    deallocate(output_data%cth_corrected)
    deallocate(output_data%cth_corrected_error)
+   deallocate(output_data%ctt)
+   deallocate(output_data%ctt_error)
+   deallocate(output_data%ctt_corrected)
+   deallocate(output_data%ctt_corrected_error)
    deallocate(output_data%cwp)
    deallocate(output_data%cwp_error)
 

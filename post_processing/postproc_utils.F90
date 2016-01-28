@@ -8,6 +8,7 @@
 ! 2015/09/26, GM: Add init_class_specific_inputs().
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -45,6 +46,9 @@ subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
    primary%ctp(i,j)                        = sreal_fill_value
    primary%ctp_uncertainty(i,j)            = sreal_fill_value
 
+   primary%ctp_corrected(i,j)              = sreal_fill_value
+   primary%ctp_corrected_uncertainty(i,j)  = sreal_fill_value
+
    primary%cc_total(i,j)                   = sreal_fill_value
    primary%cc_total_uncertainty(i,j)       = sreal_fill_value
 
@@ -59,6 +63,9 @@ subroutine init_class_specific_inputs(i, j, primary, secondary, do_secondary)
 
    primary%ctt(i,j)                        = sreal_fill_value
    primary%ctt_uncertainty(i,j)            = sreal_fill_value
+
+   primary%ctt_corrected(i,j)              = sreal_fill_value
+   primary%ctt_corrected_uncertainty(i,j)  = sreal_fill_value
 
    primary%cwp(i,j)                        = sreal_fill_value
    primary%cwp_uncertainty(i,j)            = sreal_fill_value
@@ -129,6 +136,9 @@ subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
    primary2%ctp(i,j)                        = primary1%ctp(i,j)
    primary2%ctp_uncertainty(i,j)            = primary1%ctp_uncertainty(i,j)
 
+   primary2%ctp_corrected(i,j)              = primary1%ctp_corrected(i,j)
+   primary2%ctp_corrected_uncertainty(i,j)  = primary1%ctp_corrected_uncertainty(i,j)
+
    primary2%cc_total(i,j)                   = primary1%cc_total(i,j)
    primary2%cc_total_uncertainty(i,j)       = primary1%cc_total_uncertainty(i,j)
 
@@ -143,6 +153,9 @@ subroutine copy_class_specific_inputs(i, j, primary2, primary1, secondary2, &
 
    primary2%ctt(i,j)                        = primary1%ctt(i,j)
    primary2%ctt_uncertainty(i,j)            = primary1%ctt_uncertainty(i,j)
+
+   primary2%ctt_corrected(i,j)              = primary1%ctt_corrected(i,j)
+   primary2%ctt_corrected_uncertainty(i,j)  = primary1%ctt_corrected_uncertainty(i,j)
 
    primary2%cwp(i,j)                        = primary1%cwp(i,j)
    primary2%cwp_uncertainty(i,j)            = primary1%cwp_uncertainty(i,j)

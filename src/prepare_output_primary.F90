@@ -60,6 +60,7 @@
 ! 2015/12/28, AP: Add output fields for aerosol retrievals.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/27, GM: Add cloud emissivity and cloud emissivity uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -398,6 +399,33 @@ if (output_flags%do_cloud) then
            output_data%ctp_error_vmax)
 
    !----------------------------------------------------------------------------
+   ! ctp_corrected, ctp_corrected_error
+   !----------------------------------------------------------------------------
+   if (SPixel%CTP_corrected .eq. MissingXn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = SPixel%CTP_corrected
+   end if
+   call prepare_short_packed_float( &
+           temp_real, output_data%ctp_corrected(i,j), &
+           output_data%ctp_scale, output_data%ctp_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ctp_vmin, output_data%ctp_vmax, &
+           output_data%ctp_vmax)
+
+   if (SPixel%CTP_corrected_error .eq. MissingSn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = SPixel%CTP_corrected_error
+   end if
+   call prepare_short_packed_float( &
+        temp_real, output_data%ctp_corrected_error(i,j), &
+        output_data%ctp_error_scale, output_data%ctp_error_offset, &
+        sreal_fill_value, sint_fill_value, &
+        output_data%ctp_error_vmin, output_data%ctp_error_vmax, &
+        output_data%ctp_error_vmax)
+
+   !----------------------------------------------------------------------------
    ! cct, cct_error
    !----------------------------------------------------------------------------
    if (SPixel%Xn(IFr) .eq. MissingXn) then
@@ -498,7 +526,6 @@ if (output_flags%do_cloud) then
            output_data%cth_vmin, output_data%cth_vmax, &
            output_data%cth_vmax)
 
-   ! If ctp_error is good compute cth_corrected_error
    if (SPixel%CTH_corrected_error .eq. MissingSn) then
       temp_real = sreal_fill_value
    else
@@ -542,6 +569,33 @@ if (output_flags%do_cloud) then
            output_data%ctt_error_vmin, output_data%ctt_error_vmax, &
            output_data%ctt_error_vmax)
    end if
+
+   !----------------------------------------------------------------------------
+   ! ctt_corrected, ctt_corrected_error
+   !----------------------------------------------------------------------------
+   if (SPixel%CTT_corrected .eq. MissingXn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = SPixel%CTT_corrected
+   end if
+   call prepare_short_packed_float( &
+           temp_real, output_data%ctt_corrected(i,j), &
+           output_data%ctt_scale, output_data%ctt_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ctt_vmin, output_data%ctt_vmax, &
+           output_data%ctt_vmax)
+
+   if (SPixel%CTT_corrected_error .eq. MissingSn) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = SPixel%CTT_corrected_error
+   end if
+   call prepare_short_packed_float( &
+        temp_real, output_data%ctt_corrected_error(i,j), &
+        output_data%ctt_error_scale, output_data%ctt_error_offset, &
+        sreal_fill_value, sint_fill_value, &
+        output_data%ctt_error_vmin, output_data%ctt_error_vmax, &
+        output_data%ctt_error_vmax)
 
    !----------------------------------------------------------------------------
    ! cwp, cwp_error

@@ -33,6 +33,7 @@
 ! 2015/11/17, OS: Including switched types when estimating phase.
 ! 2015/11/27, CP: Added additional cloud type prob clear
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -194,6 +195,33 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
            output_data%ctp_error_vmax)
 
    !----------------------------------------------------------------------------
+   ! ctp_corrected, ctp_corrected_error
+   !----------------------------------------------------------------------------
+   if (input_data%ctp_corrected(i,j) .eq. sreal_fill_value) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = input_data%ctp_corrected(i,j)
+   end if
+   call prepare_short_packed_float( &
+           temp_real, output_data%ctp_corrected(i,j), &
+           output_data%ctp_scale, output_data%ctp_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ctp_vmin, output_data%ctp_vmax, &
+           output_data%ctp_vmax)
+
+   if (input_data%ctp_corrected_uncertainty(i,j) .eq. sreal_fill_value) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = input_data%ctp_corrected_uncertainty(i,j)
+   end if
+   call prepare_short_packed_float( &
+        temp_real, output_data%ctp_corrected_error(i,j), &
+        output_data%ctp_error_scale, output_data%ctp_error_offset, &
+        sreal_fill_value, sint_fill_value, &
+        output_data%ctp_error_vmin, output_data%ctp_error_vmax, &
+        output_data%ctp_error_vmax)
+
+   !----------------------------------------------------------------------------
    ! cct, cct_error
    !----------------------------------------------------------------------------
    if (input_data%cc_total(i,j) .eq. sreal_fill_value) then
@@ -323,6 +351,33 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    end if
    call prepare_short_packed_float( &
         temp_real, output_data%ctt_error(i,j), &
+        output_data%ctt_error_scale, output_data%ctt_error_offset, &
+        sreal_fill_value, sint_fill_value, &
+        output_data%ctt_error_vmin, output_data%ctt_error_vmax, &
+        output_data%ctt_error_vmax)
+
+   !----------------------------------------------------------------------------
+   ! ctt_corrected, ctt_corrected_error
+   !----------------------------------------------------------------------------
+   if (input_data%ctt_corrected(i,j) .eq. sreal_fill_value) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = input_data%ctt_corrected(i,j)
+   end if
+   call prepare_short_packed_float( &
+           temp_real, output_data%ctt_corrected(i,j), &
+           output_data%ctt_scale, output_data%ctt_offset, &
+           sreal_fill_value, sint_fill_value, &
+           output_data%ctt_vmin, output_data%ctt_vmax, &
+           output_data%ctt_vmax)
+
+   if (input_data%ctt_corrected_uncertainty(i,j) .eq. sreal_fill_value) then
+      temp_real = sreal_fill_value
+   else
+      temp_real = input_data%ctt_corrected_uncertainty(i,j)
+   end if
+   call prepare_short_packed_float( &
+        temp_real, output_data%ctt_corrected_error(i,j), &
         output_data%ctt_error_scale, output_data%ctt_error_offset, &
         sreal_fill_value, sint_fill_value, &
         output_data%ctt_error_vmin, output_data%ctt_error_vmax, &

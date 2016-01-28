@@ -33,6 +33,7 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
 !    to identify thermal channels rather than dealing with Ch_Is.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -176,6 +177,11 @@ if (output_flags%do_cloud) then
    allocate(output_data%ctp_error(ixstart:ixstop,iystart:iystop))
    output_data%ctp_error=sint_fill_value
 
+   allocate(output_data%ctp_corrected(ixstart:ixstop,iystart:iystop))
+   output_data%ctp_corrected=sint_fill_value
+   allocate(output_data%ctp_corrected_error(ixstart:ixstop,iystart:iystop))
+   output_data%ctp_corrected_error=sint_fill_value
+
    allocate(output_data%cct(ixstart:ixstop,iystart:iystop))
    output_data%cct=sint_fill_value
    allocate(output_data%cct_error(ixstart:ixstop,iystart:iystop))
@@ -186,11 +192,6 @@ if (output_flags%do_cloud) then
    allocate(output_data%stemp_error(ixstart:ixstop,iystart:iystop))
    output_data%stemp_error=sint_fill_value
 
-   allocate(output_data%ctt(ixstart:ixstop,iystart:iystop))
-   output_data%ctt=sint_fill_value
-   allocate(output_data%ctt_error(ixstart:ixstop,iystart:iystop))
-   output_data%ctt_error=sint_fill_value
-
    allocate(output_data%cth(ixstart:ixstop,iystart:iystop))
    output_data%cth=sint_fill_value
    allocate(output_data%cth_error(ixstart:ixstop,iystart:iystop))
@@ -200,6 +201,16 @@ if (output_flags%do_cloud) then
    output_data%cth_corrected=sint_fill_value
    allocate(output_data%cth_corrected_error(ixstart:ixstop,iystart:iystop))
    output_data%cth_corrected_error=sint_fill_value
+
+   allocate(output_data%ctt(ixstart:ixstop,iystart:iystop))
+   output_data%ctt=sint_fill_value
+   allocate(output_data%ctt_error(ixstart:ixstop,iystart:iystop))
+   output_data%ctt_error=sint_fill_value
+
+   allocate(output_data%ctt_corrected(ixstart:ixstop,iystart:iystop))
+   output_data%ctt_corrected=sint_fill_value
+   allocate(output_data%ctt_corrected_error(ixstart:ixstop,iystart:iystop))
+   output_data%ctt_corrected_error=sint_fill_value
 
    allocate(output_data%cwp(ixstart:ixstop,iystart:iystop))
    output_data%cwp=sint_fill_value

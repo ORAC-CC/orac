@@ -566,8 +566,12 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
             SPixel%Sn                  = MissingSn
             SPixel%CWP                 = MissingXn
             SPixel%CWP_error           = MissingSn
+            SPixel%CTP_corrected       = MissingXn
+            SPixel%CTP_corrected_error = MissingSn
             SPixel%CTH_corrected       = MissingXn
             SPixel%CTH_corrected_error = MissingSn
+            SPixel%CTT_corrected       = MissingXn
+            SPixel%CTT_corrected_error = MissingSn
 
             ! These are not filled as they are FM related products but
             ! they are actually output so we fill them here for lack of

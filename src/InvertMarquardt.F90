@@ -760,13 +760,17 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       Diag%cloud_emissivity = 0
    end if
 
-   ! Evaluate corrected CTH
-   if (Ctrl%do_CTH_correction .and. &
+   ! Evaluate corrected CTX
+   if (Ctrl%do_CTX_correction .and. &
        (Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce)) then
       call Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
    else
+      SPixel%CTP_corrected       = MissingXn
+      SPixel%CTP_corrected_error = MissingSn
       SPixel%CTH_corrected       = MissingXn
       SPixel%CTH_corrected_error = MissingSn
+      SPixel%CTT_corrected       = MissingXn
+      SPixel%CTT_corrected_error = MissingSn
    end if
 
    ! Costs are divided by number of active instrument channels before output.

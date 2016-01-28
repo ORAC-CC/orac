@@ -284,7 +284,7 @@ module CTRL_def
                                                    ! in an order of decreasing
                                                    ! priority.
       logical                :: do_new_night_retrieval
-      logical                :: do_CTH_correction
+      logical                :: do_CTX_correction
 
       ! State vector selection methods (see Selm variables in ECP_constants)
       integer                :: Ap(MaxStateVar,MaxIllum) ! A Priori options

@@ -96,6 +96,7 @@
 ! 2015/11/18, GM: Add CTH_corrected and CTH_corrected_error (uncertainty).
 ! 2016/01/20, GM: Move fields in RTM_LW_t and RTM_SW_t that are common to both
 !    up one level into SPixel_RTM_t.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -281,8 +282,12 @@ module SPixel_def
                                           ! Error values for XnSav.
       real                :: CWP          ! Cloud water path
       real                :: CWP_error    ! Cloud water path error
+      real                :: CTP_corrected
+      real                :: CTP_corrected_error
       real                :: CTH_corrected
       real                :: CTH_corrected_error
+      real                :: CTT_corrected
+      real                :: CTT_corrected_error
       integer, pointer    :: spixel_y_to_ctrl_y_index(:)
                                           ! Map SPixel measurement index space to
                                           !     CRTL   measurement index space

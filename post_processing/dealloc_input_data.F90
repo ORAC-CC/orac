@@ -33,6 +33,7 @@
 ! 2015/09/07, GM: Add cldmask_uncertainty.
 ! 2015/10/22, GM: Add cloud albedo uncertainty.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -54,6 +55,8 @@ subroutine dealloc_input_data_primary_common(input_data)
    deallocate(input_data%cer_uncertainty)
    deallocate(input_data%ctp)
    deallocate(input_data%ctp_uncertainty)
+   deallocate(input_data%ctp_corrected)
+   deallocate(input_data%ctp_corrected_uncertainty)
    deallocate(input_data%cct)
    deallocate(input_data%cct_uncertainty)
    deallocate(input_data%cc_total)
@@ -66,6 +69,8 @@ subroutine dealloc_input_data_primary_common(input_data)
    deallocate(input_data%cth_corrected_uncertainty)
    deallocate(input_data%ctt)
    deallocate(input_data%ctt_uncertainty)
+   deallocate(input_data%ctt_corrected)
+   deallocate(input_data%ctt_corrected_uncertainty)
    deallocate(input_data%cwp)
    deallocate(input_data%cwp_uncertainty)
    deallocate(input_data%cloud_albedo)

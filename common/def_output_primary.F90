@@ -72,6 +72,7 @@
 ! 2015/01/07, AP: Make QCFlag long to accomodate longer state vectors.
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
 !
 ! $Id$
 !
@@ -768,6 +769,46 @@ if (output_flags%do_cloud) then
            shuffle       = shuffle_flag)
 
    !----------------------------------------------------------------------------
+   ! ctp_corrected
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctp_corrected', &
+           output_data%vid_ctp_corrected, &
+           verbose, &
+           long_name     = 'corrected cloud top pressure', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_scale, &
+           add_offset    = output_data%ctp_offset, &
+           valid_min     = output_data%ctp_vmin, &
+           valid_max     = output_data%ctp_vmax, &
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctp_corrected_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctp_corrected_uncertainty', &
+           output_data%vid_ctp_corrected_error, &
+           verbose, &
+           long_name     = 'corrected cloud top pressure uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctp_error_scale, &
+           add_offset    = output_data%ctp_error_offset, &
+           valid_min     = output_data%ctp_error_vmin, &
+           valid_max     = output_data%ctp_error_vmax, &
+           units         = 'hPa', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
    ! cc_total
    !----------------------------------------------------------------------------
    call nc_def_var_short_packed_float( &
@@ -957,6 +998,46 @@ if (output_flags%do_cloud) then
            output_data%vid_ctt_error, &
            verbose, &
            long_name     = 'cloud top temperature uncertainty', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctt_error_scale, &
+           add_offset    = output_data%ctt_error_offset, &
+           valid_min     = output_data%ctt_error_vmin, &
+           valid_max     = output_data%ctt_error_vmax, &
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctt_corrected
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctt_corrected', &
+           output_data%vid_ctt_corrected, &
+           verbose, &
+           long_name     = 'corrected cloud top temperature', &
+           standard_name = '', &
+           fill_value    = sint_fill_value, &
+           scale_factor  = output_data%ctt_scale, &
+           add_offset    = output_data%ctt_offset, &
+           valid_min     = output_data%ctt_vmin, &
+           valid_max     = output_data%ctt_vmax, &
+           units         = 'kelvin', &
+           deflate_level = deflate_level, &
+           shuffle       = shuffle_flag)
+
+   !----------------------------------------------------------------------------
+   ! ctt_corrected_uncertainty
+   !----------------------------------------------------------------------------
+   call nc_def_var_short_packed_float( &
+           ncid, &
+           dims_var, &
+           'ctt_corrected_uncertainty', &
+           output_data%vid_ctt_corrected_error, &
+           verbose, &
+           long_name     = 'corrected cloud top temperature uncertainty', &
            standard_name = '', &
            fill_value    = sint_fill_value, &
            scale_factor  = output_data%ctt_error_scale, &
