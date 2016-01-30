@@ -35,6 +35,9 @@
 ! 2016/01/13, MC: Added additional categories for cloud phase to regime pixel
 ! 2016/01/13, MC: Modified adiabatic model to depend on temperature and pressure for 
 !                 cloud base height calculation.
+! 2016/01/30, MC: Added separate computation of cloud water path depending on the 
+!                 cloud phase; methods taken from Stephens et al. (1978) and Liou, (1992)
+!                 - for the estimation of cloud base height.
 !
 ! $Id$
 !
@@ -81,14 +84,14 @@
        BaseID(1)       !index of cloud base height in Hprofile
 
    !local variables
-    real Hcthick,rhocld
+    real Hcthick,HcthickG,rhocld,cwp,cmt,cmp
 
    !Constants
-    real, parameter :: A=2.24E-4, ALPH = 0.79 !for adiabatic assumption
+    real, parameter :: a=-0.00665599, b=3.686, Fad = 0.79 !for adiabatic assumption
     real, parameter :: rhowat = 999.9*1000., rhoice = 934.4*1000.  !density of water & ice [g/m3]
      !*note, adiabatic assumption can be improved by using T&P data
 
-    real dw_dz
+    real dw_dzG,dw_dz
 
 !-----------------------------------------------------------------------------
 
@@ -132,17 +135,63 @@
       REDAT=cREF  !keep value same
       TAUDAT=cTAU !keep value same
       Hctop=cCTH  !keep value same
-      if(phaseFlag .eq. 1) rhocld=rhowat
-      if(phaseFlag .eq. 2) rhocld=rhoice
-      !Hcbase = cCTH - ( sqrt( ((10./9.)*(cTAU)*(cREF*1e-6)*(rhocld))/(A*ALPH)) ) / 1000. !from Meerkotter & zinner
 
-      !Cloud base height using dynamic adiabatic that depends on cloud top temperature and pressure    
-!      call adiabatic_lwc(283.,525.,dw_dz)
-!      print*,cCTT,cCTP
-      call adiabatic_lwc(cCTT,cCTP,dw_dz)
-!      print*,dw_dz
-      Hcbase = cCTH - ( sqrt( ((10./9.)*(cTAU)*(cREF*1e-6)*(rhocld))/( (dw_dz/1000.)*ALPH)) ) / 1000. !from Meerkotter & zinner
-!      print*,dw_dz,cCTH - ( sqrt( ((10./9.)*(cTAU)*(cREF*1e-6)*(rhocld))/(A*ALPH)) ) / 1000.,Hcbase,cCTH
+      !Cloud base height using dynamic adiabatic model that 
+      !depends on cloud top temperature and pressure    
+      !call adiabatic_lwc(283.,525.,dw_dz) !example
+      call adiabatic_lwc(cCTT,cCTP,dw_dzG)
+      if(dw_dzG .lt. 0.025) dw_dzG=0.025  !this value gets too small causing problem
+
+      !liquid water path
+      if(phaseFlag .eq. 1) then
+       !Stephens et al. (1978)
+       cwp = (2./3.)*cTAU*cREF   ![g/m2] cREF--> um
+      endif
+      
+      !ice water path
+      if(phaseFlag .eq. 2) then
+       !Liou, 1992 Table 6.4
+       cwp = cTAU/(a+b/(2*cREF)) ![g/m2] cREF--> um
+      endif
+
+      !Derived from Meerkotter & Zinner, 2007
+      HcthickG = ( sqrt( (2.*cwp)/(Fad*(dw_dzG/1000.)) ) ) / 1000. ![km]
+
+      !Re-compute cloud thickness based on middle of cloud layer temperature & pressure
+      !from first guess cloud thickness assume 5.5 K/km psuedo adiabatic lapse rate
+       cmt = cCTT + 5.5 * (HcthickG/2.)
+       cmp = cCTP / EXP(-(HcthickG)/(2.* (287.*cmt/9.8/1000.) ))
+      !corrected adiabatic rate of cwc increase with height based on 
+      !middle of cloud layer
+      call adiabatic_lwc(cmt,cmp,dw_dz)
+      if(dw_dz .lt. 0.025) dw_dz=0.025  !this value gets too small causing problem
+      
+      !corrected cloud thickness
+      Hcthick = ( sqrt( (2.*cwp)/(Fad*(dw_dz/1000.)) ) ) / 1000. ![km]
+
+      !estimated cloud base height
+      Hcbase = cCTH - Hcthick
+
+      !if( HcthickG .gt. 0.5 .and. phaseFlag .eq. 2) then
+      ! print*,'phase: ',phaseFlag
+      ! print*,'Cloud Top Height: ',cCTH
+      ! print*,'Cloud Top Temp: ',cCTT
+      ! print*,'Cloud Top Press: ',cCTP
+      ! print*,'Cloud MIDDLE Temp: ',cmt
+      ! print*,'Cloud MIDDLE Press: ',cmp
+      ! print*,'Cloud water path: ',cwp
+      ! print*,'Cloud optical depth: ',cTAU
+      ! print*,'Cloud effective radius: ',cREF
+      ! print*,'adiabaticity: ',Fad
+      ! print*,'adiabatic lapse rate 1st guess: ',dw_dzG
+      ! print*,'adiabatic lapse rate middle cloud: ',dw_dz
+      ! print*,'Cloud thickness 1st Guess: ',HcthickG
+      ! print*,'Cloud thickness: ',Hcthick
+      ! print*,'Cloud base height 1st guess: ',cCTH - HcthickG
+      ! print*,'Cloud base height: ',Hcbase
+      ! stop
+      !endif
+
       
     endif
 
