@@ -41,7 +41,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
+subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
+   output_optical_props_at_night)
 
    use orac_input
    use orac_ncdf
@@ -53,6 +54,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    type(counts_and_indexes),  intent(in)    :: indexing
    type(input_data_primary),  intent(in)    :: input_data
    type(output_data_primary), intent(inout) :: output_data
+   logical,                   intent(in)    :: output_optical_props_at_night
 
    integer            :: k
    integer(kind=sint) :: temp_short_ctp_error
@@ -82,8 +84,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data)
    !----------------------------------------------------------------------------
    ! cot, cot_error
    !----------------------------------------------------------------------------
-   ! write microphysical values only if pixel is "day"
-   if (input_data%illum(i,j) .eq. 1_byte) then
+   if (input_data%illum(i,j) .eq. 1_byte .or. output_optical_props_at_night) then
 
       if (input_data%cot(i,j) .eq. sreal_fill_value) then
          temp_real_cot = sreal_fill_value

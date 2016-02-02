@@ -108,6 +108,7 @@
 ! 2015/11/17, OS: Some bug fixing in correctly switching phase and cloud types.
 !    Previously, switching was wrong and, additionally, phase was ice for all
 !    cloud free pixels. This should all be resolved with this commit.
+! 2016/02/02, GM: Add option output_optical_props_at_night.
 !
 ! $Id$
 !
@@ -168,6 +169,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    real                        :: cost_thresh = 0.
    real                        :: norm_prob_thresh = .75
+   logical                     :: output_optical_props_at_night = .false.
    logical                     :: use_bayesian_selection = .false.
    logical                     :: use_netcdf_compression = .true.
 
@@ -223,7 +225,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    else if (nargs .eq. 1) then
       call get_command_argument(1,path_and_file)
    else if (nargs .eq. -1) then
-      index_space = INDEX(path_and_file, " ") 
+      index_space = INDEX(path_and_file, " ")
       path_and_file = path_and_file(1:(index_space-1))
       write(*,*) 'inside postproc ',trim(adjustl(path_and_file))
    end if
@@ -237,7 +239,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
    read(11,*) in_files_primary(IIce)
    write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
-   
+
    read(11,*) in_files_secondary(IWat)
    write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
    read(11,*) in_files_secondary(IIce)
@@ -262,6 +264,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
            call handle_parse_error(label)
      case('NORM_PROB_THRESH')
         if (parse_string(value, norm_prob_thresh) /= 0) &
+           call handle_parse_error(label)
+     case('OUTPUT_OPTICAL_PROPS_AT_NIGHT')
+        if (parse_string(value, output_optical_props_at_night) /= 0) &
            call handle_parse_error(label)
      case('USE_BAYESIAN_SELECTION')
         if (parse_string(value, use_bayesian_selection) /= 0) &
@@ -543,7 +548,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    do j=iystart,iystop
       do i=ixstart,ixstop
          call prepare_output_primary_pp(i, j, indexing, input_primary(1), &
-            output_primary)
+            output_primary, output_optical_props_at_night)
          if (do_secondary) then
             call prepare_output_secondary_pp(i, j, indexing, input_secondary(1), &
                output_secondary, .false.)
