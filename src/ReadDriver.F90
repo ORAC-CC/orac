@@ -414,6 +414,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
    Ctrl%RS%solar_factor   = switch(a, Default=.true.,   Aer=.false.)
 
    ! Select assumed surface reflectance based on wavelength
+   Ctrl%allow_a_default_surface = .true.
+
    wvl_threshold = 0.05
    allocate(Ctrl%RS%B(Ctrl%Ind%NSolar, MaxSurf))
    do i = 1, Ctrl%Ind%NSolar

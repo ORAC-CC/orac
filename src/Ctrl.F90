@@ -90,6 +90,7 @@
 !    Renaming Flags as Selm; Introducing XJ;
 ! 2015/09/07, AP: Allow verbose to be controlled from the driver file.
 ! 2015/11/18, GM: Add Y_Id_legacy(6).
+! 2016/02/02, GM: Add allow_a_default_surface.
 !
 ! $Id$
 !
@@ -283,6 +284,7 @@ module CTRL_def
                                                    ! sensitive channels to use
                                                    ! in an order of decreasing
                                                    ! priority.
+      logical                :: allow_a_default_surface
       logical                :: do_new_night_retrieval
       logical                :: do_CTX_correction
 
