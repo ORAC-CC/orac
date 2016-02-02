@@ -12,6 +12,7 @@
 !    and ecmwf_path_file3 to parse_optional().
 ! 2016/02/02, CP: Add ecmwf_path_hr.
 ! 2016/02/02, GM: Add use_hr_ecmwf.
+! 2016/02/02, GM: Add use_ecmwf_snow_and_ice.
 !
 ! $Id$
 !
@@ -46,9 +47,10 @@ end subroutine parse_required
 
 
 subroutine parse_optional(label, value, n_channels, channel_ids, &
-                          ecmwf_time_int_method, use_modis_emis_in_rttov, &
-                          use_hr_ecmwf, ecmwf_path, ecmwf_path2, ecmwf_path3, &
-                          ecmwf_path_hr, ecmwf_path_hr_2)
+                          use_hr_ecmwf, ecmwf_time_int_method, &
+                          use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
+                          ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr, &
+                          ecmwf_path_hr_2)
 
    use parsing
    use preproc_constants
@@ -59,9 +61,10 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    character(len=*), intent(in)    :: value
    integer,          intent(inout) :: n_channels
    integer, pointer, intent(inout) :: channel_ids(:)
-   integer,          intent(inout) :: ecmwf_time_int_method
-   logical,          intent(inout) :: use_modis_emis_in_rttov
    logical,          intent(inout) :: use_hr_ecmwf
+   integer,          intent(inout) :: ecmwf_time_int_method
+   logical,          intent(inout) :: use_ecmwf_snow_and_ice
+   logical,          intent(inout) :: use_modis_emis_in_rttov
    character(len=*), intent(inout) :: ecmwf_path
    character(len=*), intent(inout) :: ecmwf_path2
    character(len=*), intent(inout) :: ecmwf_path3
@@ -80,14 +83,17 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
       end if
       if (parse_string(value, channel_ids) /= 0) &
          call handle_parse_error(label)
+   case('USE_HR_ECMWF')
+      if (parse_string(value, use_hr_ecmwf) /= 0) &
+         call handle_parse_error(label)
    case('ECMWF_TIME_INT_METHOD')
       if (parse_string(value, ecmwf_time_int_method) /= 0) &
          call handle_parse_error(label)
+   case('USE_ECMWF_SNOW_AND_ICE')
+      if (parse_string(value, use_ecmwf_snow_and_ice) /= 0) &
+         call handle_parse_error(label)
    case('USE_MODIS_EMIS_IN_RTTOV')
       if (parse_string(value, use_modis_emis_in_rttov) /= 0) &
-         call handle_parse_error(label)
-   case('USE_HR_ECMWF')
-      if (parse_string(value, use_hr_ecmwf) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_2')
       if (parse_string(value, ecmwf_path) /= 0) &

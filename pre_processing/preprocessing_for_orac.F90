@@ -244,6 +244,8 @@
 ! 2016/02/02, CP: Input optional path to high resolution ECMWF files otherwise
 !    use ecmwf_path.
 ! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
+! 2016/02/02, GM: Make use of the ECMWF ice and snow mask (rather than NISE)
+!    optional.
 !
 ! $Id$
 !
@@ -326,6 +328,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
    logical                          :: use_hr_ecmwf
+   logical                          :: use_ecmwf_snow_and_ice
+   logical                          :: use_modis_emis_in_rttov
 
    logical                          :: check
    integer                          :: nargs
@@ -335,8 +339,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    integer                          :: n_channels
    integer, pointer                 :: channel_ids(:)
-
-   logical                          :: use_modis_emis_in_rttov
 
    integer(kind=lint)               :: startx,endx,starty,endy
    integer(kind=lint)               :: n_across_track,n_along_track
@@ -416,13 +418,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    n_channels = 0
    nullify(channel_ids)
    ecmwf_time_int_method = 2
+   use_hr_ecmwf = .true.
+   use_ecmwf_snow_and_ice = .true.
    use_modis_emis_in_rttov = .false.
    ecmwf_path(2) = ''
    ecmwf_path_hr(1) = ''
    ecmwf_path_hr(2) = ''
    ecmwf_path2(2) = ''
    ecmwf_path3(2) = ''
-   use_hr_ecmwf = .true.
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -482,8 +485,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call get_command_argument(i, line)
          call parse_line(line, value, label)
          call clean_driver_label(label)
-         call parse_optional(label, value, n_channels, channel_ids, &
-            ecmwf_time_int_method, use_modis_emis_in_rttov, use_hr_ecmwf, &
+         call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
+            ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
             ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
             ecmwf_path_hr(2))
       end do
@@ -549,8 +552,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
-        call parse_optional(label, value, n_channels, channel_ids, &
-           ecmwf_time_int_method, use_modis_emis_in_rttov, use_hr_ecmwf, &
+        call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
+           ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
            ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
            ecmwf_path_hr(2))
       end do
@@ -936,10 +939,16 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
       ! surface albedo.
       if (verbose) write(*,*) 'Correct for ice and snow'
-      call correct_for_ice_snow_ecmwf(nise_ice_snow_path, imager_geolocation, &
-           preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
-           channel_info, assume_full_paths, include_full_brdf, source_atts, &
-           verbose)
+      if (.not. use_ecmwf_snow_and_ice) then
+         call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
+              surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
+              include_full_brdf, source_atts, verbose)
+      else
+         call correct_for_ice_snow_ecmwf(nise_ice_snow_path, imager_geolocation, &
+              preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
+              channel_info, assume_full_paths, include_full_brdf, source_atts, &
+              verbose)
+      end if
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high resolution ERA surface data'
       if (.not. use_hr_ecmwf) then
