@@ -17,6 +17,7 @@
 !    that it could be executed twice, once for the ECMWF data on each side of
 !    the satellite acquisition.
 ! 2015/12/17, OS: Added wrapper specific variables.
+! 2016/02/02, OS: Now using ERA HR data for all options. TBD: make this optional.
 !
 ! $Id$
 !
@@ -44,14 +45,17 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    case(0)
       call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
+      call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR)
    case(1)
       call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,ecmwf)
+           ecmwf_path_file3,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
+      call read_ecmwf_wind_nc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
    case(2)
       call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
-           ecmwf_path_file3,ecmwf)
+           ecmwf_path_file3,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
+      call read_ecmwf_wind_badc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
    case(3)
       call read_ecmwf_wind_dwd(ecmwf_path_file,ecmwf)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim,ecmwf%kdim
@@ -63,9 +67,7 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
       write(*,*) 'SKINT) Min: ',minval(ecmwf%skin_temp),', Max: ',maxval(ecmwf%skin_temp)
    end if
    call rearrange_ecmwf(ecmwf,.false.)
-#ifdef WRAPPER
    call rearrange_ecmwf(ecmwf_HR,.true.)
-#endif
 
 end subroutine read_ecmwf_wind
 

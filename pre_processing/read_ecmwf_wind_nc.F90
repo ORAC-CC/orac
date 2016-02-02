@@ -26,6 +26,7 @@
 ! 2015/07/10, OS: undo previous commit
 ! 2015/11/17, OS: added reading of snow_depth and sea_ice_cover data
 ! 2016/01/29, GM: Add ecmwf_wind_init() and use it in read_ecmwf_wind_nc().
+! 2016/02/02, OS: Now reads into HR ERA structure if flag is set.
 !
 ! $Id$
 !
@@ -33,7 +34,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
+subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, high_res)
 
    use preproc_constants
 
@@ -43,7 +44,8 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    character(len=path_length), intent(in)    :: ecmwf2path
    character(len=path_length), intent(in)    :: ecmwf3path
    type(ecmwf_s),              intent(inout) :: ecmwf
-
+   logical,                    intent(in)    :: high_res
+   
    call ecmwf_wind_init(ecmwf)
 
    allocate(ecmwf%avec(61))
@@ -83,8 +85,10 @@ subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
 
    ! loop over given files (order not necessarily known)
    call read_ecmwf_wind_file(ecmwf_path,ecmwf)
-   call read_ecmwf_wind_file(ecmwf2path,ecmwf)
-   call read_ecmwf_wind_file(ecmwf3path,ecmwf)
+   if (.not. high_res) then
+      call read_ecmwf_wind_file(ecmwf2path,ecmwf)
+      call read_ecmwf_wind_file(ecmwf3path,ecmwf)
+   endif
 
 end subroutine read_ecmwf_wind_nc
 

@@ -26,6 +26,7 @@
 ! 2016/01/29, GM: read_ecmwf_wind_file() expects values to be initilized do must
 !    call ecmwf_wind_init().
 ! 2016/01/27, GM: Check and trim filename length for grib_open_file().
+! 2016/02/02, OS: Now reads into HR ERA structure if flag is set.
 !
 ! $Id$
 !
@@ -33,7 +34,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
+subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, high_res)
 
    use grib_api
    use preproc_constants
@@ -43,6 +44,7 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    character(len=*), intent(in)    :: ecmwf_path
    character(len=*), intent(in)    :: ecmwf2path, ecmwf3path
    type(ecmwf_s),    intent(inout) :: ecmwf
+   logical,          intent(in)    :: high_res
 
    integer                         :: i,fid,gid,stat
    integer                         :: PVPresent,PLPresent,level
@@ -64,60 +66,62 @@ subroutine read_ecmwf_wind_badc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf)
    ! ggas NCDF file, giving U10,V10,lat,lon
    call read_ecmwf_wind_file(ecmwf_path,ecmwf)
 
-   ! loop over GRIB files for vertical coordinate
-   do i=1,2
-      call grib_open_file(fid,paths(i),'r',stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error opening GRIB field.'
-      call grib_new_from_file(fid,gid,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting GRIB_ID.'
-      if (gid .eq. GRIB_END_OF_FILE) &
-           stop 'ERROR: read_ecmwf_wind(): Empty GRIB file.'
-
-      ! ensure it contains the expected fields
-      call grib_get(gid,'PVPresent',PVPresent)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
-      call grib_get(gid,'PLPresent',PLPresent)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
-      if (PVPresent .eq. 1 .and. PLPresent .eq. 1) then
-         ! fetch vertical coordinate
-         call grib_get_size(gid,'pv',npv,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error checking PV.'
-         allocate(pv(npv))
-         call grib_get(gid,'pv',pv,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PV.'
-         nk=npv/2-1
-
-         nlevels=0
-         do while (stat .ne. GRIB_END_OF_FILE)
-            call grib_get(gid,'level',level,stat)
-            if (stat .ne. 0) &
-                 stop 'ERROR: read_ecmwf_wind(): Error getting level.'
-            if (level .gt. nlevels) nlevels=level
-
-            ! advance file position
+   if (.not. high_res) then
+      ! loop over GRIB files for vertical coordinate
+      do i=1,2
+         call grib_open_file(fid,paths(i),'r',stat)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error opening GRIB field.'
+         call grib_new_from_file(fid,gid,stat)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting GRIB_ID.'
+         if (gid .eq. GRIB_END_OF_FILE) &
+              stop 'ERROR: read_ecmwf_wind(): Empty GRIB file.'
+         
+         ! ensure it contains the expected fields
+         call grib_get(gid,'PVPresent',PVPresent)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
+         call grib_get(gid,'PLPresent',PLPresent)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
+         if (PVPresent .eq. 1 .and. PLPresent .eq. 1) then
+            ! fetch vertical coordinate
+            call grib_get_size(gid,'pv',npv,stat)
+            if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error checking PV.'
+            allocate(pv(npv))
+            call grib_get(gid,'pv',pv,stat)
+            if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PV.'
+            nk=npv/2-1
+            
+            nlevels=0
+            do while (stat .ne. GRIB_END_OF_FILE)
+               call grib_get(gid,'level',level,stat)
+               if (stat .ne. 0) &
+                    stop 'ERROR: read_ecmwf_wind(): Error getting level.'
+               if (level .gt. nlevels) nlevels=level
+               
+               ! advance file position
+               call grib_release(gid)
+               call grib_new_from_file(fid,gid,stat)
+            end do
+         else
             call grib_release(gid)
-            call grib_new_from_file(fid,gid,stat)
-         end do
-      else
-         call grib_release(gid)
-      end if
-
-      call grib_close_file(fid)
-   end do
-
-   if (.not. allocated(pv)) &
-        stop 'ERROR: read_ecmwf_wind(): Could not find vertical field.'
-
-   ! set ECMWF dimensions
-   if (nk .ne. nlevels) &
-        stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical levels.'
-   ecmwf%kdim=nk
-   allocate(ecmwf%avec(nk+1))
-   allocate(ecmwf%bvec(nk+1))
-   ecmwf%avec=pv(1:nk+1)
-   ecmwf%bvec=pv(nk+2:)
-
-   ! clean-up
-   deallocate(pv)
+         end if
+         
+         call grib_close_file(fid)
+      end do
+      
+      if (.not. allocated(pv)) &
+           stop 'ERROR: read_ecmwf_wind(): Could not find vertical field.'
+      
+      ! set ECMWF dimensions
+      if (nk .ne. nlevels) &
+           stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical levels.'
+      ecmwf%kdim=nk
+      allocate(ecmwf%avec(nk+1))
+      allocate(ecmwf%bvec(nk+1))
+      ecmwf%avec=pv(1:nk+1)
+      ecmwf%bvec=pv(nk+2:)
+      
+      ! clean-up
+      deallocate(pv)
+   endif
 
 end subroutine read_ecmwf_wind_badc

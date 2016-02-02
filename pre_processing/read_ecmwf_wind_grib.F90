@@ -24,6 +24,7 @@
 ! 2014/05/07, AP: First version.
 ! 2014/11/04, OS: Added reading of skin temperature.
 ! 2016/01/27, GM: Check and trim filename length for grib_open_file().
+! 2016/02/02, OS: Now also reads sea-ice cover and snow depth from HR ERA file.
 !
 ! $Id$
 !
@@ -100,6 +101,8 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
    allocate(ecmwf%u10(ni,nj))
    allocate(ecmwf%v10(ni,nj))
    allocate(ecmwf%skin_temp(ni,nj))
+   allocate(ecmwf%snow_depth(ni,nj))
+   allocate(ecmwf%sea_ice_cover(ni,nj))
 
    nlevels=0
    do while (stat .ne. GRIB_END_OF_FILE)
@@ -142,6 +145,18 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
          if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading skin_temp.'
 
          ecmwf%skin_temp=reshape(val, (/ni,nj/))
+      case(31)
+         ! sea-ice cover
+         call grib_get(gid,'values',val,stat)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading sea-ice cover.'
+
+         ecmwf%sea_ice_cover=reshape(val, (/ni,nj/))
+      case(141)
+         ! snow depth
+         call grib_get(gid,'values',val,stat)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading snow_depth.'
+
+         ecmwf%snow_depth=reshape(val, (/ni,nj/))
       end select
 
       ! advance file position
