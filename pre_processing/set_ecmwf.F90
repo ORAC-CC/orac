@@ -56,7 +56,7 @@
 
 subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2, &
    ecmwf_path3,ecmwf_path_file,ecmwf_path_file2,ecmwf_path_file3,ecmwf_flag, &
-   imager_geolocation, imager_time,time_interp_method,time_int_fac,assume_full_path)
+   imager_geolocation,imager_time,time_interp_method,time_int_fac,assume_full_path)
 
    use calender
    use imager_structures
@@ -141,7 +141,7 @@ else if (time_interp_method .eq. 1) then
          jday2 = jday0
       else
          jday2 = jday1
-      endif
+      end if
 
       call JD2GREG(jday0, year, month, day_real)
       day = int(day_real, sint)

@@ -11,8 +11,8 @@
 ! 2015/11/26, GM: Add ecmwf_time_int_method, ecmwf_path_file, ecmwf_path_file2,
 !    and ecmwf_path_file3 to parse_optional().
 ! 2016/02/02, CP: Add ecmwf_path_hr.
+! 2016/02/02, GM: Add use_hr_ecmwf.
 !
-
 ! $Id$
 !
 ! Bugs:
@@ -47,7 +47,8 @@ end subroutine parse_required
 
 subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_time_int_method, use_modis_emis_in_rttov, &
-                          ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr)
+                          use_hr_ecmwf, ecmwf_path, ecmwf_path2, ecmwf_path3, &
+                          ecmwf_path_hr)
 
    use parsing
    use preproc_constants
@@ -60,6 +61,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    integer, pointer, intent(inout) :: channel_ids(:)
    integer,          intent(inout) :: ecmwf_time_int_method
    logical,          intent(inout) :: use_modis_emis_in_rttov
+   logical,          intent(inout) :: use_hr_ecmwf
    character(len=*), intent(inout) :: ecmwf_path
    character(len=*), intent(inout) :: ecmwf_path_hr
    character(len=*), intent(inout) :: ecmwf_path2
@@ -74,7 +76,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
       if (n_channels == 0) then
          write(*,*) 'ERROR: must set option n_channels before option channels'
          stop error_stop_code
-      endif
+      end if
       if (parse_string(value, channel_ids) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_TIME_INT_METHOD')
@@ -82,6 +84,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
          call handle_parse_error(label)
    case('USE_MODIS_EMIS_IN_RTTOV')
       if (parse_string(value, use_modis_emis_in_rttov) /= 0) &
+         call handle_parse_error(label)
+   case('USE_HR_ECMWF')
+      if (parse_string(value, use_hr_ecmwf) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_2')
       if (parse_string(value, ecmwf_path) /= 0) &

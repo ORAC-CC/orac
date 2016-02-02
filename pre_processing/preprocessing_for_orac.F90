@@ -241,8 +241,9 @@
 ! 2016/02/02, OS: Small fix for DWD specific problem with parsing driver file.
 ! 2016/02/02, OS: High resolution ERA-Interim data now used by default. Snow/ice
 !    mask is now built from ERA-Interim data instead of NISE.
-! 2016/02/02, CP: input optional path to high resolution files otherwise uses
-!    ecmwf directory
+! 2016/02/02, CP: Input optional path to high resolution ECMWF files otherwise
+!    use ecmwf_path.
+! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
 !
 ! $Id$
 !
@@ -324,6 +325,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    logical                          :: verbose
    logical                          :: assume_full_paths
    logical                          :: include_full_brdf
+   logical                          :: use_hr_ecmwf
 
    logical                          :: check
    integer                          :: nargs
@@ -416,9 +418,11 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ecmwf_time_int_method = 2
    use_modis_emis_in_rttov = .false.
    ecmwf_path(2) = ''
+   ecmwf_path_hr(1) = ''
    ecmwf_path_hr(2) = ''
    ecmwf_path2(2) = ''
    ecmwf_path3(2) = ''
+   use_hr_ecmwf = .true.
 
    ! if more than one argument passed, all inputs on command line
    if (nargs .gt. 1) then
@@ -479,8 +483,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call parse_line(line, value, label)
          call clean_driver_label(label)
          call parse_optional(label, value, n_channels, channel_ids, &
-            ecmwf_time_int_method, use_modis_emis_in_rttov, ecmwf_path(2), &
-            ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(2))
+            ecmwf_time_int_method, use_modis_emis_in_rttov, use_hr_ecmwf, &
+            ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(2))
       end do
    else
 
@@ -545,8 +549,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
         call parse_optional(label, value, n_channels, channel_ids, &
-           ecmwf_time_int_method, use_modis_emis_in_rttov, ecmwf_path(2), &
-           ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(2))
+           ecmwf_time_int_method, use_modis_emis_in_rttov, use_hr_ecmwf, &
+           ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(2))
       end do
 
       close(11)
@@ -589,16 +593,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       write(*,*) 'ERROR: options n_channels and channel_ids must be used together'
       stop error_stop_code
    endif
-
-#ifndef WRAPPER
-   if (assume_full_paths .and. ecmwf_time_int_method .eq. 2 .and. &
-       (ecmwf_path(2) .eq. '' .or. ecmwf_path2(2) .eq. '' .or. &
-        ecmwf_path3(2) .eq. '')) then
-      write(*,*) 'ERROR: must supply all 3 second ECMWF paths when ' // &
-                 'assume_full_paths = true .and. ecmwf_time_int_method = 2'
-      stop error_stop_code
-   endif
-#endif
 
    if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
    if (ecmwf_path2(2) .eq. '') ecmwf_path2(2) = ecmwf_path2(1)
@@ -843,25 +837,34 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), ecmwf_HR_path_file(1), &
-              ecmwf_path_file2(1), ecmwf_path_file3(1), ecmwf, ecmwf_HR, verbose)
+              ecmwf_path_file2(1), ecmwf_path_file3(1), ecmwf, ecmwf_HR, use_hr_ecmwf, &
+              verbose)
       else
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), ecmwf_HR_path_file(1), &
-              ecmwf_path_file2(1), ecmwf_path_file3(1), ecmwf1, ecmwf_HR1, verbose)
+              ecmwf_path_file2(1), ecmwf_path_file3(1), ecmwf1, ecmwf_HR1, use_hr_ecmwf, &
+              verbose)
          call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(2), ecmwf_HR_path_file(2), &
-              ecmwf_path_file2(2), ecmwf_path_file3(2), ecmwf2, ecmwf_HR2, verbose)
+              ecmwf_path_file2(2), ecmwf_path_file3(2), ecmwf2, ecmwf_HR2, use_hr_ecmwf, &
+              verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
-         call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
+         if (use_hr_ecmwf) then
+            call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
+         end if
 
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
               ecmwf1, ecmwf2, ecmwf, low_res)
-         call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
-              ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
+         if (use_hr_ecmwf) then
+            call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
+                 ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
+         end if
 
          call deallocate_ecmwf_structures(ecmwf1, low_res)
          call deallocate_ecmwf_structures(ecmwf2, low_res)
-         call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
-         call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
+         if (use_hr_ecmwf) then
+            call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
+            call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
+         end if
       end if
 
       ! define preprocessing grid from user grid spacing and satellite limits
@@ -937,9 +940,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            verbose)
 
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high resolution ERA surface data'
-      call cloud_type(channel_info, sensor, surface, imager_flags, &
-           imager_angles, imager_geolocation, imager_measurements, &
-           imager_pavolonis, ecmwf_HR, platform, doy, verbose)
+      if (.not. use_hr_ecmwf) then
+         call cloud_type(channel_info, sensor, surface, imager_flags, &
+              imager_angles, imager_geolocation, imager_measurements, &
+              imager_pavolonis, ecmwf, platform, doy, verbose)
+      else
+         call cloud_type(channel_info, sensor, surface, imager_flags, &
+              imager_angles, imager_geolocation, imager_measurements, &
+              imager_pavolonis, ecmwf_HR, platform, doy, verbose)
+      end if
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'
@@ -1018,7 +1027,9 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
       call deallocate_ecmwf_structures(ecmwf, low_res)
-      call deallocate_ecmwf_structures(ecmwf_HR, high_res)
+      if (use_hr_ecmwf) then
+         call deallocate_ecmwf_structures(ecmwf_HR, high_res)
+      end if
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &

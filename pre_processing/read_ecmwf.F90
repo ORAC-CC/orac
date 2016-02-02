@@ -18,6 +18,7 @@
 !    the satellite acquisition.
 ! 2015/12/17, OS: Added wrapper specific variables.
 ! 2016/02/02, OS: Now using ERA HR data for all options. TBD: make this optional.
+! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
 !
 ! $Id$
 !
@@ -26,7 +27,7 @@
 !-------------------------------------------------------------------------------
 
 subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
-   ecmwf_path_file2, ecmwf_path_file3, ecmwf, ecmwf_HR, verbose)
+   ecmwf_path_file2, ecmwf_path_file3, ecmwf, ecmwf_HR, use_hr_ecmwf, verbose)
 
    use preproc_structures
 
@@ -39,27 +40,36 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
    character(len=path_length), intent(in)  :: ecmwf_path_file3
    type(ecmwf_s),              intent(out) :: ecmwf
    type(ecmwf_s),              intent(out) :: ecmwf_HR
+   logical,                    intent(in)  :: use_hr_ecmwf
    logical,                    intent(in)  :: verbose
 
    select case (ecmwf_flag)
    case(0)
       call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
-      call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR)
+      if (use_hr_ecmwf) then
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR)
+      end if
    case(1)
       call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
            ecmwf_path_file3,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
-      call read_ecmwf_wind_nc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
+      if (use_hr_ecmwf) then
+         call read_ecmwf_wind_nc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
+      end if
    case(2)
       call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
            ecmwf_path_file3,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
-      call read_ecmwf_wind_badc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
+      if (use_hr_ecmwf) then
+         call read_ecmwf_wind_badc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
+      end if
    case(3)
       call read_ecmwf_wind_dwd(ecmwf_path_file,ecmwf)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim,ecmwf%kdim
-      call read_ecmwf_wind_dwd(ecmwf_HR_path_file,ecmwf_HR)
+      if (use_hr_ecmwf) then
+         call read_ecmwf_wind_dwd(ecmwf_HR_path_file,ecmwf_HR)
+      end if
    end select
    if (verbose) then
       write(*,*) 'U10) Min: ',minval(ecmwf%u10),', Max: ',maxval(ecmwf%u10)
@@ -67,7 +77,9 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
       write(*,*) 'SKINT) Min: ',minval(ecmwf%skin_temp),', Max: ',maxval(ecmwf%skin_temp)
    end if
    call rearrange_ecmwf(ecmwf,.false.)
-   call rearrange_ecmwf(ecmwf_HR,.true.)
+   if (use_hr_ecmwf) then
+      call rearrange_ecmwf(ecmwf_HR,.true.)
+   end if
 
 end subroutine read_ecmwf_wind
 
