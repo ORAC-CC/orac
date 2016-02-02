@@ -201,6 +201,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    integer(kind=lint)          :: ixstart,ixstop,iystart,iystop
 
    integer(kind=byte)          :: phase_flag
+   integer                     :: index_space
 
    integer                     :: i_min_costjm
    real                        :: a_min_costjm
@@ -222,6 +223,8 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    else if (nargs .eq. 1) then
       call get_command_argument(1,path_and_file)
    else if (nargs .eq. -1) then
+      index_space = INDEX(path_and_file, " ") 
+      path_and_file = path_and_file(1:(index_space-1))
       write(*,*) 'inside postproc ',trim(adjustl(path_and_file))
    end if
 
@@ -234,7 +237,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
    read(11,*) in_files_primary(IIce)
    write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
-
+   
    read(11,*) in_files_secondary(IWat)
    write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
    read(11,*) in_files_secondary(IIce)
