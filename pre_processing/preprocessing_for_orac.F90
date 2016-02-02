@@ -238,6 +238,9 @@
 ! 2015/12/17, OS: ECMWF (de)allocation routines and SR to linearly combine ERA
 !    data now use flag indicating whether high or low resolution data are used.
 !    High res data do not contain same variables as low res.
+! 2016/02/02, OS: Small fix for DWD specific problem with parsing driver file.
+! 2016/02/02, OS: High resolution ERA-Interim data now used by default. Snow/ice mask
+!    is now built from ERA-Interim data instead of NISE. 
 !
 ! $Id$
 !
@@ -583,6 +586,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       stop error_stop_code
    endif
 
+#ifndef WRAPPER
    if (assume_full_paths .and. ecmwf_time_int_method .eq. 2 .and. &
        (ecmwf_path(2) .eq. '' .or. ecmwf_path2(2) .eq. '' .or. &
         ecmwf_path3(2) .eq. '')) then
@@ -590,6 +594,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
                  'assume_full_paths = true .and. ecmwf_time_int_method = 2'
       stop error_stop_code
    endif
+#endif
 
    if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
    if (ecmwf_path2(2) .eq. '') ecmwf_path2(2) = ecmwf_path2(1)
@@ -842,21 +847,17 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
               ecmwf_path_file2(2), ecmwf_path_file3(2), ecmwf2, ecmwf_HR2, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
-#ifdef WRAPPER
          call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
-#endif
+
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
               ecmwf1, ecmwf2, ecmwf, low_res)
-#ifdef WRAPPER
          call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
               ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
-#endif
+
          call deallocate_ecmwf_structures(ecmwf1, low_res)
          call deallocate_ecmwf_structures(ecmwf2, low_res)
-#ifdef WRAPPER
          call deallocate_ecmwf_structures(ecmwf_HR1, high_res)
          call deallocate_ecmwf_structures(ecmwf_HR2, high_res)
-#endif
       end if
 
       ! define preprocessing grid from user grid spacing and satellite limits
@@ -926,24 +927,15 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! Snow and Ice Data Center to detect ice and snow pixels, and correct the
       ! surface albedo.
       if (verbose) write(*,*) 'Correct for ice and snow'
-#ifdef WRAPPER
       call correct_for_ice_snow_ecmwf(nise_ice_snow_path, imager_geolocation, &
            preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
            channel_info, assume_full_paths, include_full_brdf, source_atts, &
            verbose)
+
       if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high resolution ERA surface data'
       call cloud_type(channel_info, sensor, surface, imager_flags, &
            imager_angles, imager_geolocation, imager_measurements, &
            imager_pavolonis, ecmwf_HR, platform, doy, verbose)
-#else
-      call correct_for_ice_snow(nise_ice_snow_path, imager_geolocation, &
-           surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
-           include_full_brdf, source_atts, verbose)
-      if (verbose) write(*,*) 'Calculate Pavolonis cloud phase'
-      call cloud_type(channel_info, sensor, surface, imager_flags, &
-           imager_angles, imager_geolocation, imager_measurements, &
-           imager_pavolonis, ecmwf, platform, doy, verbose)
-#endif
 
       ! create output netcdf files.
       if (verbose) write(*,*) 'Create output netcdf files'
@@ -1022,9 +1014,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! deallocate the array parts of the structures
       if (verbose) write(*,*) 'Deallocate chunk specific structures'
       call deallocate_ecmwf_structures(ecmwf, low_res)
-#ifdef WRAPPER
       call deallocate_ecmwf_structures(ecmwf_HR, high_res)
-#endif
       call deallocate_preproc_structures(preproc_dims, preproc_geoloc, &
            preproc_geo, preproc_prtm, preproc_surf)
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
