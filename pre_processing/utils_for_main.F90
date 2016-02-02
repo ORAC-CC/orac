@@ -10,7 +10,9 @@
 ! 2015/10/19, GM: Add use_modis_emis_in_rttov to parse_optional().
 ! 2015/11/26, GM: Add ecmwf_time_int_method, ecmwf_path_file, ecmwf_path_file2,
 !    and ecmwf_path_file3 to parse_optional().
+! 2016/02/02, CP: Add ecmwf_path_hr
 !
+
 ! $Id$
 !
 ! Bugs:
@@ -45,7 +47,7 @@ end subroutine parse_required
 
 subroutine parse_optional(label, value, n_channels, channel_ids, &
                           ecmwf_time_int_method, use_modis_emis_in_rttov, &
-                          ecmwf_path, ecmwf_path2, ecmwf_path3)
+                          ecmwf_path, ecmwf_path2, ecmwf_path3, ecmwf_path_hr)
 
    use parsing
    use preproc_constants
@@ -59,6 +61,7 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
    integer,          intent(inout) :: ecmwf_time_int_method
    logical,          intent(inout) :: use_modis_emis_in_rttov
    character(len=*), intent(inout) :: ecmwf_path
+   character(len=*), intent(inout) :: ecmwf_path_hr
    character(len=*), intent(inout) :: ecmwf_path2
    character(len=*), intent(inout) :: ecmwf_path3
 
@@ -88,6 +91,9 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
          call handle_parse_error(label)
    case('ECMWF_PATH3_2')
       if (parse_string(value, ecmwf_path3) /= 0) &
+         call handle_parse_error(label)
+   case('ECMWF_PATH_HR')
+      if (parse_string(value, ecmwf_path_hr) /= 0) &
          call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)

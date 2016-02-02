@@ -240,7 +240,8 @@
 !    High res data do not contain same variables as low res.
 ! 2016/02/02, OS: Small fix for DWD specific problem with parsing driver file.
 ! 2016/02/02, OS: High resolution ERA-Interim data now used by default. Snow/ice mask
-!    is now built from ERA-Interim data instead of NISE. 
+! 2016/02/02, CP: input optional path to high resolution files otherwise uses ecmwf directory
+!
 !
 ! $Id$
 !
@@ -292,6 +293,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    character(len=path_length)       :: geo_path_file
    character(len=path_length)       :: usgs_path_file
    character(len=path_length)       :: ecmwf_path(2),ecmwf_path_file(2)
+   character(len=path_length)       :: ecmwf_path_hr(2)
    character(len=path_length)       :: ecmwf_HR_path_file(2)
    character(len=path_length)       :: rttov_coef_path
    character(len=path_length)       :: rttov_emiss_path
@@ -413,6 +415,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
    ecmwf_time_int_method = 2
    use_modis_emis_in_rttov = .false.
    ecmwf_path(2)  = ''
+   ecmwf_path_hr(2)  = ''
    ecmwf_path2(2) = ''
    ecmwf_path3(2) = ''
 
@@ -476,7 +479,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call clean_driver_label(label)
          call parse_optional(label, value, n_channels, channel_ids, &
             ecmwf_time_int_method, use_modis_emis_in_rttov, ecmwf_path(2), &
-            ecmwf_path2(2), ecmwf_path3(2))
+            ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(2))
       end do
    else
 
@@ -819,7 +822,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
            cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear, &
            cmonth,cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3, &
-           ecmwf_path_file,ecmwf_HR_path_file,ecmwf_path_file2, &
+           ecmwf_path_hr,ecmwf_path_file,ecmwf_HR_path_file,ecmwf_path_file2, &
            ecmwf_path_file3,global_atts,ecmwf_flag,ecmwf_time_int_method, &
            imager_geolocation,imager_time,i_chunk,ecmwf_time_int_fac, &
            assume_full_paths, verbose)

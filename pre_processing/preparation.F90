@@ -73,6 +73,7 @@
 !   path/to/low_res_era_file.nc = path/to/low_res_era_file_HR.nc
 ! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
 ! 2015/12/17, OS: Added write of HR file 2.
+! 2015/12/17, OS: Added optional HR path input
 !
 ! $Id$
 !
@@ -91,7 +92,8 @@ contains
 
 subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
      cf_file,lsf_file,geo_file,loc_file,alb_file,sensor,platform,cyear,cmonth, &
-     cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_path_file, &
+     cday,chour,cminute,ecmwf_path,ecmwf_path2,ecmwf_path3,ecmwf_path_hr, &
+     ecmwf_path_file, &
      ecmwf_HR_path_file,ecmwf_path_file2,ecmwf_path_file3,global_atts, &
      ecmwf_flag,ecmwf_time_int_method,imager_geolocation,imager_time,i_chunk, &
      time_int_fac,assume_full_path,verbose)
@@ -112,6 +114,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    character(len=path_length),     intent(in)  :: ecmwf_path(2), &
                                                   ecmwf_path2(2), &
                                                   ecmwf_path3(2)
+                                                  ecmwf_path_hr(2)
    character(len=path_length),     intent(out) :: ecmwf_path_file(2), &
                                                   ecmwf_HR_path_file(2), &
                                                   ecmwf_path_file2(2), &
@@ -141,9 +144,11 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
    if (verbose) write(*,*) 'chour: ',                 trim(chour)
    if (verbose) write(*,*) 'cminute: ',               trim(cminute)
    if (verbose) write(*,*) 'ecmwf_path(1): ',         trim(ecmwf_path(1))
+   if (verbose) write(*,*) 'ecmwf_path_hr(1): ',         trim(ecmwf_path_hr(1))
    if (verbose) write(*,*) 'ecmwf_path2(1): ',        trim(ecmwf_path2(1))
    if (verbose) write(*,*) 'ecmwf_path3(1): ',        trim(ecmwf_path3(1))
    if (verbose) write(*,*) 'ecmwf_path(2): ',         trim(ecmwf_path(2))
+   if (verbose) write(*,*) 'ecmwf_path_hr(2): ',         trim(ecmwf_path_hr(2))
    if (verbose) write(*,*) 'ecmwf_path2(2): ',        trim(ecmwf_path2(2))
    if (verbose) write(*,*) 'ecmwf_path3(2): ',        trim(ecmwf_path3(2))
    if (verbose) write(*,*) 'ecmwf_flag: ',            ecmwf_flag
@@ -159,19 +164,26 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                   ecmwf_time_int_method,time_int_fac,assume_full_path)
 
    ! build file path for high resolution ERA-Interim data from low resolution
-   ! file path
-   call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_HR_path_file(1))
-   if (ecmwf_time_int_method .eq. 2) then
-      call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
-   end if
+   ! file path if the path is the sameas other ecmwf variables
+
+
+   if ( ecmwf_path_hr .eq. '') then
+      call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_HR_path_file(1))
+      if (ecmwf_time_int_method .eq. 2) then
+      	 call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
+      end if
+   endif
 
    if (verbose) then
       write(*,*)'ecmwf_path_file:  ',trim(ecmwf_path_file(1))
+      write(*,*)'ecmwf_path_file_2:  ',trim(ecmwf_path_file(2))
       write(*,*)'ecmwf_HR_path_file:  ',trim(ecmwf_HR_path_file(1))
       write(*,*)'ecmwf_HR_path_file2:  ',trim(ecmwf_HR_path_file(2))
       if (ecmwf_flag .gt. 0) then
          write(*,*)'ecmwf_path_file2: ',trim(ecmwf_path_file2(1))
          write(*,*)'ecmwf_path_file3: ',trim(ecmwf_path_file3(1))
+         write(*,*)'ecmwf_path_file2_2: ',trim(ecmwf_path_file2(2))
+         write(*,*)'ecmwf_path_file3_2: ',trim(ecmwf_path_file3(2))
       end if
    end if
 
