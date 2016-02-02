@@ -944,7 +944,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
               surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
               include_full_brdf, source_atts, verbose)
       else
-         call correct_for_ice_snow_ecmwf(nise_ice_snow_path, imager_geolocation, &
+         call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), imager_geolocation, &
               preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
               channel_info, assume_full_paths, include_full_brdf, source_atts, &
               verbose)

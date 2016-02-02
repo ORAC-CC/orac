@@ -468,7 +468,7 @@ end subroutine apply_ice_correction
 !-------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 
-subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,preproc_prtm, &
+subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,preproc_dims,preproc_prtm, &
                   surface,cyear,cmonth,cday,channel_info,assume_full_path,include_full_brdf, &
                   source_atts,verbose)
 
@@ -483,7 +483,7 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
    implicit none
 
    ! Arguments
-   character(len=path_length), intent(in)    :: nise_path
+   character(len=path_length), intent(in)    :: ecmwf_HR_path
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
    type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(preproc_prtm_s),       intent(in)    :: preproc_prtm
@@ -491,7 +491,6 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
    logical,                    intent(in)    :: include_full_brdf
    type(source_attributes_s),  intent(inout) :: source_atts
    logical,                    intent(in)    :: verbose
-
 
    type(surface_s),            intent(inout) :: surface
    character(len=date_length), intent(in)    :: cyear,cmonth,cday
@@ -503,12 +502,14 @@ subroutine correct_for_ice_snow_ecmwf(nise_path,imager_geolocation,preproc_dims,
    real(kind=sreal), dimension(4) :: snow_albedo, ice_albedo, tmp_albedo
    real(kind=sreal)               :: snow_threshold, ice_threshold
 
-
    snow_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
    ice_albedo = (/ 0.958, 0.868, 0.0364, 0.0 /)
 
    snow_threshold=0.01 ! I belive this is 1cm
    ice_threshold=0.15 ! I believe this is 15%
+
+   source_atts%snow_file=trim(ecmwf_HR_path)
+   source_atts%sea_ice_file=trim(ecmwf_HR_path)
 
    do j=1,imager_geolocation%ny
       do i=imager_geolocation%startx,imager_geolocation%endx
