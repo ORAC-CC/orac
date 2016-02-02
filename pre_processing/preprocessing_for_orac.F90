@@ -484,7 +484,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          call clean_driver_label(label)
          call parse_optional(label, value, n_channels, channel_ids, &
             ecmwf_time_int_method, use_modis_emis_in_rttov, use_hr_ecmwf, &
-            ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(2))
+            ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
+            ecmwf_path_hr(2))
       end do
    else
 
@@ -550,7 +551,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
         call clean_driver_label(label)
         call parse_optional(label, value, n_channels, channel_ids, &
            ecmwf_time_int_method, use_modis_emis_in_rttov, use_hr_ecmwf, &
-           ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(2))
+           ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
+           ecmwf_path_hr(2))
       end do
 
       close(11)
