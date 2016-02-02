@@ -249,7 +249,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
             write(*, *) 'WARNING: Get_Surface(): Invalid surface property ' // &
                  'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-            if (Ctrl%allow_a_default_surface) then
+            if (Ctrl%RS%allow_a_default_surface) then
                SPixel%Surface%Rs(i) = Rs(ii,i_surf)
             else
                status = SPixelSurfglint
@@ -273,7 +273,7 @@ subroutine Get_Surface(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
                write(*, *) 'WARNING: Get_Surface(): Invalid surface property ' // &
                     'in pixel at: ', SPixel%Loc%X0, SPixel%Loc%Y0
 #endif
-               if (Ctrl%allow_a_default_surface) then
+               if (Ctrl%RS%allow_a_default_surface) then
                   SPixel%Surface%Rs2(i,:) = Rs(ii,i_surf)
                else
                   status = SPixelSurfglint

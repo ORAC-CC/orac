@@ -178,6 +178,7 @@ module CTRL_def
       integer                :: SRsSelm            ! Surface reflectance
                                                    ! uncertainty selection method
       logical                :: use_full_brdf
+      logical                :: allow_a_default_surface
       real, pointer          :: B(:,:)             ! Prescribed surface reflect
                                                    ! (chs, sea/land)
       real, pointer          :: Sb(:,:)            ! % error in B
@@ -284,7 +285,6 @@ module CTRL_def
                                                    ! sensitive channels to use
                                                    ! in an order of decreasing
                                                    ! priority.
-      logical                :: allow_a_default_surface
       logical                :: do_new_night_retrieval
       logical                :: do_CTX_correction
 
