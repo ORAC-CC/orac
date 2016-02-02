@@ -33,8 +33,8 @@ subroutine read_ecmwf_wind_dwd(ecmwf_path, ecmwf)
 
    implicit none
 
-   character(len=path_length), intent(in)    :: ecmwf_path
-   type(ecmwf_s),              intent(inout) :: ecmwf
+   character(len=*), intent(in)    :: ecmwf_path
+   type(ecmwf_s),    intent(inout) :: ecmwf
 
    ! initialise
    ecmwf%xdim=0

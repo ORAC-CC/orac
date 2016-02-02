@@ -10,7 +10,7 @@
 ! 2015/10/19, GM: Add use_modis_emis_in_rttov to parse_optional().
 ! 2015/11/26, GM: Add ecmwf_time_int_method, ecmwf_path_file, ecmwf_path_file2,
 !    and ecmwf_path_file3 to parse_optional().
-! 2016/02/02, CP: Add ecmwf_path_hr
+! 2016/02/02, CP: Add ecmwf_path_hr.
 !
 
 ! $Id$
