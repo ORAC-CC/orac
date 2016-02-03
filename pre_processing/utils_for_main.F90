@@ -105,10 +105,10 @@ subroutine parse_optional(label, value, n_channels, channel_ids, &
       if (parse_string(value, ecmwf_path3) /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR')
-      if (parse_string(value, ecmwf_path_hr) /= 0) &
+      if (parse_string(value, ecmwf_path_hr)  /= 0) &
          call handle_parse_error(label)
    case('ECMWF_PATH_HR_2')
-      if (parse_string(value, ecmwf_path_hr) /= 0) &
+      if (parse_string(value, ecmwf_path_hr_2)  /= 0) &
          call handle_parse_error(label)
    case default
       write(*,*) 'ERROR: Unknown option: ', trim(label)
