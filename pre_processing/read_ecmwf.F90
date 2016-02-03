@@ -19,6 +19,8 @@
 ! 2015/12/17, OS: Added wrapper specific variables.
 ! 2016/02/02, OS: Now using ERA HR data for all options. TBD: make this optional.
 ! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
+! 2016/02/03, GM: Use read_ecmwf_wind_grib() to read in the HR data in cases 1
+!    and 2.
 !
 ! $Id$
 !
@@ -45,24 +47,25 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
 
    select case (ecmwf_flag)
    case(0)
-      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf)
+      call read_ecmwf_wind_grib(ecmwf_path_file,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims grib: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR)
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
       end if
    case(1)
       call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
            ecmwf_path_file3,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_nc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
+         call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
+            ecmwf_path_file3,ecmwf,.true.)
       end if
    case(2)
       call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
            ecmwf_path_file3,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims badc: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_badc(ecmwf_HR_path_file,"n/a","n/a",ecmwf_HR,.true.)
+         call read_ecmwf_wind_grib(ecmwf_HR_path_file,ecmwf_HR,.true.)
       end if
    case(3)
       call read_ecmwf_wind_dwd(ecmwf_path_file,ecmwf)

@@ -25,6 +25,8 @@
 ! 2014/11/04, OS: Added reading of skin temperature.
 ! 2016/01/27, GM: Check and trim filename length for grib_open_file().
 ! 2016/02/02, OS: Now also reads sea-ice cover and snow depth from HR ERA file.
+! 2016/02/03, GM: Changes/fixes to read the HR ERA GRIB file: no vertical
+!    coordinate and no wind.
 !
 ! $Id$
 !
@@ -32,7 +34,7 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
+subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
 
    use grib_api
    use preproc_constants
@@ -41,6 +43,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
 
    character(len=*), intent(in)    :: ecmwf_path
    type(ecmwf_s),    intent(inout) :: ecmwf
+   logical,          intent(in)    :: high_res
 
    real, allocatable, dimension(:) :: pv,lat,lon,val
    integer                         :: fid,gid,stat
@@ -63,23 +66,27 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
    if (gid .eq. GRIB_END_OF_FILE) &
         stop 'ERROR: read_ecmwf_wind(): Empty GRIB file.'
 
-   ! ensure it contains the expected fields
-   call grib_get(gid,'PVPresent',PVPresent)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
-   if (PVPresent .eq. 0) &
-        stop 'ERROR: read_ecmwf_wind(): Incorrect file format. Check ECMWF_FLAG.'
-   call grib_get(gid,'PLPresent',PLPresent)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
-   if (PLPresent .eq. 1) &
-        stop 'ERROR: read_ecmwf_wind(): Incorrect file formatting. Check ECMWF_FLAG.'
+   if (.not. high_res) then
+      ! ensure it contains the expected fields
+      call grib_get(gid,'PVPresent',PVPresent)
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
+      if (PVPresent .eq. 0) &
+           stop 'ERROR: read_ecmwf_wind(): Incorrect file format. Check ECMWF_FLAG.'
+      call grib_get(gid,'PLPresent',PLPresent)
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
+      if (PLPresent .eq. 1) &
+           stop 'ERROR: read_ecmwf_wind(): Incorrect file formatting. Check ECMWF_FLAG.'
 
-   ! fetch vertical coordinate
-   call grib_get_size(gid,'pv',npv,stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error checking PV.'
-   allocate(pv(npv))
-   call grib_get(gid,'pv',pv,stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PV.'
-   nk=npv/2-1
+      ! fetch vertical coordinate
+      call grib_get_size(gid,'pv',npv,stat)
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error checking PV.'
+      allocate(pv(npv))
+      call grib_get(gid,'pv',pv,stat)
+      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PV.'
+      nk=npv/2-1
+   else
+      nk=0
+   endif
 
    ! read dimensions
    call grib_get(gid,'Ni',ni,stat)
@@ -98,8 +105,10 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
    allocate(ecmwf%lat(nj))
    allocate(ecmwf%avec(nk+1))
    allocate(ecmwf%bvec(nk+1))
-   allocate(ecmwf%u10(ni,nj))
-   allocate(ecmwf%v10(ni,nj))
+   if (.not. high_res) then
+      allocate(ecmwf%u10(ni,nj))
+      allocate(ecmwf%v10(ni,nj))
+   end if
    allocate(ecmwf%skin_temp(ni,nj))
    allocate(ecmwf%snow_depth(ni,nj))
    allocate(ecmwf%sea_ice_cover(ni,nj))
@@ -124,27 +133,31 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
       if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting parameter.'
       select case (param)
       case(165)
-         ! 10m zonal wind component, latitude, and longitude
-         call grib_get_data(gid,lat,lon,val,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading U10.'
+         if (.not. high_res) then
+            ! 10m zonal wind component, latitude, and longitude
+            call grib_get(gid,'values',val,stat)
+            if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading U10.'
 
-         ecmwf%u10=reshape(val, (/ni,nj/))
+            ecmwf%u10=reshape(val, (/ni,nj/))
+         end if
+      case(166)
+         if (.not. high_res) then
+            ! 10 m meriodional wind component
+            call grib_get(gid,'values',val,stat)
+            if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading V10.'
+
+            ecmwf%v10=reshape(val, (/ni,nj/))
+         end if
+      case(235)
+         ! skin temperature
+         call grib_get_data(gid,lat,lon,val,stat)
+         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading skin_temp.'
+
+         ecmwf%skin_temp=reshape(val, (/ni,nj/))
          ecmwf%lon=lon(1:ni)
          do i=1,n,ni
             ecmwf%lat(1+i/ni)=lat(i)
          end do
-      case(166)
-         ! 10 m meriodional wind component
-         call grib_get(gid,'values',val,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading V10.'
-
-         ecmwf%v10=reshape(val, (/ni,nj/))
-      case(235)
-         ! skin temperature
-         call grib_get(gid,'values',val,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading skin_temp.'
-
-         ecmwf%skin_temp=reshape(val, (/ni,nj/))
       case(31)
          ! sea-ice cover
          call grib_get(gid,'values',val,stat)
@@ -168,15 +181,23 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf)
 
    ! set ECMWF dimensions
    if (nk .ne. nlevels) &
-           stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical levels.'
+      stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical levels.'
+
    ecmwf%xdim=ni
    ecmwf%ydim=nj
    ecmwf%kdim=nk
-   ecmwf%avec=pv(1:nk+1)
-   ecmwf%bvec=pv(nk+2:)
+   if (.not. high_res) then
+      ecmwf%avec=pv(1:nk+1)
+      ecmwf%bvec=pv(nk+2:)
+   else
+      ecmwf%avec=avec(1:nk+1)
+      ecmwf%bvec=bvec(1:nk+1)
+   end if
 
    ! clean-up
-   deallocate(pv)
+   if (.not. high_res) then
+      deallocate(pv)
+   end if
    deallocate(lat)
    deallocate(lon)
    deallocate(val)

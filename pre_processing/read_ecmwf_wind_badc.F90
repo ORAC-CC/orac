@@ -23,7 +23,7 @@
 !
 ! History:
 ! 2014/05/07, AP: First version.
-! 2016/01/29, GM: read_ecmwf_wind_file() expects values to be initilized do must
+! 2016/01/29, GM: read_ecmwf_wind_file() expects values to be initilized, must
 !    call ecmwf_wind_init().
 ! 2016/01/27, GM: Check and trim filename length for grib_open_file().
 ! 2016/02/02, OS: Now reads into HR ERA structure if flag is set.

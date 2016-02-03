@@ -17,9 +17,11 @@
 !
 ! History:
 ! 2014/12/17, OS: First version.
-! 2015/07/03, OS: added error status variable to nc_open call
-! 2015/07/10, OS: undo previous commit
+! 2015/07/03, OS: Added error status variable to nc_open call.
+! 2015/07/10, OS: Undo previous commit.
 ! 2015/11/17, OS: Added snow_depth and sea_ice_cover reading.
+! 2016/02/03, GM: Call ecmwf_wind_init() to be consistent with the other wind
+!    readers.
 !
 ! $Id: read_ecmwf_wind_nc.F90 2746 2014-11-21 10:12:39Z gmcgarragh $
 !
@@ -36,51 +38,12 @@ subroutine read_ecmwf_wind_dwd(ecmwf_path, ecmwf)
    character(len=*), intent(in)    :: ecmwf_path
    type(ecmwf_s),    intent(inout) :: ecmwf
 
-   ! initialise
-   ecmwf%xdim=0
-   ecmwf%ydim=0
-   ecmwf%kdim=0
+   call ecmwf_wind_init(ecmwf)
+
    allocate(ecmwf%avec(61))
    allocate(ecmwf%bvec(61))
-   ecmwf%avec=[0.000000,     2.000000E+01, 3.842534E+01, 6.364780E+01, &
-               9.563696E+01, 1.344833E+02, 1.805844E+02, 2.347791E+02, &
-               2.984958E+02, 3.739719E+02, 4.646182E+02, 5.756511E+02, &
-               7.132180E+02, 8.836604E+02, 1.094835E+03, 1.356475E+03, &
-               1.680640E+03, 2.082274E+03, 2.579889E+03, 3.196422E+03, &
-               3.960292E+03, 4.906707E+03, 6.018020E+03, 7.306633E+03, &
-               8.765055E+03, 1.037612E+04, 1.207745E+04, 1.377532E+04, &
-               1.537980E+04, 1.681947E+04, 1.804518E+04, 1.902770E+04, &
-               1.975511E+04, 2.022220E+04, 2.042986E+04, 2.038448E+04, &
-               2.009740E+04, 1.958433E+04, 1.886475E+04, 1.796136E+04, &
-               1.689947E+04, 1.570645E+04, 1.441112E+04, 1.304322E+04, &
-               1.163276E+04, 1.020950E+04, 8.802355E+03, 7.438805E+03, &
-               6.144316E+03, 4.941777E+03, 3.850913E+03, 2.887697E+03, &
-               2.063780E+03, 1.385913E+03, 8.553618E+02, 4.673335E+02, &
-               2.103939E+02, 6.588924E+01, 7.367743,     0.000000,     &
-               0.000000 ]
-   ecmwf%bvec=[0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
-               0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
-               0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
-               0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
-               0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
-               0.0000000,     0.0000000,     0.0000000,     0.0000000,     &
-               7.5823496E-05, 4.6139490E-04, 1.8151561E-03, 5.0811172E-03, &
-               1.1142910E-02, 2.0677876E-02, 3.4121163E-02, 5.1690407E-02, &
-               7.3533833E-02, 9.9674702E-02, 0.1300225,     0.1643843,     &
-               0.2024759,     0.2439331,     0.2883230,     0.3351549,     &
-               0.3838921,     0.4339629,     0.4847715,     0.5357099,     &
-               0.5861684,     0.6355475,     0.6832686,     0.7287858,     &
-               0.7715966,     0.8112534,     0.8473749,     0.8796569,     &
-               0.9078839,     0.9319403,     0.9518215,     0.9676452,     &
-               0.9796627,     0.9882701,     0.9940194,     0.9976301,     &
-               1.0000000 ]
-   nullify(ecmwf%lon)
-   nullify(ecmwf%lat)
-   nullify(ecmwf%u10)
-   nullify(ecmwf%v10)
-   nullify(ecmwf%skin_temp)
-   nullify(ecmwf%snow_depth)
-   nullify(ecmwf%sea_ice_cover)
+   ecmwf%avec = avec
+   ecmwf%bvec = bvec
 
    ! loop over given files (order not necessarily known)
    call read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)

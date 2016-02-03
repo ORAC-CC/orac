@@ -163,7 +163,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
                   ecmwf_time_int_method,time_int_fac,assume_full_path)
 
    ! build file path for high resolution ERA-Interim data from low resolution
-   ! file path if the path if a specific path is not provided
+   ! file path if a specific path is not provided
 
    if (ecmwf_path_hr(1) .eq. '') then
       call build_ecmwf_HR_file_from_LR(ecmwf_path_file(1), ecmwf_HR_path_file(1))
