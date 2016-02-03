@@ -19,8 +19,8 @@
 ! 2015/12/17, OS: Added wrapper specific variables.
 ! 2016/02/02, OS: Now using ERA HR data for all options. TBD: make this optional.
 ! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
-! 2016/02/03, GM: Use read_ecmwf_wind_grib() to read in the HR data in cases 1
-!    and 2.
+! 2016/02/03, GM: Use read_ecmwf_wind_grib() to read in the HR data in case 2.
+! 2016/02/03, GM: Set the fill_value for sea_ice_cover to sreal_fill_value.
 !
 ! $Id$
 !
@@ -79,6 +79,16 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
       write(*,*) 'V10) Min: ',minval(ecmwf%v10),', Max: ',maxval(ecmwf%v10)
       write(*,*) 'SKINT) Min: ',minval(ecmwf%skin_temp),', Max: ',maxval(ecmwf%skin_temp)
    end if
+
+   ! It is possible for this field to have fill.  It is set to -9e+33 for DWD
+   ! and 9999.0 for Ox/RAL.  Here we set it to ORAC's value.
+   where (ecmwf%sea_ice_cover .lt. 0.0 .or. ecmwf%sea_ice_cover .gt. 1.0) &
+      ecmwf%sea_ice_cover = sreal_fill_value
+   if (use_hr_ecmwf) then
+      where (ecmwf_HR%sea_ice_cover .lt. 0.0 .or. ecmwf_HR%sea_ice_cover .gt. 1.0) &
+         ecmwf_HR%sea_ice_cover = sreal_fill_value
+   end if
+
    call rearrange_ecmwf(ecmwf,.false.)
    if (use_hr_ecmwf) then
       call rearrange_ecmwf(ecmwf_HR,.true.)

@@ -21,6 +21,8 @@
 ! 2015/12/17, OS: Added low_res flag.
 ! 2016/02/03, GM: Added parameter arrays avec and bvec as they were being
 !    duplicated in subroutines.
+! 2016/02/03, GM: Check for fill_value in sea_ice_cover during linear
+!    combination.
 !
 ! $Id$
 !
@@ -147,15 +149,20 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
    type(ecmwf_s), intent(out) :: ecmwf
    logical,       intent(in)  :: low_res
 
-   ecmwf%lat              = a * ecmwf1%lat           + b * ecmwf2%lat
-   ecmwf%lon              = a * ecmwf1%lon           + b * ecmwf2%lon
-   ecmwf%avec             = a * ecmwf1%avec          + b * ecmwf2%avec
-   ecmwf%bvec             = a * ecmwf1%bvec          + b * ecmwf2%bvec
-   if (low_res) ecmwf%u10 = a * ecmwf1%u10           + b * ecmwf2%u10
-   if (low_res) ecmwf%v10 = a * ecmwf1%v10           + b * ecmwf2%v10
-   ecmwf%skin_temp        = a * ecmwf1%skin_temp     + b * ecmwf2%skin_temp
-   ecmwf%snow_depth       = a * ecmwf1%snow_depth    + b * ecmwf2%snow_depth
-   ecmwf%sea_ice_cover    = a * ecmwf1%sea_ice_cover + b * ecmwf2%sea_ice_cover
+   ecmwf%lat              = a * ecmwf1%lat        + b * ecmwf2%lat
+   ecmwf%lon              = a * ecmwf1%lon        + b * ecmwf2%lon
+   ecmwf%avec             = a * ecmwf1%avec       + b * ecmwf2%avec
+   ecmwf%bvec             = a * ecmwf1%bvec       + b * ecmwf2%bvec
+   if (low_res) ecmwf%u10 = a * ecmwf1%u10        + b * ecmwf2%u10
+   if (low_res) ecmwf%v10 = a * ecmwf1%v10        + b * ecmwf2%v10
+   ecmwf%skin_temp        = a * ecmwf1%skin_temp  + b * ecmwf2%skin_temp
+   ecmwf%snow_depth       = a * ecmwf1%snow_depth + b * ecmwf2%snow_depth
+
+   ecmwf%sea_ice_cover = sreal_fill_value
+   where (ecmwf1%sea_ice_cover .ne. sreal_fill_value .and. &
+          ecmwf2%sea_ice_cover .ne. sreal_fill_value)
+      ecmwf%sea_ice_cover = a * ecmwf1%sea_ice_cover + b * ecmwf2%sea_ice_cover
+   endwhere
 
 end subroutine linearly_combine_ecmwfs
 
