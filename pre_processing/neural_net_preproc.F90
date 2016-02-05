@@ -36,6 +36,7 @@
 ! 2015/12/17, OS: changed structure of setting thresholds
 ! 2016/01/21, OS: Added correction for ice-free sea skin temperature - to be tested
 ! 2016/01/21, OS: Removed offset when correcting AATSR ch1 and ch2 data
+! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
 
 ! $Id$
 !
@@ -54,7 +55,7 @@ contains
   !------------------------------------------------------------------------
   subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
        & solzen, satzen, dem, niseflag, lsflag, &
-       & lusflag, sfctype, cccot_pre, cldflag, cld_uncertainty, lat, skint, &
+       & lusflag, albedo1, albedo2, cccot_pre, cldflag, cld_uncertainty, lat, skint, &
        & ch3a_on_avhrr_flag, i, j, glint_angle, sensor_name, platform, verbose)
     !------------------------------------------------------------------------
 
@@ -81,9 +82,9 @@ contains
     character(len=sensor_length),   intent(in)    :: sensor_name
     character(len=platform_length), intent(in)    :: platform
     integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
-    integer(kind=sint), intent(in) :: sfctype, ch3a_on_avhrr_flag
+    integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
     integer(kind=lint), intent(in) :: dem
-    real(kind=sreal),   intent(in) :: solzen, lat, skint, satzen, glint_angle
+    real(kind=sreal),   intent(in) :: solzen, lat, skint, satzen, glint_angle, albedo1, albedo2
     real(kind=sreal),   intent(in) :: channel1, channel2, channel3b, channel4, channel5
     integer(kind=lint), intent(in) :: i, j
     logical,            intent(in) :: verbose
@@ -98,7 +99,7 @@ contains
     real(kind=sreal)   :: btd_ch4_ch5, btd_ch4_ch3b, norm_diff_cc_th
     integer(kind=sint) :: glint_mask
     logical            :: call_neural_net
-    
+
     if ( glint_angle .lt. 40.0 .and. glint_angle .ne. sreal_fill_value ) then
        glint_mask = YES
     else
@@ -108,7 +109,9 @@ contains
     if ( channel1 .eq. sreal_fill_value ) then
        ch1 = channel1
     else
-       ch1 = channel1 * 100.
+       ch1 = channel1
+       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0. .and. albedo1 .lt. 0.8)) ch1 = max(ch1 - albedo1 / 2., 0.)
+       ch1 = ch1 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch1 = 0.8945 * ch1 + 2.217
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch1 = 0.8542 * ch1
        ch1 = min(106.,ch1) ! Dont allow reflectance to be higher than trained
@@ -121,7 +124,9 @@ contains
           ch2 = channel2
        endif
     else
-       ch2 = channel2 * 100.
+       ch2 = channel2 
+       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0. .and. albedo2 .lt. 0.8)) ch2 = max(ch2 - albedo2 / 2., 0.)
+       ch2 = ch2 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch2 = 0.8336 * ch2 + 1.749
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch2 = 0.7787 * ch2
        ch2 = min(104.,ch2) ! Dont allow reflectance to be higher than trained
@@ -168,10 +173,10 @@ contains
        illum_nn = 3
        ! use twilight net if ch3b is missing at night/twilight:
        if ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 2
-!       if ( ( ch3b .lt. NOAA7_9_CH3B_BT_THRES ) .and. ( (trim(adjustl(platform)) .eq. 'noaa7') &
-!            .or. (trim(adjustl(platform)) .eq. 'noaa9') ) ) then
-!          illum_nn = 2
-!       endif
+       !       if ( ( ch3b .lt. NOAA7_9_CH3B_BT_THRES ) .and. ( (trim(adjustl(platform)) .eq. 'noaa7') &
+       !            .or. (trim(adjustl(platform)) .eq. 'noaa9') ) ) then
+       !          illum_nn = 2
+       !       endif
     else
        illum_nn = 0
        ! if solzen is negative, do not call neural net
@@ -179,7 +184,7 @@ contains
     endif
 
     threshold_used = sreal_fill_value
- 
+
     ! --- if day
     if ( illum_nn .eq. 1 ) then
 
@@ -220,11 +225,11 @@ contains
 
        !set threshold
        if ( lsflag .eq. 0_byte ) then
-           threshold_used = COT_THRES_DAY_SEA
-           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_SEA_ICE
+          threshold_used = COT_THRES_DAY_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_SEA_ICE
        elseif ( lsflag .eq. 1_byte ) then
-           threshold_used = COT_THRES_DAY_LAND
-           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_LAND_ICE
+          threshold_used = COT_THRES_DAY_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_DAY_LAND_ICE
        endif
 
     elseif ( illum_nn .eq. 2 )  then
@@ -266,13 +271,13 @@ contains
        input(5) = niseflag
        input(6) = lsflag
 
-        !set threshold
+       !set threshold
        if ( lsflag .eq. 0_byte ) then
-           threshold_used = COT_THRES_TWL_SEA
-           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_SEA_ICE
+          threshold_used = COT_THRES_TWL_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_SEA_ICE
        elseif ( lsflag .eq. 1_byte ) then
-           threshold_used = COT_THRES_TWL_LAND
-           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_LAND_ICE
+          threshold_used = COT_THRES_TWL_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_TWL_LAND_ICE
        endif
 
     elseif ( illum_nn .eq. 3 ) then
@@ -317,11 +322,11 @@ contains
 
        !set threshold
        if ( lsflag .eq. 0_byte ) then
-           threshold_used = COT_THRES_NIGHT_SEA
-           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_SEA_ICE
+          threshold_used = COT_THRES_NIGHT_SEA
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_SEA_ICE
        elseif ( lsflag .eq. 1_byte ) then
-           threshold_used = COT_THRES_NIGHT_LAND
-           if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_LAND_ICE
+          threshold_used = COT_THRES_NIGHT_LAND
+          if ( niseflag .eq. YES  ) threshold_used = COT_THRES_NIGHT_LAND_ICE
        endif
 
     else
@@ -351,7 +356,10 @@ contains
        ! This probably needs to be done in future because the sunglint correction does not
        ! really work for AATSR ; but at the moment wait for the results
        !       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
-       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
+       !       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
+       !       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO)) output = output - albedo(1)
+       !       output = output + min( 0., (1./6. * ( (glint_angle / 25. ) -1.) ) )
+
        !       endif
 
        ! Testing ice-free sea skin temperature correction
@@ -371,22 +379,22 @@ contains
 
        ! now apply threshold and create BIT mask: 0=CLEAR, 1=CLOUDY
        if ( cccot_pre .gt. threshold_used ) then
-            cldflag = CLOUDY
+          cldflag = CLOUDY
        else
-            cldflag = CLEAR
+          cldflag = CLEAR
        endif
 
 
        ! calculate Uncertainty with pre calculated calipso scores
        ! depending on normalized difference between cccot_pre and used threshold
        if ( cldflag .eq. CLEAR ) then
-           norm_diff_cc_th = ( cccot_pre - threshold_used ) / threshold_used
-           cld_uncertainty = ( CLEAR_UNC_MAX - CLEAR_UNC_MIN ) * norm_diff_cc_th + CLEAR_UNC_MAX
+          norm_diff_cc_th = ( cccot_pre - threshold_used ) / threshold_used
+          cld_uncertainty = ( CLEAR_UNC_MAX - CLEAR_UNC_MIN ) * norm_diff_cc_th + CLEAR_UNC_MAX
        elseif ( cldflag .eq. CLOUDY ) then
-           norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
-           cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
+          norm_diff_cc_th = ( cccot_pre - threshold_used ) / ( 1 - threshold_used )
+          cld_uncertainty = ( CLOUDY_UNC_MAX - CLOUDY_UNC_MIN ) * (norm_diff_cc_th -1 )**2 + CLOUDY_UNC_MIN
        else
-           cld_uncertainty = sreal_fill_value
+          cld_uncertainty = sreal_fill_value
        endif
 
        ! here we go.

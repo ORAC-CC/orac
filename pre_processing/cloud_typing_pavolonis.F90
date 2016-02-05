@@ -56,6 +56,7 @@
 ! 2016/01/21  OS: Removed bug due to differences in land/sea masks between 
 !                 ERA-Interim and USGS
 ! 2016/01/21  OS: Removed bug: test with AATSR flag was also applied to other sensors
+! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
 
 ! $Id$
 !
@@ -517,7 +518,6 @@ contains
     ! load external file containing fill coefficients
     include 'pavolonis_fill_coefficients.inc'
 
-
     !=====================================================================
     !                                                                    !
     !                     Begin cloud typing.                            !
@@ -695,10 +695,9 @@ contains
           BTD_Ch3b_Ch4 = imager_measurements%DATA(i,j,ch4) - &
                imager_measurements%DATA(i,j,ch5)
 
+
+
           !-- NEURAL_NET_PREPROC subroutine
-
-
-
           call ann_cloud_mask( &
                imager_measurements%DATA(i,j,ch1), &
                imager_measurements%DATA(i,j,ch2), &
@@ -710,7 +709,8 @@ contains
                int(imager_geolocation%DEM(i,j), lint), &
                snow_ice_mask(i,j), imager_flags%LSFLAG(i,j), &
                imager_flags%LUSFLAG(i,j), &
-               imager_pavolonis%SFCTYPE(i,j), &
+               surface%albedo(i,j,1), &
+               surface%albedo(i,j,2), &
                imager_pavolonis%CCCOT_pre(i,j), &
                imager_pavolonis%CLDMASK(i,j) , &
                imager_pavolonis%CLDMASK_UNCERTAINTY(i,j) , &
