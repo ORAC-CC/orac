@@ -142,9 +142,9 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
       (delta_Ts * Es_dB_dTs * RTM_Pc%LW%Tbc(Thermal))
 
    ! Calculate overcast radiances at cloud pressure level
-   R_over = (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd)  + &
+   R_over = (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,IT_dv)  + &
              RTM_Pc%LW%B(Thermal)       * CRP(:,IEm)  + &
-             RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) * &
+             RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IR_dv)) * &
              RTM_Pc%LW%Tac(Thermal) + RTM_Pc%LW%Rac_up(Thermal)
 
    ! Calculate part cloudy radiances (a linear combination of R_clear and R_over)
@@ -156,30 +156,30 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
    ! Calculate radiance gradients
 
    ! Gradient w.r.t. cloud optical depth, tau
-   d_R(:,ITau) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,ITd,ITau) + &
+   d_R(:,ITau) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,IT_dv,ITau) + &
                          RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,ITau) + &
-                         RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IRd,ITau))
+                         RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IR_dv,ITau))
 
    ! Gradient w.r.t. effective radius, re
-   d_R(:,IRe) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,ITd,IRe) + &
+   d_R(:,IRe) = fTac * (RTM_Pc%LW%Rbc_up(Thermal)  * d_CRP(:,IT_dv,IRe) + &
                         RTM_Pc%LW%B(Thermal)       * d_CRP(:,IEm,IRe) + &
-                        RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IRd,IRe))
+                        RTM_Pc%LW%Rac_dwn(Thermal) * d_CRP(:,IR_dv,IRe))
 
    ! Gradient w.r.t. cloud pressure, Pc
    d_R(:,IPc) = X(IFr) * (RTM_Pc%LW%dTac_dPc(Thermal) * &
-                          (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,ITd) + &
+                          (RTM_Pc%LW%Rbc_up(Thermal)  * CRP(:,IT_dv) + &
                            RTM_Pc%LW%B(Thermal)       * CRP(:,IEm) + &
-                           RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IRd)) + &
+                           RTM_Pc%LW%Rac_dwn(Thermal) * CRP(:,IR_dv)) + &
                           RTM_Pc%LW%dRac_up_dPc(Thermal)) &
-              + fTac * (RTM_Pc%LW%dRbc_up_dPc(Thermal)  * CRP(:,ITd) + &
+              + fTac * (RTM_Pc%LW%dRbc_up_dPc(Thermal)  * CRP(:,IT_dv) + &
                         RTM_Pc%LW%dB_dPc(Thermal)       * CRP(:,IEm) + &
-                        RTM_Pc%LW%dRac_dwn_dPc(Thermal) * CRP(:,IRd))
+                        RTM_Pc%LW%dRac_dwn_dPc(Thermal) * CRP(:,IR_dv))
 
    ! Gradient w.r.t. cloud fraction, f
    d_R(:,IFr) = R_over - R_clear
 
    ! Gradient w.r.t. surface temperature, Ts
-   d_R(:,ITs) = fTac * Es_dB_dTs * RTM_Pc%LW%Tbc(Thermal) * CRP(:,ITd) + &
+   d_R(:,ITs) = fTac * Es_dB_dTs * RTM_Pc%LW%Tbc(Thermal) * CRP(:,IT_dv) + &
       (1.0 - X(IFr)) * Es_dB_dTs * SPixel%RTM%LW%Tac(Thermal,1)
 
    ! Convert radiances to brightness temperatures
@@ -219,8 +219,8 @@ subroutine FM_Thermal(Ctrl, SAD_LUT, SPixel, SAD_Chan, RTM_Pc, X, GZero, &
 
       do i=1,SPixel%Ind%NThermal
          write(bkp_lun,'(a,i2,3(a,f9.4))') 'Channel index: ', i, &
-              ' CRP Td: ', CRP(i,ITd), '  CRP Em: ', CRP(i,IEm), &
-              '  CRP Rd: ', CRP(i,IRd)
+              ' CRP Td: ', CRP(i,IT_dv), '  CRP Em: ', CRP(i,IEm), &
+              '  CRP Rd: ', CRP(i,IR_dv)
       end do
 
       do i=1,SPixel%Ind%NThermal
