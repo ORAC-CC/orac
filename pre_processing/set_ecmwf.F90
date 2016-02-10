@@ -47,6 +47,8 @@
 ! 2015/11/26, GM: Changes to support temporal interpolation between ecmwf files.
 ! 2016/01/22, GM: If assume_full_path = .false. and a file from the next day is
 !    required use ecmwf_path_file*(2).
+! 2016/01/22, GM: Bug fix: time_int_fac was not being computed for
+!    assume_full_path=.true.
 !
 ! $Id$
 !
@@ -86,6 +88,18 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
    real(dreal)   :: day_real
    character     :: cera_year*4, cera_month*2, cera_day*2, cera_hour*2
 
+   ! Rather than deal with whether the next 6 hour file is in the next month,
+   ! in the next year, or if the year is a leap year it is more straight
+   ! forward to convert to Julian day space, then operate, then convert back.
+   if (time_interp_method .eq. 1 .or. time_interp_method .eq. 2) then
+      jday = find_center_time(imager_geolocation, imager_time)
+
+      jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
+      jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
+
+      time_int_fac = (jday - jday0) / (jday1 - jday0)
+   end if
+
    if (assume_full_path) then
       ! for ecmwf_flag=2, ensure NCDF file is listed in ecmwf_pathout
       if (index(ecmwf_path(1),'.nc') .gt. 0) then
@@ -106,116 +120,97 @@ subroutine set_ecmwf(sensor,cyear,cmonth,cday,chour,cminute,ecmwf_path,ecmwf_pat
          ecmwf_path_file3 = ecmwf_path3
       end if
    else
+      if (time_interp_method .eq. 0) then
+         ! pick last ERA interim file wrt sensor time (as on the same day)
+         read(chour, *) hour
+         select case (hour)
+         case(0:5)
+            cera_hour='00'
+         case(6:11)
+            cera_hour='06'
+         case(12:17)
+            cera_hour='12'
+         case(18:23)
+            cera_hour='18'
+         case default
+            cera_hour='00'
+         end select
 
-if (time_interp_method .eq. 0) then
-      ! pick last ERA interim file wrt sensor time (as on the same day)
-      read(chour, *) hour
-      select case (hour)
-      case(0:5)
-         cera_hour='00'
-      case(6:11)
-         cera_hour='06'
-      case(12:17)
-         cera_hour='12'
-      case(18:23)
-         cera_hour='18'
-      case default
-         cera_hour='00'
-      end select
+         call make_ecmwf_name(cyear,cmonth,cday,cera_hour,ecmwf_flag,ecmwf_path(1), &
+            ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1),ecmwf_path_file2(1), &
+            ecmwf_path_file3(1))
+      else if (time_interp_method .eq. 1) then
+         ! Pick the closest ERA interim file wrt sensor time
 
-      call make_ecmwf_name(cyear,cmonth,cday,cera_hour,ecmwf_flag,ecmwf_path(1), &
-         ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1),ecmwf_path_file2(1), &
-         ecmwf_path_file3(1))
-else if (time_interp_method .eq. 1) then
-      ! Pick the closest ERA interim file wrt sensor time
+         if (jday - jday0 .lt. jday1 - jday) then
+            jday2 = jday0
+         else
+            jday2 = jday1
+         end if
 
-      ! Rather than deal with whether the next 6 hour file is in the next month,
-      ! in the next year, or if the year is a leap year it is more straight
-      ! forward to convert to Julian day space, then operate, then convert back.
-      jday = find_center_time(imager_geolocation, imager_time)
+         call JD2GREG(jday0, year, month, day_real)
+         day = int(day_real, sint)
 
-      jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
-      jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
+         day_before = day
 
-      if (jday - jday0 .lt. jday1 - jday) then
-         jday2 = jday0
+         call JD2GREG(jday2, year, month, day_real)
+         day = int(day_real, sint)
+         hour = int((day_real - day) * 24._dreal, sint)
+
+         write(cera_year,  '(I4.4)') year
+         write(cera_month, '(I2.2)') month
+         write(cera_day,   '(I2.2)') day
+         write(cera_hour,  '(I2.2)') hour
+
+         if (day_before .eq. day) then
+            i_path = 1
+         else
+            i_path = 2
+         end if
+
+         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+            ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+            ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
+      else if (time_interp_method .eq. 2) then
+         ! Pick the ERA interim files before and after wrt sensor time
+
+         call JD2GREG(jday0, year, month, day_real)
+         day  = int(day_real, sint)
+         hour = int((day_real - day) * 24._dreal, sint)
+
+         write(cera_year,  '(I4.4)') year
+         write(cera_month, '(I2.2)') month
+         write(cera_day,   '(I2.2)') day
+         write(cera_hour,  '(I2.2)') hour
+
+         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+            ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
+            ecmwf_path_file2(1), ecmwf_path_file3(1))
+
+         day_before = day
+
+         call JD2GREG(jday1, year, month, day_real)
+         day = int(day_real, sint)
+         hour = int((day_real - day) * 24._dreal, sint)
+
+         write(cera_year,  '(I4.4)') year
+         write(cera_month, '(I2.2)') month
+         write(cera_day,   '(I2.2)') day
+         write(cera_hour,  '(I2.2)') hour
+
+         if (day_before .eq. day) then
+            i_path = 1
+         else
+            i_path = 2
+         end if
+
+         call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
+            ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
+            ecmwf_path_file(2),ecmwf_path_file2(2), ecmwf_path_file3(2))
       else
-         jday2 = jday1
+         write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', time_interp_method
+         stop error_stop_code
       end if
-
-      call JD2GREG(jday0, year, month, day_real)
-      day = int(day_real, sint)
-
-      day_before = day
-
-      call JD2GREG(jday2, year, month, day_real)
-      day = int(day_real, sint)
-      hour = int((day_real - day) * 24._dreal, sint)
-
-      write(cera_year,  '(I4.4)') year
-      write(cera_month, '(I2.2)') month
-      write(cera_day,   '(I2.2)') day
-      write(cera_hour,  '(I2.2)') hour
-
-      if (day_before .eq. day) then
-         i_path = 1
-      else
-         i_path = 2
-      end if
-
-      call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-         ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
-         ecmwf_path_file(1),ecmwf_path_file2(1),ecmwf_path_file3(1))
-else if (time_interp_method .eq. 2) then
-      ! Pick the ERA interim files before and after wrt sensor time
-
-      ! Rather than deal with whether the next 6 hour file is in the next month,
-      ! in the next year, or if the year is a leap year it is more straight
-      ! forward to convert to Julian day space, then operate, then convert back.
-      jday = find_center_time(imager_geolocation, imager_time)
-
-      jday0 = floor(jday / (6._dreal / 24._dreal)           ) * 6._dreal / 24._dreal
-      jday1 = floor(jday / (6._dreal / 24._dreal) + 1._dreal) * 6._dreal / 24._dreal
-
-      time_int_fac = (jday - jday0) / (jday1 - jday0)
-
-      call JD2GREG(jday0, year, month, day_real)
-      day  = int(day_real, sint)
-      hour = int((day_real - day) * 24._dreal, sint)
-
-      write(cera_year,  '(I4.4)') year
-      write(cera_month, '(I2.2)') month
-      write(cera_day,   '(I2.2)') day
-      write(cera_hour,  '(I2.2)') hour
-
-      call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-         ecmwf_path(1),ecmwf_path2(1),ecmwf_path3(1),ecmwf_path_file(1), &
-         ecmwf_path_file2(1), ecmwf_path_file3(1))
-
-      day_before = day
-
-      call JD2GREG(jday1, year, month, day_real)
-      day = int(day_real, sint)
-      hour = int((day_real - day) * 24._dreal, sint)
-
-      write(cera_year,  '(I4.4)') year
-      write(cera_month, '(I2.2)') month
-      write(cera_day,   '(I2.2)') day
-      write(cera_hour,  '(I2.2)') hour
-
-      if (day_before .eq. day) then
-         i_path = 1
-      else
-         i_path = 2
-      end if
-
-      call make_ecmwf_name(cera_year,cera_month,cera_day,cera_hour,ecmwf_flag, &
-         ecmwf_path(i_path),ecmwf_path2(i_path),ecmwf_path3(i_path), &
-         ecmwf_path_file(2),ecmwf_path_file2(2), ecmwf_path_file3(2))
-else
-      write(*,*) 'ERROR: invalid set_ecmwf() time_interp_method: ', time_interp_method
-      stop error_stop_code
-end if
    end if
 
 end subroutine set_ecmwf
