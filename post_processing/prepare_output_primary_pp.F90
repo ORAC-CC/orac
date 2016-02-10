@@ -34,6 +34,7 @@
 ! 2015/11/27, CP: Added additional cloud type prob clear
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
 ! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/02/10, GM: Remove redundant checks for fill_value.
 !
 ! $Id$
 !
@@ -85,11 +86,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    if (input_data%illum(i,j) .eq. 1_byte .or. output_optical_props_at_night) then
 
-      if (input_data%cot(i,j) .eq. sreal_fill_value) then
-         temp_real_cot = sreal_fill_value
-      else
-         temp_real_cot = input_data%cot(i,j)
-      end if
+      temp_real_cot = input_data%cot(i,j)
       call prepare_short_packed_float( &
               temp_real_cot, output_data%cot(i,j), &
               output_data%cot_scale, output_data%cot_offset, &
@@ -97,11 +94,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
               output_data%cot_vmin, output_data%cot_vmax, &
               output_data%cot_vmax)
 
-      if (input_data%cot_uncertainty(i,j) .eq. sreal_fill_value) then
-         temp_real = sreal_fill_value
-      else
-         temp_real = input_data%cot_uncertainty(i,j)
-      end if
+      temp_real = input_data%cot_uncertainty(i,j)
       call prepare_short_packed_float( &
               temp_real, output_data%cot_error(i,j), &
               output_data%cot_error_scale, output_data%cot_error_offset, &
@@ -112,11 +105,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
       !--------------------------------------------------------------------------
       ! cer, cer_error
       !--------------------------------------------------------------------------
-      if (input_data%cer(i,j) .eq. sreal_fill_value) then
-         temp_real = sreal_fill_value
-      else
-         temp_real = input_data%cer(i,j)
-      end if
+      temp_real = input_data%cer(i,j)
       call prepare_short_packed_float( &
               temp_real, output_data%cer(i,j), &
               output_data%cer_scale, output_data%cer_offset, &
@@ -124,11 +113,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
               output_data%cer_vmin, output_data%cer_vmax, &
               output_data%cer_vmax)
 
-      if (input_data%cer_uncertainty(i,j) .eq. sreal_fill_value) then
-         temp_real = sreal_fill_value
-      else
-         temp_real = input_data%cer_uncertainty(i,j)
-      end if
+      temp_real = input_data%cer_uncertainty(i,j)
       call prepare_short_packed_float( &
               temp_real, output_data%cer_error(i,j), &
               output_data%cer_error_scale, output_data%cer_error_offset, &
@@ -139,11 +124,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
       !-------------------------------------------------------------------------
       ! cwp, cwp_error
       !-------------------------------------------------------------------------
-      if (input_data%cwp(i,j) .eq. sreal_fill_value) then
-         temp_real = sreal_fill_value
-      else
-         temp_real = input_data%cwp(i,j)
-      end if
+     temp_real = input_data%cwp(i,j)
       call prepare_short_packed_float( &
               temp_real, output_data%cwp(i,j), &
               output_data%cwp_scale, output_data%cwp_offset, &
@@ -151,11 +132,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
               output_data%cwp_vmin, output_data%cwp_vmax, &
               output_data%cwp_vmax)
 
-      if (input_data%cwp_uncertainty(i,j) .eq. sreal_fill_value) then
-         temp_real = sreal_fill_value
-      else
-         temp_real = input_data%cwp_uncertainty(i,j)
-      end if
+      temp_real = input_data%cwp_uncertainty(i,j)
       call prepare_short_packed_float( &
               temp_real, output_data%cwp_error(i,j), &
               output_data%cwp_error_scale, output_data%cwp_error_offset, &
@@ -167,11 +144,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! ctp, ctp_error
    !----------------------------------------------------------------------------
-   if (input_data%ctp(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%ctp(i,j)
-   end if
+   temp_real = input_data%ctp(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%ctp(i,j), &
            output_data%ctp_scale, output_data%ctp_offset, &
@@ -179,11 +152,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%ctp_vmin, output_data%ctp_vmax, &
            output_data%ctp_vmax)
 
-   if (input_data%ctp_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real_ctp_error = sreal_fill_value
-   else
-      temp_real_ctp_error = input_data%ctp_uncertainty(i,j)
-   end if
+   temp_real_ctp_error = input_data%ctp_uncertainty(i,j)
    call prepare_short_packed_float( &
            temp_real_ctp_error, output_data%ctp_error(i,j), &
            output_data%ctp_error_scale, output_data%ctp_error_offset, &
@@ -194,11 +163,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! ctp_corrected, ctp_corrected_error
    !----------------------------------------------------------------------------
-   if (input_data%ctp_corrected(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%ctp_corrected(i,j)
-   end if
+   temp_real = input_data%ctp_corrected(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%ctp_corrected(i,j), &
            output_data%ctp_scale, output_data%ctp_offset, &
@@ -206,11 +171,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%ctp_vmin, output_data%ctp_vmax, &
            output_data%ctp_vmax)
 
-   if (input_data%ctp_corrected_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%ctp_corrected_uncertainty(i,j)
-   end if
+   temp_real = input_data%ctp_corrected_uncertainty(i,j)
    call prepare_short_packed_float( &
         temp_real, output_data%ctp_corrected_error(i,j), &
         output_data%ctp_error_scale, output_data%ctp_error_offset, &
@@ -221,11 +182,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! cct, cct_error
    !----------------------------------------------------------------------------
-   if (input_data%cc_total(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%cc_total(i,j)
-   end if
+   temp_real = input_data%cc_total(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%cct(i,j), &
            output_data%cct_scale, output_data%cct_offset, &
@@ -233,11 +190,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%cct_vmin, output_data%cct_vmax, &
            sint_fill_value)
 
-   if (input_data%cc_total_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%cc_total_uncertainty(i,j)
-   end if
+   temp_real = input_data%cc_total_uncertainty(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%cct_error(i,j), &
            output_data%cct_error_scale, output_data%cct_error_offset, &
@@ -248,11 +201,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! stemp, stemp_error
    !----------------------------------------------------------------------------
-   if (input_data%stemp(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%stemp(i,j)
-   end if
+   temp_real = input_data%stemp(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%stemp(i,j), &
            output_data%stemp_scale, output_data%stemp_offset, &
@@ -260,11 +209,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%stemp_vmin, output_data%stemp_vmax, &
            output_data%stemp_vmax)
 
-   if (input_data%stemp_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%stemp_uncertainty(i,j)
-   end if
+   temp_real = input_data%stemp_uncertainty(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%stemp_error(i,j), &
            output_data%stemp_error_scale, output_data%stemp_error_offset, &
@@ -275,11 +220,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! cth, cth_error
    !----------------------------------------------------------------------------
-   if (input_data%cth(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%cth(i,j)
-   end if
+   temp_real = input_data%cth(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%cth(i,j), &
            output_data%cth_scale, output_data%cth_offset, &
@@ -287,11 +228,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%cth_vmin, output_data%cth_vmax, &
            output_data%cth_vmax)
 
-   if (input_data%cth_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%cth_uncertainty(i,j)
-   end if
+   temp_real = input_data%cth_uncertainty(i,j)
    call prepare_short_packed_float( &
         temp_real, output_data%cth_error(i,j), &
         output_data%cth_error_scale, output_data%cth_error_offset, &
@@ -302,11 +239,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! cth_corrected, cth_corrected_error
    !----------------------------------------------------------------------------
-   if (input_data%cth_corrected(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%cth_corrected(i,j)
-   end if
+   temp_real = input_data%cth_corrected(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%cth_corrected(i,j), &
            output_data%cth_scale, output_data%cth_offset, &
@@ -314,11 +247,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%cth_vmin, output_data%cth_vmax, &
            output_data%cth_vmax)
 
-   if (input_data%cth_corrected_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%cth_corrected_uncertainty(i,j)
-   end if
+   temp_real = input_data%cth_corrected_uncertainty(i,j)
    call prepare_short_packed_float( &
         temp_real, output_data%cth_corrected_error(i,j), &
         output_data%cth_error_scale, output_data%cth_error_offset, &
@@ -329,11 +258,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! ctt, ctt_error
    !----------------------------------------------------------------------------
-   if (input_data%ctt(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%ctt(i,j)
-   end if
+   temp_real = input_data%ctt(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%ctt(i,j), &
            output_data%ctt_scale, output_data%ctt_offset, &
@@ -341,11 +266,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%ctt_vmin, output_data%ctt_vmax, &
            output_data%ctt_vmax)
 
-   if (input_data%ctt_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%ctt_uncertainty(i,j)
-   end if
+   temp_real = input_data%ctt_uncertainty(i,j)
    call prepare_short_packed_float( &
         temp_real, output_data%ctt_error(i,j), &
         output_data%ctt_error_scale, output_data%ctt_error_offset, &
@@ -356,11 +277,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    ! ctt_corrected, ctt_corrected_error
    !----------------------------------------------------------------------------
-   if (input_data%ctt_corrected(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%ctt_corrected(i,j)
-   end if
+   temp_real = input_data%ctt_corrected(i,j)
    call prepare_short_packed_float( &
            temp_real, output_data%ctt_corrected(i,j), &
            output_data%ctt_scale, output_data%ctt_offset, &
@@ -368,11 +285,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%ctt_vmin, output_data%ctt_vmax, &
            output_data%ctt_vmax)
 
-   if (input_data%ctt_corrected_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real = sreal_fill_value
-   else
-      temp_real = input_data%ctt_corrected_uncertainty(i,j)
-   end if
+   temp_real = input_data%ctt_corrected_uncertainty(i,j)
    call prepare_short_packed_float( &
         temp_real, output_data%ctt_corrected_error(i,j), &
         output_data%ctt_error_scale, output_data%ctt_error_offset, &
