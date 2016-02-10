@@ -56,9 +56,8 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    type(output_data_primary), intent(inout) :: output_data
    logical,                   intent(in)    :: output_optical_props_at_night
 
-   integer            :: k
-   integer(kind=sint) :: temp_short_ctp_error
-   real(kind=sreal)   :: temp_real, temp_real_cot, temp_real_ctp_error
+   integer          :: k
+   real(kind=sreal) :: temp_real, temp_real_cot, temp_real_ctp_error
 
 
    !----------------------------------------------------------------------------
@@ -181,12 +180,9 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%ctp_vmax)
 
    if (input_data%ctp_uncertainty(i,j) .eq. sreal_fill_value) then
-      temp_real_ctp_error=sreal_fill_value
+      temp_real_ctp_error = sreal_fill_value
    else
       temp_real_ctp_error = input_data%ctp_uncertainty(i,j)
-      temp_short_ctp_error = ( int(temp_real_ctp_error, kind=sint) - &
-                               output_data%ctp_error_scale &
-                             ) / output_data%ctp_error_scale
    end if
    call prepare_short_packed_float( &
            temp_real_ctp_error, output_data%ctp_error(i,j), &
