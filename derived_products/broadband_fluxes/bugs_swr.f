@@ -49,6 +49,9 @@
 ! * changed declarations to adapt the code from BUGS4 to BUGS5.
 !   Laura D. Fowler/slikrock (02-01-00).
 
+! * added PAR based on spectrally integrated weights over bands 1 & 2
+!   Christensen M. (02/11/16)
+
 ! SUBROUTINES CALLED:
 
 !     pscale         : pressure scaling.
@@ -445,14 +448,33 @@
 
 !---- 1.8 computes photosynthetic active radiation - Matt Christensen 11/3/15
         !Calculate PAR (400-700nm) from band 1 (200-689nm)
-        !Flux estimate is 23.159% too large because some of
-        !the radiant energy from 200-400 nm contributes 22% more
-        !to the flux across this band the other 1% comes from 689-700nm
-        !this method is not ideal although it would require adding another
+        !Flux estimate is too large from band 1 because some of
+        !the radiant energy from 200-400 nm contributes 25.37% more
+        !to the flux across this band the other 3.2% comes from 689-700nm
+        !this method is not ideal. It would require adding another
+        !PAR = R1*W1 + R2W2
+        ! W1 = 0.746274 & W2 = 0.032175
         !shortwave channel
-        if(ib .eq. 1 .and. ig .eq. 10) boapar(1)=fdsw(1,nlm)*0.768
-        if(ib .eq. 1 .and. ig .eq. 10) boapardif(1)=fdswdif(1,nlm)*0.768
-        if(ib .eq. 1 .and. ig .eq. 10) toapar(1)=fdsw(1,1)*0.768
+        !band 1 (74.6% weight from this channel)
+        if(ib .eq. 1 .and. ig .eq. 10) then 
+          boapar(1)   = fdsw(1,nlm)    * 0.746274
+          boapardif(1)= fdswdif(1,nlm) * 0.746274
+          toapar(1)   = fdsw(1,1)      * 0.746274
+        endif
+
+        !band 2 (3.2% weight from this channel)
+         !note bands are being added 1 each time so need to subtract
+         !total-band1 to get band2
+        if(ib .eq. 2 .and. ig .eq. 8) then
+          !print*,boapar,boapardif,toapar
+          boapar(1)   = boapar(1)    + 
+     &                 (fdsw(1,nlm)   -    boapar(1)/0.746274)*0.032175
+          boapardif(1)= boapardif(1) +
+     &                 (fdswdif(1,nlm)- boapardif(1)/0.746274)*0.032175
+          toapar(1)=toapar(1)+
+     &                 (fdsw(1,nlm)   -    toapar(1)/0.746274)*0.032175
+          !print*,boapar,boapardif,toapar
+        endif
 
          enddo ! end k-distribution
       enddo ! end spectral interval
