@@ -58,7 +58,7 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    logical,                   intent(in)    :: output_optical_props_at_night
 
    integer          :: k
-   real(kind=sreal) :: temp_real, temp_real_cot, temp_real_ctp_error
+   real(kind=sreal) :: temp_real
 
 
    !----------------------------------------------------------------------------
@@ -86,9 +86,9 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
    !----------------------------------------------------------------------------
    if (input_data%illum(i,j) .eq. 1_byte .or. output_optical_props_at_night) then
 
-      temp_real_cot = input_data%cot(i,j)
+      temp_real = input_data%cot(i,j)
       call prepare_short_packed_float( &
-              temp_real_cot, output_data%cot(i,j), &
+              temp_real, output_data%cot(i,j), &
               output_data%cot_scale, output_data%cot_offset, &
               sreal_fill_value, sint_fill_value, &
               output_data%cot_vmin, output_data%cot_vmax, &
@@ -152,9 +152,9 @@ subroutine prepare_output_primary_pp(i, j, indexing, input_data, output_data, &
            output_data%ctp_vmin, output_data%ctp_vmax, &
            output_data%ctp_vmax)
 
-   temp_real_ctp_error = input_data%ctp_uncertainty(i,j)
+   temp_real = input_data%ctp_uncertainty(i,j)
    call prepare_short_packed_float( &
-           temp_real_ctp_error, output_data%ctp_error(i,j), &
+           temp_real, output_data%ctp_error(i,j), &
            output_data%ctp_error_scale, output_data%ctp_error_offset, &
            sreal_fill_value, sint_fill_value, &
            output_data%ctp_error_vmin, output_data%ctp_error_vmax, &
