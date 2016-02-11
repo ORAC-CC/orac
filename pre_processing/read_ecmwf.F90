@@ -57,8 +57,8 @@ subroutine read_ecmwf_wind(ecmwf_flag, ecmwf_path_file, ecmwf_HR_path_file, &
            ecmwf_path_file3,ecmwf,.false.)
       if (verbose) write(*,*)'ecmwf_dims ncdf: ',ecmwf%xdim,ecmwf%ydim
       if (use_hr_ecmwf) then
-         call read_ecmwf_wind_nc(ecmwf_path_file,ecmwf_path_file2, &
-            ecmwf_path_file3,ecmwf,.true.)
+         call read_ecmwf_wind_nc(ecmwf_HR_path_file,ecmwf_path_file2, &
+            ecmwf_path_file3,ecmwf_HR,.true.)
       end if
    case(2)
       call read_ecmwf_wind_badc(ecmwf_path_file,ecmwf_path_file2, &
