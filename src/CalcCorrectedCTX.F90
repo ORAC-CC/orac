@@ -12,7 +12,10 @@
 ! History:
 ! 2015/11/18, GM: Original version.
 ! 2015/12/15, GM: Some cleanup.  Make use of find_in_array().
-! 2016/01/28, GM: Output ctp and ctt corrected and corrected_uncertianty.
+! 2016/01/25, GM: Output uncorrected values when no correction is applied.
+! 2016/01/28, GM: Output CTH and CTT corrected and corrected_uncertianty.
+! 2016/02/12, GM: Apply a lower CTP correction limit that also affects CTP and
+!    CTH.
 !
 ! $Id$
 !
@@ -209,9 +212,8 @@ subroutine Calc_Corrected_CTX(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Sy)
       cth_new        = RTM_Pc%Hc     + delta_ctp * RTM_Pc%dHc_dPc
       cth_new_sigma = abs(ctp_new_sigma * RTM_Pc%dHc_dPc)
 
-      ! It doesn't happen much but if it does lets just ignore corrections in
-      ! the downward direction
-      if (ctp_new - SPixel%Xn(iPc) .lt. 0) then
+      ! Ignore corrections less than a thresold or in the downward direction
+      if (ctp_new .gt. Ctrl%CTP_correction_limit .and. ctp_new .lt. SPixel%Xn(iPc)) then
          SPixel%CTP_corrected       = ctp_new
          SPixel%CTP_corrected_error = ctp_new_sigma
          SPixel%CTH_corrected       = cth_new

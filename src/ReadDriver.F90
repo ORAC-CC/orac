@@ -825,6 +825,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end if
 
+   Ctrl%CTP_correction_limit = 100.
+
 
    !----------------------------------------------------------------------------
    ! Consider optional lines of driver file
