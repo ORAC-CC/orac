@@ -47,14 +47,16 @@ pro loadct_rs,test=test,out=out,step=step,ps=ps,gamma=gamma,ifi=ifi,tw=tw,rct=c,
 			g(wh)=g2(-csel(wh))
 			b(wh)=b2(-csel(wh))
 		endif
-stop
+
 		if keyword_set(out) then wr_struct,ifi,{r:r,g:g,b:b}
 	endif
+
 	if n_tags(c) eq 0 then c=rd_struct(ifi)
 ;	if !d.n_colors lt 4 then message,'Must have at least 4 colours available !'
 ;	nc=!d.n_colors-3
 ; !d.n_colors gives problems on 24 bit graphics cards (B.Latter 24th Jan 2002)
 	if !d.table_size lt 4 then message,'Must have at least 4 colours available !'
+
 	nc=!d.table_size-3
 	ni=n_elements(c.r)
 	i1=findgen(ni)/(ni-1)

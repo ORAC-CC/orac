@@ -12,16 +12,19 @@
 ;	RKML	Set resolution of sinusoidal grid used with KML file
 ;       ERROR : plot uncertainties of retrieved values
 ;       COMB: add combined solution option
+;       fatplot: plot images wider than default plotting, better for
+;modis granules
 ;
 ; R.S. 28/03/11
 ; CP 4 4/2013 CP added error keyword
 ; cp : 20/06/2013 added in nosec keyword
 ; cp : 24/2/2014 added night variable
+; cp : 24/06/2014 added fatplot
 
 ; $Id: plot_ret_cldmodel_modis.pro 937 2011-06-10 09:36:13Z rsiddans $
 ;-
 ;===============================================================================
-pro plot_ret_cldmodel_modis,x,h,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop_x=eop_x,kml=kml,rkml=rkml,error=error,nosec=nosec,fips=fips,night=night
+pro plot_ret_cldmodel_modis,x,h,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop_x=eop_x,kml=kml,rkml=rkml,error=error,nosec=nosec,fips=fips,night=night,fatplot=fatplot,inst=inst,aer=aer,noir=noir
 ;
 ; change v to be the index of along-track lines with valid data (avoid confusing
 ; null data gaps)
@@ -54,6 +57,7 @@ pro plot_ret_cldmodel_modis,x,h,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop
 ;
 	h1=h
 	h1.v=v2
+
 	if h.sv.n_total eq 4 then begin
 		mask=[[0,1,2,3,4,5],[6,7,8,9,10,11]]
 	endif else if h.sv.n_total eq 5 then begin
@@ -96,11 +100,11 @@ pro plot_ret_cldmodel_modis,x,h,_EXTRA=extra,clon=clon,clat=clat,eop_y=eop_y,eop
 	endif
 if night gt 0 then begin
 	plot_ret_cldmodel_cloud,x,h1,/axti,_EXTRA=extra,mas=mask,p1=[0.01,0.01,0.99,0.98],chars=1.5,crd=0.2,cbl=0.5,$
-		p2=[0.14,0.01,0.99,0.92],ext=ext,eop_thick=eop_thick,eop_col=eop_col,eop_x=eop_x1,eop_y=eop_y1,kml=kml,error=error,/noresid,nosec=nosec,fips=fips,/night
+		p2=[0.14,0.01,0.99,0.92],ext=ext,eop_thick=eop_thick,eop_col=eop_col,eop_x=eop_x1,eop_y=eop_y1,kml=kml,error=error,/noresid,nosec=nosec,fips=fips,/night,fatplot=fatplot,v1=v1,inst=inst,aer=aer,noir=noir
      endif else begin
 
 plot_ret_cldmodel_cloud,x,h1,/axti,_EXTRA=extra,mas=mask,p1=[0.01,0.01,0.99,0.98],chars=1.5,crd=0.2,cbl=0.5,$
-		p2=[0.14,0.01,0.99,0.92],ext=ext,eop_thick=eop_thick,eop_col=eop_col,eop_x=eop_x1,eop_y=eop_y1,kml=kml,error=error,/noresid,nosec=nosec,fips=fips
+		p2=[0.14,0.01,0.99,0.92],ext=ext,eop_thick=eop_thick,eop_col=eop_col,eop_x=eop_x1,eop_y=eop_y1,kml=kml,error=error,/noresid,nosec=nosec,fips=fips,fatplot=fatplot,v1=v1,inst=inst,aer=aer,noir=noir
 
 endelse
 

@@ -23,12 +23,13 @@ function ret_add_geo,x,h
 	if h.sg.sat eq 1 then begin
 		ll={lat:h.sg.lat,lon:h.sg.lon}
 	endif else ll=standard_grid_ll(h.sg,h.u,h.v)
-	lat=ll.lat
-	lon=ll.lon
+;	lat=ll.lat
+;	lon=ll.lon
 	u=h.u
 	v=h.v
 	for i=0l,nx-1 do begin
-		x1=create_struct(x(i),{lat:lat(i),lon:lon(i),u:u(i),v:v(i)})
+;		x1=create_struct(x(i),{lat:lat(i),lon:lon(i),u:u(i),v:v(i)})
+x1=create_struct(x(i),{u:u(i),v:v(i)})
 		if n_tags(xs) eq 0 then xs=replicate(zero_struct(x1),nx)
 		xs(i)=x1
 	endfor

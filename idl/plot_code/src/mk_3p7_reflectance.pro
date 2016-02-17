@@ -21,9 +21,11 @@ function mk_3p7_reflectance,y,s
 	ic11=ic(1)
 	b11=reform(y(ic11,*))
 	b37=reform(y(ic37,*))
-	i37_total=bt_rttov(b37,s(ic37).rttov)
-	i37_thermal=bt_rttov(b11,s(ic37).rttov)
+
+	i37_total=bt_rttov(b37,s.rttov(ic37))
+
+	i37_thermal=bt_rttov(b11,s.rttov(ic37))
 	i37_solar=i37_total-i37_thermal
-	r37=i37_solar*!pi/(s(ic37).i0/100)
+	r37=i37_solar*!pi/(s.i0/100.)
 	return,r37
 end

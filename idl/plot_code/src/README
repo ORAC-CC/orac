@@ -1,1 +1,6 @@
 read_orac_nc_pp is the main program the other files are called by this program
+
+Look in the header of this file to see examples of how to run the code
+ typical usage idl>x=read_orac_nc_pp(/plot,/ps)
+
+ Code is still a bit experimental so feed back would be appreciated.

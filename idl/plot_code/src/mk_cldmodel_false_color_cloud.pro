@@ -59,11 +59,17 @@ im(*,*,2)=im(*,*,0)+(im(*,*,2)-im(*,*,0))*8
 	endif else begin
         	ich=get_nns([1.6,0.8,0.63],h.s.mwl)      ; identify std false colour channel
         	im=reform(y(*,ich),nx,1,3)
+;stop
+;print,'a',range(im)
+
         	im=im*450
+;print,'b',range(im)
+;stop
         	wh=where(im gt 255,nw) & if nw gt 0 then im(wh)=255
         	wh=where(im lt 0,nw) & if nw gt 0 then im(wh)=0
         
 	im=((im/255)^0.7)*255
+print,'c',range(im)
 	endelse
         im=reform(im)
 ;
@@ -71,8 +77,8 @@ im(*,*,2)=im(*,*,0)+(im(*,*,2)-im(*,*,0))*8
 ;the same scale
 ;
         if not keyword_set(n32) then im=mk_32bit_image(im(*,0),im(*,1),im(*,2),cmax=255,cmin=0)
-
-
+print,'e',range(im)
+;stop
 	return,im
 
 end

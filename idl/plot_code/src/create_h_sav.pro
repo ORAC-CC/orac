@@ -21,14 +21,70 @@
 ; $Id$
 ;-
 ;==========================================================================
-function create_h_sav
+function create_h_sav,i37=i37
 
 temp1=fltarr(416)
 temp2=intarr(3)
+if keyword_set(i37) then begin
+mwla=[0.645832 ,    0.856874   ,   3.7  ,    11.0263  ,    12.0424]
+extra_name='_i37'
+endif else begin
 mwla=[0.645832 ,    0.856874   ,   1.62808  ,    11.0263  ,    12.0424]
-s={NAME:'Band01',INST:'MODIS-AQUA',MWL:mwla,I0:6654.7548,MODTRAN:2,MO3XSEC:2.6825364e-21,MH2OXSEC:1.0689331e-25,MCO2XSEC:0.0000000,MCH4XSEC:0.0000000,MN2OXSEC:0.0000000,MSO2XSEC:0.0000000,MO3TC:9.0209256e+18,MH2OTC:9.9668842e+22,MCO2TC:7.1343327e+21,MCH4TC:3.4154408e+19,MN2OTC:6.3939793e+18,MSO2TC:2.9310859e+15,X:0,HSREMIS_PCU:temp1,HSREMIS_PCM:0.0000000,SOLAR_FLAG:1,THERMAL_FLAG:0,IMODIS:2,YE:0.0049998998,YE_COREG:2.0000000,YE_HOMOG:0.75000000,RTTOV_ID:temp1,RTTOV_SOLAR:0,ST:0,IVIEW:indgen(5)*0} 
-;RTTOV:STRUCT-><Anonymous>Array[1)
+extra_name=''
+endelse
 
+chcek=file_search('~/imager'+extra_name+'.sav',count=fdim)
+if fdim eq 0 then begin
+sr=rd_imager_chans(/rt,/aatsr)
+wr_sav,'~/imager'+extra_name+'.sav',sr
+endif else begin
+sr=rd_sav('~/imager'+extra_name+'.sav')
+endelse
+
+s={NAME:'Band01',INST:'MODIS-AQUA',MWL:mwla,I0:6654.7548,MODTRAN:2,MO3XSEC:2.6825364e-21,MH2OXSEC:1.0689331e-25,MCO2XSEC:0.0000000,MCH4XSEC:0.0000000,MN2OXSEC:0.0000000,MSO2XSEC:0.0000000,MO3TC:9.0209256e+18,MH2OTC:9.9668842e+22,MCO2TC:7.1343327e+21,MCH4TC:3.4154408e+19,MN2OTC:6.3939793e+18,MSO2TC:2.9310859e+15,X:0,HSREMIS_PCU:temp1,HSREMIS_PCM:0.0000000,SOLAR_FLAG:1,THERMAL_FLAG:0,IMODIS:2,YE:0.0049998998,YE_COREG:2.0000000,YE_HOMOG:0.75000000,RTTOV_ID:temp1,RTTOV_SOLAR:0,ST:0,IVIEW:indgen(5)*0,rttov:sr.rttov} 
+;
+;
+;
+
+;temp_COEF_SCATT_IR=FLTArray[20,7]
+;temp_OPTP=FLTArray[20,7]
+;temp_NCHAN=FLTArray[7]
+;temp_NRTTOVID=INTArray[7]
+;temp_CWN=FLtArray[1,7]
+;temp_PW=INTArray[7]
+;temp_LBL=INTArray[7]
+;temp_LEVELS=FLtArray[43,7]
+;temp_NLEVELS=FLTArray[7]
+;temp_INST=FLTArray[3,7]
+;temp_ICHAN=FLTArray[1,7]
+;temp_PLANCK1=FLTArray[7]
+;temp_PLANCK2=FLTArray[7]} 
+
+
+
+;RTTOV:STRUCT-><Anonymous>Array[1)
+;rttov={VERSION:'',$ 
+;LIB:'',$
+;COEF:FLTArray[20,7],$
+;FILE:STRArray[1],$
+;AEROSOL:FLTArray[7],$
+;CLOUDS:FLTArray[7],$
+;COEF_SCATT_IR:FLTArray[20,7],$
+;OPTP:FLTArray[20,7],$
+;NCHAN:FLTArray[7],$
+;NRTTOVID:INTArray[7],$
+;CWN:FLtArray[1,7],$
+;PW:INTArray[7],$
+;LBL:INTArray[7],$
+;LEVELS:FLtArray[43,7],$
+;NLEVELS:FLTArray[7],$
+;INST:FLTArray[3,7],$
+;ICHAN:FLTArray[1,7],$
+;SSIREM:0.0,$
+;FF:0.0,$
+;PLANCK1:FLTArray[7],$
+;PLANCK2:FLTArray[7]} 
+      
 
 
 lcot={NX:1,I0:0,I1:0,AP:-1.0000000,AE:1000.0000,FG:-1.0000000,SHORT_NAME:'LCOT',LONG_NAME:'Log10(OpticalDepth)',UNIT:'-'}
