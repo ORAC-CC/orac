@@ -246,6 +246,8 @@
 ! 2016/02/02, GM: Make use of the high resolution ECMWF input optional.
 ! 2016/02/02, GM: Make use of the ECMWF ice and snow mask (rather than NISE)
 !    optional.
+! 2016/02/18, OS: if nargs = -1 (i.e. WRAPPER mode), cut off driver file name
+!    at first space; now passing imager_flags to correct_for_ice_snow_ecmwf
 !
 ! $Id$
 !
@@ -397,6 +399,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
    type(netcdf_output_info_s)       :: netcdf_info
 
+   integer                          :: index_space
    integer                          :: ecmwf_time_int_method
    real                             :: ecmwf_time_int_fac
 
@@ -496,6 +499,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          ! if just one argument => this is a driver file
          call get_command_argument(1,driver_path_file)
       else if (nargs .eq. -1) then
+         index_space = INDEX(driver_path_file, " ")
+         driver_path_file = driver_path_file(1:(index_space-1))         
          write(*,*) 'inside preproc: ',trim(adjustl(driver_path_file))
       end if
 
@@ -945,7 +950,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
               include_full_brdf, source_atts, verbose)
       else
          call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), imager_geolocation, &
-              preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
+              imager_flags, preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
               channel_info, assume_full_paths, include_full_brdf, source_atts, &
               verbose)
       end if

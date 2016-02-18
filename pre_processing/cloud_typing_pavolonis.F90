@@ -57,6 +57,7 @@
 !                 ERA-Interim and USGS
 ! 2016/01/21  OS: Removed bug: test with AATSR flag was also applied to other sensors
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
+! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask 
 
 ! $Id$
 !
@@ -490,8 +491,11 @@ contains
           call interp_field (ecmwf%snow_depth, snow_depth(j,i), interp(1))
           call interp_field (ecmwf%sea_ice_cover, sea_ice_cover(j,i), interp(1))
 
-          if ((snow_depth(j,i) .GT. 0.01) .OR. & 
-               (sea_ice_cover(j,i) .GT. 0.15)) then
+          if ( &
+               ((snow_depth(j,i) .GT. 0.01)    .AND. (imager_flags%LSFLAG(j,i)         .EQ. 1_byte)) .OR. & 
+               ((snow_depth(j,i) .GT. 0.01)    .AND. (imager_geolocation%latitude(j,i) .lt. -60.00)) .OR. &
+               ((sea_ice_cover(j,i) .GT. 0.15) .AND. (imager_flags%LSFLAG(j,i)         .EQ. 0_byte))      &
+             ) then
              snow_ice_mask(j,i) = YES
           else
              snow_ice_mask(j,i) = NO

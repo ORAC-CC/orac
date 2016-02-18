@@ -89,6 +89,7 @@
 !    data in SR correct_for_ice_snow_ecmwf
 ! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
 ! 2015/04/10, GM: Fixed the use of snow/ice albedo for the BRDF parameters.
+! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask 
 !
 ! $Id$
 !
@@ -468,7 +469,7 @@ end subroutine apply_ice_correction
 !-------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 
-subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,preproc_dims,preproc_prtm, &
+subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,imager_flags,preproc_dims,preproc_prtm, &
                   surface,cyear,cmonth,cday,channel_info,assume_full_path,include_full_brdf, &
                   source_atts,verbose)
 
@@ -485,6 +486,7 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,preproc_d
    ! Arguments
    character(len=path_length), intent(in)    :: ecmwf_HR_path
    type(imager_geolocation_s), intent(in)    :: imager_geolocation
+   type(imager_flags_s),       intent(in)    :: imager_flags
    type(preproc_dims_s),       intent(in)    :: preproc_dims
    type(preproc_prtm_s),       intent(in)    :: preproc_prtm
    logical,                    intent(in)    :: assume_full_path
@@ -531,8 +533,11 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,preproc_d
 
          tmp_albedo=surface%albedo(i,j,:)
 
-         if(preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .or. &
-             preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) then
+         if ( &
+              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. (imager_flags%lsflag(i,j)         .eq. 1_byte)) .or. &
+              ((preproc_prtm%snow_depth(lon_i,lat_j)    .gt. snow_threshold) .and. (imager_geolocation%latitude(i,j) .lt. -60.00)) .or. &
+              ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold)  .and. (imager_flags%lsflag(i,j)         .eq. 0_byte)) &
+            ) then
            surface%nise_mask(i,j)=YES
          else
            surface%nise_mask(i,j)=NO
