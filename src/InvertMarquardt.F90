@@ -174,6 +174,7 @@
 ! 2016/01/07, AP: Add output of diffuse fraction of illumination and AOT870.
 ! 2016/01/27, GM: Compute ecc and ecc uncertainty.
 ! 2016/01/27, GM: Compute corrected CTH for both day and night.
+! 2016/02/18, OS: Making sure CEE is within 0-1.
 !
 ! $Id$
 !
@@ -746,6 +747,12 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          GZero, Ctrl, CRP_thermal, d_CRP_thermal, IEm, &
          SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
+      
+      where (CRP_thermal .lt. 0.)
+         CRP_thermal = 0.
+      elsewhere (CRP_thermal .gt. 1.)
+         CRP_thermal = 1.
+      endwhere
 
       Diag%cloud_emissivity(1:SPixel%Ind%NThermal) = CRP_thermal
 
