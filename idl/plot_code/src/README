@@ -1,6 +1,21 @@
 read_orac_nc_pp is the main program the other files are called by this program
 
 Look in the header of this file to see examples of how to run the code
- typical usage idl>x=read_orac_nc_pp(/plot,/ps)
+ typical usage idl>
 
- Code is still a bit experimental so feed back would be appreciated.
+AVHRR files should run using this command
+x=read_orac_nc_pp(/plot,dirin='/misc/wantage_static/cpoulsen/cloud_ecv/postproc/2009/01/10/',chsize=1000,/forc,version='fv2.0',/istomina,/ps,/i37)
+
+
+files need to have this format inorder to be read into the code
+
+Note I had to change your file names slightly to run with the code
+
+20090110090000-ESACCI-L2_CLOUD-CLD_PRODUCTS-AVHRRGAC-NOAA18-fv2.0.primary.nc
+20090110090000-ESACCI-L2_CLOUD-CLD_PRODUCTS-AVHRRGAC-NOAA18-fv2.0.secondary.nc
+
+
+The plots I think are more informative when the 'clear' scenes are run as well
+
+NB this code is not that neat!
+
