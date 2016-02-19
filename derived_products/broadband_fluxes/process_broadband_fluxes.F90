@@ -46,6 +46,8 @@
 !    diffuse visible, direct near-IR, and diffuse-IR as required inputs for BUGSrad.
 ! 2016/02/19, MC: Added meteorological variables (surface temperature, pressure, 
 !    humidity, LTS, FTH, & column ozone) to output file.
+! 2016/02/19, MC: Fixed bug in reading time from input file name. Index is now based
+!    the last underscore in primary file instead of the word primary.
 !
 ! $Id$
 !
@@ -395,10 +397,13 @@ program process_broadband_fluxes
 
 !-------------------------------------------------------------------------------
    !Read time string from file
-   index1=index(trim(adjustl(Fprimary)),'.primary',back=.true.)
-    cyear=trim(adjustl(Fprimary(index1-19:index1-16)))
-    cmonth=trim(adjustl(Fprimary(index1-15:index1-13)))
-    cday=trim(adjustl(Fprimary(index1-13:index1-11)))
+   index1=index(trim(adjustl(Fprimary)),'_',back=.true.)
+    cyear=trim(adjustl(Fprimary(index1-12:index1-9)))
+    cmonth=trim(adjustl(Fprimary(index1-8:index1-6)))
+    cday=trim(adjustl(Fprimary(index1-6:index1-4)))
+    print*,cyear
+    print*,cmonth
+    print*,cday
    read(cyear,'(I4)') value
    pxYear = value
    read(cmonth,'(I2)') value
@@ -408,7 +413,6 @@ program process_broadband_fluxes
    !Get calendar day
    call greg2jul(pxYear,pxMonth,pxDay,pxJday)
    print*,pxYear,pxMonth,pxDay,pxJday
-   !NOTE THIS CURRENTLY ASSUMES THE VERSION NUMBER IS 6 CHARACTERS, E.G., fv00.0
 !-------------------------------------------------------------------------------
    ! Open TSI file
    call nc_open(ncid,FTSI)
