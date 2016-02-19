@@ -44,6 +44,8 @@
 ! 2016/01/12, MC: Added Liang (2000) surface albedo model which converts narrowband
 !    albedo radiances for each channel into broadband albedo for direct visible,
 !    diffuse visible, direct near-IR, and diffuse-IR as required inputs for BUGSrad.
+! 2016/02/19, MC: Added meteorological variables (surface temperature, pressure, 
+!    humidity, LTS, FTH, & column ozone) to output file.
 !
 ! $Id$
 !
@@ -51,19 +53,19 @@
 ! None known.
 !
 ! Examples
-! bsub -q lotus -W 06:00 -R "order[-r15s:pg]" -o bugsrad.out -e bugsrad.err -J BUGSrad 
+! bsub -q lotus -W 06:00 -R "order[-r15s:pg]" -o /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.out -e /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/bugsrad.err -J BUGSrad 
 !
 ! MODIS
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.bugsrad.nc
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi/tsi.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-MODIS_ORAC_AQUA_200803200710_V1.1.bugsrad.nc
 !
 ! AATSR
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc '' '' 182 13487
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.bugsrad.nc '' '' 182 13487
 !
 ! AATSR WITH AEROSOL
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.8.bugsrad.nc /group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v03-02/L2/2008/2008_06_20/20080620084636-ESACCI-L2P_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC_32969-fv03.02.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/aci/collocation/200806200846_V1.0.collocation.nc 182 13487
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-AATSR_ORAC_Envisat_200806200846_V1.8.bugsrad.nc /group_workspaces/cems/aerosol_cci/public/cci_products/AATSR_ORAC_v03-02/L2/2008/2008_06_20/20080620084636-ESACCI-L2P_AEROSOL-AER_PRODUCTS-AATSR-ENVISAT-ORAC_32969-fv03.02.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/aci/collocation/200806200846_V1.0.collocation.nc 182 13487
 !
 ! SEVIRI
-!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/TEST-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc '' '' 1500 1500
+!./process_broadband_fluxes /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/postproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.primary.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.prtm.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/preproc/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.alb.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/data/tsi_soho_sorce_1978_2015.nc /group_workspaces/cems/cloud_ecv/mchristensen/orac/workspace/output/derived_products/ESACCI-L2-CLOUD-CLD-SEVIRI_ORAC_MSG2_201004161312_V1.0.bugsradTEST.nc '' '' 1500 1500
 !
 !-------------------------------------------------------------------------------
 
@@ -185,6 +187,9 @@ program process_broadband_fluxes
    real :: pxts   !land/sea surface temperature
    real pxregime
    integer pxHctopID(1),pxHcbaseID(1)
+   real :: pxLTS
+   real :: pxFTH
+   real :: pxcolO3
 
    !radiation flux profiles
    real (kind=8), dimension(1,NL) ::  &
@@ -266,6 +271,25 @@ program process_broadband_fluxes
 
    real, allocatable :: boa_par_dif(:,:) !BOA PAR - diffuse
      integer boa_par_dif_vid
+
+   !NETCDF Output METEOROLOGICAL VARIABLES
+   real, allocatable :: boa_tsfc(:,:) !BOA temperature
+     integer boa_tsfc_vid
+
+   real, allocatable :: boa_psfc(:,:) !BOA pressure
+     integer boa_psfc_vid
+
+   real, allocatable :: boa_qsfc(:,:) !BOA vapour pressure
+     integer boa_qsfc_vid
+ 
+   real, allocatable :: lts(:,:) !LTS (LOWER TROPOSPHERE STABILITY)
+     integer lts_vid
+
+   real, allocatable :: fth(:,:) !FTH (FREE TROPOSPHERE HUMIDITY 850 hPa)
+     integer fth_vid
+
+   real, allocatable :: colO3(:,:) !Column Ozone
+     integer colO3_vid
 
    !NETCDF OUTPUT (lat/lon/time)
       integer LAT_vid
@@ -372,9 +396,9 @@ program process_broadband_fluxes
 !-------------------------------------------------------------------------------
    !Read time string from file
    index1=index(trim(adjustl(Fprimary)),'.primary',back=.true.)
-   cyear=trim(adjustl(Fprimary(index1-17:index1-14)))
-   cmonth=trim(adjustl(Fprimary(index1-13:index1-11)))
-   cday=trim(adjustl(Fprimary(index1-11:index1-9)))
+    cyear=trim(adjustl(Fprimary(index1-19:index1-16)))
+    cmonth=trim(adjustl(Fprimary(index1-15:index1-13)))
+    cday=trim(adjustl(Fprimary(index1-13:index1-11)))
    read(cyear,'(I4)') value
    pxYear = value
    read(cmonth,'(I2)') value
@@ -382,7 +406,9 @@ program process_broadband_fluxes
    read(cday,'(I2)') value
    pxDay = value
    !Get calendar day
-   call greg2jul(pxYear,pxMonth,pxDay,pxJday)   
+   call greg2jul(pxYear,pxMonth,pxDay,pxJday)
+   print*,pxYear,pxMonth,pxDay,pxJday
+   !NOTE THIS CURRENTLY ASSUMES THE VERSION NUMBER IS 6 CHARACTERS, E.G., fv00.0
 !-------------------------------------------------------------------------------
    ! Open TSI file
    call nc_open(ncid,FTSI)
@@ -633,6 +659,12 @@ program process_broadband_fluxes
    allocate(toa_par_tot(xN,yN))
    allocate(boa_par_tot(xN,yN))
    allocate(boa_par_dif(xN,yN))
+   allocate(boa_tsfc(xN,yN))
+   allocate(boa_psfc(xN,yN))
+   allocate(boa_qsfc(xN,yN))
+   allocate(lts(xN,yN))
+   allocate(fth(xN,yN))
+   allocate(colO3(xN,yN))
 
     !Fill OUTPUT with missing
     lat_data(:,:) = sint_fill_value
@@ -655,7 +687,9 @@ program process_broadband_fluxes
     toa_par_tot(:,:) = sint_fill_value
     boa_par_tot(:,:) = sint_fill_value
     boa_par_dif(:,:) = sint_fill_value
-   
+    boa_tsfc(:,:) = sint_fill_value
+    boa_psfc(:,:) = sint_fill_value
+    boa_qsfc(:,:) = sint_fill_value
 
    !re-grid PRTM vertical profile to match bugsrad resolution (NLS)
    do i=1,NLS 
@@ -822,7 +856,8 @@ call cpu_time(cpuStart)
 
    !loop over cross-track dimension
     do i=pxX0,pxX1
-      print*,'complete: ',i*100./(xN*1.),'%   i=',i
+      call cpu_time(cpuFinish)
+      print*,'complete: ',i*100./(xN*1.),'%   i=',i, cpuFinish-cpuStart,' seconds elapsed'
 
       !loop over along-track dimension
       do j=pxY0,pxY1
@@ -831,33 +866,30 @@ call cpu_time(cpuStart)
       !Valid lat/lon required to run (needed for SEVIRI)
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
 
-       !surface albedo
-        !pxAsfcSWRdr = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
-        !pxAsfcNIRdr = (rho_dd(i,j,ch3ID)*ch3WT+rho_dd(i,j,ch4ID)*ch4WT)/(ch3WT+ch4WT)
-        !pxAsfcSWRdf = (rho_dd(i,j,ch1ID)*ch1WT+rho_dd(i,j,ch2ID)*ch2WT)/(ch1WT+ch2WT)
-        !pxAsfcNIRdf = (rho_dd(i,j,ch3ID)*ch3WT+rho_dd(i,j,ch4ID)*ch4WT)/(ch3WT+ch4WT)
-        !*note*
-         !weights are based on the fraction of planck radiation integrated over the band width
-         !based on heritage channels 1,2, shortwave & 3,4 NIR
-        
+       !-----------------------------------------------
+       ! Surface albedo
+       ! converting narrowband radiances to broadband land 
+       ! surface albedo using formula from Liang (2000).
+       !-----------------------------------------------
         !Visible direct albedo
-        !pxAsfcSWRdr = ( 0.369*rho_0d(i,j,ch1ID) + 0.374*rho_0d(i,j,ch1ID) + 0.257*rho_0d(i,j,ch1ID) ) * pi/2.
-        !pxAsfcSWRdf = ( 0.246*rho_dd(i,j,ch1ID) + 0.528*rho_dd(i,j,ch1ID) + 0.226*rho_dd(i,j,ch1ID) - 0.0013 ) * pi/2. 
-        !pxAsfcNIRdr = ( 0.085*rho_0d(i,j,ch1ID) + 0.693*rho_0d(i,j,ch2ID) - 0.146*rho_0d(i,j,ch1ID) + 0.176*rho_0d(i,j,ch1ID) + 0.146*rho_0d(i,j,ch3ID) + 0.047*rho_0d(i,j,ch3ID) - 0.0021 ) * pi/2.
-        !pxAsfcNIRdf = ( 0.037*rho_dd(i,j,ch1ID) + 0.479*rho_dd(i,j,ch2ID) - 0.068*rho_dd(i,j,ch1ID) + 0.09796*rho_dd(i,j,ch1ID) + 0.266*rho_dd(i,j,ch3ID) + 0.0757*rho_dd(i,j,ch3ID) + 0.107*rho_dd(i,j,ch3ID) ) * pi/2.
-
         pxAsfcSWRdr = ( 0.369*rho_0d(i,j,ch1ID) + 0.374*rho_0d(i,j,ch1ID) + 0.257*rho_0d(i,j,ch1ID) ) * pi/4.
         pxAsfcSWRdf = ( 0.246*rho_dd(i,j,ch1ID) + 0.528*rho_dd(i,j,ch1ID) + 0.226*rho_dd(i,j,ch1ID) - 0.0013 ) * pi/4.
         pxAsfcNIRdr = ( 0.085*rho_0d(i,j,ch1ID) + 0.693*rho_0d(i,j,ch2ID) - 0.146*rho_0d(i,j,ch1ID) + 0.176*rho_0d(i,j,ch1ID) + 0.146*rho_0d(i,j,ch3ID) + 0.047*rho_0d(i,j,ch3ID) - 0.0021 ) * pi/4.
         pxAsfcNIRdf = ( 0.037*rho_dd(i,j,ch1ID) + 0.479*rho_dd(i,j,ch2ID) - 0.068*rho_dd(i,j,ch1ID) + 0.09796*rho_dd(i,j,ch1ID) + 0.266*rho_dd(i,j,ch3ID) + 0.0757*rho_dd(i,j,ch3ID) + 0.107*rho_dd(i,j,ch3ID) ) * pi/4.
+          !pi/4 scale factor - TEMPORARY FIX UNTIL PROBLEM IS DIAGNOSED
+          pxAsfcSWRdr = pxAsfcSWRdr * pi/4.
+          pxAsfcSWRdf = pxAsfcSWRdf * pi/4.
+          pxAsfcNIRdr = pxAsfcNIRdr * pi/4.
+          pxAsfcNIRdf = pxAsfcNIRdf * pi/4.
+          !A factor of pi/4 is used to match the integration over the hemisphere BRDF model. 
+          !Not sure if it is accurate at this point; currently investigating.
 
-        !converting narrowband radiances to broadband land surface albedo using formula from Liang (2000).
-        !A factor of pi/2 is used to match the integration over the hemisphere BRDF model. Not sure if it is accurate at this point; currently investigating.
-
-       !solar zenith angle
+       ! solar zenith angle
        pxTheta = COS( SOLZ(i,j) * Pi/180.)
-       !Valid solar zenith angle (remove nighttime & twilight)
-       if( SOLZ(i,j) .lt. 80.) then
+       !print*,i,j,solz(i,j),pxTheta
+
+       ! solar zenith angle condition (remove nighttime & twilight)
+!       if( SOLZ(i,j) .lt. 80.) then
  
         !meteorology
         call interpolate_meteorology(lon_prtm,lat_prtm,levdim_prtm,&
@@ -883,20 +915,21 @@ call cpu_time(cpuStart)
         pxQ = inQ(mask_vres)
         pxO3 = inO3(mask_vres)
 
-        !Surface temperature
+        !surface temperature
         pxts = pxT(NLS)
 
-!         print*,'latitude: ',LAT(i,j)
-!         print*,'longitude: ',LON(i,j)
-!         print*,'cc_tot:  ',cc_tot(i,j)
-!         print*,'Sat Phase: ',PHASE(i,j)
-!         print*,'Sat retr. CTH = ',CTH(i,j)
-!         print*,'Sat retr. CTT = ',CTT(i,j)
-!         print*,'SAT retr. REF = ',REF(i,j)
-!         print*,'SAT retr. COT = ',COT(i,j)
-!         print*,'SAT retr. cc_tot = ',cc_tot(i,j)
-!         print*,'Aerosol Optical Depth: ',aerAOD(aID(i,j))
-!         print*,'Aerosol Effective Radius: ',aerREF(aID(i,j))     
+         !print*,'latitude: ',LAT(i,j)
+         !print*,'longitude: ',LON(i,j)
+         !print*,'solar zenith: ',SOLZ(i,j)
+         !print*,'cc_tot:  ',cc_tot(i,j)
+         !print*,'Sat Phase: ',PHASE(i,j)
+         !print*,'Sat retr. CTH = ',CTH(i,j)
+         !print*,'Sat retr. CTT = ',CTT(i,j)
+         !print*,'SAT retr. REF = ',REF(i,j)
+         !print*,'SAT retr. COT = ',COT(i,j)
+         !print*,'SAT retr. cc_tot = ',cc_tot(i,j)
+         !print*,'Aerosol Optical Depth: ',aerAOD(aID(i,j))
+         !print*,'Aerosol Effective Radius: ',aerREF(aID(i,j))     
 
         !cloud base & top height calculation
         call preprocess_bugsrad(cc_tot(i,j),AREF(i,j),AOD550(i,j),phase(i,j),&
@@ -909,12 +942,13 @@ call cpu_time(cpuStart)
         nanFlag=0
 
          !debugging (print statements)
-!         print*,'phase: ',pxPhaseFlag
-!         print*,'re :',pxREF
-!         print*,'tau :',pxCOT
-!         print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
-!         print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
-!         print*,'Regime: ',pxregime      
+         !print*,'phase: ',pxPhaseFlag
+         !print*,'re :',pxREF
+         !print*,'tau :',pxCOT
+         !print*,'Hctop = ',pxHctop,' HctopID: ',pxHctopID
+         !print*,'Hcbase = ',pxHcbase,' HcbaseID: ',pxHcbaseID
+         !print*,'Regime: ',pxregime
+         !print*,'TOTAL SOLAR IRRADIANCE: ',pxTSI 
 
          call driver_for_bugsrad(NL,pxTSI,pxtheta,pxAsfcSWRdr,pxAsfcNIRdr,pxAsfcSWRdf,pxAsfcNIRdf,pxts,&
                           pxPhaseFlag,pxREF,pxCOT,pxHctop,pxHcbase,&
@@ -928,13 +962,11 @@ call cpu_time(cpuStart)
                           ulwfx,dlwfx,uswfx,dswfx,&
                           ulwfxclr,dlwfxclr,uswfxclr,dswfxclr)
 
-!           print*,pxtoalwup,pxtoaswdn,pxtoaswup
-!           print*,pxtoalwupclr,pxtoaswupclr
-!           print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
-!           print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
-!           print*,bpar,bpardif
-           !if(j .eq. 10) stop
-!if(pxregime .eq. 3) stop
+           !print*,pxtoalwup,pxtoaswdn,pxtoaswup
+           !print*,pxtoalwupclr,pxtoaswupclr
+           !print*,pxboalwup,pxboalwdn,pxboaswdn,pxboaswup
+           !print*,pxboalwupclr,pxboalwdnclr,pxboaswdnclr,pxboaswupclr
+           !print*,bpar,bpardif
 
          !catch NaN
          if(isnan(pxtoalwup)) nanFlag=1
@@ -974,7 +1006,21 @@ call cpu_time(cpuStart)
           boa_par_dif(i,j) = bpardif
 
          endif !valid data
-       endif   !valid solar zenith angle
+
+
+         ! meteorology data to output in netCDF file
+         boa_tsfc(i,j) = pxT(NLS)
+         boa_psfc(i,j) = pxP(NLS)
+         boa_qsfc(i,j) = pxQ(NLS)
+          call compute_lts(NL,pxP,pxT,pxLTS)
+          call compute_fth(NL,pxP,pxT,pxQ,pxFTH)
+          call compute_column_o3(NL,pxZ,pxO3,pxcolO3)
+
+         lts(i,j) = pxLTS
+         fth(i,j) = pxFTH
+         colO3(i,j) = pxcolO3
+
+!       endif   !valid solar zenith angle
       endif   !valid geolocation data
     enddo !j-loop
    enddo !i-loop
@@ -992,8 +1038,15 @@ if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
   print*,'toa_swup    : ',toa_swup(i,j)
   print*,'toa_swup_clr: ',toa_swup_clr(i,j)
   print*,'toa_albedo  : ',toa_swup(i,j)/toa_swdn(i,j)
+  print*,'boa_swdn    : ',boa_swdn(i,j)
+  print*,'boa_swdn_clr: ',boa_swdn_clr(i,j)
   print*,'boa_par_tot : ',boa_par_tot(i,j)
   print*,'boa_par_dif : ',boa_par_dif(i,j)
+  print*,'AOD550      : ',AOD550(i,j)
+  print*,'AREF        : ',AREF(i,j)
+  print*,'lts :',lts(i,j)
+  print*,'fth :',fth(i,j)
+  print*,'colO3 :',colO3(i,j)
 
   !write profile of last pixel to ascii file 
   !(to write out more than 1 pixel would take tremendous memory)
@@ -1438,7 +1491,125 @@ end if
                deflate_level = deflate_lv, &
                shuffle       = shuffle_flag)
 
+      !-------------------------------------------------------------------------
+      ! surface_air_temperature
+      !-------------------------------------------------------------------------
+       call nc_def_var_float_packed_float( &
+               ncid, &
+               dims_var, &
+               'boa_tsfc', &
+               boa_tsfc_vid, &
+               verbose, &
+               long_name     = 'bottom of atmosphere air temperature', &
+               standard_name = 'surface_air_temperature', &
+               fill_value    = sreal_fill_value, &
+               scale_factor  = real(1), &
+               add_offset    = real(0), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
+               units         = 'K', &
+               deflate_level = deflate_lv, &
+               shuffle       = shuffle_flag)
 
+      !-------------------------------------------------------------------------
+      ! surface_air_pressure
+      !-------------------------------------------------------------------------
+       call nc_def_var_float_packed_float( &
+               ncid, &
+               dims_var, &
+               'boa_psfc', &
+               boa_psfc_vid, &
+               verbose, &
+               long_name     = 'bottom of atmosphere air pressure', &
+               standard_name = 'surface_air_pressure', &
+               fill_value    = sreal_fill_value, &
+               scale_factor  = real(1), &
+               add_offset    = real(0), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
+               units         = 'hPa', &
+               deflate_level = deflate_lv, &
+               shuffle       = shuffle_flag)
+
+      !-------------------------------------------------------------------------
+      ! surface_specific_humidity
+      !-------------------------------------------------------------------------
+       call nc_def_var_float_packed_float( &
+               ncid, &
+               dims_var, &
+               'boa_qsfc', &
+               boa_qsfc_vid, &
+               verbose, &
+               long_name     = 'bottom of atmosphere specific humidity', &
+               standard_name = 'surface_specific_humidity', &
+               fill_value    = sreal_fill_value, &
+               scale_factor  = real(1), &
+               add_offset    = real(0), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
+               units         = 'kg/kg', &
+               deflate_level = deflate_lv, &
+               shuffle       = shuffle_flag)
+
+      !-------------------------------------------------------------------------
+      ! lower_troposphere_stability
+      !-------------------------------------------------------------------------
+       call nc_def_var_float_packed_float( &
+               ncid, &
+               dims_var, &
+               'lts', &
+               lts_vid, &
+               verbose, &
+               long_name     = 'lower troposphere stability (theta700 - theta sfc)', &
+               standard_name = 'lower_troposphere_stability', &
+               fill_value    = sreal_fill_value, &
+               scale_factor  = real(1), &
+               add_offset    = real(0), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
+               units         = 'K', &
+               deflate_level = deflate_lv, &
+               shuffle       = shuffle_flag)
+
+      !-------------------------------------------------------------------------
+      ! free_troposphere_humidity
+      !-------------------------------------------------------------------------
+       call nc_def_var_float_packed_float( &
+               ncid, &
+               dims_var, &
+               'fth', &
+               fth_vid, &
+               verbose, &
+               long_name     = 'free troposphere humidity (RH at 850 hPa)', &
+               standard_name = 'free_troposphere_humidity', &
+               fill_value    = sreal_fill_value, &
+               scale_factor  = real(1), &
+               add_offset    = real(0), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
+               units         = '1', &
+               deflate_level = deflate_lv, &
+               shuffle       = shuffle_flag)
+
+      !-------------------------------------------------------------------------
+      ! Column_Ozone
+      !-------------------------------------------------------------------------
+       call nc_def_var_float_packed_float( &
+               ncid, &
+               dims_var, &
+               'colO3', &
+               colO3_vid, &
+               verbose, &
+               long_name     = 'column ozone', &
+               standard_name = 'column_ozone', &
+               fill_value    = sreal_fill_value, &
+               scale_factor  = real(1), &
+               add_offset    = real(0), &
+               valid_min     = real(0, sreal), &
+               valid_max     = real(1500, sreal), &
+               units         = 'DU', &
+               deflate_level = deflate_lv, &
+               shuffle       = shuffle_flag)
 
      !Need to exit define mode to write data
       if (nf90_enddef(ncid) .ne. NF90_NOERR) then
@@ -1504,6 +1675,24 @@ end if
 
      call nc_write_array(ncid,'toa_par_tot',toa_par_tot_vid,&
              toa_par_tot(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+     call nc_write_array(ncid,'boa_tsfc',boa_tsfc_vid,&
+             boa_tsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+     call nc_write_array(ncid,'boa_psfc',boa_psfc_vid,&
+             boa_psfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+     call nc_write_array(ncid,'boa_qsfc',boa_qsfc_vid,&
+             boa_qsfc(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+     call nc_write_array(ncid,'lts',lts_vid,&
+             lts(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+     call nc_write_array(ncid,'fth',fth_vid,&
+             fth(ixstart:,iystart:),1,1,n_x,1,1,n_y)
+
+     call nc_write_array(ncid,'colO3',colO3_vid,&
+             colO3(ixstart:,iystart:),1,1,n_x,1,1,n_y)
 
      !close netcdf file
       if (nf90_close(ncid) .ne. NF90_NOERR) then
