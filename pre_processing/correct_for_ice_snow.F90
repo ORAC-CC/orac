@@ -90,6 +90,7 @@
 ! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
 ! 2015/04/10, GM: Fixed the use of snow/ice albedo for the BRDF parameters.
 ! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask 
+! 2016/02/23, OS: previous commit on ECMWF snow/ice mask was incomplete
 !
 ! $Id$
 !
@@ -546,24 +547,25 @@ subroutine correct_for_ice_snow_ecmwf(ecmwf_HR_path,imager_geolocation,imager_fl
          flag = .false.
 
          ! calculate albedo according to fraction of sea ice
-         if (preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .and. &
-             preproc_prtm%snow_depth(lon_i,lat_j) .lt. snow_threshold) then
+         if ((surface%nise_mask(i,j) .eq. YES) .and. & 
+             (preproc_prtm%snow_depth(lon_i,lat_j) .lt. snow_threshold)) then
              flag = .true.
              surface%albedo(i,j,:) = &
              ice_albedo*preproc_prtm%sea_ice_cover(lon_i,lat_j) + &
              tmp_albedo*(1.-preproc_prtm%sea_ice_cover(lon_i,lat_j))
 
          ! same as before but with snow cover on sea ice part
-         else if (preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold .and. &
-             preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) then
+         else if ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .gt. ice_threshold) .and. &
+             (preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) .and. &
+             (surface%nise_mask(i,j) .eq. YES)) then
              flag = .true.
              surface%albedo(i,j,:) = &
              snow_albedo*preproc_prtm%sea_ice_cover(lon_i,lat_j) + &
              tmp_albedo*(1.-preproc_prtm%sea_ice_cover(lon_i,lat_j))
 
          ! calculate albedo for snowy pixels in absence of sea ice
-         else if (preproc_prtm%sea_ice_cover(lon_i,lat_j) .lt. ice_threshold .and. &
-             preproc_prtm%snow_depth(lon_i,lat_j) .gt. snow_threshold) then
+         else if ((preproc_prtm%sea_ice_cover(lon_i,lat_j) .lt. ice_threshold) .and. &
+             (surface%nise_mask(i,j) .eq. YES)) then
              flag = .true.
              surface%albedo(i,j,:) = snow_albedo
 
