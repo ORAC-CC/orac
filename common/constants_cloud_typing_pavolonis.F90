@@ -17,6 +17,7 @@
 ! 2015/11/27, CP: Added prob clear type 
 ! 2015/12/17, OS: Added twilight NN thresholds
 ! 2015/12/17, OS: Changed twilight NN thresholds for land_ice and sea
+! 2016/02/23, OS: Changed day land threshold to 0.2 (from 0.3)
 !
 ! $Id$
 !
@@ -44,7 +45,7 @@ module constants_cloud_typing_pavolonis
    real(sreal)   :: COT_THRES_DAY_SEA_ICE = 0.4
    real(sreal)   :: COT_THRES_DAY_LAND_ICE = 0.35
    real(sreal)   :: COT_THRES_DAY_SEA = 0.1
-   real(sreal)   :: COT_THRES_DAY_LAND = 0.3
+   real(sreal)   :: COT_THRES_DAY_LAND = 0.2
    real(sreal)   :: COT_THRES_NIGHT_SEA_ICE = 0.4
    real(sreal)   :: COT_THRES_NIGHT_LAND_ICE = 0.35
    real(sreal)   :: COT_THRES_NIGHT_SEA = 0.2
@@ -53,7 +54,6 @@ module constants_cloud_typing_pavolonis
    real(sreal)   :: COT_THRES_TWL_LAND_ICE = 0.4 
    real(sreal)   :: COT_THRES_TWL_SEA = 0.35 
    real(sreal)   :: COT_THRES_TWL_LAND = 0.3
-
    !---
    REAL(kind=sreal)   :: NOAA7_9_CH3B_BT_THRES=240 ! Dont use 3.7 µm channel at night,
                                                      ! if BT of ch3b is below this value.
