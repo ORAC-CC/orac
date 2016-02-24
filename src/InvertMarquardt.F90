@@ -676,7 +676,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
    if (Ctrl%Approach == AerSw) then
       call Allocate_GZero(GZero, SPixel)
 
-      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
+      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
            GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
@@ -707,10 +707,11 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Evaluate cloud_albedo
    if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
-        SPixel%Ind%NSolar > 0) then
+        SPixel%Ind%NSolar > 0 .and. any(SPixel%X == ITau) .and. &
+        any(SPixel%X == IRe)) then
       call Allocate_GZero(GZero, SPixel)
 
-      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
+      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
            GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 
@@ -728,18 +729,17 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       end do
 
       call Deallocate_GZero(GZero)
-   else
-      Diag%cloud_albedo = 0
    end if
 
    ! Evaluate cloud effective emissivity
    if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
-        SPixel%Ind%NThermal > 0) then
+        SPixel%Ind%NThermal > 0 .and. any(SPixel%X == ITau) .and. &
+        any(SPixel%X == IRe)) then
       call Allocate_GZero(GZero, SPixel)
 
 !     a = SPixel%Geom%Satzen(1)
 !     SPixel%Geom%Satzen(1) = 0.
-      call Set_GZero(SPixel%Xn(iTau), SPixel%Xn(iRe), Ctrl, SPixel, SAD_LUT, &
+      call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
          GZero, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
 !     SPixel%Geom%Satzen(1) = a
@@ -748,7 +748,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
          GZero, Ctrl, CRP_thermal, d_CRP_thermal, IEm, &
          SPixel%spixel_y_thermal_to_ctrl_y_index, SPixel%Ind%YThermal, stat)
       if (stat /= 0) go to 99 ! Terminate processing this pixel
-      
+
       where (CRP_thermal .lt. 0.)
          CRP_thermal = 0.
       elsewhere (CRP_thermal .gt. 1.)
@@ -764,8 +764,6 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       end do
 
       call Deallocate_GZero(GZero)
-   else
-      Diag%cloud_emissivity = 0
    end if
 
    ! Evaluate corrected CTX

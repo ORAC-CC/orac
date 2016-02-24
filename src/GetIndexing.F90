@@ -151,7 +151,8 @@ subroutine Get_Indexing(Ctrl, SAD_Chan, SPixel, MSI_Data, status)
    ! Select appropriate logic for channel selection
    select case (Ctrl%Approach)
    case (CldWat, CldIce, AshEyj)
-      if (.not. Ctrl%do_new_night_retrieval .or. SPixel%Illum(1) .eq. IDay) then
+      if (.not. Ctrl%do_new_night_retrieval &
+          .or. SPixel%Illum(1) .eq. IDay .or. SPixel%Illum(1) .eq. ITwi) then
          call cloud_indexing_logic(Ctrl, SPixel, is_not_used_or_missing, &
               X, XJ, XI, status)
       else
