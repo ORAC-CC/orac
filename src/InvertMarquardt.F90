@@ -707,8 +707,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
 
    ! Evaluate cloud_albedo
    if ((Ctrl%Approach == CldWat .or. Ctrl%Approach == CldIce) .and. &
-        SPixel%Ind%NSolar > 0 .and. any(SPixel%X == ITau) .and. &
-        any(SPixel%X == IRe)) then
+        SPixel%Ind%NSolar > 0) then
       call Allocate_GZero(GZero, SPixel)
 
       call Set_GZero(SPixel%Xn(ITau), SPixel%Xn(IRe), Ctrl, SPixel, SAD_LUT, &
