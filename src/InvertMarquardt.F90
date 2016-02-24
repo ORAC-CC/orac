@@ -175,6 +175,7 @@
 ! 2016/01/27, GM: Compute ecc and ecc uncertainty.
 ! 2016/01/27, GM: Compute corrected CTH for both day and night.
 ! 2016/02/18, OS: Making sure CEE is within 0-1.
+! 2016/02/24, OS: Avoid negative CEE uncertainties.
 !
 ! $Id$
 !
@@ -759,7 +760,7 @@ subroutine Invert_Marquardt(Ctrl, SPixel, SAD_Chan, SAD_LUT, RTM_Pc, Diag, stat)
       temp_thermal = matmul(matmul(d_CRP_thermal, SPixel%Sn((/ITau,IRe/), &
                             (/ITau,IRe/))), transpose(d_CRP_thermal))
       do m = 1, SPixel%Ind%NThermal
-         Diag%cloud_emissivity_s(m) = temp_thermal(m, m)
+         Diag%cloud_emissivity_s(m) = max(temp_thermal(m, m), 0.)
       end do
 
       call Deallocate_GZero(GZero)
