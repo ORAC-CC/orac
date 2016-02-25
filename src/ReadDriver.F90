@@ -792,36 +792,32 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
          XJ_Dy(NXJ_Dy) = IRs(i,IRho_DD)
       end do
 
-      ! In twilight or night, retrieve cloud top pressure and surface
-      ! temperature. Include white sky albedo in Jacobian.
-      if (.not. Ctrl%do_new_night_retrieval) then
-         Nx_Tw   = 2
-         X_Tw(1) = IPc
-         X_Tw(2) = ITs
-         NXJ_Tw  = NXJ_Dy
-         XJ_Tw   = XJ_Dy
+      ! In twilight retrieve cloud top pressure and surface. Include white sky
+      ! albedo in Jacobian.
+      Nx_Tw   = 2
+      X_Tw(1) = IPc
+      X_Tw(2) = ITs
+      NXJ_Tw  = NXJ_Dy
+      XJ_Tw   = XJ_Dy
 
+      if (.not. Ctrl%do_new_night_retrieval) then
+         ! At night retrieve cloud top pressure and surface. Include white sky
+         ! albedo in Jacobian.
          Nx_Ni   = 2
          X_Ni(1) = IPc
          X_Ni(2) = ITs
          NXJ_Ni  = NXJ_Dy
          XJ_Ni   = XJ_Dy
       else
-         Nx_Tw    = 4
-         X_Tw(1)  = ITau
-         X_Tw(2)  = IRe
-         X_Tw(3)  = IPc
-         X_Tw(4)  = ITs
-         NXJ_Tw  = NXJ_Dy
-         XJ_Tw   = XJ_Dy
-
+         ! At night retrieve optical depth, effective radius, cloud top pressure
+         ! and surface temperature.
          Nx_Ni    = 4
          X_Ni(1)  = ITau
          X_Ni(2)  = IRe
          X_Ni(3)  = IPc
          X_Ni(4)  = ITs
-         NXJ_Ni  = NXJ_Dy
-         XJ_Ni   = XJ_Dy
+         NXJ_Ni   = NXJ_Dy
+         XJ_Ni    = XJ_Dy
       end if
    end if
 
