@@ -604,6 +604,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       stop error_stop_code
    endif
 
+
    if (ecmwf_path(2) .eq. '') ecmwf_path(2) = ecmwf_path(1)
    if (ecmwf_path2(2) .eq. '') ecmwf_path2(2) = ecmwf_path2(1)
    if (ecmwf_path3(2) .eq. '') ecmwf_path3(2) = ecmwf_path3(1)
@@ -647,7 +648,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            channel_info,verbose)
 
       ! currently setup to do day only by default
-      if (day_night .eq. 0) day_night=1
+      if (day_night .eq. 0) day_night=0
       loc_limit=(/ -90.0, -180.0, 90.0, 180.0 /)
 
       ! initialise the second length and offset variables
@@ -1051,6 +1052,7 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       call deallocate_imager_structures(imager_geolocation, imager_angles, &
            imager_flags, imager_time, imager_measurements, imager_pavolonis)
       call deallocate_surface_structures(surface, include_full_brdf)
+
 
    end do ! end looping over chunks
 
