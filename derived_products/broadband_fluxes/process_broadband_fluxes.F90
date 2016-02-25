@@ -124,10 +124,12 @@ program process_broadband_fluxes
    !Albedo FILE
    real, allocatable :: rho_0d(:,:,:)  ! Albedo direct directional - blacksky albedo
    real, allocatable :: rho_dd(:,:,:)  ! Albedo diffuse directional - whitesky albedo
+   real, allocatable :: emis_data(:,:,:)  ! Emissivity
    real, allocatable :: alb_abs_ch_numbers(:) !channels used in albedo product
+   real, allocatable :: emis_abs_ch_numbers(:) !channels used in emissivity product
    integer :: ch1ID,ch2ID,ch3ID,ch4ID
-   real, parameter :: ch1WT=0.95,ch2WT=0.05,ch3WT=0.05,ch4WT=0.95
    integer(kind=lint) :: nc_alb
+   integer(kind=lint) :: nc_emis
 
    !PRIMARY FILE
    real, allocatable :: COT(:,:)  ! Cloud Optical Depth (xp,yp)
@@ -192,6 +194,7 @@ program process_broadband_fluxes
    real :: pxLTS
    real :: pxFTH
    real :: pxcolO3
+   real :: rho_0d_bugsrad(6),rho_dd_bugsrad(6),emis_bugsrad(12)
 
    !radiation flux profiles
    real (kind=8), dimension(1,NL) ::  &
@@ -575,16 +578,21 @@ program process_broadband_fluxes
 
     !Get #Channels
     nc_alb = nc_dim_length(ncid, 'nc_alb', verbose)
+    nc_emis = nc_dim_length(ncid, 'nc_emis', verbose)
 
     !Allocate arrays
     allocate(rho_dd(xN, yN, nc_alb))
     allocate(rho_0d(xN, yN, nc_alb))
+    allocate(emis_data(xN, yN, nc_emis))
     allocate(alb_abs_ch_numbers(nc_alb))
+    allocate(emis_abs_ch_numbers(nc_emis))
 
     !Read ALB data
     call nc_read_array(ncid, "rho_dd_data", rho_dd, verbose)
     call nc_read_array(ncid, "rho_0d_data", rho_0d, verbose)
+    call nc_read_array(ncid, "emis_data", emis_data, verbose)
     call nc_read_array(ncid, "alb_abs_ch_numbers", alb_abs_ch_numbers, verbose)
+    call nc_read_array(ncid, "emis_abs_ch_numbers", emis_abs_ch_numbers, verbose)
  
     ! Close file
     if (nf90_close(ncid) .ne. NF90_NOERR) then
@@ -592,14 +600,6 @@ program process_broadband_fluxes
                   'LWRTM file: ', FALB
        stop error_stop_code
     end if
-    
-    !Channel indices
-    do i=1,nc_alb
-      if(alb_abs_ch_numbers(i) .eq. 1) ch1ID=i
-      if(alb_abs_ch_numbers(i) .eq. 2) ch2ID=i
-      if(alb_abs_ch_numbers(i) .eq. 3) ch3ID=i
-      if(alb_abs_ch_numbers(i) .eq. 4) ch4ID=i
-    enddo
 
 !-------------------------------------------------------------------------------
 
@@ -870,23 +870,16 @@ call cpu_time(cpuStart)
       !Valid lat/lon required to run (needed for SEVIRI)
       if(LAT(i,j) .ne. -999.0 .and. LON(i,j) .ne. -999.0) then
 
-       !-----------------------------------------------
+
+       !---------------------------------------------------------
        ! Surface albedo
-       ! converting narrowband radiances to broadband land 
-       ! surface albedo using formula from Liang (2000).
-       !-----------------------------------------------
-        !Visible direct albedo
-        pxAsfcSWRdr = ( 0.369*rho_0d(i,j,ch1ID) + 0.374*rho_0d(i,j,ch1ID) + 0.257*rho_0d(i,j,ch1ID) ) * pi/4.
-        pxAsfcSWRdf = ( 0.246*rho_dd(i,j,ch1ID) + 0.528*rho_dd(i,j,ch1ID) + 0.226*rho_dd(i,j,ch1ID) - 0.0013 ) * pi/4.
-        pxAsfcNIRdr = ( 0.085*rho_0d(i,j,ch1ID) + 0.693*rho_0d(i,j,ch2ID) - 0.146*rho_0d(i,j,ch1ID) + 0.176*rho_0d(i,j,ch1ID) + 0.146*rho_0d(i,j,ch3ID) + 0.047*rho_0d(i,j,ch3ID) - 0.0021 ) * pi/4.
-        pxAsfcNIRdf = ( 0.037*rho_dd(i,j,ch1ID) + 0.479*rho_dd(i,j,ch2ID) - 0.068*rho_dd(i,j,ch1ID) + 0.09796*rho_dd(i,j,ch1ID) + 0.266*rho_dd(i,j,ch3ID) + 0.0757*rho_dd(i,j,ch3ID) + 0.107*rho_dd(i,j,ch3ID) ) * pi/4.
-          !pi/4 scale factor - TEMPORARY FIX UNTIL PROBLEM IS DIAGNOSED
-          pxAsfcSWRdr = pxAsfcSWRdr * pi/4.
-          pxAsfcSWRdf = pxAsfcSWRdf * pi/4.
-          pxAsfcNIRdr = pxAsfcNIRdr * pi/4.
-          pxAsfcNIRdf = pxAsfcNIRdf * pi/4.
-          !A factor of pi/4 is used to match the integration over the hemisphere BRDF model. 
-          !Not sure if it is accurate at this point; currently investigating.
+       ! interpolate narrowband BRDF radiances to broadband BUGSrad radiances
+       !---------------------------------------------------------
+      call preprocess_bugsrad_sfc_albedo(nc_alb,rho_0d(i,j,:),rho_dd(i,j,:),rho_0d_bugsrad,rho_dd_bugsrad)
+      call preprocess_bugsrad_sfc_emissivity(nc_emis,emis_data(i,j,:),emis_bugsrad)
+       !print*,'BUGSrad (blacksky) ',rho_0d_bugsrad
+       !print*,'BUGSrad (whitesky) ',rho_dd_bugsrad
+       !print*,'BUGSrad emissivity ',emis_bugsrad         
 
        ! solar zenith angle
        pxTheta = COS( SOLZ(i,j) * Pi/180.)
@@ -964,7 +957,8 @@ call cpu_time(cpuStart)
                           pxboalwupclr,pxboalwdnclr,pxboaswupclr,pxboaswdnclr,&
                           bpar,bpardif,tpar,&
                           ulwfx,dlwfx,uswfx,dswfx,&
-                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr)
+                          ulwfxclr,dlwfxclr,uswfxclr,dswfxclr,&
+                          emis_bugsrad,rho_0d_bugsrad,rho_dd_bugsrad)
 
            !print*,pxtoalwup,pxtoaswdn,pxtoaswup
            !print*,pxtoalwupclr,pxtoaswupclr
@@ -1046,6 +1040,8 @@ if(px_processing_mode .eq. 1 .or. px_processing_mode .eq. 2) then
   print*,'boa_swdn_clr: ',boa_swdn_clr(i,j)
   print*,'boa_par_tot : ',boa_par_tot(i,j)
   print*,'boa_par_dif : ',boa_par_dif(i,j)
+  print*,'boa_lwdn    : ',boa_lwdn(i,j)
+  print*,'boa_lwup    : ',boa_lwup(i,j)
   print*,'AOD550      : ',AOD550(i,j)
   print*,'AREF        : ',AREF(i,j)
   print*,'lts :',lts(i,j)

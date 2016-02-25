@@ -16,7 +16,8 @@
      +,                  acld, umco2, umch4, umn2o
      +,                  fdswcl,    fuswcl,    fdlwcl,    fulwcl
      +,                  tboapar, tboapardif, ttoapar
-     +,                  tresat)
+     +,                  tresat
+     +,                  emis,rho0d,rhodd)
       
       use kinds
 
@@ -93,8 +94,11 @@
      &, umch4      !Concentration of CH4                          (ppm).
      &, umn2o      !Concentration of N2O                          (ppm).
 
-      real tresat  !input retrieved satellite effective radius
-    
+      real, intent(in) :: tresat  !input retrieved satellite effective radius
+      real, intent(in) :: emis(12) !Spectral surface emissivity for each LW band
+      real, intent(in) :: rho0d(6) !Spectral direct surface albedo for each SW band
+      real, intent(in) :: rhodd(6) !Spectral diffuse surface albedo for each SW band
+      
 
 
 !     OUTPUT ARGUMENTS:
@@ -125,9 +129,9 @@
      &, aslcl      !Clear-sky SW radiative heating rate           (K/s).
 
       real (kind=dbl_kind), dimension(nlen)::
-     &  boapar     !Base of atmosphere BAND 1 radiative flux    (W/m^-2).
-     &, boapardif  !Base of atmosphere BAND 1 diffuse radiative flux    (W/m^-2).
-     &, toapar     !Base of atmosphere BAND 1 diffuse radiative flux    (W/m^-2).
+     &  boapar     !Base of atmosphere BAND 1&2 radiative flux    (W/m^-2).
+     &, boapardif  !Base of atmosphere BAND 1&2 diffuse radiative flux    (W/m^-2).
+     &, toapar     !Base of atmosphere BAND 1&2 diffuse radiative flux    (W/m^-2).
 
       real tboapar, tboapardif, ttoapar
 
@@ -237,7 +241,6 @@
      &, radvdcc_day!As radvbcc, but for daytime grid-points    (W/m^-2).
      &, radnbcc_day!As radnbc_loc, but for daytime grid-points (W/m^-2).
      &, radndcc_day!As radnbc_loc, but for daytime grid-points (W/m^-2).
-
 
 
 !-----------------------------------------------------------------------
@@ -379,7 +382,7 @@
      +,                    b4 ,  umco2 ,   umch4 ,  umn2o
      +,                  fdlw , fdlwcl ,    fulw , fulwcl
      +,          sel_rules_lw , tresat
-     +           )
+     +,          emis)
 
 !     print*,'---- exit subroutine bugs_lwr:'
          
@@ -472,7 +475,8 @@
      +,            fusw_day ,  fuswcl_day ,   radvbc_day , radvbcc_day
      +,          radvdc_day , radvdcc_day ,   radnbc_day , radnbcc_day
      +,          radndc_day , radndcc_day , sel_rules_sw , boapar
-     +,          boapardif  , toapar,tresat)
+     +,          boapardif  , toapar,tresat
+     +,          rho0d,rhodd)
 
 !     print*,'---- end subroutine bugs_swr:'
 

@@ -14,7 +14,8 @@
                              boalwupclr,boalwdnclr,boaswupclr,boaswdnclr,&
                              boapar,boapardif,toapar,&
                              fulw  ,fdlw  ,fusw  ,fdsw,&
-                             fulwcl,fdlwcl,fuswcl,fdswcl)
+                             fulwcl,fdlwcl,fuswcl,fdswcl,&
+                             emis,rho0d,rhodd)
 
       use kinds, only:  int_kind, dbl_kind
       use bugsrad_physconst, only:  gravity, cp_dry_air, sol_const
@@ -77,6 +78,9 @@
          pxQ   ,& !specific humidity profile at SAT. pixel (kg/kg).
          pxO3     !Ozone mixing ratio at SAT. pixel        (kg/kg).
 
+       real, intent(in) :: emis(12) !Spectral surface emissivity for each LW band
+       real, intent(in) :: rho0d(6) !Spectral direct surface albedo for each SW band
+       real, intent(in) :: rhodd(6) !Spectral diffuse surface albedo for each SW band
 
 ! Output VARIABLES:
        real, intent(out) :: &
@@ -154,7 +158,6 @@
    !tune incoming solar radiation to TSI measurements
    solar_factor = tsi/bugs_solar_constant 
    !print*,tsi,solar_factor
-
 !   pxP(1) = pxP(1)+0.5
 !   pxP(2) = pxP(2)+1.5
 !   pxP(3) = pxP(3)+3.5
@@ -230,7 +233,8 @@
                     o3l,ts,amu0,slr,alvdf,alndf,alvdr,alndr,sol_const, &
                     gravity,cp_dry_air,asl,atl,fdsw,fusw,fdlw,fulw, &
                     acld, umco2, umch4, umn2o, &
-                    fdswcl,fuswcl,fdlwcl,fulwcl,boapar,boapardif,toapar,cref)      
+                    fdswcl,fuswcl,fdlwcl,fulwcl,boapar,boapardif,toapar,cref,&
+                    emis,rho0d,rhodd)      
       
 !---- OUTPUT RESULTS:
 ! print fluxes in W/m2, heating rates in K/day.

@@ -44,8 +44,9 @@ ORAC_OBJ = $(OBJS)/kinds.o \
            $(OBJS)/adiabatic_lwc.o \
            $(OBJS)/compute_lts.o \
            $(OBJS)/compute_fth.o \
-           $(OBJS)/compute_column_o3.o
-
+           $(OBJS)/compute_column_o3.o \
+           $(OBJS)/preprocess_bugsrad_sfc_albedo.o \
+           $(OBJS)/preprocess_bugsrad_sfc_emissivity.o
 
 
 ORAC_OBJ_MAIN = $(OBJS)/process_broadband_fluxes.o

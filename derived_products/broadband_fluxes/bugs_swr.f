@@ -16,7 +16,8 @@
      +,                  fusw ,  fuswcl ,   radvbc , radvbccl
      +,                radvdc ,radvdccl ,   radnbc , radnbccl
      +,                radndc ,radndccl ,sel_rules , boapar
-     +,                boapardif, toapar,resat)
+     +,                boapardif, toapar,resat
+     +,                rho0d,rhodd)
 
 
       use kinds
@@ -117,7 +118,9 @@
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm+1)::
      &  pp      !Level pressure                                   (hPa).
 
-      real resat !input satellite retrieved cloud effective radius (um)
+      real, intent(in) :: resat !input satellite retrieved cloud effective radius (um)
+      real, intent(in) :: rho0d(6) !Spectral direct surface albedo for each SW band
+      real, intent(in) :: rhodd(6) !Spectral diffuse surface albedo for each SW band
 
 
 
@@ -302,11 +305,20 @@
           enddo
       enddo
 
+!---- note: this will be changed to accomodate the spectral dependence
+!     the surface albedo:
+! old code
+!      do i = 1, ncol
+!        asdir(i,1)   = alvdr(i)
+!        asdir(i,2:6) = alndr(i)
+!        asdif(i,1)   = alvdf(i)
+!        asdif(i,2:6) = alndf(i)
+!      enddo
+! NEW code
+! Matt Christensen 02/24/16
       do i = 1, ncol
-        asdir(i,1)   = alvdr(i)
-        asdir(i,2:6) = alndr(i)
-        asdif(i,1)   = alvdf(i)
-        asdif(i,2:6) = alndf(i)
+        asdir(i,:)   = rho0d(:)
+        asdif(i,:)   = rhodd(:)
       enddo
 
 !--   pressure scaling:

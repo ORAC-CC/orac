@@ -14,7 +14,7 @@
      +,                      b4 ,  umco2 , umch4 ,  umn2o
      +,                    fdlw , fdlwcl ,  fulw , fulwcl
      +,               sel_rules , resat
-     +                )
+     +,               emis)
      
       use kinds
       use bugsrad_planck, only:  planck
@@ -108,7 +108,8 @@
       real (kind=dbl_kind), intent(in), dimension(ncol,nlm+1)::
      &  pp    !Level pressure                                    (hPa).
 
-      real resat !input satellite retrieved cloud effective radius (um)
+      real, intent(in) :: resat !input satellite retrieved cloud effective radius (um)
+      real, intent(in) :: emis(12) !Spectral surface emissivity for each LW band
 
 !     OUTPUT ARGUMENTS:
 !     -----------------
@@ -252,11 +253,16 @@
 
 !---- note: this will be changed to accomodate the spectral dependence
 !     the surface emissivity:
-
-      do ib = 1, mbir
-         do i = 1, ncol
-            es(i,ib) = 1.
-         enddo
+! old code that uses surface emissivity value of 1
+!      do ib = 1, mbir
+!         do i = 1, ncol
+!            es(i,ib) = 1.
+!         enddo
+!      enddo
+! NEW CODE that inputs spectral emissivity
+! Matt Christensen 02/24/16
+      do i = 1, ncol
+        es(i,:) = emis(:)
       enddo
 
 !--   pressure scaling:
