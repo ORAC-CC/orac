@@ -2,12 +2,12 @@
 ! Name: CalcCWP.F90
 !
 ! Purpose:
-! This routine calculates the Cloud water path and the associated error on
-! the Cloud waterPath
+! This routine calculates the cloud water path and the associated uncertainty on
+! the cloud water path.
 !
 ! Description and Algorithm details:
-! 1) Evaluate (4/3) * COT * Ref * density / extinction_coefficient.
-! 2) Evalute derivatives of that for Jacobian.
+! 1) Evaluate (4/3) * COT * CER * density / extinction_coefficient.
+! 2) Propagate COT and CER uncertainty through #1 to get CWP uncertainty.
 !
 ! Arguments:
 ! Name       Type    In/Out/Both Description
@@ -16,14 +16,17 @@
 ! SPixel     struct  Both Structure for the pixel currently being retrieved.
 !
 ! History:
-! 2011/11/08, CP: original version adapted from idl version
-! 2011/11/28, CP: remove log write statement
-! 2013/11/14, MJ: makes branch for ICE explicit
+! 2011/11/08, CP: Original version adapted from idl version
+! 2011/11/28, CP: Remove log write statement
+! 2013/11/14, MJ: Makes branch for ICE explicit
 ! 2013/11/14, GM: Some code cleanup
-! 2014/06/11, CP: removes automatic crash if ice wat class not specified so
-!    can cope with aerosol class
-! 2014/07/23, AP: added value for al10e2.
+! 2014/06/11, CP: Removes automatic crash if ice or wat class id not specified
+!    so it can cope with other classes.
+! 2014/07/23, AP: Added value for al10e2.
 ! 2014/12/19, AP: Renaming CloudClass field in Ctrl.
+! 2016/02/26, GM: Correct computation of CWP uncertainty which was missing a
+!    fac**2 factor.  Then reformulated the computation in the form of standard
+!    propagation of COT and CER uncertainty through the CWP computation.
 !
 ! $Id$
 !
@@ -40,48 +43,37 @@ subroutine Calc_CWP(Ctrl, SPixel)
    implicit none
 
    ! Argument declarations
+
    type(CTRL_t),   intent(in)    :: Ctrl
    type(SPixel_t), intent(inout) :: SPixel
 
    ! Local variable declarations
-   real :: rho             ! liquid or water density
-   real :: fac             ! CWP factor
-   real :: s_cot_cre       ! co-variance cot, effective radius (from log10 cot,
-                           ! effective radius)
-   real :: s_cot           ! variance in cot from variance in log10cot
-   real :: tenpcot         ! 10^cot convert from log value to linear value
-   real :: al10e = .434294 ! i.e  log10(exp(1.))
-   real :: al10e2 =.188612 ! =al10e*al10e
 
+   real :: fac
+   real :: tenpcot
+   real :: dcwp_dtau
+   real :: dcwp_dr_e
 
    if (Ctrl%Approach == CldWat) then
-      rho=rhowat
-      fac=(4./3.)*rho/qextwat
+      fac = (4./3.) * rhowat / qextwat
    else if (Ctrl%Approach == CldIce) then
-      rho=rhoice
-      fac=(4./3.)*rho/qextice
+      fac = (4./3.) * rhoice / qextice
    else
-      ! most likely aerosol but could be some other crash
-      SPixel%CWP=sreal_fill_value
-      SPixel%CWP_error=sreal_fill_value
+      SPixel%CWP       = sreal_fill_value
+      SPixel%CWP_error = sreal_fill_value
       return
    end if
 
-   tenpcot=10.**(SPixel%Xn(iTau))
+   tenpcot = 10.**SPixel%Xn(ITau)
 
-   SPixel%CWP=fac* tenpcot*SPixel%Xn(iRe)
+   SPixel%CWP = fac * tenpcot * SPixel%Xn(IRe)
 
-   ! covariance
-   s_cot_cre=(SPixel%Sn(iTau,iRe)*tenpcot)/al10e
+   dcwp_dtau = fac * tenpcot * log(10.) * SPixel%Xn(IRe)
+   dcwp_dr_e = fac * tenpcot
 
-   ! error on optical depth
-   s_cot=(SPixel%Sn(iTau,iTau)*tenpcot*tenpcot)/al10e2
-
-   ! based on
-   ! SPixel%CWP_error=fac*sqrt(cre*cre*s_cot+cot*cot*s_cre+2.*cre*cot*s_cot_cre)
-
-   SPixel%CWP_error=SPixel%Xn(iRe)*SPixel%Xn(iRe)*s_cot+ &
-                    tenpcot*tenpcot*SPixel%Sn(iRe,iRe)+ &
-                    2.* tenpcot*SPixel%Xn(iRe)*s_cot_cre
+   SPixel%CWP_error = dcwp_dtau * dcwp_dtau * SPixel%Sn(ITau,ITau) + &
+                      dcwp_dtau * dcwp_dr_e * SPixel%Sn(IRe,ITau) + &
+                      dcwp_dr_e * dcwp_dtau * SPixel%Sn(ITau,IRe) + &
+                      dcwp_dr_e * dcwp_dr_e * SPixel%Sn(IRe,IRe)
 
 end subroutine Calc_CWP
