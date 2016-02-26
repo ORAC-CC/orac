@@ -37,6 +37,7 @@
 ! 2016/01/21, OS: Added correction for ice-free sea skin temperature - to be tested
 ! 2016/01/21, OS: Removed offset when correcting AATSR ch1 and ch2 data
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
+! 2016/02/26, OS: Added different approach for nighttime cloud mask SST correction.
 
 ! $Id$
 !
@@ -363,8 +364,14 @@ contains
        !       endif
 
        ! Testing ice-free sea skin temperature correction
-       if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO)) then
+       if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
+            (illum_nn .ne. 3) ) then
           output = output - ((300.- skint)/30.)*0.15
+       endif
+
+       if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &
+            (illum_nn .eq. 3) ) then
+          output = output - ((300.- skint)/30.)*0.3
        endif
 
        ! --- ensure that CCCOT is within 0 - 1 range
