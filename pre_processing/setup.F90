@@ -120,7 +120,7 @@ subroutine setup_aatsr(l1b_path_file,geo_path_file,platform,sensor,year, &
       (/ 0,    0,    0,    0,    1,    1,    1 /)
 
    integer, parameter :: all_channel_ids_rttov_coef_sw(all_nchannels_total) = &
-      (/ 0,    5,    4,    3,    2,    0,    0 /)
+      (/ 7,    6,    5,    4,    3,    0,    0 /)
 
    integer, parameter :: all_channel_ids_rttov_coef_lw(all_nchannels_total) = &
       (/ 0,    0,    0,    0,    3,    2,    1 /)
