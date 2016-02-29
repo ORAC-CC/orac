@@ -260,14 +260,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
        parse_string(line, Ctrl%Ind%NAvail) /= 0) &
       call h_p_e('number of channels expected in preproc files')
 
-   ! Read channel related info
-   call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
-     channel_lw_flag, channel_wvl, global_atts, source_atts)
-
-   ! Read dimensions of preprocessing swath files
-   call read_input_dimensions_msi(Ctrl%FID%MSI, Ctrl%FID%Geo, &
-      Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, Ctrl%verbose)
-
    ! Read processing flag from driver
    allocate(channel_proc_flag(Ctrl%Ind%NAvail))
    if (parse_driver(dri_lun, line) /= 0 .or. &
@@ -279,6 +271,54 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
                  channel_proc_flag
       stop DriverFileIncompat
    end if
+
+   ! Read in cloud class (aka phase of no aerosols processed)
+   if (parse_driver(dri_lun, line) /= 0 .or. &
+       parse_string(line, Ctrl%LUTClass) /= 0) &
+      call h_p_e('Ctrl%LUTClass')
+
+   ! Output filenames
+   outname=trim(Ctrl%FID%Out_Dir)//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
+   Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
+   Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
+   Ctrl%FID%BkP          = trim(outname)//'.bkp'
+
+   ! Read code path controlling options from the driver file.
+   Ctrl%Approach = -1
+
+   Ctrl%do_new_night_retrieval = .true.
+   Ctrl%do_CTX_correction      = .true.
+
+   do while (parse_driver(dri_lun, line, label) == 0)
+      call clean_driver_label(label)
+      select case (label)
+      case('CTRL%APPROACH')
+         if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
+      case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
+         if (parse_string(line, Ctrl%do_new_night_retrieval)/= 0) call h_p_e(label)
+      case('CTRL%DO_CTX_CORRECTION')
+         if (parse_string(line, Ctrl%do_CTX_correction)/= 0) call h_p_e(label)
+      case('CTRL%VERBOSE')
+         if (parse_string(line, Ctrl%verbose)          /= 0) call h_p_e(label)
+      case default
+         cycle
+      end select
+   end do
+
+   ! Done with first pass through driver file.  Move file position to the end of
+   ! the mandatory arguments which is the beginning of the optional arguments.
+   rewind dri_lun
+   do i = 1, 8
+      read(dri_lun, *)
+   end do
+
+   ! Read channel related info
+   call read_config_file(Ctrl, channel_ids_instr, channel_sw_flag, &
+     channel_lw_flag, channel_wvl, global_atts, source_atts)
+
+   ! Read dimensions of preprocessing swath files
+   call read_input_dimensions_msi(Ctrl%FID%MSI, Ctrl%FID%Geo, &
+      Ctrl%Ind%Xmax, Ctrl%Ind%YMax, Ctrl%Ind%NViews, Ctrl%verbose)
 
    ! Determine the number of channels to be used.
    Ctrl%Ind%Ny       = count(channel_proc_flag == 1)
@@ -340,44 +380,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       end if
    end do
    Ctrl%Ind%NWvl = ii
-
-   ! Read in cloud class (aka phase of no aerosols processed)
-   if (parse_driver(dri_lun, line) /= 0 .or. &
-       parse_string(line, Ctrl%LUTClass) /= 0) &
-      call h_p_e('Ctrl%LUTClass')
-
-   ! Output filenames
-   outname=trim(Ctrl%FID%Out_Dir)//trim(Ctrl%FID%Filename)//trim(Ctrl%LUTClass)
-   Ctrl%FID%L2_primary   = trim(outname)//'.primary.nc'
-   Ctrl%FID%L2_secondary = trim(outname)//'.secondary.nc'
-   Ctrl%FID%BkP          = trim(outname)//'.bkp'
-
-   ! Read code path controlling options from the driver file.
-   Ctrl%Approach = -1
-
-   Ctrl%do_new_night_retrieval = .true.
-   Ctrl%do_CTX_correction      = .true.
-
-   do while (parse_driver(dri_lun, line, label) == 0)
-      call clean_driver_label(label)
-      select case (label)
-      case('CTRL%APPROACH')
-         if (parse_user_text(line, Ctrl%Approach) /= 0) call h_p_e(label)
-      case('CTRL%DO_NEW_NIGHT_RETRIEVAL')
-         if (parse_string(line, Ctrl%do_new_night_retrieval)/= 0) call h_p_e(label)
-      case('CTRL%DO_CTX_CORRECTION')
-         if (parse_string(line, Ctrl%do_CTX_correction)/= 0) call h_p_e(label)
-      case default
-         cycle
-      end select
-   end do
-
-   ! Done with first pass through driver file.  Move file position to the end of
-   ! the mandatory arguments which is the beginning of the optional arguments.
-   rewind dri_lun
-   do i = 1, 8
-      read(dri_lun, *)
-   end do
 
    if (Ctrl%Approach == -1) then
       ! Approach not set, so deduce from LUTClass
@@ -963,8 +965,6 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
       case('CTRL%SURFACES_TO_SKIP')
          if (parse_user_text(line, Ctrl%surfaces_to_skip) &
                                                        /= 0) call h_p_e(label)
-      case('CTRL%VERBOSE')
-         if (parse_string(line, Ctrl%verbose)          /= 0) call h_p_e(label)
       case('CTRL%RECHANS')
          if (parse_user_text(line, Ctrl%ReChans)       /= 0) call h_p_e(label)
       case('CTRL%AP')
@@ -1011,7 +1011,8 @@ subroutine Read_Driver(Ctrl, global_atts, source_atts)
                                                        /= 0) call h_p_e(label)
       case('CTRL%APPROACH', &
            'CTRL%DO_NEW_NIGHT_RETRIEVAL', &
-           'CTRL%DO_CTX_CORRECTION')
+           'CTRL%DO_CTX_CORRECTION', &
+           'CTRL%VERBOSE')
          cycle ! These arguments have already been parsed in the first pass
                ! through the driver file.
       case default

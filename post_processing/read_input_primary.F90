@@ -174,7 +174,7 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
 
    integer :: ncid
 
-   write(*,*) 'Opening primary input file: ', trim(fname)
+   if (verbose) write(*,*) 'Opening primary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
    call nc_get_common_attributes(ncid, global_atts, source_atts)
@@ -202,7 +202,7 @@ subroutine read_input_primary_all(fname, input_data, xdim, ydim, indexing, &
    call nc_read_packed_array(ncid, "cldmask_uncertainty", input_data%cldmask_uncertainty, verbose)
    call nc_read_packed_array(ncid, "cccot_pre", input_data%cccot_pre, verbose)
 
-   write(*,*) 'Closing primary input file.'
+   if (verbose) write(*,*) 'Closing primary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code

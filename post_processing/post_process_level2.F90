@@ -137,8 +137,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    implicit none
 
-   logical,            parameter :: verbose = .true.
-
    integer,            parameter :: MaxInFiles = 32
 
    integer,            parameter :: MaxNumMeas = 36
@@ -172,6 +170,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    logical                     :: output_optical_props_at_night = .false.
    logical                     :: use_bayesian_selection = .false.
    logical                     :: use_netcdf_compression = .true.
+   logical                     :: verbose = .true.
 
    integer                     :: n_in_files
 
@@ -227,30 +226,21 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    else if (nargs .eq. -1) then
       index_space = INDEX(path_and_file, " ")
       path_and_file = path_and_file(1:(index_space-1))
-      write(*,*) 'inside postproc ',trim(adjustl(path_and_file))
+      if (verbose) write(*,*) 'inside postproc ',trim(adjustl(path_and_file))
    end if
-
-   write(*,*)'path_and_file = ', trim(path_and_file)
 
    ! read from an external file
    open(11,file=trim(adjustl(path_and_file)), status='old', form='formatted')
 
-   read(11,*) in_files_primary(IWat)
-   write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
-   read(11,*) in_files_primary(IIce)
-   write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
+   read(11,'(A)') in_files_primary(IWat)
+   read(11,'(A)') in_files_primary(IIce)
 
-   read(11,*) in_files_secondary(IWat)
-   write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
-   read(11,*) in_files_secondary(IIce)
-   write(*,*) 'secondary ice input = ', trim(in_files_secondary(IIce))
+   read(11,'(A)') in_files_secondary(IWat)
+   read(11,'(A)') in_files_secondary(IIce)
 
-   read(11,*) out_file_primary
-   write(*,*) 'primary output = ', trim(out_file_primary)
-   read(11,*) out_file_secondary
-   write(*,*) 'secondary output = ', trim(out_file_secondary)
-   read(11,*) switch_phases
-   write(*,*) 'switch_phases = ', switch_phases
+   read(11,'(A)') out_file_primary
+   read(11,'(A)') out_file_secondary
+   read(11,'(A)') switch_phases
 
    n_in_files = 2
 
@@ -274,6 +264,9 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
      case('USE_NETCDF_COMPRESSION')
         if (parse_string(value, use_netcdf_compression) /= 0) &
            call handle_parse_error(label)
+     case('VERBOSE')
+        if (parse_string(value, verbose) /= 0) &
+           call handle_parse_error(label)
      case('')
         n_in_files = n_in_files + 1
         in_files_primary(n_in_files) = value
@@ -289,16 +282,28 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
      end select
    end do
 
+   if (verbose) then
+      write(*,*) 'path_and_file = ', trim(path_and_file)
+      write(*,*) 'primary water input = ', trim(in_files_primary(IWat))
+      write(*,*) 'primary ice input = ', trim(in_files_primary(IIce))
+      write(*,*) 'secondary water input = ', trim(in_files_secondary(IWat))
+      write(*,*) 'secondary ice input = ', trim(in_files_secondary(IIce))
+      write(*,*) 'primary output = ', trim(out_file_primary)
+      write(*,*) 'secondary output = ', trim(out_file_secondary)
+      write(*,*) 'switch_phases = ', switch_phases
+   end if
 
    ! Here we have a general hack to get some channel indexing information from
    ! the secondary measurement variable names.
 
-   write(*,*) 'Obtaining channel indexing'
+   if (verbose) write(*,*) 'Obtaining channel indexing'
 
    indexing%Nx = 4 ! This count is hardwired for now
    indexing%NViews = 1
 
-   write(*,*) 'Opening first secondary input file: ', trim(in_files_secondary(IIce))
+   if (verbose) &
+        write(*,*) 'Opening first secondary input file: ', &
+                   trim(in_files_secondary(IIce))
    call nc_open(ncid_secondary,in_files_secondary(IIce))
 
    indexing%Ny = 0
@@ -340,7 +345,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          end if
       end if
    end do
-   write(*,*) 'Closing first secondary input file.'
+   if (verbose) write(*,*) 'Closing first secondary input file.'
    if (nf90_close(ncid_secondary) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code
@@ -349,16 +354,16 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    ! read intermediate input files and into a structures
 
-   write(*,*) 'Reading input dimensions'
+   if (verbose) write(*,*) 'Reading input dimensions'
    call read_input_dimensions(in_files_primary(1),xdim,ydim,verbose)
 
-   write(*,*) '********************************'
-   write(*,*) 'read: ', trim(in_files_primary(1))
+   if (verbose) write(*,*) '********************************'
+   if (verbose) write(*,*) 'read: ', trim(in_files_primary(1))
    call alloc_input_data_primary_all(input_primary(1),xdim,ydim,indexing)
    call read_input_primary_all(in_files_primary(1),input_primary(1),xdim, &
       ydim,indexing,global_atts,source_atts,verbose)
    if (do_secondary) then
-      write(*,*) 'read: ', trim(in_files_secondary(1))
+      if (verbose) write(*,*) 'read: ', trim(in_files_secondary(1))
       call alloc_input_data_secondary_all(input_secondary(1),xdim,ydim, &
          indexing)
       call read_input_secondary_all(in_files_secondary(1),input_secondary(1), &
@@ -366,13 +371,13 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    end if
 
    do i = 2, n_in_files
-      write(*,*) '********************************'
-      write(*,*) 'read: ', trim(in_files_primary(i))
+      if (verbose) write(*,*) '********************************'
+      if (verbose) write(*,*) 'read: ', trim(in_files_primary(i))
       call alloc_input_data_primary_class(input_primary(i),xdim,ydim,indexing)
       call read_input_primary_class(in_files_primary(i),input_primary(i),xdim, &
          ydim,indexing,global_atts,verbose)
       if (do_secondary) then
-         write(*,*) 'read: ', trim(in_files_secondary(i))
+         if (verbose) write(*,*) 'read: ', trim(in_files_secondary(i))
          call alloc_input_data_secondary_class(input_secondary(i),xdim,ydim, &
             indexing)
          call read_input_secondary_class(in_files_secondary(i),input_secondary(i), &
@@ -387,9 +392,11 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    iystart=1
    iystop=ydim
 
-   write(*,*) 'Processing limits:'
-   write(*,*) ixstart, ixstop
-   write(*,*) iystart, iystop
+   if (verbose) then
+      write(*,*) 'Processing limits:'
+      write(*,*) ixstart, ixstop
+      write(*,*) iystart, iystop
+   end if
 
    do j=iystart,iystop
       do i=ixstart,ixstop

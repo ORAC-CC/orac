@@ -113,7 +113,7 @@ subroutine read_input_secondary_all(fname, input_data, xdim, ydim, indexing, &
    integer           :: i
    character(len=32) :: input_num
 
-   write(*,*) 'Opening secondary input file: ', trim(fname)
+   if (verbose) write(*,*) 'Opening secondary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
    call read_input_secondary_common(ncid, input_data, xdim, ydim, &
@@ -142,7 +142,7 @@ subroutine read_input_secondary_all(fname, input_data, xdim, ydim, indexing, &
       end if
    end do
 
-   write(*,*) 'Closing secondary input file.'
+   if (verbose) write(*,*) 'Closing secondary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code
@@ -169,13 +169,13 @@ subroutine read_input_secondary_class(fname, input_data, xdim, ydim, indexing, &
 
    integer :: ncid
 
-   write(*,*) 'Opening secondary input file: ', trim(fname)
+   if (verbose) write(*,*) 'Opening secondary input file: ', trim(fname)
    call nc_open(ncid,fname)
 
    call read_input_secondary_common(ncid, input_data, xdim, ydim, &
       indexing, verbose)
 
-   write(*,*) 'Closing secondary input file.'
+   if (verbose) write(*,*) 'Closing secondary input file.'
    if (nf90_close(ncid) .ne. NF90_NOERR) then
       write(*,*) 'ERROR: nf90_close()'
       stop error_stop_code

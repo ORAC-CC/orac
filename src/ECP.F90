@@ -485,7 +485,8 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 #ifdef _OPENMP
    ! Along track loop is parallelized with OpenMP
    n_threads = omp_get_max_threads()
-   write(*,*) 'ORAC along-track loop now running on', n_threads, 'threads'
+   if (Ctrl%verbose) &
+        write(*,*) 'ORAC along-track loop now running on', n_threads, 'threads'
 
    ! Start OMP section by spawning the threads
    !$OMP PARALLEL &
@@ -495,7 +496,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
 
    thread_num = omp_get_thread_num()
    !$OMP CRITICAL
-   write(*,*) 'Thread ', thread_num+1, 'is active'
+   if (Ctrl%verbose) write(*,*) 'Thread ', thread_num+1, 'is active'
    !$OMP END CRITICAL
 #endif
 
@@ -659,17 +660,18 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
    avj       = sum(avj_line)
    totmaxj   = sum(totmaxj_line)
 
-   write(*,*)' Total super-pixels processed          ',TotPix
-   write(*,*)' Total skipped due to 0 cloud or error ',TotMissed
-   write(*,*)' No. of retrievals converged           ',TotConv
-   if (TotConv > 0) then
-      write(*,*)' Avge no. of iter per conv.            ',&
-         float(AvIter)/float(TotConv)
-      write(*,*)' Avge cost per conv                    ',&
-         AvJ / float(TotConv)
-      write(*,*)' No. of retrieval costs > max          ',TotMaxJ
+   if (Ctrl%verbose) then
+      write(*,*)' Total super-pixels processed          ',TotPix
+      write(*,*)' Total skipped due to 0 cloud or error ',TotMissed
+      write(*,*)' No. of retrievals converged           ',TotConv
+      if (TotConv > 0) then
+         write(*,*)' Avge no. of iter per conv.            ',&
+              float(AvIter)/float(TotConv)
+         write(*,*)' Avge cost per conv                    ',&
+              AvJ / float(TotConv)
+         write(*,*)' No. of retrieval costs > max          ',TotMaxJ
+      end if
    end if
-
 
    ! Deallocate some vectors for openMP
    deallocate(totpix_line)
@@ -711,7 +713,7 @@ subroutine ECP(mytask,ntasks,lower_bound,upper_bound,drifile)
       stop SecondaryFileCloseErr
    end if
 
-   write(*,*) 'ORAC is ending successfully'
+   if (Ctrl%verbose) write(*,*) 'ORAC is ending successfully'
 
 #ifdef USE_TIMING
    m3=mclock()

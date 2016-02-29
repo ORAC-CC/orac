@@ -121,13 +121,11 @@ EPR_SProductId* epr_open_product(const char* product_file_path) {
         return NULL;
     }
 
-   printf(" aa %s\n", product_id->id_string);
     /* Disguise ATSR1/ATSR2 products as AATSR */
     if ((strncmp("AT1", product_id->id_string, 3) == 0) ||
         (strncmp("AT2",  product_id->id_string, 3) == 0) ) {
         product_id->id_string[2] = 'S';
-    }   
-    printf(" bb %s\n", product_id->id_string);
+    }
     /* Product identifier filter*/
     if ((strncmp(EPR_ENVISAT_PRODUCT_MERIS, product_id->id_string, 3) != 0) &&
             (strncmp(EPR_ENVISAT_PRODUCT_ASAR,  product_id->id_string, 3) != 0) &&
@@ -497,6 +495,3 @@ uint epr_compute_scene_height(const EPR_SProductId* product_id) {
 
     return min_num_mds_recs;
 }
-
-
-
