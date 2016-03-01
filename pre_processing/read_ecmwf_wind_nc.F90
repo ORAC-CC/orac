@@ -35,7 +35,8 @@
 ! None known.
 !-------------------------------------------------------------------------------
 
-subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, high_res)
+subroutine read_ecmwf_wind_nc(ecmwf_path, ecmwf2path, ecmwf3path, ecmwf, &
+                              high_res)
 
    use preproc_constants
 
@@ -115,23 +116,23 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid,ndim,nvar) .ne. 0) &
-        stop 'ERROR: read_ecmwf_wind(): Bad inquire.'
+        call h_e_e('wind_file', 'Bad inquire.')
    do i=1,ndim
       if (nf90_inquire_dimension(fid,i,name,size) .ne. 0) &
-           stop 'ERROR: read_ecmwf_wind(): Bad dimension.'
+           call h_e_e('wind_file', 'Bad dimension.')
       if (name .eq. 'longitude') then
          if (ecmwf%xdim .eq. 0) then
             ecmwf%xdim=size
          else
             if (ecmwf%xdim .ne. size) &
-                 stop 'ERROR: read_ecmwf_wind(): Inconsistent lon.'
+                 call h_e_e('wind_file', 'Inconsistent lon.')
          end if
       else if (name .eq. 'latitude') then
          if (ecmwf%ydim .eq. 0) then
             ecmwf%ydim=size
          else
             if (ecmwf%ydim .ne. size) &
-                 stop 'ERROR: read_ecmwf_wind(): Inconsistent lat.'
+                 call h_e_e('wind_file', 'Inconsistent lat.')
          end if
          ! the vertical coordinate is inconsistently named between gpam and ggam
       else if ((name.eq.'hybrid' .and. ndim.eq.4) .or. &
@@ -140,7 +141,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
             ecmwf%kdim=size
          else
             if (ecmwf%kdim .ne. size) &
-                 stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical.'
+                 call h_e_e('wind_file', 'Inconsistent vertical.')
          end if
       end if
    end do
@@ -148,7 +149,7 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
    ! read wind fields and geolocation from files
    do i=1,nvar
       if (nf90_inquire_variable(fid,i,name) .ne. 0) &
-           stop 'ERROR: read_ecmwf_wind(): Bad variable.'
+           call h_e_e('wind_file', 'Bad variable.')
       select case (name)
       case('longitude')
          if (.not.associated(ecmwf%lon)) then
@@ -204,6 +205,6 @@ subroutine read_ecmwf_wind_file(ecmwf_path, ecmwf)
    end do
 
    if (nf90_close(fid) .ne. NF90_NOERR) &
-        stop 'ERROR: read_ecmwf_wind(): File could not close.'
+        call h_e_e('wind_file', 'File could not close.')
 
 end subroutine read_ecmwf_wind_file

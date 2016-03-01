@@ -51,38 +51,34 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    integer                         :: i,n,ni,nj,nk,npv,ni_,nj_
    integer                         :: param,level,nlevels
 
-   if (len(trim(ecmwf_path)) .gt. 1024) then
-         write(*,*) 'ERROR: read_ecmwf_wind_grib(), Filename argument string ' // &
-                    'ecmwf_path is too long.  It must be limited to a length of ' // &
-                    '1024 due to a bug in grib_api.'
-         stop error_stop_code
-   end if
+   if (len(trim(ecmwf_path)) .gt. 1024) call h_e_e('wind_grib', &
+         'Filename argument string ecmwf_path is too long.  It must be ' // &
+         'limited to a length of 1024 due to a bug in grib_api.')
 
    ! open file
    call grib_open_file(fid,trim(ecmwf_path),'r',stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error opening GRIB field.'
+   if (stat .ne. 0) call h_e_e('wind_grib', 'Error opening GRIB field.')
    call grib_new_from_file(fid,gid,stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting GRIB_ID.'
-   if (gid .eq. GRIB_END_OF_FILE) &
-        stop 'ERROR: read_ecmwf_wind(): Empty GRIB file.'
+   if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting GRIB_ID.')
+   if (gid .eq. GRIB_END_OF_FILE) call h_e_e('wind_grib', 'Empty GRIB file.')
 
    if (.not. high_res) then
       ! ensure it contains the expected fields
       call grib_get(gid,'PVPresent',PVPresent)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
       if (PVPresent .eq. 0) &
-           stop 'ERROR: read_ecmwf_wind(): Incorrect file format. Check ECMWF_FLAG.'
+           call h_e_e('wind_grib', 'Incorrect file format. Check ECMWF_FLAG.')
       call grib_get(gid,'PLPresent',PLPresent)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PVPresent.'
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PVPresent.')
       if (PLPresent .eq. 1) &
-           stop 'ERROR: read_ecmwf_wind(): Incorrect file formatting. Check ECMWF_FLAG.'
+           call h_e_e('wind_grib', 'Incorrect file formatting. Check ECMWF_FLAG.')
 
       ! fetch vertical coordinate
       call grib_get_size(gid,'pv',npv,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error checking PV.'
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error checking PV.')
       allocate(pv(npv))
       call grib_get(gid,'pv',pv,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting PV.'
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting PV.')
       nk=npv/2-1
    else
       nk=0
@@ -90,9 +86,9 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
 
    ! read dimensions
    call grib_get(gid,'Ni',ni,stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting Ni.'
+   if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting Ni.')
    call grib_get(gid,'Nj',nj,stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting Nj.'
+   if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting Nj.')
    n=ni*nj
 
    ! allocate temporary arrays
@@ -117,26 +113,24 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    do while (stat .ne. GRIB_END_OF_FILE)
       ! check for consistent dimensions
       call grib_get(gid,'Ni',ni_,stat)
-      if (stat .ne. 0 .or. ni_ .ne. ni) &
-           stop 'ERROR: read_ecmwf_wind(): Error with Ni.'
+      if (stat .ne. 0 .or. ni_ .ne. ni) call h_e_e('wind_grib', 'Error with Ni.')
       call grib_get(gid,'Nj',nj_,stat)
-      if (stat .ne. 0 .or. nj_ .ne. nj) &
-           stop 'ERROR: read_ecmwf_wind(): Error with Nj.'
+      if (stat .ne. 0 .or. nj_ .ne. nj) call h_e_e('wind_grib', 'Error with Nj.')
       call grib_get(gid,'level',level,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting level.'
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting level.')
 
       ! count level number
       if (level .gt. nlevels) nlevels=level
 
       ! if wind field, read and output
       call grib_get(gid,'parameter',param,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error getting parameter.'
+      if (stat .ne. 0) call h_e_e('wind_grib', 'Error getting parameter.')
       select case (param)
       case(165)
          if (.not. high_res) then
             ! 10m zonal wind component, latitude, and longitude
             call grib_get(gid,'values',val,stat)
-            if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading U10.'
+            if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading U10.')
 
             ecmwf%u10=reshape(val, (/ni,nj/))
          end if
@@ -144,14 +138,14 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
          if (.not. high_res) then
             ! 10 m meriodional wind component
             call grib_get(gid,'values',val,stat)
-            if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading V10.'
+            if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading V10.')
 
             ecmwf%v10=reshape(val, (/ni,nj/))
          end if
       case(235)
          ! skin temperature
          call grib_get_data(gid,lat,lon,val,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading skin_temp.'
+         if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading skin_temp.')
 
          ecmwf%skin_temp=reshape(val, (/ni,nj/))
          ecmwf%lon=lon(1:ni)
@@ -161,13 +155,13 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
       case(31)
          ! sea-ice cover
          call grib_get(gid,'values',val,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading sea-ice cover.'
+         if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading sea-ice cover.')
 
          ecmwf%sea_ice_cover=reshape(val, (/ni,nj/))
       case(141)
          ! snow depth
          call grib_get(gid,'values',val,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_wind(): Error reading snow_depth.'
+         if (stat .ne. 0) call h_e_e('wind_grib', 'Error reading snow_depth.')
 
          ecmwf%snow_depth=reshape(val, (/ni,nj/))
       end select
@@ -180,8 +174,7 @@ subroutine read_ecmwf_wind_grib(ecmwf_path, ecmwf, high_res)
    call grib_close_file(fid)
 
    ! set ECMWF dimensions
-   if (nk .ne. nlevels) &
-      stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical levels.'
+   if (nk .ne. nlevels) call h_e_e('wind_grib', 'Inconsistent vertical levels.')
 
    ecmwf%xdim=ni
    ecmwf%ydim=nj

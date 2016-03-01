@@ -97,26 +97,26 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    ! open the ECMWF file
    call PBOPEN(fu, ecmwf_file, 'r', stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Failed to read file.'
+   if (stat .ne. 0) call h_e_e('grib', 'Failed to read file.')
 
    ! select appropriate grid definition
    charv(1)='grib'
-   if (INTIN('form',iblank,grid,charv).ne.0) &
-        stop 'ERROR: read_ecmwf_grib(): INTIN form failed.'
-   if (INTOUT('form',iblank,grid,charv).ne.0) &
-        stop 'ERROR: read_ecmwf_grib(): INTOUT form failed.'
+   if (INTIN('form',iblank,grid,charv) .ne. 0) &
+        call h_e_e('grib', 'INTIN form failed.')
+   if (INTOUT('form',iblank,grid,charv) .ne. 0) &
+        call h_e_e('grib', 'INTOUT form failed.')
 
    ! input details of new grid (see note in header)
    grid(1) = 0.5 / preproc_dims%dellon
    grid(2) = 0.5 / preproc_dims%dellat
-   if (INTOUT('grid',iblank,grid,charv).ne.0) &
-        stop 'ERROR: read_ecmwf_grib(): INTOUT grid failed.'
+   if (INTOUT('grid',iblank,grid,charv) .ne. 0) &
+        call h_e_e('grib', 'INTOUT grid failed.')
    area(1) = preproc_geoloc%latitude(preproc_dims%max_lat) + 0.01*grid(2)
    area(2) = preproc_geoloc%longitude(preproc_dims%min_lon) + 0.01*grid(1)
    area(3) = preproc_geoloc%latitude(preproc_dims%min_lat) + 0.01*grid(2)
    area(4) = preproc_geoloc%longitude(preproc_dims%max_lon) + 0.01*grid(1)
-   if (INTOUT('area',iblank,area,charv).ne.0) &
-        stop 'ERROR: read_ecmwf_grib(): INTOUT area failed.'
+   if (INTOUT('area',iblank,area,charv) .ne. 0) &
+        call h_e_e('grib', 'INTOUT area failed.')
 
    allocate(in_data(BUFFER))
    allocate(out_data(BUFFER))
@@ -126,47 +126,48 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
       ! read GRIB data field
       call PBGRIB(fu, in_data, BUFFER*lint, nbytes, stat)
       if (stat .eq. -1) exit
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Failure to read product.'
+      if (stat .ne. 0) call h_e_e('grib', 'Failure to read product.')
 
       ! interpolate GRIB field (into another GRIB field)
       in_words = nbytes / lint
       out_words = BUFFER
-      if (INTF(in_data,in_words,zni,out_data,out_words,zno).ne.0) &
-           stop 'ERROR: read_ecmwf_grib(): INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.'
+      if (INTF(in_data,in_words,zni,out_data,out_words,zno) .ne. 0) &
+           call h_e_e('grib', &
+              'INTF failed. Check if 1/dellon 1/dellat are muliples of 0.001.')
 
       ! load grib data into grib_api
       call grib_new_from_message(gid,out_data(1:out_words),stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting GRIB_ID.'
+      if (stat .ne. 0) call h_e_e('grib', 'Error getting GRIB_ID.')
 
       call grib_get(gid,'parameter',param,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting parameter #.'
+      if (stat .ne. 0) call h_e_e('grib', 'Error getting parameter #.')
       call grib_get(gid,'level',level,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting level #.'
+      if (stat .ne. 0) call h_e_e('grib', 'Error getting level #.')
       call grib_get(gid,'Nj',nj,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting nj.'
+      if (stat .ne. 0) call h_e_e('grib', 'Error getting nj.')
 
       ! check if this is a reduced Gaussian grid
       call grib_get(gid,'PLPresent',plpresent,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting PLPresent.'
+      if (stat .ne. 0) call h_e_e('grib', 'Error getting PLPresent.')
       if (plpresent .eq. 1) then
          ! determine total number of points from PL array
          allocate(pl(nj))
          call grib_get(gid,'pl',pl,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting PL.'
+         if (stat .ne. 0) call h_e_e('grib', 'Error getting PL.')
          n=sum(pl)
          deallocate(pl)
       else
          ! regular grid
          call grib_get(gid,'Ni',ni,stat)
-         if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error getting level #.'
+         if (stat .ne. 0) call h_e_e('grib', 'Error getting level #.')
          n=ni*nj
       end if
       if (.not.allocated(val)) allocate(val(n))
 
       call grib_get(gid,'values',val,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error reading data.'
+      if (stat .ne. 0) call h_e_e('grib', 'Error reading data.')
       call grib_release(gid,stat)
-      if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Error releasing GRIB_ID.'
+      if (stat .ne. 0) call h_e_e('grib', 'Error releasing GRIB_ID.')
 
       ! select correct output array
       select case (param)
@@ -256,6 +257,6 @@ subroutine read_ecmwf_grib(ecmwf_file,preproc_dims,preproc_geoloc, &
 
    ! close ECMWF file
    call PBCLOSE(fu,stat)
-   if (stat .ne. 0) stop 'ERROR: read_ecmwf_grib(): Failed to close file.'
+   if (stat .ne. 0) call h_e_e('grib', 'Failed to close file.')
 
 end subroutine read_ecmwf_grib

@@ -33,7 +33,7 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure. Pass logical array
 !    to identify thermal channels rather than dealing with Ch_Is.
 ! 2016/01/27, GM: Add cee and cee_uncertainty.
-! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertianty.
+! 2016/01/28, GM: Add ctp and ctt corrected and corrected_uncertainty.
 !
 ! $Id$
 !

@@ -30,24 +30,25 @@
 !    as cloudy , checks in sunglint at day over sea if reflectances in ch1 and
 !    ch2 is high and also ch3b has values gt 300 Kelvin
 ! 2015/06/24, SS: added cloud mask uncertainty
-! 2015/10/29, CP: functionality for ATSR2 added added SteSta NN calibration corrections
-! 2015/11/17, OS: added platform flag and correction coefficients for MODIS and AATSR;
-!    removed sunglint double check; minor editing
+! 2015/10/29, CP: functionality for ATSR2 added added SteSta NN calibration
+!    corrections
+! 2015/11/17, OS: added platform flag and correction coefficients for MODIS and
+!    AATSR; removed sunglint double check; minor editing
 ! 2015/12/17, OS: changed structure of setting thresholds
-! 2016/01/21, OS: Added correction for ice-free sea skin temperature - to be tested
+! 2016/01/21, OS: Added correction for ice-free sea skin temperature - to be
+!    tested
 ! 2016/01/21, OS: Removed offset when correcting AATSR ch1 and ch2 data
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
-! 2016/02/26, OS: Added different approach for nighttime cloud mask SST correction.
-
+! 2016/02/26, OS: Added different approach for nighttime cloud mask SST
+!    correction.
+!
 ! $Id$
 !
 ! Bugs:
 ! None known.
 !-------------------------------------------------------------------------------
 
-!=========================================================================
 module NEURAL_NET_PREPROC
-  !=========================================================================
 
   implicit none
 
@@ -125,7 +126,7 @@ contains
           ch2 = channel2
        endif
     else
-       ch2 = channel2 
+       ch2 = channel2
        if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0. .and. albedo2 .lt. 0.8)) ch2 = max(ch2 - albedo2 / 2., 0.)
        ch2 = ch2 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch2 = 0.8336 * ch2 + 1.749
@@ -174,10 +175,10 @@ contains
        illum_nn = 3
        ! use twilight net if ch3b is missing at night/twilight:
        if ( ch3a_on_avhrr_flag .ne. NO ) illum_nn = 2
-       !       if ( ( ch3b .lt. NOAA7_9_CH3B_BT_THRES ) .and. ( (trim(adjustl(platform)) .eq. 'noaa7') &
-       !            .or. (trim(adjustl(platform)) .eq. 'noaa9') ) ) then
-       !          illum_nn = 2
-       !       endif
+!       if ( ( ch3b .lt. NOAA7_9_CH3B_BT_THRES ) .and. ( (trim(adjustl(platform)) .eq. 'noaa7') &
+!            .or. (trim(adjustl(platform)) .eq. 'noaa9') ) ) then
+!          illum_nn = 2
+!       endif
     else
        illum_nn = 0
        ! if solzen is negative, do not call neural net
@@ -340,7 +341,7 @@ contains
     endif
 
     !this should never happen and is only the case if lsflag is neither 0 nor 1
-    if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false. 
+    if ( threshold_used .eq. sreal_fill_value ) call_neural_net=.false.
 
     ! --- subroutine which carries out neural network computation
 
@@ -356,12 +357,11 @@ contains
        ! --- correct for sunglint - test phase for AVHRR
        ! This probably needs to be done in future because the sunglint correction does not
        ! really work for AATSR ; but at the moment wait for the results
-       !       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
-       !       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
-       !       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO)) output = output - albedo(1)
-       !       output = output + min( 0., (1./6. * ( (glint_angle / 25. ) -1.) ) )
-
-       !       endif
+!       if ( (trim(adjustl(sensor_name)) .eq. 'MODIS' ) .or. (trim(adjustl(sensor_name)) .eq. 'AVHRR') ) then
+!       output = output + min( 0., (1./6. * ( (glint_angle / 50. )**2. -1.) ) )
+!       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO)) output = output - albedo(1)
+!          output = output + min( 0., (1./6. * ( (glint_angle / 25. ) -1.) ) )
+!       endif
 
        ! Testing ice-free sea skin temperature correction
        if  (( lsflag .eq. 0_byte ) .AND. (niseflag .eq. NO) .and. &

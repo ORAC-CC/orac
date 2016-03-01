@@ -224,7 +224,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
    else if (nargs .eq. 1) then
       call get_command_argument(1,path_and_file)
    else if (nargs .eq. -1) then
-      index_space = INDEX(path_and_file, " ")
+      index_space = index(path_and_file, " ")
       path_and_file = path_and_file(1:(index_space-1))
       if (verbose) write(*,*) 'inside postproc ',trim(adjustl(path_and_file))
    end if
@@ -501,7 +501,6 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
          call dealloc_input_data_secondary_class(input_secondary(i))
       end if
    end do
-
 
    ! Hardwire outputs until different input file types supported
    output_flags%do_cloud               = .true.

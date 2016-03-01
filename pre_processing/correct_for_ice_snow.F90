@@ -89,7 +89,7 @@
 !    data in SR correct_for_ice_snow_ecmwf
 ! 2015/03/04, GM: Changes related to supporting channels in arbitrary order.
 ! 2015/04/10, GM: Fixed the use of snow/ice albedo for the BRDF parameters.
-! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask 
+! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
 ! 2016/02/23, OS: previous commit on ECMWF snow/ice mask was incomplete
 !
 ! $Id$

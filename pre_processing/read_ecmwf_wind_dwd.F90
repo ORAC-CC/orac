@@ -99,23 +99,21 @@ subroutine read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)
 
    ! check field dimensions for consistency
    if (nf90_inquire(fid,ndim,nvar) .ne. 0) &
-        stop 'ERROR: read_ecmwf_wind(): Bad inquire.'
+        call h_e_e('wind_dwd', 'Bad inquire.')
    do i=1,ndim
       if (nf90_inquire_dimension(fid,i,name,size) .ne. 0) &
-           stop 'ERROR: read_ecmwf_wind(): Bad dimension.'
+           call h_e_e('wind_dwd', 'Bad dimension.')
       if (name .eq. 'lon') then
          if (ecmwf%xdim .eq. 0) then
             ecmwf%xdim=size
          else
-            if (ecmwf%xdim .ne. size) &
-                 stop 'ERROR: read_ecmwf_wind(): Inconsistent lon.'
+            if (ecmwf%xdim .ne. size) call h_e_e('wind_dwd', 'Inconsistent lon.')
          end if
       else if (name .eq. 'lat') then
          if (ecmwf%ydim .eq. 0) then
             ecmwf%ydim=size
          else
-            if (ecmwf%ydim .ne. size) &
-                 stop 'ERROR: read_ecmwf_wind(): Inconsistent lat.'
+            if (ecmwf%ydim .ne. size) call h_e_e('wind_dwd', 'Inconsistent lat.')
          end if
          ! the vertical coordinate is inconsistently between gpam and ggam
       else if (name .eq. 'nhym') then
@@ -123,7 +121,7 @@ subroutine read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)
             ecmwf%kdim=size
          else
             if (ecmwf%kdim .ne. size) &
-                 stop 'ERROR: read_ecmwf_wind(): Inconsistent vertical.'
+                 call h_e_e('wind_dwd', 'Inconsistent vertical.')
          end if
       end if
    end do
@@ -131,7 +129,7 @@ subroutine read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)
    ! read wind fields and geolocation from files
    do i=1,nvar
       if (nf90_inquire_variable(fid,i,name) .ne. 0) &
-           stop 'ERROR: read_ecmwf_wind(): Bad variable.'
+           call h_e_e('wind_dwd', 'Bad variable.')
       select case (name)
       case('lon')
          if (.not.associated(ecmwf%lon)) then
@@ -187,6 +185,6 @@ subroutine read_ecmwf_wind_file_dwd(ecmwf_path,ecmwf)
    end do
 
    if (nf90_close(fid) .ne. NF90_NOERR) &
-        stop 'ERROR: read_ecmwf_wind(): File could not close.'
+        call h_e_e('wind_dwd', 'File could not close.')
 
 end subroutine read_ecmwf_wind_file_dwd

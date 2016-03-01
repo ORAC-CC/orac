@@ -499,8 +499,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
          ! if just one argument => this is a driver file
          call get_command_argument(1,driver_path_file)
       else if (nargs .eq. -1) then
-         index_space = INDEX(driver_path_file, " ")
-         driver_path_file = driver_path_file(1:(index_space-1))         
+         index_space = index(driver_path_file, " ")
+         driver_path_file = driver_path_file(1:(index_space-1))
          write(*,*) 'inside preproc: ',trim(adjustl(driver_path_file))
       end if
 
@@ -557,10 +557,10 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       do while (parse_driver(11, value, label) == 0)
         call clean_driver_label(label)
-        call parse_optional(label, value, n_channels, channel_ids, use_hr_ecmwf, &
-           ecmwf_time_int_method, use_ecmwf_snow_and_ice, use_modis_emis_in_rttov, &
-           ecmwf_path(2), ecmwf_path2(2), ecmwf_path3(2), ecmwf_path_hr(1), &
-           ecmwf_path_hr(2))
+        call parse_optional(label, value, n_channels, channel_ids, &
+           use_hr_ecmwf, ecmwf_time_int_method, use_ecmwf_snow_and_ice, &
+           use_modis_emis_in_rttov, ecmwf_path(2), ecmwf_path2(2), &
+           ecmwf_path3(2), ecmwf_path_hr(1), ecmwf_path_hr(2))
       end do
 
       close(11)
@@ -647,8 +647,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            day,doy,hour,minute,cyear,cmonth,cday,cdoy,chour,cminute,channel_ids, &
            channel_info,verbose)
 
-      ! currently setup to do day only by default
-      if (day_night .eq. 0) day_night=0
       loc_limit=(/ -90.0, -180.0, 90.0, 180.0 /)
 
       ! initialise the second length and offset variables
@@ -847,27 +845,27 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
 
       ! read surface wind fields and ECMWF dimensions
       if (ecmwf_time_int_method .ne. 2) then
-         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), ecmwf_HR_path_file(1), &
-              ecmwf_path_file2(1), ecmwf_path_file3(1), ecmwf, ecmwf_HR, use_hr_ecmwf, &
-              verbose)
+         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
+              ecmwf_HR_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1), &
+              ecmwf, ecmwf_HR, use_hr_ecmwf, verbose)
       else
-         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), ecmwf_HR_path_file(1), &
-              ecmwf_path_file2(1), ecmwf_path_file3(1), ecmwf1, ecmwf_HR1, use_hr_ecmwf, &
-              verbose)
-         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(2), ecmwf_HR_path_file(2), &
-              ecmwf_path_file2(2), ecmwf_path_file3(2), ecmwf2, ecmwf_HR2, use_hr_ecmwf, &
-              verbose)
+         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(1), &
+              ecmwf_HR_path_file(1), ecmwf_path_file2(1), ecmwf_path_file3(1), &
+              ecmwf1, ecmwf_HR1, use_hr_ecmwf, verbose)
+         call read_ecmwf_wind(ecmwf_flag, ecmwf_path_file(2), &
+              ecmwf_HR_path_file(2), ecmwf_path_file2(2), ecmwf_path_file3(2), &
+              ecmwf2, ecmwf_HR2, use_hr_ecmwf, verbose)
 
          call dup_ecmwf_allocation(ecmwf1, ecmwf, low_res)
          if (use_hr_ecmwf) then
             call dup_ecmwf_allocation(ecmwf_HR1, ecmwf_HR, high_res)
          end if
 
-         call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
-              ecmwf1, ecmwf2, ecmwf, low_res)
+         call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
+              ecmwf_time_int_fac, ecmwf1, ecmwf2, ecmwf, low_res)
          if (use_hr_ecmwf) then
-            call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, ecmwf_time_int_fac, &
-                 ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
+            call linearly_combine_ecmwfs(1.-ecmwf_time_int_fac, &
+                 ecmwf_time_int_fac, ecmwf_HR1, ecmwf_HR2, ecmwf_HR, high_res)
          end if
 
          call deallocate_ecmwf_structures(ecmwf1, low_res)
@@ -924,8 +922,8 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
       ! read USGS physiography file, including land use and DEM data
       ! NOTE: variable imager_flags%lsflag is overwritten by USGS data !!!
       if (verbose) write(*,*) 'Reading USGS path: ',trim(USGS_path_file)
-      call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, usgs, &
-           assume_full_paths, source_atts, verbose)
+      call get_USGS_data(USGS_path_file, imager_flags, imager_geolocation, &
+           usgs, assume_full_paths, source_atts, verbose)
 
       ! select correct emissivity file and calculate the emissivity over land
       if (verbose) write(*,*) 'Get surface emissivity'
@@ -950,13 +948,14 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
               surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
               include_full_brdf, source_atts, verbose)
       else
-         call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), imager_geolocation, &
-              imager_flags, preproc_dims, preproc_prtm, surface, cyear, cmonth, cday, &
-              channel_info, assume_full_paths, include_full_brdf, source_atts, &
-              verbose)
+         call correct_for_ice_snow_ecmwf(ecmwf_HR_path_file(1), &
+              imager_geolocation, imager_flags, preproc_dims, preproc_prtm, &
+              surface, cyear, cmonth, cday, channel_info, assume_full_paths, &
+              include_full_brdf, source_atts, verbose)
       end if
 
-      if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high resolution ERA surface data'
+      if (verbose) write(*,*) 'Calculate Pavolonis cloud phase with high '// &
+           'resolution ERA surface data'
       if (.not. use_hr_ecmwf) then
          call cloud_type(channel_info, sensor, surface, imager_flags, &
               imager_angles, imager_geolocation, imager_measurements, &
@@ -1053,7 +1052,6 @@ subroutine preprocessing(mytask,ntasks,lower_bound,upper_bound,driver_path_file,
            imager_flags, imager_time, imager_measurements, imager_pavolonis)
       call deallocate_surface_structures(surface, include_full_brdf)
 
-
    end do ! end looping over chunks
 
    if (verbose) write(*,*)'Deallocate remaining memory'
@@ -1071,4 +1069,3 @@ end subroutine preprocessing
 #else
 end program preprocessing
 #endif
-

@@ -171,7 +171,7 @@ subroutine preparation(lwrtm_file,swrtm_file,prtm_file,config_file,msi_file, &
       	 call build_ecmwf_HR_file_from_LR(ecmwf_path_file(2), ecmwf_HR_path_file(2))
       end if
 
-      else
+   else
       ecmwf_HR_path_file(1)=ecmwf_path_hr(1)
 
       if (ecmwf_time_int_method .eq. 2) then

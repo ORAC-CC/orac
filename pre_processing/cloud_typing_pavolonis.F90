@@ -52,13 +52,14 @@
 ! 2015/11/23, OS: Fixed bug that could lead to uninitialised variables when
 !    ch3a was available for solzen > 88.
 ! 2015/11/28  CP: used probabaly clear to deal with saturation of 12um channel
-!                 over antarctica in ATSR channel
-! 2016/01/21  OS: Removed bug due to differences in land/sea masks between 
-!                 ERA-Interim and USGS
-! 2016/01/21  OS: Removed bug: test with AATSR flag was also applied to other sensors
+!    over antarctica in ATSR channel
+! 2016/01/21  OS: Removed bug due to differences in land/sea masks between
+!    ERA-Interim and USGS
+! 2016/01/21  OS: Removed bug: test with AATSR flag was also applied to other
+!    sensors
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
-! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask 
-
+! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
+!
 ! $Id$
 !
 ! Bugs:

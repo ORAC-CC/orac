@@ -166,4 +166,17 @@ subroutine linearly_combine_ecmwfs(a, b, ecmwf1, ecmwf2, ecmwf, low_res)
 
 end subroutine linearly_combine_ecmwfs
 
+
+! handle_ecmwf_error (h_e_e)
+subroutine h_e_e(routine, message)
+
+   implicit none
+
+   character(len=*), intent(in) :: routine, message
+
+   write(*,*) 'ERROR: read_ecmwf_'//trim(routine)//'(): '//trim(message)
+   stop error_stop_code
+
+end subroutine h_e_e
+
 end module ecmwf_m
