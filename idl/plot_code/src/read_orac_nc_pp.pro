@@ -142,7 +142,7 @@ print,'file no.',i,files(i)
    if strpos(filein,'MODIS') gt 0 then inst='modis'
    if strpos(filein,'MYD') gt 0 then inst='modis'
    if strpos(filein,'AATSR') gt 0 then inst='aatsr'
-if strpos(filein,'ATSR2') gt 0 then inst='atsr2'
+   if strpos(filein,'ATSR2') gt 0 then inst='atsr2'
    if strpos(filein,'AVHRR') gt 0 then inst='avhrr'
    if strpos(filein,'avhrr') gt 0 then inst='avhrr'
    
@@ -685,24 +685,25 @@ skipnightcheck:
             
             if ~keyword_set(mli) then begin 
                if n_tags(xs) le 103 then begin
-
+print,'aa'
                   xin={y:meas,y0:y0,yn:yn,xn:xn,sx:unc,cost:(xp.costja(*,nys:nye)+xp.costjm(*,nys:nye))*xp.COSTJM_ATT.SCALE_FACTOR,conv:abs(xp.convergence(*,nys:nye)),tc:xp.ctt(*,nys:nye)*xp.ctt_att.scale_factor,itype:xp.phase(*,nys:nye),zc_cor:xp.cth_corrected(*,nys:nye)*xp.cth_corrected_att.scale_factor,zc:xp.cth(*,nys:nye)*xp.cth_att.scale_factor,ni:xp.niter(*,nys:nye),white_sky_albedo:meas(*,*,0)*0.0-999.,clearsky_bt:meas*0.0-999.,xo:meas*0.0-999.,ae:meas(*,*,*)*0.0-999,ym:meas,ymfit:ymfit,phase:xp.phase(*,nys:nye),x0:x0,lat:xp.lat(*,nys:nye),lon:xp.lon(*,nys:nye),solz:xp.SOLAR_ZENITH_VIEW_NO1(*,nys:nye),satz:xp.SATELLITE_ZENITH_VIEW_NO1(*,nys:nye),relaz:xp.REL_AZIMUTH_VIEW_NO1(*,nys:nye),cth:xp.cth(*,nys:nye)*xp.cth_att.SCALE_FACTOR,cth_cor:xp.cth_corrected(*,nys:nye)*xp.cth_corrected_att.SCALE_FACTOR,nn_pre:xp.cccot_pre(*,nys:nye)*xp.cccot_pre_att.SCALE_FACTOR,ice_mask:xp.NISEMASK(*,nys:nye),land_use:xp.lusflag(*,nys:nye),mask:xp.cc_total(*,nys:nye),cloud_type:xp.CLDTYPE(*,nys:nye),alb:alb,lsflag:xp.lsflag(*,nys:nye), cccot:cvar(*,nys:nye),illum:abs(xp.illum(*,nys:nye)),cloud_alb:cloud_alb,nn_pre_mask:xp.cc_total(*,nys:nye),phase_pavolonis:xp.cldtype(*,nys:nye),cwp:xp.cwp(*,nys:nye)*xp.cwp_att.scale_factor}
 
                endif else begin
-                  
+print,'bb'                  
                   xin={y:meas,y0:y0,yn:yn,xn:xn,sx:unc,cost:(xp.costja(*,nys:nye)+xp.costjm(*,nys:nye))*xp.COSTJM_ATT.SCALE_FACTOR,conv:abs(xp.convergence(*,nys:nye)),tc:xp.ctt(*,nys:nye)*xp.ctt_att.scale_factor,itype:xp.phase(*,nys:nye),zc:xp.cth(*,nys:nye)*xp.cth_att.scale_factor,ni:xp.niter(*,nys:nye),white_sky_albedo:meas(*,*,0)*0.0-999.,clearsky_bt:meas*0.0-999.,xo:meas*0.0-999.,ae:meas(*,*,*)*0.0-999,ym:meas,ymfit:ymfit,phase:xp.phase(*,nys:nye),x0:x0,lat:xp.lat(*,nys:nye),lon:xp.lon(*,nys:nye),solz:xp.SOLAR_ZENITH_VIEW_NO1(*,nys:nye),satz:xp.SATELLITE_ZENITH_VIEW_NO1(*,nys:nye),relaz:xp.REL_AZIMUTH_VIEW_NO1(*,nys:nye),cth_cor:xp.cth_corrected(*,nys:nye)*xp.cth_corrected_att.SCALE_FACTOR,cth:xp.cth(*,nys:nye)*xp.cth_att.SCALE_FACTOR,nn_pre:xp.cccot_pre(*,nys:nye)*xp.cccot_pre_att.SCALE_FACTOR,ice_mask:xp.NISEMASK(*,nys:nye),land_use:xp.lusflag(*,nys:nye),mask:xp.cc_total(*,nys:nye),cloud_type:xp.CLDTYPE(*,nys:nye),alb:alb,lsflag:xp.lsflag(*,nys:nye), cccot:cvar(*,nys:nye),illum:abs(xp.illum(*,nys:nye)),cloud_alb:cloud_alb,nn_pre_mask:xp.CLouDMASK_pre(*,nys:nye),phase_pavolonis:xp.PHASE_PAVOLONIS(*,nys:nye),cwp:xp.cwp(*,nys:nye)*xp.cwp_att.scale_factor}
                endelse ;tags < 103
                
                
                
             endif else begin;mli
+print,'cc'
                xin={y:meas,y0:y0,yn:yn,xn:xn,sx:unc,cost:(xp.costja(*,nys:nye)+xp.costjm(*,nys:nye))*xp.COSTJM_ATT.SCALE_FACTOR,conv:abs(xp.convergence(*,nys:nye)),tc:xp.ctt(*,nys:nye)*xp.ctt_att.scale_factor,itype:xp.phase(*,nys:nye),zc:xp.cth(*,nys:nye)*xp.cth_att.scale_factor,ni:xp.niter(*,nys:nye),white_sky_albedo:meas(*,*,0)*0.0-999.,clearsky_bt:meas*0.0-999.,xo:meas*0.0-999.,ae:meas(*,*,*)*0.0-999,ym:meas,ymfit:ymfit,phase:xp.phase(*,nys:nye),x0:x0,lat:xp.lat(*,nys:nye),lon:xp.lon(*,nys:nye),solz:xp.SOLAR_ZENITH_VIEW_NO1(*,nys:nye),satz:xp.SATELLITE_ZENITH_VIEW_NO1(*,nys:nye),relaz:xp.REL_AZIMUTH_VIEW_NO1(*,nys:nye),cth:xp.cth(*,nys:nye)*xp.cth_att.SCALE_FACTOR,cth_cor:xp.cth_corrected(*,nys:nye)*xp.cth_corrected_att.SCALE_FACTOR,nn_pre:xp.cccot_pre(*,nys:nye)*xp.cccot_pre_att.SCALE_FACTOR,ice_mask:xp.NISEMASK(*,nys:nye),land_use:xp.lusflag(*,nys:nye),mask:xp.cldmask(*,nys:nye),cloud_type:xp.CLDTYPE(*,nys:nye),alb:alb,lsflag:xp.lsflag(*,nys:nye), cccot:cvar(*,nys:nye),illum:abs(xp.illum(*,nys:nye)),cloud_alb:cloud_alb,nn_pre_mask:xp.CLDMASK(*,nys:nye),phase_pavolonis:xp.CLDTYPE(*,nys:nye),cwp:xp.cwp(*,nys:nye)*xp.cwp_att.scale_factor}
             endelse
              ;end of mli
 
          endif else begin ;v1
 ; older version
-            
+         print,'dd'   
             xin={y:meas,y0:y0,yn:yn,xn:xn,sx:unc,cost:(xp.costja(*,nys:nye)+xp.costjm(*,nys:nye))*xp.COSTJM_ATT.SCALE_FACTOR,conv:abs(xp.convergence(*,nys:nye)),tc:xp.ctt(*,nys:nye)*xp.ctt_att.scale_factor,itype:xp.phase(*,nys:nye),zc:xp.cth(*,nys:nye)*xp.cth_att.scale_factor,ni:xp.niter(*,nys:nye),white_sky_albedo:meas(*,*,0)*0.0-999.,clearsky_bt:meas*0.0-999.,xo:meas*0.0-999.,ae:meas(*,*,*)*0.0-999,ym:meas,ymfit:ymfit,phase:xp.phase(*,nys:nye),x0:x0,lat:xp.lat(*,nys:nye),lon:xp.lon(*,nys:nye),solz:xp.SOLAR_ZENITH_VIEW_NO1(*,nys:nye),satz:xp.SATELLITE_ZENITH_VIEW_NO1(*,nys:nye),relaz:xp.REL_AZIMUTH_VIEW_NO1(*,nys:nye),cth:xp.cth(*,nys:nye)*xp.cth_att.SCALE_FACTOR,cth_cor:xp.cth_corrected(*,nys:nye)*xp.cth_corrected_att.SCALE_FACTOR,nn_pre:xp.CCCOT(*,nys:nye)*xp.CCCOT_att.SCALE_FACTOR,nn_pre_mask:xp.CC_TOTAL(*,nys:nye),ice_mask:xp.lsflag(*,nys:nye),land_use:xp.lsflag(*,nys:nye)*0,mask:xp.cc_total(*,nys:nye),cloud_type:xp.lsflag(*,nys:nye)*0,alb:alb,lsflag:xp.lsflag(*,nys:nye), cccot:cvar(*,nys:nye),illum:abs(xp.illum(*,nys:nye)),cwp:xp.cwp(*,nys:nye)*xp.cwp_att.scale_factor}
             
          endelse ;end of version
@@ -747,6 +748,7 @@ for iz=0,4 do print,range(xin.xn(*,*,iz))
 
 
          if ngood le 0 then print,'no good points in this file skip chunk',filein
+         if ngood le 0 then goto,skipchunk
 if keyword_set(noir) and ngood le 0 then goto,skipchunk
 
          if keyword_set(ps) then begin
