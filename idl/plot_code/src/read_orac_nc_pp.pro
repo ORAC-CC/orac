@@ -144,6 +144,7 @@ print,'file no.',i,files(i)
    if strpos(filein,'AATSR') gt 0 then inst='aatsr'
 if strpos(filein,'ATSR2') gt 0 then inst='atsr2'
    if strpos(filein,'AVHRR') gt 0 then inst='avhrr'
+   if strpos(filein,'avhrr') gt 0 then inst='avhrr'
    
    if inst eq 'atsr'  then message,'routine not valid for this instrument must edit to adapt it!'+' '+inst
    
@@ -258,6 +259,7 @@ endelse
 
 
       xpwat=ncdf_read(fdir+'/'+fb+'primary.nc')
+
       possec=strpos(fdir+'/'+fb+'primary.nc','PP')
 
       print,'sec file test',fdir+'/'+fbs+'.secondary'+ext+'.nc'
@@ -291,7 +293,7 @@ if vdim eq 0  and  ~keyword_set(nosec) then goto,skipend
    ny=n_elements(xpwat.cot(1,*)) ;along track
 
    nchunks=1
- 
+ chunksize_file=0l
 
    if ~keyword_set(chsize) then chunksize_file=ny ;chunksize=1000
 
@@ -309,13 +311,13 @@ if vdim eq 0  and  ~keyword_set(nosec) then goto,skipend
       print,'number of chunks to process',nc,nchunks  
       
       if nchunks gt 1 then begin
-         nys=nc*chunksize_file 
-         nye=(nc+1)*chunksize_file-1
+         nys=(nc+0l)*chunksize_file 
+         nye=(nc+1l)*chunksize_file-1
          ny=chunksize_file
          psfis=psfisa+'_'+i2s(nc)
       endif else begin
          nys=0
-         nye=ny-1
+         nye=ny-1l
          ny=ny
          psfis=psfisa
       endelse
@@ -410,6 +412,7 @@ if vdim eq 0  and  ~keyword_set(nosec) then goto,skipend
          xn(*,*,3)=xp.stemp(*,nys:nye)*xp.stemp_att.scale_factor
          xn(*,*,4)=xp.cc_total(*,nys:nye)*xp.cc_total_att.scale_factor
          
+
          if ~keyword_set(nosec) then begin
             if n_elements(xs) gt 0 then begin
                
@@ -590,6 +593,7 @@ if ~keyword_set(noir) then                    yn(*,*,4)=xs.BRIGHTNESS_TEMPERATUR
                      cloud_alb(*,*,1)=xp.cloud_albedo_IN_CHANNEL_NO_2(*,nys:nye)*xp.cloud_albedo_IN_CHANNEL_NO_2_ATT.scale_factor+xp.cloud_albedo_IN_CHANNEL_NO_2_att.add_offset
                      cloud_alb(*,*,2)=xp.cloud_albedo_IN_CHANNEL_NO_3(*,nys:nye)*xp.cloud_albedo_IN_CHANNEL_NO_3_ATT.scale_factor+xp.cloud_albedo_IN_CHANNEL_NO_3_att.add_offset
                   endif
+
                   alb(*,*,0)=xs.albedo_IN_CHANNEL_NO_1(*,nys:nye)*xs.ALBEDO_IN_CHANNEL_NO_1_ATT.scale_factor+xs.ALBEDO_IN_CHANNEL_NO_1_ATT.add_offset
                   alb(*,*,1)=xs.albedo_IN_CHANNEL_NO_2(*,nys:nye)*xs.ALBEDO_IN_CHANNEL_NO_2_ATT.scale_factor+xs.ALBEDO_IN_CHANNEL_NO_2_ATT.add_offset
                   alb(*,*,2)=xs.albedo_IN_CHANNEL_NO_3(*,nys:nye)*xs.ALBEDO_IN_CHANNEL_NO_3_ATT.scale_factor+xs.ALBEDO_IN_CHANNEL_NO_3_ATT.add_offset
@@ -739,7 +743,12 @@ if keyword_set(noir) then     igood = where(xin.xn(*,*,1) gt -999.0,ngood,comple
          endelse      
          print,'number of good/bad retrievals',ngood,nbad
 
-         if ngood le 0 then print,'no good points in this file skip file',filein
+for iz=0,4 do print,range(xin.xn(*,*,iz)) 
+
+
+         if ngood le 0 then print,'no good points in this file skip chunk',filein
+if keyword_set(noir) and ngood le 0 then goto,skipchunk
+
          if keyword_set(ps) then begin
             if ngood le 0 then begin
                pdfile=strreplace(psfi,'.ps','.pdf')
@@ -946,7 +955,7 @@ endloop:
       
       dataout={ret:ret,ha:ha_temp}
       
-
+skipchunk:
       print,'here skipend adim i'
    endfor ;nchunks
 skipend:

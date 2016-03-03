@@ -643,8 +643,9 @@ skipref:
       
 ;endif
               if strpos(tis(i),'TS') ge 0 or  strpos(tis(i),'Ts') ge 0  then begin
+levstemp=indgen(20)*4+240
                  quick_cim_prc,kml=kmlfi,h.sg,xd,yd,pd,ur=ur,vr=vr,num=2,fac=fac,$
-                               position=ypos(p1,p2,mask=mask),lev=levctt,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
+                               position=ypos(p1,p2,mask=mask),lev=levstemp,chars=chs,title=ti1,lcb=lcb,bcb=bcb,cbs=cbs,ext=ext,_EXTRA=extra,$
                                image=image,axti=axti,eop_col=eop_col,eop_thick=def_th,eop_y=eop_y,eop_x=eop_x
                  
               endif else begin
