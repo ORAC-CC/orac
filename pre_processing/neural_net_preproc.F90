@@ -39,9 +39,9 @@
 !    tested
 ! 2016/01/21, OS: Removed offset when correcting AATSR ch1 and ch2 data
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
-! 2016/02/26, OS: Added different approach for nighttime cloud mask SST
-!    correction.
-!
+! 2016/02/26, OS: Added different approach for nighttime cloud mask SST correction.
+! 2016/03/04, OS: bug fix in albedo correction
+
 ! $Id$
 !
 ! Bugs:
@@ -57,7 +57,7 @@ contains
   !------------------------------------------------------------------------
   subroutine ann_cloud_mask(channel1, channel2, channel3b, channel4, channel5, &
        & solzen, satzen, dem, niseflag, lsflag, &
-       & lusflag, albedo1, albedo2, cccot_pre, cldflag, cld_uncertainty, lat, skint, &
+       & lusflag, albedo1, albedo2, cccot_pre, cldflag, cld_uncertainty, lat, lon, skint, &
        & ch3a_on_avhrr_flag, i, j, glint_angle, sensor_name, platform, verbose)
     !------------------------------------------------------------------------
 
@@ -86,7 +86,7 @@ contains
     integer(kind=byte), intent(in) :: lsflag, lusflag, niseflag
     integer(kind=sint), intent(in) :: ch3a_on_avhrr_flag
     integer(kind=lint), intent(in) :: dem
-    real(kind=sreal),   intent(in) :: solzen, lat, skint, satzen, glint_angle, albedo1, albedo2
+    real(kind=sreal),   intent(in) :: solzen, lat, lon, skint, satzen, glint_angle, albedo1, albedo2
     real(kind=sreal),   intent(in) :: channel1, channel2, channel3b, channel4, channel5
     integer(kind=lint), intent(in) :: i, j
     logical,            intent(in) :: verbose
@@ -111,11 +111,10 @@ contains
     if ( channel1 .eq. sreal_fill_value ) then
        ch1 = channel1
     else
-       ch1 = channel1
-       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0. .and. albedo1 .lt. 0.8)) ch1 = max(ch1 - albedo1 / 2., 0.)
-       ch1 = ch1 * 100.
+       ch1 = channel1 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch1 = 0.8945 * ch1 + 2.217
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch1 = 0.8542 * ch1
+       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo1 .ge. 0.)) ch1 = max(ch1 - albedo1 * 100. / 2., 0.)
        ch1 = min(106.,ch1) ! Dont allow reflectance to be higher than trained
     endif
 
@@ -126,11 +125,10 @@ contains
           ch2 = channel2
        endif
     else
-       ch2 = channel2
-       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0. .and. albedo2 .lt. 0.8)) ch2 = max(ch2 - albedo2 / 2., 0.)
-       ch2 = ch2 * 100.
+       ch2 = channel2 * 100.
        if (trim(adjustl(sensor_name)) .eq. 'MODIS' ) ch2 = 0.8336 * ch2 + 1.749
        if (trim(adjustl(sensor_name)) .eq. 'AATSR' ) ch2 = 0.7787 * ch2
+       if ((lsflag .eq. 0_byte) .and. (niseflag .eq. NO) .and. (albedo2 .gt. 0.)) ch2 = max(ch2 - albedo2 * 100. / 2., 0.)
        ch2 = min(104.,ch2) ! Dont allow reflectance to be higher than trained
     endif
 

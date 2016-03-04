@@ -58,8 +58,9 @@
 ! 2016/01/21  OS: Removed bug: test with AATSR flag was also applied to other
 !    sensors
 ! 2016/02/05, OS: Cloud mask now uses albedo for glint correction.
-! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask
-!
+! 2016/02/18, OS: ECMWF snow/ice mask now corrected by USGS land/sea mask 
+! 2016/03/04, OS: bug fix in setting index when passing surface%albedo
+
 ! $Id$
 !
 ! Bugs:
@@ -714,12 +715,13 @@ contains
                int(imager_geolocation%DEM(i,j), lint), &
                snow_ice_mask(i,j), imager_flags%LSFLAG(i,j), &
                imager_flags%LUSFLAG(i,j), &
-               surface%albedo(i,j,1), &
-               surface%albedo(i,j,2), &
+               surface%albedo(i,j,ch1), &
+               surface%albedo(i,j,ch2), &
                imager_pavolonis%CCCOT_pre(i,j), &
                imager_pavolonis%CLDMASK(i,j) , &
                imager_pavolonis%CLDMASK_UNCERTAINTY(i,j) , &
                imager_geolocation%LATITUDE(i,j) , &
+               imager_geolocation%LONGITUDE(i,j) , &
                skint(i,j) , &
                ch3a_on_avhrr_flag, &
                i, j, &
