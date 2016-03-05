@@ -29,7 +29,7 @@
    ierr = nf90_get_var(ncid, vid, arr, start, counter, stride)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_read_file(): Could not read variable ',trim(name)
-      print*,trim(nc_error(ierr))
+      print*,trim(nf90_strerror(ierr))
       stop error_stop_code
    endif
 

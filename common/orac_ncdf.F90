@@ -101,7 +101,7 @@ subroutine nc_open(ncid, fname, error_status)
    ierr=nf90_open(path=trim(adjustl(fname)),mode=NF90_NOWRITE,ncid=ncid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_open(): Error opening file ',trim(fname)
-      print*,trim(nc_error(ierr))
+      print*,trim(nf90_strerror(ierr))
       if (present(error_status)) then
          error_status = error_stop_code
       else
@@ -147,14 +147,14 @@ function nc_dim_length(ncid, name, verbose) result(len)
    ierr = nf90_inq_dimid(ncid, name, did)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_dim_length(): Could not locate dimension ',trim(name)
-      print*,trim(nc_error(ierr))
+      print*,trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 
    ierr = nf90_inquire_dimension(ncid, did, dname, len)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_dim_length():: Could not read dimension ',trim(name)
-      print*,trim(nc_error(ierr))
+      print*,trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
 
@@ -497,107 +497,6 @@ end function nc_dim_length
 #undef NC_WRITE_NAME_2D
 #undef NC_WRITE_NAME_3D
 #undef NC_WRITE_NAME_4D
-
-!-------------------------------------------------------------------------------
-! Name: nc_error
-!
-! Purpose:
-! Function that translates an error code returned by a NetCDF routine into a
-! string that can be understood by a user.
-!
-! Description and Algorithm details:
-! 1) A CASE statement derived from
-!    http://www.unidata.ucar.edu/software/netcdf/docs/netcdf-c/Error-Codes.html
-!
-! Arguments:
-! Name  Type   In/Out/Both Description
-! ------------------------------------------------------------------------------
-! ierr integer In  Error code returned by NetCDF routine
-! out  string  Out Descriptive string for that code
-!
-! History:
-! 2014/02/10, AP: Original version
-! 2014/08/05, GM: 'out' was being truncated. Extended length to 64.
-!
-! Bugs:
-! None known.
-!-------------------------------------------------------------------------------
-function nc_error(ierr) result(out)
-   implicit none
-
-   integer, intent(in) :: ierr
-   character(len=64)   :: out
-
-   select case (ierr)
-   case(-33)
-      out='Not a netcdf id.'
-   case(-34)
-      out='Too many netcdfs open.'
-   case(-35)
-      out='netcdf file exists && NC_NOCLOBBER.'
-   case(-36)
-      out='Invalid Argument.'
-   case(-37)
-      out='Write to read only.'
-   case(-38)
-      out='Operation not allowed in data mode.'
-   case(-39)
-      out='Operation not allowed in define mode.'
-   case(-40)
-      out='Index exceeds dimension bound.'
-   case(-41)
-      out='NC_MAX_DIMS exceeded.'
-   case(-42)
-      out='String match to name in use.'
-   case(-43)
-      out='Attribute not found.'
-   case(-44)
-      out='NC_MAX_ATTRS exceeded.'
-   case(-45)
-      out='Not a netcdf data type.'
-   case(-46)
-      out='Invalid dimension id or name.'
-   case(-47)
-      out='NC_UNLIMITED in the wrong index.'
-   case(-48)
-      out='NC_MAX_VARS exceeded.'
-   case(-49)
-      out='Variable not found.'
-   case(-50)
-      out='Action prohibited on NC_GLOBAL varid.'
-   case(-51)
-      out='Not a netcdf file.'
-   case(-52)
-      out='In Fortran, string too short.'
-   case(-53)
-      out='NC_MAX_NAME exceeded.'
-   case(-54)
-      out='NC_UNLIMITED size already in use.'
-   case(-55)
-      out='nc_rec op when there are no record vars.'
-   case(-56)
-      out='Attempt to convert between text & numbers.'
-   case(-57)
-      out='Edge+start exceeds dimension bound.'
-   case(-58)
-      out='Illegal stride.'
-   case(-59)
-      out='Attribute or variable name contains illegal characters.'
-   case(-60)
-      out='Math result not representable.'
-   case(-61)
-      out='Memory allocation case(malloc) failure.'
-   case(-62)
-      out='One or more variable sizes violate format constraints.'
-   case(-63)
-      out='Invalid dimension size.'
-   case(-64)
-      out='File likely truncated or possibly corrupted.'
-   case default
-      out='Unknown NetCDF error code.'
-   end select
-
-end function nc_error
 
 
 include 'orac_nc_utils.F90'

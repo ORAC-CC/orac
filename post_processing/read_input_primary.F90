@@ -132,18 +132,18 @@ subroutine read_input_primary_common(ncid, input_data, xdim, ydim, indexing, &
    ierr = nf90_inq_varid(ncid, "qcflag", varid)
    if (ierr.ne.NF90_NOERR) then
       print*,'ERROR: nc_read_file(): Could not locate variable ', trim("qcflag")
-      print*,trim(nc_error(ierr))
+      print*,trim(nf90_strerror(ierr))
       stop error_stop_code
    end if
    ierr = nf90_get_att(ncid, varid, 'flag_masks', input_data%qc_flag_masks)
    if (ierr.ne.NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_get_att(), ', trim(nc_error(ierr)), &
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
           ', variable: qcflag, name: flag_masks'
       stop error_stop_code
    end if
    ierr = nf90_get_att(ncid, varid, 'flag_meanings', input_data%qc_flag_meanings)
    if (ierr.ne.NF90_NOERR) then
-      write(*,*) 'ERROR: nf90_get_att(), ', trim(nc_error(ierr)), &
+      write(*,*) 'ERROR: nf90_get_att(), ', trim(nf90_strerror(ierr)), &
           ', variable: qcflag, name: flag_meanings'
       stop error_stop_code
    end if
