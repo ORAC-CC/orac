@@ -240,7 +240,7 @@ subroutine post_process_level2(mytask,ntasks,lower_bound,upper_bound,path_and_fi
 
    read(11,'(A)') out_file_primary
    read(11,'(A)') out_file_secondary
-   read(11,'(A)') switch_phases
+   read(11,*) switch_phases
 
    n_in_files = 2
 
