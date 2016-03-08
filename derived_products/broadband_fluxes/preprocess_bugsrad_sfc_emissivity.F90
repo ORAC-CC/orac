@@ -74,14 +74,14 @@
       modID1=[1,1,1,1,1,1,2,3,3,3,3,3]
       modID2=[2,2,2,2,2,2,3,3,3,3,3,3]
 
-      print*,emis_data
+      !print*,emis_data
 
       ! Interpolate emissivity
       do I=1,7
         m = ( emis_data(modID2(I)) - emis_data(modID1(I)) ) / ( modBand(modID2(I)) - modBand(modID1(I)) )
         b = emis_data(modID1(I)) - m*modBand(modID1(I))
         emis_bugsrad(I) = m*bugsBand(I) + b
-        PRINT*,I,emis_bugsrad(I),m,b,emis_data(modID2(I)), emis_data(modID1(I)),modBand(modID1(I)),modBand(modID2(I)),bugsBand(I)
+        !PRINT*,I,emis_bugsrad(I),m,b,emis_data(modID2(I)), emis_data(modID1(I)),modBand(modID1(I)),modBand(modID2(I)),bugsBand(I)
       enddo
       !Bands 8 - 12 fill with MODIS band 36
       emis_bugsrad(8)  = 1.0!emis_data(3)
