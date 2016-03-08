@@ -125,8 +125,8 @@ subroutine dup_ecmwf_allocation(ecmwf, ecmwf2, low_res)
    ecmwf2%ydim = ecmwf%ydim
    ecmwf2%kdim = ecmwf%kdim
 
-   allocate(ecmwf2%avec(61))
-   allocate(ecmwf2%bvec(61))
+   allocate(ecmwf2%avec(ecmwf%kdim+1))
+   allocate(ecmwf2%bvec(ecmwf%kdim+1))
    allocate(ecmwf2%lon(ecmwf%xdim))
    allocate(ecmwf2%lat(ecmwf%ydim))
    if (low_res) allocate(ecmwf2%u10(ecmwf%xdim,ecmwf%ydim))
