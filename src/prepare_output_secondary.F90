@@ -43,6 +43,8 @@
 ! 2016/01/06, AP: Wrap do_* flags into output_flags structure.
 ! 2016/01/07, AP: Check for valid AK values relied on short-circuiting, which
 !    isn't standard Fortran.
+! 2016/03/04, AP: Tidy prepare_*_packed_float. Make MissingXn the only value
+!    checked for in X, X0, Xb (sreal_fill_value had been ocassionally checked).
 !
 ! $Id$
 !
@@ -84,56 +86,40 @@ if (output_flags%do_aerosol) then
    !----------------------------------------------------------------------------
    ! aot550_ap, aot550_fg
    !----------------------------------------------------------------------------
-   if (SPixel%Xb(ITau) .eq. MissingXn) then
-      dummyreal = sreal_fill_value
-   else
-      dummyreal = 10.0**SPixel%Xb(ITau)
-   end if
+   dummyreal = 10.0**SPixel%Xb(ITau)
    call prepare_short_packed_float( &
-           dummyreal, output_data%aot550_ap(i,j), &
-           output_data%aot550_ap_scale, output_data%aot550_ap_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%aot550_ap_vmin, output_data%aot550_ap_vmax, &
-           output_data%aot550_ap_vmax)
+        dummyreal, output_data%aot550_ap(i,j), &
+        output_data%aot550_ap_scale, output_data%aot550_ap_offset, &
+        output_data%aot550_ap_vmin, output_data%aot550_ap_vmax, &
+        MissingXn, output_data%aot550_ap_vmax, &
+        control=SPixel%Xb(ITau))
 
-   if (SPixel%X0(ITau) .eq. MissingXn) then
-      dummyreal = sreal_fill_value
-   else
-      dummyreal = 10.0**SPixel%X0(ITau)
-   end if
+   dummyreal = 10.0**SPixel%X0(ITau)
    call prepare_short_packed_float( &
-           dummyreal, output_data%aot550_fg(i,j), &
-           output_data%aot550_fg_scale, output_data%aot550_fg_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%aot550_fg_vmin, output_data%aot550_fg_vmax, &
-           output_data%aot550_fg_vmax)
+        dummyreal, output_data%aot550_fg(i,j), &
+        output_data%aot550_fg_scale, output_data%aot550_fg_offset, &
+        output_data%aot550_fg_vmin, output_data%aot550_fg_vmax, &
+        MissingXn, output_data%aot550_fg_vmax, &
+        control=SPixel%X0(ITau))
 
    !----------------------------------------------------------------------------
    ! aer_ap, aer_fg
    !----------------------------------------------------------------------------
-   if (SPixel%Xb(ITau) .eq. MissingXn) then
-      dummyreal = sreal_fill_value
-   else
-      dummyreal = 10.0**SPixel%Xb(IRe)
-   end if
+   dummyreal = 10.0**SPixel%Xb(IRe)
    call prepare_short_packed_float( &
-           dummyreal, output_data%aer_ap(i,j), &
-           output_data%aer_ap_scale, output_data%aer_ap_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%aer_ap_vmin, output_data%aer_ap_vmax, &
-           output_data%aer_ap_vmax)
+        dummyreal, output_data%aer_ap(i,j), &
+        output_data%aer_ap_scale, output_data%aer_ap_offset, &
+        output_data%aer_ap_vmin, output_data%aer_ap_vmax, &
+        MissingXn, output_data%aer_ap_vmax, &
+        control=SPixel%Xb(IRe))
 
-   if (SPixel%X0(ITau) .eq. MissingXn) then
-      dummyreal = sreal_fill_value
-   else
-      dummyreal = 10.0**SPixel%X0(IRe)
-   end if
+   dummyreal = 10.0**SPixel%X0(IRe)
    call prepare_short_packed_float( &
-           dummyreal, output_data%aer_fg(i,j), &
-           output_data%aer_fg_scale, output_data%aer_fg_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%aer_fg_vmin, output_data%aer_fg_vmax, &
-           output_data%aer_fg_vmax)
+        dummyreal, output_data%aer_fg(i,j), &
+        output_data%aer_fg_scale, output_data%aer_fg_offset, &
+        output_data%aer_fg_vmin, output_data%aer_fg_vmax, &
+        MissingXn, output_data%aer_fg_vmax, &
+        control=SPixel%X0(IRe))
 end if
 
 if (output_flags%do_rho) then
@@ -145,33 +131,17 @@ if (output_flags%do_rho) then
 
       do l=1,MaxRho_XX
          if (any(SPixel%X .eq. IRs(kk,l))) then
-            if (SPixel%Xb(IRs(kk,l)) .eq. MissingXn) then
-               dummyreal = sreal_fill_value
-            else
-               dummyreal = SPixel%Xb(IRs(kk,l))
-            end if
             call prepare_short_packed_float( &
-                 dummyreal, output_data%rho_ap(i,j,kk,l), &
-                 output_data%rho_ap_scale, &
-                 output_data%rho_ap_offset, &
-                 sreal_fill_value, sint_fill_value, &
-                 output_data%rho_ap_vmin, &
-                 output_data%rho_ap_vmax, &
-                 sint_fill_value)
+                 SPixel%Xb(IRs(kk,l)), output_data%rho_ap(i,j,kk,l), &
+                 output_data%rho_ap_scale, output_data%rho_ap_offset, &
+                 output_data%rho_ap_vmin, output_data%rho_ap_vmax, &
+                 MissingXn, sint_fill_value)
 
-            if (SPixel%X0(IRs(kk,l)) .eq. MissingXn) then
-               dummyreal = sreal_fill_value
-            else
-               dummyreal = SPixel%X0(IRs(kk,l))
-            end if
             call prepare_short_packed_float( &
-                 dummyreal, output_data%rho_fg(i,j,kk,l), &
-                 output_data%rho_fg_scale, &
-                 output_data%rho_fg_offset, &
-                 sreal_fill_value, sint_fill_value, &
-                 output_data%rho_fg_vmin, &
-                 output_data%rho_fg_vmax, &
-                 sint_fill_value)
+                 SPixel%X0(IRs(kk,l)), output_data%rho_fg(i,j,kk,l), &
+                 output_data%rho_fg_scale, output_data%rho_fg_offset, &
+                 output_data%rho_fg_vmin, output_data%rho_fg_vmax, &
+                 MissingXn, sint_fill_value)
          end if
       end do
    end do
@@ -184,56 +154,32 @@ if (output_flags%do_swansea) then
    do k=1,SPixel%Ind%NSolar
       kk = SPixel%spixel_y_solar_to_ctrl_y_solar_index(k)
 
-      if (SPixel%Xb(ISS(kk)) .eq. MissingXn) then
-         dummyreal = sreal_fill_value
-      else
-         dummyreal = SPixel%Xb(ISS(kk))
-      end if
       call prepare_short_packed_float( &
-           dummyreal, output_data%swansea_s_ap(i,j,k), &
+           SPixel%Xb(ISS(kk)), output_data%swansea_s_ap(i,j,k), &
            output_data%swansea_s_ap_scale, output_data%swansea_s_ap_offset, &
-           sreal_fill_value, sint_fill_value, &
            output_data%swansea_s_ap_vmin, output_data%swansea_s_ap_vmax, &
-           output_data%swansea_s_ap_vmax)
+           MissingXn, output_data%swansea_s_ap_vmax)
 
-      if (SPixel%X0(ISS(kk)) .eq. MissingXn) then
-         dummyreal = sreal_fill_value
-      else
-         dummyreal = SPixel%X0(ISS(kk))
-      end if
       call prepare_short_packed_float( &
-           dummyreal, output_data%swansea_s_fg(i,j,k), &
+           SPixel%X0(ISS(kk)), output_data%swansea_s_fg(i,j,k), &
            output_data%swansea_s_fg_scale, output_data%swansea_s_fg_offset, &
-           sreal_fill_value, sint_fill_value, &
            output_data%swansea_s_fg_vmin, output_data%swansea_s_fg_vmax, &
-           output_data%swansea_s_fg_vmax)
+           MissingXn, output_data%swansea_s_fg_vmax)
    end do
 
    do k=1,Ctrl%Ind%NViews
       if (any(SPixel%X .eq. ISP(k))) then
-         if (SPixel%Xb(ISP(k)) .eq. MissingXn) then
-            dummyreal = sreal_fill_value
-         else
-            dummyreal = SPixel%Xb(ISP(k))
-         end if
          call prepare_short_packed_float( &
-              dummyreal, output_data%swansea_p_ap(i,j,k), &
+              SPixel%Xb(ISP(k)), output_data%swansea_p_ap(i,j,k), &
               output_data%swansea_p_ap_scale, output_data%swansea_p_ap_offset, &
-              sreal_fill_value, sint_fill_value, &
               output_data%swansea_p_ap_vmin, output_data%swansea_p_ap_vmax, &
-              output_data%swansea_p_ap_vmax)
+              MissingXn, output_data%swansea_p_ap_vmax)
 
-         if (SPixel%X0(ISP(k)) .eq. MissingXn) then
-            dummyreal = sreal_fill_value
-         else
-            dummyreal = SPixel%X0(ISP(k))
-         end if
          call prepare_short_packed_float( &
-              dummyreal, output_data%swansea_s_fg(i,j,k), &
+              SPixel%X0(ISP(k)), output_data%swansea_s_fg(i,j,k), &
               output_data%swansea_p_fg_scale, output_data%swansea_p_fg_offset, &
-              sreal_fill_value, sint_fill_value, &
               output_data%swansea_p_fg_vmin, output_data%swansea_p_fg_vmax, &
-              output_data%swansea_p_fg_vmax)
+              MissingXn, output_data%swansea_p_fg_vmax)
       end if
    end do
 end if
@@ -242,98 +188,77 @@ if (output_flags%do_cloud) then
    !----------------------------------------------------------------------------
    ! cot_ap, cot_fg
    !----------------------------------------------------------------------------
-   if (SPixel%Xb(ITau) .eq. MissingXn) then
-      dummyreal = sreal_fill_value
-   else
-      dummyreal = 10.0**SPixel%Xb(ITau)
-   end if
+   dummyreal = 10.0**SPixel%Xb(ITau)
    call prepare_short_packed_float( &
-           dummyreal, output_data%cot_ap(i,j), &
-           output_data%cot_ap_scale, output_data%cot_ap_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
-           output_data%cot_ap_vmax)
+        dummyreal, output_data%cot_ap(i,j), &
+        output_data%cot_ap_scale, output_data%cot_ap_offset, &
+        output_data%cot_ap_vmin, output_data%cot_ap_vmax, &
+        MissingXn, output_data%cot_ap_vmax, &
+        control=SPixel%Xb(ITau))
 
-   if (SPixel%X0(ITau) .eq. MissingXn) then
-      dummyreal = sreal_fill_value
-   else
-      dummyreal = 10.0**SPixel%X0(ITau)
-   end if
+   dummyreal = 10.0**SPixel%X0(ITau)
    call prepare_short_packed_float( &
-           dummyreal, output_data%cot_fg(i,j), &
-           output_data%cot_fg_scale, output_data%cot_fg_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cot_fg_vmin, output_data%cot_fg_vmax, &
-           output_data%cot_fg_vmax)
+        dummyreal, output_data%cot_fg(i,j), &
+        output_data%cot_fg_scale, output_data%cot_fg_offset, &
+        output_data%cot_fg_vmin, output_data%cot_fg_vmax, &
+        MissingXn, output_data%cot_fg_vmax, &
+        control=SPixel%X0(ITau))
 
    !----------------------------------------------------------------------------
    ! cer_ap, cer_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%Xb(IRe)
    call prepare_short_packed_float( &
-           dummyreal, output_data%cer_ap(i,j), &
-           output_data%cer_ap_scale, output_data%cer_ap_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cer_ap_vmin, output_data%cer_ap_vmax, &
-           output_data%cer_ap_vmax)
+        SPixel%Xb(IRe), output_data%cer_ap(i,j), &
+        output_data%cer_ap_scale, output_data%cer_ap_offset, &
+        output_data%cer_ap_vmin, output_data%cer_ap_vmax, &
+        MissingXn, output_data%cer_ap_vmax)
 
-   dummyreal=SPixel%X0(IRe)
    call prepare_short_packed_float( &
-           dummyreal, output_data%cer_fg(i,j), &
-           output_data%cer_fg_scale, output_data%cer_fg_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%cer_fg_vmin, output_data%cer_fg_vmax, &
-           output_data%cer_fg_vmax)
+        SPixel%X0(IRe), output_data%cer_fg(i,j), &
+        output_data%cer_fg_scale, output_data%cer_fg_offset, &
+        output_data%cer_fg_vmin, output_data%cer_fg_vmax, &
+        MissingXn, output_data%cer_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! ctp_ap, ctp_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%Xb(IPc)
    call prepare_short_packed_float( &
-           dummyreal, output_data%ctp_ap(i,j), &
-           output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
-           output_data%ctp_ap_vmax)
+        SPixel%Xb(IPc), output_data%ctp_ap(i,j), &
+        output_data%ctp_ap_scale, output_data%ctp_ap_offset, &
+        output_data%ctp_ap_vmin, output_data%ctp_ap_vmax, &
+        MissingXn, output_data%ctp_ap_vmax)
 
-   dummyreal=SPixel%X0(IPc)
    call prepare_short_packed_float( &
-           dummyreal, output_data%ctp_fg(i,j), &
-           output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%ctp_fg_vmin, output_data%ctp_fg_vmax, &
-           output_data%ctp_fg_vmax)
+        SPixel%X0(IPc), output_data%ctp_fg(i,j), &
+        output_data%ctp_fg_scale, output_data%ctp_fg_offset, &
+        output_data%ctp_fg_vmin, output_data%ctp_fg_vmax, &
+        MissingXn, output_data%ctp_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! stemp_ap, stemp_fg
    !----------------------------------------------------------------------------
-   dummyreal=SPixel%X0(ITs)
    call prepare_short_packed_float( &
-           dummyreal, output_data%stemp_ap(i,j), &
-           output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
-           output_data%stemp_ap_vmax)
+        SPixel%X0(ITs), output_data%stemp_ap(i,j), &
+        output_data%stemp_ap_scale, output_data%stemp_ap_offset, &
+        output_data%stemp_ap_vmin, output_data%stemp_ap_vmax, &
+        MissingXn, output_data%stemp_ap_vmax)
 
-   dummyreal=SPixel%X0(ITs)
    call prepare_short_packed_float( &
-           dummyreal, output_data%stemp_fg(i,j), &
-           output_data%stemp_fg_scale, output_data%stemp_fg_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%stemp_fg_vmin, output_data%stemp_fg_vmax, &
-           output_data%stemp_fg_vmax)
+        SPixel%X0(ITs), output_data%stemp_fg(i,j), &
+        output_data%stemp_fg_scale, output_data%stemp_fg_offset, &
+        output_data%stemp_fg_vmin, output_data%stemp_fg_vmax, &
+        MissingXn, output_data%stemp_fg_vmax)
 
    !----------------------------------------------------------------------------
    ! albedo
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%NSolar
-      dummyreal=MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%Y0,k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%albedo(i,j,k), &
+           MSI_Data%ALB(SPixel%Loc%X0,SPixel%Loc%Y0,k), &
+           output_data%albedo(i,j,k), &
            output_data%albedo_scale, output_data%albedo_offset, &
-           sreal_fill_value, sint_fill_value, &
            output_data%albedo_vmin, output_data%albedo_vmax, &
-           sint_fill_value)
+           sreal_fill_value, sint_fill_value)
    end do
 end if
 
@@ -341,13 +266,12 @@ end if
    ! channels
    !----------------------------------------------------------------------------
    do k=1,Ctrl%Ind%Ny
-      dummyreal=MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%channels(i,j,k), &
+           MSI_Data%MSI(SPixel%Loc%X0, SPixel%Loc%Y0, k), &
+           output_data%channels(i,j,k), &
            output_data%channels_scale(k), output_data%channels_offset(k), &
-           sreal_fill_value, sint_fill_value, &
            output_data%channels_vmin(k), output_data%channels_vmax(k), &
-           sint_fill_value)
+           sreal_fill_value, sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -356,13 +280,11 @@ end if
    do k=1,SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
-      dummyreal=Diag%Y0(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%y0(i,j,kk), &
+           Diag%Y0(k), output_data%y0(i,j,kk), &
            output_data%y0_scale(kk), output_data%y0_offset(kk), &
-           sreal_fill_value, sint_fill_value, &
            output_data%y0_vmin(kk), output_data%y0_vmax(kk), &
-           sint_fill_value)
+           sreal_fill_value, sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -371,13 +293,11 @@ end if
    do k=1,SPixel%Ind%Ny
       kk = SPixel%spixel_y_to_ctrl_y_index(k)
 
-      dummyreal=Diag%YmFit(k)
       call prepare_short_packed_float( &
-           dummyreal, output_data%residuals(i,j,kk), &
+           Diag%YmFit(k), output_data%residuals(i,j,kk), &
            output_data%residuals_scale(kk), output_data%residuals_offset(kk), &
-           sreal_fill_value, sint_fill_value, &
            output_data%residuals_vmin(kk), output_data%residuals_vmax(kk), &
-           sint_fill_value)
+           sreal_fill_value, sint_fill_value)
    end do
 
    !----------------------------------------------------------------------------
@@ -395,11 +315,10 @@ end if
       end do
    end if
    call prepare_short_packed_float( &
-           dummyreal, output_data%ds(i,j), &
-           output_data%ds_scale, output_data%ds_offset, &
-           sreal_fill_value, sint_fill_value, &
-           output_data%ds_vmin, output_data%ds_vmax, &
-           sint_fill_value)
+        dummyreal, output_data%ds(i,j), &
+        output_data%ds_scale, output_data%ds_offset, &
+        output_data%ds_vmin, output_data%ds_vmax, &
+        sreal_fill_value, sint_fill_value)
 
    !----------------------------------------------------------------------------
    ! covariance
@@ -408,11 +327,9 @@ if (output_flags%do_covariance) then
    do k=1,SPixel%Nx
       do l=1,SPixel%Nx
         call prepare_float_packed_float( &
-                real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
-                1._sreal, 0._sreal, &
-                sreal_fill_value, sreal_fill_value, &
-                0._sreal, huge(dummyreal), &
-                sreal_fill_value)
+             real(SPixel%Sn(k,l),kind=sreal), output_data%covariance(i,j,k,l), &
+             1._sreal, 0._sreal, 0._sreal, huge(dummyreal), &
+             sreal_fill_value, sreal_fill_value)
       end do
    end do
 end if
